@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.metadata.apifirst.types
+package com.android.settingslib.metadata.preferencesapi.types
 
-class SubscriptionId : ApiFirstType<Int>
+/** A boolean value. */
+object AnyBoolean : ApiType<Boolean>

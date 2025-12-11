@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.metadata.apifirst.types
+package com.android.settingslib.metadata.preferencesapi.types
 
-/** Any package installed on the device. */
-object InstalledPackageName: ApiFirstType<String>
+interface ApiType<V>

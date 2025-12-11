@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.metadata.apifirst
+package com.android.settingslib.metadata.preferencesapi
 
 /**
- * A utility object for creating standardized exception messages for the ApiFirst approach.
+ * A utility object for creating standardized exception messages for the API-first approach.
  *
  * This object centralizes common error message templates to ensure that validation errors
  * (e.g. incorrect block order, duplicate definitions) are reported consistently across the module.

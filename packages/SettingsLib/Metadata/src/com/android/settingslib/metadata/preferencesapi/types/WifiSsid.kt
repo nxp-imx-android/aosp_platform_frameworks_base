@@ -14,19 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.metadata.apifirst.preconditions
-
-import com.android.settingslib.metadata.KeyParametersSchema
+package com.android.settingslib.metadata.preferencesapi.types
 
 /**
- * The getter is unavailable due to the value or state of another preference. The
- * otherPreferenceScreenKey/otherPreferenceKey/otherPreferenceParams should identify the
- * problematic preference (params being required only if the other preference is
- * parameterised). The reason should explain what is wrong.
+ * The Ssid of a network which is either currently connected, able to be connected to, or saved to
+ * the device.
  */
-class InvalidPreference(
-    otherPreferenceScreenKey: Int,
-    otherPreferenceKey: Int,
-    otherPreferenceParams: KeyParametersSchema?,
-    override val reason: Int
-) : Disallowed
+class WifiSsid : ApiType<String>

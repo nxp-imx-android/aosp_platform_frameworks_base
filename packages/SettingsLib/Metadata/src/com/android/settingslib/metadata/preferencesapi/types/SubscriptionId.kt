@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.metadata.apifirst.preconditions
+package com.android.settingslib.metadata.preferencesapi.types
 
-/** The getter is unavailable due to some hardware issue, the reason should give details. */
-class HardwareUnsupported(override val reason: Int) : Disallowed
+class SubscriptionId : ApiType<Int>

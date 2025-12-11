@@ -14,26 +14,26 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.metadata.apifirst
+package com.android.settingslib.metadata.preferencesapi
 
 import android.Manifest
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.android.settingslib.metadata.apifirst.ExceptionMessagesFormatter.EXCEPTION_MESSAGE_NO_PARAMETER_DEFINED
+import com.android.settingslib.metadata.preferencesapi.ExceptionMessagesFormatter.EXCEPTION_MESSAGE_NO_PARAMETER_DEFINED
 import com.android.settingslib.metadata.test.R
-import com.android.settingslib.metadata.apifirst.ExceptionMessagesFormatter.getExceptionMessageMultipleDefines
-import com.android.settingslib.metadata.apifirst.ExceptionMessagesFormatter.getExceptionMessageMultipleParametersDefined
-import com.android.settingslib.metadata.apifirst.ExceptionMessagesFormatter.getExceptionMessageWrongOrder
-import com.android.settingslib.metadata.apifirst.category.Category
-import com.android.settingslib.metadata.apifirst.preconditions.Allowed
-import com.android.settingslib.metadata.apifirst.preconditions.Custom
-import com.android.settingslib.metadata.apifirst.preconditions.EnterpriseRestriction
-import com.android.settingslib.metadata.apifirst.preconditions.HardwareUnsupported
-import com.android.settingslib.metadata.apifirst.types.AnyBoolean
-import com.android.settingslib.metadata.apifirst.types.AnyInt
-import com.android.settingslib.metadata.apifirst.types.GeneratedParameterType
-import com.android.settingslib.metadata.apifirst.types.ResultValue
+import com.android.settingslib.metadata.preferencesapi.ExceptionMessagesFormatter.getExceptionMessageMultipleDefines
+import com.android.settingslib.metadata.preferencesapi.ExceptionMessagesFormatter.getExceptionMessageMultipleParametersDefined
+import com.android.settingslib.metadata.preferencesapi.ExceptionMessagesFormatter.getExceptionMessageWrongOrder
+import com.android.settingslib.metadata.preferencesapi.category.Category
+import com.android.settingslib.metadata.preferencesapi.preconditions.Allowed
+import com.android.settingslib.metadata.preferencesapi.preconditions.Custom
+import com.android.settingslib.metadata.preferencesapi.preconditions.EnterpriseRestriction
+import com.android.settingslib.metadata.preferencesapi.preconditions.HardwareUnsupported
+import com.android.settingslib.metadata.preferencesapi.types.AnyBoolean
+import com.android.settingslib.metadata.preferencesapi.types.AnyInt
+import com.android.settingslib.metadata.preferencesapi.types.GeneratedParameterType
+import com.android.settingslib.metadata.preferencesapi.types.ResultValue
 import kotlinx.coroutines.test.runTest
 import com.android.settingslib.preference.PreferenceFragment
 import com.google.common.truth.Truth.assertThat
@@ -43,15 +43,15 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class ApiFirstPreferenceScreenTest {
+class PreferencesApiScreenTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
 
     @Test
-    fun createApiFirstPreferenceScreenWithoutGetter_throwsError() {
+    fun createPreferencesApiScreenWithoutGetter_throwsError() {
         val exception = assertThrows(IllegalStateException::class.java) {
-            val preferenceKey1 = "ApiFirstPreference"
+            val preferenceKey1 = "ApiPreference"
 
-            object : ApiFirstPreferenceScreen(
+            object : PreferencesApiScreen(
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
@@ -71,11 +71,11 @@ class ApiFirstPreferenceScreenTest {
     }
 
     @Test
-    fun createApiFirstPreferenceScreen_orderIsCorrect() {
-        val preferenceKey1 = "ApiFirstPreference1"
-        val preferenceKey2 = "ApiFirstPreference2"
+    fun createPreferencesApiScreen_orderIsCorrect() {
+        val preferenceKey1 = "ApiPreference1"
+        val preferenceKey2 = "ApiPreference2"
 
-        val preferenceScreen = object : ApiFirstPreferenceScreen(
+        val preferenceScreen = object : PreferencesApiScreen(
             key = SCREEN_KEY,
             topLevelSettingsCategory = Category.SYSTEM,
             fragment = PreferenceFragment::class,
@@ -108,21 +108,21 @@ class ApiFirstPreferenceScreenTest {
         assertThat(preferenceScreen.preferences.size).isEqualTo(2)
 
         // Check preference order is correct
-        val firstPreference = preferenceScreen.preferences[0] as ApiFirstPreference<Boolean>
+        val firstPreference = preferenceScreen.preferences[0] as ApiPreference<Boolean>
         assertThat(firstPreference.key).isEqualTo(preferenceKey1)
 
-        val secondPreference = preferenceScreen.preferences[1] as ApiFirstPreference<Int>
+        val secondPreference = preferenceScreen.preferences[1] as ApiPreference<Int>
         assertThat(secondPreference.key).isEqualTo(preferenceKey2)
     }
 
     @Test
-    fun createApiFirstPreferenceScreenWithGetters_succeeds() {
+    fun createPreferencesApiScreenWithGetters_succeeds() {
         val preferenceValue1 = false
-        val preferenceKey1 = "ApiFirstPreference1"
+        val preferenceKey1 = "ApiPreference1"
         val preferenceValue2 = 0
-        val preferenceKey2 = "ApiFirstPreference2"
+        val preferenceKey2 = "ApiPreference2"
 
-        val preferenceScreen = object : ApiFirstPreferenceScreen(
+        val preferenceScreen = object : PreferencesApiScreen(
             key = SCREEN_KEY,
             topLevelSettingsCategory = Category.SYSTEM,
             fragment = PreferenceFragment::class,
@@ -156,27 +156,27 @@ class ApiFirstPreferenceScreenTest {
         assertThat(preferenceScreen.preferences.size).isEqualTo(2)
 
         // Check that getters return the correct value
-        val firstPreference = preferenceScreen.preferences[0] as ApiFirstPreference<Boolean>
+        val firstPreference = preferenceScreen.preferences[0] as ApiPreference<Boolean>
         assertThat(
             firstPreference.storage(context).getValue(preferenceKey1, Boolean::class.java)
         ).isEqualTo(preferenceValue1)
 
-        val secondPreference = preferenceScreen.preferences[1] as ApiFirstPreference<Int>
-        assertThat(secondPreference.key).isEqualTo("ApiFirstPreference2")
+        val secondPreference = preferenceScreen.preferences[1] as ApiPreference<Int>
+        assertThat(secondPreference.key).isEqualTo("ApiPreference2")
         assertThat(
             secondPreference.storage(context).getValue(preferenceKey2, Int::class.java)
         ).isEqualTo(preferenceValue2)
     }
 
     @Test
-    fun createApiFirstPreferenceScreenWithGettersAndSetters_succeeds() {
+    fun createPreferencesApiScreenWithGettersAndSetters_succeeds() {
         val preferenceValue1 = false
-        val preferenceKey1 = "ApiFirstPreference1"
+        val preferenceKey1 = "ApiPreference1"
         var preferenceValue2 = 0
-        val preferenceKey2 = "ApiFirstPreference2"
+        val preferenceKey2 = "ApiPreference2"
         val newPreferenceValue2 = 22
 
-        val preferenceScreen = object : ApiFirstPreferenceScreen(
+        val preferenceScreen = object : PreferencesApiScreen(
             key = SCREEN_KEY,
             topLevelSettingsCategory = Category.SYSTEM,
             fragment = PreferenceFragment::class,
@@ -215,7 +215,7 @@ class ApiFirstPreferenceScreenTest {
         assertThat(preferenceScreen.preferences.size).isEqualTo(2)
 
         // First preference doesn't have a setter, so the getter should return the same value
-        val firstPreference = preferenceScreen.preferences[0] as ApiFirstPreference<Boolean>
+        val firstPreference = preferenceScreen.preferences[0] as ApiPreference<Boolean>
         assertThat(firstPreference.key).isEqualTo(preferenceKey1)
         firstPreference.storage(context).setValue(preferenceKey1, Boolean::class.java, true)
         assertThat(
@@ -223,7 +223,7 @@ class ApiFirstPreferenceScreenTest {
         ).isEqualTo(preferenceValue1)
 
         // Value of the second preference should be changed by setter
-        val secondPreference = preferenceScreen.preferences[1] as ApiFirstPreference<Int>
+        val secondPreference = preferenceScreen.preferences[1] as ApiPreference<Int>
         assertThat(secondPreference.key).isEqualTo(preferenceKey2)
         secondPreference.storage(context)
             .setValue(preferenceKey2, Int::class.java, newPreferenceValue2)
@@ -233,14 +233,14 @@ class ApiFirstPreferenceScreenTest {
     }
 
     @Test
-    fun createApiFirstPreferenceScreenWithGetterAndSetter_withValuePreconditions() {
+    fun createPreferencesApiScreenWithGetterAndSetter_withValuePreconditions() {
         val initialPreferenceValue = 0
         var preferenceValue = initialPreferenceValue
-        val preferenceKey = "ApiFirstPreference"
+        val preferenceKey = "ApiPreference"
         val newPreferenceWrongValue = 23
         val newPreferenceValue = 112
 
-        val preferenceScreen = object : ApiFirstPreferenceScreen(
+        val preferenceScreen = object : PreferencesApiScreen(
             key = SCREEN_KEY,
             topLevelSettingsCategory = Category.SYSTEM,
             fragment = PreferenceFragment::class,
@@ -282,7 +282,7 @@ class ApiFirstPreferenceScreenTest {
         assertThat(preferenceScreen.preferences.size).isEqualTo(1)
 
         // Trying to set a wrong value throws exception and value stays the same
-        val preference = preferenceScreen.preferences[0] as ApiFirstPreference<Int>
+        val preference = preferenceScreen.preferences[0] as ApiPreference<Int>
         assertThat(preference.key).isEqualTo(preferenceKey)
         val exception = assertThrows(IllegalStateException::class.java) {
             preference.storage(context)
@@ -302,12 +302,12 @@ class ApiFirstPreferenceScreenTest {
     }
 
     @Test
-    fun createApiFirstPreferenceScreenWithParameters_wrongOrderPreferenceBeforeParameters_fails() {
+    fun createPreferencesApiScreenWithParameters_wrongOrderPreferenceBeforeParameters_fails() {
         val preferenceValue = false
-        val preferenceKey = "ApiFirstPreference"
+        val preferenceKey = "ApiPreference"
 
         val exception = assertThrows(IllegalStateException::class.java) {
-            object : ApiFirstPreferenceScreen(
+            object : PreferencesApiScreen(
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
@@ -344,12 +344,12 @@ class ApiFirstPreferenceScreenTest {
     }
 
     @Test
-    fun createApiFirstPreferenceScreenWithParametersPermissionsPreconditions_wrongOrderPreconditionsBeforePermissions_fails() {
+    fun createPreferencesApiScreenWithParametersPermissionsPreconditions_wrongOrderPreconditionsBeforePermissions_fails() {
         val preferenceValue = false
-        val preferenceKey = "ApiFirstPreference"
+        val preferenceKey = "ApiPreference"
 
         val exception = assertThrows(IllegalStateException::class.java) {
-            object : ApiFirstPreferenceScreen(
+            object : PreferencesApiScreen(
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
@@ -392,12 +392,12 @@ class ApiFirstPreferenceScreenTest {
     }
 
     @Test
-    fun createApiFirstPreferenceScreenMultipleParametersBlocks_fails() {
+    fun createPreferencesApiScreenMultipleParametersBlocks_fails() {
         val preferenceValue = false
-        val preferenceKey = "ApiFirstPreference"
+        val preferenceKey = "ApiPreference"
 
         val exception = assertThrows(IllegalStateException::class.java) {
-            object : ApiFirstPreferenceScreen(
+            object : PreferencesApiScreen(
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
@@ -447,7 +447,7 @@ class ApiFirstPreferenceScreenTest {
     @Test
     fun parameters_emptyBlock_throwsException() {
         val exception = assertThrows(IllegalStateException::class.java) {
-            object : ApiFirstPreferenceScreen(
+            object : PreferencesApiScreen(
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
@@ -465,7 +465,7 @@ class ApiFirstPreferenceScreenTest {
     @Test
     fun parameters_multipleParameters_throwsException() {
         val exception = assertThrows(IllegalStateException::class.java) {
-            object : ApiFirstPreferenceScreen(
+            object : PreferencesApiScreen(
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
@@ -501,7 +501,7 @@ class ApiFirstPreferenceScreenTest {
 
     @Test
     fun getAllPossibleParameters_returnsCorrectParameters() = runTest {
-        val screen = object : ApiFirstPreferenceScreen(
+        val screen = object : PreferencesApiScreen(
             key = SCREEN_KEY,
             topLevelSettingsCategory = Category.SYSTEM,
             fragment = PreferenceFragment::class,
@@ -528,12 +528,12 @@ class ApiFirstPreferenceScreenTest {
     }
 
     @Test
-    fun createApiFirstPreferenceScreenMultiplePermissionsBlocks_fails() {
+    fun createPreferencesApiScreenMultiplePermissionsBlocks_fails() {
         val preferenceValue = false
-        val preferenceKey = "ApiFirstPreference"
+        val preferenceKey = "ApiPreference"
 
         val exception = assertThrows(IllegalStateException::class.java) {
-            object : ApiFirstPreferenceScreen(
+            object : PreferencesApiScreen(
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
@@ -562,12 +562,12 @@ class ApiFirstPreferenceScreenTest {
     }
 
     @Test
-    fun createApiFirstPreferenceScreenMultiplePreconditionsBlocks_fails() {
+    fun createPreferencesApiScreenMultiplePreconditionsBlocks_fails() {
         val preferenceValue = false
-        val preferenceKey = "ApiFirstPreference"
+        val preferenceKey = "ApiPreference"
 
         val exception = assertThrows(IllegalStateException::class.java) {
-            object : ApiFirstPreferenceScreen(
+            object : PreferencesApiScreen(
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
@@ -600,12 +600,12 @@ class ApiFirstPreferenceScreenTest {
     }
 
     @Test
-    fun createApiFirstPreferenceScreenPreferenceWithMultiplePermissionsBlocks_fails() {
+    fun createPreferencesApiScreenPreferenceWithMultiplePermissionsBlocks_fails() {
         var preferenceValue = false
-        val preferenceKey = "ApiFirstPreference"
+        val preferenceKey = "ApiPreference"
 
         val exception = assertThrows(IllegalStateException::class.java) {
-            object : ApiFirstPreferenceScreen(
+            object : PreferencesApiScreen(
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
@@ -634,12 +634,12 @@ class ApiFirstPreferenceScreenTest {
     }
 
     @Test
-    fun createApiFirstPreferenceScreenPreferenceWithMultiplePreconditionsBlocks_fails() {
+    fun createPreferencesApiScreenPreferenceWithMultiplePreconditionsBlocks_fails() {
         var preferenceValue = false
-        val preferenceKey = "ApiFirstPreference"
+        val preferenceKey = "ApiPreference"
 
         val exception = assertThrows(IllegalStateException::class.java) {
-            object : ApiFirstPreferenceScreen(
+            object : PreferencesApiScreen(
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
@@ -672,12 +672,12 @@ class ApiFirstPreferenceScreenTest {
     }
 
     @Test
-    fun createApiFirstPreferenceScreenPreferenceWithMultipleGetBlocks_fails() {
+    fun createPreferencesApiScreenPreferenceWithMultipleGetBlocks_fails() {
         var preferenceValue = false
-        val preferenceKey = "ApiFirstPreference"
+        val preferenceKey = "ApiPreference"
 
         val exception = assertThrows(IllegalStateException::class.java) {
-            object : ApiFirstPreferenceScreen(
+            object : PreferencesApiScreen(
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
@@ -709,12 +709,12 @@ class ApiFirstPreferenceScreenTest {
     }
 
     @Test
-    fun createApiFirstPreferenceScreenPreferenceWithMultipleSetBlocks_fails() {
+    fun createPreferencesApiScreenPreferenceWithMultipleSetBlocks_fails() {
         var preferenceValue = false
-        val preferenceKey = "ApiFirstPreference"
+        val preferenceKey = "ApiPreference"
 
         val exception = assertThrows(IllegalStateException::class.java) {
-            object : ApiFirstPreferenceScreen(
+            object : PreferencesApiScreen(
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
@@ -752,12 +752,12 @@ class ApiFirstPreferenceScreenTest {
     }
 
     @Test
-    fun createApiFirstPreferenceScreenPreferenceWithGetterAndSetter_wrongOrderSetBeforeGet_fails() {
+    fun createPreferencesApiScreenPreferenceWithGetterAndSetter_wrongOrderSetBeforeGet_fails() {
         var preferenceValue = false
-        val preferenceKey = "ApiFirstPreference"
+        val preferenceKey = "ApiPreference"
 
         val exception = assertThrows(IllegalStateException::class.java) {
-            object : ApiFirstPreferenceScreen(
+            object : PreferencesApiScreen(
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
@@ -789,12 +789,12 @@ class ApiFirstPreferenceScreenTest {
     }
 
     @Test
-    fun createApiFirstPreferenceScreenPreferenceWithPermissionsPreconditionsGetterSetter_wrongOrderGetBeforePermissions_fails() {
+    fun createPreferencesApiScreenPreferenceWithPermissionsPreconditionsGetterSetter_wrongOrderGetBeforePermissions_fails() {
         var preferenceValue = false
-        val preferenceKey = "ApiFirstPreference"
+        val preferenceKey = "ApiPreference"
 
         val exception = assertThrows(IllegalStateException::class.java) {
-            object : ApiFirstPreferenceScreen(
+            object : PreferencesApiScreen(
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
@@ -831,12 +831,12 @@ class ApiFirstPreferenceScreenTest {
     }
 
     @Test
-    fun createApiFirstPreferenceScreenPreferenceWithGetter_wrongOrderExecuteBeforePreconditions_fails() {
+    fun createPreferencesApiScreenPreferenceWithGetter_wrongOrderExecuteBeforePreconditions_fails() {
         var preferenceValue = false
-        val preferenceKey = "ApiFirstPreference"
+        val preferenceKey = "ApiPreference"
 
         val exception = assertThrows(IllegalStateException::class.java) {
-            object : ApiFirstPreferenceScreen(
+            object : PreferencesApiScreen(
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
@@ -868,12 +868,12 @@ class ApiFirstPreferenceScreenTest {
     }
 
     @Test
-    fun createApiFirstPreferenceScreenPreferenceWithGetter_withMultiplePermissions_fails() {
+    fun createPreferencesApiScreenPreferenceWithGetter_withMultiplePermissions_fails() {
         var preferenceValue = false
-        val preferenceKey = "ApiFirstPreference"
+        val preferenceKey = "ApiPreference"
 
         val exception = assertThrows(IllegalStateException::class.java) {
-            object : ApiFirstPreferenceScreen(
+            object : PreferencesApiScreen(
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
@@ -902,12 +902,12 @@ class ApiFirstPreferenceScreenTest {
     }
 
     @Test
-    fun createApiFirstPreferenceScreenPreferenceWithGetter_withMultiplePreconditions_fails() {
+    fun createPreferencesApiScreenPreferenceWithGetter_withMultiplePreconditions_fails() {
         var preferenceValue = false
-        val preferenceKey = "ApiFirstPreference"
+        val preferenceKey = "ApiPreference"
 
         val exception = assertThrows(IllegalStateException::class.java) {
-            object : ApiFirstPreferenceScreen(
+            object : PreferencesApiScreen(
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
@@ -940,12 +940,12 @@ class ApiFirstPreferenceScreenTest {
     }
 
     @Test
-    fun createApiFirstPreferenceScreenPreferenceWithGetter_withMultipleExecuteBlocks_fails() {
+    fun createPreferencesApiScreenPreferenceWithGetter_withMultipleExecuteBlocks_fails() {
         var preferenceValue = false
-        val preferenceKey = "ApiFirstPreference"
+        val preferenceKey = "ApiPreference"
 
         val exception = assertThrows(IllegalStateException::class.java) {
-            object : ApiFirstPreferenceScreen(
+            object : PreferencesApiScreen(
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
@@ -975,12 +975,12 @@ class ApiFirstPreferenceScreenTest {
     }
 
     @Test
-    fun createApiFirstPreferenceScreenPreferenceWithSetter_wrongOrderExecuteBeforeValuePreconditions_fails() {
+    fun createPreferencesApiScreenPreferenceWithSetter_wrongOrderExecuteBeforeValuePreconditions_fails() {
         var preferenceValue = false
-        val preferenceKey = "ApiFirstPreference"
+        val preferenceKey = "ApiPreference"
 
         val exception = assertThrows(IllegalStateException::class.java) {
-            object : ApiFirstPreferenceScreen(
+            object : PreferencesApiScreen(
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
@@ -1016,12 +1016,12 @@ class ApiFirstPreferenceScreenTest {
     }
 
     @Test
-    fun createApiFirstPreferenceScreenPreferenceWithSetter_withMultiplePermissions_fails() {
+    fun createPreferencesApiScreenPreferenceWithSetter_withMultiplePermissions_fails() {
         var preferenceValue = false
-        val preferenceKey = "ApiFirstPreference"
+        val preferenceKey = "ApiPreference"
 
         val exception = assertThrows(IllegalStateException::class.java) {
-            object : ApiFirstPreferenceScreen(
+            object : PreferencesApiScreen(
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
@@ -1050,12 +1050,12 @@ class ApiFirstPreferenceScreenTest {
     }
 
     @Test
-    fun createApiFirstPreferenceScreenPreferenceWithSetter_withMultiplePreconditions_fails() {
+    fun createPreferencesApiScreenPreferenceWithSetter_withMultiplePreconditions_fails() {
         var preferenceValue = false
-        val preferenceKey = "ApiFirstPreference"
+        val preferenceKey = "ApiPreference"
 
         val exception = assertThrows(IllegalStateException::class.java) {
-            object : ApiFirstPreferenceScreen(
+            object : PreferencesApiScreen(
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
@@ -1088,12 +1088,12 @@ class ApiFirstPreferenceScreenTest {
     }
 
     @Test
-    fun createApiFirstPreferenceScreenPreferenceWithSetter_withMultipleValuePreconditions_fails() {
+    fun createPreferencesApiScreenPreferenceWithSetter_withMultipleValuePreconditions_fails() {
         var preferenceValue = false
-        val preferenceKey = "ApiFirstPreference"
+        val preferenceKey = "ApiPreference"
 
         val exception = assertThrows(IllegalStateException::class.java) {
-            object : ApiFirstPreferenceScreen(
+            object : PreferencesApiScreen(
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
@@ -1126,12 +1126,12 @@ class ApiFirstPreferenceScreenTest {
     }
 
     @Test
-    fun createApiFirstPreferenceScreenPreferenceWithSetter_withMultipleExecuteBlocks_fails() {
+    fun createPreferencesApiScreenPreferenceWithSetter_withMultipleExecuteBlocks_fails() {
         var preferenceValue = false
-        val preferenceKey = "ApiFirstPreference"
+        val preferenceKey = "ApiPreference"
 
         val exception = assertThrows(IllegalStateException::class.java) {
-            object : ApiFirstPreferenceScreen(
+            object : PreferencesApiScreen(
                 key = SCREEN_KEY,
                 topLevelSettingsCategory = Category.SYSTEM,
                 fragment = PreferenceFragment::class,
@@ -1161,6 +1161,6 @@ class ApiFirstPreferenceScreenTest {
     }
 
     companion object {
-        const val SCREEN_KEY = "ApiFirstScreen"
+        const val SCREEN_KEY = "ApiScreen"
     }
 }

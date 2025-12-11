@@ -14,10 +14,20 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.metadata.apifirst.preconditions
+package com.android.settingslib.metadata.preferencesapi.preconditions
+
+import androidx.annotation.StringRes
+
+interface ApiPreconditions
+
+/** All preconditions are met and get can be called. */
+object Allowed : ApiPreconditions
 
 /**
- * The getter is unavailable due to some enterprise restriction. The reason should explain which
- * restriction.
+ * Represents a failed precondition check.
+ * Every implementation of `Disallowed` needs to provide a `reason`.
  */
-class EnterpriseRestriction(override val reason: Int) : Disallowed
+interface Disallowed : ApiPreconditions {
+    /** A human-readable reason explaining why the precondition failed. */
+    @get:StringRes val reason: Int
+}

@@ -14,22 +14,19 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.metadata.apifirst.types
+package com.android.settingslib.metadata.preferencesapi.preconditions
 
-import android.content.Context
-import androidx.annotation.StringRes
-
-typealias GeneratedParameterType = GeneratedType<ResultValue>
+import com.android.settingslib.metadata.KeyParametersSchema
 
 /**
- * The context for a GeneratedType, providing access to the [Context] and any necessary
- * environmental information for executing the lambda.
- *
- * @property context The application context, used for accessing system services and resources.
+ * The getter is unavailable due to the value or state of another preference. The
+ * otherPreferenceScreenKey/otherPreferenceKey/otherPreferenceParams should identify the
+ * problematic preference (params being required only if the other preference is
+ * parameterised). The reason should explain what is wrong.
  */
-class GeneratedTypeContext(val context: Context)
-
-class GeneratedType<V : Any>(
-    @StringRes val description: Int,
-    val lambda: GeneratedTypeContext.() -> Collection<V>
-) : ApiFirstType<V>
+class InvalidPreference(
+    otherPreferenceScreenKey: Int,
+    otherPreferenceKey: Int,
+    otherPreferenceParams: KeyParametersSchema?,
+    override val reason: Int
+) : Disallowed

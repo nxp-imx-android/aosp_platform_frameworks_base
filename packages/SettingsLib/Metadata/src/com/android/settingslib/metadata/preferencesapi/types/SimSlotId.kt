@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.metadata.apifirst.types
+package com.android.settingslib.metadata.preferencesapi.types
 
-/** Any int in the given range, along the given step. */
-class IntInRange(val min: Int?, val max: Int?, val step: Int = 1): ApiFirstType<Int>
+/** A valid sim slot ID. */
+class SimSlotId: ApiType<String>
