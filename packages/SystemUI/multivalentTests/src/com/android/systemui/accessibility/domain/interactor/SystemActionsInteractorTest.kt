@@ -19,23 +19,17 @@ package com.android.systemui.accessibility.domain.interactor
 import android.view.accessibility.accessibilityManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.SystemActions
-import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
-import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.scene.SceneHelper.setDeviceEntered
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.shadeTestUtil
-import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.testKosmosNew
-import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -141,15 +135,4 @@ class SystemActionsInteractorTest : SysuiTestCase() {
                     eq(SystemActions.SYSTEM_ACTION_ID_ACCESSIBILITY_DISMISS_NOTIFICATION_SHADE),
                 )
         }
-
-    private fun Kosmos.setDeviceEntered() {
-        biometricUnlockInteractor.setBiometricUnlockState(
-            unlockStateInt = BiometricUnlockController.MODE_DISMISS,
-            biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
-        )
-
-        sceneInteractor.changeScene(Scenes.Gone, "#setDeviceEntered")
-        sceneInteractor.setTransitionState(flowOf(ObservableTransitionState.Idle(Scenes.Gone)))
-        assertThat(deviceEntryInteractor.isDeviceEntered.value).isEqualTo(true)
-    }
 }
