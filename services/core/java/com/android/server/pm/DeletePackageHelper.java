@@ -154,8 +154,9 @@ final class DeletePackageHelper {
             if (PackageManagerServiceUtils.isUpdatedSystemApp(uninstalledPs)
                     && ((deleteFlags & PackageManager.DELETE_SYSTEM_APP) == 0)) {
                 UserInfo userInfo = mUserManagerInternal.getUserInfo(userId);
-                if (userInfo == null || (!userInfo.isAdmin() && !mUserManagerInternal.getUserInfo(
-                        mUserManagerInternal.getProfileParentId(userId)).isAdmin())) {
+                if (userInfo == null || (!userInfo.isAdmin() && !treatAsAdminAnyway(userId)
+                        && !mUserManagerInternal.getUserInfo(
+                                mUserManagerInternal.getProfileParentId(userId)).isAdmin())) {
                     Slog.w(TAG, "Not removing package " + packageName
                             + " as only admin user (or their profile) may downgrade system apps");
                     EventLog.writeEvent(0x534e4554, "170646036", -1, packageName);
@@ -350,6 +351,16 @@ final class DeletePackageHelper {
         }
 
         return res ? DELETE_SUCCEEDED : PackageManager.DELETE_FAILED_INTERNAL_ERROR;
+    }
+
+    private boolean treatAsAdminAnyway(int userId) {
+        // TODO(b/457997251): On most devices, the SYSTEM is already an Admin. But for HSUM devices,
+        //  the HSU is no longer an Admin. Currently, that breaks stuff on HSUM, so - for now -
+        //  treat the SYSTEM user as if it were an Admin regardless in these otherwise-broken areas.
+        //  But see b/457997251#comment11.
+        return android.multiuser.Flags.hsuNotAdmin()
+                && !android.multiuser.Flags.hsuNotAdminNoExemptions()
+                && userId == UserHandle.USER_SYSTEM;
     }
 
     /** Deletes dexopt artifacts for the given package*/

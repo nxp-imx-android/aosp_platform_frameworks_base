@@ -461,6 +461,17 @@ class BugreportManagerServiceImpl extends IDumpstate.Stub {
             return mRoleManagerWrapper;
         }
 
+        /** Whether to treat the given user as an Admin regardless of its Admin status. */
+        boolean treatAsAdminAnyway(int userId) {
+            // TODO(b/457559134): On most devices, the SYSTEM is already an Admin. But for HSUM
+            //  devices, the HSU is no longer an Admin. Currently, that breaks stuff on HSUM,
+            //  so - for now - treat the SYSTEM user as if it were an Admin regardless in these
+            //  otherwise-broken areas. See b/457559134 and b/461646697.
+            return android.multiuser.Flags.hsuNotAdmin()
+                    && !android.multiuser.Flags.hsuNotAdminNoExemptions()
+                    && userId == UserHandle.USER_SYSTEM;
+        }
+
         PackageManager getPackageManager() {
             return mContext.getPackageManager();
         }
@@ -783,6 +794,9 @@ class BugreportManagerServiceImpl extends IDumpstate.Stub {
             }
         } finally {
             Binder.restoreCallingIdentity(identity);
+        }
+        if (!isAdminUser && mInjector.treatAsAdminAnyway(effectiveCallingUserId)) {
+            isAdminUser = true;
         }
         if (!isAdminUser) {
             if (bugreportMode == BugreportParams.BUGREPORT_MODE_REMOTE

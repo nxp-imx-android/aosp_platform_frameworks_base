@@ -221,6 +221,10 @@ public class BugreportManagerServiceImplTest {
         int callingUid = Binder.getCallingUid();
         int callingUserId = UserHandle.getUserId(callingUid);
         when(mMockUserManager.isUserAdmin(callingUserId)).thenReturn(false);
+        if (android.multiuser.Flags.hsuNotAdmin()
+                && !android.multiuser.Flags.hsuNotAdminNoExemptions()) {
+                    mInjector.setTreatCallerAsAdmin(false);
+        }
         when(mMockUserManager.getProfileParent(callingUserId)).thenReturn(ADMIN_USER_INFO);
 
         mService.startBugreport(mCallingUid, mContext.getPackageName(),
@@ -236,6 +240,10 @@ public class BugreportManagerServiceImplTest {
     @Test
     public void testStartBugreport_throwsForNonAdminUser() throws Exception {
         when(mMockUserManager.isUserAdmin(anyInt())).thenReturn(false);
+        if (android.multiuser.Flags.hsuNotAdmin()
+                && !android.multiuser.Flags.hsuNotAdminNoExemptions()) {
+                    mInjector.setTreatCallerAsAdmin(false);
+        }
 
         Exception thrown = assertThrows(IllegalArgumentException.class,
                 () -> mService.startBugreport(mCallingUid, mContext.getPackageName(),
@@ -251,6 +259,10 @@ public class BugreportManagerServiceImplTest {
     @Test
     public void testStartBugreport_nonAdminAllowed() throws Exception {
         when(mMockUserManager.isUserAdmin(anyInt())).thenReturn(false);
+        if (android.multiuser.Flags.hsuNotAdmin()
+                && !android.multiuser.Flags.hsuNotAdminNoExemptions()) {
+                    mInjector.setTreatCallerAsAdmin(false);
+        }
 
         ArraySet<String> nonAdminAllowed = new ArraySet<>();
         nonAdminAllowed.add(mCallingPackage);
@@ -269,6 +281,10 @@ public class BugreportManagerServiceImplTest {
     @Test
     public void testStartBugreport_nonAdminNotAllowed() throws Exception {
         when(mMockUserManager.isUserAdmin(anyInt())).thenReturn(false);
+        if (android.multiuser.Flags.hsuNotAdmin()
+                && !android.multiuser.Flags.hsuNotAdminNoExemptions()) {
+                    mInjector.setTreatCallerAsAdmin(false);
+        }
 
         // mCallingPackage is NOT in the non-admin allowlist
         Exception thrown = assertThrows(IllegalArgumentException.class,
@@ -284,6 +300,10 @@ public class BugreportManagerServiceImplTest {
     @Test
     public void testStartBugreport_throwsForNotAffiliatedUser() throws Exception {
         when(mMockUserManager.isUserAdmin(anyInt())).thenReturn(false);
+        if (android.multiuser.Flags.hsuNotAdmin()
+                && !android.multiuser.Flags.hsuNotAdminNoExemptions()) {
+                    mInjector.setTreatCallerAsAdmin(false);
+        }
         when(mMockDevicePolicyManager.getDeviceOwnerUserId()).thenReturn(-1);
         when(mMockDevicePolicyManager.isAffiliatedUser(anyInt())).thenReturn(false);
 
@@ -410,6 +430,7 @@ public class BugreportManagerServiceImplTest {
         private final PackageManager mPackageManager;
         private final AppOpsManager mAppOpsManager;
         private final ArrayMap<String, Integer> mPermissionResults = new ArrayMap<>();
+        private boolean mTreatCallerAsAdmin = false;
 
         TestInjector(Context context, ArraySet<String> allowlistedPackages, AtomicFile mappingFile,
                 UserManager um, DevicePolicyManager dpm, String grantedRole,
@@ -471,6 +492,15 @@ public class BugreportManagerServiceImplTest {
 
         public boolean isBugreportStarted() {
             return mBugreportStarted;
+        }
+
+        void setTreatCallerAsAdmin(boolean treatCallerAsAdmin) {
+            mTreatCallerAsAdmin = treatCallerAsAdmin;
+        }
+
+        @Override
+        boolean treatAsAdminAnyway(int userId) {
+            return mTreatCallerAsAdmin;
         }
     }
 }
