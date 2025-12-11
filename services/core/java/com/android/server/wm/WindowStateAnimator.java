@@ -45,7 +45,6 @@ import static com.android.server.wm.WindowManagerDebugConfig.SHOW_LIGHT_TRANSACT
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 import static com.android.server.wm.WindowManagerService.logWithStack;
-import static com.android.window.flags.Flags.setScPropertiesInClient;
 
 import android.content.Context;
 import android.graphics.PixelFormat;
@@ -333,11 +332,6 @@ class WindowStateAnimator {
                     .setBLASTLayer().build();
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
 
-            if (!setScPropertiesInClient()) {
-                setColorSpaceAgnosticLocked(
-                        (attrs.privateFlags & LayoutParams.PRIVATE_FLAG_COLOR_SPACE_AGNOSTIC) != 0);
-            }
-
             w.setHasSurface(true);
             // The surface instance is changed. Make sure the input info can be applied to the
             // new surface, e.g. relaunch activity.
@@ -463,14 +457,6 @@ class WindowStateAnimator {
         ProtoLog.i(WM_SHOW_TRANSACTIONS, "SURFACE isOpaque=%b: %s", isOpaque, mTitle);
         mWin.getPendingTransaction().setOpaque(mSurfaceControl, isOpaque);
         mService.scheduleAnimationLocked();
-    }
-
-    void setColorSpaceAgnosticLocked(boolean agnostic) {
-        if (mSurfaceControl == null) {
-            return;
-        }
-        ProtoLog.i(WM_SHOW_TRANSACTIONS, "SURFACE isColorSpaceAgnostic=%b: %s", agnostic, mTitle);
-        mWin.getPendingTransaction().setColorSpaceAgnostic(mSurfaceControl, agnostic);
     }
 
     void applyEnterAnimationLocked() {
