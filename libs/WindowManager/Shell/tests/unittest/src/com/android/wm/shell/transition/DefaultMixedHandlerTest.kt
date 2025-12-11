@@ -24,8 +24,6 @@ import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_GOING_AWAY
 import android.view.WindowManager.TRANSIT_OPEN
-import android.view.WindowManager.TRANSIT_TO_BACK
-import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.window.IRemoteTransition
 import android.window.RemoteTransition
 import android.window.TransitionInfo
@@ -35,7 +33,6 @@ import android.window.WindowContainerTransaction
 import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn
 import com.android.testing.wm.util.MockToken
-import com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.Flags.FLAG_FIX_OPEN_APP_BUBBLE_FROM_LOCKSCREEN
 import com.android.wm.shell.ShellTestCase
@@ -309,30 +306,6 @@ class DefaultMixedHandlerTest : ShellTestCase() {
             mock<SurfaceControl.Transaction>(), mock<Transitions.TransitionFinishCallback>())
 
         verify(bubbleTransitions).startTaskTrampolineBubbleLaunch(
-            any(), eq(openingChange.taskInfo!!), eq(closingChange.taskInfo!!), any())
-    }
-
-    @Test
-    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ROOT_TASK)
-    fun test_startAnimation_bubbleSwitch() {
-        val openingChange =
-            TransitionInfo.Change(mock<WindowContainerToken>(), mock<SurfaceControl>())
-        openingChange.mode = TRANSIT_TO_FRONT
-        openingChange.taskInfo = createRunningTask()
-        val closingChange =
-            TransitionInfo.Change(mock<WindowContainerToken>(), mock<SurfaceControl>())
-        closingChange.mode = TRANSIT_TO_BACK
-        closingChange.taskInfo = createRunningTask()
-        val info = TransitionInfo(TRANSIT_TO_FRONT, 0)
-        info.addChange(openingChange)
-        info.addChange(closingChange)
-
-        bubbleHelper.stub { onGeneric { isAppBubbleTask(any()) } doReturn true }
-
-        mixedHandler.startAnimation(Binder(), info, mock<SurfaceControl.Transaction>(),
-            mock<SurfaceControl.Transaction>(), mock<Transitions.TransitionFinishCallback>())
-
-        verify(bubbleTransitions).startBubbleSwitch(
             any(), eq(openingChange.taskInfo!!), eq(closingChange.taskInfo!!), any())
     }
 
