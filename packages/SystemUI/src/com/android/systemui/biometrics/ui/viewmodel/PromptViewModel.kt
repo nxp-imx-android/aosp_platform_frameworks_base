@@ -196,7 +196,7 @@ constructor(
     private val _fingerprintStartMode = MutableStateFlow(FingerprintStartMode.Pending)
 
     /** Fingerprint sensor state. */
-    val fingerprintStartMode: Flow<FingerprintStartMode> = _fingerprintStartMode.asStateFlow()
+    val fingerprintStartMode: StateFlow<FingerprintStartMode> = _fingerprintStartMode.asStateFlow()
 
     /** Whether a finger has been acquired by the sensor */
     val hasFingerBeenAcquired: Flow<Boolean> =
