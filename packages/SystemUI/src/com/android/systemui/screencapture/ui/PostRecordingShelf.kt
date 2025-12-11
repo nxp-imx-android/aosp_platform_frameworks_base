@@ -71,6 +71,7 @@ import com.android.systemui.screencapture.record.smallscreen.ui.PostRecordSnackb
 import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.PostRecordingViewModel
 import com.android.systemui.statusbar.phone.EdgeToEdgeDialogDelegate
 import com.android.systemui.statusbar.phone.SystemUIDialog
+import com.android.systemui.statusbar.phone.SystemUIDialog.DIALOG_WINDOW_TYPE
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
 import com.android.systemui.statusbar.phone.create
 import dagger.assisted.Assisted
@@ -205,11 +206,13 @@ constructor(
                                             dialogFactory,
                                             context,
                                             postRecordingViewModel,
+                                            display,
                                         )
                                     ) {
                                         hide()
                                         postRecordSnackbarDialogs.showVideoDeleted(
-                                            postRecordingViewModel.videoUri
+                                            postRecordingViewModel.videoUri,
+                                            display,
                                         )
                                     }
                                     isConfirmDeletionDialogShowing = false
@@ -313,6 +316,5 @@ constructor(
 
     companion object {
         private val DEFAULT_TIMEOUT = 6.seconds
-        private val DIALOG_WINDOW_TYPE = WindowManager.LayoutParams.TYPE_STATUS_BAR_SUB_PANEL
     }
 }
