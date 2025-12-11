@@ -26,6 +26,7 @@ import androidx.annotation.ColorInt
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -40,6 +41,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -292,7 +294,7 @@ fun ContentScope.ExpandedShadeHeader(
                 ) {
                     ShadeCarrierGroup(
                         viewModel = viewModel,
-                        modifier = Modifier.align(Alignment.CenterEnd),
+                        modifier = Modifier.align(Alignment.CenterEnd).widthIn(max = 180.dp),
                     )
                 }
             }
@@ -633,6 +635,7 @@ private fun CarrierTextWithSubscriptionId(
 private fun CarrierTextNoSubscriptionId(viewModel: ShadeHeaderViewModel) {
     Text(
         text = viewModel.carrierText.toString(),
+        modifier = Modifier.basicMarquee(),
         color = ShadeHeader.Colors.textColor,
         style =
             TextStyle(
@@ -640,6 +643,7 @@ private fun CarrierTextNoSubscriptionId(viewModel: ShadeHeaderViewModel) {
                     FontFamily(Font(DeviceFontFamilyName("variable-body-medium-emphasized"))),
                 letterSpacing = 0.01.em,
             ),
+        maxLines = 1,
     )
 }
 
