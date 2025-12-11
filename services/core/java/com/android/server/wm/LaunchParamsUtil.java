@@ -455,26 +455,18 @@ class LaunchParamsUtil {
             }
         }
 
-        if (com.android.window.flags.Flags.fallbackToFocusedDisplay()) {
-            // Select the TDA from the top focused display if possible.
-            final DisplayContent focusedDisplay =
-                    supervisor.mRootWindowContainer.getTopFocusedDisplayContent();
-            final TaskDisplayArea defaultTaskDisplayArea;
-            if (canPlaceEntityOnDisplay(focusedDisplay.getDefaultTaskDisplayArea(), activityRecord,
-                    request, supervisor)) {
-                defaultTaskDisplayArea = focusedDisplay.getDefaultTaskDisplayArea();
-            } else {
-                defaultTaskDisplayArea =
-                        supervisor.mRootWindowContainer.getDefaultTaskDisplayArea();
-            }
-            logger.accept("display-area-from-default-fallback=" + defaultTaskDisplayArea);
-            return defaultTaskDisplayArea;
+        // Select the TDA from the top focused display if possible.
+        final DisplayContent focusedDisplay =
+                supervisor.mRootWindowContainer.getTopFocusedDisplayContent();
+        final TaskDisplayArea defaultTaskDisplayArea;
+        if (canPlaceEntityOnDisplay(focusedDisplay.getDefaultTaskDisplayArea(), activityRecord,
+                request, supervisor)) {
+            defaultTaskDisplayArea = focusedDisplay.getDefaultTaskDisplayArea();
         } else {
-            final TaskDisplayArea defaultTaskDisplayArea =
-                    supervisor.mRootWindowContainer.getDefaultTaskDisplayArea();
-            logger.accept("display-area-from-default-fallback=" + defaultTaskDisplayArea);
-            return defaultTaskDisplayArea;
+            defaultTaskDisplayArea = supervisor.mRootWindowContainer.getDefaultTaskDisplayArea();
         }
+        logger.accept("display-area-from-default-fallback=" + defaultTaskDisplayArea);
+        return defaultTaskDisplayArea;
     }
 
     /**

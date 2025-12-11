@@ -39,7 +39,12 @@ public class RavenwoodEnablementCheckerTest {
     }
 
     private static PolicyChecker parse(String text) throws Exception {
-        return RavenwoodEnablementChecker.getTextPolicyCheckerForTest("[filename]", text);
+        return parse(text, /* ignoreLargeTests= */ false);
+    }
+
+    private static PolicyChecker parse(String text, boolean ignoreLargeTests) throws Exception {
+        return RavenwoodEnablementChecker.getTextPolicyCheckerForTest(
+                "[filename]", text, ignoreLargeTests);
     }
 
     private static <T> T expectException(String message, Callable<T> c) throws Exception {
@@ -66,10 +71,26 @@ public class RavenwoodEnablementCheckerTest {
     }
 
     @Test
-    public void testBadLine() throws Exception {
-        expectException("Too many fields", () -> parse("""
+    public void testBadOption1() throws Exception {
+        expectException("Unknown option", () -> parse("""
 !module RavenwoodCoreTest
-f1 f2 f3 # too many fields
+f1 enable axy
+"""));
+    }
+
+    @Test
+    public void testBadOption2() throws Exception {
+        expectException("Unknown option", () -> parse("""
+!module RavenwoodCoreTest
+f1 enable :LAR
+"""));
+    }
+
+    @Test
+    public void testBadOption3() throws Exception {
+        expectException("Unknown option", () -> parse("""
+!module RavenwoodCoreTest
+f1 enable :large :badoption
 """));
     }
 
@@ -78,7 +99,7 @@ f1 f2 f3 # too many fields
         // The file contains a bad lne, but the module name is different, so it won't be parsed.
         parse("""
 !module RandomAnotherTestModule
-f1 f2 f3 # too many fields
+f1 enable :xx # bad option
 """);
     }
 
@@ -98,7 +119,9 @@ x@ # Invalid char, but this file should be ignored.
         // In normal mode, disabled tests should not run.
         RavenwoodEnablementChecker.overrideInstance(
                 RavenwoodEnablementChecker.RunMode.Normal, /* policyText= */ null,
-                /* overridingPattern= */ null);
+                /* overridingPattern= */ null,
+                /* ignoreLargeTests= */ false
+        );
         assertThat(RavenwoodEnablementChecker.getInstance().wouldRunDisabledTests()).isFalse();
     }
 
@@ -111,7 +134,9 @@ x@ # Invalid char, but this file should be ignored.
         // In "also disabled" mode, disabled tests should run.
         RavenwoodEnablementChecker.overrideInstance(
                 RavenwoodEnablementChecker.RunMode.AlsoDisabledTests, /* policyText= */ null,
-                /* overridingPattern= */ null);
+                /* overridingPattern= */ null,
+                /* ignoreLargeTests= */ false
+        );
         assertThat(RavenwoodEnablementChecker.getInstance().wouldRunDisabledTests()).isTrue();
     }
 
@@ -124,7 +149,9 @@ x@ # Invalid char, but this file should be ignored.
         // In "also disabled" mode, disabled tests should run.
         RavenwoodEnablementChecker.overrideInstance(
                 RunMode.DisabledOnly, /* policyText= */ null,
-                /* overridingPattern= */ null);
+                /* overridingPattern= */ null,
+                /* ignoreLargeTests= */ false
+            );
         assertThat(RavenwoodEnablementChecker.getInstance().wouldRunDisabledTests()).isTrue();
     }
 }

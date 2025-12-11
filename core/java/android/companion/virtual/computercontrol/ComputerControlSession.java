@@ -698,7 +698,7 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
          * <p>When the session is active, the following will apply:
          *
          * <ul>
-         *   <li>Interactions with the session (e.g. {@link #tap(int, int)} are allowed.
+         *   <li>Interactions with the session (e.g. {@link #tap(int, int)}) are allowed.
          *   <li>Taking screenshots of the content using {@link #getScreenshot()} is allowed.
          *   <li>Getting Accessibility windows for the session using
          *     {@link #getAccessibilityWindows()} is allowed.
@@ -713,7 +713,7 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
          * with or access the content of the session:
          *
          * <ul>
-         *   <li>Interactions with the session (e.g. {@link #tap(int, int)} are NOT allowed.
+         *   <li>Interactions with the session (e.g. {@link #tap(int, int)}) are NOT allowed.
          *   <li>Taking screenshots of the content using {@link #getScreenshot()} is NOT allowed.
          *   <li>Getting Accessibility windows for the session using
          *     {@link #getAccessibilityWindows()} is NOT allowed.

@@ -16,11 +16,15 @@
 
 package com.android.server.display;
 
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -28,19 +32,44 @@ import static org.mockito.Mockito.when;
 
 import android.hardware.display.DisplayManagerInternal;
 import android.view.Display;
+import java.lang.reflect.Method;
+
+import com.android.modules.utils.testing.ExtendedMockitoRule;
+import com.android.os.AtomsProto.Atom;
+import android.util.StatsEvent;
+import android.util.StatsLog;
+import android.util.StatsEventTestUtils;
+import com.android.os.wear.powermanager.PowermanagerExtensionAtoms;
+import com.google.protobuf.ExtensionRegistryLite;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.android.internal.util.FrameworkStatsLog;
+
+import android.util.Log;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.List;
+
 public class DisplayOffloadSessionImplTest {
+
+    @Rule
+    public final ExtendedMockitoRule mExtendedMockitoRule =
+            new ExtendedMockitoRule.Builder(this).mockStatic(StatsLog.class).build();
 
     @Mock
     private DisplayManagerInternal.DisplayOffloader mDisplayOffloader;
 
     @Mock
     private DisplayPowerController mDisplayPowerController;
+
+    @Captor
+    private ArgumentCaptor<StatsEvent> mStatsEventCaptor;
 
     private DisplayOffloadSessionImpl mSession;
 
@@ -62,11 +91,22 @@ public class DisplayOffloadSessionImplTest {
     }
 
     @Test
-    public void testStopOffload() {
+    public void testStopOffload() throws Exception {
         mSession.startOffload(Display.STATE_DOZE_SUSPEND);
         mSession.stopOffload();
 
         assertFalse(mSession.isActive());
+
+        verify(() -> StatsLog.write(mStatsEventCaptor.capture()), atLeast(1));
+        StatsEvent statsEvent = mStatsEventCaptor.getValue();
+
+        // Use reflection to access hidden API on StatsEvent.
+        // Normally we would use StatsEventTestUtils however this doesn't
+        // work for empty atoms b/287773614.
+        Class<?> statsEventClass = Class.forName("android.util.StatsEvent");
+        Method getAtomIdMethod = statsEventClass.getMethod("getAtomId");
+        int atomId = (int) getAtomIdMethod.invoke(statsEvent);
+        assertThat(atomId).isEqualTo(FrameworkStatsLog.DISPLAY_SWITCH_TO_AP_ISSUED);
 
         // An inactive session shouldn't be stopped again
         mSession.stopOffload();

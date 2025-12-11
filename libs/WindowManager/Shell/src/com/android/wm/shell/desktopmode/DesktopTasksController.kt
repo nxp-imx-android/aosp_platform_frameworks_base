@@ -281,7 +281,6 @@ class DesktopTasksController(
     private val transitionStateHolder: TransitionStateHolder,
 ) :
     RemoteCallable<DesktopTasksController>,
-    TransitionHandler,
     DragAndDropController.DragAndDropListener,
     UserChangeListener {
 
@@ -412,7 +411,6 @@ class DesktopTasksController(
         shellController.addUserChangeListener(this)
         // Update the current user id again because it might be updated between init and onInit().
         updateCurrentUser(ActivityManager.getCurrentUser())
-        transitions.addHandler(this)
         desktopFullscreenRequestHandler.desktopTasksController = this
         dragToDesktopTransitionHandler.dragToDesktopStateListener = dragToDesktopStateListener
         recentsTransitionHandler.addTransitionStateListener(
@@ -3731,21 +3729,10 @@ class DesktopTasksController(
 
     override fun getRemoteCallExecutor(): ShellExecutor = mainExecutor
 
-    override fun startAnimation(
-        transition: IBinder,
-        info: TransitionInfo,
-        startTransaction: Transaction,
-        finishTransaction: Transaction,
-        finishCallback: TransitionFinishCallback,
-    ): Boolean {
-        // This handler should never be the sole handler, so should not animate anything.
-        return false
-    }
-
     private fun taskDisplaySupportDesktopMode(triggerTask: RunningTaskInfo) =
         desktopState.isDesktopModeSupportedOnDisplay(triggerTask.displayId)
 
-    override fun handleRequest(
+    fun handleRequest(
         transition: IBinder,
         request: TransitionRequestInfo,
     ): WindowContainerTransaction? {

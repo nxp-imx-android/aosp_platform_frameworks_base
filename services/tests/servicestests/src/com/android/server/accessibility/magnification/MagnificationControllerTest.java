@@ -2122,8 +2122,7 @@ public class MagnificationControllerTest {
     }
 
     @Test
-    @DisableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_MAGNIFICATION_UI_FOR_FULLSCREEN_ONLY_CAPABILITY)
-    public void onTouchInteractionStart_fullScreenMode_flagOff_notShowMagnificationButton() {
+    public void onTouchInteractionStart_fullScreenMode_notShowMagnificationButton() {
         mMagnificationController.setMagnificationCapabilities(
                 ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
         mScreenMagnificationController.setScaleAndCenter(
@@ -2137,38 +2136,7 @@ public class MagnificationControllerTest {
     }
 
     @Test
-    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_MAGNIFICATION_UI_FOR_FULLSCREEN_ONLY_CAPABILITY)
-    public void onTouchInteractionStart_fullScreenMode_flagOn_notShowMagnificationButton() {
-        mMagnificationController.setMagnificationCapabilities(
-                ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
-        mScreenMagnificationController.setScaleAndCenter(
-                TEST_DISPLAY, 2.0f, 0, 0, false, MAGNIFICATION_GESTURE_HANDLER_ID);
-        clearInvocations(mMagnificationConnectionManager);
-
-        mMagnificationController.onTouchInteractionStart(TEST_DISPLAY, MODE_FULLSCREEN);
-
-        verify(mMagnificationConnectionManager).removeMagnificationButton(eq(TEST_DISPLAY));
-        verify(mMagnificationConnectionManager).removeMagnificationSettingsPanel(eq(TEST_DISPLAY));
-    }
-
-    @Test
-    @DisableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_MAGNIFICATION_UI_FOR_FULLSCREEN_ONLY_CAPABILITY)
-    public void onMouseMove_fullScreenMode_flagOff_notShowMagnificationButton() {
-        mMagnificationController.setMagnificationCapabilities(
-                ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
-        mScreenMagnificationController.setScaleAndCenter(
-                TEST_DISPLAY, 2.0f, 0, 0, false, MAGNIFICATION_GESTURE_HANDLER_ID);
-        clearInvocations(mMagnificationConnectionManager);
-
-        mMagnificationController.onMouseMove(TEST_DISPLAY, MODE_FULLSCREEN);
-
-        verify(mMagnificationConnectionManager).removeMagnificationButton(eq(TEST_DISPLAY));
-        verify(mMagnificationConnectionManager).removeMagnificationSettingsPanel(eq(TEST_DISPLAY));
-    }
-
-    @Test
-    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_MAGNIFICATION_UI_FOR_FULLSCREEN_ONLY_CAPABILITY)
-    public void onMouseMove_fullScreenMode_flagOn_showMagnificationButton() {
+    public void onMouseMove_fullScreenMode_showMagnificationButton() {
         mMagnificationController.setMagnificationCapabilities(
                 ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
         mScreenMagnificationController.setScaleAndCenter(

@@ -71,4 +71,7 @@ public class StubOrganizer extends ITaskOrganizer.Stub {
     public void onPackageUpdateRequested(
             List<ActivityManager.RunningTaskInfo> updatingTaskInfos) {
     }
+
+    @Override
+    public void onPackageUpdateFinished(List<ActivityManager.RunningTaskInfo> updatedTaskInfos) {}
 }

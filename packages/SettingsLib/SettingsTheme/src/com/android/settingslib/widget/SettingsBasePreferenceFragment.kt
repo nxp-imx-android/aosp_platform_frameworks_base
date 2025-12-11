@@ -46,8 +46,12 @@ abstract class SettingsBasePreferenceFragment : PreferenceFragmentCompat() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if (SettingsThemeHelper.isExpressiveTheme(requireContext())) {
-            // Don't allow any divider in between the preferences in expressive design.
-            setDivider(null)
+            // This null check is to fix b/412578060 on our side;
+            // If this will be resolved in the future in PreferenceFragmentCompat this can be removed
+            if (listView != null) {
+                // Don't allow any divider in between the preferences in expressive design.
+                setDivider(null)
+            }
             if (isPreferenceSpacingEnabled) {
                 listView?.addItemDecoration(MarginItemDecoration())
             }

@@ -3505,7 +3505,6 @@ public class ActivityRecordTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_TO_WEB)
     public void testCapturedLink() {
         final ActivityRecord activity1 = createActivityWithTask();
         final ActivityRecord activity2 = createActivityRecord(activity1.getTask());

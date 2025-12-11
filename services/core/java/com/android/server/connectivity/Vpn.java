@@ -26,7 +26,6 @@ import static android.net.RouteInfo.RTN_UNREACHABLE;
 import static android.net.VpnManager.NOTIFICATION_CHANNEL_VPN;
 import static android.net.ipsec.ike.IkeSessionParams.ESP_ENCAP_TYPE_AUTO;
 import static android.net.ipsec.ike.IkeSessionParams.ESP_IP_VERSION_AUTO;
-import static android.net.platform.flags.Flags.collectVpnMetrics;
 import static android.net.platform.flags.Flags.reenableInnerIpv6OnVpn;
 import static android.net.vcn.util.PersistableBundleUtils.STRING_DESERIALIZER;
 import static android.os.PowerWhitelistManager.REASON_VPN;
@@ -390,9 +389,8 @@ public class Vpn {
     private final VpnProfileStore mVpnProfileStore;
     /**
      * Instance responsible for collecting VPN connectivity metrics.
-     * This field will be null if the {@link collectVpnMetrics} flag is set to false.
      */
-    @Nullable
+    @NonNull
     private final VpnConnectivityMetrics mVpnConnectivityMetrics;
 
     /**
@@ -620,9 +618,7 @@ public class Vpn {
         }
 
         /**
-         * @see VpnConnectivityMetrics.
-         *
-         * <p>This method is only called when {@link collectVpnMetrics} is true.
+         * @see VpnConnectivityMetrics
          */
         public VpnConnectivityMetrics makeVpnConnectivityMetrics(int userId,
                 ConnectivityManager cm) {
@@ -684,8 +680,7 @@ public class Vpn {
         mPackage = VpnConfig.LEGACY_VPN;
         mOwnerUID = getAppUid(mContext, mPackage, mUserId);
         mIsPackageTargetingAtLeastQ = doesPackageTargetAtLeastQ(mPackage);
-        mVpnConnectivityMetrics = collectVpnMetrics()
-                ? mDeps.makeVpnConnectivityMetrics(userId, mConnectivityManager) : null;
+        mVpnConnectivityMetrics = mDeps.makeVpnConnectivityMetrics(userId, mConnectivityManager);
         mReenableInnerIpv6OnVpn = reenableInnerIpv6OnVpn();
         try {
             netService.registerObserver(mObserver);

@@ -40,6 +40,7 @@ android_test {
         "//frameworks/libs/systemui/mechanics:mechanics-testing",
         "TestParameterInjector",
         "WMShellTests-utils",
+        "WmTestUtils",
         "WindowManager-Shell",
         "androidx.core_core-animation-testing",
         "androidx.datastore_datastore",

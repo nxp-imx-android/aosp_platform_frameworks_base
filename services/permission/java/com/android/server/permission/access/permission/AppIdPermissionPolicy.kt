@@ -142,7 +142,7 @@ class AppIdPermissionPolicy : SchemePolicy() {
             newState.externalState.userIds.forEachIndexed { _, userId ->
                 inheritImplicitPermissionStates(packageState.appId, userId)
             }
-            revokePermissionsOnPackageUpdate(packageState.appId)
+            updatePermissionsOnPackageUpdate(packageState.appId)
         }
     }
 
@@ -160,7 +160,7 @@ class AppIdPermissionPolicy : SchemePolicy() {
         newState.externalState.userIds.forEachIndexed { _, userId ->
             inheritImplicitPermissionStates(packageState.appId, userId)
         }
-        revokePermissionsOnPackageUpdate(packageState.appId)
+        updatePermissionsOnPackageUpdate(packageState.appId)
     }
 
     override fun MutateStateScope.onPackageRemoved(packageName: String, appId: Int) {
@@ -721,9 +721,12 @@ class AppIdPermissionPolicy : SchemePolicy() {
         }
     }
 
-    private fun MutateStateScope.revokePermissionsOnPackageUpdate(appId: Int) {
+    private fun MutateStateScope.updatePermissionsOnPackageUpdate(appId: Int) {
         revokeStorageAndMediaPermissionsOnPackageUpdate(appId)
         revokeHeartRatePermissionsOnPackageUpdate(appId)
+        if (Flags.accessLocalNetworkPermissionEnabled()) {
+            clearNearbyDevicesPermissionsUserFlagsOnPackageUpdate(appId)
+        }
     }
 
     private fun MutateStateScope.revokeStorageAndMediaPermissionsOnPackageUpdate(appId: Int) {
@@ -883,6 +886,31 @@ class AppIdPermissionPolicy : SchemePolicy() {
             }
         }
     }
+
+    private fun MutateStateScope.clearNearbyDevicesPermissionsUserFlagsOnPackageUpdate(appId: Int) =
+        newState.userStates.forEachIndexed { _, userId, userState ->
+            val oldPermissionFlags =
+                oldState.userStates[userId]
+                    ?.appIdPermissionFlags[appId]
+                    ?.get(Manifest.permission.ACCESS_LOCAL_NETWORK) ?: 0
+            if (oldPermissionFlags.hasBits(PermissionFlags.IMPLICIT)) {
+                val isNearbyDevicesPermissionGroupRevoked =
+                    NEARBY_DEVICES_PERMISSIONS.noneIndexed { _, permissionName ->
+                        isRuntimePermissionGranted(appId, userId, permissionName)
+                    }
+                if (isNearbyDevicesPermissionGroupRevoked) {
+                    NEARBY_DEVICES_PERMISSIONS.forEachIndexed { _, permissionName ->
+                        updatePermissionFlags(
+                            appId,
+                            userId,
+                            permissionName,
+                            PermissionFlags.USER_SET or PermissionFlags.USER_FIXED,
+                            0,
+                        )
+                    }
+                }
+            }
+        }
 
     private fun GetStateScope.isRuntimePermissionGranted(
         appId: Int,
@@ -2007,13 +2035,20 @@ class AppIdPermissionPolicy : SchemePolicy() {
                 Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
             )
 
-        private val NEARBY_DEVICES_PERMISSIONS =
+        val NEARBY_DEVICES_PERMISSIONS =
             indexedSetOf(
-                Manifest.permission.BLUETOOTH_ADVERTISE,
-                Manifest.permission.BLUETOOTH_CONNECT,
-                Manifest.permission.BLUETOOTH_SCAN,
-                Manifest.permission.NEARBY_WIFI_DEVICES,
-            )
+                    Manifest.permission.BLUETOOTH_ADVERTISE,
+                    Manifest.permission.BLUETOOTH_CONNECT,
+                    Manifest.permission.BLUETOOTH_SCAN,
+                    Manifest.permission.NEARBY_WIFI_DEVICES,
+                )
+                .let {
+                    if (Flags.accessLocalNetworkPermissionEnabled()) {
+                        it + Manifest.permission.ACCESS_LOCAL_NETWORK
+                    } else {
+                        it
+                    }
+                }
 
         private val NOTIFICATIONS_PERMISSIONS = indexedSetOf(Manifest.permission.POST_NOTIFICATIONS)
 

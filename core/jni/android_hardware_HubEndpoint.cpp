@@ -67,6 +67,8 @@ public:
 
     ProducerWrapper(ProducerWrapper&& other)
           : mProducer(std::move(other.mProducer)),
+            mQueue(other.mQueue),
+            mAllocator(other.mAllocator),
             mNotificationDataHandle(other.mNotificationDataHandle) {}
 
     UntypedProducer& getProducer() {
@@ -335,7 +337,7 @@ static jintArray android_hardware_HubEndpoint_createDataFlowInfo(JNIEnv* env, jo
     RETURN_ON_FALSE(javaArray != nullptr, nullptr, "Failed to create int array");
     env->SetIntArrayRegion(javaArray, 0, out.size(), out.data());
 
-    resource->addProducerWrapper(region.id,
+    resource->addProducerWrapper(regionId,
                                  ProducerWrapper(std::move(*producer), queue.value(), alloc.value(),
                                                  notificationDataHandle));
 

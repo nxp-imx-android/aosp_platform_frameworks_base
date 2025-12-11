@@ -74,16 +74,6 @@ public final class MultiUserManagedUserProvisioningParams {
     }
 
     /**
-     * Returns a copy of the admin extras bundle.
-     *
-     * @see DevicePolicyManager#EXTRA_PROVISIONING_ADMIN_EXTRAS_BUNDLE
-     */
-    public @NonNull PersistableBundle getAdminExtras() {
-        return mTransport.adminExtras == null ? new PersistableBundle() : new PersistableBundle(
-                mTransport.adminExtras);
-    }
-
-    /**
      * Logs the provisioning params using {@link DevicePolicyEventLogger}.
      *
      * @hide
@@ -131,13 +121,6 @@ public final class MultiUserManagedUserProvisioningParams {
         @NonNull
         public Builder setLeaveAllSystemAppsEnabled(boolean leaveAllSystemAppsEnabled) {
             this.mTransport.leaveAllSystemAppsEnabled = leaveAllSystemAppsEnabled;
-            return this;
-        }
-
-        /** Sets a {@link PersistableBundle} that contains admin-specific extras. */
-        @NonNull
-        public Builder setAdminExtras(@Nullable PersistableBundle adminExtras) {
-            this.mTransport.adminExtras = adminExtras;
             return this;
         }
 

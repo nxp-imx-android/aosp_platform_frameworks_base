@@ -20,6 +20,8 @@ import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
 import android.content.Context
 import android.content.res.ColorStateList
+import android.graphics.drawable.Animatable2
+import android.graphics.drawable.AnimatedVectorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.TransitionDrawable
 import android.provider.Settings
@@ -148,6 +150,8 @@ constructor(
     }
 
     var applyIconTint: Boolean = true
+    var showIconBackground: Boolean = true
+    var playIconAnimationInLoop: Boolean = false
 
     private var previousButtonLevel: BannerStatus? = null
     var buttonLevel: BannerStatus = BannerStatus.GENERIC
@@ -314,7 +318,8 @@ constructor(
                 }
                 parent.addView(tempImageView, parent.indexOfChild(views.iconView))
 
-                views.iconView.setImageDrawable(toState.icon)
+                setIconDrawable(views, toState.icon)
+                views.maybeStartIconAnimationOnBackgroundView(playIconAnimationInLoop)
                 animateTransition(tempImageView, views.iconView, fromColor, toColor, views)
             } else {
                 if (fromState.level == BannerStatus.GENERIC && isDefaultIcon) {
@@ -332,7 +337,10 @@ constructor(
             }
         } else if (fromView != toView) {
             // Transitioning between different types of views (e.g., icon to progress indicator).
-            if (toView == views.iconView) views.iconView.setImageDrawable(toState.icon)
+            if (toView == views.iconView) {
+                setIconDrawable(views, toState.icon)
+                views.maybeStartIconAnimationOnBackgroundView(playIconAnimationInLoop)
+            }
             if (fromView == views.iconView) views.iconView.setImageDrawable(fromState.icon)
             fromView?.visibility = View.VISIBLE
             animateTransition(fromView, toView, fromColor, toColor, views)
@@ -388,12 +396,25 @@ constructor(
         backgroundView?.setImageDrawable(getBackgroundDrawable(state.level))
 
         if (targetView == views.iconView) {
-            views.iconView.setImageDrawable(state.icon)
+            setIconDrawable(views, state.icon)
 
             // Reset scale/alpha for non-animation cases.
             views.iconView.scaleX = 1f
             views.iconView.scaleY = 1f
             views.iconView.alpha = 1f
+            views.maybeStartIconAnimationOnBackgroundView(playIconAnimationInLoop)
+        }
+    }
+
+    private fun setIconDrawable(views: ViewHolder, icon: Drawable?) {
+        if (showIconBackground) {
+            views.iconView.setImageDrawable(icon)
+        } else {
+            // When `showIconBackground` is false, the provided icon is assumed to contain
+            // its own background. It is placed in the `backgroundView` to ensure
+            // correct sizing, and the foreground `iconView` is cleared.
+            backgroundView?.setImageDrawable(icon)
+            views.iconView.setImageDrawable(null)
         }
     }
 
@@ -498,6 +519,9 @@ constructor(
     }
 
     private fun getBackgroundDrawable(level: BannerStatus): Drawable? {
+        if (!showIconBackground) {
+            return null
+        }
         return when (level) {
             BannerStatus.LOW ->
                 ContextCompat.getDrawable(
@@ -690,6 +714,7 @@ constructor(
          * 1. Explicitly cancels all tracked animations to stop them from modifying views.
          * 2. Removes any temporary, orphaned ImageViews from previous animations.
          * 3. Resets the visual properties of all animatable views to a known, clean state.
+         * 4. Stops any running AnimatedVectorDrawables and clears callbacks on the iconView and backgroundView.
          */
         fun cleanup() {
             // 1.
@@ -712,6 +737,39 @@ constructor(
                 view.scaleY = 1f
                 view.alpha = 1f
                 view.visibility = View.VISIBLE
+            }
+
+            // 4.
+            val iconViewDrawable = iconView.drawable
+            if (iconViewDrawable is AnimatedVectorDrawable) {
+                iconViewDrawable.stop()
+                iconViewDrawable.clearAnimationCallbacks()
+            }
+            val backgroundViewDrawable = backgroundView?.drawable
+            if (backgroundViewDrawable is AnimatedVectorDrawable) {
+                backgroundViewDrawable.stop()
+                backgroundViewDrawable.clearAnimationCallbacks()
+            }
+        }
+
+        /**
+         * Starts the drawable on the backgroundView if it is an AnimatedVectorDrawable and sets it to loop.
+         */
+        fun maybeStartIconAnimationOnBackgroundView(playIconAnimationInLoop: Boolean) {
+            val drawable = backgroundView?.drawable
+            if (drawable is AnimatedVectorDrawable) {
+                val avd = drawable
+                avd.clearAnimationCallbacks()
+                if (playIconAnimationInLoop) {
+                    avd.registerAnimationCallback(object : Animatable2.AnimationCallback() {
+                        override fun onAnimationEnd(drawable: Drawable) {
+                            if (backgroundView.drawable === avd) {
+                                avd.start()
+                            }
+                        }
+                    })
+                }
+                avd.start()
             }
         }
     }

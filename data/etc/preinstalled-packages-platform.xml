@@ -169,4 +169,11 @@ to pre-existing users, but cannot uninstall pre-existing system packages from pr
         <install-in user-type="FULL" />
     </install-in-user-type>
 
+    <!-- SoundPicker (RELEASE_PACKAGE_SOUND_PICKER) -->
+    <install-in-user-type package="com.android.soundpicker">
+        <install-in user-type="FULL" />
+        <install-in user-type="android.os.usertype.profile.MANAGED" />
+        <install-in user-type="android.os.usertype.profile.PRIVATE" />
+    </install-in-user-type>
+
 </config>

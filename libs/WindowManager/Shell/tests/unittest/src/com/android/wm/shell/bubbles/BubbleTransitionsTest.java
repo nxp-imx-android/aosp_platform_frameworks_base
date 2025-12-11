@@ -74,7 +74,7 @@ import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.launcher3.icons.BubbleIconFactory;
-import com.android.wm.shell.MockToken;
+import com.android.testing.wm.util.MockToken;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestSyncExecutor;
@@ -235,11 +235,10 @@ public class BubbleTransitionsTest extends ShellTestCase {
         doReturn(new UserHandle(0)).when(bubble).getUser();
         final ActivityManager.RunningTaskInfo taskInfo = setupBubble(
                 bubble, taskView, taskViewTaskController);
-        doReturn(true).when(mBubbleController).shouldBeAppBubble(taskInfo);
         doReturn(true).when(mBubbleHelper).isAppBubbleTask(taskInfo);
         if (BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
             doReturn(mRootTaskBinder).when(mRootTaskToken).asBinder();
-            doReturn(mRootTaskToken).when(mBubbleController).getAppBubbleRootTaskToken();
+            doReturn(mRootTaskToken).when(mBubbleHelper).getAppBubbleRootTaskToken();
         }
         return taskInfo;
     }
@@ -263,29 +262,38 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
     private TransitionInfo setupFullscreenTaskTransition(ActivityManager.RunningTaskInfo taskInfo,
             SurfaceControl taskLeash, SurfaceControl snapshot) {
-        final TransitionInfo info = new TransitionInfo(TRANSIT_CONVERT_TO_BUBBLE, 0);
-        final TransitionInfo.Change chg = new TransitionInfo.Change(taskInfo.token, taskLeash);
-        chg.setTaskInfo(taskInfo);
-        chg.setMode(TRANSIT_CHANGE);
-        chg.setStartAbsBounds(new Rect(0, 0, FULLSCREEN_TASK_WIDTH, FULLSCREEN_TASK_HEIGHT));
-        chg.setSnapshot(snapshot, /* luma= */ 0f);
-        info.addChange(chg);
-        info.addRoot(new TransitionInfo.Root(0, mock(SurfaceControl.class), 0, 0));
-        return info;
+        return setUpTransition(taskInfo, taskLeash, snapshot, null,
+                TRANSIT_CONVERT_TO_BUBBLE,
+                TRANSIT_CHANGE);
     }
 
     private TransitionInfo setupConvertTransition(ActivityManager.RunningTaskInfo taskInfo,
             SurfaceControl taskLeash, SurfaceControl snapshot, IBinder launchCookieBinder) {
-        final TransitionInfo info = new TransitionInfo(TRANSIT_OPEN, 0);
+        return setUpTransition(taskInfo, taskLeash, snapshot, launchCookieBinder, TRANSIT_OPEN,
+                TRANSIT_CHANGE);
+    }
+
+    private TransitionInfo setupToFrontTransition(ActivityManager.RunningTaskInfo taskInfo,
+            SurfaceControl taskLeash, SurfaceControl snapshot, IBinder launchCookieBinder) {
+        return setUpTransition(taskInfo, taskLeash, snapshot, launchCookieBinder, TRANSIT_OPEN,
+                TRANSIT_TO_FRONT);
+    }
+
+    private TransitionInfo setUpTransition(ActivityManager.RunningTaskInfo taskInfo,
+            SurfaceControl taskLeash, SurfaceControl snapshot, IBinder launchCookieBinder,
+            int transitionType, int transitionMode) {
+        final TransitionInfo info = new TransitionInfo(transitionType, 0);
         final TransitionInfo.Change chg = new TransitionInfo.Change(taskInfo.token, taskLeash);
         chg.setTaskInfo(taskInfo);
-        chg.setMode(TRANSIT_CHANGE);
+        chg.setMode(transitionMode);
         chg.setStartAbsBounds(new Rect(0, 0, FULLSCREEN_TASK_WIDTH, FULLSCREEN_TASK_HEIGHT));
         if (snapshot != null) {
             chg.setSnapshot(snapshot, /* luma= */ 0f);
         }
         // Add the launch cookie to the task info
-        taskInfo.launchCookies.add(launchCookieBinder);
+        if (launchCookieBinder != null) {
+            taskInfo.launchCookies.add(launchCookieBinder);
+        }
         info.addChange(chg);
         info.addRoot(new TransitionInfo.Root(0, mock(SurfaceControl.class), 0, 0));
         return info;
@@ -1112,7 +1120,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
     @Test
     @EnableFlags(FLAG_ENABLE_BUBBLE_ROOT_TASK)
-    public void testLaunchOrConvert_withRootTaskForBubble_setsAlphaToZero() {
+    public void testLaunchOrConvert_withRootTaskForBubble_setsAlpha() {
         final ActivityManager.RunningTaskInfo taskInfo = setupAppBubble();
         doReturn(mPendingIntent).when(mBubble).getPendingIntent();
         final BubbleTransitions.LaunchOrConvertToBubble bt =
@@ -1126,17 +1134,28 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
         // Prepare for startAnimation call
         final SurfaceControl taskLeash = new SurfaceControl.Builder().setName("taskLeash").build();
-        final TransitionInfo info = setupConvertTransition(taskInfo, taskLeash,
+        final TransitionInfo convertTransition = setupConvertTransition(taskInfo, taskLeash,
                 null /* snapshot */, bt.mLaunchCookie.binder);
         final IBinder transitionToken = mock(IBinder.class);
         bt.mPlayingTransition = transitionToken;
         final SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
 
         // Start playing the transition
-        bt.startAnimation(transitionToken, info, startT,
+        bt.startAnimation(transitionToken, convertTransition, startT,
                 mock(SurfaceControl.Transaction.class), wct -> {});
 
-        // Verify that the alpha is set to 0 for the launched task's leash
+        // Verify that the alpha is never changed for the launched task's leash (visible -> visible)
+        verify(startT, never()).setAlpha(taskLeash, 0f);
+
+        // Set up a to-front transition
+        final TransitionInfo toFrontTransition = setupToFrontTransition(taskInfo, taskLeash,
+                null /* snapshot */, bt.mLaunchCookie.binder);
+
+        // Playing the transition
+        bt.startAnimation(transitionToken, toFrontTransition, startT,
+                mock(SurfaceControl.Transaction.class), wct -> {});
+
+        // Verify that the alpha is set to zero for the launched task's leash (invisible -> visible)
         verify(startT).setAlpha(taskLeash, 0f);
     }
 
@@ -1150,9 +1169,9 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final BubbleTransitions.LaunchNewTaskBubbleForExistingTransition bt =
                 (BubbleTransitions.LaunchNewTaskBubbleForExistingTransition) mBubbleTransitions
                         .startLaunchNewTaskBubbleForExistingTransition(
-                                mBubble, mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
-                                mStackView, mLayerView, mIconFactory, false /* inflateSync */,
-                                transition, transitionHandler -> {});
+                                mBubble, mExpandedViewManager, mTaskViewFactory, mStackView,
+                                mLayerView, mIconFactory, false /* inflateSync */, transition,
+                                transitionHandler -> {});
 
         verify(mBubble).setCurrentTransition(bt);
 
@@ -1242,9 +1261,9 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final BubbleTransitions.JumpcutBubbleSwitchTransition bt =
                 (BubbleTransitions.JumpcutBubbleSwitchTransition) mBubbleTransitions
                         .startJumpcutBubbleSwitchTransition(mBubble, closingBubble,
-                                mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
-                                mStackView, mLayerView, mIconFactory, false /* inflateSync */,
-                                transitionToken, onInflatedCallback);
+                                mExpandedViewManager, mTaskViewFactory, mStackView, mLayerView,
+                                mIconFactory, false /* inflateSync */, transitionToken,
+                                onInflatedCallback);
 
         verify(mBubble).setCurrentTransition(bt);
         verify(closingBubble).setCurrentTransition(bt);
@@ -1326,9 +1345,9 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final BubbleTransitions.JumpcutBubbleSwitchTransition bt =
                 (BubbleTransitions.JumpcutBubbleSwitchTransition) mBubbleTransitions
                         .startJumpcutBubbleSwitchTransition(mBubble, closingBubble,
-                                mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
-                                mStackView, mLayerView, mIconFactory, false /* inflateSync */,
-                                transitionToken, onInflatedCallback);
+                                mExpandedViewManager, mTaskViewFactory, mStackView, mLayerView,
+                                mIconFactory, false /* inflateSync */, transitionToken,
+                                onInflatedCallback);
 
         bt.onInflated(mBubble);
         bt.startAnimation(transitionToken, info, startT, finishT, finishCb);
@@ -1369,9 +1388,9 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final BubbleTransitions.LaunchNewTaskBubbleForExistingTransition bt =
                 (BubbleTransitions.LaunchNewTaskBubbleForExistingTransition) mBubbleTransitions
                         .startLaunchNewTaskBubbleForExistingTransition(
-                                mBubble, mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
-                                mStackView, mLayerView, mIconFactory, false /* inflateSync */,
-                                transition, transitionHandler -> {});
+                                mBubble, mExpandedViewManager, mTaskViewFactory, mStackView,
+                                mLayerView, mIconFactory, false /* inflateSync */, transition,
+                                transitionHandler -> {});
 
         verify(mBubble).setCurrentTransition(bt);
 
@@ -1452,9 +1471,9 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final BubbleTransitions.LaunchNewTaskBubbleForExistingTransition bt =
                 (BubbleTransitions.LaunchNewTaskBubbleForExistingTransition) mBubbleTransitions
                         .startLaunchNewTaskBubbleForExistingTransition(mBubble,
-                                mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
-                                mStackView, mLayerView, mIconFactory, false /* inflateSync */,
-                                transitionToken, onInflatedCallback);
+                                mExpandedViewManager, mTaskViewFactory, mStackView, mLayerView,
+                                mIconFactory, false /* inflateSync */, transitionToken,
+                                onInflatedCallback);
 
         verify(mBubble).setCurrentTransition(bt);
 

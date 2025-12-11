@@ -355,14 +355,10 @@ constructor(
         taskSurface: SurfaceControl?,
     ) =
         traceSection("DefaultWindowDecoration#relayout") {
-            if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB.isTrue) {
-                taskInfo.capturedLink?.let {
-                    appToWebRepository.setCapturedLink(
-                        taskInfo.taskId,
-                        it,
-                        taskInfo.capturedLinkTimestamp,
-                    )
-                }
+            taskInfo.capturedLink?.let {
+                appToWebRepository.setCapturedLink(
+                    taskInfo.taskId, it, taskInfo.capturedLinkTimestamp
+                )
             }
 
             if (DesktopExperienceFlags.ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY.isTrue) {

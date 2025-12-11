@@ -79,6 +79,16 @@ flag {
 }
 
 flag {
+    name: "disable_display_force_freeform_on_pc"
+    namespace: "lse_desktop_experience"
+    description: "Prevents a display from being forced to freeform solely due to it being on PC."
+    bug: "467351253"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "disable_restore_non_fullscreen_bounds_on_configuration_change"
     namespace: "lse_desktop_experience"
     description: "Disable restoring bounds to mLastNonFullscreenBounds on configuration change."
@@ -539,13 +549,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_windowing_app_to_web"
-    namespace: "lse_desktop_experience"
-    description: "Whether to enable the app-to-web feature and show the open in browser button in the header menu"
-    bug: "349695493"
-}
-
-flag {
     name: "enable_desktop_windowing_app_to_web_education"
     namespace: "lse_desktop_experience"
     description: "Enables desktop windowing app-to-web education"
@@ -678,13 +681,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables desktop wallpaper activity to show wallpaper in the desktop mode"
     bug: "309014605"
-}
-
-flag {
-    name: "enable_display_compat_mode"
-    namespace: "lse_desktop_experience"
-    description: "Enables display compat mode for connected displays."
-    bug: "408704764"
 }
 
 flag {
@@ -1094,13 +1090,6 @@ flag {
 }
 
 flag {
-    name: "enable_restart_menu_for_connected_displays"
-    namespace: "lse_desktop_experience"
-    description: "Enable restart menu UI, which is shown when an app moves between displays."
-    bug: "397804287"
-}
-
-flag {
     name: "enable_restore_to_previous_size_from_desktop_immersive"
     namespace: "lse_desktop_experience"
     description: "Restores the window bounds to their previous size when exiting desktop immersive"
@@ -1137,13 +1126,6 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
-}
-
-flag {
-    name: "enable_size_compat_mode_improvements_for_connected_displays"
-    namespace: "lse_desktop_experience"
-    description: "Enable some improvements in size compat mode for connected displays."
-    bug: "399752440"
 }
 
 flag {

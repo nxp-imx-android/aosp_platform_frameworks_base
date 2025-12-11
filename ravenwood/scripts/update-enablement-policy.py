@@ -28,7 +28,6 @@ import sys
 
 Path = pathlib.Path
 
-
 class PolicyFile:
   """An enablement policy file"""
 
@@ -51,6 +50,10 @@ class PolicyFile:
 
     # Class stats
     self.classes: dict[str, bool] = {}
+
+    # Duration of each test method.
+    # For a parametric method that was executed multiple times, it's the total of all the runs.
+    self.durations: dict[str, float] = {}
 
     # Stats
     self.class_total = 0
@@ -107,6 +110,8 @@ class PolicyFile:
           elif skipped:
             self.method_skipped += 1
 
+          self.durations[method] = self.durations.get(method, 0) + float(row['DurationMillis'])
+
   def write(self):
     """Writes the enablement policy file to disk."""
     tmp = Path(f"{self.path}.tmp")
@@ -156,7 +161,12 @@ class PolicyFile:
 
       for class_method, policy in sorted(self.policies.items()):
         p = "enable" if policy else "disable"
-        f.write(f"{class_method} {p}\n")
+        f.write(f"{class_method} {p}")
+
+        size = self.durations.get(class_method, 0)
+        if size >= 1:
+          f.write(" :large")
+        f.write("\n")
 
     tmp.rename(self.path)
 

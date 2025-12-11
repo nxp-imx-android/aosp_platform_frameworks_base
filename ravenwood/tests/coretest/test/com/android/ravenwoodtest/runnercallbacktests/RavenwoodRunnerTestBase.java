@@ -81,6 +81,7 @@ public abstract class RavenwoodRunnerTestBase {
         RunMode runMode() default RunMode.Normal;
         String enablementPolicy() default "";
         String overridingRegex() default "";
+        boolean ignoreLargeTests() default false;
     }
 
     private static final AtomicReference<Throwable> sError = new AtomicReference<>();
@@ -153,7 +154,10 @@ public abstract class RavenwoodRunnerTestBase {
 
         // Oevrride enablement policy
         RavenwoodEnablementChecker.overrideInstance(
-                expected.runMode(), expected.enablementPolicy(), expected.overridingRegex());
+                expected.runMode(),
+                expected.enablementPolicy(),
+                expected.overridingRegex(),
+                expected.ignoreLargeTests());
 
         sError.set(null);
 

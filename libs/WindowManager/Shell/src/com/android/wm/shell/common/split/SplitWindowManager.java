@@ -174,14 +174,14 @@ public final class SplitWindowManager extends WindowlessWindowManager {
             mViewHost = null;
         }
 
-        if (mLeash != null) {
+        if (mLeash != null && mLeash.isValid()) {
             if (t == null) {
                 new SurfaceControl.Transaction().remove(mLeash).apply();
             } else {
                 t.remove(mLeash);
             }
-            mLeash = null;
         }
+        mLeash = null;
     }
 
     @Override

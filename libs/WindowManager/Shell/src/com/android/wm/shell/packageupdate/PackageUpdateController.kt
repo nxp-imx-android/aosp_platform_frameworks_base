@@ -79,6 +79,10 @@ class PackageUpdateController(
         transitions.startTransition(TRANSIT_OPEN, wct, null)
     }
 
+    override fun onPackageUpdateFinished(updatedTasks: List<ActivityManager.RunningTaskInfo>) {
+        // TODO: b/466354852 - Remove task or launch baseIntent
+    }
+
     private fun launchPlaceholderInTask(
         wct: WindowContainerTransaction,
         task: ActivityManager.RunningTaskInfo

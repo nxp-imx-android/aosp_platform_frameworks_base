@@ -3253,8 +3253,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             if (r.finishing) {
                 return;
             }
-            if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB.isTrue()
-                    && mInfo.capturedLink == null) {
+            if (mInfo.capturedLink == null) {
                 setCapturedLink(r);
             }
             mInfo.numActivities++;

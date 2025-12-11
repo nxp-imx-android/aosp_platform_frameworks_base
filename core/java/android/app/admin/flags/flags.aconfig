@@ -296,13 +296,6 @@ flag {
 }
 
 flag {
-    name: "backup_connected_apps_settings"
-    namespace: "enterprise"
-    description: "backup and restore connected work and personal apps user settings across devices"
-    bug: "175067666"
-}
-
-flag {
     name: "headless_single_min_target_sdk"
     namespace: "enterprise"
     description: "Only allow DPCs targeting Android V to provision into single user mode"
@@ -606,5 +599,13 @@ flag {
   namespace: "enterprise"
   description: "Enables coexistence support for setDeviceOwnerLockScreenInfo"
   bug: "457343029"
+  is_exported: true
+}
+
+flag {
+  name: "enable_nullable_admin_component"
+  namespace: "enterprise"
+  description: "Enable passing a null admin component to DPM.enableSystemApp and DPM.setPermissionPolicy."
+  bug: "346490174"
   is_exported: true
 }

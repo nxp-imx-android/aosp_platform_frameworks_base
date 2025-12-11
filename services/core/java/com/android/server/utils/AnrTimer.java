@@ -300,7 +300,7 @@ public class AnrTimer<V> implements AutoCloseable {
         // Includes any extensions.
         public final long mDurationMs;
 
-        ExpiredTimer(int id, long startMs, long durationMs) {
+        public ExpiredTimer(int id, long startMs, long durationMs) {
             mTimerId = id;
             mStartMs = startMs;
             mDurationMs = durationMs;

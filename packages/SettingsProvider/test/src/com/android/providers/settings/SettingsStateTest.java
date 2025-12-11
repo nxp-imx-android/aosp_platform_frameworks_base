@@ -18,6 +18,7 @@ package com.android.providers.settings;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotSame;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
@@ -28,7 +29,6 @@ import android.aconfig.Aconfig.parsed_flags;
 import android.aconfigd.AconfigdFlagInfo;
 import android.content.Context;
 import android.os.Looper;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.util.Xml;
@@ -146,6 +146,15 @@ public class SettingsStateTest {
                         .addBug("12345678")
                         .setState(Aconfig.flag_state.ENABLED)
                         .setPermission(Aconfig.flag_permission.READ_ONLY))
+                .addParsedFlag(parsed_flag
+                    .newBuilder()
+                        .setPackage("com.android.flags2")
+                        .setName("flag3")
+                        .setNamespace("test_namespace")
+                        .setDescription("another test flag")
+                        .addBug("12345678")
+                        .setState(Aconfig.flag_state.ENABLED)
+                        .setPermission(Aconfig.flag_permission.READ_ONLY))
                 .build();
 
         AconfigdFlagInfo flag1 = AconfigdFlagInfo.newBuilder()
@@ -162,21 +171,34 @@ public class SettingsStateTest {
                                                 .setIsReadWrite(false)
                                                 .setNamespace("test_namespace")
                                                 .build();
-        Map<String, AconfigdFlagInfo> flagInfoDefault = new HashMap<>();
+        AconfigdFlagInfo flag3 = AconfigdFlagInfo.newBuilder()
+                                                .setPackageName("com.android.flags2")
+                                                .setFlagName("flag3")
+                                                .setDefaultFlagValue("true")
+                                                .setIsReadWrite(false)
+                                                .setNamespace("test_namespace")
+                                                .build();
+        Map<String, SettingsState.PackageFlags> flagInfoDefault = new HashMap<>();
 
         synchronized (lock) {
             Map<String, Map<String, String>> defaults = new HashMap<>();
             settingsState.loadAconfigDefaultValues(
                 flags.toByteArray(), defaults, flagInfoDefault);
             Map<String, String> namespaceDefaults = defaults.get("test_namespace");
-            assertEquals(2, namespaceDefaults.keySet().size());
+            assertEquals(3, namespaceDefaults.keySet().size());
 
             assertEquals("false", namespaceDefaults.get("test_namespace/com.android.flags.flag1"));
             assertEquals("true", namespaceDefaults.get("test_namespace/com.android.flags.flag2"));
+            assertEquals("true", namespaceDefaults.get("test_namespace/com.android.flags2.flag3"));
         }
 
-        assertEquals(flag1, flagInfoDefault.get(flag1.getFullFlagName()));
-        assertEquals(flag2, flagInfoDefault.get(flag2.getFullFlagName()));
+        SettingsState.PackageFlags info = flagInfoDefault.get(flag1.getPackageName());
+        assertTrue(info.mRwFlags.contains(flag1.getFlagName()));
+        assertTrue(info.mRoFlags.contains(flag2.getFlagName()));
+
+        SettingsState.PackageFlags info2 = flagInfoDefault.get(flag3.getPackageName());
+        assertNotSame(info, info2);
+        assertTrue(info2.mRoFlags.contains(flag3.getFlagName()));
     }
 
     @Test
@@ -188,7 +210,7 @@ public class SettingsStateTest {
                 InstrumentationRegistry.getContext(), lock, mSettingsFile, configKey,
                 SettingsState.MAX_BYTES_PER_APP_PACKAGE_UNLIMITED, Looper.getMainLooper());
 
-        Map<String, AconfigdFlagInfo> flagInfoDefault = new HashMap<>();
+        Map<String, SettingsState.PackageFlags> flagInfoDefault = new HashMap<>();
 
         parsed_flags flags = parsed_flags
                 .newBuilder()
@@ -213,7 +235,7 @@ public class SettingsStateTest {
     @Test
     public void testInvalidAconfigProtoDoesNotCrash() {
         Map<String, Map<String, String>> defaults = new HashMap<>();
-        Map<String, AconfigdFlagInfo> flagInfoDefault = new HashMap<>();
+        Map<String, SettingsState.PackageFlags> flagInfoDefault = new HashMap<>();
         SettingsState settingsState = getSettingStateObject();
         settingsState.loadAconfigDefaultValues(
             "invalid protobuf".getBytes(), defaults, flagInfoDefault);
@@ -820,7 +842,7 @@ public class SettingsStateTest {
                         .setState(Aconfig.flag_state.DISABLED)
                         .setPermission(Aconfig.flag_permission.READ_WRITE))
                 .build();
-        Map<String, AconfigdFlagInfo> flagInfoDefault = new HashMap<>();
+        Map<String, SettingsState.PackageFlags> flagInfoDefault = new HashMap<>();
 
         synchronized (mLock) {
             settingsState.loadAconfigDefaultValues(
@@ -973,173 +995,6 @@ public class SettingsStateTest {
         expectedMemUsageForPackage = (testKey2.length() + testValue2.length()
                 + testValue2.length() /* size for default */) * Character.BYTES;
         assertEquals(expectedMemUsageForPackage, settingsState.getMemoryUsage(packageName));
-    }
-
-    @Test
-    public void testGetFlagOverrideToSync() {
-        long configKey = SettingsState.makeKey(SettingsState.SETTINGS_TYPE_CONFIG, 0,
-                Context.DEVICE_ID_DEFAULT);
-        Object lock = new Object();
-        SettingsState settingsState =
-                new SettingsState(
-                        InstrumentationRegistry.getContext(),
-                        lock,
-                        mSettingsFile,
-                        configKey,
-                        SettingsState.MAX_BYTES_PER_APP_PACKAGE_UNLIMITED,
-                        Looper.getMainLooper());
-        Map<String, AconfigdFlagInfo> flagInfoDefault = new HashMap<>();
-
-        // invalid flag name
-        assertNull(settingsState.getFlagOverrideToSync("invalid_flag", "false", flagInfoDefault));
-
-        // invalid local override flag name
-        assertNull(
-                settingsState.getFlagOverrideToSync(
-                        "some_namespace/some_flag", "false", flagInfoDefault));
-
-        // not a aconfig flag
-        assertNull(
-                settingsState.getFlagOverrideToSync(
-                        "some_namespace/some_flag.com", "false", flagInfoDefault));
-
-        AconfigdFlagInfo flag1 =
-                AconfigdFlagInfo.newBuilder()
-                        .setPackageName("com.android.flags")
-                        .setFlagName("flag1")
-                        .setDefaultFlagValue("false")
-                        .setIsReadWrite(true)
-                        .setNamespace("test_namespace")
-                        .build();
-
-        flagInfoDefault.put(flag1.getFullFlagName(), flag1);
-
-        // not the right namespace
-        assertNull(
-                settingsState.getFlagOverrideToSync(
-                        "some_namespace/com.android.flags.flag1", "true", flagInfoDefault));
-
-        // server override
-        settingsState.getFlagOverrideToSync(
-                "test_namespace/com.android.flags.flag1", "true", flagInfoDefault);
-        assertEquals("com.android.flags", flag1.getPackageName());
-        assertEquals("flag1", flag1.getFlagName());
-        assertEquals("true", flag1.getBootFlagValue());
-        assertEquals("true", flag1.getServerFlagValue());
-        assertEquals("false", flag1.getDefaultFlagValue());
-        assertTrue(flag1.getHasServerOverride());
-        assertNull(flag1.getLocalFlagValue());
-
-        // local override
-        settingsState.getFlagOverrideToSync(
-                "device_config_overrides/test_namespace:com.android.flags.flag1",
-                "false",
-                flagInfoDefault);
-        assertEquals("false", flag1.getBootFlagValue());
-        assertEquals("false", flag1.getLocalFlagValue());
-        assertTrue(flag1.getHasLocalOverride());
-    }
-
-    @Test
-    public void testGetAllAconfigFlagsFromSettings() throws Exception {
-        final Object lock = new Object();
-        final PrintStream os = new PrintStream(new FileOutputStream(mSettingsFile));
-        os.print(
-                "<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>"
-                        + "<settings version=\"120\">"
-                        + "  <setting id=\"0\" name=\"test_namespace/com.android.flags.flag1\" "
-                            + "value=\"false\" package=\"com.android.flags\" />"
-                        + "  <setting id=\"1\" name=\"device_config_overrides/test_namespace:com.android.flags.flag1\" "
-                            + "value=\"true\" package=\"com.android.flags\" />"
-                        + "  <setting id=\"2\" name=\"device_config_overrides/test_namespace:com.android.flags.flag2\" "
-                            + "value=\"true\" package=\"com.android.flags\" />"
-                        + "  <setting id=\"3\" name=\"test_namespace/com.android.flags.flag3\" "
-                            + "value=\"true\" package=\"com.android.flags\" />"
-                        + "  <setting id=\"3\" name=\"device_config_overrides/test_namespace:com.android.flags.flag3\" "
-                            + "value=\"true\" package=\"com.android.flags\" />"
-                        + "</settings>");
-        os.close();
-
-        long configKey = SettingsState.makeKey(SettingsState.SETTINGS_TYPE_CONFIG, 0,
-                Context.DEVICE_ID_DEFAULT);
-
-        SettingsState settingsState = new SettingsState(
-                InstrumentationRegistry.getContext(), lock, mSettingsFile, configKey,
-                SettingsState.MAX_BYTES_PER_APP_PACKAGE_UNLIMITED, Looper.getMainLooper());
-
-        int ret;
-        Map<String, AconfigdFlagInfo> flagInfoDefault = new HashMap<>();
-        synchronized (lock) {
-            ret = settingsState.getAllAconfigFlagsFromSettings(flagInfoDefault);
-        }
-        assertEquals(0, ret);
-
-        AconfigdFlagInfo flag1 =
-                AconfigdFlagInfo.newBuilder()
-                        .setPackageName("com.android.flags")
-                        .setFlagName("flag1")
-                        .setDefaultFlagValue("false")
-                        .setIsReadWrite(true)
-                        .setNamespace("test_namespace")
-                        .build();
-        flagInfoDefault.put(flag1.getFullFlagName(), flag1);
-
-        synchronized (lock) {
-            ret = settingsState.getAllAconfigFlagsFromSettings(flagInfoDefault);
-        }
-        assertEquals(2, ret);
-        assertEquals("com.android.flags", flag1.getPackageName());
-        assertEquals("flag1", flag1.getFlagName());
-        assertEquals("true", flag1.getBootFlagValue());
-        assertEquals("true", flag1.getLocalFlagValue());
-        assertEquals("false", flag1.getServerFlagValue());
-        assertEquals("false", flag1.getDefaultFlagValue());
-        assertTrue(flag1.getHasServerOverride());
-        assertTrue(flag1.getHasLocalOverride());
-
-        AconfigdFlagInfo flag2 =
-                AconfigdFlagInfo.newBuilder()
-                        .setPackageName("com.android.flags")
-                        .setFlagName("flag2")
-                        .setDefaultFlagValue("false")
-                        .setIsReadWrite(true)
-                        .setNamespace("test_namespace")
-                        .build();
-        flagInfoDefault.put(flag2.getFullFlagName(), flag2);
-        synchronized (lock) {
-            ret = settingsState.getAllAconfigFlagsFromSettings(flagInfoDefault);
-        }
-        assertEquals(3, ret);
-        assertEquals("com.android.flags", flag2.getPackageName());
-        assertEquals("flag2", flag2.getFlagName());
-        assertEquals("true", flag2.getBootFlagValue());
-        assertEquals("true", flag2.getLocalFlagValue());
-        assertEquals("false", flag2.getDefaultFlagValue());
-        assertNull(flag2.getServerFlagValue());
-        assertFalse(flag2.getHasServerOverride());
-        assertTrue(flag2.getHasLocalOverride());
-
-        AconfigdFlagInfo flag3 =
-                AconfigdFlagInfo.newBuilder()
-                        .setPackageName("com.android.flags")
-                        .setFlagName("flag3")
-                        .setDefaultFlagValue("false")
-                        .setIsReadWrite(false)
-                        .setNamespace("test_namespace")
-                        .build();
-        flagInfoDefault.put(flag3.getFullFlagName(), flag3);
-        synchronized (lock) {
-            ret = settingsState.getAllAconfigFlagsFromSettings(flagInfoDefault);
-        }
-        assertEquals(3, ret);
-        assertEquals("com.android.flags", flag3.getPackageName());
-        assertEquals("flag3", flag3.getFlagName());
-        assertEquals("false", flag3.getBootFlagValue());
-        assertEquals("false", flag3.getDefaultFlagValue());
-        assertNull(flag3.getLocalFlagValue());
-        assertNull(flag3.getServerFlagValue());
-        assertFalse(flag3.getHasServerOverride());
-        assertFalse(flag3.getHasLocalOverride());
     }
 
     @Test

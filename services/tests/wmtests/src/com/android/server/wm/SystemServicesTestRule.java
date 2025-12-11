@@ -46,6 +46,7 @@ import static org.mockito.Mockito.withSettings;
 import android.annotation.Nullable;
 import android.app.ActivityManagerInternal;
 import android.app.ActivityThread;
+import android.app.AppLockInternal;
 import android.app.AppOpsManager;
 import android.app.IApplicationThread;
 import android.app.usage.UsageStatsManagerInternal;
@@ -326,6 +327,9 @@ public class SystemServicesTestRule implements TestRule {
         ComponentName systemServiceComponent = new ComponentName("android.test.system.service", "");
         doReturn(systemServiceComponent).when(packageManagerInternal).getSystemUiServiceComponent();
 
+        // AppLockInternal
+        LocalServices.addService(AppLockInternal.class, mock(AppLockInternal.class));
+
         // PowerManagerInternal
         final PowerManagerInternal pmi = mock(PowerManagerInternal.class);
         final PowerSaveState state = new PowerSaveState.Builder().build();
@@ -514,6 +518,7 @@ public class SystemServicesTestRule implements TestRule {
         LocalServices.removeServiceForTest(UiModeManagerInternal.class);
         LocalServices.removeServiceForTest(UserManagerInternal.class);
         LocalServices.removeServiceForTest(GrammaticalInflectionManagerInternal.class);
+        LocalServices.removeServiceForTest(AppLockInternal.class);
     }
 
     Description getDescription() {

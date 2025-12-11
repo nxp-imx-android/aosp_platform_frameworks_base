@@ -108,7 +108,7 @@ public class Watchdog implements Dumpable {
 
     // Throttle non-fatal thread dumps to avoid adversely affecting performance.
     private static final long PRE_WATCHDOG_COOL_OFF_MILLIS =
-            com.android.internal.os.Flags.preWatchdogThrottleThreadDump() ? 60 * 60 * 1000 : 0;
+            60 * 60 * 1000;
 
     // These are temporally ordered: larger values as lateness increases
     static final int COMPLETED = 0;

@@ -1720,7 +1720,6 @@ package android.app.admin {
   }
 
   @FlaggedApi("android.app.admin.flags.multi_user_management_user_provisioning") public final class MultiUserManagedUserProvisioningParams {
-    method @NonNull public android.os.PersistableBundle getAdminExtras();
     method @NonNull public android.content.ComponentName getProfileAdminComponentName();
     method public boolean isLeaveAllSystemAppsEnabled();
   }
@@ -1728,7 +1727,6 @@ package android.app.admin {
   public static final class MultiUserManagedUserProvisioningParams.Builder {
     ctor public MultiUserManagedUserProvisioningParams.Builder(@NonNull android.content.ComponentName);
     method @NonNull public android.app.admin.MultiUserManagedUserProvisioningParams build();
-    method @NonNull public android.app.admin.MultiUserManagedUserProvisioningParams.Builder setAdminExtras(@Nullable android.os.PersistableBundle);
     method @NonNull public android.app.admin.MultiUserManagedUserProvisioningParams.Builder setLeaveAllSystemAppsEnabled(boolean);
   }
 

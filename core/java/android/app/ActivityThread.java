@@ -8672,9 +8672,20 @@ public final class ActivityThread extends ClientTransactionHandler
             Context c, String auth, int userId, boolean stable) {
         synchronized (mProviderMap) {
             final ProviderKey key = new ProviderKey(auth, userId);
-            final ProviderClientRecord pr = mProviderMap.get(key);
+            ProviderClientRecord pr = mProviderMap.get(key);
             if (pr == null) {
-                return null;
+                if (Flags.singleUserProviderCacheFix()) {
+                    // If the provider wasn't found for the current user, check if it's a
+                    // single-user provider cached under |UserHandle.USER_ALL|.
+                    final ProviderKey allUsersKey = new ProviderKey(auth, UserHandle.USER_ALL);
+                    pr = mProviderMap.get(allUsersKey);
+                    if (pr == null) {
+                        // The cached single-user providers lookup also failed.
+                        return null;
+                    }
+                } else {
+                    return null;
+                }
             }
 
             IContentProvider provider = pr.mProvider;
@@ -8888,7 +8899,6 @@ public final class ActivityThread extends ClientTransactionHandler
     private ProviderClientRecord installProviderAuthoritiesLocked(IContentProvider provider,
             ContentProvider localProvider, ContentProviderHolder holder) {
         final String auths[] = holder.info.authority.split(";");
-        final int userId = UserHandle.getUserId(holder.info.applicationInfo.uid);
 
         if (provider != null) {
             // If this provider is hosted by the core OS and cannot be upgraded,
@@ -8909,6 +8919,19 @@ public final class ActivityThread extends ClientTransactionHandler
 
         final ProviderClientRecord pcr = new ProviderClientRecord(
                 auths, provider, localProvider, holder);
+
+        final int userId;
+        if (Flags.singleUserProviderCacheFix()) {
+            // Single-user providers are cached under |UserHandle.USER_ALL|, given they
+            // should be returned regardless of the user requesting the provider.
+            final boolean isSingleUser =
+                    (pcr.mHolder.info.flags & ProviderInfo.FLAG_SINGLE_USER) != 0;
+            userId = isSingleUser
+                    ? UserHandle.USER_ALL : UserHandle.getUserId(holder.info.applicationInfo.uid);
+        } else {
+            userId = UserHandle.getUserId(holder.info.applicationInfo.uid);
+        }
+
         for (String auth : auths) {
             final ProviderKey key = new ProviderKey(auth, userId);
             final ProviderClientRecord existing = mProviderMap.get(key);

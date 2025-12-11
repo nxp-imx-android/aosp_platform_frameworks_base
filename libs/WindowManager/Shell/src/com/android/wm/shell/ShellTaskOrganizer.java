@@ -231,6 +231,11 @@ public class ShellTaskOrganizer extends TaskOrganizer {
          * Notifies when a package update is requested for a list of tasks.
          */
         void onPackageUpdateRequested(List<RunningTaskInfo> updatingTasks);
+
+        /**
+         * Notifies when a package update is finished for a list of tasks.
+         */
+        void onPackageUpdateFinished(List<RunningTaskInfo> updatedTasks);
     }
     /**
      * Keys map from either a task id or {@link TaskListenerType}.
@@ -1356,6 +1361,15 @@ public class ShellTaskOrganizer extends TaskOrganizer {
         synchronized (mLock) {
             for (PackageUpdateListener listener : mPackageUpdateListeners) {
                 listener.onPackageUpdateRequested(updatingTasks);
+            }
+        }
+    }
+
+    @Override
+    public void onPackageUpdateFinished(@NonNull List<RunningTaskInfo> updatedTasks) {
+        synchronized (mLock) {
+            for (PackageUpdateListener listener : mPackageUpdateListeners) {
+                listener.onPackageUpdateFinished(updatedTasks);
             }
         }
     }

@@ -24,7 +24,7 @@ import android.aconfig.Aconfig.flag_permission;
 import android.aconfig.Aconfig.flag_state;
 import android.aconfig.Aconfig.parsed_flag;
 import android.aconfig.Aconfig.parsed_flags;
-import android.aconfigd.AconfigdFlagInfo;
+import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
@@ -70,6 +70,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -256,9 +258,17 @@ public class SettingsState {
     @NonNull
     private final Map<String, Map<String, String>> mNamespaceDefaults;
 
-    // TOBO(b/312444587): remove the comparison logic after Test Mission 2.
+    // Container for all flags defined in a particular package, partitioned
+    // by whether they are read-only or read-write.
+    static class PackageFlags {
+        final Set<String> mRoFlags = new ArraySet<>();
+        final Set<String> mRwFlags = new ArraySet<>();
+    }
+
+    @GuardedBy("mLock")
     @NonNull
-    private final Map<String, AconfigdFlagInfo> mAconfigDefaultFlags;
+    // Maps from aconfig package names to information about flags in the package.
+    private final Map<String, PackageFlags> mAconfigDefaultFlags = new ArrayMap<>();
 
     public static final int SETTINGS_TYPE_GLOBAL = 0;
     public static final int SETTINGS_TYPE_SYSTEM = 1;
@@ -364,7 +374,6 @@ public class SettingsState {
                 Build.IS_DEBUGGABLE ? new ArrayList<>(HISTORICAL_OPERATION_COUNT) : null;
 
         mNamespaceDefaults = new HashMap<>();
-        mAconfigDefaultFlags = new HashMap<>();
 
         synchronized (mLock) {
             readStateSyncLocked();
@@ -381,80 +390,7 @@ public class SettingsState {
                 List<String> apexProtoPaths = listApexProtoPaths();
                 loadAconfigDefaultValuesLocked(apexProtoPaths);
             }
-
-            if (isConfigSettingsKey(mKey)) {
-                getAllAconfigFlagsFromSettings(mAconfigDefaultFlags);
-            }
         }
-    }
-
-    @GuardedBy("mLock")
-    public int getAllAconfigFlagsFromSettings(
-            @NonNull Map<String, AconfigdFlagInfo> flagInfoDefault) {
-        int numSettings = mSettings.size();
-        int num_requests = 0;
-        for (int i = 0; i < numSettings; i++) {
-            String name = mSettings.keyAt(i);
-            Setting setting = mSettings.valueAt(i);
-            AconfigdFlagInfo flag =
-                    getFlagOverrideToSync(name, setting.getValue(), flagInfoDefault);
-            if (flag == null) {
-                continue;
-            }
-            if (flag.getIsReadWrite()) {
-                ++num_requests;
-            }
-        }
-        Slog.i(LOG_TAG, num_requests + " flag override requests created");
-        return num_requests;
-    }
-
-    // TODO(b/341764371): migrate aconfig flag push to GMS core
-    @VisibleForTesting
-    @GuardedBy("mLock")
-    @Nullable
-    public AconfigdFlagInfo getFlagOverrideToSync(
-            String name, String value, @NonNull Map<String, AconfigdFlagInfo> flagInfoDefault) {
-        int slashIdx = name.indexOf("/");
-        if (slashIdx <= 0 || slashIdx >= name.length() - 1) {
-            Slog.e(LOG_TAG, "invalid flag name " + name);
-            return null;
-        }
-
-        String namespace = name.substring(0, slashIdx);
-        namespace = namespace.intern();  // Many configs have the same namespace.
-        String fullFlagName = name.substring(slashIdx + 1);
-        boolean isLocal = false;
-
-        // get actual fully qualified flag name <package>.<flag>, note this is done
-        // after staged flag is applied, so no need to check staged flags
-        if (namespace.equals("device_config_overrides")) {
-            int colonIdx = fullFlagName.indexOf(":");
-            if (colonIdx == -1) {
-                Slog.e(LOG_TAG, "invalid local override flag name " + name);
-                return null;
-            }
-            namespace = fullFlagName.substring(0, colonIdx);
-            fullFlagName = fullFlagName.substring(colonIdx + 1);
-            isLocal = true;
-        }
-        // get package name and flag name
-        int dotIdx = fullFlagName.lastIndexOf(".");
-        if (dotIdx == -1) {
-            Slog.e(LOG_TAG, "invalid override flag name " + name);
-            return null;
-        }
-        AconfigdFlagInfo flag = flagInfoDefault.get(fullFlagName);
-        if (flag == null || !namespace.equals(flag.getNamespace())) {
-            return null;
-        }
-
-        if (isLocal) {
-            flag.setLocalFlagValue(value);
-        } else {
-            flag.setServerFlagValue(value);
-        }
-        return flag;
     }
 
     @GuardedBy("mLock")
@@ -516,29 +452,29 @@ public class SettingsState {
     public static void loadAconfigDefaultValues(
             byte[] fileContents,
             @NonNull Map<String, Map<String, String>> defaultMap,
-            @NonNull Map<String, AconfigdFlagInfo> flagInfoDefault) {
+            @NonNull Map<String, PackageFlags> flagInfoDefault) {
         try {
             parsed_flags parsedFlags = parsed_flags.parseFrom(fileContents);
             for (parsed_flag flag : parsedFlags.getParsedFlagList()) {
                 if (!defaultMap.containsKey(flag.getNamespace())) {
                     Map<String, String> defaults = new HashMap<>();
-                    defaultMap.put(flag.getNamespace(), defaults);
+                    defaultMap.put(flag.getNamespace().intern(), defaults);
                 }
                 String fullFlagName = flag.getPackage() + "." + flag.getName();
                 String flagName = flag.getNamespace() + "/" + fullFlagName;
                 String flagValue = flag.getState() == flag_state.ENABLED ? "true" : "false";
                 boolean isReadWrite = flag.getPermission() == flag_permission.READ_WRITE;
                 defaultMap.get(flag.getNamespace()).put(flagName, flagValue);
-                if (!flagInfoDefault.containsKey(fullFlagName)) {
-                    flagInfoDefault.put(
-                            fullFlagName,
-                            AconfigdFlagInfo.newBuilder()
-                                    .setPackageName(flag.getPackage())
-                                    .setFlagName(flag.getName())
-                                    .setDefaultFlagValue(flagValue)
-                                    .setIsReadWrite(isReadWrite)
-                                    .setNamespace(flag.getNamespace())
-                                    .build());
+
+                PackageFlags packageFlags = flagInfoDefault.computeIfAbsent(
+                        flag.getPackage(), k -> new PackageFlags());
+                if (!packageFlags.mRwFlags.contains(flag.getName())
+                        && !packageFlags.mRoFlags.contains(flag.getName())) {
+                    if (isReadWrite) {
+                        packageFlags.mRwFlags.add(flag.getName());
+                    } else {
+                        packageFlags.mRoFlags.add(flag.getName());
+                    }
                 }
             }
         } catch (IOException e) {
@@ -604,10 +540,39 @@ public class SettingsState {
         }
     }
 
-    @NonNull
-    public Map<String, AconfigdFlagInfo> getAconfigDefaultFlags() {
+    public static final int ACONFIG_FLAG_TYPE_INVALID = 0;
+    public static final int ACONFIG_FLAG_TYPE_RO = 1;
+    public static final int ACONFIG_FLAG_TYPE_RW = 2;
+
+    @IntDef({ACONFIG_FLAG_TYPE_INVALID, ACONFIG_FLAG_TYPE_RO, ACONFIG_FLAG_TYPE_RW})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface AconfigFlagType {
+    }
+
+    /**
+     * Returns whether the given string is an aconfig flag, and if so, whether it is RO or RW.
+     */
+    @AconfigFlagType
+    public int getAconfigFlagType(String fullFlagName) {
+        int separatorIndex = fullFlagName.lastIndexOf(".");
+
+        if (separatorIndex < 0) {
+            return ACONFIG_FLAG_TYPE_INVALID;
+        }
+
+        String packageName = fullFlagName.substring(0, separatorIndex);
+        String flagName = fullFlagName.substring(separatorIndex + 1);
+
         synchronized (mLock) {
-            return mAconfigDefaultFlags;
+            PackageFlags packageFlags = mAconfigDefaultFlags.get(packageName);
+            if (packageFlags == null) {
+                return ACONFIG_FLAG_TYPE_INVALID;
+            } else if (packageFlags.mRoFlags.contains(flagName)) {
+                return ACONFIG_FLAG_TYPE_RO;
+            } else if (packageFlags.mRwFlags.contains(flagName)) {
+                return ACONFIG_FLAG_TYPE_RW;
+            }
+            return ACONFIG_FLAG_TYPE_INVALID;
         }
     }
 

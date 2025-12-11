@@ -121,10 +121,10 @@ flag {
 }
 
 flag {
-    name: "enable_magnification_ui_for_fullscreen_only_capability"
+    name: "enable_magnification_rebased_delayed_motion_event"
     namespace: "accessibility"
-    description: "Whether to enable magnification UI for fullscreen only capability"
-    bug: "363166354"
+    description: "Whether to dispatch rebased MotionEvents for Magnification delayed events to fix timestamp synchronization issues"
+    bug: "279211403"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

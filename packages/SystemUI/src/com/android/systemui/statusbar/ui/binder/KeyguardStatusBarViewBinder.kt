@@ -65,59 +65,59 @@ object KeyguardStatusBarViewBinder {
                         view.setKeyguardUserSwitcherEnabled(it)
                     }
                 }
-            }
 
-            view.setSnapshotBinding {
-                val (baseVis, animState) = viewModel.systemInfoCombinedVis
+                view.setSnapshotBinding {
+                    val (baseVis, animState) = viewModel.systemInfoCombinedVis
 
-                // Always update base visibility first
-                systemInfoView.visibility = baseVis.visibility
+                    // Always update base visibility first
+                    systemInfoView.visibility = baseVis.visibility
 
-                if (animState != lastAnimState) {
-                    currentAnimator?.cancel()
-                }
-
-                if (animState.isAnimatingChip()) {
-                    when (animState) {
-                        AnimatingIn -> {
-                            currentAnimator =
-                                StatusBarSystemEventDefaultAnimator
-                                    .getDefaultStatusBarAnimationForChipEnter(
-                                        targetTranslation = translationXIn,
-                                        setX = { systemInfoView.translationX = it },
-                                        setAlpha = { systemInfoView.alpha = it },
-                                    )
-                                    .apply { start() }
-                        }
-
-                        AnimatingOut -> {
-                            currentAnimator =
-                                StatusBarSystemEventDefaultAnimator
-                                    .getDefaultStatusBarAnimationForChipExit(
-                                        targetTranslation = translationXOut,
-                                        setX = { systemInfoView.translationX = it },
-                                        setAlpha = { systemInfoView.alpha = it },
-                                    )
-                                    .apply { start() }
-                        }
-
-                        RunningChipAnim -> {
-                            // When the chip animation is running, the system info must remain
-                            // hidden.
-                            systemInfoView.alpha = 0f
-                            currentAnimator = null
-                        }
-
-                        else -> {}
+                    if (animState != lastAnimState) {
+                        currentAnimator?.cancel()
                     }
-                } else {
-                    // Idle State (Not animating):
-                    // We must forcibly reset properties here because we might have just
-                    // transitioned from RunningChipAnim (where alpha was 0).
-                    systemInfoView.alpha = 1f
-                    systemInfoView.translationX = 0f
+
+                    if (animState.isAnimatingChip()) {
+                        when (animState) {
+                            AnimatingIn -> {
+                                currentAnimator =
+                                    StatusBarSystemEventDefaultAnimator
+                                        .getDefaultStatusBarAnimationForChipEnter(
+                                            targetTranslation = translationXIn,
+                                            setX = { systemInfoView.translationX = it },
+                                            setAlpha = { systemInfoView.alpha = it },
+                                        )
+                                        .apply { start() }
+                            }
+
+                            AnimatingOut -> {
+                                currentAnimator =
+                                    StatusBarSystemEventDefaultAnimator
+                                        .getDefaultStatusBarAnimationForChipExit(
+                                            targetTranslation = translationXOut,
+                                            setX = { systemInfoView.translationX = it },
+                                            setAlpha = { systemInfoView.alpha = it },
+                                        )
+                                        .apply { start() }
+                            }
+
+                            RunningChipAnim -> {
+                                // When the chip animation is running, the system info must remain
+                                // hidden.
+                                systemInfoView.alpha = 0f
+                                currentAnimator = null
+                            }
+
+                            else -> {}
+                        }
+                    } else {
+                        // Idle State (Not animating):
+                        // We must forcibly reset properties here because we might have just
+                        // transitioned from RunningChipAnim (where alpha was 0).
+                        systemInfoView.alpha = 1f
+                        systemInfoView.translationX = 0f
+                    }
+                    lastAnimState = animState
                 }
-                lastAnimState = animState
             }
         }
     }

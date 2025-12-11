@@ -170,7 +170,7 @@ public class LogicalDisplayTest {
     public void testNoLetterbox_noAnisotropyCorrectionIfAnisotropicModesEnabled() {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
-                /*isSyncedResolutionSwitchEnabled=*/ true, false, mDisplayInfoCacheMocked);
+                /*isSyncedResolutionSwitchEnabled=*/ true, mDisplayInfoCacheMocked);
 
         // In case of Anisotropy of pixels, then the content should be rescaled so it would adjust
         // to using the whole screen. This is because display will rescale it back to fill the
@@ -288,7 +288,7 @@ public class LogicalDisplayTest {
     @Test
     public void testSetDisplaySizeIsCalledDuringConfigureDisplayLocked() {
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
-                /*isSyncedResolutionSwitchEnabled=*/ true, false, mDisplayInfoCacheMocked);
+                /*isSyncedResolutionSwitchEnabled=*/ true, mDisplayInfoCacheMocked);
         mLogicalDisplay.updateLocked(mDeviceRepo);
         SurfaceControl.Transaction t = mock(SurfaceControl.Transaction.class);
         mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false, mExecutor);
@@ -667,7 +667,7 @@ public class LogicalDisplayTest {
     @Test
     public void testUserPreferredModeWithSizeOverride_updatesResolution() {
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice, false,
-                true, mDisplayInfoCacheMocked);
+            mDisplayInfoCacheMocked);
         Display.Mode mode = new Display.Mode(OTHER_MODE_ID, -1, Display.Mode.FLAG_SIZE_OVERRIDE,
                 1000, 1000, 60f, 60f, new float[]{}, new int[]{});
         mDisplayDeviceInfo.supportedModes = new Display.Mode[] {mode};
@@ -688,7 +688,7 @@ public class LogicalDisplayTest {
     @Test
     public void testUserPreferredModeWithoutSizeOverride_doesNotUpdateResolution() {
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice, false,
-                true, mDisplayInfoCacheMocked);
+                mDisplayInfoCacheMocked);
         Display.Mode mode = new Display.Mode(OTHER_MODE_ID, -1, 0,
                 1000, 1000, 60f, 60f, new float[]{}, new int[]{});
         mDisplayDeviceInfo.supportedModes = new Display.Mode[] {mode};
@@ -710,7 +710,7 @@ public class LogicalDisplayTest {
     public void testUserPreferredModeWithSizeOverride_withRotation_updatesProjection() {
         // Enable size override for this test
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice, false,
-                true, mDisplayInfoCacheMocked);
+                mDisplayInfoCacheMocked);
 
         // Setup a physical display that is portrait (1000x2000)
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
@@ -767,7 +767,7 @@ public class LogicalDisplayTest {
     @EnableFlags(Flags.FLAG_ANISOTROPY_CORRECTED_MODE_BY_DEFAULT)
     public void testAnisotropyCorrectedMode_selected() {
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice, false,
-                true, mDisplayInfoCacheMocked);
+                mDisplayInfoCacheMocked);
         Display.Mode anisotropicMode = new Display.Mode(MODE_ID, -1, 0,
                 1000, 1000, 60f, 60f, new float[]{}, new int[]{});
         Display.Mode anisotropyCorrectedMode = new Display.Mode(OTHER_MODE_ID, MODE_ID,
@@ -799,7 +799,7 @@ public class LogicalDisplayTest {
     @EnableFlags(Flags.FLAG_ANISOTROPY_CORRECTED_MODE_BY_DEFAULT)
     public void testAnisotropyCorrectedMode_notSelectedNoMatchingMode() {
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice, false,
-                true, mDisplayInfoCacheMocked);
+                mDisplayInfoCacheMocked);
         Display.Mode anisotropicMode = new Display.Mode(MODE_ID, -1, 0,
                 1000, 1000, 60f, 60f, new float[]{}, new int[]{});
         Display.Mode anisotropyCorrectedMode = new Display.Mode(OTHER_MODE_ID, 1000,
@@ -831,7 +831,7 @@ public class LogicalDisplayTest {
     @EnableFlags(Flags.FLAG_ANISOTROPY_CORRECTED_MODE_BY_DEFAULT)
     public void testAnisotropyCorrectedMode_notSelectedIntenalDisplay() {
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice, false,
-                true, mDisplayInfoCacheMocked);
+                mDisplayInfoCacheMocked);
         Display.Mode anisotropicMode = new Display.Mode(MODE_ID, -1, 0,
                 1000, 1000, 60f, 60f, new float[]{}, new int[]{});
         Display.Mode anisotropyCorrectedMode = new Display.Mode(OTHER_MODE_ID, MODE_ID,
@@ -863,7 +863,7 @@ public class LogicalDisplayTest {
     @EnableFlags(Flags.FLAG_ANISOTROPY_CORRECTED_MODE_BY_DEFAULT)
     public void testAnisotropyCorrectedMode_notSelectedUserPreferredModeSetAndSelected() {
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice, false,
-                true, mDisplayInfoCacheMocked);
+                mDisplayInfoCacheMocked);
         Display.Mode anisotropicMode = new Display.Mode(MODE_ID, -1, 0,
                 1000, 1000, 60f, 60f, new float[]{}, new int[]{});
         Display.Mode anisotropyCorrectedMode = new Display.Mode(OTHER_MODE_ID, MODE_ID,

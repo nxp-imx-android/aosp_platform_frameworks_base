@@ -151,6 +151,16 @@ public class WindowTestsBase extends SystemServiceTestsBase {
     static final int DEFAULT_TASK_FRAGMENT_ORGANIZER_UID = 10000;
     static final String DEFAULT_TASK_FRAGMENT_ORGANIZER_PROCESS_NAME = "Test:TaskFragmentOrganizer";
 
+    static final String TEST_PACKAGE_1 = "com.test.pkg1";
+    static final String TEST_PACKAGE_2 = "com.test.pkg2";
+    static final String TEST_PACKAGE_3 = "com.test.pkg3";
+    static final String TEST_ACTIVITY = ".TestActivity";
+    static final int TEST_USER_ID_1 = 0;
+    static final int TEST_USER_ID_2 = 1;
+    static final ComponentName TEST_COMPONENT_1 = new ComponentName(TEST_PACKAGE_1, TEST_ACTIVITY);
+    static final ComponentName TEST_COMPONENT_2 = new ComponentName(TEST_PACKAGE_2, TEST_ACTIVITY);
+    static final ComponentName TEST_COMPONENT_3 = new ComponentName(TEST_PACKAGE_3, TEST_ACTIVITY);
+
     // Default base activity name
     private static final String DEFAULT_COMPONENT_CLASS_NAME = ".BarActivity";
 

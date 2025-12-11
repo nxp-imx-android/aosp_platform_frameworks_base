@@ -1347,8 +1347,8 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
 
             boolean allowHomeAlwaysPresent = isHomeAlwaysPresentAllowed(
                     homeActivityIntentPair.first, userId);
-            if (allowHomeAlwaysPresent
-                    && homeActivityIntentPair.first.applicationInfo.isPrivilegedApp()) {
+            if (homeActivityIntentPair.first.applicationInfo.isPrivilegedApp()
+                    && allowHomeAlwaysPresent) {
                 if (needsHomeLaunchOnDisplay(userId, taskDisplayArea)) {
                     // Launch home not on top as this path ensures the correct home activity is
                     // running in the background without disrupting the current foreground activity.
@@ -1356,12 +1356,10 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                             false /* allowInstrumenting */, false /* fromHomeKey */,
                             false /* onTop */);
                 }
-            } else {
-                if (taskDisplayArea.topRunningActivity() == null) {
-                    startHomeOnTaskDisplayArea(userId, reason, taskDisplayArea,
-                            false /* allowInstrumenting */, false /* fromHomeKey */,
-                            true /* onTop */);
-                }
+            } else if (taskDisplayArea.topRunningActivity() == null) {
+                startHomeOnTaskDisplayArea(userId, reason, taskDisplayArea,
+                        false /* allowInstrumenting */, false /* fromHomeKey */,
+                        true /* onTop */);
             }
         });
     }

@@ -28,6 +28,7 @@ import com.android.internal.policy.DesktopModeCompatPolicy
 import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.bubbles.BubbleController
+import com.android.wm.shell.bubbles.BubbleHelper
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.LockTaskChangeListener
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
@@ -50,6 +51,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.whenever
@@ -63,7 +65,9 @@ import org.mockito.kotlin.whenever
 @RunWith(AndroidTestingRunner::class)
 class CaptionVisibilityHelperTests : ShellTestCase() {
     private val mockDisplayController = mock<DisplayController>()
-    private val mockBubbleController = mock<BubbleController>()
+    private val mockBubbleHelper = mock<BubbleHelper>()
+    private val mockBubbleController =
+        mock<BubbleController> { on { bubbleHelper } doReturn mockBubbleHelper }
     private val mockDisplay = mock<Display>()
     private val mockSplitScreenController = mock<SplitScreenController>()
     private val mockLockTaskChangeListener = mock<LockTaskChangeListener>()

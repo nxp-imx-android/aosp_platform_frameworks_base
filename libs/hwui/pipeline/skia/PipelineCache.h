@@ -94,7 +94,7 @@ private:
 
     std::atomic_size_t mLastSizeBytes;
 
-    std::atomic_bool mExit;
+    bool mExit;
     std::thread mThread;
 };
 

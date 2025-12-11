@@ -20,6 +20,7 @@ import android.annotation.NonNull;
 import android.app.HandoffActivityData;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
+import com.android.internal.util.FrameworkStatsLog;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -87,5 +88,10 @@ public record HandoffRequestResultMessage(
             HandoffActivityDataSerializer.INSTANCE.write(
                     pos, android.companion.HandoffRequestResultMessage.ACTIVITIES, activity);
         }
+    }
+
+    @Override
+    public int getTypeForMetrics() {
+        return FrameworkStatsLog.TASK_CONTINUITY_MESSAGE_SENT__MESSAGE_TYPE__HANDOFF_REQUEST_RESULT;
     }
 }

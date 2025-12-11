@@ -28,10 +28,7 @@ import platform.test.desktop.SimulatedConnectedDisplayTestRule
 
 /** Base scenario test for moving an app between displays and manually restarting the app. */
 @Ignore("Test Base Class")
-@RequiresFlagsEnabled(
-    Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-    Flags.FLAG_ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS,
-)
+@RequiresFlagsEnabled(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
 abstract class RestartAppInDesktopMode(
     isResizable: Boolean = true,
     isLandscapeApp: Boolean = true,

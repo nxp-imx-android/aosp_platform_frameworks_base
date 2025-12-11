@@ -162,7 +162,10 @@ PipelineCacheStore::PipelineCacheStore(useconds_t writeThrottleInterval)
         , mThread(&PipelineCacheStore::runThread, this) {}
 
 PipelineCacheStore::~PipelineCacheStore() {
-    mExit = true;
+    {
+        std::lock_guard<std::mutex> lock(mMutex);
+        mExit = true;
+    }
     mConditionVariable.notify_one();
     mThread.join();
 }
@@ -171,11 +174,18 @@ void PipelineCacheStore::runThread() {
     while (true) {
         {
             std::unique_lock<std::mutex> lock(mMutex);
-            mConditionVariable.wait(lock, [this] { return mExit || mStoreRequest.has_value(); });
-        }
 
-        if (mExit) {
-            return;
+            while (true) {
+                if (mExit) {
+                    return;
+                }
+
+                if (mStoreRequest.has_value()) {
+                    break;
+                }
+
+                mConditionVariable.wait(lock);
+            }
         }
 
         {

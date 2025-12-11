@@ -52,7 +52,7 @@ interface BubbleExpandedViewManager {
 
     fun getAppBubbleRootTaskToken(): WindowContainerToken?
 
-    fun shouldBeAppBubble(taskInfo: ActivityManager.RunningTaskInfo): Boolean
+    fun isAppBubbleTask(taskInfo: ActivityManager.RunningTaskInfo): Boolean
 
     companion object {
         /**
@@ -110,10 +110,10 @@ interface BubbleExpandedViewManager {
                 }
 
                 override fun getAppBubbleRootTaskToken(): WindowContainerToken? =
-                    controller.appBubbleRootTaskToken
+                    controller.bubbleHelper.getAppBubbleRootTaskToken()
 
-                override fun shouldBeAppBubble(taskInfo: ActivityManager.RunningTaskInfo): Boolean =
-                    controller.shouldBeAppBubble(taskInfo)
+                override fun isAppBubbleTask(taskInfo: ActivityManager.RunningTaskInfo): Boolean =
+                    controller.bubbleHelper.isAppBubbleTask(taskInfo)
             }
         }
     }

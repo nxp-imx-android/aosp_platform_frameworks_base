@@ -30,7 +30,9 @@ public interface AppLockInternal {
 
     /**
      * Returns a {@link SparseArray} where the key is the userId and the value is a {@link Set}
-     * of package names for which App Lock is enabled.
+     * of package names for which App Lock is enabled. The data returned by this method is only
+     * reliable after {@link com.android.server.SystemService#PHASE_SYSTEM_SERVICES_READY}, as the
+     * initial list of App Lock enabled packages is populated during that phase.
      */
     SparseArray<Set<String>> getAppLockEnabledPackages();
 

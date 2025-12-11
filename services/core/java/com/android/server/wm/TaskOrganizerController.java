@@ -1030,6 +1030,33 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         }
     }
 
+    void onPackageUpdateFinished(ArrayList<Task> tasks) {
+        final ArrayMap<TaskOrganizerState, ArrayList<ActivityManager.RunningTaskInfo>>
+                stateToTasks = new ArrayMap<>();
+        // Group the given tasks per state
+        for (int i = 0; i < tasks.size(); i++) {
+            final Task task = tasks.get(i);
+            final TaskOrganizerState state = mTaskOrganizerStates.get(
+                    task.mTaskOrganizer.asBinder());
+
+            if (state != null) {
+                stateToTasks.computeIfAbsent(state, k -> new ArrayList<>()).add(task.getTaskInfo());
+            }
+        }
+        for (int i = 0; i < stateToTasks.size(); i++) {
+            final TaskOrganizerState state = stateToTasks.keyAt(i);
+            final ArrayList<ActivityManager.RunningTaskInfo> updatingTasks = stateToTasks.valueAt(
+                    i);
+            if (state != null) {
+                try {
+                    state.mOrganizer.mTaskOrganizer.onPackageUpdateFinished(updatingTasks);
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Exception sending onPackageUpdate callback", e);
+                }
+            }
+        }
+    }
+
     void onTaskInfoChanged(Task task, boolean force) {
         if (!task.mTaskAppearedSent) {
             // Skip if task still not appeared.

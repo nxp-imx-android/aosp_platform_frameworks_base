@@ -97,7 +97,6 @@ import static com.android.server.wm.ActivityRecord.State.PAUSING;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityTaskManagerService.enforceTaskPermission;
 import static com.android.server.wm.ActivityTaskManagerService.isPip2ExperimentEnabled;
-import static com.android.server.wm.ActivityTaskSupervisor.REMOVE_FROM_RECENTS;
 import static com.android.server.wm.AppCompatReachabilityPolicy.REACHABILITY_SOURCE_SHELL;
 import static com.android.server.wm.ConfigurationContainer.BOUNDS_CHANGE_NONE;
 import static com.android.server.wm.Task.FLAG_FORCE_HIDDEN_FOR_PINNED_TASK;
@@ -374,7 +373,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     nextTransition.mReadyTracker.add(wctApplied);
                     nextTransition.calcParallelCollectType(wct);
                     nextTransition.mLogger.mFromPlayer = true;
-                    mTransitionController.startCollectOrQueue(nextTransition,
+                    mTransitionController.startCollectOrQueueExternal(nextTransition,
                             (deferred) -> {
                                 final ActionChain chain = mService.mChainTracker.start(
                                         "startNewTransit", nextTransition);
@@ -1192,6 +1191,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
         switch (type) {
             case HIERARCHY_OP_TYPE_REMOVE_TASK: {
                 final WindowContainer wc = WindowContainer.fromBinder(hop.getContainer());
+                final boolean removeFromRecents = hop.getRemoveFromRecents();
                 if (wc == null || wc.asTask() == null || !wc.isAttached()) {
                     Slog.e(TAG, "Attempt to remove invalid task: " + wc);
                     break;
@@ -1202,8 +1202,8 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 }
                 if (task.isLeafTask()) {
                     mService.mTaskSupervisor
-                            .removeTask(task, true, REMOVE_FROM_RECENTS, "remove-task"
-                                    + "-through-hierarchyOp");
+                            .removeTask(task, true, /* removeFromRecents= */ removeFromRecents,
+                                    "remove-task-through-hierarchyOp");
                 } else {
                     mService.mTaskSupervisor.removeRootTask(task);
                 }

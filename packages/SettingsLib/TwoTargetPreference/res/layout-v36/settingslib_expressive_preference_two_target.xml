@@ -25,7 +25,6 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingVertical="@dimen/settingslib_expressive_space_small1"
         android:gravity="center_vertical"
         android:filterTouchesWhenObscured="false"
         android:orientation="horizontal">

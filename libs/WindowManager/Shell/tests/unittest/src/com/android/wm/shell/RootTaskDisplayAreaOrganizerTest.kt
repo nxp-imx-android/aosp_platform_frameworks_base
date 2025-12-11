@@ -21,6 +21,7 @@ import android.window.DisplayAreaInfo
 import android.window.DisplayAreaOrganizer
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.testing.wm.util.MockToken
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer.RootTaskDisplayAreaListener
 import com.android.wm.shell.sysui.ShellInit
 import com.google.common.truth.Truth.assertThat

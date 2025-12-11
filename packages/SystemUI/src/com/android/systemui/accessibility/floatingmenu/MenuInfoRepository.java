@@ -274,9 +274,7 @@ class MenuInfoRepository {
                 /* notifyForDescendants */ false,
                 mMenuTargetFeaturesContentObserver,
                 UserHandle.USER_CURRENT);
-        if (com.android.systemui.Flags.floatingMenuUpdateOnFeatureEnabled()) {
-            registerFrameworkFeaturesObserver();
-        }
+        registerFrameworkFeaturesObserver();
         mSecureSettings.registerContentObserverForUserSync(
                 mSecureSettings.getUriFor(Settings.Secure.ACCESSIBILITY_FLOATING_MENU_SIZE),
                 /* notifyForDescendants */ false, mMenuSizeContentObserver,

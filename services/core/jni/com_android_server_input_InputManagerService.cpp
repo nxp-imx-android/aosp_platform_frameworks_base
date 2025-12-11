@@ -406,9 +406,12 @@ public:
     void notifySwitch(nsecs_t when, uint32_t switchValues, uint32_t switchMask,
                       uint32_t policyFlags) override;
     // ANR-related callbacks -- start
-    void notifyNoFocusedWindowAnr(const std::shared_ptr<InputApplicationHandle>& handle) override;
+    void notifyNoFocusedWindowAnr(const std::shared_ptr<InputApplicationHandle>& handle,
+                                  int32_t eventId, nsecs_t eventTime,
+                                  std::chrono::milliseconds timeoutDuration) override;
     void notifyWindowUnresponsive(const sp<IBinder>& token, std::optional<gui::Pid> pid,
-                                  const std::string& reason) override;
+                                  const std::string& reason, int32_t eventId, nsecs_t eventTime,
+                                  std::chrono::milliseconds timeoutDuration) override;
     void notifyWindowResponsive(const sp<IBinder>& token, std::optional<gui::Pid> pid) override;
     // ANR-related callbacks -- end
     void notifyInputChannelBroken(const sp<IBinder>& token) override;
@@ -1214,7 +1217,8 @@ static jobject getInputApplicationHandleObjLocalRef(
 }
 
 void NativeInputManager::notifyNoFocusedWindowAnr(
-        const std::shared_ptr<InputApplicationHandle>& inputApplicationHandle) {
+        const std::shared_ptr<InputApplicationHandle>& inputApplicationHandle, int32_t eventId,
+        nsecs_t eventTime, std::chrono::milliseconds timeoutDuration) {
 #if DEBUG_INPUT_DISPATCHER_POLICY
     ALOGD("notifyNoFocusedWindowAnr");
 #endif
@@ -1227,13 +1231,15 @@ void NativeInputManager::notifyNoFocusedWindowAnr(
             getInputApplicationHandleObjLocalRef(env, inputApplicationHandle);
 
     env->CallVoidMethod(mServiceObj, gServiceClassInfo.notifyNoFocusedWindowAnr,
-                        inputApplicationHandleObj);
+                        inputApplicationHandleObj, eventId, eventTime, timeoutDuration.count());
     checkAndClearExceptionFromCallback(env, "notifyNoFocusedWindowAnr");
 }
 
 void NativeInputManager::notifyWindowUnresponsive(const sp<IBinder>& token,
                                                   std::optional<gui::Pid> pid,
-                                                  const std::string& reason) {
+                                                  const std::string& reason, int32_t eventId,
+                                                  nsecs_t eventTime,
+                                                  std::chrono::milliseconds timeoutDuration) {
 #if DEBUG_INPUT_DISPATCHER_POLICY
     ALOGD("notifyWindowUnresponsive");
 #endif
@@ -1246,7 +1252,8 @@ void NativeInputManager::notifyWindowUnresponsive(const sp<IBinder>& token,
     ScopedLocalRef<jstring> reasonObj(env, env->NewStringUTF(reason.c_str()));
 
     env->CallVoidMethod(mServiceObj, gServiceClassInfo.notifyWindowUnresponsive, tokenObj,
-                        pid.value_or(gui::Pid{0}).val(), pid.has_value(), reasonObj.get());
+                        pid.value_or(gui::Pid{0}).val(), pid.has_value(), reasonObj.get(), eventId,
+                        eventTime, timeoutDuration.count());
     checkAndClearExceptionFromCallback(env, "notifyWindowUnresponsive");
 }
 
@@ -3679,10 +3686,10 @@ int register_android_server_InputManager(JNIEnv* env) {
     GET_METHOD_ID(gServiceClassInfo.notifyVibratorState, clazz, "notifyVibratorState", "(IZ)V");
 
     GET_METHOD_ID(gServiceClassInfo.notifyNoFocusedWindowAnr, clazz, "notifyNoFocusedWindowAnr",
-                  "(Landroid/view/InputApplicationHandle;)V");
+                  "(Landroid/view/InputApplicationHandle;IJJ)V");
 
     GET_METHOD_ID(gServiceClassInfo.notifyWindowUnresponsive, clazz, "notifyWindowUnresponsive",
-                  "(Landroid/os/IBinder;IZLjava/lang/String;)V");
+                  "(Landroid/os/IBinder;IZLjava/lang/String;IJJ)V");
 
     GET_METHOD_ID(gServiceClassInfo.notifyWindowResponsive, clazz, "notifyWindowResponsive",
                   "(Landroid/os/IBinder;IZ)V");

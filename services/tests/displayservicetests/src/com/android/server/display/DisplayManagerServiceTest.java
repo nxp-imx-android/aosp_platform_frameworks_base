@@ -82,7 +82,6 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.annotation.NonNull;
@@ -3685,32 +3684,6 @@ public class DisplayManagerServiceTest {
     }
 
     @Test
-    public void testResolutionChangeGetsBackedUp_FeatureFlagFalse() {
-        mPermissionEnforcer.grant(MODIFY_USER_PREFERRED_DISPLAY_MODE);
-        when(mMockFlags.isResolutionBackupRestoreEnabled()).thenReturn(false);
-        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
-
-        Display.Mode[] modes = new Display.Mode[2];
-        modes[0] = new Display.Mode(/*id=*/ 101, /*width=*/ 100, /*height=*/ 200, /*rr=*/ 60);
-        modes[1] = new Display.Mode(/*id=*/ 101, /*width=*/ 200, /*height=*/ 400, /*rr=*/ 60);
-        FakeDisplayDevice displayDevice = createFakeDisplayDevice(mDisplayManager, modes);
-        flushHandlers();
-
-        mDisplayManager.onBootPhase(SystemService.PHASE_BOOT_COMPLETED);
-
-        DisplayManagerService.BinderService bs = mDisplayManager.new BinderService();
-
-        bs.setUserPreferredDisplayMode(
-                Display.DEFAULT_DISPLAY, new Display.Mode(100, 200, 0), true);
-        try {
-            Settings.Secure.getInt(mContext.getContentResolver(),
-                    Settings.Secure.SCREEN_RESOLUTION_MODE);
-            fail("SettingNotFoundException should have been thrown.");
-        } catch (SettingNotFoundException expected) {
-        }
-    }
-
-    @Test
     public void testBrightnessUpdates() {
         mPermissionEnforcer.grant(CONTROL_DISPLAY_BRIGHTNESS);
         mDisplayManager = new DisplayManagerService(mContext, mShortMockedInjector);
@@ -3781,7 +3754,6 @@ public class DisplayManagerServiceTest {
     @Test
     public void testResolutionChangeGetsBackedUp() throws Exception {
         mPermissionEnforcer.grant(MODIFY_USER_PREFERRED_DISPLAY_MODE);
-        when(mMockFlags.isResolutionBackupRestoreEnabled()).thenReturn(true);
         mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
 
         Display.Mode[] modes = new Display.Mode[2];
@@ -3810,7 +3782,6 @@ public class DisplayManagerServiceTest {
     @Test
     public void testResolutionChangeDoesNotGetBackedUp() throws Exception {
         mPermissionEnforcer.grant(MODIFY_USER_PREFERRED_DISPLAY_MODE);
-        when(mMockFlags.isResolutionBackupRestoreEnabled()).thenReturn(true);
         when(mMockFlags.isModeSwitchWithoutSavingEnabled()).thenReturn(true);
         mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
 
@@ -3842,7 +3813,6 @@ public class DisplayManagerServiceTest {
     @Test
     public void testResolutionRestFromSettings() throws Exception {
         mPermissionEnforcer.grant(MODIFY_USER_PREFERRED_DISPLAY_MODE);
-        when(mMockFlags.isResolutionBackupRestoreEnabled()).thenReturn(true);
         when(mMockFlags.isModeSwitchWithoutSavingEnabled()).thenReturn(true);
         mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
 
@@ -3873,7 +3843,6 @@ public class DisplayManagerServiceTest {
 
     @Test
     public void testResolutionGetsRestored() throws Exception {
-        when(mMockFlags.isResolutionBackupRestoreEnabled()).thenReturn(true);
         mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
 
         mDisplayManager.systemReady(false /* safeMode */);
@@ -3907,19 +3876,6 @@ public class DisplayManagerServiceTest {
 
         Display.Mode newMode = bs.getUserPreferredDisplayMode(Display.DEFAULT_DISPLAY);
         assertEquals(modes[1], newMode);
-    }
-
-    @Test
-    public void testResolutionGetsRestored_FeatureFlagFalse() throws Exception {
-        when(mMockFlags.isResolutionBackupRestoreEnabled()).thenReturn(false);
-        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
-
-        mDisplayManager.systemReady(false /* safeMode */);
-        flushHandlers();
-        ArgumentMatcher<IntentFilter> matchesFilter =
-                (filter) -> Intent.ACTION_SETTING_RESTORED.equals(filter.getAction(0));
-        verify(mContext, times(0)).registerReceiver(any(BroadcastReceiver.class),
-                argThat(matchesFilter));
     }
 
     @Test

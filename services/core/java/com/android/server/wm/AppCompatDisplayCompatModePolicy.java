@@ -24,8 +24,6 @@ import static android.content.pm.ActivityInfo.CONFIG_NAVIGATION;
 import static android.content.pm.ActivityInfo.CONFIG_TOUCHSCREEN;
 import static android.view.Display.TYPE_INTERNAL;
 import static android.window.DesktopExperienceFlags.ENABLE_AUTO_RECOVERY_FROM_SELF_KILL;
-import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_COMPAT_MODE;
-import static android.window.DesktopExperienceFlags.ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS;
 
 import android.annotation.NonNull;
 import android.app.ActivityOptions;
@@ -95,9 +93,8 @@ class AppCompatDisplayCompatModePolicy {
      */
     boolean isRestartMenuEnabledForDisplayMove() {
         // Restart menu is only available to apps in display/size compat mode.
-        return ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS.isTrue()
-                && (isInDisplayCompatMode()
-                || (mActivityRecord.inSizeCompatMode() && mDisplayChangedWithoutRestart));
+        return isInDisplayCompatMode()
+                || (mActivityRecord.inSizeCompatMode() && mDisplayChangedWithoutRestart);
     }
 
     /**
@@ -216,8 +213,6 @@ class AppCompatDisplayCompatModePolicy {
     }
 
     private int getStaticDisplayCompatModeConfigMask() {
-        if (!ENABLE_DISPLAY_COMPAT_MODE.isTrue()) return 0;
-
         if (mActivityRecord.info.applicationInfo.category != ApplicationInfo.CATEGORY_GAME) {
             // A large majority of apps that crash with display move are games. Apply this compat
             // treatment only to games to minimize risk.

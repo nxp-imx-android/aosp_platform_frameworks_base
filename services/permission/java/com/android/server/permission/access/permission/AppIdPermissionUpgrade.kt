@@ -19,6 +19,7 @@ package com.android.server.permission.access.permission
 import android.Manifest
 import android.health.connect.HealthPermissions
 import android.os.Build
+import android.permission.flags.Flags
 import android.util.Slog
 import com.android.server.permission.access.GetStateScope
 import com.android.server.permission.access.MutateStateScope
@@ -85,6 +86,18 @@ class AppIdPermissionUpgrade(private val policy: AppIdPermissionPolicy) {
                     ", version: $version, user: $userId",
             )
             upgradeBodySensorReadHeartRatePermissions(packageState, userId)
+        }
+        // TODO Enable isAtLeastC check, when moving subsystem to mainline.
+        if (
+            version <= 18 /*&& SdkLevel.isAtLeastC()*/ &&
+                Flags.accessLocalNetworkPermissionEnabled()
+        ) {
+            Slog.v(
+                LOG_TAG,
+                "Clearing user flags for nearby devices permissions for package: $packageName" +
+                    ", version: $version, user: $userId",
+            )
+            clearNearbyDevicesPermissionsUserFlags(packageState, userId)
         }
 
         // Add a new upgrade step: if (packageVersion <= LATEST_VERSION) { .... }
@@ -362,6 +375,38 @@ class AppIdPermissionUpgrade(private val policy: AppIdPermissionPolicy) {
                         packageState,
                         userId,
                         HealthPermissions.READ_HEALTH_DATA_IN_BACKGROUND,
+                    )
+                }
+            }
+        }
+    }
+
+    private fun MutateStateScope.clearNearbyDevicesPermissionsUserFlags(
+        packageState: PackageState,
+        userId: Int,
+    ) {
+        val androidPackage = packageState.androidPackage!!
+        val isAccessLocalNetworkExplicitlyRequested =
+            Manifest.permission.ACCESS_LOCAL_NETWORK in androidPackage.requestedPermissions &&
+                Manifest.permission.ACCESS_LOCAL_NETWORK !in androidPackage.implicitPermissions
+        if (!isAccessLocalNetworkExplicitlyRequested) {
+            return
+        }
+
+        val isNearbyDevicesPermissionGroupRevoked =
+            AppIdPermissionPolicy.NEARBY_DEVICES_PERMISSIONS.noneIndexed { _, permissionName ->
+                isRuntimePermissionGranted(packageState, userId, permissionName)
+            }
+        if (isNearbyDevicesPermissionGroupRevoked) {
+            with(policy) {
+                AppIdPermissionPolicy.NEARBY_DEVICES_PERMISSIONS.forEachIndexed { _, permissionName
+                    ->
+                    updatePermissionFlags(
+                        packageState.appId,
+                        userId,
+                        permissionName,
+                        PermissionFlags.USER_SET or PermissionFlags.USER_FIXED,
+                        0,
                     )
                 }
             }

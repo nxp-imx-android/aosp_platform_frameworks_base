@@ -130,6 +130,7 @@ import java.util.stream.Collectors;
 
 @SmallTest
 @RunWith(JUnitParamsRunner.class)
+@EnableFlags(Flags.FLAG_ENABLE_WORK_DURATIONS)
 public class DisplayModeDirectorTest {
     @ClassRule
     public static final SetFlagsRule.ClassRule mClassRule = new SetFlagsRule.ClassRule();
@@ -3186,7 +3187,8 @@ public class DisplayModeDirectorTest {
         listener.notifyThrottling(getSkinTemp(Temperature.THROTTLING_CRITICAL));
         BackgroundThread.getHandler().runWithScissors(() -> { }, 500 /*timeout*/);
         vote = director.getVote(DISPLAY_ID, Vote.PRIORITY_SKIN_TEMPERATURE);
-        assertVoteForRenderFrameRateRange(vote, 0f, 60.f);
+        Vote expectedVote = new CombinedVote(List.of(new RefreshRateVote.RenderVote(0f, 60f)));
+        assertEquals(expectedVote, vote);
 
         // Set the skin temperature to severe and verify that the vote is gone.
         listener.notifyThrottling(getSkinTemp(Temperature.THROTTLING_SEVERE));
@@ -3591,7 +3593,6 @@ public class DisplayModeDirectorTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WORK_DURATIONS)
     public void testWorkDurations_defaultValuesSetInDesiredDisplayModeSpecs() {
         // Set up DisplayDeviceConfig and DisplayModeDirector mocks.
         WorkDuration workDurations = new WorkDuration(10500000,
@@ -3622,7 +3623,6 @@ public class DisplayModeDirectorTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WORK_DURATIONS)
     public void testWorkDurations_lowPowerMode_setInDesiredDisplayModeSpecs() {
         // Set up DisplayDeviceConfig and DisplayModeDirector mocks.
         WorkDuration workDurations = new WorkDuration(11500000,
@@ -3652,6 +3652,73 @@ public class DisplayModeDirectorTest {
 
         DesiredDisplayModeSpecs specs = director.getDesiredDisplayModeSpecs(DISPLAY_ID);
         assertEquals(workDurations, specs.workDurationsData);
+    }
+
+    @Test
+    public void testWorkDurations_thermalThrottling_setInDesiredDisplayModeSpecs() {
+        // Set up DisplayDeviceConfig and DisplayModeDirector mocks.
+        WorkDuration workDurations = new WorkDuration(10, 10, 10);
+        DisplayDeviceConfig ddcMock = mock(DisplayDeviceConfig.class);
+        SparseArray<DisplayDeviceConfig> configs = new SparseArray<>();
+        configs.put(DISPLAY_ID, ddcMock);
+        SparseArray<Display.Mode> defaultModesByDisplay = new SparseArray<>();
+        Display.Mode mode = new Display.Mode(
+                /*modeId=*/8, /*width=*/2000, /*height=*/2000, 90);
+        defaultModesByDisplay.put(DISPLAY_ID, mode);
+        SparseArray<Display.Mode[]> supportedModes = new SparseArray<>();
+        supportedModes.put(DISPLAY_ID, new Display.Mode[]{mode});
+
+        DisplayModeDirector director = new DisplayModeDirector(mContext, mHandler, mInjector,
+                mDisplayManagerFlags, mDisplayDeviceConfigProvider);
+        director.injectDisplayDeviceConfigByDisplay(configs);
+        director.injectDefaultModeByDisplay(defaultModesByDisplay);
+        director.injectSupportedModesByDisplay(supportedModes);
+
+        // Set up the thermal throttling vote.
+        SparseArray<Vote> votes = new SparseArray<>();
+        SparseArray<SparseArray<Vote>> votesByDisplay = new SparseArray<>();
+        votesByDisplay.put(DISPLAY_ID, votes);
+        votes.put(Vote.PRIORITY_SKIN_TEMPERATURE, Vote.forWorkDurations(workDurations));
+        director.injectVotesByDisplay(votesByDisplay);
+
+        DesiredDisplayModeSpecs specs = director.getDesiredDisplayModeSpecs(DISPLAY_ID);
+        assertEquals(workDurations, specs.workDurationsData);
+    }
+
+    @Test
+    public void testWorkDurations_thermalThrottlingTakesPriority_setInDesiredDisplayModeSpecs() {
+        // Set up DisplayDeviceConfig and DisplayModeDirector mocks.
+        WorkDuration lowPowerWorkDurations = new WorkDuration(10, 10, 10);
+        WorkDuration thermalWorkDurations = new WorkDuration(20, 20, 20);
+        DisplayDeviceConfig ddcMock = mock(DisplayDeviceConfig.class);
+        SparseArray<DisplayDeviceConfig> configs = new SparseArray<>();
+        configs.put(DISPLAY_ID, ddcMock);
+        SparseArray<Display.Mode> defaultModesByDisplay = new SparseArray<>();
+        Display.Mode mode = new Display.Mode(/*width=*/2000, /*height=*/2000, 90);
+        defaultModesByDisplay.put(DISPLAY_ID, mode);
+        SparseArray<Display.Mode[]> supportedModes = new SparseArray<>();
+        supportedModes.put(DISPLAY_ID, new Display.Mode[]{mode});
+
+        DisplayModeDirector director = new DisplayModeDirector(mContext, mHandler, mInjector,
+                mDisplayManagerFlags, mDisplayDeviceConfigProvider);
+        director.injectDisplayDeviceConfigByDisplay(configs);
+        director.injectDefaultModeByDisplay(defaultModesByDisplay);
+        director.injectSupportedModesByDisplay(supportedModes);
+
+        // Set up the low power vote.
+        SparseArray<Vote> votes = new SparseArray<>();
+        SparseArray<SparseArray<Vote>> votesByDisplay = new SparseArray<>();
+        votesByDisplay.put(DISPLAY_ID, votes);
+        votes.put(Vote.PRIORITY_LOW_POWER_MODE_MODES, Vote.forWorkDurations(lowPowerWorkDurations));
+        director.injectVotesByDisplay(votesByDisplay);
+
+        // Set up the thermal throttling vote.
+        votes.put(Vote.PRIORITY_SKIN_TEMPERATURE, Vote.forWorkDurations(thermalWorkDurations));
+        director.injectVotesByDisplay(votesByDisplay);
+
+        DesiredDisplayModeSpecs specs = director.getDesiredDisplayModeSpecs(DISPLAY_ID);
+        // Thermal throttling votes are prioritized.
+        assertEquals(thermalWorkDurations, specs.workDurationsData);
     }
 
     private Temperature getSkinTemp(@Temperature.ThrottlingStatus int status) {

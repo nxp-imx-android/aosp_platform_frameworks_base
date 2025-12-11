@@ -23,9 +23,8 @@ import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
-import static com.android.window.flags.Flags.FLAG_ENABLE_HANDLERS_DEBUGGING_MODE;
-import static com.android.window.flags.Flags.FLAG_ENABLE_SEE_THROUGH_TASK_FRAGMENTS;
 import static com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK;
+import static com.android.window.flags.Flags.FLAG_ENABLE_SEE_THROUGH_TASK_FRAGMENTS;
 import static com.android.window.flags.Flags.enableHandlersDebuggingMode;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE;
 import static com.android.wm.shell.Flags.FLAG_TASK_VIEW_TRANSITIONS_REFACTOR;
@@ -61,6 +60,7 @@ import android.window.WindowContainerTransaction;
 
 import androidx.test.filters.SmallTest;
 
+import com.android.testing.wm.util.TransitionInfoBuilder;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.bubbles.BubbleHelper;
@@ -68,7 +68,6 @@ import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.transition.TransitionDispatchState;
-import com.android.wm.shell.transition.TransitionInfoBuilder;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.util.StubTransaction;
 

@@ -1893,7 +1893,7 @@
 
     <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=50]-->
     <string name="permlab_force_use_loopback_interface">force use loopback interface</string>
-    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=120]-->
+    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=175]-->
     <string name="permdesc_force_use_loopback_interface">Allows the app to interact with other apps over loopback interface without requiring the other app to hold loopback permissions</string>
 
     <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=50]-->
@@ -6897,6 +6897,11 @@
 
     <!-- Label for private space biometric prompt logo description [CHAR LIMIT=30] -->
     <string name="private_space_biometric_prompt_title">Private space</string>
+
+    <!-- Notification message used when the app that posted a notification is locked by App Lock [CHAR_LIMIT=NOTIF_BODY] -->
+    <string name="app_locked_new_notification">New notification</string>
+    <!-- Notification message used when the app that posted a notification is locked by App Lock [CHAR_LIMIT=NOTIF_BODY] -->
+    <string name="app_locked_notification_message">New message</string>
 
     <!-- Notification message used when a notification's normal message contains sensitive information [CHAR_LIMIT=NOTIF_BODY] -->
     <string name="redacted_notification_message">Sensitive notification content hidden</string>

@@ -19,6 +19,7 @@ package com.android.server.companion.datatransfer.continuity.messages;
 import android.annotation.NonNull;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
+import com.android.internal.util.FrameworkStatsLog;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -51,5 +52,10 @@ public record HandoffRequestMessage(int taskId) implements TaskContinuityMessage
     public void writeToProto(@NonNull ProtoOutputStream pos) {
         Objects.requireNonNull(pos)
                 .write(android.companion.HandoffRequestMessage.TASK_ID, taskId());
+    }
+
+    @Override
+    public int getTypeForMetrics() {
+        return FrameworkStatsLog.TASK_CONTINUITY_MESSAGE_SENT__MESSAGE_TYPE__HANDOFF_REQUEST;
     }
 }

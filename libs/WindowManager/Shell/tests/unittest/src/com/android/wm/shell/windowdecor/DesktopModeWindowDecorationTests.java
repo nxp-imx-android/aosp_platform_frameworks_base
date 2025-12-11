@@ -1447,7 +1447,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_TO_WEB)
     public void capturedLink_CapturedLinkUsedIfValidAndWebUriUnavailable() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
         final DesktopModeWindowDecoration decor = createWindowDecoration(
@@ -1460,7 +1459,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_TO_WEB)
     public void capturedLink_capturedLinkNotResetToSameLink() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
         final DesktopModeWindowDecoration decor = createWindowDecoration(
@@ -1490,7 +1488,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_TO_WEB)
     public void capturedLink_capturedLinkSetToUsedAfterClick() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
         final DesktopModeWindowDecoration decor = createWindowDecoration(
@@ -1518,7 +1515,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_TO_WEB)
     public void capturedLink_openInBrowserListenerCalledOnClick() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
         final DesktopModeWindowDecoration decor = createWindowDecoration(
@@ -1543,9 +1539,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_TO_WEB,
-            com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
-            com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_TO_FULLSCREEN})
+    @EnableFlags({com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
+ com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_TO_FULLSCREEN})
     public void capturedLink_desktopNotAvailable_linkNotUsed() {
         mDesktopState.getOverrideDesktopModeSupportPerDisplay().put(Display.DEFAULT_DISPLAY, false);
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
@@ -1561,7 +1556,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_TO_WEB)
     public void sessionTransferUri_sessionTransferUriUsedWhenWhenAvailable() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
         final DesktopModeWindowDecoration decor = createWindowDecoration(
@@ -1573,7 +1567,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_TO_WEB)
     public void webUri_webUriUsedWhenSessionTransferUriUnavailable() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
         final DesktopModeWindowDecoration decor = createWindowDecoration(
@@ -1585,7 +1578,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_TO_WEB)
     public void genericLink_genericLinkUsedWhenCapturedLinkAndAssistContentUriUnavailable() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(true /* visible */);
         final DesktopModeWindowDecoration decor = createWindowDecoration(
@@ -1763,7 +1755,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_TO_WEB)
     public void browserApp_transferSessionUriUsedForBrowserAppWhenAvailable() {
         // Make {@link AppToWebUtils#isBrowserApp} return true
         ResolveInfo browserResolveInfo = createResolveInfo(true /* handleAllWebUriData */);
@@ -1782,7 +1773,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
 
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_TO_WEB)
     public void browserApp_webUriUsedForBrowserAppWhenTransferSessionUriUnavailable() {
         // Make {@link AppToWebUtils#isBrowserApp} return true
         ResolveInfo resolveInfo = new ResolveInfo();

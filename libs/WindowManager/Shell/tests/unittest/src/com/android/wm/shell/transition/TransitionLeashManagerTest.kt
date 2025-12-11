@@ -15,7 +15,6 @@
  */
 
 package com.android.wm.shell.transition
-
 import android.app.ActivityManager.RunningTaskInfo
 import android.os.Binder
 import android.view.SurfaceControl
@@ -27,6 +26,7 @@ import android.window.TransitionInfo.FLAG_MOVED_TO_TOP
 import android.window.WindowContainerToken
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.testing.wm.util.TransitionInfoBuilder
 import com.android.wm.shell.ShellTestCase
 import kotlin.test.Test
 import kotlin.test.assertEquals

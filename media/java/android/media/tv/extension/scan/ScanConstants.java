@@ -28,7 +28,7 @@ import java.lang.annotation.RetentionPolicy;
  * @hide
  */
 final class ScanConstants {
-    /*************************************** BroadcastType ****************************************/
+    /*************************************** Broadcast Type****************************************/
     @IntDef({
             TYPE_DVB_T,
             TYPE_DVB_C,
@@ -65,7 +65,7 @@ final class ScanConstants {
     public static final int TYPE_ISDB_T3 = 43;
     public static final int TYPE_ISDB_ARIB = 51;  // Japan specific
 
-    /********************************************ScanType******************************************/
+    /*******************************************Scan Type******************************************/
     @StringDef({
             SCAN_TYPE_UNKNOWN,
             SCAN_TYPE_FULL,
@@ -275,14 +275,18 @@ final class ScanConstants {
             KEY_BROADCAST_TYPE,
             KEY_OPERATOR_ID,
             KEY_SLOT_NUMBER,
-            KEY_COUNTRY_CODE
+            KEY_COUNTRY_CODE,
+            KEY_SCAN_TYPE
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface ClearServiceListBundleKey {}
+    // Value should be one of the following from @BroadcastType.
     public static final String KEY_BROADCAST_TYPE = "BROADCAST_TYPE";
     public static final String KEY_OPERATOR_ID = "OPERATOR_ID";
     public static final String KEY_SLOT_NUMBER = "SLOT_NUMBER";
     public static final String KEY_COUNTRY_CODE = "COUNTRY_CODE";
+    // Value should be one of the following from @ScanType.
+    public static final String KEY_SCAN_TYPE = "SCAN_TYPE";
 
     /*********************************ServiceInfoBundle********************************************/
     @StringDef({
