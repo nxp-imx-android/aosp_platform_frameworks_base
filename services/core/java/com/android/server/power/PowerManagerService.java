@@ -7953,6 +7953,12 @@ public final class PowerManagerService extends SystemService
         public void goToSleepPerGroup(IntArray groupIds, long eventTime, int reason, int flags) {
             goToSleepInternal(groupIds, eventTime, reason, flags);
         }
+
+        @Override
+        public void wakeupPerGroup(IntArray groupIds, long eventTime, int reason, String details,
+                String opPackageName, int uid) {
+            wakeupDisplayGroupsLocked(groupIds, eventTime, reason, details, opPackageName, uid);
+        }
     }
 
     /**
