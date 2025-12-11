@@ -40,26 +40,29 @@ import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import java.io.PrintWriter;
 
 /**
- * Encapsulate app-compat logic for multi-display environments.
+ * Encapsulates app-compat logic for multi-display environments.
  *
- * <p>The primary feature is "display compat mode", which suppresses automatic activity restart
- * caused by display-specific config changes to prevent unexpected crashes.
- * The current conditions of an app being in display compat mode are:
- * <ul>
- *     <li>The app is a game.
- *     <li>The app doesn't support all of {@link DISPLAY_COMPAT_MODE_CONFIG_MASK}.
- *     <li>The app has moved to a different display but not restarted yet.
- * </ul>
+ * <p>This policy implements three main features to improve app compatibility when moving
+ * between displays:
  *
- * <p>Display compat mode comes with restart handle menu, with which the app process gets recreated,
- * and all the config changes get reloaded by the app, at the timing the user wants to do so with
- * the risk of losing the current state of the app.
+ * <ol>
+ * <li><b>Display Compat Mode:</b> Suppresses automatic activity restarts caused by
+ * display-specific configuration changes (e.g., density, color mode). This is primarily
+ * targeted at games to prevent unexpected crashes or state loss.
  *
- * <p>A secondary feature is "compat mode" for ComputerControl (virtual) displays. Any
- * application moving to/from a VirtualDisplay owned by a ComputerControl session should see a
- * number of configuration changes suppressed.
+ * <li><b>Computer Control Compat Mode:</b> Suppresses additional configuration changes
+ * (e.g., keyboard, navigation) when moving to/from a ComputerControl (virtual) display.
+ *
+ * <li><b>Self-Kill Recovery:</b> A heuristic mechanism that detects when an app unintentionally
+ * finishes itself ("self-kill") upon receiving configuration changes during a display move.
+ * If detected, the system automatically relaunches the activity on the new display to
+ * recover the session.
+ * </ol>
+ *
+ * <p>This class also controls the availability of the restart handle menu and determines
+ * whether a forced restart is required based on app-compat overrides.
  */
-class AppCompatDisplayCompatModePolicy {
+class AppCompatDisplayCompatPolicy {
 
     private static final int DISPLAY_COMPAT_MODE_CONFIG_MASK =
             CONFIG_DENSITY | CONFIG_TOUCHSCREEN | CONFIG_COLOR_MODE;
@@ -80,7 +83,7 @@ class AppCompatDisplayCompatModePolicy {
 
     private boolean mDisplayChangedForComputerControlWithoutRestart;
 
-    AppCompatDisplayCompatModePolicy(@NonNull ActivityRecord activityRecord) {
+    AppCompatDisplayCompatPolicy(@NonNull ActivityRecord activityRecord) {
         mActivityRecord = activityRecord;
         mSelfKillStateMachine = new SelfKillStateMachine(mActivityRecord);
     }
@@ -185,6 +188,9 @@ class AppCompatDisplayCompatModePolicy {
         mSelfKillStateMachine.onActivityRelaunching(configChangeFlags);
     }
 
+    // TODO(b/408704764): Consider renaming this to "Density" Compat Mode once activity recreation
+    //  mitigation is fully launched as at that point density will be the only config change that
+    //  needs to be sandboxed here.
     private boolean isInDisplayCompatMode() {
         return getDisplayCompatModeConfigMask() != 0;
     }
@@ -322,6 +328,11 @@ class AppCompatDisplayCompatModePolicy {
 
         void onMovedToDisplay(@NonNull DisplayContent previousDisplay,
                 @NonNull DisplayContent newDisplay) {
+            if (mActivityRecord.mAppCompatController.getTransparentPolicy().isRunning()
+                    || mActivityRecord.getTask() == null
+                    || mActivityRecord != mActivityRecord.getTask().topRunningActivity()) {
+                return;
+            }
             final Transition displayMoveTransition =
                     mActivityRecord.mTransitionController.getCollectingTransition();
             if (displayMoveTransition == null) {
