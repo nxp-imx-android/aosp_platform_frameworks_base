@@ -39,6 +39,7 @@ import androidx.dynamicanimation.animation.SpringAnimation;
 import androidx.dynamicanimation.animation.SpringForce;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.wm.shell.Flags;
 import com.android.wm.shell.animation.FlingAnimationUtils;
 import com.android.wm.shell.bubbles.BubbleExpandedView;
 import com.android.wm.shell.bubbles.BubblePositioner;
@@ -254,6 +255,10 @@ public class ExpandedViewAnimationControllerImpl implements ExpandedViewAnimatio
         if (mExpandedView != null) {
             if (mBottomClipAnim != null) {
                 mBottomClipAnim.cancel();
+            }
+            // IME state may change before the animation starts, check if positioner is visible.
+            if (Flags.fixBubbleImeClipping() && visible && !mPositioner.isImeVisible()) {
+                return;
             }
             int clip = 0;
             if (visible) {

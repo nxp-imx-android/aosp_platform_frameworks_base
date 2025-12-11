@@ -307,3 +307,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "fix_bubble_ime_clipping"
+    namespace: "multitasking"
+    description: "Fix a bug where the ime clipped all of bubbles view when it shouldn't"
+    bug: "459673299"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
