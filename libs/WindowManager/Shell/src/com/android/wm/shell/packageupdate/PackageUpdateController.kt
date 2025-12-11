@@ -21,6 +21,7 @@ import android.app.ActivityOptions
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.UserHandle
+import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_OPEN
 import android.window.WindowContainerTransaction
 import androidx.core.net.toUri
@@ -56,7 +57,7 @@ class PackageUpdateController(
         ProtoLog.d(
             WM_SHELL_PACKAGE_UPDATE,
             "PackageUpdateController: onPackageUpdateRequested for task: [%s]",
-            updatingTasks.joinToString { "${it?.taskId}" }
+            updatingTasks.joinToString { "${it.taskId}" }
         )
 
         val wct = WindowContainerTransaction()
@@ -80,7 +81,31 @@ class PackageUpdateController(
     }
 
     override fun onPackageUpdateFinished(updatedTasks: List<ActivityManager.RunningTaskInfo>) {
-        // TODO: b/466354852 - Remove task or launch baseIntent
+        ProtoLog.d(
+            WM_SHELL_PACKAGE_UPDATE,
+            "PackageUpdateController: onPackageUpdateFinished for task: [%s]",
+            updatedTasks.joinToString { "${it.taskId}" }
+        )
+
+        val wct = WindowContainerTransaction()
+        updatedTasks.forEach { task ->
+            if (task.isVisible || task.isVisibleRequested) {
+                ProtoLog.d(
+                    WM_SHELL_PACKAGE_UPDATE,
+                    "PackageUpdateController: task %d is visible, launching the base intent and removing placeholder. ",
+                    task.taskId
+                )
+                launchBaseIntent(wct, task)
+            } else {
+                ProtoLog.d(
+                    WM_SHELL_PACKAGE_UPDATE,
+                    "PackageUpdateController: Task is not visible, removing task %d.",
+                    task.taskId
+                )
+                wct.removeTask(task.token, /* removeFromRecents= */ false)
+            }
+        }
+        transitions.startTransition(TRANSIT_CHANGE, wct, null)
     }
 
     private fun launchPlaceholderInTask(
@@ -105,6 +130,7 @@ class PackageUpdateController(
                 pendingIntentBackgroundActivityStartMode =
                     ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
                 launchTaskId = task.taskId
+                setAvoidMoveToFront()
             }
         val pendingIntent =
             PendingIntent.getActivityAsUser(
@@ -116,5 +142,34 @@ class PackageUpdateController(
                 userHandle,
             )
         wct.sendPendingIntent(pendingIntent, intent, options.toBundle())
+    }
+
+    private fun launchBaseIntent(
+        wct: WindowContainerTransaction,
+        task: ActivityManager.RunningTaskInfo
+    ) {
+        val userId = task.userId
+        val userHandle = UserHandle.of(userId)
+        val userContext = userProfileContexts[userId]
+
+        task.baseIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
+        val options =
+            ActivityOptions.makeBasic().apply {
+                pendingIntentBackgroundActivityStartMode =
+                    ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
+                launchTaskId = task.taskId
+                setAvoidMoveToFront()
+            }
+        val pendingIntent =
+            PendingIntent.getActivityAsUser(
+                userContext,
+                /* requestCode= */ 0,
+                task.baseIntent,
+                PendingIntent.FLAG_IMMUTABLE,
+                /* options= */ null,
+                userHandle,
+            )
+        wct.sendPendingIntent(pendingIntent, Intent(), options.toBundle())
     }
 }
