@@ -60,7 +60,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
-import android.util.SparseLongArray;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.ArrayUtils;
@@ -227,13 +226,12 @@ public class LockPatternUtils {
     private final Supplier<Duration> mTimeSinceBootSupplier;
     private UserManager mUserManager;
     private final Handler mHandler;
-    private final SparseLongArray mLockoutDeadlines = new SparseLongArray();
     private Boolean mHasSecureLockScreen;
 
     /**
      * Use {@link TrustManager#isTrustUsuallyManaged(int)}.
      *
-     * This returns the lazily-peristed value and should only be used by TrustManagerService.
+     * <p>This returns the lazily-peristed value and should only be used by TrustManagerService.
      */
     public boolean isTrustUsuallyManaged(int userId) {
         if (!(mLockSettingsService instanceof ILockSettings.Stub)) {
@@ -1194,25 +1192,16 @@ public class LockPatternUtils {
      * the deadline has passed.
      *
      * @return the chosen deadline.
-     * @deprecated this function just returns the current lockout end time after
-     *     <tt>android.security.manage_lockout_end_time_in_service</tt> is launched. Call-sites will
-     *     be removed and replaced with {@link #getLockoutEndTime(int)} as needed.
+     * @deprecated this function just returns the current lockout end time. Call-sites will be
+     * removed and replaced with {@link #getLockoutEndTime(int)} as needed.
      */
     @UnsupportedAppUsage
     @Deprecated
     public Duration setLockoutAttemptDeadline(int userId, Duration timeout) {
+        // TODO b/467741771 - remove this method and its callers
         final Duration deadline = mTimeSinceBootSupplier.get().plus(timeout);
-        if (android.security.Flags.manageLockoutEndTimeInService()) {
-            final Duration lockoutEndTime = getLockoutEndTime(userId);
-            return lockoutEndTime.compareTo(deadline) > 0 ? lockoutEndTime : deadline;
-        }
-        if (userId == USER_FRP) {
-            // For secure password storage (that is required for FRP), the underlying storage also
-            // enforces the deadline. Since we cannot store settings for the FRP user, don't.
-            return deadline;
-        }
-        mLockoutDeadlines.put(userId, deadline.toMillis());
-        return deadline;
+        final Duration lockoutEndTime = getLockoutEndTime(userId);
+        return lockoutEndTime.compareTo(deadline) > 0 ? lockoutEndTime : deadline;
     }
 
     /**
@@ -1220,22 +1209,12 @@ public class LockPatternUtils {
      *     Duration#ZERO} if the user is currently allowed.
      */
     public Duration getLockoutEndTime(int userId) {
-        if (android.security.Flags.manageLockoutEndTimeInService()) {
-            Duration lockoutEndTime = mLockoutEndTimeCache.query(userId);
-            if (!lockoutEndTime.isZero()
-                    && lockoutEndTime.compareTo(mTimeSinceBootSupplier.get()) <= 0) {
-                return mLockoutEndTimeCache.recompute(userId);
-            }
-            return lockoutEndTime;
+        Duration lockoutEndTime = mLockoutEndTimeCache.query(userId);
+        if (!lockoutEndTime.isZero()
+                && lockoutEndTime.compareTo(mTimeSinceBootSupplier.get()) <= 0) {
+            return mLockoutEndTimeCache.recompute(userId);
         }
-        final long deadline = mLockoutDeadlines.get(userId, 0L);
-        final long now = mTimeSinceBootSupplier.get().toMillis();
-        if (deadline < now && deadline != 0) {
-            // timeout expired
-            mLockoutDeadlines.put(userId, 0);
-            return Duration.ZERO;
-        }
-        return Duration.ofMillis(deadline);
+        return lockoutEndTime;
     }
 
     private boolean getBoolean(String secureSettingKey, boolean defaultValue, int userId) {

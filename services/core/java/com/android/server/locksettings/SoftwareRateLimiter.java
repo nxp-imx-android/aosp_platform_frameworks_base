@@ -197,10 +197,8 @@ class SoftwareRateLimiter {
     SoftwareRateLimiter(Injector injector, boolean enforcing) {
         mInjector = injector;
         mEnforcing = enforcing;
-        if (android.security.Flags.manageLockoutEndTimeInService()) {
-            // The cache doesn't work until it's initialized.
-            mInjector.invalidateLockoutEndTimeCache();
-        }
+        // The cache doesn't work until it's initialized.
+        mInjector.invalidateLockoutEndTimeCache();
     }
 
     /**
@@ -355,9 +353,7 @@ class SoftwareRateLimiter {
         }
         if (!lockoutEndTime.equals(state.lockoutEndTime)) {
             state.lockoutEndTime = lockoutEndTime;
-            if (android.security.Flags.manageLockoutEndTimeInService()) {
-                mInjector.invalidateLockoutEndTimeCache();
-            }
+            mInjector.invalidateLockoutEndTimeCache();
         }
     }
 
@@ -365,9 +361,7 @@ class SoftwareRateLimiter {
     private void clearLockoutEndTime(RateLimiterState state) {
         if (!state.lockoutEndTime.isZero()) {
             state.lockoutEndTime = Duration.ZERO;
-            if (android.security.Flags.manageLockoutEndTimeInService()) {
-                mInjector.invalidateLockoutEndTimeCache();
-            }
+            mInjector.invalidateLockoutEndTimeCache();
         }
     }
 
@@ -429,7 +423,7 @@ class SoftwareRateLimiter {
         RateLimiterState state = getExistingState(id);
 
         Duration now = mInjector.getTimeSinceBoot();
-        if (android.security.Flags.manageLockoutEndTimeInService() && hwTimeout.isPositive()) {
+        if (hwTimeout.isPositive()) {
             // Always track any hardware timeouts, including when not enforcing.
             updateLockoutEndTime(state, now, now.plus(hwTimeout));
         }
@@ -438,9 +432,7 @@ class SoftwareRateLimiter {
         // counted by apply(), including having stats written for them. In enforcing mode, this
         // method isn't passed duplicate wrong guesses.
         if (!mEnforcing && ArrayUtils.contains(state.savedWrongGuesses, guess)) {
-            return android.security.Flags.manageLockoutEndTimeInService()
-                    ? computeRemainingTimeout(state, now)
-                    : Duration.ZERO;
+            return computeRemainingTimeout(state, now);
         }
 
         // Increment the failure counter regardless of whether the failure is a certainly wrong
@@ -588,9 +580,7 @@ class SoftwareRateLimiter {
     private void clearLskfStateAtIndex(int index) {
         final RateLimiterState state = mState.valueAt(index);
         forgetSavedWrongGuesses(state);
-        if (android.security.Flags.manageLockoutEndTimeInService()) {
-            clearLockoutEndTime(state);
-        }
+        clearLockoutEndTime(state);
         mState.removeAt(index);
     }
 

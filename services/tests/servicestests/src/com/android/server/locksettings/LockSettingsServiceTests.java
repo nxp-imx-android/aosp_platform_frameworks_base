@@ -846,10 +846,8 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         assertEquals(Duration.ZERO, response.getTimeoutAsDuration());
     }
 
-    // When handling hardware timeouts, both software and hardware timeouts should preempt
-    // duplicate detection.
+    // Both software and hardware timeouts should preempt duplicate detection.
     @Test
-    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
     public void testRepeatOfWrongGuessThrottled_afterWeaverIncorrectKeyWithTimeoutButWithinTimeout()
             throws Exception {
         final int userId = PRIMARY_USER_ID;
@@ -1080,7 +1078,6 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
-    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
     public void testGetLockoutEndTime_nonZeroAfterTimedOutAttempt() throws Exception {
         final int userId = PRIMARY_USER_ID;
         final LockscreenCredential credential = newPassword("password");
@@ -1098,7 +1095,6 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
-    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
     public void testGetLockoutEndTime_zeroAfterVerificationPostLockout() throws Exception {
         final int userId = PRIMARY_USER_ID;
         final LockscreenCredential credential = newPassword("password");
@@ -1122,7 +1118,6 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
-    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
     public void testGetLockoutEndTime_zeroAfterEndTime() throws Exception {
         final int userId = PRIMARY_USER_ID;
         final LockscreenCredential credential = newPassword("password");
@@ -1143,7 +1138,6 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
-    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
     public void testGetLockoutEndTime_zeroAfterCredentialResetWithToken() throws Exception {
         byte[] token = "some-high-entropy-secure-token".getBytes();
         EscrowTokenStateChangeCallback mockActivateListener =
@@ -1169,7 +1163,6 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
-    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
     @DisableFlags(android.security.Flags.FLAG_ENABLE_WEAVER_GET_TIMEOUT)
     public void testGetLockoutEndTime_doesNotAccountForWeaverTimeoutWhenFlagDisabled()
             throws Exception {
@@ -1186,10 +1179,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
-    @EnableFlags({
-        android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE,
-        android.security.Flags.FLAG_ENABLE_WEAVER_GET_TIMEOUT
-    })
+    @EnableFlags(android.security.Flags.FLAG_ENABLE_WEAVER_GET_TIMEOUT)
     public void testGetLockoutEndTime_accountsForWeaverTimeout() throws Exception {
         final int userId = PRIMARY_USER_ID;
         final LockscreenCredential credential = newPassword("password");

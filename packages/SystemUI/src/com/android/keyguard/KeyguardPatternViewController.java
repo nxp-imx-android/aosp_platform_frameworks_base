@@ -17,7 +17,6 @@
 package com.android.keyguard;
 
 import static android.security.Flags.lockscreenIndicateDuplicateGuesses;
-import static android.security.Flags.manageLockoutEndTimeInService;
 
 import static com.android.internal.util.LatencyTracker.ACTION_CHECK_CREDENTIAL;
 import static com.android.internal.util.LatencyTracker.ACTION_CHECK_CREDENTIAL_UNLOCKED;
@@ -214,16 +213,10 @@ public class KeyguardPatternViewController
                 );
                 mLockPatternView.setDisplayMode(LockPatternView.DisplayMode.Wrong);
                 if (isValidPattern) {
-                    getKeyguardSecurityCallback().reportUnlockAttempt(userId, false,
-                            timeout, isDuplicate);
+                    getKeyguardSecurityCallback()
+                            .reportUnlockAttempt(userId, false, timeout, isDuplicate);
                     if (timeout.isPositive()) {
-                        Duration lockoutEndTime;
-                        if (manageLockoutEndTimeInService()) {
-                            lockoutEndTime = mLockPatternUtils.getLockoutEndTime(userId);
-                        } else {
-                            lockoutEndTime = mLockPatternUtils.setLockoutAttemptDeadline(
-                                    userId, timeout);
-                        }
+                        Duration lockoutEndTime = mLockPatternUtils.getLockoutEndTime(userId);
                         handleAttemptLockout(lockoutEndTime);
                     }
                 }
