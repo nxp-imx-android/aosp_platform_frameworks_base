@@ -20,6 +20,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.Display
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -89,7 +90,10 @@ constructor(
         val coroutineScope = rememberCoroutineScope()
         val viewModel =
             rememberViewModel("SmallScreenPostRecordingActivity#viewModel") {
-                viewModelFactory.create(intent.data ?: error("Data URI is missing"))
+                viewModelFactory.create(
+                    intent.data ?: error("Data URI is missing"),
+                    Display.DEFAULT_DISPLAY,
+                )
             }
 
         val shouldShowVideoSaved = intent.shouldWaitForVideo()

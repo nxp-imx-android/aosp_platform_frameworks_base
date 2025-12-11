@@ -144,7 +144,9 @@ constructor(
 
         val coroutineScope = rememberCoroutineScope()
         val postRecordingViewModel =
-            rememberViewModel("PostRecordingShelf#viewModel") { viewModelFactory.create(uri) }
+            rememberViewModel("PostRecordingShelf#viewModel") {
+                viewModelFactory.create(uri, display.displayId)
+            }
         val parentUri = postRecordingViewModel.parentUri
         val shareIcon =
             loadIcon(
