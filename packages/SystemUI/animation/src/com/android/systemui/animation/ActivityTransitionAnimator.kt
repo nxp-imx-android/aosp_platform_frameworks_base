@@ -237,8 +237,8 @@ constructor(
                 LinkedHashSet(listeners).forEach { it.onTransitionAnimationStart() }
             }
 
-            override fun onTransitionAnimationEnd() {
-                LinkedHashSet(listeners).forEach { it.onTransitionAnimationEnd() }
+            override fun onTransitionAnimationEnd(transaction: SurfaceControl.Transaction) {
+                LinkedHashSet(listeners).forEach { it.onTransitionAnimationEnd(transaction) }
             }
 
             override fun onTransitionAnimationProgress(linearProgress: Float) {
@@ -987,9 +987,10 @@ constructor(
 
         /**
          * Called when an activity transition animation is finished. This will be called if and only
-         * if [onTransitionAnimationStart] was called earlier.
+         * if [onTransitionAnimationStart] was called earlier. A [transaction] is provided so that
+         * the listener can synchronize any surface updates with the end of the transition.
          */
-        fun onTransitionAnimationEnd() {}
+        fun onTransitionAnimationEnd(transaction: SurfaceControl.Transaction) {}
 
         /**
          * The animation was cancelled. Note that [onTransitionAnimationEnd] will still be called
@@ -1157,8 +1158,8 @@ constructor(
             delegate?.onTransitionAnimationProgress(linearProgress)
         }
 
-        override fun onTransitionAnimationEnd() {
-            delegate?.onTransitionAnimationEnd()
+        override fun onTransitionAnimationEnd(transaction: SurfaceControl.Transaction) {
+            delegate?.onTransitionAnimationEnd(transaction)
             if (!cancelled) {
                 onAnimationComplete.invoke()
             }
@@ -1262,7 +1263,9 @@ constructor(
                     delegate.onAnimationStart(
                         info,
                         startTransaction = startTransaction,
-                        onAnimationFinished = { finishCallback?.invoke(token, info) },
+                        onAnimationFinished = { finishTransaction ->
+                            finishCallback?.invoke(token, info, finishTransaction)
+                        },
                     )
                 }
             }
@@ -1292,7 +1295,9 @@ constructor(
                     delegate.takeOverAnimation(
                         info,
                         startTransaction = startTransaction,
-                        onAnimationFinished = { finishCallback?.invoke(token, info) },
+                        onAnimationFinished = { finishTransaction ->
+                            finishCallback?.invoke(token, info, finishTransaction)
+                        },
                         states,
                     )
                 }
@@ -1394,10 +1399,14 @@ constructor(
                 timedOut = false
             }
 
-        fun IRemoteTransitionFinishedCallback.invoke(token: IBinder?, info: TransitionInfo?) {
+        fun IRemoteTransitionFinishedCallback.invoke(
+            token: IBinder?,
+            info: TransitionInfo?,
+            transaction: SurfaceControl.Transaction? = null,
+        ) {
             info?.releaseAllSurfaces()
 
-            val finishTransaction = SurfaceControl.Transaction()
+            val finishTransaction = transaction ?: SurfaceControl.Transaction()
             token?.let { transitionHelper.cleanUpAnimation(token, finishTransaction) }
             try {
                 onTransitionFinished(null, finishTransaction)
@@ -1795,7 +1804,7 @@ constructor(
         fun onAnimationStart(
             info: TransitionInfo,
             startTransaction: SurfaceControl.Transaction,
-            onAnimationFinished: () -> Unit,
+            onAnimationFinished: (SurfaceControl.Transaction?) -> Unit,
         ) {
             impl.onAnimationStart(
                 resolveAnimatedSurface = {
@@ -1810,7 +1819,7 @@ constructor(
         fun takeOverAnimation(
             info: TransitionInfo,
             startTransaction: SurfaceControl.Transaction,
-            onAnimationFinished: () -> Unit,
+            onAnimationFinished: (SurfaceControl.Transaction?) -> Unit,
             states: Array<out WindowAnimationState>,
         ) {
             impl.takeOverAnimation(
@@ -2131,7 +2140,7 @@ constructor(
         fun onAnimationStart(
             resolveAnimatedSurface: () -> AnimatedSurface?,
             startTransaction: SurfaceControl.Transaction? = null,
-            onAnimationFinished: () -> Unit,
+            onAnimationFinished: (SurfaceControl.Transaction?) -> Unit,
         ) {
             val window = setUpAnimation(resolveAnimatedSurface, onAnimationFinished) ?: return
 
@@ -2151,7 +2160,7 @@ constructor(
         fun takeOverAnimation(
             resolveAnimatedSurface: () -> AnimatedSurface?,
             startTransaction: SurfaceControl.Transaction,
-            onAnimationFinished: () -> Unit,
+            onAnimationFinished: (SurfaceControl.Transaction?) -> Unit,
         ) {
             val window = setUpAnimation(resolveAnimatedSurface, onAnimationFinished) ?: return
             takeOverAnimationInternal(window, startTransaction, onAnimationFinished)
@@ -2160,7 +2169,7 @@ constructor(
         private fun takeOverAnimationInternal(
             window: AnimatedSurface,
             startTransaction: SurfaceControl.Transaction?,
-            onAnimationFinished: () -> Unit,
+            onAnimationFinished: (SurfaceControl.Transaction?) -> Unit,
         ) {
             val useSpring =
                 !controller.isLaunching && window.startState != null && startTransaction != null
@@ -2170,14 +2179,14 @@ constructor(
         @UiThread
         private fun setUpAnimation(
             resolveAnimatedSurface: () -> AnimatedSurface?,
-            onAnimationFinished: () -> Unit,
+            onAnimationFinished: (SurfaceControl.Transaction?) -> Unit,
         ): AnimatedSurface? {
             removeTimeouts()
 
             // The animation was started too late and we already notified the controller that it
             // timed out.
             if (timedOut) {
-                onAnimationFinished()
+                onAnimationFinished(null)
                 return null
             }
 
@@ -2190,7 +2199,7 @@ constructor(
             val window = resolveAnimatedSurface()
             if (window == null) {
                 Log.i(TAG, "Aborting the animation as no window is opening")
-                onAnimationFinished()
+                onAnimationFinished(null)
 
                 if (DEBUG_TRANSITION_ANIMATION) {
                     Log.d(
@@ -2210,7 +2219,7 @@ constructor(
             window: AnimatedSurface,
             useSpring: Boolean = false,
             startTransaction: SurfaceControl.Transaction? = null,
-            onAnimationFinished: () -> Unit,
+            onAnimationFinished: (SurfaceControl.Transaction?) -> Unit,
         ) {
             if (TransitionAnimator.DEBUG) {
                 Log.d(TAG, "Remote animation started")
@@ -2355,7 +2364,8 @@ constructor(
                     }
 
                     override fun onTransitionAnimationEnd(isExpandingFullyAbove: Boolean) {
-                        listener?.onTransitionAnimationEnd()
+                        val finishTransaction = SurfaceControl.Transaction()
+                        listener?.onTransitionAnimationEnd(finishTransaction)
 
                         if (reparent) {
                             val cleanUpTransitionLeash: () -> Unit = {
@@ -2401,7 +2411,7 @@ constructor(
                         }
                         delegate.onTransitionAnimationEnd(isExpandingFullyAbove)
 
-                        onAnimationFinished()
+                        onAnimationFinished(finishTransaction)
                     }
 
                     override fun onTransitionAnimationProgress(

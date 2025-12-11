@@ -18,6 +18,7 @@ package com.android.systemui.scene.domain.startable
 
 import android.app.StatusBarManager
 import android.view.Display
+import android.view.SurfaceControl
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
@@ -1266,7 +1267,7 @@ constructor(
                     sceneInteractor.onTransitionAnimationStart()
                 }
 
-                override fun onTransitionAnimationEnd() {
+                override fun onTransitionAnimationEnd(transaction: SurfaceControl.Transaction) {
                     sceneInteractor.onTransitionAnimationEnd()
                 }
             }

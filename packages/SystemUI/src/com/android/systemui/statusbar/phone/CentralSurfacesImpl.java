@@ -73,6 +73,7 @@ import android.view.Display;
 import android.view.IRemoteAnimationRunner;
 import android.view.IWindowManager;
 import android.view.MotionEvent;
+import android.view.SurfaceControl;
 import android.view.ThreadedRenderer;
 import android.view.View;
 import android.view.WindowInsets;
@@ -3030,7 +3031,8 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                 }
 
                 @Override
-                public void onTransitionAnimationEnd() {
+                public void onTransitionAnimationEnd(
+                        @Nullable SurfaceControl.Transaction transaction) {
                     if (Flags.notificationShadeBlur()) {
                         mNotificationShadeDepthControllerLazy.get()
                                 .onTransitionAnimationEnd();
