@@ -98,6 +98,7 @@ public class AppLockActivityTest {
     private static final int EXPECTED_RESULT_TOAST_DURATION = Toast.LENGTH_SHORT;
     private static final int INVALID_TOAST_DURATION = -1;
     private static final int REQUEST_CODE_SET_SCREEN_LOCK = 1;
+    private static final int REQUEST_CODE_USER_EDUCATION_DIALOG = 2;
 
     private final Context mContext = ApplicationProvider.getApplicationContext();
 
@@ -258,6 +259,10 @@ public class AppLockActivityTest {
 
         try (ActivityScenario<TestAppLockActivity> scenario = ActivityScenario.launch(intent)) {
             scenario.onActivity(activity -> {
+                if (newAppLockEnabled) {
+                    activity.onActivityResult(REQUEST_CODE_USER_EDUCATION_DIALOG,
+                            Activity.RESULT_OK, null);
+                }
                 assertThat(activity.mBiometricPromptShown).isTrue();
                 verifyBiometricPromptDisplayed();
             });
@@ -355,7 +360,7 @@ public class AppLockActivityTest {
 
     @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
     @Test
-    public void launchActivity_screenLockSetupSuccessful_startsBiometricPrompt() {
+    public void launchActivity_screenLockSetupSuccessful_startsUserEducation() {
         final Intent intent = createTestAppLockActivityIntent(/* newAppLockEnabled= */ true);
         mApplicationInfo.isAppLockSupported = true;
         mApplicationInfo.isAppLockEnabled = false;
@@ -366,8 +371,9 @@ public class AppLockActivityTest {
                 when(mKeyguardManager.isDeviceSecure(anyInt())).thenReturn(true);
                 activity.onActivityResult(REQUEST_CODE_SET_SCREEN_LOCK, Activity.RESULT_OK, null);
 
-                assertThat(activity.mBiometricPromptShown).isTrue();
-                verifyBiometricPromptDisplayed();
+                assertThat(activity.mLastRequestCode).isEqualTo(REQUEST_CODE_USER_EDUCATION_DIALOG);
+                assertThat(activity.mStartedIntentForResult.getComponent().getClassName())
+                        .isEqualTo(AppLockUserEducationActivity.class.getName());
             });
         }
     }
@@ -412,6 +418,13 @@ public class AppLockActivityTest {
 
         try (ActivityScenario<TestAppLockActivity> scenario = ActivityScenario.launch(intent)) {
             scenario.onActivity(activity -> {
+                if (newAppLockEnabled) {
+                    when(mKeyguardManager.isDeviceSecure(anyInt())).thenReturn(true);
+                    activity.onActivityResult(REQUEST_CODE_SET_SCREEN_LOCK, Activity.RESULT_OK,
+                            null);
+                    activity.onActivityResult(REQUEST_CODE_USER_EDUCATION_DIALOG,
+                            Activity.RESULT_OK, null);
+                }
                 captureAuthenticationCallback().onAuthenticationSucceeded(mock(
                         BiometricPrompt.AuthenticationResult.class));
 
@@ -440,6 +453,8 @@ public class AppLockActivityTest {
             scenario.onActivity(activity -> {
                 when(mKeyguardManager.isDeviceSecure(anyInt())).thenReturn(true);
                 activity.onActivityResult(REQUEST_CODE_SET_SCREEN_LOCK, Activity.RESULT_OK, null);
+                activity.onActivityResult(REQUEST_CODE_USER_EDUCATION_DIALOG, Activity.RESULT_OK,
+                        null);
                 captureAuthenticationCallback().onAuthenticationError(
                         BiometricPrompt.BIOMETRIC_ERROR_USER_CANCELED, "User canceled");
 
@@ -470,6 +485,24 @@ public class AppLockActivityTest {
                 verify(mPackageManager, never()).setPackageAppLockEnabled(
                         anyString(), anyBoolean());
                 assertThat(activity.isFinishing()).isTrue();
+            });
+        }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void testLaunchesUserEducation_enablingAppLock_whenDeviceIsSecure() {
+        mApplicationInfo.isAppLockSupported = true;
+        mApplicationInfo.isAppLockEnabled = false;
+        when(mKeyguardManager.isDeviceSecure(anyInt())).thenReturn(true);
+        Intent intent = createTestAppLockActivityIntent(true);
+
+        try (ActivityScenario<TestAppLockActivity> scenario = ActivityScenario.launch(intent)) {
+            scenario.onActivity(activity -> {
+                assertThat(activity.mLastRequestCode).isEqualTo(
+                        REQUEST_CODE_USER_EDUCATION_DIALOG);
+                assertThat(activity.mStartedIntentForResult.getComponent().getClassName())
+                        .isEqualTo(AppLockUserEducationActivity.class.getName());
             });
         }
     }
@@ -520,6 +553,7 @@ public class AppLockActivityTest {
         static CharSequence sShownToastText;
         static int sShownToastDuration;
 
+        int mLastRequestCode = -1;
         boolean mBiometricPromptShown = false;
         Intent mStartedIntentForResult;
 
@@ -545,6 +579,7 @@ public class AppLockActivityTest {
         @Override
         public void startActivityForResult(Intent intent, int requestCode) {
             mStartedIntentForResult = intent;
+            mLastRequestCode = requestCode;
         }
 
         @Override

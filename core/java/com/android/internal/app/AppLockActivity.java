@@ -83,6 +83,11 @@ import java.util.Objects;
  * {@link androidx.test.core.app.ActivityScenario}, which does not support testing activities in a
  * separate process, this class is not declared {@code final}. This allows
  * {@link AppLockActivityTest} to use a test-specific subclass.
+ *
+ * <p>Note: Sub-activities launched from this activity should use
+ * {@link android.app.Activity#finishAffinity()} when the user cancels or navigates back. This
+ * ensures the entire task stack is dismissed simultaneously, preventing a visible UI flash that
+ * occurs if the parent activity is briefly re-displayed before it can finish itself.
  */
 // TODO(b/436380342): Finish AppLockActivity UI.
 // TODO(b/469727319): Revisit custom XML drawables, 'app_lock_btn_pill_backaground.xml' and
@@ -154,6 +159,10 @@ public class AppLockActivity extends Activity {
             return;
         }
 
+        if (savedInstanceState != null) {
+            return;
+        }
+
         // Check for valid Intent.
         final Intent intent = getIntent();
         final String packageName = intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME);
@@ -218,9 +227,7 @@ public class AppLockActivity extends Activity {
             if (!isDeviceSecure) {
                 showSetupScreenLockDialog(packageName);
             } else {
-                // TODO(b/442522951): Only showUserEducationDialog() should be called here.
-                showBiometricPrompt(packageName, packageLabel, newAppLockEnabled);
-                showUserEducationDialog(packageName);
+                showUserEducationDialog(packageName, packageLabel);
             }
         }
     }
@@ -231,7 +238,6 @@ public class AppLockActivity extends Activity {
         if (mScreenLockDialog != null && mScreenLockDialog.isShowing()) {
             mScreenLockDialog.dismiss();
         }
-        finish();
     }
 
     @Override
@@ -328,11 +334,13 @@ public class AppLockActivity extends Activity {
     }
 
     /** Displays a user education dialog to the user which informs about the App Lock feature. */
-    private void showUserEducationDialog(String packageName) {
-        // TODO(b/442522951): Implement App Lock user education dialog.
+    private void showUserEducationDialog(String packageName, CharSequence packageLabel) {
         if (DEBUG) {
             Slog.d(TAG, "showUserEducationDialog called for " + packageName);
         }
+        final Intent userEducationIntent = AppLockUserEducationActivity.createIntent(this,
+                packageName, packageLabel);
+        startActivityForResult(userEducationIntent, REQUEST_CODE_USER_EDUCATION_DIALOG);
     }
 
     /** Displays a permission review dialog while adding App Lock to Photos app. */
@@ -375,9 +383,7 @@ public class AppLockActivity extends Activity {
                 }
                 if (mKeyguardManager != null
                         && mKeyguardManager.isDeviceSecure(UserHandle.myUserId())) {
-                    // TODO(b/442522951): Only showUserEducationDialog() should be called here.
-                    showBiometricPrompt(packageName, packageLabel, newAppLockEnabled);
-                    showUserEducationDialog(packageName);
+                    showUserEducationDialog(packageName, packageLabel);
                 } else {
                     if (DEBUG) {
                         Slog.d(TAG, "Screen lock not set after setup attempt, finishing.");

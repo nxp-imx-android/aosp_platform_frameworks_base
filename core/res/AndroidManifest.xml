@@ -10258,6 +10258,15 @@
             </intent-filter>
         </activity>
 
+        <!-- Activity for the App Lock user education and confirmation dialog. -->
+        <activity android:name="com.android.internal.app.AppLockUserEducationActivity"
+                  android:theme="@style/Theme.DeviceDefault.AppLockActivity"
+                  android:excludeFromRecents="true"
+                  android:exported="false"
+                  android:process=":ui"
+                  android:featureFlag="android.security.app_lock_core"
+                  android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|keyboard|keyboardHidden|uiMode"/>
+
         <activity android:name="com.android.internal.app.LockedAppActivity"
                   android:exported="false"
                   android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|keyboard|keyboardHidden|uiMode"

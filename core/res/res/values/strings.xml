@@ -5829,28 +5829,16 @@
     <string name="app_lock_add_screen_lock_title">
         First, add a screen lock
     </string>
-    <!-- Title of the dialog that is shown when the user tries to enable App Lock on the provided application [CHAR LIMIT=NONE] -->
-    <string name="enable_app_lock_dialog_title" translatable="false">
-        Lock <xliff:g id="app_name" example="Gmail">%1$s</xliff:g>?
-    </string>
-    <!-- Text of the button that enables App Lock on an application [CHAR LIMIT=20] -->
-    <string name="enable_app_lock_dialog_enable_button_text" translatable="false">Lock</string>
-    <!-- Title of the dialog that is shown when the user tries to disable App Lock on the provided application [CHAR LIMIT=NONE] -->
-    <string name="disable_app_lock_dialog_title" translatable="false">
-        Remove App Lock from <xliff:g id="app_name" example="Gmail">%1$s</xliff:g>?
-    </string>
-    <!-- Text of the button that disables App Lock on an application [CHAR LIMIT=40] -->
-    <string name="disable_app_lock_dialog_disable_button_text" translatable="false">Remove lock</string>
     <!-- Message shown in a toast notifying the user about the successful enablement of App Lock on the provided application [CHAR LIMIT=NONE] -->
-    <string name="enable_app_lock_success_toast_message" translatable="false">
+    <string name="enable_app_lock_success_toast_message">
         <xliff:g id="app_name" example="Gmail">%1$s</xliff:g> is locked
     </string>
     <!-- Message shown in a toast notifying the user about the unsuccessful enablement of App Lock on the provided application [CHAR LIMIT=NONE] -->
-    <string name="enable_app_lock_failure_toast_message" translatable="false">
+    <string name="enable_app_lock_failure_toast_message">
         Can\'t lock <xliff:g id="app_name" example="Gmail">%1$s</xliff:g>
     </string>
     <!-- Message shown in a toast notifying the user about the successful disablement of App Lock on the provided application [CHAR LIMIT=NONE] -->
-    <string name="disable_app_lock_success_toast_message" translatable="false">
+    <string name="disable_app_lock_success_toast_message">
         App Lock is removed from <xliff:g id="app_name" example="Gmail">%1$s</xliff:g>
     </string>
     <!-- Message shown on the system-provided BiometricPrompt, informing the user the app they're trying to open is locked by App Lock. [CHAR LIMIT=NONE] -->
@@ -5860,6 +5848,64 @@
     <!-- Message shown on the system-provided activity, informing the user who is using an external display that the app they're trying to open needs to be unlocked on their other device. [CHAR LIMIT=NONE] -->
     <string name="locked_app_external_display_message">
         To access the app on this display, first verify it’s you on your other device
+    </string>
+    <!-- Title of the dialog that is shown when the user tries to enable App Lock on the provided application. [CHAR LIMIT=NONE] -->
+    <string name="app_lock_edu_dialog_enable_app_lock_title">
+        Add app lock to <xliff:g id="app_name" example="Gmail">%1$s</xliff:g>?
+    </string>
+    <!-- Description for the App Lock user education dialog. Explains the security measures. [CHAR LIMIT=NONE] -->
+    <string name="app_lock_edu_dialog_description">
+        For your security, only you can access this app with Fingerprint and Face Unlock or your PIN
+    </string>
+    <!-- Description for the App Lock user education dialog, with placeholders for biometric and credential types. [CHAR LIMIT=NONE] -->
+    <string name="app_lock_edu_dialog_description_template">
+        For your security, only you can access this app with %1$s or your %2$s
+    </string>
+    <!-- Description for the App Lock user education dialog, shown when the user has a screen lock
+         (e.g., PIN, pattern) but no biometrics enrolled. The %1$s placeholder will be replaced with
+         the type of screen lock (e.g., "PIN"). [CHAR LIMIT=NONE] -->
+    <string name="app_lock_edu_dialog_description_template_no_biometrics">
+        For your security, only you can access this app with your %1$s
+    </string>
+    <!-- Header for the section in the main App Lock user education dialog that explains the consequences of locking an app. [CHAR LIMIT=40] -->
+    <string name="app_lock_edu_dialog_info_header">
+        With app lock
+    </string>
+    <!-- An informational item explaining that notifications from a locked app will have their content hidden. [CHAR LIMIT=60] -->
+    <string name="app_lock_edu_dialog_info_notifications">
+        Notification content will be hidden
+    </string>
+    <!-- An informational item explaining that widgets and shortcuts for a locked app will be removed. [CHAR LIMIT=60] -->
+    <string name="app_lock_edu_dialog_info_widgets">
+        Widgets and shortcuts will be removed
+    </string>
+    <!-- Text for the primary action button in the main App Lock user education dialog to confirm locking the app. [CHAR LIMIT=20] -->
+    <string name="app_lock_edu_dialog_button_lock">
+        Add app lock
+    </string>
+    <!-- The name for the Face Unlock feature. Used when only face is available. [CHAR LIMIT=20] -->
+    <string name="app_lock_edu_dialog_biometric_description_has_face">
+        Face Unlock
+    </string>
+    <!-- The name for the Fingerprint Unlock feature. Used when only fingerprint is available. [CHAR LIMIT=40] -->
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint">
+        Fingerprint Unlock
+    </string>
+    <!-- A string that combines the names for both Fingerprint and Face Unlock. Used when both are available. [CHAR LIMIT=40] -->
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face">
+        Fingerprint or Face Unlock
+    </string>
+    <!-- Credential type name for a password-based screen lock, shown in the App Lock education dialog. [CHAR LIMIT=20] -->
+    <string name="app_lock_edu_dialog_lockscreen_password_name">
+        Password
+    </string>
+    <!-- Credential type name for a pattern-based screen lock, shown in the App Lock education dialog. [CHAR LIMIT=20] -->
+    <string name="app_lock_edu_dialog_lockscreen_pattern_name">
+        Pattern
+    </string>
+    <!-- Credential type name for a PIN-based screen lock, shown in the App Lock education dialog. [CHAR LIMIT=20] -->
+    <string name="app_lock_edu_dialog_lockscreen_pin_name">
+        PIN
     </string>
 
     <!-- Title of a dialog. This text is confirming that the user wants to turn on access to their work apps, which the user had previously paused. "Work" is an adjective. [CHAR LIMIT=30] -->
