@@ -241,9 +241,18 @@ constructor(
         _shouldOpenSettings.value = false
     }
 
+    /** Notifies that anything in the lockscreen scene has been clicked at position [x], [y]. */
+    fun onSceneClick(x: Float, y: Float) {
+        if (SceneContainerFlag.isEnabled) {
+            pulsingGestureListener.onSingleTapUp(x, y)
+        }
+    }
+
     /** Notifies that the lockscreen has been clicked at position [x], [y]. */
     fun onClick(x: Float, y: Float) {
-        pulsingGestureListener.onSingleTapUp(x, y)
+        if (!SceneContainerFlag.isEnabled) {
+            pulsingGestureListener.onSingleTapUp(x, y)
+        }
         if (faceAuthInteractor.canFaceAuthRun()) {
             faceAuthInteractor.onNotificationPanelClicked()
         } else if (_isAnyPointerDeviceConnected.value) {
