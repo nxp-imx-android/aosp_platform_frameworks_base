@@ -18,19 +18,23 @@ package com.android.server.serial
 
 import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManagerInternal
 import android.hardware.serial.ISerialPortListener
 import android.hardware.serial.ISerialPortResponseCallback
 import android.hardware.serial.ISerialPortResponseCallback.ErrorCode
 import android.hardware.serial.SerialPort
 import android.hardware.serial.SerialPortInfo
+import android.os.Binder
 import android.os.IBinder
 import android.os.ParcelFileDescriptor
 import android.os.RemoteException
+import android.os.UserHandle
 import android.system.OsConstants.O_NOCTTY
 import android.system.OsConstants.O_NONBLOCK
 import android.system.OsConstants.O_RDWR
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.compatibility.common.util.SystemUtil.runWithShellPermissionIdentity
+import com.android.server.LocalServices
 import com.android.server.serial.SerialManagerService.SerialDeviceFilterFactory
 import java.util.function.Predicate
 import java.util.function.Supplier
@@ -38,16 +42,21 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
+import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mock
 import org.mockito.junit.MockitoJUnit
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.doThrow
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -74,6 +83,9 @@ class SerialManagerServiceTest {
 
     @Mock
     private lateinit var accessManager: SerialUserAccessManagerInterface
+
+    @Mock
+    private lateinit var pmInternal: PackageManagerInternal
 
     @Mock
     private lateinit var context: Context
@@ -118,6 +130,13 @@ class SerialManagerServiceTest {
     }()
 
     private val NATIVE_SERIAL_PORTS = listOf(NATIVE_SERIAL_PORT_INFO, PTY_PORT_INFO)
+
+    @Before
+    fun setUp() {
+        doReturn(true).whenever(pmInternal).isSameApp(any(), anyInt(), anyInt())
+        LocalServices.removeServiceForTest(PackageManagerInternal::class.java)
+        LocalServices.addService(PackageManagerInternal::class.java, pmInternal)
+    }
 
     @Test
     fun testGetSerialPorts_success() {
@@ -259,6 +278,27 @@ class SerialManagerServiceTest {
         verify(callback).onResult(serialPortInfoCaptor.capture(), pfdCaptor.capture())
         assertEquals(PORT_NAME, serialPortInfoCaptor.value.name)
         assertEquals(pfd, pfdCaptor.value)
+    }
+
+    @Test
+    fun testRequestOpen_packageNameNotMatch() {
+        val service = SerialManagerService(
+            context, arrayOf(PORT_PATH), "", serialDeviceFilterFactory, nativeServiceSupplier,
+            { _, _, _ -> accessManager }
+        )
+        reset(pmInternal)
+        val packageName = "package"
+        val uid = Binder.getCallingUid()
+        val userId = UserHandle.getUserId(uid)
+        doReturn(false).whenever(pmInternal).isSameApp(packageName, uid, userId)
+
+        val flags = SerialPort.OPEN_FLAG_READ_WRITE or SerialPort.OPEN_FLAG_NONBLOCK
+        service.requestOpen(PORT_NAME, flags, /*exclusive=*/ false, packageName, callback)
+
+        verify(pmInternal).isSameApp(packageName, uid, userId)
+
+        verify(callback, never()).onResult(any(), any())
+        verify(callback).onError(eq(ErrorCode.ERROR_ACCESS_DENIED), any())
     }
 
     @Test

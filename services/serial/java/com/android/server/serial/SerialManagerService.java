@@ -31,6 +31,7 @@ import android.annotation.RequiresNoPermission;
 import android.annotation.RequiresPermission;
 import android.annotation.UserIdInt;
 import android.content.Context;
+import android.content.pm.PackageManagerInternal;
 import android.hardware.serial.ISerialManager;
 import android.hardware.serial.ISerialPortListener;
 import android.hardware.serial.ISerialPortResponseCallback;
@@ -53,6 +54,7 @@ import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.DumpUtils;
+import com.android.server.LocalServices;
 import com.android.server.SystemService;
 
 import java.io.FileDescriptor;
@@ -249,6 +251,13 @@ public class SerialManagerService extends ISerialManager.Stub {
         final int callingPid = Binder.getCallingPid();
         final int callingUid = Binder.getCallingUid();
         final @UserIdInt int userId = UserHandle.getUserId(callingUid);
+        final PackageManagerInternal pm = LocalServices.getService(PackageManagerInternal.class);
+        if (!pm.isSameApp(packageName, callingUid, userId)) {
+            // We can never allow an app to impersonate any other apps.
+            Slog.w(TAG, "Package " + packageName + " doesn't match the calling UID " + callingUid);
+            deliverErrorToCallback(callback, ErrorCode.ERROR_ACCESS_DENIED, portName);
+            return;
+        }
 
         synchronized (mLock) {
             if (!connectToNativeService()) {
