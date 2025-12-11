@@ -57,9 +57,11 @@ import com.android.internal.protolog.ProtoLog
 import com.android.window.flags.Flags.fixCrossActivityBackAnimationInBubbles
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
+import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.protolog.ShellProtoLogGroup
 import com.android.wm.shell.shared.animation.Interpolators
 import com.android.wm.shell.shared.annotations.ShellMainThread
+import java.util.Optional
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -70,6 +72,7 @@ abstract class CrossActivityBackAnimation(
     private val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
     protected val transaction: SurfaceControl.Transaction,
     @ShellMainThread handler: Handler,
+    private val bubbleController: Optional<BubbleController>,
 ) : ShellBackAnimation() {
 
     protected val startClosingRect = RectF()
@@ -200,6 +203,23 @@ abstract class CrossActivityBackAnimation(
         }
         // Offset start rectangle to align task bounds.
         backAnimRect.offsetTo(0, 0)
+
+        if (fixCrossActivityBackAnimationInBubbles()) {
+            // Use a custom corner radius when we're inside a Bubble or a freeform task.
+            cornerRadius = when {
+                bubbleController.isPresent && bubbleController.get()
+                    .hasStableBubbleForTask(closingTarget!!.taskId) -> {
+                    bubbleController.get().getBubbleCornerRadius(closingTarget!!.taskId)
+                }
+                closingTarget!!.taskInfo.isFreeform -> {
+                    context.resources.getDimensionPixelSize(com.android.wm.shell.shared.R.dimen
+                        .desktop_windowing_freeform_rounded_corner_radius).toFloat()
+                }
+                else -> {
+                    ScreenDecorationsUtils.getWindowCornerRadius(context)
+                }
+            }
+        }
 
         preparePreCommitClosingRectMovement(backMotionEvent.swipeEdge)
         preparePreCommitEnteringRectMovement()
@@ -573,14 +593,8 @@ abstract class CrossActivityBackAnimation(
     override fun prepareNextAnimation(
         animationInfo: BackNavigationInfo.CustomAnimationInfo?,
         letterboxColor: Int,
-        cornerRadius: Float,
     ): Boolean {
         this.letterboxColor = letterboxColor
-        this.cornerRadius = if (fixCrossActivityBackAnimationInBubbles() && cornerRadius >= 0) {
-            cornerRadius
-        } else {
-            ScreenDecorationsUtils.getWindowCornerRadius(context)
-        }
         return false
     }
 

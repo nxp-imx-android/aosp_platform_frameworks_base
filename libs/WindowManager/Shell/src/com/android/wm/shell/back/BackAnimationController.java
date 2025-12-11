@@ -83,8 +83,6 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.LatencyTracker;
 import com.android.internal.view.AppearanceRegion;
 import com.android.wm.shell.R;
-import com.android.wm.shell.ShellTaskOrganizer;
-import com.android.wm.shell.bubbles.BubbleController;
 import com.android.wm.shell.common.ExternalInterfaceBinder;
 import com.android.wm.shell.common.RemoteCallable;
 import com.android.wm.shell.common.ShellExecutor;
@@ -100,7 +98,6 @@ import java.io.PrintWriter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 /**
@@ -147,7 +144,6 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
     private final ShellController mShellController;
     private final ShellCommandHandler mShellCommandHandler;
     private final ShellExecutor mShellExecutor;
-    private final ShellTaskOrganizer mShellTaskOrganizer;
     private final WindowManager mWindowManager;
     private final Transitions mTransitions;
     private final InputManager mInputManager;
@@ -186,8 +182,6 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
     @Nullable
     @VisibleForTesting
     RemoteAnimationTarget[] mApps;
-
-    private final Optional<BubbleController> mOptionalBubbles;
 
     @VisibleForTesting
     final RemoteCallback mNavigationObserver = new RemoteCallback(
@@ -244,27 +238,23 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
             @NonNull ShellInit shellInit,
             @NonNull ShellController shellController,
             @NonNull @ShellMainThread ShellExecutor shellExecutor,
-            @NonNull ShellTaskOrganizer shellTaskOrganizer,
             Context context,
             @NonNull BackAnimationBackground backAnimationBackground,
             ShellBackAnimationRegistry shellBackAnimationRegistry,
             ShellCommandHandler shellCommandHandler,
             Transitions transitions,
-            @ShellMainThread Handler handler,
-            Optional<BubbleController> optionalBubbles) {
+            @ShellMainThread Handler handler) {
         this(
                 shellInit,
                 shellController,
                 shellExecutor,
                 ActivityTaskManager.getService(),
-                shellTaskOrganizer,
                 context,
                 backAnimationBackground,
                 shellBackAnimationRegistry,
                 shellCommandHandler,
                 transitions,
-                handler,
-                optionalBubbles);
+                handler);
     }
 
     @VisibleForTesting
@@ -273,18 +263,15 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
             @NonNull ShellController shellController,
             @NonNull @ShellMainThread ShellExecutor shellExecutor,
             @NonNull IActivityTaskManager activityTaskManager,
-            @NonNull ShellTaskOrganizer shellTaskOrganizer,
             Context context,
             @NonNull BackAnimationBackground backAnimationBackground,
             ShellBackAnimationRegistry shellBackAnimationRegistry,
             ShellCommandHandler shellCommandHandler,
             Transitions transitions,
-            @NonNull @ShellMainThread Handler handler,
-            Optional<BubbleController> optionalBubbles) {
+            @NonNull @ShellMainThread Handler handler) {
         mShellController = shellController;
         mShellExecutor = shellExecutor;
         mActivityTaskManager = activityTaskManager;
-        mShellTaskOrganizer = shellTaskOrganizer;
         mContext = context;
         mRequirePointerPilfer =
                 context.getResources().getBoolean(R.bool.config_backAnimationRequiresPointerPilfer);
@@ -304,7 +291,6 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
         updateTouchableArea();
         mAnimationScaleChangeListener = scale -> mShellExecutor.execute(
                 this::updateAnimationScale);
-        mOptionalBubbles = optionalBubbles;
     }
 
     private void onInit() {
@@ -1190,28 +1176,8 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
             return;
         }
 
-        final BackAnimationRunner runner;
-        final int taskId = mBackNavigationInfo.getFocusedTaskId();
-        final int type = mBackNavigationInfo.getType();
-        float cornerRadius = -1f;
-
-        if (type == BackNavigationInfo.TYPE_CROSS_ACTIVITY) {
-            // Use a custom corner radius when we're inside a Bubble or a freeform task.
-            if (mOptionalBubbles.isPresent()
-                    && mOptionalBubbles.get().hasStableBubbleForTask(taskId)) {
-                cornerRadius = mOptionalBubbles.get().getBubbleCornerRadius(taskId);
-            } else {
-                final ActivityManager.RunningTaskInfo taskInfo =
-                        mShellTaskOrganizer.getRunningTaskInfo(taskId);
-                if (taskInfo != null && taskInfo.isFreeform()) {
-                    cornerRadius = mContext.getResources().getDimensionPixelSize(com.android.wm
-                            .shell.shared.R.dimen.desktop_windowing_freeform_rounded_corner_radius);
-                }
-            }
-        }
-
-        runner = mShellBackAnimationRegistry.getAnimationRunnerAndInit(mBackNavigationInfo,
-                cornerRadius);
+        final BackAnimationRunner runner =
+                mShellBackAnimationRegistry.getAnimationRunnerAndInit(mBackNavigationInfo);
         if (runner == null) {
             if (mBackAnimationFinishedCallback != null) {
                 try {

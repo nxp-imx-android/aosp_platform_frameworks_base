@@ -520,13 +520,11 @@ public abstract class WMShellBaseModule {
             ShellInit shellInit,
             ShellController shellController,
             @ShellMainThread ShellExecutor shellExecutor,
-            ShellTaskOrganizer shellTaskOrganizer,
             BackAnimationBackground backAnimationBackground,
             Optional<ShellBackAnimationRegistry> shellBackAnimationRegistry,
             ShellCommandHandler shellCommandHandler,
             Transitions transitions,
-            @ShellMainThread Handler handler,
-            Optional<BubbleController> bubbleController
+            @ShellMainThread Handler handler
     ) {
             return shellBackAnimationRegistry.map(
                     (animations) ->
@@ -534,14 +532,12 @@ public abstract class WMShellBaseModule {
                                     shellInit,
                                     shellController,
                                     shellExecutor,
-                                    shellTaskOrganizer,
                                     context,
                                     backAnimationBackground,
                                     animations,
                                     shellCommandHandler,
                                     transitions,
-                                    handler,
-                                    bubbleController));
+                                    handler));
     }
 
     @BindsOptionalOf
