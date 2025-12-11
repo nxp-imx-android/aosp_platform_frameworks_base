@@ -820,10 +820,12 @@ public abstract class OomAdjuster {
 
     @GuardedBy({"mServiceLock", "mProcLock"})
     private void updateOomAdjLSP(@OomAdjReason int oomAdjReason) {
-        if (checkAndEnqueueOomAdjTargetLocked(null)) {
-            // Simply return as there is an oomAdjUpdate ongoing
+        // Simply return as there is an oomAdjUpdate ongoing
+        if (mOomAdjUpdateOngoing) {
+            mPendingFullOomAdjUpdate = true;
             return;
         }
+
         try {
             mOomAdjUpdateOngoing = true;
             performUpdateOomAdjLSP(oomAdjReason);
@@ -859,8 +861,9 @@ public abstract class OomAdjuster {
             return true;
         }
 
-        if (checkAndEnqueueOomAdjTargetLocked(app)) {
-            // Simply return true as there is an oomAdjUpdate ongoing
+        // Simply return true as there is an oomAdjUpdate ongoing.
+        if (mOomAdjUpdateOngoing) {
+            mPendingProcessSet.add(app);
             return true;
         }
 
@@ -1046,26 +1049,6 @@ public abstract class OomAdjuster {
                 PlatformCompatCache.getInstance().invalidate(app.getPackageName());
             }
         }
-    }
-
-    /**
-     * Check if there is an ongoing oomAdjUpdate, enqueue the given process record
-     * to {@link #mPendingProcessSet} if there is one.
-     *
-     * @param app The target app to get an oomAdjUpdate, or a full oomAdjUpdate if it's null.
-     * @return {@code true} if there is an ongoing oomAdjUpdate.
-     */
-    @GuardedBy("mServiceLock")
-    private boolean checkAndEnqueueOomAdjTargetLocked(@Nullable ProcessRecordInternal app) {
-        if (!mOomAdjUpdateOngoing) {
-            return false;
-        }
-        if (app != null) {
-            mPendingProcessSet.add(app);
-        } else {
-            mPendingFullOomAdjUpdate = true;
-        }
-        return true;
     }
 
     /**
