@@ -17,11 +17,13 @@
 package com.android.systemui.authentication.domain.interactor
 
 import android.app.admin.DevicePolicyManager
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
+import android.security.Flags.FLAG_LOCKSCREEN_INDICATE_DUPLICATE_GUESSES
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.widget.LockPatternUtils
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.authentication.data.repository.AuthenticationRepository.Companion.WARM_UP_THROTTLE_DURATION
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.None
@@ -32,17 +34,13 @@ import com.android.systemui.authentication.shared.model.AuthenticationPatternCoo
 import com.android.systemui.authentication.shared.model.AuthenticationResult
 import com.android.systemui.authentication.shared.model.AuthenticationWipeModel
 import com.android.systemui.coroutines.collectLastValue
-import com.android.systemui.coroutines.collectValues
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.FakeUserRepository
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.google.common.truth.Truth.assertThat
-import kotlin.time.Duration.Companion.ZERO
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runCurrent
@@ -65,6 +63,7 @@ class AuthenticationInteractorTest : SysuiTestCase() {
         testScope.collectLastValue(underTest.failedAuthenticationAttempts)
     private val lastWarmUpTrigger
         get() = kosmos.fakeAuthenticationRepository.lastWarmUpTrigger
+
     private val now
         get() = testScope.currentTime.milliseconds
 
@@ -594,6 +593,46 @@ class AuthenticationInteractorTest : SysuiTestCase() {
             runCurrent()
 
             assertThat(lastWarmUpTrigger).isEqualTo(now)
+        }
+
+    @Test
+    @DisableFlags(FLAG_LOCKSCREEN_INDICATE_DUPLICATE_GUESSES)
+    fun authenticate_withTooShortPassword_doesNotClearDuplicateStateWithFlagOff() =
+        testScope.runTest {
+            val isDuplicateAttempt by collectLastValue(underTest.isDuplicateAttempt)
+
+            kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Password)
+            assertFailed(underTest.authenticate(listOf(9, 8, 7, 6, 5, 4)))
+            assertFailed(underTest.authenticate(listOf(9, 8, 7, 6, 5, 4)))
+            assertThat(isDuplicateAttempt).isTrue()
+
+            val tooShortPassword = buildList {
+                repeat(kosmos.fakeAuthenticationRepository.minPasswordLength - 1) { time ->
+                    add("$time")
+                }
+            }
+            assertSkipped(underTest.authenticate(tooShortPassword), assertNoResultEvents = false)
+            assertThat(isDuplicateAttempt).isTrue()
+        }
+
+    @Test
+    @EnableFlags(FLAG_LOCKSCREEN_INDICATE_DUPLICATE_GUESSES)
+    fun authenticate_withTooShortPassword_clearsDuplicateState() =
+        testScope.runTest {
+            val isDuplicateAttempt by collectLastValue(underTest.isDuplicateAttempt)
+
+            kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Password)
+            assertFailed(underTest.authenticate(listOf(9, 8, 7, 6, 5, 4)))
+            assertFailed(underTest.authenticate(listOf(9, 8, 7, 6, 5, 4)))
+            assertThat(isDuplicateAttempt).isTrue()
+
+            val tooShortPassword = buildList {
+                repeat(kosmos.fakeAuthenticationRepository.minPasswordLength - 1) { time ->
+                    add("$time")
+                }
+            }
+            assertSkipped(underTest.authenticate(tooShortPassword), assertNoResultEvents = false)
+            assertThat(isDuplicateAttempt).isFalse()
         }
 
     private fun assertSucceeded(authenticationResult: AuthenticationResult) {
