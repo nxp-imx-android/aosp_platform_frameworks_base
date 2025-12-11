@@ -560,6 +560,26 @@ public final class PhoneAccount implements Parcelable {
     public static final int CAPABILITY_CHANGE_RTT_CALL_TO_AUDIO_CALL = 0x100000;
 
     /**
+     * Flag indicating that this {@link PhoneAccount} should be opted out of automatic requests for
+     * premium network capabilities.
+     *
+     * <p>By default, the system may automatically request a premium network slice (such as a
+     * slice for unified communications) on behalf of an application with
+     * {@link Call#PROPERTY_IS_TRANSACTIONAL}, when a call is being established. Setting this
+     * capability would allow an application to opt-out of this behaviour and manage its own network
+     * requests, giving it more granular control over its networking.
+     *
+     * <p>This is intended for applications with sophisticated, custom network management logic that
+     * prefer to handle their own network requests rather than relying on the system's automatic
+     * behavior.
+     *
+     * @see #getCapabilities()
+     */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_OPT_OUT_PREMIUM_NETWORK)
+    public static final int CAPABILITY_OPT_OUT_OF_PREMIUM_NETWORK = 0x200000;
+
+
+    /**
      * URI scheme for telephone number URIs.
      */
     public static final String SCHEME_TEL = "tel";
@@ -1474,6 +1494,9 @@ public final class PhoneAccount implements Parcelable {
         }
         if (hasCapabilities(CAPABILITY_CHANGE_RTT_CALL_TO_AUDIO_CALL)) {
             sb.append("RttToAudio ");
+        }
+        if (hasCapabilities(CAPABILITY_OPT_OUT_OF_PREMIUM_NETWORK)) {
+            sb.append("OptOutPremium ");
         }
         return sb.toString();
     }
