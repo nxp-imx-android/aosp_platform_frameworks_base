@@ -41,12 +41,6 @@ flag {
     description: "Controls whether the connected mice's primary buttons, left and right, can be swapped."
     bug: "352598211"
 }
-flag {
-    name: "touchpad_system_gesture_disable"
-    namespace: "input"
-    description: "Adds an accessibility setting to disable system navigation gestures (3- and 4-finger swipes) on touchpads"
-    bug: "353947750"
-}
 
 flag {
     name: "enable_customizable_input_gestures"
