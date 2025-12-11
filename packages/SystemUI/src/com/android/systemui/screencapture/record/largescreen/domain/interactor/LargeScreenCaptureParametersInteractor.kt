@@ -19,8 +19,6 @@ package com.android.systemui.screencapture.record.largescreen.domain.interactor
 import android.net.Uri
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.screencapture.record.largescreen.data.repository.LargeScreenCaptureParametersRepository
-import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
-import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 
@@ -40,21 +38,5 @@ constructor(private val largeScreenSettingsRepository: LargeScreenCaptureParamet
 
     suspend fun setIsCustomSaveLocationActive(isActive: Boolean) {
         largeScreenSettingsRepository.updateIsCustomSaveLocationActive(isActive)
-    }
-
-    suspend fun getSelectedCaptureType(): ScreenCaptureType {
-        return largeScreenSettingsRepository.getSelectedCaptureType()
-    }
-
-    suspend fun getSelectedCaptureRegion(): ScreenCaptureRegion {
-        return largeScreenSettingsRepository.getSelectedCaptureRegion()
-    }
-
-    suspend fun setSelectedCaptureType(type: ScreenCaptureType) {
-        largeScreenSettingsRepository.updateSelectedCaptureTypeString(type)
-    }
-
-    suspend fun setSelectedCaptureRegion(region: ScreenCaptureRegion) {
-        largeScreenSettingsRepository.updateSelectedCaptureRegionString(region)
     }
 }

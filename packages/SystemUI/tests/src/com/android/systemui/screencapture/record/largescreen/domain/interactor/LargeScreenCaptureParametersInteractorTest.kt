@@ -23,8 +23,6 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
-import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
-import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -119,30 +117,5 @@ class LargeScreenCaptureParametersInteractorTest : SysuiTestCase() {
 
             assertThat(latestUriValue).isEqualTo(initialUri.toString())
             assertThat(latestActiveValue).isFalse()
-        }
-
-    @Test
-    fun setSelectedCaptureType_setAndGetCaptureType() =
-        kosmos.runTest {
-            underTest.setSelectedCaptureType(ScreenCaptureType.RECORDING)
-            assertThat(underTest.getSelectedCaptureType()).isEqualTo(ScreenCaptureType.RECORDING)
-
-            underTest.setSelectedCaptureType(ScreenCaptureType.SCREENSHOT)
-            assertThat(underTest.getSelectedCaptureType()).isEqualTo(ScreenCaptureType.SCREENSHOT)
-        }
-
-    @Test
-    fun setSelectedCaptureRegion_setCaptureRegion() =
-        kosmos.runTest {
-            underTest.setSelectedCaptureRegion(ScreenCaptureRegion.PARTIAL)
-            assertThat(underTest.getSelectedCaptureRegion()).isEqualTo(ScreenCaptureRegion.PARTIAL)
-
-            underTest.setSelectedCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
-            assertThat(underTest.getSelectedCaptureRegion())
-                .isEqualTo(ScreenCaptureRegion.APP_WINDOW)
-
-            underTest.setSelectedCaptureRegion(ScreenCaptureRegion.FULLSCREEN)
-            assertThat(underTest.getSelectedCaptureRegion())
-                .isEqualTo(ScreenCaptureRegion.FULLSCREEN)
         }
 }
