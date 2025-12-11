@@ -5192,23 +5192,21 @@ public class WindowManagerService extends IWindowManager.Stub
     public void updateDisplayWindowAnimatingTypes(int displayId, @InsetsType int animatingTypes,
             @Nullable ImeTracker.Token statsToken) {
         updateDisplayWindowAnimatingTypes_enforcePermission();
-        if (android.view.inputmethod.Flags.reportAnimatingInsetsTypes()) {
-            final long origId = Binder.clearCallingIdentity();
-            try {
-                synchronized (mGlobalLock) {
-                    final DisplayContent dc = mRoot.getDisplayContent(displayId);
-                    if (dc == null || dc.mRemoteInsetsControlTarget == null) {
-                        ImeTracker.forLogging().onFailed(statsToken,
-                                ImeTracker.PHASE_SERVER_UPDATE_DISPLAY_WINDOW_ANIMATING_TYPES);
-                        return;
-                    }
-                    ImeTracker.forLogging().onProgress(statsToken,
+        final long origId = Binder.clearCallingIdentity();
+        try {
+            synchronized (mGlobalLock) {
+                final DisplayContent dc = mRoot.getDisplayContent(displayId);
+                if (dc == null || dc.mRemoteInsetsControlTarget == null) {
+                    ImeTracker.forLogging().onFailed(statsToken,
                             ImeTracker.PHASE_SERVER_UPDATE_DISPLAY_WINDOW_ANIMATING_TYPES);
-                    dc.mRemoteInsetsControlTarget.setAnimatingTypes(animatingTypes, statsToken);
+                    return;
                 }
-            } finally {
-                Binder.restoreCallingIdentity(origId);
+                ImeTracker.forLogging().onProgress(statsToken,
+                        ImeTracker.PHASE_SERVER_UPDATE_DISPLAY_WINDOW_ANIMATING_TYPES);
+                dc.mRemoteInsetsControlTarget.setAnimatingTypes(animatingTypes, statsToken);
             }
+        } finally {
+            Binder.restoreCallingIdentity(origId);
         }
     }
 

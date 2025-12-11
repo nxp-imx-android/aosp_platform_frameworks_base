@@ -7402,10 +7402,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             if (mAnimatingTypes != animatingTypes) {
                 getInsetsPolicy().onAnimatingTypesChanged(this, mAnimatingTypes, animatingTypes);
                 mAnimatingTypes = animatingTypes;
-
-                if (android.view.inputmethod.Flags.reportAnimatingInsetsTypes()) {
-                    getInsetsStateController().onAnimatingTypesChanged(this, statsToken);
-                }
+                getInsetsStateController().onAnimatingTypesChanged(this, statsToken);
             }
         }
 

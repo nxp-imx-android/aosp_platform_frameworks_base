@@ -871,13 +871,11 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                     this, mAnimatingTypes, animatingTypes);
             mAnimatingTypes = animatingTypes;
 
-            if (android.view.inputmethod.Flags.reportAnimatingInsetsTypes()) {
-                ImeTracker.forLogging().onProgress(statsToken,
-                        ImeTracker.PHASE_SERVER_WINDOW_ANIMATING_TYPES_CHANGED);
-                final InsetsStateController insetsStateController =
-                        getDisplayContent().getInsetsStateController();
-                insetsStateController.onAnimatingTypesChanged(this, statsToken);
-            }
+            ImeTracker.forLogging().onProgress(statsToken,
+                    ImeTracker.PHASE_SERVER_WINDOW_ANIMATING_TYPES_CHANGED);
+            final InsetsStateController insetsStateController =
+                    getDisplayContent().getInsetsStateController();
+            insetsStateController.onAnimatingTypesChanged(this, statsToken);
         } else {
             ImeTracker.forLogging().onFailed(statsToken,
                     ImeTracker.PHASE_SERVER_WINDOW_ANIMATING_TYPES_CHANGED);

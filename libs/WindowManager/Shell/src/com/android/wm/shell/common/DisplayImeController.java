@@ -429,18 +429,7 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
                         statsToken);
             }
 
-            boolean hideAnimOngoing;
-            boolean reportVisible;
-            if (android.view.inputmethod.Flags.reportAnimatingInsetsTypes()) {
-                hideAnimOngoing = false;
-                reportVisible = mImeRequestedVisible;
-            } else {
-                // In case of a hide, the statsToken should not been send yet (as the animation
-                // is still ongoing). It will be sent at the end of the animation.
-                hideAnimOngoing = !mImeRequestedVisible && mAnimation != null;
-                reportVisible = mImeRequestedVisible || mAnimation != null;
-            }
-            setVisibleDirectly(reportVisible, hideAnimOngoing ? null : statsToken);
+            setVisibleDirectly(mImeRequestedVisible, statsToken);
         }
 
         /**
@@ -635,11 +624,9 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
                             mDisplayId, imeTop(hiddenY, defaultY), imeTop(shownY, defaultY),
                             (mAnimationDirection == DIRECTION_SHOW));
 
-                    if (android.view.inputmethod.Flags.reportAnimatingInsetsTypes()) {
-                        // Updating the animatingTypes when starting the animation is not the
-                        // trigger to show the IME. Thus, not sending the statsToken here.
-                        setAnimating(true /* imeAnimationOngoing */, null /* statsToken */);
-                    }
+                    // Updating the animatingTypes when starting the animation is not the
+                    // trigger to show the IME. Thus, not sending the statsToken here.
+                    setAnimating(true /* imeAnimationOngoing */, null /* statsToken */);
                     int flags = dispatchStartPositioning(mDisplayId, imeTop(hiddenY, defaultY),
                             imeTop(shownY, defaultY), mAnimationDirection == DIRECTION_SHOW,
                             isFloating, t);
@@ -687,10 +674,8 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
                         t.setPosition(animatingLeash, x, y);
                         t.setAlpha(animatingLeash, 1f);
                     }
-                    if (android.view.inputmethod.Flags.reportAnimatingInsetsTypes()) {
-                        setAnimating(false /* imeAnimationOngoing */,
-                                mAnimationDirection == DIRECTION_HIDE ? statsToken : null);
-                    }
+                    setAnimating(false /* imeAnimationOngoing */,
+                            mAnimationDirection == DIRECTION_HIDE ? statsToken : null);
                     if (mAnimationDirection == DIRECTION_HIDE && !mCancelled) {
                         ImeTracker.forLogging().onProgress(mStatsToken,
                                 ImeTracker.PHASE_SHELL_ANIMATION_RUNNING);
@@ -698,9 +683,7 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
                         // Updating the client visibility will not hide the IME, unless it is
                         // not animating anymore. Thus, not sending a statsToken here, but
                         // only later when we're updating the animatingTypes.
-                        setVisibleDirectly(false /* visible */,
-                                !android.view.inputmethod.Flags.reportAnimatingInsetsTypes()
-                                        ? statsToken : null);
+                        setVisibleDirectly(false /* visible */, null /* statsToken */);
                     } else if (mAnimationDirection == DIRECTION_SHOW && !mCancelled) {
                         ImeTracker.forLogging().onShown(mStatsToken);
                     } else if (mCancelled) {
