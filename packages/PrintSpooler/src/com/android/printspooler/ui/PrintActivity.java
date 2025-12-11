@@ -1365,12 +1365,19 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
     }
 
     private void confirmPrint() {
+        if (Flags.enableSetupActivity()
+                && mCurrentPrinter != null
+                && mCurrentPrinter.getSetupIntent() != null) {
+            // TODO: b/460112550 - Make UI reflect this status before the user gets here.
+            return;
+        }
+
         setState(STATE_PRINT_CONFIRMED);
 
         addCurrentPrinterToHistory();
         setUserPrinted();
 
-        // updateSelectedPagesFromTextField migth update the preview, hence apply the preview first
+        // updateSelectedPagesFromTextField might update the preview, hence apply the preview first
         updateSelectedPagesFromPreview();
         updateSelectedPagesFromTextField();
 

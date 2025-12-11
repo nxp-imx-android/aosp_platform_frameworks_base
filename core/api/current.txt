@@ -37349,6 +37349,7 @@ package android.print {
     method @NonNull public android.print.PrinterInfo.Builder setIconResourceId(@DrawableRes int);
     method @NonNull public android.print.PrinterInfo.Builder setInfoIntent(@NonNull android.app.PendingIntent);
     method @NonNull public android.print.PrinterInfo.Builder setName(@NonNull String);
+    method @FlaggedApi("android.print.flags.enable_setup_activity") @NonNull public android.print.PrinterInfo.Builder setSetupIntent(@NonNull android.app.PendingIntent);
     method @NonNull public android.print.PrinterInfo.Builder setStatus(int);
   }
 

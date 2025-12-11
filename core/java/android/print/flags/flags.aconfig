@@ -6,4 +6,5 @@ flag {
     namespace: "printing"
     description: "Enable PrintService implementations to provide a printer setup activity"
     bug: "455021653"
+    is_exported: true
 }
