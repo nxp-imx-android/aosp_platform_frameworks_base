@@ -47,6 +47,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -63,6 +64,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
@@ -70,6 +72,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.PlatformOutlinedButton
@@ -121,9 +124,13 @@ fun ContentScope.PinInputDisplay(viewModel: PinBouncerViewModel, modifier: Modif
     // Because of all these differences, there are two separate implementations, rather than
     // unifying into a single, more complex implementation.
 
-    when (val length = hintedPinLength) {
-        null -> RegularPinInputDisplay(viewModel, shapeAnimations, pinInputModifier)
-        else -> HintingPinInputDisplay(viewModel, shapeAnimations, length, pinInputModifier)
+    // Override the layout direction to LTR because, even in RTL locales, digits are written from
+    // left to right.
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+        when (val length = hintedPinLength) {
+            null -> RegularPinInputDisplay(viewModel, shapeAnimations, pinInputModifier)
+            else -> HintingPinInputDisplay(viewModel, shapeAnimations, length, pinInputModifier)
+        }
     }
 }
 

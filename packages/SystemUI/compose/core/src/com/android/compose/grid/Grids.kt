@@ -35,6 +35,9 @@ import kotlin.math.roundToInt
  *
  * Each column is spaced from the columns to its left and right by [horizontalSpacing]. Each cell
  * inside a column is spaced from the cells above and below it with [verticalSpacing].
+ *
+ * If [placeRelative] is set to `false`, the child composables will be placed left-to-right, without
+ * regard to the layout direction.
  */
 @Composable
 fun VerticalGrid(
@@ -42,6 +45,7 @@ fun VerticalGrid(
     modifier: Modifier = Modifier,
     verticalSpacing: Dp = 0.dp,
     horizontalSpacing: Dp = 0.dp,
+    placeRelative: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     Grid(
@@ -50,6 +54,7 @@ fun VerticalGrid(
         modifier = modifier,
         verticalSpacing = verticalSpacing,
         horizontalSpacing = horizontalSpacing,
+        placeRelative = placeRelative,
         content = content,
     )
 }
@@ -61,6 +66,9 @@ fun VerticalGrid(
  *
  * Each column is spaced from the columns to its left and right by [horizontalSpacing]. Each cell
  * inside a column is spaced from the cells above and below it with [verticalSpacing].
+ *
+ * If [placeRelative] is set to `false`, the child composables will be placed left-to-right, without
+ * regard to the layout direction.
  */
 @Composable
 fun HorizontalGrid(
@@ -68,6 +76,7 @@ fun HorizontalGrid(
     modifier: Modifier = Modifier,
     verticalSpacing: Dp = 0.dp,
     horizontalSpacing: Dp = 0.dp,
+    placeRelative: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     Grid(
@@ -76,6 +85,7 @@ fun HorizontalGrid(
         modifier = modifier,
         verticalSpacing = verticalSpacing,
         horizontalSpacing = horizontalSpacing,
+        placeRelative = placeRelative,
         content = content,
     )
 }
@@ -87,6 +97,7 @@ private fun Grid(
     modifier: Modifier = Modifier,
     verticalSpacing: Dp,
     horizontalSpacing: Dp,
+    placeRelative: Boolean,
     content: @Composable () -> Unit,
 ) {
     check(primarySpaces > 0) {
@@ -184,7 +195,11 @@ private fun Grid(
                     val cellIndex = row * columns + column
                     if (cellIndex < cells) {
                         val placeable = placeables[cellIndex]
-                        placeable.placeRelative(x, y)
+                        if (placeRelative) {
+                            placeable.placeRelative(x, y)
+                        } else {
+                            placeable.place(x, y)
+                        }
                         x += placeable.width + horizontalSpacing.roundToPx()
                         maxChildHeight = max(maxChildHeight, placeable.height)
                     }
