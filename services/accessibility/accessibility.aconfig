@@ -79,13 +79,6 @@ flag {
 }
 
 flag {
-    name: "enable_low_vision_hats"
-    namespace: "accessibility"
-    description: "Use HaTS for low vision feedback."
-    bug: "397794341"
-}
-
-flag {
     name: "enable_magnification_joystick"
     namespace: "accessibility"
     description: "Whether to enable joystick controls for magnification"
