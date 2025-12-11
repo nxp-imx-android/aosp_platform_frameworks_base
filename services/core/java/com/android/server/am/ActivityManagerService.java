@@ -434,7 +434,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.autofill.AutofillManagerInternal;
-import android.widget.Toast;
 
 import com.android.internal.annotations.CompositeRWLock;
 import com.android.internal.annotations.GuardedBy;
@@ -486,7 +485,6 @@ import com.android.server.SystemConfig;
 import com.android.server.SystemService;
 import com.android.server.SystemServiceManager;
 import com.android.server.ThreadPriorityBooster;
-import com.android.server.UiThread;
 import com.android.server.Watchdog;
 import com.android.server.am.LowMemDetector.MemFactor;
 import com.android.server.am.psc.ActiveUidsInternal;
@@ -4553,18 +4551,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                         packageName, null, userId);
         }
 
-        boolean clearPendingIntentsForStoppedApp = false;
-        try {
-            clearPendingIntentsForStoppedApp = (packageStateStopped
-                    && android.content.pm.Flags.stayStopped());
-        } catch (IllegalStateException e) {
-            // It's unlikely for a package to be force-stopped early in the boot cycle. So, if we
-            // check for 'packageStateStopped' which should evaluate to 'false', then this should
-            // ensure we are not accessing the flag early in the boot cycle. As an additional
-            // safety measure, catch the exception and ignore to avoid causing a device restart.
-            clearPendingIntentsForStoppedApp = false;
-        }
-        if (packageName == null || uninstalling || clearPendingIntentsForStoppedApp) {
+        if (packageName == null || uninstalling || packageStateStopped) {
             final int cancelReason;
             if (packageName == null) {
                 cancelReason = PendingIntentRecord.CANCEL_REASON_USER_STOPPED;
@@ -5288,7 +5275,6 @@ public class ActivityManagerService extends IActivityManager.Stub
         if (isRestrictedBackupMode) return;
 
         if (!sendBroadcast) {
-            if (!android.content.pm.Flags.stayStopped()) return;
             // Nothing to do if it wasn't previously stopped
             if (!wasForceStopped) {
                 return;

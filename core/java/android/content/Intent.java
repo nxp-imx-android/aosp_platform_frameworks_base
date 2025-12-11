@@ -2989,7 +2989,6 @@ public class Intent implements Parcelable, Cloneable {
      * @see #ACTION_PACKAGE_RESTARTED
      */
     @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)
-    @FlaggedApi(android.content.pm.Flags.FLAG_STAY_STOPPED)
     public static final String ACTION_PACKAGE_UNSTOPPED = "android.intent.action.PACKAGE_UNSTOPPED";
 
     /**

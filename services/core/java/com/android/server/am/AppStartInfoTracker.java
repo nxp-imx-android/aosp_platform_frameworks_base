@@ -530,13 +530,9 @@ public final class AppStartInfoTracker {
         start.setDefiningUid(definingUid > 0 ? definingUid : app.info.uid);
         start.setProcessName(app.processName);
         start.setPackageName(app.info.packageName);
-        if (android.content.pm.Flags.stayStopped()) {
-            // TODO: Verify this is created at the right time to have the correct force-stopped
-            // state in the ProcessRecord.
-            final WindowProcessController wpc = app.getWindowProcessController();
-            start.setForceStopped(app.wasForceStopped()
-                    || (wpc != null ? wpc.wasForceStopped() : false));
-        }
+        final WindowProcessController wpc = app.getWindowProcessController();
+        start.setForceStopped(app.wasForceStopped()
+                || (wpc != null ? wpc.wasForceStopped() : false));
     }
 
     /**

@@ -1312,15 +1312,12 @@ public class SyncManager {
 
     /**
      * Returns whether the package is in a stopped state or not.
-     * Always returns {@code false} if the {@code android.content.pm.stay_stopped} flag is not set.
      */
     private boolean isPackageStopped(String packageName, int userId) {
-        if (android.content.pm.Flags.stayStopped()) {
-            try {
-                return mPackageManagerInternal.isPackageStopped(packageName, userId);
-            } catch (NameNotFoundException e) {
-                Log.e(TAG, "Couldn't determine stopped state for unknown package: " + packageName);
-            }
+        try {
+            return mPackageManagerInternal.isPackageStopped(packageName, userId);
+        } catch (NameNotFoundException e) {
+            Log.e(TAG, "Couldn't determine stopped state for unknown package: " + packageName);
         }
         return false;
     }
