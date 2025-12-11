@@ -750,16 +750,21 @@ constructor(
             ?: flowOf(Rect(0, 0, 0, 0)).flowOn(bgDispatcher)
 
     override val isSignOutButtonVisible: Boolean by
-        combine(
-                userLogoutInteractor.isLogoutToSystemUserEnabled,
-                deviceProvisioningInteractor.isDeviceProvisioned,
-                sceneInteractor.currentScene,
-            ) { isLogoutToSystemUserEnabled, isDeviceProvisioned, currentScene ->
+        if (
                 Flags.signOutButtonOnKeyguardStatusBar() &&
-                    keyguardInteractor.isSignOutButtonOnStatusBarEnabled &&
+                    keyguardInteractor.isSignOutButtonOnStatusBarEnabled
+            ) {
+                combine(
+                    userLogoutInteractor.isLogoutToSystemUserEnabled,
+                    deviceProvisioningInteractor.isDeviceProvisioned,
+                    sceneInteractor.currentScene,
+                ) { isLogoutToSystemUserEnabled, isDeviceProvisioned, currentScene ->
                     isLogoutToSystemUserEnabled &&
-                    isDeviceProvisioned &&
-                    currentScene == Scenes.Lockscreen
+                        isDeviceProvisioned &&
+                        currentScene == Scenes.Lockscreen
+                }
+            } else {
+                flowOf(false)
             }
             .hydratedStateOf(traceName = "isSignOutButtonVisible", initialValue = false)
 
