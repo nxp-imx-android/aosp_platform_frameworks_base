@@ -37,8 +37,7 @@ constructor(
                 val blurLevel = it.blurLevel
                 ButtonUiState(
                     isEnabled = blurLevel != BlurLevel.OFF,
-                    // TODO(b/436222258): Replace hardcoded strings with resource resolution
-                    mainTitle = "Blur",
+                    mainTitle = com.android.systemui.res.R.string.av_blur,
                     image = icon(blurLevel),
                 )
             }

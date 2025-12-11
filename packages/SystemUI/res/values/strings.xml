@@ -4721,4 +4721,65 @@
     <string name="location_button_text_use_precise_location">Use precise location</string>
     <string name="location_button_text_near_precise_location">Near precise location</string>
     <string name="location_button_text_precise_location">Precise location</string>
+
+    <!-- Privacy chip "in use" string, where the parameter is the sensor name (e.g. "Camera in use") [CHAR LIMIT=NONE] -->
+    <string name="privacy_chip_use_string"><xliff:g example="Camera" id="sensor">%1$s</xliff:g> in use</string>
+    <!-- Privacy chip "in use" string, where the first parameter is the sensor name and the second is the app name (e.g. "Camera in use by Camera") [CHAR LIMIT=NONE] -->
+    <string name="privacy_chip_use_string_with_app"><xliff:g example="Camera" id="sensor">%1$s</xliff:g> in use by <xliff:g example="Camera" id="app">%2$s</xliff:g></string>
+    <!-- Text to show in the privacy chip when both camera and mic are used. [CHAR LIMIT=NONE] -->
+    <string name="privacy_chip_camera_and_mic_text">Camera and mic</string>
+    <!-- Title of the AV controls panel. [CHAR LIMIT=NONE] -->
+    <string name="av_panel_title">Privacy</string>
+    <!-- Header of the sensor activity drill in page. [CHAR LIMIT=NONE] -->
+    <string name="sensor_activity_header">See apps that are actively or recently using these permissions.</string>
+    <!-- Button text to see all sensor access. [CHAR LIMIT=NONE] -->
+    <string name="sensor_activity_see_all_access_button">See all access</string>
+    <!-- Label for camera sensor. [CHAR LIMIT=NONE] -->
+    <string name="sensor_activity_camera_label">Camera</string>
+    <!-- Label for microphone sensor. [CHAR LIMIT=NONE] -->
+    <string name="sensor_activity_microphone_label">Microphone</string>
+    <!-- Button text to manage app access. [CHAR LIMIT=NONE] -->
+    <string name="sensor_activity_manage_access_button">Manage access</string>
+    <!-- Button text to close the app. [CHAR LIMIT=NONE] -->
+    <string name="sensor_activity_close_app_button">Close app</string>
+    <!-- Content description for the back button in the sensor activity drill in page. [CHAR LIMIT=NONE] -->
+    <string name="sensor_activity_back_button_cd">Back</string>
+
+    <!-- Suffix for the app name when multiple apps are using a sensor. [CHAR LIMIT=NONE] -->
+    <string name="privacy_chip_apps_using_sensor_suffix">+<xliff:g id="count">%1$d</xliff:g> more</string>
+    <!-- Text to show in the privacy chip when camera is in use. [CHAR LIMIT=NONE] -->
+    <string name="privacy_chip_camera_in_use">Camera in use</string>
+    <!-- Text to show in the privacy chip when mic is in use. [CHAR LIMIT=NONE] -->
+    <string name="privacy_chip_mic_in_use">Mic in use</string>
+    <!-- Text to show in the privacy chip when both camera and mic are in use. [CHAR LIMIT=NONE] -->
+    <string name="privacy_chip_camera_mic_in_use">Camera, mic in use</string>
+
+    <!-- Title for the face retouch quick setting button [CHAR LIMIT=NONE] -->
+    <string name="av_camera_portrait_touch_up">Portrait touch-up</string>
+    <!-- Label for the microphone toggle [CHAR LIMIT=NONE] -->
+    <string name="av_mic_label">Microphone</string>
+    <!-- Label for the camera toggle [CHAR LIMIT=NONE] -->
+    <string name="av_camera_label">Camera</string>
+    <!-- Title for background blur drill in page [CHAR LIMIT=20] -->
+    <string name="av_camera_blur_drill_in_title">Background Blur</string>
+    <!-- Title for background blur off [CHAR LIMIT=NONE] -->
+    <string name="av_camera_blur_off">Off</string>
+    <!-- Title for background blur light [CHAR LIMIT=NONE] -->
+    <string name="av_camera_blur_light">Light</string>
+    <!-- Title for background blur full [CHAR LIMIT=NONE] -->
+    <string name="av_camera_blur_full">Full</string>
+    <!-- Title for portrait relight button [CHAR LIMIT=NONE] -->
+    <string name="av_camera_improve_lighting">Improve lighting</string>
+    <!-- Title for camera framing button [CHAR LIMIT=NONE] -->
+    <string name="av_camera_framing">Camera Framing</string>
+    <!-- Title for studio mic button [CHAR LIMIT=NONE] -->
+    <string name="av_studio_mic">Studio Mic</string>
+    <!-- Title for studio look button [CHAR LIMIT=NONE] -->
+    <string name="av_studio_look">Studio Look</string>
+    <!-- Subtitle for studio look button showing number of active effects [CHAR LIMIT=NONE] -->
+    <string name="av_studio_look_effects">%d effects</string>
+    <!-- Title for blur button [CHAR LIMIT=NONE] -->
+    <string name="av_blur">Blur</string>
+    <!-- Title for live captions button [CHAR LIMIT=NONE] -->
+    <string name="av_live_captions">Live Captions</string>
 </resources>

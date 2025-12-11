@@ -33,7 +33,7 @@ constructor(private val avControlsChipInteractor: AvControlsChipInteractor) :
             .map {
                 ButtonUiState(
                     isEnabled = !it,
-                    // TODO(b/436222258): Replace hardcoded strings with resource resolution
+                    subText = com.android.systemui.res.R.string.av_camera_label,
                     image =
                         if (it) com.android.systemui.res.R.drawable.gs_videocam_off
                         else com.android.systemui.res.R.drawable.gs_videocam,

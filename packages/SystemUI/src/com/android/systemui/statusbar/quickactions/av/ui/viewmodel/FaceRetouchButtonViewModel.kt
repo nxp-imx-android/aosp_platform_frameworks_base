@@ -33,8 +33,7 @@ constructor(private val desktopEffectInteractor: DesktopEffectInteractor) :
             .map {
                 ButtonUiState(
                     isEnabled = it.faceRetouch,
-                    // TODO(b/436222258): Replace hardcoded strings with resource resolution
-                    mainTitle = "Portrait touch-up",
+                    mainTitle = com.android.systemui.res.R.string.av_camera_portrait_touch_up,
                     image = com.android.systemui.res.R.drawable.gs_face_retouch,
                 )
             }

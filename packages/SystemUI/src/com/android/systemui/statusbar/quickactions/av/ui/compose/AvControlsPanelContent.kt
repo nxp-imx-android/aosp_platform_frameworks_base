@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.android.compose.ui.graphics.painter.DrawablePainter
 import com.android.systemui.lifecycle.rememberViewModel
@@ -163,7 +164,7 @@ private fun SimpleButton(
             }
         }
         viewModel.state.subText?.let {
-            Row { Text(text = it, style = MaterialTheme.typography.labelSmall) }
+            Row { Text(text = stringResource(it), style = MaterialTheme.typography.labelSmall) }
         }
     }
 }
@@ -189,8 +190,18 @@ private fun SectionButton(
                 Icon(painter = painterResource(id = it), contentDescription = null)
             }
         },
-        headlineContent = { viewModel.state.mainTitle?.let { Text(text = it) } },
-        supportingContent = { viewModel.state.subTitle?.let { Text(text = it) } },
+        headlineContent = { viewModel.state.mainTitle?.let { Text(text = stringResource(it)) } },
+        supportingContent = {
+            viewModel.state.subTitle?.let {
+                val text =
+                    if (viewModel.state.subTitleArg != null) {
+                        stringResource(it, viewModel.state.subTitleArg!!)
+                    } else {
+                        stringResource(it)
+                    }
+                Text(text = text)
+            }
+        },
         colors = itemColors(viewModel.state.isEnabled),
     )
 }

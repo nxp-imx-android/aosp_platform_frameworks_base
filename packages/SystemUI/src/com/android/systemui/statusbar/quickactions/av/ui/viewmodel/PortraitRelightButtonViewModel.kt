@@ -33,8 +33,7 @@ constructor(private val desktopEffectInteractor: DesktopEffectInteractor) :
             .map {
                 ButtonUiState(
                     isEnabled = it.portraitRelight,
-                    // TODO(b/436222258): Replace hardcoded strings with resource resolution
-                    mainTitle = "Improve lighting",
+                    mainTitle = com.android.systemui.res.R.string.av_camera_improve_lighting,
                     image = com.android.systemui.res.R.drawable.gs_portrait_lighting,
                 )
             }
