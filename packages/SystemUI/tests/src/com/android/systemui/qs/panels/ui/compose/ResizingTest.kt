@@ -23,7 +23,6 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
@@ -83,27 +82,24 @@ class ResizingTest(flags: FlagsParameterization) : SysuiTestCase() {
         onResize: (EditAction.ResizeTile) -> Unit = {},
     ) {
         val largeTilesSpecs = remember { largeTiles.toMutableSet() }
-        // TODO(b/467024654): Remove LookaheadScope when the bug is fixed.
-        LookaheadScope {
-            PlatformTheme {
-                DefaultEditTileGrid(
-                    listState = listState,
-                    allTiles = listState.tiles.filterIsInstance<TileGridCell>().map { it.tile },
-                    modifier = Modifier.fillMaxSize(),
-                    snapshotViewModel = remember { snapshotViewModelFactory.create() },
-                    topBarActions = remember { mutableStateListOf() },
-                    onStopEditing = {},
-                ) { action ->
-                    when (action) {
-                        is EditAction.ResizeTile -> {
-                            onResize(action)
+        PlatformTheme {
+            DefaultEditTileGrid(
+                listState = listState,
+                allTiles = listState.tiles.filterIsInstance<TileGridCell>().map { it.tile },
+                modifier = Modifier.fillMaxSize(),
+                snapshotViewModel = remember { snapshotViewModelFactory.create() },
+                topBarActions = remember { mutableStateListOf() },
+                onStopEditing = {},
+            ) { action ->
+                when (action) {
+                    is EditAction.ResizeTile -> {
+                        onResize(action)
 
-                            if (action.toIcon) largeTilesSpecs.remove(action.tileSpec)
-                            else largeTilesSpecs.add(action.tileSpec)
-                            listState.updateTiles(tiles, largeTilesSpecs)
-                        }
-                        else -> {}
+                        if (action.toIcon) largeTilesSpecs.remove(action.tileSpec)
+                        else largeTilesSpecs.add(action.tileSpec)
+                        listState.updateTiles(tiles, largeTilesSpecs)
                     }
+                    else -> {}
                 }
             }
         }
