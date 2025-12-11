@@ -23,7 +23,6 @@ import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.app.KeyguardManager;
 import android.companion.virtual.VirtualDeviceManager;
-import android.companion.virtualdevice.flags.Flags;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -147,9 +146,6 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
     }
 
     void initialize() {
-        if (!Flags.computerControlAllowlists()) {
-            return;
-        }
         Slog.v(TAG, "Initialize called, updating allowlists and adding DeviceConfig listener");
 
         mBackgroundExecutor.execute(() -> {
@@ -199,10 +195,6 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
 
         if (isSuperAgent(packageName)) {
             Slog.i(TAG, "isPackageAllowedToCreateSession: Found super agent " + packageName);
-            return true;
-        }
-
-        if (!Flags.computerControlAllowlists()) {
             return true;
         }
 
@@ -263,10 +255,6 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
         if (Objects.equals(packageManager.getPermissionControllerPackageName(), targetPackage)) {
             Slog.i(TAG, "isPackageAutomatable: Cannot automate permission controller");
             return false;
-        }
-
-        if (!Flags.computerControlAllowlists()) {
-            return true;
         }
 
         final SigningDetails targetPackageSigningDetails =
