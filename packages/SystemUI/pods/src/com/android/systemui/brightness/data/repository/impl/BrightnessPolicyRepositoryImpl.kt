@@ -24,6 +24,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.user.data.repository.UserRepository
+import com.android.systemui.util.kotlin.mapDirect
 import com.android.systemui.util.policy.PolicyRestriction
 import com.android.systemui.util.policy.UserRestrictionChecker
 import javax.inject.Inject
@@ -31,7 +32,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.mapLatest
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @SysUISingleton
@@ -45,7 +45,7 @@ constructor(
 ) : BrightnessPolicyRepository {
     override val restrictionPolicy: Flow<PolicyRestriction> =
         userRepository.selectedUserInfo
-            .mapLatest { user ->
+            .mapDirect { user ->
                 userRestrictionChecker
                     .checkIfRestrictionEnforced(
                         applicationContext,

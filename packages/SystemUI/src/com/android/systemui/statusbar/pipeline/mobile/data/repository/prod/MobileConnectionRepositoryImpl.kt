@@ -64,6 +64,7 @@ import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConn
 import com.android.systemui.statusbar.pipeline.mobile.util.MobileMappingsProxy
 import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityModel
 import com.android.systemui.statusbar.pipeline.shared.data.model.toMobileDataActivityModel
+import com.android.systemui.util.kotlin.mapDirect
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -79,7 +80,6 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.scan
@@ -346,7 +346,7 @@ class MobileConnectionRepositoryImpl(
 
     override val cdmaRoaming: StateFlow<Boolean> =
         telephonyPollingEvent
-            .mapLatest {
+            .mapDirect {
                 try {
                     val cdmaEri = telephonyManager.cdmaEnhancedRoamingIndicatorDisplayNumber
                     cdmaEri == ERI_ON || cdmaEri == ERI_FLASH

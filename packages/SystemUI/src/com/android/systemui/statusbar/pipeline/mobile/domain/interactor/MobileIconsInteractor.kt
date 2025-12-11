@@ -38,6 +38,7 @@ import com.android.systemui.statusbar.pipeline.shared.data.model.ConnectivitySlo
 import com.android.systemui.statusbar.pipeline.shared.data.repository.ConnectivityRepository
 import com.android.systemui.statusbar.policy.data.repository.UserSetupRepository
 import com.android.systemui.util.CarrierConfigTracker
+import com.android.systemui.util.kotlin.mapDirect
 import java.lang.ref.WeakReference
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -52,7 +53,6 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 
@@ -184,7 +184,7 @@ constructor(
 
     override val activeDataIconInteractor: StateFlow<MobileIconInteractor?> =
         mobileConnectionsRepo.activeMobileDataSubscriptionId
-            .mapLatest {
+            .mapDirect {
                 if (it != null) {
                     getMobileConnectionInteractorForSubId(it)
                 } else {
@@ -301,7 +301,7 @@ constructor(
 
     override val icons =
         filteredSubscriptions
-            .mapLatest { subs ->
+            .mapDirect { subs ->
                 subs.map { getMobileConnectionInteractorForSubId(it.subscriptionId) }
             }
             .stateIn(scope, SharingStarted.WhileSubscribed(), emptyList())
@@ -366,12 +366,12 @@ constructor(
 
     override val alwaysShowDataRatIcon: StateFlow<Boolean> =
         mobileConnectionsRepo.defaultDataSubRatConfig
-            .mapLatest { it.alwaysShowDataRatIcon }
+            .mapDirect { it.alwaysShowDataRatIcon }
             .stateIn(scope, SharingStarted.WhileSubscribed(), false)
 
     override val alwaysUseCdmaLevel: StateFlow<Boolean> =
         mobileConnectionsRepo.defaultDataSubRatConfig
-            .mapLatest { it.alwaysShowCdmaRssi }
+            .mapDirect { it.alwaysShowCdmaRssi }
             .stateIn(scope, SharingStarted.WhileSubscribed(), false)
 
     override val isSingleCarrier: StateFlow<Boolean> =
