@@ -38,6 +38,7 @@ android_library {
         "SettingsLibCollapsingToolbarBaseActivity",
         "SettingsLibDisplayUtils",
         "SettingsLibPreference",
+        "SettingsLibService",
         "SettingsLibSettingsTheme",
         "SystemUI-shared-utils",
         "com_android_a11y_menu_flags_lib",

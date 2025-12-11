@@ -40,6 +40,18 @@
             </intent-filter>
         </provider>
 
+        <!--
+        Service based on settingslib ipc to expose PreferenceMetadata and Get/Set functionality.
+        -->
+        <service
+            android:name=".PreferenceService"
+            android:exported="true"
+            android:permission="android.permission.READ_SYSTEM_PREFERENCES">
+            <intent-filter>
+                <action android:name="com.android.settingslib.PREFERENCE_SERVICE" />
+            </intent-filter>
+        </service>
+
         <service
             android:name="com.android.systemui.accessibility.accessibilitymenu.AccessibilityMenuService"
             android:exported="false"
