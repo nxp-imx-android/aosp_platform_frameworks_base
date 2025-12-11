@@ -1406,6 +1406,10 @@ public class WindowManagerService extends IWindowManager.Stub
                 com.android.internal.R.bool.config_perDisplayFocusEnabled);
         mAssistantOnTopOfDream = context.getResources().getBoolean(
                 com.android.internal.R.bool.config_assistantOnTopOfDream);
+
+        // TODO(b/427186215): Remove mSkipActivityRelaunchWhenDocking and
+        // config_skipActivityRelaunchWhenDocking when the aconfig flag
+        // enable_less_activity_recreation_on_config_change is eligible for cleanup.
         mSkipActivityRelaunchWhenDocking = context.getResources()
                 .getBoolean(R.bool.config_skipActivityRelaunchWhenDocking);
 

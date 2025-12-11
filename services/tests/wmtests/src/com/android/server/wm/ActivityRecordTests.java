@@ -48,6 +48,7 @@ import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSET;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+import static android.content.pm.ActivityInfo.SKIP_ACTIVITY_RECREATION_ON_CONFIG_CHANGE;
 import static android.content.pm.ApplicationInfo.CATEGORY_GAME;
 import static android.content.pm.ApplicationInfo.CATEGORY_SOCIAL;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
@@ -504,9 +505,42 @@ public class ActivityRecordTests extends WindowTestsBase {
     }
 
     @Test
-    public void testDeskModeChange_doesNotRelaunch() throws RemoteException {
+    public void testDeskModeChange_resourceConfig_doesNotRelaunch() throws RemoteException {
         mWm.mSkipActivityRelaunchWhenDocking = true;
 
+        final ActivityRecord activity = createActivityWithTask();
+        // The activity will already be relaunching out of the gate, finish the relaunch so we can
+        // test properly.
+        activity.finishRelaunching();
+        // Clear out any calls to scheduleTransaction from launching the activity.
+        reset(mClientLifecycleManager);
+
+        final Task task = activity.getTask();
+        activity.setState(RESUMED, "Testing");
+
+        // Send a desk UI mode config update.
+        final Configuration newConfig = new Configuration(task.getConfiguration());
+        newConfig.uiMode |= UI_MODE_TYPE_DESK;
+        task.onRequestedOverrideConfigurationChanged(newConfig);
+        ensureActivityConfiguration(activity);
+
+        // The activity shouldn't start relaunching since it doesn't have any desk resources.
+        assertFalse(activity.isRelaunching());
+        // The activity configuration ui mode should match.
+        final var activityConfig = activity.getConfiguration();
+        assertEquals(newConfig.uiMode, activityConfig.uiMode);
+
+        // The configuration change is still sent to the activity, even if it doesn't relaunch.
+        final ActivityConfigurationChangeItem expected = new ActivityConfigurationChangeItem(
+                activity.token, activityConfig, activity.getActivityWindowInfo(), DEFAULT_DISPLAY);
+        verify(mClientLifecycleManager).scheduleTransactionItem(
+                eq(activity.app.getThread()), eq(expected));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_LESS_ACTIVITY_RECREATION_ON_CONFIG_CHANGE)
+    @EnableCompatChanges(SKIP_ACTIVITY_RECREATION_ON_CONFIG_CHANGE)
+    public void testDeskModeChange_compatChange_doesNotRelaunch() throws RemoteException {
         final ActivityRecord activity = createActivityWithTask();
         // The activity will already be relaunching out of the gate, finish the relaunch so we can
         // test properly.

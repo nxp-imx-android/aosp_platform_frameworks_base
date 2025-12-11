@@ -7027,9 +7027,8 @@ public final class ActivityThread extends ClientTransactionHandler
                 || shouldUpdateResources(activityToken, currentResConfig, newConfig,
                 amOverrideConfig, movedToDifferentDisplay, hasPublicResConfigChange);
 
-        // TODO(b/274944389): remove once a longer-term solution is implemented.
-        boolean skipActivityRelaunchWhenDocking = activity.getResources().getBoolean(
-                R.bool.config_skipActivityRelaunchWhenDocking);
+        final boolean skipActivityRelaunchWhenDocking = shouldSkipActivityRelaunchWhenDocking(
+                activity);
         int handledConfigChanges = activity.mActivityInfo.getRealConfigChanged();
         if (skipActivityRelaunchWhenDocking && onlyDeskInUiModeChanged(activity.mCurrentConfig,
                 newConfig)) {
@@ -7105,6 +7104,18 @@ public final class ActivityThread extends ClientTransactionHandler
 
     private static boolean isInDeskUiMode(Configuration config) {
         return (config.uiMode & UI_MODE_TYPE_MASK) == UI_MODE_TYPE_DESK;
+    }
+
+    /**
+     * Returns true if we should skip the activity recreation when the device is docked or undocked
+     * and the application does not have desk mode resources.
+     */
+    private boolean shouldSkipActivityRelaunchWhenDocking(@NonNull Activity activity) {
+        return (com.android.window.flags.Flags.enableLessActivityRecreationOnConfigChange()
+                && CompatChanges.isChangeEnabled(
+                        ActivityInfo.SKIP_ACTIVITY_RECREATION_ON_CONFIG_CHANGE))
+                || activity.getResources().getBoolean(
+                        R.bool.config_skipActivityRelaunchWhenDocking);
     }
 
     /**

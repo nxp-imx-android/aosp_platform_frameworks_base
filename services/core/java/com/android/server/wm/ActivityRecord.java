@@ -8640,9 +8640,8 @@ final class ActivityRecord extends WindowToken {
             skipRelaunchConfigMask |= CONFIG_UI_MODE;
         }
 
-        // TODO(b/274944389): remove workaround after long-term solution is implemented
         // Don't restart due to desk mode change if the app does not have desk resources.
-        if (mWmService.mSkipActivityRelaunchWhenDocking && onlyDeskInUiModeChanged(changesConfig)
+        if (shouldSkipActivityRelaunchWhenDocking() && onlyDeskInUiModeChanged(changesConfig)
                 && !hasDeskResources()) {
             skipRelaunchConfigMask |= CONFIG_UI_MODE;
         }
@@ -8723,6 +8722,16 @@ final class ActivityRecord extends WindowToken {
             Slog.w(TAG, "Exception thrown during checking for desk resources " + this, e);
         }
         return mHasDeskResources;
+    }
+
+    /**
+     * Returns true if we should skip the activity recreation when the device is docked or undocked
+     * and the application does not have desk mode resources.
+     */
+    boolean shouldSkipActivityRelaunchWhenDocking() {
+        return (Flags.enableLessActivityRecreationOnConfigChange()
+                && info.isChangeEnabled(ActivityInfo.SKIP_ACTIVITY_RECREATION_ON_CONFIG_CHANGE))
+                || mWmService.mSkipActivityRelaunchWhenDocking;
     }
 
     private int getConfigurationChanges(Configuration lastReportedConfig) {
