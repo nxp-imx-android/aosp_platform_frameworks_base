@@ -137,6 +137,23 @@ public class FusedSignalsTest {
     }
 
     @Test
+    public void testAddOrigin_withExplicitTimestamp() {
+        FusedSignals fusedSignals = new FusedSignals(TZ_LA, ORIGIN_TELEPHONY);
+        long timestamp = 123456789L;
+
+        fusedSignals.addOrigin(ORIGIN_LOCATION, List.of(TZ_NY), timestamp);
+
+        assertTrue(fusedSignals.hasOrigin(ORIGIN_LOCATION, 0));
+        assertTrue(fusedSignals.getZoneIdCandidates().contains(TZ_NY));
+        assertEquals(
+                timestamp,
+                fusedSignals.getOriginInfoForOrigin(ORIGIN_LOCATION).getTimestampAdded());
+        assertEquals(
+                timestamp,
+                fusedSignals.getOriginInfoForOrigin(ORIGIN_LOCATION).getTimestampLastUpdated());
+    }
+
+    @Test
     public void testSetQualityForOrigin() {
         FusedSignals fusedSignals = new FusedSignals(TZ_LA, ORIGIN_TELEPHONY);
         fusedSignals.setQualityForOrigin(ORIGIN_TELEPHONY, 50);

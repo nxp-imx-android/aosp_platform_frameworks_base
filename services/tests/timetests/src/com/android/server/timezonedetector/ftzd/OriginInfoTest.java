@@ -32,6 +32,16 @@ public class OriginInfoTest {
     }
 
     @Test
+    public void testConstructor_explicitTimestamp() {
+        long explicitTimestamp = 123456789L;
+        OriginInfo originInfo = new OriginInfo(explicitTimestamp);
+
+        assertThat(originInfo.getTimestampAdded()).isEqualTo(explicitTimestamp);
+        assertThat(originInfo.getTimestampLastUpdated()).isEqualTo(explicitTimestamp);
+        assertThat(originInfo.getQuality()).isEqualTo(100);
+    }
+
+    @Test
     public void testCopyConstructor() {
         OriginInfo original = new OriginInfo().setQuality(50).updateLastUpdated();
         OriginInfo copy = new OriginInfo(original);
