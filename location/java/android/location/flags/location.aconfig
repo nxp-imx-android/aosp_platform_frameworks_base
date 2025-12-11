@@ -133,13 +133,6 @@ flag {
 }
 
 flag {
-    name: "gnss_assistance_interface_jni"
-    namespace: "location"
-    description: "Flag for GNSS assistance interface JNI"
-    bug: "209078566"
-}
-
-flag {
     name: "jni_delete_local_reference_gnss_antenna_info_builder"
     namespace: "location"
     description: "Flag for deleting local reference for gnssAntennaInfoBuilder"
