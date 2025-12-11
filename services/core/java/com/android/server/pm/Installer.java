@@ -425,10 +425,10 @@ public class Installer extends SystemService {
 
     public void moveCompleteApp(String fromUuid, String toUuid, String packageName,
             int appId, String seInfo, int targetSdkVersion,
-            String fromCodePath) throws InstallerException {
+            String fromCodePath, int pccId) throws InstallerException {
         if (!checkBeforeRemote()) return;
         try {
-            mInstalld.moveCompleteApp(fromUuid, toUuid, packageName, appId, seInfo,
+            mInstalld.moveCompleteApp(fromUuid, toUuid, packageName, appId, pccId, seInfo,
                     targetSdkVersion, fromCodePath);
         } catch (Exception e) {
             throw InstallerException.from(e);
