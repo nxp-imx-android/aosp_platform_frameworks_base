@@ -433,7 +433,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     fun testDragMove_whenSnappedOrMaximized_restoresBounds() = runOnUiThread {
         val prevBounds = Rect(100, 250, 200, 500) // width=100, height=250
         whenever(mockDesktopRepository.hasBoundsBeforeSnapOrMaximize(any())).thenReturn(true)
-        whenever(mockDesktopRepository.removeBoundsBeforeSnapOrMaximize(TASK_ID))
+        whenever(mockDesktopRepository.getBoundsBeforeSnapOrMaximize(TASK_ID))
             .thenReturn(prevBounds)
         val expectedRestoredBounds = Rect(100, 100, 200, 350) // width=100, height=250
 
@@ -519,7 +519,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     fun testDragMove_awaitsResizeTransition_beforeMoving() = runOnUiThread {
         val prevBounds = Rect(10, 20, 90, 80) // width=80, height=60
         whenever(mockDesktopRepository.hasBoundsBeforeSnapOrMaximize(any())).thenReturn(true)
-        whenever(mockDesktopRepository.removeBoundsBeforeSnapOrMaximize(TASK_ID))
+        whenever(mockDesktopRepository.getBoundsBeforeSnapOrMaximize(TASK_ID))
             .thenReturn(prevBounds)
 
         val mockResizeBinder = mock<IBinder>()

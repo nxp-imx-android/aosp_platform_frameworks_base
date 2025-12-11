@@ -1217,6 +1217,10 @@ class DesktopRepository(
         }
     }
 
+    /** Returns the bounds saved before snapping or maximizing the given task. */
+    fun getBoundsBeforeSnapOrMaximize(taskId: Int): Rect? =
+        boundsBeforeSnapOrMaximizeByTaskId.get(taskId)
+
     /** Removes and returns the bounds saved before snapping or maximizing the given task. */
     fun removeBoundsBeforeSnapOrMaximize(taskId: Int): Rect? =
         boundsBeforeSnapOrMaximizeByTaskId.removeReturnOld(taskId)
