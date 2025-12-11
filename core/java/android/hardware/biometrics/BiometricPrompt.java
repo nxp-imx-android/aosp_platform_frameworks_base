@@ -537,7 +537,7 @@ public class BiometricPrompt implements BiometricAuthenticator, BiometricConstan
         }
 
         /**
-         * Remove system-provided fallback of a specific type.
+         * Hide system-provided fallback of a specific type.
          *
          * <p>This method is useful when the calling surface wants to prevent certain
          * system-provided fallback options from being displayed to the user.
