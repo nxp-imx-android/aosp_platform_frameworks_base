@@ -18,6 +18,7 @@ package com.android.printspooler.ui;
 
 import android.annotation.NonNull;
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -29,6 +30,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentSender.SendIntentException;
 import android.content.Loader;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -156,6 +158,7 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
     private static final int ACTIVITY_REQUEST_CREATE_FILE = 1;
     private static final int ACTIVITY_REQUEST_SELECT_PRINTER = 2;
     private static final int ACTIVITY_REQUEST_POPULATE_ADVANCED_PRINT_OPTIONS = 3;
+    private static final int SETUP_INTENT_REQUEST_CODE = 4;
 
     private static final int DEST_ADAPTER_MAX_ITEM_COUNT = 9;
 
@@ -737,6 +740,10 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
 
             case ACTIVITY_REQUEST_POPULATE_ADVANCED_PRINT_OPTIONS: {
                 onAdvancedPrintOptionsActivityResult(resultCode, data);
+            } break;
+
+            case SETUP_INTENT_REQUEST_CODE: {
+                onSetupActivityResult(resultCode, data);
             } break;
         }
     }
@@ -1364,14 +1371,34 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
         }
     }
 
-    private void confirmPrint() {
-        if (Flags.enableSetupActivity()
-                && mCurrentPrinter != null
-                && mCurrentPrinter.getSetupIntent() != null) {
-            // TODO: b/460112550 - Make UI reflect this status before the user gets here.
+    private void setupAndPrint() {
+        if (!needsSetup(mCurrentPrinter)) {
+            confirmPrint();
             return;
         }
 
+        try {
+            Log.i(LOG_TAG, "Printer requires setup: " + mCurrentPrinter);
+            Intent fillInIntent = new Intent();
+            Bundle options =
+                    ActivityOptions.makeBasic()
+                            .setPendingIntentBackgroundActivityStartMode(
+                                    ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED)
+                            .toBundle();
+            startIntentSenderForResult(
+                    mCurrentPrinter.getSetupIntent().getIntentSender(),
+                    SETUP_INTENT_REQUEST_CODE,
+                    fillInIntent,
+                    0,
+                    0,
+                    0,
+                    options);
+        } catch (SendIntentException e) {
+            Log.e(LOG_TAG, "Failed to send pending setup intent: %s", e);
+        }
+    }
+
+    private void confirmPrint() {
         setState(STATE_PRINT_CONFIRMED);
 
         addCurrentPrinterToHistory();
@@ -1390,6 +1417,36 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
         if (!mPrintedDocument.isUpdating()) {
             requestCreatePdfFileOrFinish();
         }
+    }
+
+    private void onSetupActivityResult(int resultCode, Intent data) {
+        if (resultCode != RESULT_OK || data == null) {
+            return;
+        }
+
+        PrinterInfo printerInfo =
+                data.getParcelableExtra(SelectPrinterActivity.INTENT_EXTRA_PRINTER);
+        if (printerInfo == null) {
+            return;
+        }
+
+        // Allow the setup activity to return an alternate printer in case it withdraws
+        // the one originally being set up.
+        mCurrentPrinter = printerInfo;
+        mPrintJob.setPrinterId(printerInfo.getId());
+        mPrintJob.setPrinterName(printerInfo.getName());
+
+        if (canPrint(printerInfo)) {
+            updatePrintAttributesFromCapabilities(printerInfo.getCapabilities());
+            onPrinterAvailable(printerInfo);
+        } else {
+            onPrinterUnavailable(printerInfo);
+        }
+        if (mPrinterRegistry != null) {
+            mPrinterRegistry.setTrackedPrinter(printerInfo.getId());
+        }
+
+        mDestinationSpinnerAdapter.ensurePrinterInVisibleAdapterPosition(printerInfo);
     }
 
     private void bindUi() {
@@ -1627,23 +1684,25 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
             }
 
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setTitle(getString(R.string.print_service_security_warning_title,
-                    serviceLabel))
-                    .setMessage(getString(R.string.print_service_security_warning_summary,
-                            serviceLabel))
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int id) {
-                            ComponentName printService =
-                                    getArguments().getParcelable(PRINTSERVICE_KEY);
-                            // Prevent onSharedPreferenceChanged from getting triggered
-                            mApprovedServices
-                                    .unregisterChangeListener(PrintServiceApprovalDialog.this);
+            builder.setTitle(getString(R.string.print_service_security_warning_title, serviceLabel))
+                    .setMessage(
+                            getString(
+                                    R.string.print_service_security_warning_summary, serviceLabel))
+                    .setPositiveButton(
+                            android.R.string.ok,
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int id) {
+                                    ComponentName printService =
+                                            getArguments().getParcelable(PRINTSERVICE_KEY);
+                                    // Prevent onSharedPreferenceChanged from getting triggered
+                                    mApprovedServices.unregisterChangeListener(
+                                            PrintServiceApprovalDialog.this);
 
-                            mApprovedServices.addApprovedService(printService);
-                            ((PrintActivity) getActivity()).confirmPrint();
-                        }
-                    })
+                                    mApprovedServices.addApprovedService(printService);
+                                    ((PrintActivity) getActivity()).setupAndPrint();
+                                }
+                            })
                     .setNegativeButton(android.R.string.cancel, null);
 
             return builder.create();
@@ -1668,7 +1727,7 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
                     || (!Flags.updatedButtonLayout() && view == mPrintImageButton)) {
                 if (mCurrentPrinter != null) {
                     if (Flags.skipServiceWarning()) {
-                        confirmPrint();
+                        setupAndPrint();
                     } else if (mDestinationSpinnerAdapter.getPdfPrinter() == mCurrentPrinter) {
                         confirmPrint();
                     } else {
@@ -1677,7 +1736,7 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
 
                         ComponentName printService = mCurrentPrinter.getId().getServiceName();
                         if (approvedServices.isApprovedService(printService)) {
-                            confirmPrint();
+                            setupAndPrint();
                         } else {
                             PrintServiceApprovalDialog.newInstance(printService)
                                     .show(getFragmentManager(), "approve");
@@ -1707,6 +1766,12 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
                 && printer.getStatus() != PrinterInfo.STATUS_UNAVAILABLE;
     }
 
+    private static boolean needsSetup(PrinterInfo printer) {
+        return android.print.flags.Flags.enableSetupActivity()
+                && printer != null
+                && printer.getSetupIntent() != null;
+    }
+
     /**
      * Disable all options UI elements, beside the {@link #mDestinationSpinner} and {@link
      * #mCancelButton}
@@ -1721,7 +1786,12 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
         mDuplexModeSpinner.setEnabled(false);
         mOrientationSpinner.setEnabled(false);
         if (Flags.updatedButtonLayout()) {
-            mPrintButton.setEnabled(false);
+            if (needsSetup(mCurrentPrinter)) {
+                // The setup button is always enabled even if options aren't available.
+                mPrintButton.setEnabled(true);
+            } else {
+                mPrintButton.setEnabled(false);
+            }
         } else {
             mPrintImageButton.setVisibility(View.GONE);
         }
@@ -1747,8 +1817,13 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
         // settings are loading.
         if (mDestinationSpinnerAdapter.getPdfPrinter() != mCurrentPrinter) {
             if (Flags.updatedButtonLayout()) {
-                mPrintButton.setText(getString(R.string.print_button));
-                mPrintButton.setContentDescription(getString(R.string.print_button));
+                if (needsSetup(mCurrentPrinter)) {
+                    mPrintButton.setText(getString(R.string.setup_button));
+                    mPrintButton.setContentDescription(getString(R.string.setup_button));
+                } else {
+                    mPrintButton.setText(getString(R.string.print_button));
+                    mPrintButton.setContentDescription(getString(R.string.print_button));
+                }
             } else {
                 mPrintImageButton.setImageResource(com.android.internal.R.drawable.ic_print);
                 mPrintImageButton.setContentDescription(getString(R.string.print_button));
@@ -1782,8 +1857,8 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
         }
 
         // If no current printer, or it has no capabilities, or it is not
-        // available, we disable all print options except the destination.
-        if (mCurrentPrinter == null || !canPrint(mCurrentPrinter)) {
+        // available, or it needs setup, we disable all print options except the destination.
+        if (mCurrentPrinter == null || !canPrint(mCurrentPrinter) || needsSetup(mCurrentPrinter)) {
             disableOptionsUi(false);
             return;
         }
