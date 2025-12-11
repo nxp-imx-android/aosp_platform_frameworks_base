@@ -19,6 +19,7 @@ package com.android.systemui.dreams
 import android.Manifest.permission.WRITE_DREAM_STATE
 import android.app.DreamManager
 import androidx.annotation.RequiresPermission
+import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.CoreStartable
 import com.android.systemui.authentication.domain.interactor.AuthenticationInteractor
 import com.android.systemui.dagger.SysUISingleton
@@ -30,18 +31,21 @@ import com.android.systemui.log.core.Logger
 import com.android.systemui.log.dagger.DreamLog
 import com.android.systemui.scene.domain.interactor.SceneBackInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
+import com.android.systemui.scene.domain.resolver.SceneResolver
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.util.kotlin.pairwise
 import com.android.systemui.util.kotlin.sample
+import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -58,6 +62,7 @@ constructor(
     private val keyguardInteractor: KeyguardInteractor,
     private val authenticationInteractor: AuthenticationInteractor,
     @DreamLog private val logBuffer: LogBuffer,
+    private val sceneFamilyResolvers: Lazy<Map<SceneKey, @JvmSuppressWildcards SceneResolver>>,
 ) : CoreStartable {
 
     private val logger = Logger(logBuffer, TAG)
@@ -99,6 +104,13 @@ constructor(
                         )
                     }
                 } else {
+                    // Since we just got a signal that dream stopped, it is not guaranteed that the
+                    // home scene family resolver has received the update. Wait until it no longer
+                    // resolves to the Dream scene before requesting the scene change.
+                    sceneFamilyResolvers.get()[SceneFamilies.Home]?.resolvedScene?.first {
+                        it != Scenes.Dream
+                    }
+
                     sceneInteractor.changeScene(
                         toScene = SceneFamilies.Home,
                         loggingReason = "Dream stopped",
