@@ -794,6 +794,8 @@ public class MediaQualityService extends SystemService {
                     pp.pictureParameters = pictureParameters;
 
                     mMediaQuality.sendDefaultPictureParameters(pp);
+                    mMediaQuality.sendDefaultPictureProfile(
+                            mHalNotifier.convertToHalPictureProfile(longId, params));
                     parcel.recycle();
                     return true;
                 }
@@ -1397,6 +1399,8 @@ public class MediaQualityService extends SystemService {
                     sp.soundParameters = soundParameters;
 
                     mMediaQuality.sendDefaultSoundParameters(sp);
+                    mMediaQuality.sendDefaultSoundProfile(
+                            mHalNotifier.convertToHalSoundProfile(longId, params));
                     return true;
                 }
             } catch (RemoteException e) {
