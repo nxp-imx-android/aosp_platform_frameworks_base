@@ -46,6 +46,7 @@ class PostRecordingViewModel
 @AssistedInject
 constructor(
     @Assisted val videoUri: Uri,
+    @Assisted private val displayId: Int,
     private val context: Context,
     private val broadcastSender: BroadcastSender,
     private val userTracker: UserTracker,
@@ -130,7 +131,7 @@ constructor(
                 }
 
         broadcastSender.sendBroadcastAsUser(
-            intent = ActivityStartingReceiver.wrapIntent(context, intent),
+            intent = ActivityStartingReceiver.wrapIntent(context, intent, displayId),
             userHandle = userTracker.userHandle,
         )
     }
@@ -138,6 +139,6 @@ constructor(
     @AssistedFactory
     interface Factory {
 
-        fun create(videoUri: Uri): PostRecordingViewModel
+        fun create(videoUri: Uri, displayId: Int): PostRecordingViewModel
     }
 }

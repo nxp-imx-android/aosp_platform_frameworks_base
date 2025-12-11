@@ -30,9 +30,10 @@ import com.android.systemui.settings.userTracker
 val Kosmos.postRecordingViewModelFactory by
     Kosmos.Fixture {
         object : PostRecordingViewModel.Factory {
-            override fun create(videoUri: Uri): PostRecordingViewModel {
+            override fun create(videoUri: Uri, displayId: Int): PostRecordingViewModel {
                 return PostRecordingViewModel(
                     videoUri = videoUri,
+                    displayId = displayId,
                     context = applicationContext,
                     broadcastSender = broadcastSender,
                     userTracker = userTracker,
