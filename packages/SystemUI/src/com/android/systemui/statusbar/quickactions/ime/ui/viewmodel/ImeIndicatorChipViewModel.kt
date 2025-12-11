@@ -58,9 +58,9 @@ constructor(
             return QuickActionChipUiState.Hidden(QuickActionChipId.ImeIndicator)
         }
 
-        // TODO(b/458557858): Use subtype short label as another fallback option if available. Also,
-        // determine what to set as the accessible name when there is a selected subtype.
-        val icon =
+        // TODO(b/458557858): Determine what to set as the accessible name when there is a selected
+        // subtype.
+        val subtypeIcon =
             model.selectedSubtype?.icon?.let { subtypeIcon ->
                 android.graphics.drawable.Icon.createWithResource(
                         subtypeIcon.packageName,
@@ -69,17 +69,32 @@ constructor(
                     .loadDrawable(context)
                     ?.asIcon(resId = subtypeIcon.resId, resPackage = subtypeIcon.packageName)
             }
-                ?: Icon.Resource(
-                    R.drawable.ic_keyboard,
-                    ContentDescription.Resource(
-                        R.string.accessibility_status_bar_input_method_indicator
-                    ),
-                )
+        val subtypeShortLabel = model.selectedSubtype?.shortLabel
+
+        val (icons: List<ChipIcon>, chipText: String?) =
+            when {
+                subtypeIcon != null -> {
+                    listOf(ChipIcon(subtypeIcon)) to null
+                }
+                !subtypeShortLabel.isNullOrBlank() -> {
+                    emptyList<ChipIcon>() to subtypeShortLabel
+                }
+                else -> {
+                    val defaultIcon =
+                        Icon.Resource(
+                            R.drawable.ic_keyboard,
+                            ContentDescription.Resource(
+                                R.string.accessibility_status_bar_input_method_indicator
+                            ),
+                        )
+                    listOf(ChipIcon(defaultIcon)) to null
+                }
+            }
 
         return QuickActionChipUiState.PopupChip(
             chipId = QuickActionChipId.ImeIndicator,
-            icons = listOf(ChipIcon(icon)),
-            chipText = null,
+            icons = icons,
+            chipText = chipText,
             showPopup = { imeIndicatorChipInteractor.showInputMethodPicker(displayId) },
         )
     }

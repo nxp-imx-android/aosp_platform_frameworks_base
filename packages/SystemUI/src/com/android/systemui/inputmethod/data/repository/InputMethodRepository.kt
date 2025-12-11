@@ -19,6 +19,7 @@ package com.android.systemui.inputmethod.data.repository
 import android.annotation.SuppressLint
 import android.os.UserHandle
 import android.provider.Settings
+import android.view.inputmethod.Flags
 import android.view.inputmethod.InputMethodInfo
 import android.view.inputmethod.InputMethodManager
 import com.android.systemui.dagger.SysUISingleton
@@ -198,6 +199,12 @@ constructor(
                     subtypeId = it.subtypeId,
                     isAuxiliary = it.isAuxiliary,
                     icon = icon,
+                    shortLabel =
+                        if (Flags.imeSubtypeShortLabel()) {
+                            it.subtypeShortLabel.toString()?.ifEmpty { null }
+                        } else {
+                            null
+                        },
                 )
             }
     }
