@@ -27,7 +27,6 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.content.Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT;
-import static android.content.pm.ActivityInfo.FLAG_ALWAYS_FOCUSABLE;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_UNRESIZEABLE;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LOCKED;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_NOSENSOR;
@@ -708,34 +707,6 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
         rootTask.moveToBack("moveRootTaskToBack", null /* task */);
         // After moving the root task to back, the root task should be the last focused.
         assertEquals(rootTask, taskDisplayAreas.getLastFocusedRootTask());
-    }
-
-    /**
-     * This test simulates the picture-in-picture menu activity launches an activity to fullscreen
-     * root task. The fullscreen root task should be the top focused for resuming correctly.
-     */
-    @Test
-    public void testFullscreenRootTaskCanBeFocusedWhenFocusablePinnedRootTaskExists() {
-        // Create a pinned root task and move to front.
-        final Task pinnedRootTask = mRootWindowContainer.getDefaultTaskDisplayArea()
-                .createRootTask(WINDOWING_MODE_PINNED, ACTIVITY_TYPE_STANDARD, ON_TOP);
-        final Task pinnedTask = new TaskBuilder(mAtm.mTaskSupervisor)
-                .setParentTask(pinnedRootTask).build();
-        new ActivityBuilder(mAtm).setActivityFlags(FLAG_ALWAYS_FOCUSABLE)
-                .setTask(pinnedTask).build();
-        pinnedRootTask.moveToFront("movePinnedRootTaskToFront");
-
-        // The focused root task should be the pinned root task.
-        assertTrue(pinnedRootTask.isFocusedRootTaskOnDisplay());
-
-        // Create a fullscreen root task and move to front.
-        final Task fullscreenRootTask = createTaskWithActivity(
-                mRootWindowContainer.getDefaultTaskDisplayArea(),
-                WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD, ON_TOP, true);
-        fullscreenRootTask.moveToFront("moveFullscreenRootTaskToFront");
-
-        // The focused root task should be the fullscreen root task.
-        assertTrue(fullscreenRootTask.isFocusedRootTaskOnDisplay());
     }
 
     /**

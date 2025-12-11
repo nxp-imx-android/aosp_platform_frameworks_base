@@ -24,7 +24,6 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
-import static android.content.pm.ActivityInfo.FLAG_ALWAYS_FOCUSABLE;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.window.DisplayAreaOrganizer.FEATURE_VENDOR_FIRST;
 
@@ -817,13 +816,6 @@ public class RootWindowContainerTests extends WindowTestsBase {
         // We should not be focusable when in pinned mode
         assertFalse(pinnedTask.isTopActivityFocusable());
         assertFalse(pinnedActivity.isFocusable());
-
-        // Add flag forcing focusability.
-        pinnedActivity.info.flags |= FLAG_ALWAYS_FOCUSABLE;
-
-        // Task with FLAG_ALWAYS_FOCUSABLE should be focusable.
-        assertTrue(pinnedTask.isTopActivityFocusable());
-        assertTrue(pinnedActivity.isFocusable());
     }
 
     /**

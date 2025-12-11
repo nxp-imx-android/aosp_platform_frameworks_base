@@ -3617,11 +3617,6 @@
         <attr name="turnScreenOn" />
 
         <attr name="directBootAware" />
-        <!-- @hide This activity is always focusable regardless of if it is in a task/stack whose
-             activities are normally not focusable.
-             For example, {@link android.R.attr#supportsPictureInPicture} activities are placed
-             in a task/stack that isn't focusable. This flag allows them to be focusable.-->
-        <attr name="alwaysFocusable" format="boolean" />
         <attr name="enableVrMode" />
         <attr name="rotationAnimation" />
         <attr name="visibleToInstantApps" />
