@@ -43,7 +43,9 @@ public final class TaskContinuityMessageSerializer {
                 message = TaskStackBroadcastMessage.readFromProto(pis);
                 break;
             case (int) android.companion.TaskContinuityMessage.HANDOFF_REQUEST:
-                message = HandoffRequestMessage.readFromProto(pis);
+                message =
+                        HandoffRequestMessage.CREATOR.read(
+                                pis, android.companion.TaskContinuityMessage.HANDOFF_REQUEST);
                 break;
             case (int) android.companion.TaskContinuityMessage.HANDOFF_REQUEST_RESULT:
                 message = HandoffRequestResultMessage.readFromProto(pis);
