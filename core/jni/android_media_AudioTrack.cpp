@@ -388,6 +388,9 @@ static jint android_media_AudioTrack_setup(JNIEnv *env, jobject thiz, jobject we
                                   (offload || encapsulationMode) ? &offloadInfo : NULL,
                                   attributionSource, // Passed from Java
                                   paa.get(),
+                                  false, // doNotReconnect
+                                  1.0f, // maxRequiredSpeed
+                                  AUDIO_PORT_HANDLE_NONE, // selectedDeviceId
                                   codecProvenanceStr.c_str() != nullptr ? codecProvenanceStr.c_str()
                                                                         : "");
             break;
