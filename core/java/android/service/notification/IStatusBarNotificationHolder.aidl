@@ -19,6 +19,7 @@ package android.service.notification;
 import android.service.notification.StatusBarNotification;
 
 /** @hide */
+// TODO: b/467399610 - Delete entirely
 interface IStatusBarNotificationHolder {
     /** Fetch the held StatusBarNotification. This method should only be called once per Holder */
     StatusBarNotification get();

@@ -1527,26 +1527,7 @@ public abstract class NotificationListenerService extends Service {
     /** @hide */
     protected class NotificationListenerWrapper extends INotificationListener.Stub {
         @Override
-        public void onNotificationPosted(IStatusBarNotificationHolder sbnHolder,
-                NotificationRankingUpdate update, long dispatchToken) {
-            StatusBarNotification sbn;
-            try {
-                sbn = sbnHolder.get();
-            } catch (RemoteException e) {
-                Log.w(TAG, "onNotificationPosted: Error receiving StatusBarNotification", e);
-                notifyDispatchCompletion(dispatchToken);
-                return;
-            }
-            if (sbn == null) {
-                Log.w(TAG, "onNotificationPosted: Error receiving StatusBarNotification");
-                notifyDispatchCompletion(dispatchToken);
-                return;
-            }
-            onNotificationPostedFull(sbn, update, dispatchToken);
-        }
-
-        @Override
-        public void onNotificationPostedFull(StatusBarNotification sbn,
+        public void onNotificationPosted(StatusBarNotification sbn,
                 NotificationRankingUpdate update, long dispatchToken) {
             try {
                 // convert icon metadata to legacy format for older clients
@@ -1582,22 +1563,7 @@ public abstract class NotificationListenerService extends Service {
         }
 
         @Override
-        public void onNotificationRemoved(IStatusBarNotificationHolder sbnHolder,
-                NotificationRankingUpdate update, NotificationStats stats, int reason,
-                long dispatchToken) {
-            StatusBarNotification sbn;
-            try {
-                sbn = sbnHolder.get();
-            } catch (RemoteException e) {
-                Log.w(TAG, "onNotificationRemoved: Error receiving StatusBarNotification", e);
-                notifyDispatchCompletion(dispatchToken);
-                return;
-            }
-            onNotificationRemovedFull(sbn, update, stats, reason, dispatchToken);
-        }
-
-        @Override
-        public void onNotificationRemovedFull(StatusBarNotification sbn,
+        public void onNotificationRemoved(StatusBarNotification sbn,
                 NotificationRankingUpdate update, NotificationStats stats, int reason,
                 long dispatchToken) {
             if (sbn == null) {
@@ -1676,14 +1642,6 @@ public abstract class NotificationListenerService extends Service {
 
         @Override
         public void onNotificationEnqueuedWithChannel(
-                IStatusBarNotificationHolder notificationHolder, NotificationChannel channel,
-                NotificationRankingUpdate update)
-                throws RemoteException {
-            // no-op in the listener
-        }
-
-        @Override
-        public void onNotificationEnqueuedWithChannelFull(
                 StatusBarNotification sbn, NotificationChannel channel,
                 NotificationRankingUpdate update)
                 throws RemoteException {
@@ -1714,13 +1672,6 @@ public abstract class NotificationListenerService extends Service {
 
         @Override
         public void onNotificationSnoozedUntilContext(
-                IStatusBarNotificationHolder notificationHolder, String snoozeCriterionId)
-                throws RemoteException {
-            // no-op in the listener
-        }
-
-        @Override
-        public void onNotificationSnoozedUntilContextFull(
                 StatusBarNotification sbn, String snoozeCriterionId)
                 throws RemoteException {
             // no-op in the listener

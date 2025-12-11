@@ -26,10 +26,7 @@ import android.annotation.Nullable;
 import android.annotation.SdkConstant;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
-import android.annotation.TestApi;
-import android.app.ActivityManager;
 import android.app.Flags;
-import android.app.INotificationManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -44,7 +41,9 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.RemoteException;
 import android.util.Log;
+
 import com.android.internal.os.SomeArgs;
+
 import java.lang.annotation.Retention;
 import java.util.HashSet;
 import java.util.List;
@@ -496,25 +495,7 @@ public abstract class NotificationAssistantService extends NotificationListenerS
 
     private class NotificationAssistantServiceWrapper extends NotificationListenerWrapper {
         @Override
-        public void onNotificationEnqueuedWithChannel(IStatusBarNotificationHolder sbnHolder,
-                NotificationChannel channel, NotificationRankingUpdate update) {
-            StatusBarNotification sbn;
-            try {
-                sbn = sbnHolder.get();
-            } catch (RemoteException e) {
-                Log.w(TAG, "onNotificationEnqueued: Error receiving StatusBarNotification", e);
-                return;
-            }
-            if (sbn == null) {
-                Log.w(TAG, "onNotificationEnqueuedWithChannel: "
-                        + "Error receiving StatusBarNotification");
-                return;
-            }
-            onNotificationEnqueuedWithChannelFull(sbn, channel, update);
-        }
-
-        @Override
-        public void onNotificationEnqueuedWithChannelFull(StatusBarNotification sbn,
+        public void onNotificationEnqueuedWithChannel(StatusBarNotification sbn,
                 NotificationChannel channel, NotificationRankingUpdate update) {
             applyUpdateLocked(update);
             SomeArgs args = SomeArgs.obtain();
@@ -527,23 +508,6 @@ public abstract class NotificationAssistantService extends NotificationListenerS
 
         @Override
         public void onNotificationSnoozedUntilContext(
-                IStatusBarNotificationHolder sbnHolder, String snoozeCriterionId) {
-            StatusBarNotification sbn;
-            try {
-                sbn = sbnHolder.get();
-            } catch (RemoteException e) {
-                Log.w(TAG, "onNotificationSnoozed: Error receiving StatusBarNotification", e);
-                return;
-            }
-            if (sbn == null) {
-                Log.w(TAG, "onNotificationSnoozed: Error receiving StatusBarNotification");
-                return;
-            }
-            onNotificationSnoozedUntilContextFull(sbn, snoozeCriterionId);
-        }
-
-        @Override
-        public void onNotificationSnoozedUntilContextFull(
                 StatusBarNotification sbn, String snoozeCriterionId) {
             SomeArgs args = SomeArgs.obtain();
             args.arg1 = sbn;

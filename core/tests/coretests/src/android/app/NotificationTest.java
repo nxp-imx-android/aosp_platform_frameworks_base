@@ -196,38 +196,6 @@ public class NotificationTest {
     }
 
     @Test
-    public void testHasCompletedProgress_noProgress() {
-        Notification n = new Notification.Builder(mContext).build();
-
-        assertFalse(n.hasCompletedProgress());
-    }
-
-    @Test
-    public void testHasCompletedProgress_complete() {
-        Notification n = new Notification.Builder(mContext)
-                .setProgress(100, 100, true)
-                .build();
-        Notification n2 = new Notification.Builder(mContext)
-                .setProgress(10, 10, false)
-                .build();
-        assertTrue(n.hasCompletedProgress());
-        assertTrue(n2.hasCompletedProgress());
-    }
-
-    @Test
-    public void testHasCompletedProgress_notComplete() {
-        Notification n = new Notification.Builder(mContext)
-                .setProgress(100, 99, true)
-                .build();
-        Notification n2 = new Notification.Builder(mContext)
-                .setProgress(10, 4, false)
-                .build();
-        assertFalse(n.hasCompletedProgress());
-        assertFalse(n2.hasCompletedProgress());
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_NOTIFICATION_UPDATE_SHEDDING_ALLOW_PROGRESS_COMPLETION)
     public void getProgressState_indeterminate_ongoing() {
         Notification n1 = new Notification.Builder(mContext)
                 .setProgress(0, 0, true)
@@ -246,14 +214,12 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NOTIFICATION_UPDATE_SHEDDING_ALLOW_PROGRESS_COMPLETION)
     public void getProgressState_noProgress_none() {
         Notification n = new Notification.Builder(mContext).build();
         assertThat(n.getProgressState()).isEqualTo(Notification.PROGRESS_STATE_NONE);
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NOTIFICATION_UPDATE_SHEDDING_ALLOW_PROGRESS_COMPLETION)
     public void getProgressState_atMax_complete() {
         Notification n = new Notification.Builder(mContext)
                 .setProgress(10, 10, false)
