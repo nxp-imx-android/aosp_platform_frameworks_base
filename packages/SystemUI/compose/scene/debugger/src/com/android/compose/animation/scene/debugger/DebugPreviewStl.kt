@@ -49,7 +49,7 @@ import com.android.compose.animation.scene.transitions
 object ParentSTL {
     object Scenes {
         val SceneA = SceneKey("SceneA")
-        val SceneB = SceneKey("SceneB")
+        val SceneB = SceneKey("SceneBWithVeryLongDebugName")
     }
 }
 
@@ -64,7 +64,7 @@ object Elements {
     val Shared = ElementKey("Shared")
     val NotShared = ElementKey("NotShared")
     val NotShared2 = ElementKey("NotShared2")
-    val Container = ElementKey("Container")
+    val Container = ElementKey("ContainerWithVeryLongDebugName")
     val Child = ElementKey("Child")
 }
 

@@ -34,6 +34,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -59,7 +60,7 @@ import kotlin.math.absoluteValue
  */
 internal val placedInContents = mutableMapOf<ElementKey, MutableSet<ContentKey>>()
 
-internal fun Modifier.debugElement(key: ElementKey): Modifier {
+internal fun Modifier.debugElement(key: ElementKey, content: Content): Modifier {
     return composed {
         val textMeasurer = rememberTextMeasurer()
 
@@ -98,9 +99,14 @@ internal fun Modifier.debugElement(key: ElementKey): Modifier {
                 }
 
                 if (StlDebugConfig.showElementLabels()) {
+                    val text =
+                        listOf(
+                            "E:" + key.debugName.truncateText(),
+                            "In:" + content.key.debugName.truncateText(),
+                        )
                     drawDebugLabel(
                         textMeasurer = textMeasurer,
-                        text = listOf(key.debugName),
+                        text = text,
                         color = color,
                         position = StlDebugConfig.elementLabelPosition,
                         verticalOffset = 0f,
@@ -139,7 +145,7 @@ internal fun Modifier.debugScene(key: SceneKey): Modifier {
                     // 3. Draw Label (Always on top)
                     drawDebugLabel(
                         textMeasurer = textMeasurer,
-                        text = listOf("Scene: ${key.debugName}"),
+                        text = listOf("Scene: ${key.debugName.truncateText()}"),
                         color = color,
                         position = StlDebugConfig.sceneLabelPosition,
                         textSize = 12.sp,
@@ -187,9 +193,9 @@ internal fun Modifier.debugStl(
                     state.read {
                         when (val currentState = transitionState) {
                             is TransitionState.Idle ->
-                                "Idle(${currentState.currentScene.debugName})"
+                                "Idle(${currentState.currentScene.debugName.truncateText(14)})"
                             is TransitionState.Transition ->
-                                "[${currentState.fromContent.debugName} -> ${currentState.toContent.debugName}]"
+                                "[${currentState.fromContent.debugName.truncateText(14)} -> ${currentState.toContent.debugName.truncateText(14)}]"
                         }
                     }
 
@@ -197,7 +203,7 @@ internal fun Modifier.debugStl(
                     // 3. Draw Label
                     drawDebugLabel(
                         textMeasurer = textMeasurer,
-                        text = listOf("$debugName$typeLabel:", stateText),
+                        text = listOf("${debugName.truncateText()}$typeLabel:", stateText),
                         color = color,
                         position = StlDebugConfig.stlLabelPosition,
                         textSize = textSize,
@@ -249,7 +255,12 @@ private fun DrawScope.drawDebugLabel(
         textMeasurer.measure(
             text = AnnotatedString(text.joinToString("\n")),
             style =
-                TextStyle(color = Color.Black, fontSize = textSize, fontWeight = FontWeight.Bold),
+                TextStyle(
+                    color = Color.Black,
+                    fontSize = textSize,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = getTextAlignment(position),
+                ),
         )
     val backgroundSize =
         Size(
@@ -261,6 +272,18 @@ private fun DrawScope.drawDebugLabel(
 
     drawRect(color = color, topLeft = topLeft, size = backgroundSize)
     drawText(textLayoutResult = textLayout, topLeft = topLeft + Offset(padding, padding))
+}
+
+private fun getTextAlignment(position: DebugLabelPosition): TextAlign {
+    return when (position) {
+        DebugLabelPosition.TopLeft,
+        DebugLabelPosition.BottomLeft -> TextAlign.Left
+
+        DebugLabelPosition.TopRight,
+        DebugLabelPosition.BottomRight -> TextAlign.Right
+
+        else -> TextAlign.Center
+    }
 }
 
 private fun calculateLabelPosition(
@@ -504,14 +527,25 @@ internal fun performLog(elementKey: ElementKey, contentKey: ContentKey? = null, 
 }
 
 private fun getContextString(contentKey: ContentKey?, elementKey: ElementKey): String {
-    val maxNameLength = 18
     val contentStr =
         when (contentKey) {
             null -> ""
-            is SceneKey -> "[S:${contentKey.debugName.takeLast(maxNameLength)}]"
-            is OverlayKey -> "[O:${contentKey.debugName.takeLast(maxNameLength)}]"
+            is SceneKey -> "[S:${contentKey.debugName.truncateText()}]"
+            is OverlayKey -> "[O:${contentKey.debugName.truncateText()}]"
         }
-    return "[E:${elementKey.debugName.takeLast(maxNameLength)}]$contentStr "
+    return "[E:${elementKey.debugName.truncateText()}]$contentStr "
+}
+
+/**
+ * Shortens the text to the [maxLength] if it exceeds it. The text is represented as: "<first m/2
+ * chars><number of skipped chars><last m/2 chars>"
+ */
+private fun String.truncateText(maxLength: Int = 18): String {
+    if (this.length <= maxLength) return this
+    val split = (maxLength - 2) / 2
+    val first = this.take(split)
+    val last = this.takeLast(split)
+    return "$first..$last"
 }
 
 /**
