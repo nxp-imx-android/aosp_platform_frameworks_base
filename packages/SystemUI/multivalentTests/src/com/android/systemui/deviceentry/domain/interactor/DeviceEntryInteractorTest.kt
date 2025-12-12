@@ -665,7 +665,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
             fakeKeyguardRepository.setDozeTransitionModel(
                 DozeTransitionModel(from = DozeStateModel.DOZE, to = DozeStateModel.FINISH)
             )
-            testScope.advanceTimeBy(KeyguardInteractor.IS_ABLE_TO_DREAM_DELAY_MS + 100L)
+            testScope.advanceTimeBy(KeyguardInteractor.IS_DREAMING_NOT_DOZING_DELAY_MS + 100L)
             switchToScene(Scenes.Dream)
             assertThat(isUnlocked).isTrue()
             assertThat(currentScene).isEqualTo(Scenes.Dream)
@@ -734,6 +734,6 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
 
     private companion object {
         // A delay to move past the initial dreaming delay.
-        const val DREAMING_DELAY_MS = KeyguardInteractor.IS_ABLE_TO_DREAM_DELAY_MS + 100L
+        const val DREAMING_DELAY_MS = KeyguardInteractor.IS_DREAMING_NOT_DOZING_DELAY_MS + 100L
     }
 }

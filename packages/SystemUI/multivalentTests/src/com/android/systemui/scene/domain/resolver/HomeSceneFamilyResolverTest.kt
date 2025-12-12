@@ -68,7 +68,7 @@ class HomeSceneFamilyResolverTest : SysuiTestCase() {
             fakeKeyguardRepository.setDozeTransitionModel(
                 DozeTransitionModel(from = DozeStateModel.DOZE, to = DozeStateModel.FINISH)
             )
-            testScope.advanceTimeBy(KeyguardInteractor.IS_ABLE_TO_DREAM_DELAY_MS + 100L)
+            testScope.advanceTimeBy(KeyguardInteractor.IS_DREAMING_NOT_DOZING_DELAY_MS + 100L)
 
             assertThat(resolvedScene).isEqualTo(Scenes.Dream)
         }

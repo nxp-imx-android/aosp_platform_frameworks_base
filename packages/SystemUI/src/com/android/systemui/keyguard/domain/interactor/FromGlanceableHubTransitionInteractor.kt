@@ -144,8 +144,8 @@ constructor(
         }
 
         scope.launch {
-            keyguardInteractor.isAbleToDream
-                .filterRelevantKeyguardStateAnd { isAbleToDream -> isAbleToDream }
+            keyguardInteractor.isDreamingNotDozing
+                .filterRelevantKeyguardStateAnd { isDreamingNotDozing -> isDreamingNotDozing }
                 .collect {
                     communalSceneInteractor.changeScene(
                         newScene = CommunalScenes.Blank,

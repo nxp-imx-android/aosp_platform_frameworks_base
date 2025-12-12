@@ -158,7 +158,7 @@ class DreamStartableTest : SysuiTestCase() {
             advanceTimeBy(DREAMING_DELAY_MS)
             runCurrent()
 
-            // The scene should now be Dream because isAbleToDream was true on start.
+            // The scene should now be Dream because isDreamingNotDozing was true on start.
             assertThat(currentScene).isEqualTo(Scenes.Dream)
 
             // Stop dreaming.
@@ -361,6 +361,6 @@ class DreamStartableTest : SysuiTestCase() {
 
     private companion object {
         // A delay to move past the initial dreaming delay.
-        const val DREAMING_DELAY_MS = KeyguardInteractor.IS_ABLE_TO_DREAM_DELAY_MS + 100L
+        const val DREAMING_DELAY_MS = KeyguardInteractor.IS_DREAMING_NOT_DOZING_DELAY_MS + 100L
     }
 }

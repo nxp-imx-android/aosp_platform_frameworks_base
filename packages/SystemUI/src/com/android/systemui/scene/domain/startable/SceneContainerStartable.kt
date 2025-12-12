@@ -1084,7 +1084,7 @@ constructor(
             occlusionInteractor.isKeyguardOccluded
                 .sample(
                     combine(
-                        keyguardInteractor.isAbleToDream,
+                        keyguardInteractor.isDreamingNotDozing,
                         sceneBackInteractor.backScene,
                         powerInteractor.isAwake,
                         ::Triple,

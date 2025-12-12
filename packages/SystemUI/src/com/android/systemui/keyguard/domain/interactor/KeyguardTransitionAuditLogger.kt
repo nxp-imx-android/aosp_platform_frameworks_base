@@ -126,8 +126,8 @@ constructor(
         }
 
         scope.launch {
-            keyguardInteractor.isAbleToDream.collect {
-                logger.log(TAG, VERBOSE, "isAbleToDream", it)
+            keyguardInteractor.isDreamingNotDozing.collect {
+                logger.log(TAG, VERBOSE, "isDreamingNotDozing", it)
             }
         }
 

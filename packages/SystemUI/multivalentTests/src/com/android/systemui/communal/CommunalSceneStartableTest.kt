@@ -208,7 +208,7 @@ class CommunalSceneStartableTest(flags: FlagsParameterization) : SysuiTestCase()
 
             // Start dreaming.
             fakeKeyguardRepository.setDreaming(true)
-            advanceTimeBy(KeyguardInteractor.IS_ABLE_TO_DREAM_DELAY_MS.milliseconds)
+            advanceTimeBy(KeyguardInteractor.IS_DREAMING_NOT_DOZING_DELAY_MS.milliseconds)
 
             // Hub times out immediately.
             assertThat(scene).isEqualTo(CommunalScenes.Blank)
@@ -356,7 +356,7 @@ class CommunalSceneStartableTest(flags: FlagsParameterization) : SysuiTestCase()
 
             // Start dreaming.
             fakeKeyguardRepository.setDreaming(true)
-            advanceTimeBy(KeyguardInteractor.IS_ABLE_TO_DREAM_DELAY_MS.milliseconds)
+            advanceTimeBy(KeyguardInteractor.IS_DREAMING_NOT_DOZING_DELAY_MS.milliseconds)
 
             // Hub times out immediately.
             assertThat(scene).isEqualTo(Scenes.Dream)
