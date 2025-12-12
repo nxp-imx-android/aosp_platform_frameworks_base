@@ -258,6 +258,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
             UserManager userManager,
             Handler delayDisableHandler,
             Handler delayedNotificationHandler,
+            HandlerThread handlerThread,
             AtomicBoolean apmRequestedUsbDataStatus,
             UiModeManager uiModeManager,
             boolean canSetUsbDataSignal,
@@ -270,6 +271,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
         mKeyguardManager = keyguardManager;
         mNotificationManager = notificationManager;
         mDelayedNotificationHandler = delayedNotificationHandler;
+        mHandlerThread = handlerThread;
         mDelayedDisableHandler = delayDisableHandler;
         mUiModeManager = uiModeManager;
         mCanSetUsbDataSignal = canSetUsbDataSignal;
@@ -587,8 +589,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
         for (UsbAccessory accessory : mUsbManager.getAccessoryList()) {
             // https://docs.partner.android.com/auto/resources/huig/huig_next/huig_head_next#R03-242
             if (accessory.getManufacturer().equals("Android")
-                    && accessory.getModel().equals("Android Auto")
-                    && accessory.getDescription().equals("Android Auto")) {
+                    && accessory.getModel().equals("Android Auto")) {
                 return true;
             }
         }
@@ -901,7 +902,6 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                 mKeyguardListenerExecutor, keyguardListener);
     }
 
-    // TODO:(b/449783386) If finalized and planned for launch, add supporting tests.
     private void registerCarProjectionModeListener() {
         OnProjectionStateChangedListener projectionModeListener =
                 new OnProjectionStateChangedListener() {
@@ -932,7 +932,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
             // capable, we should assume it can switch back to PROJECTION_TYPE_AUTOMOTIVE
             // anytime. We reset value upon USB disconnect instead
             UiModeManager.PROJECTION_TYPE_AUTOMOTIVE,
-            mContext.getMainExecutor(),
+            mHandlerThread.getThreadExecutor(),
             projectionModeListener);
         Slog.d(TAG, "Registered projection mode listener");
     }
