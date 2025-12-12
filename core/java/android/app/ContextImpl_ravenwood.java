@@ -24,20 +24,17 @@ import android.content.pm.PackageManager;
 import android.os.FileUtils;
 import android.os.IBinder;
 import android.os.SystemProperties;
-import android.platform.test.ravenwood.RavenwoodEnvironment;
 
 import java.io.File;
 
 public class ContextImpl_ravenwood {
     private static final String TAG = "ContextImpl_ravenwood";
 
+    private static final String IS_SYSTEM_OR_SYSUI_PROP =
+            "ravenwood.android.app.ContextImpl.isSystemOrSystemUI";
+
     static boolean isSystemOrSystemUI(Context context) {
-        if (SystemProperties.getBoolean("ravenwood.android.app.ContextImpl.isSystemOrSystemUI",
-                false)) {
-            return true;
-        }
-        // TODO(b/450069205): Delete it after adding ravenwood.prop to SystemUiRavenTests.
-        return "SystemUiRavenTests".equals(RavenwoodEnvironment.getInstance().getTestModuleName());
+        return SystemProperties.getBoolean(IS_SYSTEM_OR_SYSUI_PROP, false);
     }
 
     static PackageManager getPackageManagerInner(ContextImpl contextImpl) {
