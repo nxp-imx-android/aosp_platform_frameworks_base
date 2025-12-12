@@ -64,7 +64,6 @@ constructor(
                 deviceEntryInteractor.canSwipeToEnter,
                 deviceEntryInteractor.isDeviceEntered,
                 deviceEntryInteractor.isUnlocked,
-                keyguardInteractor.isDreamingWithOverlay,
                 keyguardInteractor.isDreamingNotDozing,
                 keyguardInteractor.isAodAvailable,
                 powerInteractor.isAwake,
@@ -81,7 +80,6 @@ constructor(
                         canSwipeToEnter = deviceEntryInteractor.canSwipeToEnter.value,
                         isDeviceEntered = deviceEntryInteractor.isDeviceEntered.value,
                         isUnlocked = deviceEntryInteractor.isUnlocked.value,
-                        isDreamingWithOverlay = false,
                         isDreamingNotDozing = false,
                         isAodAvailable = false,
                         isAwake = true,
@@ -95,7 +93,6 @@ constructor(
         canSwipeToEnter: Boolean?,
         isDeviceEntered: Boolean,
         isUnlocked: Boolean,
-        isDreamingWithOverlay: Boolean,
         isDreamingNotDozing: Boolean,
         isAodAvailable: Boolean,
         isAwake: Boolean,
@@ -103,7 +100,7 @@ constructor(
     ): SceneKey {
         return when {
             // Dream can run even if Keyguard is disabled, thus it has the highest priority here.
-            isDreamingWithOverlay && isDreamingNotDozing -> Scenes.Dream
+            isDreamingNotDozing -> Scenes.Dream
             isKeyguardOccluded -> Scenes.Occluded
             // If we're asleep on AOD, show Lockscreen scene even if keyguard is disabled.
             !isAwake && isAodAvailable -> Scenes.Lockscreen
