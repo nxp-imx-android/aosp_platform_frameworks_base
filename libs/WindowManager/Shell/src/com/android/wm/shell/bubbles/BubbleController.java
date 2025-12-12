@@ -1893,6 +1893,48 @@ public class BubbleController implements ConfigurationChangeListener,
     }
 
     /**
+     * Animation to switch the Task showing in expanded Bubble.
+     */
+    @NonNull
+    Transitions.TransitionHandler bubbleSwitchTransition(
+            @NonNull ActivityManager.RunningTaskInfo openingTaskInfo,
+            @NonNull ActivityManager.RunningTaskInfo closingTaskInfo,
+            @NonNull IBinder transition,
+            @NonNull Consumer<Transitions.TransitionHandler> onInflatedCallback) {
+        final Bubble closingBubble = mBubbleData.getBubbleInStackWithTaskId(
+                closingTaskInfo.taskId);
+        if (closingBubble == null
+                || mBubbleData.getSelectedBubble() != closingBubble
+                || !mBubbleData.isExpanded()) {
+            BubbleLog.w(
+                    "BubbleController.bubbleSwitchTransition() The existing Bubble for "
+                            + "taskId=%d was not expanded, fallback to "
+                            + "expandStackAndSelectBubbleForExistingTransition",
+                    closingTaskInfo.taskId);
+            return expandStackAndSelectBubbleForExistingTransition(openingTaskInfo, transition,
+                    onInflatedCallback);
+        }
+
+        final Bubble openingBubble = mBubbleData.getBubbleInStackWithTaskId(openingTaskInfo.taskId);
+        if (openingBubble == null) {
+            BubbleLog.w(
+                    "BubbleController.bubbleSwitchTransition() The expanding Bubble for "
+                            + "taskId=%d was not bubbled before the transition, fallback to "
+                            + "expandStackAndSelectBubbleForExistingTransition",
+                    closingTaskInfo.taskId);
+            return expandStackAndSelectBubbleForExistingTransition(openingTaskInfo, transition,
+                    onInflatedCallback);
+        }
+
+        BubbleLog.v("BubbleController.bubbleSwitchTransition() newTaskId=%d oldTaskId=%d",
+                openingTaskInfo.taskId, closingTaskInfo.taskId);
+
+        return mBubbleTransitions.startBubbleSwitchTransition(openingBubble, closingBubble,
+                mExpandedViewManager, mBubbleTaskViewFactory, mStackView, mLayerView,
+                mBubbleIconFactory, mInflateSynchronously, transition, onInflatedCallback);
+    }
+
+    /**
      * Expands and selects a bubble based on the provided {@link BubbleEntry}. If no bubble
      * exists for this entry, and it is able to bubble, a new bubble will be created.
      *
@@ -2716,7 +2758,7 @@ public class BubbleController implements ConfigurationChangeListener,
             // Only need to update the layer view if we're currently expanded for selection changes.
             if (mLayerView != null && mLayerView.isExpanded()) {
                 final Bubble b = (selectedBubble instanceof Bubble bubble) ? bubble : null;
-                if (b == null || !b.isJumpcutBubbleSwitching()) {
+                if (b == null || (!b.isJumpcutBubbleSwitching() && !b.isBubbleSwitching())) {
                     // Otherwise the animation will be called by the TransitionHandler when ready to
                     // play.
                     mLayerView.showExpandedView(selectedBubble);
