@@ -799,7 +799,6 @@ public class BackNavigationControllerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_INDEPENDENT_BACK_IN_PROJECTED)
     public void testBackIsInProjectedMode_returnsWindowOnUnfocusedDisplay() {
         final DisplayContent secondDc = createNewDisplay();
         doReturn(true).when(mBackNavigationController).isInProjectedMode(secondDc.mDisplayId);
