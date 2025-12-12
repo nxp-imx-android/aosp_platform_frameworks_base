@@ -269,8 +269,13 @@ public class Utils {
     /**
      * Checks if the authenticator configuration is a valid combination of the public APIs.
      *
-     * throws {@link SecurityException} if the caller requests for mandatory biometrics without
-     * {@link SET_BIOMETRIC_DIALOG_ADVANCED} permission
+     * throws {@link SecurityException} if the caller requests for
+     * {@link Authenticators.IDENTITY_CHECK} without {@link SET_BIOMETRIC_DIALOG_ADVANCED}
+     * permission
+     *
+     * throws {@link SecurityException} if the caller requests for
+     * {@link Authenticators.DEVICE_CREDENTIAL_AND_IDENTITY_CHECK} without
+     * {@link USE_BIOMETRIC_INTERNAL} permission
      */
     static boolean isValidAuthenticatorConfig(Context context, int authenticators) {
         // The caller is not required to set the authenticators. But if they do, check the below.
@@ -280,10 +285,18 @@ public class Utils {
 
         // Check if any of the non-biometric and non-credential bits are set. If so, this is
         // invalid.
-        final int testBits;
-        testBits = ~(Authenticators.DEVICE_CREDENTIAL
-                | Authenticators.BIOMETRIC_MIN_STRENGTH
-                | Authenticators.IDENTITY_CHECK);
+        int testBits;
+
+        if (Flags.doubleAuth()) {
+            testBits = ~(Authenticators.DEVICE_CREDENTIAL
+                    | Authenticators.BIOMETRIC_MIN_STRENGTH
+                    | Authenticators.IDENTITY_CHECK
+                    | Authenticators.DEVICE_CREDENTIAL_AND_IDENTITY_CHECK);
+        } else {
+            testBits = ~(Authenticators.DEVICE_CREDENTIAL
+                    | Authenticators.BIOMETRIC_MIN_STRENGTH
+                    | Authenticators.IDENTITY_CHECK);
+        }
 
         if ((authenticators & testBits) != 0) {
             Slog.e(BiometricService.TAG, "Non-biometric, non-credential bits found."
@@ -305,6 +318,11 @@ public class Utils {
             //TODO(b/347123256): Update CTS test
             context.enforceCallingOrSelfPermission(SET_BIOMETRIC_DIALOG_ADVANCED,
                     "Must have SET_BIOMETRIC_DIALOG_ADVANCED permission");
+            return true;
+        } else if (Flags.doubleAuth()
+                && authenticators == Authenticators.DEVICE_CREDENTIAL_AND_IDENTITY_CHECK) {
+            context.enforceCallingOrSelfPermission(USE_BIOMETRIC_INTERNAL,
+                    "Must have USE_BIOMETRIC_INTERNAL permission");
             return true;
         }
 

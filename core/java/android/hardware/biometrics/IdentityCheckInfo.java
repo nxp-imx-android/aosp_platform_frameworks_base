@@ -44,6 +44,7 @@ public class IdentityCheckInfo implements Parcelable {
     private boolean mIdentityCheckActive = false;
     private int mIdentityCheckInactiveReason = 0;
     private boolean mClearIdentityCheckFallbackOption = false;
+    private boolean mDeviceCredentialAndIdentityCheck = false;
 
     public IdentityCheckInfo() {}
 
@@ -52,6 +53,9 @@ public class IdentityCheckInfo implements Parcelable {
         mIdentityCheckInactiveReason = in.readInt();
         if (Flags.clearFallbackOption()) {
             mClearIdentityCheckFallbackOption = in.readBoolean();
+        }
+        if (Flags.doubleAuth()) {
+            mDeviceCredentialAndIdentityCheck = in.readBoolean();
         }
     }
 
@@ -79,6 +83,9 @@ public class IdentityCheckInfo implements Parcelable {
         if (Flags.clearFallbackOption()) {
             dest.writeBoolean(mClearIdentityCheckFallbackOption);
         }
+        if (Flags.doubleAuth()) {
+            dest.writeBoolean(mDeviceCredentialAndIdentityCheck);
+        }
     }
 
     public void setIdentityCheckActive(boolean identityCheckActive) {
@@ -94,6 +101,10 @@ public class IdentityCheckInfo implements Parcelable {
         mClearIdentityCheckFallbackOption = true;
     }
 
+    public void setDeviceCredentialAndIdentityCheck(boolean status) {
+        mDeviceCredentialAndIdentityCheck = status;
+    }
+
     public boolean isClearIdentityCheckFallbackOption() {
         return mClearIdentityCheckFallbackOption;
     }
@@ -104,5 +115,9 @@ public class IdentityCheckInfo implements Parcelable {
 
     public int getIdentityCheckInactiveReason() {
         return mIdentityCheckInactiveReason;
+    }
+
+    public boolean isDeviceCredentialAndIdentityCheckRequested() {
+        return mDeviceCredentialAndIdentityCheck;
     }
 }

@@ -311,6 +311,12 @@ public class PromptInfo implements Parcelable {
     }
 
     public void setAuthenticators(int authenticators) {
+        if (Flags.doubleAuth() && authenticators
+                == BiometricManager.Authenticators.DEVICE_CREDENTIAL_AND_IDENTITY_CHECK) {
+            mIdentityCheckInfo.setDeviceCredentialAndIdentityCheck(true);
+            authenticators = BiometricManager.Authenticators.DEVICE_CREDENTIAL
+                    | BiometricManager.Authenticators.BIOMETRIC_STRONG;
+        }
         mAuthenticators = authenticators;
     }
 
@@ -530,5 +536,9 @@ public class PromptInfo implements Parcelable {
      */
     public void addFallbackOption(FallbackOption fallbackOption) {
         mFallbackOptions.add(fallbackOption);
+    }
+
+    public boolean isDeviceCredentialAndIdentityCheckRequested() {
+        return mIdentityCheckInfo.isDeviceCredentialAndIdentityCheckRequested();
     }
 }
