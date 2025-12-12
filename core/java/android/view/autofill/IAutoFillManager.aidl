@@ -75,4 +75,5 @@ oneway interface IAutoFillManager {
     // For SystemUI to notify AutofillManager that a remote fill has occurred.
     void autofillRemoteApp(IBinder activityToken, int taskId, in AutofillId id,
         in AutofillValue value, int userId);
+    void getNoiseInjectionMasterSeed(in IResultReceiver result);
 }

@@ -26,6 +26,7 @@ import static android.service.autofill.FillRequest.FLAG_SUPPORTS_FILL_DIALOG;
 import static android.service.autofill.FillRequest.FLAG_VIEW_NOT_FOCUSED;
 import static android.service.autofill.FillRequest.FLAG_VIEW_REQUESTS_CREDMAN_SERVICE;
 import static android.service.autofill.Flags.FLAG_FILL_DIALOG_IMPROVEMENTS;
+import static android.service.autofill.Flags.FLAG_STRING_REBUILD_API;
 import static android.service.autofill.Flags.getViewCoordinatesInUiThread;
 import static android.service.autofill.Flags.improveFillDialogAconfig;
 import static android.service.autofill.Flags.relayoutFix;
@@ -4263,6 +4264,29 @@ public final class AutofillManager {
             }
         }
         return false;
+    }
+
+    /**
+     * Gets the master seed used to generate noise for privacy-preserving autofill responses.
+     * This API is only expected to be used for CTS tests verifying the noise injection behaviors.
+     *
+     * @return The master seed, or {@code null} if the service is not available.
+     * @hide
+     */
+    @FlaggedApi(FLAG_STRING_REBUILD_API)
+    @TestApi
+    @Nullable
+    public String getNoiseInjectionMasterSeed() {
+        try {
+            final SyncResultReceiver receiver = new SyncResultReceiver(SYNC_CALLS_TIMEOUT_MS);
+            mService.getNoiseInjectionMasterSeed(receiver);
+            return receiver.getStringResult();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        } catch (SyncResultReceiver.TimeoutException e) {
+            Log.e(TAG, "Fail to get noise injection master seed", e);
+            return null;
+        }
     }
 
     /**

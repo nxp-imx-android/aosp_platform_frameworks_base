@@ -106,6 +106,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Entry point service for autofill management.
@@ -168,6 +169,19 @@ public final class AutofillManagerService
     @GuardedBy("mLock")
     private final SparseArray<AutoFillUI> mUis = new SparseArray<>();
     final ComponentName mCredentialAutofillService;
+
+    /**
+     * Master seed for injecting noise to sensitive texts in AssistStructure to obfuscate user
+     * private info.
+     * We intend to maintain a master seed to keep the noise injected to the same activity's same
+     * view consistent for the same device so that the Autofill provider can not accumulate enough
+     * copies with different randomized noise for the same view of the same device to rebuild the
+     * user's private info.
+     * Hence this seed is intentionally held by AutofillManagerService rather
+     * AutofillManagerServiceImpl so that the master seed won't change when the user switches user
+     * profiles back and forth.
+     */
+    private final String mNoiseInjectionMasterSeed;
 
     private final LocalLog mRequestsHistory = new LocalLog(20);
     private final LocalLog mUiLatencyHistory = new LocalLog(20);
@@ -281,6 +295,8 @@ public final class AutofillManagerService
         setMaxPartitionsFromSettings();
         setMaxVisibleDatasetsFromSettings();
         setDeviceConfigProperties();
+
+        mNoiseInjectionMasterSeed = UUID.randomUUID().toString();
 
         final IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
@@ -1768,7 +1784,7 @@ public final class AutofillManagerService
                         getServiceForUserWithLocalBinderIdentityLocked(userId);
                 result = service.startSessionLocked(activityToken, taskId, getCallingUid(),
                         clientCallback, autofillId, bounds, value, hasCallback, clientActivity,
-                        compatMode, mAllowInstantService, flags);
+                        compatMode, mAllowInstantService, mNoiseInjectionMasterSeed, flags);
             }
             final int sessionId = (int) result;
             final int resultFlags = (int) (result >> 32);
@@ -2243,6 +2259,11 @@ public final class AutofillManagerService
                     Slog.v(TAG, "autofillRemoteApp(): no service for " + userId);
                 }
             }
+        }
+
+        @Override
+        public void getNoiseInjectionMasterSeed(IResultReceiver result) {
+            send(result, mNoiseInjectionMasterSeed);
         }
 
         @Override
