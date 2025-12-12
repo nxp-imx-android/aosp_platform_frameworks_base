@@ -18,18 +18,27 @@ package com.android.systemui.screencapture.record.largescreen.ui.compose
 
 import android.graphics.Point
 import android.view.PointerIcon as ViewPointerIcon
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -46,36 +55,59 @@ import com.android.systemui.screencapture.record.largescreen.shared.model.Screen
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.PreCaptureViewModel
 
+// Scale in from the center of the top of the screen
+private val scaleTransformOrigin = TransformOrigin(pivotFractionX = 0.5f, pivotFractionY = 0f)
+
 /** Main component for the pre-capture UI. */
 @Composable
 fun PreCaptureUI(viewModel: PreCaptureViewModel) {
     val localResources = LocalResources.current
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Box(
-            modifier =
-                Modifier.fillMaxWidth()
-                    .wrapContentSize(Alignment.TopCenter)
-                    .padding(top = 36.dp)
-                    .zIndex(1f)
-        ) {
+    val uiVisibilityState = remember { MutableTransitionState(false) }
+
+    // When the component loads, animate in.
+    LaunchedEffect(Unit) { uiVisibilityState.targetState = true }
+
+    // When the UI is hidden and animate out completes, close the UI.
+    LaunchedEffect(uiVisibilityState.targetState, uiVisibilityState.isIdle) {
+        if (!uiVisibilityState.targetState && uiVisibilityState.isIdle) {
+            viewModel.closeUi()
+        }
+    }
+
+    // Toolbar container
+    AnimatedVisibility(
+        visibleState = uiVisibilityState,
+        enter = scaleIn(transformOrigin = scaleTransformOrigin) + slideInVertically(),
+        exit = scaleOut(transformOrigin = scaleTransformOrigin) + slideOutVertically(),
+        modifier = Modifier.zIndex(1f),
+    ) {
+        Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()) {
             PreCaptureToolbar(
                 viewModel = viewModel.toolbarViewModel,
                 selectedCaptureType = viewModel.captureType,
                 selectedCaptureRegion = viewModel.captureRegion,
                 onCaptureTypeSelected = viewModel::updateCaptureType,
                 onCaptureRegionSelected = viewModel::updateCaptureRegion,
-                onCloseClick = viewModel::closeUi,
-                modifier = Modifier.pointerHoverIcon(PointerIcon.Default),
+                onCloseClick = { uiVisibilityState.targetState = false },
+                modifier = Modifier.padding(top = 36.dp).pointerHoverIcon(PointerIcon.Default),
             )
         }
+    }
 
-        val iconResourceId =
-            when (viewModel.captureType) {
-                ScreenCaptureType.SCREENSHOT -> R.drawable.ic_screen_capture_camera
-                ScreenCaptureType.RECORDING -> R.drawable.ic_screenrecord
-            }
+    val iconResourceId =
+        when (viewModel.captureType) {
+            ScreenCaptureType.SCREENSHOT -> R.drawable.ic_screen_capture_camera
+            ScreenCaptureType.RECORDING -> R.drawable.ic_screenrecord
+        }
 
+    // Main content
+    AnimatedVisibility(
+        visibleState = uiVisibilityState,
+        enter = fadeIn(),
+        exit = fadeOut(),
+        modifier = Modifier.zIndex(0f),
+    ) {
         when (viewModel.captureRegion) {
             ScreenCaptureRegion.FULLSCREEN -> {
                 val fullscreenPointerIcon =
@@ -94,8 +126,7 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                 // Dim the entire screen with a scrim before taking a fullscreen screenshot.
                 Box(
                     modifier =
-                        Modifier.zIndex(0f)
-                            .fillMaxSize()
+                        Modifier.fillMaxSize()
                             .background(color = ScreenCaptureColors.scrimColor)
                             .pointerInput(Unit) { detectTapGestures { viewModel.beginCapture() } }
                             .pointerHoverIcon(fullscreenPointerIcon)
