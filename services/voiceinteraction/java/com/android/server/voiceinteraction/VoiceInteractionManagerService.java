@@ -17,6 +17,9 @@
 package com.android.server.voiceinteraction;
 
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
+import static android.app.voiceinteraction.VoiceInteractionManager.READ_SCREEN_CONTEXT_REQUEST_STATE_GRANTED;
+import static android.app.voiceinteraction.VoiceInteractionManager.READ_SCREEN_CONTEXT_REQUEST_STATE_REQUESTABLE;
+import static android.app.voiceinteraction.VoiceInteractionManager.READ_SCREEN_CONTEXT_REQUEST_STATE_UNREQUESTABLE;
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_NO_ANIMATION;
@@ -29,6 +32,7 @@ import android.Manifest;
 import android.annotation.CallbackExecutor;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.PermissionManuallyEnforced;
 import android.annotation.RequiresPermission;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
@@ -548,6 +552,13 @@ public class VoiceInteractionManagerService extends SystemService {
 
         /** The start value of showSessionId */
         private static final int SHOW_SESSION_START_ID = 0;
+
+        /**
+         * Maximum user denied read screen context access requests an app can make before
+         * {@link #getReadScreenContextRequestState} returns
+         * {@link android.app.voiceinteraction.VoiceInteractionManager#READ_SCREEN_CONTEXT_REQUEST_STATE_UNREQUESTABLE}.
+         */
+        private static final int MAX_READ_SCREEN_CONTENT_REQUEST_DENIALS = 10;
 
         private final boolean IS_HDS_REQUIRED = AppOpsPolicy.isHotwordDetectionServiceRequired(
                 mContext.getPackageManager());
@@ -2664,18 +2675,34 @@ public class VoiceInteractionManagerService extends SystemService {
             }
         }
 
+        @Nullable
+        private String getAssistantRoleHolderForUser(int userId) {
+            final long identity = Binder.clearCallingIdentity();
+            try {
+                RoleManager roleManager = mContext.getSystemService(RoleManager.class);
+                List<String> roleHolders =
+                        roleManager.getRoleHoldersAsUser(RoleManager.ROLE_ASSISTANT,
+                                UserHandle.of(userId));
+                if (roleHolders.isEmpty()) {
+                    if (DEBUG) {
+                        Slog.i(TAG, "No role holder found.");
+                    }
+                    return null;
+                }
+                return roleHolders.get(0);
+            } finally {
+                Binder.restoreCallingIdentity(identity);
+            }
+        }
+
         private boolean isAssistStructureEnabledInternal(int userId) {
-            RoleManager roleManager = mContext.getSystemService(RoleManager.class);
-            List<String> roleHolders =
-                    roleManager.getRoleHoldersAsUser(RoleManager.ROLE_ASSISTANT,
-                            UserHandle.of(userId));
-            if (roleHolders.isEmpty()) {
+            String packageName = getAssistantRoleHolderForUser(userId);
+            if (packageName == null) {
                 if (DEBUG) {
                     Slog.i(TAG, "Can not get assist structure enabled. No role holder found.");
                 }
                 return false;
             }
-            String packageName = roleHolders.get(0);
             int uid;
             try {
                 uid = mContext.getPackageManager().getPackageUidAsUser(packageName, userId);
@@ -2730,6 +2757,98 @@ public class VoiceInteractionManagerService extends SystemService {
                     USER_FILTER_WITH_ALL_COMPLETE_USERS)) {
                 updateAssistStructureSecureSettingsForUser(user.id);
             }
+        }
+
+        private void enforceCrossUserPermission(int userId, @NonNull String message) {
+            if (userId != UserHandle.getUserId(Binder.getCallingUid())) {
+                mContext.enforceCallingOrSelfPermission(
+                        android.Manifest.permission.INTERACT_ACROSS_USERS_FULL, message);
+            }
+        }
+
+        @Override
+        @PermissionManuallyEnforced
+        public int getReadScreenContextRequestState(int uid) {
+            if (uid != Binder.getCallingUid()) {
+                mContext.enforceCallingOrSelfPermission(
+                        Manifest.permission.MANAGE_READ_SCREEN_CONTEXT_REQUEST,
+                        "Requires MANAGE_READ_SCREEN_CONTEXT_REQUEST if specified UID is different"
+                                + " from the calling UID.");
+            }
+            final int userId = UserHandle.getUserId(uid);
+            enforceCrossUserPermission(userId, "getReadScreenContextRequestState");
+
+            String roleHolder = getAssistantRoleHolderForUser(userId);
+            try {
+                int roleHolderUid =
+                        mContext.getPackageManager().getPackageUidAsUser(roleHolder, userId);
+                if (roleHolderUid != uid) {
+                    // Specified app/uid is not the current role holder
+                    return READ_SCREEN_CONTEXT_REQUEST_STATE_UNREQUESTABLE;
+                }
+            } catch (PackageManager.NameNotFoundException e) {
+                if (DEBUG) {
+                    Slog.e(TAG, "No role holder package found for user " + userId);
+                }
+                return READ_SCREEN_CONTEXT_REQUEST_STATE_UNREQUESTABLE;
+            }
+
+            if (isAssistStructureEnabledInternal(userId)) {
+                return READ_SCREEN_CONTEXT_REQUEST_STATE_GRANTED;
+            }
+
+            if (getReadScreenContextRequestDeniedCountInternal(userId)
+                    >= MAX_READ_SCREEN_CONTENT_REQUEST_DENIALS) {
+                return READ_SCREEN_CONTEXT_REQUEST_STATE_UNREQUESTABLE;
+            }
+
+            return READ_SCREEN_CONTEXT_REQUEST_STATE_REQUESTABLE;
+        }
+
+        private int getReadScreenContextRequestDeniedCountInternal(int userId) {
+            final long identity = Binder.clearCallingIdentity();
+            try {
+                return Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                        Settings.Secure.READ_SCREEN_CONTEXT_REQUEST_DENIED_COUNT,
+                        0, userId);
+            } finally {
+                Binder.restoreCallingIdentity(identity);
+            }
+        }
+
+        private void setReadScreenContextRequestDeniedCountInternal(int count, int userId) {
+            final long identity = Binder.clearCallingIdentity();
+            try {
+                Settings.Secure.putIntForUser(mContext.getContentResolver(),
+                        Settings.Secure.READ_SCREEN_CONTEXT_REQUEST_DENIED_COUNT,
+                        count, userId);
+            } finally {
+                Binder.restoreCallingIdentity(identity);
+            }
+        }
+
+        @Override
+        @PermissionManuallyEnforced
+        public void incrementReadScreenContextRequestDeniedCountForUser(int userId) {
+            enforceCrossUserPermission(userId,
+                    "incrementReadScreenContextRequestDeniedCountForUser");
+            mContext.enforceCallingOrSelfPermission(
+                    Manifest.permission.MANAGE_READ_SCREEN_CONTEXT_REQUEST,
+                    "incrementReadScreenContextRequestDeniedCountForUser");
+
+            int count = getReadScreenContextRequestDeniedCountInternal(userId) + 1;
+            setReadScreenContextRequestDeniedCountInternal(count, userId);
+        }
+
+        @Override
+        @PermissionManuallyEnforced
+        public void clearReadScreenContextRequestDeniedCountForUser(int userId) {
+            enforceCrossUserPermission(userId, "clearReadScreenContextRequestDeniedCountForUser");
+            mContext.enforceCallingOrSelfPermission(
+                    Manifest.permission.MANAGE_READ_SCREEN_CONTEXT_REQUEST,
+                    "clearReadScreenContextRequestDeniedCountForUser");
+
+            setReadScreenContextRequestDeniedCountInternal(0, userId);
         }
 
         @Override
