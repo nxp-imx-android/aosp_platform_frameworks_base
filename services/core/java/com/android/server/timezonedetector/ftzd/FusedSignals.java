@@ -154,6 +154,26 @@ public final class FusedSignals {
     }
 
     /**
+     * Adds an origin with a specific timestamp.
+     *
+     * <p>If the origin already exists, this operation is a no-op.
+     *
+     * @param origin the origin providing the update
+     * @param zoneIdCandidates the list of candidate time zone IDs from this origin
+     * @param timestamp the explicit timestamp to use for the origin info
+     */
+    public FusedSignals addOrigin(
+            @Origin int origin, List<String> zoneIdCandidates, long timestamp) {
+        if (mOrigins.containsKey(origin)) {
+            return this;
+        }
+
+        mZoneIdCandidates.addAll(zoneIdCandidates);
+        mOrigins.put(origin, new OriginInfo(timestamp));
+        return this;
+    }
+
+    /**
      * Sets a quality score for a given origin.
      *
      * @param origin the origin to update
@@ -245,6 +265,11 @@ public final class FusedSignals {
     /** Returns the set of origins that support this time zone. */
     public Set<@Origin Integer> getOrigins() {
         return Set.copyOf(mOrigins.keySet());
+    }
+
+    /** Returns the {@link OriginInfo} for a given origin. */
+    public OriginInfo getOriginInfoForOrigin(@Origin int origin) {
+        return mOrigins.get(origin);
     }
 
     /** Returns the set of candidate time zone IDs. */

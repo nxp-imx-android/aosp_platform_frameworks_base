@@ -15,6 +15,13 @@
  */
 package com.android.server.timezonedetector;
 
+import static android.app.time.DetectorStatusTypes.DETECTION_ALGORITHM_STATUS_RUNNING;
+import static android.app.time.LocationTimeZoneAlgorithmStatus.PROVIDER_STATUS_IS_CERTAIN;
+import static android.app.time.LocationTimeZoneAlgorithmStatus.PROVIDER_STATUS_NOT_PRESENT;
+import static android.service.timezone.TimeZoneProviderStatus.DEPENDENCY_STATUS_NOT_APPLICABLE;
+import static android.service.timezone.TimeZoneProviderStatus.DEPENDENCY_STATUS_OK;
+import static android.service.timezone.TimeZoneProviderStatus.OPERATION_STATUS_OK;
+
 import static com.android.server.SystemTimeZone.TIME_ZONE_CONFIDENCE_HIGH;
 import static com.android.server.SystemTimeZone.TIME_ZONE_CONFIDENCE_LOW;
 import static com.android.server.timezonedetector.TimeZoneDetectorStrategyImpl.TELEPHONY_SCORE_HIGH;
@@ -22,10 +29,13 @@ import static com.android.server.timezonedetector.TimeZoneDetectorStrategyImpl.T
 import static com.android.server.timezonedetector.TimeZoneDetectorStrategyImpl.TELEPHONY_SCORE_USAGE_THRESHOLD;
 import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.Origin;
 import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.ORIGIN_FUSED;
+import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.ORIGIN_LOCATION;
+import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.ORIGIN_TELEPHONY;
 import static com.android.server.timezonedetector.FusedTimeZoneDetector.TimeZoneSetter;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -42,9 +52,11 @@ import android.app.timezonedetector.TelephonyTimeZoneSuggestion;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.os.HandlerThread;
+import android.service.timezone.TimeZoneProviderStatus;
 import android.util.IndentingPrintWriter;
 
 import com.android.server.SystemTimeZone.TimeZoneConfidence;
+import com.android.server.timezonedetector.ftzd.FusedSignals;
 
 import org.junit.After;
 import org.junit.Before;
@@ -67,6 +79,21 @@ import java.util.TimeZone;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FusedTimeZoneDetectorImplTest {
+
+    public static final TimeZoneProviderStatus ARBITRARY_PROVIDER_STATUS =
+            new TimeZoneProviderStatus.Builder()
+                    .setConnectivityDependencyStatus(DEPENDENCY_STATUS_OK)
+                    .setLocationDetectionDependencyStatus(DEPENDENCY_STATUS_NOT_APPLICABLE)
+                    .setTimeZoneResolutionOperationStatus(OPERATION_STATUS_OK)
+                    .build();
+
+    public static final LocationTimeZoneAlgorithmStatus ARBITRARY_LOCATION_ALGORITHM_STATUS =
+            new LocationTimeZoneAlgorithmStatus(
+                    /* status= */ DETECTION_ALGORITHM_STATUS_RUNNING,
+                    /* primaryProviderStatus= */ PROVIDER_STATUS_IS_CERTAIN,
+                    /* primaryProviderReportedStatus= */ ARBITRARY_PROVIDER_STATUS,
+                    /* secondaryProviderStatus= */ PROVIDER_STATUS_NOT_PRESENT,
+                    /* secondaryProviderReportedStatus= */ null);
 
     @Mock private Context mMockContext;
     @Mock private ContentResolver mMockContentResolver;
@@ -336,27 +363,87 @@ public class FusedTimeZoneDetectorImplTest {
     }
 
     @Test
-    public void telephonyResolvesLocationDisagreement() {
+    public void telephonyResolvesLocationDisagreement_onlyTelephonyOrigin() {
         String initialTelephonyZoneId = "America/New_York";
         String locationZoneId = "Europe/London";
 
-        // 1. Set initial time zone with a telephony suggestion.
+        // Set initial time zone with a telephony suggestion.
         mScript.simulateTelephonySuggestion(
                         createTelephonySuggestion(
                                 initialTelephonyZoneId, TELEPHONY_SCORE_HIGH, "310", "us"))
                 .verifyTimeZoneSuggested(initialTelephonyZoneId);
 
-        // 2. A disagreeing location suggestion arrives. Time zone should not change, but a
-        //    disagreement candidate should be recorded.
+        // A disagreeing location suggestion arrives. Time zone should not change, but a
+        // disagreement candidate should be recorded.
         mScript.simulateLocationEvent(createLocationEvent(locationZoneId))
-                .verifyTimeZoneNotChanged();
+                .verifyTimeZoneNotChanged()
+                .verifyLocationDisagreementCandidatesPresent();
 
-        // 3. A new telephony suggestion arrives that agrees with the pending location suggestion.
-        //    This should resolve the disagreement and update the time zone.
+        // A new telephony suggestion arrives that agrees with the pending location suggestion.
+        // This should resolve the disagreement and update the time zone.
         mScript.simulateTelephonySuggestion(
                         createTelephonySuggestion(
                                 locationZoneId, TELEPHONY_SCORE_HIGH, "234", "gb"))
-                .verifyTimeZoneSuggested(locationZoneId);
+                .verifyTimeZoneSuggested(locationZoneId)
+                .verifyNoLocationDisagreementCandidatesPresent();
+
+        FusedSignals currentSignals = mFusedTimeZoneDetector.getCurrentFusedSignals();
+        assertTrue(
+                "No location origin found: " + currentSignals,
+                currentSignals.hasOrigin(ORIGIN_LOCATION, 0));
+        assertTrue(
+                "No telephony origin found: " + currentSignals,
+                currentSignals.hasOrigin(ORIGIN_TELEPHONY, 0));
+
+        assertTrue(
+                currentSignals.getOriginInfoForOrigin(ORIGIN_TELEPHONY).getTimestampAdded()
+                        > currentSignals
+                                .getOriginInfoForOrigin(ORIGIN_LOCATION)
+                                .getTimestampAdded());
+    }
+
+    @Test
+    public void telephonyResolvesLocationDisagreement_AllOrigin() {
+        String initialTelephonyZoneId = "America/New_York";
+        String locationZoneId = "Europe/London";
+
+        // Set initial time zone with a telephony suggestion.
+        mScript.simulateTelephonySuggestion(
+                        createTelephonySuggestion(
+                                initialTelephonyZoneId, TELEPHONY_SCORE_HIGH, "310", "us"))
+                .verifyTimeZoneSuggested(initialTelephonyZoneId);
+
+        // Confirm time zone with a location suggestion.
+        mScript.simulateLocationEvent(createLocationEvent(initialTelephonyZoneId))
+                .verifyTimeZoneNotChanged();
+
+        // A disagreeing location suggestion arrives. Time zone should not change, but a
+        // disagreement candidate should be recorded.
+        mScript.simulateLocationEvent(createLocationEvent(locationZoneId))
+                .verifyTimeZoneNotChanged()
+                .verifyLocationDisagreementCandidatesPresent();
+
+        // A new telephony suggestion arrives that agrees with the pending location suggestion.
+        // This should resolve the disagreement and update the time zone.
+        mScript.simulateTelephonySuggestion(
+                        createTelephonySuggestion(
+                                locationZoneId, TELEPHONY_SCORE_HIGH, "234", "gb"))
+                .verifyTimeZoneSuggested(locationZoneId)
+                .verifyNoLocationDisagreementCandidatesPresent();
+
+        FusedSignals currentSignals = mFusedTimeZoneDetector.getCurrentFusedSignals();
+        assertTrue(
+                "No location origin found: " + currentSignals,
+                currentSignals.hasOrigin(ORIGIN_LOCATION, 0));
+        assertTrue(
+                "No telephony origin found: " + currentSignals,
+                currentSignals.hasOrigin(ORIGIN_TELEPHONY, 0));
+
+        assertTrue(
+                currentSignals.getOriginInfoForOrigin(ORIGIN_TELEPHONY).getTimestampAdded()
+                        > currentSignals
+                                .getOriginInfoForOrigin(ORIGIN_LOCATION)
+                                .getTimestampAdded());
     }
 
     @Test
@@ -420,14 +507,8 @@ public class FusedTimeZoneDetectorImplTest {
         GeolocationTimeZoneSuggestion suggestion =
                 GeolocationTimeZoneSuggestion.createCertainSuggestion(
                         1000L, Arrays.asList(zoneIds));
-        LocationTimeZoneAlgorithmStatus status =
-                new LocationTimeZoneAlgorithmStatus(
-                        LocationTimeZoneAlgorithmStatus.PROVIDER_STATUS_IS_CERTAIN,
-                        LocationTimeZoneAlgorithmStatus.PROVIDER_STATUS_IS_CERTAIN,
-                        null,
-                        LocationTimeZoneAlgorithmStatus.PROVIDER_STATUS_NOT_PRESENT,
-                        null);
-        return new LocationAlgorithmEvent(status, suggestion);
+
+        return new LocationAlgorithmEvent(ARBITRARY_LOCATION_ALGORITHM_STATUS, suggestion);
     }
 
     private class Script {
@@ -451,6 +532,16 @@ public class FusedTimeZoneDetectorImplTest {
 
         Script verifyTimeZoneNotChanged() {
             mFakeTimeZoneSetter.assertTimeZoneNotChanged();
+            return this;
+        }
+
+        Script verifyLocationDisagreementCandidatesPresent() {
+            assertFalse(mFusedTimeZoneDetector.getLocationDisagreementCandidates().isEmpty());
+            return this;
+        }
+
+        Script verifyNoLocationDisagreementCandidatesPresent() {
+            assertTrue(mFusedTimeZoneDetector.getLocationDisagreementCandidates().isEmpty());
             return this;
         }
     }
