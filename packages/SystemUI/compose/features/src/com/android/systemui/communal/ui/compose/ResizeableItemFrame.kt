@@ -16,6 +16,19 @@
 
 package com.android.systemui.communal.ui.compose
 
+import android.util.MathUtils
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.EnterExitState
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.updateTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.AnchoredDraggableState
@@ -63,6 +76,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import android.content.Context
+import android.view.View
+import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityManager
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -86,6 +104,19 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 
 private val AccessibilityResizeButtonSize = 48.dp
+private const val IconAnimationDelayThreshold = 0.5f
+
+private val MedLowBounceSpring = spring<Float>(stiffness = 400f, dampingRatio = 0.7f)
+private val MedLowNoBounceSpring = spring<Float>(stiffness = 400f, dampingRatio = 1f)
+private val NoBounceFastSpring = spring<Float>(stiffness = 10000f, dampingRatio = 1f)
+
+private val HighStiffnessSpring = spring<Float>(stiffness = Spring.StiffnessHigh, dampingRatio = 1f)
+private val HandleFadeSpring = spring<Float>(stiffness = Spring.StiffnessMedium, dampingRatio = 1f)
+private val HandleScaleSpring =
+    spring<Float>(
+        stiffness = Spring.StiffnessMedium,
+        dampingRatio = Spring.DampingRatioMediumBouncy,
+    )
 
 @Composable
 private fun UpdateGridLayoutInfo(
@@ -153,7 +184,29 @@ private fun AccessibilityResizeButtonWrapper(
     isTopRounded: Boolean,
 ) {
     Box(modifier = Modifier.height(AccessibilityResizeButtonSize)) {
-        if (visible) {
+        val transformOrigin =
+            if (isTopRounded) TransformOrigin(0.5f, 1f) else TransformOrigin(0.5f, 0f)
+
+        // Use a MutableTransitionState to ensure the enter animation runs when the button is first
+        // displayed, as AnimatedVisibility typically defaults to no animation for the initial state.
+        val visibleState = remember { MutableTransitionState(false) }
+        visibleState.targetState = visible
+
+        AnimatedVisibility(
+            visibleState = visibleState,
+            enter =
+                scaleIn(
+                    animationSpec = MedLowBounceSpring,
+                    initialScale = 0.5f,
+                    transformOrigin = transformOrigin,
+                ) + fadeIn(animationSpec = MedLowNoBounceSpring),
+            exit =
+                scaleOut(
+                    animationSpec = MedLowBounceSpring,
+                    targetScale = 0.5f,
+                    transformOrigin = transformOrigin,
+                ) + fadeOut(animationSpec = MedLowNoBounceSpring),
+        ) {
             ResizeButton(
                 icon = icon,
                 contentDescription = contentDescription,
@@ -175,6 +228,9 @@ private fun BoxScope.AccessibilityButtons(
     modifier: Modifier = Modifier,
 ) {
     val spacing = 8.dp
+    val view = LocalView.current
+    val expandAnnouncement = stringResource(R.string.accessibility_announcement_expand_widget)
+    val shrinkAnnouncement = stringResource(R.string.accessibility_announcement_shrink_widget)
 
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         val expandAction =
@@ -182,14 +238,24 @@ private fun BoxScope.AccessibilityButtons(
                 isVisible = canExpand,
                 icon = Icons.Default.Add,
                 description = stringResource(R.string.accessibility_action_label_expand_widget),
-                onClick = { if (isAccessibilityControlsVisible) onExpand() },
+                onClick = {
+                    if (isAccessibilityControlsVisible) {
+                        onExpand()
+                        view.announceForAccessibility(expandAnnouncement)
+                    }
+                },
             )
         val shrinkAction =
             AccessibilityResizeAction(
                 isVisible = canShrink,
                 icon = Icons.Default.Remove,
                 description = stringResource(R.string.accessibility_action_label_shrink_widget),
-                onClick = { if (isAccessibilityControlsVisible) onShrink() },
+                onClick = {
+                    if (isAccessibilityControlsVisible) {
+                        onShrink()
+                        view.announceForAccessibility(shrinkAnnouncement)
+                    }
+                },
             )
 
         val actions =
@@ -217,7 +283,7 @@ private fun BoxScope.AccessibilityButtons(
 }
 
 @Composable
-private fun ResizeButton(
+private fun AnimatedVisibilityScope.ResizeButton(
     icon: ImageVector,
     contentDescription: String,
     onClick: () -> Unit,
@@ -231,6 +297,14 @@ private fun ResizeButton(
             } else {
                 RoundedCornerShape(bottomStartPercent = 50, bottomEndPercent = 50)
             }
+        }
+
+    val progressionState =
+        transition.animateFloat(
+            transitionSpec = { MedLowNoBounceSpring },
+            label = "ResizeButtonIconProgression",
+        ) { state: EnterExitState ->
+            if (state == EnterExitState.Visible) 1f else 0f
         }
 
     val borderColor = MaterialTheme.colorScheme.onTertiaryContainer
@@ -248,7 +322,23 @@ private fun ResizeButton(
         border = border,
         contentPadding = PaddingValues(0.dp),
     ) {
-        Icon(icon, contentDescription = contentDescription)
+        Icon(
+            icon,
+            contentDescription = contentDescription,
+            modifier =
+                Modifier.graphicsLayer {
+                    val progression = progressionState.value
+                    val iconProgression =
+                        (progression - IconAnimationDelayThreshold).coerceAtLeast(0f) /
+                            (1f - IconAnimationDelayThreshold)
+                    val iconScale = MathUtils.lerp(0.5f, 1.0f, iconProgression)
+                    val iconAlpha = iconProgression
+
+                    scaleX = iconScale
+                    scaleY = iconScale
+                    alpha = iconAlpha
+                },
+        )
     }
 }
 
@@ -320,46 +410,77 @@ private fun BoxScope.UnifiedResizeHandle(
         if (communalEditModeAccessibilityResize()) {
             if (!state.canExpand && !state.canShrink) return@Box
 
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
-                // DragPill logic
-                val pillAlpha = if (state.isAccessibilityControlsVisible) 0f else 1f
-                val pillScale = if (state.isAccessibilityControlsVisible) 0.33f else 1f
-                val originY = if (state.orientation == ResizeHandle.TOP) 1f else 0f
+            val transition =
+                updateTransition(
+                    targetState = state.isAccessibilityControlsVisible,
+                    label = "ResizeHandleMode",
+                )
 
-                Box(
-                    modifier =
-                        Modifier.graphicsLayer {
-                            alpha = pillAlpha
-                            scaleX = pillScale
-                            scaleY = pillScale
-                            transformOrigin = TransformOrigin(0.5f, originY)
-                        }
-                ) {
-                    DragPill(
-                        brush = brush,
-                        radius = dragHandleRadius,
-                        alpha = { pillAlpha * contentAlpha() },
-                        modifier =
-                            Modifier.fillMaxWidth()
-                                .height(dragHandleRadius * 2)
-                                .accessibilityResizeClickable(
-                                    label = stringResource(R.string.accessibility_action_label_resize_widget),
-                                    onClick = currentOnToggle,
-                                ),
-                    )
+            val transformOriginY = if (state.orientation == ResizeHandle.TOP) 1f else 0f
+            val dragHandleTransformOrigin = TransformOrigin(0.5f, transformOriginY)
+
+            val dragPillAlpha by
+                transition.animateFloat(
+                    transitionSpec = { if (targetState) HighStiffnessSpring else HandleFadeSpring },
+                    label = "dragPillAlpha",
+                ) { isVisible ->
+                    if (isVisible) 0f else 1f
                 }
 
-                // Accessibility Buttons
-                if (state.isAccessibilityControlsVisible) {
-                    AccessibilityButtons(
-                        handle = state.orientation,
-                        isAccessibilityControlsVisible = state.isAccessibilityControlsVisible,
-                        canExpand = state.canExpand,
-                        canShrink = state.canShrink,
-                        onExpand = onExpand,
-                        onShrink = onShrink,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
+            val dragPillScale by
+                transition.animateFloat(
+                    transitionSpec = { if (targetState) NoBounceFastSpring else HandleScaleSpring },
+                    label = "dragPillScale",
+                ) { isVisible ->
+                    if (isVisible) 0.33f else 1f
+                }
+
+            val accessibilityButtonsAlpha by
+                transition.animateFloat(
+                    transitionSpec = { if (targetState) HandleFadeSpring else HighStiffnessSpring },
+                    label = "accessibilityButtonsAlpha",
+                ) { isVisible ->
+                    if (isVisible) 1f else 0f
+                }
+
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
+                if (!state.isAccessibilityControlsVisible || !transition.currentState) {
+                    Box(
+                        modifier =
+                            Modifier.graphicsLayer {
+                                alpha = dragPillAlpha
+                                scaleX = dragPillScale
+                                scaleY = dragPillScale
+                                transformOrigin = dragHandleTransformOrigin
+                            }
+                    ) {
+                        DragPill(
+                            brush = brush,
+                            radius = dragHandleRadius,
+                            alpha = { dragPillAlpha * contentAlpha() },
+                            modifier =
+                                Modifier.fillMaxWidth()
+                                    .height(dragHandleRadius * 2)
+                                    .accessibilityResizeClickable(
+                                        label = stringResource(R.string.accessibility_action_label_resize_widget),
+                                        onClick = currentOnToggle,
+                                    ),
+                        )
+                    }
+                }
+
+                if (state.isAccessibilityControlsVisible || transition.currentState) {
+                    Box(modifier = Modifier.graphicsLayer { alpha = accessibilityButtonsAlpha }) {
+                        AccessibilityButtons(
+                            handle = state.orientation,
+                            isAccessibilityControlsVisible = state.isAccessibilityControlsVisible,
+                            canExpand = state.canExpand,
+                            canShrink = state.canShrink,
+                            onExpand = onExpand,
+                            onShrink = onShrink,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
                 }
             }
         } else {
