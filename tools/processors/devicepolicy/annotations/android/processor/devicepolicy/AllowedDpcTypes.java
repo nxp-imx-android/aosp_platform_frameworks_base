@@ -33,13 +33,25 @@ public @interface AllowedDpcTypes {
      */
     public static final int DISALLOWED = 2;
 
+    /**
+     * Only applicable to `affiliatedFullUserProfileOwner`. Indicates that the value for this field
+     * will be inherited from `unaffiliatedFullUserProfileOwner`. As the default, it should not be
+     * specified explicitly.
+     */
+    public static final int SAME_AS_UNAFFILIATED = 3;
+
     public int deviceOwner();
+
     public int managedProfileOwnerOfOrganizationOwnedDevice();
+
     public int managedProfileOwnerOfPersonalOwnedDevice();
+
     public int unaffiliatedFullUserProfileOwner();
 
     // Niche DPC types. You most likely don't need to use these.
     public int financedDeviceOwner() default DISALLOWED;
+
     public int profileOwnerOnUser0() default DISALLOWED;
-    public int affiliatedFullUserProfileOwner() default DISALLOWED;
+
+    public int affiliatedFullUserProfileOwner() default SAME_AS_UNAFFILIATED;
 }

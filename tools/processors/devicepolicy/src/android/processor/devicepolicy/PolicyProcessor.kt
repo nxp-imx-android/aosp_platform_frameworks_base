@@ -302,7 +302,7 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
                 ?: ""
         val allowedScopes = convertScopes(element, definition.allowedScopes.toList())
         val affectedResource = convertResourceType(element, definition.affectedResource) ?: return null
-        val allowedDpcTypes = convertDpcTypes(definition.allowedDpcTypes)
+        val allowedDpcTypes = convertDpcTypes(element, definition.allowedDpcTypes)
 
         if (documentation.trim().isEmpty()) {
             printError(element, "Missing JavaDoc")
@@ -372,31 +372,60 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
         }
     }
 
-    private fun convertDpcTypes(input: AllowedDpcTypes): List<PolicyMetadata.DpcType> {
+    private fun convertDpcTypes(element: Element, input: AllowedDpcTypes): List<PolicyMetadata.DpcType> {
         var result = mutableListOf<PolicyMetadata.DpcType>()
 
-        if (input.deviceOwner == AllowedDpcTypes.ALLOWED) {
-            result.add(PolicyMetadata.DpcType.DPC_TYPE_DEVICE_OWNER)
+        fun addDpcType(
+            dpcType: PolicyMetadata.DpcType,
+            input: Int,
+        ) {
+            when (input) {
+                AllowedDpcTypes.ALLOWED -> result.add(dpcType)
+                AllowedDpcTypes.DISALLOWED -> {}
+                AllowedDpcTypes.SAME_AS_UNAFFILIATED -> printError(
+                    element,
+                    "$dpcType cannot be set to SAME_AS_UNAFFILIATED."
+                )
+                else -> throw IllegalArgumentException("Invalid value for $dpcType: ${input}")
+            }
         }
-        if (input.financedDeviceOwner == AllowedDpcTypes.ALLOWED) {
-            result.add(PolicyMetadata.DpcType.DPC_TYPE_FINANCED_DEVICE_OWNER)
-        }
-        if (input.managedProfileOwnerOfOrganizationOwnedDevice == AllowedDpcTypes.ALLOWED) {
-            result.add(
-                PolicyMetadata.DpcType.DPC_TYPE_MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
-            )
-        }
-        if (input.profileOwnerOnUser0 == AllowedDpcTypes.ALLOWED) {
-            result.add(PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER_ON_USER0)
-        }
-        if (input.managedProfileOwnerOfPersonalOwnedDevice == AllowedDpcTypes.ALLOWED) {
-            result.add(PolicyMetadata.DpcType.DPC_TYPE_MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE)
-        }
-        if (input.unaffiliatedFullUserProfileOwner == AllowedDpcTypes.ALLOWED) {
-            result.add(PolicyMetadata.DpcType.DPC_TYPE_UNAFFILIATED_FULL_USER_PROFILE_OWNER)
-        }
-        if (input.affiliatedFullUserProfileOwner == AllowedDpcTypes.ALLOWED) {
-            result.add(PolicyMetadata.DpcType.DPC_TYPE_AFFILIATED_FULL_USER_PROFILE_OWNER)
+
+        addDpcType(
+            PolicyMetadata.DpcType.DPC_TYPE_DEVICE_OWNER,
+            input.deviceOwner,
+        )
+        addDpcType(
+            PolicyMetadata.DpcType.DPC_TYPE_FINANCED_DEVICE_OWNER,
+            input.financedDeviceOwner,
+        )
+        addDpcType(
+            PolicyMetadata.DpcType.DPC_TYPE_MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE,
+            input.managedProfileOwnerOfOrganizationOwnedDevice,
+        )
+        addDpcType(
+            PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER_ON_USER0,
+            input.profileOwnerOnUser0,
+        )
+        addDpcType(
+            PolicyMetadata.DpcType.DPC_TYPE_MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE,
+            input.managedProfileOwnerOfPersonalOwnedDevice,
+        )
+        addDpcType(
+            PolicyMetadata.DpcType.DPC_TYPE_UNAFFILIATED_FULL_USER_PROFILE_OWNER,
+            input.unaffiliatedFullUserProfileOwner,
+        )
+
+        // affiliatedFullUserProfileOwner supports SAME_AS_UNAFFILIATED.
+        // Handle it separately.
+        when (input.affiliatedFullUserProfileOwner) {
+            AllowedDpcTypes.ALLOWED -> result.add(PolicyMetadata.DpcType.DPC_TYPE_AFFILIATED_FULL_USER_PROFILE_OWNER)
+            AllowedDpcTypes.DISALLOWED -> {}
+            AllowedDpcTypes.SAME_AS_UNAFFILIATED -> {
+                if (input.unaffiliatedFullUserProfileOwner == AllowedDpcTypes.ALLOWED) {
+                    result.add(PolicyMetadata.DpcType.DPC_TYPE_AFFILIATED_FULL_USER_PROFILE_OWNER)
+                }
+            }
+            else -> throw IllegalArgumentException("Invalid value for affiliatedFullUserProfileOwner: ${input.affiliatedFullUserProfileOwner}")
         }
 
         return result
