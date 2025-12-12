@@ -72,6 +72,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
@@ -434,7 +435,9 @@ fun ContentScope.NestedScrollingNotificationPanel(
 
     val interactionSource = remember { MutableInteractionSource() }
 
-    val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp
+    // Prevent background gaps during overscroll.
+    val backgroundHeightDp =
+        LocalWindowInfo.current.containerDpSize.height + OffsetOverscrollEffect.DefaultMaxDistance
 
     val scrollingContentOverscrollEffect = contentOverscrollEffect
     val shortContentOverscrollEffect = rememberOffsetOverscrollEffect()
@@ -634,7 +637,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
                     backgroundMeasurable.measure(
                         Constraints.fixed(
                             width = constraints.maxWidth,
-                            height = screenHeightDp.roundToPx(),
+                            height = backgroundHeightDp.roundToPx(),
                         )
                     )
 
