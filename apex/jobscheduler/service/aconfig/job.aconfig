@@ -57,16 +57,6 @@ flag {
 }
 
 flag {
-    name: "enhance_system_job_limit_exception"
-    namespace: "backstage_power"
-    description: "Enhance the IllegalStateException with debug information about top jobs when the system UID exceeds the job scheduling limit."
-    bug: "438864409"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "include_trace_tag_in_job_name"
     namespace: "backstage_power"
     description: "Add the trace tag to the job name"
