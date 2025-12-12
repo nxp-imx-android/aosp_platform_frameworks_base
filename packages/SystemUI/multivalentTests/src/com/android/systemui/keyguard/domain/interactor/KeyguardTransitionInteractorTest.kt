@@ -979,6 +979,45 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
+    fun transition_conversion_emit_values_with_snap_transition_between_desired_scenes() =
+        testScope.runTest {
+            val currentStates by
+                collectValues(underTest.transition(Edge.create(Overlays.Bouncer, AOD)))
+            val currentStatesConverted by
+                collectValues(underTest.transition(Edge.create(UNDEFINED, AOD)))
+
+            kosmos.setSceneTransition(
+                Idle(currentScene = Scenes.Occluded, currentOverlays = setOf(Overlays.Bouncer))
+            )
+            kosmos.setSceneTransition(Idle(Scenes.Lockscreen))
+
+            val sendStep1 = TransitionStep(UNDEFINED, AOD, 1f, STARTED)
+            val sendStep2 = TransitionStep(UNDEFINED, AOD, 1f, FINISHED)
+            sendSteps(sendStep1, sendStep2)
+
+            assertEquals(listOf(sendStep1, sendStep2), currentStates)
+            assertEquals(listOf(sendStep1, sendStep2), currentStatesConverted)
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun transition_conversion_emit_nothing_with_snap_transition_between_wrong_scenes() =
+        testScope.runTest {
+            val currentStates by
+                collectValues(underTest.transition(Edge.create(Overlays.Bouncer, AOD)))
+
+            kosmos.setSceneTransition(Idle(Scenes.Shade))
+            kosmos.setSceneTransition(Idle(Scenes.Lockscreen))
+
+            val sendStep1 = TransitionStep(UNDEFINED, AOD, 1f, STARTED)
+            val sendStep2 = TransitionStep(UNDEFINED, AOD, 1f, FINISHED)
+            sendSteps(sendStep1, sendStep2)
+
+            assertEquals(listOf<TransitionStep>(), currentStates)
+        }
+
+    @Test
+    @EnableSceneContainer
     fun transition_conversion_emits_values_when_edge_within_lockscreen_scene() =
         testScope.runTest {
             val currentStates by
