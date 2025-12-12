@@ -33,9 +33,7 @@ data class UIComponentItem(
 @WMSingleton
 class CompatUIComponentRepository @Inject constructor() :
     GenericRepository<String, UIComponentItem> by MemoryRepositoryImpl(
-        logger = { msg ->
-            ProtoLog.v(WM_SHELL_APP_COMPAT, "%s: %s", "CompatUIComponentRepository", msg)
-        }
+        logger = { msg -> ProtoLog.v(WM_SHELL_APP_COMPAT, "CompatUIComponentRepository: %s", msg) }
     ) {
 
     /**

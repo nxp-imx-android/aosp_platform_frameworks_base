@@ -40,6 +40,6 @@ data class CompatUISharedState(
 class CompatUISharedStateRepository @Inject constructor() :
     GenericRepository<Int, CompatUISharedState> by MemoryRepositoryImpl(
         logger = { msg ->
-            ProtoLog.v(WM_SHELL_APP_COMPAT, "%s: %s", "CompatUISharedStateRepository", msg)
+            ProtoLog.v(WM_SHELL_APP_COMPAT, "CompatUISharedStateRepository: %s", msg)
         }
     )

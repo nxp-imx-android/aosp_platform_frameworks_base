@@ -563,7 +563,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
 
         void onAnimationFinish() {
             mController.finish(mShow);
-            ProtoLog.d(INSETS_CONTROLLER_DEBUG, "onAnimationFinish showOnFinish: %s", mShow);
+            ProtoLog.d(INSETS_CONTROLLER_DEBUG, "onAnimationFinish showOnFinish: %b", mShow);
         }
 
         @Override
@@ -1590,7 +1590,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         mHost.updateAnimatingTypes(mAnimatingTypes, null /* statsToken */);
         mRunningAnimations.add(new RunningAnimation(runner, animationType));
         ProtoLog.d(INSETS_CONTROLLER_DEBUG,
-                "Animation added to runner. useInsetsAnimationThread: %s",
+                "Animation added to runner. useInsetsAnimationThread: %b",
                 useInsetsAnimationThread);
         if (cancellationSignal != null) {
             cancellationSignal.setOnCancelListener(() ->
@@ -1710,7 +1710,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             reportRequestedVisibleTypes(null /* statsToken */);
         }
         cancelAnimation(runner, false /* invokeCallback */);
-        ProtoLog.d(INSETS_CONTROLLER_DEBUG, "notifyFinished. shown: %s", shown);
+        ProtoLog.d(INSETS_CONTROLLER_DEBUG, "notifyFinished. shown: %b", shown);
         if (runner.getAnimationType() == ANIMATION_TYPE_RESIZE) {
             // The resize animation doesn't show or hide the insets. We shouldn't change the
             // requested visibility.

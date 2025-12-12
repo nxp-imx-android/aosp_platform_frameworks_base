@@ -919,6 +919,7 @@ public interface ImeTracker {
         Context getAppContext();
     }
 
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private static void log(@NonNull String messageString, @NonNull Object... args) {
         if (android.tracing.Flags.imetrackerProtolog()) {
             ProtoLog.i(IME_TRACKER, messageString, args);
