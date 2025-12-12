@@ -50,7 +50,7 @@ package com.android.server.am {
     method public boolean stopSdkSandboxService(@NonNull android.content.Intent, int, @NonNull String, @NonNull String);
   }
 
-  @FlaggedApi("com.android.server.am.fgs_delegate_system_api") public class ForegroundServiceDelegationParams {
+  @FlaggedApi("com.android.server.am.fgs_delegate_system_api") public final class ForegroundServiceDelegationParams {
     ctor public ForegroundServiceDelegationParams(int, int, @NonNull String, boolean, @NonNull String, int, int);
     field public static final int DELEGATION_REASON_VOIP = 1; // 0x1
   }

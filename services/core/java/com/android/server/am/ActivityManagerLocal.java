@@ -196,12 +196,14 @@ public interface ActivityManagerLocal {
 
     /**
      * Start a foreground service delegate on behalf of the actual app. By this the client app's
-     * process state can be promoted to FOREGROUND_SERVICE process state which is higher than the
-     * app's actual process state if the app is in the background. This can help to keep the app in
-     * the memory and extra run-time. The app does not need to define an actual service component
-     * nor add it into manifest file.
+     * process state can be promoted to a higher process state, equivalent to that of a foreground
+     * service, which may be higher than the app's actual process state if the app is in the
+     * background. This can help keep the app in memory and potentially give it extra run-time. The
+     * app does not need to define an actual service component nor add it to their manifest file.
+     *
      * @param params foreground service delegate params.
-     * @param connection a service connection served as callback to caller.
+     * @param connection a service connection served as callback to the caller. If {@code null}, no
+     *                   callbacks will be made to the caller.
      * @return true if delegate is started successfully, false otherwise.
      * @hide
      */

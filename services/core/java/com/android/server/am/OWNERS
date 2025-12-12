@@ -9,7 +9,6 @@ per-file PhantomProcessRecord.java = file:/ACTIVITY_MANAGER_OWNERS
 per-file SystemServer.java = file:/ACTIVITY_MANAGER_OWNERS
 per-file ServiceRecord.java = file:/ACTIVITY_MANAGER_OWNERS
 per-file AppProfiler.java = file:/ACTIVITY_MANAGER_OWNERS
-per-file ForegroundServiceTypeLoggerModule.java = file:/ACTIVITY_MANAGER_OWNERS
 per-file AppRestrictionController.java = file:/ACTIVITY_MANAGER_OWNERS
 per-file ConnectionRecord.java = file:/ACTIVITY_MANAGER_OWNERS
 per-file ActiveUids.java = file:/ACTIVITY_MANAGER_OWNERS
@@ -24,6 +23,7 @@ per-file UidObserverController* = file:/ACTIVITY_MANAGER_OWNERS
 per-file App*StartInfo* = file:/PERFORMANCE_OWNERS
 per-file appstartinfo.proto = file:/PERFORMANCE_OWNERS
 per-file MemoryLimiter* = file:/PERFORMANCE_OWNERS
+per-file ForegroundService* = file:/ACTIVITY_MANAGER_OWNERS
 
 # Permissions & Packages
 per-file AccessCheckDelegateHelper.java = file:/core/java/android/permission/OWNERS
