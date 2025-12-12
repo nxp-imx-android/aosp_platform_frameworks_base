@@ -241,6 +241,7 @@ public class KeyguardIndicationController {
     private KeyguardUpdateMonitorCallback mUpdateMonitorCallback;
 
     private boolean mDozing;
+    private boolean mDreaming;
     private final ScreenLifecycle mScreenLifecycle;
     @VisibleForTesting
     final Consumer<Set<Integer>> mCoExAcquisitionMsgIdsToShowCallback =
@@ -408,6 +409,7 @@ public class KeyguardIndicationController {
         mKeyguardStateController.addCallback(mKeyguardStateCallback);
 
         mStatusBarStateListener.onDozingChanged(mStatusBarStateController.isDozing());
+        mStatusBarStateListener.onDreamingChanged(mStatusBarStateController.isDreaming());
     }
 
     @Nullable
@@ -1818,6 +1820,18 @@ public class KeyguardIndicationController {
                         hideBiometricMessage();
                     }
                     updateDeviceEntryIndication(false);
+                }
+
+                @Override
+                public void onDreamingChanged(boolean dreaming) {
+                    if (mDreaming == dreaming) {
+                        return;
+                    }
+                    mDreaming = dreaming;
+
+                    if (mDreaming) {
+                        hideBiometricMessage();
+                    }
                 }
             };
 
