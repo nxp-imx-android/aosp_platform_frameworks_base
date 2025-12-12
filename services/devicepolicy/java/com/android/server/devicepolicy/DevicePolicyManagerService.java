@@ -5069,9 +5069,26 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 mLockPatternUtils.isSeparateProfileChallengeEnabled(userHandle));
     }
 
-    @Override
-    public void setPasswordMinimumLength(ComponentName who, int length, boolean parent) {
-        if (!mHasFeature || notSupportedOnAutomotive("setPasswordMinimumLength")) {
+    /**
+     * Helper method to set a specific password policy field inside the `PasswordPolicy` object.
+     * This method encapsulates everything needed in the public setters.
+     *
+     * @param newValue The new integer value to set for the password policy field.
+     * @param requiredQuality The minimum password quality required for this policy to be effective.
+     *        Must be one of the {@code DevicePolicyManager.PASSWORD_QUALITY_XYZ} values.
+     * @param operationName The name of caller of this method, for logging and error messages.
+     * @param eventId The {@link DevicePolicyEnums} event ID for logging.
+     * @param getter A {@link Function} to get the current value of the field from
+     *        {@link PasswordPolicy}.
+     * @param setter A {@link BiConsumer} to set the new value of the field in
+     *        {@link PasswordPolicy}.
+     */
+    private void setPasswordPolicyField(
+            ComponentName who, boolean parent, int newValue, int requiredQuality,
+            String operationName, int eventId,
+            Function<PasswordPolicy, Integer> getter,
+            BiConsumer<PasswordPolicy, Integer> setter) {
+        if (!mHasFeature || notSupportedOnAutomotive(operationName)) {
             return;
         }
         Objects.requireNonNull(who, "ComponentName is null");
@@ -5079,20 +5096,28 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         synchronized (getLockObject()) {
             ActiveAdmin ap = getActiveAdminForCallerLocked(
                     who, DeviceAdminInfo.USES_POLICY_LIMIT_PASSWORD, parent);
-            ensureMinimumQuality(userId, ap, PASSWORD_QUALITY_NUMERIC, "setPasswordMinimumLength");
+            ensureMinimumQuality(userId, ap, requiredQuality, operationName);
             final PasswordPolicy passwordPolicy = ap.mPasswordPolicy;
-            if (passwordPolicy.length != length) {
-                passwordPolicy.length = length;
+            if (getter.apply(passwordPolicy) != newValue) {
+                setter.accept(passwordPolicy, newValue);
                 updatePasswordValidityCheckpointLocked(userId, parent);
                 saveSettingsLocked(userId);
             }
             logPasswordQualitySetIfSecurityLogEnabled(who, userId, parent, passwordPolicy);
         }
         DevicePolicyEventLogger
-                .createEvent(DevicePolicyEnums.SET_PASSWORD_MINIMUM_LENGTH)
+                .createEvent(eventId)
                 .setAdmin(who)
-                .setInt(length)
+                .setInt(newValue)
                 .write();
+    }
+
+    @Override
+    public void setPasswordMinimumLength(ComponentName who, int length, boolean parent) {
+        setPasswordPolicyField(who, parent, length, PASSWORD_QUALITY_NUMERIC,
+                "setPasswordMinimumLength", DevicePolicyEnums.SET_PASSWORD_MINIMUM_LENGTH,
+                policy -> policy.length,
+                (policy, value) -> policy.length = value);
     }
 
     private void ensureMinimumQuality(
@@ -5482,29 +5507,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @Override
     public void setPasswordMinimumUpperCase(ComponentName who, int length, boolean parent) {
-        if (!mHasFeature || notSupportedOnAutomotive("setPasswordMinimumUpperCase")) {
-            return;
-        }
-        Objects.requireNonNull(who, "ComponentName is null");
-        final int userId = mInjector.userHandleGetCallingUserId();
-        synchronized (getLockObject()) {
-            final ActiveAdmin ap = getActiveAdminForCallerLocked(
-                    who, DeviceAdminInfo.USES_POLICY_LIMIT_PASSWORD, parent);
-            ensureMinimumQuality(
-                    userId, ap, PASSWORD_QUALITY_COMPLEX, "setPasswordMinimumUpperCase");
-            final PasswordPolicy passwordPolicy = ap.mPasswordPolicy;
-            if (passwordPolicy.upperCase != length) {
-                passwordPolicy.upperCase = length;
-                updatePasswordValidityCheckpointLocked(userId, parent);
-                saveSettingsLocked(userId);
-            }
-            logPasswordQualitySetIfSecurityLogEnabled(who, userId, parent, passwordPolicy);
-        }
-        DevicePolicyEventLogger
-                .createEvent(DevicePolicyEnums.SET_PASSWORD_MINIMUM_UPPER_CASE)
-                .setAdmin(who)
-                .setInt(length)
-                .write();
+        setPasswordPolicyField(who, parent, length, PASSWORD_QUALITY_COMPLEX,
+                "setPasswordMinimumUpperCase", DevicePolicyEnums.SET_PASSWORD_MINIMUM_UPPER_CASE,
+                policy -> policy.upperCase,
+                (policy, value) -> policy.upperCase = value);
     }
 
     @Override
@@ -5515,29 +5521,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @Override
     public void setPasswordMinimumLowerCase(ComponentName who, int length, boolean parent) {
-        if (notSupportedOnAutomotive("setPasswordMinimumLowerCase")) {
-            return;
-        }
-        Objects.requireNonNull(who, "ComponentName is null");
-        final int userId = mInjector.userHandleGetCallingUserId();
-        synchronized (getLockObject()) {
-            ActiveAdmin ap = getActiveAdminForCallerLocked(
-                    who, DeviceAdminInfo.USES_POLICY_LIMIT_PASSWORD, parent);
-            ensureMinimumQuality(
-                    userId, ap, PASSWORD_QUALITY_COMPLEX, "setPasswordMinimumLowerCase");
-            final PasswordPolicy passwordPolicy = ap.mPasswordPolicy;
-            if (passwordPolicy.lowerCase != length) {
-                passwordPolicy.lowerCase = length;
-                updatePasswordValidityCheckpointLocked(userId, parent);
-                saveSettingsLocked(userId);
-            }
-            logPasswordQualitySetIfSecurityLogEnabled(who, userId, parent, passwordPolicy);
-        }
-        DevicePolicyEventLogger
-                .createEvent(DevicePolicyEnums.SET_PASSWORD_MINIMUM_LOWER_CASE)
-                .setAdmin(who)
-                .setInt(length)
-                .write();
+        setPasswordPolicyField(who, parent, length, PASSWORD_QUALITY_COMPLEX,
+                "setPasswordMinimumLowerCase", DevicePolicyEnums.SET_PASSWORD_MINIMUM_LOWER_CASE,
+                policy -> policy.lowerCase,
+                (policy, value) -> policy.lowerCase = value);
     }
 
     @Override
@@ -5548,28 +5535,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @Override
     public void setPasswordMinimumLetters(ComponentName who, int length, boolean parent) {
-        if (!mHasFeature || notSupportedOnAutomotive("setPasswordMinimumLetters")) {
-            return;
-        }
-        Objects.requireNonNull(who, "ComponentName is null");
-        final int userId = mInjector.userHandleGetCallingUserId();
-        synchronized (getLockObject()) {
-            ActiveAdmin ap = getActiveAdminForCallerLocked(
-                    who, DeviceAdminInfo.USES_POLICY_LIMIT_PASSWORD, parent);
-            ensureMinimumQuality(userId, ap, PASSWORD_QUALITY_COMPLEX, "setPasswordMinimumLetters");
-            final PasswordPolicy passwordPolicy = ap.mPasswordPolicy;
-            if (passwordPolicy.letters != length) {
-                passwordPolicy.letters = length;
-                updatePasswordValidityCheckpointLocked(userId, parent);
-                saveSettingsLocked(userId);
-            }
-            logPasswordQualitySetIfSecurityLogEnabled(who, userId, parent, passwordPolicy);
-        }
-        DevicePolicyEventLogger
-                .createEvent(DevicePolicyEnums.SET_PASSWORD_MINIMUM_LETTERS)
-                .setAdmin(who)
-                .setInt(length)
-                .write();
+        setPasswordPolicyField(who, parent, length, PASSWORD_QUALITY_COMPLEX,
+                "setPasswordMinimumLetters", DevicePolicyEnums.SET_PASSWORD_MINIMUM_LETTERS,
+                policy -> policy.letters,
+                (policy, value) -> policy.letters = value);
     }
 
     @Override
@@ -5580,28 +5549,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @Override
     public void setPasswordMinimumNumeric(ComponentName who, int length, boolean parent) {
-        if (!mHasFeature || notSupportedOnAutomotive("setPasswordMinimumNumeric")) {
-            return;
-        }
-        Objects.requireNonNull(who, "ComponentName is null");
-        final int userId = mInjector.userHandleGetCallingUserId();
-        synchronized (getLockObject()) {
-            ActiveAdmin ap = getActiveAdminForCallerLocked(
-                    who, DeviceAdminInfo.USES_POLICY_LIMIT_PASSWORD, parent);
-            ensureMinimumQuality(userId, ap, PASSWORD_QUALITY_COMPLEX, "setPasswordMinimumNumeric");
-            final PasswordPolicy passwordPolicy = ap.mPasswordPolicy;
-            if (passwordPolicy.numeric != length) {
-                passwordPolicy.numeric = length;
-                updatePasswordValidityCheckpointLocked(userId, parent);
-                saveSettingsLocked(userId);
-            }
-            logPasswordQualitySetIfSecurityLogEnabled(who, userId, parent, passwordPolicy);
-        }
-        DevicePolicyEventLogger
-                .createEvent(DevicePolicyEnums.SET_PASSWORD_MINIMUM_NUMERIC)
-                .setAdmin(who)
-                .setInt(length)
-                .write();
+        setPasswordPolicyField(who, parent, length, PASSWORD_QUALITY_COMPLEX,
+                "setPasswordMinimumNumeric", DevicePolicyEnums.SET_PASSWORD_MINIMUM_NUMERIC,
+                policy -> policy.numeric,
+                (policy, value) -> policy.numeric = value);
     }
 
     @Override
@@ -5612,28 +5563,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @Override
     public void setPasswordMinimumSymbols(ComponentName who, int length, boolean parent) {
-        if (!mHasFeature || notSupportedOnAutomotive("setPasswordMinimumSymbols")) {
-            return;
-        }
-        Objects.requireNonNull(who, "ComponentName is null");
-        final int userId = mInjector.userHandleGetCallingUserId();
-        synchronized (getLockObject()) {
-            ActiveAdmin ap = getActiveAdminForCallerLocked(
-                    who, DeviceAdminInfo.USES_POLICY_LIMIT_PASSWORD, parent);
-            ensureMinimumQuality(userId, ap, PASSWORD_QUALITY_COMPLEX, "setPasswordMinimumSymbols");
-            final PasswordPolicy passwordPolicy = ap.mPasswordPolicy;
-            if (passwordPolicy.symbols != length) {
-                ap.mPasswordPolicy.symbols = length;
-                updatePasswordValidityCheckpointLocked(userId, parent);
-                saveSettingsLocked(userId);
-            }
-            logPasswordQualitySetIfSecurityLogEnabled(who, userId, parent, passwordPolicy);
-        }
-        DevicePolicyEventLogger
-                .createEvent(DevicePolicyEnums.SET_PASSWORD_MINIMUM_SYMBOLS)
-                .setAdmin(who)
-                .setInt(length)
-                .write();
+        setPasswordPolicyField(who, parent, length, PASSWORD_QUALITY_COMPLEX,
+                "setPasswordMinimumSymbols", DevicePolicyEnums.SET_PASSWORD_MINIMUM_SYMBOLS,
+                policy -> policy.symbols,
+                (policy, value) -> policy.symbols = value);
     }
 
     @Override
@@ -5644,29 +5577,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @Override
     public void setPasswordMinimumNonLetter(ComponentName who, int length, boolean parent) {
-        if (!mHasFeature || notSupportedOnAutomotive("setPasswordMinimumNonLetter")) {
-            return;
-        }
-        Objects.requireNonNull(who, "ComponentName is null");
-        final int userId = mInjector.userHandleGetCallingUserId();
-        synchronized (getLockObject()) {
-            ActiveAdmin ap = getActiveAdminForCallerLocked(
-                    who, DeviceAdminInfo.USES_POLICY_LIMIT_PASSWORD, parent);
-            ensureMinimumQuality(
-                    userId, ap, PASSWORD_QUALITY_COMPLEX, "setPasswordMinimumNonLetter");
-            final PasswordPolicy passwordPolicy = ap.mPasswordPolicy;
-            if (passwordPolicy.nonLetter != length) {
-                ap.mPasswordPolicy.nonLetter = length;
-                updatePasswordValidityCheckpointLocked(userId, parent);
-                saveSettingsLocked(userId);
-            }
-            logPasswordQualitySetIfSecurityLogEnabled(who, userId, parent, passwordPolicy);
-        }
-        DevicePolicyEventLogger
-                .createEvent(DevicePolicyEnums.SET_PASSWORD_MINIMUM_NON_LETTER)
-                .setAdmin(who)
-                .setInt(length)
-                .write();
+        setPasswordPolicyField(who, parent, length, PASSWORD_QUALITY_COMPLEX,
+                "setPasswordMinimumNonLetter", DevicePolicyEnums.SET_PASSWORD_MINIMUM_NON_LETTER,
+                policy -> policy.nonLetter,
+                (policy, value) -> policy.nonLetter = value);
     }
 
     @Override
