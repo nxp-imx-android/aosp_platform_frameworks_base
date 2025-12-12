@@ -18,7 +18,6 @@
 package com.android.systemui.biometrics.ui.binder
 
 import android.content.res.Resources
-import android.hardware.biometrics.Flags.bpFallbackOptions
 import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
@@ -30,10 +29,6 @@ import com.android.systemui.biometrics.ui.viewmodel.BiometricAuthIconViewModel
 import com.android.systemui.biometrics.ui.viewmodel.PromptIconViewModel
 import com.android.systemui.biometrics.ui.viewmodel.PromptViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
-import com.android.systemui.util.kotlin.Quad
-import com.android.systemui.util.kotlin.Utils.Companion.toQuint
-import com.android.systemui.util.kotlin.sample
-import kotlinx.coroutines.flow.combine
 
 private const val TAG = "PromptIconViewBinder"
 
@@ -47,74 +42,26 @@ object PromptIconViewBinder {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.onConfigurationChanged(iconView.context.resources.configuration)
 
-                if (bpFallbackOptions()) {
-                    launch {
-                        viewModel.iconState.collect { state ->
-                            if (state.asset != -1) {
-                                iconView.updateAsset(
-                                    "iconAsset",
-                                    state.asset,
-                                    state.shouldAnimate,
-                                    state.shouldLoop,
-                                    state.activeBiometricAuthType,
-                                )
-                            }
-
-                            if (state.contentDescriptionId != -1) {
-                                iconView.contentDescription =
-                                    iconView.context.getString(state.contentDescriptionId)
-                            }
-
-                            iconView.rotation = state.rotation
-
-                            viewModel.setPreviousIconWasError(state.showingError)
-                        }
-                    }
-                } else {
-                    launch {
-                        viewModel.iconAsset
-                            .sample(
-                                combine(
-                                    viewModel.activeBiometricAuthType,
-                                    viewModel.shouldAnimateIconView,
-                                    viewModel.shouldLoopIconView,
-                                    viewModel.showingError,
-                                    ::Quad,
-                                ),
-                                ::toQuint,
+                launch {
+                    viewModel.iconState.collect { state ->
+                        if (state.asset != -1) {
+                            iconView.updateAsset(
+                                "iconAsset",
+                                state.asset,
+                                state.shouldAnimate,
+                                state.shouldLoop,
+                                state.activeBiometricAuthType,
                             )
-                            .collect {
-                                (
-                                    iconAsset,
-                                    activeBiometricAuthType,
-                                    shouldAnimateIconView,
-                                    shouldLoopIconView,
-                                    showingError) ->
-                                if (iconAsset != -1) {
-                                    iconView.updateAsset(
-                                        "iconAsset",
-                                        iconAsset,
-                                        shouldAnimateIconView,
-                                        shouldLoopIconView,
-                                        activeBiometricAuthType,
-                                    )
-                                    viewModel.setPreviousIconWasError(showingError)
-                                }
-                            }
-                    }
-
-                    launch {
-                        viewModel.iconViewRotation.collect { rotation ->
-                            iconView.rotation = rotation
                         }
-                    }
 
-                    launch {
-                        viewModel.contentDescriptionId.collect { id ->
-                            if (id != -1) {
-                                iconView.contentDescription = iconView.context.getString(id)
-                            }
+                        if (state.contentDescriptionId != -1) {
+                            iconView.contentDescription =
+                                iconView.context.getString(state.contentDescriptionId)
                         }
+
+                        iconView.rotation = state.rotation
+
+                        viewModel.setPreviousIconWasError(state.showingError)
                     }
                 }
             }
@@ -164,7 +111,7 @@ private fun LottieAnimationView.setFailureListener(
         Log.d(
             TAG,
             "Collecting $type: activeBiometricAuthType = $activeBiometricAuthType, invalid " +
-                    "resource id: $asset, name $assetName",
+                "resource id: $asset, name $assetName",
             result,
         )
     }

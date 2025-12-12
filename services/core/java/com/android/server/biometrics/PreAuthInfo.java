@@ -39,7 +39,6 @@ import android.util.Pair;
 import android.util.Slog;
 import android.view.Display;
 
-import com.android.internal.R;
 import com.android.server.biometrics.sensors.LockoutTracker;
 
 import java.lang.annotation.Retention;
@@ -133,11 +132,6 @@ class PreAuthInfo {
         final boolean isMandatoryBiometricsAuthentication =
                 updateAuthenticatorsIfIdentityCheckIsActive(promptInfo, effectiveUserId,
                         trustManager, settingObserver);
-
-        if (!Flags.bpFallbackOptions() && isMandatoryBiometricsAuthentication
-                && promptInfo.getNegativeButtonText() == null) {
-            promptInfo.setNegativeButtonText(context.getString(R.string.cancel));
-        }
 
         final boolean biometricRequested = Utils.isBiometricRequested(promptInfo);
         final int requestedStrength = Utils.getPublicBiometricStrength(promptInfo);
@@ -287,9 +281,6 @@ class PreAuthInfo {
                     sensor.impl.getLockoutModeForUser(userId);
             if (lockoutMode == LockoutTracker.LOCKOUT_TIMED) {
                 return BIOMETRIC_LOCKOUT_TIMED;
-            } else if (lockoutMode == LockoutTracker.LOCKOUT_PERMANENT
-                    && !Flags.bpFallbackOptions()) {
-                return BIOMETRIC_LOCKOUT_PERMANENT;
             }
         } catch (RemoteException e) {
             return BIOMETRIC_HARDWARE_NOT_DETECTED;

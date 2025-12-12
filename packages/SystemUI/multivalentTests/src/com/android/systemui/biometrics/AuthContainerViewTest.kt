@@ -17,13 +17,11 @@ package com.android.systemui.biometrics
 
 import android.content.packageManager
 import android.content.pm.PackageInfo
-import android.content.res.Configuration
 import android.content.testableContext
 import android.hardware.biometrics.BiometricAuthenticator
 import android.hardware.biometrics.BiometricConstants
 import android.hardware.biometrics.BiometricManager
 import android.hardware.biometrics.BiometricPrompt
-import android.hardware.biometrics.Flags
 import android.hardware.biometrics.PromptContentViewWithMoreOptionsButton
 import android.hardware.biometrics.PromptInfo
 import android.hardware.biometrics.PromptVerticalListContentView
@@ -32,8 +30,6 @@ import android.hardware.fingerprint.FingerprintSensorPropertiesInternal
 import android.os.IBinder
 import android.os.UserManager
 import android.os.userManager
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import android.testing.TestableLooper.RunWithLooper
 import android.testing.ViewUtils
@@ -61,7 +57,6 @@ import com.android.systemui.keyguard.wakefulnessLifecycle
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
-import com.android.systemui.shade.data.repository.fakeShadeRepository
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runCurrent
@@ -102,7 +97,6 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
     private val testScope = kosmos.testScope
     private val fakeExecutor = kosmos.fakeExecutor
-    private val fakeShadeRepository = kosmos.fakeShadeRepository
 
     private val defaultLogoIcon = context.getDrawable(R.drawable.ic_android)
 
@@ -205,18 +199,6 @@ open class AuthContainerViewTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_BP_FALLBACK_OPTIONS)
-    @Ignore("b/430630633")
-    fun testIgnoresAnimatedInWhenDialogAnimatingOut() {
-        val container = initializeFingerprintContainer(addToView = false)
-        container.mContainerState = 4 // STATE_ANIMATING_OUT
-        container.addToView()
-        waitForIdleSync()
-
-        verify(callback, never()).onDialogAnimatedIn(anyLong(), anyBoolean())
-    }
-
-    @Test
     fun testDismissBeforeIntroEnd() {
         val container = initializeFingerprintContainer()
         waitForIdleSync()
@@ -295,7 +277,6 @@ open class AuthContainerViewTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_BP_FALLBACK_OPTIONS)
     fun testActionFallbackOption_sendsFallbackOption() {
         val container =
             initializeFingerprintContainer(
@@ -331,7 +312,6 @@ open class AuthContainerViewTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_BP_FALLBACK_OPTIONS)
     fun testActionCredentialMatched_doesNotDismissWhenCredentialNotAllowed() {
         val container =
             initializeFingerprintContainer(
@@ -378,60 +358,6 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
         verify(callback).onDeviceCredentialPressed(authContainer?.requestId ?: 0L)
         assertThat(container.hasCredentialView()).isTrue()
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_BP_FALLBACK_OPTIONS)
-    @Ignore("b/430630633")
-    fun testAnimateToCredentialUI_invokesStartTransitionToCredentialUI() {
-        val container =
-            initializeFingerprintContainer(
-                authenticators =
-                    BiometricManager.Authenticators.BIOMETRIC_WEAK or
-                        BiometricManager.Authenticators.DEVICE_CREDENTIAL
-            )
-        container.animateToCredentialUI(false)
-        waitForIdleSync()
-
-        assertThat(container.hasCredentialView()).isTrue()
-        assertThat(container.hasBiometricPrompt()).isFalse()
-
-        // Check credential view persists after new attachment
-        container.onAttachedToWindow()
-
-        assertThat(container.hasCredentialView()).isTrue()
-        assertThat(container.hasBiometricPrompt()).isFalse()
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_BP_FALLBACK_OPTIONS)
-    @Ignore("b/430630633")
-    fun testAnimateToCredentialUI_rotateCredentialUI() {
-        val container =
-            initializeFingerprintContainer(
-                authenticators =
-                    BiometricManager.Authenticators.BIOMETRIC_WEAK or
-                        BiometricManager.Authenticators.DEVICE_CREDENTIAL
-            )
-        container.animateToCredentialUI(false)
-        waitForIdleSync()
-
-        assertThat(container.hasCredentialView()).isTrue()
-        assertThat(container.hasBiometricPrompt()).isFalse()
-
-        // Check credential view persists after new attachment
-        container.onAttachedToWindow()
-
-        assertThat(container.hasCredentialView()).isTrue()
-        assertThat(container.hasBiometricPrompt()).isFalse()
-
-        val configuration = Configuration(context.resources.configuration)
-        configuration.orientation = Configuration.ORIENTATION_LANDSCAPE
-        container.dispatchConfigurationChanged(configuration)
-        waitForIdleSync()
-
-        assertThat(container.hasCredentialView()).isTrue()
-        assertThat(container.hasBiometricPrompt()).isFalse()
     }
 
     @Test
@@ -738,11 +664,7 @@ private fun AuthContainerView.hasBiometricPrompt() =
     (findViewById<ScrollView>(R.id.biometric_scrollview)?.childCount ?: 0) > 0
 
 private fun AuthContainerView.hasCredentialView() =
-    if (Flags.bpFallbackOptions()) {
-        (findViewById<View>(R.id.credential_view)?.visibility ?: View.GONE) == View.VISIBLE
-    } else {
-        hasCredentialPatternView() || hasCredentialPasswordView()
-    }
+    (findViewById<View>(R.id.credential_view)?.visibility ?: View.GONE) == View.VISIBLE
 
 private fun AuthContainerView.hasCredentialPatternView() =
     findViewById<View>(R.id.lockPattern) != null

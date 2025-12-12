@@ -46,17 +46,12 @@ constructor(
      * identity check or watch ranging allow it
      */
     val isCredentialAllowed: Flow<Boolean> =
-        if (Flags.bpFallbackOptions()) {
-            combine(
-                promptCredentialInteractor.prompt,
-                promptSelectorInteractor.watchRangingState,
-            ) { prompt, watchRangingState ->
-                prompt?.credentialRequested == true &&
-                    (watchRangingState == WatchRangingState.WATCH_RANGING_SUCCESSFUL ||
-                        prompt.credentialAllowed)
-            }
-        } else {
-            promptCredentialInteractor.prompt.map { it?.credentialAllowed == true }
+        combine(promptCredentialInteractor.prompt, promptSelectorInteractor.watchRangingState) {
+            prompt,
+            watchRangingState ->
+            prompt?.credentialRequested == true &&
+                (watchRangingState == WatchRangingState.WATCH_RANGING_SUCCESSFUL ||
+                    prompt.credentialAllowed)
         }
 
     /** Top level information about the prompt. */
@@ -168,7 +163,7 @@ constructor(
     /** Whether the fallback button should show on the credential screen */
     val showFallbackButton: Flow<Boolean> =
         combine(biometricsRequested, fallbackOptions) { biometricsRequested, fallbackOptions ->
-            Flags.bpFallbackOptions() && !biometricsRequested && fallbackOptions.isNotEmpty()
+            !biometricsRequested && fallbackOptions.isNotEmpty()
         }
 
     /** Enable transition animations. */
