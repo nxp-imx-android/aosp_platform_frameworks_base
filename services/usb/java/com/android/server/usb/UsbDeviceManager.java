@@ -1178,13 +1178,11 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
             if (enabled != mMidiEnabled) {
                 if (enabled) {
                     boolean midiDeviceFound = false;
-                    if (android.hardware.usb.flags.Flags.enableUsbSysfsMidiIdentification()) {
-                        try {
-                            getMidiCardDevice();
-                            midiDeviceFound = true;
-                        } catch (FileNotFoundException e) {
-                            Slog.w(TAG, "could not identify MIDI device", e);
-                        }
+                    try {
+                        getMidiCardDevice();
+                        midiDeviceFound = true;
+                    } catch (FileNotFoundException e) {
+                        Slog.w(TAG, "could not identify MIDI device", e);
                     }
                     // For backward compatibility with older kernels without
                     // https://lore.kernel.org/r/20240307030922.3573161-1-royluo@google.com
