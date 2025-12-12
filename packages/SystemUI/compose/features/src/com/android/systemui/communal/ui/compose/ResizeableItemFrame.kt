@@ -16,6 +16,7 @@
 
 package com.android.systemui.communal.ui.compose
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.Orientation
@@ -23,13 +24,25 @@ import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -44,21 +57,35 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastIsFinite
 import androidx.compose.ui.zIndex
 import com.android.compose.modifiers.thenIf
 import com.android.internal.R.dimen.system_app_widget_background_radius
+import com.android.systemui.Flags.communalEditModeAccessibilityResize
+import com.android.systemui.communal.ui.compose.extensions.observeTaps
+import com.android.systemui.communal.ui.model.AccessibilityResizeAction
 import com.android.systemui.communal.ui.viewmodel.ResizeHandle
 import com.android.systemui.communal.ui.viewmodel.ResizeInfo
 import com.android.systemui.communal.ui.viewmodel.ResizeableItemFrameViewModel
+import com.android.systemui.res.R
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+
+private val AccessibilityResizeButtonSize = 48.dp
 
 @Composable
 private fun UpdateGridLayoutInfo(
@@ -118,6 +145,137 @@ private fun UpdateGridLayoutInfo(
 }
 
 @Composable
+private fun AccessibilityResizeButtonWrapper(
+    visible: Boolean,
+    icon: ImageVector,
+    contentDescription: String,
+    onClick: () -> Unit,
+    isTopRounded: Boolean,
+) {
+    Box(modifier = Modifier.height(AccessibilityResizeButtonSize)) {
+        if (visible) {
+            ResizeButton(
+                icon = icon,
+                contentDescription = contentDescription,
+                onClick = onClick,
+                isTopRounded = isTopRounded,
+            )
+        }
+    }
+}
+
+@Composable
+private fun BoxScope.AccessibilityButtons(
+    handle: ResizeHandle,
+    isAccessibilityControlsVisible: Boolean,
+    canExpand: Boolean,
+    canShrink: Boolean,
+    onExpand: () -> Unit,
+    onShrink: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val spacing = 8.dp
+
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        val expandAction =
+            AccessibilityResizeAction(
+                isVisible = canExpand,
+                icon = Icons.Default.Add,
+                description = stringResource(R.string.accessibility_action_label_expand_widget),
+                onClick = { if (isAccessibilityControlsVisible) onExpand() },
+            )
+        val shrinkAction =
+            AccessibilityResizeAction(
+                isVisible = canShrink,
+                icon = Icons.Default.Remove,
+                description = stringResource(R.string.accessibility_action_label_shrink_widget),
+                onClick = { if (isAccessibilityControlsVisible) onShrink() },
+            )
+
+        val actions =
+            if (handle == ResizeHandle.TOP) {
+                listOf(expandAction, shrinkAction)
+            } else {
+                listOf(shrinkAction, expandAction)
+            }
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(spacing),
+        ) {
+            actions.forEachIndexed { index, action ->
+                AccessibilityResizeButtonWrapper(
+                    visible = action.isVisible,
+                    icon = action.icon,
+                    contentDescription = action.description,
+                    onClick = action.onClick,
+                    isTopRounded = index == 0,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ResizeButton(
+    icon: ImageVector,
+    contentDescription: String,
+    onClick: () -> Unit,
+    isTopRounded: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val shape =
+        remember(isTopRounded) {
+            if (isTopRounded) {
+                RoundedCornerShape(topStartPercent = 50, topEndPercent = 50)
+            } else {
+                RoundedCornerShape(bottomStartPercent = 50, bottomEndPercent = 50)
+            }
+        }
+
+    val borderColor = MaterialTheme.colorScheme.onTertiaryContainer
+    val border = remember(borderColor) { BorderStroke(2.dp, borderColor) }
+
+    Button(
+        onClick = onClick,
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+            ),
+        modifier = modifier.size(AccessibilityResizeButtonSize),
+        shape = shape,
+        border = border,
+        contentPadding = PaddingValues(0.dp),
+    ) {
+        Icon(icon, contentDescription = contentDescription)
+    }
+}
+
+@Immutable
+private data class ResizeHandleUiState(
+    val orientation: ResizeHandle,
+    val isAccessibilityControlsVisible: Boolean,
+    val canExpand: Boolean,
+    val canShrink: Boolean,
+)
+
+@Composable
+private fun Modifier.accessibilityResizeClickable(
+    label: String,
+    onClick: () -> Unit,
+): Modifier {
+    return this.pointerInput(Unit) { observeTaps(shouldConsume = true) { onClick() } }
+        .semantics {
+            role = Role.Button
+            onClick(label = label) {
+                onClick()
+                true
+            }
+        }
+}
+
+@Composable
 private fun DragPill(brush: Brush, radius: Dp, alpha: () -> Float, modifier: Modifier = Modifier) {
     Canvas(modifier = modifier) {
         drawCircle(
@@ -131,36 +289,89 @@ private fun DragPill(brush: Brush, radius: Dp, alpha: () -> Float, modifier: Mod
 
 @Composable
 private fun BoxScope.UnifiedResizeHandle(
-    handle: ResizeHandle,
-    dragState: AnchoredDraggableState<Int>,
+    state: ResizeHandleUiState,
+    draggableState: AnchoredDraggableState<Int>,
+    onToggleAccessibilityControls: () -> Unit,
+    onExpand: () -> Unit,
+    onShrink: () -> Unit,
     dragHandleRadius: Dp,
     outlinePadding: Dp,
     brush: Brush,
     contentAlpha: () -> Float,
     modifier: Modifier = Modifier,
 ) {
-    val directionalModifier = if (handle == ResizeHandle.TOP) -1 else 1
-    val alignment = if (handle == ResizeHandle.TOP) Alignment.TopCenter else Alignment.BottomCenter
+    val directionalModifier = if (state.orientation == ResizeHandle.TOP) -1 else 1
+    val currentOnToggle by rememberUpdatedState(onToggleAccessibilityControls)
 
     Box(
         modifier =
             modifier
-                .align(alignment)
                 .graphicsLayer {
                     translationY =
                         directionalModifier * (size.height / 2 + outlinePadding.toPx()) +
-                            (dragState.offset.takeIf { it.fastIsFinite() } ?: 0f)
+                            (draggableState.offset.takeIf { it.fastIsFinite() } ?: 0f)
                 }
-                .anchoredDraggable(state = dragState, orientation = Orientation.Vertical)
+                .anchoredDraggable(
+                    state = draggableState,
+                    orientation = Orientation.Vertical,
+                    enabled = !state.isAccessibilityControlsVisible,
+                )
     ) {
-        // TODO(b/431683508): Add accessibility controls
-        if (dragState.anchors.size > 1) {
-            DragPill(
-                brush = brush,
-                radius = dragHandleRadius,
-                alpha = contentAlpha,
-                modifier = Modifier.fillMaxWidth().height(dragHandleRadius * 2),
-            )
+        if (communalEditModeAccessibilityResize()) {
+            if (!state.canExpand && !state.canShrink) return@Box
+
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
+                // DragPill logic
+                val pillAlpha = if (state.isAccessibilityControlsVisible) 0f else 1f
+                val pillScale = if (state.isAccessibilityControlsVisible) 0.33f else 1f
+                val originY = if (state.orientation == ResizeHandle.TOP) 1f else 0f
+
+                Box(
+                    modifier =
+                        Modifier.graphicsLayer {
+                            alpha = pillAlpha
+                            scaleX = pillScale
+                            scaleY = pillScale
+                            transformOrigin = TransformOrigin(0.5f, originY)
+                        }
+                ) {
+                    DragPill(
+                        brush = brush,
+                        radius = dragHandleRadius,
+                        alpha = { pillAlpha * contentAlpha() },
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .height(dragHandleRadius * 2)
+                                .accessibilityResizeClickable(
+                                    label = stringResource(R.string.accessibility_action_label_resize_widget),
+                                    onClick = currentOnToggle,
+                                ),
+                    )
+                }
+
+                // Accessibility Buttons
+                if (state.isAccessibilityControlsVisible) {
+                    AccessibilityButtons(
+                        handle = state.orientation,
+                        isAccessibilityControlsVisible = state.isAccessibilityControlsVisible,
+                        canExpand = state.canExpand,
+                        canShrink = state.canShrink,
+                        onExpand = onExpand,
+                        onShrink = onShrink,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
+        } else {
+            // Replicate the original DragHandle behavior when the flag is off.
+            if (draggableState.anchors.size > 1) {
+                DragPill(
+                    brush = brush,
+                    radius = dragHandleRadius,
+                    alpha = contentAlpha,
+                    modifier = Modifier.fillMaxWidth().height(dragHandleRadius * 2),
+                )
+            }
         }
     }
 }
@@ -211,9 +422,18 @@ fun ResizableItemFrame(
     onResize: (info: ResizeInfo) -> Unit = {},
     content: @Composable () -> Unit,
 ) {
+    val accessibilityResizeHandle by viewModel.visibleAccessibilityResizeHandle
+
+    // When resizing is disabled (e.g. the widget is deselected), ensure we reset the state of
+    // the accessibility resize controls.
+    LaunchedEffect(enabled) {
+        if (!enabled) {
+            viewModel.clearAccessibilityResizeHandle()
+        }
+    }
+
     val brush = SolidColor(outlineColor)
     val onResizeUpdated by rememberUpdatedState(onResize)
-    val dragHandleHeight = dragHandleRadius * 2
     val isDragging by
         remember(viewModel) {
             derivedStateOf {
@@ -224,31 +444,56 @@ fun ResizableItemFrame(
             }
         }
 
-    // Draw content surrounded by drag handles at top and bottom. Allow drag handles
+    // Draw content surrounded by resize handles at top and bottom. Allow resize handles
     // to overlap content.
-    Box(modifier.thenIf(isDragging) { Modifier.zIndex(1f) }) {
+    Box(
+        modifier
+            .thenIf(communalEditModeAccessibilityResize()) { Modifier.fillMaxSize() }
+            .thenIf(
+                isDragging ||
+                    (communalEditModeAccessibilityResize() && accessibilityResizeHandle != null)
+            ) {
+                Modifier.zIndex(1f)
+            }
+    ) {
         content()
 
         if (enabled) {
-            UnifiedResizeHandle(
-                handle = ResizeHandle.TOP,
-                dragState = viewModel.topResizeState,
-                dragHandleRadius = dragHandleRadius,
-                outlinePadding = outlinePadding,
-                brush = brush,
-                contentAlpha = alpha,
-                modifier = Modifier.fillMaxWidth().height(dragHandleHeight),
-            )
+            listOf(ResizeHandle.TOP, ResizeHandle.BOTTOM).forEach { handle ->
+                val uiState =
+                    ResizeHandleUiState(
+                        orientation = handle,
+                        isAccessibilityControlsVisible =
+                            communalEditModeAccessibilityResize() &&
+                                accessibilityResizeHandle == handle,
+                        canExpand = viewModel.canExpand(handle),
+                        canShrink = viewModel.canShrink(handle),
+                    )
+                val draggableState =
+                    if (handle == ResizeHandle.TOP) viewModel.topResizeState
+                    else viewModel.bottomResizeState
 
-            UnifiedResizeHandle(
-                handle = ResizeHandle.BOTTOM,
-                dragState = viewModel.bottomResizeState,
-                dragHandleRadius = dragHandleRadius,
-                outlinePadding = outlinePadding,
-                brush = brush,
-                contentAlpha = alpha,
-                modifier = Modifier.fillMaxWidth().height(dragHandleHeight),
-            )
+                UnifiedResizeHandle(
+                    state = uiState,
+                    draggableState = draggableState,
+                    onToggleAccessibilityControls = {
+                        if (communalEditModeAccessibilityResize()) {
+                            viewModel.toggleAccessibilityResizeHandle(handle)
+                        }
+                    },
+                    onExpand = { viewModel.expand(handle) },
+                    onShrink = { viewModel.shrink(handle) },
+                    modifier =
+                        Modifier.align(
+                            if (handle == ResizeHandle.TOP) Alignment.TopCenter
+                            else Alignment.BottomCenter
+                        ),
+                    dragHandleRadius = dragHandleRadius,
+                    outlinePadding = outlinePadding,
+                    brush = brush,
+                    contentAlpha = alpha,
+                )
+            }
 
             // Draw outline around the element.
             Canvas(modifier = Modifier.matchParentSize()) {
