@@ -39,9 +39,11 @@ import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.telecom.Annotation;
+import android.telecom.TelecomManager;
 import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
 import android.util.Log;
@@ -432,6 +434,10 @@ public final class BlockedNumbersManager {
      * @throws SecurityException if the caller is missing the necessary permissions
      */
     private void verifyBlockedNumbersPermission() {
+        if (mContext.checkCallingOrSelfPermission(TelecomManager.PERMISSION_TELECOM_UI_ACCESS)
+                == PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
         mContext.enforceCallingOrSelfPermission(Manifest.permission.READ_BLOCKED_NUMBERS,
                 "Caller does not have the android.permission.READ_BLOCKED_NUMBERS permission");
         mContext.enforceCallingOrSelfPermission(Manifest.permission.WRITE_BLOCKED_NUMBERS,
