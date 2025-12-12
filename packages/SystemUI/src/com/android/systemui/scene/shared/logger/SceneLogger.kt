@@ -290,12 +290,15 @@ constructor(
         }
     }
 
-    fun logSceneBackStack(backStack: SceneStack) {
+    fun logSceneBackStack(backStack: SceneStack, reason: String) {
         logBuffer.log(
             tag = TAG,
             level = LogLevel.INFO,
-            messageInitializer = { str1 = backStack.toString() },
-            messagePrinter = { "back stack: $str1" },
+            messageInitializer = {
+                str1 = backStack.toString()
+                str2 = reason
+            },
+            messagePrinter = { "back stack: $str1, reason: $str2" },
         )
     }
 
