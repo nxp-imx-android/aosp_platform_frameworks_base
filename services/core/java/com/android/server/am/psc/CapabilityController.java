@@ -16,6 +16,7 @@
 package com.android.server.am.psc;
 
 import static android.app.ActivityManager.PROCESS_CAPABILITY_ALL;
+import static android.app.ActivityManager.PROCESS_CAPABILITY_BFSL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
 
 import static com.android.server.am.psc.Constants.FOREGROUND_APP_ADJ;
@@ -31,13 +32,26 @@ class CapabilityController {
         // No capability is granted to a non-running process.
         if (!edge.getTarget().isProcessRunning()) return PROCESS_CAPABILITY_NONE;
         // TODO(b/466961280): Add more policies.
-        return evaluateMaxAdjPolicy(edge);
+        // TODO(b/473696073): Optimize: If all the capabilities that a policy is able to give are
+        //  already given by its preceding policies, the policy evaluation can be skipped.
+        return evaluateMaxAdjPolicy(edge) | evaluateInstrumentationPolicy(edge);
     }
 
     /** Evaluates a filter based on the process's max oom score (maxAdj). */
     private static @ProcessCapability int evaluateMaxAdjPolicy(ProcessEdge edge) {
         if (edge.getTarget().getMaxAdj() <= FOREGROUND_APP_ADJ) {
             return PROCESS_CAPABILITY_ALL;
+        } else {
+            return PROCESS_CAPABILITY_NONE;
+        }
+    }
+
+    /** Grants BFSL if the process has an active instrumentation. */
+    private static @ProcessCapability int evaluateInstrumentationPolicy(ProcessEdge edge) {
+        // TODO(b/471530626): The policy ignores whether the process is running remote animation
+        //  or not, which is different from current OomAdjuster impl. Revisit this policy if needed.
+        if (edge.getTarget().hasActiveInstrumentation()) {
+            return PROCESS_CAPABILITY_BFSL;
         } else {
             return PROCESS_CAPABILITY_NONE;
         }
