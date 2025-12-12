@@ -144,9 +144,9 @@ public class ThemeOverlayHelper {
         //Themed Colors
         assignColorsToOverlay(overlay, DynamicColors.getAllDynamicColorsMapped(),
                 false, lightColorScheme, darkColorScheme);
-        // Fixed Colors
-        assignColorsToOverlay(overlay, DynamicColors.getFixedColorsMapped(), true, lightColorScheme,
-                darkColorScheme);
+        // Fixed colors intentionally use only the lightscheme, hence the "fixed" in name.
+        assignColorsToOverlay(overlay, DynamicColors.getFixedColorsMapped(), true,
+                lightColorScheme, lightColorScheme);
         //Custom Colors
         assignColorsToOverlay(overlay, DynamicColors.getCustomColorsMapped(), false,
                 lightColorScheme, darkColorScheme);
