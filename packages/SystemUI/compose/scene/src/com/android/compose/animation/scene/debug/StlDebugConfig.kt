@@ -14,28 +14,81 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package com.android.compose.animation.scene.debug
 
-import android.os.SystemProperties
+import android.content.Context
+import android.database.ContentObserver
+import android.os.Handler
+import android.os.Looper
+import android.provider.Settings
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import com.android.compose.animation.scene.debug.StlDebugConfig.elementKeyFilter
+import com.android.compose.animation.scene.debug.StlDebugKeys.ELEMENT_FILTER
+import com.android.compose.animation.scene.debug.StlDebugKeys.LOG_ELEMENTS
+import com.android.compose.animation.scene.debug.StlDebugKeys.LOG_ELEMENTS_VERBOSE
+import com.android.compose.animation.scene.debug.StlDebugKeys.POS_ELEMENT_LABEL
+import com.android.compose.animation.scene.debug.StlDebugKeys.POS_SCENE_LABEL
+import com.android.compose.animation.scene.debug.StlDebugKeys.POS_STL_LABEL
+import com.android.compose.animation.scene.debug.StlDebugKeys.SHOW_ELEMENT_BORDERS
+import com.android.compose.animation.scene.debug.StlDebugKeys.SHOW_ELEMENT_LABELS
+import com.android.compose.animation.scene.debug.StlDebugKeys.SHOW_SCENE_BORDERS
+import com.android.compose.animation.scene.debug.StlDebugKeys.SHOW_SCENE_LABELS
+import com.android.compose.animation.scene.debug.StlDebugKeys.SHOW_STL_BORDERS
+import com.android.compose.animation.scene.debug.StlDebugKeys.SHOW_STL_LABELS
+import com.android.systemui.util.Compile
 
+/**
+ * Manages the global configuration for visual and logging debug of [SceneTransitionLayout].
+ *
+ * The settings can be set either via App or adb using the following commands example:
+ * ```
+ * Set Boolean true: `adb shell settings put global debug_stl_show_element_borders 1`
+ * Set String filter: `adb shell settings put global debug_stl_element_filter "Button,Icon,Title"`
+ * Set Enum by name: `adb shell settings put global debug_stl_pos_element_label "TopLeft"`
+ * Reset to default: `adb shell settings delete global debug_stl`
+ * ```
+ *
+ * The keys are found in [StlDebugKeys]
+ */
 internal object StlDebugConfig {
-    const val DEBUG_STL = false
+    /**
+     * Master switch to turn off all debugging. In PROD this is completely turned off. For ENG and
+     * USERDEBUG builds only we register content observers to listen to the settings set through adb
+     * or App.
+     */
+    const val DEBUG_STL = Compile.IS_DEBUG
 
     // ====================== ELEMENT ======================
     /**
      * Shows borders around elements. The borders are inset on 3 lanes and dashed to reduce
      * overlapping and better visual. Filtered by [elementKeyFilter].
      */
-    val showElementBorders = DEBUG_STL
+    private var showElementBorders by mutableStateOf(false)
+
+    inline fun showElementBorders(): Boolean {
+        return DEBUG_STL && showElementBorders
+    }
 
     /** Show names of the elements within the element. Filtered by [elementKeyFilter]. */
-    val showElementLabels = DEBUG_STL
+    private var showElementLabels by mutableStateOf(false)
+
+    inline fun showElementLabels(): Boolean {
+        return DEBUG_STL && showElementLabels
+    }
+
+    inline fun isDebuggingElement(): Boolean {
+        return DEBUG_STL && (showElementBorders or showElementLabels)
+    }
 
     /**
      * Position of the element label within the element. This can be changed to reduce overlapping
      * of labels.
      */
-    val elementLabelPosition = DebugLabelPosition.CenterTop
+    var elementLabelPosition by mutableStateOf(DebugLabelPosition.CenterTop)
 
     /**
      * Log the element states of all elements on each transition changes. Filtered by
@@ -44,7 +97,11 @@ internal object StlDebugConfig {
      * This is useful if you want to understand which contents currently hold which state and which
      * content is currently responsible for placing the element during a transition.
      */
-    val logElements = DEBUG_STL
+    private var logElements by mutableStateOf(false)
+
+    inline fun logElements(): Boolean {
+        return DEBUG_STL && logElements
+    }
 
     /**
      * Log the verbose path that is taken during measure, layout and drawing of a specific element.
@@ -52,48 +109,176 @@ internal object StlDebugConfig {
      *
      * This is useful if you want to debug the inner workings of STL.
      */
-    val logElementsVerbose = DEBUG_STL
+    private var logElementsVerbose by mutableStateOf(false)
+
+    inline fun logElementsVerbose(): Boolean {
+        return DEBUG_STL && logElementsVerbose
+    }
 
     /**
-     * Limit visual debugging and logging to elements containing this String in the [key.debugName].
+     * The filter accepts a comma separated list of keys.
      *
-     * SET: `adb shell setprop persist.debug.stl_element_key_filter YOUR_FILTER && adb reboot`
-     * RESET: `adb shell setprop persist.debug.stl_element_key_filter \"\" && adb reboot`
+     * Limit visual debugging and logging to elements matching one of the filter Strings with the
+     * [elementKey.debugName].
      */
-    val elementKeyFilter: String =
-        SystemProperties.get("persist.debug.stl_element_key_filter") ?: ""
+    private var elementKeyFilter: String = ""
+        set(value) {
+            field = value
+            elementFilterList = value.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+        }
+
+    /**
+     * List of filters for [ElementKey.debugName]. The [debugName] has to match one of the strings
+     * in this list (case insensitive).
+     */
+    var elementFilterList by mutableStateOf(emptyList<String>())
+        private set
 
     // ====================== SCENE ======================
 
     /** Shows borders around scenes */
-    val showSceneBorders = DEBUG_STL
+    private var showSceneBorders by mutableStateOf(false)
+
+    inline fun showSceneBorders(): Boolean {
+        return DEBUG_STL && showSceneBorders
+    }
 
     /** Show the scene name on a label */
-    val showSceneLabels = DEBUG_STL
+    private var showSceneLabels by mutableStateOf(false)
+
+    inline fun showSceneLabels(): Boolean {
+        return DEBUG_STL && showSceneLabels
+    }
+
+    inline fun isDebuggingScene(): Boolean {
+        return DEBUG_STL && (showSceneBorders or showSceneLabels)
+    }
 
     /** Position of the scene label within the scene */
-    val sceneLabelPosition = DebugLabelPosition.BottomRight
+    var sceneLabelPosition by mutableStateOf(DebugLabelPosition.BottomRight)
 
     // ====================== STL ======================
 
     /** Show a border around an STL */
-    val showStlBorders = DEBUG_STL
+    private var showStlBorders by mutableStateOf(false)
+
+    inline fun showStlBorders(): Boolean {
+        return DEBUG_STL && showStlBorders
+    }
 
     /** Show a label containing the STL name and the currently active transition */
-    val showStlLabels = DEBUG_STL
+    private var showStlLabels by mutableStateOf(false)
+
+    inline fun showStlLabels(): Boolean {
+        return DEBUG_STL && showStlLabels
+    }
+
+    inline fun isDebuggingStl(): Boolean {
+        return DEBUG_STL && (showStlBorders or showStlLabels)
+    }
 
     /** Position of the STL label */
-    val stlLabelPosition = DebugLabelPosition.CenterLow
+    var stlLabelPosition by mutableStateOf(DebugLabelPosition.CenterLow)
 
-    enum class DebugLabelPosition {
-        TopLeft,
-        TopRight,
-        BottomLeft,
-        BottomRight,
-        Center,
-        CenterTop,
-        CenterBottom,
-        CenterHigh, // 1/3rd down
-        CenterLow, // 2/3rds down
+    private var isListening = false
+
+    /** Call to setup Setting listeners that will set debug vars. */
+    fun initDebug(context: Context) {
+        if (!DEBUG_STL || isListening) return
+        isListening = true
+
+        updateFromSettings(context)
+
+        val observer =
+            object : ContentObserver(Handler(Looper.getMainLooper())) {
+                override fun onChange(selfChange: Boolean) {
+                    updateFromSettings(context)
+                }
+            }
+
+        StlDebugKeys.entries.forEach { item ->
+            context.contentResolver.registerContentObserver(
+                Settings.Global.getUriFor(item.key),
+                false,
+                observer,
+            )
+        }
     }
+
+    private fun updateFromSettings(context: Context) {
+        val resolver = context.contentResolver
+
+        fun readBool(key: String, def: Boolean): Boolean {
+            return Settings.Global.getInt(resolver, key, if (def) 1 else 0) == 1
+        }
+
+        fun readStr(key: String): String {
+            return Settings.Global.getString(resolver, key) ?: ""
+        }
+
+        fun <T : Enum<T>> readEnum(key: String, default: T, valueOf: (String) -> T): T {
+            val valStr = Settings.Global.getString(resolver, key) ?: ""
+            return if (valStr.isNotEmpty())
+                try {
+                    valueOf(valStr)
+                } catch (_: Exception) {
+                    default
+                }
+            else default
+        }
+
+        elementKeyFilter = readStr(ELEMENT_FILTER.key)
+
+        val defaultToggleValue = false
+        showElementBorders = readBool(SHOW_ELEMENT_BORDERS.key, defaultToggleValue)
+        showElementLabels = readBool(SHOW_ELEMENT_LABELS.key, defaultToggleValue)
+        logElements = readBool(LOG_ELEMENTS.key, defaultToggleValue)
+        logElementsVerbose = readBool(LOG_ELEMENTS_VERBOSE.key, defaultToggleValue)
+
+        showSceneBorders = readBool(SHOW_SCENE_BORDERS.key, defaultToggleValue)
+        showSceneLabels = readBool(SHOW_SCENE_LABELS.key, defaultToggleValue)
+
+        showStlBorders = readBool(SHOW_STL_BORDERS.key, defaultToggleValue)
+        showStlLabels = readBool(SHOW_STL_LABELS.key, defaultToggleValue)
+
+        elementLabelPosition =
+            readEnum(POS_ELEMENT_LABEL.key, DebugLabelPosition.CenterTop) {
+                DebugLabelPosition.valueOf(it)
+            }
+        sceneLabelPosition =
+            readEnum(POS_SCENE_LABEL.key, DebugLabelPosition.BottomRight) {
+                DebugLabelPosition.valueOf(it)
+            }
+        stlLabelPosition =
+            readEnum(POS_STL_LABEL.key, DebugLabelPosition.CenterLow) {
+                DebugLabelPosition.valueOf(it)
+            }
+    }
+}
+
+enum class DebugLabelPosition {
+    TopLeft,
+    TopRight,
+    BottomLeft,
+    BottomRight,
+    Center,
+    CenterTop,
+    CenterBottom,
+    CenterHigh, // 1/3rd down
+    CenterLow, // 2/3rds down
+}
+
+enum class StlDebugKeys(val key: String) {
+    ELEMENT_FILTER("debug_stl_element_filter"),
+    SHOW_ELEMENT_BORDERS("debug_stl_show_element_borders"),
+    SHOW_ELEMENT_LABELS("debug_stl_show_element_labels"),
+    POS_ELEMENT_LABEL("debug_stl_pos_element_label"),
+    LOG_ELEMENTS("debug_stl_log_elements"),
+    LOG_ELEMENTS_VERBOSE("debug_stl_log_elements_verbose"),
+    SHOW_SCENE_BORDERS("debug_stl_show_scene_borders"),
+    SHOW_SCENE_LABELS("debug_stl_show_scene_labels"),
+    POS_SCENE_LABEL("debug_stl_pos_scene_label"),
+    SHOW_STL_BORDERS("debug_stl_show_stl_borders"),
+    SHOW_STL_LABELS("debug_stl_show_stl_labels"),
+    POS_STL_LABEL("debug_stl_pos_stl_label"),
 }

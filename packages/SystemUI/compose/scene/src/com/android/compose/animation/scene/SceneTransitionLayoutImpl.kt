@@ -495,7 +495,7 @@ internal class SceneTransitionLayoutImpl(
     @Composable
     internal fun Content(modifier: Modifier) {
         val stateLogger =
-            if (StlDebugConfig.DEBUG_STL && StlDebugConfig.logElements) {
+            if (StlDebugConfig.logElements()) {
                 remember { StateLogger() }
             } else {
                 null
@@ -512,14 +512,14 @@ internal class SceneTransitionLayoutImpl(
                     LayoutElement(layoutImpl = this, transitionState = this.state.transitionState)
                 )
                 .thenIf(implicitTestTags) { Modifier.testTag(SceneTransitionLayoutRootContentTag) }
-                .thenIf(StlDebugConfig.showSceneBorders || StlDebugConfig.showSceneLabels) {
+                .thenIf(StlDebugConfig.isDebuggingStl()) {
                     Modifier.debugStl(
                         state = state,
                         debugName = debugName,
                         nestingLevel = ancestors.size,
                     )
                 }
-                .thenIf(StlDebugConfig.logElements && stateLogger != null) {
+                .thenIf(StlDebugConfig.logElements() && stateLogger != null) {
                     Modifier.logElementsOnTransitionChange(this, stateLogger!!)
                 }
         ) {
@@ -552,7 +552,7 @@ internal class SceneTransitionLayoutImpl(
                     isInvisible = isInvisible,
                     modifier =
                         Modifier.then(ContentElement(scene.zIndex, isInvisible)).thenIf(
-                            StlDebugConfig.showSceneBorders
+                            StlDebugConfig.isDebuggingScene()
                         ) {
                             Modifier.debugScene(scene.key)
                         },
