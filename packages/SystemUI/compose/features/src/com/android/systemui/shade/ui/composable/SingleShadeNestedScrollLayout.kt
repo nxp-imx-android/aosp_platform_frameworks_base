@@ -64,8 +64,8 @@ import kotlinx.coroutines.launch
  * @param modifier The modifier to be applied to this layout.
  * @param shadeSession The session for this shade instance.
  * @param viewModel The view model for this placeholder.
- * @param scrollState The scroll state of the notification list.
- * @param scrimOverScrollEffect The overscroll effect for the scrim.
+ * @param contentScrollState The scroll state of the scrollable notification scrim content.
+ * @param contentOverScrollEffect Overscroll effect of the scrollable notification scrim content.
  * @param jankMonitor To monitor jank.
  * @param statusBarHeader The composable for the status bar header (clock, icons, etc). This header
  *   is always visible.
@@ -80,8 +80,8 @@ fun ContentScope.SingleShadeNestedScrollLayout(
     modifier: Modifier = Modifier,
     shadeSession: SaveableSession,
     viewModel: NotificationsPlaceholderViewModel,
-    scrollState: ScrollState,
-    scrimOverScrollEffect: OffsetOverscrollEffect,
+    contentScrollState: ScrollState,
+    contentOverScrollEffect: OffsetOverscrollEffect,
     jankMonitor: InteractionJankMonitor,
     statusBarHeader: @Composable () -> Unit,
     mediaAndQqsHeader: @Composable () -> Unit,
@@ -115,8 +115,8 @@ fun ContentScope.SingleShadeNestedScrollLayout(
     if (isAlwaysComposedContentVisible()) {
         // whether the stack is moving due to a swipe or fling
         val isScrollInProgress =
-                scrollState.isScrollInProgress ||
-                scrimOverScrollEffect.isInProgress ||
+            contentScrollState.isScrollInProgress ||
+                contentOverScrollEffect.isInProgress ||
                 scrimOffset.isRunning
 
         LaunchedEffect(isScrollInProgress) {
@@ -134,9 +134,9 @@ fun ContentScope.SingleShadeNestedScrollLayout(
                     ShadeScrollState(
                         // we are not scrolled to the top unless the scroll position is zero,
                         // and the scrim is at its maximum offset
-                        isScrolledToTop = scrimOffset.value >= 0f && scrollState.value == 0,
-                        scrollPosition = scrollState.value,
-                        maxScrollPosition = scrollState.maxValue,
+                        isScrolledToTop = scrimOffset.value >= 0f && contentScrollState.value == 0,
+                        scrollPosition = contentScrollState.value,
+                        maxScrollPosition = contentScrollState.maxValue,
                     )
                 }
             }
@@ -144,10 +144,10 @@ fun ContentScope.SingleShadeNestedScrollLayout(
     }
 
     val isContentOverscrolledOnTop by
-        remember(scrollState) {
+        remember(contentScrollState) {
             derivedStateOf {
                 // When the scrim cannot moved further up, scrolling takes over to move the content.
-                scrollState.value > 0
+                contentScrollState.value > 0
             }
         }
 
@@ -193,6 +193,7 @@ fun ContentScope.SingleShadeNestedScrollLayout(
                             // When part of the gesture was used to scroll Notifications, don't
                             // allow Scene changes by swipes.
                             .disableSwipesWhenScrolling()
+                            // The glue between scrolling the content and offsetting the scrim.
                             .nestedScroll(
                                 remember(scrimOffset, flingBehavior) {
                                     scrimNestedScrollConnection(
