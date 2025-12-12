@@ -21,30 +21,42 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.biometrics.data.repository.fingerprintPropertyRepository
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.deviceentry.domain.interactor.AuthRippleInteractor.DwellRipplePhase
 import com.android.systemui.flags.DisableSceneContainer
+import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.shared.model.BiometricUnlockMode
 import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@DisableSceneContainer
 class AuthRippleInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
-    private val deviceEntrySourceInteractor = kosmos.deviceEntrySourceInteractor
+    private lateinit var deviceEntrySourceInteractor: DeviceEntrySourceInteractor
     private val fingerprintPropertyRepository = kosmos.fingerprintPropertyRepository
     private val keyguardRepository = kosmos.fakeKeyguardRepository
-    private val underTest = kosmos.authRippleInteractor
 
+    private lateinit var underTest: AuthRippleInteractor
+
+    @Before
+    fun setup() {
+        deviceEntrySourceInteractor = kosmos.deviceEntrySourceInteractor
+        underTest = kosmos.authRippleInteractor
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
+    @DisableSceneContainer
     fun enteringDeviceFromDeviceEntryIcon_udfpsNotSupported_doesNotShowAuthRipple() =
         testScope.runTest {
             val showUnlockRipple by collectLastValue(underTest.showUnlockRipple)
@@ -55,7 +67,9 @@ class AuthRippleInteractorTest : SysuiTestCase() {
             assertThat(showUnlockRipple).isNull()
         }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
+    @DisableSceneContainer
     fun enteringDeviceFromDeviceEntryIcon_udfpsSupported_showsAuthRipple() =
         testScope.runTest {
             val showUnlockRipple by collectLastValue(underTest.showUnlockRipple)
@@ -67,6 +81,7 @@ class AuthRippleInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun faceUnlocked_showsAuthRipple() =
         testScope.runTest {
             val showUnlockRipple by collectLastValue(underTest.showUnlockRipple)
@@ -78,6 +93,7 @@ class AuthRippleInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun fingerprintUnlocked_showsAuthRipple() =
         testScope.runTest {
             val showUnlockRippleFromBiometricUnlock by collectLastValue(underTest.showUnlockRipple)
@@ -88,4 +104,189 @@ class AuthRippleInteractorTest : SysuiTestCase() {
             assertThat(showUnlockRippleFromBiometricUnlock)
                 .isEqualTo(BiometricUnlockSource.FINGERPRINT_SENSOR)
         }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    @EnableSceneContainer
+    fun pulsing_retractThenFade_updatesToRetractThenFade() =
+        testScope.runTest {
+            keyguardRepository.setKeyguardShowing(true)
+            runCurrent()
+
+            val phase by collectLastValue(underTest.dwellRipplePhase)
+            underTest.sendAuthRippleEvent(AuthRippleInteractor.AuthRippleEvent.PulseOut)
+            assertThat(phase).isEqualTo(DwellRipplePhase.PULSE_OUT)
+
+            underTest.sendAuthRippleEvent(AuthRippleInteractor.AuthRippleEvent.Retract)
+            assertThat(phase).isEqualTo(DwellRipplePhase.RETRACT)
+
+            underTest.sendAuthRippleEvent(AuthRippleInteractor.AuthRippleEvent.FadeOut)
+            assertThat(phase).isEqualTo(DwellRipplePhase.FADE_OUT)
+        }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    @EnableSceneContainer
+    fun dwellRipplePulsesWhenUnlockingRippleEmits_maintainsPulse() =
+        testScope.runTest {
+            keyguardRepository.setKeyguardShowing(true)
+            runCurrent()
+
+            val phase by collectLastValue(underTest.dwellRipplePhase)
+            underTest.sendAuthRippleEvent(AuthRippleInteractor.AuthRippleEvent.PulseOut)
+            runCurrent()
+
+            keyguardRepository.setBiometricUnlockState(
+                BiometricUnlockMode.ONLY_WAKE_UNLOCKED,
+                BiometricUnlockSource.FINGERPRINT_SENSOR,
+            )
+            runCurrent()
+            assertThat(phase).isEqualTo(DwellRipplePhase.PULSE_OUT)
+        }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    @EnableSceneContainer
+    fun dwellRippleRetractsWhenUnlockingRippleEmits_maintainsRetracts() =
+        testScope.runTest {
+            keyguardRepository.setKeyguardShowing(true)
+            runCurrent()
+
+            val phase by collectLastValue(underTest.dwellRipplePhase)
+            underTest.sendAuthRippleEvent(AuthRippleInteractor.AuthRippleEvent.PulseOut)
+            runCurrent()
+            assertThat(phase).isEqualTo(DwellRipplePhase.PULSE_OUT)
+
+            underTest.sendAuthRippleEvent(AuthRippleInteractor.AuthRippleEvent.Retract)
+            keyguardRepository.setBiometricUnlockState(
+                BiometricUnlockMode.ONLY_WAKE_UNLOCKED,
+                BiometricUnlockSource.FINGERPRINT_SENSOR,
+            )
+            runCurrent()
+            assertThat(phase).isEqualTo(DwellRipplePhase.RETRACT)
+        }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    @EnableSceneContainer
+    fun dwellRippleFadesOutAndRepulsesWhenUnlockingRippleEmits_fadesOut() =
+        testScope.runTest {
+            keyguardRepository.setKeyguardShowing(true)
+            runCurrent()
+
+            val phase by collectLastValue(underTest.dwellRipplePhase)
+            underTest.sendAuthRippleEvent(AuthRippleInteractor.AuthRippleEvent.PulseOut)
+            runCurrent()
+            assertThat(phase).isEqualTo(DwellRipplePhase.PULSE_OUT)
+
+            underTest.sendAuthRippleEvent(AuthRippleInteractor.AuthRippleEvent.FadeOut)
+            runCurrent()
+            assertThat(phase).isEqualTo(DwellRipplePhase.FADE_OUT)
+
+            underTest.sendAuthRippleEvent(AuthRippleInteractor.AuthRippleEvent.PulseOut)
+            keyguardRepository.setBiometricUnlockState(
+                BiometricUnlockMode.ONLY_WAKE_UNLOCKED,
+                BiometricUnlockSource.FINGERPRINT_SENSOR,
+            )
+            runCurrent()
+            assertThat(phase).isEqualTo(DwellRipplePhase.FADE_OUT)
+        }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    @EnableSceneContainer
+    fun idle_receivesRetract_remainsIdle() =
+        testScope.runTest {
+            keyguardRepository.setKeyguardShowing(true)
+            runCurrent()
+            val phase by collectLastValue(underTest.dwellRipplePhase)
+
+            underTest.sendAuthRippleEvent(AuthRippleInteractor.AuthRippleEvent.Retract)
+            runCurrent()
+            assertThat(phase).isEqualTo(DwellRipplePhase.IDLE)
+        }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    @EnableSceneContainer
+    fun idle_receivesFadeOut_remainsIdle() =
+        testScope.runTest {
+            keyguardRepository.setKeyguardShowing(true)
+            runCurrent()
+
+            val phase by collectLastValue(underTest.dwellRipplePhase)
+            underTest.sendAuthRippleEvent(AuthRippleInteractor.AuthRippleEvent.FadeOut)
+            runCurrent()
+            assertThat(phase).isEqualTo(DwellRipplePhase.IDLE)
+        }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    @EnableSceneContainer
+    fun unlockedBeforeFingerprintRetracts_ignoreRetractsAndFadeOut() =
+        testScope.runTest {
+            keyguardRepository.setKeyguardShowing(true)
+            runCurrent()
+
+            val phase by collectLastValue(underTest.dwellRipplePhase)
+            underTest.sendAuthRippleEvent(AuthRippleInteractor.AuthRippleEvent.PulseOut)
+            runCurrent()
+
+            unlockFromSource(BiometricUnlockSource.FACE_SENSOR)
+            runCurrent()
+
+            underTest.sendAuthRippleEvent(AuthRippleInteractor.AuthRippleEvent.Retract)
+            runCurrent()
+            assertThat(phase).isEqualTo(DwellRipplePhase.FADE_OUT)
+        }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    @EnableSceneContainer
+    fun unlockedWithFingerprint_keyguardReshow_resetsToIdle() =
+        testScope.runTest {
+            keyguardRepository.setKeyguardShowing(true)
+            runCurrent()
+
+            val phase by collectLastValue(underTest.dwellRipplePhase)
+            underTest.sendAuthRippleEvent(AuthRippleInteractor.AuthRippleEvent.PulseOut)
+            runCurrent()
+            unlockFromSource(BiometricUnlockSource.FINGERPRINT_SENSOR)
+            runCurrent()
+            assertThat(phase).isEqualTo(DwellRipplePhase.FADE_OUT)
+
+            keyguardRepository.setKeyguardShowing(true)
+            runCurrent()
+            assertThat(phase).isEqualTo(DwellRipplePhase.IDLE)
+        }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    @EnableSceneContainer
+    fun unlockedWithFingerprint_keyguardReshow_resetsToIdleAndAllowsNewPulse() =
+        testScope.runTest {
+            keyguardRepository.setKeyguardShowing(true)
+            runCurrent()
+
+            val phase by collectLastValue(underTest.dwellRipplePhase)
+            underTest.sendAuthRippleEvent(AuthRippleInteractor.AuthRippleEvent.PulseOut)
+            assertThat(phase).isEqualTo(DwellRipplePhase.PULSE_OUT)
+            unlockFromSource(BiometricUnlockSource.FINGERPRINT_SENSOR)
+            assertThat(phase).isEqualTo(DwellRipplePhase.FADE_OUT)
+            runCurrent()
+
+            keyguardRepository.setKeyguardShowing(true)
+            runCurrent()
+            assertThat(phase).isEqualTo(DwellRipplePhase.IDLE)
+
+            underTest.sendAuthRippleEvent(AuthRippleInteractor.AuthRippleEvent.PulseOut)
+            runCurrent()
+            assertThat(phase).isEqualTo(DwellRipplePhase.PULSE_OUT)
+        }
+
+    private fun unlockFromSource(source: BiometricUnlockSource) {
+        keyguardRepository.setBiometricUnlockState(BiometricUnlockMode.ONLY_WAKE_UNLOCKED, source)
+        underTest.sendAuthRippleEvent(AuthRippleInteractor.AuthRippleEvent.FadeOut)
+        keyguardRepository.setKeyguardShowing(false)
+    }
 }

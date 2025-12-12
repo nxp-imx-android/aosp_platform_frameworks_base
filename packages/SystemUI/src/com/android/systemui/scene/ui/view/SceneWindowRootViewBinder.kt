@@ -47,6 +47,8 @@ import com.android.systemui.compose.modifiers.sysUiResTagContainer
 import com.android.systemui.initOnBackPressedDispatcherOwner
 import com.android.systemui.keyboard.shortcut.ui.composable.InteractionsConfig
 import com.android.systemui.keyboard.shortcut.ui.composable.rememberShortcutHelperIndication
+import com.android.systemui.keyguard.ui.composable.AuthRippleScrim
+import com.android.systemui.keyguard.ui.viewmodel.AuthRippleScrimViewModel
 import com.android.systemui.lifecycle.WindowLifecycleState
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.lifecycle.setSnapshotBinding
@@ -86,6 +88,7 @@ object SceneWindowRootViewBinder {
         dataSourceDelegator: SceneDataSourceDelegator,
         sceneJankMonitorFactory: SceneJankMonitor.Factory,
         tintedIconManagerFactory: TintedIconManager.Factory,
+        authRippleViewModelFactory: AuthRippleScrimViewModel.Factory,
     ) {
         val unsortedSceneByKey: Map<SceneKey, Scene> = scenes.associateBy { scene -> scene.key }
         val sortedSceneByKey: Map<SceneKey, Scene> =
@@ -250,6 +253,14 @@ object SceneWindowRootViewBinder {
                         )
                     }
 
+                    view.addView(
+                        createAuthRippleScrim(
+                            context = view.context,
+                            viewModelFactory = authRippleViewModelFactory,
+                            windowInsets = windowInsets,
+                        )
+                    )
+
                     view.setSnapshotBinding { onVisibilityChangedInternal(viewModel.isVisible) }
                     awaitCancellation()
                 } finally {
@@ -352,6 +363,27 @@ object SceneWindowRootViewBinder {
                         bouncerOverlay = bouncerOverlay,
                         modifier = modifier,
                     )
+                }
+            }
+        }
+    }
+
+    private fun createAuthRippleScrim(
+        context: Context,
+        viewModelFactory: AuthRippleScrimViewModel.Factory,
+        windowInsets: State<WindowInsets?>,
+    ): View {
+        return ComposeView(context).apply {
+            layoutParams =
+                FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                )
+            setContent {
+                PlatformTheme {
+                    ScreenDecorProvider(windowInsets = { windowInsets.value }) {
+                        AuthRippleScrim(viewModelFactory = viewModelFactory)
+                    }
                 }
             }
         }

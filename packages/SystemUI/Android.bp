@@ -596,6 +596,7 @@ android_library {
         "kairos",
         "displaylib",
         "aconfig_settings_flags_lib",
+        "SurfaceEffectsComposeLib",
     ],
     enable_ksp: true,
     annotation_processor_flags: [
