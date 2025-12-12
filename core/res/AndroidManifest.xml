@@ -2727,6 +2727,14 @@
          android:protectionLevel="signature|privileged"
          android:featureFlag="com.android.nfc.module.flags.tap_to_x"/>
 
+    <!-- @SystemApi Allows system application to provide a service for Tap-to-Share.
+         <p>Protection level: signature
+         @FlaggedApi(android.service.chooser.Flags.FLAG_TAP_TO_SHARE)
+         @hide -->
+    <permission android:name="android.permission.BIND_TO_TAP_TO_SHARE_SERVICE"
+         android:protectionLevel="signature"
+         android:featureFlag="android.service.chooser.tap_to_share"/>
+
     <!-- @SystemApi Allows an internal user to use privileged SecureElement APIs.
          Applications holding this permission can access OMAPI reset system API
          and bypass OMAPI AccessControlEnforcer.
