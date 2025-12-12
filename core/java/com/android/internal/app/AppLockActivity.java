@@ -31,6 +31,7 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.ApplicationInfoFlags;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.hardware.biometrics.BiometricManager.Authenticators;
@@ -49,6 +50,7 @@ import android.widget.Toast;
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -345,10 +347,14 @@ public class AppLockActivity extends Activity {
 
     /** Displays a permission review dialog while adding App Lock to Photos app. */
     private void showPhotosAppPermissionReviewDialog(String packageName) {
-        // TODO(b/442573118): Implement App Lock photos app permission review dialog.
         if (DEBUG) {
             Slog.d(TAG, "showPhotosAppPermissionReviewDialog called for " + packageName);
         }
+        final Intent photoAccessActivityIntent =
+                AppLockPermissionReviewActivity.createIntent(this, packageName);
+
+        startActivityForResult(photoAccessActivityIntent,
+                REQUEST_CODE_PHOTOS_APP_PERMISSION_REVIEW_DIALOG);
     }
 
     @SuppressLint("AndroidFrameworkRequiresPermission")
@@ -392,10 +398,11 @@ public class AppLockActivity extends Activity {
                 }
             }
             case REQUEST_CODE_USER_EDUCATION_DIALOG -> {
-                // TODO(b/442573118): If the app is photos, then only call
-                // showPhotosAppPermissionReviewDialog().
-                showPhotosAppPermissionReviewDialog(packageName);
-                showBiometricPrompt(packageName, packageLabel, newAppLockEnabled);
+                if (isPhotoApp(packageName)) {
+                    showPhotosAppPermissionReviewDialog(packageName);
+                } else {
+                    showBiometricPrompt(packageName, packageLabel, newAppLockEnabled);
+                }
             }
             case REQUEST_CODE_PHOTOS_APP_PERMISSION_REVIEW_DIALOG -> {
                 showBiometricPrompt(packageName, packageLabel, newAppLockEnabled);
@@ -433,7 +440,32 @@ public class AppLockActivity extends Activity {
         }
     }
 
-    /** Informs the user via a toast whether the App Lock state was changed successfully. */
+    /**
+     * Determines if an app is a "photo app" by checking if it can handle image or video MIME
+     * types.
+     */
+    private boolean isPhotoApp(String packageName) {
+        return canPackageHandleMimeType(packageName, "image/*")
+            || canPackageHandleMimeType(packageName, "video/*");
+    }
+
+    private boolean canPackageHandleMimeType(String packageName, String mimeType) {
+        try {
+            final Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setPackage(packageName);
+            intent.setType(mimeType);
+
+            List<ResolveInfo> activities = getPackageManager().queryIntentActivities(intent,
+                    PackageManager.MATCH_DEFAULT_ONLY);
+            return !activities.isEmpty();
+        } catch (Exception e) {
+            Slog.e(TAG, "Failed to query intent activities for " + packageName + " with "
+                    + mimeType, e);
+            return false;
+        }
+    }
+
+    /* Informs the user via a toast whether the App Lock state was changed successfully. */
     private void showResultToast(boolean success, String packageName, CharSequence packageLabel,
             boolean newAppLockEnabled) {
         if (DEBUG) {

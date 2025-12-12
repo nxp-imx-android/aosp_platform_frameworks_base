@@ -5907,6 +5907,22 @@
     <string name="app_lock_edu_dialog_lockscreen_pin_name">
         PIN
     </string>
+    <!-- Title of the dialog warning the user that locking the current app doesn't prevent other apps from seeing their photos. [CHAR LIMIT=60] -->
+    <string name="app_lock_permission_review_dialog_title">
+        Your photos may still show in other apps
+    </string>
+    <!-- Subtitle introducing the list of other applications that have permission to access the user's photos. [CHAR LIMIT=40] -->
+    <string name="app_lock_permission_review_dialog_sub_title">
+        Apps with access to your photos
+    </string>
+    <!-- Label for the button that expands the collapsed list of apps to show all of them. [CHAR LIMIT=20] -->
+    <string name="app_lock_permission_review_expand_app_list_button">
+        View all
+    </string>
+    <!-- Label for the button to acknowledge the warning and proceed with the app lock action. [CHAR LIMIT=20] -->
+    <string name="app_lock_permission_review_continue_button">
+        Continue
+    </string>
 
     <!-- Title of a dialog. This text is confirming that the user wants to turn on access to their work apps, which the user had previously paused. "Work" is an adjective. [CHAR LIMIT=30] -->
     <string name="work_mode_off_title">Unpause work apps?</string>
