@@ -1736,6 +1736,32 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
 
         mDestinationSpinner.setEnabled(!isFinalState(mState));
 
+        // Update print button content so it shows the correct icon/text while the other
+        // settings are loading.
+        if (mDestinationSpinnerAdapter.getPdfPrinter() != mCurrentPrinter) {
+            if (Flags.updatedButtonLayout()) {
+                mPrintButton.setText(getString(R.string.print_button));
+                mPrintButton.setContentDescription(getString(R.string.print_button));
+            } else {
+                mPrintImageButton.setImageResource(com.android.internal.R.drawable.ic_print);
+                mPrintImageButton.setContentDescription(getString(R.string.print_button));
+            }
+        } else {
+            if (Flags.updatedButtonLayout()) {
+                if (mShowDestinationPrompt) {
+                    mPrintButton.setText(getString(R.string.destination_default_text));
+                    mPrintButton.setContentDescription(
+                            getString(R.string.destination_default_text));
+                } else {
+                    mPrintButton.setText(getString(R.string.savetopdf_button));
+                    mPrintButton.setContentDescription(getString(R.string.savetopdf_button));
+                }
+            } else {
+                mPrintImageButton.setImageResource(R.drawable.ic_menu_savetopdf);
+                mPrintImageButton.setContentDescription(getString(R.string.savetopdf_button));
+            }
+        }
+
         if (mState == STATE_PRINT_CONFIRMED
                 || mState == STATE_PRINT_COMPLETED
                 || mState == STATE_PRINT_CANCELED
@@ -2029,30 +2055,6 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
             mMoreOptionsButton.setEnabled(false);
         }
 
-        // Print
-        if (mDestinationSpinnerAdapter.getPdfPrinter() != mCurrentPrinter) {
-            if (Flags.updatedButtonLayout()) {
-                mPrintButton.setText(getString(R.string.print_button));
-                mPrintButton.setContentDescription(getString(R.string.print_button));
-            } else {
-                mPrintImageButton.setImageResource(com.android.internal.R.drawable.ic_print);
-                mPrintImageButton.setContentDescription(getString(R.string.print_button));
-            }
-        } else {
-            if (Flags.updatedButtonLayout()) {
-                if (mShowDestinationPrompt) {
-                    mPrintButton.setText(getString(R.string.destination_default_text));
-                    mPrintButton.setContentDescription(
-                            getString(R.string.destination_default_text));
-                } else {
-                    mPrintButton.setText(getString(R.string.savetopdf_button));
-                    mPrintButton.setContentDescription(getString(R.string.savetopdf_button));
-                }
-            } else {
-                mPrintImageButton.setImageResource(R.drawable.ic_menu_savetopdf);
-                mPrintImageButton.setContentDescription(getString(R.string.savetopdf_button));
-            }
-        }
         if (!mPrintedDocument.getDocumentInfo().updated
                 ||(mRangeOptionsSpinner.getSelectedItemPosition() == 1
                 && (TextUtils.isEmpty(mPageRangeEditText.getText()) || hasErrors()))
