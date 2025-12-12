@@ -4270,10 +4270,9 @@ public class AudioService extends IAudioService.Stub
         boolean adjustVolume = true;
         int step;
 
-        // skip a2dp absolute volume control request when the device
-        // is neither an a2dp device nor BLE device
-        if ((!AudioSystem.DEVICE_OUT_ALL_A2DP_SET.contains(deviceType)
-                && !AudioSystem.DEVICE_OUT_ALL_BLE_SET.contains(deviceType))
+        // skip absolute volume control request when the device is neither an a2dp device nor BLE
+        // device nor SCO out device and the absolute volume flag is set
+        if (!AudioSystem.isBluetoothOutDevice(deviceType)
                 && (flags & AudioManager.FLAG_BLUETOOTH_ABS_VOLUME) != 0) {
             return;
         }
@@ -5823,10 +5822,9 @@ public class AudioService extends IAudioService.Stub
         final int deviceType = deviceAttr.getInternalType();
         int oldIndex;
 
-        // skip a2dp absolute volume control request when the device
-        // is neither an a2dp device nor BLE device
-        if ((!AudioSystem.DEVICE_OUT_ALL_A2DP_SET.contains(deviceType)
-                && !AudioSystem.DEVICE_OUT_ALL_BLE_SET.contains(deviceType))
+        // skip absolute volume control request when the device is neither an a2dp device nor BLE
+        // device nor SCO out device and the absolute volume flag is set
+        if (!AudioSystem.isBluetoothOutDevice(deviceType)
                 && (flags & AudioManager.FLAG_BLUETOOTH_ABS_VOLUME) != 0) {
             return;
         }
