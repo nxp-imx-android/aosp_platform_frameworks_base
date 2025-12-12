@@ -18,6 +18,7 @@ package android.view;
 
 import static android.Manifest.permission.CONFIGURE_DISPLAY_COLOR_MODE;
 import static android.Manifest.permission.CONTROL_DISPLAY_BRIGHTNESS;
+import static android.hardware.flags.Flags.FLAG_DISPLAY_HDR_26Q2;
 import static android.hardware.flags.Flags.FLAG_OVERLAYPROPERTIES_CLASS_API;
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 
@@ -2991,12 +2992,19 @@ public final class Display {
          */
         public static final int HDR_TYPE_HDR10_PLUS = 4;
 
+        /**
+         * HLG+ display.
+         */
+        @FlaggedApi(FLAG_DISPLAY_HDR_26Q2)
+        public static final int HDR_TYPE_HLG_PLUS = 6;
+
         /** @hide */
         public static final int[] HDR_TYPES = {
                 HDR_TYPE_DOLBY_VISION,
                 HDR_TYPE_HDR10,
                 HDR_TYPE_HLG,
-                HDR_TYPE_HDR10_PLUS
+                HDR_TYPE_HDR10_PLUS,
+                HDR_TYPE_HLG_PLUS
         };
 
         /** @hide */
@@ -3006,6 +3014,7 @@ public final class Display {
                 HDR_TYPE_HDR10,
                 HDR_TYPE_HLG,
                 HDR_TYPE_HDR10_PLUS,
+                HDR_TYPE_HLG_PLUS,
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface HdrType {}
@@ -3161,6 +3170,8 @@ public final class Display {
                     return "HDR_TYPE_HLG";
                 case HDR_TYPE_HDR10_PLUS:
                     return "HDR_TYPE_HDR10_PLUS";
+                case HDR_TYPE_HLG_PLUS:
+                    return "HDR_TYPE_HLG_PLUS";
                 default:
                     return "HDR_TYPE_INVALID";
             }
