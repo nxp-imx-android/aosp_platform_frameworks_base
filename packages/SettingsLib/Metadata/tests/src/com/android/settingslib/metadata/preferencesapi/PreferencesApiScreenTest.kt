@@ -302,6 +302,41 @@ class PreferencesApiScreenTest {
     }
 
     @Test
+    fun createPreferencesApiScreenWithParametersPermissionsPreconditions_wrongOrderPermissionsBeforeFlag_fails() {
+        val preferenceValue = false
+        val preferenceKey = "ApiPreference"
+
+        val exception = assertThrows(IllegalStateException::class.java) {
+            object : PreferencesApiScreen(
+                key = SCREEN_KEY,
+                topLevelSettingsCategory = Category.SYSTEM,
+                fragment = PreferenceFragment::class,
+                purpose = R.string.preference_screen_purpose
+            ) {
+                init {
+                    permissions(listOf(Manifest.permission.ACCESS_FINE_LOCATION))
+
+                    flag { false }
+
+                    preference(
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean
+                    ) {
+                        get {
+                            execute {
+                                preferenceValue
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        assertThat(exception.message).isEqualTo(getExceptionMessageWrongOrder("flag"))
+    }
+
+    @Test
     fun createPreferencesApiScreenWithParameters_wrongOrderPreferenceBeforeParameters_fails() {
         val preferenceValue = false
         val preferenceKey = "ApiPreference"
@@ -389,6 +424,40 @@ class PreferencesApiScreenTest {
         }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageWrongOrder("permissions"))
+    }
+
+    @Test
+    fun createPreferencesApiScreenMultipleFlagBlocks_fails() {
+        val preferenceValue = false
+        val preferenceKey = "ApiPreference"
+
+        val exception = assertThrows(IllegalStateException::class.java) {
+            object : PreferencesApiScreen(
+                key = SCREEN_KEY,
+                topLevelSettingsCategory = Category.SYSTEM,
+                fragment = PreferenceFragment::class,
+                purpose = R.string.preference_screen_purpose
+            ) {
+                init {
+                    flag { true }
+                    flag { false }
+
+                    preference(
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean
+                    ) {
+                        get {
+                            execute {
+                                preferenceValue
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        assertThat(exception.message).isEqualTo(getExceptionMessageMultipleDefines("flag"))
     }
 
     @Test
@@ -786,6 +855,45 @@ class PreferencesApiScreenTest {
         }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageWrongOrder("get"))
+    }
+
+    @Test
+    fun createPreferencesApiScreenPreferenceWithPermissionsPreconditionsGetterSetter_wrongOrderSetBeforeFlag_fails() {
+        var preferenceValue = false
+        val preferenceKey = "ApiPreference"
+
+        val exception = assertThrows(IllegalStateException::class.java) {
+            object : PreferencesApiScreen(
+                key = SCREEN_KEY,
+                topLevelSettingsCategory = Category.SYSTEM,
+                fragment = PreferenceFragment::class,
+                purpose = R.string.preference_screen_purpose
+            ) {
+                init {
+                    preference(
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean
+                    ) {
+                        get {
+                            execute {
+                                preferenceValue
+                            }
+                        }
+
+                        set {
+                            execute { value ->
+                                preferenceValue = value
+                            }
+                        }
+
+                        flag { false }
+                    }
+                }
+            }
+        }
+
+        assertThat(exception.message).isEqualTo(getExceptionMessageWrongOrder("flag"))
     }
 
     @Test
