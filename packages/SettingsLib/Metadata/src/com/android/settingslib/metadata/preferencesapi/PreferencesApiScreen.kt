@@ -50,14 +50,14 @@ interface ProvidesParametersNonStatically {
  * Scope for parameterization-related declarations.
  */
 class ParameterizationConfig {
-    internal class ApiParameterDefinition(
+    internal class ApiFirstParameterDefinition(
         val name: String,
-        val purpose: String,
+        @StringRes val purpose: Int,
         val required: Boolean,
         val type: GeneratedParameterType
     )
 
-    internal val parameters = mutableMapOf<String, ApiParameterDefinition>()
+    internal val parameters = mutableMapOf<String, ApiFirstParameterDefinition>()
 
     /**
      * Defines a parameter and adds it to the schema.
@@ -65,20 +65,20 @@ class ParameterizationConfig {
      * @param name The unique name for the parameter.
      * @param purpose A human-readable purpose of the parameter.
      * @param required Whether this parameter must be provided. Defaults to `false`.
-     * @param type
+     * @param type The type of the parameter, used to generate its possible values.
      *
      * @throws IllegalArgumentException if a parameter with the same name is already defined.
      */
     fun parameter(
         name: String,
-        purpose: String,
+        @StringRes purpose: Int,
         required: Boolean = false,
         type: GeneratedParameterType
     ) {
         if (parameters.containsKey(name)) {
             throw IllegalArgumentException("Parameter '$name' is already defined.")
         }
-        parameters[name] = ApiParameterDefinition(name, purpose, required, type)
+        parameters[name] = ApiFirstParameterDefinition(name, purpose, required, type)
     }
 
     /**
@@ -86,7 +86,7 @@ class ParameterizationConfig {
      */
     internal fun buildSchema(): KeyParametersSchema = KeyParametersSchema {
         parameters.values.map {
-            parameter(name = it.name, description = it.purpose, required = it.required)
+            parameter(name = it.name, purpose = it.purpose, required = it.required)
         }
     }
 }

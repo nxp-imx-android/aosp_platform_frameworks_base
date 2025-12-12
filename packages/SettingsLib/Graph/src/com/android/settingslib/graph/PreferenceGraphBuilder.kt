@@ -253,7 +253,7 @@ private constructor(
             screen.root = preferenceGroupProto { preference = preferenceProto { key = screenKey } }
             screen.parameterized = true
             if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
-                screen.parametersSchema = factory.parametersSchema.toJsonString()
+                screen.parametersSchema = factory.parametersSchema.toJsonString(context)
             }
             if (includeParameters) {
                 if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
@@ -365,7 +365,7 @@ private constructor(
             PreferenceScreenProto.newBuilder().also {
                 it.parameterized = true
                 PreferenceScreenRegistry.getScreenParametersSchema(key)?.let { schema ->
-                    it.parametersSchema = schema.toJsonString()
+                    it.parametersSchema = schema.toJsonString(context)
                 }
             }
 
