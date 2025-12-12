@@ -51,7 +51,6 @@ import static android.os.Process.SYSTEM_UID;
 import static android.os.UserHandle.USER_NULL;
 import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND;
-import static android.window.DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_STATES;
 import static com.android.server.wm.ActivityRecord.State.PAUSED;
@@ -1520,9 +1519,6 @@ class TaskFragment extends WindowContainer<WindowContainer> {
     /**
      * Checks if a task is allowed to run in the lock task mode.
      *
-     * <p>Returns {@code true} if {@link ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX} flag is not
-     * enabled.
-     *
      * <p>Returns {@code true} if the device is not currently in lock task.
      *
      * <p>A task is permitted if it's a leaf task that is allowed by the lock task admin policy, or
@@ -1532,9 +1528,6 @@ class TaskFragment extends WindowContainer<WindowContainer> {
      * @return {@code true} if the task is allowed to run, {@code false} otherwise.
      */
     private boolean isPermittedInLockTask(@NonNull Task task) {
-        if (!ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX.isTrue()) {
-            return true;
-        }
         final int lockTaskState = mLockTaskController.getLockTaskModeState();
         final boolean isInLockTask =
                 lockTaskState == LOCK_TASK_MODE_LOCKED || lockTaskState == LOCK_TASK_MODE_PINNED;
