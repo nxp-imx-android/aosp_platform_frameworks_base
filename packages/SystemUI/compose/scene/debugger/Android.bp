@@ -29,7 +29,6 @@ android_library {
         "PlatformComposeCore",
         "PlatformComposeSceneTransitionLayoutDemoLib",
         "//frameworks/libs/systemui:compilelib",
-        "hierarchysnapshotter",
         "WindowManager-Shell-shared",
 
         "androidx.activity_activity-compose",
