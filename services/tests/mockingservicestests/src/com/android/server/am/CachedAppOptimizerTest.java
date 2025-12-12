@@ -28,6 +28,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -41,6 +43,7 @@ import android.content.pm.PackageManagerInternal;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IMmd;
+import android.os.IMmdProcessWritebackCallback;
 import android.os.MessageQueue;
 import android.os.Process;
 import android.platform.test.annotations.DisableFlags;
@@ -65,6 +68,7 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 
 import java.io.IOException;
@@ -763,6 +767,7 @@ public final class CachedAppOptimizerTest {
             com.android.server.am.Flags.FLAG_LOG_ZRAM_WRITEBACK_EVENTS})
     @Test
     public void zramWritebackInitiated() throws Exception {
+        initActivityManagerService();
         long[] rssAfter =
                 new long[]{/*totalRSS*/ 9000, /*fileRSS*/ 9000, /*anonRSS*/ 11000, /*swap*/9000};
         verifyZramWriteback(rssAfter, /*hasActivities*/ true, /*supportsZramOps*/ true,
@@ -838,10 +843,10 @@ public final class CachedAppOptimizerTest {
     @SuppressWarnings("GuardedBy")
     private void verifyZramWriteback(long[] rssAfter, boolean hasActivities,
             boolean supportsZramOps, boolean shouldBeCalled) throws Exception {
+        initActivityManagerService();
         setFlag(CachedAppOptimizer.KEY_USE_COMPACTION, "true", true);
         setFlag(CachedAppOptimizer.KEY_COMPACT_FULL_DELTA_RSS_THROTTLE_KB, "12000", false);
         setFlag(CachedAppOptimizer.KEY_ZRAM_WRITEBACK_WAIT_SECONDS, "0", false);
-        initActivityManagerService();
         long[] rssBefore =
                 new long[]{/*totalRSS*/ 10000, /*fileRSS*/ 10000, /*anonRSS*/ 12000, /*swap*/
                         10000};
@@ -857,7 +862,16 @@ public final class CachedAppOptimizerTest {
                 false);
         waitForHandler();
         if (shouldBeCalled) {
-            verify(mIMmd).asyncWritebackProcessZramMemory(any(), any());
+            ArgumentCaptor<IMmdProcessWritebackCallback> callbackCaptor =
+                    ArgumentCaptor.forClass(IMmdProcessWritebackCallback.class);
+            verify(mIMmd).asyncWritebackProcessZramMemory(any(), callbackCaptor.capture());
+
+            // Simulate a successful writeback.
+            IMmdProcessWritebackCallback callback = callbackCaptor.getValue();
+            callback.onProcessMemoryWritebackComplete(
+                    IMmdProcessWritebackCallback.WritebackStatus.SUCCESS, 1234L);
+
+            verify(mAms.mProcessStateController).setIsZramWrittenBack(processRecord, true);
         } else {
             verify(mIMmd, never()).asyncWritebackProcessZramMemory(any(), any());
         }
@@ -1142,6 +1156,46 @@ public final class CachedAppOptimizerTest {
     }
 
     @Test
+    public void unfreezeWrittenBackProcess_notifyOomAdjuster() throws Exception {
+        mUseFreezer = true;
+        mProcessDependencies.setRss(new long[]{
+                0 /*total_rss*/,
+                0 /*file*/,
+                0 /*anon*/,
+                0 /*swap*/,
+                0 /*shmem*/
+        });
+
+        // Force the system to use the freezer
+        DeviceConfig.setProperty(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER_NATIVE_BOOT,
+                CachedAppOptimizer.KEY_USE_FREEZER, "true", false);
+        mCachedAppOptimizerUnderTest.init();
+        initActivityManagerService();
+
+        assertTrue(mAms.isAppFreezerSupported());
+        assertThat(mCachedAppOptimizerUnderTest.useFreezer()).isTrue();
+
+        int pid = 10000;
+        int uid = 2;
+        int pkgUid = 3;
+        ProcessRecord app = makeProcessRecord(pid, uid, pkgUid, "p1", "app1");
+
+        // Freeze the app
+        mFreezeCounter = new CountDownLatch(1);
+        mCachedAppOptimizerUnderTest.forceFreezeForTest(app, true);
+        assertTrue(mFreezeCounter.await(5, TimeUnit.SECONDS));
+
+        // Mark as written back
+        app.setIsZramWrittenBack(true);
+        assertTrue(app.isZramWrittenBack());
+
+        // Verify onZramWritebackStateChanged call
+        mCachedAppOptimizerUnderTest.forceFreezeForTest(app, false);
+        verify(mAms.mProcessStateController).setIsZramWrittenBack(app, false);
+        assertFalse(app.isZramWrittenBack());
+    }
+
+    @Test
     public void testFrozenNotifier() throws Exception {
         mUseFreezer = true;
         mProcessDependencies.setRss(new long[] {
@@ -1270,10 +1324,10 @@ public final class CachedAppOptimizerTest {
     }
 
     private void initActivityManagerService() {
-        mAms = new ActivityManagerService(mInjector, mServiceThreadRule.getThread());
         mAms.mActivityTaskManager = new ActivityTaskManagerService(mContext);
         mAms.mActivityTaskManager.initialize(null, null, mAms.mProcessStateController,
                 mContext.getMainLooper());
+        mAms.mProcessStateController = spy(mAms.mProcessStateController);
         mAms.mAtmInternal = spy(mAms.mActivityTaskManager.getAtmInternal());
         mAms.mPackageManagerInt = mPackageManagerInt;
     }
