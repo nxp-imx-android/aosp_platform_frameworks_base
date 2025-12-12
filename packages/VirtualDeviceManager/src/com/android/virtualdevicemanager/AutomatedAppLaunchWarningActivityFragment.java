@@ -56,7 +56,6 @@ public class AutomatedAppLaunchWarningActivityFragment  extends DialogFragment {
     private CharSequence mAgentAppLabel;
     private Drawable mAgentAppIcon;
     private CharSequence mTargetAppLabel;
-    private Drawable mTargetAppIcon;
 
     static AutomatedAppLaunchWarningActivityFragment newInstance(
             @NonNull String targetPackageName, @NonNull IntentSender target,
@@ -89,7 +88,6 @@ public class AutomatedAppLaunchWarningActivityFragment  extends DialogFragment {
             final ApplicationInfo targetAppInfo = packageManager.getApplicationInfo(
                     mTargetPackageName, PackageManager.ApplicationInfoFlags.of(0));
             mTargetAppLabel = packageManager.getApplicationLabel(targetAppInfo);
-            mTargetAppIcon = packageManager.getApplicationIcon(targetAppInfo);
         } catch (PackageManager.NameNotFoundException e) {
             requireActivity().finish();
         }
@@ -116,8 +114,6 @@ public class AutomatedAppLaunchWarningActivityFragment  extends DialogFragment {
 
         ImageView agentIconView = view.findViewById(R.id.agent_icon);
         agentIconView.setImageDrawable(mAgentAppIcon);
-        ImageView targetIconView = view.findViewById(R.id.target_icon);
-        targetIconView.setImageDrawable(mTargetAppIcon);
 
         Dialog dialog = new Dialog(activity);
         dialog.setContentView(view);
