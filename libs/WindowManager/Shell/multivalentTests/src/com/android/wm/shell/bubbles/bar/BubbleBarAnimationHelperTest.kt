@@ -60,7 +60,13 @@ import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.verify
 
-/** Tests for [BubbleBarAnimationHelper] */
+/**
+ * Tests for [BubbleBarAnimationHelper]
+ *
+ * Build/Install/Run:
+ * - Robolectric: atest WMShellRobolectricTests:BubbleBarAnimationHelperTest
+ * - On device: atest WMShellMultivalentTestsOnDevice:BubbleBarAnimationHelperTest
+ */
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class BubbleBarAnimationHelperTest {
@@ -153,6 +159,7 @@ class BubbleBarAnimationHelperTest {
 
         assertThat(toBubble.bubbleBarExpandedView?.visibility).isEqualTo(View.VISIBLE)
         assertThat(toBubble.bubbleBarExpandedView?.alpha).isEqualTo(1f)
+        assertThat(toBubble.bubbleBarExpandedView?.captionView?.alpha).isEqualTo(1f)
         assertThat(toBubble.bubbleBarExpandedView?.isSurfaceZOrderedOnTop).isFalse()
     }
 
@@ -191,6 +198,7 @@ class BubbleBarAnimationHelperTest {
 
         assertThat(toBubble.bubbleBarExpandedView?.visibility).isEqualTo(View.VISIBLE)
         assertThat(toBubble.bubbleBarExpandedView?.alpha).isEqualTo(1f)
+        assertThat(toBubble.bubbleBarExpandedView?.captionView?.alpha).isEqualTo(1f)
         assertThat(toBubble.bubbleBarExpandedView?.isSurfaceZOrderedOnTop).isFalse()
     }
 

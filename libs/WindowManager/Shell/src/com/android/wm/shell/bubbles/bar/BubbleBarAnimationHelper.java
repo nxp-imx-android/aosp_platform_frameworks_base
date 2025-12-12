@@ -317,6 +317,7 @@ public class BubbleBarAnimationHelper {
                 startNewAnimator(switchAnim);
                 // Immediately jump to the ending stage as jumpcut.
                 switchAnim.end();
+                toBbev.getCaptionView().setAlpha(1f);
             };
         } else {
             // For normal animation, the end runnable can be added to onAnimationEnd directly since
