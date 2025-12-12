@@ -26,6 +26,7 @@ import static com.android.internal.pm.pkg.parsing.ParsingUtils.parseKnownActivit
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityTaskManager;
+import android.app.compat.CompatChanges;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
@@ -80,12 +81,12 @@ public class ParsedActivityUtils {
     /**
      * Bit mask of all the valid bits that can be set in recreateOnConfigChanges.
      */
-    private static final int RECREATE_ON_CONFIG_CHANGES_MASK =
-            com.android.window.flags.Flags.enableLessActivityRecreationOnConfigChange() ?
-                    ActivityInfo.CONFIG_MCC | ActivityInfo.CONFIG_MNC | ActivityInfo.CONFIG_KEYBOARD
-                            | ActivityInfo.CONFIG_KEYBOARD_HIDDEN | ActivityInfo.CONFIG_NAVIGATION
-                            | ActivityInfo.CONFIG_TOUCHSCREEN | ActivityInfo.CONFIG_COLOR_MODE
-                    : ActivityInfo.CONFIG_MCC | ActivityInfo.CONFIG_MNC;
+    public static final int RECREATE_ON_CONFIG_CHANGES_MASK =
+            ActivityInfo.CONFIG_MCC | ActivityInfo.CONFIG_MNC
+                    | (shouldSkipActivityRecreationOnConfigChange() ? (ActivityInfo.CONFIG_KEYBOARD
+                    | ActivityInfo.CONFIG_KEYBOARD_HIDDEN | ActivityInfo.CONFIG_NAVIGATION
+                    | ActivityInfo.CONFIG_TOUCHSCREEN | ActivityInfo.CONFIG_COLOR_MODE)
+                    : 0);
 
     @NonNull
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
@@ -693,6 +694,20 @@ public class ParsedActivityUtils {
             layout.windowLayoutAffinity = windowLayoutAffinity;
         }
         return input.success(layout);
+    }
+
+    /**
+     * Whether we should skip the activity recreation by default on config change of
+     * {@link ActivityInfo#CONFIG_KEYBOARD}, {@link ActivityInfo#CONFIG_KEYBOARD_HIDDEN},
+     * {@link ActivityInfo#CONFIG_NAVIGATION}, {@link ActivityInfo#CONFIG_TOUCHSCREEN} and
+     * {@link ActivityInfo#CONFIG_COLOR_MODE}.
+     *
+     * @hide
+     */
+    public static boolean shouldSkipActivityRecreationOnConfigChange() {
+        return com.android.window.flags.Flags.enableLessActivityRecreationOnConfigChange()
+                && CompatChanges.isChangeEnabled(
+                        ActivityInfo.SKIP_ACTIVITY_RECREATION_ON_CONFIG_CHANGE);
     }
 
     /**

@@ -25,6 +25,7 @@ import static android.content.pm.ActivityInfo.CONFIG_TOUCHSCREEN;
 import static com.android.window.flags.Flags.enableLessActivityRecreationOnConfigChange;
 
 import android.annotation.NonNull;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -69,6 +70,11 @@ public class AppCompatRecreateOnConfigChangePolicy {
     @VisibleForTesting
     int getRecreateConfigMask() {
         if (!enableLessActivityRecreationOnConfigChange()) {
+            return 0;
+        }
+
+        if (!mActivityRecord.info.isChangeEnabled(
+                ActivityInfo.SKIP_ACTIVITY_RECREATION_ON_CONFIG_CHANGE)) {
             return 0;
         }
 
