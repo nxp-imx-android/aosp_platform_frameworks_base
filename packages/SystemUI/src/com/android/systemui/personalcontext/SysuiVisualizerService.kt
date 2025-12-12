@@ -41,17 +41,22 @@ class SysuiVisualizerService
 constructor(
     private val templateFactory: VisualizerTemplateFactory,
     private val sessionFactory: VisualizerSessionFactory,
+    private val composeViewFactory: ComposeViewFactory,
 ) : InsightSurfaceVisualizerService() {
 
     @VisibleForTesting val sessions = mutableMapOf<UUID, VisualizerSession>()
+    private val viewsAwaitingClientConnection = mutableMapOf<UUID, ComposeView>()
 
     override fun onClientConnected(info: InsightSurfaceClientInfo) {
-        if (info.id in sessions) {
-            Log.e(TAG, "Client already connected: ${info.id}")
+        Log.d(TAG, "onClientConnected: ${info.id}")
+
+        val view = viewsAwaitingClientConnection.remove(info.id)
+        if (view == null) {
+            Log.e(TAG, "No view for connected client")
             return
         }
 
-        sessions[info.id] = sessionFactory.createSession(info.id)
+        sessions[info.id] = sessionFactory.createSession(info.id, view)
     }
 
     override fun onCreateEmbeddedView(
@@ -59,16 +64,17 @@ constructor(
         insights: List<ContextInsight>,
         info: InsightSurfaceClientInfo,
     ): View? {
-        val session = sessions[info.id]
-        if (session == null) {
-            Log.e(TAG, "Session not found: ${info.id}")
+        Log.d(TAG, "onCreateEmbeddedView: ${info.id}")
+
+        if (sessions[info.id] != null) {
+            Log.e(TAG, "Session already exists for client: ${info.id}")
             return null
         }
 
         val template = templateFactory.createTemplate(insights, info) ?: return null
 
-        return ComposeView(context).apply {
-            session.attachToView(this)
+        return composeViewFactory.createComposeView(context).apply {
+            viewsAwaitingClientConnection[info.id] = this
             setContent {
                 CompositionLocalProvider(LocalInsightSurfaceClientInfo provides info) {
                     template.Content(insights)
@@ -78,6 +84,8 @@ constructor(
     }
 
     override fun onClientDisconnected(info: InsightSurfaceClientInfo) {
+        Log.d(TAG, "onClientDisconnected: ${info.id}")
+
         val session = sessions.remove(info.id)
         if (session == null) {
             Log.e(TAG, "Session not found: ${info.id}")
