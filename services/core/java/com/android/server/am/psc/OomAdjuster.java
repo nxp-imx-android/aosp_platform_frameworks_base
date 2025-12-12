@@ -384,7 +384,8 @@ public abstract class OomAdjuster {
     @VisibleForTesting
     public static final long PERCEPTIBLE_TASK_TIMEOUT_MILLIS = 5 * 60 * 1000;
 
-    static final int ALL_CPU_TIME_CAPABILITIES =
+    @VisibleForTesting
+    public static final int ALL_CPU_TIME_CAPABILITIES =
             PROCESS_CAPABILITY_CPU_TIME | PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
 
     /**

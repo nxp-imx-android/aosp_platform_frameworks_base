@@ -29,9 +29,7 @@ import static android.content.Context.BIND_AUTO_CREATE;
 import static android.content.Context.BIND_INCLUDE_CAPABILITIES;
 import static android.content.Context.BIND_WAIVE_PRIORITY;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED;
-import static android.os.Process.myUid;
 import static android.os.UserHandle.USER_SYSTEM;
-import static android.platform.test.flag.junit.SetFlagsRule.DefaultInitValueType.DEVICE_DEFAULT;
 
 import static com.android.server.am.ProcessCachedOptimizerRecord.SHOULD_NOT_FREEZE_REASON_NONE;
 import static com.android.server.am.psc.Constants.CACHED_APP_MIN_ADJ;
@@ -44,77 +42,43 @@ import static com.android.server.am.psc.OomAdjuster.IMPLICIT_CPU_TIME_REASON_NON
 import static com.android.server.am.psc.OomAdjuster.IMPLICIT_CPU_TIME_REASON_OTHER;
 
 import static org.junit.Assert.assertNotEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.clearInvocations;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.app.IServiceConnection;
-import android.app.usage.UsageStatsManagerInternal;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManagerInternal;
-import android.content.pm.ResolveInfo;
-import android.content.pm.ServiceInfo;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.IBinder;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.flag.junit.CheckFlagsRule;
-import android.platform.test.flag.junit.DeviceFlagsValueProvider;
-import android.platform.test.flag.junit.SetFlagsRule;
 
-import androidx.test.platform.app.InstrumentationRegistry;
-
-import com.android.server.DropBoxManagerInternal;
-import com.android.server.LocalServices;
-import com.android.server.am.ActivityManagerService.Injector;
-import com.android.server.am.ApplicationExitInfoTest.ServiceThreadRule;
 import com.android.server.am.psc.OomAdjuster;
-import com.android.server.appop.AppOpsService;
-import com.android.server.firewall.IntentFirewall;
-import com.android.server.wm.ActivityTaskManagerService;
 import com.android.server.wm.WindowProcessController;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.verification.VerificationMode;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.function.Consumer;
 
 /**
- * Test class for the service timeout.
+ * Test class for the service binding policy.
  *
  * Build/Install/Run:
  *  atest ServiceBindingOomAdjPolicyTest
  */
 @Presubmit
-public final class ServiceBindingOomAdjPolicyTest {
-    private static final String TAG = ServiceBindingOomAdjPolicyTest.class.getSimpleName();
-
-    private static final String TEST_APP1_NAME = "com.example.foo";
-    private static final String TEST_SERVICE1_NAME = "com.example.foo.Foobar";
+public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
+    private static final String TEST_APP1_NAME = CALLING_PACKAGE_NAME;
+    private static final String TEST_SERVICE1_NAME = CALLING_PACKAGE_NAME + ".Foobar";
     private static final int TEST_APP1_UID = 10123;
     private static final int TEST_APP1_PID = 12345;
 
@@ -123,92 +87,16 @@ public final class ServiceBindingOomAdjPolicyTest {
     private static final int TEST_APP2_UID = 10124;
     private static final int TEST_APP2_PID = 12346;
 
-    @Rule
-    public final ServiceThreadRule mServiceThreadRule = new ServiceThreadRule();
-    @Rule
-    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule(DEVICE_DEFAULT);
-    @Rule
-    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
-
-    private Context mContext;
-    private HandlerThread mHandlerThread;
-
-    @Mock
-    private AppOpsService mAppOpsService;
-    @Mock
-    private DropBoxManagerInternal mDropBoxManagerInt;
-    @Mock
-    private PackageManagerInternal mPackageManagerInt;
-    @Mock
-    private UsageStatsManagerInternal mUsageStatsManagerInt;
-    @Mock
-    private AppErrors mAppErrors;
-    @Mock
-    private IntentFirewall mIntentFirewall;
-
-    private ActivityManagerService mAms;
-    private ProcessList mProcessList;
-    private ActiveServices mActiveServices;
-
-    private int mCurrentCallingUid;
-    private int mCurrentCallingPid;
-
     /** Run at the test class initialization */
     @BeforeClass
     public static void setUpOnce() {
+        // Share class loader to allow access to package-private classes
         System.setProperty("dexmaker.share_classloader", "true");
     }
 
-    @SuppressWarnings("GuardedBy")
     @Before
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
-
-        mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-
-        mHandlerThread = new HandlerThread(TAG);
-        mHandlerThread.start();
-        final ProcessList realProcessList = new ProcessList();
-        mProcessList = spy(realProcessList);
-
-        LocalServices.removeServiceForTest(DropBoxManagerInternal.class);
-        LocalServices.addService(DropBoxManagerInternal.class, mDropBoxManagerInt);
-        LocalServices.removeServiceForTest(PackageManagerInternal.class);
-        LocalServices.addService(PackageManagerInternal.class, mPackageManagerInt);
-        doReturn(new ComponentName("", "")).when(mPackageManagerInt).getSystemUiServiceComponent();
-
-        final ActivityManagerService realAms = new ActivityManagerService(
-                new TestInjector(mContext), mServiceThreadRule.getThread());
-        final ActivityTaskManagerService realAtm = new ActivityTaskManagerService(mContext);
-        realAtm.initialize(null, null, realAms.mProcessStateController, mContext.getMainLooper());
-        realAms.mActivityTaskManager = spy(realAtm);
-        realAms.mAtmInternal = spy(realAms.mActivityTaskManager.getAtmInternal());
-
-        final CachedAppOptimizer cachedAppOptimizer = spy(realAms.getCachedAppOptimizer());
-        doReturn(true).when(cachedAppOptimizer).useFreezer();
-        doNothing().when(cachedAppOptimizer).freezeAppAsyncAtEarliestLSP(any());
-        realAms.setCachedAppOptimizer(cachedAppOptimizer);
-        realAms.mProcessStateController = spy(realAms.mProcessStateController);
-        realAms.mOomAdjuster = spy(realAms.mOomAdjuster);
-
-        realAms.mPackageManagerInt = mPackageManagerInt;
-        realAms.mUsageStatsService = mUsageStatsManagerInt;
-        realAms.mAppProfiler = spy(realAms.mAppProfiler);
-        realAms.mProcessesReady = true;
-        mAms = spy(realAms);
-        realProcessList.mService = mAms;
-
-        doReturn(false).when(mPackageManagerInt).filterAppAccess(anyString(), anyInt(), anyInt());
-        // Necessary for calling package to match caller uid
-        doReturn(myUid()).when(mPackageManagerInt).getPackageUid(
-                eq(TEST_APP1_NAME), anyLong(), anyInt());
-        doReturn(true).when(mPackageManagerInt).isSameApp(
-                eq(TEST_APP1_NAME), anyLong(), eq(myUid()), anyInt());
-        doReturn(true).when(mIntentFirewall).checkService(any(), any(), anyInt(), anyInt(), any(),
-                any());
-        doReturn(false).when(mAms.mAtmInternal).hasSystemAlertWindowPermission(anyInt(), anyInt(),
-                any());
-        doNothing().when(mAms.mAppProfiler).updateLowMemStateLSP(anyInt(), anyInt(), anyLong());
+        super.setUp();
 
         mCurrentCallingUid = TEST_APP1_UID;
         mCurrentCallingPid = TEST_APP1_PID;
@@ -216,9 +104,7 @@ public final class ServiceBindingOomAdjPolicyTest {
 
     @After
     public void tearDown() throws Exception {
-        LocalServices.removeServiceForTest(DropBoxManagerInternal.class);
-        LocalServices.removeServiceForTest(PackageManagerInternal.class);
-        mHandlerThread.quit();
+        super.tearDown();
     }
 
     @Test
@@ -953,36 +839,15 @@ public final class ServiceBindingOomAdjPolicyTest {
     @SuppressWarnings("GuardedBy")
     private ProcessRecord addProcessRecord(int pid, int uid, int procState, int adj, int cap,
                 String packageName, boolean isNativeService) {
-        final ApplicationThreadDeferred appThread = mock(ApplicationThreadDeferred.class);
-        final IBinder threadBinder = mock(IBinder.class);
-        final ProcessRecord app = makeProcessRecord(pid, uid, uid, null, 0,
-                procState, adj, cap, 0L, 0L, packageName, packageName, mAms, isNativeService);
-
-        app.makeActive(appThread, mAms.mProcessStats);
-        doReturn(threadBinder).when(appThread).asBinder();
-        mProcessList.addProcessNameLocked(app);
-        mProcessList.updateLruProcessLocked(app, false, null);
-
-        setFieldValue(ProcessRecord.class, app, "mWindowProcessController",
-                mock(WindowProcessController.class));
+        // TODO: b/467131711 - remove Native tests. Tests in this file are not affected by
+        //  isNativeService state.
+        final ProcessRecord app = makeProcessRecord(pid, uid, procState, adj, cap, packageName,
+                packageName, mAms);
 
         doReturn(app.getSetCapability()).when(mAms.mOomAdjuster).getDefaultCapability(
                 eq(app), anyInt());
 
         return app;
-    }
-
-    @SuppressWarnings("GuardedBy")
-    private Intent createServiceIntent(String packageName, String serviceName, int serviceUid) {
-        final ComponentName compName = new ComponentName(packageName, serviceName);
-        final Intent serviceIntent = new Intent().setComponent(compName);
-        final ResolveInfo rInfo = new ResolveInfo();
-        rInfo.serviceInfo = makeServiceInfo(compName.getClassName(), compName.getPackageName(),
-                serviceUid);
-        doReturn(rInfo).when(mPackageManagerInt).resolveService(any(Intent.class), any(),
-                anyLong(), anyInt(), anyInt(), anyInt());
-
-        return serviceIntent;
     }
 
     @SuppressWarnings("GuardedBy")
@@ -1012,13 +877,16 @@ public final class ServiceBindingOomAdjPolicyTest {
     }
 
     @SuppressWarnings("GuardedBy")
-    private ProcessRecord makeProcessRecord(int pid, int uid, int packageUid, Integer definingUid,
-            int connectionGroup, int procState, int adj, int cap, long pss, long rss,
-            String processName, String packageName, ActivityManagerService ams,
-            boolean isNativeService) {
-        final ProcessRecord app = ApplicationExitInfoTest.makeProcessRecord(pid, uid, packageUid,
-                definingUid, connectionGroup, procState, pss, rss, processName, packageName, ams,
-                isNativeService);
+    private ProcessRecord makeProcessRecord(int pid, int uid, int procState, int adj, int cap,
+            String processName, String packageName, ActivityManagerService ams) {
+        final ProcessRecord app = new TestProcessBuilder()
+                .setActivityManagerService(ams)
+                .setPackageName(packageName)
+                .setProcessName(processName)
+                .setPid(pid)
+                .setUid(uid)
+                .build();
+
         app.setCurRawProcState(procState);
         app.setCurProcState(procState);
         app.setSetProcState(procState);
@@ -1032,89 +900,6 @@ public final class ServiceBindingOomAdjPolicyTest {
         app.setSetCpuTimeReasons(defaultCpuTimeReasons(cap));
         app.setSetImplicitCpuTimeReasons(defaultImplicitCpuTimeReasons(cap));
         return app;
-    }
-
-    @SuppressWarnings("GuardedBy")
-    private ServiceInfo makeServiceInfo(String serviceName, String packageName, int packageUid) {
-        final ServiceInfo sInfo = new ServiceInfo();
-        sInfo.name = serviceName;
-        sInfo.processName = packageName;
-        sInfo.packageName = packageName;
-        sInfo.applicationInfo = new ApplicationInfo();
-        sInfo.applicationInfo.uid = packageUid;
-        sInfo.applicationInfo.packageName = packageName;
-        sInfo.exported = true;
-        return sInfo;
-    }
-
-    private static <T> void setFieldValue(Class clazz, Object obj, String fieldName, T val) {
-        try {
-            Field field = clazz.getDeclaredField(fieldName);
-            field.setAccessible(true);
-            Field mfield = Field.class.getDeclaredField("accessFlags");
-            mfield.setAccessible(true);
-            mfield.setInt(field, mfield.getInt(field) & ~(Modifier.FINAL | Modifier.PRIVATE));
-            field.set(obj, val);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-        }
-    }
-
-    private class TestInjector extends Injector {
-        TestInjector(Context context) {
-            super(context);
-        }
-
-        @Override
-        public AppOpsService getAppOpsService(Handler handler) {
-            return mAppOpsService;
-        }
-
-        @Override
-        public Handler getUiHandler(ActivityManagerService service) {
-            return mHandlerThread.getThreadHandler();
-        }
-
-        @Override
-        public ProcessList getProcessList(ActivityManagerService service) {
-            return mProcessList;
-        }
-
-        @Override
-        public ActiveServices getActiveServices(ActivityManagerService service) {
-            if (mActiveServices == null) {
-                mActiveServices = spy(new ActiveServices(service));
-            }
-            return mActiveServices;
-        }
-
-        @Override
-        public int getCallingUid() {
-            return mCurrentCallingUid;
-        }
-
-        @Override
-        public int getCallingPid() {
-            return mCurrentCallingPid;
-        }
-
-        @Override
-        public long clearCallingIdentity() {
-            return (((long) mCurrentCallingUid) << 32) | mCurrentCallingPid;
-        }
-
-        @Override
-        public void restoreCallingIdentity(long ident) {
-        }
-
-        @Override
-        public AppErrors getAppErrors() {
-            return mAppErrors;
-        }
-
-        @Override
-        public IntentFirewall getIntentFirewall() {
-            return mIntentFirewall;
-        }
     }
 
     // TODO: [b/302724778] Remove manual JNI load
