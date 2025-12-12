@@ -346,9 +346,6 @@ public class BubbleController implements ConfigurationChangeListener,
     /** Used to block task view transitions while we're switching over to floating views. */
     private IBinder mBarToFloatingTransition = null;
 
-    /** Used to indicate that bubbles should not be added back on move to fullscreen. */
-    private boolean mSkipAddingBackBubbleOnMoveToFullScreen = false;
-
     public BubbleController(Context context,
             ShellInit shellInit,
             ShellCommandHandler shellCommandHandler,
@@ -457,20 +454,15 @@ public class BubbleController implements ConfigurationChangeListener,
     private void addUnfoldProgressProviderListener(
             ShellUnfoldProgressProvider unfoldProgressProvider) {
         BubblesUnfoldListener unfoldListener = new BubblesUnfoldListener(
-                mBubbleData, mFoldLockSettingsObserver, (bubble, moveToFullscreen) -> {
-                    if (moveToFullscreen) {
-                        bubble.getTaskView().moveToFullscreen();
-                        mSkipAddingBackBubbleOnMoveToFullScreen = true;
-                    } else {
-                        mBarToFloatingTransition = new Binder();
-                        BubbleLog.d(
-                                "BubbleController.addUnfoldProgressProviderListener() enqueuing "
-                                        + "bar to floating transition %s",
-                                mBarToFloatingTransition);
-                        mBubbleTransitions.mTaskViewTransitions.enqueueExternal(
-                                bubble.getTaskView().getController(),
-                                () -> mBarToFloatingTransition);
-                    }
+                mBubbleData, mFoldLockSettingsObserver, (bubble) -> {
+                    mBarToFloatingTransition = new Binder();
+                    BubbleLog.d(
+                            "BubbleController.addUnfoldProgressProviderListener() enqueuing "
+                                    + "bar to floating transition %s",
+                            mBarToFloatingTransition);
+                    mBubbleTransitions.mTaskViewTransitions.enqueueExternal(
+                            bubble.getTaskView().getController(),
+                            () -> mBarToFloatingTransition);
                     return Unit.INSTANCE;
                 });
         unfoldProgressProvider.addListener(mMainExecutor, unfoldListener);
@@ -2214,13 +2206,6 @@ public class BubbleController implements ConfigurationChangeListener,
         }
         for (int i = mBubbleData.getBubbles().size() - 1; i >= 0; i--) {
             Bubble bubble = mBubbleData.getBubbles().get(i);
-            if (bubble.getKey().equals(mBubbleData.getSelectedBubbleKey())
-                    && mSkipAddingBackBubbleOnMoveToFullScreen) {
-                // Reset and skip inflating the floating view for the selected bubble, which will
-                // also skip adding it to the stack view in the callback.
-                mSkipAddingBackBubbleOnMoveToFullScreen = false;
-                continue;
-            }
             bubble.inflate(callback,
                     mContext,
                     mExpandedViewManager,
