@@ -907,6 +907,9 @@ public class HubEndpoint {
         } else if (isFixedSize
                 && (minCapacity % elementSize != 0 || maxCapacity % elementSize != 0)) {
             throw new IllegalArgumentException("Capacity must be a multiple of the element size.");
+        } else if (minCapacity < elementSize || maxCapacity < elementSize) {
+            throw new IllegalArgumentException(
+                    "Capacity must be greater than or equal to the element size.");
         }
         if (!Flags.fmcqImplementation()) {
             throw new UnsupportedOperationException(
