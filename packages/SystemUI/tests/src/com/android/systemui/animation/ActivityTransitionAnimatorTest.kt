@@ -409,7 +409,7 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
             waitForIdleSync()
             verify(transitionHelper).setUpAnimation(token, info, startTransaction, finishCallback)
             verify(listener).onTransitionAnimationStart()
-            verify(listener).onTransitionAnimationEnd()
+            verify(listener).onTransitionAnimationEnd(any())
             verify(transitionHelper).cleanUpAnimation(eq(token), any())
         }
     }
@@ -520,7 +520,7 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
             waitForIdleSync()
             verify(transitionHelper).setUpAnimation(token, info, startTransaction, finishCallback)
             verify(listener).onTransitionAnimationStart()
-            verify(listener).onTransitionAnimationEnd()
+            verify(listener).onTransitionAnimationEnd(any())
             verify(transitionHelper).cleanUpAnimation(eq(token), any())
         }
     }
