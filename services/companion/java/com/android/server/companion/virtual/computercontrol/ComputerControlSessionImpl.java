@@ -153,7 +153,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     @VisibleForTesting
     static final int PRODUCT_ID_TOUCHSCREEN = 0xCC03;
 
-    private final Context mContext;
     private final IBinder mAppToken;
     private final ComputerControlSessionParams mParams;
     private final IApplicationThread mAppThread;
@@ -276,7 +275,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             AttributionSource attributionSource,
             ComputerControlSessionProcessor.VirtualDeviceFactory virtualDeviceFactory,
             Consumer<ComputerControlSessionImpl> onClosedListener, Executor fgThreadExecutor) {
-        mContext = context;
         mFgThreadExecutor = fgThreadExecutor;
         mViewConfiguration = viewConfiguration;
         mGlobalSessionTimeoutDurationMs = globalSessionTimeoutDurationMs;
@@ -306,7 +304,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mInputManagerInternal = LocalServices.getService(InputManagerInternal.class);
         mDisplayManagerGlobal = displayManagerGlobal;
         mStatsController = new ComputerControlStatsController(
-            mContext.getPackageManager(), attributionSource, params);
+                context.getPackageManager(), attributionSource, params);
         if (android.app.appfunctions.flags.Flags.enableAppInteractionApi()) {
             mAppInteractionService = LocalServices.getService(AppInteractionService.class);
         } else {
