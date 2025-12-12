@@ -2702,6 +2702,12 @@
                  when the app has been granted the ACCESS_FINE_LOCATION and/or
                  ACCESS_COARSE_LOCATION permissions. -->
             <flag name="neverForLocation" value="0x00010000" />
+            <!-- Only applies to android.permission.ACCESS_FINE_LOCATION. When this flag is set,
+                 apps cannot request that permission through
+                 {@link Activity#requestPermissions(String[], int)}, and can only use location
+                 button to obtain it temporarily.
+                 -->
+            <flag name="onlyForLocationButton" value="0x00020000" />
         </attr>
         <!-- Optional: The resource ID for the purpose string. Only required when stated so by the
              {@link #AndroidManifestPermission permission} tag's <code>
