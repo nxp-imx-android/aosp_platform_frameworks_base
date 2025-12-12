@@ -18,7 +18,6 @@ package com.android.systemui.statusbar.phone.ongoingcall.domain.interactor
 
 import android.content.applicationContext
 import com.android.systemui.activity.data.repository.activityManagerRepository
-import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
@@ -33,12 +32,8 @@ val Kosmos.ongoingCallInteractor: OngoingCallInteractor by
     Kosmos.Fixture {
         OngoingCallInteractor(
             scope = applicationCoroutineScope,
-            activeNotificationsInteractor = activeNotificationsInteractor,
             activityManagerRepository = activityManagerRepository,
-            statusBarModeRepositoryStore = fakeStatusBarModeRepository,
-            statusBarWindowControllerStore = fakeStatusBarWindowControllerStore,
-            displayComponentRepo = displaySubcomponentPerDisplayRepository,
-            keyguardInteractor = keyguardInteractor,
+            activeNotificationsInteractor = activeNotificationsInteractor,
             logBuffer = logcatLogBuffer("OngoingCallInteractorKosmos"),
         )
     }
