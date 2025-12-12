@@ -21,26 +21,60 @@ import android.content.Context
 import android.content.Intent
 import android.os.UserHandle
 import android.provider.Settings
-import android.text.TextUtils
 import android.util.Slog
 import android.view.Gravity
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.WindowManager
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.TextView
+import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import com.android.compose.PlatformOutlinedButton
+import com.android.compose.theme.PlatformTheme
 import com.android.internal.R
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.inputmethod.IImeSwitcherMenu
-import com.android.internal.widget.RecyclerView
 import com.android.systemui.inputmethod.ImeSwitcherMenuDialogDelegate.Companion.NOT_A_SUBTYPE_INDEX
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
+import com.android.systemui.statusbar.phone.create
 import com.android.systemui.util.Assert
 import java.io.PrintWriter
 
@@ -58,7 +92,11 @@ internal class ImeSwitcherMenuDialogDelegate(
     /** The currently showing IME Switcher Menu dialog, or `null` if no menu is showing. */
     private var currentDialog: SystemUIDialog? = null
 
-    private var menuItems: List<MenuItem>? = null
+    private val onSettingsClick = mutableStateOf<(() -> Unit)?>(null)
+
+    private val menuItems = mutableStateListOf<MenuItem>()
+
+    private val selectedIndex = mutableIntStateOf(-1)
 
     internal interface ImeSwitcherMenuDialogListener {
 
@@ -99,20 +137,9 @@ internal class ImeSwitcherMenuDialogDelegate(
             it.dismiss()
         }
         val dialog =
-            sysuiDialogFactory.create(
-                context,
-                R.style.Theme_DeviceDefault_InputMethodSwitcherDialog,
-                true,
-                this,
-            )
-
-        dialog.create()
-
-        val context = dialog.context
-        LayoutInflater.from(context).inflate(R.layout.input_method_switch_dialog, null).apply {
-            accessibilityPaneTitle = context.getText(R.string.select_input_method)
-            dialog.setContentView(this)
-        }
+            sysuiDialogFactory.create(context = context, dialogDelegate = this) {
+                ImeSwitcherMenuContent(it)
+            }
 
         dialog.setOnShowListener { listener.onVisibilityChanged(true, displayId, userId) }
         dialog.setOnDismissListener { listener.onVisibilityChanged(false, displayId, userId) }
@@ -123,11 +150,11 @@ internal class ImeSwitcherMenuDialogDelegate(
                 // token
                 // with other IME windows based on type vs. grouping based on whichever token
                 // happens to get selected by the system later on.
-                token = context.windowContextToken
+                token = dialog.context.windowContextToken
                 gravity =
                     Gravity.getAbsoluteGravity(
                         Gravity.BOTTOM or Gravity.END,
-                        context.resources.configuration.layoutDirection,
+                        dialog.context.resources.configuration.layoutDirection,
                     )
                 x = HORIZONTAL_OFFSET
                 privateFlags =
@@ -148,7 +175,7 @@ internal class ImeSwitcherMenuDialogDelegate(
                 override fun onStop(owner: LifecycleOwner) {
                     Assert.isMainThread()
                     currentDialog = null
-                    menuItems = null
+                    menuItems.clear()
                 }
             }
         )
@@ -157,7 +184,174 @@ internal class ImeSwitcherMenuDialogDelegate(
         return dialog
     }
 
-    override fun getWidth(dialog: SystemUIDialog): Int = WindowManager.LayoutParams.WRAP_CONTENT
+    @Composable
+    private fun ImeSwitcherMenuContent(dialog: SystemUIDialog) {
+        // TODO(b/369376884): The composable does correctly update when the theme changes
+        //  while the dialog is open, but the background (which we don't control here)
+        //  doesn't, which causes us to show things like white text on a white background.
+        //  as a workaround, we remember the original theme and keep it on recomposition.
+        val isCurrentlyInDarkTheme = isSystemInDarkTheme()
+        val cachedDarkTheme = remember { isCurrentlyInDarkTheme }
+        val paneTitleDescription = stringResource(R.string.select_input_method)
+        val buttonDescription = stringResource(R.string.input_method_language_settings)
+
+        PlatformTheme(isDarkTheme = cachedDarkTheme) {
+            Column(
+                modifier = Modifier.fillMaxWidth().semantics { paneTitle = paneTitleDescription },
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                ImeSwitcherMenuList(menuItems.toList(), dialog)
+                onSettingsClick.value?.let {
+                    Box(
+                        contentAlignment = Alignment.CenterEnd,
+                        modifier =
+                            Modifier.fillMaxWidth().padding(top = 8.dp, end = 16.dp, bottom = 16.dp),
+                    ) {
+                        PlatformOutlinedButton(
+                            onClick = {
+                                it.invoke()
+                                dialog.dismiss()
+                            }
+                        ) {
+                            Text(
+                                text =
+                                    stringResource(R.string.input_method_switcher_settings_button),
+                                modifier =
+                                    Modifier.padding(vertical = 3.dp).semantics {
+                                        contentDescription = buttonDescription
+                                    },
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun ImeSwitcherMenuList(items: List<MenuItem>, dialog: SystemUIDialog) {
+        val listState = rememberLazyListState()
+        LaunchedEffect(selectedIndex.intValue, items.size) {
+            val index = selectedIndex.intValue
+            if (index != -1 && index < items.size) {
+                listState.scrollToItem(index)
+            }
+        }
+
+        // TODO(b/308488505): Add scroll indicators to the LazyColumn once implemented.
+        LazyColumn(
+            state = listState,
+            contentPadding = PaddingValues(top = 8.dp),
+            modifier = Modifier.heightIn(max = 373.dp),
+        ) {
+            itemsIndexed(items, key = { _, item -> "${item.imeId}:${item.subtypeIndex}" }) {
+                index,
+                item ->
+                MenuItemView(item, index == selectedIndex.intValue, dialog)
+            }
+        }
+    }
+
+    @Composable
+    private fun MenuItemView(item: MenuItem, isSelected: Boolean, dialog: SystemUIDialog) {
+        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+            if (item.hasDivider) {
+                HorizontalDivider(
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .padding(start = 20.dp, top = 8.dp, end = 24.dp, bottom = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                )
+            }
+
+            if (item.hasHeader) {
+                Text(
+                    text = item.imeName.toString(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .padding(horizontal = 8.dp)
+                            .padding(top = 4.dp, bottom = 16.dp),
+                )
+            }
+
+            val backgroundColor =
+                if (isSelected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent
+            val selectedColor =
+                if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer
+                else MaterialTheme.colorScheme.onSurface
+            Row(
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .padding(bottom = 8.dp)
+                        .heightIn(min = 72.dp)
+                        .clip(RoundedCornerShape(28.dp))
+                        .background(backgroundColor)
+                        .semantics { this.selected = isSelected }
+                        .clickable(
+                            onClick = {
+                                if (!isSelected) {
+                                    listener.onImeAndSubtypeSelected(
+                                        item.imeId,
+                                        item.subtypeIndex,
+                                        userId,
+                                    )
+                                }
+                                dialog.dismiss()
+                            }
+                        )
+                        .padding(start = 20.dp, end = 24.dp)
+                        .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    val text =
+                        if (item.subtypeName.isNullOrEmpty()) item.imeName else item.subtypeName
+                    Text(
+                        text = text.toString(),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = selectedColor,
+                        maxLines = 1,
+                        modifier =
+                            if (isSelected) Modifier.basicMarquee(iterations = 1) else Modifier,
+                    )
+                    if (!item.layoutName.isNullOrEmpty()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = item.layoutName.toString().uppercase(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            modifier =
+                                if (isSelected) Modifier.basicMarquee(iterations = 1) else Modifier,
+                        )
+                    }
+                }
+
+                if (isSelected) {
+                    Icon(
+                        painter = painterResource(com.android.systemui.res.R.drawable.ic_check),
+                        contentDescription = null, // decorative
+                        tint = selectedColor,
+                        modifier = Modifier.padding(start = 12.dp).size(24.dp),
+                    )
+                }
+            }
+        }
+    }
+
+    override fun getWidth(dialog: SystemUIDialog): Int {
+        // The base width of the window is set from config_prefDialogWidth. This would be overridden
+        // by the first view that has some fixed layout_width set. For Compose the width modifier
+        // would not be enforced, and thus limit it to the base width, and the requiredWidthIn
+        // modifier would not propagate up the hierarchy, and would lead to clipping the content.
+        // TODO(b/469720572): Use WRAP_CONTENT and set width on the outermost Column above once
+        //  view-compose measurement is fixed.
+        val desiredWidth = SystemUIDialog.calculateDialogWidthWithInsets(dialog, 320)
+        val screenWidth = dialog.context.resources.displayMetrics.widthPixels
+        return desiredWidth.coerceAtMost(screenWidth)
+    }
 
     /**
      * Shows the Input Method Switcher Menu, with a list of IMEs and their subtypes.
@@ -180,8 +374,9 @@ internal class ImeSwitcherMenuDialogDelegate(
         val dialog = createDialog()
 
         val menuItems = getMenuItems(items)
-        this.menuItems = menuItems
+        this.menuItems.addAll(menuItems)
         val selectedIndex = getSelectedIndex(menuItems, selectedImeId, selectedSubtypeIndex)
+        this.selectedIndex.intValue = selectedIndex
         if (selectedIndex == -1) {
             Slog.w(
                 TAG,
@@ -190,24 +385,7 @@ internal class ImeSwitcherMenuDialogDelegate(
             )
         }
 
-        val inflater = LayoutInflater.from(dialog.context)
-
-        val onItemClick = { item: SubtypeItem, isSelected: Boolean ->
-            if (!isSelected) {
-                listener.onImeAndSubtypeSelected(item.imeId, item.subtypeIndex, userId)
-            }
-            dialog.dismiss()
-        }
-
-        // Create the current IME subtypes list.
-        val recyclerView: RecyclerView = dialog.requireViewById(R.id.list)
-        recyclerView.setAdapter(Adapter(menuItems, selectedIndex, inflater, onItemClick))
-        // Scroll to the currently selected IME. This must run after the recycler view is laid out.
-        recyclerView.post { recyclerView.scrollToPosition(selectedIndex) }
-        // Request focus to enable rotary scrolling on watches.
-        recyclerView.requestFocus()
-
-        updateLanguageSettingsButton(selectedImeSettingsIntent, dialog, isScreenLocked)
+        updateLanguageSettingsButton(selectedImeSettingsIntent, isScreenLocked)
 
         dialog.show()
     }
@@ -238,46 +416,31 @@ internal class ImeSwitcherMenuDialogDelegate(
      *
      * @param settingsIntent the intent for the settings activity of the selected IME, or `null` if
      *   no IME is selected, or the selected IME does not have a settings activity.
-     * @param dialog the dialog.
      * @param isScreenLocked whether the screen is currently locked.
      */
-    private fun updateLanguageSettingsButton(
-        settingsIntent: Intent?,
-        dialog: SystemUIDialog,
-        isScreenLocked: Boolean,
-    ) {
+    private fun updateLanguageSettingsButton(settingsIntent: Intent?, isScreenLocked: Boolean) {
         val isDeviceProvisioned =
             Settings.Global.getInt(
-                dialog.context.contentResolver,
+                context.contentResolver,
                 Settings.Global.DEVICE_PROVISIONED,
                 0,
             ) != 0
         val hasButton = settingsIntent != null && !isScreenLocked && isDeviceProvisioned
-        val buttonBar: View = dialog.requireViewById(R.id.button_bar)
-        val button: Button = dialog.requireViewById(R.id.button1)
-        val recyclerView: RecyclerView = dialog.requireViewById(R.id.list)
         if (hasButton) {
             settingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            buttonBar.visibility = View.VISIBLE
-            button.setOnClickListener {
-                dialog.context.startActivityAsUser(settingsIntent, UserHandle.of(userId))
-                dialog.dismiss()
+            onSettingsClick.value = {
+                context.startActivityAsUser(settingsIntent, UserHandle.of(userId))
             }
-            // Indicate that the list can be scrolled.
-            recyclerView.scrollIndicators = View.SCROLL_INDICATOR_BOTTOM
         } else {
-            buttonBar.visibility = View.GONE
-            button.setOnClickListener(null)
-            // Remove scroll indicator as there is nothing drawn below the list.
-            recyclerView.scrollIndicators = 0
+            onSettingsClick.value = null
         }
     }
 
-    /** Item to be displayed in the menu. */
-    private sealed interface MenuItem
-
-    /** Subtype item containing an input method and optionally an input method subtype. */
-    private data class SubtypeItem(
+    /**
+     * Item to be displayed in the menu, containing an input method and optionally an input method
+     * subtype.
+     */
+    private data class MenuItem(
 
         /** The name of the input method. */
         val imeName: CharSequence,
@@ -299,162 +462,13 @@ internal class ImeSwitcherMenuDialogDelegate(
          * [NOT_A_SUBTYPE_INDEX] if this item doesn't have a subtype.
          */
         @param:IntRange(from = NOT_A_SUBTYPE_INDEX.toLong()) val subtypeIndex: Int,
-    ) : MenuItem
 
-    /** Header item displayed before a group of [SubtypeItem] of the same input method. */
-    private data class HeaderItem(
+        /** Whether this item has a divider, displayed before the header. */
+        val hasDivider: Boolean,
 
-        /** The header title. */
-        val title: CharSequence
-    ) : MenuItem
-
-    /** Divider item displayed before a [HeaderItem]. */
-    private data object DividerItem : MenuItem
-
-    private class Adapter(
-
-        /** The list of items to show. */
-        private val items: List<MenuItem>,
-
-        /** The index of the selected item. */
-        @param:IntRange(from = -1) private val selectedIndex: Int,
-        private val inflater: LayoutInflater,
-
-        /** The listener used to handle clicks on [Adapter.SubtypeViewHolder] items. */
-        private val onItemClick: (SubtypeItem, Boolean) -> Unit,
-    ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-        override fun onCreateViewHolder(
-            parent: ViewGroup?,
-            viewType: Int,
-        ): RecyclerView.ViewHolder {
-            return when (viewType) {
-                TYPE_SUBTYPE -> {
-                    val view = inflater.inflate(R.layout.input_method_switch_item, parent, false)
-                    SubtypeViewHolder(view, onItemClick)
-                }
-
-                TYPE_HEADER -> {
-                    val view =
-                        inflater.inflate(R.layout.input_method_switch_item_header, parent, false)
-                    HeaderViewHolder(view)
-                }
-
-                TYPE_DIVIDER -> {
-                    val view =
-                        inflater.inflate(R.layout.input_method_switch_item_divider, parent, false)
-                    DividerViewHolder(view)
-                }
-
-                else -> throw IllegalArgumentException("Unknown viewType: $viewType")
-            }
-        }
-
-        override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
-            val item = items[position]
-            when {
-                holder is SubtypeViewHolder && item is SubtypeItem -> {
-                    holder.bind(item, position == selectedIndex /* isSelected */)
-                }
-                holder is HeaderViewHolder && item is HeaderItem -> {
-                    holder.bind(item)
-                }
-                holder is DividerViewHolder && item is DividerItem -> {
-                    // Nothing to bind for dividers.
-                    return
-                }
-                else -> Slog.w(TAG, "Holder type: $holder doesn't match item type: $item")
-            }
-        }
-
-        override fun getItemCount(): Int {
-            return items.size
-        }
-
-        override fun getItemViewType(position: Int): Int {
-            return when (items[position]) {
-                is SubtypeItem -> TYPE_SUBTYPE
-                is HeaderItem -> TYPE_HEADER
-                is DividerItem -> TYPE_DIVIDER
-            }
-        }
-
-        private class SubtypeViewHolder(
-            /** The container of the item. */
-            private val container: View,
-            private val onItemClick: (SubtypeItem, Boolean) -> Unit,
-        ) : RecyclerView.ViewHolder(container) {
-            /** The name of the item. */
-            private val name: TextView = container.requireViewById(R.id.text)
-
-            /** The layout name. */
-            private val layout: TextView = container.requireViewById(R.id.text2)
-
-            /** Indicator for the selected status of the item. */
-            private val checkmark: ImageView = container.requireViewById(R.id.image)
-
-            /** The bound item data, or `null` if no item was bound yet. */
-            private var item: SubtypeItem? = null
-
-            /** Whether this item is the currently selected one. */
-            private var isSelected = false
-
-            init {
-                container.setOnClickListener { item?.let { onItemClick(it, isSelected) } }
-            }
-
-            /**
-             * Binds the given item to the current view.
-             *
-             * @param item the item to bind.
-             * @param isSelected whether the item is selected.
-             */
-            fun bind(item: SubtypeItem, isSelected: Boolean) {
-                this.item = item
-                this.isSelected = isSelected
-
-                container.isActivated = isSelected
-                // Activated is the correct state, but we also set selected for accessibility info.
-                container.isSelected = isSelected
-                // Trigger the ellipsize marquee behaviour by selecting the name.
-                name.setSelected(isSelected)
-                // Use the IME name for subtypes with an empty subtype name.
-                name.text = if (item.subtypeName.isNullOrEmpty()) item.imeName else item.subtypeName
-                layout.text = item.layoutName
-                layout.visibility =
-                    if (!TextUtils.isEmpty(item.layoutName)) View.VISIBLE else View.GONE
-                checkmark.setVisibility(if (isSelected) View.VISIBLE else View.GONE)
-            }
-        }
-
-        private class HeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-
-            /** The title view, only visible if the bound item has a title. */
-            private val title: TextView = itemView.requireViewById(R.id.header_text)
-
-            /**
-             * Binds the given item to the current view.
-             *
-             * @param item the item to bind.
-             */
-            fun bind(item: HeaderItem) {
-                title.text = item.title
-            }
-        }
-
-        private class DividerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
-
-        companion object {
-
-            /** View type for [SubtypeItem]. */
-            private const val TYPE_SUBTYPE = 0
-
-            /** View type for [HeaderItem]. */
-            private const val TYPE_HEADER = 1
-
-            /** View type for [DividerItem]. */
-            private const val TYPE_DIVIDER = 2
-        }
-    }
+        /** Whether this item has a header. */
+        val hasHeader: Boolean,
+    )
 
     companion object {
 
@@ -489,37 +503,35 @@ internal class ImeSwitcherMenuDialogDelegate(
                 return menuItems
             }
 
-            val numItems = items.size
             // Initialize to the last IME id to avoid headers if there is only a single IME.
             var prevImeId = items.last().imeId
             var firstGroup = true
-            for (i in 0..<numItems) {
+            for (i in items.indices) {
                 val item = items[i]
 
-                val imeId = item.imeId
-                val groupChange = imeId != prevImeId
+                var hasDivider = false
+                var hasHeader = false
+
+                val groupChange = item.imeId != prevImeId
                 if (groupChange) {
-                    if (!firstGroup) {
-                        menuItems.add(DividerItem)
-                    }
-                    // Add a header if we have at least two items, or a single item with a subtype
+                    hasDivider = !firstGroup
+                    // Has a header if we have at least two items, or a single item with a subtype
                     // name.
                     val nextItemId: String? = items.getOrNull(i + 1)?.imeId
-                    val addHeader = item.subtypeName != null || imeId == nextItemId
-                    if (addHeader) {
-                        menuItems.add(HeaderItem(item.imeName))
-                    }
+                    hasHeader = item.subtypeName != null || item.imeId == nextItemId
                     firstGroup = false
-                    prevImeId = imeId
+                    prevImeId = item.imeId
                 }
 
                 menuItems.add(
-                    SubtypeItem(
+                    MenuItem(
                         item.imeName,
                         item.subtypeName,
                         item.layoutName,
                         item.imeId,
                         item.subtypeIndex,
+                        hasDivider,
+                        hasHeader,
                     )
                 )
             }
@@ -548,8 +560,7 @@ internal class ImeSwitcherMenuDialogDelegate(
             // explicit subtypes. In this case, the implicit subtype will no longer be included in
             // the list.
             return items.indexOfFirst { item ->
-                item is SubtypeItem &&
-                    item.imeId == selectedImeId &&
+                item.imeId == selectedImeId &&
                     ((item.subtypeIndex == 0 && selectedSubtypeIndex == NOT_A_SUBTYPE_INDEX) ||
                         item.subtypeIndex == NOT_A_SUBTYPE_INDEX ||
                         item.subtypeIndex == selectedSubtypeIndex)

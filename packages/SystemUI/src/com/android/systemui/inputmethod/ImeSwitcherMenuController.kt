@@ -26,11 +26,9 @@ import android.hardware.display.DisplayManager
 import android.os.RemoteException
 import android.util.Log
 import android.util.Slog
-import android.view.ContextThemeWrapper
 import android.view.WindowManager
 import android.view.inputmethod.Flags
 import android.view.inputmethod.InputMethodManager
-import com.android.internal.R
 import com.android.internal.inputmethod.IImeSwitcherMenu
 import com.android.internal.inputmethod.IImeSwitcherMenuListener
 import com.android.systemui.CoreStartable
@@ -180,7 +178,7 @@ constructor(
         if (curContext?.displayId == displayId) {
             return curContext
         }
-        // TODO: figure out the equivalent to mDisplayController.getDisplayContext in SysUI
+        // TODO(b/460776726): find the equivalent to mDisplayController.getDisplayContext in SysUI
         val display = displayManager.getDisplay(displayId)
         if (display == null) {
             throw IllegalArgumentException("Invalid display: $displayId")
@@ -191,9 +189,8 @@ constructor(
                 WindowManager.LayoutParams.TYPE_INPUT_METHOD_DIALOG,
                 null, /* options */
             )
-        val newContext = ContextThemeWrapper(windowContext, R.style.Theme_DeviceDefault_Settings)
-        dialogWindowContext = newContext
-        return newContext
+        dialogWindowContext = windowContext
+        return windowContext
     }
 
     private inner class DialogListener :

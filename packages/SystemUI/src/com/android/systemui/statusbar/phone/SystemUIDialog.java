@@ -613,7 +613,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
      * Return the pixel width {@param dialog} should be so that it is {@param widthInDp} wide,
      * taking its background insets into consideration.
      */
-    private static int calculateDialogWidthWithInsets(Dialog dialog, int widthInDp) {
+    public static int calculateDialogWidthWithInsets(Dialog dialog, int widthInDp) {
         float widthInPixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, widthInDp,
                 dialog.getContext().getResources().getDisplayMetrics());
         return Math.round(widthInPixels + getHorizontalInsets(dialog));
