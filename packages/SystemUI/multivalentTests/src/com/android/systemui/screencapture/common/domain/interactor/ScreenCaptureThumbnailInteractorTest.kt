@@ -74,7 +74,7 @@ class ScreenCaptureThumbnailInteractorTest : SysuiTestCase() {
 
             // Assert
             assertThat(fakeScreenCaptureThumbnailRepository.loadThumbnailCalls).containsExactly(1)
-            assertThat(result).isEqualTo(fakeScreenCaptureThumbnailRepository.fakeThumbnail)
+            assertThat(result).isEqualTo(fakeScreenCaptureThumbnailRepository.defaultFakeThumbnail)
         }
 
     @Test

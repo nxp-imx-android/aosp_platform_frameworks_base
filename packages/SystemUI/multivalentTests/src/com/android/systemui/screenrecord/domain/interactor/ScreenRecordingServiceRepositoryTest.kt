@@ -35,9 +35,9 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.screenrecord.data.repository.ScreenRecordingServiceRepository
 import com.android.systemui.screenrecord.data.repository.screenRecordingServiceRepository
-import com.android.systemui.screenrecord.service.FakeScreenRecordingService
 import com.android.systemui.screenrecord.service.FakeScreenRecordingServiceCallbackWrapper
 import com.android.systemui.screenrecord.service.callbackStatus
+import com.android.systemui.screenrecord.service.fakeScreenRecordingService
 import com.android.systemui.screenrecord.shared.model.ScreenRecording
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus
@@ -66,7 +66,6 @@ private val defaultParams =
 class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
 
     private val kosmos = testKosmosNew().apply { applicationContext = mockedContext }
-    private val service = FakeScreenRecordingService()
 
     private var serviceConnection: ServiceConnection? = null
 
@@ -89,7 +88,7 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
                 .then {
                     serviceConnection =
                         (it.arguments[1] as ServiceConnection).apply {
-                            onServiceConnected(componentName, service)
+                            onServiceConnected(componentName, fakeScreenRecordingService)
                         }
                     true
                 }
@@ -100,9 +99,10 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
     fun testStartRecording_startsRecording() =
         kosmos.runTest {
             val interactorStatus: ScreenRecordingStatus? by collectLastValue(underTest.status)
-            val serviceStatus: ScreenRecordingStatus? by collectLastValue(service.status)
+            val serviceStatus: ScreenRecordingStatus? by
+                collectLastValue(fakeScreenRecordingService.status)
             val callbackStatus: FakeScreenRecordingServiceCallbackWrapper.RecordingStatus? by
-                collectLastValue(service.callbackStatus)
+                collectLastValue(fakeScreenRecordingService.callbackStatus)
 
             underTest.startRecording()
 
@@ -112,16 +112,17 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
                 .isInstanceOf(
                     FakeScreenRecordingServiceCallbackWrapper.RecordingStatus.Started::class.java
                 )
-            assertThat(service.currentCallback).isNotNull()
+            assertThat(fakeScreenRecordingService.currentCallback).isNotNull()
         }
 
     @Test
     fun testStartRecording_startsRecording_externalDisplay() =
         kosmos.runTest {
             val interactorStatus: ScreenRecordingStatus? by collectLastValue(underTest.status)
-            val serviceStatus: ScreenRecordingStatus? by collectLastValue(service.status)
+            val serviceStatus: ScreenRecordingStatus? by
+                collectLastValue(fakeScreenRecordingService.status)
             val callbackStatus: FakeScreenRecordingServiceCallbackWrapper.RecordingStatus? by
-                collectLastValue(service.callbackStatus)
+                collectLastValue(fakeScreenRecordingService.callbackStatus)
 
             val externalDisplayParams =
                 ScreenRecordingParameters(
@@ -139,16 +140,17 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
                 .isInstanceOf(
                     FakeScreenRecordingServiceCallbackWrapper.RecordingStatus.Started::class.java
                 )
-            assertThat(service.currentCallback).isNotNull()
+            assertThat(fakeScreenRecordingService.currentCallback).isNotNull()
         }
 
     @Test
     fun testStopRecording_stopsRecording() =
         kosmos.runTest {
             val interactorStatus: ScreenRecordingStatus? by collectLastValue(underTest.status)
-            val serviceStatus: ScreenRecordingStatus? by collectLastValue(service.status)
+            val serviceStatus: ScreenRecordingStatus? by
+                collectLastValue(fakeScreenRecordingService.status)
             val callbackStatus: FakeScreenRecordingServiceCallbackWrapper.RecordingStatus? by
-                collectLastValue(service.callbackStatus)
+                collectLastValue(fakeScreenRecordingService.callbackStatus)
             underTest.startRecording()
 
             underTest.stopRecording(StopReason.STOP_HOST_APP)
@@ -162,16 +164,17 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
                     FakeScreenRecordingServiceCallbackWrapper.RecordingStatus.Interrupted::class
                         .java
                 )
-            assertThat(service.currentCallback).isNotNull()
+            assertThat(fakeScreenRecordingService.currentCallback).isNotNull()
         }
 
     @Test
     fun testStartRecordingDelayed_startsRecordingAfterDelay() =
         kosmos.runTest {
             val interactorStatuses: List<ScreenRecordingStatus>? by collectValues(underTest.status)
-            val serviceStatus: ScreenRecordingStatus? by collectLastValue(service.status)
+            val serviceStatus: ScreenRecordingStatus? by
+                collectLastValue(fakeScreenRecordingService.status)
             val callbackStatus: FakeScreenRecordingServiceCallbackWrapper.RecordingStatus? by
-                collectLastValue(service.callbackStatus)
+                collectLastValue(fakeScreenRecordingService.callbackStatus)
 
             underTest.startRecordingDelayed()
             advanceTimeBy(3.seconds)
@@ -192,16 +195,17 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
                 .isInstanceOf(
                     FakeScreenRecordingServiceCallbackWrapper.RecordingStatus.Started::class.java
                 )
-            assertThat(service.currentCallback).isNotNull()
+            assertThat(fakeScreenRecordingService.currentCallback).isNotNull()
         }
 
     @Test
     fun testStartRecording_overridesStartWithDelay() =
         kosmos.runTest {
             val interactorStatuses: List<ScreenRecordingStatus>? by collectValues(underTest.status)
-            val serviceStatus: ScreenRecordingStatus? by collectLastValue(service.status)
+            val serviceStatus: ScreenRecordingStatus? by
+                collectLastValue(fakeScreenRecordingService.status)
             val callbackStatus: FakeScreenRecordingServiceCallbackWrapper.RecordingStatus? by
-                collectLastValue(service.callbackStatus)
+                collectLastValue(fakeScreenRecordingService.callbackStatus)
 
             underTest.startRecordingDelayed()
             underTest.startRecording()
@@ -219,16 +223,17 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
                 .isInstanceOf(
                     FakeScreenRecordingServiceCallbackWrapper.RecordingStatus.Started::class.java
                 )
-            assertThat(service.currentCallback).isNotNull()
+            assertThat(fakeScreenRecordingService.currentCallback).isNotNull()
         }
 
     @Test
     fun testStartRecordingDelayed_noOpWhenAlreadyStarted() =
         kosmos.runTest {
             val interactorStatuses: List<ScreenRecordingStatus>? by collectValues(underTest.status)
-            val serviceStatus: ScreenRecordingStatus? by collectLastValue(service.status)
+            val serviceStatus: ScreenRecordingStatus? by
+                collectLastValue(fakeScreenRecordingService.status)
             val callbackStatus: FakeScreenRecordingServiceCallbackWrapper.RecordingStatus? by
-                collectLastValue(service.callbackStatus)
+                collectLastValue(fakeScreenRecordingService.callbackStatus)
 
             underTest.startRecording()
             underTest.startRecordingDelayed()
@@ -245,16 +250,17 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
                 .isInstanceOf(
                     FakeScreenRecordingServiceCallbackWrapper.RecordingStatus.Started::class.java
                 )
-            assertThat(service.currentCallback).isNotNull()
+            assertThat(fakeScreenRecordingService.currentCallback).isNotNull()
         }
 
     @Test
     fun testStopRecording_stopsDelayedRecording() =
         kosmos.runTest {
             val interactorStatuses: List<ScreenRecordingStatus>? by collectValues(underTest.status)
-            val serviceStatus: ScreenRecordingStatus? by collectLastValue(service.status)
+            val serviceStatus: ScreenRecordingStatus? by
+                collectLastValue(fakeScreenRecordingService.status)
             val callbackStatus: FakeScreenRecordingServiceCallbackWrapper.RecordingStatus? by
-                collectLastValue(service.callbackStatus)
+                collectLastValue(fakeScreenRecordingService.callbackStatus)
 
             underTest.startRecordingDelayed()
             underTest.stopRecording(StopReason.STOP_HOST_APP)
@@ -269,7 +275,7 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
                 )
             assertThat(serviceStatus).isInstanceOf(ScreenRecordingStatus.Stopped::class.java)
             assertThat(callbackStatus).isNull()
-            assertThat(service.currentCallback).isNull()
+            assertThat(fakeScreenRecordingService.currentCallback).isNull()
         }
 
     @Test
@@ -281,7 +287,7 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
 
             val uri = Uri.parse("content://test")
             val thumbnail = Icon.createWithBitmap(Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565))
-            with(service.currentCallback!!) {
+            with(fakeScreenRecordingService.currentCallback!!) {
                 onSavingRecording(uri)
                 onRecordingSaved(uri, thumbnail)
             }
@@ -305,7 +311,8 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
     @Test
     fun testUpdatingParameters_afterStartRecording() =
         kosmos.runTest {
-            val serviceStatus: ScreenRecordingStatus? by collectLastValue(service.status)
+            val serviceStatus: ScreenRecordingStatus? by
+                collectLastValue(fakeScreenRecordingService.status)
 
             underTest.startRecording(defaultParams.copy(shouldShowTaps = false))
 
@@ -320,7 +327,8 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
     @Test
     fun testUpdatingParameters_afterStartRecordingDelayed() =
         kosmos.runTest {
-            val serviceStatus: ScreenRecordingStatus? by collectLastValue(service.status)
+            val serviceStatus: ScreenRecordingStatus? by
+                collectLastValue(fakeScreenRecordingService.status)
 
             underTest.startRecordingDelayed(
                 parameters = defaultParams.copy(shouldShowTaps = false),

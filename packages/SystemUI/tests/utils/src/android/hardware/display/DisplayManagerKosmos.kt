@@ -22,6 +22,6 @@ import org.mockito.kotlin.mock
 
 val Kosmos.displayManager by Kosmos.Fixture { mock<DisplayManager>() }
 
-val Kosmos.defaultDisplay: Display by Kosmos.Fixture { mock<Display>() }
+var Kosmos.defaultDisplay: Display by Kosmos.Fixture { mock<Display>() }
 
 val Kosmos.rearDisplay: Display by Kosmos.Fixture { mock<Display>() }

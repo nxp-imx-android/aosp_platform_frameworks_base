@@ -21,9 +21,16 @@ import com.android.systemui.screencapture.common.domain.interactor.screenCapture
 import com.android.systemui.screencapture.common.ui.viewmodel.drawableLoaderViewModel
 
 val Kosmos.recordDetailsMarkupColorPickerViewModel by
+    Kosmos.Fixture { recordDetailsMarkupColorPickerViewModelFactory.create() }
+
+val Kosmos.recordDetailsMarkupColorPickerViewModelFactory by
     Kosmos.Fixture {
-        RecordDetailsMarkupColorPickerViewModel(
-            drawableLoaderViewModel = drawableLoaderViewModel,
-            interactor = screenCaptureMarkupInteractor,
-        )
+        object : RecordDetailsMarkupColorPickerViewModel.Factory {
+            override fun create(): RecordDetailsMarkupColorPickerViewModel {
+                return RecordDetailsMarkupColorPickerViewModel(
+                    drawableLoaderViewModel = drawableLoaderViewModel,
+                    interactor = screenCaptureMarkupInteractor,
+                )
+            }
+        }
     }

@@ -113,7 +113,8 @@ class RecentTasksViewModelImplTest : SysuiTestCase() {
             viewModel.activateIn(testScope)
             fakeScreenCaptureIconRepository.fakeIcon = Result.success(fakeIcon)
             fakeScreenCaptureLabelRepository.fakeLabel = Result.success("FakeLabel")
-            fakeScreenCaptureThumbnailRepository.fakeThumbnail = Result.success(fakeThumbnail)
+            fakeScreenCaptureThumbnailRepository.defaultFakeThumbnail =
+                Result.success(fakeThumbnail)
 
             // Act
             val result =
