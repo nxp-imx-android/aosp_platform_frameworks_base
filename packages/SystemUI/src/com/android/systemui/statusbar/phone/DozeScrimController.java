@@ -180,7 +180,12 @@ public class DozeScrimController implements StateListener {
             mDozeLog.tracePulseEvent("cancel", mDozing, mPulseReason);
             mHandler.removeCallbacks(mPulseOut);
             mHandler.removeCallbacks(mPulseOutExtended);
-            pulseFinished();
+
+            // If the SceneContainer is enabled, don't immediately finish the pulse. Instead,
+            // we let the pulse finish on DozeMachine.State.FINISH.
+            if (!SceneContainerFlag.isEnabled()) {
+                pulseFinished();
+            }
         }
     }
 
