@@ -1922,8 +1922,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             // landscape) happened, the IME was not redrawn. Therefore, we need to dispatch
             // another show request. As the IME is still visible from IMMS's perspective, we
             // need to enforce it, otherwise it would early return.
-            final boolean imeBound = Flags.reportAnimatingInsetsTypes()
-                    && userData.mBindingController.getCurIme() != null;
+            final boolean imeBound = userData.mBindingController.getCurIme() != null;
             showCurrentInputInternal(focusedWindow, statsToken, imeBound /* forceShow */);
         }
 
@@ -3389,8 +3388,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         }
         ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_SERVER_SYSTEM_READY);
 
-        if (Flags.reportAnimatingInsetsTypes() && visibilityStateComputer.isInputShown()
-                && !forceShow) {
+        if (visibilityStateComputer.isInputShown() && !forceShow) {
             // We already called showSoftInput on the IME, no need to dispatch a new show request.
             ImeTracker.forLogging().onCancelled(statsToken,
                     ImeTracker.PHASE_SERVER_ALREADY_VISIBLE);
