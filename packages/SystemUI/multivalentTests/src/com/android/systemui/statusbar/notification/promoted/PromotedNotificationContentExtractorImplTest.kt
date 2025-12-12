@@ -41,7 +41,6 @@ import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTIO
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_PUBLIC
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
-import com.android.systemui.statusbar.notification.promoted.AutomaticPromotionCoordinator.Companion.EXTRA_WAS_AUTOMATICALLY_PROMOTED
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Style
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.When
@@ -130,26 +129,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
                 assertThat(title).isEqualTo(TEST_CONTENT_TITLE)
                 assertThat(text).isEqualTo(TEST_CONTENT_TEXT)
             }
-        }
-
-    @Test
-    fun extractContent_wasPromotedAutomatically_false() =
-        kosmos.runTest {
-            val entry = createEntry { extras.putBoolean(EXTRA_WAS_AUTOMATICALLY_PROMOTED, false) }
-
-            val content = requireContent(entry).privateVersion
-
-            assertThat(content.wasPromotedAutomatically).isFalse()
-        }
-
-    @Test
-    fun extractContent_wasPromotedAutomatically_true() =
-        kosmos.runTest {
-            val entry = createEntry { extras.putBoolean(EXTRA_WAS_AUTOMATICALLY_PROMOTED, true) }
-
-            val content = requireContent(entry).privateVersion
-
-            assertThat(content.wasPromotedAutomatically).isTrue()
         }
 
     @Test

@@ -21,7 +21,6 @@ import com.android.systemui.statusbar.notification.collection.PipelineDumper
 import com.android.systemui.statusbar.notification.collection.coordinator.dagger.CoordinatorScope
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifSectioner
 import com.android.systemui.statusbar.notification.collection.provider.SectionStyleProvider
-import com.android.systemui.statusbar.notification.promoted.AutomaticPromotionCoordinator
 import com.android.systemui.statusbar.notification.shared.NmHighlights
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism
@@ -69,7 +68,6 @@ constructor(
     statsLoggerCoordinator: NotificationStatsLoggerCoordinator,
     bundleCoordinator: BundleCoordinator,
     summarizationCoordinator: SummarizationCoordinator,
-    automaticPromotionCoordinator: AutomaticPromotionCoordinator,
     highlightsCoordinator: HighlightsCoordinator,
 ) : NotifCoordinators {
 
@@ -109,7 +107,6 @@ constructor(
         mCoordinators.add(preparationCoordinator)
         mCoordinators.add(remoteInputCoordinator)
         mCoordinators.add(dismissibilityCoordinator)
-        mCoordinators.add(automaticPromotionCoordinator)
         if (NotificationBundleUi.isEnabled) {
             mCoordinators.add(bundleCoordinator)
         }
