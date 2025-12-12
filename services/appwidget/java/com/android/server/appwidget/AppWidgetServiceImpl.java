@@ -54,6 +54,7 @@ import android.app.IServiceConnection;
 import android.app.KeyguardManager;
 import android.app.PendingIntent;
 import android.app.StatsManager;
+import android.app.admin.DevicePolicyIdentifiers;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.app.admin.DevicePolicyManagerInternal.OnCrossProfileWidgetProvidersChangeListener;
 import android.app.job.JobScheduler;
@@ -1069,8 +1070,15 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                 // TODO(b/281839596): don't rely on platform always meaning suspended by admin.
                 if (suspendingPackage != null
                         && PLATFORM_PACKAGE_NAME.equals(suspendingPackage.packageName)) {
-                    onClickIntent = mDevicePolicyManagerInternal.createShowAdminSupportIntent(
-                            appUserId, true);
+                    if (android.app.admin.flags.Flags.policyTransparencyRefactorEnabled()) {
+                        onClickIntent =
+                                mDevicePolicyManagerInternal.createShowAdminSupportIntentForPolicy(
+                                        appUserId,
+                                        DevicePolicyIdentifiers.PACKAGES_SUSPENDED_POLICY);
+                    } else {
+                        onClickIntent = mDevicePolicyManagerInternal.createShowAdminSupportIntent(
+                                appUserId, true);
+                    }
                 } else {
                     final SuspendDialogInfo dialogInfo =
                             mPackageManagerInternal.getSuspendedDialogInfo(
