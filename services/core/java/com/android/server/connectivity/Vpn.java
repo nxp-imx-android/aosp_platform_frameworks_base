@@ -4596,17 +4596,24 @@ public class Vpn {
     /**
      * Set the application exclusion list for the specified VPN profile.
      *
-     * @param packageName the package name of the app provisioning this profile
-     * @param excludedApps the list of excluded packages
+     * <p>This list persists in keystore and will be applied to future VPN connections. If the
+     * package name matches the currently active VPN, the exclusion list will also be applied to
+     * the running connection immediately.
      *
-     * @return whether setting the list is successful or not
+     * @param packageName The package name of the app needs to set exclusion list.
+     * @param excludedApps The list of package names needs to be excluded.
+     *
+     * @return {@code true} if the exclusion list was successfully stored; {@code false} otherwise.
      */
     public synchronized boolean setAppExclusionList(@NonNull String packageName,
             @NonNull List<String> excludedApps) {
         enforceNotRestrictedUser();
         if (!storeAppExclusionList(packageName, excludedApps)) return false;
 
-        updateAppExclusionList(excludedApps);
+        // Only update the running VPN if the package name matches
+        if (TextUtils.equals(mPackage, packageName)) {
+            updateAppExclusionList(excludedApps);
+        }
 
         return true;
     }
@@ -4618,6 +4625,15 @@ public class Vpn {
         updateAppExclusionList(getAppExclusionList(mPackage));
     }
 
+    /**
+     * Triggers an update of the VPN network's excluded UIDs if a VPN is running.
+     *
+     * <p> It is the caller's responsibility to ensure that the provided {@code excludedApps} list
+     * corresponds to the currently active VPN package ({@code mPackage}) before calling this
+     * method.
+     *
+     * @param excludedApps the list of excluded packages
+     */
     private synchronized void updateAppExclusionList(@NonNull List<String> excludedApps) {
         // Re-build and update NetworkCapabilities via NetworkAgent.
         if (mNetworkAgent != null) {
@@ -4634,6 +4650,35 @@ public class Vpn {
                 doSendNetworkCapabilities(mNetworkAgent, mNetworkCapabilities);
             }
         }
+    }
+
+    /**
+     * Clears the application exclusion list associated with the specified package.
+     *
+     * <p>This method fully removes the record from keystore that matches the key. If a VPN for
+     * the specified package is currently active, its exclusion list will also be updated to be
+     * empty.
+     *
+     * @param packageName The package name of the app needs to clear exclusion list.
+     * @return {@code true} if the exclusion list was successfully removed from the keystore;
+     *         {@code false} if no such list was found (e.g., the package is not a VPN app or has
+     *         no configured exclusions) or if the removal failed.
+     */
+    public synchronized boolean clearAppExclusionList(@NonNull String packageName) {
+        requireNonNull(packageName, "No package name provided");
+        enforceNotRestrictedUser();
+        final long oldId = Binder.clearCallingIdentity();
+        try {
+            if (!getVpnProfileStore().remove(getVpnAppExcludedForPackage(packageName))) {
+                return false;
+            }
+        } finally {
+            Binder.restoreCallingIdentity(oldId);
+        }
+        if (TextUtils.equals(mPackage, packageName)) {
+            updateAppExclusionList(new ArrayList<>());
+        }
+        return true;
     }
 
     /**
