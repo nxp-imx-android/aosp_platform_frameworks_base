@@ -567,6 +567,7 @@ object TestShortcuts {
             ),
             simpleShortcutCategory(System, "System controls", "Show shortcuts"),
             simpleShortcutCategory(System, "System controls", "View recent apps"),
+            simpleShortcutCategory(System, "System apps", "Take a note"),
         )
     val customInputGestureTypeHome = simpleInputGestureData(keyGestureType = KEY_GESTURE_TYPE_HOME)
 
@@ -612,6 +613,7 @@ object TestShortcuts {
             simpleInputGestureData(
                 keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER
             ),
+            simpleInputGestureData(keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_OPEN_NOTES),
         )
 
     val allAppsShortcutAddRequest =
