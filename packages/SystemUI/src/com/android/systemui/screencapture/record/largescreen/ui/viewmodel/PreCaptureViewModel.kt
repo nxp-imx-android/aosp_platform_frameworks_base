@@ -39,6 +39,8 @@ import com.android.systemui.screencapture.record.largescreen.shared.model.Screen
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
+import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus
+import com.android.systemui.util.kotlin.pairwiseBy
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -46,6 +48,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 /** Models UI for the Screen Capture UI for large screen devices. */
@@ -68,6 +71,13 @@ constructor(
 
     private val recordingParameters = screenCaptureUiParams as ScreenCaptureUiParameters.Record
     private val isShowingUiFlow = MutableStateFlow(true)
+    val recordingIsNotStarted by
+        screenRecordingServiceInteractor.status
+            .map { it is ScreenRecordingStatus.Started }
+            .pairwiseBy(initialValue = false) { wasRecording, isRecording ->
+                !wasRecording && !isRecording
+            }
+            .hydratedStateOf("PreCaptureViewModel#recordingIsStarted")
     private val captureTypeSource = MutableStateFlow(ScreenCaptureType.SCREENSHOT)
     private val captureRegionSource = MutableStateFlow(ScreenCaptureRegion.FULLSCREEN)
     private val regionBoxSource = MutableStateFlow<Rect?>(null)
