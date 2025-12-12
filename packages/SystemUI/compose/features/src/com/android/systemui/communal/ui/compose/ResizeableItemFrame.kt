@@ -558,9 +558,9 @@ fun ResizableItemFrame(
     val isDragging by
         remember(viewModel) {
             derivedStateOf {
-                val topOffset = viewModel.topResizeState.offset.takeIf { it.fastIsFinite() } ?: 0f
+                val topOffset = viewModel.topDragState.offset.takeIf { it.fastIsFinite() } ?: 0f
                 val bottomOffset =
-                    viewModel.bottomResizeState.offset.takeIf { it.fastIsFinite() } ?: 0f
+                    viewModel.bottomDragState.offset.takeIf { it.fastIsFinite() } ?: 0f
                 topOffset > 0 || bottomOffset > 0
             }
         }
@@ -591,8 +591,8 @@ fun ResizableItemFrame(
                         canShrink = viewModel.canShrink(handle),
                     )
                 val draggableState =
-                    if (handle == ResizeHandle.TOP) viewModel.topResizeState
-                    else viewModel.bottomResizeState
+                    if (handle == ResizeHandle.TOP) viewModel.topDragState
+                    else viewModel.bottomDragState
 
                 UnifiedResizeHandle(
                     state = uiState,
@@ -619,9 +619,9 @@ fun ResizableItemFrame(
             // Draw outline around the element.
             Canvas(modifier = Modifier.matchParentSize()) {
                 val paddingPx = outlinePadding.toPx()
-                val topOffset = viewModel.topResizeState.offset.takeIf { it.fastIsFinite() } ?: 0f
+                val topOffset = viewModel.topDragState.offset.takeIf { it.fastIsFinite() } ?: 0f
                 val bottomOffset =
-                    viewModel.bottomResizeState.offset.takeIf { it.fastIsFinite() } ?: 0f
+                    viewModel.bottomDragState.offset.takeIf { it.fastIsFinite() } ?: 0f
                 drawRoundRect(
                     brush,
                     alpha = alpha(),
@@ -647,9 +647,7 @@ fun ResizableItemFrame(
                 maxHeightPx = maxHeightPx,
                 resizeMultiple = resizeMultiple,
             )
-            LaunchedEffect(viewModel) {
-                viewModel.resizeInfo.collectLatest { info -> onResizeUpdated(info) }
-            }
+            LaunchedEffect(viewModel) { viewModel.observeResize { info -> onResizeUpdated(info) } }
         }
     }
 }

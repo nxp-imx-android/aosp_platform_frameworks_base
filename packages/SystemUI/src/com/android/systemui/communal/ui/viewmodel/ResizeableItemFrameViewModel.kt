@@ -22,7 +22,9 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
 import com.android.app.tracing.coroutines.coroutineScopeTraced as coroutineScope
+import com.android.systemui.Flags.communalEditModeAccessibilityResize
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.util.kotlin.pairwise
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -30,7 +32,7 @@ import kotlin.math.sign
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -162,16 +164,16 @@ class ResizeableItemFrameViewModel : HydratedActivatable(enableEnqueuedActivatio
     /** Checks if expansion is possible from a specific handle. */
     fun canExpand(handle: ResizeHandle): Boolean {
         return when (handle) {
-            ResizeHandle.TOP -> getNextAnchor(topResizeState, moveUp = true) != null
-            ResizeHandle.BOTTOM -> getNextAnchor(bottomResizeState, moveUp = false) != null
+            ResizeHandle.TOP -> getNextAnchor(topDragState, moveUp = true) != null
+            ResizeHandle.BOTTOM -> getNextAnchor(bottomDragState, moveUp = false) != null
         }
     }
 
     /** Checks if shrinking is possible from a specific handle. */
     fun canShrink(handle: ResizeHandle): Boolean {
         return when (handle) {
-            ResizeHandle.TOP -> getNextAnchor(topResizeState, moveUp = false) != null
-            ResizeHandle.BOTTOM -> getNextAnchor(bottomResizeState, moveUp = true) != null
+            ResizeHandle.TOP -> getNextAnchor(topDragState, moveUp = false) != null
+            ResizeHandle.BOTTOM -> getNextAnchor(bottomDragState, moveUp = true) != null
         }
     }
 
@@ -185,9 +187,9 @@ class ResizeableItemFrameViewModel : HydratedActivatable(enableEnqueuedActivatio
         enqueueOnActivatedScope {
             val (state, moveUp) =
                 if (handle == ResizeHandle.TOP) {
-                    topResizeState to isExpand
+                    topDragState to isExpand
                 } else {
-                    bottomResizeState to !isExpand
+                    bottomDragState to !isExpand
                 }
             getNextAnchor(state = state, moveUp = moveUp)?.let { state.snapTo(it) }
         }
@@ -199,19 +201,29 @@ class ResizeableItemFrameViewModel : HydratedActivatable(enableEnqueuedActivatio
      */
     private val gridLayoutInfo = MutableStateFlow<GridLayoutInfo?>(null)
 
-    val topResizeState = AnchoredDraggableState(0, DraggableAnchors { 0 at 0f })
-    val bottomResizeState = AnchoredDraggableState(0, DraggableAnchors { 0 at 0f })
+    val topDragState = AnchoredDraggableState(0, DraggableAnchors { 0 at 0f })
+    val bottomDragState = AnchoredDraggableState(0, DraggableAnchors { 0 at 0f })
 
     /** Emits a [ResizeInfo] when the element is resized using a drag gesture. */
-    val resizeInfo: Flow<ResizeInfo> =
+    private val resizeInfo: Flow<ResizeInfo> =
         merge(
-            snapshotFlow { topResizeState.settledValue }
+            snapshotFlow { topDragState.settledValue }
                 .map { ResizeInfo(-it, ResizeHandle.TOP) },
-            snapshotFlow { bottomResizeState.settledValue }
+            snapshotFlow { bottomDragState.settledValue }
                 .map { ResizeInfo(it, ResizeHandle.BOTTOM) },
         )
             .filter { it.spans != 0 }
-            .distinctUntilChanged()
+            .onEach {
+                if (communalEditModeAccessibilityResize()) {
+                    topDragState.snapTo(0)
+                    bottomDragState.snapTo(0)
+                }
+            }
+
+    /** Observes the resize info flow and executes the given action when a resize occurs. */
+    suspend fun observeResize(action: (ResizeInfo) -> Unit) {
+        resizeInfo.collect { action(it) }
+    }
 
     /**
      * Sets the necessary grid layout information needed for calculating the pixel offsets of the
@@ -336,10 +348,10 @@ class ResizeableItemFrameViewModel : HydratedActivatable(enableEnqueuedActivatio
         coroutineScope("ResizeableItemFrameViewModel.onActivated") {
             gridLayoutInfo
                 .onEach { layoutInfo ->
-                    topResizeState.updateAnchors(
+                    topDragState.updateAnchors(
                         calculateAnchorsForHandle(ResizeHandle.TOP, layoutInfo)
                     )
-                    bottomResizeState.updateAnchors(
+                    bottomDragState.updateAnchors(
                         calculateAnchorsForHandle(ResizeHandle.BOTTOM, layoutInfo)
                     )
                 }
