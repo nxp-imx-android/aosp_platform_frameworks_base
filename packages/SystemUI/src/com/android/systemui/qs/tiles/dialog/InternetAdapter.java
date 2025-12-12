@@ -116,6 +116,29 @@ public class InternetAdapter extends RecyclerView.Adapter<InternetAdapter.Intern
 
             wifiNetworkLayoutParams.height = wifiListLayoutParams.height;
             wifiNetworkLayout.setLayoutParams(wifiNetworkLayoutParams);
+
+            // Update the size of the wifi icon.
+            ImageView wifiIcon = mHolderView.findViewById(R.id.wifi_icon);
+            View iconContainer = (View) wifiIcon.getParent();
+            ViewGroup.LayoutParams iconContainerParams = iconContainer.getLayoutParams();
+            int newIconSize = res.getDimensionPixelSize(R.dimen.tile_details_entry_icon_size);
+            iconContainerParams.width = newIconSize;
+            iconContainerParams.height = newIconSize;
+            iconContainer.setLayoutParams(iconContainerParams);
+
+            // Make the wifi end icon match the parent.
+            ImageView wifiEndIcon = mHolderView.findViewById(R.id.wifi_end_icon);
+            ViewGroup.LayoutParams endIconParams = wifiEndIcon.getLayoutParams();
+            endIconParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
+            endIconParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
+            wifiEndIcon.setLayoutParams(endIconParams);
+
+            // Update the wifi of the Wifi end icon's parent.
+            View endIconContainer = (View) wifiEndIcon.getParent();
+            ViewGroup.LayoutParams endContainerParams = endIconContainer.getLayoutParams();
+            endContainerParams.width = newIconSize;
+            endContainerParams.height = newIconSize;
+            endIconContainer.setLayoutParams(endContainerParams);
         }
 
         return new InternetViewHolder(mHolderView, mInternetDetailsContentController,

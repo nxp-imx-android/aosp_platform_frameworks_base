@@ -20,11 +20,10 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.annotation.AnyThread
-import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
-import com.android.settingslib.catalyst.flags.Flags as CatalystFlags
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import com.android.settingslib.catalyst.flags.Flags as CatalystFlags
 
 /**
  * Metadata of preference screen.
@@ -47,7 +46,9 @@ import kotlinx.coroutines.flow.Flow
 @AnyThread
 interface PreferenceScreenMetadata : PreferenceGroup {
     /** Arguments to build the screen content. */
-    @Deprecated("This property will be removed once the catalyst framework stops passing the arguments as a bundle. Use the keyParameters instead.")
+    @Deprecated(
+        "This property will be removed once the catalyst framework stops passing the arguments as a bundle. Use the keyParameters instead."
+    )
     val arguments: Bundle?
         get() = null
 
@@ -126,7 +127,67 @@ interface PreferenceScreenMetadata : PreferenceGroup {
      *
      * @param metadata the preference to locate when show the screen
      */
-    fun getLaunchIntent(context: Context, metadata: PreferenceMetadata?): Intent? = null
+    fun getLaunchIntent(context: Context, metadata: PreferenceMetadata?): Intent? {
+        val highlightKey = metadata?.key
+        return when {
+            CatalystFlags.catalystUseKeyParameters() && keyParameters != null -> {
+                makeLaunchpadIntent(context, key, keyParameters!!, highlightKey)
+            }
+            arguments != null -> {
+                makeLaunchpadIntent(context, key, arguments!!, highlightKey)
+            }
+            else -> {
+                makeLaunchpadIntent(context, key, highlightKey)
+            }
+        }
+    }
+
+    private fun makeLaunchpadIntent(context: Context, screenKey: String, key: String?): Intent =
+        Intent(LAUNCH_SETTINGS_PAGES_ACTION).apply {
+            setPackage("com.android.settings")
+            putExtra(EXTRA_SCREEN_KEY, screenKey)
+            if (key != null) {
+                putExtra(EXTRA_FRAGMENT_ARG_KEY, key)
+            }
+        }
+
+    private fun makeLaunchpadIntent(
+        context: Context,
+        screenKey: String,
+        keyParameters: ValidatedKeyParameters,
+        key: String?,
+    ): Intent =
+        Intent(LAUNCH_SETTINGS_PAGES_ACTION).apply {
+            setPackage("com.android.settings")
+            putExtra(EXTRA_SCREEN_KEY, screenKey)
+            putExtra(EXTRA_SCREEN_ARGS, keyParameters.toBundle())
+            if (key != null) {
+                putExtra(EXTRA_FRAGMENT_ARG_KEY, key)
+            }
+        }
+
+    private fun makeLaunchpadIntent(
+        context: Context,
+        screenKey: String,
+        arguments: Bundle,
+        key: String?,
+    ): Intent =
+        Intent(LAUNCH_SETTINGS_PAGES_ACTION).apply {
+            setPackage("com.android.settings")
+            putExtra(EXTRA_SCREEN_KEY, screenKey)
+            putExtra(EXTRA_SCREEN_ARGS, arguments)
+            if (key != null) {
+                putExtra(EXTRA_FRAGMENT_ARG_KEY, key)
+            }
+        }
+
+    companion object {
+        internal const val LAUNCH_SETTINGS_PAGES_ACTION =
+            "com.android.settings.action.LAUNCH_SETTINGS_PAGES"
+        internal const val EXTRA_SCREEN_KEY = "screen_key"
+        internal const val EXTRA_SCREEN_ARGS = "screen_args"
+        internal const val EXTRA_FRAGMENT_ARG_KEY = ":settings:fragment_args_key"
+    }
 }
 
 /**
@@ -216,15 +277,18 @@ interface PreferenceScreenMetadataParameterizedFactory : PreferenceScreenMetadat
      * @param context application context to create the PreferenceScreenMetadata
      * @param keyParameters parameters to create the screen metadata
      */
-    fun createWithKeyParameters(context: Context, keyParameters: ValidatedKeyParameters): PreferenceScreenMetadata
+    fun createWithKeyParameters(
+        context: Context,
+        keyParameters: ValidatedKeyParameters,
+    ): PreferenceScreenMetadata
 
     /**
      * Returns all possible key-parameters to create [PreferenceScreenMetadata].
      *
      * Note that an empty key-parameters is used for backward compatibility when a preference screen
-     * transitions from being non-parameterized to parameterized. In such migration scenarios
-     * the parameterized screen is expected to gracefully accept and handle empty key-parameters
-     * to ensure compatibility with older configurations or entry points.
+     * transitions from being non-parameterized to parameterized. In such migration scenarios the
+     * parameterized screen is expected to gracefully accept and handle empty key-parameters to
+     * ensure compatibility with older configurations or entry points.
      *
      * To mark a preference screen as transitioning from non-parameterized to parameterized:
      * 1. Set [ProvidePreferenceScreen.parameterizedMigration] to `true`, so that the generated
@@ -248,8 +312,6 @@ interface ParameterizedPreferenceScreenArgumentsFactory {
      */
     val parametersSchema: KeyParametersSchema
 
-    /**
-     * Returns all possible parameters to create a [PreferenceScreenMetadata].
-     */
+    /** Returns all possible parameters to create a [PreferenceScreenMetadata]. */
     fun keyParameters(context: Context): Flow<ValidatedKeyParameters>
 }

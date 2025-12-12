@@ -58,7 +58,7 @@ import com.android.systemui.util.WallpaperController
 import com.android.systemui.wallpapers.domain.interactor.WallpaperInteractor
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import com.android.wm.shell.appzoomout.AppZoomOut
-import com.android.wm.shell.desktopmode.DesktopMode
+import com.android.wm.shell.desktopmode.api.DesktopMode
 import dagger.Lazy
 import java.io.PrintWriter
 import java.util.Optional

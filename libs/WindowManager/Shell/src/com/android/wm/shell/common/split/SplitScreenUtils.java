@@ -31,6 +31,7 @@ import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSIT
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
+import android.app.TaskInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Rect;
@@ -42,6 +43,7 @@ import com.android.internal.util.ArrayUtils;
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
+import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.shared.split.SplitScreenConstants;
 import com.android.wm.shell.splitscreen.BranchNode;
 import com.android.wm.shell.splitscreen.LayoutNode;
@@ -115,9 +117,23 @@ public class SplitScreenUtils {
                 && ArrayUtils.contains(CONTROLLED_WINDOWING_MODES, taskInfo.getWindowingMode());
     }
 
-    /** Retrieve user id from a taskId */
+    /** Retrieve user id from a taskId using {@link ShellTaskOrganizer}. */
     public static int getUserId(int taskId, ShellTaskOrganizer taskOrganizer) {
-        final ActivityManager.RunningTaskInfo taskInfo = taskOrganizer.getRunningTaskInfo(taskId);
+        final TaskInfo taskInfo = taskOrganizer.getRunningTaskInfo(taskId);
+        return getUserIdFromTaskInfo(taskInfo);
+    }
+
+    /** Retrieve user id from a taskId using {@link RecentTasksController}. */
+    public static int getUserId(int taskId,
+            @Nullable RecentTasksController recentTasksController) {
+        if (recentTasksController == null) {
+            return -1;
+        }
+        final TaskInfo taskInfo = recentTasksController.findTaskInBackground(taskId);
+        return getUserIdFromTaskInfo(taskInfo);
+    }
+
+    private static int getUserIdFromTaskInfo(TaskInfo taskInfo) {
         return taskInfo != null ? taskInfo.userId : -1;
     }
 

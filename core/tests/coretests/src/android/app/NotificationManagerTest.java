@@ -37,7 +37,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.ParceledListSlice;
 import android.os.ParcelFileDescriptor;
 import android.os.UserHandle;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 
@@ -92,7 +91,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY)
     public void notify_rapidUpdate_isThrottled() throws Exception {
         Notification n = exampleNotification();
 
@@ -108,7 +106,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY)
     public void notify_reasonableUpdate_isNotThrottled() throws Exception {
         Notification n = exampleNotification();
 
@@ -122,7 +119,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY)
     public void notify_rapidAdd_isNotThrottled() throws Exception {
         Notification n = exampleNotification();
 
@@ -136,7 +132,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY)
     public void notifyAsPackage_rapidUpdate_isThrottled() throws Exception {
         Notification n = exampleNotification();
 
@@ -152,8 +147,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY,
-            Flags.FLAG_NOTIFICATION_UPDATE_SHEDDING_ALLOW_PROGRESS_COMPLETION})
     public void notifyAsPackage_advanceProgress_isThrottled() throws Exception {
         for (int i = 0; i < 100; i++) {
             Notification advance = new Notification.Builder(mContext, "channel")
@@ -171,8 +164,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY,
-            Flags.FLAG_NOTIFICATION_UPDATE_SHEDDING_ALLOW_PROGRESS_COMPLETION})
     public void notifyAsPackage_completesProgress_isNotThrottled() throws Exception {
         for (int i = 0; i < 100; i++) {
             Notification advance = new Notification.Builder(mContext, "channel")
@@ -198,8 +189,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY,
-            Flags.FLAG_NOTIFICATION_UPDATE_SHEDDING_ALLOW_PROGRESS_COMPLETION})
     public void notifyAsPackage_removesProgress_isNotThrottled() throws Exception {
         for (int i = 0; i < 100; i++) {
             Notification advance = new Notification.Builder(mContext, "channel")
@@ -224,7 +213,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY)
     public void cancel_unnecessaryAndRapid_isThrottled() throws Exception {
 
         for (int i = 0; i < 100; i++) {
@@ -239,10 +227,9 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY)
     public void cancel_unnecessaryButReasonable_isNotThrottled() throws Exception {
         // Scenario: the app tries to repeatedly cancel a single notification, but at a reasonable
-        // rate. Strange, but not what we're trying to block with NM_BINDER_PERF_THROTTLE_NOTIFY.
+        // rate. Strange, but not what we're trying to block.
         for (int i = 0; i < 100; i++) {
             mNotificationManager.cancel(1);
             mClock.advanceByMillis(500);
@@ -253,10 +240,9 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY)
     public void cancel_necessaryAndRapid_isNotThrottled() throws Exception {
         // Scenario: the app posts and immediately cancels a bunch of notifications. Strange,
-        // but not what we're trying to block with NM_BINDER_PERF_THROTTLE_NOTIFY.
+        // but not what we're trying to block.
         Notification n = exampleNotification();
 
         for (int i = 0; i < 100; i++) {
@@ -272,7 +258,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY)
     public void cancel_maybeNecessaryAndRapid_isNotThrottled() throws Exception {
         // Scenario: the app posted a lot of notifications, is killed, then restarts (so NM client
         // doesn't know about them), then cancels them one by one. We don't want to throttle this
@@ -287,7 +272,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY)
     public void notify_afterCancel_isNotUpdateAndIsNotThrottled() throws Exception {
         // First, hit the enqueue threshold.
         Notification n = exampleNotification();
@@ -307,7 +291,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY)
     public void notify_afterCancelAsPackage_isNotUpdateAndIsNotThrottled() throws Exception {
         // First, hit the enqueue threshold.
         Notification n = exampleNotification();
@@ -327,7 +310,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY)
     public void notify_afterCancelAll_isNotUpdateAndIsNotThrottled() throws Exception {
         // First, hit the enqueue threshold.
         Notification n = exampleNotification();
@@ -347,7 +329,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY})
     public void notify_rapidUpdate_logsOncePerSecond() throws Exception {
         Notification n = exampleNotification();
         clearSlog();
@@ -361,7 +342,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY})
     public void cancel_unnecessaryAndRapid_logsOncePerSecond() throws Exception {
         clearSlog();
 
@@ -376,7 +356,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NM_BINDER_PERF_CACHE_CHANNELS)
     public void getNotificationChannel_cachedUntilInvalidated() throws Exception {
         // Invalidate the cache first because the cache won't do anything until then
         NotificationManager.invalidateNotificationChannelCache();
@@ -400,7 +379,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NM_BINDER_PERF_CACHE_CHANNELS)
     public void getNotificationChannel_sameApp_oneCall() throws Exception {
         NotificationManager.invalidateNotificationChannelCache();
 
@@ -421,7 +399,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NM_BINDER_PERF_CACHE_CHANNELS)
     public void getNotificationChannels_cachedUntilInvalidated() throws Exception {
         NotificationManager.invalidateNotificationChannelCache();
         when(mNotificationManager.mBackendService.getNotificationChannels(any(), any(),
@@ -442,7 +419,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NM_BINDER_PERF_CACHE_CHANNELS)
     public void getNotificationChannel_channelAndConversationLookup() throws Exception {
         NotificationManager.invalidateNotificationChannelCache();
 
@@ -479,7 +455,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NM_BINDER_PERF_CACHE_CHANNELS)
     public void getNotificationChannel_differentPackages() throws Exception {
         NotificationManager.invalidateNotificationChannelCache();
         final String pkg1 = "one";
@@ -520,7 +495,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NM_BINDER_PERF_CACHE_CHANNELS)
     public void getNotificationChannel_localModificationDoesNotChangeCache() throws Exception {
         NotificationManager.invalidateNotificationChannelCache();
         NotificationChannel original = new NotificationChannel("id", "name",
@@ -558,7 +532,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NM_BINDER_PERF_CACHE_CHANNELS)
     public void getNotificationChannelGroup_cachedUntilInvalidated() throws Exception {
         // Data setup: group has some channels in it
         NotificationChannelGroup g1 = new NotificationChannelGroup("g1", "group one");
@@ -601,7 +574,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NM_BINDER_PERF_CACHE_CHANNELS)
     public void getNotificationChannelGroups_cachedUntilInvalidated() throws Exception {
         NotificationChannelGroup g1 = new NotificationChannelGroup("g1", "group one");
         NotificationChannelGroup g2 = new NotificationChannelGroup("g2", "group two");
@@ -638,7 +610,6 @@ public class NotificationManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NM_BINDER_PERF_CACHE_CHANNELS)
     public void getNotificationChannelGroup_localModificationDoesNotChangeCache() throws Exception {
         // Group setup
         NotificationChannelGroup g1 = new NotificationChannelGroup("g1", "group one");

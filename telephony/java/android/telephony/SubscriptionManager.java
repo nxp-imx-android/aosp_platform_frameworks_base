@@ -1250,6 +1250,42 @@ public class SubscriptionManager {
     public static final String SATELLITE_ENTITLEMENT_VOICE_SERVICE_POLICY =
             SimInfo.COLUMN_SATELLITE_ENTITLEMENT_VOICE_SERVICE_POLICY;
 
+    /**
+     * TelephonyProvider column name for the maximum downstream bitrate for streaming
+     * applications, in kilobits per second (Kbps).
+     * <p>
+     * This value indicates the data rate that the carrier has allocated for streaming services
+     * under this plan. Streaming applications can use this information to select an appropriate
+     * media quality that avoids buffering.
+     * <p>
+     * For example, a value of {@code 2000} represents a 2000 Kbps (2 Mbps) connection.
+     * <p>
+     * The value may be {@link android.telephony.SubscriptionPlan#BITRATE_UNKNOWN} if this
+     * information is not available from the carrier or not applicable to the plan.
+     *
+     * @hide
+     */
+    public static final String STREAMING_APP_MAX_DOWNLINK_KBPS =
+            SimInfo.COLUMN_STREAMING_APP_MAX_DOWNLINK_KBPS;
+
+    /**
+     * TelephonyProvider column name for the maximum upstream bitrate for streaming applications
+     * on this subscription plan, in Kilobits per second (Kbps).
+     * <p>
+     * This value represents the data rate that the carrier has allocated for streaming
+     * applications to upload data. It can be used by streaming apps to select an appropriate
+     * media quality for outgoing streams, helping to avoid buffering or connection issues.
+     * <p>
+     * For example, a 1000 Kbps connection would be represented as {@code 1000}.
+     * <p>
+     * The value may be {@link android.telephony.SubscriptionPlan#BITRATE_UNKNOWN} if this
+     * information is not available from the carrier or not applicable to the plan.
+     *
+     * @hide
+     */
+    public static final String STREAMING_APP_MAX_UPLINK_KBPS =
+            SimInfo.COLUMN_STREAMING_APP_MAX_UPLINK_KBPS;
+
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = {"USAGE_SETTING_"},

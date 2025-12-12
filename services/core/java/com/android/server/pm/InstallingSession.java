@@ -393,7 +393,7 @@ class InstallingSession {
         try (PackageManagerTracedLock installLock = mPm.mInstallLock.acquireLock()) {
             mPm.mInstaller.moveCompleteApp(mMoveInfo.mFromUuid, mMoveInfo.mToUuid,
                     mMoveInfo.mPackageName, mMoveInfo.mAppId, mMoveInfo.mSeInfo,
-                    mMoveInfo.mTargetSdkVersion, mMoveInfo.mFromCodePath);
+                    mMoveInfo.mTargetSdkVersion, mMoveInfo.mFromCodePath, mMoveInfo.mPccId);
         } catch (Installer.InstallerException e) {
             final String errorMessage = "Failed to move app";
             request.setError(PackageManagerException.ofInternalError(errorMessage,

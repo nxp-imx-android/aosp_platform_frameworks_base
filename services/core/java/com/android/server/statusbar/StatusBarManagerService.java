@@ -34,7 +34,6 @@ import static android.os.UserHandle.USER_SYSTEM;
 import static android.os.UserHandle.getCallingUserId;
 import static android.os.UserManager.isVisibleBackgroundUsersEnabled;
 import static android.view.Display.DEFAULT_DISPLAY;
-import static android.view.ViewRootImpl.CLIENT_TRANSIENT;
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_2BUTTON_OVERLAY;
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_3BUTTON_OVERLAY;
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL_OVERLAY;
@@ -663,7 +662,7 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
                 }
                 return;
             }
-            if (!CLIENT_TRANSIENT) {
+            if (!com.android.window.flags.Flags.enableTransientGestureInSystemUi()) {
                 // Only call from here when the client transient is not enabled.
                 runWithStatusBarIfPresent(
                         bar -> bar.immersiveModeChanged(

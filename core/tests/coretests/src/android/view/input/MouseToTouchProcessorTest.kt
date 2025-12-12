@@ -23,10 +23,7 @@ import android.content.pm.FeatureInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.graphics.PointF
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.Presubmit
-import android.platform.test.flag.junit.SetFlagsRule
 import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MotionEvent
@@ -45,7 +42,6 @@ import com.android.cts.input.inputeventmatchers.withMotionAction
 import com.android.cts.input.inputeventmatchers.withPointerCount
 import com.android.cts.input.inputeventmatchers.withSource
 import com.android.cts.input.inputeventmatchers.withToolType
-import com.android.hardware.input.Flags
 import libcore.junit.util.compat.CoreCompatChangeRule.DisableCompatChanges
 import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges
 import org.hamcrest.CoreMatchers.allOf
@@ -74,9 +70,6 @@ class MouseToTouchProcessorTest {
     private lateinit var context: Context
 
     @get:Rule
-    val setFlagsRule: SetFlagsRule = SetFlagsRule()
-
-    @get:Rule
     val compatChangeRule = PlatformCompatChangeRule()
 
     @Before
@@ -86,27 +79,18 @@ class MouseToTouchProcessorTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_MOUSE_TO_TOUCH_PER_APP_COMPAT)
-    fun compatibilityNotNeededIfFlagIsDisabled() {
-        assertThat(MouseToTouchProcessor.isCompatibilityNeeded(context), equalTo(false))
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_MOUSE_TO_TOUCH_PER_APP_COMPAT)
     @DisableCompatChanges(ActivityInfo.OVERRIDE_MOUSE_TO_TOUCH)
     fun compatibilityNotNeededIfCompatChangesDisabled() {
         assertThat(MouseToTouchProcessor.isCompatibilityNeeded(context), equalTo(false))
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_MOUSE_TO_TOUCH_PER_APP_COMPAT)
     @EnableCompatChanges(ActivityInfo.OVERRIDE_MOUSE_TO_TOUCH)
     fun compatibilityNotNeededIfCompatChangesEnabled() {
         assertThat(MouseToTouchProcessor.isCompatibilityNeeded(context), equalTo(true))
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_MOUSE_TO_TOUCH_PER_APP_COMPAT)
     @EnableCompatChanges(ActivityInfo.OVERRIDE_MOUSE_TO_TOUCH)
     fun compatibilityNotNeededIfFeaturePCPresent() {
         val mockPackageInfo = PackageInfo().apply {
@@ -123,7 +107,6 @@ class MouseToTouchProcessorTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_MOUSE_TO_TOUCH_PER_APP_COMPAT)
     @EnableCompatChanges(ActivityInfo.OVERRIDE_MOUSE_TO_TOUCH)
     fun compatibilityNeededIfFeaturePCNotPresent() {
         val mockPackageInfo = PackageInfo().apply {

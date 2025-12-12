@@ -133,6 +133,7 @@ import com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.Companion.DRAG_TO_DESKTOP_FINISH_ANIM_DURATION_MS
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.DragToDesktopStateListener
 import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler.FULLSCREEN_ANIMATION_DURATION
+import com.android.wm.shell.desktopmode.api.DesktopMode
 import com.android.wm.shell.desktopmode.clientfullscreenrequest.DesktopFullscreenRequestHandler
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
 import com.android.wm.shell.desktopmode.data.DesktopDisplay
@@ -6357,7 +6358,11 @@ class DesktopTasksController(
             IndicatorType.TO_BUBBLE_LEFT_INDICATOR,
             IndicatorType.TO_BUBBLE_RIGHT_INDICATOR -> {
                 // TODO(b/391928049): add support fof dragging desktop apps to a bubble
-
+                if (DesktopExperienceFlags.ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT.isTrue) {
+                    // TODO: b/391928049 - Explore coexistence between restoring bounds and bubbles
+                    val repository = userRepositories.getProfile(taskInfo.userId)
+                    repository.removeBoundsBeforeSnapOrMaximize(taskInfo.taskId)
+                }
                 if (
                     DesktopExperienceFlags.ENABLE_WINDOW_DROP_SMOOTH_TRANSITION.isTrue &&
                         !desktopState.isEligibleWindowDropTarget(motionEvent.displayId)

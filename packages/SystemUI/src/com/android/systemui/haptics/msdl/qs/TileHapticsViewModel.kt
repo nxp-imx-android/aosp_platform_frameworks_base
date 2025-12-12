@@ -20,6 +20,7 @@ import android.service.quicksettings.Tile
 import com.android.systemui.animation.Expandable
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.qs.panels.ui.viewmodel.TileViewModel
+import com.android.systemui.util.kotlin.mapDirect
 import com.android.systemui.util.kotlin.pairwise
 import com.google.android.msdl.data.model.MSDLToken
 import com.google.android.msdl.domain.MSDLPlayer
@@ -30,7 +31,6 @@ import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.transform
 
@@ -56,7 +56,7 @@ constructor(
 
     private val toggleHapticsState: Flow<TileHapticsState> =
         tileViewModel.state
-            .mapLatest { it.state }
+            .mapDirect { it.state }
             .pairwise()
             .transform { (previous, current) ->
                 val toggleState =
@@ -74,7 +74,7 @@ constructor(
 
     private val interactionHapticsState: Flow<TileHapticsState> =
         tileInteractionState
-            .mapLatest {
+            .mapDirect {
                 if (it == TileInteractionState.LONG_CLICKED) {
                     TileHapticsState.LONG_PRESS
                 } else {

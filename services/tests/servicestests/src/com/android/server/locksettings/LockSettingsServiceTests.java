@@ -742,7 +742,6 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
-    @EnableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
     public void testDuplicateWrongGuessesAreNotCounted() throws Exception {
         final int userId = PRIMARY_USER_ID;
         final LockscreenCredential pin = newPin("1234");
@@ -773,38 +772,6 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
-    @DisableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
-    public void testSoftwareRateLimiterFlagDisabled() throws Exception {
-        final int userId = PRIMARY_USER_ID;
-        final LockscreenCredential pin = newPin("1234");
-        final LockscreenCredential wrongPin = newPin("1111");
-        final int numGuesses = 100;
-
-        mSpManager.enableWeaver();
-        setCredential(userId, pin);
-        final long protectorId = mService.getCurrentLskfBasedProtectorId(userId);
-        final LskfIdentifier lskfId = new LskfIdentifier(userId, protectorId);
-
-        // The software and hardware counters start at 0.
-        assertEquals(0, mSpManager.readFailureCounter(lskfId));
-        assertEquals(0, mSpManager.getSumOfWeaverFailureCounters());
-
-        // Try the same wrong PIN repeatedly.
-        for (int i = 0; i < numGuesses; i++) {
-            VerifyCredentialResponse response =
-                    mService.verifyCredential(wrongPin, userId, 0 /* flags */);
-            assertFalse(response.isMatched());
-            assertTrue(response.isOtherError());
-        }
-        // The software counter should still be 0, since the software rate-limiter is fully disabled
-        // and thus it should have never been told about the guesses at all. The hardware counter
-        // should now be numGuesses, as all the (duplicate) guesses should have been sent to it.
-        assertEquals(0, mSpManager.readFailureCounter(lskfId));
-        assertEquals(numGuesses, mSpManager.getSumOfWeaverFailureCounters());
-    }
-
-    @Test
-    @EnableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
     public void testVerifyCredentialTooShort() throws Exception {
         final int userId = PRIMARY_USER_ID;
         setCredential(userId, newPassword("password"));
@@ -813,21 +780,10 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         assertTrue(response.isCredTooShort());
     }
 
-    @Test
-    @DisableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
-    public void testVerifyCredentialTooShort_softwareRateLimiterFlagDisabled() throws Exception {
-        final int userId = PRIMARY_USER_ID;
-        setCredential(userId, newPassword("password"));
-        VerifyCredentialResponse response =
-                mService.verifyCredential(newPassword("a"), userId, /* flags= */ 0);
-        assertTrue(response.isOtherError());
-    }
-
     // Tests that if verifyCredential is passed a wrong guess and Weaver reports INCORRECT_KEY with
     // zero timeout (which indicates a certainly wrong guess), then LockSettingsService saves that
     // guess as a recent wrong guess and rejects a repeat of it as a duplicate.
     @Test
-    @EnableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
     public void testRepeatOfWrongGuessRejectedAsDuplicate_afterWeaverIncorrectKeyWithoutTimeout()
             throws Exception {
         final int userId = PRIMARY_USER_ID;
@@ -864,7 +820,6 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
 
     // Same as preceding test case, but uses a nonzero timeout.
     @Test
-    @EnableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
     public void testRepeatOfWrongGuessRejectedAsDuplicate_afterWeaverIncorrectKeyWithTimeout()
             throws Exception {
         final int userId = PRIMARY_USER_ID;
@@ -894,10 +849,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     // When handling hardware timeouts, both software and hardware timeouts should preempt
     // duplicate detection.
     @Test
-    @EnableFlags({
-        android.security.Flags.FLAG_SOFTWARE_RATELIMITER,
-        android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE
-    })
+    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
     public void testRepeatOfWrongGuessThrottled_afterWeaverIncorrectKeyWithTimeoutButWithinTimeout()
             throws Exception {
         final int userId = PRIMARY_USER_ID;
@@ -931,7 +883,6 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     // timeout in Weaver), then LockSettingsService does not block the same guess from being
     // re-attempted and in particular does not reject it as a duplicate wrong guess.
     @Test
-    @EnableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
     public void testRepeatOfCorrectGuessAllowed_afterWeaverThrottle() throws Exception {
         final int userId = PRIMARY_USER_ID;
         final LockscreenCredential credential = newPassword("password");
@@ -958,7 +909,6 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     // the guess), then LockSettingsService does not block the same guess from being re-attempted
     // and in particular does not reject it as a duplicate wrong guess.
     @Test
-    @EnableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
     public void testRepeatOfCorrectGuessAllowed_afterWeaverFailed() throws Exception {
         final int userId = PRIMARY_USER_ID;
         final LockscreenCredential credential = newPassword("password");
@@ -977,7 +927,6 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
-    @EnableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
     public void test20UniqueGuessesAllowed() throws Exception {
         final int userId = PRIMARY_USER_ID;
         final LockscreenCredential credential = newPassword("password");
@@ -991,7 +940,6 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
-    @EnableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
     public void testMoreThan20UniqueGuessesNotAllowed() throws Exception {
         final int userId = PRIMARY_USER_ID;
         final LockscreenCredential credential = newPassword("password");
@@ -1002,20 +950,6 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         guessWrongCredential(userId, 20, TEN_YEARS);
         response = mService.verifyCredential(credential, userId, /* flags= */ 0);
         assertFalse(response.isMatched());
-    }
-
-    @Test
-    @DisableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
-    public void testMoreThan20UniqueGuessesAllowed_softwareRateLimiterFlagDisabled()
-            throws Exception {
-        final int userId = PRIMARY_USER_ID;
-        final LockscreenCredential credential = newPassword("password");
-        VerifyCredentialResponse response;
-
-        setCredential(userId, credential);
-        guessWrongCredential(userId, /* times= */ 20);
-        response = mService.verifyCredential(credential, userId, /* flags= */ 0);
-        assertTrue(response.isMatched());
     }
 
     @Test
@@ -1146,10 +1080,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
-    @EnableFlags({
-        android.security.Flags.FLAG_SOFTWARE_RATELIMITER,
-        android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE,
-    })
+    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
     public void testGetLockoutEndTime_nonZeroAfterTimedOutAttempt() throws Exception {
         final int userId = PRIMARY_USER_ID;
         final LockscreenCredential credential = newPassword("password");
@@ -1167,10 +1098,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
-    @EnableFlags({
-        android.security.Flags.FLAG_SOFTWARE_RATELIMITER,
-        android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE,
-    })
+    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
     public void testGetLockoutEndTime_zeroAfterVerificationPostLockout() throws Exception {
         final int userId = PRIMARY_USER_ID;
         final LockscreenCredential credential = newPassword("password");
@@ -1194,10 +1122,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
-    @EnableFlags({
-        android.security.Flags.FLAG_SOFTWARE_RATELIMITER,
-        android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE,
-    })
+    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
     public void testGetLockoutEndTime_zeroAfterEndTime() throws Exception {
         final int userId = PRIMARY_USER_ID;
         final LockscreenCredential credential = newPassword("password");
@@ -1218,10 +1143,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
-    @EnableFlags({
-        android.security.Flags.FLAG_SOFTWARE_RATELIMITER,
-        android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE,
-    })
+    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
     public void testGetLockoutEndTime_zeroAfterCredentialResetWithToken() throws Exception {
         byte[] token = "some-high-entropy-secure-token".getBytes();
         EscrowTokenStateChangeCallback mockActivateListener =
@@ -1247,10 +1169,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
-    @EnableFlags({
-        android.security.Flags.FLAG_SOFTWARE_RATELIMITER,
-        android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE
-    })
+    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
     @DisableFlags(android.security.Flags.FLAG_ENABLE_WEAVER_GET_TIMEOUT)
     public void testGetLockoutEndTime_doesNotAccountForWeaverTimeoutWhenFlagDisabled()
             throws Exception {
@@ -1268,7 +1187,6 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
 
     @Test
     @EnableFlags({
-        android.security.Flags.FLAG_SOFTWARE_RATELIMITER,
         android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE,
         android.security.Flags.FLAG_ENABLE_WEAVER_GET_TIMEOUT
     })

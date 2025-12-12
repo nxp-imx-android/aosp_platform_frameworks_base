@@ -17,6 +17,7 @@
 package com.android.systemui.util.kotlin
 
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.systemui.Flags
 import com.android.systemui.util.time.SystemClock
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.max
@@ -24,16 +25,19 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -500,3 +504,17 @@ public fun <T> Flow<T>.slidingWindow(windowDuration: Duration, clock: SystemCloc
             }
         }
     }
+
+/**
+ * Aids the transition from `mapLatest` to `map` when the lambda is a non-suspend method.
+ *
+ * This has been introduced to make the change flag-guarded.
+ */
+@OptIn(ExperimentalCoroutinesApi::class)
+public inline fun <T, R> Flow<T>.mapDirect(noinline transform: (value: T) -> R): Flow<R> {
+    return if (Flags.optimizeFlowMapOperators()) {
+        this.conflate().map(transform)
+    } else {
+        this.mapLatest(transform)
+    }
+}

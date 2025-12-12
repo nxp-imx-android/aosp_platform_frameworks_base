@@ -85,7 +85,7 @@ public final class ProviderInfo extends ComponentInfo
     /**
      * Bit in {@link #flags} indicating if the provider should run in the Private Compute Core
      * sandbox.
-     * @see android.R.styleable#AndroidManifestProvider_isPrivateComputeCoreProcess
+     * @see android.R.styleable#AndroidManifestProvider_privateComputeCore
      * @hide
      */
     public static final int FLAG_RUN_IN_PCC_SANDBOX = 0x80000;

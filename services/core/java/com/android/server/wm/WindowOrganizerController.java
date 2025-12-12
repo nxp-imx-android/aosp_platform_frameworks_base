@@ -107,6 +107,7 @@ import static com.android.server.wm.TaskFragment.EMBEDDING_ALLOWED;
 import static com.android.server.wm.TaskFragment.FLAG_FORCE_HIDDEN_FOR_TASK_FRAGMENT_ORG;
 import static com.android.server.wm.WindowContainer.POSITION_BOTTOM;
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
+import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_NORMAL;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -1915,6 +1916,19 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                         && adjacentParams.shouldDelayPrimaryLastActivityRemoval());
                 secondaryTaskFragment.setDelayLastActivityRemoval(adjacentParams != null
                         && adjacentParams.shouldDelaySecondaryLastActivityRemoval());
+
+                if (Flags.fixTfAdjacentFocus()) {
+                    final ActivityRecord focusedApp = taskFragment.getDisplayContent().mFocusedApp;
+                    final TaskFragment focusedTaskFragment = focusedApp != null
+                            ? focusedApp.getTaskFragment()
+                            : null;
+                    if (focusedTaskFragment == taskFragment
+                            || focusedTaskFragment == secondaryTaskFragment) {
+                        // The focused window may change due to this adjacency change.
+                        mService.mWindowManager.updateFocusedWindowLocked(UPDATE_FOCUS_NORMAL,
+                                true /*updateInputWindows*/);
+                    }
+                }
                 break;
             }
             case OP_TYPE_CLEAR_ADJACENT_TASK_FRAGMENTS: {
@@ -1936,9 +1950,14 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
 
                 // Clear the focused app if the focused app is no longer visible after reset the
                 // adjacent TaskFragments.
-                if (wasFocusedInAdjacent
-                        && !focusedTaskFragment.shouldBeVisible(null /* starting */)) {
-                    focusedTaskFragment.getDisplayContent().setFocusedApp(null /* newFocus */);
+                if (wasFocusedInAdjacent) {
+                    if (!focusedTaskFragment.shouldBeVisible(null /* starting */)) {
+                        focusedTaskFragment.getDisplayContent().setFocusedApp(null /* newFocus */);
+                    } else if (Flags.fixTfAdjacentFocus()) {
+                        // The focused window may change due to this adjacency change.
+                        mService.mWindowManager.updateFocusedWindowLocked(UPDATE_FOCUS_NORMAL,
+                                true /*updateInputWindows*/);
+                    }
                 }
                 break;
             }

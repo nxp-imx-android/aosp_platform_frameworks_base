@@ -62,8 +62,6 @@ import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.UserHandle;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.telephony.SubscriptionManager;
 
@@ -917,22 +915,7 @@ public class BroadcastRecordTest {
                                 createResolveInfo(PACKAGE3, getAppId(3)))));
     }
 
-
     @Test
-    @DisableFlags(Flags.FLAG_LOG_BROADCAST_PROCESSED_EVENT)
-    public void testUpdateBroadcastProcessedEventRecord_flagDisabled() {
-        final ResolveInfo receiver = createResolveInfo(PACKAGE1, getAppId(1));
-        final BroadcastRecord record = createBroadcastRecord(
-                new Intent(Intent.ACTION_AIRPLANE_MODE_CHANGED),
-                List.of(receiver));
-
-        record.updateBroadcastProcessedEventRecord(receiver, 10);
-
-        assertThat(record.getBroadcastProcessedRecordsForTest()).isEmpty();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_LOG_BROADCAST_PROCESSED_EVENT)
     public void testUpdateBroadcastProcessedEventRecord_withNewReceiver_newBroadcastProcessedEventRecordCreated() {
         final ResolveInfo receiver =
                 createResolveInfoWithProcessName(PACKAGE1, getAppId(1), PROCESS1);
@@ -960,7 +943,6 @@ public class BroadcastRecordTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_LOG_BROADCAST_PROCESSED_EVENT)
     public void testUpdateBroadcastProcessedEventRecord_withNewAndExistingReceiver_multipleBroadcastProcessedEventRecordCreated() {
         final ResolveInfo receiver1 =
                 createResolveInfoWithProcessName(PACKAGE1, getAppId(1), PROCESS1);
@@ -1005,14 +987,7 @@ public class BroadcastRecordTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_LOG_BROADCAST_PROCESSED_EVENT)
-    public void testLogBroadcastProcessedEventRecord_flagDisabled() {
-        testLogBroadcastProcessedEventRecord(0);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_LOG_BROADCAST_PROCESSED_EVENT)
-    public void testLogBroadcastProcessedEventRecord_flagEnabled_allBroadcastProcessedEventLogged() {
+    public void testLogBroadcastProcessedEventRecord_allBroadcastProcessedEventLogged() {
         testLogBroadcastProcessedEventRecord(1);
     }
 

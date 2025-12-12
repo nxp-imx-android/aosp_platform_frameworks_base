@@ -31,6 +31,7 @@ import com.android.systemui.statusbar.pipeline.mobile.ui.MobileViewLogger
 import com.android.systemui.statusbar.pipeline.mobile.ui.VerboseMobileViewLogger
 import com.android.systemui.statusbar.pipeline.mobile.ui.view.ModernStatusBarMobileView
 import com.android.systemui.statusbar.pipeline.shared.ConnectivityConstants
+import com.android.systemui.util.kotlin.mapDirect
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
@@ -44,7 +45,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 
 /**
@@ -71,7 +71,7 @@ constructor(
 
     val subscriptionIdsFlow: StateFlow<List<Int>> =
         interactor.filteredSubscriptions
-            .mapLatest { subscriptions ->
+            .mapDirect { subscriptions ->
                 subscriptions.map { subscriptionModel -> subscriptionModel.subscriptionId }
             }
             .stateIn(scope, SharingStarted.WhileSubscribed(), listOf())

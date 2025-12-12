@@ -53,6 +53,7 @@
 #include <input/PrintTools.h>
 #include <input/SpriteController.h>
 #include <inputflinger/InputManager.h>
+#include <jni.h>
 #include <limits.h>
 #include <nativehelper/ScopedLocalFrame.h>
 #include <nativehelper/ScopedLocalRef.h>
@@ -606,7 +607,9 @@ NativeInputManager::NativeInputManager(jobject serviceObj, const sp<Looper>& loo
 
     mServiceObj = env->NewGlobalRef(serviceObj);
 
-    InputManager* im = new InputManager(this, *this, *this, *this, env);
+    JavaVM* vm;
+    env->GetJavaVM(&vm);
+    InputManager* im = new InputManager(this, *this, *this, *this, vm);
     mInputManager = im;
     defaultServiceManager()->addService(String16("inputflinger"), im);
 }

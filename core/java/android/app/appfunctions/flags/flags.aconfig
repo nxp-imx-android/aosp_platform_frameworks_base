@@ -25,3 +25,11 @@ flag {
     description: "This flags the App Interaction Feature."
     bug: "452916227"
 }
+
+flag {
+    name: "enable_app_function_permission_v2"
+    is_exported: true
+    namespace: "app_function"
+    description: "This flags the App Interaction Feature."
+    bug: "443924426"
+}

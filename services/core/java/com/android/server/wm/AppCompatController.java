@@ -51,7 +51,7 @@ class AppCompatController {
     @NonNull
     private final AppCompatSandboxingPolicy mSandboxingPolicy;
     @NonNull
-    private final AppCompatDisplayCompatModePolicy mDisplayCompatModePolicy;
+    private final AppCompatDisplayCompatPolicy mDisplayCompatPolicy;
     @NonNull
     private final AppCompatResourceOverlayPolicy mResourceOverlayPolicy;
     @NonNull
@@ -80,7 +80,7 @@ class AppCompatController {
         mSizeCompatModePolicy = new AppCompatSizeCompatModePolicy(activityRecord,
                 mAppCompatOverrides);
         mSandboxingPolicy = new AppCompatSandboxingPolicy(activityRecord);
-        mDisplayCompatModePolicy = new AppCompatDisplayCompatModePolicy(activityRecord);
+        mDisplayCompatPolicy = new AppCompatDisplayCompatPolicy(activityRecord);
         mResourceOverlayPolicy = new AppCompatResourceOverlayPolicy(activityRecord);
         mRecreateOnConfigChangePolicy = new AppCompatRecreateOnConfigChangePolicy(activityRecord);
     }
@@ -171,8 +171,8 @@ class AppCompatController {
     }
 
     @NonNull
-    AppCompatDisplayCompatModePolicy getDisplayCompatModePolicy() {
-        return mDisplayCompatModePolicy;
+    AppCompatDisplayCompatPolicy getDisplayCompatPolicy() {
+        return mDisplayCompatPolicy;
     }
 
     @NonNull
@@ -194,7 +194,7 @@ class AppCompatController {
         getTransparentPolicy().dump(pw, prefix);
         getLetterboxPolicy().dump(pw, prefix);
         getSizeCompatModePolicy().dump(pw, prefix);
-        getDisplayCompatModePolicy().dump(pw, prefix);
+        getDisplayCompatPolicy().dump(pw, prefix);
         getSafeRegionPolicy().dump(pw, prefix);
         getRecreateOnConfigChangePolicy().dump(pw, prefix);
     }

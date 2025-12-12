@@ -3941,6 +3941,31 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
                 mSubscriptionPlans.put(subId, plans);
                 mSubscriptionPlansOwner.put(subId, callingPackage);
 
+                if (com.android.internal.telephony.flags.Flags.subscriptionPlanEnhancement()) {
+                    int downlinkBandwidth = SubscriptionPlan.BITRATE_UNKNOWN;
+                    int uplinkBandwidth = SubscriptionPlan.BITRATE_UNKNOWN;
+                    if (plans.length > 0) {
+                        // For now we only support DL/UL bitrate from the master plan.
+                        downlinkBandwidth = plans[0].getStreamingAppMaxDownlinkKbps();
+                        uplinkBandwidth = plans[0].getStreamingAppMaxUplinkKbps();
+                    }
+
+                    // Write bandwidth information into SubscriptionInfo. This makes it available to
+                    // apps with READ_PHONE_STATE permission, which is less restrictive than the
+                    // permissions required to access the full SubscriptionPlan. This is acceptable
+                    // because bandwidth data is considered less privacy-sensitive.
+                    try {
+                        SubscriptionManager.setSubscriptionProperty(subId,
+                                SubscriptionManager.STREAMING_APP_MAX_DOWNLINK_KBPS,
+                                String.valueOf(downlinkBandwidth));
+                        SubscriptionManager.setSubscriptionProperty(subId,
+                                SubscriptionManager.STREAMING_APP_MAX_UPLINK_KBPS,
+                                String.valueOf(uplinkBandwidth));
+                    } catch (IllegalArgumentException e) {
+                        Log.w(TAG, "Subscription does not exist");
+                    }
+                }
+
                 final String subscriberId = mSubIdToSubscriberId.get(subId, null);
                 if (subscriberId != null) {
                     ensureActiveCarrierPolicyAL(subId, subscriberId);

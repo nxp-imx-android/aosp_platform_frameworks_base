@@ -208,7 +208,6 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
-    @EnableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
     public void testVerifyCredential() throws RemoteException {
         LockscreenCredential password = newPassword("password");
         LockscreenCredential badPassword = newPassword("badpassword");
@@ -226,21 +225,6 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
         } else {
             assertTrue(response.isOtherError());
         }
-    }
-
-    @Test
-    @DisableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
-    public void testVerifyCredential_softwareRateLimiterFlagDisabled() throws RemoteException {
-        LockscreenCredential password = newPassword("password");
-        LockscreenCredential badPassword = newPassword("badpassword");
-
-        initSpAndSetCredential(PRIMARY_USER_ID, password);
-        assertTrue(mService.verifyCredential(password, PRIMARY_USER_ID, 0 /* flags */).isMatched());
-        verify(mActivityManager).unlockUser2(eq(PRIMARY_USER_ID), any());
-
-        assertTrue(
-                mService.verifyCredential(badPassword, PRIMARY_USER_ID, 0 /* flags */)
-                        .isOtherError());
     }
 
     @Test

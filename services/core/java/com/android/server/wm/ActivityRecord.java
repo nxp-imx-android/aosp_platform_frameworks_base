@@ -1474,6 +1474,19 @@ final class ActivityRecord extends WindowToken {
         return parent != null ? parent.asTaskFragment() : null;
     }
 
+    /**
+     * @return whether the other activity is in an adjacent TaskFragment of this activity's
+     * TaskFragment.
+     */
+    boolean isInAdjacentTaskFragment(@Nullable ActivityRecord other) {
+        if (other == null) {
+            return false;
+        }
+        final TaskFragment tf = getTaskFragment();
+        final TaskFragment otherTf = other.getTaskFragment();
+        return tf != null && otherTf != null && tf.isAdjacentTo(otherTf);
+    }
+
     /** Whether we should prepare a transition for this {@link ActivityRecord} parent change. */
     private boolean shouldStartChangeTransition(
             @Nullable TaskFragment newParent, @Nullable TaskFragment oldParent) {
@@ -1728,7 +1741,7 @@ final class ActivityRecord extends WindowToken {
         }
 
         mAppCompatController.getLetterboxPolicy().onMovedToDisplay(mDisplayContent.getDisplayId());
-        mAppCompatController.getDisplayCompatModePolicy().onMovedToDisplay(prevDc, dc);
+        mAppCompatController.getDisplayCompatPolicy().onMovedToDisplay(prevDc, dc);
     }
 
     void layoutLetterboxIfNeeded(WindowState winHint) {
@@ -4263,7 +4276,7 @@ final class ActivityRecord extends WindowToken {
             // process dies, the SDKs are unloaded and can not handle the activity, so sandbox
             // activity records should be removed.
             remove = true;
-        } else if (mAppCompatController.getDisplayCompatModePolicy()
+        } else if (mAppCompatController.getDisplayCompatPolicy()
                 .shouldRecoverFromSelfKillOnDisplayMove()) {
             // Relaunch it as it's likely to be unintentionally killing itself on display move.
             remove = false;
@@ -8630,7 +8643,7 @@ final class ActivityRecord extends WindowToken {
         }
 
         // Some apps relaunch unexpectedly with display move and crash.
-        skipRelaunchConfigMask |= mAppCompatController.getDisplayCompatModePolicy()
+        skipRelaunchConfigMask |= mAppCompatController.getDisplayCompatPolicy()
                 .getDisplayCompatModeConfigMask();
 
         // For CONFIG_ASSETS_PATHS change, check the constraints for the resource overlays which
@@ -8791,7 +8804,7 @@ final class ActivityRecord extends WindowToken {
             // Note: don't need to call pauseIfSleepingLocked() here, because the caller will only
             // request resume if this activity is currently resumed, which implies we aren't
             // sleeping.
-            mAppCompatController.getDisplayCompatModePolicy()
+            mAppCompatController.getDisplayCompatPolicy()
                     .onActivityRelaunching(configChangeFlags);
         }
 
@@ -8822,7 +8835,7 @@ final class ActivityRecord extends WindowToken {
         // Reset the existing override configuration so it can be updated according to the latest
         // configuration.
         mAppCompatController.getSizeCompatModePolicy().clearSizeCompatMode();
-        mAppCompatController.getDisplayCompatModePolicy().onProcessRestarted();
+        mAppCompatController.getDisplayCompatPolicy().onProcessRestarted();
 
         if (!attachedToProcess()) {
             return;

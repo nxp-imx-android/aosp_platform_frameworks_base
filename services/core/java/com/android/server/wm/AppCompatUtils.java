@@ -171,7 +171,7 @@ final class AppCompatUtils {
                         .isLetterboxEducationEnabled());
 
         appCompatTaskInfo.setRestartMenuEnabledForDisplayMove(top.mAppCompatController
-                .getDisplayCompatModePolicy().isRestartMenuEnabledForDisplayMove());
+                .getDisplayCompatPolicy().isRestartMenuEnabledForDisplayMove());
 
         // Whether the activity is using safe region letterboxing bounds. This happens when the
         // activity is in compat mode and is being sandboxed within the safe region bounds or if

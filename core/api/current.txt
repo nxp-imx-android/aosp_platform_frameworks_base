@@ -1065,7 +1065,6 @@ package android {
     field public static final int isIndicator = 16843079; // 0x1010147
     field public static final int isLightTheme = 16844176; // 0x1010590
     field @Deprecated public static final int isModifier = 16843334; // 0x1010246
-    field @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public static final int isPrivateComputeCoreProcess;
     field @Deprecated public static final int isRepeatable = 16843336; // 0x1010248
     field public static final int isScrollContainer = 16843342; // 0x101024e
     field @Deprecated public static final int isSplitRequired = 16844177; // 0x1010591
@@ -1373,6 +1372,7 @@ package android {
     field public static final int previewLayout = 16844327; // 0x1010627
     field public static final int primaryContentAlpha = 16844114; // 0x1010552
     field public static final int priority = 16842780; // 0x101001c
+    field @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public static final int privateComputeCore;
     field public static final int privateImeOptions = 16843299; // 0x1010223
     field public static final int process = 16842769; // 0x1010011
     field public static final int progress = 16843063; // 0x1010137
@@ -9346,7 +9346,8 @@ package android.app.appfunctions {
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public abstract class AppFunctionService extends android.app.Service {
     ctor public AppFunctionService();
     method @NonNull public final android.os.IBinder onBind(@Nullable android.content.Intent);
-    method @MainThread public abstract void onExecuteFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull String, @NonNull android.content.pm.SigningInfo, @NonNull android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<android.app.appfunctions.ExecuteAppFunctionResponse,android.app.appfunctions.AppFunctionException>);
+    method @Deprecated @FlaggedApi("android.app.appfunctions.flags.enable_app_function_permission_v2") @MainThread public void onExecuteFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull String, @NonNull android.content.pm.SigningInfo, @NonNull android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<android.app.appfunctions.ExecuteAppFunctionResponse,android.app.appfunctions.AppFunctionException>);
+    method @FlaggedApi("android.app.appfunctions.flags.enable_app_function_permission_v2") @MainThread public void onExecuteFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<android.app.appfunctions.ExecuteAppFunctionResponse,android.app.appfunctions.AppFunctionException>);
     field @NonNull public static final String SERVICE_INTERFACE = "android.app.appfunctions.AppFunctionService";
   }
 
@@ -13073,7 +13074,7 @@ package android.content.pm {
   }
 
   public static final class ActivityInfo.WindowLayout {
-    ctor public ActivityInfo.WindowLayout(int, float, int, float, int, int, int);
+    ctor @Deprecated @FlaggedApi("com.android.window.flags.runtime_density_resolution_for_window_layout") public ActivityInfo.WindowLayout(int, float, int, float, int, int, int);
     field public final int gravity;
     field @Deprecated @FlaggedApi("com.android.window.flags.runtime_density_resolution_for_window_layout") public final int height;
     field public final float heightFraction;
@@ -47505,6 +47506,8 @@ package android.telephony {
     method public int getPortIndex();
     method @NonNull public java.util.Set<java.lang.Integer> getServiceCapabilities();
     method public int getSimSlotIndex();
+    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public int getStreamingAppMaxDownlinkKbps();
+    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public int getStreamingAppMaxUplinkKbps();
     method public int getSubscriptionId();
     method public int getSubscriptionType();
     method public int getUsageSetting();
@@ -47623,6 +47626,7 @@ package android.telephony {
     method @Nullable public CharSequence getTitle();
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public java.util.Set<java.lang.Integer> getTypes();
     method public void writeToParcel(android.os.Parcel, int);
+    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public static final int BITRATE_UNKNOWN = -1; // 0xffffffff
     field public static final long BYTES_UNKNOWN = -1L; // 0xffffffffffffffffL
     field public static final long BYTES_UNLIMITED = 9223372036854775807L; // 0x7fffffffffffffffL
     field @NonNull public static final android.os.Parcelable.Creator<android.telephony.SubscriptionPlan> CREATOR;
@@ -47656,6 +47660,8 @@ package android.telephony {
     method public android.telephony.SubscriptionPlan.Builder setDataLimit(long, int);
     method public android.telephony.SubscriptionPlan.Builder setDataUsage(long, long);
     method @NonNull public android.telephony.SubscriptionPlan.Builder setNetworkTypes(@NonNull int[]);
+    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public android.telephony.SubscriptionPlan.Builder setStreamingAppMaxDownlinkKbps(int);
+    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public android.telephony.SubscriptionPlan.Builder setStreamingAppMaxUplinkKbps(int);
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date") @NonNull public android.telephony.SubscriptionPlan.Builder setSubscriptionStatus(int);
     method public android.telephony.SubscriptionPlan.Builder setSummary(@Nullable CharSequence);
     method public android.telephony.SubscriptionPlan.Builder setTitle(@Nullable CharSequence);

@@ -21,7 +21,6 @@ import static android.view.InsetsFrameProvider.SOURCE_ARBITRARY_RECTANGLE;
 import static android.view.InsetsFrameProvider.SOURCE_CONTAINER_BOUNDS;
 import static android.view.InsetsFrameProvider.SOURCE_DISPLAY;
 import static android.view.InsetsFrameProvider.SOURCE_FRAME;
-import static android.view.ViewRootImpl.CLIENT_TRANSIENT;
 import static android.view.WindowInsetsController.APPEARANCE_FORCE_LIGHT_NAVIGATION_BARS;
 import static android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
 import static android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS;
@@ -463,7 +462,7 @@ public class DisplayPolicy {
         final Looper looper = UiThread.getHandler().getLooper();
         mHandler = new PolicyHandler(looper);
         // TODO(b/181821798) Migrate SystemGesturesPointerEventListener to use window context.
-        if (!CLIENT_TRANSIENT) {
+        if (!com.android.window.flags.Flags.enableTransientGestureInSystemUi()) {
             SystemGesturesPointerEventListener.Callbacks gesturesPointerEventCallbacks =
                     new SystemGesturesPointerEventListener.Callbacks() {
 
@@ -699,7 +698,7 @@ public class DisplayPolicy {
                 mContext, () -> {
             synchronized (mLock) {
                 onConfigurationChanged();
-                if (!CLIENT_TRANSIENT) {
+                if (!com.android.window.flags.Flags.enableTransientGestureInSystemUi()) {
                     mSystemGestures.onConfigurationChanged();
                 }
                 mDisplayContent.updateSystemGestureExclusion();
@@ -723,7 +722,7 @@ public class DisplayPolicy {
     }
 
     void systemReady() {
-        if (!CLIENT_TRANSIENT) {
+        if (!com.android.window.flags.Flags.enableTransientGestureInSystemUi()) {
             mSystemGestures.systemReady();
         }
         if (mService.mPointerLocationEnabled) {
@@ -1439,7 +1438,7 @@ public class DisplayPolicy {
     }
 
     void onDisplayInfoChanged(DisplayInfo info) {
-        if (!CLIENT_TRANSIENT) {
+        if (!com.android.window.flags.Flags.enableTransientGestureInSystemUi()) {
             mSystemGestures.onDisplayInfoChanged(info);
         }
     }
@@ -1856,7 +1855,7 @@ public class DisplayPolicy {
         // Update the latest display size, cutout.
         mDisplayContent.requestDisplayUpdate(() -> {
             onConfigurationChanged();
-            if (!CLIENT_TRANSIENT) {
+            if (!com.android.window.flags.Flags.enableTransientGestureInSystemUi()) {
                 mSystemGestures.onConfigurationChanged();
             }
         });
@@ -2359,7 +2358,7 @@ public class DisplayPolicy {
 
     @VisibleForTesting
     void requestTransientBars(WindowState swipeTarget, boolean isGestureOnSystemBar) {
-        if (CLIENT_TRANSIENT) {
+        if (com.android.window.flags.Flags.enableTransientGestureInSystemUi()) {
             return;
         }
         if (swipeTarget == null || !mService.mPolicy.isUserSetupComplete()) {
@@ -3176,7 +3175,7 @@ public class DisplayPolicy {
             pw.print(prefix); pw.println("mCachedDecorInsets:");
             mCachedDecorInsets.mDecorInsets.dump(prefixInner, pw);
         }
-        if (!CLIENT_TRANSIENT) {
+        if (!com.android.window.flags.Flags.enableTransientGestureInSystemUi()) {
             mSystemGestures.dump(pw, prefix);
         }
     }

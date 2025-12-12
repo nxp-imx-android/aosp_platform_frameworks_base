@@ -5240,6 +5240,42 @@ public final class Telephony {
          */
         public static final String COLUMN_IS_PRIVATE_NETWORK = "is_private_network";
 
+        /**
+         * TelephonyProvider column name for the maximum downstream bandwidth for streaming
+         * applications, in kilobits per second (Kbps).
+         * <p>
+         * This value indicates the data rate that the carrier has allocated for streaming services
+         * under this plan. Streaming applications can use this information to select an appropriate
+         * media quality that avoids buffering.
+         * <p>
+         * For example, a value of {@code 2000} represents a 2000 Kbps (2 Mbps) connection.
+         * <p>
+         * The value may be {@link android.telephony.SubscriptionPlan#BITRATE_UNKNOWN} if this
+         * information is not available from the carrier or not applicable to the plan.
+         *
+         * @hide
+         */
+        public static final String COLUMN_STREAMING_APP_MAX_DOWNLINK_KBPS =
+                "streaming_app_max_downlink_kbps";
+
+        /**
+         * TelephonyProvider column name for the maximum upstream bitrate for streaming
+         * applications on this subscription plan, in Kilobits per second (Kbps).
+         * <p>
+         * This value represents the data rate that the carrier has allocated for streaming
+         * applications to upload data. It can be used by streaming apps to select an appropriate
+         * media quality for outgoing streams, helping to avoid buffering or connection issues.
+         * <p>
+         * For example, a 1000 Kbps connection would be represented as {@code 1000}.
+         * <p>
+         * The value may be {@link android.telephony.SubscriptionPlan#BITRATE_UNKNOWN} if this
+         * information is not available from the carrier or not applicable to the plan.
+         *
+         * @hide
+         */
+        public static final String COLUMN_STREAMING_APP_MAX_UPLINK_KBPS =
+                "streaming_app_max_uplink_kbps";
+
         /** All columns in {@link SimInfo} table. */
         private static final List<String> ALL_COLUMNS = List.of(
                 COLUMN_UNIQUE_KEY_SUBSCRIPTION_ID,
@@ -5324,7 +5360,9 @@ public final class Telephony {
                 COLUMN_SATELLITE_ENTITLEMENT_SERVICE_TYPE_MAP,
                 COLUMN_SATELLITE_ENTITLEMENT_DATA_SERVICE_POLICY,
                 COLUMN_SATELLITE_ENTITLEMENT_VOICE_SERVICE_POLICY,
-                COLUMN_IS_PRIVATE_NETWORK
+                COLUMN_IS_PRIVATE_NETWORK,
+                COLUMN_STREAMING_APP_MAX_DOWNLINK_KBPS,
+                COLUMN_STREAMING_APP_MAX_UPLINK_KBPS
         );
 
         /**

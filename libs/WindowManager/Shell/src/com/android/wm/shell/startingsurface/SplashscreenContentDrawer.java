@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.startingsurface;
 
+import static android.app.Flags.fixContrastAndForceInvertStateForMultiUser;
 import static android.content.Context.CONTEXT_RESTRICTED;
 import static android.content.res.Configuration.UI_MODE_NIGHT_MASK;
 import static android.os.Process.THREAD_PRIORITY_TOP_APP_BOOST;
@@ -82,6 +83,8 @@ import com.android.launcher3.icons.BaseIconFactory;
 import com.android.launcher3.icons.IconProvider;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.TransactionPool;
+import com.android.wm.shell.sysui.ShellController;
+import com.android.wm.shell.sysui.UserChangeListener;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -135,14 +138,17 @@ public class SplashscreenContentDrawer {
     @VisibleForTesting
     final ColorCache mColorCache;
     @Nullable
-    private UiModeManager.ForceInvertStateChangeListener mForceInvertStateChangeListener = null;
+    private final UiModeManager.ForceInvertStateChangeListener mForceInvertStateChangeListener =
+            forceInvertState -> mForceInvertState = forceInvertState;
     @UiModeManager.ForceInvertType
     private int mForceInvertState;
 
     private UiModeManager mUiModeManager = null;
 
+    private UserChangeListener mUserChangeListener;
+
     SplashscreenContentDrawer(Context context, IconProvider iconProvider, TransactionPool pool,
-            long minimumIconShowDuration) {
+            long minimumIconShowDuration, ShellController shellController) {
         mContext = context;
         mHighResIconProvider = new HighResIconProvider(mContext, iconProvider);
         mTransactionPool = pool;
@@ -159,16 +165,36 @@ public class SplashscreenContentDrawer {
         mCanUseAppIconForSplashScreen = context.getResources().getBoolean(
                 com.android.wm.shell.R.bool.config_canUseAppIconForSplashScreen);
         if (android.view.accessibility.Flags.forceInvertColor()) {
-            if (mForceInvertStateChangeListener == null) {
-                mForceInvertStateChangeListener =
-                        forceInvertState -> mForceInvertState = forceInvertState;
-                mUiModeManager =
-                        context.getSystemService(UiModeManager.class);
-                if (mUiModeManager != null) {
-                    mForceInvertState = mUiModeManager.getForceInvertState();
-                    mUiModeManager.addForceInvertStateChangeListener(
-                            mSplashscreenWorkerHandler::post,
-                            mForceInvertStateChangeListener);
+            if (fixContrastAndForceInvertStateForMultiUser()) {
+                mUserChangeListener = new UserChangeListener() {
+                    @Override
+                    public void onUserChanged(int newUserId, @NonNull Context userContext) {
+                        if (mUiModeManager != null) {
+                            mUiModeManager.removeForceInvertStateChangeListener(
+                                    mForceInvertStateChangeListener);
+                        }
+                        // We here don't use [context] but [userContext] to properly get the manager
+                        // linked with the current user.
+                        mUiModeManager = userContext.getSystemService(UiModeManager.class);
+                        if (mUiModeManager != null) {
+                            mForceInvertState = mUiModeManager.getForceInvertState();
+                            mUiModeManager.addForceInvertStateChangeListener(
+                                    mSplashscreenWorkerHandler::post,
+                                    mForceInvertStateChangeListener);
+                        }
+                    }
+                };
+                shellController.addUserChangeListener(mUserChangeListener);
+            } else {
+                if (mUiModeManager == null) {
+                    mUiModeManager =
+                            context.getSystemService(UiModeManager.class);
+                    if (mUiModeManager != null) {
+                        mForceInvertState = mUiModeManager.getForceInvertState();
+                        mUiModeManager.addForceInvertStateChangeListener(
+                                mSplashscreenWorkerHandler::post,
+                                mForceInvertStateChangeListener);
+                    }
                 }
             }
         }

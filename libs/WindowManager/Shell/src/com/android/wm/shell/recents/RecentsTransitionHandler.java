@@ -94,6 +94,8 @@ import com.android.wm.shell.transition.HomeTransitionObserver;
 import com.android.wm.shell.transition.Transitions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -415,6 +417,18 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
         private SurfaceControl.Transaction mFinishTransaction = null;
 
         /**
+         * States for each of the tasks participating in active transitions. This map is populated
+         * before we assign each task to the opening, pausing, and closing lists, when leashes
+         * have not been created yet. Once the leash manager creates one-off leashes, the
+         * {@link TransitionInfo} object loses its references to the original surfaces. We store
+         * them here so we have the references when we populate the opening, pausing, and closing
+         * lists, and can correctly apply the finish transactions to them.
+         *
+         *
+         */
+        private HashMap<WindowContainerToken, TaskState> mTaskStates = new HashMap<>();
+
+        /**
          * List of tasks that we are switching away from via this transition, ordered from top most
          * to bottom most in z-order. Upon finish, these pausing tasks will become invisible.
          * These need to be ordered since the order must be restored if there is no task-switch.
@@ -647,6 +661,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 mLeashMap = null;
             }
             mFinishTransaction = null;
+            mTaskStates.clear();
             mPausingTasks = null;
             mPausingDesk = null;
             mClosingTasks = null;
@@ -804,6 +819,15 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
 
             Transitions.TransitionFinishCallback wrappedCallback = finishCB;
             if (addOneOffHandlerLeashes()) {
+                // First create states for each task in the transition capturing the original info.
+                // This is necessary so we still have access to the original surface internally,
+                // when finishing.
+                for (TransitionInfo.Change change : info.getChanges()) {
+                    if (change.getTaskInfo() != null) {
+                        mTaskStates.put(change.getContainer(), new TaskState(change, null));
+                    }
+                }
+
                 // Provide handler-specific leashes to make sure that animations remain contained to
                 // the scope of ownership of the handler. This is only necessary because we are
                 // handing the animation off to a remote, over which we have no control.
@@ -860,7 +884,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                             belowLayers - i, info, t, mLeashMap);
                     apps.add(target);
                     if (TransitionUtil.isClosingType(change.getMode())) {
-                        mPausingTasks.add(new TaskState(change, target.leash));
+                        mPausingTasks.add(updateTaskState(change, target.leash));
                         closingSplitTaskId = change.getTaskInfo().taskId;
                         if (taskInfo.topActivityType == ACTIVITY_TYPE_HOME) {
                             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
@@ -898,7 +922,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                     } else if (TransitionUtil.isOpeningType(change.getMode())) {
                         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                                 "  adding opening leaf taskId=%d", taskInfo.taskId);
-                        mOpeningTasks.add(new TaskState(change, target.leash));
+                        mOpeningTasks.add(updateTaskState(change, target.leash));
                     }
                 } else if (taskInfo != null && TransitionInfo.isIndependent(change, info)) {
                     // Root tasks
@@ -906,7 +930,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         final int layer = aboveLayers - i;
                         // raise closing (pausing) task to "above" layer so it isn't covered
                         t.setLayer(change.getLeash(), layer);
-                        mPausingTasks.add(new TaskState(change, null /* leash */));
+                        mPausingTasks.add(updateTaskState(change, null /* leash */));
                         if (mDesksOrganizer.isDeskChange(change)) {
                             mPausingDesk = change.getContainer();
                             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
@@ -923,7 +947,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                                 "  adding opening taskId=%d at layer=%d", taskInfo.taskId, layer);
                         // Put into the "below" layer space.
                         t.setLayer(change.getLeash(), layer);
-                        mOpeningTasks.add(new TaskState(change, null /* leash */));
+                        mOpeningTasks.add(updateTaskState(change, null /* leash */));
                     } else {
                         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                                 "  unhandled root taskId=%d", taskInfo.taskId);
@@ -1107,6 +1131,35 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 cancel("keyguard_locked");
                 return;
             }
+
+            Transitions.TransitionFinishCallback wrappedCallback = finishCallback;
+            if (addOneOffHandlerLeashes()) {
+                // First figure out which tasks were already part of the transition, so we can
+                // exclude them from the leash creation as they already have leashes. Then create
+                // new states for each new task in the transition capturing the original info. This
+                // is necessary so we still have access to the original surface internally, when
+                // finishing.
+                final HashSet<TransitionInfo.Change> excluded = new HashSet<>();
+                for (TransitionInfo.Change change : info.getChanges()) {
+                    if (mTaskStates.containsKey(change.getContainer())) {
+                        excluded.add(change);
+                        continue;
+                    }
+                    if (change.getTaskInfo() != null) {
+                        mTaskStates.put(change.getContainer(), new TaskState(change, null));
+                    }
+                }
+
+                // Provide handler-specific leashes to make sure that animations remain contained to
+                // the scope of ownership of the handler. This is only necessary because we are
+                // handing the animation off to a remote, over which we have no control.
+                mTransitions.getLeashManager().setUpLeashes(mTransition, info, startT, excluded);
+                wrappedCallback = wct -> {
+                    finishCallback.onTransitionFinished(wct);
+                    mTransitions.getLeashManager().cleanUp(mTransition);
+                };
+            }
+
             mMergingInfo = info;
             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                     "[%d] RecentsController.merge", mInstanceId);
@@ -1380,7 +1433,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                             // Hide the animation leash, let the listener show it
                             startT.hide(target.leash);
                         }
-                        mOpeningTasks.add(new TaskState(change, target.leash));
+                        mOpeningTasks.add(updateTaskState(change, target.leash));
                         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
                             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                                     "  opening new leaf taskId=%d wasClosing=%b",
@@ -1405,7 +1458,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         // Setup hides opening tasks initially, so make it visible since recents
                         // is only animating the leafs.
                         startT.show(change.getLeash());
-                        mOpeningTasks.add(new TaskState(change, null));
+                        mOpeningTasks.add(updateTaskState(change, null));
                         onlyOpeningPausedTasksOrPausedDesk = false;
                     }
                 }
@@ -1458,7 +1511,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             // can trigger subsequent queued transitions to run, including a transition that
             // finishes the recents transition (so we can't rely on referencing any recents
             // controller state after merging).
-            consumeMerge(info, startT, finishT, finishCallback);
+            consumeMerge(info, startT, finishT, wrappedCallback);
         }
 
         /**
@@ -1867,6 +1920,23 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             // visibility gets committed in Core when using split-screen (in splitscreen,
             // the leaf-tasks are not "independent" so aren't hidden by normal setup).
             finishTransaction.hide(task.mTaskSurface);
+        }
+
+        /**
+         * Fetches the {@link TaskState} associated with the given transition participant,
+         * associating it with a leash.
+         */
+        private TaskState updateTaskState(
+                TransitionInfo.Change change, @Nullable SurfaceControl leash) {
+            if (!addOneOffHandlerLeashes()) return new TaskState(change, leash);
+
+            TaskState state = mTaskStates.get(change.getContainer());
+            if (state != null) {
+                state.mLeash = leash;
+            } else {
+                state = new TaskState(change, leash);
+            }
+            return state;
         }
 
         @Override

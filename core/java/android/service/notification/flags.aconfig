@@ -99,13 +99,6 @@ flag {
 }
 
 flag {
-  name: "enable_dnd_sync"
-  namespace: "wear_frameworks"
-  description: "Whether to enable dnd sync"
-  bug: "430676215"
-}
-
-flag {
   name: "listener_hint_exempt_packages"
   namespace: "systemui"
   description: "Exempt packages from Listener Hint restrictions in ZenModeHelper"
@@ -131,6 +124,14 @@ flag {
    namespace: "systemui"
    description: "Allows the NAS to delete conversation notification channels"
    bug: "416144530"
+}
+
+flag {
+  name: "enable_dnd_sync"
+  is_exported: true
+  namespace: "wear_frameworks"
+  description: "Whether to enable dnd sync"
+  bug: "430676215"
 }
 
 # End: API flags

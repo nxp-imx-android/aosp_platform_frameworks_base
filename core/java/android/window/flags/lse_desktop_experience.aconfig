@@ -801,6 +801,13 @@ flag {
 }
 
 flag {
+    name: "enable_game_controls_entry_in_handle_menu"
+    namespace: "lse_desktop_experience"
+    description: "Enables the game controls menu item in the app's handle menu"
+    bug: "460164391"
+}
+
+flag {
     name: "enable_handle_input_fix"
     namespace: "lse_desktop_experience"
     description: "Enables using AdditionalSystemViewContainer to resolve handle input issues."

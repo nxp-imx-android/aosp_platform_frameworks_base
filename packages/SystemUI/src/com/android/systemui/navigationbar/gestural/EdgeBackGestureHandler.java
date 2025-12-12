@@ -105,7 +105,7 @@ import com.android.systemui.util.concurrency.BackPanelUiThread;
 import com.android.systemui.util.concurrency.UiThreadContext;
 import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.wm.shell.back.BackAnimation;
-import com.android.wm.shell.desktopmode.DesktopMode;
+import com.android.wm.shell.desktopmode.api.DesktopMode;
 import com.android.wm.shell.pip.Pip;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 

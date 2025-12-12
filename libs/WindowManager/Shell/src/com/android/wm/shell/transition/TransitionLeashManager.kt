@@ -74,8 +74,17 @@ class TransitionLeashManager {
      * Wraps each participant of a transition in a leash. This new [SurfaceControl] is designed to
      * provide the same level of control to the next handler, while being easy to swap out for a new
      * one should the animation be handed over to a new handler.
+     *
+     * Participants can be explicitly excluded from leash creation by providing them as part of the
+     * optional [excluded] set.
      */
-    fun setUpLeashes(token: IBinder, info: TransitionInfo, transaction: Transaction) {
+    @JvmOverloads
+    fun setUpLeashes(
+        token: IBinder,
+        info: TransitionInfo,
+        transaction: Transaction,
+        excluded: Set<TransitionInfo.Change>? = null,
+    ) {
         val originalSurfaces = arrayOfNulls<SurfaceControl?>(info.changes.size)
         val leashes =
             leashes[token]
@@ -87,15 +96,34 @@ class TransitionLeashManager {
 
         for (i in info.changes.size - 1 downTo 0) {
             val change = info.changes[i]
+            if (excluded?.contains(change) == true) continue
+
             originalSurfaces[i] = change.leash
 
-            if (skipReparenting(change, info)) continue
+            // The default check does not reparent dependent changes, but for leashes we need
+            // dependent tasks to be wrapped as well, as they might be animated directly anyway.
+            if (skipReparenting(change, info) && !isNestedTaskChange(change, info)) continue
 
             val leash = createLeash(info, change, i, transaction)
-            leashes.add(leash)
+            // Only add the new leash to the set if one was created, otherwise we risk releasing the
+            // participant's original surface on cleanup.
+            if (leash != change.leash) leashes.add(leash)
             change.leash = leash
         }
 
         surfaces[token] = originalSurfaces
+    }
+
+    /**
+     * Checks whether a [TransitionInfo] participant is a task _and_ is dependent on another task
+     * participant.
+     */
+    private fun isNestedTaskChange(
+        change: TransitionInfo.Change,
+        info: TransitionInfo,
+    ): Boolean {
+        if (change.taskInfo?.taskId == null) return false
+        val parent = change.parent ?: return true
+        return info.getChange(parent)?.taskInfo == null
     }
 }

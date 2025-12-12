@@ -42,6 +42,13 @@ interface BubbleStackViewManager {
     /** Tells whether current active user using gesture navigation mode. */
     fun isGestureNavigationMode(): Boolean
 
+    /**
+     * Starts a transition to expand the given Bubble, if supported.
+     *
+     * @return {@code true} if the expansion is supported through {@link WindowContainerTransaction}
+     */
+    fun applyBubbleExpandTransactionIfNeeded(bubble: Bubble): Boolean
+
     companion object {
 
         @JvmStatic
@@ -69,6 +76,10 @@ interface BubbleStackViewManager {
 
                 override fun isGestureNavigationMode(): Boolean {
                     return controller.isGestureNavigationMode()
+                }
+
+                override fun applyBubbleExpandTransactionIfNeeded(bubble: Bubble): Boolean {
+                    return controller.applyBubbleExpandTransactionIfNeeded(bubble)
                 }
             }
     }

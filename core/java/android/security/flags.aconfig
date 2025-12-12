@@ -57,13 +57,6 @@ flag {
 }
 
 flag {
-    name: "software_ratelimiter"
-    namespace: "security"
-    description: "Enable support for SoftwareRateLimiter in LockSettingsService"
-    bug: "395976735"
-}
-
-flag {
     name: "stop_recognizing_legacy_password_hashes"
     namespace: "security"
     description: "Make LockSettingsService stop recognizing legacy password hashes"

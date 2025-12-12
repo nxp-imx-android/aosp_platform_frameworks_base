@@ -139,7 +139,7 @@
     <!-- @FlaggedApi(android.view.inputmethod.Flags.FLAG_IME_SUBTYPE_SHORT_LABEL) -->
     <public name="shortLabel"/>
     <!-- @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT) -->
-    <public name="isPrivateComputeCoreProcess"/>
+    <public name="privateComputeCore"/>
   </staging-public-group>
 
   <staging-public-group type="id" first-id="0x01a10000">

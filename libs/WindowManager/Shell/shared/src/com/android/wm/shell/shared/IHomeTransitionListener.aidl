@@ -29,7 +29,7 @@ oneway interface IHomeTransitionListener {
     /**
      * Called when a transition changes the visibility of the home activity on the default display.
      */
-    void onHomeVisibilityChanged(in boolean isVisible);
+    void onHomeVisibilityChanged(in boolean isVisible, in boolean keyguardGoingAway);
 
     /**
      * Called when the insets at display-level change.

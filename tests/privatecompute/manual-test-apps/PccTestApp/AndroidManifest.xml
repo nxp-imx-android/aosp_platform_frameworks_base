@@ -16,7 +16,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.pcctestapp">
 
-    <application>
+    <application android:label="Pcc Test App">
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -25,7 +25,6 @@
         </activity>
         <service
             android:name=".TestPccService"
-            android:exported="true"
-            android:isPrivateComputeCoreProcess="true"/>
+            android:privateComputeCore="true"/>
     </application>
 </manifest>

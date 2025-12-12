@@ -35,6 +35,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import android.app.UiModeManager;
 import android.content.Context;
 import android.hardware.display.DisplayManager;
 import android.os.Binder;
@@ -81,6 +82,7 @@ import org.mockito.MockitoAnnotations;
 public class StartingWindowControllerTests extends ShellTestCase {
 
     private @Mock Context mContext;
+    private @Mock Context mUserContext;
     private @Mock DisplayManager mDisplayManager;
     private @Mock DisplayInsetsController mDisplayInsetsController;
     private @Mock ShellCommandHandler mShellCommandHandler;
@@ -91,6 +93,7 @@ public class StartingWindowControllerTests extends ShellTestCase {
     private @Mock TransactionPool mTransactionPool;
     private @Mock UserManager mUserManager;
     private @Mock Transitions mTransitions;
+    private @Mock UiModeManager mUiModeManager;
     private StartingWindowController mController;
     private ShellInit mShellInit;
     private ShellController mShellController;
@@ -102,6 +105,9 @@ public class StartingWindowControllerTests extends ShellTestCase {
         doReturn(mock(Display.class)).when(mDisplayManager).getDisplay(anyInt());
         doReturn(mDisplayManager).when(mContext).getSystemService(eq(DisplayManager.class));
         doReturn(super.mContext.getResources()).when(mContext).getResources();
+        doReturn(mUserContext).when(mContext).createContextAsUser(any(), anyInt());
+        doReturn(mUiModeManager).when(mUserContext).getSystemService(eq(UiModeManager.class));
+
         mShellInit = spy(new ShellInit(mSplashScreenExecutor));
         mShellController = spy(new ShellController(mContext, mShellInit, mShellCommandHandler,
                 mDisplayInsetsController, mUserManager, mSplashScreenExecutor));

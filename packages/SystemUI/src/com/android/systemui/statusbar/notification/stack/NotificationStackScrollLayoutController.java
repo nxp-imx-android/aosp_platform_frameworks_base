@@ -2189,7 +2189,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
             boolean swipeWantsIt = false;
             if (mLongPressedView == null && !mView.isBeingDragged()
                     && !mView.isExpandingNotification()
-                    && !mView.getExpandedNotificationInThisMotion()
+                    && !mView.getExpandedInThisMotion()
                     && !lockscreenExpandWantsIt
                     && !mView.getOnlyScrollingInThisMotion()
                     && !mView.getDisallowDismissInThisMotion()
@@ -2243,8 +2243,8 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 boolean wasExpandingBefore = expandingNotification;
                 expandWantsIt = expandHelper.onTouchEvent(ev);
                 expandingNotification = mView.isExpandingNotification();
-                if (mView.getExpandedNotificationInThisMotion() && !expandingNotification
-                        && wasExpandingBefore && !mView.getDisallowScrollingInThisMotion()) {
+                if (mView.getExpandedInThisMotion() && !expandingNotification && wasExpandingBefore
+                        && !mView.getDisallowScrollingInThisMotion()) {
                     // Finish expansion here, as this gesture will be marked to be sent to
                     // scene container
                     if (SceneContainerFlag.isEnabled() && !isCancelOrUp) {
@@ -2269,7 +2269,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
             if (mLongPressedView == null && !mView.isBeingDragged()
                     && !expandingNotification
                     && !lockscreenExpandWantsIt
-                    && !mView.getExpandedNotificationInThisMotion()
+                    && !mView.getExpandedInThisMotion()
                     && !onlyScrollingInThisMotion
                     && !mView.getDisallowDismissInThisMotion()) {
                 horizontalSwipeWantsIt = mSwipeHelper.onTouchEvent(ev);

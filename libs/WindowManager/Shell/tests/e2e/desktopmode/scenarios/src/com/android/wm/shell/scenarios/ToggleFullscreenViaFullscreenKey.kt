@@ -17,10 +17,6 @@
 package com.android.wm.shell.scenarios
 
 import android.platform.test.annotations.RequiresFlagsEnabled
-import android.platform.test.flag.junit.DeviceFlagsValueProvider
-import android.tools.NavBar
-import android.tools.PlatformConsts.DEFAULT_DISPLAY
-import android.tools.Rotation
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.view.KeyEvent
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
@@ -31,18 +27,14 @@ import com.android.server.wm.flicker.helpers.ImmersiveAppHelper
 import com.android.server.wm.flicker.helpers.KeyEventHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.window.flags.Flags
-import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.utils.SplitScreenUtils
-import com.android.wm.shell.shared.desktopmode.DesktopState
 import org.junit.After
-import org.junit.Assume
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 
 /** Base scenario test for toggling fullscreen status via the fullscreen key. */
 @RequiresFlagsEnabled(Flags.FLAG_TOGGLE_FULLSCREEN_STATE_VIA_FULLSCREEN_KEY)
-abstract class ToggleFullscreenViaFullscreenKey {
+abstract class ToggleFullscreenViaFullscreenKey : TestScenarioBase() {
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(getInstrumentation())
     private val device = UiDevice.getInstance(getInstrumentation())
@@ -51,17 +43,8 @@ abstract class ToggleFullscreenViaFullscreenKey {
     private val simpleApp = DesktopModeAppHelper(SimpleAppHelper(getInstrumentation()))
     private val keyEventHelper = KeyEventHelper(getInstrumentation())
 
-    @get:Rule(order = 0) val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
-    @get:Rule(order = 1)
-    val testSetupRule = Utils.testSetupRuleFunctional(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
-
     @Before
     fun setup() {
-        Assume.assumeTrue(
-            DesktopState.fromContext(getInstrumentation().context)
-                .isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
-        )
-
         immersiveApp.enterDesktopMode(wmHelper, device, isImmersiveApp = true)
         simpleApp.enterDesktopMode(wmHelper, device, isImmersiveApp = false)
 

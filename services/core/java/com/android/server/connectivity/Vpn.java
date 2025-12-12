@@ -26,7 +26,6 @@ import static android.net.RouteInfo.RTN_UNREACHABLE;
 import static android.net.VpnManager.NOTIFICATION_CHANNEL_VPN;
 import static android.net.ipsec.ike.IkeSessionParams.ESP_ENCAP_TYPE_AUTO;
 import static android.net.ipsec.ike.IkeSessionParams.ESP_IP_VERSION_AUTO;
-import static android.net.platform.flags.Flags.reenableInnerIpv6OnVpn;
 import static android.net.vcn.util.PersistableBundleUtils.STRING_DESERIALIZER;
 import static android.os.PowerWhitelistManager.REASON_VPN;
 import static android.os.UserHandle.PER_USER_RANGE;
@@ -393,12 +392,6 @@ public class Vpn {
     @NonNull
     private final VpnConnectivityMetrics mVpnConnectivityMetrics;
 
-    /**
-     * Instance responsible for handling Inner IPv6 address when MTU changes. This field will get
-     * assigned via {@link reenableInnerIpv6OnVpn} in VPN constructor
-     */
-    private boolean mReenableInnerIpv6OnVpn = false;
-
     @VisibleForTesting
     VpnProfileStore getVpnProfileStore() {
         return mVpnProfileStore;
@@ -681,7 +674,6 @@ public class Vpn {
         mOwnerUID = getAppUid(mContext, mPackage, mUserId);
         mIsPackageTargetingAtLeastQ = doesPackageTargetAtLeastQ(mPackage);
         mVpnConnectivityMetrics = mDeps.makeVpnConnectivityMetrics(userId, mConnectivityManager);
-        mReenableInnerIpv6OnVpn = reenableInnerIpv6OnVpn();
         try {
             netService.registerObserver(mObserver);
         } catch (RemoteException e) {
@@ -3284,7 +3276,7 @@ public class Vpn {
                                     removed.getAddress(), removed.getPrefixLength());
                         }
                     } else {
-                        if (mReenableInnerIpv6OnVpn && needReenableIPv6Locked(newMtu, oldMtu)) {
+                        if (needReenableIPv6Locked(newMtu, oldMtu)) {
                             // To reenable IPv6, we will first only update the MTU via
                             // doSendLinkProperties. After the MTU update is completed,
                             // onVpnNetworkLinkPropertiesChanged will be fired and we will then
@@ -3323,11 +3315,6 @@ public class Vpn {
 
         @Override
         public void onVpnNetworkLinkPropertiesChanged(@NonNull LinkProperties lp) {
-            // Ignore if config set to false
-            if (!mReenableInnerIpv6OnVpn) {
-                return;
-            }
-
             // If the service isn't running, this is a stale runner, or the new properties
             // don't match the current interface, then we can't proceed.
             if (!mIsRunning) {

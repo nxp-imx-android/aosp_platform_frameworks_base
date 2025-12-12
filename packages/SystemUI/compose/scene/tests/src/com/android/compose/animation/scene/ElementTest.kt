@@ -2346,7 +2346,7 @@ class ElementTest {
         var progress by mutableFloatStateOf(0f)
         scope.launch {
             state.uiBoundState!!.startTransition(
-                transition(SceneA, SceneB, progress = { progress }, isUserInputOngoing = true)
+                transition(SceneA, SceneB, progress = { progress }, isUserInputOngoing = { true })
             )
         }
         assertThat(

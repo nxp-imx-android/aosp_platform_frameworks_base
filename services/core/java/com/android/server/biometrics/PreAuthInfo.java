@@ -435,8 +435,15 @@ class PreAuthInfo {
                 // Pick the first sensor error if it exists
                 if (!ineligibleSensors.isEmpty()) {
                     final Pair<BiometricSensor, Integer> pair = calculateErrorByPriority();
-                    modality |= pair.first.modality;
-                    status = pair.second;
+                    if (com.android.server.biometrics.Flags.returnCredentialNotEnrolled()
+                            && (pair.second == BIOMETRIC_INSUFFICIENT_STRENGTH
+                            || pair.second == BIOMETRIC_INSUFFICIENT_STRENGTH_AFTER_DOWNGRADE)) {
+                        modality |= TYPE_CREDENTIAL;
+                        status = CREDENTIAL_NOT_ENROLLED;
+                    } else {
+                        modality |= pair.first.modality;
+                        status = pair.second;
+                    }
                 } else {
                     modality |= TYPE_CREDENTIAL;
                     status = CREDENTIAL_NOT_ENROLLED;

@@ -159,7 +159,6 @@ import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 import static com.android.server.wm.WindowManagerInternal.OnWindowRemovedListener;
 import static com.android.server.wm.WindowManagerInternal.WindowFocusChangeListener;
 import static com.android.window.flags.Flags.multiCrop;
-import static com.android.window.flags.Flags.setScPropertiesInClient;
 
 import android.Manifest;
 import android.Manifest.permission;
@@ -2662,13 +2661,6 @@ public class WindowManagerService extends IWindowManager.Stub
                 if ((privateFlagChanges & SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS) != 0) {
                     updateNonSystemOverlayWindowsVisibilityIfNeeded(
                             win, win.mWinAnimator.getShown());
-                }
-                if (!setScPropertiesInClient()) {
-                    if ((attrChanges & (WindowManager.LayoutParams.PRIVATE_FLAGS_CHANGED)) != 0) {
-                        winAnimator.setColorSpaceAgnosticLocked((win.mAttrs.privateFlags
-                                & WindowManager.LayoutParams.PRIVATE_FLAG_COLOR_SPACE_AGNOSTIC)
-                                != 0);
-                    }
                 }
                 // See if the DisplayWindowPolicyController wants to keep the activity on the window
                 if (displayContent.mDwpcHelper.hasController()

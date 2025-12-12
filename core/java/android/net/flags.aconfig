@@ -97,17 +97,6 @@ flag {
 }
 
 flag {
-  name: "reenable_inner_ipv6_on_vpn"
-  namespace: "android_core_networking"
-  is_exported: false
-  description: "Flag for adding inner IPv6 address back to VPN if MTU supports"
-  bug: "394337934"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "connectivity_service_modify_qdisc_clsact"
   namespace: "android_core_networking"
   is_exported: true

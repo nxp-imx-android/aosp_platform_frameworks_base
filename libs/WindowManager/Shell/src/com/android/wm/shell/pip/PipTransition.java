@@ -729,7 +729,8 @@ public class PipTransition extends PipTransitionController {
             mPipOrganizer.clearContentOverlay();
         }
         if (mPipOrganizer.getOutPipWindowingMode() == WINDOWING_MODE_UNDEFINED) {
-            mHomeTransitionObserver.notifyHomeVisibilityChanged(false /* isVisible */);
+            mHomeTransitionObserver.notifyHomeVisibilityChanged(
+                    false /* isVisible */, false /* keyguardGoingAway */);
         }
         if (pipChange == null) {
             ProtoLog.w(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,

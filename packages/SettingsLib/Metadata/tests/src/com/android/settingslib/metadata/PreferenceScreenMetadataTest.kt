@@ -21,8 +21,14 @@ import android.os.Bundle
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
+import androidx.fragment.app.Fragment
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.settingslib.catalyst.flags.Flags
+import com.android.settingslib.metadata.PreferenceScreenMetadata.Companion.EXTRA_FRAGMENT_ARG_KEY
+import com.android.settingslib.metadata.PreferenceScreenMetadata.Companion.EXTRA_SCREEN_ARGS
+import com.android.settingslib.metadata.PreferenceScreenMetadata.Companion.EXTRA_SCREEN_KEY
+import com.android.settingslib.metadata.PreferenceScreenMetadata.Companion.LAUNCH_SETTINGS_PAGES_ACTION
 import com.android.settingslib.preference.PreferenceFragment
 import com.android.settingslib.preference.PreferenceScreenCreator
 import com.android.settingslib.preference.launchFragmentScenario
@@ -39,6 +45,8 @@ import org.junit.runner.RunWith
 class PreferenceScreenMetadataTest {
     @get:Rule
     val mSetFlagsRule = SetFlagsRule()
+
+    private val context: Context = ApplicationProvider.getApplicationContext()
 
     @Test
     fun isContainer_isEntryPoint() {
@@ -161,6 +169,87 @@ class PreferenceScreenMetadataTest {
             .close()
     }
 
+    @Test
+    fun getLaunchIntent_basic_returnsCorrectActionAndScreenKey() {
+        val preferenceScreen = object : PreferenceScreenMetadata {
+            override val key = SCREEN_KEY
+            override val purpose = 0
+            override fun fragmentClass(): Class<out Fragment> = PreferenceFragment::class.java
+            override fun getPreferenceHierarchy(
+                context: Context,
+                coroutineScope: CoroutineScope
+            ): PreferenceHierarchy = preferenceHierarchy(context) {}
+        }
+
+        val intent = preferenceScreen.getLaunchIntent(context, null)
+
+        assertThat(intent).isNotNull()
+        assertThat(intent!!.action).isEqualTo(LAUNCH_SETTINGS_PAGES_ACTION)
+        assertThat(intent.getStringExtra(EXTRA_SCREEN_KEY)).isEqualTo(SCREEN_KEY)
+        // Ensure no other extras are accidentally set
+        assertThat(intent.hasExtra(EXTRA_FRAGMENT_ARG_KEY)).isFalse()
+        assertThat(intent.hasExtra(EXTRA_SCREEN_ARGS)).isFalse()
+    }
+
+    @Test
+    fun getLaunchIntent_withMetadata_setsHighlightKey() {
+        val preferenceScreen = object : PreferenceScreenMetadata {
+            override val key = SCREEN_KEY
+            override val purpose = 0
+            override fun fragmentClass(): Class<out Fragment> = PreferenceFragment::class.java
+            override fun getPreferenceHierarchy(
+                context: Context,
+                coroutineScope: CoroutineScope
+            ): PreferenceHierarchy = preferenceHierarchy(context) {}
+        }
+
+        val testHighlightKey = "test_preference_key"
+
+        // Create a simple dummy metadata object
+        val metadata = object : PreferenceMetadata {
+            override val key = testHighlightKey
+            override val title = 0
+            override val summary = 0
+            override val icon = 0
+            override val purpose = 0
+        }
+
+        val intent = preferenceScreen.getLaunchIntent(context, metadata)
+
+        assertThat(intent).isNotNull()
+        assertThat(intent!!.getStringExtra(EXTRA_SCREEN_KEY)).isEqualTo(SCREEN_KEY)
+        assertThat(intent.getStringExtra(EXTRA_FRAGMENT_ARG_KEY)).isEqualTo(testHighlightKey)
+    }
+
+    @Test
+    fun getLaunchIntent_withArguments_setsScreenArgsBundle() {
+        val expectedArgValue = "some_arg_value"
+
+        // Create screen that overrides arguments
+        val preferenceScreen = object : PreferenceScreenMetadata {
+            override val key = SCREEN_KEY
+            override val purpose = 0
+            override fun fragmentClass(): Class<out Fragment> = PreferenceFragment::class.java
+            override fun getPreferenceHierarchy(
+                context: Context,
+                coroutineScope: CoroutineScope
+            ): PreferenceHierarchy = preferenceHierarchy(context) {}
+            // Mocking the behavior of having arguments
+            override val arguments: Bundle = Bundle().apply {
+                putString("test_arg", expectedArgValue)
+            }
+        }
+
+        val intent = preferenceScreen.getLaunchIntent(context, null)
+
+        assertThat(intent).isNotNull()
+        assertThat(intent!!.hasExtra(EXTRA_SCREEN_ARGS)).isTrue()
+
+        val args = intent.getBundleExtra(EXTRA_SCREEN_ARGS)
+        assertThat(args).isNotNull()
+        assertThat(args!!.getString("test_arg")).isEqualTo(expectedArgValue)
+    }
+
     open class Screen(override val key: String, override val arguments: Bundle? = null) :
         PreferenceScreenCreator, PreferenceLifecycleProvider {
 
@@ -201,6 +290,10 @@ class PreferenceScreenMetadataTest {
         override fun createWithKeyParameters(context: Context, keyParameters: ValidatedKeyParameters): PreferenceScreenMetadata = TODO("Not yet implemented")
         override fun keyParameters(context: Context): Flow<ValidatedKeyParameters> = parameters(context).map { parametersSchema.prepare(it) }
         override val parametersSchema: KeyParametersSchema get() = KeyParametersSchema {}
+    }
+
+    companion object {
+        const val SCREEN_KEY = "Screen_key"
     }
 }
 

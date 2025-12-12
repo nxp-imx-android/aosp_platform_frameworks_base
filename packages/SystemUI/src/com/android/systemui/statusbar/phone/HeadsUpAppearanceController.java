@@ -184,8 +184,7 @@ public class HeadsUpAppearanceController extends ViewController<PhoneStatusBarVi
     public void updateHeadsUpAndPulsingRoundness(ExpandableNotificationRow row) {
         boolean isTrackedChild = row == mTrackedChild;
         if (row.isPinned() || row.isHeadsUpAnimatingAway() || isTrackedChild) {
-            float roundness = MathUtils.saturate(1f - mAppearFraction);
-            row.requestRoundness(roundness, roundness, HEADS_UP);
+            row.requestRoundness(1f, 1f, HEADS_UP);
         } else {
             row.requestRoundnessReset(HEADS_UP);
         }

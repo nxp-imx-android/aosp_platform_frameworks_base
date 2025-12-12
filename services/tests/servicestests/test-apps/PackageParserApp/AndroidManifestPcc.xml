@@ -4,28 +4,28 @@
     <application>
         <activity android:name=".MyActivity" />
 
-        <activity android:name=".PccActivity" android:isPrivateComputeCoreProcess="true" />
-        <service android:name=".PccService" android:isPrivateComputeCoreProcess="true" />
-        <receiver android:name=".PccReceiver" android:isPrivateComputeCoreProcess="true" />
+        <activity android:name=".PccActivity" android:privateComputeCore="true" />
+        <service android:name=".PccService" android:privateComputeCore="true" />
+        <receiver android:name=".PccReceiver" android:privateComputeCore="true" />
         <provider android:name=".PccProvider"
           android:authorities="com.android.servicestests.apps.packageparserapp.pccprovider"
-          android:isPrivateComputeCoreProcess="true" />
+          android:privateComputeCore="true" />
         <activity-alias android:name=".PccActivityAlias" android:targetActivity=".PccActivity"
-          android:isPrivateComputeCoreProcess="true" />
+          android:privateComputeCore="true" />
         <activity-alias android:name=".PccActivityAliasToNormal" android:targetActivity=".MyActivity"
-          android:isPrivateComputeCoreProcess="true" />
+          android:privateComputeCore="true" />
 
         <activity-alias android:name=".MyActivityAliasToPcc" android:targetActivity=".PccActivity"
-          android:isPrivateComputeCoreProcess="false" />
+          android:privateComputeCore="false" />
 
-        <activity android:name=".MyActivityExplicitlyNotPcc" android:isPrivateComputeCoreProcess="false" />
-        <service android:name=".MyServiceExplicitlyNotPcc" android:isPrivateComputeCoreProcess="false" />
-        <receiver android:name=".MyReceiverExplicitlyNotPcc" android:isPrivateComputeCoreProcess="false" />
+        <activity android:name=".MyActivityExplicitlyNotPcc" android:privateComputeCore="false" />
+        <service android:name=".MyServiceExplicitlyNotPcc" android:privateComputeCore="false" />
+        <receiver android:name=".MyReceiverExplicitlyNotPcc" android:privateComputeCore="false" />
         <provider android:name=".MyProviderExplicitlyNotPcc"
           android:authorities="com.android.servicestests.apps.packageparserapp.myproviderexplicitlynotpcc"
-          android:isPrivateComputeCoreProcess="false" />
+          android:privateComputeCore="false" />
         <activity-alias android:name=".MyActivityAliasExplicitlyNotPcc" android:targetActivity=".MyActivityExplicitlyNotPcc"
-          android:isPrivateComputeCoreProcess="false" />
+          android:privateComputeCore="false" />
 
         <service android:name=".MyService" />
         <receiver android:name=".MyReceiver" />

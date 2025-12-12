@@ -1007,10 +1007,6 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
     }
 
     private void createFullScreenMagnificationPointerMotionEventFilter() {
-        if (!Flags.enableMagnificationFollowsMouseWithPointerMotionFilter()) {
-            return;
-        }
-
         final FullScreenMagnificationController controller =
                 mAms.getMagnificationController().getFullScreenMagnificationController();
         mFullScreenMagnificationPointerMotionEventFilter =
@@ -1028,10 +1024,6 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
      */
     public void setCursorFollowingMode(
             @AccessibilityMagnificationCursorFollowingMode int cursorFollowingMode) {
-        if (!Flags.enableMagnificationFollowsMouseWithPointerMotionFilter()) {
-            return;
-        }
-
         if (mFullScreenMagnificationPointerMotionEventFilter != null) {
             mFullScreenMagnificationPointerMotionEventFilter.setMode(cursorFollowingMode);
         }
@@ -1039,10 +1031,6 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
 
     @VisibleForTesting
     void registerPointerMotionFilter(boolean enabled) {
-        if (!Flags.enableMagnificationFollowsMouseWithPointerMotionFilter()) {
-            return;
-        }
-
         if (enabled == (mFullScreenMagnificationPointerMotionEventFilter != null)) {
             return;
         }

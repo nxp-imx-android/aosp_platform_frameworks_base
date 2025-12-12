@@ -27,6 +27,7 @@ import com.android.systemui.media.controls.domain.pipeline.mediaDeviceManager
 import com.android.systemui.media.controls.domain.pipeline.mediaResumeListener
 import com.android.systemui.media.controls.domain.pipeline.mediaSessionBasedFilter
 import com.android.systemui.media.controls.domain.pipeline.mediaTimeoutListener
+import com.android.systemui.media.controls.util.mediaUiEventLogger
 import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
 import com.android.systemui.media.remedia.data.repository.mediaRepository
 
@@ -43,6 +44,7 @@ val Kosmos.mediaCarouselInteractor by
             mediaDataFilter = mediaDataFilter,
             mediaPipelineRepository = mediaPipelineRepository,
             mediaRepository = mediaRepository,
+            mediaUiEventLogger = mediaUiEventLogger,
             keyguardTransitionInteractor = keyguardTransitionInteractor,
             deviceEntryInteractor = deviceEntryInteractor,
         )

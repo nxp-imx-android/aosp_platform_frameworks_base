@@ -142,7 +142,6 @@ import static com.android.window.flags.Flags.alwaysSeqIdLayoutWear;
 import static com.android.window.flags.Flags.enableWindowContextResourcesUpdateOnConfigChange;
 import static com.android.window.flags.Flags.predictiveBackFixImeEventsSkipBackDispatcher;
 import static com.android.window.flags.Flags.reduceChangedExclusionRectsMsgs;
-import static com.android.window.flags.Flags.setScPropertiesInClient;
 
 import android.Manifest;
 import android.accessibilityservice.AccessibilityService;
@@ -387,13 +386,6 @@ public final class ViewRootImpl implements ViewParent,
      */
     private static final boolean MT_RENDERER_AVAILABLE = true;
 
-    /**
-     * Whether the client (system UI) is handling the transient gesture and the corresponding
-     * animation.
-     * @hide
-     */
-    public static final boolean CLIENT_TRANSIENT =
-            SystemProperties.getBoolean("persist.wm.debug.client_transient", false);
 
     /**
      * Allow enabling IPC rendering on a per-package basis for debugging.
@@ -4025,20 +4017,18 @@ public final class ViewRootImpl implements ViewParent,
                             Surface.FRAME_RATE_COMPATIBILITY_NO_VOTE).apply();
                     }
 
-                    if (setScPropertiesInClient()) {
-                        if (surfaceControlChanged) {
-                            // Reset to default for a new SurfaceControl.
-                            mIsSurfaceColorSpaceAgnostic = false;
-                        }
-                        if (surfaceControlChanged || windowAttributesChanged) {
-                            boolean colorSpaceAgnostic = (lp.privateFlags
-                                    & WindowManager.LayoutParams.PRIVATE_FLAG_COLOR_SPACE_AGNOSTIC)
-                                    != 0;
-                            if (colorSpaceAgnostic != mIsSurfaceColorSpaceAgnostic) {
-                                mIsSurfaceColorSpaceAgnostic = colorSpaceAgnostic;
-                                mTransaction.setColorSpaceAgnostic(
-                                        mSurfaceControl, colorSpaceAgnostic).applyAsyncUnsafe();
-                            }
+                    if (surfaceControlChanged) {
+                        // Reset to default for a new SurfaceControl.
+                        mIsSurfaceColorSpaceAgnostic = false;
+                    }
+                    if (surfaceControlChanged || windowAttributesChanged) {
+                        boolean colorSpaceAgnostic = (lp.privateFlags
+                                & WindowManager.LayoutParams.PRIVATE_FLAG_COLOR_SPACE_AGNOSTIC)
+                                != 0;
+                        if (colorSpaceAgnostic != mIsSurfaceColorSpaceAgnostic) {
+                            mIsSurfaceColorSpaceAgnostic = colorSpaceAgnostic;
+                            mTransaction.setColorSpaceAgnostic(
+                                    mSurfaceControl, colorSpaceAgnostic).applyAsyncUnsafe();
                         }
                     }
                 }

@@ -6481,10 +6481,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     }
 
     boolean readMagnificationCursorFollowingMode(AccessibilityUserState userState) {
-        if (!Flags.enableMagnificationFollowsMouseWithPointerMotionFilter()) {
-            return false;
-        }
-
         @AccessibilityMagnificationCursorFollowingMode
         final int cursorFollowingMode = Settings.Secure.getIntForUser(
                 mContext.getContentResolver(),

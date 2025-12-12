@@ -79,6 +79,7 @@ flag {
     namespace: "accessibility"
     description: "Enables new APIs for an app to get the nodes from a SelectionPosition without a direct node instance."
     bug: "362783892"
+    is_exported: true
 }
 
 flag {
