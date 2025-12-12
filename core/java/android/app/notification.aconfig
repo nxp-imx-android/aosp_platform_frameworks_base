@@ -144,6 +144,13 @@ flag {
   }
 }
 
+flag {
+  name: "modes_auto_reply_message"
+  namespace: "systemui"
+  description: "When enabled, auto reply messages for a specific mode when it is turned on."
+  bug: "467758845"
+}
+
 # Start: exported flags that cannot be removed
 
 flag {
