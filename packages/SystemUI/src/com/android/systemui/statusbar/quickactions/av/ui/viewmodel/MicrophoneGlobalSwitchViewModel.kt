@@ -42,7 +42,7 @@ constructor(private val avControlsChipInteractor: AvControlsChipInteractor) :
             .hydratedStateOf(initialValue = ButtonUiState())
 
     override suspend fun onClick() {
-        avControlsChipInteractor.setCameraBlocked(!state.isEnabled)
+        avControlsChipInteractor.setMicrophoneBlocked(state.isEnabled)
     }
 
     /** A factory to be used to create view model instances. */

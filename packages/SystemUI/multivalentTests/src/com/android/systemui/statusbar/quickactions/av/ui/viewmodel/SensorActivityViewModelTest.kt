@@ -20,6 +20,7 @@ import android.graphics.drawable.ShapeDrawable
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
@@ -30,7 +31,6 @@ import com.android.systemui.statusbar.quickactions.av.shared.model.SensorAccess
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.MutableStateFlow
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -38,37 +38,39 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class SensorActivityViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmosNew()
-    private lateinit var underTest: SensorActivityViewModel
+    private val Kosmos.underTest by
+        Kosmos.Fixture {
+            val res =
+                SensorActivityViewModel(
+                    avControlsChipInteractor = interactor,
+                    setCurrentPage = { currentPage = it },
+                )
+            res.activateIn(testScope)
+            res
+        }
     private val interactor = FakeInteractor()
     private var currentPage: PageType? = null
 
-    @Before
-    fun setUp() {
-        underTest =
-            SensorActivityViewModel(
-                avControlsChipInteractor = interactor,
-                setCurrentPage = { currentPage = it },
-            )
-        underTest.activateIn(kosmos.testScope)
-    }
+    @Test
+    fun returnToMainPage_setsPageToMain() =
+        kosmos.runTest {
+            underTest.returnToMainPage()
+            assertThat(currentPage).isEqualTo(PageType.MAIN)
+        }
 
     @Test
-    fun returnToMainPage_setsPageToMain() {
-        underTest.returnToMainPage()
-        assertThat(currentPage).isEqualTo(PageType.MAIN)
-    }
+    fun enterDedicatedPage_setsPageToSensorActivity() =
+        kosmos.runTest {
+            underTest.enterDedicatedPage()
+            assertThat(currentPage).isEqualTo(PageType.SENSOR_ACTIVITY)
+        }
 
     @Test
-    fun enterDedicatedPage_setsPageToSensorActivity() {
-        underTest.enterDedicatedPage()
-        assertThat(currentPage).isEqualTo(PageType.SENSOR_ACTIVITY)
-    }
-
-    @Test
-    fun closeApp_callsInteractor() {
-        underTest.closeApp("com.example.app")
-        assertThat(interactor.closedApps).contains("com.example.app")
-    }
+    fun closeApp_callsInteractor() =
+        kosmos.runTest {
+            underTest.closeApp("com.example.app")
+            assertThat(interactor.closedApps).contains("com.example.app")
+        }
 
     @Test
     fun sensorAccessList_updatesFromInteractor() =

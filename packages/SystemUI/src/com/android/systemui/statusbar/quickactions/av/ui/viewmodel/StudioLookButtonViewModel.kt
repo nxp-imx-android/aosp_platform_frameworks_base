@@ -34,7 +34,7 @@ constructor(
         desktopEffectInteractor.model
             .map {
                 val activeEffectCount: Int =
-                    if (it.faceRetouch) 1 else 0 + if (it.portraitRelight) 1 else 0
+                    (if (it.faceRetouch) 1 else 0) + (if (it.portraitRelight) 1 else 0)
                 ButtonUiState(
                     isEnabled = activeEffectCount > 0,
                     mainTitle = com.android.systemui.res.R.string.av_studio_look,
