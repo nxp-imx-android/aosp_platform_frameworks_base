@@ -250,6 +250,8 @@ public:
 
     void visitAllRenderNodes(std::function<void(const RenderNode&)>) const;
 
+    void setRtAnimationsEnabled(bool enabled) { mEnableRTAnimations = enabled; }
+
 private:
     CanvasContext(RenderThread& thread, bool translucent, RenderNode* rootRenderNode,
                   IContextFactory* contextFactory, std::unique_ptr<IRenderPipeline> renderPipeline,
@@ -371,6 +373,8 @@ private:
 
     // If set to true, we expect that callbacks into onSurfaceStatsAvailable
     bool mExpectSurfaceStats = false;
+
+    bool mEnableRTAnimations = true;
 
     std::function<bool(int64_t, int64_t, int64_t)> mASurfaceTransactionCallback;
     std::function<void()> mPrepareSurfaceControlForWebviewCallback;

@@ -526,6 +526,14 @@ void RenderProxy::setRtAnimationsEnabled(bool enabled) {
     }
 }
 
+void RenderProxy::setRtAnimationsEnabledForContext(bool enabled) {
+    if (RenderThread::hasInstance()) {
+        RenderThread& thread = RenderThread::getInstance();
+        thread.queue().post(
+                [this, enabled]() { mContext->setRtAnimationsEnabled(enabled); });
+    }
+}
+
 } /* namespace renderthread */
 } /* namespace uirenderer */
 } /* namespace android */

@@ -159,6 +159,8 @@ public:
 
     static void setRtAnimationsEnabled(bool enabled);
 
+    void setRtAnimationsEnabledForContext(bool enabled);
+
 private:
     RenderThread& mRenderThread;
     CanvasContext* mContext;
