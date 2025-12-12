@@ -1357,16 +1357,6 @@ flag {
 }
 
 flag {
-    name: "qs_edit_mode_v2"
-    namespace: "systemui"
-    description: "Updates the removal process of tiles and improves tiles selection."
-    bug: "438943936"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "qs_material_expressive_tiles"
     namespace: "systemui"
     description: "Uses the Material Expressive button groups for QS tiles."

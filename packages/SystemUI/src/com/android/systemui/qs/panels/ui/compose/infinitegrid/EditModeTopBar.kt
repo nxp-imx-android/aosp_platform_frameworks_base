@@ -40,7 +40,6 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -61,50 +60,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.systemui.common.ui.icons.MoreVert
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditModeTopBarDefaults.editModeTopAppBarColors
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditModeTopBarDefaults.menuItemColors
 import com.android.systemui.qs.panels.ui.viewmodel.EditTopBarActionViewModel
 import com.android.systemui.res.R
-
-/**
- * Top app bar for Edit mode.
- *
- * Displays a static bar with the page's title, navigation arrow and optionals actions.
- *
- * @param onStopEditing callback when the user clicks on the navigation arrow
- * @param modifier [Modifier] applied to the top app bar
- * @param collapsibleActions list of [EditTopBarActionViewModel] to display. If more than one action
- *   is passed, they will be grouped in a dropdown menu.
- * @param actions Additional actions to show regardless of [collapsibleActions]
- */
-@Composable
-fun EditModeTopBar(
-    onStopEditing: () -> Unit,
-    modifier: Modifier = Modifier,
-    collapsibleActions: SnapshotStateList<EditTopBarActionViewModel>,
-    actions: @Composable RowScope.() -> Unit = {},
-) {
-    TopAppBar(
-        colors = editModeTopAppBarColors(),
-        title = {
-            Title(MaterialTheme.typography.titleLargeEmphasized, Modifier.padding(start = 24.dp))
-        },
-        navigationIcon = {
-            NavigationArrow(
-                onStopEditing = onStopEditing,
-                containerColor = LocalAndroidColorScheme.current.surfaceEffect2,
-            )
-        },
-        actions = {
-            actions()
-            CollapsibleActions(collapsibleActions)
-        },
-        modifier = modifier.padding(vertical = 8.dp),
-        windowInsets = WindowInsets(0.dp),
-    )
-}
 
 /**
  * Expandable top app bar for Edit mode.
