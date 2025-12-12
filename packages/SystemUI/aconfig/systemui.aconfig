@@ -1415,9 +1415,9 @@ flag {
 
 flag {
     name: "qs_wifi_config"
-    namespace: "desktop_connectivity"
+    namespace: "systemui"
     description: "Enables the multi-user WiFi configuration UI in Interent detailed tiles. This flag depends on qs_tile_detailed_view flag"
-    bug: "406548883"
+    bug: "402214828"
 }
 
 flag {
