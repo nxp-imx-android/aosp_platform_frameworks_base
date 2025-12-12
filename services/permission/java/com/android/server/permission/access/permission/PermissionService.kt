@@ -562,6 +562,17 @@ class PermissionService(private val service: AccessCheckingService) :
             return PackageManager.PERMISSION_DENIED
         }
 
+        if (
+            android.app.privatecompute.flags.Flags.enablePccFrameworkSupport() &&
+                Process.isPrivateComputeCoreUid(uid)
+        ) {
+            val permission =
+                service.getState { with(policy) { getPermissions()[permissionName] } }
+            if (permission?.isAllowedInPrivateComputeCore != true) {
+                return PackageManager.PERMISSION_DENIED
+            }
+        }
+
         // PackageManagerInternal.getPackage(int) already checks package visibility and enforces
         // that instant apps can't see shared UIDs. Note that on the contrary,
         // PackageManagerInternal.getPackage(String) doesn't perform any checks.
