@@ -1371,7 +1371,11 @@ public class CameraDeviceImpl extends CameraDevice
 
                 mRemoteDevice.updateOutputConfigurations(streamIds, newConfigs);
 
+                for (OutputConfiguration config : configurations) {
+                    config.updateCachedSurfaceSize();
+                }
                 for (i = 0; i < streamIds.length; i++) {
+                    newConfigs[i].updateCachedSurfaceSize();
                     mConfiguredOutputs.put(streamIds[i], newConfigs[i]);
                 }
                 for (i = 0; i < replacedOutputs.size(); i++) {
