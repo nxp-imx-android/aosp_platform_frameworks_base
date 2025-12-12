@@ -100,6 +100,13 @@ static jstring native_pairing_wait(JNIEnv* env, jobject thiz) {
     return env->NewStringUTF(peer_public_key);
 }
 
+static jint native_pairing_get_port(JNIEnv* /* env */, jobject /* thiz */) {
+    if (sServer != nullptr) {
+        return sServer->GetPort();
+    }
+    return 0;
+}
+
 // ----------------------------------------------------------------------------
 
 static const JNINativeMethod gPairingThreadMethods[] = {
@@ -108,6 +115,7 @@ static const JNINativeMethod gPairingThreadMethods[] = {
          (void*)native_pairing_start},
         {"native_pairing_cancel", "()V", (void*)native_pairing_cancel},
         {"native_pairing_wait", "()Ljava/lang/String;", (void*)native_pairing_wait},
+        {"native_pairing_get_port", "()I", (void*)native_pairing_get_port},
 };
 
 int register_android_server_AdbDebuggingManager(JNIEnv* env) {
