@@ -8,7 +8,7 @@ policy_metadata {
     class_name: "Boolean"
     package_name: "java.lang"
   }
-  documentation: "Test policy 1\nSecond line"
+  documentation: "Test policy 1\n Second line "
   type_specific_metadata {
     boolean_metadata {
     }
@@ -29,7 +29,7 @@ policy_metadata {
     class_name: "Integer"
     package_name: "java.lang"
   }
-  documentation: "Test policy 2"
+  documentation: "Test policy 2 "
   type_specific_metadata {
     enum_metadata {
       default_value: 1
@@ -41,7 +41,7 @@ policy_metadata {
           class_name: "PolicyIdentifier"
           package_name: "android.app.admin"
         }
-        documentation: "First entry"
+        documentation: "First entry "
       }
       values {
         field_name {
@@ -50,7 +50,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 1
-        documentation: "Second entry"
+        documentation: "Second entry "
       }
       values {
         field_name {
@@ -59,7 +59,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 2
-        documentation: "Third entry"
+        documentation: "Third entry "
       }
     }
   }
@@ -79,7 +79,7 @@ policy_metadata {
     class_name: "Integer"
     package_name: "java.lang"
   }
-  documentation: "Test policy 3"
+  documentation: "Test policy 3 "
   type_specific_metadata {
     integer_metadata {
     }
@@ -200,6 +200,7 @@ policy_metadata {
   allowed_scopes: POLICY_SCOPE_USER
   affected_resource: RESOURCE_DEVICE_WIDE
   allowed_dpc_types: DPC_TYPE_UNAFFILIATED_FULL_USER_PROFILE_OWNER
+  allowed_dpc_types: DPC_TYPE_AFFILIATED_FULL_USER_PROFILE_OWNER
 }
 policy_metadata {
   identifier {
@@ -219,6 +220,44 @@ policy_metadata {
   allowed_scopes: POLICY_SCOPE_USER
   affected_resource: RESOURCE_DEVICE_WIDE
   allowed_dpc_types: DPC_TYPE_AFFILIATED_FULL_USER_PROFILE_OWNER
+}
+policy_metadata {
+  identifier {
+    field_name: "TEST_AFFILIATED_PROFILE_OWNER_ON_USER_SAME_AS_UNAFFILIATED"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Integer"
+    package_name: "java.lang"
+  }
+  documentation: "Test policy verifying processing of AFFILIATED_PROFILE_OWNER_ON_USER_SAME_AS_UNAFFILIATED."
+  type_specific_metadata {
+    integer_metadata {
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+  allowed_dpc_types: DPC_TYPE_UNAFFILIATED_FULL_USER_PROFILE_OWNER
+  allowed_dpc_types: DPC_TYPE_AFFILIATED_FULL_USER_PROFILE_OWNER
+}
+policy_metadata {
+  identifier {
+    field_name: "TEST_AFFILIATED_PROFILE_OWNER_ON_USER_SAME_AS_UNAFFILIATED_DISALLOWED"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Integer"
+    package_name: "java.lang"
+  }
+  documentation: "Test policy verifying processing of\nAFFILIATED_PROFILE_OWNER_ON_USER_SAME_AS_UNAFFILIATED_DISALLOWED."
+  type_specific_metadata {
+    integer_metadata {
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
 }
 policy_metadata {
   identifier {
@@ -252,7 +291,7 @@ policy_metadata {
     class_name: "String"
     package_name: "java.lang"
   }
-  documentation: "Test policy 4"
+  documentation: "Test policy 4 "
   type_specific_metadata {
     string_metadata {
     }
@@ -270,7 +309,7 @@ policy_metadata {
     class_name: "List<java.lang.String>"
     package_name: "java.util"
   }
-  documentation: "Test policy 5"
+  documentation: "Test policy 5 "
   type_specific_metadata {
     list_of_string_metadata {
       element_metadata {
