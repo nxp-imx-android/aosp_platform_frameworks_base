@@ -19,6 +19,8 @@ import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
 import static android.content.pm.PackageManager.MATCH_ALL;
 import static android.os.Process.INVALID_UID;
 
+import static com.android.window.flags.Flags.enableAppRestartAfterUpdate;
+
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
 import android.app.IActivityManager;
@@ -26,6 +28,8 @@ import android.app.IUidObserver;
 import android.app.UidObserver;
 import android.os.Process;
 import android.os.RemoteException;
+import android.util.IntArray;
+import android.util.Slog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +40,7 @@ import java.util.concurrent.TimeUnit;
  * Use to monitor UIDs are really killed by the {@link IUidObserver}
  */
 final class KillAppBlocker {
+    private static final String TAG = "KillAppBlocker";
     private static final int DEFAULT_MAX_WAIT_TIMEOUT_MS = 1000;
     private final int mMaxWaitTimeoutMs;
     private CountDownLatch mUidsGoneCountDownLatch = new CountDownLatch(1);
@@ -107,7 +112,25 @@ final class KillAppBlocker {
                             packageName, MATCH_ALL, userId, Process.SYSTEM_UID);
                     if (uid != INVALID_UID) {
                         if (ami.getUidProcessState(uid) != PROCESS_STATE_NONEXISTENT) {
+                            Slog.d(TAG, "Adding uid " + uid + " for package " + packageName);
                             mActiveUids.add(uid);
+                        }
+                        if (enableAppRestartAfterUpdate()) {
+                            // Add isolated UIDs owned by this app UID
+                            IntArray isolatedUids = snapshot.getIsolatedUidsForUid(uid);
+                            if (isolatedUids.size() > 0) {
+                                Slog.d(TAG, "Found isolated uids " + isolatedUids + " for owner "
+                                        + uid);
+                            }
+                            for (int j = 0; j < isolatedUids.size(); j++) {
+                                int isolatedUid = isolatedUids.get(j);
+                                if (ami.getUidProcessState(isolatedUid)
+                                        != PROCESS_STATE_NONEXISTENT) {
+                                    Slog.d(TAG, "Adding isolated uid " + isolatedUid
+                                            + " for package " + packageName);
+                                    mActiveUids.add(isolatedUid);
+                                }
+                            }
                         }
                     }
                 }

@@ -115,6 +115,7 @@ import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
+import android.util.IntArray;
 import android.util.Log;
 import android.util.LogPrinter;
 import android.util.LongSparseLongArray;
@@ -1893,6 +1894,18 @@ public class ComputerEngine implements Computer {
             return isolatedUid;
         }
         return ownerUid;
+    }
+
+    @Override
+    public final @NonNull IntArray getIsolatedUidsForUid(int ownerUid) {
+        final IntArray isolatedUids = new IntArray();
+        // mIsolatedOwners maps isolatedUid to ownerUid
+        for (int i = 0; i < mIsolatedOwners.size(); i++) {
+            if (mIsolatedOwners.valueAt(i) == ownerUid) {
+                isolatedUids.add(mIsolatedOwners.keyAt(i));
+            }
+        }
+        return isolatedUids;
     }
 
     public final String resolveExternalPackageName(AndroidPackage pkg) {
