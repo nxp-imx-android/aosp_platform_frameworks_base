@@ -151,7 +151,6 @@ final class UserHelper {
         return START_SUCCESS;
     }
 
-    // TODO(b/412177078): use callback to set it locally (when user switches) and inline it instead
     private @UserIdInt int getCurrentUserId() {
         return ActivityManager.getCurrentUser();
     }
