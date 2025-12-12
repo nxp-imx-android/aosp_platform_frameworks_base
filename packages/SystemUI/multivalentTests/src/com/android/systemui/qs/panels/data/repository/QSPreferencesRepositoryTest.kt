@@ -19,8 +19,6 @@ package com.android.systemui.qs.panels.data.repository
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.UserInfo
-import android.platform.test.annotations.RequiresFlagsDisabled
-import android.platform.test.annotations.RequiresFlagsEnabled
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -28,7 +26,6 @@ import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.qs.flags.QsSplitInternetTile
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.pipeline.shared.TilesUpgradePath
 import com.android.systemui.settings.userFileManager
@@ -306,57 +303,6 @@ class QSPreferencesRepositoryTest : SysuiTestCase() {
 
                 assertThat(largeTiles).isEqualTo(tiles)
             }
-        }
-
-    @Test
-    @RequiresFlagsEnabled(QsSplitInternetTile.FLAG_NAME)
-    fun flagEnabled_storedInternet_replacedWithWifi() =
-        kosmos.runTest {
-            val storedLargeTiles = setOf("internet", "a")
-            setLargeTilesSpecsInSharedPreferences(storedLargeTiles)
-
-            val largeTiles by collectLastValue(underTest.largeTilesSpecs)
-
-            assertThat(largeTiles!!).containsExactly(TileSpec.create("wifi"), TileSpec.create("a"))
-        }
-
-    @Test
-    @RequiresFlagsEnabled(QsSplitInternetTile.FLAG_NAME)
-    fun flagEnabled_migrationStored_defaultNotChanged() =
-        kosmos.runTest {
-            val storedLargeTiles = setOf("internet", "a")
-            setLargeTilesSpecsInSharedPreferences(storedLargeTiles)
-
-            collectLastValue(underTest.largeTilesSpecs).invoke() // make sure a value is collected
-
-            assertThat(getLargeTilesSpecsFromSharedPreferences()).containsExactly("wifi", "a")
-            assertThat(getSharedPreferences().getAll()).doesNotContainKey(LARGE_TILES_DEFAULT_KEY)
-        }
-
-    @Test
-    @RequiresFlagsDisabled(QsSplitInternetTile.FLAG_NAME)
-    fun flagDisabled_storedInternet_replacedWithWifi() =
-        kosmos.runTest {
-            val storedLargeTiles = setOf("wifi", "a")
-            setLargeTilesSpecsInSharedPreferences(storedLargeTiles)
-
-            val largeTiles by collectLastValue(underTest.largeTilesSpecs)
-
-            assertThat(largeTiles!!)
-                .containsExactly(TileSpec.create("internet"), TileSpec.create("a"))
-        }
-
-    @Test
-    @RequiresFlagsDisabled(QsSplitInternetTile.FLAG_NAME)
-    fun flagDisabled_migrationStored_defaultNotChanged() =
-        kosmos.runTest {
-            val storedLargeTiles = setOf("wifi", "a")
-            setLargeTilesSpecsInSharedPreferences(storedLargeTiles)
-
-            collectLastValue(underTest.largeTilesSpecs).invoke() // make sure a value is collected
-
-            assertThat(getLargeTilesSpecsFromSharedPreferences()).containsExactly("internet", "a")
-            assertThat(getSharedPreferences().getAll()).doesNotContainKey(LARGE_TILES_DEFAULT_KEY)
         }
 
     private fun getSharedPreferences(): SharedPreferences =
