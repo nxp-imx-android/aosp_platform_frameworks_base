@@ -139,10 +139,10 @@ public interface EntryAdapter {
     @Nullable
     NotificationListenerService.Ranking getRanking();
 
+    @Deprecated
     void endLifetimeExtension(
             @Nullable NotifLifetimeExtender.OnEndLifetimeExtensionCallback callback,
             @NonNull NotifLifetimeExtender extender);
-
 
     void onImportanceChanged();
 
