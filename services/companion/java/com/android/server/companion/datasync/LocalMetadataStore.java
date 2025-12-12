@@ -26,18 +26,14 @@ import android.os.PersistableBundle;
 import android.util.AtomicFile;
 import android.util.Slog;
 import android.util.SparseArray;
-import android.util.Xml;
 
 import com.android.internal.annotations.GuardedBy;
-import com.android.modules.utils.TypedXmlPullParser;
-import com.android.modules.utils.TypedXmlSerializer;
 
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -57,8 +53,8 @@ import java.util.concurrent.TimeoutException;
 public class LocalMetadataStore {
 
     private static final String TAG = "CDM_LocalMetadataStore";
-    private static final String FILE_NAME = "cdm_local_metadata.xml";
-    private static final String ROOT_TAG = "bundle";
+    // A binary file w/o file extension
+    private static final String FILE_NAME = "cdm_local_metadata";
     private static final int READ_FROM_DISK_TIMEOUT = 5; // in seconds
 
     private final ExecutorService mExecutor;
@@ -127,14 +123,7 @@ public class LocalMetadataStore {
                 + file.getBaseFile().getPath());
 
         synchronized (file) {
-            writeToFileSafely(file, out -> {
-                final TypedXmlSerializer serializer = Xml.resolveSerializer(out);
-                serializer.startDocument(null, true);
-                serializer.startTag(null, ROOT_TAG);
-                metadata.saveToXml(serializer);
-                serializer.endTag(null, ROOT_TAG);
-                serializer.endDocument();
-            });
+            writeToFileSafely(file, metadata::writeToStream);
         }
     }
 
@@ -150,7 +139,7 @@ public class LocalMetadataStore {
                 return new PersistableBundle();
             }
             try (FileInputStream in = file.openRead()) {
-                return readMetadataFromInputStream(in);
+                return PersistableBundle.readFromStream(in);
             } catch (IOException e) {
                 Slog.e(TAG, "Error while reading metadata file", e);
                 return new PersistableBundle();
@@ -173,22 +162,10 @@ public class LocalMetadataStore {
     @NonNull
     public PersistableBundle readMetadataFromPayload(@NonNull byte[] payload) {
         try (ByteArrayInputStream in = new ByteArrayInputStream(payload)) {
-            return readMetadataFromInputStream(in);
+            return PersistableBundle.readFromStream(in);
         } catch (IOException e) {
             Slog.w(TAG, "Error while reading metadata from payload.", e);
             return new PersistableBundle();
-        }
-    }
-
-    @NonNull
-    private PersistableBundle readMetadataFromInputStream(@NonNull InputStream in)
-            throws IOException {
-        try {
-            final TypedXmlPullParser parser = Xml.resolvePullParser(in);
-            parser.next();
-            return PersistableBundle.restoreFromXml(parser);
-        } catch (XmlPullParserException e) {
-            throw new IOException(e);
         }
     }
 
