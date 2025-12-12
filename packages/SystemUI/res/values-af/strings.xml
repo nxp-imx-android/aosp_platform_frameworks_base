@@ -376,6 +376,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"Verwyder alle kennisgewings."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Kennisgewings"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistent"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4316411266975554038) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{nog # kennisgewing binne.}other{nog # kennisgewings binne.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Skerm is in landskapsoriëntasie gesluit."</string>
@@ -1175,8 +1177,7 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Skakel <xliff:g id="ID_1">%1$s</xliff:g>-kortpadsleutel aan?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Moenie aanskakel nie"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Skakel kortpad aan"</string>
-    <!-- no translation found for accessibility_key_gesture_color_inversion_dialog_content (8831745570619953566) -->
-    <skip />
+    <string name="accessibility_key_gesture_color_inversion_dialog_content" msgid="8831745570619953566">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ikoon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> is die kortpadsleutel om kleuromkering te gebruik. Kleuromkering maak ligte skerms donker. Dit maak ook donker skerms lig."</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g>-kortpadsleutel is aangeskakel"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645"><annotation id="action_key_icon">"<xliff:g id="ID_1">^1</xliff:g>-ikoon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> is die kortpadsleutels om <xliff:g id="ID_4">^4</xliff:g>, ’n toeganklikheidskenmerk, te gebruik. Jy kan daarmee vinnig op die skerm inzoem om inhoud groter te maak. Wanneer vergroting aan is, moet jy "<annotation id="action_key_icon">"<xliff:g id="ID_5">^1</xliff:g>-ikoon"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> en “+” of “-” druk om die zoem te verstel."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Skakel kortpad af"</string>
@@ -1586,10 +1587,8 @@
     <string name="keyguard_unlock_to_customize_ls" msgid="2068542308086253819">"Ontsluit om sluitskerm te pasmaak"</string>
     <string name="wifi_unavailable_dream_overlay_content_description" msgid="2024166212194640100">"Wi-fi is nie beskikbaar nie"</string>
     <string name="location_active_dream_overlay_content_description" msgid="6208885541020673916">"Ligging is aktief"</string>
-    <!-- no translation found for camera_privacy_dream_overlay_content_description (4503818441101346249) -->
-    <skip />
-    <!-- no translation found for mic_privacy_dream_overlay_content_description (1164197684411086751) -->
-    <skip />
+    <string name="camera_privacy_dream_overlay_content_description" msgid="4503818441101346249">"Kamera is aktief"</string>
+    <string name="mic_privacy_dream_overlay_content_description" msgid="1164197684411086751">"Mikrofoon is aktief"</string>
     <string name="camera_blocked_dream_overlay_content_description" msgid="4074759493559418130">"Kamera is geblokkeer"</string>
     <string name="camera_and_microphone_blocked_dream_overlay_content_description" msgid="7891078093416249764">"Kamera en mikrofoon is geblokkeer"</string>
     <string name="microphone_blocked_dream_overlay_content_description" msgid="5466897982130007033">"Mikrofoon is geblokkeer"</string>
@@ -1760,6 +1759,8 @@
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Vorige"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Volgende"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"navigeer na die volgende bladsy"</string>
+    <!-- no translation found for accessibility_close_overlay_action (3581095146209387670) -->
+    <skip />
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"outovul"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"vou uit"</string>
     <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Deel presiese ligging"</string>

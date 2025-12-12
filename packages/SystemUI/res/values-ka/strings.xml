@@ -376,6 +376,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"ყველა შეტყობინების წაშლა"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"შეტყობინებები"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"ასისტენტი"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4316411266975554038) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{კიდევ # შეტყობინება.}other{კიდევ # შეტყობინება.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"ეკრანი დაბლოკილია თარაზულ ორიენტაციაში"</string>
@@ -1175,8 +1177,7 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"გსურთ, ჩაირთოს <xliff:g id="ID_1">%1$s</xliff:g> კლავიატურის მალსახმობი?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"არ ჩაირთოს"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"მალსახმობის ჩართვა"</string>
-    <!-- no translation found for accessibility_key_gesture_color_inversion_dialog_content (8831745570619953566) -->
-    <skip />
+    <string name="accessibility_key_gesture_color_inversion_dialog_content" msgid="8831745570619953566">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ხატულა"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> არის კლავიატურის მალსახმობი ფერთა ინვერსიის გამოსაყენებლად. ფერთა ინვერსია ღია ეკრანს გაამუქებს. ის, ასევე, გაანათებს მუქ ეკრანს."</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> კლავიატურის მალსახმობი ჩართულია"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ხატულა"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> არის კლავიატურის მალსახმობი <xliff:g id="ID_4">^4</xliff:g>-ის, მარტივი წვდომის ფუნქციის გამოსაყენებლად. ეს საშუალებას გაძლევთ, სწრაფად გაადიდოთ მასშტაბი ეკრანზე კონტენტის გასადიდებლად. როდესაც გადიდება ჩართულია, მასშტაბის კორექტირებისთვის დააჭირეთ <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"ხატულას"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> და „+“ ან „-“."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"მალსახმობის გამორთვა"</string>
@@ -1758,6 +1759,8 @@
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"წინა"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"შემდეგი"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"მომდევნო გვერდზე გადასვლა"</string>
+    <!-- no translation found for accessibility_close_overlay_action (3581095146209387670) -->
+    <skip />
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ავტომატური შევსება"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"გაფართოება"</string>
     <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"ზუსტი მდებარეობის გაზიარება"</string>

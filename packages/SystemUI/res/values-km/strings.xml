@@ -376,6 +376,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"សម្អាត​ការ​ជូន​ដំណឹង​ទាំងអស់។"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"ការ​ជូនដំណឹង"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"ជំនួយការ"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4316411266975554038) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{មានការជូនដំណឹង # ទៀតនៅខាងក្នុង។}other{មាន​ការ​ជូនដំណឹង # ទៀត​នៅ​ខាង​ក្នុង។}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"អេក្រង់​ជាប់​សោ​ក្នុង​ទិស​ផ្ដេក។"</string>
@@ -1175,8 +1177,7 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"បើកផ្លូវកាត់​ក្ដារ​ចុច <xliff:g id="ID_1">%1$s</xliff:g> ឬ?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"កុំបើក"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"បើកផ្លូវ​កាត់"</string>
-    <!-- no translation found for accessibility_key_gesture_color_inversion_dialog_content (8831745570619953566) -->
-    <skip />
+    <string name="accessibility_key_gesture_color_inversion_dialog_content" msgid="8831745570619953566"><annotation id="action_key_icon">"រូប"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> គឺជាផ្លូវកាត់​ក្ដារ​ចុចសម្រាប់ប្រើការបញ្ច្រាស​ពណ៌។ ការបញ្ច្រាស​ពណ៌​ប្រែក្លាយ​អេក្រង់​ដែលភ្លឺ​ទៅជា​ងងឹត។ វាក៏ប្រែក្លាយអេក្រង់ដែលងងឹតទៅភ្លឺផងដែរ។"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"ផ្លូវកាត់​ក្ដារ​ចុចនៃ<xliff:g id="ID_1">%1$s</xliff:g>ត្រូវបានបើក"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"រូប"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> គឺជាផ្លូវកាត់​ក្ដារ​ចុចសម្រាប់ប្រើ <xliff:g id="ID_4">^4</xliff:g> ដែលជាមុខងារភាពងាយស្រួល។ វាអនុញ្ញាតឱ្យអ្នកពង្រីកនៅលើអេក្រង់យ៉ាងរហ័ស ដើម្បីធ្វើឱ្យខ្លឹមសារកាន់តែធំ។ នៅពេលការ​ពង្រីកត្រូវបានបើក សូមចុច<xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"រូប"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> និង \"+\" ឬ \"-\" ដើម្បីកែតម្រូវការពង្រីកបង្រួម។"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"បិទ​ផ្លូវកាត់"</string>
@@ -1758,6 +1759,8 @@
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"មុន"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"បន្ទាប់"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"រុក​រក​ទៅ​ទំព័រ​បន្ទាប់"</string>
+    <!-- no translation found for accessibility_close_overlay_action (3581095146209387670) -->
+    <skip />
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"បំពេញស្វ័យប្រវត្តិ"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"ពង្រីក"</string>
     <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"ចែករំលែកទីតាំងជាក់លាក់"</string>

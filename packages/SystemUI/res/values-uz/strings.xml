@@ -376,6 +376,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"Barcha eslatmalarni tozalash."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Bildirishnomalar"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistent"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4316411266975554038) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Ichida yana # ta bildirishnoma bor.}other{Ichida yana # ta bildirishnoma bor.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Ekran eniga holatida qulflandi."</string>
@@ -1757,6 +1759,7 @@
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Avvalgisi"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Keyingisi"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"keyingi sahifani ochish"</string>
+    <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"orqaga"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"avtomatik kiritish"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"yoyish"</string>
     <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Aniq joylashuvni ulashish"</string>

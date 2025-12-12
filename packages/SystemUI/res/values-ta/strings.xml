@@ -376,6 +376,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"எல்லா அறிவிப்புகளையும் அழி."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"அறிவிப்புகள்"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4316411266975554038) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{குழுவில் மேலும் # அறிவிப்பு உள்ளது.}other{குழுவில் மேலும் # அறிவிப்புகள் உள்ளன.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"நிலத்தோற்ற திசையமைப்பில் திரைப் பூட்டப்பட்டுள்ளது."</string>
@@ -1175,8 +1177,7 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> கீபோர்டு ஷார்ட்கட்டை ஆன் செய்யவா?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"ஆன் செய்ய வேண்டாம்"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"ஷார்ட்கட்டை ஆன் செய்"</string>
-    <!-- no translation found for accessibility_key_gesture_color_inversion_dialog_content (8831745570619953566) -->
-    <skip />
+    <string name="accessibility_key_gesture_color_inversion_dialog_content" msgid="8831745570619953566">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ஐகான்"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> என்பது கலர் இன்வெர்ஷனைப் பயன்படுத்துவதற்கான கீபோர்டு ஷார்ட்கட்டாகும். கலர் இன்வெர்ஷன் லைட் ஸ்கிரீன்களை டார்க்காக மாற்றும். அதேபோன்று டார்க் ஸ்கிரீன்களை லைட்டாக மாற்றும்."</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> கீபோர்டு ஷார்ட்கட் ஆன் செய்யப்பட்டது"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ஐகான்"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> என்பது மாற்றுத்திறன் அம்சமான <xliff:g id="ID_4">^4</xliff:g> ஐப் பயன்படுத்துவதற்கான கீபோர்டு ஷார்ட்கட்டாகும். இதன்மூலம் திரையில் உள்ள உள்ளடக்கத்தை விரைவாக ஜூம் இன் செய்து பார்க்கலாம். பெரிதாக்கல் அம்சம் ஆன் செய்யப்பட்டதும் அளவை மாற்ற, <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"ஐகான்"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> மற்றும் \"+\" அல்லது \"-\" என்பதை அழுத்தவும்."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"ஷார்ட்கட்டை ஆஃப் செய்"</string>
@@ -1586,10 +1587,8 @@
     <string name="keyguard_unlock_to_customize_ls" msgid="2068542308086253819">"பூட்டுத் திரையைப் பிரத்தியேகப்படுத்த அன்லாக் செய்யுங்கள்"</string>
     <string name="wifi_unavailable_dream_overlay_content_description" msgid="2024166212194640100">"வைஃபை கிடைக்கவில்லை"</string>
     <string name="location_active_dream_overlay_content_description" msgid="6208885541020673916">"இருப்பிடம் இயக்கத்திலுள்ளது"</string>
-    <!-- no translation found for camera_privacy_dream_overlay_content_description (4503818441101346249) -->
-    <skip />
-    <!-- no translation found for mic_privacy_dream_overlay_content_description (1164197684411086751) -->
-    <skip />
+    <string name="camera_privacy_dream_overlay_content_description" msgid="4503818441101346249">"கேமரா செயலிலுள்ளது"</string>
+    <string name="mic_privacy_dream_overlay_content_description" msgid="1164197684411086751">"மைக்ரோஃபோன் செயலிலுள்ளது"</string>
     <string name="camera_blocked_dream_overlay_content_description" msgid="4074759493559418130">"கேமரா தடுக்கப்பட்டுள்ளது"</string>
     <string name="camera_and_microphone_blocked_dream_overlay_content_description" msgid="7891078093416249764">"கேமராவும் மைக்ரோஃபோனும் தடுக்கப்பட்டுள்ளன"</string>
     <string name="microphone_blocked_dream_overlay_content_description" msgid="5466897982130007033">"மைக்ரோஃபோன் தடுக்கப்பட்டுள்ளது"</string>
@@ -1760,6 +1759,8 @@
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"முந்தையது"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"அடுத்து"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"அடுத்த பக்கத்திற்குச் செல்லும்"</string>
+    <!-- no translation found for accessibility_close_overlay_action (3581095146209387670) -->
+    <skip />
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"தானாக நிரப்பும்"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"விரிவாக்கும்"</string>
     <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"துல்லியமான இருப்பிடத்தைப் பகிர்"</string>

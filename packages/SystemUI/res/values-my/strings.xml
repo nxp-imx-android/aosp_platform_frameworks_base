@@ -85,7 +85,7 @@
     <string name="screenshot_select_folder" msgid="4770537414396025502">"ဖိုင်တွဲရွေးရန်"</string>
     <string name="screenshot_custom_uri_save_fail_title" msgid="1584124511048051054">"%1$s ဖိုင်တွဲတွင် သိမ်းလိုက်သည်"</string>
     <string name="screenshot_custom_uri_save_fail_message" msgid="8548656555271518389">"တစ်ခုခု မှားသွားသည်။ “%1$s” ဖိုင်တွဲတွင် သိမ်း၍မရလိုက်ပါ။"</string>
-    <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"ပြင်ပဖန်သားပြင်"</string>
+    <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"ပြင်ပပြကွက်"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"ဖန်သားပြင်ဓာတ်ပုံကို မသိမ်းမီ စက်ပစ္စည်းကို လော့ခ်ဖွင့်ထားရမည်"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"မျက်နှာပြင်ပုံကို ထပ်ရိုက်ကြည့်ပါ"</string>
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"ဖန်သားပြင်ဓာတ်ပုံကို သိမ်း၍မရပါ"</string>
@@ -376,6 +376,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"အကြောင်းကြားချက်အားလုံးကို ထုတ်ပစ်သည်။"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"အကြောင်းကြားချက်များ"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"အထောက်အကူ"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4316411266975554038) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{အထဲတွင် နောက်ထပ်အကြောင်းကြားချက် # ခု ရှိသည်။}other{အထဲတွင် နောက်ထပ်အကြောင်းကြားချက် # ခု ရှိသည်။}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"ဖန်သားပြင် အနေအထားက အလျားလိုက်အဖြစ် ပုံသေ လုပ်ထားပါသည်"</string>
@@ -1175,8 +1177,7 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> လက်ကွက်ဖြတ်လမ်းကို ဖွင့်မလား"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"မဖွင့်ပါနှင့်"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"ဖြတ်လမ်းလင့်ခ် ဖွင့်ရန်"</string>
-    <!-- no translation found for accessibility_key_gesture_color_inversion_dialog_content (8831745570619953566) -->
-    <skip />
+    <string name="accessibility_key_gesture_color_inversion_dialog_content" msgid="8831745570619953566">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"သင်္ကေတ"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> သည် အရောင်ပြောင်းပြန်ပြုလုပ်ခြင်းကို သုံးရန် လက်ကွက်ဖြတ်လမ်းဖြစ်သည်။ အရောင်ပြောင်းပြန်ပြုလုပ်ခြင်းသည် လင်းသည့်မျက်နှာပြင်ကို မှောင်စေသည်။ မှောင်သည့်ဖန်သားပြင်ကိုလည်း လင်းစေသည်။"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> လက်ကွက်ဖြတ်လမ်းကို ဖွင့်ထားသည်"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"သင်္ကေတ"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> သည် အများသုံးနိုင်သည့် ဝန်ဆောင်မှု <xliff:g id="ID_4">^4</xliff:g> ကို သုံးရန် လက်ကွက်ဖြတ်လမ်းဖြစ်သည်။ ၎င်းသည် အကြောင်းအရာကို ပိုကြီးအောင်လုပ်ရန်အတွက် စခရင်တွင် အမြန်ဇူးမ်ဆွဲခွင့်ပြုသည်။ ချဲ့ခြင်းကို ဖွင့်ပြီးသည်နှင့် <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"သင်္ကေတ"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> နှင့် ဇူးမ်ချိန်ညှိရန် “+” (သို့) “-” ကို နှိပ်ပါ။"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"ဖြတ်လမ်းလင့်ခ်ကို ပိတ်ရန်"</string>
@@ -1758,6 +1759,8 @@
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"ယခင်"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"ရှေ့သို့"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"နောက်စာမျက်နှာသို့ သွားရန်"</string>
+    <!-- no translation found for accessibility_close_overlay_action (3581095146209387670) -->
+    <skip />
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"အော်တိုဖြည့်"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"ချဲ့ရန်"</string>
     <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"နေရာအတိအကျကို မျှဝေရန်"</string>
