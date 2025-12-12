@@ -609,13 +609,31 @@ public final class SatelliteManager {
     @SystemApi
     public static final int NT_RADIO_TECHNOLOGY_PROPRIETARY = 4;
 
+    /**
+     * LTE Direct To Cell technology.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_SATELLITE_26Q2_APIS)
+    public static final int NT_RADIO_TECHNOLOGY_LTE_DTC = 5;
+
+    /**
+     * NR Direct To Cell technology.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_SATELLITE_26Q2_APIS)
+    public static final int NT_RADIO_TECHNOLOGY_NR_DTC = 6;
+
     /** @hide */
     @IntDef(prefix = "NT_RADIO_TECHNOLOGY_", value = {
             NT_RADIO_TECHNOLOGY_UNKNOWN,
             NT_RADIO_TECHNOLOGY_NB_IOT_NTN,
             NT_RADIO_TECHNOLOGY_NR_NTN,
             NT_RADIO_TECHNOLOGY_EMTC_NTN,
-            NT_RADIO_TECHNOLOGY_PROPRIETARY
+            NT_RADIO_TECHNOLOGY_PROPRIETARY,
+            NT_RADIO_TECHNOLOGY_LTE_DTC,
+            NT_RADIO_TECHNOLOGY_NR_DTC
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface NTRadioTechnology {}
