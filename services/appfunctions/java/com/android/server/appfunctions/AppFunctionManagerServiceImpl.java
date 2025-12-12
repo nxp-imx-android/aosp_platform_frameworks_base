@@ -512,6 +512,11 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                                     .getClientRequest()
                                                     .getFunctionIdentifier(),
                                             targetUser)) {
+                                maybeGrantImplicitAccess(
+                                        callingUid,
+                                        /* causingIntent= */ null,
+                                        targetUser,
+                                        targetPackageName);
                                 mDynamicAppFunctionRegistry.executeAppFunction(
                                         requestInternal,
                                         safeExecuteAppFunctionCallback,
@@ -560,22 +565,11 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                             ERROR_SYSTEM_ERROR, "Cannot find the target service."));
             return;
         }
-        // Grant target app implicit visibility to the caller
-        final int grantRecipientUserId = targetUser.getIdentifier();
-        final int grantRecipientAppId =
-                UserHandle.getAppId(
-                        mPackageManagerInternal.getPackageUid(
-                                requestInternal.getClientRequest().getTargetPackageName(),
-                                /* flags= */ 0,
-                                /* userId= */ grantRecipientUserId));
-        if (grantRecipientAppId > 0) {
-            mPackageManagerInternal.grantImplicitAccess(
-                    grantRecipientUserId,
-                    serviceIntent,
-                    grantRecipientAppId,
-                    callingUid,
-                    /* direct= */ true);
-        }
+        maybeGrantImplicitAccess(
+                callingUid,
+                serviceIntent,
+                targetUser,
+                requestInternal.getClientRequest().getTargetPackageName());
         bindAppFunctionServiceUnchecked(
                 requestInternal,
                 serviceIntent,
@@ -585,6 +579,29 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 bindFlags,
                 callerBinder,
                 callingUid);
+    }
+
+    private void maybeGrantImplicitAccess(
+            int callingUid,
+            @Nullable Intent causingIntent,
+            @NonNull UserHandle targetUser,
+            @NonNull String targetPackageName) {
+        // Grant target app implicit visibility to the caller
+        final int grantRecipientUserId = targetUser.getIdentifier();
+        final int grantRecipientAppId =
+                UserHandle.getAppId(
+                        mPackageManagerInternal.getPackageUid(
+                                targetPackageName,
+                                /* flags= */ 0,
+                                /* userId= */ grantRecipientUserId));
+        if (grantRecipientAppId > 0) {
+            mPackageManagerInternal.grantImplicitAccess(
+                    grantRecipientUserId,
+                    causingIntent,
+                    grantRecipientAppId,
+                    callingUid,
+                    /* direct= */ true);
+        }
     }
 
     @Override
