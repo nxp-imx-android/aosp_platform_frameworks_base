@@ -16,10 +16,12 @@
 
 package com.android.systemui.screencapture.record.smallscreen.ui.viewmodel
 
+import android.app.ActivityOptions
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.DocumentsContract
+import android.view.Display
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -131,7 +133,18 @@ constructor(
                 }
 
         broadcastSender.sendBroadcastAsUser(
-            intent = ActivityStartingReceiver.wrapIntent(context, intent, displayId),
+            intent =
+                ActivityStartingReceiver.wrapIntent(
+                    context,
+                    intent,
+                    displayId
+                        .takeIf { it != Display.INVALID_DISPLAY }
+                        ?.let { validDisplayId ->
+                            ActivityOptions.makeBasic()
+                                .apply { launchDisplayId = validDisplayId }
+                                .toBundle()
+                        },
+                ),
             userHandle = userTracker.userHandle,
         )
     }
