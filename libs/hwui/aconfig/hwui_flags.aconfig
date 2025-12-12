@@ -216,3 +216,11 @@ flag {
   description: "Enables AnimatedImageDrawable to send frame rate hints to its callback for power savings."
   bug: "454016825"
 }
+
+flag {
+  name: "image_decoder_default_listener"
+  namespace: "core_graphics"
+  is_exported: true
+  description: "Set a default listener for ImageDecoder"
+  bug: "447585785"
+}
