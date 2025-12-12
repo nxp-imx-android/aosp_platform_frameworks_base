@@ -43,6 +43,8 @@ import android.util.MathUtils;
 
 import androidx.test.core.app.ApplicationProvider;
 
+import android.provider.Settings;
+
 import com.android.internal.display.BrightnessUtils;
 
 import org.junit.Before;
@@ -105,6 +107,9 @@ public class UpgradeControllerTest {
     @Mock
     private SettingsState.Setting mHdrBrightnessBoostSetting;
 
+    @Mock
+    private SettingsState.Setting mAdaptiveConnectivitySetting;
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -125,6 +130,10 @@ public class UpgradeControllerTest {
         when(mPeakRefreshRateSetting.isNull()).thenReturn(true);
         when(mMinRefreshRateSetting.isNull()).thenReturn(true);
         when(mHdrBrightnessBoostSetting.isNull()).thenReturn(true);
+
+        when(mSecureSettings.getSettingLocked(Settings.Secure.ADAPTIVE_CONNECTIVITY_ENABLED))
+                .thenReturn(mAdaptiveConnectivitySetting);
+        when(mAdaptiveConnectivitySetting.isNull()).thenReturn(true);
 
         mSettingsRegistry.injectSettings(mSystemSettings, SETTINGS_TYPE_SYSTEM, USER_ID, DEVICE_ID);
         mSettingsRegistry.injectSettings(mSecureSettings, SETTINGS_TYPE_SECURE, USER_ID, DEVICE_ID);
@@ -224,5 +233,61 @@ public class UpgradeControllerTest {
         verify(mSecureSettings).insertSettingLocked(eq(HDR_BRIGHTNESS_BOOST_LEVEL),
                 eq(String.valueOf(newHdrBrightnessBoostLevel)), /* tag= */ any(),
                 /* makeDefault= */ anyBoolean(), /* packageName= */ any());
+    }
+
+    @Test
+    public void testUpgrade_adaptiveConnectivity_enabled() {
+        when(mAdaptiveConnectivitySetting.isNull()).thenReturn(false);
+        when(mAdaptiveConnectivitySetting.getValue()).thenReturn("1");
+
+        mUpgradeController.upgradeIfNeededLocked();
+
+        verify(mSecureSettings).insertSettingOverrideableByRestoreLocked(
+                eq(Settings.Secure.ADAPTIVE_CONNECTIVITY_WIFI_ENABLED),
+                eq("1"),
+                /* tag= */ any(),
+                /* makeDefault= */ eq(true),
+                /* packageName= */ eq(SettingsState.SYSTEM_PACKAGE_NAME));
+        verify(mSecureSettings).insertSettingOverrideableByRestoreLocked(
+                eq(Settings.Secure.ADAPTIVE_CONNECTIVITY_MOBILE_NETWORK_ENABLED),
+                eq("1"),
+                /* tag= */ any(),
+                /* makeDefault= */ eq(true),
+                /* packageName= */ eq(SettingsState.SYSTEM_PACKAGE_NAME));
+    }
+
+    @Test
+    public void testUpgrade_adaptiveConnectivity_disabled() {
+        when(mAdaptiveConnectivitySetting.isNull()).thenReturn(false);
+        when(mAdaptiveConnectivitySetting.getValue()).thenReturn("0");
+
+        mUpgradeController.upgradeIfNeededLocked();
+
+        verify(mSecureSettings).insertSettingOverrideableByRestoreLocked(
+                eq(Settings.Secure.ADAPTIVE_CONNECTIVITY_WIFI_ENABLED),
+                eq("0"),
+                /* tag= */ any(),
+                /* makeDefault= */ eq(true),
+                /* packageName= */ eq(SettingsState.SYSTEM_PACKAGE_NAME));
+        verify(mSecureSettings).insertSettingOverrideableByRestoreLocked(
+                eq(Settings.Secure.ADAPTIVE_CONNECTIVITY_MOBILE_NETWORK_ENABLED),
+                eq("0"),
+                /* tag= */ any(),
+                /* makeDefault= */ eq(true),
+                /* packageName= */ eq(SettingsState.SYSTEM_PACKAGE_NAME));
+    }
+
+    @Test
+    public void testUpgrade_adaptiveConnectivity_missing() {
+        when(mAdaptiveConnectivitySetting.isNull()).thenReturn(true);
+
+        mUpgradeController.upgradeIfNeededLocked();
+
+        verify(mSecureSettings, never()).insertSettingOverrideableByRestoreLocked(
+                eq(Settings.Secure.ADAPTIVE_CONNECTIVITY_WIFI_ENABLED),
+                any(), any(), anyBoolean(), any());
+        verify(mSecureSettings, never()).insertSettingOverrideableByRestoreLocked(
+                eq(Settings.Secure.ADAPTIVE_CONNECTIVITY_MOBILE_NETWORK_ENABLED),
+                any(), any(), anyBoolean(), any());
     }
 }
