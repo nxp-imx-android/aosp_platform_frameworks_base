@@ -1037,6 +1037,14 @@
     <uses-permission android:name="android.permission.health.READ_HEART_RATE"/>
     <uses-permission android:name="android.permission.health.READ_OXYGEN_SATURATION"/>
     <uses-permission android:name="android.permission.health.READ_SKIN_TEMPERATURE"/>
+    <uses-permission android:name="android.permission.health.READ_VO2_MAX"
+        android:featureFlag="android.permission.flags.granular_health_permissions_phase_two_enabled"/>
+    <uses-permission android:name="android.permission.health.READ_BLOOD_PRESSURE"
+        android:featureFlag="android.permission.flags.granular_health_permissions_phase_two_enabled"/>
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE_VARIABILITY"
+        android:featureFlag="android.permission.flags.granular_health_permissions_phase_two_enabled"/>
+    <uses-permission android:name="android.permission.health.READ_RESPIRATORY_RATE"
+        android:featureFlag="android.permission.flags.granular_health_permissions_phase_two_enabled"/>
 
     <!-- Permissions required for CTS test - CtsHealthFitnessDeviceTestCases-->
     <uses-permission android:name="android.permission.BACKUP_HEALTH_CONNECT_DATA_AND_SETTINGS"
