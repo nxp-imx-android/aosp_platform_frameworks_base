@@ -621,8 +621,13 @@ public class BubbleStackView extends FrameLayout
 
             if (isExpanded() && !clickedBubbleIsCurrentlyExpandedBubble) {
                 if (clickedBubble != mBubbleData.getSelectedBubble()) {
-                    // Select the clicked bubble.
-                    mBubbleData.setSelectedBubble(clickedBubble);
+                    // Try expand clicked bubble in transition, which will update BubbleData if
+                    // successful
+                    if (!mManager.applyBubbleExpandTransactionIfNeeded(clickedBubble)) {
+                        // Directly update the BubbleData if failed to expand with transition, which
+                        // can happen if the selected bubble is not an app bubble.
+                        mBubbleData.setSelectedBubble(clickedBubble);
+                    }
                 } else {
                     // If the clicked bubble is the selected bubble (but not the expanded bubble),
                     // that means overflow was previously expanded. Set the selected bubble
