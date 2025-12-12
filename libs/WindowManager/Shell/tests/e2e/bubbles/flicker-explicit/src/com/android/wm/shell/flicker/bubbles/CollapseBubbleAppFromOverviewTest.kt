@@ -24,7 +24,7 @@ import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils.testSetupRule
 import com.android.wm.shell.flicker.bubbles.testcase.CollapseBubbleAppTestCases
 import com.android.wm.shell.flicker.bubbles.utils.AssumptionRule
-import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.BubbleLaunchSource.FROM_TASK_BAR
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.BubbleLaunchSource.FROM_OVERVIEW
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaTouchOutside
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
@@ -70,7 +70,7 @@ class CollapseBubbleAppFromOverviewTest(navBar: NavBar) :
         private val recordTraceWithTransitionRule =
             RecordTraceWithTransitionRule(
                 setUpBeforeTransition = {
-                    launchBubbleViaBubbleMenu(testApp, tapl, wmHelper, fromSource = FROM_TASK_BAR)
+                    launchBubbleViaBubbleMenu(testApp, tapl, wmHelper, fromSource = FROM_OVERVIEW)
                 },
                 transition = {
                     collapseBubbleAppViaTouchOutside(testApp, wmHelper)

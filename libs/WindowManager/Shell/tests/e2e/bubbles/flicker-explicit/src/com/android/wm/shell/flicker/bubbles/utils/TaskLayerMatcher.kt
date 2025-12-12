@@ -16,24 +16,11 @@
 
 package com.android.wm.shell.flicker.bubbles.utils
 
-import android.tools.traces.component.IComponentMatcher
 import android.tools.traces.component.IComponentNameMatcher
 import android.tools.traces.surfaceflinger.Layer
-import android.tools.traces.wm.Activity
-import android.tools.traces.wm.WindowContainer
-import java.util.function.Predicate
 
 /** Matches the Task layer that contains the given child activity. */
-class TaskLayerMatcher(private val childActivityMatcher: IComponentNameMatcher) :
-    IComponentMatcher {
-    override fun windowMatchesAnyOf(windows: Collection<WindowContainer>): Boolean {
-        error("Unimplemented - only for layer")
-    }
-
-    override fun activityMatchesAnyOf(activities: Collection<Activity>): Boolean {
-        error("Unimplemented - only for layer")
-    }
-
+class TaskLayerMatcher(private val childActivityMatcher: IComponentNameMatcher) : LayerMatcher() {
     override fun layerMatchesAnyOf(layers: Collection<Layer>): Boolean {
         return layers.any {
             if (!it.name.contains("Task=")) {
@@ -45,22 +32,7 @@ class TaskLayerMatcher(private val childActivityMatcher: IComponentNameMatcher) 
         }
     }
 
-    override fun toActivityIdentifier(): String {
-        error("Unimplemented - only for layer")
-    }
-
-    override fun toWindowIdentifier(): String {
-        error("Unimplemented - only for layer")
-    }
-
     override fun toLayerIdentifier(): String {
         return "Task[${childActivityMatcher.className}]"
-    }
-
-    override fun check(
-        layers: Collection<Layer>,
-        condition: Predicate<Collection<Layer>>,
-    ): Boolean {
-        return condition.test(layers.filter { layerMatchesAnyOf(it) })
     }
 }

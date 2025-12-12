@@ -45,6 +45,7 @@ import com.android.server.wm.flicker.helpers.ImeAppHelper
 import com.android.wm.shell.Flags
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.BubbleLaunchSource.FROM_ALL_APPS
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.BubbleLaunchSource.FROM_HOME_SCREEN
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.BubbleLaunchSource.FROM_OVERVIEW
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.BubbleLaunchSource.FROM_TASK_BAR
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.DismissSource.FROM_BUBBLE_BAR_HANDLE
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.DismissSource.FROM_BUBBLE_BAR_ITEM
@@ -76,18 +77,17 @@ internal object BubbleFlickerTestHelper {
         trampolineApp: StandardAppHelper? = null,
     ) {
         val appName = trampolineApp?.appName ?: testApp.appName
-        val workspace = tapl.goHome()
-        // Go to all apps to launch app into a bubble.
         val appIcon =
             when (fromSource) {
-                FROM_ALL_APPS -> workspace.switchToAllApps().getAppIcon(appName)
-                FROM_TASK_BAR -> {
+                FROM_ALL_APPS -> tapl.goHome().switchToAllApps().getAppIcon(appName)
+                FROM_OVERVIEW -> {
                     SplitScreenUtils.createShortcutOnHotseatIfNotExist(tapl, appName)
                     val overview = tapl.goHome().switchToOverview()
                     val taskBar = overview.taskbar ?: error("Can't find TaskBar")
                     taskBar.getAppIcon(appName)
                 }
                 FROM_HOME_SCREEN -> {
+                    val workspace = tapl.goHome()
                     val homeScreenIcon = workspace.tryGetWorkspaceAppIcon(appName)
                     if (homeScreenIcon != null) {
                         // If there's an icon on the homeScreen, just use it.
@@ -103,6 +103,11 @@ internal object BubbleFlickerTestHelper {
                             )
                         tapl.workspace.getWorkspaceAppIcon(appName)
                     }
+                }
+                FROM_TASK_BAR -> {
+                    tapl.showTaskbarIfHidden()
+                    tapl.launchedAppState.assertTaskbarVisible()
+                    tapl.launchedAppState.taskbar.getAppIcon(appName)
                 }
             }
         launchAndWaitForBubbleAppExpanded(testApp, appIcon, wmHelper)
@@ -579,6 +584,9 @@ internal object BubbleFlickerTestHelper {
 
         /** Launches the bubble from home screen page. */
         FROM_HOME_SCREEN,
+
+        /** Launches the bubble from the task bar in overview. */
+        FROM_OVERVIEW,
 
         /** Launches the bubble from the task bar. */
         FROM_TASK_BAR,
