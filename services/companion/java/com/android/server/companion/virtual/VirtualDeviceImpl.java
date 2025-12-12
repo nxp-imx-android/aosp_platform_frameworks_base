@@ -76,7 +76,13 @@ import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.DisplayManagerInternal;
 import android.hardware.display.IVirtualDisplayCallback;
 import android.hardware.display.VirtualDisplayConfig;
-import android.hardware.input.IVirtualInputDevice;
+import android.hardware.input.IVirtualDpad;
+import android.hardware.input.IVirtualKeyboard;
+import android.hardware.input.IVirtualMouse;
+import android.hardware.input.IVirtualNavigationTouchpad;
+import android.hardware.input.IVirtualRotaryEncoder;
+import android.hardware.input.IVirtualStylus;
+import android.hardware.input.IVirtualTouchscreen;
 import android.hardware.input.VirtualDpadConfig;
 import android.hardware.input.VirtualKeyboardConfig;
 import android.hardware.input.VirtualMouseConfig;
@@ -1085,7 +1091,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     }
 
     @Override // Binder call
-    public IVirtualInputDevice createVirtualDpad(@NonNull VirtualDpadConfig config,
+    public IVirtualDpad createVirtualDpad(@NonNull VirtualDpadConfig config,
             @NonNull IBinder deviceToken) {
         checkCallerIsDeviceOwner();
         Objects.requireNonNull(config);
@@ -1096,13 +1102,13 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     }
 
     @Override // Binder call
-    public IVirtualInputDevice createVirtualKeyboard(@NonNull VirtualKeyboardConfig config,
+    public IVirtualKeyboard createVirtualKeyboard(@NonNull VirtualKeyboardConfig config,
             @NonNull IBinder deviceToken) {
         checkCallerIsDeviceOwner();
         Objects.requireNonNull(config);
         Objects.requireNonNull(deviceToken);
         checkVirtualInputDeviceDisplayIdAssociation(config.getAssociatedDisplayId());
-        IVirtualInputDevice device = Binder.withCleanCallingIdentity(() ->
+        IVirtualKeyboard device = Binder.withCleanCallingIdentity(() ->
                 mInputController.createKeyboard(deviceToken, config));
         synchronized (mVirtualDeviceLock) {
             mLocaleList = LocaleList.forLanguageTags(config.getLanguageTag());
@@ -1111,7 +1117,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     }
 
     @Override // Binder call
-    public IVirtualInputDevice createVirtualMouse(@NonNull VirtualMouseConfig config,
+    public IVirtualMouse createVirtualMouse(@NonNull VirtualMouseConfig config,
             @NonNull IBinder deviceToken) {
         checkCallerIsDeviceOwner();
         Objects.requireNonNull(config);
@@ -1122,7 +1128,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     }
 
     @Override // Binder call
-    public IVirtualInputDevice createVirtualTouchscreen(@NonNull VirtualTouchscreenConfig config,
+    public IVirtualTouchscreen createVirtualTouchscreen(@NonNull VirtualTouchscreenConfig config,
             @NonNull IBinder deviceToken) {
         checkCallerIsDeviceOwner();
         Objects.requireNonNull(config);
@@ -1133,7 +1139,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     }
 
     @Override // Binder call
-    public IVirtualInputDevice createVirtualNavigationTouchpad(
+    public IVirtualNavigationTouchpad createVirtualNavigationTouchpad(
             @NonNull VirtualNavigationTouchpadConfig config, @NonNull IBinder deviceToken) {
         checkCallerIsDeviceOwner();
         Objects.requireNonNull(config);
@@ -1144,7 +1150,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     }
 
     @Override // Binder call
-    public IVirtualInputDevice createVirtualStylus(@NonNull VirtualStylusConfig config,
+    public IVirtualStylus createVirtualStylus(@NonNull VirtualStylusConfig config,
             @NonNull IBinder deviceToken) {
         checkCallerIsDeviceOwner();
         Objects.requireNonNull(config);
@@ -1155,7 +1161,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     }
 
     @Override // Binder call
-    public IVirtualInputDevice createVirtualRotaryEncoder(
+    public IVirtualRotaryEncoder createVirtualRotaryEncoder(
             @NonNull VirtualRotaryEncoderConfig config, @NonNull IBinder deviceToken) {
         checkCallerIsDeviceOwner();
         Objects.requireNonNull(config);

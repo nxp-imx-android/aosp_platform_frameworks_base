@@ -20,9 +20,16 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.AttributionSource;
 import android.content.Context;
-import android.hardware.input.IVirtualInputDevice;
+import android.hardware.input.IVirtualDpad;
+import android.hardware.input.IVirtualKeyboard;
+import android.hardware.input.IVirtualMouse;
+import android.hardware.input.IVirtualNavigationTouchpad;
+import android.hardware.input.IVirtualRotaryEncoder;
+import android.hardware.input.IVirtualStylus;
+import android.hardware.input.IVirtualTouchscreen;
 import android.hardware.input.InputManager;
 import android.hardware.input.VirtualDpadConfig;
+import android.hardware.input.VirtualInputDeviceConfig;
 import android.hardware.input.VirtualKeyboardConfig;
 import android.hardware.input.VirtualMouseConfig;
 import android.hardware.input.VirtualNavigationTouchpadConfig;
@@ -51,7 +58,7 @@ final class InputController {
 
     /* Token -> file descriptor associations. */
     @GuardedBy("mLock")
-    private final ArrayMap<IBinder, IVirtualInputDevice> mInputDevices = new ArrayMap<>();
+    private final ArrayMap<IBinder, VirtualInputDevice> mInputDevices = new ArrayMap<>();
 
     private final InputManagerInternal mInputManagerInternal;
     private final InputManager mInputManager;
@@ -72,10 +79,10 @@ final class InputController {
     void close() {
         mInputManager.unregisterInputDeviceListener(mInputDeviceListener);
         synchronized (mLock) {
-            final Iterator<Map.Entry<IBinder, IVirtualInputDevice>> iterator =
+            final Iterator<Map.Entry<IBinder, VirtualInputDevice>> iterator =
                     mInputDevices.entrySet().iterator();
             while (iterator.hasNext()) {
-                final Map.Entry<IBinder, IVirtualInputDevice> entry = iterator.next();
+                final Map.Entry<IBinder, VirtualInputDevice> entry = iterator.next();
                 final IBinder token = entry.getKey();
                 iterator.remove();
                 mInputManagerInternal.closeVirtualInputDevice(token);
@@ -83,66 +90,69 @@ final class InputController {
         }
     }
 
-    IVirtualInputDevice createDpad(@NonNull IBinder token, @NonNull VirtualDpadConfig config) {
-        IVirtualInputDevice device = mInputManagerInternal.createVirtualDpad(token, config);
+    IVirtualDpad createDpad(@NonNull IBinder token, @NonNull VirtualDpadConfig config)
+            throws RemoteException {
+        IVirtualDpad device = mInputManagerInternal.createVirtualDpad(token, config);
         Counter.logIncrementWithUid("virtual_devices.value_virtual_dpad_created_count",
                 mAttributionSource.getUid());
-        addDevice(token, device);
+        addDevice(token, device.getInputDeviceId(), config);
         return device;
     }
 
-    IVirtualInputDevice createKeyboard(@NonNull IBinder token,
-            @NonNull VirtualKeyboardConfig config) {
-        IVirtualInputDevice device = mInputManagerInternal.createVirtualKeyboard(token, config);
+    IVirtualKeyboard createKeyboard(@NonNull IBinder token, @NonNull VirtualKeyboardConfig config)
+            throws RemoteException {
+        IVirtualKeyboard device = mInputManagerInternal.createVirtualKeyboard(token, config);
         Counter.logIncrementWithUid("virtual_devices.value_virtual_keyboard_created_count",
                 mAttributionSource.getUid());
-        addDevice(token, device);
+        addDevice(token, device.getInputDeviceId(), config);
         return device;
     }
 
-    IVirtualInputDevice createMouse(@NonNull IBinder token, @NonNull VirtualMouseConfig config) {
-        IVirtualInputDevice device = mInputManagerInternal.createVirtualMouse(token, config);
+    IVirtualMouse createMouse(@NonNull IBinder token, @NonNull VirtualMouseConfig config)
+            throws RemoteException {
+        IVirtualMouse device = mInputManagerInternal.createVirtualMouse(token, config);
         Counter.logIncrementWithUid("virtual_devices.value_virtual_mouse_created_count",
                 mAttributionSource.getUid());
-        addDevice(token, device);
+        addDevice(token, device.getInputDeviceId(), config);
         return device;
     }
 
-    IVirtualInputDevice createTouchscreen(@NonNull IBinder token,
-            @NonNull VirtualTouchscreenConfig config) {
-        IVirtualInputDevice device = mInputManagerInternal.createVirtualTouchscreen(token, config);
+    IVirtualTouchscreen createTouchscreen(@NonNull IBinder token,
+            @NonNull VirtualTouchscreenConfig config) throws RemoteException {
+        IVirtualTouchscreen device = mInputManagerInternal.createVirtualTouchscreen(token, config);
         Counter.logIncrementWithUid("virtual_devices.value_virtual_touchscreen_created_count",
                 mAttributionSource.getUid());
-        addDevice(token, device);
+        addDevice(token, device.getInputDeviceId(), config);
         return device;
     }
 
-    IVirtualInputDevice createNavigationTouchpad(@NonNull IBinder token,
-            @NonNull VirtualNavigationTouchpadConfig config) {
-        IVirtualInputDevice device =
+    IVirtualNavigationTouchpad createNavigationTouchpad(@NonNull IBinder token,
+            @NonNull VirtualNavigationTouchpadConfig config) throws RemoteException {
+        IVirtualNavigationTouchpad device =
                 mInputManagerInternal.createVirtualNavigationTouchpad(token, config);
         Counter.logIncrementWithUid(
                 "virtual_devices.value_virtual_navigationtouchpad_created_count",
                 mAttributionSource.getUid());
-        addDevice(token, device);
+        addDevice(token, device.getInputDeviceId(), config);
         return device;
     }
 
-    IVirtualInputDevice createStylus(@NonNull IBinder token, @NonNull VirtualStylusConfig config) {
-        IVirtualInputDevice device = mInputManagerInternal.createVirtualStylus(token, config);
+    IVirtualStylus createStylus(@NonNull IBinder token, @NonNull VirtualStylusConfig config)
+            throws RemoteException {
+        IVirtualStylus device = mInputManagerInternal.createVirtualStylus(token, config);
         Counter.logIncrementWithUid("virtual_devices.value_virtual_stylus_created_count",
                 mAttributionSource.getUid());
-        addDevice(token, device);
+        addDevice(token, device.getInputDeviceId(), config);
         return device;
     }
 
-    IVirtualInputDevice createRotaryEncoder(@NonNull IBinder token,
-            @NonNull VirtualRotaryEncoderConfig config) {
-        IVirtualInputDevice device =
+    IVirtualRotaryEncoder createRotaryEncoder(@NonNull IBinder token,
+            @NonNull VirtualRotaryEncoderConfig config) throws RemoteException {
+        IVirtualRotaryEncoder device =
                 mInputManagerInternal.createVirtualRotaryEncoder(token, config);
         Counter.logIncrementWithUid("virtual_devices.value_virtual_rotary_created_count",
                 mAttributionSource.getUid());
-        addDevice(token, device);
+        addDevice(token, device.getInputDeviceId(), config);
         return device;
     }
 
@@ -171,10 +181,9 @@ final class InputController {
         }
     }
 
-    @VisibleForTesting
-    void addDevice(IBinder token, IVirtualInputDevice device) {
+    private void addDevice(IBinder token, int deviceId, VirtualInputDeviceConfig config) {
         synchronized (mLock) {
-            mInputDevices.put(token, device);
+            mInputDevices.put(token, new VirtualInputDevice(deviceId, config));
         }
     }
 
@@ -194,15 +203,11 @@ final class InputController {
     @GuardedBy("mLock")
     @Nullable
     private IBinder getTokenForInputDeviceIdLocked(int inputDeviceId) {
-        try {
-            for (int i = 0; i < mInputDevices.size(); ++i) {
-                IVirtualInputDevice device = mInputDevices.valueAt(i);
-                if (device.getInputDeviceId() == inputDeviceId) {
-                    return mInputDevices.keyAt(i);
-                }
+        for (int i = 0; i < mInputDevices.size(); ++i) {
+            VirtualInputDevice device = mInputDevices.valueAt(i);
+            if (device.mDeviceId == inputDeviceId) {
+                return mInputDevices.keyAt(i);
             }
-        } catch (RemoteException e) {
-            e.rethrowFromSystemServer();
         }
         return null;
     }
@@ -222,6 +227,45 @@ final class InputController {
                 if (token != null) {
                     mInputDevices.remove(token);
                 }
+            }
+        }
+    }
+
+    private static final class VirtualInputDevice {
+        private final int mDeviceId;
+        private final VirtualInputDeviceConfig mConfig;
+
+        VirtualInputDevice(int deviceId, VirtualInputDeviceConfig config) {
+            mDeviceId = deviceId;
+            mConfig = config;
+        }
+
+        @Override
+        public String toString() {
+            return "VirtualInputDevice("
+                    + " name=" + mConfig.getInputDeviceName()
+                    + " inputDeviceId=" + mDeviceId
+                    + " associatedDisplayId=" + mConfig.getAssociatedDisplayId()
+                    + " type=" + getTypeFromConfig() + ")";
+        }
+
+        private String getTypeFromConfig() {
+            if (mConfig instanceof VirtualDpadConfig) {
+                return "dpad";
+            } else if (mConfig instanceof VirtualKeyboardConfig) {
+                return "keyboard";
+            } else if (mConfig instanceof VirtualMouseConfig) {
+                return "mouse";
+            } else if (mConfig instanceof VirtualTouchscreenConfig) {
+                return "touchscreen";
+            } else if (mConfig instanceof VirtualNavigationTouchpadConfig) {
+                return "navigationTouchpad";
+            } else if (mConfig instanceof VirtualStylusConfig) {
+                return "stylus";
+            } else if (mConfig instanceof VirtualRotaryEncoderConfig) {
+                return "rotaryEncoder";
+            } else {
+                return "unknown";
             }
         }
     }

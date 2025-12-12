@@ -33,14 +33,20 @@ import android.content.IntentFilter;
 import android.graphics.Point;
 import android.hardware.display.IVirtualDisplayCallback;
 import android.hardware.display.VirtualDisplayConfig;
-import android.hardware.input.IVirtualInputDevice;
+import android.hardware.input.IVirtualDpad;
+import android.hardware.input.IVirtualKeyboard;
+import android.hardware.input.IVirtualMouse;
+import android.hardware.input.IVirtualNavigationTouchpad;
+import android.hardware.input.IVirtualRotaryEncoder;
+import android.hardware.input.IVirtualStylus;
+import android.hardware.input.IVirtualTouchscreen;
 import android.hardware.input.VirtualDpadConfig;
 import android.hardware.input.VirtualKeyboardConfig;
 import android.hardware.input.VirtualMouseConfig;
+import android.hardware.input.VirtualNavigationTouchpadConfig;
 import android.hardware.input.VirtualRotaryEncoderConfig;
 import android.hardware.input.VirtualStylusConfig;
 import android.hardware.input.VirtualTouchscreenConfig;
-import android.hardware.input.VirtualNavigationTouchpadConfig;
 import android.os.ResultReceiver;
 
 /**
@@ -144,39 +150,39 @@ interface IVirtualDevice {
     /**
      * Creates a new dpad and registers it with the input framework with the given token.
      */
-    IVirtualInputDevice createVirtualDpad(in VirtualDpadConfig config, IBinder token);
+    IVirtualDpad createVirtualDpad(in VirtualDpadConfig config, IBinder token);
 
     /**
      * Creates a new keyboard and registers it with the input framework with the given token.
      */
-    IVirtualInputDevice createVirtualKeyboard(in VirtualKeyboardConfig config, IBinder token);
+    IVirtualKeyboard createVirtualKeyboard(in VirtualKeyboardConfig config, IBinder token);
 
     /**
      * Creates a new mouse and registers it with the input framework with the given token.
      */
-    IVirtualInputDevice createVirtualMouse(in VirtualMouseConfig config, IBinder token);
+    IVirtualMouse createVirtualMouse(in VirtualMouseConfig config, IBinder token);
 
     /**
      * Creates a new touchscreen and registers it with the input framework with the given token.
      */
-    IVirtualInputDevice createVirtualTouchscreen(in VirtualTouchscreenConfig config, IBinder token);
+    IVirtualTouchscreen createVirtualTouchscreen(in VirtualTouchscreenConfig config, IBinder token);
 
     /**
      * Creates a new navigation touchpad and registers it with the input framework with the given
      * token.
      */
-    IVirtualInputDevice createVirtualNavigationTouchpad(in VirtualNavigationTouchpadConfig config,
-            IBinder token);
+    IVirtualNavigationTouchpad createVirtualNavigationTouchpad(
+            in VirtualNavigationTouchpadConfig config, IBinder token);
 
     /**
      * Creates a new stylus and registers it with the input framework with the given token.
      */
-    IVirtualInputDevice createVirtualStylus(in VirtualStylusConfig config, IBinder token);
+    IVirtualStylus createVirtualStylus(in VirtualStylusConfig config, IBinder token);
 
     /**
      * Creates a new rotary encoder and registers it with the input framework with the given token.
      */
-    IVirtualInputDevice createVirtualRotaryEncoder(in VirtualRotaryEncoderConfig config,
+    IVirtualRotaryEncoder createVirtualRotaryEncoder(in VirtualRotaryEncoderConfig config,
             IBinder token);
 
     /**

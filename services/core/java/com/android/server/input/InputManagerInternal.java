@@ -22,7 +22,13 @@ import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.hardware.display.DisplayTopologyGraph;
 import android.hardware.display.DisplayViewport;
-import android.hardware.input.IVirtualInputDevice;
+import android.hardware.input.IVirtualDpad;
+import android.hardware.input.IVirtualKeyboard;
+import android.hardware.input.IVirtualMouse;
+import android.hardware.input.IVirtualNavigationTouchpad;
+import android.hardware.input.IVirtualRotaryEncoder;
+import android.hardware.input.IVirtualStylus;
+import android.hardware.input.IVirtualTouchscreen;
 import android.hardware.input.KeyGestureEvent;
 import android.hardware.input.VirtualDpadConfig;
 import android.hardware.input.VirtualKeyboardConfig;
@@ -383,7 +389,7 @@ public abstract class InputManagerInternal {
      * @return the new virtual input device, or {@code null} if the creation failed.
      */
     @NonNull
-    public abstract IVirtualInputDevice createVirtualKeyboard(@NonNull IBinder token,
+    public abstract IVirtualKeyboard createVirtualKeyboard(@NonNull IBinder token,
             @NonNull VirtualKeyboardConfig config);
 
     /**
@@ -394,7 +400,7 @@ public abstract class InputManagerInternal {
      * @return the new virtual input device, or {@code null} if the creation failed.
      */
     @NonNull
-    public abstract IVirtualInputDevice createVirtualMouse(@NonNull IBinder token,
+    public abstract IVirtualMouse createVirtualMouse(@NonNull IBinder token,
             @NonNull VirtualMouseConfig config);
 
     /**
@@ -405,7 +411,7 @@ public abstract class InputManagerInternal {
      * @return the new virtual input device, or {@code null} if the creation failed.
      */
     @NonNull
-    public abstract IVirtualInputDevice createVirtualTouchscreen(@NonNull IBinder token,
+    public abstract IVirtualTouchscreen createVirtualTouchscreen(@NonNull IBinder token,
             @NonNull VirtualTouchscreenConfig config);
 
     /**
@@ -416,8 +422,8 @@ public abstract class InputManagerInternal {
      * @return the new virtual input device, or {@code null} if the creation failed.
      */
     @NonNull
-    public abstract IVirtualInputDevice createVirtualNavigationTouchpad(@NonNull IBinder token,
-            @NonNull VirtualNavigationTouchpadConfig config);
+    public abstract IVirtualNavigationTouchpad createVirtualNavigationTouchpad(
+            @NonNull IBinder token, @NonNull VirtualNavigationTouchpadConfig config);
 
     /**
      * Creates a new virtual dpad.
@@ -427,7 +433,7 @@ public abstract class InputManagerInternal {
      * @return the new virtual input device, or {@code null} if the creation failed.
      */
     @NonNull
-    public abstract IVirtualInputDevice createVirtualDpad(@NonNull IBinder token,
+    public abstract IVirtualDpad createVirtualDpad(@NonNull IBinder token,
             @NonNull VirtualDpadConfig config);
 
     /**
@@ -438,7 +444,7 @@ public abstract class InputManagerInternal {
      * @return the new virtual input device, or {@code null} if the creation failed.
      */
     @NonNull
-    public abstract IVirtualInputDevice createVirtualStylus(@NonNull IBinder token,
+    public abstract IVirtualStylus createVirtualStylus(@NonNull IBinder token,
             @NonNull VirtualStylusConfig config);
 
     /**
@@ -449,7 +455,7 @@ public abstract class InputManagerInternal {
      * @return the new virtual input device, or {@code null} if the creation failed.
      */
     @NonNull
-    public abstract IVirtualInputDevice createVirtualRotaryEncoder(@NonNull IBinder token,
+    public abstract IVirtualRotaryEncoder createVirtualRotaryEncoder(@NonNull IBinder token,
             @NonNull VirtualRotaryEncoderConfig config);
 
     /**

@@ -18,12 +18,12 @@ package android.hardware.input;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.os.RemoteException;
 import android.util.Log;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 
 import java.io.Closeable;
@@ -44,32 +44,14 @@ public class VirtualKeyboard implements Closeable {
     private static final String TAG = "VirtualKeyboard";
     private static final int UNSUPPORTED_KEY_CODE = KeyEvent.KEYCODE_DPAD_CENTER;
 
-    // This class is expected to be initiated with either a {@link IVirtualKeyboard} or
-    // {@link IVirtualInputDevice}. Only one should be non-null at a time and is an error
-    // if both are null.
-    @Nullable
-    private IVirtualKeyboard mVirtualKeyboard;
-    @Nullable
-    private IVirtualInputDevice mVirtualInputDevice;
+    private final IVirtualKeyboard mVirtualKeyboard;
 
     private final VirtualKeyboardConfig mConfig;
 
-    /**
-     * Constructor if creating a virtual keyboard with a {@link IVirtualKeyboard}.
-     * @hide
-     */
+    /** @hide */
     public VirtualKeyboard(VirtualKeyboardConfig config, IVirtualKeyboard virtualKeyboard) {
         mConfig = config;
         mVirtualKeyboard = Objects.requireNonNull(virtualKeyboard);
-    }
-
-    /**
-     * Constructor if creating a virtual keyboard with a {@link IVirtualInputDevice}.
-     * @hide
-     */
-    public VirtualKeyboard(VirtualKeyboardConfig config, IVirtualInputDevice virtualDevice) {
-        mConfig = config;
-        mVirtualInputDevice = Objects.requireNonNull(virtualDevice);
     }
 
     /**
@@ -84,16 +66,8 @@ public class VirtualKeyboard implements Closeable {
                 throw new IllegalArgumentException("Unsupported key code " + event.getKeyCode()
                         + " sent to a VirtualKeyboard input device.");
             }
-
-            if (mVirtualKeyboard == null && mVirtualInputDevice == null) {
-                throw new IllegalStateException("VirtualKeyboard is not properly initialized.");
-            }
-
-            if (mVirtualKeyboard != null && !mVirtualKeyboard.sendKeyEvent(event)) {
+            if (!mVirtualKeyboard.sendKeyEvent(event)) {
                 Log.w(TAG, "Failed to send key event to virtual keyboard "
-                        + mConfig.getInputDeviceName());
-            } else if (mVirtualInputDevice != null && !mVirtualInputDevice.sendKeyEvent(event)) {
-                Log.w(TAG, "Failed to send key event to virtual input device keyboard "
                         + mConfig.getInputDeviceName());
             }
         } catch (RemoteException e) {
@@ -112,13 +86,7 @@ public class VirtualKeyboard implements Closeable {
     @SystemApi
     public int getInputDeviceId() {
         try {
-            if (mVirtualKeyboard != null) {
-                return mVirtualKeyboard.getInputDeviceId();
-            } else if (mVirtualInputDevice != null) {
-                return mVirtualInputDevice.getInputDeviceId();
-            } else {
-                throw new IllegalStateException("VirtualKeyboard is not properly initialized.");
-            }
+            return mVirtualKeyboard.getInputDeviceId();
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -126,14 +94,9 @@ public class VirtualKeyboard implements Closeable {
 
     @Override
     public void close() {
+        Log.d(TAG, "Closing virtual keyboard " + mConfig.getInputDeviceName());
         try {
-            if (mVirtualKeyboard != null) {
-                mVirtualKeyboard.close();
-            } else if (mVirtualInputDevice != null) {
-                mVirtualInputDevice.close();
-            } else {
-                throw new IllegalStateException("VirtualKeyboard is not properly initialized.");
-            }
+            mVirtualKeyboard.close();
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -152,16 +115,6 @@ public class VirtualKeyboard implements Closeable {
     @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
     @TestApi
     public int getInputDeviceIdForTest() {
-        try {
-            if (mVirtualInputDevice != null) {
-                return mVirtualInputDevice.getInputDeviceId();
-            } else if (mVirtualKeyboard != null) {
-                return getInputDeviceId();
-            } else {
-                throw new IllegalStateException("VirtualKeyboard is not properly initialized.");
-            }
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
+        return getInputDeviceId();
     }
 }
