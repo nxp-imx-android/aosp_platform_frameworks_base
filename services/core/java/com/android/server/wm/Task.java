@@ -7258,6 +7258,33 @@ class Task extends TaskFragment {
         mExcludeLayersFromTaskSnapshot = null;
     }
 
+    // TODO(b/464035997): remove this method once the long term solution is implemented.
+    /**
+     * Returns whether this task has a sibling task that is opaque. This is only relevant for
+     * non-root Tasks.
+     */
+    boolean hasOpaqueSibling() {
+        final WindowContainer parent = getParent();
+        if (parent == null) {
+            return false;
+        }
+        final Task parentTask = parent.asTask();
+        if (parentTask == null) {
+            return false;
+        }
+        for (int i = 0; i < parentTask.getChildCount(); i++) {
+            final WindowContainer child = parentTask.getChildAt(i);
+            // Skip the task being moved
+            if (child == this) {
+                continue;
+            }
+            if (mAtmService.mVisibilityHelper.isOpaque(child)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * A class managing the decor surface.
      *

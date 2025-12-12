@@ -91,9 +91,11 @@ oneway interface ITaskOrganizer {
      *        {@link Activity#moveTaskToBack}, false if it's triggered by a back press.
      * @param isOptInOnBackInvoked True if the root activity of the task has opted in to
      *        {@link android.window.OnBackInvokedCallback}.
+     * @param hasOpaqueSibling Whether the task has an opaque sibling
      */
     void onBackPressedOnTaskRoot(in ActivityManager.RunningTaskInfo taskInfo,
-            boolean isFromMoveActivityTaskToBack, boolean isOptInOnBackInvoked);
+            boolean isFromMoveActivityTaskToBack, boolean isOptInOnBackInvoked,
+            boolean hasOpaqueSibling);
 
     /**
      * Called when the IME has drawn on the organized task.

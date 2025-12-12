@@ -542,6 +542,7 @@ class RootTaskDesksOrganizer(
         taskInfo: RunningTaskInfo,
         isFromMoveActivityTaskToBack: Boolean,
         isOptInOnBackInvoked: Boolean,
+        hasOpaqueSibling: Boolean,
     ) {
         if (Flags.enableBackNavigationDesktopAppNoMinimize() && !isOptInOnBackInvoked) {
             backPressedOnDeskListener?.invoke(taskInfo)
