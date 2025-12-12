@@ -692,7 +692,8 @@ public class WindowTestsBase extends SystemServiceTestsBase {
             int windowingMode, int activityType, boolean onTop, boolean twoLevelTask) {
         return createTask(taskDisplayArea, windowingMode, activityType,
                 onTop, true /* createActivity */, twoLevelTask,
-                false /* forceOpaque */);
+                false /* forceOpaque */, false /* shouldIgnoreInsets */,
+                false /* disableAppCompatRoundedCorners */);
     }
 
     /** Creates a {@link Task} and adds to the given {@link DisplayContent}. */
@@ -708,20 +709,24 @@ public class WindowTestsBase extends SystemServiceTestsBase {
     Task createTask(TaskDisplayArea taskDisplayArea, int windowingMode, int activityType) {
         return createTask(taskDisplayArea, windowingMode, activityType,
                 true /* onTop */, false /* createActivity */, false /* twoLevelTask */,
-                false /* forceOpaque */);
+                false /* forceOpaque */, false /* shouldIgnoreInsets */,
+                false /* disableAppCompatRoundedCorners */);
     }
 
     /** Creates a {@link Task} and adds to the given {@link TaskDisplayArea}. */
     Task createTask(TaskDisplayArea taskDisplayArea, int windowingMode, int activityType,
             boolean onTop, boolean createActivity, boolean twoLevelTask,
-            boolean forcepaque) {
+            boolean forceOpaque, boolean shouldIgnoreInsets,
+            boolean disableAppCompatRoundedCorners) {
         final TaskBuilder builder = new TaskBuilder(mSupervisor)
                 .setTaskDisplayArea(taskDisplayArea)
                 .setWindowingMode(windowingMode)
                 .setActivityType(activityType)
                 .setOnTop(onTop)
                 .setCreateActivity(createActivity)
-                .setForceOpaque(forcepaque);
+                .setForceOpaque(forceOpaque)
+                .setShouldIgnoreInsets(shouldIgnoreInsets)
+                .setDisableAppCompatRoundedCorners(disableAppCompatRoundedCorners);
         if (twoLevelTask) {
             return builder
                     .setCreateParentTask(true)
@@ -1572,6 +1577,8 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         private boolean mCreateActivity = false;
         private boolean mCreatedByOrganizer = false;
         private boolean mIsForceOpaque = false;
+        private boolean mShouldIgnoreInsets = false;
+        private boolean mDisableAppCompatRoundedCorners = false;
 
         TaskBuilder(ActivityTaskSupervisor supervisor) {
             mSupervisor = supervisor;
@@ -1673,6 +1680,16 @@ public class WindowTestsBase extends SystemServiceTestsBase {
             return this;
         }
 
+        TaskBuilder setShouldIgnoreInsets(boolean shouldIgnoreInsets) {
+            mShouldIgnoreInsets = shouldIgnoreInsets;
+            return this;
+        }
+
+        TaskBuilder setDisableAppCompatRoundedCorners(boolean disableAppCompatRoundedCorners) {
+            mDisableAppCompatRoundedCorners = disableAppCompatRoundedCorners;
+            return this;
+        }
+
         Task build() {
             SystemServicesTestRule.checkHoldsLock(mSupervisor.mService.mGlobalLock);
 
@@ -1709,7 +1726,9 @@ public class WindowTestsBase extends SystemServiceTestsBase {
                     .setOnTop(mOnTop)
                     .setVoiceSession(mVoiceSession)
                     .setCreatedByOrganizer(mCreatedByOrganizer)
-                    .setForceOpaque(mIsForceOpaque);
+                    .setForceOpaque(mIsForceOpaque)
+                    .setShouldIgnoreInsets(mShouldIgnoreInsets)
+                    .setDisableAppCompatRoundedCorners(mDisableAppCompatRoundedCorners);
             final Task task;
             if (mParentTask == null) {
                 task = builder.setActivityType(mActivityType)

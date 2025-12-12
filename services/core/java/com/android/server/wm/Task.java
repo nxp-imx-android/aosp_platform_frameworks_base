@@ -662,7 +662,14 @@ class Task extends TaskFragment {
     /** @see #isDisablePip() */
     private boolean mDisablePip;
 
+    /** @see #isForceOpaque() */
     private final boolean mIsForceOpaque;
+
+    /** @see #shouldIgnoreInsets() */
+    private boolean mShouldIgnoreInsets;
+
+    /** @see #disableAppCompatRoundedCorners() */
+    private boolean mDisableAppCompatRoundedCorners;
 
     private Task(ActivityTaskManagerService atmService, int _taskId, Intent _intent,
             Intent _affinityIntent, String _affinity, String _rootAffinity,
@@ -676,7 +683,8 @@ class Task extends TaskFragment {
             @Nullable ActivityInfo info, @Nullable IVoiceInteractionSession _voiceSession,
             IVoiceInteractor _voiceInteractor, boolean _createdByOrganizer, IBinder _launchCookie,
             boolean _deferTaskAppear, boolean _removeWithTaskOrganizer,
-            boolean isForceOpaque, boolean _realActivityAppLockEnabled) {
+            boolean isForceOpaque, boolean shouldIgnoreInsets,
+            boolean disableAppCompatRoundedCorners, boolean _realActivityAppLockEnabled) {
         super(atmService, null /* fragmentToken */, _createdByOrganizer, false /* isEmbedded */);
 
         mTaskId = _taskId;
@@ -726,6 +734,8 @@ class Task extends TaskFragment {
         mRemoveWithTaskOrganizer = _removeWithTaskOrganizer;
         mIsTrimmableFromRecents = true;
         mIsForceOpaque = isForceOpaque;
+        mShouldIgnoreInsets = shouldIgnoreInsets;
+        mDisableAppCompatRoundedCorners = disableAppCompatRoundedCorners;
         EventLogTags.writeWmTaskCreated(mTaskId);
 
         if (android.security.Flags.appLockCore()) {
@@ -6664,6 +6674,25 @@ class Task extends TaskFragment {
         return super.hasFillingContent();
     }
 
+    /**
+     * Indicates whether this Task can float on top of insets, so it should report task bounds
+     * without checking insets, such as for metrics like smallestScreenWidthDp.
+     */
+    boolean shouldIgnoreInsets() {
+        // Only allow the explicit override behavior if this task is created by an organizer.
+        return mCreatedByOrganizer && mShouldIgnoreInsets;
+    }
+
+    /**
+     * Indicates whether this Task will disable showing rounded corners for app compat purposes
+     * around an activity (e.g. when a landscape app is letterboxed). Tasks can set this for better
+     * UX since sharp corners may look better in some cases like in a Bubble.
+     */
+    boolean disableAppCompatRoundedCorners() {
+        // Only allow the explicit override behavior if this task is created by an organizer.
+        return mCreatedByOrganizer && mDisableAppCompatRoundedCorners;
+    }
+
     static class Builder {
         private final ActivityTaskManagerService mAtmService;
         private WindowContainer mParent;
@@ -6712,6 +6741,8 @@ class Task extends TaskFragment {
         private String mName;
 
         private boolean mIsForceOpaque;
+        private boolean mShouldIgnoreInsets = false;
+        private boolean mDisableAppCompatRoundedCorners = false;
 
         /**
          * Records the source task that requesting to build a new task, used to determine which of
@@ -6851,6 +6882,24 @@ class Task extends TaskFragment {
          */
         Builder setForceOpaque(boolean forceOpaque) {
             mIsForceOpaque = forceOpaque;
+            return this;
+        }
+
+        /**
+         * Sets whether the Task should ignore insets.
+         * @see Task#shouldIgnoreInsets()
+         */
+        Builder setShouldIgnoreInsets(boolean shouldIgnoreInsets) {
+            mShouldIgnoreInsets = shouldIgnoreInsets;
+            return this;
+        }
+
+        /**
+         * Sets whether the Task should disable showing app compat rounded corners.
+         * @see Task#disableAppCompatRoundedCorners()
+         */
+        Builder setDisableAppCompatRoundedCorners(boolean disableAppCompatRoundedCorners) {
+            mDisableAppCompatRoundedCorners = disableAppCompatRoundedCorners;
             return this;
         }
 
@@ -7095,7 +7144,8 @@ class Task extends TaskFragment {
                     mRealActivitySuspended, mUserSetupComplete, mMinWidth, mMinHeight,
                     mActivityInfo, mVoiceSession, mVoiceInteractor, mCreatedByOrganizer,
                     mLaunchCookie, mDeferTaskAppear, mRemoveWithTaskOrganizer,
-                    mIsForceOpaque, mRealActivityAppLockEnabled);
+                    mIsForceOpaque, mShouldIgnoreInsets, mDisableAppCompatRoundedCorners,
+                    mRealActivityAppLockEnabled);
         }
     }
 

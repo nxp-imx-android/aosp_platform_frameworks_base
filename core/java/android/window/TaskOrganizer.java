@@ -47,6 +47,7 @@ public class TaskOrganizer extends WindowOrganizer {
      * Data associated with a request to create a new root task.
      * @hide
      */
+    // TODO(b/468029217): Consider making this class Parcelable.
     public static class CreateRootTaskRequest {
         public int displayId;
         public int windowingMode;
@@ -55,6 +56,8 @@ public class TaskOrganizer extends WindowOrganizer {
         public @Nullable IBinder launchCookie;
         public @Nullable String name;
         public boolean isForceOpaque;
+        public boolean shouldIgnoreInsets;
+        public boolean disableAppCompatRoundedCorners;
 
         /**
          * Sets the ID of the display to create the root task on.
@@ -119,6 +122,26 @@ public class TaskOrganizer extends WindowOrganizer {
                 throw new UnsupportedOperationException("Enabling force opaque is not enabled!");
             }
             this.isForceOpaque = forceOpaque;
+            return this;
+        }
+
+        /**
+         * If sets to {@code true}, the created Task can float on top of insets, so it should report
+         * task bounds without checking insets, such as for metrics like smallestScreenWidthDp.
+         */
+        public CreateRootTaskRequest setShouldIgnoreInsets(boolean shouldIgnoreInsets) {
+            this.shouldIgnoreInsets = shouldIgnoreInsets;
+            return this;
+        }
+
+        /**
+         * If {@code true}, the created Task will disable showing rounded corners for app compat
+         * purposes (e.g. when a landscape app is letterboxed). Tasks can set this for better
+         * UX since sharp corners may look better in some cases like in a Bubble.
+         */
+        public CreateRootTaskRequest setDisableAppCompatRoundedCorners(
+                boolean disableAppCompatRoundedCorners) {
+            this.disableAppCompatRoundedCorners = disableAppCompatRoundedCorners;
             return this;
         }
 
@@ -318,7 +341,8 @@ public class TaskOrganizer extends WindowOrganizer {
             return mTaskOrganizerController.createRootTask(request.displayId, request.windowingMode,
                     request.launchCookie, request.removeWithTaskOrganizer,
                     request.reparentOnDisplayRemoval, request.name,
-                    request.isForceOpaque);
+                    request.isForceOpaque, request.shouldIgnoreInsets,
+                    request.disableAppCompatRoundedCorners);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
