@@ -128,6 +128,7 @@ class NotificationEntryAdapter(
         return entry.ranking
     }
 
+    @Deprecated("Use SelfTrackingLifetimeExtender in coordinators instead")
     override fun endLifetimeExtension(
         callback: NotifLifetimeExtender.OnEndLifetimeExtensionCallback?,
         extender: NotifLifetimeExtender,
