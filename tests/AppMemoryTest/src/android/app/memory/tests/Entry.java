@@ -85,6 +85,13 @@ public class Entry {
         }
     }
 
+    static class ArtClock extends Entry {
+        final long mTime;
+        ArtClock(Scanner s, Context c) {
+            mTime = s.jJ();
+        }
+    }
+
     static class HeapClass extends Entry {
         final int mSerial;
         final long mClassId;
@@ -637,6 +644,7 @@ public class Entry {
         // A sentinel for the end-of-heap
     }
 
+    // LINT.IfChange(hprof-tags)
     static Entry inflate(int tag, Scanner s, Context c) {
         return switch (tag) {
             case 0x01 -> new HeapString(s, c);
@@ -650,6 +658,7 @@ public class Entry {
             case 0x0c -> new HeapDump(s, c);
             case 0x1c -> new HeapDump(s, c);
             case 0x2c -> new EndOfHeap();
+            case 0xa0 -> new ArtClock(s, c);
             default -> throw new RuntimeException(String.format("unknown tag: 0x%x\n", tag));
         };
     }
@@ -667,7 +676,9 @@ public class Entry {
             case 0x0c -> "HeapDump";
             case 0x1c -> "HeapDump";
             case 0x2c -> "End";
+            case 0xa0 -> "ArtClock";
             default -> throw new RuntimeException(String.format("unknown tag: 0x%x\n", tag));
         };
     }
+    // LINT.ThenChange(//depot/google3/art/runtime/hprof/hprof.cc:hprof-tags)
 }
