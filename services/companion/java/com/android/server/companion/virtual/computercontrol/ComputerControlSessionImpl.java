@@ -32,6 +32,7 @@ import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
 import android.app.ActivityOptions;
 import android.app.AppOpsManager;
+import android.app.IApplicationThread;
 import android.app.KeyguardManager;
 import android.app.PendingIntent;
 import android.companion.virtual.VirtualDeviceManager;
@@ -65,6 +66,7 @@ import android.hardware.input.VirtualTouchscreen;
 import android.hardware.input.VirtualTouchscreenConfig;
 import android.media.ImageReader;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.UserHandle;
@@ -154,6 +156,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final Context mContext;
     private final IBinder mAppToken;
     private final ComputerControlSessionParams mParams;
+    private final IApplicationThread mAppThread;
+    private final String mAttributionTag;
 
     private final UserHandle mOwnerUser;
     private final String mOwnerPackageName;
@@ -253,12 +257,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     ComputerControlSessionImpl(Context context,
             ComputerControlAllowlistController allowlistController, IBinder appToken,
-            ComputerControlSessionParams params, AttributionSource attributionSource,
+            ComputerControlSessionParams params, IApplicationThread appThread,
+            AttributionSource attributionSource,
             ComputerControlSessionProcessor.VirtualDeviceFactory virtualDeviceFactory,
             Consumer<ComputerControlSessionImpl> onClosedListener) {
         this(context, DisplayManagerGlobal.getInstance(), allowlistController,
                 ViewConfiguration.get(context), DEFAULT_GLOBAL_SESSION_TIMEOUT_DURATION_MS,
-                SurfaceControl.Transaction::new, appToken, params, attributionSource,
+                SurfaceControl.Transaction::new, appToken, params, appThread, attributionSource,
                 virtualDeviceFactory, onClosedListener, FgThread.getExecutor());
     }
 
@@ -267,7 +272,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             ComputerControlAllowlistController allowlistController,
             ViewConfiguration viewConfiguration, long globalSessionTimeoutDurationMs,
             Supplier<SurfaceControl.Transaction> transactionSupplier, IBinder appToken,
-            ComputerControlSessionParams params, AttributionSource attributionSource,
+            ComputerControlSessionParams params, IApplicationThread appThread,
+            AttributionSource attributionSource,
             ComputerControlSessionProcessor.VirtualDeviceFactory virtualDeviceFactory,
             Consumer<ComputerControlSessionImpl> onClosedListener, Executor fgThreadExecutor) {
         mContext = context;
@@ -279,6 +285,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mParams = params;
         mAllowlistController = allowlistController;
         mPreviewIntent = params.getPreviewIntent();
+        mAppThread = appThread;
+        mAttributionTag = attributionSource.getAttributionTag();
 
         mOwnerUser = UserHandle.getUserHandleForUid(attributionSource.getUid());
         mOwnerContext = context.createContextAsUser(mOwnerUser, /* flags = */ 0);
@@ -495,10 +503,11 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         // If we block input and screenshots in the blocked state, we simply allow all
         // activities to launch. We detect blocked state automatically when an activity
         // launch request comes in for a package that's not allowed to launch.
-        Binder.withCleanCallingIdentity(() ->
-                mContext.startActivityAsUser(intent,
-                        ActivityOptions.makeBasic()
-                                .setLaunchDisplayId(mVirtualDisplayId).toBundle(), mOwnerUser));
+        final Bundle options =
+                ActivityOptions.makeBasic().setLaunchDisplayId(mVirtualDisplayId).toBundle();
+        Binder.withCleanCallingIdentity(() -> mActivityTaskManagerInternal.startActivityAsUser(
+                mAppThread, mOwnerPackageName, mAttributionTag, intent, null,
+                Intent.FLAG_ACTIVITY_NEW_TASK, options, mOwnerUser.getIdentifier()));
         mStatsController.onApplicationLaunched(packageName);
     }
 
