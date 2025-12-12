@@ -17,6 +17,7 @@
 package com.android.systemui.inputmethod.data.repository
 
 import android.os.UserHandle
+import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
 import android.view.inputmethod.InputMethodInfo
 import android.view.inputmethod.InputMethodManager
@@ -180,6 +181,40 @@ class InputMethodRepositoryTest : SysuiTestCase() {
             assertThat(result!!.icon).isNotNull()
             assertThat(result!!.icon!!.resId).isEqualTo(iconResId)
             assertThat(result!!.icon!!.packageName).isEqualTo(context.packageName)
+        }
+
+    @Test
+    @EnableFlags(android.view.inputmethod.Flags.FLAG_IME_SUBTYPE_SHORT_LABEL)
+    fun selectedInputMethodSubtype_returnsSubtypeWithShortLabel() =
+        testScope.runTest {
+            val shortLabel = "EN"
+            val subtype =
+                InputMethodSubtype.InputMethodSubtypeBuilder()
+                    .setSubtypeId(123)
+                    .setIsAuxiliary(false)
+                    .setSubtypeShortLabel(shortLabel)
+                    .build()
+            val selectedImiId = "imiId"
+            val selectedImi = mock<InputMethodInfo> { on { id } doReturn selectedImiId }
+            inputMethodManager.stub {
+                on { getCurrentInputMethodInfoAsUser(eq(USER_HANDLE)) }.thenReturn(selectedImi)
+                on {
+                        getEnabledInputMethodSubtypeListAsUser(
+                            eq(selectedImiId),
+                            any(),
+                            eq(USER_HANDLE),
+                        )
+                    }
+                    .thenReturn(listOf(subtype))
+            }
+            settings.putIntForUser(
+                Settings.Secure.SELECTED_INPUT_METHOD_SUBTYPE,
+                subtype.subtypeId,
+                USER_HANDLE.identifier,
+            )
+
+            val result by collectLastValue(underTest.selectedInputMethodSubtype(USER_HANDLE))
+            assertThat(result!!.shortLabel).isEqualTo(shortLabel)
         }
 
     @Test

@@ -53,6 +53,11 @@ data class InputMethodModel(
         val isAuxiliary: Boolean,
         /** The icon for this subtype. */
         val icon: SubtypeIcon? = null,
+        /**
+         * The short label for this subtype. This is a non-localized string the IME can provide to
+         * represent the subtype in compact UI elements.
+         */
+        val shortLabel: String? = null,
     )
 
     /** A subtype icon that can be loaded from an IME app. */
