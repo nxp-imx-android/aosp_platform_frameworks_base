@@ -113,6 +113,7 @@ public class ThemeEventObserverTest {
         mContext.addMockSystemService(Context.KEYGUARD_SERVICE, mKeyguardManager);
 
         when(mActivityManagerInternal.getCurrentUserId()).thenReturn(USER_ID);
+        when(mThemeUserLifecycle.loadUserStateAndNotifyStateManager(anyInt())).thenReturn(true);
 
         org.mockito.Mockito.doAnswer(invocation -> {
             mWallpaperListener = invocation.getArgument(0);
@@ -121,8 +122,8 @@ public class ThemeEventObserverTest {
 
         mThemeEventObserver = new ThemeEventObserver(mContext, mThemeStateManager,
                 mThemeManagerInternal, mThemeUserLifecycle);
-        mThemeEventObserver.onServicesReady(mThemeWallpaperManager, mUserManagerInternal,
-                mActivityManagerInternal, mUiModeManagerInternal, mKeyguardManager);
+        mThemeEventObserver.onServicesReady(mThemeWallpaperManager, mActivityManagerInternal,
+                mUiModeManagerInternal, mKeyguardManager);
         mThemeEventObserver.registerListeners();
     }
 
@@ -154,6 +155,8 @@ public class ThemeEventObserverTest {
         when(mThemeStateManager.parentOf(PROFILE_ID)).thenReturn(USER_ID);
         // Simulate state missing initially for parent
         when(mThemeStateManager.hasState(USER_ID)).thenReturn(false);
+        // Simulate successful load
+        when(mThemeUserLifecycle.loadUserStateAndNotifyStateManager(USER_ID)).thenReturn(true);
 
         mThemeEventObserver.mBroadcastReceiver.onReceive(mContext, intent);
 
@@ -165,8 +168,10 @@ public class ThemeEventObserverTest {
 
     @Test
     public void testProfileAdded_hsumSystemUser_ignored() {
-        when(mUserManagerInternal.isHeadlessSystemUserMode()).thenReturn(true);
         when(mThemeStateManager.parentOf(PROFILE_ID)).thenReturn(UserHandle.USER_SYSTEM);
+        // Simulate that loading the system user state fails in HSUM
+        when(mThemeUserLifecycle.loadUserStateAndNotifyStateManager(
+                UserHandle.USER_SYSTEM)).thenReturn(false);
 
         Intent intent = new Intent(Intent.ACTION_PROFILE_ADDED);
         intent.putExtra(Intent.EXTRA_USER, UserHandle.of(PROFILE_ID));
@@ -270,6 +275,8 @@ public class ThemeEventObserverTest {
     public void testUserSetupComplete_lazyLoadsState_ifMissing() {
         // Simulate state missing initially
         when(mThemeStateManager.hasState(USER_ID)).thenReturn(false);
+        // Simulate successful load
+        when(mThemeUserLifecycle.loadUserStateAndNotifyStateManager(USER_ID)).thenReturn(true);
 
         // Trigger ContentObserver
         Settings.Secure.putIntForUser(mContentResolver, Settings.Secure.USER_SETUP_COMPLETE, 1,
@@ -279,6 +286,24 @@ public class ThemeEventObserverTest {
         // Verify lazy load happened BEFORE onFinishSetup
         verify(mThemeUserLifecycle).loadUserStateAndNotifyStateManager(USER_ID);
         verify(mThemeStateManager).onFinishSetup(USER_ID);
+    }
+
+    @Test
+    public void testUserSetupComplete_lazyLoadsState_fails_ignored() {
+        // Simulate state missing initially
+        when(mThemeStateManager.hasState(USER_ID)).thenReturn(false);
+        // Simulate failed load (e.g. profile user)
+        when(mThemeUserLifecycle.loadUserStateAndNotifyStateManager(USER_ID)).thenReturn(false);
+
+        // Trigger ContentObserver
+        Settings.Secure.putIntForUser(mContentResolver, Settings.Secure.USER_SETUP_COMPLETE, 1,
+                USER_ID);
+        mThemeEventObserver.mUserSetupObserver.onChange(false, null, 0, USER_ID);
+
+        // Verify lazy load attempted
+        verify(mThemeUserLifecycle).loadUserStateAndNotifyStateManager(USER_ID);
+        // Verify onFinishSetup was NOT called to avoid crash
+        verify(mThemeStateManager, never()).onFinishSetup(USER_ID);
     }
 
     @Test

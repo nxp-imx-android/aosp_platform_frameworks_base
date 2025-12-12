@@ -41,7 +41,6 @@ import android.util.Slog;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.BackgroundThread;
 import com.android.server.UiModeManagerInternal;
-import com.android.server.pm.UserManagerInternal;
 import com.android.systemui.monet.ColorScheme;
 
 import java.util.Collection;
@@ -72,7 +71,6 @@ public class ThemeEventObserver {
     private final ThemeUserLifecycle mThemeUserLifecycle;
 
     private ThemeWallpaperManager mWallpaperManager;
-    private UserManagerInternal mUserManagerInternal;
     private ActivityManagerInternal mActivityManagerInternal;
     private UiModeManagerInternal mUiModeManagerInternal;
     private KeyguardManager mKeyguardManager;
@@ -92,10 +90,9 @@ public class ThemeEventObserver {
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     @RequiresPermission(Manifest.permission.SUBSCRIBE_TO_KEYGUARD_LOCKED_STATE)
     public void onServicesReady(ThemeWallpaperManager wallpaperManager,
-            UserManagerInternal userManager, ActivityManagerInternal activityManager,
+            ActivityManagerInternal activityManager,
             UiModeManagerInternal uiModeManager, KeyguardManager keyguardManager) {
         mWallpaperManager = wallpaperManager;
-        mUserManagerInternal = userManager;
         mActivityManagerInternal = activityManager;
         mUiModeManagerInternal = uiModeManager;
         mKeyguardManager = keyguardManager;
@@ -167,7 +164,7 @@ public class ThemeEventObserver {
         mThemeUserLifecycle.loadUserStateAndNotifyStateManager(newUserOrProfileId);
 
         Integer parentId = mStateManager.parentOf(newUserOrProfileId);
-        if (parentId == null || !shouldHandleEventForUser(parentId, "onProfileAdd")) {
+        if (parentId == null || shouldIgnoreEventForUser(parentId, "onProfileAdd")) {
             return;
         }
 
@@ -188,7 +185,7 @@ public class ThemeEventObserver {
 
     private void handleWallpaperColorsChanged(WallpaperColors wallpaperColors, int userId,
             boolean fromForegroundApp) {
-        if (!shouldHandleEventForUser(userId, "onColorsChanged")) {
+        if (shouldIgnoreEventForUser(userId, "onColorsChanged")) {
             return;
         }
         ThemeSettings userSettings = mThemeManagerInternal.getThemeSettingsOrDefault(userId);
@@ -210,7 +207,7 @@ public class ThemeEventObserver {
     }
 
     private void handleContrastChanged(int userId, float contrast) {
-        if (!shouldHandleEventForUser(userId, "onContrastChange")) {
+        if (shouldIgnoreEventForUser(userId, "onContrastChange")) {
             return;
         }
         mStateManager.onContrastChange(userId, contrast);
@@ -233,7 +230,7 @@ public class ThemeEventObserver {
     };
 
     private void handleUserSetupChanged(int userId) {
-        if (!shouldHandleEventForUser(userId, "onFinishSetup")) {
+        if (shouldIgnoreEventForUser(userId, "onFinishSetup")) {
             return;
         }
         Slog.d(TAG, "User: " + userId + " setup complete");
@@ -251,7 +248,7 @@ public class ThemeEventObserver {
     };
 
     private void handleThemeCustomizationChanged(int userId) {
-        if (!shouldHandleEventForUser(userId, "onThemeSettingsChanged")) {
+        if (shouldIgnoreEventForUser(userId, "onThemeSettingsChanged")) {
             return;
         }
         // The settings have changed on disk, invalidate the local cache.
@@ -272,17 +269,12 @@ public class ThemeEventObserver {
 
     // Helper Methods
 
-    private boolean shouldHandleEventForUser(int userId, String methodName) {
-        if (mUserManagerInternal != null && mUserManagerInternal.isHeadlessSystemUserMode()
-                && userId == UserHandle.USER_SYSTEM) {
-            Slog.d(TAG, "Ignoring " + methodName + " for system user in HSUM");
+    private boolean shouldIgnoreEventForUser(int userId, String methodName) {
+        if (mThemeUserLifecycle.loadUserStateAndNotifyStateManager(userId)) {
             return false;
         }
-        if (!mStateManager.hasState(userId)) {
-            Slog.d(TAG, "Event " + methodName + " for user " + userId + " but state missing. "
-                    + "Loading it now.");
-            mThemeUserLifecycle.loadUserStateAndNotifyStateManager(userId);
-        }
+
+        Slog.d(TAG, "Ignoring '" + methodName + "' for user " + userId);
         return true;
     }
 }
