@@ -26,10 +26,26 @@ import com.android.settingslib.metadata.PersistentPreference
 import com.android.settingslib.metadata.ReadWritePermit
 import com.android.settingslib.metadata.apifirst.ExceptionMessagesFormatter.getExceptionMessageMultipleDefines
 import com.android.settingslib.metadata.apifirst.ExceptionMessagesFormatter.getExceptionMessageWrongOrder
+import com.android.settingslib.metadata.ValidatedKeyParameters
 import com.android.settingslib.metadata.apifirst.preconditions.Allowed
 import com.android.settingslib.metadata.apifirst.preconditions.ApiFirstPreconditions
 import com.android.settingslib.metadata.apifirst.preconditions.Disallowed
 import com.android.settingslib.metadata.apifirst.types.ApiFirstType
+
+/**
+ * The context for an API-first operation, providing access to the application [Context] and
+ * any necessary environmental information for executing preference
+ * operations, ensuring that each operation has a consistent and secure context to run in.
+ *
+ * @property context The application context, used for accessing system services and resources.
+ * @property parameters A map of validated key-value pairs that can be used to parameterize
+ *   the behavior of the preference. These parameters are derived from the preference screen's
+ *   configuration and are guaranteed to be valid.
+ */
+class ApiFirstOperationContext(
+    val context: Context,
+    val parameters: ValidatedKeyParameters
+)
 
 /** Configuration of the [ApiFirstPreference] permissions. */
 class PermissionsConfig(incomingPermissions: List<String>) {
@@ -40,20 +56,20 @@ class PermissionsConfig(incomingPermissions: List<String>) {
 /** Configuration of the [ApiFirstPreference] preconditions. */
 class PreconditionsConfig(
     @StringRes val description: Int,
-    val check: (Context) -> ApiFirstPreconditions,
+    val check: ApiFirstOperationContext.() -> ApiFirstPreconditions,
 )
 
 /** Configuration of the [ApiFirstPreference] get. */
 class GetConfig<V : Any>(
     val permissions: PermissionsConfig? = null,
     val preconditions: PreconditionsConfig? = null,
-    val execute: (Context) -> V
+    val execute: ApiFirstOperationContext.() -> V
 )
 
 /** Configuration of the [ApiFirstPreference] value preconditions. */
 class ValuePreconditionsConfig<V : Any>(
     @StringRes val description: Int,
-    val check: ((Context, V) -> ApiFirstPreconditions),
+    val check: (ApiFirstOperationContext.(V) -> ApiFirstPreconditions),
 )
 
 /** Configuration of the [ApiFirstPreference] set. */
@@ -61,7 +77,7 @@ class SetConfig<V : Any>(
     val permissions: PermissionsConfig? = null,
     val preconditions: PreconditionsConfig? = null,
     val valuePreconditions: ValuePreconditionsConfig<V>? = null,
-    val execute: (Context, V) -> Unit
+    val execute: (ApiFirstOperationContext.(V) -> Unit)
 )
 
 /**
@@ -93,6 +109,22 @@ abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
     }
 
     /**
+     * Creates and returns an [ApiFirstOperationContext] for the current preference.
+     *
+     * This method encapsulates the creation of the operation context, ensuring that it is
+     * consistently initialized with the necessary application [Context] and validated key
+     * parameters from the preference screen. If no screen parameters are available, it defaults
+     * to an empty set of parameters.
+     *
+     * @param context The application context to be used in the operation context.
+     * @return An initialized [ApiFirstOperationContext] instance.
+     */
+    private fun getApiFirstOperationContext(context: Context): ApiFirstOperationContext {
+        val keyParameters = screenParameters ?: ValidatedKeyParameters.EMPTY
+        return ApiFirstOperationContext(context, keyParameters)
+    }
+
+    /**
      * Evaluates preconditions in order: screen-level, common, and operation-specific.
      * Returns the first precondition that is not [Allowed], or [Allowed] if all preconditions
      * are met.
@@ -101,15 +133,16 @@ abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
         context: Context,
         operationPreconditions: PreconditionsConfig?
     ): ApiFirstPreconditions {
-        screenPreconditions?.check(context)?.let {
+        val operationContext = getApiFirstOperationContext(context)
+        screenPreconditions?.check(operationContext)?.let {
             if (it != Allowed) return it
         }
 
-        preconditions?.check(context)?.let {
+        preconditions?.check(operationContext)?.let {
             if (it != Allowed) return it
         }
 
-        operationPreconditions?.check(context)?.let {
+        operationPreconditions?.check(operationContext)?.let {
             if (it != Allowed) return it
         }
 
@@ -133,12 +166,14 @@ abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
 
     override fun storage(context: Context): KeyValueStore =
         object : NoOpKeyedObservable<String>(), KeyValueStore {
+            private val operationContext = getApiFirstOperationContext(context)
+
             override fun contains(storeKey: String): Boolean = storeKey == key
 
             override fun <T : Any> getValue(storeKey: String, valueType: Class<T>): T? =
                 when {
                     storeKey == key -> {
-                        get.execute(context) as T?
+                        get.execute(operationContext) as T?
                     }
 
                     else -> null
@@ -165,9 +200,9 @@ abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
                 // This cast is safe because we already checked the `value` is of type `V`
                 val valueV = value as V
                 val valuePreconditionsCheck =
-                    set?.valuePreconditions?.check?.invoke(context, valueV) ?: Allowed
+                    set?.valuePreconditions?.check?.invoke(operationContext, valueV) ?: Allowed
                 when (valuePreconditionsCheck) {
-                    Allowed -> set?.execute(context, valueV)
+                    Allowed -> set?.execute(operationContext, valueV)
                     is Disallowed -> error(
                         context.getString(
                             valuePreconditionsCheck.reason
@@ -176,6 +211,9 @@ abstract class ApiFirstPreference<V : Any>() : PersistentPreference<V> {
                 }
             }
         }
+
+    /** The validated key-value parameters from the preference screen this preference belongs to. */
+    abstract val screenParameters: ValidatedKeyParameters?
 
     /** Preference's permission on the screen level. */
     abstract val screenPermissions: PermissionsConfig?
@@ -211,7 +249,7 @@ class PermissionsConfigBuilder(val permissions: List<String>) {
 @ApiFirstPreferenceDsl
 class PreconditionsConfigBuilder(
     @StringRes val description: Int,
-    val lambda: (Context) -> ApiFirstPreconditions
+    val lambda: ApiFirstOperationContext.() -> ApiFirstPreconditions
 ) {
     internal fun build(): PreconditionsConfig {
         return PreconditionsConfig(
@@ -237,7 +275,7 @@ class PreconditionsConfigBuilder(
 class GetConfigBuilder<V : Any> {
     private var permissionsConfig: PermissionsConfig? = null
     private var preconditionsConfig: PreconditionsConfig? = null
-    private var executeBlock: ((Context) -> V)? = null
+    private var executeBlock: (ApiFirstOperationContext.() -> V)? = null
 
     /** Sets permissions for the get. */
     fun permissions(permissionsList: List<String>) {
@@ -253,7 +291,7 @@ class GetConfigBuilder<V : Any> {
     }
 
     /** Defines a precondition check that must pass for the get to be executed. */
-    fun preconditions(@StringRes description: Int, lambda: (Context) -> ApiFirstPreconditions) {
+    fun preconditions(@StringRes description: Int, lambda: ApiFirstOperationContext.() -> ApiFirstPreconditions) {
         if (preconditionsConfig != null) {
             error(getExceptionMessageMultipleDefines("preconditions"))
         }
@@ -266,7 +304,7 @@ class GetConfigBuilder<V : Any> {
     }
 
     /** Declare the execute block of the get. */
-    fun execute(lambda: (Context) -> V) {
+    fun execute(lambda: ApiFirstOperationContext.() -> V) {
         if (executeBlock != null) {
             error(getExceptionMessageMultipleDefines("execute"))
         }
@@ -300,7 +338,7 @@ class SetConfigBuilder<V : Any> {
     private var permissionsConfig: PermissionsConfig? = null
     private var preconditionsConfig: PreconditionsConfig? = null
     private var valuePreconditionsConfig: ValuePreconditionsConfig<V>? = null
-    private var executeBlock: ((Context, V) -> Unit)? = null
+    private var executeBlock: (ApiFirstOperationContext.(V) -> Unit)? = null
 
     /** Sets permissions for the set. */
     fun permissions(permissionsList: List<String>) {
@@ -316,7 +354,7 @@ class SetConfigBuilder<V : Any> {
     }
 
     /** Defines a precondition check that must pass for the set to be executed. */
-    fun preconditions(@StringRes description: Int, lambda: (Context) -> ApiFirstPreconditions) {
+    fun preconditions(@StringRes description: Int, lambda: ApiFirstOperationContext.() -> ApiFirstPreconditions) {
         if (preconditionsConfig != null) {
             error(getExceptionMessageMultipleDefines("preconditions"))
         }
@@ -329,7 +367,7 @@ class SetConfigBuilder<V : Any> {
     }
 
     /** Defines a value precondition check that must pass for the set to be executed. */
-    fun valuePreconditions(@StringRes description: Int, lambda: (Context, V) -> ApiFirstPreconditions) {
+    fun valuePreconditions(@StringRes description: Int, lambda: ApiFirstOperationContext.(V) -> ApiFirstPreconditions) {
         if (valuePreconditionsConfig != null) {
             error(getExceptionMessageMultipleDefines("valuePreconditions"))
         }
@@ -342,7 +380,7 @@ class SetConfigBuilder<V : Any> {
     }
 
     /** Declare the execute block of the set. */
-    fun execute(lambda: (Context, V) -> Unit) {
+    fun execute(lambda: ApiFirstOperationContext.(V) -> Unit) {
         if (executeBlock != null) {
             error(getExceptionMessageMultipleDefines("execute"))
         }
@@ -367,7 +405,8 @@ class ApiFirstPreferenceConfigBuilder<V : Any>(val key: String,
                                                val type: ApiFirstType<V>,
                                                val valueType: Class<V>,
                                                val screenPermissions: PermissionsConfig?,
-                                               val screenPreconditions: PreconditionsConfig?)
+                                               val screenPreconditions: PreconditionsConfig?,
+                                               val screenParameters: ValidatedKeyParameters?)
 {
     private var permissionsConfig: PermissionsConfig? = null
     private var preconditionsConfig: PreconditionsConfig? = null
@@ -392,7 +431,7 @@ class ApiFirstPreferenceConfigBuilder<V : Any>(val key: String,
     /**
      * Build the [PreconditionsConfig] from the given [PreconditionsConfigBuilder] block.
      */
-    fun preconditions(@StringRes description: Int, lambda: (Context) -> ApiFirstPreconditions) {
+    fun preconditions(@StringRes description: Int, lambda: ApiFirstOperationContext.() -> ApiFirstPreconditions) {
         if (preconditionsConfig != null) {
             error(getExceptionMessageMultipleDefines("preconditions"))
         }
@@ -445,5 +484,6 @@ class ApiFirstPreferenceConfigBuilder<V : Any>(val key: String,
         override val valueType: Class<V> = this@ApiFirstPreferenceConfigBuilder.valueType
         override val key: String = this@ApiFirstPreferenceConfigBuilder.key
         override val purpose: Int = this@ApiFirstPreferenceConfigBuilder.purpose
+        override val screenParameters: ValidatedKeyParameters? = this@ApiFirstPreferenceConfigBuilder.screenParameters
     }
 }

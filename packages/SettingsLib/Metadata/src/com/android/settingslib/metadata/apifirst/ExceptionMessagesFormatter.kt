@@ -27,9 +27,18 @@ internal object ExceptionMessagesFormatter {
     private const val EXCEPTION_MESSAGE_MULTIPLE_DEFINES =
         "%s should be only defined once per screen"
 
+    const val EXCEPTION_MESSAGE_NO_PARAMETER_DEFINED =
+        "no parameter has been defined for this screen"
+
+    private const val EXCEPTION_MESSAGE_MULTIPLE_PARAMETERS_DEFINED =
+        "only one parameters expected, but %s found"
+
     fun getExceptionMessageWrongOrder(item: String) =
         String.format(EXCEPTION_MESSAGE_WRONG_ORDER, item)
 
     fun getExceptionMessageMultipleDefines(item: String) =
         String.format(EXCEPTION_MESSAGE_MULTIPLE_DEFINES, item)
+
+    fun getExceptionMessageMultipleParametersDefined(size: Int) =
+        String.format(EXCEPTION_MESSAGE_MULTIPLE_PARAMETERS_DEFINED, size)
 }
