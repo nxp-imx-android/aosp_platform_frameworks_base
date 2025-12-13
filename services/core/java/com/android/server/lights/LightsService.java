@@ -422,8 +422,8 @@ public class LightsService extends SystemService {
             }
 
             IntArray frames = new IntArray();
-            for (int delay : sequence.getDelaysMillis()) {
-                frames.add(delay / light.minUpdatePeriodMillis);
+            for (long delay : sequence.getDelaysMillis()) {
+                frames.add((int) (delay / light.minUpdatePeriodMillis));
             }
 
             HwLightEffect hwEffect = new HwLightEffect();
