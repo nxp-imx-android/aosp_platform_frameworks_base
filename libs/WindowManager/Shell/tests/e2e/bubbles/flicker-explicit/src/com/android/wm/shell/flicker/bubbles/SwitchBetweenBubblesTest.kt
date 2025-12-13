@@ -21,7 +21,6 @@ import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
 import android.tools.device.apphelpers.MessagingAppHelper
 import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
-import androidx.test.filters.FlakyTest
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils.testSetupRule
@@ -61,7 +60,6 @@ import org.junit.runners.Parameterized.Parameters
  * - [MultipleBubbleExpandBubbleAppTestCases]
  * - [previousApp] becomes invisible.
  */
-@FlakyTest(bugId = 420909828) // The "USB debugging connected" cover the Bubble icon
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
