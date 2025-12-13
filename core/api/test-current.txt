@@ -3482,6 +3482,17 @@ package android.service.chooser {
     ctor public ChooserResult(int, @Nullable android.content.ComponentName, boolean);
   }
 
+  @FlaggedApi("android.service.chooser.tap_to_share") public final class TapToShareClient {
+    ctor public TapToShareClient(@NonNull android.content.Context);
+    method public void endSession();
+    method public void startSession(@NonNull android.content.ComponentName, @Nullable android.net.Uri, @NonNull java.util.concurrent.Executor, @NonNull android.service.chooser.TapToShareClient.SessionListener);
+  }
+
+  public static interface TapToShareClient.SessionListener {
+    method public void onConnectionFailed(@NonNull Exception);
+    method public void onDeviceTapped();
+  }
+
 }
 
 package android.service.dreams {

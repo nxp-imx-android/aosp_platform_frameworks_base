@@ -151,18 +151,6 @@ object BubbleUtils {
         )
     }
 
-    /**
-     * Returns true if the task is valid for Bubble.
-     *
-     * For now, this is just if the task supports multi-window, which checks under the hood if the
-     * system framework policy supports multi-window for non-resizable activities. The support is
-     * defined by a device specific config and can be conditional on screen size.
-     */
-    @JvmStatic
-    fun ActivityManager.RunningTaskInfo?.isValidToBubble(): Boolean {
-        return this?.supportsMultiWindow == true
-    }
-
     /** Determines if a bubble task is moving to fullscreen based on its windowing mode. */
     @JvmStatic
     fun ActivityManager.RunningTaskInfo?.isBubbleToFullscreen(): Boolean {

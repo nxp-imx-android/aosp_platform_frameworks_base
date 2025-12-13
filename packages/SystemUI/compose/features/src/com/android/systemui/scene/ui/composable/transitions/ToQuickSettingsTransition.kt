@@ -24,6 +24,7 @@ import com.android.systemui.brightness.ui.compose.BrightnessSliderDimensions
 import com.android.systemui.notifications.ui.composable.Notifications
 import com.android.systemui.qs.shared.ui.QuickSettings.Elements
 import com.android.systemui.qs.ui.composable.QuickSettingsScene
+import com.android.systemui.shade.ui.composable.Shade
 import com.android.systemui.shade.ui.composable.ShadeHeader
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -46,6 +47,7 @@ fun TransitionBuilder.toQuickSettingsSceneTransition(durationScale: Double = 1.0
     }
 
     fade(Notifications.Elements.HeadsUpNotificationPlaceholder)
+    fade(Shade.Elements.BackgroundScrim)
 
     // New all compose element
     // Ideally, we would want to have the BrightnessSlider start right off screen and translate

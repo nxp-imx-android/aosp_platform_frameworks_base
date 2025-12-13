@@ -26,13 +26,6 @@ flag {
 }
 
 flag {
-  name: "bp_fallback_options"
-  namespace: "biometrics_framework"
-  description: "Adds fallback options UI to biometric prompt"
-  bug: "377774089"
-}
-
-flag {
   name: "get_op_id_crypto_object"
   is_exported: true
   namespace: "biometrics_framework"
@@ -116,4 +109,11 @@ flag {
   namespace: "biometrics_framework"
   description: "Feature flag for removing a framework-added fallback option"
   bug: "456265916"
+}
+
+flag {
+  name: "double_auth"
+  namespace: "biometrics_framework"
+  description: "Feature flag for adding double auth in biometric prompt for Identity Check"
+  bug: "442571994"
 }

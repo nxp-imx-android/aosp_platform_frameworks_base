@@ -105,6 +105,7 @@ package android {
     field public static final String BIND_TELEPHONY_NETWORK_SERVICE = "android.permission.BIND_TELEPHONY_NETWORK_SERVICE";
     field public static final String BIND_TEXTCLASSIFIER_SERVICE = "android.permission.BIND_TEXTCLASSIFIER_SERVICE";
     field public static final String BIND_TIME_ZONE_PROVIDER_SERVICE = "android.permission.BIND_TIME_ZONE_PROVIDER_SERVICE";
+    field @FlaggedApi("android.service.chooser.tap_to_share") public static final String BIND_TO_TAP_TO_SHARE_SERVICE = "android.permission.BIND_TO_TAP_TO_SHARE_SERVICE";
     field public static final String BIND_TRACE_REPORT_SERVICE = "android.permission.BIND_TRACE_REPORT_SERVICE";
     field public static final String BIND_TRANSLATION_SERVICE = "android.permission.BIND_TRANSLATION_SERVICE";
     field public static final String BIND_TRUST_AGENT = "android.permission.BIND_TRUST_AGENT";
@@ -5727,7 +5728,7 @@ package android.hardware.contexthub {
     ctor public DataFlowCallback.SinkEventData();
   }
 
-  public static class DataFlowCallback.SourceEventData {
+  @FlaggedApi("android.chre.flags.fmcq_api") public static class DataFlowCallback.SourceEventData {
     ctor public DataFlowCallback.SourceEventData(@NonNull android.hardware.contexthub.HubEndpointInfo);
     method @Nullable public android.hardware.contexthub.HubEndpointInfo getSink();
   }
@@ -5796,7 +5797,9 @@ package android.hardware.contexthub {
 
   @FlaggedApi("android.chre.flags.offload_api") public class HubEndpoint {
     method @FlaggedApi("android.chre.flags.fmcq_api") @NonNull @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public android.hardware.contexthub.DataFlowSource createDataFlowSource(@NonNull @Size(min=1) java.util.Set<java.lang.Long>, @NonNull android.hardware.contexthub.DataFlowDataConfig, @IntRange(from=1) int, @IntRange(from=1) int);
+    method @FlaggedApi("android.chre.flags.fmcq_api") @Nullable public android.hardware.contexthub.DataFlowCallback getDataFlowCallback();
     method @Nullable public android.hardware.contexthub.HubEndpointLifecycleCallback getLifecycleCallback();
+    method @FlaggedApi("android.chre.flags.fmcq_api") @NonNull public android.os.Looper getLooper();
     method @Nullable public android.hardware.contexthub.HubEndpointMessageCallback getMessageCallback();
     method @NonNull public java.util.Collection<android.hardware.contexthub.HubServiceInfo> getServiceInfoCollection();
     method @Nullable public String getTag();
@@ -5812,8 +5815,11 @@ package android.hardware.contexthub {
   public static final class HubEndpoint.Builder {
     ctor public HubEndpoint.Builder(@NonNull android.content.Context);
     method @NonNull public android.hardware.contexthub.HubEndpoint build();
+    method @FlaggedApi("android.chre.flags.fmcq_api") @NonNull public android.hardware.contexthub.HubEndpoint.Builder setDataFlowCallback(@NonNull android.hardware.contexthub.DataFlowCallback);
+    method @FlaggedApi("android.chre.flags.fmcq_api") @NonNull public android.hardware.contexthub.HubEndpoint.Builder setDataFlowCallback(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.contexthub.DataFlowCallback);
     method @NonNull public android.hardware.contexthub.HubEndpoint.Builder setLifecycleCallback(@NonNull android.hardware.contexthub.HubEndpointLifecycleCallback);
     method @NonNull public android.hardware.contexthub.HubEndpoint.Builder setLifecycleCallback(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.contexthub.HubEndpointLifecycleCallback);
+    method @FlaggedApi("android.chre.flags.fmcq_api") @NonNull public android.hardware.contexthub.HubEndpoint.Builder setLooper(@NonNull android.os.Looper);
     method @NonNull public android.hardware.contexthub.HubEndpoint.Builder setMessageCallback(@NonNull android.hardware.contexthub.HubEndpointMessageCallback);
     method @NonNull public android.hardware.contexthub.HubEndpoint.Builder setMessageCallback(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.contexthub.HubEndpointMessageCallback);
     method @NonNull public android.hardware.contexthub.HubEndpoint.Builder setServiceInfoCollection(@NonNull java.util.Collection<android.hardware.contexthub.HubServiceInfo>);
@@ -14008,6 +14014,19 @@ package android.service.carrier {
     method public default void onSendMmsComplete(int, @Nullable byte[]);
     method public default void onSendMultipartSmsComplete(int, @Nullable int[]);
     method public default void onSendSmsComplete(int, int);
+  }
+
+}
+
+package android.service.chooser {
+
+  @FlaggedApi("android.service.chooser.tap_to_share") public abstract class TapToShareService extends android.app.Service {
+    ctor public TapToShareService();
+    method public final void doTapToShare();
+    method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
+    method public abstract void onSessionEnd();
+    method public abstract void onSessionStart();
+    method public final boolean onUnbind(@Nullable android.content.Intent);
   }
 
 }

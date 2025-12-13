@@ -138,7 +138,7 @@ class HomeSceneFamilyResolverTest : SysuiTestCase() {
             setupSwipeDeviceEntryMethod()
             switchToScene(Scenes.Lockscreen)
             switchToScene(Scenes.Shade)
-            sceneBackInteractor.addLockscreenToBackStack()
+            sceneBackInteractor.addLockscreenToBackStack("test")
 
             assertThat(deviceEntryInteractor.canSwipeToEnter.value).isEqualTo(true)
             assertThat(deviceEntryInteractor.isDeviceEntered.value).isEqualTo(false)

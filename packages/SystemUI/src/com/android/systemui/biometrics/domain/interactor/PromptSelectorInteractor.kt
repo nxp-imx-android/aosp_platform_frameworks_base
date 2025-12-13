@@ -18,7 +18,6 @@ package com.android.systemui.biometrics.domain.interactor
 
 import android.app.StatusBarManager.SESSION_BIOMETRIC_PROMPT
 import android.hardware.biometrics.BiometricManager
-import android.hardware.biometrics.Flags
 import android.hardware.biometrics.IIdentityCheckStateListener
 import android.hardware.biometrics.PromptInfo
 import android.util.Log
@@ -181,14 +180,7 @@ constructor(
                             credentialInteractor.getCredentialOwnerOrSelfId(userId),
                     ),
                 operationInfo = BiometricOperationInfo(gatekeeperChallenge = challenge),
-                modalities =
-                    if (Flags.bpFallbackOptions()) {
-                        modalities
-                    } else if (kind is PromptKind.Biometric) {
-                        kind.activeModalities
-                    } else {
-                        BiometricModalities()
-                    },
+                modalities = modalities,
                 opPackageName = opPackageName,
             )
         }
@@ -202,15 +194,7 @@ constructor(
 
     override val isCredentialAllowed: Flow<Boolean> =
         promptRepository.promptInfo
-            .map { info ->
-                if (Flags.bpFallbackOptions()) {
-                    info?.isDeviceCredentialAllowed ?: false
-                } else if (info != null) {
-                    isDeviceCredentialAllowed(info)
-                } else {
-                    false
-                }
-            }
+            .map { info -> info?.isDeviceCredentialAllowed ?: false }
             .distinctUntilChanged()
 
     override val isIdentityCheckActive: Flow<Boolean> =
@@ -275,21 +259,11 @@ constructor(
     override val fallbackOptions: Flow<List<FallbackOptionModel>> = promptRepository.fallbackOptions
 
     override val credentialKind: Flow<PromptKind> =
-        if (Flags.bpFallbackOptions()) {
-            promptRepository.userId.map { userId ->
-                if (userId != null) {
-                    getCredentialType(lockPatternUtils, userId)
-                } else {
-                    PromptKind.None
-                }
-            }
-        } else {
-            combine(prompt, isCredentialAllowed) { prompt, isAllowed ->
-                if (prompt != null && isAllowed) {
-                    getCredentialType(lockPatternUtils, prompt.userInfo.deviceCredentialOwnerId)
-                } else {
-                    PromptKind.None
-                }
+        promptRepository.userId.map { userId ->
+            if (userId != null) {
+                getCredentialType(lockPatternUtils, userId)
+            } else {
+                PromptKind.None
             }
         }
 
@@ -301,15 +275,11 @@ constructor(
 
     override fun onSwitchToCredential() {
         _currentView.value = BiometricPromptView.CREDENTIAL
-        val modalities: BiometricModalities =
-            if (promptRepository.promptKind.value.isBiometric())
-                (promptRepository.promptKind.value as PromptKind.Biometric).activeModalities
-            else BiometricModalities()
         setPrompt(
             promptRepository.promptInfo.value!!,
             promptRepository.userId.value!!,
             promptRepository.requestId.value!!,
-            if (Flags.bpFallbackOptions()) promptRepository.modalities.value else modalities,
+            promptRepository.modalities.value,
             promptRepository.challenge.value!!,
             promptRepository.opPackageName.value!!,
             onSwitchToCredential = true,

@@ -3711,7 +3711,7 @@ public final class InputMethodManager {
                         && ProtoLog.isEnabled(INPUT_METHOD_MANAGER_DEBUG, LogLevel.VERBOSE)) {
                 ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG,
                         "START INPUT: view=%s ic=%s editorInfo=%s startInputFlags=%s "
-                                + "imeRequestedVisible=%s",
+                                + "imeRequestedVisible=%b",
                         InputMethodDebug.dumpViewInfo(view), ic, editorInfo,
                         InputMethodDebug.startInputFlagsToString(startInputFlags),
                         imeRequestedVisible);
@@ -4111,7 +4111,7 @@ public final class InputMethodManager {
                     ProtoLog.d(INPUT_METHOD_MANAGER_DEBUG, "updateSelection");
 
                     ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG,
-                            "SELECTION CHANGE: " + mCurBindState.mImeSession);
+                            "SELECTION CHANGE: %s", mCurBindState.mImeSession);
                 } else if (DEBUG) {
                     Log.d(TAG, "updateSelection");
                     Log.v(TAG, "SELECTION CHANGE: " + mCurBindState.mImeSession);
@@ -4634,8 +4634,9 @@ public final class InputMethodManager {
             if (timeout) {
                 if (android.tracing.Flags.imetrackerProtolog()) {
                     ProtoLog.w(INPUT_METHOD_MANAGER_WITH_LOGCAT,
-                            "Timeout waiting for IME to handle input event after %d ms: %s",
-                            INPUT_METHOD_NOT_RESPONDING_TIMEOUT, p.mInputMethodId);
+                            "Timeout waiting for IME to handle input event after "
+                                    + INPUT_METHOD_NOT_RESPONDING_TIMEOUT + " ms: %s",
+                            p.mInputMethodId);
                 } else {
                     Log.w(TAG, "Timeout waiting for IME to handle input event after "
                             + INPUT_METHOD_NOT_RESPONDING_TIMEOUT + " ms: " + p.mInputMethodId);

@@ -153,6 +153,22 @@ class ShadeTouchableRegionManagerTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_DUAL_SHADE)
+    fun calculateTouchableRegionForDesktop_sceneGone_isEmpty() =
+        kosmos.runTest {
+            enableStatusBarForDesktop()
+            lockDevice()
+            unlockDevice() // Sets scene to Scenes.Gone
+            shadeInteractor.setShadeOverlayBounds(null)
+
+            val rects = underTest.calculateTouchableRegionForDesktop()
+
+            // When scene is Gone and no bounds are set,
+            // no touchable region should be exposed (passing touches through).
+            assertThat(rects).isEmpty()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_DUAL_SHADE)
     fun calculateTouchableRegionForDesktop_sceneGone_withShadeBounds() =
         kosmos.runTest {
             val bounds = Rect(0, 0, 100, 100)

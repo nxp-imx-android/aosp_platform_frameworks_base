@@ -90,6 +90,7 @@ public interface DataFlowCallback {
     /* package */ @interface SourceEvent {}
 
     /** Event data for a {@link SourceEvent}. */
+    @FlaggedApi(Flags.FLAG_FMCQ_API)
     class SourceEventData {
         @Nullable private final HubEndpointInfo mSink;
 

@@ -49,6 +49,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import java.time.Duration;
 import java.util.concurrent.Executor;
 
 @RunWith(AndroidJUnit4.class)
@@ -70,10 +71,14 @@ public class ComputerControlSessionTest {
     private IInteractiveMirror mMockInteractiveMirror;
     @Mock
     private Runnable mMockOnClosedRunnable;
+    @Mock
+    private ComputerControlSession.StabilityListener mMockStabilityListener;
 
     private ComputerControlSession mSession;
 
     private AutoCloseable mMockitoSession;
+
+    private final Executor mExecutor = new TestExecutor();
 
     @Before
     public void setUp() throws RemoteException {
@@ -196,7 +201,7 @@ public class ComputerControlSessionTest {
         ComputerControlSession.LifecycleCallback mockCallback = Mockito.mock(
                 ComputerControlSession.LifecycleCallback.class);
 
-        mSession.setLifecycleCallback(new TestExecutor(), mockCallback);
+        mSession.setLifecycleCallback(mExecutor, mockCallback);
 
         lifecycleCallbackCaptor.getValue().onClosed(123);
         verify(mockCallback).onClosed(eq(123));
@@ -218,13 +223,63 @@ public class ComputerControlSessionTest {
         verify(mMockSession).initialize(lifecycleCallbackCaptor.capture(), notNull());
         ComputerControlSession.LifecycleCallback mockCallback = Mockito.mock(
                 ComputerControlSession.LifecycleCallback.class);
-        mSession.setLifecycleCallback(new TestExecutor(), mockCallback);
+        mSession.setLifecycleCallback(mExecutor, mockCallback);
 
         mSession.clearLifecycleCallback();
 
         lifecycleCallbackCaptor.getValue().onClosed(123);
         verify(mockCallback, never()).onClosed(anyInt());
         verify(mMockOnClosedRunnable).run();
+    }
+
+    @Test
+    public void setStabilityListener_withDuration_succeeds() {
+        // Verifies that setting a stability listener with a valid duration, executor,
+        // and listener does not throw an exception.
+        mSession.setStabilityListener(Duration.ofMillis(500), mExecutor, mMockStabilityListener);
+
+        mSession.clearStabilityListener();
+    }
+
+    @Test
+    public void setStabilityListener_nullDuration_throwsException() {
+        // Verifies that passing a null duration throws a NullPointerException, as expected from
+        // the Objects.requireNonNull check.
+        assertThrows(NullPointerException.class,
+                () -> mSession.setStabilityListener(null, mExecutor, mMockStabilityListener));
+    }
+
+    @Test
+    public void setStabilityListener_nullExecutor_throwsException() {
+        // Verifies that passing a null executor throws a NullPointerException.
+        assertThrows(NullPointerException.class,
+                () -> mSession.setStabilityListener(
+                        Duration.ofMillis(500), null, mMockStabilityListener));
+    }
+
+    @Test
+    public void setStabilityListener_nullListener_throwsException() {
+        // Verifies that passing a null listener throws a NullPointerException.
+        assertThrows(NullPointerException.class,
+                () -> mSession.setStabilityListener(Duration.ofMillis(500), mExecutor, null));
+    }
+
+    @Test
+    public void setStabilityListener_calledTwice_throwsException() {
+        // Sets a listener successfully.
+        mSession.setStabilityListener(Duration.ofMillis(500), mExecutor, mMockStabilityListener);
+
+        // Verifies that attempting to set another listener throws an IllegalStateException.
+        assertThrows(IllegalStateException.class,
+                () -> mSession.setStabilityListener(
+                        Duration.ofMillis(500), mExecutor, mMockStabilityListener));
+    }
+
+    @Test
+    public void clearStabilityListener_withoutListener_throwsException() {
+        // Verifies that attempting to clear a listener when none has been set throws an
+        // IllegalStateException.
+        assertThrows(IllegalStateException.class, () -> mSession.clearStabilityListener());
     }
 
     /**

@@ -171,7 +171,6 @@ public class KeyguardSecurityViewFlipperController
     }
 
     private int getLayoutIdFor(SecurityMode securityMode) {
-        // TODO (b/297863911, b/297864907) - implement motion layout for other bouncers
         return switch (securityMode) {
             case SecureLockDeviceBiometricAuth ->
                     R.layout.keyguard_secure_lock_device_biometric_auth_view;

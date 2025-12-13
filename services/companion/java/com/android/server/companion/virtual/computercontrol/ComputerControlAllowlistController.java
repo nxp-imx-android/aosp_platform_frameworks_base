@@ -284,8 +284,9 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
         }
 
         // Check if the app is allowlisted.
+        final ApplicationInfo appInfo = getApplicationInfo(targetPackage, packageManager);
         final boolean isInAllowlist = mAutomatableAppAllowlist.anyMatch(targetPackage,
-                targetPackageSigningDetails);
+                targetPackageSigningDetails, isPreInstalledApp(appInfo));
         Slog.i(TAG, "isPackageAutomatable: Is there any allowlist entry for " + targetPackage
                 + " : " + isInAllowlist);
         return isInAllowlist;
@@ -345,8 +346,8 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
         return permissionState == PackageManager.PERMISSION_GRANTED;
     }
 
-    private static boolean isPreInstalledApp(@NonNull ApplicationInfo applicationInfo) {
-        return applicationInfo.isSystemApp();
+    private static boolean isPreInstalledApp(@Nullable ApplicationInfo applicationInfo) {
+        return applicationInfo != null && applicationInfo.isSystemApp();
     }
 
     private static boolean isPackageTestOnly(@NonNull ApplicationInfo applicationInfo) {
@@ -381,9 +382,14 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
     }
 
     private static boolean packageSignatureMatches(@NonNull String packageName,
-            @NonNull SigningDetails signingDetails, @NonNull SignedPackage signedPackage) {
+            @NonNull SigningDetails signingDetails, @NonNull SignedPackage signedPackage,
+            boolean preinstalled) {
         if (!Objects.equals(packageName, signedPackage.getPackageName())) {
             return false;
+        }
+
+        if (preinstalled && signedPackage.matchAnyPreinstalled()) {
+            return true;
         }
 
         return signingDetails.hasAncestorOrSelfWithDigest(
@@ -460,9 +466,14 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
 
         private boolean anyMatch(@NonNull String packageName,
                 @NonNull SigningDetails signingDetails) {
+            return anyMatch(packageName, signingDetails, false);
+        }
+
+        private boolean anyMatch(@NonNull String packageName,
+                @NonNull SigningDetails signingDetails, boolean preinstalled) {
             synchronized (mLock) {
                 return mSignedPackages != null
-                        && mSignedPackages.anyMatch(packageName, signingDetails);
+                        && mSignedPackages.anyMatch(packageName, signingDetails, preinstalled);
             }
         }
 
@@ -610,7 +621,8 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
             mIncludeEverything = includeEverything;
         }
 
-        boolean anyMatch(@NonNull String packageName, @NonNull SigningDetails signingDetails) {
+        boolean anyMatch(@NonNull String packageName, @NonNull SigningDetails signingDetails,
+                boolean preinstalled) {
             if (mIncludeEverything) {
                 Slog.i(TAG, "Allowlist match for package " + packageName
                         + " as it includes everything");
@@ -619,7 +631,8 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
 
             for (int i = 0; i < mSignedPackages.size(); i++) {
                 final SignedPackage allowlistedPackage = mSignedPackages.get(i);
-                if (packageSignatureMatches(packageName, signingDetails, allowlistedPackage)) {
+                if (packageSignatureMatches(packageName, signingDetails, allowlistedPackage,
+                        preinstalled)) {
                     return true;
                 }
             }
@@ -649,6 +662,7 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
 
     @VisibleForTesting
     static final class SignedPackage {
+        private static final String MATCH_ANY_PREINSTALLED = "PREINSTALLED";
         private final String mPackageName;
         private final String mCertificateDigest;
 
@@ -665,6 +679,10 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
         @NonNull
         String getCertificateDigest() {
             return mCertificateDigest;
+        }
+
+        boolean matchAnyPreinstalled() {
+            return Objects.equals(mCertificateDigest, MATCH_ANY_PREINSTALLED);
         }
 
         @Override

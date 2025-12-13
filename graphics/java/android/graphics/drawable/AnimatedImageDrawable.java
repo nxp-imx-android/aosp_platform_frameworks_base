@@ -463,7 +463,7 @@ public class AnimatedImageDrawable extends Drawable implements Animatable2 {
             throw new IllegalStateException("called start on empty AnimatedImageDrawable");
         }
 
-        if (Flags.animatedImageFrameRateHint()) {
+        if (Flags.animatedImageFrameRateHint() && Looper.myLooper() != null) {
             nSetOnFrameRateHintListener(mState.mNativePtr, new WeakReference<>(this));
         }
 
@@ -487,7 +487,7 @@ public class AnimatedImageDrawable extends Drawable implements Animatable2 {
         if (nStop(mState.mNativePtr)) {
             postOnAnimationEnd();
         }
-        if (Flags.animatedImageFrameRateHint()) {
+        if (Flags.animatedImageFrameRateHint() && Looper.myLooper() != null) {
             nSetOnFrameRateHintListener(mState.mNativePtr, null);
         }
     }

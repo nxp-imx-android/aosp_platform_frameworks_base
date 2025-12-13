@@ -222,7 +222,7 @@ data class BurnInParameters(
  * purposes.
  */
 data class BurnInScaleViewModel(
-    val scale: Float = 1f,
+    val scale: Float = MAX_LARGE_CLOCK_SCALE,
     /** Whether the scale only applies to clock UI elements. */
     val scaleClockOnly: Boolean = false,
 )

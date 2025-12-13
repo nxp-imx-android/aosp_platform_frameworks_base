@@ -96,11 +96,9 @@ public class PromptInfo implements Parcelable {
         mRealCallerForConfirmDeviceCredentialActivity = in.readParcelable(
                 ComponentName.class.getClassLoader(), ComponentName.class);
         mClassNameIfItIsConfirmDeviceCredentialActivity = in.readString();
-        if (Flags.addFallback()) {
-            ArrayList<FallbackOption> options = new ArrayList<>();
-            in.readTypedList(options, FallbackOption.CREATOR);
-            mFallbackOptions = options;
-        }
+        ArrayList<FallbackOption> options = new ArrayList<>();
+        in.readTypedList(options, FallbackOption.CREATOR);
+        mFallbackOptions = options;
         mIsSystemCaller = in.readBoolean();
         mIdentityCheckInfo = in.readParcelable(IdentityCheckInfo.class.getClassLoader(),
                 IdentityCheckInfo.class);
@@ -151,9 +149,7 @@ public class PromptInfo implements Parcelable {
         dest.writeBoolean(mUseParentProfileForDeviceCredential);
         dest.writeParcelable(mRealCallerForConfirmDeviceCredentialActivity, 0);
         dest.writeString(mClassNameIfItIsConfirmDeviceCredentialActivity);
-        if (Flags.addFallback()) {
-            dest.writeTypedList(mFallbackOptions);
-        }
+        dest.writeTypedList(mFallbackOptions);
         dest.writeBoolean(mIsSystemCaller);
         dest.writeParcelable(mIdentityCheckInfo, 0 /* parcelableFlags */);
     }
@@ -315,6 +311,12 @@ public class PromptInfo implements Parcelable {
     }
 
     public void setAuthenticators(int authenticators) {
+        if (Flags.doubleAuth() && authenticators
+                == BiometricManager.Authenticators.DEVICE_CREDENTIAL_AND_IDENTITY_CHECK) {
+            mIdentityCheckInfo.setDeviceCredentialAndIdentityCheck(true);
+            authenticators = BiometricManager.Authenticators.DEVICE_CREDENTIAL
+                    | BiometricManager.Authenticators.BIOMETRIC_STRONG;
+        }
         mAuthenticators = authenticators;
     }
 
@@ -534,5 +536,9 @@ public class PromptInfo implements Parcelable {
      */
     public void addFallbackOption(FallbackOption fallbackOption) {
         mFallbackOptions.add(fallbackOption);
+    }
+
+    public boolean isDeviceCredentialAndIdentityCheckRequested() {
+        return mIdentityCheckInfo.isDeviceCredentialAndIdentityCheckRequested();
     }
 }

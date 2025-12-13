@@ -23,7 +23,6 @@ import static android.view.RemoteAnimationTarget.MODE_OPENING;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_CLOSE_PREPARE_BACK_NAVIGATION;
 import static android.window.BackEvent.EDGE_NONE;
-import static android.window.DesktopExperienceFlags.ENABLE_INDEPENDENT_BACK_IN_PROJECTED;
 import static android.window.TransitionInfo.FLAG_BACK_GESTURE_ANIMATED;
 import static android.window.TransitionInfo.FLAG_IS_WALLPAPER;
 import static android.window.TransitionInfo.FLAG_MOVED_TO_TOP;
@@ -530,9 +529,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
             @BackEvent.SwipeEdge int swipeEdge,
             int displayId) {
 
-        if (ENABLE_INDEPENDENT_BACK_IN_PROJECTED.isTrue()) {
-            mBackAnimationAdapter.mOriginDisplayId = displayId;
-        }
+        mBackAnimationAdapter.mOriginDisplayId = displayId;
 
         BackTouchTracker activeTouchTracker = getActiveTracker();
         if (activeTouchTracker != null) {
@@ -788,9 +785,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
                 0 /* metaState */, KeyCharacterMap.VIRTUAL_KEYBOARD, 0 /* scancode */,
                 KeyEvent.FLAG_FROM_SYSTEM | KeyEvent.FLAG_VIRTUAL_HARD_KEY,
                 InputDevice.SOURCE_KEYBOARD);
-        if (ENABLE_INDEPENDENT_BACK_IN_PROJECTED.isTrue()) {
-            ev.setDisplayId(displayId);
-        }
+        ev.setDisplayId(displayId);
 
         if (!mContext.getSystemService(InputManager.class)
                 .injectInputEvent(ev, InputManager.INJECT_INPUT_EVENT_MODE_ASYNC)) {

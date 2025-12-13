@@ -144,6 +144,9 @@ data class Permission(
     inline val isImmutablyRestricted: Boolean
         get() = permissionInfo.flags.hasBits(PermissionInfo.FLAG_IMMUTABLY_RESTRICTED)
 
+    inline val isAllowedInPrivateComputeCore: Boolean
+        get() = permissionInfo.flags.hasBits(PermissionInfo.FLAG_ALLOWED_IN_PRIVATE_COMPUTE_CORE)
+
     inline val knownCerts: Set<String>
         get() = permissionInfo.knownCerts
 

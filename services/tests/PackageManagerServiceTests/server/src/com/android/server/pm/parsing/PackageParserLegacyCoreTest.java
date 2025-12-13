@@ -16,6 +16,7 @@
 
 package com.android.server.pm.parsing;
 
+import static android.content.pm.ActivityInfo.SKIP_ACTIVITY_RECREATION_ON_CONFIG_CHANGE;
 import static com.android.window.flags.Flags.FLAG_ENABLE_LESS_ACTIVITY_RECREATION_ON_CONFIG_CHANGE;
 
 import static org.junit.Assert.assertEquals;
@@ -56,6 +57,8 @@ import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.pm.test.service.server.R;
 
 import com.google.common.truth.Expect;
+
+import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -400,6 +403,7 @@ public class PackageParserLegacyCoreTest {
      */
     @Test
     @RequiresFlagsEnabled(FLAG_ENABLE_LESS_ACTIVITY_RECREATION_ON_CONFIG_CHANGE)
+    @EnableCompatChanges(SKIP_ACTIVITY_RECREATION_ON_CONFIG_CHANGE)
     public void testGetActivityConfigChanges_flagEnabled() {
         // Not set in either configChanges or recreateOnConfigChanges.
         int configChanges = 0x0000; // 000000000000000.

@@ -119,3 +119,11 @@ flag {
   description: "Enable pairing API hardening changes for Android Bluetooth from 26Q2"
   bug: "461869367"
 }
+
+flag {
+    name: "clear_app_exclusion_list_upon_vpn_install_uninstall"
+    namespace: "android_core_networking"
+    is_exported: false
+    description: "Clears the app exclusion list when the corresponding VPN package is installed/uninstalled"
+    bug: "459584692"
+}

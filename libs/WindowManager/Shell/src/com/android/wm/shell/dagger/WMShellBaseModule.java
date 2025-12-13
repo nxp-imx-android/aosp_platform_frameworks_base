@@ -1096,11 +1096,24 @@ public abstract class WMShellBaseModule {
     // Desktop mode (optional feature)
     //
 
+    @BindsOptionalOf
+    @DynamicOverride
+    abstract DesktopMode optionalDesktopMode();
+
     @WMSingleton
     @Provides
-    static Optional<DesktopMode> provideDesktopMode(
-            Optional<DesktopTasksController> desktopTasksController) {
-        return desktopTasksController.map(DesktopTasksController::asDesktopMode);
+    static Optional<DesktopMode> providesDesktopMode(
+            DesktopState desktopState,
+            @DynamicOverride Optional<Lazy<DesktopMode>> desktopMode) {
+        // Use optional-of-lazy for the dependency that this provider relies on.
+        // Lazy ensures that this provider will not be the cause the dependency is created
+        // when it will not be returned due to the condition below.
+        return desktopMode.flatMap((lazy) -> {
+            if (desktopState.canEnterDesktopModeOrShowAppHandle()) {
+                return Optional.of(lazy.get());
+            }
+            return Optional.empty();
+        });
     }
 
     @BindsOptionalOf

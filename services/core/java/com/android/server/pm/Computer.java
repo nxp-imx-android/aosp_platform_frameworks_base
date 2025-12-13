@@ -44,6 +44,7 @@ import android.content.pm.VersionedPackage;
 import android.os.UserHandle;
 import android.util.ArrayMap;
 import android.util.ArraySet;
+import android.util.IntArray;
 import android.util.Pair;
 import android.util.SparseArray;
 import android.util.proto.ProtoOutputStream;
@@ -209,6 +210,12 @@ public interface Computer extends PackageDataSnapshot {
     String resolveExternalPackageName(AndroidPackage pkg);
     String resolveInternalPackageName(String packageName, long versionCode);
     String[] getPackagesForUid(int uid);
+
+    /**
+     * Returns a list of isolated UIDs that are owned by the given owner UID.
+     */
+    @NonNull
+    IntArray getIsolatedUidsForUid(int ownerUid);
     UserInfo getProfileParent(int userId);
     boolean canViewInstantApps(int callingUid, int userId);
     boolean filterSharedLibPackage(@Nullable PackageStateInternal ps, int uid, int userId,

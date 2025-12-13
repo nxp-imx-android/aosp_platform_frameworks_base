@@ -49,7 +49,9 @@ constructor(
         when {
             largeScreenStopRecordingPopupViewModel.isShowingUi ->
                 LargeScreenStopRecordingPopupUI(largeScreenStopRecordingPopupViewModel)
-            preCaptureViewModel.isShowingUi -> PreCaptureUI(viewModel = preCaptureViewModel)
+            preCaptureViewModel.isShowingUi && preCaptureViewModel.recordingIsNotStarted == true ->
+                PreCaptureUI(viewModel = preCaptureViewModel)
+
             else -> {}
         }
     }

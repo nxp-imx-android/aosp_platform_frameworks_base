@@ -436,8 +436,13 @@ public:
         AndroidRuntime::getJNIEnv()->DeleteGlobalRef(mCallbackObj);
     }
 };
+
+static constexpr int ACCESSORY_NUM_STRINGS = 6;
 static std::unique_ptr<NativeGadgetMonitorThread> sGadgetMonitorThread;
 
+class NativeAccessoryLegacyBridgeThread;
+static std::mutex sAccessoryLegacyBridgeThreadMutex;
+static std::unique_ptr<NativeAccessoryLegacyBridgeThread> sAccessoryLegacyBridgeThread;
 /*
  * NativeVendorControlRequestMonitorThread starts a new thread to monitor vendor
  * control requests. It issues state changes for accessory mode as required.
@@ -445,7 +450,6 @@ static std::unique_ptr<NativeGadgetMonitorThread> sGadgetMonitorThread;
 class NativeVendorControlRequestMonitorThread {
     // Constants for accessory mode.
     static constexpr int ACCESSORY_VERSION = 2;
-    static constexpr int ACCESSORY_NUM_STRINGS = 6;
     static constexpr int ACCESSORY_STRING_LENGTH = 256;
     static constexpr char UHID_PATH[] = "/dev/uhid";
 
@@ -573,46 +577,63 @@ class NativeVendorControlRequestMonitorThread {
     bool handleAccessoryGetProtocol(int fd, uint16_t value, uint16_t index, uint16_t length,
                                     std::vector<char> &buf) {
         if (value != 0 || index != 0 || length != 2) {
-            ALOGE("Malformed Get protocol");
-            return false;
+            ALOGW("Malformed GET_PROTOCOL: (value=%u, index=%u, length=%u) - exp 0,0,2)", value,
+                  index, length);
         }
-        uint16_t *protocolVersion = reinterpret_cast<uint16_t *>(buf.data());
-        protocolVersion[0] = htole16(ACCESSORY_VERSION);
-        return true;
+        if (length >= 2) {
+            uint16_t *protocolVersion = reinterpret_cast<uint16_t *>(buf.data());
+            protocolVersion[0] = htole16(ACCESSORY_VERSION);
+            return true;
+        }
+        ALOGE("Protocol length too short to write version");
+        return false;
     }
 
     bool handleAccessorySendString(int fd, uint16_t index, uint16_t length,
                                    std::vector<char> &buf) {
         if (index >= ACCESSORY_NUM_STRINGS || length > ACCESSORY_STRING_LENGTH || length == 0) {
-            ALOGE("Malformed send string");
-            return false;
+            // Why is ACCESSORY_STRING_LENGTH 256 as opposed to 255
+            ALOGW("Malformed SEND_STRING: (index=%u, length=%u) - exp index<%u, 0<length<=%u",
+                  index, length, ACCESSORY_NUM_STRINGS, ACCESSORY_STRING_LENGTH);
+            if (length == 0) return true;
         }
         if (::read(fd, buf.data(), length) != length) {
             ALOGE("Usb error ctrlreq read string %d", length);
             return false;
         }
-        buf[length] = '\0';
-        std::string str(buf.data());
-        std::lock_guard<std::mutex> lock(mAccessoryFieldsMutex);
-        mAccessoryFields.strings[index] = str;
+        if (index < ACCESSORY_NUM_STRINGS) {
+            buf[length] = '\0';
+            std::string str(buf.data());
+            ALOGI("Saved string index=%u: %s", index, str.c_str());
+            std::lock_guard<std::mutex> lock(mAccessoryFieldsMutex);
+            mAccessoryFields.strings[index] = str;
+        } else {
+            ALOGW("String index out of bounds, data read but ignored.");
+        }
         return true;
     }
 
     bool handleAccessoryStart(int fd, uint16_t value, uint16_t index, uint16_t length,
                               std::vector<char> &buf) {
         if (value != 0 || index != 0 || length != 0) {
-            ALOGE("Malformed start accessory");
-            return false;
+            // Certain headunits have value set to 1.
+            // Log error, but do not return false for legacy headunit compatibility.
+            ALOGW("Malformed ACCESSORY_START (value:%u, index:%u, length:%u) - exp 0,0,0", value,
+                  index, length);
         }
-        if (::read(fd, buf.data(), 0) != 0) {
-            ALOGE("Usb error ctrlreq read data");
+        ssize_t bytesRead = ::read(fd, buf.data(), length);
+        if (bytesRead < 0) {
+            ALOGE("Error reading in data in ACCESSORY_START: %s", strerror(errno));
             return false;
+        } else if (bytesRead > 0) {
+            // Log error, but do not return false for legacy headunit compatibility.
+            ALOGW("Unexpected data in ACCESSORY_START control request. Bytes read: %zd", bytesRead);
         }
         return true;
     }
 
     bool handleRegisterHid(uint16_t hidId, uint16_t index) {
-        if (index <= 0) {
+        if (index == 0) {
             ALOGE("Descriptor length must be > 0.");
             return false;
         }
@@ -630,9 +651,10 @@ class NativeVendorControlRequestMonitorThread {
         if (it != mHidList.end()) {
             unregisterHid(hidId);
             mHidList.erase(it);
-            return true;
+        } else {
+            ALOGW("handleUnregisterHid: hidId=%u not found in mHidList", hidId);
         }
-        return false;
+        return true;
     }
 
     bool handleSetReportHidDescriptor(int fd, uint16_t hidId, uint16_t index, uint16_t length,
@@ -821,25 +843,32 @@ class NativeVendorControlRequestMonitorThread {
         jstring obj = env->NewStringUTF(controlState.c_str());
         env->CallVoidMethod(mCallbackObj, gUpdateAccessoryStateMethod, obj);
         env->DeleteLocalRef(obj);
-        obj = NULL;
+        obj = nullptr;
     }
 
     void teardown() {
         // Add teardown for vendor control requests being handled.
         ALOGI("Vendor control request monitor teardown");
 
-          // Teardown for accessory mode.
-          std::lock_guard<std::mutex> lock(mAccessoryFieldsMutex);
-          mAccessoryFields.controlState = "";
-          for (int i = 0; i < ACCESSORY_NUM_STRINGS; i++) {
-              mAccessoryFields.strings[i] = "";
-          }
-          mAccessoryFields.maxPacketSize = -1;
-          // Teardown for HID Devices
-          while (!mHidList.empty()) {
-              unregisterHid(mHidList.back());
-              mHidList.pop_back();
-          }
+        // Teardown for accessory mode.
+        std::lock_guard<std::mutex> lock(mAccessoryFieldsMutex);
+        mAccessoryFields.controlState = "";
+        for (int i = 0; i < ACCESSORY_NUM_STRINGS; i++) {
+            mAccessoryFields.strings[i] = "";
+        }
+        mAccessoryFields.maxPacketSize = -1;
+        // Teardown for HID Devices
+        while (!mHidList.empty()) {
+            unregisterHid(mHidList.back());
+            mHidList.pop_back();
+        }
+        {
+            std::lock_guard<std::mutex> lock(sAccessoryLegacyBridgeThreadMutex);
+            if (sAccessoryLegacyBridgeThread) {
+                ALOGI("Resetting legacy bridge thread");
+                sAccessoryLegacyBridgeThread.reset();
+            }
+        }
     }
 
     int setupEpoll(android::base::unique_fd &epollFd) {
@@ -958,13 +987,14 @@ public:
         mThread = std::thread(&NativeVendorControlRequestMonitorThread::monitorLoop, this);
     }
 
-    std::string getAccessoryString(int index) {
-        if (index < 0 || index >= ACCESSORY_NUM_STRINGS) {
-            ALOGE("Invalid accessory string index %d", index);
-            return "";
-        }
+    std::vector<std::string> getAccessoryStrings() {
         std::lock_guard<std::mutex> lock(mAccessoryFieldsMutex);
-        return mAccessoryFields.strings[index];
+        std::vector<std::string> strings;
+        strings.reserve(ACCESSORY_NUM_STRINGS);
+        for (int i = 0; i < ACCESSORY_NUM_STRINGS; ++i) {
+            strings.push_back(mAccessoryFields.strings[i]);
+        }
+        return strings;
     }
 
     int getMaxPacketSize() {
@@ -984,6 +1014,7 @@ public:
         AndroidRuntime::getJNIEnv()->DeleteGlobalRef(mCallbackObj);
     }
 };
+static std::mutex sVendorControlRequestMonitorThreadMutex;
 static std::unique_ptr<NativeVendorControlRequestMonitorThread> sVendorControlRequestMonitorThread;
 
 /*
@@ -994,7 +1025,7 @@ static std::unique_ptr<NativeVendorControlRequestMonitorThread> sVendorControlRe
 class NativeAccessoryLegacyBridgeThread {
     android::base::unique_fd mFfsReadFd;
     android::base::unique_fd mFfsWriteFd;
-    int mAppSocketFd;
+    android::base::unique_fd mAppSocketFd;
     int mMaxPacketSize;
     int mShutdownPipeFd[2];
     std::thread mThread;
@@ -1114,12 +1145,13 @@ class NativeAccessoryLegacyBridgeThread {
             }
 
             if (!completed_iocb) {
-                ALOGE("mEvents[%d].obj is NULL! Skipping this event.", i);
+                ALOGE("mEvents[%d].obj is null! Skipping this event.", i);
                 continue;
             }
 
             // Write completed data to the socket
-            int ret = write(mAppSocketFd, reinterpret_cast<void*>(completed_iocb->aio_buf), result);
+            int ret = write(mAppSocketFd.get(), reinterpret_cast<void *>(completed_iocb->aio_buf),
+                            result);
             if (ret < 0) {
                 ALOGE("error writing to socket: %s", strerror(errno));
                 return false;
@@ -1147,7 +1179,7 @@ class NativeAccessoryLegacyBridgeThread {
 
     bool handleSocketInput() {
         char* write_buf = mData.data() + USB_FFS_BUF_WRITE_OFFSET;
-        int ret = read(mAppSocketFd, write_buf, USB_FFS_ALL_BUFS_SIZE);
+        int ret = read(mAppSocketFd.get(), write_buf, USB_FFS_ALL_BUFS_SIZE);
 
         if (ret == 0) {
             ALOGE("accessory socket closed by client");
@@ -1194,7 +1226,7 @@ class NativeAccessoryLegacyBridgeThread {
 
         pollFds[0].fd = mReadEventFd.get();
         pollFds[0].events = POLLIN;
-        pollFds[1].fd = mAppSocketFd;
+        pollFds[1].fd = mAppSocketFd.get();
         pollFds[1].events = POLLIN | POLLHUP | POLLRDHUP | POLLERR;
         pollFds[2].fd = mShutdownPipeFd[0];
         pollFds[2].events = POLLIN;
@@ -1248,6 +1280,16 @@ class NativeAccessoryLegacyBridgeThread {
     exit:
         ALOGI("accessory socket thread exiting using readFd %d and writeFd %d", mFfsReadFd.get(),
               mFfsWriteFd.get());
+        mFfsReadFd.reset();
+        mFfsWriteFd.reset();
+        if (mReadCtx != 0) {
+            io_destroy(mReadCtx);
+            mReadCtx = 0;
+        }
+        if (mWriteCtx != 0) {
+            io_destroy(mWriteCtx);
+            mWriteCtx = 0;
+        }
     }
 
     void stop() {
@@ -1263,10 +1305,11 @@ class NativeAccessoryLegacyBridgeThread {
 public:
     explicit NativeAccessoryLegacyBridgeThread(jobject obj, android::base::unique_fd ffs_read_fd,
                                                android::base::unique_fd ffs_write_fd,
-                                               int app_socket_end, int max_packet_size)
+                                               android::base::unique_fd app_socket_fd,
+                                               int max_packet_size)
           : mFfsReadFd(std::move(ffs_read_fd)),
             mFfsWriteFd(std::move(ffs_write_fd)),
-            mAppSocketFd(app_socket_end),
+            mAppSocketFd(std::move(app_socket_fd)),
             mMaxPacketSize(max_packet_size) {
         mCallbackObj = AndroidRuntime::getJNIEnv()->NewGlobalRef(obj);
 
@@ -1290,7 +1333,6 @@ public:
         mThread = std::thread(&NativeAccessoryLegacyBridgeThread::monitorLoop, this);
     }
 
-
     ~NativeAccessoryLegacyBridgeThread() {
         ALOGD("tearing down NativeAccessoryLegacyBridgeThread...");
         stop();
@@ -1298,14 +1340,15 @@ public:
         close(mShutdownPipeFd[1]);
         if (mReadCtx != 0) {
             if (io_destroy(mReadCtx) < 0) ALOGE("io_destroy read_ctx failed");
+            mReadCtx = 0;
         }
         if (mWriteCtx != 0) {
             if (io_destroy(mWriteCtx) < 0) ALOGE("io_destroy write_ctx failed");
+            mWriteCtx = 0;
         }
         AndroidRuntime::getJNIEnv()->DeleteGlobalRef(mCallbackObj);
     }
 };
-static std::unique_ptr<NativeAccessoryLegacyBridgeThread> sAccessoryLegacyBridgeThread;
 
 static void set_accessory_string(JNIEnv *env, int fd, int cmd, jobjectArray strArray, int index)
 {
@@ -1320,54 +1363,45 @@ static void set_accessory_string(JNIEnv *env, int fd, int cmd, jobjectArray strA
     }
 }
 
-static void set_accessory_string_from_ffs(JNIEnv *env, jobjectArray strArray, int index) {
-    if (!sVendorControlRequestMonitorThread) {
-        ALOGE("Vendor control request monitor thread is not running");
-        return;
-    }
-
-    std::string str = sVendorControlRequestMonitorThread->getAccessoryString(index);
-    if (!str.empty()) {
-        jstring obj = env->NewStringUTF(str.data());
-        env->SetObjectArrayElement(strArray, index, obj);
-        env->DeleteLocalRef(obj);
-    }
-}
-
 static int get_max_packet_size(int ffs_fd) {
     struct usb_endpoint_descriptor desc{};
     if (ioctl(ffs_fd, FUNCTIONFS_ENDPOINT_DESC, reinterpret_cast<unsigned long>(&desc))) {
         ALOGE("Could not get FFS bulk-in descriptor");
         return 512;
     } else {
+        ALOGI("Got FFS max packet size: %d", desc.wMaxPacketSize);
         return desc.wMaxPacketSize;
     }
 }
 
 static jobjectArray android_server_UsbDeviceManager_getAccessoryStrings(JNIEnv *env,
                                                                         jobject /* thiz */) {
+    std::lock_guard<std::mutex> lock(sVendorControlRequestMonitorThreadMutex);
     if (sVendorControlRequestMonitorThread) {
         jclass stringClass = env->FindClass("java/lang/String");
-        jobjectArray strArray = env->NewObjectArray(6, stringClass, NULL);
+        jobjectArray strArray = env->NewObjectArray(ACCESSORY_NUM_STRINGS, stringClass, nullptr);
         if (!strArray) return nullptr;
-        set_accessory_string_from_ffs(env, strArray, 0);
-        set_accessory_string_from_ffs(env, strArray, 1);
-        set_accessory_string_from_ffs(env, strArray, 2);
-        set_accessory_string_from_ffs(env, strArray, 3);
-        set_accessory_string_from_ffs(env, strArray, 4);
-        set_accessory_string_from_ffs(env, strArray, 5);
+        std::vector<std::string> strings =
+                sVendorControlRequestMonitorThread->getAccessoryStrings();
+        for (int i = 0; i < ACCESSORY_NUM_STRINGS; ++i) {
+            if (i < strings.size() && !strings[i].empty()) {
+                jstring obj = env->NewStringUTF(strings[i].c_str());
+                env->SetObjectArrayElement(strArray, i, obj);
+                env->DeleteLocalRef(obj);
+            }
+        }
         return strArray;
     } else {
         int fd = open(DRIVER_NAME, O_RDWR);
         if (fd < 0) {
             ALOGE("could not open %s", DRIVER_NAME);
-            return NULL;
+            return nullptr;
         }
         jclass stringClass = env->FindClass("java/lang/String");
-        jobjectArray strArray = env->NewObjectArray(6, stringClass, NULL);
+        jobjectArray strArray = env->NewObjectArray(6, stringClass, nullptr);
         if (!strArray) {
             close(fd);
-            return NULL;
+            return nullptr;
         }
         set_accessory_string(env, fd, ACCESSORY_GET_STRING_MANUFACTURER, strArray, 0);
         set_accessory_string(env, fd, ACCESSORY_GET_STRING_MODEL, strArray, 1);
@@ -1383,27 +1417,110 @@ static jobjectArray android_server_UsbDeviceManager_getAccessoryStrings(JNIEnv *
 
 static jint android_server_UsbDeviceManager_getMaxPacketSize(JNIEnv * /* env */,
                                                              jobject /* thiz */) {
-    return static_cast<jint>(sVendorControlRequestMonitorThread->getMaxPacketSize());
+    std::lock_guard<std::mutex> lock(sVendorControlRequestMonitorThreadMutex);
+    if (sVendorControlRequestMonitorThread) {
+        return static_cast<jint>(sVendorControlRequestMonitorThread->getMaxPacketSize());
+    }
+    return -1;
 }
 
-static jobject android_server_UsbDeviceManager_openAccessory(JNIEnv *env, jobject /* thiz */)
-{
-    int fd = open(DRIVER_NAME, O_RDWR);
-    if (fd < 0) {
-        ALOGE("could not open %s", DRIVER_NAME);
-        return NULL;
+static jobject android_server_UsbDeviceManager_openAccessory(JNIEnv *env, jobject obj) {
+    bool useUserspace = false;
+    {
+        std::lock_guard<std::mutex> lock(sVendorControlRequestMonitorThreadMutex);
+        if (sVendorControlRequestMonitorThread) {
+            useUserspace = true;
+        }
     }
-    jobject fileDescriptor = jniCreateFileDescriptor(env, fd);
-    if (fileDescriptor == NULL) {
-        close(fd);
-        return NULL;
+
+    if (useUserspace) {
+        ALOGI("Opening userspace accessory bridge");
+        android::base::unique_fd bridgeFd;
+        android::base::unique_fd appFd;
+        {
+            int fds[2];
+            if (socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds) == -1) {
+                ALOGE("could not create socket pair: %s", strerror(errno));
+                return nullptr;
+            }
+            bridgeFd.reset(fds[0]);
+            appFd.reset(fds[1]);
+        }
+
+        android::base::unique_fd readFd(open(FFS_ACCESSORY_EP1, O_RDONLY));
+        if (readFd.get() < 0) {
+            ALOGE("could not open %s: %s", FFS_ACCESSORY_EP1, strerror(errno));
+            return nullptr;
+        }
+        android::base::unique_fd writeFd(open(FFS_ACCESSORY_EP2, O_WRONLY));
+        if (writeFd.get() < 0) {
+            ALOGE("could not open %s: %s", FFS_ACCESSORY_EP2, strerror(errno));
+            return nullptr;
+        }
+
+        int maxPacketSize = get_max_packet_size(writeFd.get());
+        {
+            std::lock_guard<std::mutex> lock(sVendorControlRequestMonitorThreadMutex);
+            if (sVendorControlRequestMonitorThread) {
+                sVendorControlRequestMonitorThread->setMaxPacketSize(maxPacketSize);
+            } else {
+                ALOGE("Vendor control request monitor thread died");
+                return nullptr;
+            }
+        }
+
+        {
+            std::lock_guard<std::mutex> lock(sAccessoryLegacyBridgeThreadMutex);
+            sAccessoryLegacyBridgeThread.reset(
+                    new NativeAccessoryLegacyBridgeThread(obj, std::move(readFd),
+                                                          std::move(writeFd), std::move(bridgeFd),
+                                                          maxPacketSize));
+        }
+        ALOGI("Successfully created userspace accessory bridge");
+
+        jobject fileDescriptor = jniCreateFileDescriptor(env, appFd.get());
+        if (fileDescriptor == nullptr) {
+            ALOGE("Failed to create JNI file descriptor, tearing down bridge");
+            {
+                std::lock_guard<std::mutex> lock(sAccessoryLegacyBridgeThreadMutex);
+                sAccessoryLegacyBridgeThread.reset();
+            }
+            return nullptr;
+        }
+
+        // Release ownership of the file descriptor, as it is now owned by the Java
+        // ParcelFileDescriptor object.
+        (void)appFd.release();
+        return env->NewObject(gParcelFileDescriptorOffsets.mClass,
+                              gParcelFileDescriptorOffsets.mConstructor, fileDescriptor);
+    } else {
+        android::base::unique_fd fd(open(DRIVER_NAME, O_RDWR));
+        if (fd.get() < 0) {
+            ALOGE("could not open %s", DRIVER_NAME);
+            return nullptr;
+        }
+        jobject fileDescriptor = jniCreateFileDescriptor(env, fd.get());
+        if (fileDescriptor == nullptr) {
+            return nullptr;
+        }
+
+        // Release ownership of the file descriptor, as it is now owned by the Java
+        // ParcelFileDescriptor object.
+        (void)fd.release();
+        return env->NewObject(gParcelFileDescriptorOffsets.mClass,
+                              gParcelFileDescriptorOffsets.mConstructor, fileDescriptor);
     }
-    return env->NewObject(gParcelFileDescriptorOffsets.mClass,
-        gParcelFileDescriptorOffsets.mConstructor, fileDescriptor);
 }
 
 static jobject android_server_UsbDeviceManager_openAccessoryForInputStream(JNIEnv *env,
                                                                            jobject /* thiz */) {
+    {
+        std::lock_guard<std::mutex> lock(sAccessoryLegacyBridgeThreadMutex);
+        if (sAccessoryLegacyBridgeThread) {
+            ALOGI("openAccessoryForInputStream: tearing down legacy bridge");
+            sAccessoryLegacyBridgeThread.reset();
+        }
+    }
     int readFd = open(FFS_ACCESSORY_EP1, O_RDONLY);
     if (readFd < 0) {
         ALOGE("could not open %s", FFS_ACCESSORY_EP1);
@@ -1420,13 +1537,26 @@ static jobject android_server_UsbDeviceManager_openAccessoryForInputStream(JNIEn
 
 static jobject android_server_UsbDeviceManager_openAccessoryForOutputStream(JNIEnv *env,
                                                                             jobject /* thiz */) {
+    {
+        std::lock_guard<std::mutex> lock(sAccessoryLegacyBridgeThreadMutex);
+        if (sAccessoryLegacyBridgeThread) {
+            ALOGI("openAccessoryForOutputStream: tearing down legacy bridge");
+            sAccessoryLegacyBridgeThread.reset();
+        }
+    }
     int writeFd = open(FFS_ACCESSORY_EP2, O_WRONLY);
 
     if (writeFd < 0) {
         ALOGE("could not open %s", FFS_ACCESSORY_EP2);
         return nullptr;
     }
-    sVendorControlRequestMonitorThread->setMaxPacketSize(get_max_packet_size(writeFd));
+    int maxPacketSize = get_max_packet_size(writeFd);
+    {
+        std::lock_guard<std::mutex> lock(sVendorControlRequestMonitorThreadMutex);
+        if (sVendorControlRequestMonitorThread) {
+            sVendorControlRequestMonitorThread->setMaxPacketSize(maxPacketSize);
+        }
+    }
     jobject writeFileDescriptor = jniCreateFileDescriptor(env, writeFd);
     if (writeFileDescriptor == nullptr) {
         close(writeFd);
@@ -1460,16 +1590,16 @@ static jobject android_server_UsbDeviceManager_openControl(JNIEnv *env, jobject 
         fd = TEMP_FAILURE_RETRY(open(ptp ? FFS_PTP_EP0 : FFS_MTP_EP0, O_RDWR));
         if (fd < 0) {
             ALOGE("could not open control for %s %s", function.c_str(), strerror(errno));
-            return NULL;
+            return nullptr;
         }
         if (!writeDescriptors(fd, ptp)) {
             close(fd);
-            return NULL;
+            return nullptr;
         }
     }
 
     jobject jifd = jniCreateFileDescriptor(env, fd);
-    if (jifd == NULL) {
+    if (jifd == nullptr) {
         // OutOfMemoryError will be pending.
         close(fd);
     }
@@ -1526,8 +1656,11 @@ static jboolean android_server_UsbDeviceManager_startVendorControlRequestMonitor
     }
 
     ALOGI("Start monitoring %s...", FFS_VENDOR_CTRL_REQUEST_EP0);
-    sVendorControlRequestMonitorThread.reset(
-            new NativeVendorControlRequestMonitorThread(thiz, std::move(ufd)));
+    {
+        std::lock_guard<std::mutex> lock(sVendorControlRequestMonitorThreadMutex);
+        sVendorControlRequestMonitorThread.reset(
+                new NativeVendorControlRequestMonitorThread(thiz, std::move(ufd)));
+    }
 
     return JNI_TRUE;
 }
@@ -1698,7 +1831,7 @@ int register_android_server_UsbDeviceManager(JavaVM *vm, JNIEnv *env) {
     gvm = vm;
 
     jclass clazz = env->FindClass("com/android/server/usb/UsbDeviceManager");
-    if (clazz == NULL) {
+    if (clazz == nullptr) {
         ALOGE("Can't find com/android/server/usb/UsbDeviceManager");
         return -1;
     }
@@ -1710,10 +1843,10 @@ int register_android_server_UsbDeviceManager(JavaVM *vm, JNIEnv *env) {
             GetMethodIDOrDie(env, clazz, "updateAccessoryState", "(Ljava/lang/String;)V");
 
     clazz = env->FindClass("android/os/ParcelFileDescriptor");
-    LOG_FATAL_IF(clazz == NULL, "Unable to find class android.os.ParcelFileDescriptor");
+    LOG_FATAL_IF(clazz == nullptr, "Unable to find class android.os.ParcelFileDescriptor");
     gParcelFileDescriptorOffsets.mClass = (jclass) env->NewGlobalRef(clazz);
     gParcelFileDescriptorOffsets.mConstructor = env->GetMethodID(clazz, "<init>", "(Ljava/io/FileDescriptor;)V");
-    LOG_FATAL_IF(gParcelFileDescriptorOffsets.mConstructor == NULL,
+    LOG_FATAL_IF(gParcelFileDescriptorOffsets.mConstructor == nullptr,
                  "Unable to find constructor for android.os.ParcelFileDescriptor");
 
     return jniRegisterNativeMethods(env, "com/android/server/usb/UsbDeviceManager",

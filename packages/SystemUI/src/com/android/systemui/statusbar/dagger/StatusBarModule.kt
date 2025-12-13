@@ -38,8 +38,6 @@ import com.android.systemui.statusbar.phone.AutoHideControllerImpl
 import com.android.systemui.statusbar.phone.LightBarController
 import com.android.systemui.statusbar.phone.StatusBarSignalPolicy
 import com.android.systemui.statusbar.phone.ongoingcall.OngoingCallLog
-import com.android.systemui.statusbar.phone.ongoingcall.domain.interactor.OngoingCallInteractor
-import com.android.systemui.statusbar.phone.ongoingcall.shared.PerDisplayOngoingCallStatusBarVisibility
 import com.android.systemui.statusbar.ui.StatusBarUiLayerModule
 import com.android.systemui.statusbar.ui.SystemBarUtilsProxyImpl
 import com.android.systemui.statusbar.window.MultiDisplayStatusBarWindowControllerStore
@@ -92,16 +90,6 @@ interface StatusBarModule {
     @Binds @SysUISingleton fun autoHideController(impl: AutoHideControllerImpl): AutoHideController
 
     companion object {
-        @Provides
-        @SysUISingleton
-        @IntoMap
-        @ClassKey(OngoingCallInteractor::class)
-        fun ongoingCallInteractor(interactor: OngoingCallInteractor): CoreStartable =
-            if (!PerDisplayOngoingCallStatusBarVisibility.isEnabled) {
-                interactor
-            } else {
-                CoreStartable.NOP
-            }
 
         @Provides
         @SysUISingleton

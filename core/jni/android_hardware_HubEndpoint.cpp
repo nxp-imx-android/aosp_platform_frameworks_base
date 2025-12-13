@@ -311,10 +311,15 @@ static jintArray android_hardware_HubEndpoint_createDataFlowInfo(JNIEnv* env, jo
                     (std::string("Failed to create queue: ") + queue.status().str()).c_str());
 
     RemoteNotifyArgs args = {.fn = [&](pw::ConstByteSpan /*id*/) {}, .id = {}};
-    auto producer = UntypedProducer::createRemote(alloc.value(), queue.value(),
-                                                  static_cast<size_t>(maxElementCount),
-                                                  static_cast<size_t>(minElementCount),
-                                                  resource->getNotifier(), std::move(args));
+
+    size_t minElementSize = static_cast<size_t>(elementSize) * minElementCount;
+    size_t maxElementSize = static_cast<size_t>(elementSize) * maxElementCount;
+    // The min block count >= 1, and maxBlockCount >= minBlockCount
+    size_t minBlockCount = 1 + (minElementSize - 1) / kBlockCapacity;
+    size_t maxBlockCount = 1 + (maxElementSize - 1) / kBlockCapacity;
+    auto producer =
+            UntypedProducer::createRemote(alloc.value(), queue.value(), maxBlockCount,
+                                          minBlockCount, resource->getNotifier(), std::move(args));
     RETURN_ON_FALSE(producer.ok(), nullptr,
                     (std::string("Failed to create producer: ") + producer.status().str()).c_str());
 

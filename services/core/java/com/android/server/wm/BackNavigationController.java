@@ -30,7 +30,6 @@ import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_APP_PROGRESS_
 import static android.view.WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_PREPARE_BACK_NAVIGATION;
-import static android.window.DesktopExperienceFlags.ENABLE_INDEPENDENT_BACK_IN_PROJECTED;
 import static android.window.SystemOverrideOnBackInvokedCallback.OVERRIDE_FINISH_AND_REMOVE_TASK;
 import static android.window.SystemOverrideOnBackInvokedCallback.OVERRIDE_UNDEFINED;
 
@@ -800,7 +799,7 @@ class BackNavigationController {
      */
     @VisibleForTesting
     boolean isInProjectedMode(int originDisplayId) {
-        if (!ENABLE_INDEPENDENT_BACK_IN_PROJECTED.isTrue() || originDisplayId == INVALID_DISPLAY) {
+        if (originDisplayId == INVALID_DISPLAY) {
             return false;
         }
 

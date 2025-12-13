@@ -495,11 +495,13 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
     private suspend fun Kosmos.setLockout(isLockedOut: Boolean, failedAttemptCount: Int = 5) {
         if (isLockedOut) {
             repeat(failedAttemptCount) {
-                fakeAuthenticationRepository.reportAuthenticationAttempt(false)
+                fakeAuthenticationRepository.reportAuthenticationAttempt(
+                    AuthenticationResult.FAILED
+                )
             }
             fakeAuthenticationRepository.reportLockoutStarted(30.seconds)
         } else {
-            fakeAuthenticationRepository.reportAuthenticationAttempt(true)
+            fakeAuthenticationRepository.reportAuthenticationAttempt(AuthenticationResult.SUCCEEDED)
         }
         isInputEnabled.value = !isLockedOut
 

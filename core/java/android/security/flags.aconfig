@@ -195,16 +195,6 @@ flag {
 }
 
 flag {
-    name: "manage_lockout_end_time_in_service"
-    namespace: "security"
-    description: "Manage lockout end time in LockSettingsService rather than LockPatternUtils"
-    bug: "322014085"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_weaver_get_timeout"
     namespace: "security"
     description: "Use IWeaver#getTimeout() to improve accuracy of lockout end time reporting"

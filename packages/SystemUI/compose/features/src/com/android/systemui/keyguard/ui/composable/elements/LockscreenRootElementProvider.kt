@@ -84,11 +84,13 @@ constructor(
             LockscreenTouchHandling(viewModel.touchHandlingFactory) { onSettingsMenuPlaced ->
                 val innerContext =
                     context.copy(
-                        burnInModifier =
+                        burnInModifierBuilder = { isClock ->
                             Modifier.burnInAware(
                                 viewModel = aodBurnInViewModel,
                                 params = burnIn.parameters,
-                            ),
+                                isClock = isClock,
+                            )
+                        },
                         onElementPositioned = { key, rect ->
                             when (key) {
                                 Clock.Small -> {

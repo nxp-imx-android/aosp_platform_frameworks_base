@@ -81,6 +81,7 @@ import android.graphics.Rect;
 import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.util.Pair;
@@ -119,7 +120,8 @@ public class RootWindowContainerTests extends WindowTestsBase {
     }
 
     @Test
-    public void testUpdateDefaultTaskDisplayAreaWindowingModeOnSettingsRetrieved() {
+    @DisableFlags(Flags.FLAG_DISABLE_DISPLAY_FORCE_FREEFORM_ON_PC)
+    public void testUpdateDefaultTaskDisplayAreaWindowingModeOnSettingsRetrieved_freeform() {
         assertEquals(WindowConfiguration.WINDOWING_MODE_FULLSCREEN,
                 mWm.getDefaultDisplayContentLocked().getDefaultTaskDisplayArea()
                         .getWindowingMode());
@@ -130,6 +132,23 @@ public class RootWindowContainerTests extends WindowTestsBase {
         mWm.mRoot.onSettingsRetrieved();
 
         assertEquals(WindowConfiguration.WINDOWING_MODE_FREEFORM,
+                mWm.getDefaultDisplayContentLocked().getDefaultTaskDisplayArea()
+                        .getWindowingMode());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_DISABLE_DISPLAY_FORCE_FREEFORM_ON_PC)
+    public void testUpdateDefaultTaskDisplayAreaWindowingModeOnSettingsRetrieved_fullscreen() {
+        assertEquals(WindowConfiguration.WINDOWING_MODE_FULLSCREEN,
+                mWm.getDefaultDisplayContentLocked().getDefaultTaskDisplayArea()
+                        .getWindowingMode());
+
+        mWm.mIsPc = true;
+        mWm.mAtmService.mSupportsFreeformWindowManagement = true;
+
+        mWm.mRoot.onSettingsRetrieved();
+
+        assertEquals(WINDOWING_MODE_FULLSCREEN,
                 mWm.getDefaultDisplayContentLocked().getDefaultTaskDisplayArea()
                         .getWindowingMode());
     }

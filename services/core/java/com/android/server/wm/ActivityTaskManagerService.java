@@ -2894,8 +2894,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 if (task == null) {
                     return;
                 }
-                if (DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX.isTrue()
-                        && getTransitionController().isShellTransitionsEnabled()) {
+                if (getTransitionController().isShellTransitionsEnabled()) {
                     if (!canEnterLockTaskMode(task)) {
                         Slog.w(TAG, "startLockTaskMode: Can't lock due to auth");
                         return;

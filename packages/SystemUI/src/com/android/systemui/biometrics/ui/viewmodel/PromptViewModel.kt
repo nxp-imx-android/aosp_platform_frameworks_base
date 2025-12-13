@@ -27,7 +27,6 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.hardware.biometrics.BiometricFingerprintConstants
 import android.hardware.biometrics.BiometricPrompt
-import android.hardware.biometrics.Flags
 import android.hardware.biometrics.PromptContentView
 import android.os.UserHandle
 import android.text.TextPaint
@@ -116,14 +115,7 @@ constructor(
             .toLong()
 
     /** The set of modalities available for this prompt */
-    val modalities: Flow<BiometricModalities> =
-        if (Flags.bpFallbackOptions()) {
-            promptSelectorInteractor.modalities
-        } else {
-            promptSelectorInteractor.prompt
-                .map { it?.modalities ?: BiometricModalities() }
-                .distinctUntilChanged()
-        }
+    val modalities: Flow<BiometricModalities> = promptSelectorInteractor.modalities
 
     /** Whether the shade is being interacted with */
     val isShadeInteracted = shadeInteractor.isUserInteracting
@@ -154,15 +146,12 @@ constructor(
 
     /** If one fallback option set, use as the negative button */
     val usingFallbackAsNegative: Flow<Boolean> =
-        promptSelectorInteractor.prompt.map {
-            Flags.bpFallbackOptions() && it?.fallbackOptions?.size == 1
-        }
+        promptSelectorInteractor.prompt.map { it?.fallbackOptions?.size == 1 }
 
     /** The label to use for the cancel button. */
     val negativeButtonText: Flow<String> =
         promptSelectorInteractor.prompt.map {
-            if (Flags.bpFallbackOptions() && it?.fallbackOptions?.size == 1)
-                it.fallbackOptions[0].text.toString()
+            if (it?.fallbackOptions?.size == 1) it.fallbackOptions[0].text.toString()
             else it?.negativeButtonText ?: ""
         }
 
@@ -196,7 +185,7 @@ constructor(
     private val _fingerprintStartMode = MutableStateFlow(FingerprintStartMode.Pending)
 
     /** Fingerprint sensor state. */
-    val fingerprintStartMode: Flow<FingerprintStartMode> = _fingerprintStartMode.asStateFlow()
+    val fingerprintStartMode: StateFlow<FingerprintStartMode> = _fingerprintStartMode.asStateFlow()
 
     /** Whether a finger has been acquired by the sensor */
     val hasFingerBeenAcquired: Flow<Boolean> =
@@ -221,13 +210,7 @@ constructor(
     /** Whether the fallback options screen is currently showing, auth view if false */
     val fallbackShowing: Flow<Boolean> = currentView.map { it == BiometricPromptView.FALLBACK }
 
-    private val _forceLargeSize = MutableStateFlow(false)
-    private val forceLargeSize =
-        if (Flags.bpFallbackOptions()) {
-            currentView.map { it == BiometricPromptView.CREDENTIAL }
-        } else {
-            _forceLargeSize
-        }
+    private val forceLargeSize = currentView.map { it == BiometricPromptView.CREDENTIAL }
     private val _forceMediumSize = MutableStateFlow(false)
 
     private val authInteractionProperties = AuthInteractionProperties()
@@ -622,10 +605,6 @@ constructor(
             isIdentityCheckEnabled,
             promptSelectorInteractor.prompt.map { it?.fallbackOptions?.size ?: 0 },
         ) { size, _, isAuthenticated, credentialAllowed, identityCheck, fallbackOptionsCount ->
-            if (!Flags.bpFallbackOptions()) {
-                return@combine false
-            }
-
             size.isNotSmall &&
                 isAuthenticated.isNotAuthenticated &&
                 (if (credentialAllowed && identityCheck) 2 else (if (credentialAllowed) 1 else 0)) +
@@ -911,24 +890,17 @@ constructor(
      * TODO(b/251476085): this should be decoupled from the shared panel controller
      */
     fun onSwitchToCredential() {
-        if (!Flags.bpFallbackOptions()) {
-            _forceLargeSize.value = true
-        }
         promptSelectorInteractor.onSwitchToCredential()
     }
 
     /** Switch to the fallback view. */
     fun onSwitchToFallback() {
-        if (Flags.bpFallbackOptions()) {
-            promptSelectorInteractor.onSwitchToFallback()
-        }
+        promptSelectorInteractor.onSwitchToFallback()
     }
 
     /** Switch to the auth view. */
     fun onSwitchToAuth() {
-        if (Flags.bpFallbackOptions()) {
-            promptSelectorInteractor.onSwitchToAuth()
-        }
+        promptSelectorInteractor.onSwitchToAuth()
     }
 
     private fun vibrateOnSuccess() {

@@ -39,6 +39,7 @@ import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.dock.DockManager
 import com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController
 import com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE
+import com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE_FOLLOW_UP
 import com.android.systemui.keyguard.ScreenLifecycle
 import com.android.systemui.keyguard.shared.model.AuthenticationFlags
 import com.android.systemui.res.R
@@ -74,10 +75,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
     fun afterFaceLockout_skipShowingFaceNotRecognized() {
         createController()
         onFaceLockoutError("lockout")
-        verifyIndicationShown(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
-            "lockout",
-        )
+        verifyIndicationShown(INDICATION_TYPE_BIOMETRIC_MESSAGE, "lockout")
         clearInvocations(mRotateTextViewController)
 
         // WHEN face sends an onBiometricHelp BIOMETRIC_HELP_FACE_NOT_RECOGNIZED (face fail)
@@ -86,9 +84,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
             "Face not recognized",
             BiometricSourceType.FACE,
         )
-        verifyNoMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE
-        ) // no updated message
+        verifyNoMessage(INDICATION_TYPE_BIOMETRIC_MESSAGE) // no updated message
     }
 
     @Test
@@ -386,10 +382,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
                 message,
                 BiometricSourceType.FACE,
             )
-        verifyIndicationMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
-            message,
-        )
+        verifyIndicationMessage(INDICATION_TYPE_BIOMETRIC_MESSAGE, message)
         reset(mRotateTextViewController)
         mStatusBarStateListener.onDozingChanged(true)
 
@@ -416,19 +409,36 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
             )
 
         // THEN message isn't shown right away
-        verifyNoMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE
-        )
+        verifyNoMessage(INDICATION_TYPE_BIOMETRIC_MESSAGE)
 
         // WHEN the screen turns on
         mScreenObserver.onScreenTurnedOn()
         mTestableLooper.processAllMessages()
 
         // THEN the message is shown
-        verifyIndicationMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
-            message,
-        )
+        verifyIndicationMessage(INDICATION_TYPE_BIOMETRIC_MESSAGE, message)
+    }
+
+    @Test
+    fun whenStartedDreaming_hideBiometricMessage() {
+        // GIVEN non-bypass face auth success message
+        createController()
+        mController.setVisible(true)
+
+        whenever(mKeyguardUpdateMonitor.isFaceAuthenticated).thenReturn(true)
+        whenever(mKeyguardBypassController.canBypass()).thenReturn(false)
+        whenever(mKeyguardUpdateMonitor.getUserCanSkipBouncer(this.currentUser)).thenReturn(false)
+        mController
+            .getKeyguardCallback()
+            .onBiometricAuthenticated(0, BiometricSourceType.FACE, true)
+        clearInvocations(mRotateTextViewController)
+
+        // WHEN dreaming
+        mStatusBarStateListener.onDreamingChanged(true)
+
+        // THEN biometric messages are hidden
+        verifyHideIndication(INDICATION_TYPE_BIOMETRIC_MESSAGE)
+        verifyHideIndication(INDICATION_TYPE_BIOMETRIC_MESSAGE_FOLLOW_UP)
     }
 
     @Test
@@ -453,7 +463,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
         // THEN show sequential messages such as: 'face not recognized' and
         // 'try fingerprint instead'
         verifyIndicationMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
+            INDICATION_TYPE_BIOMETRIC_MESSAGE,
             mContext.getString(R.string.keyguard_face_failed),
         )
         verifyIndicationMessage(
@@ -483,10 +493,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
 
         // THEN show sequential messages such as: 'face unlock unavailable' and
         // 'try fingerprint instead'
-        verifyIndicationMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
-            message,
-        )
+        verifyIndicationMessage(INDICATION_TYPE_BIOMETRIC_MESSAGE, message)
         verifyIndicationMessage(
             KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE_FOLLOW_UP,
             mContext.getString(R.string.keyguard_suggest_fingerprint),
@@ -515,10 +522,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
 
         // THEN show sequential messages such as: 'face unlock unavailable' and
         // 'try fingerprint instead'
-        verifyIndicationMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
-            message,
-        )
+        verifyIndicationMessage(INDICATION_TYPE_BIOMETRIC_MESSAGE, message)
         verifyIndicationMessage(
             KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE_FOLLOW_UP,
             mContext.getString(R.string.keyguard_unlock),
@@ -547,7 +551,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
         // THEN show sequential messages such as: 'Unlocked by face' and
         // 'Swipe up to open'
         verifyIndicationMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
+            INDICATION_TYPE_BIOMETRIC_MESSAGE,
             mContext.getString(R.string.keyguard_face_successful_unlock),
         )
         verifyIndicationMessage(
@@ -578,7 +582,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
         // THEN show sequential messages such as: 'Kept unlocked by TrustAgent' and
         // 'Swipe up to open'
         verifyIndicationMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
+            INDICATION_TYPE_BIOMETRIC_MESSAGE,
             mContext.getString(R.string.keyguard_indication_trust_unlocked),
         )
         verifyIndicationMessage(
@@ -608,9 +612,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
             )
 
         // THEN show action to unlock (ie: 'Swipe up to open')
-        verifyNoMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE
-        )
+        verifyNoMessage(INDICATION_TYPE_BIOMETRIC_MESSAGE)
         verifyIndicationMessage(
             KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE_FOLLOW_UP,
             mContext.getString(R.string.keyguard_unlock),
@@ -631,10 +633,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
                 BiometricSourceType.FACE,
             )
 
-        verifyIndicationMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
-            message,
-        )
+        verifyIndicationMessage(INDICATION_TYPE_BIOMETRIC_MESSAGE, message)
         mStatusBarStateListener.onDozingChanged(true)
 
         assertThat(mTextView.getText()).isNotEqualTo(message)
@@ -656,9 +655,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
             )
 
         // THEN no message is shown
-        verifyNoMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE
-        )
+        verifyNoMessage(INDICATION_TYPE_BIOMETRIC_MESSAGE)
         verifyNoMessage(KeyguardIndicationRotateTextViewController.INDICATION_TYPE_TRANSIENT)
     }
 
@@ -722,9 +719,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
                 message,
                 BiometricSourceType.FACE,
             )
-        verifyNoMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE
-        )
+        verifyNoMessage(INDICATION_TYPE_BIOMETRIC_MESSAGE)
     }
 
     @Test
@@ -755,10 +750,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
         }
 
         // THEN FACE_ACQUIRED_MOUTH_COVERING_DETECTED and DARK_GLASSES help messages shown
-        verifyIndicationMessages(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
-            messages,
-        )
+        verifyIndicationMessages(INDICATION_TYPE_BIOMETRIC_MESSAGE, messages)
     }
 
     @Test
@@ -788,9 +780,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
         }
 
         // THEN no messages shown
-        verifyNoMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE
-        )
+        verifyNoMessage(INDICATION_TYPE_BIOMETRIC_MESSAGE)
     }
 
     @Test
@@ -824,10 +814,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
         }
 
         // THEN message shown for each call
-        verifyIndicationMessages(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
-            helpStrings,
-        )
+        verifyIndicationMessages(INDICATION_TYPE_BIOMETRIC_MESSAGE, helpStrings)
     }
 
     @Test
@@ -851,9 +838,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
         )
 
         // THEN help message not shown yet
-        verifyNoMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE
-        )
+        verifyNoMessage(INDICATION_TYPE_BIOMETRIC_MESSAGE)
 
         // WHEN face timeout error received
         mKeyguardUpdateMonitorCallback.onBiometricError(
@@ -863,10 +848,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
         )
 
         // THEN the low light message shows with suggestion to swipe up to unlock
-        verifyIndicationMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
-            helpString,
-        )
+        verifyIndicationMessage(INDICATION_TYPE_BIOMETRIC_MESSAGE, helpString)
         verifyIndicationMessage(
             KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE_FOLLOW_UP,
             mContext.getString(R.string.keyguard_unlock),
@@ -894,9 +876,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
         )
 
         // THEN help message not shown yet
-        verifyNoMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE
-        )
+        verifyNoMessage(INDICATION_TYPE_BIOMETRIC_MESSAGE)
 
         // WHEN face timeout error received
         mKeyguardUpdateMonitorCallback.onBiometricError(
@@ -906,10 +886,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
         )
 
         // THEN the low light message shows and suggests trying fingerprint
-        verifyIndicationMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
-            helpString,
-        )
+        verifyIndicationMessage(INDICATION_TYPE_BIOMETRIC_MESSAGE, helpString)
         verifyIndicationMessage(
             KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE_FOLLOW_UP,
             mContext.getString(R.string.keyguard_suggest_fingerprint),
@@ -1281,10 +1258,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
 
         // THEN 'face unlocked' then 'press unlock icon to open' message show
         val unlockedByFace = mContext.getString(R.string.keyguard_face_successful_unlock)
-        verifyIndicationMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
-            unlockedByFace,
-        )
+        verifyIndicationMessage(INDICATION_TYPE_BIOMETRIC_MESSAGE, unlockedByFace)
         val pressToOpen = mContext.getString(R.string.keyguard_unlock_press)
         verifyIndicationMessage(
             KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE_FOLLOW_UP,
@@ -1311,10 +1285,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
 
         // THEN show 'face unlocked' and 'swipe up to open' messages
         val unlockedByFace = mContext.getString(R.string.keyguard_face_successful_unlock)
-        verifyIndicationMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
-            unlockedByFace,
-        )
+        verifyIndicationMessage(INDICATION_TYPE_BIOMETRIC_MESSAGE, unlockedByFace)
         val swipeUpToOpen = mContext.getString(R.string.keyguard_unlock)
         verifyIndicationMessage(
             KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE_FOLLOW_UP,
@@ -1340,10 +1311,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
 
         // THEN show 'face unlocked' and 'swipe up to open' messages
         val unlockedByFace = mContext.getString(R.string.keyguard_face_successful_unlock)
-        verifyIndicationMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
-            unlockedByFace,
-        )
+        verifyIndicationMessage(INDICATION_TYPE_BIOMETRIC_MESSAGE, unlockedByFace)
         val swipeUpToOpen = mContext.getString(R.string.keyguard_unlock)
         verifyIndicationMessage(
             KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE_FOLLOW_UP,
@@ -1368,10 +1336,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
 
         // THEN show 'face unlocked' and 'swipe up to open' messages
         val unlockedByFace = mContext.getString(R.string.keyguard_face_successful_unlock)
-        verifyIndicationMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
-            unlockedByFace,
-        )
+        verifyIndicationMessage(INDICATION_TYPE_BIOMETRIC_MESSAGE, unlockedByFace)
         val swipeUpToOpen = mContext.getString(R.string.keyguard_unlock)
         verifyIndicationMessage(
             KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE_FOLLOW_UP,
@@ -1395,10 +1360,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
 
         // THEN show 'swipe up to open' message
         val swipeToOpen = mContext.getString(R.string.keyguard_unlock)
-        verifyIndicationMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
-            swipeToOpen,
-        )
+        verifyIndicationMessage(INDICATION_TYPE_BIOMETRIC_MESSAGE, swipeToOpen)
     }
 
     @Test
@@ -1417,10 +1379,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
 
         // THEN show 'press unlock icon to open' message
         val pressToOpen = mContext.getString(R.string.keyguard_unlock_press)
-        verifyIndicationMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
-            pressToOpen,
-        )
+        verifyIndicationMessage(INDICATION_TYPE_BIOMETRIC_MESSAGE, pressToOpen)
     }
 
     @Test
@@ -1438,10 +1397,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
 
         // THEN show 'swipe up to open' message
         val swipeToOpen = mContext.getString(R.string.keyguard_unlock)
-        verifyIndicationMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
-            swipeToOpen,
-        )
+        verifyIndicationMessage(INDICATION_TYPE_BIOMETRIC_MESSAGE, swipeToOpen)
     }
 
     @Test
@@ -1457,10 +1413,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
 
         // THEN show 'swipe up to open' message
         val swipeToOpen = mContext.getString(R.string.keyguard_unlock)
-        verifyIndicationMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
-            swipeToOpen,
-        )
+        verifyIndicationMessage(INDICATION_TYPE_BIOMETRIC_MESSAGE, swipeToOpen)
     }
 
     @Test
@@ -1578,10 +1531,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
         createController()
         onFaceLockoutError("first lockout")
 
-        verifyIndicationShown(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
-            "first lockout",
-        )
+        verifyIndicationShown(INDICATION_TYPE_BIOMETRIC_MESSAGE, "first lockout")
     }
 
     @Test
@@ -1604,7 +1554,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
 
         verify(mRotateTextViewController)
             .updateIndication(
-                eq(KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE),
+                eq(INDICATION_TYPE_BIOMETRIC_MESSAGE),
                 mKeyguardIndicationCaptor.capture(),
                 eq(true),
             )
@@ -1643,7 +1593,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
         onFaceLockoutError("second lockout")
 
         verifyIndicationShown(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
+            INDICATION_TYPE_BIOMETRIC_MESSAGE,
             mContext.getString(R.string.keyguard_face_unlock_unavailable),
         )
     }
@@ -1717,10 +1667,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
 
         onFaceLockoutError("second lockout")
 
-        verifyIndicationShown(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
-            "second lockout",
-        )
+        verifyIndicationShown(INDICATION_TYPE_BIOMETRIC_MESSAGE, "second lockout")
     }
 
     @Test
@@ -1778,7 +1725,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
         onFaceLockoutError("second lockout")
 
         verifyIndicationShown(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
+            INDICATION_TYPE_BIOMETRIC_MESSAGE,
             mContext.getString(R.string.keyguard_face_unlock_unavailable),
         )
     }
@@ -1794,10 +1741,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
 
         mScreenObserver.onScreenTurnedOn()
 
-        verifyIndicationShown(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
-            "lockout error",
-        )
+        verifyIndicationShown(INDICATION_TYPE_BIOMETRIC_MESSAGE, "lockout error")
         verifyIndicationShown(
             KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE_FOLLOW_UP,
             mContext.getString(R.string.keyguard_unlock),
@@ -1815,10 +1759,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
 
         mScreenObserver.onScreenTurnedOn()
 
-        verifyIndicationShown(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
-            "lockout error",
-        )
+        verifyIndicationShown(INDICATION_TYPE_BIOMETRIC_MESSAGE, "lockout error")
         verifyIndicationShown(
             KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE_FOLLOW_UP,
             mContext.getString(R.string.keyguard_suggest_fingerprint),
@@ -1839,9 +1780,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
         clearInvocations(mRotateTextViewController)
 
         onFaceLockoutError("lockout")
-        verifyNoMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE
-        )
+        verifyNoMessage(INDICATION_TYPE_BIOMETRIC_MESSAGE)
     }
 
     @Test
@@ -1863,7 +1802,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
             .getKeyguardCallback()
             .onBiometricAuthenticated(0, BiometricSourceType.FACE, false)
         verifyIndicationMessage(
-            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE,
+            INDICATION_TYPE_BIOMETRIC_MESSAGE,
             mContext.getString(R.string.keyguard_face_successful_unlock),
         )
     }

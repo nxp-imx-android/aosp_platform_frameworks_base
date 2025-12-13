@@ -175,15 +175,15 @@ internal fun Modifier.element(
     // we can ensure that SceneTransitionLayoutImpl will compose new contents first.
     val currentTransitionStates = getAllNestedTransitionStates(layoutImpl)
 
-    return thenIf(StlDebugConfig.logElements) { Modifier.logElementState(layoutImpl, key, content) }
+    return thenIf(StlDebugConfig.logElements()) {
+            Modifier.logElementState(layoutImpl, key, content)
+        }
         .then(ElementModifier(layoutImpl, currentTransitionStates, content, key))
         .thenIf(layoutImpl.state.isElevationPossible(content.key, key)) {
             Modifier.maybeElevateInContent(layoutImpl, content, key, currentTransitionStates)
         }
         .thenIf(layoutImpl.implicitTestTags) { Modifier.testTag(key.testTag) }
-        .thenIf(StlDebugConfig.showElementBorders || StlDebugConfig.showElementLabels) {
-            Modifier.debugElement(key)
-        }
+        .thenIf(StlDebugConfig.isDebuggingElement()) { Modifier.debugElement(key) }
 }
 
 /**
@@ -712,13 +712,15 @@ internal class ElementNode(
     }
 
     private fun trackPlacement() {
-        if (StlDebugConfig.logElements) {
+        if (StlDebugConfig.logElements()) {
             placedInContents.getOrDefault(element.key, mutableSetOf()).add(content.key)
         }
     }
 
     private inline fun log(msg: () -> String) {
-        if (!StlDebugConfig.logElementsVerbose || filterOutElementExclusive(element.key)) return
+        if (!StlDebugConfig.logElementsVerbose() || filterOutElementExclusive(element.key)) {
+            return
+        }
         performLog(element.key, content.key, msg())
     }
 
@@ -1976,6 +1978,8 @@ private inline fun <T> interpolateSharedElement(
 }
 
 internal inline fun log(elementKey: ElementKey, contentKey: ContentKey? = null, msg: () -> String) {
-    if (!StlDebugConfig.logElementsVerbose || filterOutElementExclusive(elementKey)) return
+    if (!StlDebugConfig.logElementsVerbose() || filterOutElementExclusive(elementKey)) {
+        return
+    }
     performLog(elementKey, contentKey, msg())
 }

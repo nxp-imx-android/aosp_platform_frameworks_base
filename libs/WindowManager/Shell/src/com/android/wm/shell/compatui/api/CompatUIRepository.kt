@@ -24,7 +24,7 @@ import com.android.wm.shell.repository.MemoryRepositoryImpl
 /** Repository of all the available CompatUISpec */
 class CompatUIRepository() :
     GenericRepository<String, CompatUISpec> by MemoryRepositoryImpl(
-        logger = { msg -> ProtoLog.v(WM_SHELL_APP_COMPAT, "%s: %s", "CompatUIRepository", msg) }
+        logger = { msg -> ProtoLog.v(WM_SHELL_APP_COMPAT, "CompatUIRepository: %s", msg) }
     ) {
 
     /** Simple way to register a [CompatUISpec]. */

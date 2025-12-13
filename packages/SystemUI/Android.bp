@@ -1061,6 +1061,7 @@ android_ravenwood_test {
     name: "SystemUiRavenTests",
     manifest: "tests/AndroidManifest-base.xml",
     build_resources: true,
+    data: ["ravenwood.prop"],
     srcs: [
         ":SystemUI-tests-utils",
         ":SystemUI-tests-multivalent-monolith",

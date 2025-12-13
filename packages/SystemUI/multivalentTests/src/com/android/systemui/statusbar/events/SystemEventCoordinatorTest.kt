@@ -483,10 +483,7 @@ class SystemEventCoordinatorTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
-    @EnableFlags(
-        FLAG_LOCATION_INDICATORS_ENABLED,
-        FLAG_LOCATION_INDICATORS_ANIMATION,
-    )
+    @EnableFlags(FLAG_LOCATION_INDICATORS_ENABLED, FLAG_LOCATION_INDICATORS_ANIMATION)
     fun onPrivacyItemsChanged_locationThenMicForDefaultCamera_noAnimation() =
         testScope.runTest {
             val locationList =
@@ -555,10 +552,7 @@ class SystemEventCoordinatorTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
-    @EnableFlags(
-        FLAG_LOCATION_INDICATORS_ENABLED,
-        FLAG_LOCATION_INDICATORS_ANIMATION,
-    )
+    @EnableFlags(FLAG_LOCATION_INDICATORS_ENABLED, FLAG_LOCATION_INDICATORS_ANIMATION)
     fun onPrivacyItemsChanged_micForDefaultCameraThenLocation_showsAnimationOnce() =
         testScope.runTest {
             val micList =
@@ -768,10 +762,13 @@ class SystemEventCoordinatorTest(flags: FlagsParameterization) : SysuiTestCase()
         suspend fun emit() = flow.emit(Unit)
 
         override val connectedDisplayState: Flow<ConnectedDisplayInteractor.State>
-            get() = MutableSharedFlow<ConnectedDisplayInteractor.State>()
+            get() = MutableSharedFlow()
 
         override val connectedDisplayAddition: Flow<Unit>
             get() = flow
+
+        override val connectedDisplayRemoval: Flow<Int>
+            get() = MutableSharedFlow()
 
         override val pendingDisplay: Flow<PendingDisplay?>
             get() = MutableSharedFlow<PendingDisplay>()

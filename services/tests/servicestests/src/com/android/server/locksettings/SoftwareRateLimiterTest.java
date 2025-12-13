@@ -29,7 +29,6 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -480,7 +479,6 @@ public class SoftwareRateLimiterTest {
     }
 
     @Test
-    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
     public void testReportFailureWithHwTimeout_updatesLockoutEndTime() {
         final LskfIdentifier id = new LskfIdentifier(10, 1000);
         final LockscreenCredential guess = newPassword("password");
@@ -495,22 +493,6 @@ public class SoftwareRateLimiterTest {
     }
 
     @Test
-    @DisableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
-    public void testReportFailureWithHwTimeout_doesNotUpdateLockoutEndTimeWhenNotManagingEndTime() {
-        final LskfIdentifier id = new LskfIdentifier(10, 1000);
-        final LockscreenCredential guess = newPassword("password");
-        final Duration hwTimeout = Duration.ofSeconds(60);
-        final Duration timeSinceBoot = Duration.ofSeconds(10);
-        mInjector.setTime(timeSinceBoot);
-
-        verifyUniqueWrongGuess(id, guess, hwTimeout, Duration.ZERO);
-
-        final Duration lockoutEndTime = mRateLimiter.getLockoutEndTime(id);
-        assertThat(lockoutEndTime).isEqualTo(Duration.ZERO);
-    }
-
-    @Test
-    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
     public void testReportFailureWithHwTimeout_shorterHwTimeoutNotUsed() {
         final Duration[] timeoutTable = mRateLimiter.getTimeoutTable();
         final int timeoutThreshold = findIndexOfFirstNonZeroTimeout(timeoutTable);
@@ -534,7 +516,6 @@ public class SoftwareRateLimiterTest {
     }
 
     @Test
-    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
     public void testReportFailureWithHwTimeout_longerHwTimeoutIsUsed() {
         final Duration[] timeoutTable = mRateLimiter.getTimeoutTable();
         final int timeoutThreshold = findIndexOfFirstNonZeroTimeout(timeoutTable);
@@ -564,7 +545,6 @@ public class SoftwareRateLimiterTest {
     }
 
     @Test
-    @EnableFlags(android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE)
     public void testLockoutEndTime_clearAfterExpiration() {
         final LskfIdentifier id = new LskfIdentifier(10, 1000);
         final LockscreenCredential guess = newPassword("password");
@@ -583,10 +563,7 @@ public class SoftwareRateLimiterTest {
     }
 
     @Test
-    @EnableFlags({
-        android.security.Flags.FLAG_MANAGE_LOCKOUT_END_TIME_IN_SERVICE,
-        android.security.Flags.FLAG_ENABLE_WEAVER_GET_TIMEOUT
-    })
+    @EnableFlags(android.security.Flags.FLAG_ENABLE_WEAVER_GET_TIMEOUT)
     public void testLockoutEndTimeAfterInstantiation_reflectsGreaterOfSwAndHwTimeouts() {
         final LskfIdentifier id = new LskfIdentifier(10, 1000);
         final Duration timeSinceBoot = Duration.ZERO;

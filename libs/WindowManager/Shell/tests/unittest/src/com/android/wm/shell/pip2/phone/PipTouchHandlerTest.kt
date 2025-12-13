@@ -413,6 +413,26 @@ class PipTouchHandlerTest : ShellTestCase() {
         )
     }
 
+    @Test
+    fun onRegistrationChanged_isRegistered_registersAccessibilityConnection() {
+        // Act: Call onRegistrationChanged with isRegistered = true.
+        pipTouchHandler.onRegistrationChanged(true)
+
+        // Assert: Verify that an accessibility connection is registered with the manager.
+        // This tests the observable side-effect rather than the internal implementation detail
+        // of interacting with a private helper class, making the test more resilient.
+        verify(mockAccessibilityManager).setPictureInPictureActionReplacingConnection(any())
+    }
+
+    @Test
+    fun onRegistrationChanged_isNotRegistered_unregistersAccessibilityConnection() {
+        // Act: Call onRegistrationChanged with isRegistered = false.
+        pipTouchHandler.onRegistrationChanged(false)
+
+        // Assert: Verify that the system's accessibility connection is cleared.
+        verify(mockAccessibilityManager).setPictureInPictureActionReplacingConnection(null)
+    }
+
 
     private companion object {
         const val ORIGIN_DISPLAY_ID = 0

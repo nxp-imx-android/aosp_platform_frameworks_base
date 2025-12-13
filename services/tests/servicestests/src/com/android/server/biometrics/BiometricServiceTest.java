@@ -101,8 +101,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.UserManager;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
@@ -950,36 +948,6 @@ public class BiometricServiceTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_BP_FALLBACK_OPTIONS)
-    public void testErrorFromHal_whenPaused_notifiesSystemUIAndClient() throws Exception {
-        setupAuthForOnly(TYPE_FACE, Authenticators.BIOMETRIC_STRONG);
-        invokeAuthenticateAndStart(mBiometricService.mImpl, mReceiver1,
-                false /* requireConfirmation */, null /* authenticators */);
-
-        mBiometricService.mAuthSession.mSensorReceiver.onError(
-                SENSOR_ID_FACE,
-                getCookieForCurrentSession(mBiometricService.mAuthSession),
-                BiometricConstants.BIOMETRIC_ERROR_TIMEOUT,
-                0 /* vendorCode */);
-        mBiometricService.mAuthSession.mSensorReceiver.onError(
-                SENSOR_ID_FACE,
-                getCookieForCurrentSession(mBiometricService.mAuthSession),
-                BiometricConstants.BIOMETRIC_ERROR_CANCELED,
-                0 /* vendorCode */);
-        waitForIdle();
-
-        // Client receives error immediately
-        verify(mReceiver1).onError(
-                eq(TYPE_FACE),
-                eq(BiometricConstants.BIOMETRIC_ERROR_CANCELED),
-                eq(0 /* vendorCode */));
-        // Dialog is hidden immediately
-        verify(mBiometricService.mStatusBarService).hideAuthenticationDialog(eq(TEST_REQUEST_ID));
-        // Auth session is over
-        assertNull(mBiometricService.mAuthSession);
-    }
-
-    @Test
     public void testErrorFromHal_whileAuthenticating_waitsForSysUIBeforeNotifyingClient()
             throws Exception {
         // For errors that show in SystemUI, BiometricService stays in STATE_ERROR_PENDING_SYSUI
@@ -1082,14 +1050,6 @@ public class BiometricServiceTest {
                 BiometricPrompt.BIOMETRIC_ERROR_LOCKOUT);
     }
 
-    @Test
-    @DisableFlags(Flags.FLAG_BP_FALLBACK_OPTIONS)
-    public void testBiometricAuth_whenBiometricLockoutPermanent_sendsErrorAndModality()
-            throws Exception {
-        testBiometricAuth_whenLockout(LockoutTracker.LOCKOUT_PERMANENT,
-                BiometricPrompt.BIOMETRIC_ERROR_LOCKOUT_PERMANENT);
-    }
-
     private void testBiometricAuth_whenLockout(@LockoutTracker.LockoutMode int lockoutMode,
             int biometricPromptError) throws Exception {
         setupAuthForOnly(TYPE_FINGERPRINT, Authenticators.BIOMETRIC_STRONG);
@@ -1110,14 +1070,6 @@ public class BiometricServiceTest {
             throws Exception {
         testMultiBiometricAuth_whenLockout(LockoutTracker.LOCKOUT_TIMED,
                 BiometricPrompt.BIOMETRIC_ERROR_LOCKOUT);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_BP_FALLBACK_OPTIONS)
-    public void testMultiBiometricAuth_whenLockoutPermanent_sendsErrorAndModality()
-            throws Exception {
-        testMultiBiometricAuth_whenLockout(LockoutTracker.LOCKOUT_PERMANENT,
-                BiometricPrompt.BIOMETRIC_ERROR_LOCKOUT_PERMANENT);
     }
 
     private void testMultiBiometricAuth_whenLockout(@LockoutTracker.LockoutMode int lockoutMode,
@@ -1159,16 +1111,14 @@ public class BiometricServiceTest {
                 false /* useDefaultSubtitle */, false /* deviceCredentialAllowed */);
         waitForIdle();
 
-        if (Flags.bpFallbackOptions()) {
-            assertEquals(STATE_AUTH_CALLED, mBiometricService.mAuthSession.getState());
+        assertEquals(STATE_AUTH_CALLED, mBiometricService.mAuthSession.getState());
 
-            mBiometricService.mAuthSession.mSensorReceiver.onError(
-                    SENSOR_ID_FINGERPRINT,
-                    getCookieForPendingSession(mBiometricService.mAuthSession),
-                    BiometricConstants.BIOMETRIC_ERROR_LOCKOUT_PERMANENT,
-                    0 /* vendorCode */);
-            waitForIdle();
-        }
+        mBiometricService.mAuthSession.mSensorReceiver.onError(
+                SENSOR_ID_FINGERPRINT,
+                getCookieForPendingSession(mBiometricService.mAuthSession),
+                BiometricConstants.BIOMETRIC_ERROR_LOCKOUT_PERMANENT,
+                0 /* vendorCode */);
+        waitForIdle();
 
         verify(mReceiver1, never()).onError(anyInt(), anyInt(), anyInt());
         assertNotNull(mBiometricService.mAuthSession);
@@ -1703,13 +1653,11 @@ public class BiometricServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_BP_FALLBACK_OPTIONS)
     public void testCanAuthenticate_whenLockoutTimed() throws Exception {
         testCanAuthenticate_whenLockedOut(LockoutTracker.LOCKOUT_TIMED);
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_BP_FALLBACK_OPTIONS)
     public void testCanAuthenticate_whenLockoutPermanent() throws Exception {
         testCanAuthenticate_whenLockedOut(LockoutTracker.LOCKOUT_PERMANENT);
     }
@@ -1728,19 +1676,6 @@ public class BiometricServiceTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_BP_FALLBACK_OPTIONS)
-    public void testCanAuthenticate_whenLockoutTimed_returnsLockoutError() throws Exception {
-        testCanAuthenticate_whenLockedOut_returnLockoutError(LockoutTracker.LOCKOUT_TIMED);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_BP_FALLBACK_OPTIONS)
-    public void testCanAuthenticate_whenLockoutPermanent_returnsLockoutError() throws Exception {
-        testCanAuthenticate_whenLockedOut_returnLockoutError(LockoutTracker.LOCKOUT_PERMANENT);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_BP_FALLBACK_OPTIONS)
     public void testCanAuthenticate_whenLockoutPermanent_returnsSuccess() throws Exception {
         // When only biometric is requested, and sensor is strong enough
         setupAuthForOnly(TYPE_FINGERPRINT, Authenticators.BIOMETRIC_STRONG);

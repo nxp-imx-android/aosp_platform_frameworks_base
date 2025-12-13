@@ -26,15 +26,16 @@ import com.android.keyguard.KeyguardSecurityModel.SecurityMode
 import com.android.systemui.authentication.data.repository.AuthenticationRepository.Companion.WARM_UP_THROTTLE_DURATION
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.authentication.shared.model.AuthenticationPatternCoordinate
+import com.android.systemui.authentication.shared.model.AuthenticationResult
 import com.android.systemui.authentication.shared.model.AuthenticationResultModel
 import com.android.systemui.dagger.SysUISingleton
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.ZERO
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.Duration.Companion.ZERO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -107,15 +108,22 @@ class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
         credentialOverride = pin
     }
 
-    override suspend fun reportAuthenticationAttempt(isSuccessful: Boolean, isDuplicate: Boolean) {
-        if (isSuccessful) {
-            _failedAuthenticationAttempts.value = 0
-            previousAttempts = listOf()
-            _lockoutEndTime = null
-            hasLockoutOccurred.value = false
-            lockoutStartedReportCount = 0
-        } else {
-            _failedAuthenticationAttempts.value++
+    override suspend fun reportAuthenticationAttempt(
+        result: AuthenticationResult,
+        isDuplicate: Boolean,
+    ) {
+        when (result) {
+            AuthenticationResult.SUCCEEDED -> {
+                _failedAuthenticationAttempts.value = 0
+                previousAttempts = listOf()
+                _lockoutEndTime = null
+                hasLockoutOccurred.value = false
+                lockoutStartedReportCount = 0
+            }
+            AuthenticationResult.FAILED -> {
+                _failedAuthenticationAttempts.value++
+            }
+            AuthenticationResult.SKIPPED -> {}
         }
         _isDuplicateAttempt.value = isDuplicate
     }

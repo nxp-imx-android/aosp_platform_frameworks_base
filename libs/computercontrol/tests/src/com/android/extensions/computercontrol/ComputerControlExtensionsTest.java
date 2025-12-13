@@ -143,6 +143,6 @@ public class ComputerControlExtensionsTest {
                 new VirtualDeviceManager(mIVirtualDeviceManager, mContext));
         ComputerControlExtensions extensions = ComputerControlExtensions.getInstance(mContext);
         extensions.requestSession(mParams, Executors.newSingleThreadExecutor(), mSessionCallback);
-        verify(mIVirtualDeviceManager).requestComputerControlSession(any(), any(), any());
+        verify(mIVirtualDeviceManager).requestComputerControlSession(any(), any(), any(), any());
     }
 }

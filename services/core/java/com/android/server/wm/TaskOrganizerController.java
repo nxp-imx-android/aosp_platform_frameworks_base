@@ -903,9 +903,11 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
 
     @Nullable
     @Override
+    // TODO(b/468029217): Prevent this method from blooming as more parameters are added.
     public WindowContainerToken createRootTask(int displayId, int windowingMode,
             @Nullable IBinder launchCookie, boolean removeWithTaskOrganizer,
-            boolean reparentOnDisplayRemoval, @Nullable String name, boolean isForceOpaque) {
+            boolean reparentOnDisplayRemoval, @Nullable String name, boolean isForceOpaque,
+            boolean shouldIgnoreInsets, boolean disableAppCompatRoundedCorners) {
         enforceTaskPermission("createRootTask()");
         final long origId = Binder.clearCallingIdentity();
         try {
@@ -918,7 +920,8 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                 }
 
                 final Task task = createRootTask(display, windowingMode, launchCookie,
-                        removeWithTaskOrganizer, reparentOnDisplayRemoval, name, isForceOpaque);
+                        removeWithTaskOrganizer, reparentOnDisplayRemoval, name, isForceOpaque,
+                        shouldIgnoreInsets, disableAppCompatRoundedCorners);
                 return task.mRemoteToken.toWindowContainerToken();
             }
         } finally {
@@ -930,12 +933,14 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
     Task createRootTask(DisplayContent display, int windowingMode, @Nullable IBinder launchCookie) {
         return createRootTask(display, windowingMode, launchCookie,
                 false /* removeWithTaskOrganizer */, false /* reparentOnDisplayRemoval */,
-                "test", false /* isForceOpaque */);
+                "test", false /* isForceOpaque */, false /* shouldIgnoreInsets */,
+                false /* disableAppCompatRoundedCorners */);
     }
 
     private Task createRootTask(DisplayContent display, int windowingMode,
             @Nullable IBinder launchCookie, boolean removeWithTaskOrganizer,
-            boolean reparentOnDisplayRemoval, @Nullable String name, boolean isForceOpaque) {
+            boolean reparentOnDisplayRemoval, @Nullable String name, boolean isForceOpaque,
+            boolean shouldIgnoreInsets, boolean disableAppCompatRoundedCorners) {
         ProtoLog.v(WM_DEBUG_WINDOW_ORGANIZER, "Create root task displayId=%d winMode=%d",
                 display.mDisplayId, windowingMode);
         // We want to defer the task appear signal until the task is fully created and attached to
@@ -952,6 +957,8 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                 .setRemoveWithTaskOrganizer(removeWithTaskOrganizer)
                 .setReparentOnDisplayRemoval(reparentOnDisplayRemoval)
                 .setForceOpaque(isForceOpaque)
+                .setShouldIgnoreInsets(shouldIgnoreInsets)
+                .setDisableAppCompatRoundedCorners(disableAppCompatRoundedCorners)
                 .build();
         task.setDeferTaskAppear(false /* deferTaskAppear */);
         return task;

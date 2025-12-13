@@ -361,7 +361,7 @@ public class InsetsAnimationControlImpl implements InternalInsetsAnimationContro
         mAnimation.setAlpha(mPendingAlpha);
         if (mFinished) {
             ProtoLog.d(INSETS_ANIMATION_CONTROLLER,
-                    "notifyFinished shown: %s, currentAlpha: %s, currentInsets: %s", mShownOnFinish,
+                    "notifyFinished shown: %b, currentAlpha: %f, currentInsets: %s", mShownOnFinish,
                     mCurrentAlpha, mCurrentInsets);
             mController.notifyFinished(this, mShownOnFinish);
             releaseLeashes();

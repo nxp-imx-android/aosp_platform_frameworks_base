@@ -95,9 +95,10 @@ constructor(
                 null,
             )
             .filterNotNull()
+    // TODO: apotapov - Replace 0's with actual display values.
     val optimalCameraStreamSize: Flow<Size> =
         repository.isConnected
-            .map { repository.getOptimalCameraStreamSize() }
+            .map { repository.configureViewport(0, 0) }
             .stateInTraced(
                 "ScreenRecordCameraInteractor#optimalCameraStreamSize",
                 coroutineScope,
@@ -121,8 +122,9 @@ constructor(
         continuation.invokeOnCancellation { repository.disconnect() }
     }
 
+    // TODO: apotapov - Replace 0's with actual display values.
     suspend fun startStream(surface: Surface, width: Int, height: Int) {
-        val optimalSize = repository.getOptimalCameraStreamSize()
+        val optimalSize = repository.configureViewport(0, 0)
         if (optimalSize == null) {
             Log.w(TAG, "Couldn't get optimal size. Skipping stream start")
             return

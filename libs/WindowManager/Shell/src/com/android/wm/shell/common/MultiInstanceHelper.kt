@@ -89,8 +89,8 @@ constructor(
             } else {
                 ProtoLog.w(
                     WM_SHELL,
-                    "Warning: property=%s for activity=%s has non-bool type=%d",
-                    PROPERTY_SUPPORTS_MULTI_INSTANCE_SYSTEM_UI,
+                    "Warning: property=$PROPERTY_SUPPORTS_MULTI_INSTANCE_SYSTEM_UI " +
+                        "for activity=%s has non-bool type=%d",
                     packageName,
                     activityProp.type,
                 )
@@ -114,8 +114,8 @@ constructor(
             } else {
                 ProtoLog.w(
                     WM_SHELL,
-                    "Warning: property=%s for application=%s has non-bool type=%d",
-                    PROPERTY_SUPPORTS_MULTI_INSTANCE_SYSTEM_UI,
+                    "Warning: property=$PROPERTY_SUPPORTS_MULTI_INSTANCE_SYSTEM_UI " +
+                        "for application=%s has non-bool type=%d",
                     packageName,
                     appProp.type,
                 )

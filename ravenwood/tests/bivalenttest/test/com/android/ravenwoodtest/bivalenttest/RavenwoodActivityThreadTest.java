@@ -44,4 +44,9 @@ public class RavenwoodActivityThreadTest {
         assertEquals(ActivityThread.currentApplication().getPackageName(),
                 sContext.getPackageName());
     }
+
+    @Test
+    public void testActivityThreadCurrentPackage() {
+        assertEquals(ActivityThread.currentPackageName(), sContext.getPackageName());
+    }
 }

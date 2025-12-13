@@ -52,7 +52,6 @@ import android.hardware.display.IDisplayManager;
 import android.os.RemoteException;
 import android.os.UserManager;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
@@ -304,7 +303,7 @@ public class PreAuthInfoTest {
 
     @Test
     @RequiresFlagsEnabled({Flags.FLAG_IDENTITY_CHECK_TEST_API,
-            Flags.FLAG_IDENTITY_CHECK_ALL_SURFACES, Flags.FLAG_BP_FALLBACK_OPTIONS})
+            Flags.FLAG_IDENTITY_CHECK_ALL_SURFACES})
     public void testIdentityCheckStatus_whenAllRequirementsSatisfiedAndSensorAvailable_biometricStrongAndDeviceCredential()
             throws Exception {
         when(mSettingObserver.isIdentityCheckActive(any(), anyInt())).thenReturn(true);
@@ -325,7 +324,7 @@ public class PreAuthInfoTest {
 
     @Test
     @RequiresFlagsEnabled({Flags.FLAG_IDENTITY_CHECK_TEST_API,
-            Flags.FLAG_IDENTITY_CHECK_ALL_SURFACES, Flags.FLAG_BP_FALLBACK_OPTIONS})
+            Flags.FLAG_IDENTITY_CHECK_ALL_SURFACES})
     public void testIdentityCheckStatus_whenAllRequirementsSatisfiedAndSensorAvailable_biometricStrong()
             throws Exception {
         when(mSettingObserver.isIdentityCheckActive(any(), anyInt())).thenReturn(true);
@@ -347,7 +346,7 @@ public class PreAuthInfoTest {
 
     @Test
     @RequiresFlagsEnabled({Flags.FLAG_IDENTITY_CHECK_TEST_API,
-            Flags.FLAG_IDENTITY_CHECK_ALL_SURFACES, Flags.FLAG_BP_FALLBACK_OPTIONS})
+            Flags.FLAG_IDENTITY_CHECK_ALL_SURFACES})
     public void testIdentityCheckStatus_whenRequirementsNotSatisfied_biometricStrongAndDeviceCredential()
             throws Exception {
         when(mSettingObserver.isIdentityCheckActive(any(), anyInt())).thenReturn(false);
@@ -368,7 +367,7 @@ public class PreAuthInfoTest {
 
     @Test
     @RequiresFlagsEnabled({Flags.FLAG_IDENTITY_CHECK_TEST_API,
-            Flags.FLAG_IDENTITY_CHECK_ALL_SURFACES, Flags.FLAG_BP_FALLBACK_OPTIONS})
+            Flags.FLAG_IDENTITY_CHECK_ALL_SURFACES})
     public void testIdentityCheckStatus_whenRequirementsNotSatisfiedAndSensorAvailable_biometricStrongAndDeviceCredential()
             throws Exception {
         when(mSettingObserver.isIdentityCheckActive(any(), anyInt())).thenReturn(false);
@@ -448,7 +447,7 @@ public class PreAuthInfoTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({Flags.FLAG_IDENTITY_CHECK_TEST_API, Flags.FLAG_BP_FALLBACK_OPTIONS})
+    @RequiresFlagsEnabled({Flags.FLAG_IDENTITY_CHECK_TEST_API})
     public void testMandatoryBiometricsNegativeButtonText_shouldNotBeSet()
             throws Exception {
         when(mSettingObserver.isIdentityCheckActive(any(), anyInt())).thenReturn(true);
@@ -462,24 +461,6 @@ public class PreAuthInfoTest {
                 mUserManager);
         assertThat(preAuthInfo.getIsMandatoryBiometricsAuthentication()).isTrue();
         assertThat(promptInfo.getNegativeButtonText()).isNull();
-    }
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_IDENTITY_CHECK_TEST_API)
-    @RequiresFlagsDisabled(Flags.FLAG_BP_FALLBACK_OPTIONS)
-    public void testMandatoryBiometricsNegativeButtonText_shouldBeSet()
-            throws Exception {
-        when(mSettingObserver.isIdentityCheckActive(any(), anyInt())).thenReturn(true);
-
-        final BiometricSensor sensor = getFaceSensor();
-        final PromptInfo promptInfo = new PromptInfo();
-        promptInfo.setAuthenticators(BiometricManager.Authenticators.IDENTITY_CHECK);
-        final PreAuthInfo preAuthInfo = PreAuthInfo.create(mTrustManager, mDevicePolicyManager,
-                mSettingObserver, List.of(sensor), USER_ID, promptInfo, TEST_PACKAGE_NAME,
-                false /* checkDevicePolicyManager */, mContext, mBiometricCameraManager,
-                mUserManager);
-        assertThat(preAuthInfo.getIsMandatoryBiometricsAuthentication()).isTrue();
-        assertThat(promptInfo.getNegativeButtonText()).isNotNull();
     }
 
     @Test
@@ -590,7 +571,6 @@ public class PreAuthInfoTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_BP_FALLBACK_OPTIONS)
     public void testBiometricPrompt_calledOnDeviceLockout() throws Exception {
         when(mFingerprintAuthenticator.getLockoutModeForUser(anyInt())).thenReturn(
                 LOCKOUT_PERMANENT);

@@ -319,7 +319,7 @@ public final class ShadeTouchableRegionManager implements Dumpable {
         final List<Rect> touchableRects = new ArrayList<>();
         if (mShadeBounds != null && mIsSceneGone) {
             touchableRects.add(mShadeBounds);
-        } else {
+        } else if (!mIsSceneGone) {
             touchableRects.add(
                     new Rect(
                             /* left= */ 0,

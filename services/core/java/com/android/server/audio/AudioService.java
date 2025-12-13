@@ -80,6 +80,7 @@ import static com.android.media.audio.Flags.absVolumePrioritizesAbsDevice;
 import static com.android.media.audio.Flags.absVolumeStreamAlwaysMax;
 import static com.android.media.audio.Flags.alarmMinVolumeZero;
 import static com.android.media.audio.Flags.audioStreamBtScoCleanup;
+import static com.android.media.audio.Flags.cameraShutterSound;
 import static com.android.media.audio.Flags.deferWearPermissionUpdates;
 import static com.android.media.audio.Flags.disablePrescaleAbsoluteVolume;
 import static com.android.media.audio.Flags.equalScoHaVcIndexRange;
@@ -12944,14 +12945,17 @@ public class AudioService extends IAudioService.Stub
             Log.e(TAG, "fails to get SubscriptionManager.");
         }
 
-        if (SystemProperties.getBoolean("audio.camerasound.locale.enabled", false)
-                && !hasActiveSims) {
-            String country = Locale.getDefault().getCountry();
-            String[] countryList = mContext.getResources()
-                    .getStringArray(com.android.internal.R.array.config_cameraSoundForcedCountry);
-            if (Arrays.asList(countryList).contains(country)) {
-                Log.i(TAG, "force camera sound in case of no SIM");
-                return true;
+        if (cameraShutterSound()) {
+            if (SystemProperties.getBoolean("audio.camerasound.locale.enabled", false)
+                    && !hasActiveSims) {
+                String country = Locale.getDefault().getCountry();
+                String[] countryList = mContext.getResources()
+                        .getStringArray(
+                                com.android.internal.R.array.config_cameraSoundForcedCountry);
+                if (Arrays.asList(countryList).contains(country)) {
+                    Log.i(TAG, "force camera sound in case of no SIM");
+                    return true;
+                }
             }
         }
         return false;

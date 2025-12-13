@@ -563,7 +563,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
 
         void onAnimationFinish() {
             mController.finish(mShow);
-            ProtoLog.d(INSETS_CONTROLLER_DEBUG, "onAnimationFinish showOnFinish: %s", mShow);
+            ProtoLog.d(INSETS_CONTROLLER_DEBUG, "onAnimationFinish showOnFinish: %b", mShow);
         }
 
         @Override
@@ -1590,7 +1590,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         mHost.updateAnimatingTypes(mAnimatingTypes, null /* statsToken */);
         mRunningAnimations.add(new RunningAnimation(runner, animationType));
         ProtoLog.d(INSETS_CONTROLLER_DEBUG,
-                "Animation added to runner. useInsetsAnimationThread: %s",
+                "Animation added to runner. useInsetsAnimationThread: %b",
                 useInsetsAnimationThread);
         if (cancellationSignal != null) {
             cancellationSignal.setOnCancelListener(() ->
@@ -1700,8 +1700,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     @Override
     public void notifyFinished(@NonNull InsetsAnimationControlRunner runner, boolean shown) {
         setRequestedVisibleTypes(shown ? runner.getTypes() : 0, runner.getTypes());
-        if (Flags.reportAnimatingInsetsTypes()
-                && runner.getAnimationType() != ANIMATION_TYPE_RESIZE) {
+        if (runner.getAnimationType() != ANIMATION_TYPE_RESIZE) {
             // We update and send the requestedVisibleTypes first to the server to avoid an
             // unwanted show/hide request.
             // This could happen if a controlled (hide) animation is finished, but the IME is
@@ -1711,7 +1710,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             reportRequestedVisibleTypes(null /* statsToken */);
         }
         cancelAnimation(runner, false /* invokeCallback */);
-        ProtoLog.d(INSETS_CONTROLLER_DEBUG, "notifyFinished. shown: %s", shown);
+        ProtoLog.d(INSETS_CONTROLLER_DEBUG, "notifyFinished. shown: %b", shown);
         if (runner.getAnimationType() == ANIMATION_TYPE_RESIZE) {
             // The resize animation doesn't show or hide the insets. We shouldn't change the
             // requested visibility.
@@ -1724,9 +1723,6 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             ImeTracker.forLogging().onProgress(statsToken,
                     ImeTracker.PHASE_CLIENT_ANIMATION_FINISHED_SHOW);
             ImeTracker.forLogging().onShown(statsToken);
-        }
-        if (!Flags.reportAnimatingInsetsTypes()) {
-            reportRequestedVisibleTypes(null /* statsToken */);
         }
     }
 
@@ -1783,8 +1779,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                             && runner.getAnimationType() == ANIMATION_TYPE_HIDE) {
                         // if the (hide) animation is cancelled, the requestedVisibleTypes
                         // should be reported at this point.
-                        reportRequestedVisibleTypes(!Flags.reportAnimatingInsetsTypes()
-                                ? runner.getStatsToken() : null);
+                        reportRequestedVisibleTypes(null /* statsToken */);
                         mHost.getInputMethodManager()
                                 .removeImeSurfaceFromWindow(mHost.getWindowToken());
                     }
@@ -1795,8 +1790,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         if (removedTypes > 0) {
             mAnimatingTypes &= ~removedTypes;
             final boolean dispatchStatsToken =
-                    Flags.reportAnimatingInsetsTypes() && (removedTypes & ime()) != 0
-                            && runner.getAnimationType() == ANIMATION_TYPE_HIDE;
+                    (removedTypes & ime()) != 0 && runner.getAnimationType() == ANIMATION_TYPE_HIDE;
             mHost.updateAnimatingTypes(mAnimatingTypes,
                     dispatchStatsToken ? runner.getStatsToken() : null);
         }
@@ -1945,27 +1939,19 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
      * @param statsToken the token tracking the current IME request or {@code null} otherwise.
      */
     private void reportRequestedVisibleTypes(@Nullable ImeTracker.Token statsToken) {
-        @InsetsType
-        final int typesToReport;
         // If the IME is currently animating out, it is still visible, therefore we only
         // report its requested visibility at the end of the animation, otherwise we would
         // lose the leash, and it would disappear during the animation
         // TODO(b/326377046) revisit this part and see if we can make it more general
-        if (Flags.reportAnimatingInsetsTypes()) {
-            typesToReport = mRequestedVisibleTypes;
-        } else {
-            typesToReport = mRequestedVisibleTypes | (mAnimatingTypes & ime());
-        }
-
-        if (typesToReport != mReportedRequestedVisibleTypes) {
+        if (mRequestedVisibleTypes != mReportedRequestedVisibleTypes) {
             @InsetsType
-            final int diff = typesToReport ^ mReportedRequestedVisibleTypes;
+            final int diff = mRequestedVisibleTypes ^ mReportedRequestedVisibleTypes;
             if (WindowInsets.Type.hasCompatSystemBars(diff)) {
                 mCompatSysUiVisibilityStaled = true;
             }
             ImeTracker.forLogging().onProgress(statsToken,
                     ImeTracker.PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES);
-            if (Flags.reportAnimatingInsetsTypes() && (typesToReport & ime()) == 0) {
+            if ((mRequestedVisibleTypes & ime()) == 0) {
                 // The IME hide animating flow should not be followed from here, but after
                 // the hide animation has finished and Host.updateAnimatingTypes is called.
                 statsToken = null;
@@ -1973,7 +1959,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             mReportedRequestedVisibleTypes = mRequestedVisibleTypes;
             mHost.updateRequestedVisibleTypes(mReportedRequestedVisibleTypes, statsToken);
         } else {
-            if ((typesToReport & ime()) != 0) {
+            if ((mRequestedVisibleTypes & ime()) != 0) {
                 InsetsSourceControl control = mImeSourceConsumer.getControl();
                 if (control == null || control.getLeash() == null) {
                     // If the IME was requested to show twice, and we didn't receive the controls

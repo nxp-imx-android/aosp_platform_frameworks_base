@@ -106,6 +106,9 @@ public final class ActiveServicesTest {
                         .strictness(Strictness.LENIENT)
                         .mockStatic(CompatChanges.class)
                         .startMocking();
+        // Most tests require a non-null ActivityManagerService.  Create one now.  If the test
+        // requires a specialized mock, the test can replace this value.
+        mService = mock(ActivityManagerService.class);
     }
 
     @After

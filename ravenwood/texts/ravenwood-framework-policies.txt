@@ -25,6 +25,7 @@ class com.android.internal.logging.UiEvent keepclass  # no-pta
 class com.android.internal.logging.UiEventLogger keepclass  # no-pta
 
 # From modules-utils; cannot use annotations
+class com.android.modules.utils.BasicShellCommandHandler keepclass  # no-pta
 class com.android.modules.utils.BinaryXmlPullParser keepclass  # no-pta
 class com.android.modules.utils.BinaryXmlSerializer keepclass  # no-pta
 class com.android.modules.utils.FastDataInput keepclass  # no-pta

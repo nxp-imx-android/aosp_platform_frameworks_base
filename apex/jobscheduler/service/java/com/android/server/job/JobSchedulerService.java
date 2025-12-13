@@ -1902,8 +1902,7 @@ public class JobSchedulerService extends com.android.server.SystemService
                             "job_scheduler.value_cntr_w_uid_max_scheduling_limit_hit", callingUid);
                     String errorMsg = "Apps may not schedule more than "
                             + mMaxJobsPerApp + " distinct jobs";
-                    if ((callingUid == Process.SYSTEM_UID)
-                            && Flags.enhanceSystemJobLimitException()) {
+                    if (callingUid == Process.SYSTEM_UID) {
                         errorMsg += ". Top jobs: " + mJobs.getTopJobsDebugStringForUid(callingUid);
                     }
                     throw new IllegalStateException(errorMsg);

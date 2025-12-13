@@ -2547,6 +2547,32 @@ public class TaskTests extends WindowTestsBase {
         verify(appLockOverlayController).registerTask(task);
     }
 
+    @Test
+    public void testBuilder_notCreatedByOrganizer_ignoreInsetsAndAppCompatRoundedCornersDefault() {
+        final Task task = new Task.Builder(mAtm)
+                .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
+                .setShouldIgnoreInsets(true)
+                .setDisableAppCompatRoundedCorners(true)
+                .build();
+        task.mCreatedByOrganizer = false;
+
+        assertFalse(task.shouldIgnoreInsets());
+        assertFalse(task.disableAppCompatRoundedCorners());
+    }
+
+    @Test
+    public void testBuilder_createdByOrganizer_setIgnoreInsetsAndAppCompatRoundedCorners() {
+        final Task task = new Task.Builder(mAtm)
+                .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
+                .setShouldIgnoreInsets(true)
+                .setDisableAppCompatRoundedCorners(true)
+                .build();
+        task.mCreatedByOrganizer = true;
+
+        assertTrue(task.shouldIgnoreInsets());
+        assertTrue(task.disableAppCompatRoundedCorners());
+    }
+
     private Task getTestTask() {
         return new TaskBuilder(mSupervisor).setCreateActivity(true).build();
     }

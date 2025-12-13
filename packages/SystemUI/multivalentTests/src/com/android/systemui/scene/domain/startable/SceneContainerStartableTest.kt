@@ -26,6 +26,7 @@ import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
 import android.security.Flags.FLAG_SECURE_LOCK_DEVICE
 import android.view.Display
+import android.view.SurfaceControl
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
@@ -3101,7 +3102,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             val listeners = argumentCaptor.allValues
             listeners.forEach { it.onTransitionAnimationStart() }
             assertThat(isVisible).isTrue()
-            listeners.forEach { it.onTransitionAnimationEnd() }
+            listeners.forEach { it.onTransitionAnimationEnd(mock<SurfaceControl.Transaction>()) }
             assertThat(isVisible).isFalse()
         }
 

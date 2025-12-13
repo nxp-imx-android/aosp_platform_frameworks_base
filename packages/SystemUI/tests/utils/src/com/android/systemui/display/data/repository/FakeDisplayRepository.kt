@@ -142,6 +142,8 @@ class FakeDisplayRepository @Inject constructor() : DisplayRepository {
     override val displayIdsWithSystemDecorations: StateFlow<Set<Int>> =
         displayIdsWithSystemDecorationsFlow
 
+    suspend fun emitDisplayRemoveEvent(displayId: Int) = displayRemovalEventFlow.emit(displayId)
+
     suspend fun emitDisplayChangeEvent(displayId: Int) = _displayChangeEvent.emit(displayId)
 
     fun setDefaultDisplayOff(defaultDisplayOff: Boolean) {

@@ -37,9 +37,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -115,6 +115,7 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
         columns = columns,
         verticalSpacing = verticalSpacing,
         horizontalSpacing = calculateHorizontalSpacingBetweenColumns(gridWidth = 300.dp),
+        placeRelative = false,
         modifier =
             modifier.focusRequester(focusRequester).sysuiResTag("pin_pad_grid").semantics {
                 isTraversalGroup = true
@@ -204,12 +205,10 @@ private fun DigitButton(
                 scaleY = scale
             },
     ) { contentColor ->
-        // TODO(b/281878426): once "color: () -> Color" (added to BasicText in aosp/2568972) makes
-        // it into Text, use that here, to animate more efficiently.
-        Text(
+        BasicText(
             text = digit.toString(),
             style = MaterialTheme.typography.displaySmallEmphasized,
-            color = contentColor(),
+            color = { contentColor() },
         )
     }
 }

@@ -24,6 +24,7 @@ import androidx.compose.foundation.OverscrollFactory
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
@@ -33,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.layout.LookaheadScope
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalViewConfiguration
@@ -41,6 +43,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
+import com.android.compose.animation.scene.debug.StlDebugConfig
+import com.android.compose.animation.scene.debug.StlDebugConfig.DEBUG_STL
 import com.android.compose.animation.scene.debug.generateDefaultStlDebugName
 import com.android.compose.gesture.NestedScrollableBound
 import com.android.compose.modifiers.skipToLookaheadSize
@@ -927,4 +931,12 @@ internal fun SceneTransitionLayoutForTesting(
     }
 
     layoutImpl.Content(modifier)
+
+    if (DEBUG_STL) {
+        val context = LocalContext.current.applicationContext
+        DisposableEffect(context) {
+            StlDebugConfig.initDebug(context)
+            onDispose {}
+        }
+    }
 }

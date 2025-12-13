@@ -94,7 +94,7 @@ constructor(
                 factory = { ctx ->
                     setupDate(ctx, isLargeClock) { it.orientation = LinearLayout.VERTICAL }
                 },
-                modifier = context.burnInModifier.then(context.nonAuthUIModifier),
+                modifier = context.burnInModifier(isClock = false).then(context.nonAuthUIModifier),
                 update = { view -> updateDWA(view as LinearLayout, isWeatherEnabled, isLargeClock) },
             )
         }
@@ -120,7 +120,7 @@ constructor(
                 factory = { ctx ->
                     setupDate(ctx, isLargeClock) { it.orientation = LinearLayout.HORIZONTAL }
                 },
-                modifier = context.burnInModifier.then(context.nonAuthUIModifier),
+                modifier = context.burnInModifier(isClock = false).then(context.nonAuthUIModifier),
                 update = { view -> updateDWA(view as LinearLayout, isWeatherEnabled, isLargeClock) },
             )
         }
@@ -207,7 +207,7 @@ constructor(
                             end = clockPadding,
                             bottom = dimensionResource(R.dimen.keyguard_status_view_bottom_margin),
                         )
-                        .then(context.burnInModifier)
+                        .then(context.burnInModifier(isClock = false))
                         .then(context.nonAuthUIModifier),
             )
         }

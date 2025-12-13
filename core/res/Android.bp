@@ -208,6 +208,7 @@ android_app {
         "telecom_flags",
         "android.multiuser.flags-aconfig",
         "com.android.nfc.module.flags-aconfig",
+        "android.service.chooser.flags-aconfig",
     ],
 }
 

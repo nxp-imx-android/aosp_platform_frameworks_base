@@ -999,6 +999,7 @@
 
     <!-- Permission required for CTS test - CtsNfcTestCases -->
     <uses-permission android:name="android.permission.NFC_SET_CONTROLLER_ALWAYS_ON" />
+    <uses-permission android:name="android.permission.PERFORM_GESTURE_EXCHANGE" />
     <!-- Permission required for CTS test - AdvancedProtectionManagerTest -->
     <uses-permission android:name="android.permission.MANAGE_ADVANCED_PROTECTION_MODE"/>
     <uses-permission android:name="android.permission.QUERY_ADVANCED_PROTECTION_MODE" />
@@ -1097,6 +1098,9 @@
 
     <!-- Permission required for CTS test - CtsSerialTest -->
     <uses-permission android:name="android.permission.MANAGE_SERIAL_PORTS" />
+
+    <!-- Permission required for CTS test - CtsSharesheetTapToShareServiceTest -->
+    <uses-permission android:name="android.permission.BIND_TO_TAP_TO_SHARE_SERVICE" />
 
     <application
         android:label="@string/app_label"

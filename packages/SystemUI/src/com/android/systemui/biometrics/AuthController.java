@@ -68,7 +68,6 @@ import android.widget.Toast;
 
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.hidden_from_bootclasspath.android.hardware.biometrics.Flags;
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.os.SomeArgs;
 import com.android.internal.widget.LockPatternUtils;
@@ -1124,8 +1123,7 @@ public class AuthController implements
                 || error == BiometricConstants.BIOMETRIC_ERROR_UNABLE_TO_PROCESS
                 || isCameraPrivacyEnabled);
         if (mCurrentDialog != null) {
-            if (isLockout && (Flags.bpFallbackOptions()
-                    || mCurrentDialog.isAllowDeviceCredentials())) {
+            if (isLockout) {
                 if (DEBUG) Log.d(TAG, "onBiometricError, lockout");
                 mCurrentDialog.animateToCredentialUI(true /* isError */);
             } else if (isSoftError) {

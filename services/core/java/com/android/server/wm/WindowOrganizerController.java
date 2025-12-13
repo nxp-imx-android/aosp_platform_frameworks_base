@@ -1353,18 +1353,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     Slog.e(TAG, "Attempt to operate on detached container: " + wc);
                     break;
                 }
-                if (!DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX.isTrue()) {
-                    // There is no use case to ask the reparent operation in lock-task mode now,
-                    // so keep skipping this operation as usual.
-                    if (isInLockTaskMode && type == HIERARCHY_OP_TYPE_REPARENT) {
-                        Slog.w(TAG, "Skip applying hierarchy operation " + hop
-                                + " while in lock task mode");
-                        break;
-                    }
-                    if (isLockTaskModeViolation(wc.getParent(), wc.asTask(), isInLockTaskMode)) {
-                        break;
-                    }
-                }  else if (type == HIERARCHY_OP_TYPE_REPARENT && hop.getNewParent() != null) {
+                if (type == HIERARCHY_OP_TYPE_REPARENT && hop.getNewParent() != null) {
                     final WindowContainer parentWc = WindowContainer.fromBinder(hop.getNewParent());
                     final Task parentTask = parentWc != null ? parentWc.asTask() : null;
                     if (parentTask != null && parentTask.isLeafTask()

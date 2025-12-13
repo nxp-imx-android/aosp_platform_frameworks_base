@@ -57,8 +57,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
@@ -71,6 +73,7 @@ import com.android.systemui.screencapture.record.smallscreen.ui.PostRecordSnackb
 import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.PostRecordingViewModel
 import com.android.systemui.statusbar.phone.EdgeToEdgeDialogDelegate
 import com.android.systemui.statusbar.phone.SystemUIDialog
+import com.android.systemui.statusbar.phone.SystemUIDialog.DIALOG_WINDOW_TYPE
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
 import com.android.systemui.statusbar.phone.create
 import dagger.assisted.Assisted
@@ -144,27 +147,44 @@ constructor(
 
         val coroutineScope = rememberCoroutineScope()
         val postRecordingViewModel =
-            rememberViewModel("PostRecordingShelf#viewModel") { viewModelFactory.create(uri) }
+            rememberViewModel("PostRecordingShelf#viewModel") {
+                viewModelFactory.create(uri, display.displayId)
+            }
         val parentUri = postRecordingViewModel.parentUri
         val shareIcon =
             loadIcon(
                     viewModel = postRecordingViewModel,
                     resId = R.drawable.ic_screenshot_share,
-                    contentDescription = null,
+                    contentDescription =
+                        ContentDescription.Loaded(
+                            stringResource(
+                                R.string.screen_capture_post_recording_shelf_share_button_a11y
+                            )
+                        ),
                 )
                 .value
         val folderIcon =
             loadIcon(
                     viewModel = postRecordingViewModel,
                     resId = R.drawable.ic_screen_capture_folder,
-                    contentDescription = null,
+                    contentDescription =
+                        ContentDescription.Loaded(
+                            stringResource(
+                                R.string.screen_capture_post_recording_shelf_folder_button_a11y
+                            )
+                        ),
                 )
                 .value
         val deleteIcon =
             loadIcon(
                     viewModel = postRecordingViewModel,
                     resId = R.drawable.ic_screenshot_delete,
-                    contentDescription = null,
+                    contentDescription =
+                        ContentDescription.Loaded(
+                            stringResource(
+                                R.string.screen_capture_post_recording_shelf_delete_button_a11y
+                            )
+                        ),
                 )
                 .value
         val actionButtonItems =
@@ -205,11 +225,13 @@ constructor(
                                             dialogFactory,
                                             context,
                                             postRecordingViewModel,
+                                            display,
                                         )
                                     ) {
                                         hide()
                                         postRecordSnackbarDialogs.showVideoDeleted(
-                                            postRecordingViewModel.videoUri
+                                            postRecordingViewModel.videoUri,
+                                            display,
                                         )
                                     }
                                     isConfirmDeletionDialogShowing = false
@@ -221,10 +243,7 @@ constructor(
             }
 
         Box(
-            modifier =
-                Modifier.fillMaxSize()
-                    .clickable(onClick = { hide() }, indication = null, interactionSource = null)
-                    .safeDrawingPadding(),
+            modifier = Modifier.fillMaxSize().safeDrawingPadding(),
             contentAlignment = Alignment.BottomStart,
         ) {
             AnimatedVisibility(
@@ -291,7 +310,8 @@ constructor(
             if (preview != null) {
                 Image(
                     bitmap = preview,
-                    contentDescription = null,
+                    contentDescription =
+                        stringResource(R.string.screen_capture_post_recording_shelf_thumbnail_a11y),
                     modifier = Modifier.matchParentSize(),
                     contentScale = ContentScale.Fit,
                 )
@@ -316,6 +336,5 @@ constructor(
 
     companion object {
         private val DEFAULT_TIMEOUT = 6.seconds
-        private val DIALOG_WINDOW_TYPE = WindowManager.LayoutParams.TYPE_STATUS_BAR_SUB_PANEL
     }
 }

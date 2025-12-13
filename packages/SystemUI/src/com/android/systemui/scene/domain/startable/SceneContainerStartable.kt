@@ -18,6 +18,7 @@ package com.android.systemui.scene.domain.startable
 
 import android.app.StatusBarManager
 import android.view.Display
+import android.view.SurfaceControl
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
@@ -496,7 +497,9 @@ constructor(
                             // The device locked while already on a keyguard scene or bouncer, no
                             // need to change scenes. But make sure to replace the Gone scene in
                             // the back stack with Lockscreen.
-                            sceneBackInteractor.replaceGoneSceneOnBackStack()
+                            sceneBackInteractor.replaceGoneSceneOnBackStack(
+                                reason = "device locked while on a keyguard scene or bouncer"
+                            )
                             SwitchSceneCommand.NoOp
                         } else {
                             // The device locked while on a scene that's not a keyguard scene, go
@@ -534,7 +537,9 @@ constructor(
                                             " was showing and shade didn't need to be left open",
                                 )
                             } else {
-                                sceneBackInteractor.replaceLockscreenSceneOnBackStack()
+                                sceneBackInteractor.replaceLockscreenSceneOnBackStack(
+                                    reason = "unlocked while alternate bouncer is showing"
+                                )
                                 SwitchSceneCommand.NoOp
                             }
                         }
@@ -608,7 +613,9 @@ constructor(
                                 )
                             } else {
                                 if (previousScene.value != Scenes.Gone) {
-                                    sceneBackInteractor.replaceLockscreenSceneOnBackStack()
+                                    sceneBackInteractor.replaceLockscreenSceneOnBackStack(
+                                        reason = "previous scene is not gone"
+                                    )
                                 }
                                 SwitchSceneCommand.SwitchToScene(
                                     targetSceneKey = targetScene,
@@ -661,7 +668,9 @@ constructor(
                                     // Remain in the shade but replace the Lockscreen scene from
                                     // the bottom of the navigation with the Gone scene since the
                                     // device is unlocked.
-                                    sceneBackInteractor.replaceLockscreenSceneOnBackStack()
+                                    sceneBackInteractor.replaceLockscreenSceneOnBackStack(
+                                        reason = "unlocked while shade is open"
+                                    )
                                     SwitchSceneCommand.NoOp
                                 }
                             }
@@ -670,7 +679,9 @@ constructor(
                         // unlocked, replace the Lockscreen scene from the bottom of the navigation
                         // back stack with the Gone scene.
                         else -> {
-                            sceneBackInteractor.replaceLockscreenSceneOnBackStack()
+                            sceneBackInteractor.replaceLockscreenSceneOnBackStack(
+                                reason = "unlocked on a scene other than lockscreen or bouncer"
+                            )
                             SwitchSceneCommand.NoOp
                         }
                     }
@@ -1266,7 +1277,7 @@ constructor(
                     sceneInteractor.onTransitionAnimationStart()
                 }
 
-                override fun onTransitionAnimationEnd() {
+                override fun onTransitionAnimationEnd(transaction: SurfaceControl.Transaction) {
                     sceneInteractor.onTransitionAnimationEnd()
                 }
             }

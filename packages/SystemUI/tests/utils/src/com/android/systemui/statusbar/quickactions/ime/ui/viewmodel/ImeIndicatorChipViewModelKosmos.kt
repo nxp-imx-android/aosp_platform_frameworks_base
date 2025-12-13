@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.quickactions.ime.ui.viewmodel
 
+import android.content.applicationContext
 import android.view.Display
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
@@ -23,6 +24,7 @@ import com.android.systemui.statusbar.quickactions.ime.domain.interactor.imeIndi
 
 val Kosmos.imeIndicatorChipViewModel by Fixture {
     ImeIndicatorChipViewModel(
+        context = applicationContext,
         displayId = Display.DEFAULT_DISPLAY,
         imeIndicatorChipInteractor = imeIndicatorChipInteractor,
     )
@@ -32,6 +34,7 @@ val Kosmos.imeIndicatorChipViewModelFactory: ImeIndicatorChipViewModel.Factory b
     object : ImeIndicatorChipViewModel.Factory {
         override fun create(displayId: Int): ImeIndicatorChipViewModel =
             ImeIndicatorChipViewModel(
+                context = applicationContext,
                 displayId = displayId,
                 imeIndicatorChipInteractor = imeIndicatorChipInteractor,
             )

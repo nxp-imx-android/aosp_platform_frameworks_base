@@ -588,16 +588,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_windowing_enterprise_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Enables fixes in desktop windowing related to enterprise"
-    bug: "413607166"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_desktop_windowing_exit_transitions"
     namespace: "lse_desktop_experience"
     description: "Enables exit desktop windowing transition & motion polish changes"
@@ -681,6 +671,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables desktop wallpaper activity to show wallpaper in the desktop mode"
     bug: "309014605"
+}
+
+flag {
+    name: "enable_display_disconnect_fullscreen"
+    namespace: "lse_desktop_experience"
+    description: "Enables shell-handled disconnect transition for fullscreen tasks"
+    bug: "434035592"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -825,13 +825,6 @@ flag {
     metadata {
       purpose: PURPOSE_BUGFIX
     }
-}
-
-flag {
-    name: "enable_independent_back_in_projected"
-    namespace: "lse_desktop_experience"
-    description: "Enables the system to have independent back per-display in projected mode."
-    bug: "401530192"
 }
 
 flag {

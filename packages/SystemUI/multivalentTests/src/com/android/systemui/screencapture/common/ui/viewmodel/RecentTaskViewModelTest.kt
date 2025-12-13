@@ -149,7 +149,8 @@ class RecentTaskViewModelTest : SysuiTestCase() {
                 assertThat(model).isEqualTo(fakeTask)
                 assertThat(icon).isEqualTo(fakeScreenCaptureIconRepository.fakeIcon)
                 assertThat(label).isEqualTo(fakeScreenCaptureLabelRepository.fakeLabel)
-                assertThat(thumbnail).isEqualTo(fakeScreenCaptureThumbnailRepository.fakeThumbnail)
+                assertThat(thumbnail)
+                    .isEqualTo(fakeScreenCaptureThumbnailRepository.defaultFakeThumbnail)
                 assertThat(backgroundColorOpaque).isEqualTo(Color(0xFF123456))
             }
 

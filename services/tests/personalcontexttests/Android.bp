@@ -42,15 +42,3 @@ android_test {
         enabled: false,
     },
 }
-
-test_module_config {
-    name: "PersonalContextTests_server_personalcontext",
-    base: "PersonalContextTests",
-    test_suites: [
-        "device-tests",
-    ],
-    include_filters: [
-        "android.service.personalcontext",
-        "com.android.server.personalcontext",
-    ],
-}

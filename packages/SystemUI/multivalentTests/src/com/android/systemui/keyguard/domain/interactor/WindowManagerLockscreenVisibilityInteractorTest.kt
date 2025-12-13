@@ -1193,7 +1193,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
             assertThat(isDeviceEnteredDirectly).isFalse()
 
             kosmos.authenticationInteractor.authenticate(FakeAuthenticationRepository.DEFAULT_PIN)
-            sceneBackInteractor.updateBackStack { sceneStackOf(Scenes.Gone) }
+            sceneBackInteractor.updateBackStack("test") { sceneStackOf(Scenes.Gone) }
             assertThat(sceneBackStack?.asIterable()?.toList()).isEqualTo(listOf(Scenes.Gone))
 
             assertThat(isDeviceEntered).isTrue()
@@ -1536,7 +1536,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
             // Now, put lockscreen on the back stack. This is what happens with swipe lock when
             // the device is "locked" (it's not really locked).
-            sceneBackInteractor.updateBackStack { sceneStackOf(Scenes.Lockscreen) }
+            sceneBackInteractor.updateBackStack("test") { sceneStackOf(Scenes.Lockscreen) }
             runCurrent()
 
             // While dreaming and unlocked, but with lockscreen on back stack, lockscreen should be
@@ -1544,7 +1544,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
             assertThat(lockscreenVisibility).isTrue()
 
             // Now remove it from back stack.
-            sceneBackInteractor.updateBackStack { sceneStackOf() }
+            sceneBackInteractor.updateBackStack("test") { sceneStackOf() }
             runCurrent()
 
             // Should be false again.

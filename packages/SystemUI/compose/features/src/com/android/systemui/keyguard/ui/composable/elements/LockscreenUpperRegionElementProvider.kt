@@ -109,12 +109,15 @@ constructor(
             aodAlignment: Alignment,
             modifier: Modifier = Modifier,
         ) {
-            Box(modifier = Modifier.fillMaxSize().then(context.burnInModifier).then(modifier)) {
+            Box(modifier = Modifier.fillMaxSize().then(modifier)) {
                 AODNotifications(Modifier.align(aodAlignment))
                 // Make the Notification section overlap with the AOD icons,
                 // to avoid jumps while animating them in.
                 AnimatedVisibility(viewModel.isNotificationStackActive) {
-                    LockscreenElement(Notifications.Stack)
+                    LockscreenElement(
+                        Notifications.Stack,
+                        modifier = context.burnInModifier(isClock = false),
+                    )
                 }
             }
         }
@@ -361,7 +364,7 @@ constructor(
                 contentAlignment = Alignment.Center,
             ) {
                 LockscreenElement(Region.Clock.Large)
-                AODNotifications(context.burnInModifier.align(notifAlignment))
+                AODNotifications(Modifier.align(notifAlignment))
             }
         }
 

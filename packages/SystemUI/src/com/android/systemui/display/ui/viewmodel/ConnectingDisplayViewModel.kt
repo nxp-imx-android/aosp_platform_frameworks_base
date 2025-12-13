@@ -22,6 +22,8 @@ import android.util.Log
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.WindowInsets.Type.displayCutout
 import android.view.WindowInsets.Type.navigationBars
+import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import com.android.app.displaylib.ExternalDisplayConnectionType
@@ -42,6 +44,7 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.SystemUIBottomSheetDialog
 import com.android.systemui.statusbar.phone.SystemUIBottomSheetDialog.WindowLayout
 import com.android.systemui.statusbar.phone.SystemUIDialog
+import com.android.systemui.statusbar.policy.AccessibilityManagerWrapper
 import com.android.systemui.util.settings.SecureSettings
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import dagger.Binds
@@ -56,6 +59,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
 
 /**
@@ -73,20 +77,29 @@ constructor(
     private val connectedDisplayInteractor: ConnectedDisplayInteractor,
     @Application private val scope: CoroutineScope,
     @Background private val bgDispatcher: CoroutineDispatcher,
+    private val accessibilityManagerWrapper: AccessibilityManagerWrapper,
     private val delegateFactory: ExternalDisplayConnectionDialogDelegate.Factory,
     private val dialogFactory: SystemUIBottomSheetDialog.Factory,
     private val externalDisplayDialogWindowLayout: WindowLayout.ExternalDisplayDialogWindowLayout,
 ) : CoreStartable {
 
     private var dialog: Dialog? = null
+    private val connectedDisplays = mutableSetOf<Int>()
 
     /** Starts listening for pending displays. */
     @OptIn(FlowPreview::class)
     override fun start() {
         val pendingDisplayFlow = connectedDisplayInteractor.pendingDisplay
+        val disconnectFlow = connectedDisplayInteractor.connectedDisplayRemoval
         val kioskModeFlow = kioskModeRepository.isInKioskMode
         val concurrentDisplaysInProgressFlow =
             connectedDisplayInteractor.concurrentDisplaysInProgress
+
+        // Listen for display disconnect events and send an a11y event when necessary
+        disconnectFlow
+            .debounce(200.milliseconds)
+            .onEach { if (connectedDisplays.remove(it)) handleA11y(isConnected = false) }
+            .launchIn(scope)
 
         // Let's debounce for 2 reasons:
         // - prevent fast dialog flashes where pending displays are available for just a few millis
@@ -123,7 +136,10 @@ constructor(
         val delegate =
             delegateFactory.create(
                 rememberChoiceCheckBoxListener = { _, isChecked -> saveChoice = isChecked },
-                onStartDesktopClickListener = { enableFor(DESKTOP, saveChoice = saveChoice) },
+                onStartDesktopClickListener = {
+                    enableFor(DESKTOP, saveChoice = saveChoice)
+                    handleA11y(isConnected = true)
+                },
                 onStartMirroringClickListener = { enableFor(MIRROR, saveChoice = saveChoice) },
                 onCancelClickListener = {
                     scope.launch(context = bgDispatcher) { ignore() }
@@ -167,7 +183,10 @@ constructor(
             }
             else -> {
                 when (pendingDisplay.connectionType) {
-                    DESKTOP -> pendingDisplay.enableForDesktop()
+                    DESKTOP -> {
+                        pendingDisplay.enableForDesktop()
+                        handleA11y(isConnected = true)
+                    }
                     MIRROR -> pendingDisplay.enableForMirroring()
                     NOT_SPECIFIED ->
                         pendingDisplay.showConnectionDialog(
@@ -197,6 +216,7 @@ constructor(
                 MIRROR -> applyConnectionChoice(enableMirroring = true)
                 else -> Log.wtf(TAG, "Tried to enable display for unknown mode: $connectionType")
             }
+            connectedDisplays.add(id)
         }
 
         dismissDialog()
@@ -227,7 +247,27 @@ constructor(
     }
 
     private fun showExtendedDisplayConnectionToast() =
-        Toast.makeText(context, R.string.connected_display_extended_mode_text, LENGTH_LONG).show()
+        Toast.makeText(context, R.string.connected_display_connection_text, LENGTH_LONG).show()
+
+    private fun handleA11y(isConnected: Boolean) {
+        // Send an a11y event as if a toast was shown
+        if (!accessibilityManagerWrapper.isEnabled) return
+
+        val eventTextId =
+            if (isConnected) {
+                R.string.connected_display_connection_text
+            } else {
+                R.string.connected_display_removal_text
+            }
+
+        val event =
+            AccessibilityEvent(TYPE_NOTIFICATION_STATE_CHANGED).apply {
+                className = Toast::class.java.name
+                packageName = context.opPackageName
+                text.add(context.getString(eventTextId))
+            }
+        accessibilityManagerWrapper.sendAccessibilityEvent(event)
+    }
 
     @Module
     interface StartableModule {

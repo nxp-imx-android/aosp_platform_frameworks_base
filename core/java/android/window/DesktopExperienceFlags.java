@@ -130,9 +130,6 @@ public enum DesktopExperienceFlags {
     ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION(
             Flags::enableDesktopWindowingAppToWebEducationIntegration, true,
             Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION),
-    ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX(
-            Flags::enableDesktopWindowingEnterpriseBugfix,
-            false, Flags.FLAG_ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX),
     ENABLE_DESKTOP_WINDOWING_MULTI_ACTIVITY_PIP_KEEP_PARENT_OPEN(
             Flags::enableDesktopWindowingMultiActivityPipKeepParentOpen, false,
             Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_ACTIVITY_PIP_KEEP_PARENT_OPEN),
@@ -165,8 +162,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_FULLSCREEN_WINDOW_CONTROLS),
     ENABLE_GAME_CONTROLS_ENTRY_IN_HANDLE_MENU(Flags::enableGameControlsEntryInHandleMenu, false,
             Flags.FLAG_ENABLE_GAME_CONTROLS_ENTRY_IN_HANDLE_MENU),
-    ENABLE_INDEPENDENT_BACK_IN_PROJECTED(Flags::enableIndependentBackInProjected, true,
-            Flags.FLAG_ENABLE_INDEPENDENT_BACK_IN_PROJECTED),
     ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP(
             Flags::enableInorderTransitionCallbacksForDesktop, false,
             Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP),

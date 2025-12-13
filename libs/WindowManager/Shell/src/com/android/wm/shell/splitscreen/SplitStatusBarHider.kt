@@ -42,8 +42,8 @@ import com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_90_10
  * Determines when to request immersive mode override for status bar based on split state.
  *
  * Currently we only want immersive mode when the following conditions are met
- *   * device is in left/right split
- *   * device is in split screen in either 10:90 or 90:10
+ * * device is in left/right split
+ * * device is in split screen in either 10:90 or 90:10
  *
  * We want to reset status bar behavior whenever the user exits split screen. NOTE: Specifically
  * this means when split is NOT user visible, it is NOT tied to the activation of
@@ -167,8 +167,8 @@ class SplitStatusBarHider(
         }
         ProtoLog.d(
             ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN,
-            "Updating status bar override leftRight=%s currentSplit=%d " +
-                "splitVisible=%s overridden=%s",
+            "Updating status bar override leftRight=%b currentSplit=%d " +
+                "splitVisible=%b overridden=%b",
             isLeftRightSplit,
             currentSplitState,
             isSplitVisible,
@@ -187,7 +187,7 @@ class SplitStatusBarHider(
         } else {
             ProtoLog.d(
                 ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN,
-                "Updating status bar override to %s",
+                "Updating status bar override to %b",
                 shouldPutStatusBarInImmersive,
             )
             setStatusBarVisibilityOverride(shouldPutStatusBarInImmersive)
@@ -230,7 +230,7 @@ class SplitStatusBarHider(
         } else {
             ProtoLog.d(
                 ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN,
-                "Updating status bar override to %s AppHandle block",
+                "Updating status bar override to %b AppHandle block",
                 shouldPutStatusBarInImmersive,
             )
             setStatusBarVisibilityOverride(shouldPutStatusBarInImmersive)

@@ -27,7 +27,7 @@ import java.util.Objects;
  *
  * @hide
  */
-final class OriginInfo {
+public final class OriginInfo {
     private final long mTimestampAdded;
     private long mTimestampLastUpdated;
     private int mUpdates;
@@ -38,7 +38,15 @@ final class OriginInfo {
      * last-updated time.
      */
     public OriginInfo() {
-        long timestampAdded = SystemClock.elapsedRealtime();
+        this(SystemClock.elapsedRealtime());
+    }
+
+    /**
+     * Creates a new {@link OriginInfo} with a specific timestamp.
+     *
+     * @param timestampAdded the timestamp to use for the creation and last-updated time
+     */
+    public OriginInfo(long timestampAdded) {
         mTimestampAdded = timestampAdded;
         mTimestampLastUpdated = timestampAdded;
         mUpdates = 1;
@@ -79,6 +87,16 @@ final class OriginInfo {
     /** Returns the quality score for this origin. */
     public int getQuality() {
         return mQuality;
+    }
+
+    /** Returns the timestamp when this origin was first added. */
+    public long getTimestampAdded() {
+        return mTimestampAdded;
+    }
+
+    /** Returns the timestamp when this origin was last updated. */
+    public long getTimestampLastUpdated() {
+        return mTimestampLastUpdated;
     }
 
     @Override

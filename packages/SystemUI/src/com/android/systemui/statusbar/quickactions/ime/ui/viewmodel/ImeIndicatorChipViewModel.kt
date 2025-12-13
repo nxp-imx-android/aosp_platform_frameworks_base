@@ -16,9 +16,12 @@
 
 package com.android.systemui.statusbar.quickactions.ime.ui.viewmodel
 
+import android.content.Context
 import androidx.compose.runtime.getValue
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.common.shared.model.asIcon
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayId
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
@@ -37,6 +40,7 @@ import kotlinx.coroutines.flow.map
 class ImeIndicatorChipViewModel
 @AssistedInject
 constructor(
+    @param:Application private val context: Context,
     @Assisted private val displayId: Int,
     private val imeIndicatorChipInteractor: ImeIndicatorChipInteractor,
 ) : StatusBarPopupChipViewModel, HydratedActivatable() {
@@ -54,22 +58,37 @@ constructor(
             return QuickActionChipUiState.Hidden(QuickActionChipId.ImeIndicator)
         }
 
-        // TODO(b/458557858): Use IME icon or subtype short label if available.
-        val chipText = model.selectedSubtype?.subtypeId?.toString()
-        val icons =
-            if (chipText != null) {
-                emptyList()
-            } else {
-                listOf(
-                    ChipIcon(
+        // TODO(b/458557858): Determine what to set as the accessible name when there is a selected
+        // subtype.
+        val subtypeIcon =
+            model.selectedSubtype?.icon?.let { subtypeIcon ->
+                android.graphics.drawable.Icon.createWithResource(
+                        subtypeIcon.packageName,
+                        subtypeIcon.resId,
+                    )
+                    .loadDrawable(context)
+                    ?.asIcon(resId = subtypeIcon.resId, resPackage = subtypeIcon.packageName)
+            }
+        val subtypeShortLabel = model.selectedSubtype?.shortLabel
+
+        val (icons: List<ChipIcon>, chipText: String?) =
+            when {
+                subtypeIcon != null -> {
+                    listOf(ChipIcon(subtypeIcon)) to null
+                }
+                !subtypeShortLabel.isNullOrBlank() -> {
+                    emptyList<ChipIcon>() to subtypeShortLabel
+                }
+                else -> {
+                    val defaultIcon =
                         Icon.Resource(
                             R.drawable.ic_keyboard,
                             ContentDescription.Resource(
                                 R.string.accessibility_status_bar_input_method_indicator
                             ),
                         )
-                    )
-                )
+                    listOf(ChipIcon(defaultIcon)) to null
+                }
             }
 
         return QuickActionChipUiState.PopupChip(

@@ -22,6 +22,8 @@ import static android.app.admin.PolicyIdentifier.SIMPLE_INTEGER_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_STRING_LIST_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_STRING_POLICY;
 import static android.app.admin.PolicyIdentifier.TEST_AFFILIATED_PROFILE_OWNER_ON_USER_ALLOWED;
+import static android.app.admin.PolicyIdentifier.TEST_AFFILIATED_PROFILE_OWNER_ON_USER_SAME_AS_UNAFFILIATED;
+import static android.app.admin.PolicyIdentifier.TEST_AFFILIATED_PROFILE_OWNER_ON_USER_SAME_AS_UNAFFILIATED_DISALLOWED;
 import static android.app.admin.PolicyIdentifier.TEST_DEFAULT_DEVICE_OWNER_ALLOWED;
 import static android.app.admin.PolicyIdentifier.TEST_FINANCED_DEVICE_OWNER_ALLOWED;
 import static android.app.admin.PolicyIdentifier.TEST_MULTIPLE_DPC_TYPES_ALLOWED;
@@ -151,7 +153,8 @@ public class Policies {
             /* requiredPermission= */ null,
             /* requiredCrossUserPermission= */ null,
             /* allowedDpcTypes= */ Set.of(
-                6  // UNAFFILIATED_FULL_USER_PROFILE_OWNER
+                6, // UNAFFILIATED_FULL_USER_PROFILE_OWNER
+                7  // AFFILIATED_FULL_USER_PROFILE_OWNER
             )
         ));
         policies.add(new IntegerPolicyMetadata(
@@ -165,6 +168,29 @@ public class Policies {
             /* allowedDpcTypes= */ Set.of(
                 7  // AFFILIATED_FULL_USER_PROFILE_OWNER
             )
+        ));
+        policies.add(new IntegerPolicyMetadata(
+            /* id= */ TEST_AFFILIATED_PROFILE_OWNER_ON_USER_SAME_AS_UNAFFILIATED,
+            /* allowedScopes= */ Set.of(
+                1
+            ),
+            /* affectedResource= */ 1,
+            /* requiredPermission= */ null,
+            /* requiredCrossUserPermission= */ null,
+            /* allowedDpcTypes= */ Set.of(
+                6, // UNAFFILIATED_FULL_USER_PROFILE_OWNER
+                7  // AFFILIATED_FULL_USER_PROFILE_OWNER
+            )
+        ));
+        policies.add(new IntegerPolicyMetadata(
+            /* id= */ TEST_AFFILIATED_PROFILE_OWNER_ON_USER_SAME_AS_UNAFFILIATED_DISALLOWED,
+            /* allowedScopes= */ Set.of(
+                1
+            ),
+            /* affectedResource= */ 1,
+            /* requiredPermission= */ null,
+            /* requiredCrossUserPermission= */ null,
+            /* allowedDpcTypes= */ Set.of()
         ));
         policies.add(new IntegerPolicyMetadata(
             /* id= */ TEST_MULTIPLE_DPC_TYPES_ALLOWED,

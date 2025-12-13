@@ -858,8 +858,7 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
     public void showPrimaryBouncer(boolean scrimmed, String reason) {
         hideAlternateBouncer(
                 /* updateScrim= */ false,
-                // When the scene framework is on, don't ever clear the pending dismiss action from
-                /* clearDismissAction= */ !SceneContainerFlag.isEnabled());
+                /* clearDismissAction= */ false);
         if (mKeyguardStateController.isShowing() && !isBouncerShowing()) {
             if (SceneContainerFlag.isEnabled()) {
                 mSceneInteractorLazy.get().showOverlay(
@@ -1061,7 +1060,7 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
 
     @Override
     public void hideAlternateBouncer(boolean updateScrim, boolean clearDismissAction) {
-        if (clearDismissAction) {
+        if (clearDismissAction && SceneContainerFlag.isEnabled()) {
             mKeyguardDismissActionInteractor.get().clearDismissAction();
         }
 

@@ -679,6 +679,29 @@ class BubbleBarLayerViewTest {
         assertThat(bubble.getIconView()).isNull()
     }
 
+    @Test
+    fun removeLastBubble_collapsesView() {
+        // Create a single bubble and expand it.
+        val bubble = createBubble("first")
+        getInstrumentation().runOnMainSync { bubbleBarLayerView.showExpandedView(bubble) }
+        waitForExpandedViewAnimation()
+        assertThat(bubbleBarLayerView.isExpanded).isTrue()
+
+        // Remove the bubble from the data source, this makes it the "last" bubble being removed.
+        testBubblesList.remove(bubble)
+
+        var endActionCalled = false
+        val endAction = Runnable { endActionCalled = true }
+
+        // When the last bubble is removed, the expanded view should collapse.
+        getInstrumentation().runOnMainSync { bubbleBarLayerView.removeBubble(bubble, endAction) }
+        waitForCollapseViewAnimation()
+
+        // Verify the view is collapsed and the end action is executed.
+        assertThat(bubbleBarLayerView.isExpanded).isFalse()
+        assertThat(endActionCalled).isTrue()
+    }
+
     private fun createBubble(key: String): Bubble {
         val bubble =
             FakeBubbleFactory.createChatBubble(context, key).also { testBubblesList.add(it) }

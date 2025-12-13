@@ -722,11 +722,6 @@ public class Bubble implements BubbleViewProvider {
         return getCurrentTransition() != null && getCurrentTransition().isJumpcutBubbleSwitching();
     }
 
-    /** Whether this transition is for switching from one bubble to another. */
-    public boolean isBubbleSwitching() {
-        return getCurrentTransition() != null && getCurrentTransition().isBubbleSwitching();
-    }
-
     /**
      * Sets whether this bubble is considered text changed. This method is purely for
      * testing.

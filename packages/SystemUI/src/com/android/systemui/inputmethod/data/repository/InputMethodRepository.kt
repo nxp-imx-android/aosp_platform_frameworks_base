@@ -19,21 +19,19 @@ package com.android.systemui.inputmethod.data.repository
 import android.annotation.SuppressLint
 import android.os.UserHandle
 import android.provider.Settings
+import android.view.inputmethod.Flags
+import android.view.inputmethod.InputMethodInfo
 import android.view.inputmethod.InputMethodManager
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.inputmethod.data.model.InputMethodModel
-import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.util.settings.SecureSettings
 import com.android.systemui.util.settings.SettingsProxyExt.observerFlow
 import dagger.Binds
 import dagger.Module
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -107,8 +105,8 @@ constructor(
                         if (fetchSubtypes) {
                             enabledInputMethodSubtypes(
                                 user = user,
-                                imeId = inputMethodInfo.id,
-                                allowsImplicitlyEnabledSubtypes = true
+                                imeInfo = inputMethodInfo,
+                                allowsImplicitlyEnabledSubtypes = true,
                             )
                         } else {
                             listOf()
@@ -126,8 +124,8 @@ constructor(
         } else {
             enabledInputMethodSubtypes(
                 user = user,
-                imeId = selectedIme.id,
-                allowsImplicitlyEnabledSubtypes = false
+                imeInfo = selectedIme,
+                allowsImplicitlyEnabledSubtypes = false,
             )
         }
     }
@@ -177,20 +175,36 @@ constructor(
      */
     private suspend fun enabledInputMethodSubtypes(
         user: UserHandle,
-        imeId: String,
-        allowsImplicitlyEnabledSubtypes: Boolean
+        imeInfo: InputMethodInfo,
+        allowsImplicitlyEnabledSubtypes: Boolean,
     ): List<InputMethodModel.Subtype> {
         return withContext(backgroundDispatcher) {
                 inputMethodManager.getEnabledInputMethodSubtypeListAsUser(
-                    imeId,
+                    imeInfo.id,
                     allowsImplicitlyEnabledSubtypes,
                     user
                 )
             }
             .map {
+                val icon =
+                    it.iconResId
+                        .takeIf { it != 0 }
+                        ?.let { resId ->
+                            InputMethodModel.SubtypeIcon(
+                                resId = resId,
+                                packageName = imeInfo.packageName,
+                            )
+                        }
                 InputMethodModel.Subtype(
                     subtypeId = it.subtypeId,
                     isAuxiliary = it.isAuxiliary,
+                    icon = icon,
+                    shortLabel =
+                        if (Flags.imeSubtypeShortLabel()) {
+                            it.subtypeShortLabel.toString()?.ifEmpty { null }
+                        } else {
+                            null
+                        },
                 )
             }
     }

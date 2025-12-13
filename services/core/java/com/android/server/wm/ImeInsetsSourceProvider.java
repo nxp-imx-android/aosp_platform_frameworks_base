@@ -33,7 +33,6 @@ import android.view.InsetsSource;
 import android.view.InsetsSourceConsumer;
 import android.view.InsetsSourceControl;
 import android.view.WindowInsets;
-import android.view.inputmethod.Flags;
 import android.view.inputmethod.ImeTracker;
 
 import com.android.internal.inputmethod.SoftInputShowHideReason;
@@ -497,8 +496,8 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
             @Nullable ImeTracker.Token statsToken) {
         final var imeListener = mDisplayContent.mWmService.mOnImeRequestedChangedListener;
         if (imeListener != null) {
-            final boolean imeAnimating = Flags.reportAnimatingInsetsTypes()
-                    && (controlTarget.getAnimatingTypes() & WindowInsets.Type.ime()) != 0;
+            final boolean imeAnimating =
+                    (controlTarget.getAnimatingTypes() & WindowInsets.Type.ime()) != 0;
             final boolean imeVisible =
                     controlTarget.isRequestedVisible(WindowInsets.Type.ime()) || imeAnimating;
             // TODO (b/459507475): get actual user ID (owner of display)
@@ -536,19 +535,17 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
     @Override
     void onAnimatingTypesChanged(@NonNull InsetsControlTarget caller,
             @Nullable ImeTracker.Token statsToken) {
-        if (Flags.reportAnimatingInsetsTypes()) {
-            final InsetsControlTarget controlTarget = getControlTarget();
-            // If the IME is not being requested anymore and the animation is finished, we need to
-            // invoke the listener, to let IMS eventually know
-            if (caller == controlTarget && !caller.isRequestedVisible(WindowInsets.Type.ime())
-                    && (caller.getAnimatingTypes() & WindowInsets.Type.ime()) == 0) {
-                ImeTracker.forLogging().onProgress(statsToken,
-                        ImeTracker.PHASE_SERVER_NOTIFY_HIDE_ANIMATION_FINISHED);
-                invokeOnImeRequestedChangedListener(caller, statsToken);
-            } else {
-                ImeTracker.forLogging().onCancelled(statsToken,
-                        ImeTracker.PHASE_SERVER_NOTIFY_HIDE_ANIMATION_FINISHED);
-            }
+        final InsetsControlTarget controlTarget = getControlTarget();
+        // If the IME is not being requested anymore and the animation is finished, we need to
+        // invoke the listener, to let IMS eventually know
+        if (caller == controlTarget && !caller.isRequestedVisible(WindowInsets.Type.ime())
+                && (caller.getAnimatingTypes() & WindowInsets.Type.ime()) == 0) {
+            ImeTracker.forLogging().onProgress(statsToken,
+                    ImeTracker.PHASE_SERVER_NOTIFY_HIDE_ANIMATION_FINISHED);
+            invokeOnImeRequestedChangedListener(caller, statsToken);
+        } else {
+            ImeTracker.forLogging().onCancelled(statsToken,
+                    ImeTracker.PHASE_SERVER_NOTIFY_HIDE_ANIMATION_FINISHED);
         }
     }
 

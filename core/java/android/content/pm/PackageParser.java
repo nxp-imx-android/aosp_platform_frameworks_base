@@ -43,6 +43,8 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Trace.TRACE_TAG_PACKAGE_MANAGER;
 import static android.view.WindowManager.LayoutParams.ROTATION_ANIMATION_UNSPECIFIED;
 
+import static com.android.internal.pm.pkg.component.ParsedActivityUtils.RECREATE_ON_CONFIG_CHANGES_MASK;
+
 import android.annotation.IntDef;
 import android.annotation.IntRange;
 import android.annotation.NonNull;
@@ -222,17 +224,6 @@ public class PackageParser {
     public static final String METADATA_SUPPORTS_SIZE_CHANGES = "android.supports_size_changes";
     public static final String METADATA_ACTIVITY_WINDOW_LAYOUT_AFFINITY =
             "android.activity_window_layout_affinity";
-
-    /**
-     * Bit mask of all the valid bits that can be set in recreateOnConfigChanges.
-     * @hide
-     */
-    private static final int RECREATE_ON_CONFIG_CHANGES_MASK =
-            com.android.window.flags.Flags.enableLessActivityRecreationOnConfigChange() ?
-                    ActivityInfo.CONFIG_MCC | ActivityInfo.CONFIG_MNC | ActivityInfo.CONFIG_KEYBOARD
-                            | ActivityInfo.CONFIG_KEYBOARD_HIDDEN | ActivityInfo.CONFIG_NAVIGATION
-                            | ActivityInfo.CONFIG_TOUCHSCREEN | ActivityInfo.CONFIG_COLOR_MODE
-                    : ActivityInfo.CONFIG_MCC | ActivityInfo.CONFIG_MNC;
 
     // These are the tags supported by child packages
     public static final Set<String> CHILD_PACKAGE_TAGS = new ArraySet<>();

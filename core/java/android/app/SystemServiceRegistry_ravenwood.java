@@ -15,8 +15,6 @@
  */
 package android.app;
 
-import static android.platform.test.ravenwood.RavenwoodExperimentalApiChecker.isExperimentalApiEnabled;
-
 import android.annotation.NonNull;
 import android.app.SystemServiceRegistry.CachedServiceFetcher;
 import android.app.SystemServiceRegistry.ServiceFetcher;
@@ -93,8 +91,9 @@ public class SystemServiceRegistry_ravenwood {
                         return new RavenwoodPermissionEnforcer();
                     }});
 
-        maybeRegisterExperimentalServices();
-
+        registerExperimentalServices();
+        registerStubServices();
+        registerNullServices();
         registerRavenwoodSpecificServices();
     }
 
@@ -130,12 +129,7 @@ public class SystemServiceRegistry_ravenwood {
      * Register "experimental" system services, which are _not_ supported. They're used only for
      * Ravenwood internal development.
      */
-    private static void maybeRegisterExperimentalServices() {
-
-        if (!isExperimentalApiEnabled()) {
-            return;
-        }
-
+    private static void registerExperimentalServices() {
         registerService(Context.INPUT_SERVICE, InputManager.class,
                 new CachedServiceFetcher<InputManager>() {
             @Override
@@ -189,41 +183,10 @@ public class SystemServiceRegistry_ravenwood {
             public DisplayManager createService(ContextImpl ctx) {
                 return new DisplayManager(ctx.getOuterContext());
             }});
-        registerService(Context.TEXT_CLASSIFICATION_SERVICE, TextClassificationManager.class,
-                new CachedServiceFetcher<>() {
-                    @Override
-                    public TextClassificationManager createService(ContextImpl ctx) {
-                        return null;
-                    }
-                });
-        registerService(Context.TEXT_SERVICES_MANAGER_SERVICE, TextServicesManager.class,
-                new CachedServiceFetcher<>() {
-                    @Override
-                    public TextServicesManager createService(ContextImpl ctx) {
-                        // TextServicesManager is optional, see SystemServerRegistry
-                        return null;
-                    }
-                });
-
-        registerStubServices();
     }
 
     private static void registerStubServices() {
         Objenesis objenesis = new ObjenesisStd();
-        registerService(Context.CONTENT_CAPTURE_MANAGER_SERVICE, ContentCaptureManager.class,
-                new CachedServiceFetcher<>() {
-                    @Override
-                    public ContentCaptureManager createService(ContextImpl ctx) {
-                        return null;
-                    }
-                });
-        registerService(Context.UI_MODE_SERVICE, UiModeManager.class,
-                new CachedServiceFetcher<>() {
-                    @Override
-                    public UiModeManager createService(ContextImpl ctx) {
-                        return null;
-                    }
-                });
         registerService(Context.ACTIVITY_SERVICE, ActivityManager.class,
                 new CachedServiceFetcher<>() {
                     @Override
@@ -252,13 +215,6 @@ public class SystemServiceRegistry_ravenwood {
                         return objenesis.newInstance(PowerManager.class);
                     }
                 });
-        registerService(Context.EUICC_SERVICE, EuiccManager.class,
-                new CachedServiceFetcher<>() {
-                    @Override
-                    public EuiccManager createService(ContextImpl ctx) {
-                        return null;
-                    }
-                });
         registerService(Context.WALLPAPER_SERVICE, WallpaperManager.class,
                 new CachedServiceFetcher<>() {
                     @Override
@@ -271,6 +227,45 @@ public class SystemServiceRegistry_ravenwood {
                     @Override
                     public AccessibilityManager createService(ContextImpl ctx) {
                         return objenesis.newInstance(AccessibilityManager.class);
+                    }
+                });
+    }
+
+    private static void registerNullServices() {
+        registerService(Context.CONTENT_CAPTURE_MANAGER_SERVICE, ContentCaptureManager.class,
+                new CachedServiceFetcher<>() {
+                    @Override
+                    public ContentCaptureManager createService(ContextImpl ctx) {
+                        return null;
+                    }
+                });
+        registerService(Context.EUICC_SERVICE, EuiccManager.class,
+                new CachedServiceFetcher<>() {
+                    @Override
+                    public EuiccManager createService(ContextImpl ctx) {
+                        return null;
+                    }
+                });
+        registerService(Context.UI_MODE_SERVICE, UiModeManager.class,
+                new CachedServiceFetcher<>() {
+                    @Override
+                    public UiModeManager createService(ContextImpl ctx) {
+                        return null;
+                    }
+                });
+        registerService(Context.TEXT_CLASSIFICATION_SERVICE, TextClassificationManager.class,
+                new CachedServiceFetcher<>() {
+                    @Override
+                    public TextClassificationManager createService(ContextImpl ctx) {
+                        return null;
+                    }
+                });
+        registerService(Context.TEXT_SERVICES_MANAGER_SERVICE, TextServicesManager.class,
+                new CachedServiceFetcher<>() {
+                    @Override
+                    public TextServicesManager createService(ContextImpl ctx) {
+                        // TextServicesManager is optional, see SystemServerRegistry
+                        return null;
                     }
                 });
     }

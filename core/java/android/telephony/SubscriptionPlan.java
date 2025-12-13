@@ -295,6 +295,12 @@ public final class SubscriptionPlan implements Parcelable {
     public static final int PLAN_TYPE_TETHERING = 10;
 
     /**
+     * Value indicating that the SubscriptionPlan ID is not available.
+     */
+    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+    public static final int UNSPECIFIED_ID = -1;
+
+    /**
      * The billing cycle of the subscription plan. It defines a series of time intervals
      * over which usage is measured and billed.
      * <p>
@@ -444,6 +450,42 @@ public final class SubscriptionPlan implements Parcelable {
      */
     private final int mStreamingAppMaxUplinkKbps;
 
+
+    /**
+     * The time at which the data usage will reset.
+     *
+     * <p>This is distinct from the billing cycle or plan duration returned by
+     * {@link #getCycleRule()}. For example, a 15-day travel plan might have a
+     * {@link #getCycleRule()} covering the entire 15-day duration, but a daily data limit
+     * of 1GB. In this case, {@link #getDataUsageResetTime()} would indicate the time
+     * (e.g., midnight) when that daily 1GB limit resets, while {@link #getCycleRule()}
+     * defines when the plan itself expires.
+     *
+     * <p>This is particularly relevant for plans with a daily data allowance. The value
+     * provided for {@link #getDataUsageBytes()} must reflect the data consumed since
+     * this reset time.
+     *
+     * <p>It may be {@code null} if this information is not available or not applicable
+     * to the plan.
+     *
+     * @see #getDataUsageBytes()
+     * @see #getCycleRule()
+     */
+    @Nullable
+    private final ZonedDateTime mDataUsageResetTime;
+
+    /**
+     * The unique integer identifier for this subscription plan.
+     * <p>
+     * This ID is provided by the carrier and can be used to uniquely identify this plan,
+     * particularly when interacting with entitlement server for enrolling.
+     * <p>
+     * It may be {@link #UNSPECIFIED_ID} if no ID is specified.
+     *
+     * @see #getId()
+     */
+    private final int mId;
+
     /**
      * The type of this subscription plan.
      * <p>
@@ -492,6 +534,8 @@ public final class SubscriptionPlan implements Parcelable {
                 .boxed().collect(Collectors.toUnmodifiableSet());
         this.mStreamingAppMaxDownlinkKbps = builder.mStreamingAppMaxDownlinkKbps;
         this.mStreamingAppMaxUplinkKbps = builder.mStreamingAppMaxUplinkKbps;
+        this.mDataUsageResetTime = builder.mDataUsageResetTime;
+        this.mId = builder.mId;
     }
 
     /**
@@ -514,6 +558,8 @@ public final class SubscriptionPlan implements Parcelable {
                 .boxed().collect(Collectors.toUnmodifiableSet());
         mStreamingAppMaxDownlinkKbps = in.readInt();
         mStreamingAppMaxUplinkKbps = in.readInt();
+        mDataUsageResetTime = RecurrenceRule.convertZonedDateTime(in.readString());
+        mId = in.readInt();
     }
 
     @Override
@@ -535,6 +581,8 @@ public final class SubscriptionPlan implements Parcelable {
         dest.writeIntArray(mTypes.stream().mapToInt(Integer::intValue).toArray());
         dest.writeInt(mStreamingAppMaxDownlinkKbps);
         dest.writeInt(mStreamingAppMaxUplinkKbps);
+        dest.writeString(RecurrenceRule.convertZonedDateTime(mDataUsageResetTime));
+        dest.writeInt(mId);
     }
 
     @Override
@@ -558,6 +606,8 @@ public final class SubscriptionPlan implements Parcelable {
                 .collect(Collectors.joining(", ", "[", "]"))
                 + ", streamingAppMaxDownlinkKbps=" + mStreamingAppMaxDownlinkKbps
                 + ", streamingAppMaxUplinkKbps=" + mStreamingAppMaxUplinkKbps
+                + ", dataUsageResetTime=" + mDataUsageResetTime
+                + ", id=" + mId
                 + "}";
     }
 
@@ -612,7 +662,7 @@ public final class SubscriptionPlan implements Parcelable {
         return Objects.hash(mCycleRule, mTitle, mSummary, mDataLimitBytes,
                 mDataLimitBehavior, mDataUsageBytes, mDataUsageTime, mNetworkTypes,
                 mSubscriptionStatus, mTypes, mStreamingAppMaxDownlinkKbps,
-                mStreamingAppMaxUplinkKbps);
+                mStreamingAppMaxUplinkKbps, mDataUsageResetTime, mId);
     }
 
     @Override
@@ -629,7 +679,9 @@ public final class SubscriptionPlan implements Parcelable {
                     && Objects.equals(mNetworkTypes, other.mNetworkTypes)
                     && Objects.equals(mTypes, other.mTypes)
                     && mStreamingAppMaxDownlinkKbps == other.mStreamingAppMaxDownlinkKbps
-                    && mStreamingAppMaxUplinkKbps == other.mStreamingAppMaxUplinkKbps;
+                    && mStreamingAppMaxUplinkKbps == other.mStreamingAppMaxUplinkKbps
+                    && Objects.equals(mDataUsageResetTime, other.mDataUsageResetTime)
+                    && mId == other.mId;
         }
         return false;
     }
@@ -862,6 +914,48 @@ public final class SubscriptionPlan implements Parcelable {
     }
 
     /**
+     * Returns the time at which the data usage will reset.
+     *
+     * <p>This is distinct from the billing cycle or plan duration returned by
+     * {@link #getCycleRule()}. For example, a 15-day travel plan might have a
+     * {@link #getCycleRule()} covering the entire 15-day duration, but a daily data limit
+     * of 1GB. In this case, {@link #getDataUsageResetTime()} would indicate the time
+     * (e.g., midnight) when that daily 1GB limit resets, while {@link #getCycleRule()}
+     * defines when the plan itself expires.
+     *
+     * <p>This is particularly relevant for plans with a daily data allowance. The value
+     * provided for {@link #getDataUsageBytes()} must reflect the data consumed since
+     * this reset time.
+     *
+     * <p>It may be {@code null} if this information is not available or not applicable
+     * to the plan.
+     *
+     * @see #getDataUsageBytes()
+     * @see #getCycleRule()
+     */
+    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+    @Nullable
+    public ZonedDateTime getDataUsageResetTime() {
+        return mDataUsageResetTime;
+    }
+
+    /**
+     * Returns the unique integer identifier for this subscription plan.
+     * <p>
+     * This ID is provided by the carrier and can be used to uniquely identify this plan,
+     * particularly when interacting with entitlement server for enrolling.
+     * <p>
+     * It may be {@link #UNSPECIFIED_ID} if no ID is specified.
+     *
+     * @return The unique integer identifier for the plan, or {@link #UNSPECIFIED_ID} if not
+     * specified.
+     */
+    @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+    public int getId() {
+        return mId;
+    }
+
+    /**
      * Returns the characteristics of this subscription plan as a set of type constants.
      * A plan can have multiple types that describe its nature. For example, a plan might be both a
      * {@link #PLAN_TYPE_CELLULAR} and a {@link #PLAN_TYPE_POSTPAID} plan.
@@ -1054,6 +1148,34 @@ public final class SubscriptionPlan implements Parcelable {
         private int mStreamingAppMaxUplinkKbps = BITRATE_UNKNOWN;
 
         /**
+         * The time at which the data usage allowance resets.
+         * <p>
+         * This is particularly relevant for plans with a daily data allowance, as it specifies
+         * the exact moment (e.g., midnight in a specific timezone) when the usage for the
+         * next 24-hour period begins.
+         * <p>
+         * It may be {@code null} if this information is not available or not applicable to the
+         * plan.
+         *
+         * @see #getDataUsageResetTime()
+         */
+        @Nullable
+        private ZonedDateTime mDataUsageResetTime = null;
+
+        /**
+         * The unique integer identifier for this subscription plan.
+         * <p>
+         * This ID is provided by the carrier and can be used to uniquely identify this plan,
+         * particularly when interacting with entitlement server for enrolling.
+         * <p>
+         * It may be {@link #UNSPECIFIED_ID} if no ID is specified. Defaults to
+         * {@link #UNSPECIFIED_ID}.
+         *
+         * @see #getId()
+         */
+        private int mId = UNSPECIFIED_ID;
+
+        /**
          * The type of this subscription plan.
          * <p>
          * This indicates the type of the subscription, such as whether it is a cellular or
@@ -1107,6 +1229,31 @@ public final class SubscriptionPlan implements Parcelable {
                         "End " + end + " isn't after start " + start);
             }
             return new Builder(start, end, null);
+        }
+
+        /**
+         * Start defining a template for a non-recurring {@link SubscriptionPlan} with a specific
+         * duration.
+         * <p>
+         * This is useful for describing fixed-duration plans that users can enroll in, such as
+         * a travel pass or a one-time data package. The actual start and end dates are determined
+         * upon enrollment.
+         * <p>
+         * Plans created with this builder should be marked with
+         * {@link #setSubscriptionStatus(int)} and a status of
+         * {@link #SUBSCRIPTION_STATUS_INACTIVE}.
+         *
+         * @param duration The total duration of the plan once activated (e.g., Period.ofDays(15)).
+         * @return A {@link Builder} instance for a non-recurring plan template.
+         */
+        @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+        @NonNull
+        public static Builder createNonrecurring(@NonNull Period duration) {
+            if (duration.isZero() || duration.isNegative()) {
+                throw new IllegalArgumentException("Duration " + duration + " must be positive");
+            }
+            return new Builder(null, null, duration)
+                    .setSubscriptionStatus(SUBSCRIPTION_STATUS_INACTIVE);
         }
 
         /**
@@ -1287,6 +1434,44 @@ public final class SubscriptionPlan implements Parcelable {
         @NonNull
         public Builder setStreamingAppMaxUplinkKbps(int uplinkKbps) {
             mStreamingAppMaxUplinkKbps = uplinkKbps;
+            return this;
+        }
+
+        /**
+         * Sets the time when the data usage allowance will reset.
+         * <p>
+         * This is particularly relevant for plans with a daily data allowance, as it specifies
+         * the exact moment (e.g., midnight in a specific timezone) when the usage for the
+         * next 24-hour will reset. For other types of plans, this may not be applicable.
+         * <p>
+         * The value provided for {@link #setDataUsage(long, long)} should reflect the data consumed
+         * since the last reset time.
+         *
+         * @param dataUsageResetTime The data usage reset time, or {@code null} if this information
+         * is not available or not applicable to the plan.
+         */
+        @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+        @NonNull
+        public Builder setDataUsageResetTime(@Nullable ZonedDateTime dataUsageResetTime) {
+            this.mDataUsageResetTime = dataUsageResetTime;
+            return this;
+        }
+
+        /**
+         * Sets the unique integer identifier for this subscription plan.
+         * <p>
+         * This ID is provided by the carrier and can be used to uniquely identify this plan,
+         * particularly when interacting with entitlement server for enrolling.
+         *
+         * @param id The unique integer integer identifier for the plan, or {@link #UNSPECIFIED_ID}
+         * to clear it.
+         *
+         * @return The same {@link Builder} instance to continue building the plan.
+         */
+        @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
+        @NonNull
+        public Builder setId(int id) {
+            mId = id;
             return this;
         }
 

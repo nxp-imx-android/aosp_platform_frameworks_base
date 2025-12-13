@@ -38,7 +38,6 @@ import android.util.Slog;
 import android.view.Display;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.media.projection.flags.Flags;
 import com.android.server.SystemConfig;
 
 import java.util.List;
@@ -116,11 +115,9 @@ public class MediaProjectionStopController {
                 mTelephonyManager.registerTelephonyCallback(context.getMainExecutor(),
                         mTelephonyCallback);
             }
-            if (Flags.stopOnDisplayRemoval()) {
-                mDisplayManager.registerDisplayListener(context.getMainExecutor(),
-                            DisplayManager.EVENT_TYPE_DISPLAY_REMOVED,
-                            mProjectionDisplayListener);
-            }
+            mDisplayManager.registerDisplayListener(context.getMainExecutor(),
+                    DisplayManager.EVENT_TYPE_DISPLAY_REMOVED,
+                    mProjectionDisplayListener);
         } finally {
             Binder.restoreCallingIdentity(token);
         }
