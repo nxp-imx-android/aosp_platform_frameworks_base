@@ -65,7 +65,7 @@ class SerialManagerTest {
         )
         whenever(backendService.serialPorts).thenReturn(infos)
 
-        val ports = serialManager.serialPorts
+        val ports = serialManager.ports
 
         assertEquals(ports.size, 2)
         assertSerialPortAttributes(ports[0], "test", -1, -1)

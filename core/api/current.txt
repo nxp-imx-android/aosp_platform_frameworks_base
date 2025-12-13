@@ -21793,7 +21793,7 @@ package android.hardware.lights {
 package android.hardware.serial {
 
   @FlaggedApi("android.hardware.serial.flags.enable_wired_serial_api") public final class SerialManager {
-    method @NonNull public java.util.List<android.hardware.serial.SerialPort> getSerialPorts();
+    method @NonNull public java.util.List<android.hardware.serial.SerialPort> getPorts();
     method public void registerSerialPortListener(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.serial.SerialPortListener);
     method public void unregisterSerialPortListener(@NonNull android.hardware.serial.SerialPortListener);
   }
