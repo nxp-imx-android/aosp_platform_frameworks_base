@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imeAnimationTarget
 import androidx.compose.foundation.layout.padding
@@ -202,7 +203,7 @@ fun ContentScope.ScrollingNotificationPanel(
     stackTopPadding: Dp,
     stackBottomPadding: Dp,
     modifier: Modifier = Modifier,
-    shouldFillMaxSize: Boolean = false,
+    shouldFillMaxHeight: Boolean = false,
     shouldIncludeHeadsUpSpace: Boolean = true,
     shouldDrawScrimBackground: Boolean = true,
     isActivated: Boolean = true,
@@ -254,7 +255,8 @@ fun ContentScope.ScrollingNotificationPanel(
         isTransparencyEnabled = isTransparencyEnabled,
         stackTopPadding = stackTopPadding,
         stackBottomPadding = stackBottomPadding,
-        shouldFillMaxSize = shouldFillMaxSize,
+        shouldContentFillMaxSize = shouldFillMaxHeight,
+        shouldScrimBackgroundFillMaxHeight = false,
         shouldDrawScrimBackground = shouldDrawScrimBackground,
         shouldIncludeHeadsUpSpace = shouldIncludeHeadsUpSpace,
         isActivated = isActivated,
@@ -279,7 +281,8 @@ fun ContentScope.NestedScrollingNotificationPanel(
     contentScrollState: ScrollState,
     contentOverscrollEffect: OffsetOverscrollEffect,
     modifier: Modifier = Modifier,
-    shouldFillMaxSize: Boolean = true,
+    shouldContentFillMaxSize: Boolean,
+    shouldScrimBackgroundFillMaxHeight: Boolean,
     shouldIncludeHeadsUpSpace: Boolean = true,
     shouldDrawScrimBackground: Boolean = true,
     isActivated: Boolean = true,
@@ -526,7 +529,11 @@ fun ContentScope.NestedScrollingNotificationPanel(
                     Box {
                         Column(
                             modifier =
-                                Modifier.padding(top = stackTopPadding, bottom = stackBottomPadding)
+                                Modifier.then(
+                                        if (shouldContentFillMaxSize) Modifier.fillMaxSize()
+                                        else Modifier.fillMaxWidth()
+                                    )
+                                    .padding(top = stackTopPadding, bottom = stackBottomPadding)
                                     .onPlaced {
                                         val rawBounds = it.rawBoundsInWindow()
                                         debugLog(viewModel) {
@@ -564,7 +571,6 @@ fun ContentScope.NestedScrollingNotificationPanel(
                                         // Active only when the content is non-scrollable.
                                         enabled = !isScrollable,
                                     )
-                                    .fillMaxWidth()
                                     // Added extra bottom padding for keeping footerView inside
                                     // parent Viewbounds during overscroll, refer to
                                     // b/437347340#comment3
@@ -621,18 +627,10 @@ fun ContentScope.NestedScrollingNotificationPanel(
             val backgroundMeasurable = measurables[0][0]
             val contentMeasurable = measurables[1][0]
 
-            if (shouldFillMaxSize) {
-                // Fill the entire available space with the content. We force the background to
-                // match the screen height to ensure it covers the full display area.
-
-                val content =
-                    contentMeasurable.measure(
-                        Constraints.fixed(
-                            width = constraints.maxWidth,
-                            height = constraints.maxHeight,
-                        )
-                    )
-
+            if (shouldScrimBackgroundFillMaxHeight) {
+                // Let the content match its constraints, but force the background to match the
+                // screen height to ensure it covers the full display area.
+                val content = contentMeasurable.measure(constraints)
                 val background =
                     backgroundMeasurable.measure(
                         Constraints.fixed(
