@@ -5,3 +5,5 @@ haoyuchang@google.com
 nona@google.com
 seanmcq@google.com
 soboleva@google.com
+
+per-file style/AccessibilityClickableSpan.java = file:/services/accessibility/OWNERS
