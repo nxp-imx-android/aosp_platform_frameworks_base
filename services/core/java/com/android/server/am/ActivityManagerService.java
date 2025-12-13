@@ -8651,19 +8651,15 @@ public class ActivityManagerService extends IActivityManager.Stub
         final long origId = Binder.clearCallingIdentity();
         try {
             synchronized (this) {
-                boolean changed = false;
-                ProcessRecord pr;
+                final ProcessRecord pr;
                 synchronized (mPidsSelfLocked) {
                     pr = mPidsSelfLocked.get(pid);
                     if (pr == null) {
                         Slog.w(TAG, "setHasTopUi called on unknown pid: " + pid);
                         return;
                     }
-                    changed = mProcessStateController.setHasTopUi(pr, hasTopUi);
                 }
-                if (changed) {
-                    mProcessStateController.runUpdate(pr, OOM_ADJ_REASON_UI_VISIBILITY);
-                }
+                mProcessStateController.setHasTopUi(pr, hasTopUi);
             }
         } finally {
             Binder.restoreCallingIdentity(origId);
@@ -17291,9 +17287,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                         return;
                     }
                 }
-                if (mProcessStateController.setHasOverlayUi(pr, hasOverlayUi)) {
-                    mProcessStateController.runUpdate(pr, OOM_ADJ_REASON_UI_VISIBILITY);
-                }
+                mProcessStateController.setHasOverlayUi(pr, hasOverlayUi);
             }
         }
 

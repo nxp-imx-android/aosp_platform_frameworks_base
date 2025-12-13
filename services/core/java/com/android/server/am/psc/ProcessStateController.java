@@ -670,31 +670,28 @@ public class ProcessStateController {
     /********************* Process Visibility State Events *********************/
     /**
      * Note whether a process has Top UI or not.
-     *
-     * @return true if the state changed, otherwise returns false.
+     * Triggers an update if the state changed.
      */
     @GuardedBy("mLock")
-    public boolean setHasTopUi(@NonNull ProcessRecordInternal proc, boolean hasTopUi) {
-        if (proc.getHasTopUi() == hasTopUi) return false;
+    public void setHasTopUi(@NonNull ProcessRecordInternal proc, boolean hasTopUi) {
+        if (proc.getHasTopUi() == hasTopUi) return;
         if (DEBUG_OOM_ADJ) {
             Slog.d(TAG, "Setting hasTopUi=" + hasTopUi + " for pid=" + proc.getPid());
         }
         proc.setHasTopUi(hasTopUi);
-        return true;
+        runUpdate(proc, OOM_ADJ_REASON_UI_VISIBILITY);
     }
 
     /**
      * Note whether a process is displaying Overlay UI or not.
-     *
-     * @return true if the state changed, otherwise returns false.
+     * Triggers an update if the state changed.
      */
     @GuardedBy("mLock")
-    public boolean setHasOverlayUi(@NonNull ProcessRecordInternal proc, boolean hasOverlayUi) {
-        if (proc.getHasOverlayUi() == hasOverlayUi) return false;
+    public void setHasOverlayUi(@NonNull ProcessRecordInternal proc, boolean hasOverlayUi) {
+        if (proc.getHasOverlayUi() == hasOverlayUi) return;
         proc.setHasOverlayUi(hasOverlayUi);
-        return true;
+        runUpdate(proc, OOM_ADJ_REASON_UI_VISIBILITY);
     }
-
 
     /**
      * Note whether a process is running a remote animation.
