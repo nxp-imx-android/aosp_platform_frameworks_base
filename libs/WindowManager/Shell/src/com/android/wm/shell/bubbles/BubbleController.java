@@ -23,6 +23,7 @@ import static android.view.Display.INVALID_DISPLAY;
 import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.wm.shell.bubbles.BubbleDebugConfig.TAG_BUBBLES;
 import static com.android.wm.shell.bubbles.BubbleDebugConfig.TAG_WITH_CLASS_NAME;
@@ -1617,6 +1618,75 @@ public class BubbleController implements ConfigurationChangeListener,
     }
 
     /**
+     * Returns {@code true} if the expansion can be supported through
+     * {@link WindowContainerTransaction}.
+     */
+    boolean applyBubbleExpandTransactionIfNeeded(Bubble bubble) {
+        final WindowContainerTransaction wct = getTransactionToUpdateVisibility(
+                bubble.getTaskView().getController(), true /* visible */);
+        if (wct == null) {
+            return false;
+        }
+
+        // With Bubble rootTask, we want to rely on the actual Task reorder to animate the
+        // Bubble switch (TO_FRONT + TO_BACK) in one transition.
+        mTransitions.startTransition(TRANSIT_TO_FRONT, wct, null /* handler */);
+        return true;
+    }
+
+    /**
+     * Returns the WindowContainerTransaction that contains the necessary operation when a
+     * TaskView becomes visible or invisible. Returns {@code null} if no operation needed.
+     */
+    @Nullable
+    private WindowContainerTransaction getTransactionToUpdateVisibility(
+            TaskViewTaskController taskView, boolean visible) {
+        if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+            return null;
+        }
+        final ActivityManager.RunningTaskInfo taskInfo = taskView.getTaskInfo();
+        if (taskInfo == null || !mBubbleHelper.isAppBubbleTask(taskInfo)) {
+            return null;
+        }
+
+        final WindowContainerToken rootTaskToken = mBubbleHelper.getAppBubbleRootTaskToken();
+        if (rootTaskToken == null) {
+            throw new IllegalStateException("Bubble root task was not created yet");
+        }
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        if (visible) {
+            wct.reorder(taskInfo.token, true /* onTop */);
+            wct.setAlwaysOnTop(rootTaskToken, true /* alwaysOnTop */);
+            return wct;
+        }
+
+        boolean hideRootTask = false;
+        if (!mBubbleData.isExpanded()) {
+            hideRootTask = true;
+        } else if (mLayerView != null && !mLayerView.isExpanded()) {
+            // When bubble is being dragged in launcher, layerView is collapsed while
+            // bubbleData is not
+            hideRootTask = true;
+        } else if (mBubbleData.getSelectedBubble() != null) {
+            // Hide the app bubble root task if the selected bubble is no longer an app bubble
+            final Bubble selectedBubble = mBubbleData.getBubbleInStackWithTaskId(
+                    mBubbleData.getSelectedBubble().getTaskId());
+            final ActivityManager.RunningTaskInfo selectedTaskInfo = selectedBubble != null
+                    ? selectedBubble.getTaskView().getTaskInfo()
+                    : null;
+            if (selectedTaskInfo == null || !mBubbleHelper.isAppBubbleTask(selectedTaskInfo)) {
+                hideRootTask = true;
+            }
+        }
+
+        if (hideRootTask) {
+            wct.setAlwaysOnTop(rootTaskToken, false /* alwaysOnTop */);
+            wct.reorder(rootTaskToken, false /* onTop */);
+        }
+        return wct;
+    }
+
+    /**
      * Expands and selects the provided bubble as long as it already exists in the stack or the
      * overflow.
      *
@@ -1640,9 +1710,13 @@ public class BubbleController implements ConfigurationChangeListener,
         }
         final boolean wasExpanded = (mLayerView != null && mLayerView.isExpanded());
         if (mBubbleData.hasBubbleInStackWithKey(b.getKey())) {
-            // already in the stack
-            mBubbleData.expandAndSelectBubbleFromLauncher(b);
-            mLayerView.showExpandedView(b);
+            // Try expand selected bubble in transition, which will update BubbleData if successful.
+            if (!applyBubbleExpandTransactionIfNeeded(b)) {
+                // Directly update the BubbleData if failed to expand with transition, which can
+                // happen if the selected bubble is not an app bubble.
+                mBubbleData.expandAndSelectBubbleFromLauncher(b);
+                mLayerView.showExpandedView(b);
+            }
             if (wasExpanded) {
                 mLogger.log(b, BubbleLogger.Event.BUBBLE_BAR_BUBBLE_SWITCHED);
                 SessionEvent event = SessionEvent.SwitchedBubble.forBubbleBar(
@@ -1880,6 +1954,48 @@ public class BubbleController implements ConfigurationChangeListener,
         newBubble.enable(Notification.BubbleMetadata.FLAG_AUTO_EXPAND_BUBBLE);
 
         return mBubbleTransitions.startJumpcutBubbleSwitchTransition(newBubble, existingBubble,
+                mExpandedViewManager, mBubbleTaskViewFactory, mStackView, mLayerView,
+                mBubbleIconFactory, mInflateSynchronously, transition, onInflatedCallback);
+    }
+
+    /**
+     * Animation to switch the Task showing in expanded Bubble.
+     */
+    @NonNull
+    Transitions.TransitionHandler bubbleSwitchTransition(
+            @NonNull ActivityManager.RunningTaskInfo openingTaskInfo,
+            @NonNull ActivityManager.RunningTaskInfo closingTaskInfo,
+            @NonNull IBinder transition,
+            @NonNull Consumer<Transitions.TransitionHandler> onInflatedCallback) {
+        final Bubble closingBubble = mBubbleData.getBubbleInStackWithTaskId(
+                closingTaskInfo.taskId);
+        if (closingBubble == null
+                || mBubbleData.getSelectedBubble() != closingBubble
+                || !mBubbleData.isExpanded()) {
+            BubbleLog.w(
+                    "BubbleController.bubbleSwitchTransition() The existing Bubble for "
+                            + "taskId=%d was not expanded, fallback to "
+                            + "expandStackAndSelectBubbleForExistingTransition",
+                    closingTaskInfo.taskId);
+            return expandStackAndSelectBubbleForExistingTransition(openingTaskInfo, transition,
+                    onInflatedCallback);
+        }
+
+        final Bubble openingBubble = mBubbleData.getBubbleInStackWithTaskId(openingTaskInfo.taskId);
+        if (openingBubble == null) {
+            BubbleLog.w(
+                    "BubbleController.bubbleSwitchTransition() The expanding Bubble for "
+                            + "taskId=%d was not bubbled before the transition, fallback to "
+                            + "expandStackAndSelectBubbleForExistingTransition",
+                    closingTaskInfo.taskId);
+            return expandStackAndSelectBubbleForExistingTransition(openingTaskInfo, transition,
+                    onInflatedCallback);
+        }
+
+        BubbleLog.v("BubbleController.bubbleSwitchTransition() newTaskId=%d oldTaskId=%d",
+                openingTaskInfo.taskId, closingTaskInfo.taskId);
+
+        return mBubbleTransitions.startBubbleSwitchTransition(openingBubble, closingBubble,
                 mExpandedViewManager, mBubbleTaskViewFactory, mStackView, mLayerView,
                 mBubbleIconFactory, mInflateSynchronously, transition, onInflatedCallback);
     }
@@ -2701,7 +2817,7 @@ public class BubbleController implements ConfigurationChangeListener,
             // Only need to update the layer view if we're currently expanded for selection changes.
             if (mLayerView != null && mLayerView.isExpanded()) {
                 final Bubble b = (selectedBubble instanceof Bubble bubble) ? bubble : null;
-                if (b == null || !b.isJumpcutBubbleSwitching()) {
+                if (b == null || (!b.isJumpcutBubbleSwitching() && !b.isBubbleSwitching())) {
                     // Otherwise the animation will be called by the TransitionHandler when ready to
                     // play.
                     mLayerView.showExpandedView(selectedBubble);
@@ -3876,54 +3992,6 @@ public class BubbleController implements ConfigurationChangeListener,
             } else {
                 mBaseTransitions.setTaskViewVisible(taskView, visible);
             }
-        }
-
-        /**
-         * Returns the WindowContainerTransaction that contains the necessary operation when a
-         * TaskView becomes visible or invisible. Returns {@code null} if no operation needed.
-         */
-        @Nullable
-        private WindowContainerTransaction getTransactionToUpdateVisibility(
-                TaskViewTaskController taskView, boolean visible) {
-            if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
-                return null;
-            } else if (!mBubbleHelper.isAppBubbleTask(taskView.getTaskInfo())) {
-                return null;
-            }
-
-            final WindowContainerToken rootTaskToken = mBubbleHelper.getAppBubbleRootTaskToken();
-            if (rootTaskToken == null) {
-                throw new IllegalStateException("Bubble root task was not created yet");
-            }
-            final WindowContainerTransaction wct = new WindowContainerTransaction();
-            if (visible) {
-                wct.reorder(taskView.getTaskInfo().token, true /* onTop */);
-                wct.setAlwaysOnTop(rootTaskToken, true /* alwaysOnTop */);
-                return wct;
-            }
-
-            boolean hideRootTask = false;
-            if (!mBubbleData.isExpanded()) {
-                hideRootTask = true;
-            } else if (mLayerView != null && !mLayerView.isExpanded()) {
-                // When bubble is being dragged in launcher, layerView is collapsed while
-                // bubbleData is not
-                hideRootTask = true;
-            } else if (mBubbleData.getSelectedBubble() != null) {
-                // Hide the app bubble root task if the selected bubble is no longer an app bubble
-                final Bubble selectedBubble = mBubbleData.getBubbleInStackWithTaskId(
-                        mBubbleData.getSelectedBubble().getTaskId());
-                if (selectedBubble == null || !mBubbleHelper.isAppBubbleTask(
-                        selectedBubble.getTaskView().getTaskInfo())) {
-                    hideRootTask = true;
-                }
-            }
-
-            if (hideRootTask) {
-                wct.setAlwaysOnTop(rootTaskToken, false /* alwaysOnTop */);
-                wct.reorder(rootTaskToken, false /* onTop */);
-            }
-            return wct;
         }
 
         @Override

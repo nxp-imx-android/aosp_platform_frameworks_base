@@ -21,6 +21,7 @@ import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_PIP;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
+import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.wm.shell.splitscreen.SplitScreenController.EXIT_REASON_FULLSCREEN_REQUEST;
 import static com.android.wm.shell.transition.DefaultMixedHandler.subCopy;
@@ -528,15 +529,14 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
      *      - The Task should be dismissed from Bubble, and get opened in new windowing mode.
      *        Note: this shouldn't happen from normal user flow, and it now skipped here, but if it
      *              happens, there may not be a good animation.
-     *  - Case 3: a Task was in an unfocused Bubble, a new Activity was launched to it from the
-     *            focused expanded Bubble, or from a non-activity window, such as notification.
+     *  - Case 3: a Task was in an unfocused Bubble, and has either become focused (user switched
+     *            between bubbles) or has a new Activity launched to it from another bubble or a
+     *            non-activity window, such as a notification.
      *    - Pattern:
      *      - There is a move-to-front type Task in TransitionInfo, which is Bubbled.
-     *      - That Task is Bubbled before and after the transition.
-     *      - (Optional) There is a move-to-back type Task in TransitionInfo, which is Bubbled.
+     *      - There is a move-to-back type Task in TransitionInfo, which is Bubbled.
      *    - Expected Behavior:
-     *      - Play expand Bubble animation.
-     *      - (Optional) Hide the previous expanded Bubble.
+     *      - Play switch Bubble animation.
      *  - Case 4: a Task was in an unfocused Bubble, a new Activity was launched to it from a source
      *            activity of different windowing mode, such as Launcher.
      *    - Pattern:
@@ -558,10 +558,18 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
      *      - There is an opening Task in TransitionInfo, which is Bubbled.
      *      - (Optional) That Bubbled Task can be change/move-to-front type if it was in a different
      *        windowing mode before the transition.
-     *      - A different Task was expanded Bubbled, but it may not be in TransitionInfo, as it may
-     *        be closed later.
+     *      - There is a move-to-back type Task in TransitionInfo, which is Bubbled.
      *    - Expected Behavior:
-     *      - Play Bubble switch animation.
+     *      - Hide the expanded Bubble.
+     *      - Expand the new Bubble.
+     *  - Case 7: the previous expanded Bubbled Task was dismissed, which results in an unfocused
+     *            Bubbled Task to expand.
+     *    - Pattern:
+     *      - There is a move-to-front type Task in TransitionInfo, which is Bubbled.
+     *      - There is a close type Task in TransitionInfo, which is Bubbled.
+     *    - Expected Behavior:
+     *      - Hide the expanded Bubble.
+     *      - Expand the existing Bubble.
      */
     static boolean animateEnterBubblesFromBubble(
             @NonNull IBinder transition,
@@ -606,18 +614,28 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                         transition, enterBubbleTask.getTaskInfo(),
                         closingBubble.getTaskInfo(), onInflatedCallback);
                 return true;
-            } else if (com.android.window.flags.Flags.enableBubbleRootTask()) {
-                // Switch the expanded Bubble Task (Case 3/6)
+            } else if (com.android.window.flags.Flags.enableBubbleRootTask()
+                    && closingBubble.getMode() == TRANSIT_TO_BACK
+                    && enterBubbleTask.getMode() == TRANSIT_TO_FRONT) {
+                // Switch the expanded Bubble to another existing Bubbled Task (Case 3)
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Animating a mixed transition"
-                        + " for switching the expanded bubble");
-                // TODO(b/407669465): Handle bubble switching
+                        + " for switching the expanded bubble to another existing bubble");
+                bubbleTransitions.startBubbleSwitch(
+                        transition, enterBubbleTask.getTaskInfo(),
+                        closingBubble.getTaskInfo(), onInflatedCallback);
+                return true;
+            } else if (com.android.window.flags.Flags.enableBubbleRootTask()) {
+                // Hide the prev expanded Bubble, and expand the new focused Bubbled Task (Case 6/7)
+                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Animating a mixed transition"
+                        + " for expanding a bubble when hiding the previous expanded.");
+                // TODO(b/407669465): Handle bubble expand + hide, which is different from switch.
                 bubbleTransitions.startExpandAndSelectBubbleForExistingTransition(
                         transition, enterBubbleTask.getTaskInfo(), onInflatedCallback);
                 return true;
             }
         }
 
-        // Fallback, this can be (Case 3/6) when the closing Bubble comes in later.
+        // Fallback, this can be (Case 3/6/7) when the closing Bubble comes in later.
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Animating a mixed transition for "
                 + "entering bubble from another bubbled task or for an existing bubble");
         bubbleTransitions.startExpandAndSelectBubbleForExistingTransition(

@@ -385,6 +385,9 @@ public class BubbleBarAnimationHelper {
             @Override
             public void onAnimationEnd(Animator animation) {
                 bbev.setAnimating(false);
+                // Reset the matrix after the animation. Otherwise when the same Bubble is switched
+                // in again, it would start with incorrect scale/boundsOnScreen.
+                updateExpandedView(bbev);
             }
         });
         return animator;
