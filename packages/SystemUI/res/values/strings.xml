@@ -1838,7 +1838,7 @@
     <string name="unlock_to_see_notif_text">Unlock to see older notifications</string>
 
     <!-- Disclosure at the bottom of Quick Settings that indicates that parental controls are enabled. [CHAR LIMIT=100] -->
-    <string name="quick_settings_disclosure_parental_controls">Some settings are managed by your parent</string>
+    <string name="quick_settings_disclosure_parental_controls">Parental controls are active</string>
 
     <!-- Disclosure at the bottom of Quick Settings that indicates that parental controls are enabled. [CHAR LIMIT=100] -->
     <string name="quick_settings_disclosure_parental_controls_legacy">This device is managed by your parent</string>
