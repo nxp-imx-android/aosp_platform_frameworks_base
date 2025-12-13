@@ -272,7 +272,8 @@ public class MediaOutputDialogTest extends SysuiTestCase {
 
     @Test
     public void onStopButtonClick_releaseSession() {
-        when(mMediaSwitchingController.hasStopButton()).thenReturn(true);
+        when(mMediaSwitchingController.getStopButtonStringRes())
+                .thenReturn(R.string.media_output_dialog_button_stop_casting);
         mMediaOutputDialog.onStopButtonClick();
 
         verify(mMediaSwitchingController).releaseSession();
