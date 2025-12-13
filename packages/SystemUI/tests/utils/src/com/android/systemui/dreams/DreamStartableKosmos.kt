@@ -25,6 +25,7 @@ import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.scene.domain.interactor.sceneBackInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.scene.domain.resolver.sceneFamilyResolvers
 
 val Kosmos.dreamStartable by Fixture {
     DreamStartable(
@@ -35,5 +36,6 @@ val Kosmos.dreamStartable by Fixture {
         keyguardInteractor = keyguardInteractor,
         authenticationInteractor = authenticationInteractor,
         logBuffer = logcatLogBuffer("DreamStartableTest"),
+        sceneFamilyResolvers = { sceneFamilyResolvers },
     )
 }

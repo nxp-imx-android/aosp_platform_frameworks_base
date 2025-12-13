@@ -1381,6 +1381,17 @@ public class HardwareRenderer {
         nSetRtAnimationsEnabled(enabled);
     }
 
+    /**
+     * Disable renderThread animations drawn directly from the same window as the renderThread plan.
+     * This option is used when we do not want to de-schedule draw requests from the UI thread
+     * and do not want to disable the RenderThread animation of other windows in the same process.
+     *
+     * @hide
+     */
+    public void setRtAnimationsEnabledForWindow(boolean enabled) {
+        nSetRtAnimationsEnabledForContext(mNativeProxy, enabled);
+    }
+
     private static final class DestroyContextRunnable implements Runnable {
         private final long mNativeInstance;
 
@@ -1751,6 +1762,9 @@ public class HardwareRenderer {
     private static native boolean nIsDrawingEnabled();
 
     private static native void nSetRtAnimationsEnabled(boolean rtAnimationsEnabled);
+
+    private static native void nSetRtAnimationsEnabledForContext(long nativeProxy,
+            boolean rtAnimationsEnabled);
 
     private static native void nNotifyCallbackPending(long nativeProxy);
 

@@ -317,6 +317,7 @@ public class BubbleBarAnimationHelper {
                 startNewAnimator(switchAnim);
                 // Immediately jump to the ending stage as jumpcut.
                 switchAnim.end();
+                toBbev.getCaptionView().setAlpha(1f);
             };
         } else {
             // For normal animation, the end runnable can be added to onAnimationEnd directly since
@@ -384,6 +385,9 @@ public class BubbleBarAnimationHelper {
             @Override
             public void onAnimationEnd(Animator animation) {
                 bbev.setAnimating(false);
+                // Reset the matrix after the animation. Otherwise when the same Bubble is switched
+                // in again, it would start with incorrect scale/boundsOnScreen.
+                updateExpandedView(bbev);
             }
         });
         return animator;

@@ -38,12 +38,16 @@ public final class MemcgProcMemoryUtil {
     private static final int MEMCG_STAT_KERNEL_IDX = 2;
     private static final int MEMCG_STAT_SHMEM_IDX = 3;
     private static final int MEMCG_STAT_FILE_MAPPED_IDX = 4;
+    private static final int MEMCG_STAT_PGMAJFAULT_IDX = 5;
+    private static final int MEMCG_STAT_PGSCAN_DIRECT_IDX = 6;
     private static final String[] MEMCG_STAT_FIELDS = new String[] {
             "anon ",
             "file ",
             "kernel ",
             "shmem ",
-            "file_mapped "
+            "file_mapped ",
+            "pgmajfault ",
+            "pgscan_direct "
     };
 
     private MemcgProcMemoryUtil() {}
@@ -192,6 +196,8 @@ public final class MemcgProcMemoryUtil {
             snapshot.shmemInKiloBytes = Math.toIntExact(outStats[MEMCG_STAT_SHMEM_IDX] / 1024);
             snapshot.fileMappedInKiloBytes =
                 Math.toIntExact(outStats[MEMCG_STAT_FILE_MAPPED_IDX] / 1024);
+            snapshot.majorPageFaultCount = Math.toIntExact(outStats[MEMCG_STAT_PGMAJFAULT_IDX]);
+            snapshot.directPageScanCount = Math.toIntExact(outStats[MEMCG_STAT_PGSCAN_DIRECT_IDX]);
         } catch (NumberFormatException e) {
             return null;
         }
@@ -250,5 +256,7 @@ public final class MemcgProcMemoryUtil {
         public int shmemInKiloBytes;
         public int fileMappedInKiloBytes;
         public int memorySwapInKiloBytes;
+        public int majorPageFaultCount;
+        public int directPageScanCount;
     }
 }

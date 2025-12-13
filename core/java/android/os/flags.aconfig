@@ -13,6 +13,14 @@ flag {
 }
 
 flag {
+    name: "adpf_audio_performance"
+    is_exported: false
+    namespace: "media_audio"
+    description: "Guards the ADPF audio performance API"
+    bug: "466441536"
+}
+
+flag {
     name: "adpf_cap_max_batch_size"
     namespace: "game"
     description: "Caps the maximum batch size of work durations that can be sent in a report"

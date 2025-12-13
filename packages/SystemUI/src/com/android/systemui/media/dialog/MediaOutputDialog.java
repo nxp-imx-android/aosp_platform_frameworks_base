@@ -330,10 +330,14 @@ public class MediaOutputDialog extends SystemUIDialog
 
         // Show when remote media session is available or
         //      when the device supports BT LE audio + media is playing
-        mStopButton.setVisibility(
-                mMediaSwitchingController.hasStopButton() ? View.VISIBLE : View.GONE);
+        Integer stopResId = mMediaSwitchingController.getStopButtonStringRes();
+        if (stopResId != null) {
+            mStopButton.setText(mContext.getString(stopResId));
+            mStopButton.setVisibility(View.VISIBLE);
+        } else {
+            mStopButton.setVisibility(View.GONE);
+        }
         mStopButton.setEnabled(true);
-        mStopButton.setText(mContext.getString(mMediaSwitchingController.getStopButtonStringRes()));
         mStopButton.setOnClickListener(v -> onStopButtonClick());
 
         refreshWarningSection();

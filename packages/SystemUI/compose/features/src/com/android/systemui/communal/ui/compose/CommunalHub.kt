@@ -43,12 +43,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
-import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -304,10 +302,11 @@ fun CommunalHub(
                     ) {
                         observeTaps(
                             pass =
-                                // Use the `PointerEventPass.Final` to observe taps without interfering
-                                // with the tap handling of child composables. This allows listening
-                                // for taps on the grid's background to deselect items, while also
-                                // allowing taps on child composables to pass through to them.
+                                // Use the `PointerEventPass.Final` to observe taps without
+                                // interfering with the tap handling of child composables. This
+                                // allows listening for taps on the grid's background to deselect
+                                // items, while also allowing taps on child composables to pass
+                                // through to them.
                                 if (communalEditModeAccessibilityResize()) PointerEventPass.Final
                                 else PointerEventPass.Initial
                         ) { offset ->
@@ -1014,7 +1013,7 @@ private fun BoxScope.CommunalHubLazyGrid(
 
             val resizeableItemFrameViewModel =
                 rememberViewModel(
-                    key = currentItemSpan,
+                    key = if (communalEditModeAccessibilityResize()) item.key else currentItemSpan,
                     traceName = "ResizeableItemFrame.viewModel.$index",
                 ) {
                     ResizeableItemFrameViewModel()

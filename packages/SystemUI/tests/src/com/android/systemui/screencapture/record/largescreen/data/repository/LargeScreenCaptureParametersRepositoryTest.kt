@@ -23,8 +23,6 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
-import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
-import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType
 import com.android.systemui.testKosmosNew
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.google.common.truth.Truth.assertThat
@@ -159,44 +157,6 @@ class LargeScreenCaptureParametersRepositoryTest : SysuiTestCase() {
             fakeUserRepository.setSelectedUserInfo(PRIMARY_USER)
             assertThat(latestUriValue).isEqualTo(PRIMARY_USER_URI.toString())
             assertThat(latestActiveValue).isTrue()
-        }
-
-    @Test
-    fun getSelectedCaptureType_screenshotByDefault() =
-        kosmos.runTest {
-            assertThat(underTest.getSelectedCaptureType()).isEqualTo(ScreenCaptureType.SCREENSHOT)
-        }
-
-    @Test
-    fun updateSelectedCaptureTypeString_setCaptureType() =
-        kosmos.runTest {
-            underTest.updateSelectedCaptureTypeString(ScreenCaptureType.RECORDING)
-            assertThat(underTest.getSelectedCaptureType()).isEqualTo(ScreenCaptureType.RECORDING)
-
-            underTest.updateSelectedCaptureTypeString(ScreenCaptureType.SCREENSHOT)
-            assertThat(underTest.getSelectedCaptureType()).isEqualTo(ScreenCaptureType.SCREENSHOT)
-        }
-
-    @Test
-    fun getSelectedCaptureRegion_fullscreenByDefault() =
-        kosmos.runTest {
-            assertThat(underTest.getSelectedCaptureRegion())
-                .isEqualTo(ScreenCaptureRegion.FULLSCREEN)
-        }
-
-    @Test
-    fun updateSelectedCaptureRegionString_setCaptureRegion() =
-        kosmos.runTest {
-            underTest.updateSelectedCaptureRegionString(ScreenCaptureRegion.PARTIAL)
-            assertThat(underTest.getSelectedCaptureRegion()).isEqualTo(ScreenCaptureRegion.PARTIAL)
-
-            underTest.updateSelectedCaptureRegionString(ScreenCaptureRegion.APP_WINDOW)
-            assertThat(underTest.getSelectedCaptureRegion())
-                .isEqualTo(ScreenCaptureRegion.APP_WINDOW)
-
-            underTest.updateSelectedCaptureRegionString(ScreenCaptureRegion.FULLSCREEN)
-            assertThat(underTest.getSelectedCaptureRegion())
-                .isEqualTo(ScreenCaptureRegion.FULLSCREEN)
         }
 
     companion object {

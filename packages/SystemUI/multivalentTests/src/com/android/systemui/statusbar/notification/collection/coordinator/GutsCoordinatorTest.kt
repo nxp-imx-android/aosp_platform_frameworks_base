@@ -15,6 +15,7 @@
  */
 package com.android.systemui.statusbar.notification.collection.coordinator
 
+import android.os.Handler
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
@@ -68,11 +69,12 @@ class GutsCoordinatorTest : SysuiTestCase() {
     private val logger = GutsCoordinatorLogger(logcatLogBuffer())
     @Mock private lateinit var lifetimeExtenderCallback: OnEndLifetimeExtensionCallback
     @Mock private lateinit var notificationGuts: NotificationGuts
+    @Mock private lateinit var mainHandler: Handler
 
     @Before
     fun setUp() {
         initMocks(this)
-        coordinator = GutsCoordinator(notifGutsViewManager, logger, dumpManager)
+        coordinator = GutsCoordinator(notifGutsViewManager, logger, mainHandler, dumpManager)
         coordinator.attach(pipeline)
         notifLifetimeExtender = withArgCaptor {
             verify(pipeline).addNotificationLifetimeExtender(capture())

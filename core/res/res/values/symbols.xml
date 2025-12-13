@@ -6522,6 +6522,9 @@
     <!-- If supported, should contextual mode sync be enabled by default. -->
   <java-symbol type="bool" name="config_enableContextualModeSyncByDefault"/>
 
+  <!-- Whether Airplane Mode sync is supported by this device. -->
+  <java-symbol type="bool" name="config_supportAirplaneModeSync"/>
+
   <!-- TV Watchdog configuration -->
   <java-symbol type="integer" name="config_tvWatchdogUidIoUsageSummaryTopCount" />
   <java-symbol type="integer" name="config_tvWatchdogIoUsageSummaryMinSystemTotalWrittenBytes" />

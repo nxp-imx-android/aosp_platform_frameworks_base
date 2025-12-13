@@ -1062,26 +1062,22 @@ public class MediaSwitchingController
         return null;
     }
 
-    boolean hasStopButton() {
+    @StringRes
+    @Nullable
+    Integer getStopButtonStringRes() {
         if (mMediaSwitchingType == MediaSwitchingType.INPUT) {
-            return false;
+            return null;
         }
 
         boolean inBroadcast = Flags.enableOutputSwitcherPersonalAudioSharing()
                 && getSessionReleaseType() == RELEASE_TYPE_SHARING;
-
-        return (isCurrentConnectedDeviceRemote() || inBroadcast);
-    }
-
-    @StringRes
-    Integer getStopButtonStringRes() {
-        if (Flags.enableOutputSwitcherPersonalAudioSharing()) {
-            Integer stopButtonText = getTextForSessionReleaseType();
-            if (stopButtonText != null) {
-                return stopButtonText;
-            }
+        if (inBroadcast) {
+            return R.string.media_output_dialog_button_stop_sharing;
+        } else if (isCurrentConnectedDeviceRemote()) {
+            // TODO: b/448827170 - Change isCurrentConnectedDeviceRemote to RELEASE_TYPE_SHARING
+            return R.string.media_output_dialog_button_stop_casting;
         }
-        return R.string.media_output_dialog_button_stop_casting;
+        return null;
     }
 
 

@@ -1893,86 +1893,71 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     }
 
     @Test
-    public void hasStopButton_remotePlaybackDevice_returnTrue() {
+    public void getStopButtonText_remotePlaybackDevice_returnDefaultText() {
         doReturn(mMediaDevice1).when(mLocalMediaManager).getCurrentConnectedDevice();
         when(mMediaDevice1.getFeatures()).thenReturn(
                 ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK));
 
-        assertThat(mMediaSwitchingController.hasStopButton()).isTrue();
+        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isEqualTo(
+                R.string.media_output_dialog_button_stop_casting);
     }
 
     @Test
-    public void hasStopButton_remoteAudioPlaybackDevice_returnTrue() {
+    public void getStopButtonText_remoteAudioPlaybackDevice_returnDefaultText() {
         doReturn(mMediaDevice1).when(mLocalMediaManager).getCurrentConnectedDevice();
         when(mMediaDevice1.getFeatures()).thenReturn(
                 ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_AUDIO_PLAYBACK));
 
-        assertThat(mMediaSwitchingController.hasStopButton()).isTrue();
+        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isEqualTo(
+                R.string.media_output_dialog_button_stop_casting);
     }
 
     @Test
-    public void hasStopButton_remoteVideoPlaybackDevice_returnTrue() {
+    public void getStopButtonText_remoteVideoPlaybackDevice_returnDefaultText() {
         doReturn(mMediaDevice1).when(mLocalMediaManager).getCurrentConnectedDevice();
         when(mMediaDevice1.getFeatures()).thenReturn(
                 ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_VIDEO_PLAYBACK));
 
-        assertThat(mMediaSwitchingController.hasStopButton()).isTrue();
+        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isEqualTo(
+                R.string.media_output_dialog_button_stop_casting);
     }
 
     @Test
-    public void hasStopButton_remoteGroupPlaybackDevice_returnTrue() {
+    public void getStopButtonText_remoteGroupPlaybackDevice_returnDefaultText() {
         doReturn(mMediaDevice1).when(mLocalMediaManager).getCurrentConnectedDevice();
         when(mMediaDevice1.getFeatures()).thenReturn(
                 ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_GROUP_PLAYBACK));
 
-        assertThat(mMediaSwitchingController.hasStopButton()).isTrue();
+        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isEqualTo(
+                R.string.media_output_dialog_button_stop_casting);
     }
 
     @Test
-    public void hasStopButton_localDevice_returnFalse() {
+    public void getStopButtonText_localDevice_returnNull() {
         when(mMediaDevice1.getFeatures())
                 .thenReturn(ImmutableList.of(MediaRoute2Info.FEATURE_LOCAL_PLAYBACK));
 
-        assertThat(mMediaSwitchingController.hasStopButton()).isFalse();
+        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isNull();
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
-    public void hasStopButton_notInBroadcast_returnFalse() {
-        doReturn(RoutingSessionInfo.RELEASE_UNSUPPORTED).when(
-                mLocalMediaManager).getSessionReleaseType();
-
-        assertThat(mMediaSwitchingController.hasStopButton()).isFalse();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
-    public void hasStopButton_inBroadcast_returnTrue() {
-        doReturn(RoutingSessionInfo.RELEASE_TYPE_SHARING).when(
-                mLocalMediaManager).getSessionReleaseType();
-
-        assertThat(mMediaSwitchingController.hasStopButton()).isTrue();
-    }
-
-    @Test
-    public void hasStopButton_mediaSwitchingTypeIsInput_returnFalse() {
+    public void getStopButtonText_mediaSwitchingTypeIsInput_returnNull() {
         mMediaSwitchingController = createDefaultMediaSwitchingController(MediaSwitchingType.INPUT);
 
         doReturn(mMediaDevice1).when(mLocalMediaManager).getCurrentConnectedDevice();
         when(mMediaDevice1.getFeatures())
                 .thenReturn(ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK));
 
-        assertThat(mMediaSwitchingController.hasStopButton()).isFalse();
+        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isNull();
     }
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
-    public void getStopButtonText_notInBroadcast_returnsDefaultText() {
+    public void getStopButtonText_notInBroadcast_returnsNull() {
         doReturn(RoutingSessionInfo.RELEASE_UNSUPPORTED).when(
                 mLocalMediaManager).getSessionReleaseType();
 
-        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isEqualTo(
-                R.string.media_output_dialog_button_stop_casting);
+        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isNull();
     }
 
     @Test

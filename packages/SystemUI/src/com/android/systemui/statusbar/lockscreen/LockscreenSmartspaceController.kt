@@ -61,6 +61,7 @@ import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.plugins.keyguard.data.model.WeatherData
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.res.R
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shared.regionsampling.RegionSampler
@@ -560,10 +561,14 @@ constructor(
         datePlugin?.setEventDispatcher(null)
 
         weatherPlugin?.setEventDispatcher(null)
-        weatherPlugin?.onTargetsAvailable(emptyList())
+        if (!SceneContainerFlag.isEnabled) {
+            weatherPlugin?.onTargetsAvailable(emptyList())
+        }
 
         plugin?.setEventDispatcher(null)
-        plugin?.onTargetsAvailable(emptyList())
+        if (!SceneContainerFlag.isEnabled) {
+            plugin?.onTargetsAvailable(emptyList())
+        }
 
         Log.d(TAG, "Ended smartspace session for lockscreen")
     }

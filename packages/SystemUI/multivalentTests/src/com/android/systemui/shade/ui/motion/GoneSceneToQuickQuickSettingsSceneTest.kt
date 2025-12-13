@@ -175,6 +175,7 @@ class GoneSceneToQuickQuickSettingsSceneTest : SysuiTestCase() {
                         overlayByKey = mapOf(),
                         dataSourceDelegator = kosmos.sceneDataSourceDelegator,
                         sceneJankMonitorFactory = kosmos.sceneJankMonitorFactory,
+                        onTransitionStart = { _, _ -> },
                     )
                 }
             }

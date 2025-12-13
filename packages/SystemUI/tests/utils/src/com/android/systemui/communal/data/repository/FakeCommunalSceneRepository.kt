@@ -1,11 +1,15 @@
 package com.android.systemui.communal.data.repository
 
 import android.content.res.Configuration
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.TransitionKey
+import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.communal.shared.model.CommunalScenes
+import com.android.systemui.lifecycle.HydratedActivatable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -25,7 +29,9 @@ class FakeCommunalSceneRepository(
     override val currentScene: MutableStateFlow<SceneKey> =
         MutableStateFlow(CommunalScenes.Default),
     override val currentOverlays: MutableStateFlow<Set<OverlayKey>> = MutableStateFlow(emptySet()),
-) : CommunalSceneRepository {
+) : CommunalSceneRepository, HydratedActivatable() {
+
+    override val currentSceneAsState: SceneKey by currentScene.hydratedStateOf()
 
     override fun changeScene(toScene: SceneKey, transitionKey: TransitionKey?) =
         instantlyTransitionTo(scene = toScene)
@@ -80,4 +86,6 @@ class FakeCommunalSceneRepository(
     override fun setCommunalContainerOrientation(orientation: Int) {
         _communalContainerOrientation.value = orientation
     }
+
+    override fun startTransitionImmediately(transition: TransitionState.Transition) = Unit
 }

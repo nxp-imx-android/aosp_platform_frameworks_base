@@ -208,9 +208,10 @@ private fun NotificationsChip(viewModel: HomeStatusBarViewModel, modifier: Modif
 
         ShadeHighlightChip(
             modifier =
-                modifier.height(DesktopStatusBar.Dimensions.ChipHeight).semantics {
-                    this.contentDescription = contentDescription
-                },
+                modifier
+                    .height(DesktopStatusBar.Dimensions.ChipHeight)
+                    .semantics { this.contentDescription = contentDescription }
+                    .sysuiResTag("notificationIcons"),
             onClick = { viewModel.onNotificationIconChipClicked() },
             backgroundColor = chipHighlightModel.backgroundColor,
             hoverBackgroundColor = hoverColor,

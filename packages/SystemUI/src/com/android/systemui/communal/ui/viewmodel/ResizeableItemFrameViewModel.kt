@@ -18,9 +18,13 @@ package com.android.systemui.communal.ui.viewmodel
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.snapTo
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
 import com.android.app.tracing.coroutines.coroutineScopeTraced as coroutineScope
-import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.Flags.communalEditModeAccessibilityResize
+import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.util.kotlin.pairwise
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -28,7 +32,7 @@ import kotlin.math.sign
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -53,7 +57,28 @@ data class ResizeInfo(
     val isExpanding = spans > 0
 }
 
-class ResizeableItemFrameViewModel : ExclusiveActivatable() {
+class ResizeableItemFrameViewModel : HydratedActivatable(enableEnqueuedActivations = true) {
+
+    private val _visibleAccessibilityResizeHandle = mutableStateOf<ResizeHandle?>(null)
+    val visibleAccessibilityResizeHandle: State<ResizeHandle?> = _visibleAccessibilityResizeHandle
+
+    /**
+     * Toggles the visibility of the accessibility resize handle. If the given handle is already
+     * visible, it will be hidden.
+     */
+    fun toggleAccessibilityResizeHandle(handle: ResizeHandle) {
+        if (_visibleAccessibilityResizeHandle.value == handle) {
+            _visibleAccessibilityResizeHandle.value = null
+        } else {
+            _visibleAccessibilityResizeHandle.value = handle
+        }
+    }
+
+    /** Hides the accessibility resize handle. */
+    fun clearAccessibilityResizeHandle() {
+        _visibleAccessibilityResizeHandle.value = null
+    }
+
     data class GridLayoutInfo(
         val currentRow: Int,
         val currentSpan: Int,
@@ -119,7 +144,7 @@ class ResizeableItemFrameViewModel : ExclusiveActivatable() {
     }
 
     /** Handle expansion to the next anchor. Tries bottom handle first. */
-    suspend fun expandToNextAnchor() {
+    fun expandToNextAnchor() {
         if (canExpand(ResizeHandle.BOTTOM)) {
             expand(ResizeHandle.BOTTOM)
         } else if (canExpand(ResizeHandle.TOP)) {
@@ -128,7 +153,7 @@ class ResizeableItemFrameViewModel : ExclusiveActivatable() {
     }
 
     /** Handle shrinking to the next anchor. Tries top handle first. */
-    suspend fun shrinkToNextAnchor() {
+    fun shrinkToNextAnchor() {
         if (canShrink(ResizeHandle.TOP)) {
             shrink(ResizeHandle.TOP)
         } else if (canShrink(ResizeHandle.BOTTOM)) {
@@ -139,48 +164,34 @@ class ResizeableItemFrameViewModel : ExclusiveActivatable() {
     /** Checks if expansion is possible from a specific handle. */
     fun canExpand(handle: ResizeHandle): Boolean {
         return when (handle) {
-            ResizeHandle.TOP -> getNextAnchor(topResizeState, moveUp = true) != null
-            ResizeHandle.BOTTOM -> getNextAnchor(bottomResizeState, moveUp = false) != null
+            ResizeHandle.TOP -> getNextAnchor(topDragState, moveUp = true) != null
+            ResizeHandle.BOTTOM -> getNextAnchor(bottomDragState, moveUp = false) != null
         }
     }
 
     /** Checks if shrinking is possible from a specific handle. */
     fun canShrink(handle: ResizeHandle): Boolean {
         return when (handle) {
-            ResizeHandle.TOP -> getNextAnchor(topResizeState, moveUp = false) != null
-            ResizeHandle.BOTTOM -> getNextAnchor(bottomResizeState, moveUp = true) != null
+            ResizeHandle.TOP -> getNextAnchor(topDragState, moveUp = false) != null
+            ResizeHandle.BOTTOM -> getNextAnchor(bottomDragState, moveUp = true) != null
         }
     }
 
     /** Handle expansion to the next anchor from a specific handle. */
-    suspend fun expand(handle: ResizeHandle) {
-        when (handle) {
-            ResizeHandle.TOP -> {
-                getNextAnchor(state = topResizeState, moveUp = true)?.let {
-                    topResizeState.snapTo(it)
-                }
-            }
-            ResizeHandle.BOTTOM -> {
-                getNextAnchor(state = bottomResizeState, moveUp = false)?.let {
-                    bottomResizeState.snapTo(it)
-                }
-            }
-        }
-    }
+    fun expand(handle: ResizeHandle) = performResize(handle, isExpand = true)
 
     /** Handle shrinking to the next anchor from a specific handle. */
-    suspend fun shrink(handle: ResizeHandle) {
-        when (handle) {
-            ResizeHandle.TOP -> {
-                getNextAnchor(state = topResizeState, moveUp = false)?.let {
-                    topResizeState.snapTo(it)
+    fun shrink(handle: ResizeHandle) = performResize(handle, isExpand = false)
+
+    private fun performResize(handle: ResizeHandle, isExpand: Boolean) {
+        enqueueOnActivatedScope {
+            val (state, moveUp) =
+                if (handle == ResizeHandle.TOP) {
+                    topDragState to isExpand
+                } else {
+                    bottomDragState to !isExpand
                 }
-            }
-            ResizeHandle.BOTTOM -> {
-                getNextAnchor(state = bottomResizeState, moveUp = true)?.let {
-                    bottomResizeState.snapTo(it)
-                }
-            }
+            getNextAnchor(state = state, moveUp = moveUp)?.let { state.snapTo(it) }
         }
     }
 
@@ -190,19 +201,29 @@ class ResizeableItemFrameViewModel : ExclusiveActivatable() {
      */
     private val gridLayoutInfo = MutableStateFlow<GridLayoutInfo?>(null)
 
-    val topResizeState = AnchoredDraggableState(0, DraggableAnchors { 0 at 0f })
-    val bottomResizeState = AnchoredDraggableState(0, DraggableAnchors { 0 at 0f })
+    val topDragState = AnchoredDraggableState(0, DraggableAnchors { 0 at 0f })
+    val bottomDragState = AnchoredDraggableState(0, DraggableAnchors { 0 at 0f })
 
     /** Emits a [ResizeInfo] when the element is resized using a drag gesture. */
-    val resizeInfo: Flow<ResizeInfo> =
+    private val resizeInfo: Flow<ResizeInfo> =
         merge(
-            snapshotFlow { topResizeState.settledValue }
+            snapshotFlow { topDragState.settledValue }
                 .map { ResizeInfo(-it, ResizeHandle.TOP) },
-            snapshotFlow { bottomResizeState.settledValue }
+            snapshotFlow { bottomDragState.settledValue }
                 .map { ResizeInfo(it, ResizeHandle.BOTTOM) },
         )
             .filter { it.spans != 0 }
-            .distinctUntilChanged()
+            .onEach {
+                if (communalEditModeAccessibilityResize()) {
+                    topDragState.snapTo(0)
+                    bottomDragState.snapTo(0)
+                }
+            }
+
+    /** Observes the resize info flow and executes the given action when a resize occurs. */
+    suspend fun observeResize(action: (ResizeInfo) -> Unit) {
+        resizeInfo.collect { action(it) }
+    }
 
     /**
      * Sets the necessary grid layout information needed for calculating the pixel offsets of the
@@ -327,10 +348,10 @@ class ResizeableItemFrameViewModel : ExclusiveActivatable() {
         coroutineScope("ResizeableItemFrameViewModel.onActivated") {
             gridLayoutInfo
                 .onEach { layoutInfo ->
-                    topResizeState.updateAnchors(
+                    topDragState.updateAnchors(
                         calculateAnchorsForHandle(ResizeHandle.TOP, layoutInfo)
                     )
-                    bottomResizeState.updateAnchors(
+                    bottomDragState.updateAnchors(
                         calculateAnchorsForHandle(ResizeHandle.BOTTOM, layoutInfo)
                     )
                 }

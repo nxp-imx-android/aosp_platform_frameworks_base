@@ -50,7 +50,7 @@ import com.android.systemui.scene.ui.composable.transitions.lockscreenToShadeSce
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToSplitShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.shadeToAlwaysOnDisplayTransition
 import com.android.systemui.scene.ui.composable.transitions.shadeToQuickSettingsTransition
-import com.android.systemui.scene.ui.composable.transitions.toBouncerTransition
+import com.android.systemui.scene.ui.composable.transitions.sharedBouncerTransitions
 import com.android.systemui.scene.ui.composable.transitions.toNotificationsShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.toQuickSettingsShadeTransition
 import com.android.systemui.shade.ui.composable.Shade
@@ -211,6 +211,14 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
             }
             from(
                 Scenes.QuickSettings,
+                to = Scenes.Lockscreen,
+                cuj = Cuj.CUJ_NOTIFICATION_SHADE_QS_EXPAND_COLLAPSE,
+                cujTag = TAG_COLLAPSE,
+            ) {
+                reversed { lockscreenToQuickSettingsSceneTransition() }
+            }
+            from(
+                Scenes.QuickSettings,
                 to = Scenes.Shade,
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_QS_EXPAND_COLLAPSE,
                 cujTag = TAG_COLLAPSE,
@@ -310,15 +318,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
 
             // Overlay transitions
 
-            to(Overlays.Bouncer) { toBouncerTransition() }
-            from(Overlays.Bouncer) { fromBouncerTransition() }
-            from(
-                Overlays.Bouncer,
-                key = TransitionKey.PredictiveBack,
-                preview = { fromBouncerPreview() },
-            ) {
-                fromBouncerTransition()
-            }
+            sharedBouncerTransitions()
             from(Overlays.Bouncer, to = Scenes.Gone) { bouncerToGoneTransition() }
             from(Scenes.Dream, to = Overlays.Bouncer) { dreamToBouncerTransition() }
             from(

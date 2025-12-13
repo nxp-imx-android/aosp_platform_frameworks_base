@@ -120,6 +120,8 @@ public class SurfaceControlRegistry {
     // The default reporter for printing out the registered surfaces
     private static final DefaultReporter sDefaultReporter = new DefaultReporter();
 
+    private static final String DEBUG_CALL_FORMAT_STRING = "%s (tx: %s, sc: %s) details: %s";
+
     // The registry for a given process
     private static volatile SurfaceControlRegistry sProcessRegistry;
 
@@ -335,20 +337,14 @@ public class SurfaceControlRegistry {
             return;
         }
 
-        final String txMsg = tx != null ? "tx=" + tx.getId() + " " : "";
-        final String scMsg = sc != null ? " sc=" + sc.getName() + "" : "";
-        final String msg = details != null
-                ? call + " (" + txMsg + scMsg + ") " + details
-                : call + " (" + txMsg + scMsg + ")";
+        String txId = (tx != null) ? String.valueOf(tx.getId()) : "null";
+        String scName = (sc != null) ? sc.getName() : "null";
+        String detailMsg = (details != null) ? details : "N/A";
+
         if (sLogAllTxCallsOnApply && tx != null) {
             if (call == APPLY) {
                 // Log the apply and dump the calls on that transaction
-                if (Flags.surfaceControlRegistryProtolog()) {
-                    ProtoLog.e(SURFACE_CONTROL_REGISTRY, "%s\n%s", msg,
-                            Log.getStackTraceString(new Throwable()));
-                } else {
-                    Log.e(TAG, msg, new Throwable());
-                }
+                logCallStack(call, txId, scName, detailMsg);
                 if (tx.mCalls != null) {
                     if (Flags.surfaceControlRegistryProtolog()) {
                         for (int i = 0; i < tx.mCalls.size(); i++) {
@@ -362,13 +358,10 @@ public class SurfaceControlRegistry {
                 }
             } else if (matchesForCallStackDebugging(sc != null ? sc.getName() : null, call)) {
                 // Otherwise log this call to the transaction if it matches the tracked calls
-                if (Flags.surfaceControlRegistryProtolog()) {
-                    ProtoLog.e(SURFACE_CONTROL_REGISTRY, "%s\n%s", msg,
-                            Log.getStackTraceString(new Throwable()));
-                } else {
-                    Log.e(TAG, msg, new Throwable());
-                }
+                logCallStack(call, txId, scName, detailMsg);
                 if (tx.mCalls != null) {
+                    String msg = String.format(DEBUG_CALL_FORMAT_STRING, call, txId, scName,
+                            details);
                     tx.mCalls.add(msg);
                 }
             }
@@ -377,12 +370,20 @@ public class SurfaceControlRegistry {
             if (!matchesForCallStackDebugging(sc != null ? sc.getName() : null, call)) {
                 return;
             }
-            if (Flags.surfaceControlRegistryProtolog()) {
-                ProtoLog.e(SURFACE_CONTROL_REGISTRY, "%s\n%s", msg,
-                        Log.getStackTraceString(new Throwable()));
-            } else {
-                Log.e(TAG, msg, new Throwable());
-            }
+            logCallStack(call, txId, scName, detailMsg);
+        }
+    }
+
+    private static void logCallStack(String call, @NonNull String tx, @NonNull String sc,
+            @NonNull String details) {
+        if (Flags.surfaceControlRegistryProtolog()) {
+            String stackTrace = Log.getStackTraceString(new Throwable());
+            ProtoLog.e(SURFACE_CONTROL_REGISTRY,
+                    DEBUG_CALL_FORMAT_STRING + " \nStack:\n%s",
+                    call, tx, sc, details, stackTrace);
+        } else {
+            String msg = String.format(DEBUG_CALL_FORMAT_STRING, call, tx, sc, details);
+            Log.e(TAG, msg, new Throwable());
         }
     }
 

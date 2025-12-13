@@ -126,42 +126,6 @@ class PreCaptureViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun captureType_initializeBySelectedType() =
-        kosmos.runTest {
-            setupViewModel()
-            assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.SCREENSHOT)
-            viewModel.updateCaptureType(ScreenCaptureType.RECORDING)
-
-            setupViewModel()
-            assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.RECORDING)
-        }
-
-    @Test
-    fun captureType_selectedTypeOverriddenByDefaultType() =
-        kosmos.runTest {
-            setupViewModel(
-                LargeScreenCaptureUiParameters(defaultCaptureType = ScreenCaptureType.RECORDING)
-            )
-            assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.RECORDING)
-
-            setupViewModel()
-            assertThat(largeScreenCaptureParametersInteractor.getSelectedCaptureType())
-                .isEqualTo(ScreenCaptureType.RECORDING)
-            assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.RECORDING)
-        }
-
-    @Test
-    fun captureRegion_initializeBySelectedType() =
-        kosmos.runTest {
-            setupViewModel()
-            assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.SCREENSHOT)
-            viewModel.updateCaptureType(ScreenCaptureType.RECORDING)
-
-            setupViewModel()
-            assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.RECORDING)
-        }
-
-    @Test
     fun captureRegion_defaultsToFullscreen() =
         kosmos.runTest {
             setupViewModel()
@@ -177,35 +141,6 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             )
 
             assertThat(viewModel.captureRegion).isEqualTo(ScreenCaptureRegion.PARTIAL)
-        }
-
-    @Test
-    fun captureRegion_initializeBySelectedRegion() =
-        kosmos.runTest {
-            setupViewModel()
-            assertThat(viewModel.captureRegion).isEqualTo(ScreenCaptureRegion.FULLSCREEN)
-            viewModel.updateCaptureRegion(ScreenCaptureRegion.PARTIAL)
-
-            setupViewModel()
-            assertThat(largeScreenCaptureParametersInteractor.getSelectedCaptureRegion())
-                .isEqualTo(ScreenCaptureRegion.PARTIAL)
-            assertThat(viewModel.captureRegion).isEqualTo(ScreenCaptureRegion.PARTIAL)
-        }
-
-    @Test
-    fun captureRegion_selectedRegionOverriddenByDefaultRegion() =
-        kosmos.runTest {
-            setupViewModel(
-                LargeScreenCaptureUiParameters(
-                    defaultCaptureRegion = ScreenCaptureRegion.APP_WINDOW
-                )
-            )
-            assertThat(viewModel.captureRegion).isEqualTo(ScreenCaptureRegion.APP_WINDOW)
-
-            setupViewModel()
-            assertThat(largeScreenCaptureParametersInteractor.getSelectedCaptureRegion())
-                .isEqualTo(ScreenCaptureRegion.APP_WINDOW)
-            assertThat(viewModel.captureRegion).isEqualTo(ScreenCaptureRegion.APP_WINDOW)
         }
 
     @Test

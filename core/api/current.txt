@@ -21793,7 +21793,7 @@ package android.hardware.lights {
 package android.hardware.serial {
 
   @FlaggedApi("android.hardware.serial.flags.enable_wired_serial_api") public final class SerialManager {
-    method @NonNull public java.util.List<android.hardware.serial.SerialPort> getSerialPorts();
+    method @NonNull public java.util.List<android.hardware.serial.SerialPort> getPorts();
     method public void registerSerialPortListener(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.serial.SerialPortListener);
     method public void unregisterSerialPortListener(@NonNull android.hardware.serial.SerialPortListener);
   }
@@ -43694,6 +43694,19 @@ package android.service.personalcontext.hint {
     method @NonNull public android.service.personalcontext.hint.BundleHint.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.hint.BundleHint build();
     method @NonNull public android.service.personalcontext.hint.BundleHint.Builder setDataBundle(@NonNull android.os.Bundle);
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class CallHint extends android.service.personalcontext.hint.ContextHint {
+    method public int getModality();
+    method @NonNull public java.util.Set<android.app.Person> getParticipants();
+    field public static final int MODALITY_AUDIO = 1; // 0x1
+    field public static final int MODALITY_VIDEO = 2; // 0x2
+  }
+
+  public static final class CallHint.Builder {
+    ctor public CallHint.Builder(int, @NonNull java.util.Set<android.app.Person>);
+    method @NonNull public android.service.personalcontext.hint.CallHint.Builder addToken(@NonNull android.service.personalcontext.Token);
+    method @NonNull public android.service.personalcontext.hint.CallHint build();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class CapturedText implements android.os.Parcelable {

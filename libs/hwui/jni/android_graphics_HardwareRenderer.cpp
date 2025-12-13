@@ -877,6 +877,12 @@ static void android_view_ThreadedRenderer_setRtAnimationsEnabled(JNIEnv* env, jo
     RenderProxy::setRtAnimationsEnabled(enabled);
 }
 
+static void android_view_ThreadedRenderer_setRtAnimationsEnabledForContext(
+        JNIEnv* env, jobject clazz, jlong proxyPtr, jboolean enabled) {
+    RenderProxy* proxy = reinterpret_cast<RenderProxy*>(proxyPtr);
+    proxy->setRtAnimationsEnabledForContext(enabled);
+}
+
 static void android_view_ThreadedRenderer_notifyCallbackPending(JNIEnv*, jclass, jlong proxyPtr) {
     RenderProxy* proxy = reinterpret_cast<RenderProxy*>(proxyPtr);
     proxy->notifyCallbackPending();
@@ -1085,6 +1091,8 @@ static const JNINativeMethod gMethods[] = {
         {"nIsDrawingEnabled", "()Z", (void*)android_view_ThreadedRenderer_isDrawingEnabled},
         {"nSetRtAnimationsEnabled", "(Z)V",
          (void*)android_view_ThreadedRenderer_setRtAnimationsEnabled},
+        {"nSetRtAnimationsEnabledForContext", "(JZ)V",
+         (void*)android_view_ThreadedRenderer_setRtAnimationsEnabledForContext},
         {"nNotifyCallbackPending", "(J)V",
          (void*)android_view_ThreadedRenderer_notifyCallbackPending},
         {"nNotifyExpensiveFrame", "(J)V",

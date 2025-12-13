@@ -16,17 +16,18 @@
 
 package com.android.systemui.personalcontext.visualizer.session
 
+import androidx.compose.ui.platform.ComposeView
 import com.android.systemui.dagger.SysUISingleton
 import java.util.UUID
 import javax.inject.Inject
 
 interface VisualizerSessionFactory {
-    fun createSession(id: UUID): VisualizerSession
+    fun createSession(id: UUID, view: ComposeView): VisualizerSession
 }
 
 @SysUISingleton
 class VisualizerSessionFactoryImpl @Inject constructor() : VisualizerSessionFactory {
-    override fun createSession(id: UUID): VisualizerSession {
-        return VisualizerSession(id)
+    override fun createSession(id: UUID, view: ComposeView): VisualizerSession {
+        return VisualizerSession(id, view)
     }
 }
