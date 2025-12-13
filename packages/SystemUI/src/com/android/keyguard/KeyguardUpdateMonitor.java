@@ -124,7 +124,6 @@ import com.android.settingslib.Utils;
 import com.android.settingslib.WirelessUtils;
 import com.android.settingslib.fuelgauge.BatteryStatus;
 import com.android.systemui.CoreStartable;
-import com.android.systemui.Flags;
 import com.android.systemui.ambient.statusbar.shared.flag.OngoingActivityChipsOnDream;
 import com.android.systemui.biometrics.AuthController;
 import com.android.systemui.biometrics.FingerprintInteractiveToAuthProvider;
@@ -493,8 +492,6 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
         }
     }
 
-    @Deprecated
-    private final SparseBooleanArray mUserIsUnlocked = new SparseBooleanArray();
     private final SparseBooleanArray mUserHasTrust = new SparseBooleanArray();
     private final SparseBooleanArray mUserTrustIsManaged = new SparseBooleanArray();
     private final SparseBooleanArray mUserTrustIsUsuallyManaged = new SparseBooleanArray();
@@ -2176,7 +2173,6 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
     private void handleUserUnlocked(int userId) {
         Assert.isMainThread();
         mLogger.logUserUnlocked(userId);
-        mUserIsUnlocked.put(userId, true);
         mNeedsSlowUnlockTransition = resolveNeedsSlowUnlockTransition();
         for (int i = 0; i < mCallbacks.size(); i++) {
             KeyguardUpdateMonitorCallback cb = mCallbacks.get(i).get();
@@ -2190,14 +2186,12 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
         Assert.isMainThread();
         boolean isUnlocked = mUserManager.isUserUnlocked(userId);
         mLogger.logUserStopped(userId, isUnlocked);
-        mUserIsUnlocked.put(userId, isUnlocked);
     }
 
     @VisibleForTesting
     void handleUserRemoved(int userId) {
         Assert.isMainThread();
         mLogger.logUserRemoved(userId);
-        mUserIsUnlocked.delete(userId);
         mUserTrustIsUsuallyManaged.delete(userId);
     }
 
@@ -2584,9 +2578,6 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
 
         mTaskStackChangeListeners.registerTaskStackListener(mTaskStackListener);
         int user = mSelectedUserInteractor.getSelectedUserId();
-        boolean isUserUnlocked = mUserManager.isUserUnlocked(user);
-        mLogger.logUserUnlockedInitialState(user, isUserUnlocked);
-        mUserIsUnlocked.put(user, isUserUnlocked);
         updateSecondaryLockscreenRequirement(user);
         List<UserInfo> allUsers = mUserManager.getUsers();
         for (UserInfo userInfo : allUsers) {
@@ -2822,11 +2813,7 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
      * @see Intent#ACTION_USER_UNLOCKED
      */
     public boolean isUserUnlocked(int userId) {
-        if (Flags.userEncryptedSource()) {
-            return mUserManager.isUserUnlocked(userId);
-        } else {
-            return mUserIsUnlocked.get(userId);
-        }
+        return mUserManager.isUserUnlocked(userId);
     }
 
     /**
@@ -4346,7 +4333,7 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
         pw.println("    strongAuthFlags=" + Integer.toHexString(strongAuthFlags));
         pw.println("ActiveUnlockRunning="
                 + mTrustManager.isActiveUnlockRunning(mSelectedUserInteractor.getSelectedUserId()));
-        pw.println("userUnlockedCache[userid=" + userId + "]=" + mUserIsUnlocked.get(userId));
+        pw.println("userUnlockedCache[userid=" + userId + "]=" + isUserUnlocked(userId));
         pw.println("actualUserUnlocked[userid=" + userId + "]="
                 + mUserManager.isUserUnlocked(userId));
         new DumpsysTableLogger(
