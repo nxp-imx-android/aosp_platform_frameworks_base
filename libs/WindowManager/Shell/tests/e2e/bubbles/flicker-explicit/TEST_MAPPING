@@ -107,7 +107,15 @@
       "keywords": ["device"]
     },
     {
+      "name": "WMShellExplicitFlickerTestsBubbles-FinishExpandedBubbleToExpandCollapsedTest",
+      "keywords": ["device"]
+    },
+    {
       "name": "WMShellExplicitFlickerTestsBubbles-LaunchMultipleBubbleTest",
+      "keywords": ["device"]
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-LaunchNewTaskFromBubbleTest",
       "keywords": ["device"]
     },
     {

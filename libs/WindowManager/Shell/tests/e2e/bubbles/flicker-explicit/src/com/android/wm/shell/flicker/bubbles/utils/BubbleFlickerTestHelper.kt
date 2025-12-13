@@ -539,7 +539,8 @@ internal object BubbleFlickerTestHelper {
         }
     }
 
-    private fun waitAndAssertBubbleAppInExpandedState(
+    /** Waits for the bubble app to be fully expanded. */
+    fun waitAndAssertBubbleAppInExpandedState(
         testApp: StandardAppHelper,
         wmHelper: WindowManagerStateHelper,
     ) {
