@@ -311,6 +311,30 @@ class DreamStartableTest : SysuiTestCase() {
 
     @EnableSceneContainer
     @Test
+    fun switchFromDreamToLockscreen_whenDreamStops() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+
+            // GIVEN device is locked and dreaming
+            sceneInteractor.changeScene(Scenes.Lockscreen, "reason")
+            fakeDeviceEntryRepository.deviceUnlockStatus.value =
+                DeviceUnlockStatus(isUnlocked = false, deviceUnlockSource = null)
+            keyguardRepository.setDreaming(true)
+            advanceTimeBy(DREAMING_DELAY_MS)
+            runCurrent()
+            assertThat(currentScene).isEqualTo(Scenes.Dream)
+
+            // WHEN dreaming is stopped
+            keyguardRepository.setDreaming(false)
+            advanceTimeBy(DREAMING_DELAY_MS)
+            runCurrent()
+
+            // THEN scene changes to lockscreen
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+        }
+
+    @EnableSceneContainer
+    @Test
     fun addLockscreenToBackStackAfterDreamStartWhenUnsecured() =
         kosmos.runTest {
             val backStack by collectLastValue(sceneBackInteractor.backStack)
