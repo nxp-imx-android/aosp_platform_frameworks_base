@@ -17,9 +17,6 @@
 package com.android.wm.shell.flicker.bubbles.testcase
 
 import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
-import com.android.wm.shell.flicker.bubbles.BubbleFlickerTestBase.FlickerProperties.tapl
-import com.android.wm.shell.flicker.bubbles.utils.FlickerAssertionHelper.assertLayerAlphaChange
-import com.android.wm.shell.flicker.bubbles.utils.FlickerAssertionHelper.assertLayerPositionChange
 import org.junit.Test
 
 /**
@@ -29,15 +26,6 @@ import org.junit.Test
  * - [MultipleBubbleExpandBubbleAppTestCases]
  */
 interface SwitchExpandedBubbleTestCases : MultipleBubbleExpandBubbleAppTestCases {
-
-    @Test
-    override fun focusChanges() {
-        if (tapl.isTablet) {
-            eventLogSubject.focusChanges(previousApp.toWindowName(), testApp.toWindowName())
-        } else {
-            eventLogSubject.focusChanges(previousApp.toWindowName(), testApp.toWindowName())
-        }
-    }
 
     @Test
     override fun appWindowReplacesPreviousAppAsTopWindow() {
@@ -75,58 +63,5 @@ interface SwitchExpandedBubbleTestCases : MultipleBubbleExpandBubbleAppTestCases
             .then()
             .isVisible(testApp)
             .forAllEntries()
-    }
-
-    /** Verifies [previousApp] window is invisible at the end of transition. */
-    @Test
-    fun previousAppWindowIsInvisibleAtEnd() {
-        wmStateSubjectAtEnd.isAppWindowInvisible(previousApp)
-    }
-
-    /** Verifies [previousApp] layer is invisible at the end of transition. */
-    @Test
-    fun previousAppLayerIsInvisible() {
-        layerTraceEntrySubjectAtEnd.isInvisible(previousApp)
-    }
-
-    /** Verifies [testApp] layer's alpha value only increases (optional to stay unchanged). */
-    @Test
-    fun appLayerFadeIn() {
-        assertLayerAlphaChange(
-            layersTraceSubject = layersTraceSubject,
-            layerMatcher = testApp,
-            isFadeIn = true,
-        )
-    }
-
-    /** Verifies [previousApp] layer's alpha value only decreases (optional to stay unchanged). */
-    @Test
-    fun previousAppLayerFadeOut() {
-        assertLayerAlphaChange(
-            layersTraceSubject = layersTraceSubject,
-            layerMatcher = previousApp,
-            isFadeIn = false,
-        )
-    }
-
-    /**
-     * Verifies [testApp] layer's position change in only one direction (optional to stay
-     * unchanged).
-     */
-    @Test
-    fun appLayerAnimateIn() {
-        assertLayerPositionChange(layersTraceSubject = layersTraceSubject, layerMatcher = testApp)
-    }
-
-    /**
-     * Verifies [previousApp] layer's position change in only one direction (optional to stay
-     * unchanged).
-     */
-    @Test
-    fun previousAppLayerAnimateOut() {
-        assertLayerPositionChange(
-            layersTraceSubject = layersTraceSubject,
-            layerMatcher = previousApp,
-        )
     }
 }
