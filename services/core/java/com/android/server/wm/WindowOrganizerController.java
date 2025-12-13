@@ -2857,7 +2857,8 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     OP_TYPE_CREATE_TASK_FRAGMENT, exception);
             return;
         }
-        if (!ownerActivity.isResizeable()) {
+        if (!ownerActivity.isResizeable()
+                && !ownerActivity.info.isChangeEnabled(ActivityInfo.FORCE_RESIZE_APP)) {
             final IllegalArgumentException exception = new IllegalArgumentException("Not allowed"
                     + " to operate with non-resizable owner Activity");
             sendTaskFragmentOperationFailure(organizer, errorCallbackToken, null /* taskFragment */,
