@@ -21,5 +21,5 @@ package android.service.chooser;
  */
 oneway interface ITapToShareCallback {
     /** Invoked when a remote device is tapped and the service is ready to share. */
-    void doTapToShare();
+    void performTapToShare();
 }
