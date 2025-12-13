@@ -4318,7 +4318,7 @@ public class SettingsProvider extends ContentProvider {
 
         @VisibleForTesting
         final class UpgradeController {
-            private static final int SETTINGS_VERSION = 233;
+            private static final int SETTINGS_VERSION = 234;
 
             private final int mUserId;
             private final int mDeviceId;
@@ -6933,6 +6933,33 @@ public class SettingsProvider extends ContentProvider {
                     }
 
                     currentVersion = 233;
+                }
+
+                if (currentVersion == 233) {
+                    // Version 233: Migrate ADAPTIVE_CONNECTIVITY_ENABLED to
+                    // ADAPTIVE_CONNECTIVITY_WIFI_ENABLED and
+                    // ADAPTIVE_CONNECTIVITY_MOBILE_NETWORK_ENABLED.
+                    final Setting adaptiveConnectivityEnabled =
+                            secureSettings.getSettingLocked(
+                                    Settings.Secure.ADAPTIVE_CONNECTIVITY_ENABLED);
+                    if (!adaptiveConnectivityEnabled.isNull()) {
+                        String value = adaptiveConnectivityEnabled.getValue();
+                        secureSettings.insertSettingOverrideableByRestoreLocked(
+                                Settings.Secure.ADAPTIVE_CONNECTIVITY_WIFI_ENABLED,
+                                value,
+                                null,
+                                true,
+                                SettingsState.SYSTEM_PACKAGE_NAME);
+                        secureSettings.insertSettingOverrideableByRestoreLocked(
+                                Settings.Secure.ADAPTIVE_CONNECTIVITY_MOBILE_NETWORK_ENABLED,
+                                value,
+                                null,
+                                true,
+                                SettingsState.SYSTEM_PACKAGE_NAME);
+                        secureSettings.deleteSettingLocked(
+                                Settings.Secure.ADAPTIVE_CONNECTIVITY_ENABLED);
+                    }
+                    currentVersion = 234;
                 }
 
                 // vXXX: Add new settings above this point.
