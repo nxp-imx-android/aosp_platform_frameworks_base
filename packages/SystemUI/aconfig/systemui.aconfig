@@ -638,16 +638,6 @@ flag {
 }
 
 flag {
-   name: "face_scanning_animation_npe_fix"
-   namespace: "systemui"
-   description: "Fix for the face scanning animation NPE"
-   bug: "392032258"
-   metadata {
-       purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
    namespace: "systemui"
    name: "fetch_bookmarks_xml_keyboard_shortcuts"
    description: "Fetches application launch keyboard shortcuts from system server rather than building a hardcoded list."
