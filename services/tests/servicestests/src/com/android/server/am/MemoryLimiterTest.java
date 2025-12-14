@@ -16,6 +16,8 @@
 
 package com.android.server.am;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -49,6 +51,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Build/Install/Run:
@@ -92,28 +95,54 @@ public class MemoryLimiterTest {
     // The mapping between process states and sizes is arbitrary.  Constants are declared to
     // make it more obvious in the test routine just what the memory limit will be.
     @ProcessState
-    private static final int PROCESS_STATE_100M = ActivityManager.PROCESS_STATE_TOP;
+    private static final int PROCESS_STATE_100M = ActivityManager.PROCESS_STATE_SERVICE;
+    @ProcessState
+    private static final int PROCESS_STATE_10M = ActivityManager.PROCESS_STATE_TRANSIENT_BACKGROUND;
+    @ProcessState
+    private static final int PROCESS_STATE_MAX = ActivityManager.PROCESS_STATE_TOP;
+
+    // The memory assigned to a process in PROCESS_STATE_10M.
+    private static final Long sProcessMemory10M = (long) (10 * MEG);
 
     // The memory assigned to a process in PROCESS_STATE_100M.
     private static final Long sProcessMemory100M = (long) (100 * MEG);
 
+    // The memory assigned to a process in PROCESS_STATE_MAX.  Any negative value turns into
+    // maximum memory in the native handlers, but the test uses -1 for consistency.
+    private static final Long sProcessMemoryMax = (long) (-1);
+
     // Capture over-limit events.
     private static class EventCounter extends MemoryLimiter.ControllerEnabled {
-        private final CountDownLatch mLatch;
+        // A lock that ensures the countdown latch and the event count are consistent.
+        private final Object mLock = new Object();
+
+        // A countdown latch that tests can wait on.  This is atomic so that changes to attribute
+        // made in the test thread are visible in the callback thread.
+        private final AtomicReference<CountDownLatch> mLatch = new AtomicReference();
+
+        // The total number of events received by this object.
+        private int mEventCount;
 
         // The instance is created with the expected number of events.
         EventCounter(int expected) {
             super();
-            mLatch = new CountDownLatch(expected);
+            mLatch.set(new CountDownLatch(expected));
         }
 
-        // Wait for the counter to go to zero within timeout seconds.
+        // Wait for the counter to go to zero within timeout seconds.  This cannot take the lock!
         boolean await(long timeout) {
             try {
-                return mLatch.await(timeout, TimeUnit.SECONDS);
+                return mLatch.get().await(timeout, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 Log.e(TAG, "exception while waiting for event", e);
                 return false;
+            }
+        }
+
+        // Return the total number of events ever received by this object.
+        int eventCount() {
+            synchronized (mLock) {
+                return mEventCount;
             }
         }
 
@@ -121,7 +150,9 @@ public class MemoryLimiterTest {
         @Override
         public Long getStateLimit(@ProcessState int newState) {
             return switch (newState) {
+                case PROCESS_STATE_10M -> sProcessMemory10M;
                 case PROCESS_STATE_100M -> sProcessMemory100M;
+                case PROCESS_STATE_MAX -> sProcessMemoryMax;
                 default -> {
                     fail("invalid state for testing: " + newState);
                     yield null;
@@ -132,8 +163,12 @@ public class MemoryLimiterTest {
         // Capture an actual event.
         @Override
         public void onLimitExceeded(int pid, int uid, int limit) {
-            Log.i(TAG, String.format("onLimitExceeded(%d, %d, %d)", pid, uid, limit));
-            mLatch.countDown();
+            synchronized (mLock) {
+                mLatch.get().countDown();
+                mEventCount++;
+                Log.i(TAG, String.format("onLimitExceeded(%d, %d, %s)", pid, uid,
+                                MemoryLimiter.limitTypeToString(limit)));
+            }
         }
     }
 
@@ -224,14 +259,44 @@ public class MemoryLimiterTest {
 
             // Prepare the cgroup for testing.
             prepareHelperCgroup(pid, uid);
-
-            // Set the limit and wait for the over-limit event.
             limiter.setPidUid(pid, uid);
-            limiter.onProcStateUpdated(PROCESS_STATE_100M);
 
-            // Grow the app by 100M.
+            // Set the limit, grow the app, and wait for the over-limit event.
+            limiter.onProcStateUpdated(PROCESS_STATE_100M);
             appCommand(100);
             assertTrue(counter.await(10));
+
+            // There should be exactly one event in the counter.
+            assertThat(counter.eventCount()).isEqualTo(1);
+        }
+    }
+
+    @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
+    @Test
+    public void testLimiterAfter() throws Exception {
+        EventCounter counter = new EventCounter(1);
+        try (MemoryLimiter controller = new MemoryLimiter(counter)) {
+            MemoryLimiter.Limiter limiter = controller.newLimiter();
+
+            // -S stops any existing activity before starting new, ensuring cold start
+            String cmd = String.format("am start-activity -S -W -n %s/.%s", HELPER, ACTIVITY);
+            shellCommand(cmd);
+
+            int pid = getHelperPid();
+            int uid = getHelperUid();
+            Log.i(TAG, String.format("helper at pid=%d uid=%d", pid, uid));
+
+            // Prepare the cgroup for testing.
+            prepareHelperCgroup(pid, uid);
+            limiter.setPidUid(pid, uid);
+
+            // Grow the app by 100M, set the limit, and wait for the over-limit event.
+            appCommand(100);
+            limiter.onProcStateUpdated(PROCESS_STATE_100M);
+            assertTrue(counter.await(10));
+
+            // There should be exactly one event in the counter.
+            assertThat(counter.eventCount()).isEqualTo(1);
         }
     }
 

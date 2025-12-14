@@ -67,6 +67,17 @@ class MemoryLimiter implements AutoCloseable {
     // LINT.ThenChange(/services/core/jni/com_android_server_am_MemoryLimiter.cpp:limitTypes)
 
     /**
+     * A convenience function that maps limit types to strings.
+     */
+    static String limitTypeToString(int type) {
+        return switch (type) {
+            case 0 -> "unknown";
+            case 1 -> "memory.high";
+            default -> "unexpected";
+        };
+    }
+
+    /**
      * A controller specializes the behavior of an individual MemoryLimiter.
      */
     @UsedByNative
@@ -128,20 +139,11 @@ class MemoryLimiter implements AutoCloseable {
 
     /**
      * The controller for production use when the flag is enabled.  This uses a message queue to
-     * handle process updates, which allows the updates to happen outside the AMS lock.
+     * handle process updates, which allows the updates to happen outside the AMS lock.  Since
+     * everything happens in the message handler, no locks are required.
      */
     @UsedByNative
     static class ControllerEnabled implements Controller {
-
-        // A lock to guard the open flag.
-        private final Object mLock = new Object();
-
-        // Toggles to false once the Controller is closed.  This is also used as the lock for
-        // synchronization.
-        private boolean mOpen = true;
-
-        // The native handler.
-        private final long mNative;
 
         // The message queue that distributes calls into the native layer.
         private final Handler mQueue;
@@ -152,39 +154,50 @@ class MemoryLimiter implements AutoCloseable {
         // The opcode to configure a process.  The configuration data is in 'obj'.
         private static final int MESSAGE_CONFIG = 1;
 
+        // The opcode to close the controller.
+        private static final int MESSAGE_CLOSE = 2;
+
         /**
          * In the constructor, create the native peer and the message queue that will handle all
          * requests directed to the native layer.
          */
         ControllerEnabled() {
-            mNative = initLimiter(this);
             mQueue = new Handler(BackgroundThread.getHandler().getLooper()) {
+                    // Toggles to false once the Controller is closed.
+                    private boolean mOpen = true;
+
+                    // The native handler.
+                    private final long mNative = initLimiter(ControllerEnabled.this);
+
                     @Override
                     public void handleMessage(Message msg) {
-                        synchronized (mLock) {
-                            if (!mOpen) {
-                                // Getting a message after the controller has been closed is
-                                // unexpected but only happens during testing.  Silently ignore
-                                // it.
-                                return;
-                            }
-                            final int pid = msg.arg1;
-                            final int uid = msg.arg2;
-                            final int op = msg.what;
-                            switch (op) {
-                                case MESSAGE_START ->
-                                        onProcessStarted(mNative, pid, uid);
+                        if (!mOpen) {
+                            // Getting a message after the controller has been closed is
+                            // unexpected but only happens during testing.  Silently ignore
+                            // it.
+                            return;
+                        }
+                        final int pid = msg.arg1;
+                        final int uid = msg.arg2;
+                        final int op = msg.what;
+                        switch (op) {
+                            case MESSAGE_START ->
+                                    onProcessStarted(mNative, pid, uid);
 
-                                case MESSAGE_CONFIG -> {
-                                    if (msg.obj != null) {
-                                        long limit = (Long) msg.obj;
-                                        configureLimit(mNative, pid, uid, limit);
-                                    }
+                            case MESSAGE_CONFIG -> {
+                                if (msg.obj != null) {
+                                    long limit = (Long) msg.obj;
+                                    configureLimit(mNative, pid, uid, limit);
                                 }
-
-                                default ->
-                                        Slog.e(TAG, "invalid message: op=" + op);
                             }
+
+                            case MESSAGE_CLOSE -> {
+                                closeLimiter(mNative);
+                                mOpen = false;
+                            }
+
+                            default ->
+                                    Slog.e(TAG, "invalid message: op=" + op);
                         }
                     }
                 };
@@ -236,18 +249,13 @@ class MemoryLimiter implements AutoCloseable {
         @UsedByNative
         @Override
         public void onLimitExceeded(int pid, int uid, int limit) {
-            Slog.w(TAG, formatSimple("limits exceeded: pid=%d uid=%d limit=%d", pid, uid, limit));
+            Slog.w(TAG, formatSimple("limits exceeded: pid=%d uid=%d limit=%s", pid, uid,
+                            limitTypeToString(limit)));
         }
 
         @Override
         public void close() {
-            synchronized (mLock) {
-                if (mOpen) {
-                    mQueue.removeCallbacksAndMessages(null);
-                    closeLimiter(mNative);
-                    mOpen = false;
-                }
-            }
+            sendCommand(MESSAGE_CLOSE, 0, 0, null);
         }
     }
 
