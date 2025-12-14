@@ -18,7 +18,10 @@ package android.processor.devicepolicy
 
 import android.processor.devicepolicy.protos.PolicyMetadata
 import android.processor.devicepolicy.protos.PolicyMetadataList
-import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata
+import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.EnumPolicyMetadata
+import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.ListPolicyMetadata.ListElementMetadataCase
+import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.StringPolicyMetadata
+import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.TypeMetadataCase
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.CodeBlock
 import com.squareup.javapoet.JavaFile
@@ -130,24 +133,23 @@ object PolicyMetadataCodeGenerator {
         return loadPolicyMetadataMethod.build()
     }
 
+    // Returns a CodeBlock containing `policies.add(new MyTypePolicyMetadata(<snip arguments>));`
     private fun generatePolicyAdder(policy: PolicyMetadata): CodeBlock =
+        CodeBlock.builder()
+            .add("policies.add(")
+            .add(generatePolicyMetadata(policy))
+            .addStatement(")")
+            .build()
+
+    // Returns a CodeBlock containing `new MyTypePolicyMetadata(....)`
+    private fun generatePolicyMetadata(policy: PolicyMetadata): CodeBlock =
         when (policy.typeSpecificMetadata.typeMetadataCase) {
-            TypeSpecificPolicyMetadata.TypeMetadataCase.ENUM_METADATA ->
-                generateEnumPolicyAdder(policy)
-
-            TypeSpecificPolicyMetadata.TypeMetadataCase.BOOLEAN_METADATA ->
-                generateBooleanPolicyAdder(policy)
-
-            TypeSpecificPolicyMetadata.TypeMetadataCase.INTEGER_METADATA ->
-                generateIntegerPolicyAdder(policy)
-
-            TypeSpecificPolicyMetadata.TypeMetadataCase.STRING_METADATA ->
-                generateStringPolicyAdder(policy)
-
-            TypeSpecificPolicyMetadata.TypeMetadataCase.LIST_OF_STRING_METADATA ->
-                generateListOfStringPolicyAdder(policy)
-
-            TypeSpecificPolicyMetadata.TypeMetadataCase.TYPEMETADATA_NOT_SET ->
+            TypeMetadataCase.ENUM_METADATA -> generateEnumPolicyMetadata(policy)
+            TypeMetadataCase.BOOLEAN_METADATA -> generateBooleanPolicyMetadata(policy)
+            TypeMetadataCase.INTEGER_METADATA -> generateIntegerPolicyMetadata(policy)
+            TypeMetadataCase.STRING_METADATA -> generateStringPolicyMetadata(policy)
+            TypeMetadataCase.LIST_METADATA -> generateListPolicyMetadata(policy)
+            TypeMetadataCase.TYPEMETADATA_NOT_SET ->
                 throw IllegalArgumentException("Type specific metadata unset")
         }
 
@@ -187,6 +189,9 @@ object PolicyMetadataCodeGenerator {
         return builder.build()
     }
 
+    private fun PolicyMetadata.getPolicyIdCodeBlock() =
+        CodeBlock.of("\$L", this.identifier.fieldName.substringAfterLast("."))
+
     private fun CodeBlock.Builder.addPolicyId(name: String) =
         this.add("/* id= */ \$L,\n", name.substringAfterLast("."))
 
@@ -225,112 +230,151 @@ object PolicyMetadataCodeGenerator {
         return this
     }
 
-    private fun CodeBlock.Builder.addPolicyArguments(policy: PolicyMetadata): CodeBlock.Builder =
-        this.addPolicyId(policy.identifier.fieldName).addPolicyInformation(policy)
-
-    private fun genericPolicyAdder(policy: PolicyMetadata, type: ClassName) =
-        CodeBlock.builder()
-            .add("policies.add(new \$T(\n", type)
-            .indent()
-            .addPolicyArguments(policy)
-            .add("\n")
-            .unindent()
-            .addStatement("))")
-            .build()
+    private fun CodeBlock.Builder.addPolicyArguments(
+        policy: PolicyMetadata,
+        policyId: CodeBlock = policy.getPolicyIdCodeBlock(),
+    ): CodeBlock.Builder = this.addPolicyId(policyId).addPolicyInformation(policy)
 
     private val enumPolicyMetadataType: ClassName =
         ClassName.get(METADATA_PACKAGE, "EnumPolicyMetadata")
 
-    private fun generateEnumPolicyAdder(policy: PolicyMetadata) =
+    // Returns a CodeBlock containing `new EnumPolicyMetadata(<...>)`
+    private fun generateEnumPolicyMetadata(
+        policy: PolicyMetadata,
+        enumMetadata: EnumPolicyMetadata = policy.typeSpecificMetadata.enumMetadata,
+        policyId: CodeBlock = policy.getPolicyIdCodeBlock(),
+    ) =
         CodeBlock.builder()
-            .add("policies.add(new \$T(\n", enumPolicyMetadataType)
+            .add("new \$T(\n", enumPolicyMetadataType)
             .indent()
-            .addPolicyArguments(policy)
+            .addPolicyArguments(policy, policyId)
             .add(",\n")
             .add(
                 "/* allowedValues= */ \$L\n",
-                generateSetBuilder(
-                    policy.typeSpecificMetadata.enumMetadata.valuesList.map { it.intValue }
-                ),
+                generateSetBuilder(enumMetadata.valuesList.map { it.intValue }),
             )
             .unindent()
-            .addStatement("))")
+            .add(")")
             .build()
 
     private val booleanPolicyMetadataType = ClassName.get(METADATA_PACKAGE, "BooleanPolicyMetadata")
 
-    private fun generateBooleanPolicyAdder(policy: PolicyMetadata): CodeBlock =
-        genericPolicyAdder(policy, booleanPolicyMetadataType)
+    // Returns a CodeBlock containing `new BooleanPolicyMetadata(<...>)`
+    private fun generateBooleanPolicyMetadata(
+        policy: PolicyMetadata,
+        policyId: CodeBlock = policy.getPolicyIdCodeBlock(),
+    ): CodeBlock =
+        CodeBlock.builder()
+            .add("new \$T(\n", booleanPolicyMetadataType)
+            .indent()
+            .addPolicyArguments(policy, policyId)
+            .add("\n")
+            .unindent()
+            .add(")")
+            .build()
 
     private val integerPolicyMetadataType = ClassName.get(METADATA_PACKAGE, "IntegerPolicyMetadata")
 
-    private fun generateIntegerPolicyAdder(policy: PolicyMetadata) =
-        genericPolicyAdder(policy, integerPolicyMetadataType)
+    private fun generateIntegerPolicyMetadata(
+        policy: PolicyMetadata,
+        policyId: CodeBlock = policy.getPolicyIdCodeBlock(),
+    ) =
+        CodeBlock.builder()
+            .add("new \$T(\n", integerPolicyMetadataType)
+            .indent()
+            .addPolicyArguments(policy, policyId)
+            .add("\n")
+            .unindent()
+            .add(")")
+            .build()
 
     private val stringPolicyMetadataType = ClassName.get(METADATA_PACKAGE, "StringPolicyMetadata")
 
     private fun CodeBlock.Builder.addStringMetadataInformation(emptyStringAllowed: Boolean) =
         this.add("/* emptyStringAllowed= */ \$L", emptyStringAllowed)
 
-    private fun generateStringPolicyAdder(policy: PolicyMetadata) =
+    // Returns a CodeBlock containing `new StringPolicyMetadata(<policy-id>, ....)` .
+    private fun generateStringPolicyMetadata(
+        policy: PolicyMetadata,
+        stringMetadata: StringPolicyMetadata = policy.typeSpecificMetadata.stringMetadata,
+        policyId: CodeBlock = policy.getPolicyIdCodeBlock(),
+    ) =
         CodeBlock.builder()
-            .add("policies.add(new \$T(\n", stringPolicyMetadataType)
+            .add("new \$T(\n", stringPolicyMetadataType)
             .indent()
-            .addPolicyArguments(policy)
+            .addPolicyArguments(policy, policyId)
             .add(",\n")
-            .addStringMetadataInformation(
-                policy.typeSpecificMetadata.stringMetadata.emptyStringAllowed
-            )
+            .addStringMetadataInformation(stringMetadata.emptyStringAllowed)
             .add("\n")
             .unindent()
-            .addStatement("))")
+            .add(")")
             .build()
 
     private val listPolicyMetadataType = ClassName.get(METADATA_PACKAGE, "ListPolicyMetadata")
 
-    private fun generateListPolicyAdder(
-        policy: PolicyMetadata,
-        elementType: ClassName,
-        elementMetadataType: ClassName,
-    ) =
-        CodeBlock.builder()
-            .add(
-                "policies.add(new \$T(\n",
-                ParameterizedTypeName.get(listPolicyMetadataType, elementType),
-            )
+    // Returns a CodeBlock containing `new ListPolicyMetadata<TYPE>(....)`
+    private fun generateListPolicyMetadata(policy: PolicyMetadata): CodeBlock {
+        val elementType = getListElementType(policy)
+        val elementMetadata = generateListPolicyElementMetadata(policy)
+        return CodeBlock.builder()
+            .add("new \$T(\n", ParameterizedTypeName.get(listPolicyMetadataType, elementType))
             .indent()
             .addPolicyId(policy.identifier.fieldName)
-            .add("/* elementMetadata= */ new \$T(\n", elementMetadataType)
-            .indent()
-            .addPolicyId(
-                CodeBlock.builder()
-                    .add(
-                        "new \$T(\$L.getId() + \$S)",
-                        ParameterizedTypeName.get(policyIdentifierType, elementType),
-                        policy.identifier.fieldName,
-                        "#elements",
-                    )
-                    .build()
-            )
-            .addPolicyInformation(policy)
+            .add("/* elementMetadata= */ ")
+            .add(elementMetadata)
             .add(",\n")
-            .addStringMetadataInformation(
-                policy.typeSpecificMetadata.listOfStringMetadata.elementMetadata.emptyStringAllowed
-            )
-            .unindent()
-            .add("\n),\n")
             .add(
                 "/* emptyListAllowed= */ \$L\n",
-                policy.typeSpecificMetadata.listOfStringMetadata.emptyListAllowed,
+                policy.typeSpecificMetadata.listMetadata.emptyListAllowed,
             )
             .unindent()
-            .addStatement("))")
+            .add(")")
+            .build()
+    }
+
+    // Returns a CodeBlock containing the policy metadata for a list element
+    //    new ElementTypePolicyMetadata(<element-policy-id>, ...)
+    private fun generateListPolicyElementMetadata(policy: PolicyMetadata): CodeBlock {
+        val policyId = policy.generateListElementPolicyId(getListElementType(policy))
+        return when (policy.typeSpecificMetadata.listMetadata.listElementMetadataCase) {
+            ListElementMetadataCase.ENUM_METADATA ->
+                generateEnumPolicyMetadata(
+                    policy,
+                    policy.typeSpecificMetadata.listMetadata.enumMetadata,
+                    policyId,
+                )
+            ListElementMetadataCase.INTEGER_METADATA ->
+                generateIntegerPolicyMetadata(policy, policyId)
+            ListElementMetadataCase.STRING_METADATA ->
+                generateStringPolicyMetadata(
+                    policy,
+                    policy.typeSpecificMetadata.listMetadata.stringMetadata,
+                    policyId,
+                )
+            ListElementMetadataCase.LISTELEMENTMETADATA_NOT_SET ->
+                throw IllegalArgumentException("List Element type specific metadata unset")
+        }
+    }
+
+    private fun getListElementType(policy: PolicyMetadata): ClassName =
+        when (policy.typeSpecificMetadata.listMetadata.listElementMetadataCase) {
+            ListElementMetadataCase.ENUM_METADATA -> ClassName.get(Integer::class.javaObjectType)
+            ListElementMetadataCase.INTEGER_METADATA -> ClassName.get(Integer::class.javaObjectType)
+            ListElementMetadataCase.STRING_METADATA -> ClassName.get(String::class.java)
+            ListElementMetadataCase.LISTELEMENTMETADATA_NOT_SET ->
+                throw IllegalArgumentException("List Element type specific metadata unset")
+        }
+
+    private fun PolicyMetadata.generateListElementPolicyId(elementType: ClassName) =
+        CodeBlock.builder()
+            .add(
+                "new \$T(\$L.getId() + \$S)",
+                ParameterizedTypeName.get(policyIdentifierType, elementType),
+                this.identifier.fieldName,
+                "#elements",
+            )
             .build()
 
-    private fun generateListOfStringPolicyAdder(policy: PolicyMetadata) =
-        generateListPolicyAdder(policy, stringType, stringPolicyMetadataType)
-
-    private val stringType = ClassName.get(String::class.java)
     private val setType = ClassName.get(Set::class.java)
     private val listType = ClassName.get(List::class.java)
     private val arrayListType = ClassName.get(ArrayList::class.java)

@@ -101,10 +101,14 @@ message TypeSpecificPolicyMetadata {
     bool empty_string_allowed = 1;
   }
 
-  message ListOfStringPolicyMetadata {
-    StringPolicyMetadata element_metadata = 1;
+  message ListPolicyMetadata {
+    oneof list_element_metadata {
+      IntegerPolicyMetadata integer_metadata = 1;
+      EnumPolicyMetadata enum_metadata = 2;
+      StringPolicyMetadata string_metadata = 3;
+    }
 
-    bool empty_list_allowed = 2;
+    bool empty_list_allowed = 4;
   }
 
   oneof type_metadata {
@@ -112,8 +116,11 @@ message TypeSpecificPolicyMetadata {
     IntegerPolicyMetadata integer_metadata = 2;
     EnumPolicyMetadata enum_metadata = 3;
     StringPolicyMetadata string_metadata = 4;
-    ListOfStringPolicyMetadata list_of_string_metadata = 5;
+    ListPolicyMetadata list_metadata = 6;
   }
+
+  reserved 5;
+  reserved "list_of_string_metadata";
 }
 
 message PolicyMetadataList {
