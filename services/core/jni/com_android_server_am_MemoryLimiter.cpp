@@ -64,6 +64,18 @@ enum class MonitoredLimit {
 using wdmap_t = std::unordered_map<int, pid_t>;
 
 /**
+ * A wrapper that throws a message constructed from a printf string.
+ */
+void throwRuntime(JNIEnv* env, char const* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    char msg[1024];
+    vsnprintf(msg, sizeof(msg), fmt, args);
+    va_end(args);
+    jniThrowRuntimeException(env, msg);
+}
+
+/**
  * A monitored process.
  */
 class Process {
@@ -170,60 +182,74 @@ private:
     int mMemoryWd = UNSET;
 };
 
-// The JVM information that supports callback notifications.
+// The JVM information that supports callback notifications.  This class is valid in a single
+// thread that remains attached for its lifetime.
 class Callback {
-    JavaVM* mVm;
-    jmethodID mFunc;
-    jweak mLimiter;
+    JavaVM* mVm = nullptr;
+    jmethodID mFunc = nullptr;
+    jobject mLimiter = nullptr;
 
 public:
-    // No special constructor or destructor is needed.  The copy constructor is not allowed.
-    Callback() {}
-    Callback(Callback const&) = delete;
-    ~Callback() {}
-
-    bool init(JNIEnv* env, jobject jlimiter) {
+    // The constructor throws a Java exception on error.  If an exception is thrown, some
+    // attributes will be null.
+    Callback(JNIEnv* env, jobject jlimiter) {
         if (env->GetJavaVM(&mVm) != 0) {
-            ALOGE("GetJavaVM failed");
-            return false;
+            throwRuntime(env, "Callback: GetJavaVM() failed");
+            return;
         }
         char const* class_name = "com/android/server/am/MemoryLimiter$Controller";
         jclass service = env->FindClass(class_name);
         if (service == nullptr) {
-            ALOGE("Failed to find class %s", class_name);
-            return false;
+            throwRuntime(env, "failed to find Controller class");
+            return;
         }
         mFunc = env->GetMethodID(service, "onLimitExceeded", "(III)V");
         if (mFunc == nullptr) {
-            ALOGE("Failed to find static method onLimitExceeded");
-            return false;
+            throwRuntime(env, "failed to find limiter callback");
+            return;
         }
-        mLimiter = env->NewWeakGlobalRef(jlimiter);
+        mLimiter = env->NewGlobalRef(jlimiter);
         if (mLimiter == nullptr) {
-            ALOGE("Failed to create weak reference");
-            return false;
+            throwRuntime(env, "failed to create global ref");
+            return;
         }
-        return true;
+    }
+
+    // The copy constructor is disallowed.
+    Callback(Callback const&) = delete;
+
+    ~Callback() {
+        // These pointers will be null only if the constructor encountered a failure and exited
+        // early.
+        if (mVm != nullptr && mLimiter != nullptr) {
+            JNIEnv* env;
+            if (mVm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) == JNI_OK) {
+                env->DeleteGlobalRef(mLimiter);
+            } else {
+                ALOGE("~Callback() failed in GetEnv()");
+            }
+        }
     }
 
     void operator()(int pid, int uid, MonitoredLimit type) {
         JNIEnv* env;
-        if (mVm->AttachCurrentThread(&env, 0) == JNI_OK) {
-            jobject limiter = env->NewGlobalRef(mLimiter);
-            if (limiter != nullptr) {
-                env->CallVoidMethod(limiter, mFunc, pid, uid, type);
-                env->DeleteGlobalRef(limiter);
-            }
-            mVm->DetachCurrentThread();
+        if (mVm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) == JNI_OK) {
+            env->CallVoidMethod(mLimiter, mFunc, pid, uid, type);
         } else {
-            ALOGE("failed to attach thread to JavaVM");
+            ALOGE("GetEnv() failed");
         }
     }
 };
 
 class Monitor {
-    // True if init() has ever been called on this object.
-    bool mInitialized = false;
+    // A mutex to guard access to targets.
+    mutable Mutex mLock;
+
+    // The callback
+    Callback mCallback;
+
+    // The Java VM, used by the monitor thread.
+    JavaVM* mVm;
 
     // The inotify object that watches cgroup event files.
     base::unique_fd mInotifyFd;
@@ -237,12 +263,6 @@ class Monitor {
     // The polling thread.
     pthread_t mPoller;
 
-    // The callback
-    Callback mCallback;
-
-    // A mutex to guard access to targets.
-    mutable Mutex mLock;
-
     // The list of monitored processes, indexed by pid.
     std::unordered_map<pid_t, Process> mTargets;
 
@@ -255,34 +275,28 @@ class Monitor {
     };
 
 public:
-    Monitor() : mLock(0) {}
-
-    /**
-     * Initialize the file descriptors in the monitor.  Calling this more than once is harmless.
-     * That would be unusual in production code but is common in test code.
-     */
-    bool init(JNIEnv* env, jobject jlimiter) {
-        AutoMutex _l(mLock);
-
-        if (mInitialized) {
-            return true;
+    Monitor(JNIEnv* env, jobject jlimiter) : mLock(0), mCallback(env, jlimiter) {
+        if (env->ExceptionCheck()) {
+            // The callback has probably failed in its constructor.  Exit immediately.
+            return;
         }
 
-        if (!mCallback.init(env, jlimiter)) {
-            return false;
+        if (env->GetJavaVM(&mVm) != 0) {
+            throwRuntime(env, "Monitor: GetJavaVM() failed");
+            return;
         }
 
         int ifd = inotify_init();
         if (ifd < 0) {
-            ALOGE("inotify_init() failed: %s", strerror(errno));
-            return false;
+            throwRuntime(env, "inotify_init() failed: %s", strerror(errno));
+            return;
         }
         mInotifyFd.reset(ifd);
 
         int efd = eventfd(0, EFD_CLOEXEC | EFD_SEMAPHORE);
         if (efd < 0) {
-            ALOGE("eventfd() failed: %s", strerror(errno));
-            return false;
+            throwRuntime(env, "eventfd() failed: %s", strerror(errno));
+            return;
         }
         mEventFd.reset(efd);
 
@@ -290,41 +304,35 @@ public:
         // be non-zero.
         int pfd = epoll_create(1);
         if (pfd < 0) {
-            ALOGE("epoll_create() failed: %s", strerror(errno));
-            return false;
+            throwRuntime(env, "epoll_create() failed: %s", strerror(errno));
+            return;
         }
         mEpollFd.reset(pfd);
 
         // Add the two, permanent descriptors to epoll.
         struct epoll_event e_event = {.events = EPOLLIN, .data.u64 = 0};
         if (epoll_ctl(mEpollFd, EPOLL_CTL_ADD, mEventFd, &e_event) < 0) {
-            ALOGE("epoll add(event) failed: %s", strerror(errno));
-            return false;
+            throwRuntime(env, "epoll add(event) failed: %s", strerror(errno));
+            return;
         }
 
         struct epoll_event i_event = {.events = EPOLLIN, .data.u64 = 1};
         if (epoll_ctl(mEpollFd, EPOLL_CTL_ADD, mInotifyFd, &i_event) != 0) {
-            ALOGE("epoll add(inotify) failed: %s", strerror(errno));
-            return false;
+            throwRuntime(env, "epoll add(inotify) failed: %s", strerror(errno));
+            return;
         }
 
         if (pthread_create(&mPoller, 0, &Monitor::startMonitoring, this) != 0) {
-            ALOGE("pthread_create() failed: %s", strerror(errno));
-            return false;
+            throwRuntime(env, "pthread_create() failed: %s", strerror(errno));
+            return;
         }
         pthread_setname_np(mPoller, "memory.limiter");
-
-        mInitialized = true;
-        return true;
     }
 
     // No copy constructors or move constructors.
     Monitor(Monitor const&) = delete;
 
     ~Monitor() {
-        if (!mInitialized) return;
-
-        // Stop the monitor thread by sending it a STOP command.
         if (sendCommand(Cmd::Stop)) {
             pthread_join(mPoller, nullptr);
         } else {
@@ -344,10 +352,6 @@ public:
     // Add a process to the list of monitored processes.  The process and its file descriptors
     // is owned by the monitor.
     bool start(int pid, int uid) {
-        if (!mInitialized) {
-            ALOGE("monitor not started in start()");
-            return false;
-        }
         Process p(pid, uid);
         if (!p.init()) return false;
         base::borrowed_fd pfd = p.getPidFd();
@@ -363,11 +367,6 @@ public:
 
     // Ensure the process is being watched.
     bool watch(int pid, int uid) {
-        if (!mInitialized) {
-            ALOGE("monitor not started in watch()");
-            return false;
-        }
-
         AutoMutex _l(mLock);
         auto i = mTargets.find(pid);
         if (i != mTargets.end()) {
@@ -398,6 +397,14 @@ private:
     // The main monitoring loop.
     void* run() {
         ALOGI("begin monitoring");
+
+        // Attach the thread to the VM.  It is known that the thread is not currently attached.
+        JNIEnv* env;
+        if (mVm->AttachCurrentThread(&env, nullptr) != JNI_OK) {
+            ALOGE("failed to attach monitor thread");
+            return nullptr;
+        }
+
         static const int event_size = 32;
         struct epoll_event events[event_size];
         memset(events, 0, sizeof(events));
@@ -411,6 +418,7 @@ private:
                 break;
             }
         }
+        mVm->DetachCurrentThread();
         ALOGI("end monitoring");
         return nullptr;
     }
@@ -490,9 +498,9 @@ private:
                 auto i = mTargets.find(pid);
                 if (i != mTargets.end()) {
                     Process* p = &i->second;
-                    p->unwatch(mInotifyFd, mWdMap);
                     uid = p->mUid;
                     limit = p->getLimitType(wd);
+                    p->unwatch(mInotifyFd, mWdMap);
                 }
             }
             if (pid != 0) {
@@ -517,13 +525,11 @@ Monitor* getMonitor(jlong service) {
 
 // Create a new Monitor object and returns its address.
 jlong initLimiter(JNIEnv* env, jclass, jobject jlimiter) {
-    Monitor* m = new Monitor();
-    if (!m->init(env, jlimiter)) {
-        delete m;
-        jniThrowRuntimeException(env, "monitor initialization failed");
+    std::unique_ptr<Monitor> m(new Monitor(env, jlimiter));
+    if (env->ExceptionCheck()) {
         return 0;
     }
-    return reinterpret_cast<jlong>(m);
+    return reinterpret_cast<jlong>(m.release());
 }
 
 // Close and release a limiter.
@@ -539,6 +545,18 @@ jboolean startProcess(JNIEnv*, jclass, jlong service, jint pid, jint uid) {
     return m->start(pid, uid);
 }
 
+// A tiny class that emits a trace in its destructor.
+class EndTracer {
+    char const* track;
+    const int tag;
+
+public:
+    EndTracer(char const* track, int tag) : track(track), tag(tag) {}
+    ~EndTracer() {
+        ATRACE_ASYNC_FOR_TRACK_END(track, tag);
+    }
+};
+
 // A small wrapper to make lines shorter.  The compiler will inline this.
 bool writeString(std::string text, std::string& path) {
     return android::base::WriteStringToFile(text, path);
@@ -547,6 +565,10 @@ bool writeString(std::string text, std::string& path) {
 // A process is being configured with a memory.high limit.  A negative limit means "max".
 jboolean configureLimit(JNIEnv*, jclass, jlong service, jint pid, jint uid, jlong limit) {
     Monitor* m = getMonitor(service);
+
+    // The Java layer started a slice.  Ensure it is terminated, regardless of how this method
+    // exits.
+    EndTracer _tracer(TRACE_TRACK, pid);
 
     if (!m->watch(pid, uid)) return false;
     std::string name = "MemHigh";
