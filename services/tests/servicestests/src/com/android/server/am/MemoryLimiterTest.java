@@ -43,6 +43,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -80,6 +81,10 @@ public class MemoryLimiterTest {
     // LINT.ThenChange(
     //   /services/tests/servicestests/test-apps/MemoryLimiterTestApp/AndroidManifest.xml:testapp
     // )
+
+    // The UID of the test application.  This can change every time the package is installed but
+    // should not change for the duration of the test.
+    private int mUid;
 
     private static String shellCommand(String cmd) {
         ParcelFileDescriptor pfd = InstrumentationRegistry.getInstrumentation().getUiAutomation()
@@ -196,13 +201,20 @@ public class MemoryLimiterTest {
         }
     }
 
+    @Before
+    public void setUp() throws Exception {
+        mUid = getHelperUid();
+        blockSystemLimiter(mUid, true);
+    }
+
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
         shellCommand("am force-stop " + HELPER);
+        blockSystemLimiter(mUid, false);
     }
 
     // Fetch the pid of the helper application.
-    private int getHelperPid() throws NumberFormatException {
+    private static int getHelperPid() throws NumberFormatException {
         String pid = shellCommand("pidof " + HELPER).trim();
         assertNotNull("Could not get PID for package " + HELPER, pid);
         return Integer.parseInt(pid);
@@ -218,7 +230,7 @@ public class MemoryLimiterTest {
     // UID.  The UID is specific to the helper package, so there is no impact to any other
     // functions on the system.  This must be done every time the helper app is started because
     // the cgroup path disappears if there are no processes with the UID.
-    private int prepareHelperCgroup(int pid, int uid) throws Exception {
+    private static int prepareHelperCgroup(int pid, int uid) throws Exception {
         String path = String.format("/sys/fs/cgroup/apps/uid_%d", uid);
         String r = shellCommand("chmod -R a+rw " + path);
         if (r != null && !r.trim().equals("")) {
@@ -228,8 +240,13 @@ public class MemoryLimiterTest {
         return currentMemory(pid, uid);
     }
 
+    // Disable the system MemoryLimiter for the UID under test.
+    private static void blockSystemLimiter(int uid, boolean blocked) throws Exception {
+        shellCommand("am memory-limiter ignore " + ((blocked) ? Integer.toString(uid) : "none"));
+    }
+
     // Return the current memory of the helper app, as reported by memcg.
-    private int currentMemory(int pid, int uid) throws Exception {
+    private static int currentMemory(int pid, int uid) throws Exception {
         String path = String.format("/sys/fs/cgroup/apps/uid_%d/pid_%d/memory.current", uid, pid);
         Path filePath = Paths.get(path);
         // Always specify the Charset, e.g., UTF_8.  This may throw: allow the test to fail.
@@ -278,12 +295,11 @@ public class MemoryLimiterTest {
             shellCommand(cmd);
 
             int pid = getHelperPid();
-            int uid = getHelperUid();
-            Log.i(TAG, String.format("helper at pid=%d uid=%d", pid, uid));
+            Log.i(TAG, String.format("helper at pid=%d uid=%d", pid, mUid));
 
             // Prepare the cgroup for testing.
-            prepareHelperCgroup(pid, uid);
-            limiter.setPidUid(pid, uid);
+            prepareHelperCgroup(pid, mUid);
+            limiter.setPidUid(pid, mUid);
 
             // Set the limit, grow the app, and wait for the over-limit event.
             limiter.onProcStateUpdated(PROCESS_STATE_100M);
@@ -309,12 +325,11 @@ public class MemoryLimiterTest {
             shellCommand(cmd);
 
             int pid = getHelperPid();
-            int uid = getHelperUid();
-            Log.i(TAG, String.format("helper at pid=%d uid=%d", pid, uid));
+            Log.i(TAG, String.format("helper at pid=%d uid=%d", pid, mUid));
 
             // Prepare the cgroup for testing.
-            prepareHelperCgroup(pid, uid);
-            limiter.setPidUid(pid, uid);
+            prepareHelperCgroup(pid, mUid);
+            limiter.setPidUid(pid, mUid);
 
             // Grow the app by 100M, set the limit, and wait for the over-limit event.
             appCommand(100);

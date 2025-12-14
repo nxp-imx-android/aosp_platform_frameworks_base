@@ -16,6 +16,9 @@
 
 package com.android.server.am;
 
+import static android.os.Process.INVALID_PID;
+import static android.os.Process.INVALID_UID;
+import static android.os.Process.FIRST_APPLICATION_UID;
 import static android.text.TextUtils.formatSimple;
 
 import android.app.ActivityManager;
@@ -28,6 +31,7 @@ import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.BackgroundThread;
+import com.android.internal.util.MemInfoReader;
 import com.android.tools.r8.keepanno.annotations.UsedByNative;
 
 import java.util.Objects;
@@ -102,6 +106,9 @@ class MemoryLimiter implements AutoCloseable {
         @UsedByNative
         void onLimitExceeded(int pid, int uid, int limit);
 
+        // Block or unblock the limiter from monitoring/configuring the UID.
+        void ignoreUid(int uid, boolean ignore);
+
         // Close and release any resources.
         void close();
     }
@@ -133,6 +140,10 @@ class MemoryLimiter implements AutoCloseable {
         }
 
         @Override
+        public void ignoreUid(int uid, boolean ignore) {
+        }
+
+        @Override
         public void close() {
         }
     }
@@ -154,8 +165,21 @@ class MemoryLimiter implements AutoCloseable {
         // The opcode to configure a process.  The configuration data is in 'obj'.
         private static final int MESSAGE_CONFIG = 1;
 
+        // The opcode to ignore a UID.  Whatever is in arg2 (the uid field) is ignored.  Pass a
+        // negative value to ignore nothing (since real UIDs are non-negative).
+        private static final int MESSAGE_IGNORE = 2;
+
         // The opcode to close the controller.
-        private static final int MESSAGE_CLOSE = 2;
+        private static final int MESSAGE_CLOSE = 3;
+
+        // Well-known memory limits.
+        private static final Long MAX_MEMORY = -1L;     // Maximum memory
+        private final Long mMemoryVisible;
+        private final Long mMemoryNotVisible;
+
+        // The ignore list.  The code supports exactly one ignored uid.  The invalid uid never
+        // matches a uid, so that value turns off ignoring.
+        private int mIgnoredUid = INVALID_UID;
 
         /**
          * In the constructor, create the native peer and the message queue that will handle all
@@ -181,14 +205,23 @@ class MemoryLimiter implements AutoCloseable {
                         final int uid = msg.arg2;
                         final int op = msg.what;
                         switch (op) {
-                            case MESSAGE_START ->
+                            case MESSAGE_START -> {
+                                if (uid != mIgnoredUid) {
                                     onProcessStarted(mNative, pid, uid);
+                                }
+                            }
 
                             case MESSAGE_CONFIG -> {
-                                if (msg.obj != null) {
+                                if (msg.obj != null && uid != mIgnoredUid) {
                                     long limit = (Long) msg.obj;
                                     configureLimit(mNative, pid, uid, limit);
                                 }
+                            }
+
+                            case MESSAGE_IGNORE -> {
+                                // This message is only issued during testing.
+                                Slog.i(TAG, "ignoring " + uid + " was " + mIgnoredUid);
+                                mIgnoredUid = uid;
                             }
 
                             case MESSAGE_CLOSE -> {
@@ -201,6 +234,22 @@ class MemoryLimiter implements AutoCloseable {
                         }
                     }
                 };
+
+            if (Flags.memoryLimiterDefaultAppLimits()) {
+                MemInfoReader memInfo = new MemInfoReader();
+                memInfo.readMemInfo();
+                long vmem = memInfo.getTotalSize();
+                // Visible apps get 50% of memory.  Others get 25% of memory.
+                mMemoryVisible = vmem / 2;
+                mMemoryNotVisible = vmem / 4;
+                final long meg = 1024 * 1024;
+                Slog.i(TAG, formatSimple("Limits set to visible=%dMB not-visible=%dMB",
+                                mMemoryVisible / meg, mMemoryNotVisible / meg));
+            } else {
+                mMemoryVisible = MAX_MEMORY;
+                mMemoryNotVisible = MAX_MEMORY;
+                Slog.i(TAG, "Limits set to visible=max not-visible=max");
+            }
         }
 
         @Override
@@ -231,19 +280,19 @@ class MemoryLimiter implements AutoCloseable {
          * memory.high, captured in a Long.
          */
 
-        // Configure maximum memory.
-        private static final Long sMemoryMax = -1L;
-
         @Override
         public Long getStateLimit(@ProcessState int newState) {
-            return switch (newState) {
-                // Never try to configure a process that does not exist.
-                case ActivityManager.PROCESS_STATE_NONEXISTENT -> null;
-
-                // By configuring the maximum all the time, the MemoryLimiter does not have any
-                // effect on the system.
-                default -> sMemoryMax;
-            };
+            // Never try to configure a process that does not exist or is cached.
+            if (newState == ActivityManager.PROCESS_STATE_UNKNOWN
+                    || newState == ActivityManager.PROCESS_STATE_NONEXISTENT) {
+                return null;
+            } else if (ActivityManager.isProcStateCached(newState)) {
+                return null;
+            } else if (ActivityManager.isProcStateJankPerceptible(newState)) {
+                return mMemoryVisible;
+            } else {
+                return mMemoryNotVisible;
+            }
         }
 
         @UsedByNative
@@ -254,8 +303,13 @@ class MemoryLimiter implements AutoCloseable {
         }
 
         @Override
+        public void ignoreUid(int uid, boolean ignore) {
+            sendCommand(MESSAGE_IGNORE, INVALID_PID, ignore ? uid : INVALID_UID, null);
+        }
+
+        @Override
         public void close() {
-            sendCommand(MESSAGE_CLOSE, 0, 0, null);
+            sendCommand(MESSAGE_CLOSE, INVALID_PID, INVALID_UID, null);
         }
     }
 
@@ -303,9 +357,9 @@ class MemoryLimiter implements AutoCloseable {
     class Limiter {
 
         // The pid that this instance controls.
-        private int mPid = 0;
+        private int mPid = INVALID_PID;
         // The uid that this instance controls.
-        private int mUid = 0;
+        private int mUid = INVALID_UID;
         // The last limit assigned to the process.
         private Long mLimit = null;
 
@@ -323,12 +377,12 @@ class MemoryLimiter implements AutoCloseable {
             mPid = pid;
             mUid = uid;
 
-            if (mPid == 0 || mUid == 0 || mUid < Process.FIRST_APPLICATION_UID) {
+            if (mPid == INVALID_PID || mUid == INVALID_UID || mUid < FIRST_APPLICATION_UID) {
                 // A zero pid/zero uid is not valid for monitoring.  Do not forward any change to
                 // the controller.  The pid may change in the future, so reset the last-known
                 // limit.
-                mPid = 0;
-                mUid = 0;
+                mPid = INVALID_PID;
+                mUid = INVALID_UID;
                 mLimit = null;
                 return;
             }
@@ -346,7 +400,7 @@ class MemoryLimiter implements AutoCloseable {
             if (!mController.isEnabled()) return;
 
             // The process is not running, so we cannot assign limits.
-            if (mPid == 0) return;
+            if (mPid == INVALID_PID) return;
 
             final Long newLimit = mController.getStateLimit(newState);
             if (newLimit != null && !Objects.equals(mLimit, newLimit)) {
@@ -369,6 +423,22 @@ class MemoryLimiter implements AutoCloseable {
     @VisibleForTesting
     public void close() {
         mController.close();
+    }
+
+    /**
+     * Return the operational status of the controller.
+     */
+    boolean isEnabled() {
+        return mController.isEnabled();
+    }
+
+    /**
+     * Block or unblock a UID.  This is used in feature testing, when it is important that the
+     * limits are controlled by the test process and not by system_server.
+     */
+    @VisibleForTesting
+    void ignoreUid(int uid, boolean ignore) {
+        mController.ignoreUid(uid, ignore);
     }
 
     /**

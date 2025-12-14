@@ -164,6 +164,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -461,6 +462,8 @@ final class ActivityManagerShellCommand extends ShellCommand {
                     return runClearBadProcess(pw);
                 case "get-broadcast-constant":
                     return runGetBroadcastConstant(pw);
+                case "memory-limiter":
+                    return runMemoryLimiter(pw);
                 default:
                     return handleDefaultCommands(cmd);
             }
@@ -4663,6 +4666,41 @@ final class ActivityManagerShellCommand extends ShellCommand {
         return 0;
     }
 
+    int runMemoryLimiter(PrintWriter pw) {
+        try {
+            String cmd = getNextArgRequired();
+            MemoryLimiter limiter = mInternal.getMemoryLimiter();
+            switch (cmd) {
+                case "ignore" -> {
+                    String uidString = getNextArgRequired();
+                    if (Objects.equals(uidString, "none")) {
+                        limiter.ignoreUid(INVALID_UID, false);
+                    } else {
+                        try {
+                            limiter.ignoreUid(Integer.valueOf(uidString), true);
+                        } catch (NumberFormatException e) {
+                            getErrPrintWriter().println("Invalid UID: \"" + uidString + "\"");
+                            return -1;
+                        }
+                    }
+                }
+
+                case "status" -> {
+                    pw.println(limiter.isEnabled() ? "enabled" : "disabled");
+                }
+
+                default -> {
+                    getErrPrintWriter().println("Error: unknown sub-command \"" + cmd + "\"");
+                    return -1;
+                }
+            }
+        } catch (IllegalArgumentException e) {
+            getErrPrintWriter().println("Error: " + e.getMessage());
+            return -1;
+        }
+        return 0;
+    }
+
     private Resources getResources(PrintWriter pw) throws RemoteException {
         // system resources does not contain all the device configuration, construct it manually.
         Configuration config = mInterface.getConfiguration();
@@ -5139,6 +5177,9 @@ final class ActivityManagerShellCommand extends ShellCommand {
             pw.println("         Set an app's media service inactive or active.");
             pw.println("  clear-bad-process [--user USER_ID] <PROCESS_NAME>");
             pw.println("         Clears a process from the bad processes list.");
+            pw.println("  memory-limiter ignore <UID|none>");
+            pw.println("         Prevents the limiter from managing any process under the uid.");
+
             Intent.printIntentArgsHelp(pw, "");
         }
     }
