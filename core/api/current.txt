@@ -23186,7 +23186,7 @@ package android.media {
     method @NonNull public android.media.VolumeShaper createVolumeShaper(@NonNull android.media.VolumeShaper.Configuration);
     method protected void finalize();
     method public void flush();
-    method @FlaggedApi("android.media.audio.partial_flush_for_pcm_offload") @CheckResult public long flushFromFrame(long, int);
+    method @FlaggedApi("android.media.audio.partial_flush_for_pcm_offload") @CheckResult public long flushWrittenFramesFromPosition(long, int);
     method @NonNull public android.media.AudioAttributes getAudioAttributes();
     method public float getAudioDescriptionMixLeveldB();
     method public int getAudioFormat();
@@ -23223,6 +23223,7 @@ package android.media {
     method public int getStreamType();
     method public boolean getTimestamp(android.media.AudioTimestamp);
     method public int getUnderrunCount();
+    method @FlaggedApi("android.media.audio.partial_flush_for_pcm_offload") public long getWrittenFramesCount();
     method @Deprecated public static boolean isDirectPlaybackSupported(@NonNull android.media.AudioFormat, @NonNull android.media.AudioAttributes);
     method public boolean isOffloadedPlayback();
     method public void pause() throws java.lang.IllegalStateException;
