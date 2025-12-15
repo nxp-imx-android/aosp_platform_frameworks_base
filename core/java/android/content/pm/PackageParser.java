@@ -16,7 +16,6 @@
 
 package android.content.pm;
 
-import static android.content.pm.ActivityInfo.FLAG_ALWAYS_FOCUSABLE;
 import static android.content.pm.ActivityInfo.FLAG_SUPPORTS_PICTURE_IN_PICTURE;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_FORCE_RESIZABLE_LANDSCAPE_ONLY;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_FORCE_RESIZABLE_PORTRAIT_ONLY;
@@ -4467,10 +4466,6 @@ public class PackageParser {
             if (sa.getBoolean(R.styleable.AndroidManifestActivity_supportsPictureInPicture,
                     false)) {
                 a.info.flags |= FLAG_SUPPORTS_PICTURE_IN_PICTURE;
-            }
-
-            if (sa.getBoolean(R.styleable.AndroidManifestActivity_alwaysFocusable, false)) {
-                a.info.flags |= FLAG_ALWAYS_FOCUSABLE;
             }
 
             if (sa.hasValue(R.styleable.AndroidManifestActivity_maxAspectRatio)
