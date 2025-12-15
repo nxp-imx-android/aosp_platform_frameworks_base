@@ -36,7 +36,6 @@ import static android.os.PowerManagerInternal.WAKEFULNESS_ASLEEP;
 import static android.os.PowerManagerInternal.WAKEFULNESS_AWAKE;
 import static android.os.PowerManagerInternal.WAKEFULNESS_DOZING;
 import static android.os.PowerManagerInternal.WAKEFULNESS_DREAMING;
-import static android.service.dreams.Flags.FLAG_ALLOW_DREAM_WHEN_POSTURED;
 import static android.service.dreams.Flags.FLAG_DREAMS_V2;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doThrow;
@@ -2109,7 +2108,6 @@ public class PowerManagerServiceTest {
         assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_DREAMING);
     }
 
-    @EnableFlags(FLAG_ALLOW_DREAM_WHEN_POSTURED)
     @Test
     public void testDreamActivateWhilePosturedEnabled_postured_afterTimeout_goesToDreaming() {
         when(mBatteryManagerInternalMock.isPowered(anyInt())).thenReturn(true);
@@ -2132,7 +2130,6 @@ public class PowerManagerServiceTest {
         assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_DREAMING);
     }
 
-    @EnableFlags(FLAG_ALLOW_DREAM_WHEN_POSTURED)
     @Test
     public void testDreamActivateWhilePosturedEnabled_notPostured_afterTimeout_goesToDozing() {
         when(mBatteryManagerInternalMock.isPowered(anyInt())).thenReturn(true);

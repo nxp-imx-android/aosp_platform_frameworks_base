@@ -31,7 +31,7 @@ import static android.os.PowerManagerInternal.WAKEFULNESS_DOZING;
 import static android.os.PowerManagerInternal.WAKEFULNESS_DREAMING;
 import static android.os.PowerManagerInternal.WakeUpDelegate;
 import static android.os.PowerManagerInternal.wakefulnessToString;
-import static android.service.dreams.Flags.allowDreamWhenPostured;
+
 import static android.service.dreams.Flags.dreamsV2;
 import static android.service.dreams.Flags.napWhenDreamEnabled;
 
@@ -4816,9 +4816,6 @@ public final class PowerManagerService extends SystemService
     }
 
     private void setDevicePosturedInternal(boolean isPostured) {
-        if (!allowDreamWhenPostured()) {
-            return;
-        }
         synchronized (mLock) {
             mDevicePostured = isPostured;
             mDirty |= DIRTY_POSTURED_STATE;

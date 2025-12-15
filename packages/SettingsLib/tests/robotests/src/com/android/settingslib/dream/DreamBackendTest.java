@@ -16,7 +16,6 @@
 package com.android.settingslib.dream;
 
 
-import static android.service.dreams.Flags.FLAG_ALLOW_DREAM_WHEN_POSTURED;
 import static android.service.dreams.Flags.FLAG_USER_SELECTABLE_METADATA;
 
 import static com.android.settingslib.dream.DreamBackend.COMPLICATION_TYPE_DATE;
@@ -234,7 +233,6 @@ public final class DreamBackendTest {
     }
 
     @Test
-    @EnableFlags(FLAG_ALLOW_DREAM_WHEN_POSTURED)
     public void testChargingAndPosturedBothEnabled() {
         Settings.Secure.putInt(
                 mContext.getContentResolver(),
@@ -268,7 +266,6 @@ public final class DreamBackendTest {
     }
 
     @Test
-    @EnableFlags(FLAG_ALLOW_DREAM_WHEN_POSTURED)
     public void testPosturedAndDockedBothEnabled() {
         Settings.Secure.putInt(
                 mContext.getContentResolver(),
