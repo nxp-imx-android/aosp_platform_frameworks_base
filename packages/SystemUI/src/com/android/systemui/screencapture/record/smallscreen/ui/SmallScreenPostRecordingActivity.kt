@@ -131,7 +131,7 @@ constructor(
                         },
                         drawableLoaderViewModel = viewModel,
                         iconRes = R.drawable.ic_arrow_back,
-                        labelRes = R.string.screen_record_retake,
+                        labelRes = R.string.screen_record_take_another,
                         modifier = rowModifier,
                     )
                     PostRecordButton(

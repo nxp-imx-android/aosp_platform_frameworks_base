@@ -37,6 +37,7 @@ import com.android.systemui.screencapture.record.domain.interactor.ScreenCapture
 import com.android.systemui.screenrecord.ScreenRecordUxController
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.ScreenRecordRepository
+import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
 import com.android.systemui.statusbar.phone.KeyguardDismissUtil
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
@@ -59,6 +60,7 @@ constructor(
     private val panelInteractor: PanelInteractor,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     private val mediaProjectionMetricsLogger: MediaProjectionMetricsLogger,
+    private val screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
     private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
 ) : QSTileUserActionInteractor<ScreenRecordModel> {
     override suspend fun handleInput(input: QSTileInput<ScreenRecordModel>): Unit =
@@ -66,19 +68,23 @@ constructor(
             when (action) {
                 is QSTileUserAction.Click -> {
                     if (screenCaptureRecordFeaturesInteractor.shouldShowNewRecordingToolbar) {
-                        withContext(mainDispatcher) {
-                            // TODO(b/412723197): pass actual params here.
-                            activityStarter.executeRunnableDismissingKeyguard(
-                                {
-                                    screenCaptureUiInteractor.show(
-                                        ScreenCaptureUiParameters.Record()
-                                    )
-                                },
-                                /* cancelAction= */ null,
-                                /* dismissShade= */ true,
-                                /* afterKeyguardGone= */ true,
-                                /* deferred= */ false,
-                            )
+                        if (input.data is ScreenRecordModel.DoingNothing) {
+                            withContext(mainDispatcher) {
+                                // TODO(b/412723197): pass actual params here.
+                                activityStarter.executeRunnableDismissingKeyguard(
+                                    {
+                                        screenCaptureUiInteractor.show(
+                                            ScreenCaptureUiParameters.Record()
+                                        )
+                                    },
+                                    /* cancelAction= */ null,
+                                    /* dismissShade= */ true,
+                                    /* afterKeyguardGone= */ true,
+                                    /* deferred= */ false,
+                                )
+                            }
+                        } else {
+                            screenRecordingServiceInteractor.stopRecording(StopReason.STOP_QS_TILE)
                         }
                     } else {
                         when (data) {
