@@ -19,9 +19,13 @@ package com.android.server.devicepolicy.handlers;
 import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE;
 import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_PARENT_USER;
 import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER;
+import static android.app.admin.DevicePolicyManager.RESOURCE_DEVICE_WIDE;
+import static android.app.admin.DevicePolicyManager.RESOURCE_PER_USER;
 
+import android.Manifest.permission;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.UserIdInt;
 import android.app.admin.BooleanPolicyValue;
 import android.app.admin.DevicePolicyManager.DpcType;
 import android.app.admin.DevicePolicyManager.PolicyScope;
@@ -126,15 +130,36 @@ public class PolicyHandler<T> {
                         Boolean isDisabled =
                                 getPolicySetByAdmin(
                                         caller, PolicyDefinition.SCREEN_CAPTURE_DISABLED, scope);
-                        if (isDisabled == null) {
-                            return null;
-                        } else if (isDisabled) {
-                            return PolicyIdentifier.SCREEN_CAPTURE_DISALLOWED;
-                        } else {
-                            return PolicyIdentifier.SCREEN_CAPTURE_ALLOWED;
-                        }
+
+                        return booleanToEnum(
+                                /* trueValue= */ PolicyIdentifier.SCREEN_CAPTURE_DISALLOWED,
+                                /* falseValue= */ PolicyIdentifier.SCREEN_CAPTURE_ALLOWED,
+                                isDisabled);
+                    }
+
+                    @Override
+                    protected Integer getResolvedPerUserPolicyValue(int userId) {
+                        var isDisabled = getDelegate().getResolvedPerUserPolicy(
+                                userId,
+                                PolicyDefinition.SCREEN_CAPTURE_DISABLED
+                        );
+
+                        return booleanToEnum(
+                                /* trueValue= */ PolicyIdentifier.SCREEN_CAPTURE_DISALLOWED,
+                                /* falseValue= */ PolicyIdentifier.SCREEN_CAPTURE_ALLOWED,
+                                isDisabled);
                     }
                 });
+    }
+
+    static Integer booleanToEnum(int trueValue, int falseValue, Boolean value) {
+        if (value == null) {
+            return null;
+        } else if (value) {
+            return trueValue;
+        } else {
+            return falseValue;
+        }
     }
 
     private final PolicyIdentifier<T> mKey;
@@ -250,6 +275,49 @@ public class PolicyHandler<T> {
     }
 
     /**
+     * Read the resolved per-user policy value.
+     */
+    protected T getResolvedPerUserPolicyValue(int userId) {
+        return getDelegate().getResolvedPerUserPolicy(userId, getPolicyDefinition());
+    }
+
+    /**
+     * Retrieves the effective value of the per-user policy. Does not check permissions.
+     */
+    public PolicyValueTransport getResolvedPerUserPolicyUnchecked(int userId) {
+        if (getPolicyMetadata().getAffectedResource() != RESOURCE_PER_USER) {
+            throw new IllegalArgumentException(
+                    "Policy "
+                            + getPolicyMetadata().getId()
+                            + " is not per-user. Call getResolvedDeviceWidePolicy instead.");
+        }
+
+        return convertValue(getResolvedPerUserPolicyValue(userId));
+    }
+
+    /**
+     * Read the resolved device-wide policy value.
+     */
+    protected T getResolvedDeviceWidePolicyValue() {
+        return getDelegate().getResolvedDeviceWidePolicy(getPolicyDefinition());
+    }
+
+    /**
+     * Retrieves the effective value of the device-wide policy. Does not check permissions.
+     */
+    public PolicyValueTransport getResolvedDeviceWidePolicyUnchecked() {
+        if (getPolicyMetadata().getAffectedResource() != RESOURCE_DEVICE_WIDE) {
+            throw new IllegalArgumentException(
+                    "Policy "
+                            + getPolicyMetadata().getId()
+                            + " is not device-wide. Call getResolvedPerUserPolicy instead.");
+        }
+
+        return convertValue(getResolvedDeviceWidePolicyValue());
+    }
+
+
+    /**
      * Validates if the {@link PolicyScope} can be used for this policy.
      *
      * @throws IllegalArgumentException if the scope can not be used.
@@ -287,6 +355,42 @@ public class PolicyHandler<T> {
         return getTransportValueConvertor().toTransport(value);
     }
 
+    @NonNull
+    private String getRequiredPermission() {
+        var requiredPermission = getPolicyMetadata().getRequiredPermission();
+        if (requiredPermission == null) {
+            throw new IllegalStateException(
+                    "Policy "
+                            + getKey().getId()
+                            + " has no requiredPermission, either add one or override"
+                            + " checkPermissions in the handler");
+        }
+        return requiredPermission;
+    }
+
+    private void checkPermissionInternal(
+            CallerIdentity caller,
+            boolean checkRequiredPermission,
+            boolean checkRequiredCrossUserPermission
+    ) {
+        var permissionChecker = getPermissionChecker();
+        var requiredPermission = getRequiredPermission();
+
+        if (checkRequiredPermission) {
+            if (!isPolicyAllowedForDpc(mDelegate.getDpcType(caller))) {
+                permissionChecker.enforce(requiredPermission, caller);
+            }
+        }
+
+
+        if (checkRequiredCrossUserPermission) {
+            var requiredCrossUserPermission = getPolicyMetadata().getRequiredCrossUserPermission();
+            if (requiredCrossUserPermission != null) {
+                permissionChecker.enforce(requiredCrossUserPermission, caller);
+            }
+        }
+    }
+
     /**
      * Performs permission checks, based on the information in the {@link PolicyDefinition}
      * information provided on the {@link PolicyIdentifier}.
@@ -299,28 +403,55 @@ public class PolicyHandler<T> {
      * @throws SecurityException when the caller does not have the required permissions.
      */
     public void checkPermissions(CallerIdentity caller, @PolicyScope int scope) {
+        checkPermissionInternal(
+                caller,
+                /* checkRequiredPermission= */ true,
+                /* checkRequiredCrossUserPermission= */ scope != POLICY_SCOPE_USER
+        );
+    }
+
+    /**
+     * Performs permission checks, based on the information in the {@link PolicyDefinition}
+     * information provided on the {@link PolicyIdentifier}.
+     *
+     * <p>If the target {@code userId} is different from the {@code caller}, this additionally
+     * checks if the caller has the proper 'manage across users' permission.
+     *
+     * @param caller The caller from the binder context.
+     * @param userId The target user.
+     */
+    public void checkReadResolvedPerUserPermissions(CallerIdentity caller, @UserIdInt int userId) {
         var permissionChecker = getPermissionChecker();
 
-        // Check for the permission here to catch any issues early.
-        var requiredPermission = getPolicyMetadata().getRequiredPermission();
-        if (requiredPermission == null) {
-            throw new IllegalStateException(
-                    "Policy "
-                            + getKey().getId()
-                            + " has no requiredPermission, either add one or override"
-                            + " checkPermissions in the handler");
-        }
+        var hasQueryAdminPolicy =
+                permissionChecker.hasPermission(permission.QUERY_ADMIN_POLICY, caller);
 
-        if (!isPolicyAllowedForDpc(mDelegate.getDpcType(caller))) {
-            permissionChecker.enforce(requiredPermission, caller);
-        }
+        checkPermissionInternal(
+                caller,
+                /* checkRequiredPermission= */ !hasQueryAdminPolicy,
+                /* checkRequiredCrossUserPermission= */ caller.getUserId() != userId
+        );
+    }
 
-        if (scope != POLICY_SCOPE_USER) {
-            var requiredCrossUserPermission = getPolicyMetadata().getRequiredCrossUserPermission();
-            if (requiredCrossUserPermission != null) {
-                permissionChecker.enforce(requiredCrossUserPermission, caller);
-            }
-        }
+    /**
+     * Performs permission checks, based on the information in the {@link PolicyDefinition}
+     * information provided on the {@link PolicyIdentifier}.
+     *
+     * <p>Always checks if the caller has the proper 'manage across users' permission.
+     *
+     * @param caller The caller from the binder context.
+     */
+    public void checkReadResolvedDeviceWidePermissions(CallerIdentity caller) {
+        var permissionChecker = getPermissionChecker();
+
+        var hasQueryAdminPolicy =
+                permissionChecker.hasPermission(permission.QUERY_ADMIN_POLICY, caller);
+
+        checkPermissionInternal(
+                caller,
+                /* checkRequiredPermission= */ !hasQueryAdminPolicy,
+                /* checkRequiredCrossUserPermission= */ true
+        );
     }
 
     /**
@@ -489,5 +620,24 @@ public class PolicyHandler<T> {
                 @NonNull CallerIdentity caller,
                 @NonNull PolicyDefinition<StoredType> key,
                 @PolicyScope int scope);
+
+        /**
+         * Helper method to get the effective per-user policy value from the
+         * {@code DevicePolicyEngine}. Invoked from
+         * {@link PolicyHandler.getResolvedPerUserPolicyUnchecked}.
+         *
+         * <p>Will use {@code caller} to decide on the correct storage.
+         */
+        @Nullable
+        <StoredType> StoredType getResolvedPerUserPolicy(
+                @UserIdInt int userId, @NonNull PolicyDefinition<StoredType> key);
+
+        /**
+         * Helper method to get the effective device-wide policy value from the {@code
+         * DevicePolicyEngine}. Invoked from
+         * {@link PolicyHandler.getResolvedDeviceWidePolicyUnchecked}.
+         */
+        @Nullable
+        <T> T getResolvedDeviceWidePolicy(@NonNull PolicyDefinition<T> key);
     }
 }

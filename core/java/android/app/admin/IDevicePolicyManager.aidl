@@ -666,4 +666,6 @@ interface IDevicePolicyManager {
 
     void setPolicy(in String callerPackageName, in String policy, in int scope, in PolicyValueTransport value);
     PolicyValueTransport getPolicy(in String callerPackageName, in String policy, in int scope);
+    PolicyValueTransport getResolvedDeviceWidePolicy(in String callerPackageName, in String policy);
+    PolicyValueTransport getResolvedPerUserPolicy(in String callerPackageName, in int userId, in String policy);
 }

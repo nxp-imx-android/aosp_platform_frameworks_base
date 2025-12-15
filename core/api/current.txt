@@ -8553,6 +8553,8 @@ package android.app.admin {
     method @NonNull public java.util.List<android.app.admin.PreferentialNetworkServiceConfig> getPreferentialNetworkServiceConfigs();
     method @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCK_CREDENTIALS, conditional=true) public int getRequiredPasswordComplexity();
     method public long getRequiredStrongAuthTimeout(@Nullable android.content.ComponentName);
+    method @FlaggedApi("android.app.admin.flags.policy_streamlining") @Nullable public <T> T getResolvedDeviceWidePolicy(@NonNull android.app.admin.PolicyIdentifier<T>);
+    method @FlaggedApi("android.app.admin.flags.policy_streamlining") @Nullable public <T> T getResolvedPerUserPolicy(@NonNull android.app.admin.PolicyIdentifier<T>);
     method @NonNull public android.app.admin.DevicePolicyResourcesManager getResources();
     method public boolean getScreenCaptureDisabled(@Nullable android.content.ComponentName);
     method public java.util.List<android.os.UserHandle> getSecondaryUsers(@NonNull android.content.ComponentName);
