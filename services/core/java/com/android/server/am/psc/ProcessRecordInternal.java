@@ -826,13 +826,6 @@ public abstract class ProcessRecordInternal {
     public final OomAdjusterImpl.ProcessRecordNode[] mLinkedNodes =
             new OomAdjusterImpl.ProcessRecordNode[NUM_NODE_TYPE];
 
-    /**
-     *  Whether or not the zram memory of this process was written back to disk. Set to true when
-     *  the zram memory is successfully written back, and set to false when the process is unfrozen.
-     */
-    @GuardedBy("mServiceLock")
-    private boolean mIsZramWrittenBack = false;
-
     public ProcessRecordInternal(String processName, int uid, Object serviceLock, Object procLock) {
         this.processName = processName;
         this.uid = uid;
@@ -1666,16 +1659,6 @@ public abstract class ProcessRecordInternal {
     @GuardedBy("mProcLock")
     public void setRenderThreadTid(int renderThreadTid) {
         mRenderThreadTid = renderThreadTid;
-    }
-
-    @GuardedBy("mServiceLock")
-    public boolean isZramWrittenBack() {
-        return mIsZramWrittenBack;
-    }
-
-    @GuardedBy("mServiceLock")
-    public void setIsZramWrittenBack(boolean isZramWrittenBack) {
-        mIsZramWrittenBack = isZramWrittenBack;
     }
 
 
