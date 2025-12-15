@@ -28,7 +28,6 @@ import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.InstanceId
 import com.android.systemui.Flags.FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT
-import com.android.systemui.Flags.FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.activity.data.repository.activityManagerRepository
 import com.android.systemui.activity.data.repository.fake
@@ -117,7 +116,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     fun chips_noNotifs_empty() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -148,7 +146,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY, StatusBarConnectedDisplays.FLAG_NAME)
+    @DisableFlags(StatusBarConnectedDisplays.FLAG_NAME)
     fun chips_notifMissingStatusBarChipIconView_cdFlagDisabled_empty() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -167,7 +165,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
     fun chips_notifMissingStatusBarChipIconView_cdFlagEnabled_notEmpty() =
         kosmos.runTest {
@@ -187,7 +184,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     fun chips_onePromotedNotif_connectedDisplaysFlagDisabled_statusBarIconViewMatches() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -217,7 +213,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     fun chips_onePromotedNotif_connectedDisplaysFlagEnabled_statusBarIconMatches() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -246,7 +241,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     fun chips_onePromotedNotif_colorIsSystemThemed() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -314,7 +308,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     @EnableFlags(StatusBarChipsReturnAnimations.FLAG_NAME)
     fun chips_onePromotedNotif_returnAnimFlagEnabled_hasTransitionManager() =
         kosmos.runTest {
@@ -344,10 +337,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(
-        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
-        StatusBarChipsReturnAnimations.FLAG_NAME,
-    )
+    @DisableFlags(StatusBarChipsReturnAnimations.FLAG_NAME)
     fun chips_onePromotedNotif_returnAnimFlagDisabled_noTransitionManager() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -376,7 +366,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     fun chips_onlyForPromotedNotifs() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -413,7 +402,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     fun chips_connectedDisplaysFlagEnabled_onlyForPromotedNotifs() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -787,10 +775,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(
-        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
-        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
-    )
+    @DisableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun chips_hasShortCriticalText_usesTextInsteadOfTimeOrMetric() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -827,10 +812,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(
-        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
-        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
-    )
+    @DisableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun chips_useMetricInsteadOfTime() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -866,7 +848,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     fun chips_shortCriticalText_usesInstanceId() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -893,7 +874,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     fun chips_noTime_isIconOnly() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -916,84 +896,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
-    fun chips_basicTime_timeHiddenIfAutomaticallyPromoted() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.chips)
-            val currentTime = 30.minutes.inWholeMilliseconds
-            fakeSystemClock.setCurrentTimeMillis(currentTime)
-
-            val promotedContentBuilder =
-                newPromotedNotificationContentBuilder("notif").applyToShared {
-                    this.wasPromotedAutomatically = true
-                    this.time = When.Time(currentTime + 30.minutes.inWholeMilliseconds)
-                }
-            setNotifs(
-                listOf(
-                    activeNotificationModel(
-                        key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
-                        promotedContent = promotedContentBuilder.build(),
-                    )
-                )
-            )
-
-            assertThat(latest).hasSize(1)
-            assertThat(latest!![0].content)
-                .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
-        }
-
-    @Test
-    @EnableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
-    fun chips_basicTime_timeShownIfNotAutomaticallyPromoted() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.chips)
-            val currentTime = 30.minutes.inWholeMilliseconds
-            fakeSystemClock.setCurrentTimeMillis(currentTime)
-
-            val promotedContentBuilder =
-                newPromotedNotificationContentBuilder("notif").applyToShared {
-                    this.wasPromotedAutomatically = false
-                    if (NotificationChipFromCompactContent.isEnabled) {
-                        this.compactContent =
-                            Notification.ResolvedBasicCompactContent(
-                                COMPACT_ICON,
-                                TimeDifference.forTimer(
-                                    Instant.ofEpochMilli(
-                                        currentTime + 30.minutes.inWholeMilliseconds
-                                    ),
-                                    TimeDifference.FORMAT_CHRONOMETER,
-                                ),
-                                Notification.SEMANTIC_STYLE_UNSPECIFIED,
-                            )
-                    } else {
-                        this.time = When.Time(currentTime + 30.minutes.inWholeMilliseconds)
-                    }
-                }
-            setNotifs(
-                listOf(
-                    activeNotificationModel(
-                        key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
-                        promotedContent = promotedContentBuilder.build(),
-                    )
-                )
-            )
-
-            assertThat(latest).hasSize(1)
-            assertThat(latest!![0].content)
-                .isInstanceOf(
-                    if (NotificationChipFromCompactContent.isEnabled)
-                        OngoingActivityChipModel.Content.Timer::class.java
-                    else OngoingActivityChipModel.Content.ShortTimeDelta::class.java
-                )
-        }
-
-    @Test
-    @DisableFlags(
-        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
-        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
-    )
+    @DisableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun chips_basicTime_timeInFuture_isShortTimeDelta() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1075,10 +978,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(
-        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
-        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
-    )
+    @DisableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun chips_basicTime_timeLessThanOneMinInFuture_isIconOnly() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1106,7 +1006,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     fun chips_basicTime_timeIsNow_isIconOnly() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1134,7 +1033,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     fun chips_basicTime_timeInPast_isIconOnly() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1163,10 +1061,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     // Not necessarily the behavior we *want* to have, but it's the currently implemented behavior.
     @Test
-    @DisableFlags(
-        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
-        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
-    )
+    @DisableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun chips_basicTime_timeIsInFuture_thenTimeAdvances_stillShortTimeDelta() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1200,10 +1095,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(
-        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
-        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
-    )
+    @DisableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun chips_countUpTime_isTimer() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1241,7 +1133,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     fun chips_countUpTime_respectsIsAppVisible() =
         kosmos.runTest {
             activityManagerRepository.fake.startingIsAppVisibleValue = true
@@ -1299,7 +1190,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     fun chips_countDownTime_isTimer() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1353,7 +1243,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     fun chips_countDownTime_usesInstanceId() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1388,10 +1277,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(
-        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
-        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
-    )
+    @DisableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun chips_adaptiveTimerMetric_systemClock_isShortTimeDelta() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1483,10 +1369,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(
-        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
-        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
-    )
+    @DisableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun chips_adaptiveTimerMetric_realtimeClock_isShortTimeDelta() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1528,7 +1411,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     @EnableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun chips_compactContentAdaptiveTimer_realtimeClock_isCountdown() =
         kosmos.runTest {
@@ -1579,10 +1461,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(
-        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
-        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
-    )
+    @DisableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun chips_chronometerTimerMetric_systemClock_isTimer() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1630,7 +1509,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     @EnableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun chips_compactContentChronometerTimer_systemClock_isTimer() =
         kosmos.runTest {
@@ -1681,10 +1559,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(
-        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
-        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
-    )
+    @DisableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun chips_chronometerTimerMetric_realtimeClock_isTimer() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1732,7 +1607,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     @EnableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun chips_compactContentChronometerTimer_realtimeClock_isTimer() =
         kosmos.runTest {
@@ -1783,10 +1657,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(
-        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
-        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
-    )
+    @DisableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun chips_chronometerStopwatchMetric_systemClock_isTimer() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1834,7 +1705,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     @EnableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun chips_compactContentChronometerStopwatch_systemClock_isTimer() =
         kosmos.runTest {
@@ -1885,10 +1755,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(
-        FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY,
-        FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
-    )
+    @DisableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun chips_chronometerStopwatchMetric_realtimeClock_isTimer() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -1936,7 +1803,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     @EnableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT)
     fun chips_compactContentChronometerStopwatch_realtimeClock_isTimer() =
         kosmos.runTest {
@@ -1987,7 +1853,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     fun chips_noHeadsUp_showsTime() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -2035,7 +1900,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     fun chips_hasHeadsUpBySystem_showsTime() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -2090,7 +1954,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     fun chips_hasHeadsUpByUser_forOtherNotif_showsTime() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -2170,7 +2033,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     fun chips_hasHeadsUpByUser_forThisNotif_onlyShowsIcon() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
@@ -2205,7 +2067,6 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
     fun chips_clickingChipNotifiesInteractor() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)

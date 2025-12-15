@@ -1340,15 +1340,6 @@ flag {
 }
 
 flag {
-    name: "promote_notifications_automatically"
-    namespace: "systemui"
-    description: "Flag to automatically turn certain notifications into promoted notifications so "
-        " we can test promoted notifications with teamfooders. This flag should *never* be released "
-        "to trunkfood or nextfood."
-    bug: "367705002"
-}
-
-flag {
    name: "pss_task_switcher"
    namespace: "systemui"
    description: "Enable the task switcher feature for partial screen sharing"

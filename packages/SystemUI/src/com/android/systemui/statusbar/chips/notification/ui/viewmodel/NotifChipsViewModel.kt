@@ -215,7 +215,6 @@ constructor(
             chronometerFormat =
                 chipChronometerFormat ?: OngoingActivityChipModel.Content.Timer.Format.CHRONOMETER,
             semanticStyle = chipSemanticStyle,
-            wasPromotedAutomatically = content.wasPromotedAutomatically,
             isAppVisible = isAppVisible,
             instanceId = instanceId,
         )
@@ -405,14 +404,6 @@ constructor(
                     OngoingActivityChipModel.Content.IconOnly
                 }
                 text != null -> OngoingActivityChipModel.Content.Text(text = text)
-                Flags.promoteNotificationsAutomatically() && wasPromotedAutomatically -> {
-                    // When we're promoting notifications automatically, the `when` time set on the
-                    // notification will likely just be set to the current time, which would cause
-                    // the chip to always show "now". We don't want early testers to get that
-                    // experience since it's not what will happen at launch, so just don't show any
-                    // time.
-                    OngoingActivityChipModel.Content.IconOnly
-                }
                 NotificationChipFromCompactContent.isEnabled && chronometer != null ->
                     OngoingActivityChipModel.Content.Timer(
                         value = chronometer,
@@ -525,8 +516,6 @@ constructor(
         /** The time to show in the chip, or null if the time shouldn't be shown. */
         // TODO: b/462677827 - Delete when inlining NOTIFICATION_CHIP_FROM_COMPACT_CONTENT
         val time: PromotedNotificationContentModel.When?,
-        /** See [PromotedNotificationContentModel.wasPromotedAutomatically]. */
-        val wasPromotedAutomatically: Boolean,
         val isAppVisible: Boolean,
         val instanceId: InstanceId?,
     )
