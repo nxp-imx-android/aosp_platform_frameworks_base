@@ -1228,7 +1228,7 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
 
             final PanelFeatureState st = getPanelState(featureId, false);
 
-            if (event.isCanceled() || (mDecor != null && mDecor.mPrimaryActionMode != null) ||
+            if (event.isCanceled() || (mDecor != null && mDecor.hasPrimaryActionMode()) ||
                     (st == null)) {
                 return;
             }
