@@ -3126,20 +3126,6 @@ public class DevicePolicyManager {
     @FlaggedApi(FLAG_MULTI_USER_MANAGEMENT_USER_PROVISIONING)
     public static final int STATUS_USER_HAS_PROFILE = 22;
 
-
-    /**
-     * Results code for {@link #checkProvisioningPrecondition}.
-     *
-     * <p> Returned for {@link #ACTION_PROVISION_MANAGED_DEVICE} and
-     * {@link #ACTION_PROVISION_MANAGED_PROFILE} when the DPC is not marked
-     * as test-only and a non-default Device Policy Management role holder exists.
-     *
-     * @hide
-     */
-    @SystemApi
-    @FlaggedApi(FLAG_SECURE_ADB_ROLE_BYPASSING)
-    public static final int STATUS_NON_DEFAULT_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_EXISTS = 23;
-
     /**
      * Result code for {@link #checkProvisioningPreCondition}.
      *
@@ -3152,6 +3138,19 @@ public class DevicePolicyManager {
     @SystemApi
     @FlaggedApi(Flags.FLAG_MULTI_USER_MANAGEMENT_DEVICE_PROVISIONING)
     public static final int STATUS_MULTIUSER_MANAGEMENT_NOT_SUPPORTED = 23;
+
+    /**
+     * Results code for {@link #checkProvisioningPrecondition}.
+     *
+     * <p> Returned for {@link #ACTION_PROVISION_MANAGED_DEVICE} and
+     * {@link #ACTION_PROVISION_MANAGED_PROFILE} when the DPC is not marked
+     * as test-only and a non-default Device Policy Management role holder exists.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_SECURE_ADB_ROLE_BYPASSING)
+    public static final int STATUS_NON_DEFAULT_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_EXISTS = 24;
 
     /**
      * Result codes for {@link #checkProvisioningPrecondition} indicating all the provisioning pre
@@ -3172,6 +3171,7 @@ public class DevicePolicyManager {
             STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED, STATUS_OTHER_PROVISIONING_ERROR,
             STATUS_NOT_FULL_USER, STATUS_USER_HAS_PROFILE,
             STATUS_NON_DEFAULT_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_EXISTS,
+            STATUS_MULTIUSER_MANAGEMENT_NOT_SUPPORTED
     })
     public @interface ProvisioningPrecondition {}
 
@@ -18810,6 +18810,28 @@ public class DevicePolicyManager {
         if (mService != null) {
             try {
                 return mService.shouldAllowBypassingDevicePolicyManagementRoleQualification();
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return {@code true} if bypassing the device policy management role qualification is allowed
+     * with the current state of the device.
+     *
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(android.Manifest.permission.MANAGE_ROLE_HOLDERS)
+    @UserHandleAware
+    @FlaggedApi(FLAG_SECURE_ADB_ROLE_BYPASSING)
+    public boolean isPackageQualifiedForDevicePolicyManagementRole(@NonNull String packageName) {
+        if (mService != null) {
+            try {
+                return mService.isPackageQualifiedForDevicePolicyManagementRole(
+                        packageName, myUserId());
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
