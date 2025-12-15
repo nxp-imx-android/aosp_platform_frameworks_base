@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.quickactions.popups.ui.model
+package com.android.systemui.statusbar.quickactions.ui.compose
 
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
@@ -28,78 +28,78 @@ import com.android.systemui.res.R
  * the popup is shown/hidden and whether the chip is hovered.
  */
 @Immutable
-sealed interface ColorsModel {
+sealed interface ChipColors {
     /** The color for the background of the chip. */
-    @Composable fun chipBackground(isPopupShown: Boolean, colorScheme: ColorScheme): Color
+    @Composable fun chipBackground(isSelected: Boolean, colorScheme: ColorScheme): Color
 
     /** The color for the text and default (non-hovered) icon on the chip. */
-    @Composable fun chipContent(isPopupShown: Boolean, colorScheme: ColorScheme): Color
+    @Composable fun chipContent(isSelected: Boolean, colorScheme: ColorScheme): Color
 
     /** The color to use for the chip outline. */
-    @Composable fun chipOutline(isPopupShown: Boolean, colorScheme: ColorScheme): Color
+    @Composable fun chipOutline(isSelected: Boolean, colorScheme: ColorScheme): Color
 
     /** The color to use for the icon */
-    @Composable fun icon(isPopupShown: Boolean, isHovered: Boolean, colorScheme: ColorScheme): Color
+    @Composable fun icon(isSelected: Boolean, isHovered: Boolean, colorScheme: ColorScheme): Color
 
     /** The background color applied to the icon area when it is hovered. */
-    @Composable fun iconBackgroundOnHover(isPopupShown: Boolean, colorScheme: ColorScheme): Color
+    @Composable fun iconBackgroundOnHover(isSelected: Boolean, colorScheme: ColorScheme): Color
 
     /** The default system themed chip colors, changing based on the popup state. */
-    data object SystemTheme : ColorsModel {
+    data object SystemTheme : ChipColors {
         @Composable
-        override fun chipBackground(isPopupShown: Boolean, colorScheme: ColorScheme): Color =
-            if (isPopupShown) colorScheme.primary else colorScheme.surfaceDim
+        override fun chipBackground(isSelected: Boolean, colorScheme: ColorScheme): Color =
+            if (isSelected) colorScheme.primary else colorScheme.surfaceDim
 
         @Composable
-        override fun chipContent(isPopupShown: Boolean, colorScheme: ColorScheme): Color =
-            if (isPopupShown) colorScheme.onPrimary else colorScheme.onSurface
+        override fun chipContent(isSelected: Boolean, colorScheme: ColorScheme): Color =
+            if (isSelected) colorScheme.onPrimary else colorScheme.onSurface
 
         @Composable
-        override fun chipOutline(isPopupShown: Boolean, colorScheme: ColorScheme): Color =
+        override fun chipOutline(isSelected: Boolean, colorScheme: ColorScheme): Color =
             colorScheme.outlineVariant
 
         @Composable
         override fun icon(
-            isPopupShown: Boolean,
+            isSelected: Boolean,
             isHovered: Boolean,
             colorScheme: ColorScheme,
         ): Color =
             if (isHovered) {
-                chipBackground(isPopupShown = isPopupShown, colorScheme = colorScheme)
+                chipBackground(isSelected = isSelected, colorScheme = colorScheme)
             } else {
-                chipContent(isPopupShown = isPopupShown, colorScheme = colorScheme)
+                chipContent(isSelected = isSelected, colorScheme = colorScheme)
             }
 
         @Composable
-        override fun iconBackgroundOnHover(isPopupShown: Boolean, colorScheme: ColorScheme): Color =
-            if (isPopupShown) colorScheme.onPrimary else colorScheme.onSurface
+        override fun iconBackgroundOnHover(isSelected: Boolean, colorScheme: ColorScheme): Color =
+            if (isSelected) colorScheme.onPrimary else colorScheme.onSurface
     }
 
     /** The colors for the AvControls (Privacy Indicator) Chip */
-    data object AvControlsTheme : ColorsModel {
+    data object AvControlsTheme : ChipColors {
         @Composable private fun privacyGreen() = colorResource(R.color.privacy_chip_background)
 
         @Composable
-        override fun chipBackground(isPopupShown: Boolean, colorScheme: ColorScheme): Color =
+        override fun chipBackground(isSelected: Boolean, colorScheme: ColorScheme): Color =
             privacyGreen()
 
         @Composable
-        override fun chipOutline(isPopupShown: Boolean, colorScheme: ColorScheme): Color =
+        override fun chipOutline(isSelected: Boolean, colorScheme: ColorScheme): Color =
             privacyGreen()
 
         @Composable
-        override fun chipContent(isPopupShown: Boolean, colorScheme: ColorScheme): Color =
+        override fun chipContent(isSelected: Boolean, colorScheme: ColorScheme): Color =
             colorScheme.onPrimary
 
         @Composable
         override fun icon(
-            isPopupShown: Boolean,
+            isSelected: Boolean,
             isHovered: Boolean,
             colorScheme: ColorScheme,
         ): Color = colorScheme.onPrimary
 
         @Composable
-        override fun iconBackgroundOnHover(isPopupShown: Boolean, colorScheme: ColorScheme): Color =
+        override fun iconBackgroundOnHover(isSelected: Boolean, colorScheme: ColorScheme): Color =
             colorScheme.onPrimary
     }
 }

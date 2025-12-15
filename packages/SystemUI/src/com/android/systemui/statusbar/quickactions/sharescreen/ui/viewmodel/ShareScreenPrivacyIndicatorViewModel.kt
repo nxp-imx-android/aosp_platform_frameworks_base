@@ -20,9 +20,9 @@ import androidx.compose.runtime.getValue
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.quickactions.popups.ui.model.ColorsModel
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupChipViewModel
 import com.android.systemui.statusbar.quickactions.sharescreen.domain.interactor.ShareScreenPrivacyIndicatorInteractor
+import com.android.systemui.statusbar.quickactions.ui.compose.ChipColors
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipIcon
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
@@ -57,7 +57,7 @@ constructor(
                 icons = listOf(ChipIcon(Icon.Resource(R.drawable.ic_share_screen, null))),
                 chipText = null,
                 // TODO(b/444293568) Finalize and update the colors of this chip.
-                colors = ColorsModel.AvControlsTheme,
+                colors = ChipColors.AvControlsTheme,
                 popupViewModelFactory = popupViewModelFactory,
             )
         } else {

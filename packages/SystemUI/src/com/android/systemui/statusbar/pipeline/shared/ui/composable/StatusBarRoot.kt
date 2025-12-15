@@ -121,7 +121,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBar
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel.HomeStatusBarViewModelFactory
 import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
-import com.android.systemui.statusbar.quickactions.popups.ui.compose.StatusBarPopupChipsContainer
+import com.android.systemui.statusbar.quickactions.ui.compose.QuickActionChipsContainer
 import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
 import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIcons
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
@@ -333,7 +333,7 @@ fun StatusBarRoot(
                             )
 
                             setContent {
-                                StatusBarPopupChipsContainer(
+                                QuickActionChipsContainer(
                                     chips = statusBarViewModel.popupChips,
                                     mediaViewModelFactory = mediaViewModelFactory,
                                     mediaHost = mediaHost,

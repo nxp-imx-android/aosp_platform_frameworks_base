@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.quickactions.popups.ui.compose
+package com.android.systemui.statusbar.quickactions.ui.compose
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -28,12 +28,13 @@ import androidx.compose.ui.unit.dp
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.statusbar.quickactions.popups.ui.compose.StatusBarPopup
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 
 /** Container view that holds all right hand side chips in the status bar. */
 @Composable
-fun StatusBarPopupChipsContainer(
+fun QuickActionChipsContainer(
     chips: List<QuickActionChipUiState.PopupChip>,
     mediaViewModelFactory: MediaViewModel.Factory,
     mediaHost: MediaHost,
@@ -52,21 +53,27 @@ fun StatusBarPopupChipsContainer(
     }
 
     //    TODO(b/385353140): Add padding and spacing for this container according to UX specs.
-    if (chips.isNotEmpty()) {
-        Box {
-            Row(
-                modifier = modifier.padding(horizontal = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                chips.forEach { chip ->
-                    StatusBarPopupChip(chip)
-                    if (chip.isPopupShown) {
-                        StatusBarPopup(
-                            viewModel = chip,
-                            mediaViewModelFactory = mediaViewModelFactory,
-                            mediaHost = mediaHost,
-                        )
-                    }
+    Box {
+        Row(
+            modifier = modifier.padding(horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            chips.forEach { chip ->
+                QuickActionChip(
+                    isSelected = chip.isPopupShown,
+                    text = chip.chipText,
+                    icons = chip.icons,
+                    colors = chip.colors,
+                    hoverBehavior = chip.hoverBehavior,
+                    contentDescription = chip.contentDescription,
+                    onClick = { chip.showPopup() },
+                )
+                if (chip.isPopupShown) {
+                    StatusBarPopup(
+                        viewModel = chip,
+                        mediaViewModelFactory = mediaViewModelFactory,
+                        mediaHost = mediaHost,
+                    )
                 }
             }
         }

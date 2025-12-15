@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.quickactions.popups.ui.compose
+package com.android.systemui.statusbar.quickactions.ui.compose
 
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
@@ -61,10 +61,8 @@ import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.quickactions.popups.ui.model.ColorsModel
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipIcon
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.HoverBehavior
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 
 /**
  * A clickable chip that can show an anchored popup containing relevant system controls. The chip
@@ -72,21 +70,25 @@ import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipU
  * the chip can show text containing contextual information.
  */
 @Composable
-fun StatusBarPopupChip(
-    viewModel: QuickActionChipUiState.PopupChip,
+fun QuickActionChip(
+    isSelected: Boolean,
+    text: String?,
+    icons: List<ChipIcon>,
+    colors: ChipColors,
+    hoverBehavior: HoverBehavior,
+    contentDescription: ContentDescription?,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
-    val hasHoverBehavior = viewModel.hoverBehavior !is HoverBehavior.None
+    val hasHoverBehavior = hoverBehavior !is HoverBehavior.None
     val hoveredState by interactionSource.collectIsHoveredAsState()
     val isHovered = hasHoverBehavior && hoveredState
-    val isPopupShown = viewModel.isPopupShown
     val indication = if (hoveredState) null else LocalIndication.current
     val chipShape =
         RoundedCornerShape(dimensionResource(id = R.dimen.ongoing_activity_chip_corner_radius))
-    val colors = viewModel.colors
     val chipBackgroundColor =
-        colors.chipBackground(isPopupShown = isPopupShown, colorScheme = MaterialTheme.colorScheme)
+        colors.chipBackground(isSelected = isSelected, colorScheme = MaterialTheme.colorScheme)
 
     // Use a Box with `fillMaxHeight` to create a larger click surface for the chip. The visible
     // height of the chip is determined by the height of the background of the Row below. The
@@ -96,16 +98,15 @@ fun StatusBarPopupChip(
         modifier =
             modifier
                 .minimumInteractiveComponentSize()
-                .contentDescription(viewModel.contentDescription)
-                .thenIf(!isPopupShown) {
+                .contentDescription(contentDescription)
+                .thenIf(!isSelected) {
                     Modifier.clickable(
-                        onClick = { viewModel.showPopup() },
+                        onClick = onClick,
                         indication = null,
                         interactionSource = interactionSource,
                     )
                 },
     ) {
-        val text = viewModel.chipText
         // End padding should be symmetrical if the text is omitted.
         val startPadding = 4.dp
         val endPadding = if (text != null) 8.dp else startPadding
@@ -120,7 +121,7 @@ fun StatusBarPopupChip(
                         width = dimensionResource(id = R.dimen.ongoing_activity_chip_outline_width),
                         color =
                             colors.chipOutline(
-                                isPopupShown = isPopupShown,
+                                isSelected = isSelected,
                                 colorScheme = MaterialTheme.colorScheme,
                             ),
                         shape = chipShape,
@@ -128,17 +129,16 @@ fun StatusBarPopupChip(
                     .indication(interactionSource, indication)
                     .padding(start = startPadding, end = endPadding),
         ) {
-            val hoverBehavior = viewModel.hoverBehavior
             val chipIcons =
                 when {
                     isHovered && hoverBehavior is HoverBehavior.Buttons -> hoverBehavior.icons
-                    else -> viewModel.icons
+                    else -> icons
                 }
 
             ChipIcons(
                 chipIcons = chipIcons,
                 colors = colors,
-                isPopupShown = isPopupShown,
+                isSelected = isSelected,
                 isHovered = isHovered,
             )
 
@@ -153,7 +153,7 @@ fun StatusBarPopupChip(
                     softWrap = false,
                     color =
                         colors.chipContent(
-                            isPopupShown = isPopupShown,
+                            isSelected = isSelected,
                             colorScheme = MaterialTheme.colorScheme,
                         ),
                     modifier =
@@ -198,18 +198,18 @@ fun StatusBarPopupChip(
 @Composable
 private fun ChipIcons(
     chipIcons: List<ChipIcon>,
-    colors: ColorsModel,
-    isPopupShown: Boolean,
+    colors: ChipColors,
+    isSelected: Boolean,
     isHovered: Boolean,
 ) {
     val iconHoverBackgroundColor =
         colors.iconBackgroundOnHover(
-            isPopupShown = isPopupShown,
+            isSelected = isSelected,
             colorScheme = MaterialTheme.colorScheme,
         )
     val iconColor =
         colors.icon(
-            isPopupShown = isPopupShown,
+            isSelected = isSelected,
             isHovered = isHovered,
             colorScheme = MaterialTheme.colorScheme,
         )
