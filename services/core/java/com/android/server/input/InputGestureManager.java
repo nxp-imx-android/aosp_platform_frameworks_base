@@ -204,15 +204,13 @@ final class InputGestureManager {
                         KeyGestureEvent.KEY_GESTURE_TYPE_TRIGGER_BUG_REPORT,
                         /* allowCaptureByFocusedWindow = */true
                 ));
-        if (DesktopExperienceFlags.ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT.isTrue()) {
-            systemShortcuts.add(
-                    createKeyGesture(
-                            KeyEvent.KEYCODE_D,
-                            KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,
-                            KeyGestureEvent.KEY_GESTURE_TYPE_MOVE_TO_NEXT_DISPLAY,
-                            /* allowCaptureByFocusedWindow = */false
-                    ));
-        }
+        systemShortcuts.add(
+                createKeyGesture(
+                        KeyEvent.KEYCODE_D,
+                        KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,
+                        KeyGestureEvent.KEY_GESTURE_TYPE_MOVE_TO_NEXT_DISPLAY,
+                        /* allowCaptureByFocusedWindow = */false
+                ));
         if (enableSelectToSpeakKeyGestures()) {
             systemShortcuts.add(
                     createKeyGesture(KeyEvent.KEYCODE_S,
