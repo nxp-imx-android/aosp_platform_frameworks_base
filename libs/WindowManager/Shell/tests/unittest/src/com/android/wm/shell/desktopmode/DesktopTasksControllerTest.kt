@@ -344,6 +344,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     private lateinit var desktopState: FakeDesktopState
     private lateinit var shellDesktopState: FakeShellDesktopState
     private lateinit var desktopConfig: FakeDesktopConfig
+    private lateinit var desksController: DesksController
 
     private val shellExecutor = TestShellExecutor()
     private val bgExecutor = TestShellExecutor()
@@ -490,6 +491,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         whenever(transactionPool.acquire()).thenReturn(surfaceControlTransaction)
         whenever(splitScreenController.multiDisplayProvider).thenReturn(splitMultiDisplayProvider)
 
+        desksController = DesksController(shellController, userRepositories, desktopConfig)
+
         controller = createController()
         controller.setSplitScreenController(splitScreenController)
         controller.freeformTaskTransitionStarter = freeformTaskTransitionStarter
@@ -579,6 +582,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             lockTaskChangeListener,
             launcherApps,
             transitionStateHolder,
+            desksController,
         )
 
     @After
