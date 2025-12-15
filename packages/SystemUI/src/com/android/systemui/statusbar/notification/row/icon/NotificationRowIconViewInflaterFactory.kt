@@ -106,7 +106,7 @@ constructor(
                 val bridgedMetadata = sbn.getNotification().getBridgedNotificationMetadata()
                 if (bridgedMetadata != null) {
                     // TODO(b/438827600): Add plate overlay to the icon.
-                    return bridgedMetadata.getIcon().loadDrawable(context)
+                    return bridgedMetadata.getAppIcon().loadDrawable(context)
                 }
                 return null
             }
