@@ -376,6 +376,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"सभी सूचनाएं साफ़ करें."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"सूचनाएं"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4316411266975554038) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{ग्रुप में # सूचना है.}one{ग्रुप में # सूचना है.}other{ग्रुप में # सूचनाएं हैं.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"स्क्रीन लैंडस्केप दिशा में लॉक है."</string>
@@ -1585,10 +1587,8 @@
     <string name="keyguard_unlock_to_customize_ls" msgid="2068542308086253819">"लॉक स्क्रीन को पसंद के मुताबिक बनाने के लिए अनलॉक करें"</string>
     <string name="wifi_unavailable_dream_overlay_content_description" msgid="2024166212194640100">"वाई-फ़ाई उपलब्ध नहीं है"</string>
     <string name="location_active_dream_overlay_content_description" msgid="6208885541020673916">"जगह की जानकारी की सेटिंग चालू है"</string>
-    <!-- no translation found for camera_privacy_dream_overlay_content_description (4503818441101346249) -->
-    <skip />
-    <!-- no translation found for mic_privacy_dream_overlay_content_description (1164197684411086751) -->
-    <skip />
+    <string name="camera_privacy_dream_overlay_content_description" msgid="4503818441101346249">"कैमरा चालू है"</string>
+    <string name="mic_privacy_dream_overlay_content_description" msgid="1164197684411086751">"माइक्रोफ़ोन चालू है"</string>
     <string name="camera_blocked_dream_overlay_content_description" msgid="4074759493559418130">"कैमरे का ऐक्सेस नहीं है"</string>
     <string name="camera_and_microphone_blocked_dream_overlay_content_description" msgid="7891078093416249764">"कैमरे और माइक्रोफ़ोन का ऐक्सेस नहीं है"</string>
     <string name="microphone_blocked_dream_overlay_content_description" msgid="5466897982130007033">"माइक्रोफ़ोन का ऐक्सेस नहीं है"</string>
@@ -1759,6 +1759,7 @@
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"पीछे जाएं"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"आगे बढ़ें"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"अगले पेज पर जाएं"</string>
+    <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"वापस जाएं"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ऑटोमैटिक भरने की सुविधा"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"बड़ा करें"</string>
     <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"जगह की सटीक जानकारी शेयर करें"</string>

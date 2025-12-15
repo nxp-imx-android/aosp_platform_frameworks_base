@@ -376,6 +376,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"সমস্ত বিজ্ঞপ্তি সাফ করুন৷"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"বিজ্ঞপ্তি"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"অ্যাসিস্ট্যান্ট"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4316411266975554038) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>টি"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{ভিতরে আরও #টি বিজ্ঞপ্তি আছে।}one{ভিতরে আরও #টি বিজ্ঞপ্তি আছে।}other{ভিতরে আরও #টি বিজ্ঞপ্তি আছে।}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"ল্যান্ডস্কেপ সজ্জাতে স্ক্রিন লক করা আছে৷"</string>
@@ -1175,8 +1177,7 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> কীবোর্ড শর্টকাট চালু করতে চান?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"চালু করবেন না"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"শর্টকাট চালু করুন"</string>
-    <!-- no translation found for accessibility_key_gesture_color_inversion_dialog_content (8831745570619953566) -->
-    <skip />
+    <string name="accessibility_key_gesture_color_inversion_dialog_content" msgid="8831745570619953566">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"আইকন"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> হল কালার ইনভার্সন ব্যবহার করার কীবোর্ড শর্টকাট। কালার ইনভার্সন হালকা স্ক্রিনকে গাঢ় করে। এছাড়াও এই সুবিধা ব্যবহার করলে গাঢ় রঙের স্ক্রিন হালকা হয়ে যায়।"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> কীবোর্ড শর্টকাট চালু করা হয়েছে"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"আইকন"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> হল <xliff:g id="ID_4">^4</xliff:g> অ্যাক্সেসিবিলিটি ফিচার ব্যবহার করার কীবোর্ড শর্টকাট। এটি আপনাকে কন্টেন্ট বড় করার জন্য স্ক্রিনে দ্রুত জুম-ইন করার সুযোগ দেয়। \'বড় করে দেখা\' ফিচার চালু হয়ে গেলে, জুম অ্যাডজাস্ট করতে <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"আইকন"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> এবং \"+\" বা \"-\" প্রেস করুন।"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"শর্টকাট বন্ধ করুন"</string>
@@ -1586,10 +1587,8 @@
     <string name="keyguard_unlock_to_customize_ls" msgid="2068542308086253819">"লক স্ক্রিন কাস্টমাইজ করতে আনলক করুন"</string>
     <string name="wifi_unavailable_dream_overlay_content_description" msgid="2024166212194640100">"ওয়াই-ফাই উপলভ্য নয়"</string>
     <string name="location_active_dream_overlay_content_description" msgid="6208885541020673916">"লোকেশন অ্যাক্টিভ আছে"</string>
-    <!-- no translation found for camera_privacy_dream_overlay_content_description (4503818441101346249) -->
-    <skip />
-    <!-- no translation found for mic_privacy_dream_overlay_content_description (1164197684411086751) -->
-    <skip />
+    <string name="camera_privacy_dream_overlay_content_description" msgid="4503818441101346249">"ক্যামেরা চালু আছে"</string>
+    <string name="mic_privacy_dream_overlay_content_description" msgid="1164197684411086751">"মাইক্রোফোন চালু আছে"</string>
     <string name="camera_blocked_dream_overlay_content_description" msgid="4074759493559418130">"ক্যামেরার অ্যাক্সেস ব্লক করা আছে"</string>
     <string name="camera_and_microphone_blocked_dream_overlay_content_description" msgid="7891078093416249764">"ক্যামেরা এবং মাইক্রোফোনের অ্যাক্সেস ব্লক করা আছে"</string>
     <string name="microphone_blocked_dream_overlay_content_description" msgid="5466897982130007033">"মাইক্রোফোনের অ্যাক্সেস ব্লক করা আছে"</string>
@@ -1760,6 +1759,7 @@
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"পূর্ববর্তী"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"পরবর্তী"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"পরের পৃষ্ঠায় যান"</string>
+    <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"ফিরে যান"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"অটোফিল"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"বড় করুন"</string>
     <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"সুনির্দিষ্ট লোকেশন শেয়ার করুন"</string>

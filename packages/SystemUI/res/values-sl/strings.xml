@@ -376,6 +376,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"Izbriši vsa obvestila."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Obvestila"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Pomočnik"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4316411266975554038) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"in <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Notri je še # obvestilo.}one{Notri je še # obvestilo.}two{Notri sta še # obvestili.}few{Notri so še # obvestila.}other{Notri je še # obvestil.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Zaslon je zaklenjen v ležeči usmerjenosti."</string>
@@ -1175,8 +1177,7 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Želite vklopiti bližnjične tipke za funkcijo <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Ne vklopi"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Vklopi bližnjico"</string>
-    <!-- no translation found for accessibility_key_gesture_color_inversion_dialog_content (8831745570619953566) -->
-    <skip />
+    <string name="accessibility_key_gesture_color_inversion_dialog_content" msgid="8831745570619953566"><annotation id="action_key_icon">"Ikona"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> so bližnjične tipke za uporabo inverzije barv. Pri inverziji barv se svetli zasloni spremenijo v temne. Poleg tega se temni zasloni spremenijo v svetle."</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Bližnjična tipka za funkcijo <xliff:g id="ID_1">%1$s</xliff:g> je vklopljena"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> so bližnjične tipke za uporabo funkcije dostopnosti <xliff:g id="ID_4">^4</xliff:g>. Tako lahko hitro povečate zaslon in s tem vsebino na njem. Ko je povečava vklopljena, pritisnite <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> in »+« ali »–«, če želite prilagoditi povečavo."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Izklopi bližnjico"</string>
@@ -1758,6 +1759,7 @@
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Nazaj"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Naprej"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"pomik na naslednjo stran"</string>
+    <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"nazaj"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"samodejno izpolnjevanje"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"razširitev"</string>
     <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Deli natančno lokacijo"</string>
