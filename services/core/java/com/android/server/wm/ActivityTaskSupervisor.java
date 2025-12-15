@@ -2067,7 +2067,8 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
     }
 
     @Override
-    public void onRecentTaskRemoved(Task task, boolean wasTrimmed, boolean killProcess) {
+    public void onRecentTaskRemoved(Task task, boolean wasTrimmed, boolean killProcess,
+            @Nullable Task replacingTask) {
         if (wasTrimmed) {
             // Task was trimmed from the recent tasks list -- remove the active task record as well
             // since the user won't really be able to go back to it

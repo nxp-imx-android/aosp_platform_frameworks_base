@@ -1770,7 +1770,8 @@ public class RecentTasksTest extends WindowTestsBase {
         }
 
         @Override
-        public void onRecentTaskRemoved(Task task, boolean wasTrimmed, boolean killProcess) {
+        public void onRecentTaskRemoved(Task task, boolean wasTrimmed, boolean killProcess,
+                Task replacingTask) {
             if (wasTrimmed) {
                 mTrimmed.add(task);
             }
