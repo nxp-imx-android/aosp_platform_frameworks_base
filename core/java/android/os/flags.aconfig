@@ -274,6 +274,13 @@ flag {
 }
 
 flag {
+    name: "initiate_bugreport_as_non_admin"
+    namespace: "feedback"
+    description: "Enable non-admin users to generate a bug report"
+    bug: "450735514"
+}
+
+flag {
      name: "ipc_data_cache_module_adservices"
      namespace: "system_performance"
      description: "IpcDataCache module for AdServices."
