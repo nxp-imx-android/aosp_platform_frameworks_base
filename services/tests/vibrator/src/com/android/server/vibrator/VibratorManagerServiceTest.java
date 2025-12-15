@@ -762,21 +762,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_REMOVE_SEQUENTIAL_COMBINATION)
-    public void setAlwaysOnEffect_withNonSyncedEffect_ignoresEffect() {
-        mHalHelper.setVibratorIds(new int[]{1});
-        mHalHelper.getVibratorHelper(1).setCapabilities(IVibrator.CAP_ALWAYS_ON_CONTROL);
-
-        CombinedVibration effect = CombinedVibration.startSequential()
-                .addNext(0, VibrationEffect.get(EFFECT_CLICK))
-                .combine();
-        assertFalse(createSystemReadyService().setAlwaysOnEffect(
-                UID, PACKAGE_NAME, 1, effect, ALARM_ATTRS));
-
-        assertNull(mHalHelper.getVibratorHelper(1).getAlwaysOnEffect(1));
-    }
-
-    @Test
     public void setAlwaysOnEffect_withNoVibratorWithCapability_ignoresEffect() {
         mHalHelper.setVibratorIds(new int[]{1});
         VibratorManagerService service = createSystemReadyService();

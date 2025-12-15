@@ -2641,7 +2641,6 @@ package android.os {
 
   public abstract class CombinedVibration implements android.os.Parcelable {
     method public abstract long getDuration();
-    method @NonNull public static android.os.CombinedVibration.SequentialCombination startSequential();
   }
 
   public static final class CombinedVibration.Mono extends android.os.CombinedVibration {
@@ -2649,22 +2648,6 @@ package android.os {
     method @NonNull public android.os.VibrationEffect getEffect();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.os.CombinedVibration.Mono> CREATOR;
-  }
-
-  public static final class CombinedVibration.Sequential extends android.os.CombinedVibration {
-    method @NonNull public java.util.List<java.lang.Integer> getDelays();
-    method public long getDuration();
-    method @NonNull public java.util.List<android.os.CombinedVibration> getEffects();
-    method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.os.CombinedVibration.Sequential> CREATOR;
-  }
-
-  public static final class CombinedVibration.SequentialCombination {
-    method @NonNull public android.os.CombinedVibration.SequentialCombination addNext(int, @NonNull android.os.VibrationEffect);
-    method @NonNull public android.os.CombinedVibration.SequentialCombination addNext(int, @NonNull android.os.VibrationEffect, int);
-    method @NonNull public android.os.CombinedVibration.SequentialCombination addNext(@NonNull android.os.CombinedVibration);
-    method @NonNull public android.os.CombinedVibration.SequentialCombination addNext(@NonNull android.os.CombinedVibration, int);
-    method @NonNull public android.os.CombinedVibration combine();
   }
 
   public static final class CombinedVibration.Stereo extends android.os.CombinedVibration {
