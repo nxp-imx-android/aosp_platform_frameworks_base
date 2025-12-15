@@ -100,7 +100,21 @@ public abstract class ContextUnderstanderService extends Service {
     public abstract void onUnderstand(@NonNull List<ContextHintWithSignature> hints);
 
     /**
-     * Feeds {@link ContextInsight}s into the Personal Context system.
+     * @deprecated use {@link #understood(ContextInsight)}
+     */
+    @Deprecated
+    public final void understood(@NonNull List<ContextInsight> insights) {
+        if (mPersonalContextManager == null) {
+            mPersonalContextManager = getSystemService(PersonalContextManager.class);
+        }
+        if (mPersonalContextManager == null) {
+            throw new IllegalStateException("Personal Context Manager service is not running");
+        }
+        mPersonalContextManager.publishInsight(insights);
+    }
+
+    /**
+     * Feeds a {@link ContextInsight} into the Personal Context system.
      *
      * <p>Most understanders will want to respond to calls to {@link #onUnderstand} inline when all
      * insights have been prepared, but this is not a requirement. Understanders may want to call
@@ -110,22 +124,11 @@ public abstract class ContextUnderstanderService extends Service {
      * (e.g. new information is available that is relevant, but not in response to new hints). All
      * of these models are allowed.
      *
-     * <p>Note that while this method accepts a list of insights, this does not guarantee that the
-     * insights will be processed together by the framework. If the caller wants insights to be
-     * processed together downstream, they should be grouped together inside an
-     * {@link android.service.personalcontext.insight.InsightCollection}.
-     *
      * @throws IllegalStateException when called before the system service has started. The call
      * can be re-attempted in a few seconds, once system services have started.
      */
-    public final void understood(@NonNull List<ContextInsight> insights) {
-        if (mPersonalContextManager == null) {
-            mPersonalContextManager = getSystemService(PersonalContextManager.class);
-        }
-        if (mPersonalContextManager == null) {
-            throw new IllegalStateException("Personal Context Manager service is not running");
-        }
-        mPersonalContextManager.publishInsight(insights);
+    public final void understood(@NonNull ContextInsight insight) {
+        understood(List.of(insight));
     }
 
     private static final class Binder extends IRefiner.Stub {
