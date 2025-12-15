@@ -846,6 +846,7 @@ class SystemStatusAnimationSchedulerImplTest(flags: FlagsParameterization) : Sys
         advancePastMinUptime: Boolean = true,
         displayId: Int = Display.DEFAULT_DISPLAY,
     ) {
+        val coroutineScope = CoroutineScope(StandardTestDispatcher(testScope.testScheduler))
         systemStatusAnimationScheduler =
             SystemStatusAnimationSchedulerImpl(
                 systemEventCoordinator,
@@ -854,8 +855,9 @@ class SystemStatusAnimationSchedulerImplTest(flags: FlagsParameterization) : Sys
                 statusBarWindowControllerStore,
                 dumpManager,
                 systemClock,
-                CoroutineScope(StandardTestDispatcher(testScope.testScheduler)),
+                coroutineScope,
                 logger,
+                coroutineScope.coroutineContext,
             )
         // add a mock listener
         systemStatusAnimationScheduler.addCallback(listener)

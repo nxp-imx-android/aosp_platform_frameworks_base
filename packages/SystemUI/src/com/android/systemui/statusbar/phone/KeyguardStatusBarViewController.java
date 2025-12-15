@@ -135,7 +135,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     private final Context mContext;
     private final CarrierTextController mCarrierTextController;
     private final ConfigurationController mConfigurationController;
-    private SystemStatusAnimationScheduler mAnimationScheduler;
+    @Nullable private SystemStatusAnimationScheduler mAnimationScheduler;
     private final UserInfoController mUserInfoController;
     private final StatusBarIconController mStatusBarIconController;
     private final TintedIconManager.Factory mTintedIconManagerFactory;
@@ -192,7 +192,9 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
                 @Override
                 public void onMovedToDisplay(int newDisplayId, Configuration newConfiguration) {
                     if (Flags.systemStatusAnimationPerDisplay()) {
-                        mAnimationScheduler.removeCallback(mAnimationCallback);
+                        if (mAnimationScheduler != null) {
+                            mAnimationScheduler.removeCallback(mAnimationCallback);
+                        }
                         mAnimationScheduler = getAnimationSchedulerForDisplay(newDisplayId);
                         mAnimationScheduler.addCallback(mAnimationCallback);
                     }
@@ -392,7 +394,6 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
         mCarrierTextController = carrierTextController;
         if (Flags.systemStatusAnimationPerDisplay()) {
             mConfigurationController = displayAwareConfigurationControllerLazy.get();
-            mAnimationScheduler = getAnimationSchedulerForDisplay(context.getDisplayId());
         } else {
             mConfigurationController = defaultConfigurationControllerLazy.get();
             mAnimationScheduler = animationSchedulerLazy.get();
@@ -475,6 +476,9 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
         }
         mView.init(mStatusBarUserChipViewModel);
         mConfigurationController.addCallback(mConfigurationListener);
+        if (Flags.systemStatusAnimationPerDisplay() && mAnimationScheduler == null) {
+            mAnimationScheduler = getAnimationSchedulerForDisplay(mContext.getDisplayId());
+        }
         mAnimationScheduler.addCallback(mAnimationCallback);
         mUserInfoController.addCallback(mOnUserInfoChangedListener);
         mStatusBarStateController.addCallback(mStatusBarStateListener);
@@ -564,7 +568,9 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     protected void onViewDetached() {
         mSystemIconsContainer.setOnHoverListener(null);
         mConfigurationController.removeCallback(mConfigurationListener);
-        mAnimationScheduler.removeCallback(mAnimationCallback);
+        if (mAnimationScheduler != null) {
+            mAnimationScheduler.removeCallback(mAnimationCallback);
+        }
         mUserInfoController.removeCallback(mOnUserInfoChangedListener);
         mStatusBarStateController.removeCallback(mStatusBarStateListener);
         mKeyguardUpdateMonitor.removeCallback(mKeyguardUpdateMonitorCallback);
