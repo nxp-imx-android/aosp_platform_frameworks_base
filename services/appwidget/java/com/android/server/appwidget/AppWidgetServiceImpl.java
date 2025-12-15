@@ -290,7 +290,6 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                     break;
                 case Intent.ACTION_PACKAGE_RESTARTED:
                 case Intent.ACTION_PACKAGE_UNSTOPPED:
-                    if (!android.content.pm.Flags.stayStopped()) return;
                     updateWidgetPackageStoppedMaskedState(intent);
                     break;
                 default:

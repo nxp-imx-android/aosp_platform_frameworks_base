@@ -10711,7 +10711,6 @@ public abstract class PackageManager {
      * @throws NameNotFoundException if the package could not be found.
      * @see ApplicationInfo#FLAG_STOPPED
      */
-    @FlaggedApi(android.content.pm.Flags.FLAG_STAY_STOPPED)
     public boolean isPackageStopped(@NonNull String packageName) throws NameNotFoundException {
         throw new UnsupportedOperationException("isPackageStopped not implemented");
     }

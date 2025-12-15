@@ -5511,7 +5511,7 @@ package android.app {
     method public int getStartType();
     method public int getStartupState();
     method @NonNull public java.util.Map<java.lang.Integer,java.lang.Long> getStartupTimestamps();
-    method @FlaggedApi("android.content.pm.stay_stopped") public boolean wasForceStopped();
+    method public boolean wasForceStopped();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.ApplicationStartInfo> CREATOR;
     field public static final int LAUNCH_MODE_SINGLE_INSTANCE = 2; // 0x2
@@ -12170,7 +12170,7 @@ package android.content {
     field public static final String ACTION_PACKAGE_REMOVED = "android.intent.action.PACKAGE_REMOVED";
     field public static final String ACTION_PACKAGE_REPLACED = "android.intent.action.PACKAGE_REPLACED";
     field public static final String ACTION_PACKAGE_RESTARTED = "android.intent.action.PACKAGE_RESTARTED";
-    field @FlaggedApi("android.content.pm.stay_stopped") public static final String ACTION_PACKAGE_UNSTOPPED = "android.intent.action.PACKAGE_UNSTOPPED";
+    field public static final String ACTION_PACKAGE_UNSTOPPED = "android.intent.action.PACKAGE_UNSTOPPED";
     field public static final String ACTION_PACKAGE_VERIFIED = "android.intent.action.PACKAGE_VERIFIED";
     field public static final String ACTION_PASTE = "android.intent.action.PASTE";
     field public static final String ACTION_PICK = "android.intent.action.PICK";
@@ -14005,7 +14005,7 @@ package android.content.pm {
     method public abstract boolean isInstantApp();
     method public abstract boolean isInstantApp(@NonNull String);
     method @FlaggedApi("android.content.pm.quarantined_enabled") public boolean isPackageQuarantined(@NonNull String) throws android.content.pm.PackageManager.NameNotFoundException;
-    method @FlaggedApi("android.content.pm.stay_stopped") public boolean isPackageStopped(@NonNull String) throws android.content.pm.PackageManager.NameNotFoundException;
+    method public boolean isPackageStopped(@NonNull String) throws android.content.pm.PackageManager.NameNotFoundException;
     method public boolean isPackageSuspended(@NonNull String) throws android.content.pm.PackageManager.NameNotFoundException;
     method public boolean isPackageSuspended();
     method @CheckResult public abstract boolean isPermissionRevokedByPolicy(@NonNull String, @NonNull String);
