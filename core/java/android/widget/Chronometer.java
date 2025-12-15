@@ -103,6 +103,7 @@ public class Chronometer extends TextView {
     private OnChronometerTickListener mOnChronometerTickListener;
     private StringBuilder mRecycle = new StringBuilder(8);
     private boolean mCountDown;
+    private boolean mLowFrequency = false;
 
     /**
      * Initialize this Chronometer object.
@@ -286,6 +287,17 @@ public class Chronometer extends TextView {
     }
 
     /**
+     * Sets whether the Chronometer is in Ambient mode (low frequency).
+     * When in low frequency mode, the chronometer updates less often
+     * and displays with reduced precision to save power.
+     * @hide
+     */
+    @android.view.RemotableViewMethod
+    public void setLowFrequency(boolean lowFrequency) {
+        mLowFrequency = lowFrequency;
+    }
+
+    /**
      * Returns the current format string as set through {@link #setFormat}.
      */
     @InspectableProperty
@@ -385,15 +397,27 @@ public class Chronometer extends TextView {
             negative = true;
         }
         String text;
-        if (mUseAdaptiveFormat) {
-            text = ChronometerAdaptiveFormat.format(Duration.ofSeconds(seconds));
+        if (mLowFrequency) {
+            if (mUseAdaptiveFormat && negative && seconds < 60) {
+                text = ChronometerLowFrequencyFormat.formatAdaptiveNegativeLessThanOneMinute();
+            } else {
+                text = ChronometerLowFrequencyFormat.format(Duration.ofSeconds(seconds),
+                        mUseAdaptiveFormat);
+                if (negative) {
+                    text = getResources().getString(R.string.negative_duration, text);
+                }
+            }
         } else {
-            text = DateUtils.formatElapsedTime(mRecycle, seconds);
+            if (mUseAdaptiveFormat) {
+                text = ChronometerAdaptiveFormat.format(Duration.ofSeconds(seconds));
+            } else {
+                text = DateUtils.formatElapsedTime(mRecycle, seconds);
+            }
+            if (negative) {
+                text = getResources().getString(R.string.negative_duration, text);
+            }
         }
 
-        if (negative) {
-            text = getResources().getString(R.string.negative_duration, text);
-        }
 
         if (mFormat != null) {
             Locale loc = Locale.getDefault();
@@ -461,13 +485,18 @@ public class Chronometer extends TextView {
     private void postTickOnNextChange() {
         long nowMillis = mNow;
 
-        // In adaptive format, ticks are every 1 minute instead of 1 second, if the time elapsed
-        // or remaining is >= 3 minutes. Thus for time > 3 minutes the tick will be "on the minute"
-        // and for lower than that it's "on the second".
-        long periodInMillis = mUseAdaptiveFormat
-                ? ChronometerAdaptiveFormat.getTickPeriod(
-                        Duration.ofMillis(Math.abs(nowMillis - mBase))).toMillis()
-                : SECOND_IN_MILLIS;
+        long periodInMillis;
+        if (mLowFrequency) {
+            periodInMillis = ChronometerLowFrequencyFormat.getTickPeriod();
+        } else if (mUseAdaptiveFormat) {
+            // In adaptive format, ticks are every 1 minute instead of 1 second, if the time elapsed
+            // or remaining is >= 3 minutes. Thus for time > 3 minutes the tick will be "on
+            // the minute" and for lower than that it's "on the second".
+            periodInMillis = ChronometerAdaptiveFormat.getTickPeriod(
+                Duration.ofMillis(Math.abs(nowMillis - mBase))).toMillis();
+        } else {
+            periodInMillis = SECOND_IN_MILLIS;
+        }
 
         // LINT.IfChange
         long delayMillis;

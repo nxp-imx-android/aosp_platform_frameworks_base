@@ -530,6 +530,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
                     metricView.chronometer?.isUseAdaptiveFormat = metric.useAdaptiveFormat
                     metricView.chronometer?.format = null
                     metricView.chronometer?.setStarted(metric !is Metric.TimeDifference.Paused)
+                    metricView.chronometer?.setLowFrequency(true)
                     when (metric) {
                         is Metric.TimeDifference.ElapsedRealtime ->
                             metricView.chronometer?.setBase(metric.zeroElapsedRealtime)
@@ -733,6 +734,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
                 chronometer?.base = content.time.elapsedRealtimeMillis
                 chronometer?.isCountDown = content.time.isCountDown
                 chronometer?.setStarted(true)
+                chronometer?.setLowFrequency(true)
                 chronometer?.isVisible = true
                 setTextViewColor(chronometer, SecondaryText)
             }
