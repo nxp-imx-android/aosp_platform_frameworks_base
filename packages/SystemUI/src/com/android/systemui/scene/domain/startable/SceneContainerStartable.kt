@@ -78,7 +78,7 @@ import com.android.systemui.scene.shared.logger.SceneLogger
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.scene.shared.model.TransitionKeys.ToAlwaysOnDisplay
+import com.android.systemui.scene.shared.model.TransitionKeys.ShadeExpandedToAlwaysOnDisplay
 import com.android.systemui.scene.shared.model.isKeyguardScene
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
@@ -746,16 +746,19 @@ constructor(
                 if (isAsleep) {
                     alternateBouncerInteractor.hide()
                     dismissCallbackRegistry.notifyDismissCancelled()
+                    val isAodAvailable = keyguardInteractor.isAodAvailable.value
+                    val isShadeAnyExpanded = shadeInteractor.isShadeAnyExpanded.value
 
                     switchToScene(
                         targetSceneKey = Scenes.Lockscreen,
                         loggingReason = "device is starting to sleep",
                         transitionKey =
-                            if (keyguardInteractor.isAodAvailable.value) ToAlwaysOnDisplay
-                            else null,
+                            ShadeExpandedToAlwaysOnDisplay.takeIf {
+                                isShadeAnyExpanded && isAodAvailable
+                            },
                         keyguardState = getKeyguardStateForWakefulness(isAwake = false),
-                        freezeAndAnimateToCurrentState = !keyguardInteractor.isAodAvailable.value,
-                        instantlySnapScenes = keyguardInteractor.isAodAvailable.value,
+                        freezeAndAnimateToCurrentState = !isAodAvailable,
+                        instantlySnapScenes = isShadeAnyExpanded && isAodAvailable,
                     )
                 } else {
                     if (wakeDirectlyToGoneInteractor.canWakeDirectlyToGone.value) {
