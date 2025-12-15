@@ -668,13 +668,12 @@ public class SupervisionService extends ISupervisionManager.Stub {
      * <p>This excludes the system and main user(s) as those users are created by default.
      */
     private boolean hasNonTestDefaultUsers() {
-        List<UserInfo> users = mInjector.getUserManagerInternal().getUsers(true);
-        for (var user : users) {
-            if (!user.isForTesting() && !user.isMain() && !isSystemUser(user)) {
-                return true;
-            }
-        }
-        return false;
+        UserManagerInternal userManager = mInjector.getUserManagerInternal();
+        // Headless system user mode has two default users: system and main/primary users.
+        int numOfDefaultUsers = userManager.isHeadlessSystemUserMode()
+                ? 2 : 1;
+        List<UserInfo> users = userManager.getUsers(true);
+        return users.stream().filter(user -> !user.isForTesting()).count() > numOfDefaultUsers;
     }
 
     private static boolean isSystemUser(UserInfo userInfo) {
