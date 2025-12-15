@@ -172,6 +172,15 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+flag {
+    name: "send_a11y_action_cancel_on_reset"
+    namespace: "accessibility"
+    description: "Sends ACTION_CANCEL to InputDispatcher when AccessibilityInputFilter resets with active pointers to prevent state desynchronization."
+    bug: "433890873"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
 
 flag {
     name: "send_a11y_events_based_on_state"
