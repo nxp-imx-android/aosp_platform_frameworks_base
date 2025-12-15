@@ -21,6 +21,7 @@ import android.os.PowerManager.GoToSleepReason;
 import android.os.PowerManager.UserActivityEvent;
 import android.os.PowerManager.UserActivityFlag;
 import android.os.PowerManager.WakeReason;
+import android.util.IntArray;
 import android.view.Display;
 import android.view.KeyEvent;
 
@@ -309,6 +310,17 @@ public abstract class PowerManagerInternal {
      * @param force {@code true} to activate force disable wakelocks, {@code false} to turn it off.
      */
     public abstract void setForceDisableWakelocks(boolean force);
+
+    /**
+     * Used to put certain power groups specifically to sleep.
+     *
+     * @param groupIds power groups that should be put to sleep
+     * @param eventTime when the request was issued
+     * @param reason reason for going to sleep
+     * @param flags PowerManager sleep flags
+     */
+    public abstract void goToSleepPerGroup(IntArray groupIds, long eventTime, int reason,
+            int flags);
 
     /**
      * Boost: It is sent when user interacting with the device, for example,
