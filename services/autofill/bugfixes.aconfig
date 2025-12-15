@@ -101,7 +101,7 @@ flag {
   name: "metrics_fixes"
   namespace: "autofill"
   description: "Fixes various framework reported metrics"
-  bug: "362581326, 363011343"
+  bug: "362581326"
   metadata {
     purpose: PURPOSE_BUGFIX
   }
@@ -161,5 +161,15 @@ flag {
   bug: "390180715"
   metadata {
       purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
+  name: "use_candidate_save_value_when_update_save_assist_structure"
+  namespace: "autofill"
+  description: "To fix app resetting field value before leaving page, use the candidate save value when creating assist structure for save"
+  bug: "419303541"
+  metadata {
+    purpose: PURPOSE_BUGFIX
   }
 }
