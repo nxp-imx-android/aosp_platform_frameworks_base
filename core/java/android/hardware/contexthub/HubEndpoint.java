@@ -996,12 +996,14 @@ public class HubEndpoint {
         return mMessageCallback;
     }
 
+    /** Returns the callback interface for data flow related events for this endpoint. */
     @FlaggedApi(Flags.FLAG_FMCQ_API)
     @Nullable
     public DataFlowCallback getDataFlowCallback() {
         return mDataFlowCallback;
     }
 
+    /** Returns the {@link android.os.Looper} for epoll relating to data flow alerts. */
     @FlaggedApi(Flags.FLAG_FMCQ_API)
     @NonNull
     public Looper getLooper() {
@@ -1156,7 +1158,8 @@ public class HubEndpoint {
         /**
          * Provide an optional {@code Looper} for to handle epoll on the notification eventfds
          * associated with data flows this endpoint is the source or sink of. If not provided, the
-         * {@link android.os.Looper#getMainLooper()} will be used.
+         * {@link android.os.Looper#getMainLooper()} will be used. The {@code Looper} is only used
+         * for epoll, not for executing the callbacks registered with {@link #setDataFlowCallback}.
          *
          * @param looper The {@link android.os.Looper} to use for epoll
          */
