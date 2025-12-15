@@ -124,11 +124,6 @@ public class DisplayManagerFlags {
             Flags::subscribeGranularDisplayEvents
     );
 
-    private final FlagState mBaseDensityForExternalDisplays = new FlagState(
-            Flags.FLAG_BASE_DENSITY_FOR_EXTERNAL_DISPLAYS,
-            DesktopExperienceFlags.BASE_DENSITY_FOR_EXTERNAL_DISPLAYS::isTrue
-    );
-
     private final FlagState mFramerateOverrideTriggersRrCallbacks = new FlagState(
             Flags.FLAG_FRAMERATE_OVERRIDE_TRIGGERS_RR_CALLBACKS,
             Flags::framerateOverrideTriggersRrCallbacks
@@ -295,13 +290,6 @@ public class DisplayManagerFlags {
     }
 
     /**
-     * @return {@code true} if the flag for base density for external displays is enabled
-     */
-    public boolean isBaseDensityForExternalDisplaysEnabled() {
-        return mBaseDensityForExternalDisplays.isEnabled();
-    }
-
-    /**
      * @return {@code true} if the flag triggering refresh rate callbacks when framerate is
      * overridden is enabled
      */
@@ -395,7 +383,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mDisplayListenerPerformanceImprovementsFlagState);
         pw.println(" " + mSubscribeGranularDisplayEvents);
         pw.println(" " + mEnableDisplayContentModeManagementFlagState);
-        pw.println(" " + mBaseDensityForExternalDisplays);
         pw.println(" " + mFramerateOverrideTriggersRrCallbacks);
         pw.println(" " + mRefreshRateEventForForegroundApps);
         pw.println(" " + mCommittedStateSeparateEvent);
