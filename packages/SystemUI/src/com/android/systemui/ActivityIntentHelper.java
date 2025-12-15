@@ -16,6 +16,7 @@
 
 package com.android.systemui;
 
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -33,6 +34,7 @@ import javax.inject.Inject;
  * Contains useful methods for querying properties of an Activity Intent.
  */
 @SysUISingleton
+@SuppressLint("MissingPermission")
 public class ActivityIntentHelper {
 
     private final PackageManager mPm;
@@ -61,8 +63,7 @@ public class ActivityIntentHelper {
      * @see #wouldLaunchResolverActivity(Intent, int)
      */
     public boolean wouldPendingLaunchResolverActivity(PendingIntent intent, int currentUserId) {
-        ActivityInfo targetActivityInfo = getPendingTargetActivityInfo(intent, currentUserId,
-                false /* onlyDirectBootAware */);
+        ActivityInfo targetActivityInfo = getPendingTargetActivityInfo(intent, currentUserId);
         return targetActivityInfo == null;
     }
 
@@ -78,13 +79,23 @@ public class ActivityIntentHelper {
      */
     public ActivityInfo getTargetActivityInfo(Intent intent, int currentUserId,
             boolean onlyDirectBootAware) {
-        int flags = PackageManager.MATCH_DEFAULT_ONLY | PackageManager.GET_META_DATA;
-        if (!onlyDirectBootAware) {
-            flags |= PackageManager.MATCH_DIRECT_BOOT_AWARE
-                    | PackageManager.MATCH_DIRECT_BOOT_UNAWARE;
-        }
+        int flags = getTargetActivityInfoFlags(onlyDirectBootAware);
         final List<ResolveInfo> appList = mPm.queryIntentActivitiesAsUser(
                 intent, flags, currentUserId);
+        return getActivityInfoFromAppList(appList, intent, flags, currentUserId);
+    }
+
+    private ActivityInfo getPendingTargetActivityInfo(PendingIntent intent, int currentUserId) {
+        int flags = getTargetActivityInfoFlags(/* onlyDirectBootAware= */ false);
+        final List<ResolveInfo> appList = intent.queryIntentComponents(flags);
+        return getActivityInfoFromAppList(appList, intent.getIntent(), flags, currentUserId);
+    }
+
+    private ActivityInfo getActivityInfoFromAppList(
+            final List<ResolveInfo> appList,
+            Intent intent,
+            int flags,
+            int currentUserId) {
         if (appList.size() == 0) {
             return null;
         }
@@ -92,31 +103,6 @@ public class ActivityIntentHelper {
             return appList.get(0).activityInfo;
         }
         ResolveInfo resolved = mPm.resolveActivityAsUser(intent, flags, currentUserId);
-        if (resolved == null || wouldLaunchResolverActivity(resolved, appList)) {
-            return null;
-        } else {
-            return resolved.activityInfo;
-        }
-    }
-
-    /**
-     * @see #getTargetActivityInfo(Intent, int, boolean)
-     */
-    public ActivityInfo getPendingTargetActivityInfo(PendingIntent intent, int currentUserId,
-            boolean onlyDirectBootAware) {
-        int flags = PackageManager.MATCH_DEFAULT_ONLY | PackageManager.GET_META_DATA;
-        if (!onlyDirectBootAware) {
-            flags |= PackageManager.MATCH_DIRECT_BOOT_AWARE
-                    | PackageManager.MATCH_DIRECT_BOOT_UNAWARE;
-        }
-        final List<ResolveInfo> appList = intent.queryIntentComponents(flags);
-        if (appList.size() == 0) {
-            return null;
-        }
-        if (appList.size() == 1) {
-            return appList.get(0).activityInfo;
-        }
-        ResolveInfo resolved = mPm.resolveActivityAsUser(intent.getIntent(), flags, currentUserId);
         if (resolved == null || wouldLaunchResolverActivity(resolved, appList)) {
             return null;
         } else {
@@ -143,8 +129,7 @@ public class ActivityIntentHelper {
      * @see #wouldShowOverLockscreen(Intent, int)
      */
     public boolean wouldPendingShowOverLockscreen(PendingIntent intent, int currentUserId) {
-        ActivityInfo targetActivityInfo = getPendingTargetActivityInfo(intent,
-                currentUserId, false /* onlyDirectBootAware */);
+        ActivityInfo targetActivityInfo = getPendingTargetActivityInfo(intent, currentUserId);
         return targetActivityInfo != null
                 && (targetActivityInfo.flags & (ActivityInfo.FLAG_SHOW_WHEN_LOCKED
                 | ActivityInfo.FLAG_SHOW_FOR_ALL_USERS)) > 0;
@@ -169,5 +154,14 @@ public class ActivityIntentHelper {
             }
         }
         return true;
+    }
+
+    private int getTargetActivityInfoFlags(boolean onlyDirectBootAware) {
+        int flags = PackageManager.MATCH_DEFAULT_ONLY | PackageManager.GET_META_DATA;
+        if (!onlyDirectBootAware) {
+            flags |= PackageManager.MATCH_DIRECT_BOOT_AWARE
+                    | PackageManager.MATCH_DIRECT_BOOT_UNAWARE;
+        }
+        return flags;
     }
 }
