@@ -21,7 +21,6 @@ import static android.content.pm.ActivityInfo.CONFIG_KEYBOARD;
 import static android.content.pm.ActivityInfo.CONFIG_KEYBOARD_HIDDEN;
 import static android.content.pm.ActivityInfo.CONFIG_NAVIGATION;
 import static android.content.pm.ActivityInfo.CONFIG_TOUCHSCREEN;
-import static android.content.pm.ActivityInfo.SKIP_ACTIVITY_RECREATION_ON_CONFIG_CHANGE;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 
@@ -40,8 +39,6 @@ import android.content.res.Resources;
 import android.os.UserHandle;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
-
-import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -77,7 +74,6 @@ public class AppCompatRecreateOnConfigChangePolicyTest extends WindowTestsBase {
 
     @Test
     @EnableFlags(FLAG_ENABLE_LESS_ACTIVITY_RECREATION_ON_CONFIG_CHANGE)
-    @EnableCompatChanges(SKIP_ACTIVITY_RECREATION_ON_CONFIG_CHANGE)
     public void testGetRecreateConfigMask_undefined_equalToZero() {
         Configuration config = new Configuration();
         config.keyboard = Configuration.KEYBOARD_UNDEFINED;
@@ -97,7 +93,6 @@ public class AppCompatRecreateOnConfigChangePolicyTest extends WindowTestsBase {
 
     @Test
     @EnableFlags(FLAG_ENABLE_LESS_ACTIVITY_RECREATION_ON_CONFIG_CHANGE)
-    @EnableCompatChanges(SKIP_ACTIVITY_RECREATION_ON_CONFIG_CHANGE)
     public void testGetRecreateConfigMask_defined_notEqualToZero() {
         Configuration config = new Configuration();
         config.keyboard = Configuration.KEYBOARD_QWERTY;
