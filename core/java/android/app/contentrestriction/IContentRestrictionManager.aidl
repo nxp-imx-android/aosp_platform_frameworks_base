@@ -26,5 +26,5 @@ import android.app.contentrestriction.IContentRestrictionCallback;
  */
 interface IContentRestrictionManager {
     oneway void isContentAllowed(int userId, in Content content, in IContentRestrictionCallback callback);
-    boolean isContentRestrictionEnabled(int userId);
+    boolean isContentRestrictionEnabledForUser(int userId);
 }
