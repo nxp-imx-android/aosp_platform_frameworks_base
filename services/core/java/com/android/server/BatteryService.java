@@ -739,8 +739,9 @@ public final class BatteryService extends SystemService {
     }
 
     private @BatteryManager.BatteryChargingPolicy int translateHalChargingPolicy(int halPolicy) {
-        if (!android.os.Flags.batteryChargingInfoApi())
+        if (!batteryChargingInfoApi()) {
             return halPolicy;
+        }
 
         return switch (halPolicy) {
             case BatteryChargingPolicy.LONG_LIFE ->
@@ -1851,7 +1852,7 @@ public final class BatteryService extends SystemService {
                 case BatteryManager.BATTERY_PROPERTY_CHARGING_POLICY:
                     mContext.enforceCallingPermission(
                             android.Manifest.permission.BATTERY_STATS, null);
-                    if (!android.os.Flags.batteryChargingInfoApi()) {
+                    if (!batteryChargingInfoApi()) {
                         break;
                     }
                     synchronized (mLock) {
