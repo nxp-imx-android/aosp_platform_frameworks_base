@@ -114,15 +114,32 @@ class SafetyCenterUiDataTest {
             SafetyCenterIssue.ISSUE_SEVERITY_LEVEL_RECOMMENDATION,
         )
     private val issue5 =
-        createIssue("issue5", user10, setOf("s1"), SafetyCenterIssue.ISSUE_SEVERITY_LEVEL_OK)
+        createIssue(
+            "issue5",
+            user10,
+            setOf("s1"),
+            SafetyCenterIssue.ISSUE_SEVERITY_LEVEL_OK,
+            )
     private val dismissedIssue1 =
-        createIssue("issue6", user0, setOf("s4"), SafetyCenterIssue.ISSUE_SEVERITY_LEVEL_OK)
+        createIssue(
+            "issue6",
+            user0,
+            setOf("s4"),
+            SafetyCenterIssue.ISSUE_SEVERITY_LEVEL_OK,
+            )
     private val dismissedIssue2 =
         createIssue(
             "issue7",
             user0,
             setOf("s3"),
             SafetyCenterIssue.ISSUE_SEVERITY_LEVEL_RECOMMENDATION,
+        )
+    private val dismissedIssue3 =
+        createIssue(
+            "issue8",
+            user10,
+            setOf("s1"),
+            SafetyCenterIssue.ISSUE_SEVERITY_LEVEL_CRITICAL_WARNING,
         )
 
     private val testSafetyCenterUiData =
@@ -145,7 +162,11 @@ class SafetyCenterUiDataTest {
                     "s3" to listOf(issue4),
                 ),
             dismissedIssuesBySourceId =
-                mapOf("s4" to listOf(dismissedIssue1), "s3" to listOf(dismissedIssue2)),
+                mapOf(
+                    "s4" to listOf(dismissedIssue1),
+                    "s3" to listOf(dismissedIssue2),
+                    "s1" to listOf(dismissedIssue3),
+                ),
         )
 
     @Test
@@ -243,6 +264,38 @@ class SafetyCenterUiDataTest {
     }
 
     @Test
+    fun getDismissedIssues_noOrder_sortedBySeverity() {
+        val issues = testSafetyCenterUiData.getDismissedIssues()
+        assertThat(issues)
+            .containsExactly(dismissedIssue3, dismissedIssue2, dismissedIssue1)
+            .inOrder()
+    }
+
+    @Test
+    fun getDismissedIssues_withOrder_sortedBySeverityAndSourceOrder() {
+        val sourceOrder = listOf("s3", "s4", "s1")
+        val issues = testSafetyCenterUiData.getDismissedIssues(sourceOrder)
+        // Expected order: CRITICAL (s1), RECOMMENDATION (s3), OK (s4)
+        assertThat(issues)
+            .containsExactly(dismissedIssue3, dismissedIssue2, dismissedIssue1)
+            .inOrder()
+    }
+
+    @Test
+    fun getDismissedIssues_emptyData_returnsEmptyList() {
+        val emptyUiData =
+            SafetyCenterUiData(
+                status = defaultStatus,
+                entriesByUserIdAndSourceId = emptyMap(),
+                staticEntriesByUserIdAndSourceId = emptyMap(),
+                activeIssuesBySourceId = emptyMap(),
+                dismissedIssuesBySourceId = emptyMap(),
+            )
+        val result = emptyUiData.getDismissedIssues()
+        assertThat(result).isEmpty()
+    }
+
+    @Test
     fun getActiveIssuesForSources_filtersAndSorts() {
         val sourceOrder = listOf("s3", "s1")
         val issues = testSafetyCenterUiData.getActiveIssuesForSources(sourceOrder)
@@ -257,13 +310,13 @@ class SafetyCenterUiDataTest {
 
     @Test
     fun getDismissedIssuesForSources_filtersOutGreenIssues() {
-        val issues = testSafetyCenterUiData.getDismissedIssuesForSources(listOf("s3", "s4"))
-        assertThat(issues).containsExactly(dismissedIssue2)
+        val issues = testSafetyCenterUiData.getDismissedIssuesForSources(listOf("s1", "s3", "s4"))
+        assertThat(issues).containsExactly(dismissedIssue3, dismissedIssue2).inOrder()
     }
 
     @Test
     fun getDismissedIssuesForSources_notFound_returnsEmpty() {
-        val issues = testSafetyCenterUiData.getDismissedIssuesForSources(listOf("s1"))
+        val issues = testSafetyCenterUiData.getDismissedIssuesForSources(listOf("s2"))
         assertThat(issues).isEmpty()
     }
 

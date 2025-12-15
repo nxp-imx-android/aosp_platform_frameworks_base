@@ -37,6 +37,7 @@ import android.safetycenter.SafetyCenterStatus
  *   their safety source ID.
  * @property dismissedIssuesBySourceId A map grouping lists of dismissed SafetyCenterIssue objects
  *   by their safety source ID.
+ * @property resolvedIssues A map of issue IDs to action IDs for resolved actions.
  */
 data class SafetyCenterUiData(
     val status: SafetyCenterStatus,
@@ -108,6 +109,18 @@ data class SafetyCenterUiData(
                 .flatMap { sourceId -> activeIssuesBySourceId[sourceId] ?: emptyList() }
                 .distinct()
         return relevantIssues.sortedWith(issueComparator(sourceIdsOrder))
+    }
+
+    /**
+     * Retrieves all dismissed issues across all profiles, sorted by severity and source ID order.
+     *
+     * @param sourceIdsOrder An optional list defining the preferred order of safety source IDs for
+     *   secondary sorting.
+     * @return A sorted list of all dismissed [SafetyCenterIssue] objects.
+     */
+    fun getDismissedIssues(sourceIdsOrder: List<String> = emptyList()): List<SafetyCenterIssue> {
+        val allDismissedIssues = dismissedIssuesBySourceId.values.flatten().distinct()
+        return allDismissedIssues.sortedWith(issueComparator(sourceIdsOrder))
     }
 
     /**
