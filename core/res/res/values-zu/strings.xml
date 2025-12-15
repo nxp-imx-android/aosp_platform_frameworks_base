@@ -772,8 +772,7 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"Yehlisa ifoni"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"Yisa ifoni ngakwesokunxele sakho"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"Yisa ifoni ngakwesokudla sakho"</string>
-    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
-    <skip />
+    <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"Bheka ngokuqondile ekhamereni yakho"</string>
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"Ayikwazi ukubona ubuso bakho. Bamba ifoni yakho iqondane namehlo"</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"Ukunyakaza okuningi kakhulu. Bamba ifoni iqine."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Sicela uphinde ubhalise ubuso bakho."</string>
@@ -1453,12 +1452,9 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"Thepha ukuze uyisethe"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"Izoni yakho yesikhathi ishintshile"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"Manje sewuku-<xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
-    <!-- no translation found for time_zone_offset_change_notification_title (8232305835199459588) -->
-    <skip />
-    <!-- no translation found for time_zone_offset_change_notification_body_forward (1299493962341887576) -->
-    <skip />
-    <!-- no translation found for time_zone_offset_change_notification_body_backward (6643532078142642118) -->
-    <skip />
+    <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"Ukushintsha kwewashi"</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"Amawashi aye phambili ngokuthi <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. Manje usukokuthi <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)"</string>
+    <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"Amawashi ahlehlele emuva ngokuthi <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. Manje usukokuthi <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)"</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"Hlela isikhathi"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"Setha idethi"</string>
     <string name="date_time_set" msgid="4603445265164486816">"Hlela"</string>
@@ -2110,6 +2106,8 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"I-<xliff:g id="APP_NAME_0">%1$s</xliff:g> ayitholakali okwamanje. Lokhu kuphethwe i-<xliff:g id="APP_NAME_1">%2$s</xliff:g>."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"Funda kabanzi"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"Susa ukuphumuza uhlelo lokusebenza"</string>
+    <!-- no translation found for locked_app_biometric_prompt_description (6853122652400451464) -->
+    <skip />
     <string name="work_mode_off_title" msgid="6367463960165135829">"Susa ukumisa ama-app omsebenzi?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Qhubekisa"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Isimo esiphuthumayo"</string>
@@ -2549,6 +2547,10 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"Yenza i-Clone"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"Okomphakathi"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"Indawo engasese"</string>
+    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
+    <skip />
+    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
+    <skip />
     <string name="redacted_notification_message" msgid="1520587845842228816">"Okuqukethwe kwesaziso esizwelayo kufihliwe"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Okuqukethwe kwe-app kufihliwe kusuka ekwabelaneni kwesikrini ngokuvikelwa"</string>

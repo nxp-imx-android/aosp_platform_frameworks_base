@@ -772,8 +772,7 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"දුරකථනය තවත් පහළට ගෙන යන්න"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"දුරකථනය ඔබගේ වම් පසට ගෙන යන්න"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"දුරකථනය ඔබගේ දකුණු පසට ගෙන යන්න"</string>
-    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
-    <skip />
+    <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"ඔබේ කැමරාව දෙස වඩාත් සෘජුව බලන්න"</string>
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"ඔබගේ මුහුණ දැකිය නොහැකිය. ඔබගේ දුරකථනය ඇස් මට්ටමින් අල්ලා ගන්න."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"චලනය ඉතා වැඩියි. දුරකථනය ස්ථිරව අල්ලා සිටින්න."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"ඔබේ මුහුණ යළි ලියාපදිංචි කරන්න."</string>
@@ -1453,12 +1452,9 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"එය පිහිටුවීමට තට්ටු කරන්න"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"ඔබේ වේලා කලාපය වෙනස් විය"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"ඔබ දැන් <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>) හි වේ"</string>
-    <!-- no translation found for time_zone_offset_change_notification_title (8232305835199459588) -->
-    <skip />
-    <!-- no translation found for time_zone_offset_change_notification_body_forward (1299493962341887576) -->
-    <skip />
-    <!-- no translation found for time_zone_offset_change_notification_body_backward (6643532078142642118) -->
-    <skip />
+    <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"ඔරලෝසුව වෙනස් කිරීම"</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"ඔරලෝසු <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> ඉදිරියට ගෙන ගියා. ඔබ දැන් <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>) හි වේ."</string>
+    <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"ඔරලෝසු <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> පසුපසට ගෙන යන ලදි. ඔබ දැන් <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>) හි වේ."</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"වේලාව සකසන්න"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"දිනය සැකසීම"</string>
     <string name="date_time_set" msgid="4603445265164486816">"සකසන්න"</string>
@@ -2110,6 +2106,7 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> මේ අවස්ථාවේදී ලබා ගත නොහැකිය. මෙය <xliff:g id="APP_NAME_1">%2$s</xliff:g> මගින් කළමනාකරණය කෙරේ."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"තව දැන ගන්න"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"යෙදුම විරාම කිරීම ඉවත් කරන්න"</string>
+    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> අගුළු දමා ඇත"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"කාර්ය යෙදුම් විරාම නොකරන්න ද?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"විරාම නොකරන්න"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"හදිසි අවස්ථාව"</string>
@@ -2550,6 +2547,10 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"ක්ලෝන කරන්න"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"වාර්ගික"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"රහසිගත අවකාශය"</string>
+    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
+    <skip />
+    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
+    <skip />
     <string name="redacted_notification_message" msgid="1520587845842228816">"සංවේදී දැනුම්දීම් අන්තර්ගතය සැඟවී ඇත"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"ආරක්ෂාව සඳහා යෙදුම් අන්තර්ගතය තිරය බෙදා ගැනීමෙන් සඟවා ඇත"</string>

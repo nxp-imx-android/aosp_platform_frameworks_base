@@ -772,8 +772,7 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"請將手機向下移"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"請將手機向左移"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"請將手機向右移"</string>
-    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
-    <skip />
+    <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"請正面望相機鏡頭"</string>
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"看不到面孔，請將手機放在視線水平。"</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"裝置不夠穩定。請拿穩手機。"</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"請重新註冊面孔。"</string>
@@ -1453,12 +1452,9 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"輕按即可設定"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"你的時區已變更"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"目前所在時區為<xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
-    <!-- no translation found for time_zone_offset_change_notification_title (8232305835199459588) -->
-    <skip />
-    <!-- no translation found for time_zone_offset_change_notification_body_forward (1299493962341887576) -->
-    <skip />
-    <!-- no translation found for time_zone_offset_change_notification_body_backward (6643532078142642118) -->
-    <skip />
+    <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"時鐘變更"</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"時鐘撥快了 <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>。目前所在時區為<xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)。"</string>
+    <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"時鐘撥慢了 <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>。目前所在時區為<xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)。"</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"設定時間"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"日期設定"</string>
     <string name="date_time_set" msgid="4603445265164486816">"設定"</string>
@@ -2110,6 +2106,7 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"目前無法使用 <xliff:g id="APP_NAME_0">%1$s</xliff:g>。此應用程式是由「<xliff:g id="APP_NAME_1">%2$s</xliff:g>」管理。"</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"瞭解詳情"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"取消暫停應用程式"</string>
+    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"「<xliff:g id="APP_NAME">%1$s</xliff:g>」已上鎖"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"要取消暫停工作應用程式嗎？"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"取消暫停"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"撥打緊急電話"</string>
@@ -2549,6 +2546,10 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"複製"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"共用"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"私人空間"</string>
+    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
+    <skip />
+    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
+    <skip />
     <string name="redacted_notification_message" msgid="1520587845842228816">"已隱藏敏感通知內容"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"為安全起見，應用程式內容已從分享螢幕畫面隱藏"</string>

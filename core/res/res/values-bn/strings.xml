@@ -772,8 +772,7 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"ফোন নিচে নামান"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"ফোন আপনার বাঁদিকে সরান"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"ফোন আপনার ডানদিকে সরান"</string>
-    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
-    <skip />
+    <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"আপনার ক্যামেরার দিকে আরও সরাসরি তাকান"</string>
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"আপনার মুখ দেখা যাচ্ছে না। ফোন আপনার চোখের সোজাসুজি ধরুন।"</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"খুব বেশি নড়ছে। ফোনটি যাতে না কাঁপে সেইভাবে ধরুন।"</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"আপনার মুখের ছবি আবার নথিভুক্ত করুন।"</string>
@@ -1453,12 +1452,9 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"এটিকে সেট-আপ করতে আলতো চাপুন"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"আপনার টাইম জোন পরিবর্তন হয়ে গেছে"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"আপনি এখন <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)-এ আছেন"</string>
-    <!-- no translation found for time_zone_offset_change_notification_title (8232305835199459588) -->
-    <skip />
-    <!-- no translation found for time_zone_offset_change_notification_body_forward (1299493962341887576) -->
-    <skip />
-    <!-- no translation found for time_zone_offset_change_notification_body_backward (6643532078142642118) -->
-    <skip />
+    <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"ঘড়িতে সময় পরিবর্তন"</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"ঘড়িতে সময় <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> এগিয়ে গেছে। আপনি এখন <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)-এ আছেন।"</string>
+    <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"ঘড়িতে সময় <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> পিছিয়ে গেছে। আপনি এখন <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)-এ আছেন।"</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"সময় সেট করুন"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"তারিখ সেট করুন"</string>
     <string name="date_time_set" msgid="4603445265164486816">"সেট করুন"</string>
@@ -2110,6 +2106,7 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> এখন উপলভ্য নয়। এই অ্যাপটিকে <xliff:g id="APP_NAME_1">%2$s</xliff:g> অ্যাপ ম্যানেজ করে।"</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"আরও জানুন"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"অ্যাপ আবার চালু করুন"</string>
+    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> লক করা হয়েছে"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"অফিসের অ্যাপ আনপজ করতে চান?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"আনপজ করুন"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"জরুরি"</string>
@@ -2549,6 +2546,10 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"ক্লোন"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"কমিউনাল"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"প্রাইভেট স্পেস"</string>
+    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
+    <skip />
+    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
+    <skip />
     <string name="redacted_notification_message" msgid="1520587845842228816">"সংবেদনশীল বিজ্ঞপ্তির কন্টেন্ট লুকানো আছে"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"নিরাপত্তার জন্য স্ক্রিন শেয়ার করা থেকে লুকানো অ্যাপের কন্টেন্ট"</string>

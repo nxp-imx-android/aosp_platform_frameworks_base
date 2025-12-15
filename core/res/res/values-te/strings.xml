@@ -772,8 +772,7 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"ఫోన్‌ను కిందికి జరపండి"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"ఫోన్‌ను మీ ఎడమ వైపునకు జరపండి"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"ఫోన్‌ను మీ కుడి వైపునకు జరపండి"</string>
-    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
-    <skip />
+    <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"మీ కెమెరా వైపు మరింత నేరుగా చూడండి"</string>
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"మీ ముఖం కనిపించడం లేదు. మీ ఫోన్‌ను కళ్లకు ఎదురుగా పట్టుకోండి."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"బాగా కదుపుతున్నారు. ఫోన్‌ను స్థిరంగా పట్టుకోండి"</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"దయచేసి మీ ముఖాన్ని మళ్లీ నమోదు చేయండి."</string>
@@ -2107,6 +2106,7 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> ప్రస్తుతం అందుబాటులో లేదు. ఇది <xliff:g id="APP_NAME_1">%2$s</xliff:g> ద్వారా నిర్వహించబడుతుంది."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"మరింత తెలుసుకోండి"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"యాప్‌పై వున్న పాజ్‌ను తొలగించండి"</string>
+    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> లాక్ అయ్యింది"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"వర్క్ యాప్స్ అన్‌పాజ్ చేయాలా?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"అన్‌పాజ్ చేయండి"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"ఎమర్జెన్సీ"</string>
@@ -2546,6 +2546,10 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"క్లోన్"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"కమ్యూనల్"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"ప్రైవేట్ స్పేస్"</string>
+    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
+    <skip />
+    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
+    <skip />
     <string name="redacted_notification_message" msgid="1520587845842228816">"గోప్యమైన నోటిఫికేషన్ కంటెంట్ దాచబడింది"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"సెక్యూరిటీ కోసం స్క్రీన్ షేర్ నుండి యాప్ కంటెంట్ దాచబడింది"</string>

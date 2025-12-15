@@ -772,8 +772,7 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"ಫೋನ್ ಅನ್ನು ಕೆಳಗೆ ಸರಿಸಿ"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"ಫೋನ್ ಅನ್ನು ನಿಮ್ಮ ಎಡಕ್ಕೆ ಸರಿಸಿ"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"ಫೋನ್ ಅನ್ನು ನಿಮ್ಮ ಬಲಕ್ಕೆ ಸರಿಸಿ"</string>
-    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
-    <skip />
+    <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"ನಿಮ್ಮ ಕ್ಯಾಮರಾವನ್ನು ಹೆಚ್ಚು ನೇರವಾಗಿ ನೋಡಿ"</string>
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"ನಿಮ್ಮ ಮುಖ ಕಾಣಿಸುತ್ತಿಲ್ಲ. ನಿಮ್ಮ ಫೋನ್ ಅನ್ನು ಕಣ್ಣಿನ ನೇರಕ್ಕೆ ಹಿಡಿದುಕೊಳ್ಳಿ."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"ತುಂಬಾ ಅಲುಗಾಡುತ್ತಿದೆ ಫೋನ್ ಅನ್ನು ಸ್ಥಿರವಾಗಿ ಹಿಡಿಯಿರಿ."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"ನಿಮ್ಮ ಮುಖವನ್ನು ಮರುನೋಂದಣಿ ಮಾಡಿ."</string>
@@ -2107,6 +2106,7 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> ಆ್ಯಪ್‌ ಸದ್ಯಕ್ಕೆ ಲಭ್ಯವಿಲ್ಲ. ಇದನ್ನು <xliff:g id="APP_NAME_1">%2$s</xliff:g> ನಲ್ಲಿ ನಿರ್ವಹಿಸಲಾಗುತ್ತಿದೆ."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"ಆ್ಯಪ್ ವಿರಾಮ ನಿಲ್ಲಿಸಿ"</string>
+    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> ಅನ್ನು ಲಾಕ್ ಮಾಡಲಾಗಿದೆ"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"ಕೆಲಸದ ಆ್ಯಪ್ ವಿರಾಮ ರದ್ದುಮಾಡಬೇಕೇ"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"ವಿರಾಮವನ್ನು ರದ್ದುಗೊಳಿಸಿ"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"ತುರ್ತು"</string>
@@ -2546,6 +2546,10 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"ಕ್ಲೋನ್"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"ಸಮುದಾಯ"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"ಪ್ರೈವೆಟ್ ಸ್ಪೇಸ್"</string>
+    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
+    <skip />
+    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
+    <skip />
     <string name="redacted_notification_message" msgid="1520587845842228816">"ಸೂಕ್ಷ್ಮ ನೋಟಿಫಿಕೇಶನ್ ಕಂಟೆಂಟ್ ಅನ್ನು ಮರೆಮಾಡಲಾಗಿದೆ"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"ಭದ್ರತೆಗಾಗಿ ಸ್ಕ್ರೀನ್‌‌ ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯಲ್ಲಿ ಆ್ಯಪ್ ಕಂಟೆಂಟ್‌ ಅನ್ನು ಮರೆಮಾಡಲಾಗಿದೆ"</string>
