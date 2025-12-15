@@ -377,6 +377,18 @@ public class AssociationStore {
     }
 
     /**
+     * Get a copy of active associations that are trusted by the user.
+     */
+    @NonNull
+    public List<AssociationInfo> getTrustedAssociations(@UserIdInt int userId) {
+        synchronized (mLock) {
+            return CollectionUtils.filter(getActiveAssociations(),
+                    a -> (a.isTrusted()
+                            && (userId == UserHandle.USER_ALL || a.getUserId() == userId)));
+        }
+    }
+
+    /**
      * Get a copy of all associations by package.
      */
     @NonNull

@@ -52,6 +52,9 @@ interface ICompanionDeviceManager {
     @EnforcePermission("MANAGE_COMPANION_DEVICES")
     List<AssociationInfo> getAllAssociationsForUser(int userId);
 
+    @EnforcePermission("ACCESS_COMPANION_MESSAGE_PCC")
+    List<AssociationInfo> getTrustedAssociationsForUser(int userId);
+
     /** @deprecated */
     void legacyDisassociate(String deviceMacAddress, String callingPackage, int userId);
 

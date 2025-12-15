@@ -18,6 +18,7 @@
 package com.android.server.companion;
 
 import static android.Manifest.permission.ACCESS_COMPANION_INFO;
+import static android.Manifest.permission.ACCESS_COMPANION_MESSAGE_PCC;
 import static android.Manifest.permission.ASSOCIATE_COMPANION_DEVICES;
 import static android.Manifest.permission.BLUETOOTH_CONNECT;
 import static android.Manifest.permission.DELIVER_COMPANION_MESSAGES;
@@ -390,6 +391,17 @@ public class CompanionDeviceManagerService extends SystemService {
                 return mAssociationStore.getActiveAssociations();
             }
             return mAssociationStore.getActiveAssociationsByUser(userId);
+        }
+
+        @Override
+        @EnforcePermission(ACCESS_COMPANION_MESSAGE_PCC)
+        public List<AssociationInfo> getTrustedAssociationsForUser(int userId)
+                throws RemoteException {
+            getTrustedAssociationsForUser_enforcePermission();
+
+            enforceCallerIsSystemOrCanInteractWithUserId(getContext(), userId);
+
+            return mAssociationStore.getTrustedAssociations(userId);
         }
 
         @Override
