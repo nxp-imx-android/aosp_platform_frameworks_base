@@ -23,6 +23,7 @@ import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.SystemServerClassLoaderFactory;
+import com.android.server.display.DisplayDeviceConfig;
 import com.android.server.display.feature.DisplayManagerFlags;
 import com.android.server.display.feature.flags.Flags;
 
@@ -33,6 +34,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -49,16 +51,18 @@ public class PluginManager {
     private final PluginStorage mPluginStorage;
     private final List<Plugin> mPlugins;
 
-    public PluginManager(Context context, DisplayManagerFlags flags) {
-        this(context, flags, new Injector());
+    public PluginManager(Context context, PluginProviderDependencies dependencies,
+            DisplayManagerFlags flags) {
+        this(context, dependencies, flags, new Injector());
     }
 
     @VisibleForTesting
-    PluginManager(Context context, DisplayManagerFlags flags, Injector injector) {
+    PluginManager(Context context, PluginProviderDependencies dependencies,
+            DisplayManagerFlags flags, Injector injector) {
         Set<PluginType<?>> enabledTypes = injector.getEnabledPluginTypes(flags);
         mPluginStorage = injector.getPluginStorage(enabledTypes);
         mPlugins = Collections.unmodifiableList(injector.loadPlugins(
-                context, mPluginStorage, enabledTypes));
+                context, mPluginStorage, dependencies, enabledTypes));
         Slog.d(TAG, "loaded Plugins:" + mPlugins);
     }
 
@@ -107,6 +111,16 @@ public class PluginManager {
         void onChanged(@Nullable T value);
     }
 
+    /**
+     * Interface to bundle dependencies for the PluginProvider
+     */
+    public interface PluginProviderDependencies {
+        /**
+         * Provides map of DisplayDeviceConfigs for each unique display id
+         */
+        Map<String, DisplayDeviceConfig> getDisplayDeviceConfigs();
+    }
+
     static class Injector {
 
         Set<PluginType<?>> getEnabledPluginTypes(DisplayManagerFlags flags) {
@@ -125,6 +139,7 @@ public class PluginManager {
         }
 
         List<Plugin> loadPlugins(Context context, PluginStorage storage,
+                PluginProviderDependencies dependencies,
                 Set<PluginType<?>> enabledTypes) {
             String providerJarPath = context
                     .getString(com.android.internal.R.string.config_pluginsProviderJarPath);
@@ -140,7 +155,7 @@ public class PluginManager {
                 Class<? extends PluginsProvider> cp = pathClassLoader.loadClass(PROVIDER_IMPL_CLASS)
                         .asSubclass(PluginsProvider.class);
                 PluginsProvider provider = cp.getDeclaredConstructor().newInstance();
-                return provider.getPlugins(context, storage, enabledTypes);
+                return provider.getPlugins(context, storage, dependencies, enabledTypes);
             } catch (ClassNotFoundException e) {
                 Slog.e(TAG, "loading failed: " + PROVIDER_IMPL_CLASS + " is not found in"
                         + providerJarPath, e);
