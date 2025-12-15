@@ -39,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.TargetViewModel
@@ -58,7 +59,10 @@ fun ShareContentList(modifier: Modifier = Modifier, viewModel: TargetsViewModel)
         color = MaterialTheme.colorScheme.surfaceBright,
         modifier = modifier.heightIn(min = 24.dp, max = 224.dp).width(286.dp),
     ) {
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        LazyColumn(
+            modifier = Modifier.testTag("ShareContentList"),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
             targets?.let { targets ->
                 items(items = targets) { target ->
                     val targetViewModel =

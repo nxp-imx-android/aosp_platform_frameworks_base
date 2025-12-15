@@ -25,6 +25,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import com.android.systemui.screencapture.sharescreen.ui.viewmodel.ScreenCaptureShareScreenViewModel
 
@@ -33,7 +35,8 @@ import com.android.systemui.screencapture.sharescreen.ui.viewmodel.ScreenCapture
 fun PreShareUI(shareScreenViewModel: ScreenCaptureShareScreenViewModel) {
     Box(
         contentAlignment = Alignment.TopCenter,
-        modifier = Modifier.fillMaxSize().padding(top = 16.dp),
+        modifier =
+            Modifier.fillMaxSize().padding(top = 16.dp).semantics { testTagsAsResourceId = true },
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp),
