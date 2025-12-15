@@ -31,6 +31,7 @@ import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
 import com.android.internal.jank.Cuj
 import com.android.internal.jank.InteractionJankMonitor
+import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.MultiDisplayDragMoveBoundsCalculator
@@ -382,7 +383,7 @@ class MultiDisplayVeiledResizeTaskPositioner(
                 val wct = WindowContainerTransaction()
                 wct.setBounds(windowDecoration.taskInfo.token, repositionTaskBounds)
                 val captionInsets = windowDecoration.taskInfo.freeformCaptionInsets
-                if (captionInsets != 0) {
+                if (!Flags.refactorCaptionSandboxingToCore() && captionInsets != 0) {
                     // Reset app bounds if app bounds were overridden.
                     wct.setAppBounds(windowDecoration.taskInfo.token, null)
                 }

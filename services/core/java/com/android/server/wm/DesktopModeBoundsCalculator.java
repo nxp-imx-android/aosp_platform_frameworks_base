@@ -42,6 +42,7 @@ import android.view.Display;
 import android.view.Gravity;
 
 import com.android.internal.policy.DesktopModeCompatUtils;
+import com.android.window.flags.Flags;
 
 import java.util.function.Consumer;
 
@@ -123,7 +124,7 @@ public final class DesktopModeBoundsCalculator {
             logger.accept("respecting option bounds cascaded position="
                     + shouldRespectOptionPosition);
         }
-        if (captionHeight != 0) {
+        if (!Flags.refactorCaptionSandboxingToCore() && captionHeight != 0) {
             outParams.mAppBounds.set(outParams.mBounds);
             outParams.mAppBounds.top += captionHeight;
             logger.accept("exclude-caption-height-from-app-bounds");

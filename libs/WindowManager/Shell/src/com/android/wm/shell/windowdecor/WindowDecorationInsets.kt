@@ -125,9 +125,11 @@ private constructor(
                 )
             }
         }
-        appBoundsExclusion?.let { exclusion ->
-            val appBounds = Rect(exclusion.taskFrame).apply { top += frame.height }
-            wct.setAppBounds(token, appBounds)
+        if (!Flags.refactorCaptionSandboxingToCore()) {
+            appBoundsExclusion?.let { exclusion ->
+                val appBounds = Rect(exclusion.taskFrame).apply { top += frame.height }
+                wct.setAppBounds(token, appBounds)
+            }
         }
     }
 
@@ -135,7 +137,9 @@ private constructor(
     fun remove(wct: WindowContainerTransaction) {
         wct.removeInsetsSource(token, owner, INDEX, WindowInsets.Type.captionBar())
         wct.removeInsetsSource(token, owner, INDEX, WindowInsets.Type.mandatorySystemGestures())
-        appBoundsExclusion?.let { wct.setAppBounds(token, Rect()) }
+        if (!Flags.refactorCaptionSandboxingToCore()) {
+            appBoundsExclusion?.let { wct.setAppBounds(token, Rect()) }
+        }
     }
 
     private fun logD(msg: String, vararg arguments: Any?) {
