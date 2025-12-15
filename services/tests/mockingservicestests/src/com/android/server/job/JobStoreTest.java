@@ -16,15 +16,16 @@
 
 package com.android.server.job;
 
-import static org.junit.Assert.assertEquals;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
-import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
-import static com.android.dx.mockito.inline.extended.ExtendedMockito.spy;
-import static org.mockito.Mockito.when;
+
+import static com.google.common.truth.Truth.assertThat;
+
+import static org.mockito.Mockito.spy;
 
 import android.app.job.JobInfo;
 import android.content.ComponentName;
+
 import com.android.server.job.controllers.JobStatus;
 
 import org.junit.After;
@@ -33,10 +34,17 @@ import org.junit.Test;
 import org.mockito.MockitoSession;
 import org.mockito.quality.Strictness;
 
-public class JobStoreTest {
-
+public final class JobStoreTest {
     private static final int TEST_UID = 1000;
     private static final int NON_MATCHING_SOURCE_UID = 2000;
+    private static final String TEST_PACKAGE_NAME = "foo";
+    private static final String TEST_JOB_NAME_1 = "TestJobName1";
+    private static final String TEST_JOB_NAME_2 = "TestJobName2";
+    private static final String TEST_JOB_NAME_3 = "TestJobName3";
+    private static final String TEST_JOB_NAME_4 = "TestJobName4";
+    private static final String TEST_JOB_NAME_5 = "TestJobName5";
+    private static final String TEST_JOB_NAME_6 = "TestJobName6";
+
     private JobStore.JobSet mJobSet;
     private MockitoSession mMockingSession;
 
@@ -45,13 +53,6 @@ public class JobStoreTest {
         mMockingSession =
                 mockitoSession().initMocks(this).strictness(Strictness.LENIENT).startMocking();
         mJobSet = new JobStore.JobSet();
-    }
-
-    private JobStatus createJobStatus(int jobId, int uid, int sourceUid, String batteryName) {
-        final JobInfo jobInfo = new JobInfo.Builder(jobId,
-                new ComponentName("foo", batteryName)).build();
-        return JobStatus.createFromJobInfo(jobInfo, uid, "foo", sourceUid,
-                null, batteryName);
     }
 
     @After
@@ -63,16 +64,16 @@ public class JobStoreTest {
 
     @Test
     public void testGetTopJobsDebugStringForUid_empty() {
-        assertEquals("", mJobSet.getTopJobsDebugStringForUid(TEST_UID));
+        assertThat(mJobSet.getTopJobsDebugStringForUid(TEST_UID)).isEmpty();
     }
 
     @Test
     public void testGetTopJobsDebugStringForUid_noMatchingSourceUid() {
-        final JobStatus job = createJobStatus(1, TEST_UID, TEST_UID, "TestJobName1");
+        JobStatus job = createJobStatus(1, TEST_UID, TEST_UID, TEST_JOB_NAME_1);
         final JobStatus spiedJob = spy(job);
         doReturn(NON_MATCHING_SOURCE_UID).when(spiedJob).getSourceUid();
         mJobSet.add(spiedJob);
-        assertEquals("", mJobSet.getTopJobsDebugStringForUid(TEST_UID));
+        assertThat(mJobSet.getTopJobsDebugStringForUid(TEST_UID)).isEmpty();
     }
 
     @Test
@@ -80,36 +81,25 @@ public class JobStoreTest {
         final int uid = TEST_UID;
         int jobId = 0;
 
-        // 6 jobs for TestJobName1
-        for (int i = 0; i < 6; i++) {
-            mJobSet.add(createJobStatus(jobId++, uid, uid, "TestJobName1"));
-        }
-        // 5 jobs for TestJobName2
-        for (int i = 0; i < 5; i++) {
-            mJobSet.add(createJobStatus(jobId++, uid, uid, "TestJobName2"));
-        }
-        // 4 jobs for TestJobName3
-        for (int i = 0; i < 4; i++) {
-            mJobSet.add(createJobStatus(jobId++, uid, uid, "TestJobName3"));
-        }
-        // 3 jobs for TestJobName4
-        for (int i = 0; i < 3; i++) {
-            mJobSet.add(createJobStatus(jobId++, uid, uid, "TestJobName4"));
-        }
-        // 2 jobs for TestJobName5
-        for (int i = 0; i < 2; i++) {
-            mJobSet.add(createJobStatus(jobId++, uid, uid, "TestJobName5"));
-        }
+        jobId = addJobs(jobId, uid, 6, TEST_JOB_NAME_1);
+        jobId = addJobs(jobId, uid, 5, TEST_JOB_NAME_2);
+        jobId = addJobs(jobId, uid, 4, TEST_JOB_NAME_3);
+        jobId = addJobs(jobId, uid, 3, TEST_JOB_NAME_4);
+        jobId = addJobs(jobId, uid, 2, TEST_JOB_NAME_5);
         // 1 job for TestJobName6
-        mJobSet.add(createJobStatus(jobId++, uid, uid, "TestJobName6"));
+        mJobSet.add(createJobStatus(jobId++, uid, uid, TEST_JOB_NAME_6));
 
         // Add some noise that should be filtered out
         mJobSet.add(createJobStatus(jobId++, uid, uid + 1, "noise_job"));
         mJobSet.add(createJobStatus(jobId++, uid + 1, uid + 1, "noise_job2"));
 
-        final String expected = "foo/TestJobName1:6,foo/TestJobName2:5,foo/TestJobName3:4,"
-                + "foo/TestJobName4:3,foo/TestJobName5:2";
-        assertEquals(expected, mJobSet.getTopJobsDebugStringForUid(uid));
+        final String expected = String.join(",",
+                TEST_PACKAGE_NAME + "/" + TEST_JOB_NAME_1 + ":6",
+                TEST_PACKAGE_NAME + "/" + TEST_JOB_NAME_2 + ":5",
+                TEST_PACKAGE_NAME + "/" + TEST_JOB_NAME_3 + ":4",
+                TEST_PACKAGE_NAME + "/" + TEST_JOB_NAME_4 + ":3",
+                TEST_PACKAGE_NAME + "/" + TEST_JOB_NAME_5 + ":2");
+        assertThat(mJobSet.getTopJobsDebugStringForUid(uid)).isEqualTo(expected);
     }
 
     @Test
@@ -117,24 +107,53 @@ public class JobStoreTest {
         final int uid = TEST_UID;
         int jobId = 0;
 
-        // 3 jobs for TestJobName1
-        for (int i = 0; i < 3; i++) {
-            mJobSet.add(createJobStatus(jobId++, uid, uid, "TestJobName1"));
-        }
-        // 2 jobs for TestJobName2
-        for (int i = 0; i < 2; i++) {
-            mJobSet.add(createJobStatus(jobId++, uid, uid, "TestJobName2"));
-        }
+        jobId = addJobs(jobId, uid, 3, TEST_JOB_NAME_1);
+        addJobs(jobId, uid, 2, TEST_JOB_NAME_2);
 
-        final String expected = "foo/TestJobName1:3,foo/TestJobName2:2";
-        assertEquals(expected, mJobSet.getTopJobsDebugStringForUid(uid));
+        final String expected = String.join(",",
+                TEST_PACKAGE_NAME + "/" + TEST_JOB_NAME_1 + ":3",
+                TEST_PACKAGE_NAME + "/" + TEST_JOB_NAME_2 + ":2");
+        assertThat(mJobSet.getTopJobsDebugStringForUid(uid)).isEqualTo(expected);
     }
 
     @Test
     public void testGetTopJobsDebugStringForUid_oneJobName() {
         final int uid = TEST_UID;
-        mJobSet.add(createJobStatus(1, uid, uid, "TestJobName1"));
-        mJobSet.add(createJobStatus(2, uid, uid, "TestJobName1"));
-        assertEquals("foo/TestJobName1:2", mJobSet.getTopJobsDebugStringForUid(uid));
+        mJobSet.add(createJobStatus(1, uid, uid, TEST_JOB_NAME_1));
+        mJobSet.add(createJobStatus(2, uid, uid, TEST_JOB_NAME_1));
+        assertThat(mJobSet.getTopJobsDebugStringForUid(uid))
+                .isEqualTo(TEST_PACKAGE_NAME + "/" + TEST_JOB_NAME_1 + ":2");
+    }
+
+    /**
+     * Creates a {@link JobStatus} object for testing.
+     *
+     * @param jobId       The ID for the job.
+     * @param uid         The UID of the job.
+     * @param sourceUid   The source UID of the job.
+     * @param batteryName The battery name for the job.
+     * @return A {@link JobStatus} object.
+     */
+    private JobStatus createJobStatus(int jobId, int uid, int sourceUid, String batteryName) {
+        final JobInfo jobInfo = new JobInfo.Builder(jobId,
+                new ComponentName(TEST_PACKAGE_NAME, batteryName)).build();
+        return JobStatus.createFromJobInfo(jobInfo, uid, TEST_PACKAGE_NAME, sourceUid,
+                null, batteryName);
+    }
+
+    /**
+     * Adds a number of jobs to the job set.
+     *
+     * @param startingJobId The starting ID for the jobs.
+     * @param uid           The UID for the jobs.
+     * @param count         The number of jobs to add.
+     * @param batteryName   The battery name for the jobs.
+     * @return The next available job ID.
+     */
+    private int addJobs(int startingJobId, int uid, int count, String batteryName) {
+        for (int i = 0; i < count; i++) {
+            mJobSet.add(createJobStatus(startingJobId++, uid, uid, batteryName));
+        }
+        return startingJobId;
     }
 }
