@@ -98,7 +98,7 @@ constructor(
                             LottieCompositionFactory.fromRawRes(context, R.raw.audio_bars_out)
                                 .await()
                                 .toDrawable { setColor(color) },
-                        idle = context.getDrawable(R.drawable.audio_bars_idle)!!,
+                        idle = context.getDrawable(R.drawable.ic_tuner)!!,
                     )
                 )
             }
