@@ -19,9 +19,13 @@ package com.android.server.signalcollector.binder;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.os.OutcomeReceiver;
+import android.os.Process;
 import android.os.binder.BinderSpamStats;
 import android.os.profiling.anomaly.flags.Flags;
 import android.platform.test.annotations.RequiresFlagsEnabled;
@@ -32,6 +36,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.android.os.profiling.anomaly.collector.SubscriptionId;
 import com.android.os.profiling.anomaly.collector.binder.BinderSpamConfig;
+import com.android.os.profiling.anomaly.collector.binder.BinderSpamConfigList;
 import com.android.os.profiling.anomaly.collector.binder.BinderSpamData;
 
 import org.junit.Before;
@@ -44,6 +49,9 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.time.Duration;
+import java.util.List;
+
 @RunWith(AndroidJUnit4.class)
 @RequiresFlagsEnabled(Flags.FLAG_ANOMALY_DETECTOR_CORE)
 public class BinderSpamSignalCollectorImplTest {
@@ -52,14 +60,26 @@ public class BinderSpamSignalCollectorImplTest {
     private static final String TEST_METHOD_1 = "testMethod1";
     private static final String TEST_INTERFACE_2 = "com.test.TestInterface2";
     private static final String TEST_METHOD_2 = "testMethod2";
-    private static final BinderSpamConfig TEST_CONFIG_1 = new BinderSpamConfig.Builder()
-            .setInterfaceName(TEST_INTERFACE_1)
-            .setMethodName(TEST_METHOD_1)
-            .build();
-    private static final BinderSpamConfig TEST_CONFIG_2 = new BinderSpamConfig.Builder()
-            .setInterfaceName(TEST_INTERFACE_2)
-            .setMethodName(TEST_METHOD_2)
-            .build();
+    private static final BinderSpamConfig TEST_CONFIG_1 =
+            new BinderSpamConfig.Builder()
+                    .setInterfaceName(TEST_INTERFACE_1)
+                    .setMethodName(TEST_METHOD_1)
+                    .setCallCountThreshold(100)
+                    .setWindowSize(Duration.ofMinutes(1))
+                    .setUids(new int[0])
+                    .setCallerImportanceList(new int[0])
+                    .build();
+    private static final BinderSpamConfig TEST_CONFIG_2 =
+            new BinderSpamConfig.Builder()
+                    .setInterfaceName(TEST_INTERFACE_2)
+                    .setMethodName(TEST_METHOD_2)
+                    .setCallCountThreshold(200)
+                    .setWindowSize(Duration.ofMinutes(2))
+                    .setUids(new int[0])
+                    .setCallerImportanceList(new int[0])
+                    .build();
+    private static final BinderSpamConfigList TEST_CONFIG_LIST =
+            new BinderSpamConfigList(List.of(TEST_CONFIG_1, TEST_CONFIG_2));
 
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
@@ -77,47 +97,76 @@ public class BinderSpamSignalCollectorImplTest {
     }
 
     @Test
-    public void onBinderSpamDataReported_shouldOnlyInvokeSubscribedReceiver() {
-        BinderSpamStats[] statsArray = new BinderSpamStats[3];
-        statsArray[0] = new BinderSpamStats();
-        statsArray[0].interfaceDescriptor = TEST_INTERFACE_1;
-        statsArray[0].aidlMethod = TEST_METHOD_1;
-        statsArray[0].clientUid = 1000;
-        statsArray[0].peakCallCountPerSecond = 200;
+    public void onBinderSpamDataReported_shouldInvokeSubscribedReceiver() {
+        BinderSpamStats[] statsArray = new BinderSpamStats[]{
+                createBinderSpamStats(TEST_INTERFACE_1, TEST_METHOD_1, 1000, 200),
+                createBinderSpamStats(TEST_INTERFACE_2, TEST_METHOD_2, 1001, 201),
+                createBinderSpamStats(
+                        "NeverSubscribedInterface",
+                        "NeverSubscribedMethod",
+                        /* clientUid */ 1002,
+                        /* peakCallCountPerSecond */ 202)
+        };
 
-        statsArray[1] = new BinderSpamStats();
-        statsArray[1].interfaceDescriptor = TEST_INTERFACE_2;
-        statsArray[1].aidlMethod = TEST_METHOD_2;
-        statsArray[1].clientUid = 1001;
-        statsArray[1].peakCallCountPerSecond = 201;
-
-        statsArray[2] = new BinderSpamStats();
-        statsArray[2].interfaceDescriptor = "NeverSubscribedInterface";
-        statsArray[2].aidlMethod = "NeverSubscribedMethod";
-        statsArray[2].clientUid = 1002;
-        statsArray[2].peakCallCountPerSecond = 202;
-
-        // Subscribe and then unsubscribe to TEST_CONFIG_1.
-        SubscriptionId id = mCollector.subscribe(TEST_CONFIG_1, mReceiver);
-        mCollector.subscribe(TEST_CONFIG_1, mReceiver);
-        mCollector.unsubscribe(id);
-        // Subscribe to TEST_CONFIG_2.
-        mCollector.subscribe(TEST_CONFIG_2, mReceiver);
+        mCollector.subscribe(TEST_CONFIG_LIST, mReceiver);
 
         mCollector.onBinderSpamDataReported(statsArray);
 
-        verify(mReceiver).onResult(mBinderSpamDataArgumentCaptor.capture());
-        BinderSpamData data = mBinderSpamDataArgumentCaptor.getValue();
-        assertThat(data.getInterfaceName()).isEqualTo(statsArray[1].interfaceDescriptor);
-        assertThat(data.getMethodName()).isEqualTo(statsArray[1].aidlMethod);
-        assertThat(data.getCallingUid()).isEqualTo(statsArray[1].clientUid);
-        assertThat(data.getCallCount()).isEqualTo(statsArray[1].peakCallCountPerSecond);
+        verify(mReceiver, times(2)).onResult(mBinderSpamDataArgumentCaptor.capture());
+        var dataList = mBinderSpamDataArgumentCaptor.getAllValues();
+        assertThat(dataList).containsExactly(
+                createBinderSpamData(statsArray[0]),
+                createBinderSpamData(statsArray[1]));
+    }
+
+    private static BinderSpamStats createBinderSpamStats(
+            String interfaceDescriptor,
+            String aidlMethod,
+            int clientUid,
+            int peakCallCountPerSecond) {
+        BinderSpamStats binderSpamStats = new BinderSpamStats();
+        binderSpamStats.interfaceDescriptor = interfaceDescriptor;
+        binderSpamStats.aidlMethod = aidlMethod;
+        binderSpamStats.clientUid = clientUid;
+        binderSpamStats.peakCallCountPerSecond = peakCallCountPerSecond;
+        return binderSpamStats;
+    }
+
+    private static BinderSpamData createBinderSpamData(BinderSpamStats stats) {
+        return new BinderSpamData.Builder()
+                .setCallingUid(stats.clientUid)
+                .setServerUid(Process.myUid())
+                .setInterfaceName(stats.interfaceDescriptor)
+                .setMethodName(stats.aidlMethod)
+                .setCallCount(stats.peakCallCountPerSecond)
+                .build();
+    }
+
+    @Test
+    public void onBinderSpamDataReported_shouldNotInvokeUnsubscribedReceiver() {
+        BinderSpamStats[] statsArray = new BinderSpamStats[]{
+                createBinderSpamStats(TEST_INTERFACE_1, TEST_METHOD_1, 1000, 200),
+                createBinderSpamStats(TEST_INTERFACE_2, TEST_METHOD_2, 1001, 201),
+                createBinderSpamStats(
+                        "NeverSubscribedInterface",
+                        "NeverSubscribedMethod",
+                        /* clientUid */ 1002,
+                        /* peakCallCountPerSecond */ 202)
+        };
+
+        SubscriptionId id = mCollector.subscribe(TEST_CONFIG_LIST, mReceiver);
+        mCollector.unsubscribe(id);
+        mCollector.onBinderSpamDataReported(statsArray);
+
+        verify(mReceiver, never()).onResult(any());
     }
 
     @Test
     public void subscribe_shouldReturnDifferentSubscriptionId() {
-        SubscriptionId id1 = mCollector.subscribe(TEST_CONFIG_1, result -> {});
-        SubscriptionId id2 = mCollector.subscribe(TEST_CONFIG_2, result -> {});
+        SubscriptionId id1 = mCollector.subscribe(TEST_CONFIG_LIST, result -> {});
+        SubscriptionId id2 = mCollector.subscribe(
+                new BinderSpamConfigList(List.of(TEST_CONFIG_1)),
+                result -> {});
 
         assertThat(id1).isNotNull();
         assertThat(id2).isNotNull();
@@ -127,13 +176,21 @@ public class BinderSpamSignalCollectorImplTest {
     @Test
     public void subscribe_nullInput_shouldThrowException() {
         assertThrows(NullPointerException.class, () -> mCollector.subscribe(null, result -> {}));
-        assertThrows(NullPointerException.class, () -> mCollector.subscribe(TEST_CONFIG_1, null));
+        assertThrows(NullPointerException.class,
+                () -> mCollector.subscribe(TEST_CONFIG_LIST, null));
         assertThrows(NullPointerException.class, () -> mCollector.subscribe(null, null));
     }
 
     @Test
     public void unsubscribe_nullInput_shouldThrowException() {
         assertThrows(NullPointerException.class, () -> mCollector.unsubscribe(null));
+    }
+
+    @Test
+    public void unsubscribe_notFoundInput_shouldThrowException() {
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> mCollector.unsubscribe(SubscriptionId.generateNew()));
+        assertThat(e).hasMessageThat().contains("The provided subscription ID can not be found!");
     }
 
     @Test
@@ -147,5 +204,4 @@ public class BinderSpamSignalCollectorImplTest {
         assertThrows(UnsupportedOperationException.class,
                 () -> mCollector.requestUpdate(SubscriptionId.generateNew()));
     }
-
 }

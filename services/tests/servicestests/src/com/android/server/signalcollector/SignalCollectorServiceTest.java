@@ -43,7 +43,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.android.os.profiling.anomaly.AnomalyDetectorManagerLocal;
-import com.android.os.profiling.anomaly.collector.binder.BinderSpamConfig;
+import com.android.os.profiling.anomaly.collector.binder.BinderSpamConfigList;
 import com.android.os.profiling.anomaly.collector.binder.BinderSpamData;
 import com.android.server.LocalServices;
 import com.android.server.signalcollector.SignalCollectorService.Injector;
@@ -108,7 +108,7 @@ public final class SignalCollectorServiceTest {
         mSignalCollectorService.onStart();
 
         verify(mAnomalyDetectorManagerLocal).registerSignalCollector(
-                BinderSpamConfig.class,
+                BinderSpamConfigList.class,
                 BinderSpamData.class,
                 mSignalCollectorService.mBinderSpamSignalCollector);
     }

@@ -19,14 +19,14 @@ package com.android.server.signalcollector.binder;
 import android.os.binder.BinderSpamStats;
 
 import com.android.os.profiling.anomaly.collector.SignalCollector;
-import com.android.os.profiling.anomaly.collector.binder.BinderSpamConfig;
+import com.android.os.profiling.anomaly.collector.binder.BinderSpamConfigList;
 import com.android.os.profiling.anomaly.collector.binder.BinderSpamData;
 
 /**
  * A signal collector class dedicated to collect binder spam signals.
  */
 public abstract class BinderSpamSignalCollector
-        implements SignalCollector<BinderSpamConfig, BinderSpamData> {
+        implements SignalCollector<BinderSpamConfigList, BinderSpamData> {
 
     /**
      * Report some binder spam data based on the configurations.
