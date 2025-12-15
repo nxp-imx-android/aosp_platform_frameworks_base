@@ -855,8 +855,13 @@ public final class ViewRootImpl implements ViewParent,
     // Surface can never be reassigned or cleared (use Surface.clear()).
     @UnsupportedAppUsage
     public final Surface mSurface = new Surface();
+    /**
+     * The SurfaceControl for this window.
+     * <p>Note: This instance is final to ensure that internal accesses of
+     * {@link #getSurfaceControl}) maintain a consistent reference.
+     */
     @NonNull
-    private SurfaceControl mSurfaceControl = new SurfaceControl();
+    private final SurfaceControl mSurfaceControl = new SurfaceControl();
 
     /**
      * The cached surface if {@link #mViewVisibility} is invisible. This can reduce surface creation
@@ -9769,20 +9774,21 @@ public final class ViewRootImpl implements ViewParent,
                 mCachedSurfaceControl = null;
                 if (cachedSurfaceControl == null || !cachedSurfaceControl.isValid()) {
                     Trace.traceBegin(Trace.TRACE_TAG_VIEW, "createSurfaceControl");
-                    mSurfaceControl = createSurfaceControl();
+                    final SurfaceControl newSc = createSurfaceControl();
+                    mSurfaceControl.copyFrom(newSc, "VRI-new");
+                    newSc.release();
                     Trace.traceEnd(Trace.TRACE_TAG_VIEW);
                 } else {
-                    mSurfaceControl = cachedSurfaceControl;
+                    mSurfaceControl.copyFrom(cachedSurfaceControl, "VRI-from-cache");
+                    cachedSurfaceControl.release();
                 }
                 relayoutResult |= RELAYOUT_RES_SURFACE_CHANGED | RELAYOUT_RES_FIRST_TIME;
             }
         } else if (mSurfaceControl.isValid()) {
             if (viewVisibility == View.INVISIBLE) {
-                mCachedSurfaceControl = mSurfaceControl;
-                mSurfaceControl = new SurfaceControl();
-            } else {
-                mSurfaceControl.release();
+                mCachedSurfaceControl = new SurfaceControl(mSurfaceControl, "VRI-cache");
             }
+            mSurfaceControl.release();
         }
         return relayoutResult;
     }
