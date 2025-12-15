@@ -173,13 +173,6 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
     static final int FLAG_FEATURE_INTERCEPT_GENERIC_MOTION_EVENTS = 0x00000800;
 
     /**
-     * Flag for enabling the two-finger triple-tap magnification feature.
-     *
-     * @see #setUserAndEnabledFeatures(int, int)
-     */
-    static final int FLAG_FEATURE_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP = 0x00001000;
-
-    /**
      * Flag for enabling the Accessibility mouse key events feature.
      *
      * @see #setUserAndEnabledFeatures(int, int)
@@ -191,7 +184,6 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
                     | FLAG_FEATURE_AUTOCLICK
                     | FLAG_FEATURE_TOUCH_EXPLORATION
                     | FLAG_FEATURE_MAGNIFICATION_SINGLE_FINGER_TRIPLE_TAP
-                    | FLAG_FEATURE_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP
                     | FLAG_FEATURE_TRIGGERED_SCREEN_MAGNIFIER
                     | FLAG_SERVICE_HANDLES_DOUBLE_TAP
                     | FLAG_REQUEST_MULTI_FINGER_GESTURES
@@ -926,7 +918,6 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
     private boolean isAnyMagnificationEnabled(int enabledFeatures) {
         return (enabledFeatures & FLAG_FEATURE_CONTROL_SCREEN_MAGNIFIER) != 0
                 || ((enabledFeatures & FLAG_FEATURE_MAGNIFICATION_SINGLE_FINGER_TRIPLE_TAP) != 0)
-                || ((enabledFeatures & FLAG_FEATURE_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP) != 0)
                 || ((enabledFeatures & FLAG_FEATURE_TRIGGERED_SCREEN_MAGNIFIER) != 0);
     }
 
@@ -1127,8 +1118,6 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
             int displayId, Context displayContext) {
         final boolean detectControlGestures = (mEnabledFeatures
                 & FLAG_FEATURE_MAGNIFICATION_SINGLE_FINGER_TRIPLE_TAP) != 0;
-        final boolean detectTwoFingerTripleTap = (mEnabledFeatures
-                & FLAG_FEATURE_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP) != 0;
         final boolean triggerable = (mEnabledFeatures
                 & FLAG_FEATURE_TRIGGERED_SCREEN_MAGNIFIER) != 0;
         MagnificationGestureHandler magnificationGestureHandler;
@@ -1140,7 +1129,6 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
                     mAms.getMagnificationConnectionManager(), mAms.getTraceManager(),
                     mAms.getMagnificationController(),
                     detectControlGestures,
-                    detectTwoFingerTripleTap,
                     triggerable, displayId);
         } else {
             final Context uiContext = displayContext.createWindowContext(
@@ -1156,7 +1144,6 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
                             mAms.getTraceManager(),
                             mAms.getMagnificationController(),
                             detectControlGestures,
-                            detectTwoFingerTripleTap,
                             triggerable,
                             new WindowMagnificationPromptController(displayContext, mUserId),
                             displayId,

@@ -29,7 +29,6 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.RemoteException;
 import android.os.SystemClock;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.testing.TestableContext;
@@ -43,7 +42,6 @@ import androidx.test.runner.AndroidJUnit4;
 
 import com.android.server.accessibility.AccessibilityTraceManager;
 import com.android.server.accessibility.EventStreamTransformation;
-import com.android.server.accessibility.Flags;
 import com.android.server.accessibility.utils.TouchEventGenerator;
 
 import org.junit.After;
@@ -72,15 +70,10 @@ public class WindowMagnificationGestureHandlerTest {
     public static final int STATE_SHOW_MAGNIFIER_TRIPLE_TAP = 4;
     public static final int STATE_NOT_ENABLED_SHOW_MAGNIFIER_TRIPLE_TAP_AND_HOLD = 5;
     public static final int STATE_ENABLED_SHOW_MAGNIFIER_TRIPLE_TAP_AND_HOLD = 6;
-    public static final int STATE_SHOW_MAGNIFIER_TWO_FINGER_DOUBLE_TAP = 7;
-    public static final int STATE_NOT_ENABLED_SHOW_MAGNIFIER_TWO_FINGER_DOUBLE_TAP_AND_HOLD = 8;
-    public static final int STATE_ENABLED_SHOW_MAGNIFIER_TWO_FINGER_DOUBLE_TAP_AND_HOLD = 9;
     //TODO: Test it after can injecting Handler to GestureMatcher is available.
 
     public static final int FIRST_STATE = STATE_IDLE;
     public static final int LAST_STATE = STATE_ENABLED_SHOW_MAGNIFIER_TRIPLE_TAP_AND_HOLD;
-    public static final int LAST_STATE_WITH_MULTI_FINGER =
-            STATE_ENABLED_SHOW_MAGNIFIER_TWO_FINGER_DOUBLE_TAP_AND_HOLD;
 
     // Co-prime x and y, to potentially catch x-y-swapped errors
     public static final float DEFAULT_TAP_X = 301;
@@ -110,7 +103,7 @@ public class WindowMagnificationGestureHandlerTest {
         mMockConnection = new MockMagnificationConnection();
         mWindowMagnificationGestureHandler = new SpyWindowMagnificationGestureHandler(
                 mContext, mMagnificationConnectionManager, mMockTrace, mMockCallback,
-                /** detectSingleFingerTripleTap= */ true, /** detectTwoFingerTripleTap= */ true,
+                /** detectSingleFingerTripleTap= */ true,
                 /** detectShortcutTrigger= */ true, DISPLAY_0);
         mMockWindowMagnificationGestureHandler =
                 mWindowMagnificationGestureHandler.getMockGestureHandler();
@@ -156,21 +149,6 @@ public class WindowMagnificationGestureHandlerTest {
             }
         }, LAST_STATE);
     }
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MAGNIFICATION_MULTIPLE_FINGER_MULTIPLE_TAP_GESTURE)
-    public void testEachState_enabledMultiFinger_isReachableAndRecoverable() {
-        forEachState(state -> {
-            goFromStateIdleTo(state);
-            assertIn(state);
-            returnToNormalFrom(state);
-            try {
-                assertIn(STATE_IDLE);
-            } catch (AssertionError e) {
-                throw new AssertionError("Failed while testing state " + stateToString(state),
-                        e);
-            }
-        }, LAST_STATE_WITH_MULTI_FINGER);
-    }
 
     @Test
     public void testStates_areMutuallyExclusive() {
@@ -189,27 +167,6 @@ public class WindowMagnificationGestureHandlerTest {
                 }
             }, LAST_STATE);
         }, LAST_STATE);
-    }
-
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MAGNIFICATION_MULTIPLE_FINGER_MULTIPLE_TAP_GESTURE)
-    public void testStates_enabledMultiFinger_areMutuallyExclusive() {
-        forEachState(state1 -> {
-            forEachState(state2 -> {
-                if (state1 < state2) {
-                    goFromStateIdleTo(state1);
-                    try {
-                        assertIn(state2);
-                        fail("State " + stateToString(state1) + " also implies state "
-                                + stateToString(state2) + stateDump());
-                    } catch (AssertionError e) {
-                        // expected
-                        returnToNormalFrom(state1);
-                    }
-                }
-            }, LAST_STATE_WITH_MULTI_FINGER);
-        }, LAST_STATE_WITH_MULTI_FINGER);
     }
 
     @Test
@@ -257,15 +214,12 @@ public class WindowMagnificationGestureHandlerTest {
             break;
             case STATE_SHOW_MAGNIFIER_SHORTCUT:
             case STATE_SHOW_MAGNIFIER_TRIPLE_TAP:
-            case STATE_SHOW_MAGNIFIER_TWO_FINGER_DOUBLE_TAP:
                 check(isWindowMagnifierEnabled(DISPLAY_0), state);
                 check(mWindowMagnificationGestureHandler.mCurrentState
                         == mWindowMagnificationGestureHandler.mDetectingState, state);
                 break;
             case STATE_NOT_ENABLED_SHOW_MAGNIFIER_TRIPLE_TAP_AND_HOLD:
-            case STATE_ENABLED_SHOW_MAGNIFIER_TRIPLE_TAP_AND_HOLD:
-            case STATE_NOT_ENABLED_SHOW_MAGNIFIER_TWO_FINGER_DOUBLE_TAP_AND_HOLD:
-            case STATE_ENABLED_SHOW_MAGNIFIER_TWO_FINGER_DOUBLE_TAP_AND_HOLD: {
+            case STATE_ENABLED_SHOW_MAGNIFIER_TRIPLE_TAP_AND_HOLD: {
                 check(isWindowMagnifierEnabled(DISPLAY_0), state);
                 check(mWindowMagnificationGestureHandler.mCurrentState
                         == mWindowMagnificationGestureHandler.mViewportDraggingState, state);
@@ -337,27 +291,6 @@ public class WindowMagnificationGestureHandlerTest {
                     tapAndHold();
                 }
                 break;
-                case STATE_SHOW_MAGNIFIER_TWO_FINGER_DOUBLE_TAP: {
-                    twoFingerTap();
-                    twoFingerTap();
-                    // Wait for two-finger tap gesture completed.
-                    SystemClock.sleep(MagnificationGestureMatcher
-                            .getMagnificationMultiTapTimeout(mContext) + 100);
-                    InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-                }
-                break;
-                case STATE_NOT_ENABLED_SHOW_MAGNIFIER_TWO_FINGER_DOUBLE_TAP_AND_HOLD: {
-                    twoFingerTap();
-                    twoFingerTapAndHold();
-                }
-                break;
-                case STATE_ENABLED_SHOW_MAGNIFIER_TWO_FINGER_DOUBLE_TAP_AND_HOLD: {
-                    // enabled then perform two finger triple tap and hold gesture
-                    goFromStateIdleTo(STATE_SHOW_MAGNIFIER_SHORTCUT);
-                    twoFingerTap();
-                    twoFingerTapAndHold();
-                }
-                break;
                 default:
                     throw new IllegalArgumentException("Illegal state: " + state);
             }
@@ -392,23 +325,12 @@ public class WindowMagnificationGestureHandlerTest {
             }
             break;
             case STATE_NOT_ENABLED_SHOW_MAGNIFIER_TRIPLE_TAP_AND_HOLD:
-            case STATE_NOT_ENABLED_SHOW_MAGNIFIER_TWO_FINGER_DOUBLE_TAP_AND_HOLD:
                 send(upEvent(DEFAULT_TAP_X, DEFAULT_TAP_Y));
                 break;
             case STATE_ENABLED_SHOW_MAGNIFIER_TRIPLE_TAP_AND_HOLD:
-            case STATE_ENABLED_SHOW_MAGNIFIER_TWO_FINGER_DOUBLE_TAP_AND_HOLD:
                 send(upEvent(DEFAULT_TAP_X, DEFAULT_TAP_Y));
                 returnToNormalFrom(STATE_SHOW_MAGNIFIER_SHORTCUT);
                 break;
-            case STATE_SHOW_MAGNIFIER_TWO_FINGER_DOUBLE_TAP: {
-                twoFingerTap();
-                twoFingerTap();
-                // Wait for two-finger tap gesture completed.
-                SystemClock.sleep(MagnificationGestureMatcher
-                        .getMagnificationMultiTapTimeout(mContext) + 100);
-                InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-            }
-            break;
             default:
                 throw new IllegalArgumentException("Illegal state: " + state);
         }
@@ -470,19 +392,6 @@ public class WindowMagnificationGestureHandlerTest {
         SystemClock.sleep(ViewConfiguration.getLongPressTimeout() + 100);
     }
 
-    private void twoFingerTap() {
-        send(downEvent(DEFAULT_TAP_X, DEFAULT_TAP_Y));
-        send(pointerDownEvent(DEFAULT_TAP_X * 2, DEFAULT_TAP_Y));
-        send(pointerUpEvent(DEFAULT_TAP_X * 2, DEFAULT_TAP_Y));
-        send(upEvent(DEFAULT_TAP_X, DEFAULT_TAP_Y));
-    }
-
-    private void twoFingerTapAndHold() {
-        send(downEvent(DEFAULT_TAP_X, DEFAULT_TAP_Y));
-        send(pointerDownEvent(DEFAULT_TAP_X * 2, DEFAULT_TAP_Y));
-        SystemClock.sleep(ViewConfiguration.getLongPressTimeout() + 100);
-    }
-
     private String stateDump() {
         return "\nCurrent state dump:\n" + mWindowMagnificationGestureHandler.mCurrentState;
     }
@@ -496,11 +405,10 @@ public class WindowMagnificationGestureHandlerTest {
                 MagnificationConnectionManager magnificationConnectionManager,
                 AccessibilityTraceManager trace,
                 Callback callback,
-                boolean detectSingleFingerTripleTap, boolean detectTwoFingerTripleTap,
+                boolean detectSingleFingerTripleTap,
                 boolean detectShortcutTrigger, int displayId) {
             super(context, magnificationConnectionManager, trace, callback,
-                    detectSingleFingerTripleTap, detectTwoFingerTripleTap,
-                    detectShortcutTrigger, displayId);
+                    detectSingleFingerTripleTap, detectShortcutTrigger, displayId);
             mMockWindowMagnificationGestureHandler = mock(WindowMagnificationGestureHandler.class);
         }
 

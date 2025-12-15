@@ -35,7 +35,6 @@ import static com.android.internal.accessibility.common.ShortcutConstants.UserSh
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.SOFTWARE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TOP_ROW_KEY;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TRIPLETAP;
-import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TWOFINGER_DOUBLETAP;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.annotation.NonNull;
@@ -217,8 +216,6 @@ public final class ShortcutUtils {
             case GESTURE -> Settings.Secure.ACCESSIBILITY_GESTURE_TARGETS;
             case HARDWARE -> Settings.Secure.ACCESSIBILITY_SHORTCUT_TARGET_SERVICE;
             case TRIPLETAP -> Settings.Secure.ACCESSIBILITY_DISPLAY_MAGNIFICATION_ENABLED;
-            case TWOFINGER_DOUBLETAP ->
-                    Settings.Secure.ACCESSIBILITY_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP_ENABLED;
             case QUICK_SETTINGS -> Settings.Secure.ACCESSIBILITY_QS_TARGETS;
             case KEY_GESTURE -> Settings.Secure.ACCESSIBILITY_KEY_GESTURE_TARGETS;
             case TOP_ROW_KEY -> Settings.Secure.ACCESSIBILITY_TOP_ROW_KEY_TARGETS;
@@ -242,8 +239,6 @@ public final class ShortcutUtils {
             case Settings.Secure.ACCESSIBILITY_QS_TARGETS -> QUICK_SETTINGS;
             case Settings.Secure.ACCESSIBILITY_SHORTCUT_TARGET_SERVICE -> HARDWARE;
             case Settings.Secure.ACCESSIBILITY_DISPLAY_MAGNIFICATION_ENABLED -> TRIPLETAP;
-            case Settings.Secure.ACCESSIBILITY_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP_ENABLED ->
-                    TWOFINGER_DOUBLETAP;
             case Settings.Secure.ACCESSIBILITY_KEY_GESTURE_TARGETS -> KEY_GESTURE;
             case Settings.Secure.ACCESSIBILITY_TOP_ROW_KEY_TARGETS -> TOP_ROW_KEY;
             case Settings.Secure.ACCESSIBILITY_QUICK_ACCESS_TARGETS -> QUICK_ACCESS;
@@ -339,9 +334,7 @@ public final class ShortcutUtils {
     public static Set<String> getShortcutTargetsFromSettings(
             Context context, @UserShortcutType int shortcutType, int userId) {
         final String targetKey = convertToKey(shortcutType);
-        if (Settings.Secure.ACCESSIBILITY_DISPLAY_MAGNIFICATION_ENABLED.equals(targetKey)
-                || Settings.Secure.ACCESSIBILITY_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP_ENABLED
-                .equals(targetKey)) {
+        if (Settings.Secure.ACCESSIBILITY_DISPLAY_MAGNIFICATION_ENABLED.equals(targetKey)) {
             boolean magnificationEnabled = Settings.Secure.getIntForUser(
                     context.getContentResolver(), targetKey, /* def= */ 0, userId) == 1;
             return magnificationEnabled ? Set.of(MAGNIFICATION_CONTROLLER_NAME)

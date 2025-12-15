@@ -65,7 +65,6 @@ import static com.android.internal.accessibility.common.ShortcutConstants.UserSh
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.SOFTWARE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TOP_ROW_KEY;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TRIPLETAP;
-import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TWOFINGER_DOUBLETAP;
 import static com.android.internal.accessibility.dialog.AccessibilityButtonChooserActivity.EXTRA_TYPE_TO_CHOOSE;
 import static com.android.internal.accessibility.util.AccessibilityStatsLogUtils.logAccessibilityShortcutActivated;
 import static com.android.internal.accessibility.util.AccessibilityUtils.isUserSetupCompleted;
@@ -2475,7 +2474,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
      * preferences of accessibility shortcut updated in SUW are not lost.
      *
      * <P>
-     * Throws an exception if used with {@code TRIPLETAP} or {@code TWOFINGER_DOUBLETAP}.
+     * Throws an exception if used with {@code TRIPLETAP}.
      * </P>
      */
     // Called only during settings restore; currently supports only the main user.
@@ -3384,12 +3383,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 flags |= AccessibilityInputFilter
                         .FLAG_FEATURE_MAGNIFICATION_SINGLE_FINGER_TRIPLE_TAP;
             }
-            if (Flags.enableMagnificationMultipleFingerMultipleTapGesture()) {
-                if (userState.isMagnificationTwoFingerTripleTapEnabledLocked()) {
-                    flags |= AccessibilityInputFilter
-                            .FLAG_FEATURE_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP;
-                }
-            }
             if (userState.isShortcutMagnificationEnabledLocked()) {
                 flags |= AccessibilityInputFilter.FLAG_FEATURE_TRIGGERED_SCREEN_MAGNIFIER;
             }
@@ -3779,21 +3772,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         return false;
     }
 
-    private boolean readMagnificationTwoFingerTripleTapSettingsLocked(
-            AccessibilityUserState userState) {
-        final boolean magnificationTwoFingerTripleTapEnabled = Settings.Secure.getIntForUser(
-                mContext.getContentResolver(),
-                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP_ENABLED,
-                0, userState.mUserId) == 1;
-        if ((magnificationTwoFingerTripleTapEnabled
-                != userState.isMagnificationTwoFingerTripleTapEnabledLocked())) {
-            userState.setMagnificationTwoFingerTripleTapEnabledLocked(
-                    magnificationTwoFingerTripleTapEnabled);
-            return true;
-        }
-        return false;
-    }
-
     private boolean readAutoclickEnabledSettingLocked(AccessibilityUserState userState) {
         final boolean autoclickEnabled = Settings.Secure.getIntForUser(
                 mContext.getContentResolver(),
@@ -3879,7 +3857,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     }
 
     /**
-     * Throws an exception for {@code TRIPLETAP} or {@code TWOFINGER_DOUBLETAP} types.
+     * Throws an exception for {@code TRIPLETAP} types.
      */
     private boolean readAccessibilityShortcutTargetsLocked(AccessibilityUserState userState,
             @UserShortcutType int shortcutType) {
@@ -4001,8 +3979,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         // displays in one display. It's not a real display and there's no input events for it.
         final ArrayList<Display> displays = getValidDisplayList();
         if (userState.isMagnificationSingleFingerTripleTapEnabledLocked()
-                || (Flags.enableMagnificationMultipleFingerMultipleTapGesture()
-                && userState.isMagnificationTwoFingerTripleTapEnabledLocked())
                 || userState.isShortcutMagnificationEnabledLocked()) {
             for (int i = 0; i < displays.size(); i++) {
                 final Display display = displays.get(i);
@@ -4038,9 +4014,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         }
 
         final boolean shortcutEnabled = (userState.isShortcutMagnificationEnabledLocked()
-                || userState.isMagnificationSingleFingerTripleTapEnabledLocked()
-                || (Flags.enableMagnificationMultipleFingerMultipleTapGesture()
-                    && userState.isMagnificationTwoFingerTripleTapEnabledLocked()));
+                || userState.isMagnificationSingleFingerTripleTapEnabledLocked());
 
         final boolean connect = shortcutEnabled || userHasMagnificationServicesLocked(userState);
 
@@ -4714,8 +4688,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         }
 
         final String shortcutTypeSettingKey = ShortcutUtils.convertToKey(shortcutType);
-        if (shortcutType == UserShortcutType.TRIPLETAP
-                || shortcutType == UserShortcutType.TWOFINGER_DOUBLETAP) {
+        if (shortcutType == UserShortcutType.TRIPLETAP) {
             for (String target : shortcutTargets) {
                 if (MAGNIFICATION_CONTROLLER_NAME.equals(target)) {
                     persistIntToSetting(
@@ -6100,9 +6073,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         private final Uri mMagnificationmSingleFingerTripleTapEnabledUri = Settings.Secure
                 .getUriFor(Settings.Secure.ACCESSIBILITY_DISPLAY_MAGNIFICATION_ENABLED);
 
-        private final Uri mMagnificationTwoFingerTripleTapEnabledUri = Settings.Secure.getUriFor(
-                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP_ENABLED);
-
         private final Uri mAutoclickEnabledUri = Settings.Secure.getUriFor(
                 Settings.Secure.ACCESSIBILITY_AUTOCLICK_ENABLED);
 
@@ -6193,10 +6163,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                     false, this, UserHandle.USER_ALL);
             contentResolver.registerContentObserver(mMagnificationmSingleFingerTripleTapEnabledUri,
                     false, this, UserHandle.USER_ALL);
-            if (Flags.enableMagnificationMultipleFingerMultipleTapGesture()) {
-                contentResolver.registerContentObserver(mMagnificationTwoFingerTripleTapEnabledUri,
-                        false, this, UserHandle.USER_ALL);
-            }
             contentResolver.registerContentObserver(mAutoclickEnabledUri,
                     false, this, UserHandle.USER_ALL);
             contentResolver.registerContentObserver(mEnabledAccessibilityServicesUri,
@@ -6271,11 +6237,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                     }
                 } else if (mMagnificationmSingleFingerTripleTapEnabledUri.equals(uri)) {
                     if (readMagnificationEnabledSettingsLocked(userState)) {
-                        onUserStateChangedLocked(userState);
-                    }
-                } else if (Flags.enableMagnificationMultipleFingerMultipleTapGesture()
-                        && mMagnificationTwoFingerTripleTapEnabledUri.equals(uri)) {
-                    if (readMagnificationTwoFingerTripleTapSettingsLocked(userState)) {
                         onUserStateChangedLocked(userState);
                     }
                 } else if (mAutoclickEnabledUri.equals(uri)) {
@@ -6379,8 +6340,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
 
         final boolean magnificationEnabled =
                 userState.isMagnificationSingleFingerTripleTapEnabledLocked()
-                || (Flags.enableMagnificationMultipleFingerMultipleTapGesture()
-                && userState.isMagnificationTwoFingerTripleTapEnabledLocked())
                 || userState.isShortcutMagnificationEnabledLocked();
         final int capabilities = userState.getMagnificationCapabilitiesLocked();
         final boolean capabilitiesAllOrFullscreen = capabilities
@@ -7295,7 +7254,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     }
 
     private void assertNoTapShortcut(@UserShortcutType int shortcutType) {
-        if ((shortcutType & (TRIPLETAP | TWOFINGER_DOUBLETAP)) != 0) {
+        if ((shortcutType & TRIPLETAP) != 0) {
             throw new IllegalArgumentException("Tap shortcuts are not supported.");
         }
     }
