@@ -22,6 +22,8 @@ import static android.os.PowerExemptionManager.TEMPORARY_ALLOW_LIST_TYPE_FOREGRO
 import static android.os.PowerExemptionManager.TEMPORARY_ALLOW_LIST_TYPE_NONE;
 import static android.os.Process.INVALID_UID;
 
+import static com.android.server.power.feature.flags.Flags.interactiveDozeExperience;
+
 import android.Manifest;
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
@@ -901,9 +903,8 @@ public class DeviceIdleController extends SystemService
             }
             // Fall through when quick doze is not requested.
 
-            if (!mIsOffBody && !mForceIdle) {
-                // Quick doze wasn't requested, doze wasn't forced and device is on body
-                // so turn the device active.
+            final boolean screenStateAllowsActive = !interactiveDozeExperience() || mScreenOn;
+            if (!mIsOffBody && screenStateAllowsActive && !mForceIdle) {
                 mActiveReason = ACTIVE_REASON_ONBODY;
                 becomeActiveLocked("on_body", Process.myUid());
             }

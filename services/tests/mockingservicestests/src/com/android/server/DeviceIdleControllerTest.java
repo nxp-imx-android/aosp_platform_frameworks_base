@@ -47,6 +47,7 @@ import static com.android.server.DeviceIdleController.STATE_QUICK_DOZE_DELAY;
 import static com.android.server.DeviceIdleController.STATE_SENSING;
 import static com.android.server.DeviceIdleController.lightStateToString;
 import static com.android.server.DeviceIdleController.stateToString;
+import static com.android.server.power.feature.flags.Flags.FLAG_INTERACTIVE_DOZE_EXPERIENCE;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -2895,6 +2896,51 @@ public class DeviceIdleControllerTest {
         mDeviceIdleController.mModeManagerQuickDozeRequestConsumer.accept(true);
 
         assertTrue(mDeviceIdleController.isQuickDozeEnabled());
+    }
+
+    @Test
+    @EnableFlags(FLAG_INTERACTIVE_DOZE_EXPERIENCE)
+    public void testModeManager_onBody_notInteractive_doesNotEnterActive() {
+        mConstants.USE_MODE_MANAGER = true;
+        cleanupDeviceIdleController();
+        setupDeviceIdleController();
+        mDeviceIdleController.mModeManagerOffBodyStateConsumer.accept(true);
+
+        enterDeepState(STATE_IDLE);
+        setScreenOn(false);
+        mDeviceIdleController.mModeManagerOffBodyStateConsumer.accept(false);
+
+        verifyStateConditions(STATE_IDLE);
+    }
+
+    @Test
+    @EnableFlags(FLAG_INTERACTIVE_DOZE_EXPERIENCE)
+    public void testModeManager_onBody_interactive_entersActive() {
+        mConstants.USE_MODE_MANAGER = true;
+        cleanupDeviceIdleController();
+        setupDeviceIdleController();
+        mDeviceIdleController.mModeManagerOffBodyStateConsumer.accept(true);
+
+        enterDeepState(STATE_IDLE);
+        setScreenOn(true);
+        mDeviceIdleController.mModeManagerOffBodyStateConsumer.accept(false);
+
+        verifyStateConditions(STATE_ACTIVE);
+    }
+
+    @Test
+    @DisableFlags(FLAG_INTERACTIVE_DOZE_EXPERIENCE)
+    public void testModeManager_onBody_notInteractive_flagOff_entersActive() {
+        mConstants.USE_MODE_MANAGER = true;
+        cleanupDeviceIdleController();
+        setupDeviceIdleController();
+        mDeviceIdleController.mModeManagerOffBodyStateConsumer.accept(true);
+
+        enterDeepState(STATE_IDLE);
+        setScreenOn(false);
+        mDeviceIdleController.mModeManagerOffBodyStateConsumer.accept(false);
+
+        verifyStateConditions(STATE_ACTIVE);
     }
 
     @Test
