@@ -751,7 +751,7 @@ constructor(
                             if (keyguardInteractor.isAodAvailable.value) ToAlwaysOnDisplay
                             else null,
                         keyguardState = getKeyguardStateForWakefulness(isAwake = false),
-                        freezeAndAnimateToCurrentState = true,
+                        freezeAndAnimateToCurrentState = !keyguardInteractor.isAodAvailable.value,
                         instantlySnapScenes = keyguardInteractor.isAodAvailable.value,
                     )
                 } else {
