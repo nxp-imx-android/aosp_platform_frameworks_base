@@ -37,6 +37,8 @@ import androidx.test.filters.SmallTest
 import com.android.internal.policy.TransitionAnimation
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.bubbles.BubbleController
+import java.util.Optional
 import junit.framework.TestCase.assertEquals
 import org.junit.Assert
 import org.junit.Before
@@ -68,6 +70,7 @@ class CustomCrossActivityBackAnimationTest : ShellTestCase() {
     @Mock private lateinit var appCompatTaskInfo: AppCompatTaskInfo
     @Mock private lateinit var transaction: Transaction
     @Mock private lateinit var handler: Handler
+    @Mock private lateinit var bubbleController: BubbleController
 
     private lateinit var customCrossActivityBackAnimation: CustomCrossActivityBackAnimation
     private lateinit var customAnimationLoader: CustomAnimationLoader
@@ -84,6 +87,7 @@ class CustomCrossActivityBackAnimationTest : ShellTestCase() {
                 transaction,
                 customAnimationLoader,
                 handler,
+                Optional.of(bubbleController)
             )
 
         whenever(transitionAnimation.loadAppTransitionAnimation(eq(PACKAGE_NAME), eq(OPEN_RES_ID)))
@@ -201,7 +205,6 @@ class CustomCrossActivityBackAnimationTest : ShellTestCase() {
         customCrossActivityBackAnimation.prepareNextAnimation(
             backNavigationInfo.customAnimationInfo,
             0,
-            -1f
         )
         val finishCalled = CountDownLatch(1)
         val finishCallback = Runnable { finishCalled.countDown() }

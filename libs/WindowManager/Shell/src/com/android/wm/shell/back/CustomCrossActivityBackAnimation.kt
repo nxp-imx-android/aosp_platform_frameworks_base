@@ -30,8 +30,10 @@ import com.android.internal.R
 import com.android.internal.policy.TransitionAnimation
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
+import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.protolog.ShellProtoLogGroup
 import com.android.wm.shell.shared.annotations.ShellMainThread
+import java.util.Optional
 import javax.inject.Inject
 import kotlin.math.max
 import kotlin.math.min
@@ -44,6 +46,7 @@ class CustomCrossActivityBackAnimation(
     transaction: SurfaceControl.Transaction,
     private val customAnimationLoader: CustomAnimationLoader,
     @ShellMainThread handler: Handler,
+    bubbleController: Optional<BubbleController>,
 ) :
     CrossActivityBackAnimation(
         context,
@@ -51,6 +54,7 @@ class CustomCrossActivityBackAnimation(
         rootTaskDisplayAreaOrganizer,
         transaction,
         handler,
+        bubbleController,
     ) {
 
     private var enterAnimation: Animation? = null
@@ -65,6 +69,7 @@ class CustomCrossActivityBackAnimation(
         background: BackAnimationBackground,
         rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
         @ShellMainThread handler: Handler,
+        bubbleController: Optional<BubbleController>,
     ) : this(
         context,
         background,
@@ -74,6 +79,7 @@ class CustomCrossActivityBackAnimation(
             TransitionAnimation(context, false /* debug */, "CustomCrossActivityBackAnimation")
         ),
         handler,
+        bubbleController,
     )
 
     override fun preparePreCommitClosingRectMovement(swipeEdge: Int) {
@@ -182,9 +188,8 @@ class CustomCrossActivityBackAnimation(
     override fun prepareNextAnimation(
         animationInfo: BackNavigationInfo.CustomAnimationInfo?,
         letterboxColor: Int,
-        cornerRadius: Float,
     ): Boolean {
-        super.prepareNextAnimation(animationInfo, letterboxColor, cornerRadius)
+        super.prepareNextAnimation(animationInfo, letterboxColor)
         if (animationInfo == null) return false
         customAnimationLoader.loadAll(animationInfo)?.let { result ->
             closeAnimation = result.closeAnimation

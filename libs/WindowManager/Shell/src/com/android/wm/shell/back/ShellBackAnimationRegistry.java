@@ -171,21 +171,20 @@ public class ShellBackAnimationRegistry {
         }
     }
 
-    BackAnimationRunner getAnimationRunnerAndInit(BackNavigationInfo backNavigationInfo,
-            float cornerRadius) {
+    BackAnimationRunner getAnimationRunnerAndInit(BackNavigationInfo backNavigationInfo) {
         int type = backNavigationInfo.getType();
         // Initiate customized cross-activity animation, or fall back to cross activity animation
         if (type == BackNavigationInfo.TYPE_CROSS_ACTIVITY && mAnimationDefinition.contains(type)) {
             if (mCustomizeActivityAnimation != null
                     && mCustomizeActivityAnimation.prepareNextAnimation(
-                            backNavigationInfo.getCustomAnimationInfo(), 0, cornerRadius)) {
+                            backNavigationInfo.getCustomAnimationInfo(), 0)) {
                 mAnimationDefinition.get(type).resetWaitingAnimation();
                 mAnimationDefinition.set(
                         BackNavigationInfo.TYPE_CROSS_ACTIVITY,
                         mCustomizeActivityAnimation.getRunner());
             } else if (mDefaultCrossActivityAnimation != null) {
                 mDefaultCrossActivityAnimation.prepareNextAnimation(null,
-                        backNavigationInfo.getLetterboxColor(), cornerRadius);
+                        backNavigationInfo.getLetterboxColor());
             }
         }
         BackAnimationRunner runner = mAnimationDefinition.get(type);
