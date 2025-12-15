@@ -47,6 +47,7 @@ import com.android.testing.wm.util.MockToken
 import com.android.window.flags.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
 import com.android.wm.shell.desktopmode.NormalAppLayerController
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler
 import com.android.wm.shell.shared.TransactionPool
@@ -96,6 +97,9 @@ class PinnedLayerHandlerTests : ShellTestCase() {
         PinnedWindowRepositionAnimationHandler
     @Mock private lateinit var transactionPool: TransactionPool
     @Mock private lateinit var rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer
+    @Mock
+    private lateinit var multiDisplayDragMoveIndicatorController:
+        MultiDisplayDragMoveIndicatorController
 
     private lateinit var desktopState: FakeDesktopState
     private lateinit var pinnedLayerController: PinnedLayerController
@@ -116,6 +120,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
                 windowDragTransitionHandler,
                 pinnedWindowRepositionAnimationHandler,
                 transactionPool,
+                multiDisplayDragMoveIndicatorController,
             )
         pinnedLayerHandler =
             PinnedLayerHandler(shellInit, transitions, pinnedLayerController, normalLayerController)

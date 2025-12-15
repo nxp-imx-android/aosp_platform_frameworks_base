@@ -36,6 +36,7 @@ import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.TestShellExecutor
+import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController.UnpinStrategy
 import com.android.wm.shell.shared.TransactionPool
@@ -80,6 +81,9 @@ class PinnedLayerPermissionObserverTests : ShellTestCase() {
         PinnedWindowRepositionAnimationHandler
     @Mock private lateinit var transactionPool: TransactionPool
     @Mock private lateinit var rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer
+    @Mock
+    private lateinit var multiDisplayDragMoveIndicatorController:
+        MultiDisplayDragMoveIndicatorController
 
     private val uid = Binder.getCallingUid()
     private val shellExecutor = ObservedTestShellExecutor()
@@ -105,6 +109,7 @@ class PinnedLayerPermissionObserverTests : ShellTestCase() {
                 windowDragTransitionHandler,
                 pinnedWindowRepositionAnimationHandler,
                 transactionPool,
+                multiDisplayDragMoveIndicatorController,
             )
         pinnedLayerPermissionObserver =
             PinnedLayerPermissionObserver(context, shellExecutor, pinnedLayerController)
