@@ -19,14 +19,10 @@ package com.android.systemui.communal.data.repository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.applicationCoroutineScope
-import com.android.systemui.kosmos.testScope
-import com.android.systemui.lifecycle.activateIn
 import org.mockito.kotlin.spy
 
 var Kosmos.fakeCommunalSceneRepository by Fixture {
-    FakeCommunalSceneRepository(applicationScope = applicationCoroutineScope).apply {
-        activateIn(testScope)
-    }
+    FakeCommunalSceneRepository(applicationScope = applicationCoroutineScope)
 }
 var Kosmos.fakeCommunalSceneRepositorySpy by Fixture { spy(fakeCommunalSceneRepository) }
 

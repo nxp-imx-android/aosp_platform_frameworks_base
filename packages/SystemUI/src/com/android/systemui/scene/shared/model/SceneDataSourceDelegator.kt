@@ -19,7 +19,6 @@ package com.android.systemui.scene.shared.model
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.TransitionKey
-import com.android.compose.animation.scene.content.state.TransitionState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,9 +46,6 @@ class SceneDataSourceDelegator(applicationScope: CoroutineScope, config: SceneCo
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = config.initialSceneKey,
             )
-
-    override val currentSceneAsState: SceneKey
-        get() = delegateMutable.value.currentSceneAsState
 
     override val currentOverlays: StateFlow<Set<OverlayKey>> =
         delegateMutable
@@ -84,10 +80,6 @@ class SceneDataSourceDelegator(applicationScope: CoroutineScope, config: SceneCo
         delegateMutable.value.instantlyTransitionTo(scene = scene, overlays = overlays)
     }
 
-    override fun startTransitionImmediately(transition: TransitionState.Transition) {
-        delegateMutable.value.startTransitionImmediately(transition)
-    }
-
     /**
      * Binds the current, dependency injection provided [SceneDataSource] to the given object.
      *
@@ -105,8 +97,6 @@ class SceneDataSourceDelegator(applicationScope: CoroutineScope, config: SceneCo
     private class NoOpSceneDataSource(initialSceneKey: SceneKey) : SceneDataSource {
         override val currentScene: StateFlow<SceneKey> =
             MutableStateFlow(initialSceneKey).asStateFlow()
-
-        override val currentSceneAsState: SceneKey = initialSceneKey
 
         override val currentOverlays: StateFlow<Set<OverlayKey>> =
             MutableStateFlow(emptySet<OverlayKey>()).asStateFlow()
@@ -126,7 +116,5 @@ class SceneDataSourceDelegator(applicationScope: CoroutineScope, config: SceneCo
         override fun freezeAndAnimateToCurrentState() = Unit
 
         override fun instantlyTransitionTo(scene: SceneKey?, overlays: Set<OverlayKey>?) = Unit
-
-        override fun startTransitionImmediately(transition: TransitionState.Transition) = Unit
     }
 }

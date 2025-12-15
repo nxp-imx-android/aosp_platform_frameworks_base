@@ -20,14 +20,11 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.scene.initialSceneKey
 import com.android.systemui.scene.sceneContainerConfig
 
 val Kosmos.fakeSceneDataSource by Fixture {
-    FakeSceneDataSource(initialSceneKey = initialSceneKey, testScope = testScope).apply {
-        activateIn(testScope)
-    }
+    FakeSceneDataSource(initialSceneKey = initialSceneKey, testScope = testScope)
 }
 
 val Kosmos.sceneDataSourceDelegator by Fixture {

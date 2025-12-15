@@ -19,21 +19,16 @@ package com.android.systemui.scene.shared.model
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.TransitionKey
-import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.kosmos.currentValue
-import com.android.systemui.lifecycle.HydratedActivatable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.test.TestScope
 
-class FakeSceneDataSource(initialSceneKey: SceneKey, val testScope: TestScope) :
-    SceneDataSource, HydratedActivatable() {
+class FakeSceneDataSource(initialSceneKey: SceneKey, val testScope: TestScope) : SceneDataSource {
 
     private val _currentScene = MutableStateFlow(initialSceneKey)
     override val currentScene: StateFlow<SceneKey> = _currentScene.asStateFlow()
-
-    override val currentSceneAsState: SceneKey by currentScene.hydratedStateOf()
 
     private val _currentOverlays = MutableStateFlow<Set<OverlayKey>>(emptySet())
     override val currentOverlays: StateFlow<Set<OverlayKey>> = _currentOverlays.asStateFlow()
@@ -97,8 +92,6 @@ class FakeSceneDataSource(initialSceneKey: SceneKey, val testScope: TestScope) :
             }
         }
     }
-
-    override fun startTransitionImmediately(transition: TransitionState.Transition) = Unit
 
     /**
      * Pauses scene and overlay changes.
