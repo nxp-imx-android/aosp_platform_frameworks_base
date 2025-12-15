@@ -31,6 +31,7 @@ import com.android.systemui.qs.pipeline.data.repository.QSSettingsRestoredBroadc
 import com.android.systemui.qs.pipeline.data.repository.QSSettingsRestoredRepository
 import com.android.systemui.qs.pipeline.data.repository.TileSpecRepository
 import com.android.systemui.qs.pipeline.data.repository.TileSpecSettingsRepository
+import com.android.systemui.qs.pipeline.data.startable.PackageUninstalledCoreStartable
 import com.android.systemui.qs.pipeline.domain.interactor.CurrentTilesInteractor
 import com.android.systemui.qs.pipeline.domain.interactor.CurrentTilesInteractorImpl
 import com.android.systemui.qs.pipeline.domain.startable.QSPipelineCoreStartable
@@ -80,6 +81,13 @@ abstract class QSPipelineModule {
     @IntoMap
     @ClassKey(QSPipelineCoreStartable::class)
     abstract fun provideCoreStartable(startable: QSPipelineCoreStartable): CoreStartable
+
+    @Binds
+    @IntoMap
+    @ClassKey(PackageUninstalledCoreStartable::class)
+    abstract fun providePackageUninstalledCoreStartable(
+        startable: PackageUninstalledCoreStartable
+    ): CoreStartable
 
     @Binds
     abstract fun provideQSSettingsRestoredRepository(

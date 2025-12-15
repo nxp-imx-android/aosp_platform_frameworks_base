@@ -83,6 +83,17 @@ class FakeTileSpecRepository(
 
     override val tilesUpgradePath: Channel<Pair<TilesUpgradePath, Int>> = Channel(capacity = 10)
 
+    override suspend fun removePackage(packageName: String, userId: Int) {
+        with(getFlow(userId)) {
+            value =
+                value.toMutableList().apply {
+                    removeIf {
+                        it is TileSpec.CustomTileSpec && it.componentName.packageName == packageName
+                    }
+                }
+        }
+    }
+
     suspend fun sendTilesFromUpgradePath(upgradePath: TilesUpgradePath, userId: Int) {
         tilesUpgradePath.send(upgradePath to userId)
     }

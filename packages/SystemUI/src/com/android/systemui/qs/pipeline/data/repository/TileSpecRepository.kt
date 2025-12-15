@@ -21,6 +21,7 @@ import android.content.res.Resources
 import android.util.SparseArray
 import androidx.annotation.GuardedBy
 import com.android.app.tracing.coroutines.launchTraced
+import com.android.systemui.Flags.qsDeleteUninstalledTileService
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.qs.pipeline.data.model.RestoreData
@@ -81,6 +82,8 @@ interface TileSpecRepository {
 
     /** Reset the current set of tiles to the default list of tiles */
     suspend fun resetToDefault(userId: Int): List<TileSpec>
+
+    suspend fun removePackage(packageName: String, @UserIdInt userId: Int)
 
     val tilesUpgradePath: ReceiveChannel<Pair<TilesUpgradePath, Int>>
 
@@ -178,6 +181,12 @@ constructor(
 
     override suspend fun resetToDefault(userId: Int): List<TileSpec> {
         return maybeGetTileRepositoryForUser(userId)?.resetToDefault() ?: emptyList()
+    }
+
+    override suspend fun removePackage(packageName: String, userId: Int) {
+        if (qsDeleteUninstalledTileService()) {
+            maybeGetTileRepositoryForUser(userId)?.onPackageRemoved(packageName)
+        }
     }
 
     private suspend fun getTileRepositoryForUser(userId: Int): UserTileSpecRepository {
