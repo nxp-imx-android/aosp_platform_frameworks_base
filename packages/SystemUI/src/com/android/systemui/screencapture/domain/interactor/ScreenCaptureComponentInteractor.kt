@@ -16,12 +16,15 @@
 
 package com.android.systemui.screencapture.domain.interactor
 
+import android.util.Log
 import android.view.Choreographer
 import androidx.annotation.VisibleForTesting
 import com.android.systemui.coroutines.newTracingContext
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.screencapture.common.ScreenCaptureComponent
+import com.android.systemui.screencapture.common.ScreenCaptureReleasable
+import com.android.systemui.screencapture.common.ScreenCaptureStartable
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
 import com.android.systemui.screencapture.data.repository.ScreenCaptureComponentRepository
@@ -29,9 +32,12 @@ import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServic
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -40,7 +46,12 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+
+private val startablesTimeout = 1.seconds
+private val releasablesTimeout = 1.seconds
+private const val TAG = "ScreenCaptureComponentInteractor"
 
 /** Manages the lifecycle of the [ScreenCaptureComponent]. */
 @SysUISingleton
@@ -85,15 +96,18 @@ constructor(
                     if (it is ScreenCaptureUiState.Visible) {
                         repository.update(type) { component ->
                             component
-                                ?: componentBuilder
-                                    .setScope(
-                                        CoroutineScope(
-                                            dispatcherContext +
-                                                newTracingContext("ScreenCaptureScope_$type")
+                                ?: run {
+                                    componentBuilder
+                                        .setScope(
+                                            CoroutineScope(
+                                                dispatcherContext +
+                                                    newTracingContext("ScreenCaptureScope_$type")
+                                            )
                                         )
-                                    )
-                                    .setParameters(it.parameters)
-                                    .build()
+                                        .setParameters(it.parameters)
+                                        .build()
+                                        .apply { screenCaptureStartableSet().startAll() }
+                                }
                         }
                     }
                 },
@@ -107,7 +121,10 @@ constructor(
             .collect { shouldHoldComponent ->
                 if (shouldHoldComponent) return@collect
                 repository.update(type) { component: ScreenCaptureComponent? ->
-                    component?.coroutineScope()?.cancel()
+                    component?.run {
+                        screenCaptureReleasableSet().releaseAll()
+                        coroutineScope().cancel()
+                    }
                     null
                 }
             }
@@ -136,4 +153,30 @@ constructor(
         val uiState: ScreenCaptureUiState,
         val isCapturing: Boolean,
     )
+}
+
+private suspend fun Set<ScreenCaptureStartable>.startAll(): Unit =
+    withLogOnTimeout(timeout = startablesTimeout, message = { "Startables take too long!" }) {
+        map { launch { it.start() } }.joinAll()
+    }
+
+private suspend fun Set<ScreenCaptureReleasable>.releaseAll(): Unit =
+    withLogOnTimeout(timeout = releasablesTimeout, message = { "Releasables take too long!" }) {
+        map { launch { it.release() } }.joinAll()
+    }
+
+private suspend fun withLogOnTimeout(
+    timeout: Duration,
+    message: () -> String,
+    block: suspend CoroutineScope.() -> Unit,
+): Unit = coroutineScope {
+    val loggingJob = launch {
+        delay(timeout)
+        Log.wtf(TAG, message())
+    }
+    try {
+        block()
+    } finally {
+        loggingJob.cancel()
+    }
 }

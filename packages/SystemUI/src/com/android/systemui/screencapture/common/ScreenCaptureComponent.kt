@@ -49,6 +49,10 @@ interface ScreenCaptureComponent {
 
     fun screenRecordOverlayUi(): ScreenCaptureOverlayUi
 
+    fun screenCaptureStartableSet(): Set<ScreenCaptureStartable>
+
+    fun screenCaptureReleasableSet(): Set<ScreenCaptureReleasable>
+
     /**
      * Dagger Subcomponent Builder for [ScreenCaptureComponent].
      *

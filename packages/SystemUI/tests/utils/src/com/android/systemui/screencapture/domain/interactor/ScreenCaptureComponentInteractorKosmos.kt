@@ -19,7 +19,11 @@ package com.android.systemui.screencapture.domain.interactor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.screencapture.common.ScreenCaptureComponent
+import com.android.systemui.screencapture.common.ScreenCaptureReleasable
+import com.android.systemui.screencapture.common.ScreenCaptureStartable
 import com.android.systemui.screencapture.common.ScreenCaptureUiComponent
+import com.android.systemui.screencapture.common.screenCaptureReleasables
+import com.android.systemui.screencapture.common.screenCaptureStartables
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.data.repository.screenCaptureComponentRepository
@@ -75,5 +79,11 @@ private class FakeScreenCaptureComponentBuilder(private val kosmos: Kosmos) :
 
             override fun uiComponentBuilders():
                 Map<ScreenCaptureType, ScreenCaptureUiComponent.Builder> = emptyMap()
+
+            override fun screenCaptureStartableSet(): Set<ScreenCaptureStartable> =
+                kosmos.screenCaptureStartables
+
+            override fun screenCaptureReleasableSet(): Set<ScreenCaptureReleasable> =
+                kosmos.screenCaptureReleasables
         }
 }
