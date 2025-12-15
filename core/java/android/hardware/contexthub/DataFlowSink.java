@@ -66,7 +66,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @SystemApi
 @FlaggedApi(Flags.FLAG_FMCQ_API)
-public class DataFlowSink implements AutoCloseable {
+public final class DataFlowSink implements AutoCloseable {
     private static final String TAG = "DataFlowSink";
 
     /** The configuration of data read from this data flow. */
@@ -155,14 +155,14 @@ public class DataFlowSink implements AutoCloseable {
      */
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     @Nullable
-    public DataFlowData requestData(@Size(min = 1) int elementCount, boolean allOrNothing) {
+    public DataFlowData readData(@Size(min = 1) int elementCount, boolean allOrNothing) {
         try (ApiGuard guard = acquireApiGuard()) {
             return requestDataInternal(elementCount, allOrNothing);
         }
     }
 
     /**
-     * Blocking version of {@link #requestData(int, boolean)} that necessarily returns {@code
+     * Blocking version of {@link #readData(int, boolean)} that necessarily returns {@code
      * elementCount} elements.
      *
      * <p>While this method is blocking, {@link DataFlowCallback#onDataFlowSinkEvent(DataFlowSink,
@@ -308,7 +308,8 @@ public class DataFlowSink implements AutoCloseable {
     }
 
     /**
-     * Syncs this sink to a position at an offset behind the source's current write position.
+     * Moves the read position forward to a specified offset behind the source's current write
+     * position.
      *
      * <p>The purpose of this method is to allow a sink to fast-forward through stale data to data
      * that is actually relevant to it. For example, a sink may only care about data from the last
@@ -319,7 +320,7 @@ public class DataFlowSink implements AutoCloseable {
      *
      * <p>This API is non-blocking.
      *
-     * @param offset The offset in bytes behind the source's current write position
+     * @param offsetFromSource The offset in bytes behind the source's current write position
      * @throws IllegalArgumentException if the offset is not a multiple of the element size for
      *     fixed-size element data flows or if the offset is greater than the current size of the
      *     data flow
@@ -328,19 +329,19 @@ public class DataFlowSink implements AutoCloseable {
      *     async operation is in progress
      */
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
-    public void syncToSource(@IntRange(from = 0) int offset) {
+    public void seekToSource(@IntRange(from = 0) int offsetFromSource) {
         try (ApiGuard guard = acquireApiGuard()) {
             if (mConfig.getFormat() == DataFlowDataConfig.FORMAT_FIXED_SIZE
-                    && offset % mConfig.getElementSize() != 0) {
+                    && offsetFromSource % mConfig.getElementSize() != 0) {
                 throw new IllegalStateException(
-                        "syncToSource() offset must be a multiple of the element size for"
+                        "seekToSource() offset must be a multiple of the element size for"
                                 + " fixed-size element data flows.");
-            } else if (offset > size()) {
+            } else if (offsetFromSource > size()) {
                 throw new IllegalStateException(
-                        "syncToSource() offset must be less than or equal to the current size of"
+                        "seekToSource() offset must be less than or equal to the current size of"
                                 + " the data flow.");
             }
-            mEndpoint.sinkSyncToSource(mHandle, offset);
+            mEndpoint.sinkSyncToSource(mHandle, offsetFromSource);
         }
     }
 
@@ -353,7 +354,7 @@ public class DataFlowSink implements AutoCloseable {
      *     async operation is in progress
      */
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
-    public boolean sourceCanOverwriteReadPosition() {
+    public boolean canSourceOverwriteReadPosition() {
         try (ApiGuard guard = acquireApiGuard()) {
             return mEndpoint.sinkSourceCanOverwriteReadPosition(mHandle);
         }

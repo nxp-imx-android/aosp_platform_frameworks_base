@@ -35,7 +35,7 @@ import java.util.List;
  */
 @SystemApi
 @FlaggedApi(Flags.FLAG_FMCQ_API)
-public class DataFlowData {
+public final class DataFlowData {
     /**
      * One or more buffers containing the data. The order of the buffers is the order of the data as
      * it should be written or was read. For a fixed-size element data flow, each buffer contains

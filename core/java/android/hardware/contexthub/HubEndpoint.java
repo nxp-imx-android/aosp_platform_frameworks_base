@@ -387,9 +387,7 @@ public class HubEndpoint {
                                 mDataFlowCallbackExecutor.execute(
                                         () -> {
                                             mDataFlowCallback.onDataFlowSinkEvent(
-                                                    sink,
-                                                    DataFlowCallback.SINK_EVENT_READABLE,
-                                                    /* data= */ null);
+                                                    sink, DataFlowCallback.SINK_EVENT_READABLE);
                                         });
                             }
                         } else {
@@ -586,9 +584,7 @@ public class HubEndpoint {
                             mDataFlowCallbackExecutor.execute(
                                     () -> {
                                         mDataFlowCallback.onDataFlowSinkEvent(
-                                                sink,
-                                                DataFlowCallback.SINK_EVENT_STOPPED,
-                                                /* data= */ null);
+                                                sink, DataFlowCallback.SINK_EVENT_STOPPED);
                                     });
                         }
                     }

@@ -117,14 +117,6 @@ public interface DataFlowCallback {
     }
 
     /**
-     * Event data for a {@link SinkEvent}.
-     *
-     * <p>Currently, no sink events require additional data, so this class is empty. It is provided
-     * to allow for future expansion if sink events need to carry payloads.
-     */
-    class SinkEventData {}
-
-    /**
      * Called when this endpoint is added as a sink for a data flow whose source is an offload
      * endpoint.
      *
@@ -176,8 +168,6 @@ public interface DataFlowCallback {
      *     {@link #onDataFlowHostSinkRegistered(DataFlowSink, HubEndpointInfo, HubMessage, int)}
      * @param event The sink event that occurred, either {@link #SINK_EVENT_READABLE} or {@link
      *     #SINK_EVENT_STOPPED}
-     * @param data An optional payload associated with the event
      */
-    public void onDataFlowSinkEvent(
-            @NonNull DataFlowSink sink, @SinkEvent int event, @Nullable SinkEventData data);
+    public void onDataFlowSinkEvent(@NonNull DataFlowSink sink, @SinkEvent int event);
 }
