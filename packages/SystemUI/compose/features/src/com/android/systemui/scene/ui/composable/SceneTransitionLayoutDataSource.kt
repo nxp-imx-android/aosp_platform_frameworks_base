@@ -21,7 +21,6 @@ import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.TransitionKey
-import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.animation.scene.observableTransitionState
 import com.android.systemui.scene.shared.model.SceneDataSource
 import kotlinx.coroutines.CoroutineScope
@@ -44,9 +43,6 @@ class SceneTransitionLayoutDataSource(
      */
     private val coroutineScope: CoroutineScope,
 ) : SceneDataSource {
-    override val currentSceneAsState: SceneKey
-        get() = state.currentScene
-
     override val currentScene: StateFlow<SceneKey> =
         state
             .observableTransitionState()
@@ -107,9 +103,5 @@ class SceneTransitionLayoutDataSource(
             scene = scene ?: state.transitionState.currentScene,
             overlays = overlays ?: state.transitionState.currentOverlays,
         )
-    }
-
-    override fun startTransitionImmediately(transition: TransitionState.Transition) {
-        state.startTransitionImmediately(animationScope = coroutineScope, transition = transition)
     }
 }

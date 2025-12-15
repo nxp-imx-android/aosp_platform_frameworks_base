@@ -50,7 +50,7 @@ import com.android.systemui.scene.ui.composable.transitions.lockscreenToShadeSce
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToSplitShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.shadeToAlwaysOnDisplayTransition
 import com.android.systemui.scene.ui.composable.transitions.shadeToQuickSettingsTransition
-import com.android.systemui.scene.ui.composable.transitions.sharedBouncerTransitions
+import com.android.systemui.scene.ui.composable.transitions.toBouncerTransition
 import com.android.systemui.scene.ui.composable.transitions.toNotificationsShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.toQuickSettingsShadeTransition
 import com.android.systemui.shade.ui.composable.Shade
@@ -318,7 +318,15 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
 
             // Overlay transitions
 
-            sharedBouncerTransitions()
+            to(Overlays.Bouncer) { toBouncerTransition() }
+            from(Overlays.Bouncer) { fromBouncerTransition() }
+            from(
+                Overlays.Bouncer,
+                key = TransitionKey.PredictiveBack,
+                preview = { fromBouncerPreview() },
+            ) {
+                fromBouncerTransition()
+            }
             from(Overlays.Bouncer, to = Scenes.Gone) { bouncerToGoneTransition() }
             from(Scenes.Dream, to = Overlays.Bouncer) { dreamToBouncerTransition() }
             from(

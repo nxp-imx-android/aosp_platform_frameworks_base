@@ -22,7 +22,6 @@ import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.TransitionKey
-import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.communal.dagger.Communal
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.dagger.SysUISingleton
@@ -121,8 +120,6 @@ constructor(
         override val currentScene: StateFlow<SceneKey> =
             MutableStateFlow(initialSceneKey).asStateFlow()
 
-        override val currentSceneAsState: SceneKey = initialSceneKey
-
         override val currentOverlays: StateFlow<Set<OverlayKey>> =
             MutableStateFlow(emptySet<OverlayKey>()).asStateFlow()
 
@@ -141,7 +138,5 @@ constructor(
         override fun freezeAndAnimateToCurrentState() = Unit
 
         override fun instantlyTransitionTo(scene: SceneKey?, overlays: Set<OverlayKey>?) = Unit
-
-        override fun startTransitionImmediately(transition: TransitionState.Transition) = Unit
     }
 }
