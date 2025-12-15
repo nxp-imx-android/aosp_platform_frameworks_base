@@ -207,6 +207,7 @@ package android.app {
   }
 
   public class AlarmManager {
+    method public long getPrioritizedAlarmDelay();
     method public boolean hasScheduleExactAlarm(@NonNull String, int);
   }
 
