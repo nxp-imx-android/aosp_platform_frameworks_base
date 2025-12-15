@@ -2365,8 +2365,9 @@ public final class CameraCharacteristics extends CameraMetadata<CameraCharacteri
      * <li>Processed (but stalling): any non-RAW format with a stallDurations &gt; 0.
      *   Typically {@link android.graphics.ImageFormat#JPEG JPEG format}.</li>
      * <li>Raw formats: {@link android.graphics.ImageFormat#RAW_SENSOR RAW_SENSOR},
-     *   {@link android.graphics.ImageFormat#RAW10 RAW10}, or
-     *   {@link android.graphics.ImageFormat#RAW12 RAW12}.</li>
+     *   {@link android.graphics.ImageFormat#RAW10 RAW10},
+     *   {@link android.graphics.ImageFormat#RAW12 RAW12}, or
+     *   {@link android.graphics.ImageFormat#RAW14 RAW14}</li>
      * <li>Processed (but not-stalling): any non-RAW format without a stall duration.  Typically
      *   {@link android.graphics.ImageFormat#YUV_420_888 YUV_420_888},
      *   {@link android.graphics.ImageFormat#NV21 NV21}, {@link android.graphics.ImageFormat#YV12 YV12}, or {@link android.graphics.ImageFormat#Y8 Y8} .</li>
@@ -2400,6 +2401,7 @@ public final class CameraCharacteristics extends CameraMetadata<CameraCharacteri
      * <li>{@link android.graphics.ImageFormat#RAW_SENSOR RAW_SENSOR}</li>
      * <li>{@link android.graphics.ImageFormat#RAW10 RAW10}</li>
      * <li>{@link android.graphics.ImageFormat#RAW12 RAW12}</li>
+     * <li>{@link android.graphics.ImageFormat#RAW14 RAW14}</li>
      * </ul>
      * <p>LEGACY mode devices ({@link CameraCharacteristics#INFO_SUPPORTED_HARDWARE_LEVEL android.info.supportedHardwareLevel} <code>==</code> LEGACY)
      * never support raw streams.</p>
@@ -3358,6 +3360,7 @@ public final class CameraCharacteristics extends CameraMetadata<CameraCharacteri
      * <li>{@link android.graphics.ImageFormat#YUV_420_888 }</li>
      * <li>{@link android.graphics.ImageFormat#RAW10 }</li>
      * <li>{@link android.graphics.ImageFormat#RAW12 }</li>
+     * <li>{@link android.graphics.ImageFormat#RAW14 }</li>
      * <li>{@link android.graphics.ImageFormat#Y8 }</li>
      * </ul>
      * <p>All other formats may or may not have an allowed stall duration on

@@ -687,7 +687,7 @@ public abstract class CameraMetadata<TKey> {
      * then the list of resolutions for YUV_420_888 from {@link android.hardware.camera2.params.StreamConfigurationMap#getOutputSizes } contains at
      * least one resolution &gt;= 8 megapixels, with a minimum frame duration of &lt;= 1/20
      * s.</p>
-     * <p>If the device supports the {@link android.graphics.ImageFormat#RAW10 }, {@link android.graphics.ImageFormat#RAW12 }, {@link android.graphics.ImageFormat#Y8 }, then those can also be
+     * <p>If the device supports the {@link android.graphics.ImageFormat#RAW10 }, {@link android.graphics.ImageFormat#RAW12 }, {@link android.graphics.ImageFormat#RAW14 }, {@link android.graphics.ImageFormat#Y8 }, then those can also be
      * captured at the same rate as the maximum-size YUV_420_888 resolution is.</p>
      * <p>If the device supports the PRIVATE_REPROCESSING capability, then the same guarantees
      * as for the YUV_420_888 format also apply to the {@link android.graphics.ImageFormat#PRIVATE } format.</p>
@@ -1633,6 +1633,7 @@ public abstract class CameraMetadata<TKey> {
      * <li>{@link android.graphics.ImageFormat#RAW_SENSOR RAW_SENSOR}</li>
      * <li>{@link android.graphics.ImageFormat#RAW10 RAW10}</li>
      * <li>{@link android.graphics.ImageFormat#RAW12 RAW12}</li>
+     * <li>{@link android.graphics.ImageFormat#RAW14 RAW14}</li>
      * </ul>
      * <p>session configuration is not guaranteed to succeed.</p>
      * <p>This stream use case may not be supported on some devices.</p>
