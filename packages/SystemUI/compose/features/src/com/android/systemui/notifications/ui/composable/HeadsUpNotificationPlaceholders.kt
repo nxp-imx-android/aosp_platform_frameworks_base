@@ -201,23 +201,6 @@ fun ContentScope.SnoozableHeadsUpNotificationPlaceholder(
                             ),
                     )
                 }
-                // TODO(462706428) Make NSSL work with HeadsUpPlaceholder values only, and leave
-                // stack related updates strictly to the stack placeholders.
-                //
-                // Make sure NSSL needs to receive some valid stack bounds, even if the
-                // HeadsUpPlaceholder is displayed without the regular StackPlaceholder.
-                .onPlaced {
-                    val bounds = it.boundsInWindow()
-                    debugLog(viewModel) { "$tag.Snoozable onPlaced bounds:$bounds" }
-                    viewModel.setStackBounds(YSpace(bounds.top, bounds.bottom))
-                    // Use -headsUpInset to allow HUN translation outside bounds for snoozing.
-                    viewModel.setStackScrollTop(-headsUpInset)
-                }
-                .onUnplaced {
-                    debugLog(viewModel) { "$tag.Snoozable onUnplaced" }
-                    viewModel.resetStackBounds()
-                    viewModel.resetStackScrollTop()
-                }
                 .thenIf(isSnoozable) { Modifier.nestedScroll(snoozeScrollConnection) }
                 .scrollable(orientation = Orientation.Vertical, state = scrollableState),
     )
