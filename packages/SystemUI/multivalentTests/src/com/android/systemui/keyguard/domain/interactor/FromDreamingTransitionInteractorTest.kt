@@ -31,9 +31,7 @@ import com.android.systemui.communal.data.repository.communalSceneRepository
 import com.android.systemui.communal.domain.interactor.setCommunalAvailable
 import com.android.systemui.communal.domain.interactor.setCommunalV2ConfigEnabled
 import com.android.systemui.communal.shared.model.CommunalScenes
-import com.android.systemui.keyguard.data.repository.FakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
-import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepositorySpy
 import com.android.systemui.keyguard.data.repository.keyguardOcclusionRepository
 import com.android.systemui.keyguard.data.repository.keyguardTransitionRepository
@@ -82,13 +80,6 @@ class FromDreamingTransitionInteractorTest(flags: FlagsParameterization?) : Sysu
 
     private val kosmos =
         testKosmos().useStandardTestDispatcher().apply {
-            this.fakeKeyguardTransitionRepository =
-                FakeKeyguardTransitionRepository(
-                    // This test sends transition steps manually in the test cases.
-                    initiallySendTransitionStepsOnStartTransition = false,
-                    testScope = testScope,
-                )
-
             this.keyguardTransitionRepository = fakeKeyguardTransitionRepositorySpy
         }
 
@@ -193,6 +184,28 @@ class FromDreamingTransitionInteractorTest(flags: FlagsParameterization?) : Sysu
     fun testDismissFromDreaming() =
         kosmos.runTest {
             underTest.dismissFromDreaming()
+            testScope.runCurrent()
+
+            assertThat(transitionRepository)
+                .startedTransition(from = KeyguardState.DREAMING, to = KeyguardState.GONE)
+        }
+
+    @Test
+    fun testDreamingToGone() =
+        kosmos.runTest {
+            kosmos.transitionRepository.sendTransitionSteps(
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.DREAMING,
+                kosmos.testScope,
+            )
+
+            fakeKeyguardRepository.setKeyguardDismissible(true)
+            fakeKeyguardRepository.setKeyguardShowing(false)
+            powerInteractor.setAwakeForTest()
+            testScope.advanceTimeBy(60L)
+            testScope.runCurrent()
+
+            underTest.startTransitionFromDream(openHub = false)
             testScope.runCurrent()
 
             assertThat(transitionRepository)
