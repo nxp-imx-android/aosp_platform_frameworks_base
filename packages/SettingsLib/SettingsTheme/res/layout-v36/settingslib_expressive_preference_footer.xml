@@ -14,13 +14,30 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   -->
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/settingslib_expressive_link_footer"
-    android:layout_width="wrap_content"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/settingslib_expressive_footer_container"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:orientation="vertical"
     android:paddingBottom="@dimen/settingslib_expressive_space_extrasmall7"
-    android:textAppearance="@style/TextAppearance.SettingsLib.TitleSmall"
-    android:textColor="@color/settingslib_materialColorPrimary"
-    android:clickable="true"
-    android:visibility="gone"
-    android:filterTouchesWhenObscured="true"/>
+    android:visibility="gone">
+
+    <ImageView
+        android:id="@+id/settingslib_expressive_footer_image"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/settingslib_expressive_footer_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.SettingsLib.TitleSmall"
+        android:textColor="@color/settingslib_materialColorPrimary"
+        android:focusable="true"
+        android:clickable="true"
+        android:visibility="gone"
+        android:filterTouchesWhenObscured="true"/>
+
+</LinearLayout>
