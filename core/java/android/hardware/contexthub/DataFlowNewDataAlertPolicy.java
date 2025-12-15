@@ -41,7 +41,7 @@ import java.util.Objects;
  */
 @SystemApi
 @FlaggedApi(Flags.FLAG_FMCQ_API)
-public class DataFlowNewDataAlertPolicy {
+public final class DataFlowNewDataAlertPolicy {
     /** Never alert a sink on new data. */
     public static final int POLICY_TYPE_NEVER = 0;
 
