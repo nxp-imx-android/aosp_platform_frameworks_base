@@ -30,6 +30,8 @@ import com.android.internal.protolog.common.IProtoLog;
 import com.android.internal.protolog.common.IProtoLogGroup;
 import com.android.internal.protolog.common.LogLevel;
 
+import java.util.UUID;
+
 /**
  * ProtoLog API - exposes static logging methods. Usage of this API is similar
  * to {@code android.utils.Log} class. Instead of plain text log messages each call consists of
@@ -261,11 +263,18 @@ public class ProtoLog {
 
     private static void logStringMessage(@NonNull LogLevel logLevel, @NonNull IProtoLogGroup group,
             @NonNull String stringMessage, @NonNull Object... args) {
-        final var instance = sController.mProtoLogInstance;
+        var instance = sController.mProtoLogInstance;
         if (instance == null) {
-            Log.wtfStack(LOG_TAG,
-                    "Trying to use ProtoLog before it is initialized in this process.");
-            return;
+            if (android.tracing.Flags.protologAsyncInit()) {
+                initAsync(group);
+                instance = sController.mProtoLogInstance;
+                ProtoLog.w(PROTOLOG_GROUP,
+                        "ProtoLog used before initialization, calling initAsync");
+            } else {
+                Log.wtfStack(LOG_TAG,
+                        "Trying to use ProtoLog before it is initialized in this process.");
+                return;
+            }
         }
 
         if (instance.isEnabled(group, logLevel)) {
@@ -302,4 +311,39 @@ public class ProtoLog {
         // already been made compatible with ravenwood.
         return true;
     }
+
+    private static final IProtoLogGroup PROTOLOG_GROUP = new IProtoLogGroup() {
+        private volatile boolean mLogToLogcat = true;
+
+        @Override
+        public boolean isEnabled() {
+            return true;
+        }
+
+        @Override
+        public boolean isLogToLogcat() {
+            return mLogToLogcat;
+        }
+
+        @Override
+        public String getTag() {
+            return "ProtoLog";
+        }
+
+        @Override
+        public void setLogToLogcat(boolean logToLogcat) {
+            mLogToLogcat = logToLogcat;
+        }
+
+        @Override
+        public String name() {
+            return "ProtoLog";
+        }
+
+        @Override
+        public int getId() {
+            return (int) UUID.nameUUIDFromBytes(ProtoLog.class.getName().getBytes())
+                    .getMostSignificantBits() % Integer.MAX_VALUE;
+        }
+    };
 }
