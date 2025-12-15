@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.record.camera.domain.interactor
 
+import android.util.Size
 import android.view.Surface
 import com.android.systemui.screencapture.common.ScreenCapture
 import com.android.systemui.screencapture.common.ScreenCaptureReleasable
@@ -31,6 +32,10 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.takeWhile
 
+/**
+ * Controls the [ScreenRecordCameraInteractor] camera stream. It makes sure to gracefully
+ * [stopStream] when the [ScreenCaptureScope] is being released using the [ScreenCaptureReleasable].
+ */
 @ScreenCaptureScope
 class ScreenRecordCameraSurfaceInteractor
 @Inject
@@ -50,7 +55,7 @@ constructor(
     }
 
     fun startStream(surface: Surface, width: Int, height: Int) {
-        surfaceStatus.value = Status.Active(surface, width, height)
+        surfaceStatus.value = Status.Active.Started(surface, Size(width, height))
         if (consumingJob != null) {
             return
         }
@@ -58,13 +63,13 @@ constructor(
             surfaceStatus
                 .takeWhile { it is Status.Active }
                 .map { it as Status.Active }
-                .onStart { emit(Status.Active()) }
+                .onStart { emit(Status.Active.Stopped) }
                 .pairwiseBy { old: Status.Active, new: Status.Active ->
-                    if (old.surface != null) {
+                    if (old is Status.Active.Started) {
                         cameraInteractor.stopStream()
                     }
-                    if (new.surface != null) {
-                        cameraInteractor.startStream(new.surface, new.width, new.height)
+                    if (new is Status.Active.Started) {
+                        cameraInteractor.onSurfaceReady(new.surface, new.size)
                     }
                 }
                 .onCompletion { cameraInteractor.stopStream() }
@@ -72,13 +77,17 @@ constructor(
     }
 
     fun stopStream() {
-        surfaceStatus.value = Status.Active()
+        surfaceStatus.value = Status.Active.Stopped
     }
 
     private sealed interface Status {
         data object Inactive : Status
 
-        data class Active(val surface: Surface? = null, val width: Int = 0, val height: Int = 0) :
-            Status
+        sealed interface Active : Status {
+
+            data class Started(val surface: Surface, val size: Size) : Active
+
+            data object Stopped : Active
+        }
     }
 }

@@ -19,16 +19,20 @@ package com.android.systemui.screencapture.record.camera.data.repository
 import android.util.Size
 import android.view.Surface
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.screencapture.record.camera.shared.model.CameraState
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flowOf
 
 @SysUISingleton
 class ScreenRecordCameraRepositoryImpl @Inject constructor() : ScreenRecordCameraRepository {
     override val errors: Flow<Int> = emptyFlow()
-    override val state: Flow<Int> = emptyFlow()
-    override val isConnected: Flow<Boolean> = flowOf(false)
+    override val state: StateFlow<CameraState> =
+        MutableStateFlow(CameraState.Unavailable).asStateFlow()
+    override val isConnected: StateFlow<Boolean> = MutableStateFlow(false).asStateFlow()
 
     override fun connect() {}
 
@@ -39,8 +43,8 @@ class ScreenRecordCameraRepositoryImpl @Inject constructor() : ScreenRecordCamer
     override suspend fun stopStream() {}
 
     override suspend fun prepareStream(
-        displayId: Int,
-        displayOrientation: Int,
+        displayUniqueId: String?,
+        @Surface.Rotation displayRotation: Int,
     ): Size? = null
 
     override suspend fun setBackgroundColor(color: Int) {}

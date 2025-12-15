@@ -22,7 +22,7 @@ import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.screencapture.common.domain.interactor.screenCaptureLabelInteractor
 import com.android.systemui.screencapture.common.domain.interactor.screenCaptureMarkupInteractor
 import com.android.systemui.screencapture.common.domain.interactor.screenCaptureRecentTaskInteractor
-import com.android.systemui.screencapture.record.camera.domain.interactor.screenRecordCameraInteractor
+import com.android.systemui.screencapture.record.camera.domain.interactor.screenRecordCameraSurfaceInteractor
 import com.android.systemui.screencapture.record.domain.interactor.screenCaptureRecordParametersInteractor
 import com.android.systemui.screenrecord.domain.interactor.screenRecordingServiceInteractor
 
@@ -35,7 +35,7 @@ val Kosmos.recordDetailsTargetInteractor: RecordDetailsTargetInteractor by
             recentTaskInteractor = screenCaptureRecentTaskInteractor,
             screenCaptureLabelInteractor = screenCaptureLabelInteractor,
             parametersInteractor = screenCaptureRecordParametersInteractor,
-            cameraInteracor = screenRecordCameraInteractor,
+            cameraInteracor = screenRecordCameraSurfaceInteractor,
             markupInteractor = screenCaptureMarkupInteractor,
         )
     }

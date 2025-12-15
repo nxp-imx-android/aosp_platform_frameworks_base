@@ -17,18 +17,20 @@
 package com.android.systemui.screencapture.record.camera.ui.viewmodel
 
 import android.util.Size
+import android.view.Display
 import android.view.Surface
 import androidx.compose.runtime.getValue
 import com.android.app.tracing.coroutines.flow.collectTraced
 import com.android.systemui.lifecycle.HydratedActivatable
-import com.android.systemui.screencapture.domain.interactor.ScreenCaptureOverlayStateInteractor
 import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenRecordCameraInteractor
 import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenRecordCameraSurfaceInteractor
+import com.android.systemui.screencapture.record.camera.shared.model.CameraState
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class ScreenCaptureCameraViewModel
@@ -36,16 +38,14 @@ class ScreenCaptureCameraViewModel
 constructor(
     private val screenRecordCameraSurfaceInteractor: ScreenRecordCameraSurfaceInteractor,
     private val screenRecordCameraInteractor: ScreenRecordCameraInteractor,
-    overlayStateInteractor: ScreenCaptureOverlayStateInteractor,
 ) : HydratedActivatable() {
 
     private val taps = Channel<Unit>()
 
     val shouldShowCamera: Boolean? by
-        overlayStateInteractor.isCameraInUse.hydratedStateOf(
-            "ScreenCaptureCameraViewModel#shouldShowCamera",
-            null,
-        )
+        screenRecordCameraInteractor.state
+            .map { it == CameraState.Started }
+            .hydratedStateOf("ScreenCaptureCameraViewModel#shouldShowCamera", null)
 
     val surfaceSize: Size? by
         screenRecordCameraInteractor.optimalCameraStreamSize.hydratedStateOf(
@@ -74,6 +74,13 @@ constructor(
 
     fun onSurfaceClicked() {
         taps.trySend(Unit)
+    }
+
+    fun onDisplayReady(display: Display) {
+        screenRecordCameraInteractor.onDisplayReady(
+            uniqueId = display.uniqueId,
+            rotation = display.rotation,
+        )
     }
 
     @AssistedFactory
