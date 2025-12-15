@@ -47,6 +47,7 @@ public class ConversationHintTest {
     private static final AutofillId AUTOFILL_ID = new AutofillId(1);
     private static final String CONTENT_DESCRIPTION = "content description";
     private static final Instant REFERENCE_TIME = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+    private static final Instant CLIENT_EVENT_TIMESTAMP = REFERENCE_TIME.minusSeconds(1);
     private static final ChatMessageData CHAT_MESSAGE_DATA =
             new ChatMessageData.Builder()
                     .setOutgoingMessage(true)
@@ -62,8 +63,10 @@ public class ConversationHintTest {
     @Test
     public void testConversationHint_enterEvent_parcelUnparcel() {
         final Instant enterTimestamp = REFERENCE_TIME;
+        final Instant clientEventTimestamp = CLIENT_EVENT_TIMESTAMP;
         final ConversationEnterEvent enterEvent =
-                new ConversationEnterEvent(CONVERSATION_SESSION_ID, enterTimestamp, enterTimestamp);
+                new ConversationEnterEvent(
+                        CONVERSATION_SESSION_ID, clientEventTimestamp, enterTimestamp);
         final ConversationHint hint = new ConversationHint.Builder(enterEvent).build();
 
         final ContextHint outputHint = ContextHintTestUtils.assertParcelUnparcel(hint);
@@ -75,12 +78,16 @@ public class ConversationHintTest {
         final ConversationEnterEvent outputEnterEvent = (ConversationEnterEvent) outputEvent;
         assertThat(outputEnterEvent.getConversationSessionId()).isEqualTo(CONVERSATION_SESSION_ID);
         assertThat(outputEnterEvent.getConversationEnterTimestamp()).isEqualTo(enterTimestamp);
+        assertThat(outputEnterEvent.getClientEventTimestamp()).isEqualTo(clientEventTimestamp);
     }
 
     @Test
     public void testConversationHint_exitEvent_parcelUnparcel() {
+        final Instant exitTimestamp = REFERENCE_TIME;
+        final Instant clientEventTimestamp = CLIENT_EVENT_TIMESTAMP;
         final ConversationExitEvent exitEvent =
-                new ConversationExitEvent(CONVERSATION_SESSION_ID, REFERENCE_TIME);
+                new ConversationExitEvent(
+                        CONVERSATION_SESSION_ID, clientEventTimestamp, exitTimestamp);
         final ConversationHint hint = new ConversationHint.Builder(exitEvent).build();
 
         final ContextHint outputHint = ContextHintTestUtils.assertParcelUnparcel(hint);
@@ -91,16 +98,19 @@ public class ConversationHintTest {
 
         final ConversationExitEvent outputExitEvent = (ConversationExitEvent) outputEvent;
         assertThat(outputExitEvent.getConversationSessionId()).isEqualTo(CONVERSATION_SESSION_ID);
+        assertThat(outputExitEvent.getConversationExitTimestamp()).isEqualTo(exitTimestamp);
+        assertThat(outputExitEvent.getClientEventTimestamp()).isEqualTo(clientEventTimestamp);
     }
 
     @Test
     public void testConversationHint_processingEvent_parcelUnparcel() {
         final Instant processingTimestamp = REFERENCE_TIME;
+        final Instant clientEventTimestamp = CLIENT_EVENT_TIMESTAMP;
         final AutofillId messageAutofillId = new AutofillId(2);
         final ConversationProcessingEvent processingEvent =
                 new ConversationProcessingEvent(
                         CONVERSATION_SESSION_ID,
-                        processingTimestamp,
+                        clientEventTimestamp,
                         processingTimestamp,
                         messageAutofillId);
         final ConversationHint hint = new ConversationHint.Builder(processingEvent).build();
@@ -118,13 +128,16 @@ public class ConversationHintTest {
         assertThat(outputProcessingEvent.getMessageAutofillId()).isEqualTo(messageAutofillId);
         assertThat(outputProcessingEvent.getConversationSessionId())
                 .isEqualTo(CONVERSATION_SESSION_ID);
+        assertThat(outputProcessingEvent.getClientEventTimestamp()).isEqualTo(clientEventTimestamp);
     }
 
     @Test
     public void testConversationHint_updateEvent_parcelUnparcel() {
         final ActivityId activityId = new ActivityId(1, null);
-        final Instant processingStartTimestamp = REFERENCE_TIME;
+        final Instant processingStartTimestamp = CLIENT_EVENT_TIMESTAMP;
         final Instant processingEndTimestamp = REFERENCE_TIME;
+        final Instant clientEventTimestamp = CLIENT_EVENT_TIMESTAMP;
+        final Instant updateTimestamp = REFERENCE_TIME;
         final ComponentName componentName = new ComponentName("pkg", "cls");
         final AutofillId inputBoxAutofillId = new AutofillId(1);
         final ConversationData conversationData =
@@ -143,7 +156,10 @@ public class ConversationHintTest {
                         .build();
         final ConversationUpdateEvent updateEvent =
                 new ConversationUpdateEvent(
-                        CONVERSATION_SESSION_ID, REFERENCE_TIME, conversationData);
+                        CONVERSATION_SESSION_ID,
+                        clientEventTimestamp,
+                        updateTimestamp,
+                        conversationData);
         final ConversationHint hint = new ConversationHint.Builder(updateEvent).build();
 
         final ContextHint outputHint = ContextHintTestUtils.assertParcelUnparcel(hint);
@@ -154,14 +170,18 @@ public class ConversationHintTest {
 
         final ConversationUpdateEvent outputUpdateEvent = (ConversationUpdateEvent) outputEvent;
         assertThat(outputUpdateEvent.getConversationData()).isEqualTo(conversationData);
+        assertThat(outputUpdateEvent.getConversationUpdateTimestamp()).isEqualTo(REFERENCE_TIME);
         assertThat(outputUpdateEvent.getConversationSessionId()).isEqualTo(CONVERSATION_SESSION_ID);
+        assertThat(outputUpdateEvent.getClientEventTimestamp()).isEqualTo(clientEventTimestamp);
     }
 
     @Test
     public void testHintSignature() throws GeneralSecurityException {
         final ActivityId activityId = new ActivityId(1, new Binder());
-        final Instant processingStartTimestamp = REFERENCE_TIME;
+        final Instant processingStartTimestamp = CLIENT_EVENT_TIMESTAMP;
         final Instant processingEndTimestamp = REFERENCE_TIME;
+        final Instant clientEventTimestamp = CLIENT_EVENT_TIMESTAMP;
+        final Instant updateTimestamp = REFERENCE_TIME;
         final ComponentName componentName = new ComponentName("pkg", "cls");
         final AutofillId inputBoxAutofillId = new AutofillId(1);
         final ConversationData conversationData =
@@ -180,7 +200,10 @@ public class ConversationHintTest {
                         .build();
         final ConversationUpdateEvent updateEvent =
                 new ConversationUpdateEvent(
-                        CONVERSATION_SESSION_ID, REFERENCE_TIME, conversationData);
+                        CONVERSATION_SESSION_ID,
+                        clientEventTimestamp,
+                        updateTimestamp,
+                        conversationData);
         final ConversationHint hint = new ConversationHint.Builder(updateEvent).build();
 
         final SecretKeySpec key = ContextHintTestUtils.generateSignedHintKey();
