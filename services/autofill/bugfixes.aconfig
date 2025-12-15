@@ -167,3 +167,13 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "return_when_window_destroyed"
+  namespace: "autofill"
+  description: "Check whether window is destroyed inside hide(). If it's destroyed, then hide() returns without throwing exception. This prevents exception from thrown"
+  bug: "392539682"
+  metadata {
+      purpose: PURPOSE_BUGFIX
+  }
+}
