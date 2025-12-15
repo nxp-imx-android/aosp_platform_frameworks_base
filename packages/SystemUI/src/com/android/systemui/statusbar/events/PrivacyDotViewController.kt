@@ -133,7 +133,7 @@ constructor(
     @Assisted private val contentInsetsProvider: StatusBarContentInsetsProvider,
     @Assisted private val animationScheduler: SystemStatusAnimationScheduler,
     private val shadeInteractor: ShadeInteractor,
-    avControlsChipInteractor: AvControlsChipInteractor?,
+    @Assisted avControlsChipInteractor: AvControlsChipInteractor,
     @ScreenDecorationsThread val uiExecutor: DelayableExecutor,
     @Assisted private val displayId: Int,
     private val shadeDisplaysInteractor: Lazy<ShadeDisplaysInteractor>?,
@@ -727,6 +727,7 @@ constructor(
             contentInsetsProvider: StatusBarContentInsetsProvider,
             displayId: Int,
             animationScheduler: SystemStatusAnimationScheduler,
+            avControlsChipInteractor: AvControlsChipInteractor,
         ): PrivacyDotViewControllerImpl
     }
 }
@@ -804,6 +805,7 @@ object PrivacyDotViewControllerModule {
         configurationController: ConfigurationController,
         perDisplaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
         @Default defaultAnimationSchedulerLazy: Lazy<SystemStatusAnimationScheduler>,
+        defaultAvControlsChipInteractor: AvControlsChipInteractor,
     ): PrivacyDotViewController {
         val displaySubcomponent = perDisplaySubcomponentRepo[Display.DEFAULT_DISPLAY]!!
         val animationScheduler =
@@ -818,6 +820,7 @@ object PrivacyDotViewControllerModule {
             displaySubcomponent.statusBarContentInsetsProvider,
             Display.DEFAULT_DISPLAY,
             animationScheduler,
+            defaultAvControlsChipInteractor,
         )
     }
 }

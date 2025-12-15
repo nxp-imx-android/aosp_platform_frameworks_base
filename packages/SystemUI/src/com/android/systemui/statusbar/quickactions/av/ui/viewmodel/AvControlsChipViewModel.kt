@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.quickactions.av.ui.viewmodel
 import androidx.compose.runtime.getValue
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.res.R
@@ -38,7 +39,7 @@ import kotlinx.coroutines.flow.map
 /** ViewModel for the VC Privacy Chip */
 class AvControlsChipViewModel
 @AssistedInject
-constructor(avControlsChipInteractor: AvControlsChipInteractor) :
+constructor(@DisplayAware avControlsChipInteractor: AvControlsChipInteractor) :
     StatusBarPopupChipViewModel, ExclusiveActivatable() {
     companion object {
         val CAMERA_DRAWABLE: Int = com.android.internal.R.drawable.perm_group_camera

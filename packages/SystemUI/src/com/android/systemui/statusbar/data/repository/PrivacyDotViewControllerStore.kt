@@ -30,6 +30,7 @@ import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.events.PrivacyDotViewController
 import com.android.systemui.statusbar.events.PrivacyDotViewControllerImpl
 import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler
+import com.android.systemui.statusbar.quickactions.av.domain.interactor.AvControlsChipInteractor
 import dagger.Lazy
 import dagger.Module
 import dagger.Provides
@@ -51,6 +52,7 @@ constructor(
     private val displayScopeRepository: PerDisplayRepository<CoroutineScope>,
     private val perDisplaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
     @Default private val defaultStatusAnimationSchedulerLazy: Lazy<SystemStatusAnimationScheduler>,
+    private val defaultAvControlsChipInteractorLazy: Lazy<AvControlsChipInteractor>,
 ) :
     PrivacyDotViewControllerStore,
     StatusBarPerDisplayStoreImpl<PrivacyDotViewController>(
@@ -67,12 +69,19 @@ constructor(
             } else {
                 defaultStatusAnimationSchedulerLazy.get()
             }
+        val avControlsChipInteractor =
+            if (Flags.avControlsChipPerDisplay()) {
+                displaySubcomponent.avControlsChipInteractor
+            } else {
+                defaultAvControlsChipInteractorLazy.get()
+            }
         return factory.create(
             displayScope,
             displaySubcomponent.statusBarConfigurationController,
             displaySubcomponent.statusBarContentInsetsProvider,
             displayId,
             animationScheduler,
+            avControlsChipInteractor,
         )
     }
 
