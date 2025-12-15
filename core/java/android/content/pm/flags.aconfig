@@ -307,6 +307,7 @@ flag {
     namespace: "package_manager_service"
     description: "Feature flag to add new ADB related APIs in the verification service"
     bug: "460818215"
+    is_exported: true
 }
 
 flag {
