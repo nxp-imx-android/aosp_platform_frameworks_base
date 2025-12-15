@@ -56,6 +56,12 @@ class DesktopModeImpl(
         }
     }
 
+    override fun removeDeskChangeListener(listener: DeskChangeListener) {
+        mainExecutor.execute {
+            desktopTasksController.getOrNull()?.removeDeskChangeListener(listener)
+        }
+    }
+
     override fun addDesktopGestureExclusionRegionListener(
         listener: Consumer<Region>,
         callbackExecutor: Executor,
@@ -92,10 +98,7 @@ class DesktopModeImpl(
         }
     }
 
-    override fun moveFocusedTaskToStageSplit(
-        displayId: Int,
-        leftOrTop: Boolean
-    ) {
+    override fun moveFocusedTaskToStageSplit(displayId: Int, leftOrTop: Boolean) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: moveFocusedTaskToStageSplit", TAG)
         mainExecutor.execute {
             desktopTasksController

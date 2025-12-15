@@ -51,6 +51,13 @@ public interface DesktopMode {
     void addDeskChangeListener(DesktopRepository.DeskChangeListener listener,
             Executor callbackExecutor);
 
+   /**
+     * Remove a listener to find out about desk changes.
+     *
+     * @param listener the listener to remove.
+     */
+    void removeDeskChangeListener(DesktopRepository.DeskChangeListener listener);
+
     /**
      * Adds a consumer to listen for Desktop task corner changes. This is used for gesture
      * exclusion. The SparseArray contains a list of four corner resize handles mapped to each

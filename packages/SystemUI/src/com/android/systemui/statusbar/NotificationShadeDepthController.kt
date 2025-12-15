@@ -40,6 +40,8 @@ import com.android.systemui.Flags.checkDesktopModeForSpacialModelAppPushback
 import com.android.systemui.animation.ShadeInterpolation
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.desktop.DesktopModeRepository
 import com.android.systemui.display.data.repository.FocusedDisplayRepository
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
@@ -92,7 +94,7 @@ constructor(
     private val shadeDisplaysRepository: Lazy<ShadeDisplaysRepository>,
     private val focusedDisplayRepository: FocusedDisplayRepository,
     @Application private val applicationScope: CoroutineScope,
-    private val desktopMode: Optional<DesktopMode>,
+    private val desktopModeRepository: DesktopModeRepository,
     dumpManager: DumpManager,
 ) : ShadeExpansionListener, Dumpable {
     companion object {
@@ -109,6 +111,8 @@ constructor(
 
         private const val TAG = "DepthController"
     }
+
+    private val shadeDisplayId = shadeDisplaysRepository.get().displayId
 
     lateinit var root: View
     private var keyguardAnimator: Animator? = null
@@ -325,14 +329,10 @@ constructor(
     private fun blurRadiusToZoomOut(blurRadius: Float): Float {
         val disableZoomForMode =
             if (checkDesktopModeForSpacialModelAppPushback()) {
-                desktopMode
-                    .map { dm ->
-                        dm.isDisplayInDesktopMode(shadeDisplaysRepository.get().displayId.value)
-                    }
-                    .orElse(false)
+                desktopModeRepository.isDisplayInDesktopMode(shadeDisplayId.value)
             } else {
-                shadeModeInteractor.isSplitShade
-            }
+                null
+            } ?: shadeModeInteractor.isSplitShade
 
         val zoomOut =
             when {

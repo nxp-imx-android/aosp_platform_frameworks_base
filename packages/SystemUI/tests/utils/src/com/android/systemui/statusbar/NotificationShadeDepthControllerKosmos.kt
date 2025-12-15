@@ -18,6 +18,7 @@ package com.android.systemui.statusbar
 
 import android.view.Choreographer
 import android.view.View
+import com.android.systemui.desktop.desktopModeRepository
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.Kosmos
@@ -54,7 +55,7 @@ var Kosmos.notificationShadeDepthController by Fixture {
             shadeDisplaysRepository = { shadeDisplaysRepository },
             focusedDisplayRepository = fakeFocusedDisplayRepository,
             applicationScope = applicationCoroutineScope,
-            desktopMode = Optional.empty(),
+            desktopModeRepository = desktopModeRepository,
             dumpManager = dumpManager,
         )
         .apply { root = mock<View>() }

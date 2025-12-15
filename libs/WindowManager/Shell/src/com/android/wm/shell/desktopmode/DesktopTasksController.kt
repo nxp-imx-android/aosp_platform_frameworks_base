@@ -6605,6 +6605,15 @@ class DesktopTasksController(
     }
 
     /**
+     * Remove a listener to find out about desk changes.
+     *
+     * @param listener the listener to remove.
+     */
+    fun removeDeskChangeListener(listener: DeskChangeListener) {
+        userRepositories.current.removeDeskChangeListener(listener)
+    }
+
+    /**
      * Adds a listener to track changes to desktop task gesture exclusion regions
      *
      * @param listener the listener to add.
