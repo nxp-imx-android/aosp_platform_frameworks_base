@@ -52,7 +52,6 @@ import android.content.Intent;
 import android.content.pm.LauncherApps;
 import android.content.pm.ShortcutInfo;
 import android.graphics.Rect;
-import android.hardware.input.InputManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.RemoteException;
@@ -116,7 +115,6 @@ import com.android.wm.shell.sysui.KeyguardChangeListener;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
-import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.WindowDecorViewModel;
 
@@ -156,7 +154,6 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
     public static final int EXIT_REASON_FULLSCREEN_REQUEST = 13;
     public static final int EXIT_REASON_CHILD_TASK_ENTER_BUBBLE = 14;
     public static final int EXIT_REASON_DRAG_TO_FULLSCREEN = 15;
-
     @IntDef(value = {
             EXIT_REASON_UNKNOWN,
             EXIT_REASON_APP_DOES_NOT_SUPPORT_MULTIWINDOW,
@@ -218,12 +215,10 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
     private final SplitState mSplitState;
     private final RootDisplayAreaOrganizer mRootDisplayAreaOrganizer;
     private final IActivityTaskManager mActivityTaskManager;
-    private final FocusTransitionObserver mFocusTransitionObserver;
     private final SplitScreenShellCommandHandler mSplitScreenShellCommandHandler;
     private final DesktopState mDesktopState;
     private final MSDLPlayer mMSDLPlayer;
     private final Optional<BubbleController> mBubbleController;
-    private final InputManager mInputManager;
 
     @VisibleForTesting
     StageCoordinator mStageCoordinator;
@@ -263,9 +258,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
             DesktopState desktopState,
             IActivityTaskManager activityTaskManager,
             MSDLPlayer msdlPlayer,
-            Optional<BubbleController> bubbleController,
-            FocusTransitionObserver focusTransitionObserver,
-            InputManager inputManager) {
+            Optional<BubbleController> bubbleController) {
         mShellCommandHandler = shellCommandHandler;
         mShellController = shellController;
         mTaskOrganizer = shellTaskOrganizer;
@@ -292,12 +285,10 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
         mSplitState = splitState;
         mRootDisplayAreaOrganizer = rootDisplayAreaOrganizer;
         mActivityTaskManager = activityTaskManager;
-        mFocusTransitionObserver = focusTransitionObserver;
         mSplitScreenShellCommandHandler = new SplitScreenShellCommandHandler(this);
         mDesktopState = desktopState;
         mMSDLPlayer = msdlPlayer;
         mBubbleController = bubbleController;
-        mInputManager = inputManager;
         // TODO(b/238217847): Temporarily add this check here until we can remove the dynamic
         //                    override for this controller from the base module
         if (ActivityTaskManager.supportsSplitScreenMultiWindow(context)) {
@@ -334,14 +325,6 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
         }
         mWindowDecorViewModel.ifPresent(viewModel -> viewModel.setSplitScreenController(this));
         mDesktopTasksController.ifPresent(controller -> controller.setSplitScreenController(this));
-
-        SplitKeyGestureHandler splitKeyGestureHandler = new SplitKeyGestureHandler(
-                mStageCoordinator,
-                mDesktopTasksController,
-                mInputManager,
-                mFocusTransitionObserver,
-                mTaskOrganizer
-        );
     }
 
     protected StageCoordinator createStageCoordinator() {

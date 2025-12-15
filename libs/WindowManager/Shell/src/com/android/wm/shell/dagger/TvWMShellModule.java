@@ -18,7 +18,6 @@ package com.android.wm.shell.dagger;
 
 import android.app.IActivityTaskManager;
 import android.content.Context;
-import android.hardware.input.InputManager;
 import android.os.Handler;
 
 import com.android.launcher3.icons.IconProvider;
@@ -46,7 +45,6 @@ import com.android.wm.shell.startingsurface.tv.TvStartingWindowTypeAlgorithm;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
-import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.Transitions;
 
 import com.google.android.msdl.domain.MSDLPlayer;
@@ -104,15 +102,12 @@ public class TvWMShellModule {
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
             DesktopState desktopState,
             IActivityTaskManager activityTaskManager,
-            MSDLPlayer msdlPlayer,
-            FocusTransitionObserver focusTransitionObserver,
-            InputManager inputManager) {
+            MSDLPlayer msdlPlayer) {
         return new TvSplitScreenController(context, shellInit, shellCommandHandler, shellController,
                 shellTaskOrganizer, syncQueue, rootTDAOrganizer, displayController,
                 displayImeController, displayInsetsController, transitions, transactionPool,
                 iconProvider, recentTasks, launchAdjacentController, multiInstanceHelper,
                 splitState, mainExecutor, mainHandler, systemWindows, rootDisplayAreaOrganizer,
-                desktopState, activityTaskManager, msdlPlayer, focusTransitionObserver,
-                inputManager);
+                desktopState, activityTaskManager, msdlPlayer);
     }
 }

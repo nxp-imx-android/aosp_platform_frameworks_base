@@ -394,6 +394,14 @@ oneway interface IStatusBar
     void moveFocusedTaskToFullscreen(int displayId);
 
     /**
+     * Enters stage split from a current running app.
+     *
+     * @param displayId the id of the current display.
+     * @param leftOrTop indicates where the stage split is.
+     */
+    void moveFocusedTaskToStageSplit(int displayId, boolean leftOrTop);
+
+    /**
      * Set the split screen focus to the left / top app or the right / bottom app based on
      * {@param leftOrTop}.
      */

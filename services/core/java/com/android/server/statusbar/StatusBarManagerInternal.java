@@ -246,6 +246,13 @@ public interface StatusBarManagerInternal {
     void moveFocusedTaskToFullscreen(int displayId);
 
     /**
+     * Enters stage split from a current running app.
+     *
+     * @see com.android.internal.statusbar.IStatusBar#moveFocusedTaskToStageSplit
+     */
+    void moveFocusedTaskToStageSplit(int displayId, boolean leftOrTop);
+
+    /**
      * Change the split screen focus to the left / top app or the right / bottom app based on
      * {@param leftOrTop}.
      *

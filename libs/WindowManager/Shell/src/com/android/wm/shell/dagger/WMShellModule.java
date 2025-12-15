@@ -774,9 +774,7 @@ public abstract class WMShellModule {
             DesktopState desktopState,
             IActivityTaskManager activityTaskManager,
             MSDLPlayer msdlPlayer,
-            Optional<BubbleController> bubbleController,
-            FocusTransitionObserver focusTransitionObserver,
-            InputManager inputManager) {
+            Optional<BubbleController> bubbleController) {
         return new SplitScreenController(
                 context,
                 shellInit,
@@ -806,9 +804,7 @@ public abstract class WMShellModule {
                 desktopState,
                 activityTaskManager,
                 msdlPlayer,
-                bubbleController,
-                focusTransitionObserver,
-                inputManager);
+                bubbleController);
     }
 
     //
