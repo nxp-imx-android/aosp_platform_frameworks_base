@@ -283,10 +283,11 @@ public class CommandQueue extends IStatusBar.Stub implements
         /**
          * Sets the new IME window status.
          *
-         * @param displayId The id of the display to which the IME is bound.
-         * @param vis The IME window visibility.
-         * @param backDisposition The IME back disposition mode.
-         * @param showImeSwitcherButton Whether the IME Switcher button should be shown.
+         * @param displayId             The ID of the display where the IME should be shown.
+         * @param vis                   The IME window visibility.
+         * @param backDisposition       The IME back disposition mode.
+         * @param showImeSwitcherButton Whether the IME Switcher button should be shown when the IME
+         *                              is shown.
          */
         default void setImeWindowStatus(int displayId, @ImeWindowVisibility int vis,
                 @BackDispositionMode int backDisposition, boolean showImeSwitcherButton) { }

@@ -32,10 +32,13 @@ public final class RegisterStatusBarResult implements Parcelable {
     public final int mDisabledFlags1;                   // switch[0]
     public final int mAppearance;                       // switch[1]
     public final AppearanceRegion[] mAppearanceRegions; // switch[2]
+    /** The IME window visibility. */
     @ImeWindowVisibility
     public final int mImeWindowVis;                     // switch[3]
+    /** The IME back disposition mode. */
     @BackDispositionMode
     public final int mImeBackDisposition;               // switch[4]
+    /** Whether the IME Switcher button should be shown when the IME is shown. */
     public final boolean mShowImeSwitcherButton;        // switch[5]
     public final int mDisabledFlags2;                   // switch[6]
     public final boolean mNavbarColorManagedByIme;

@@ -2663,21 +2663,19 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         final boolean hasNavigationBar = mWindowManagerInternal
                 .hasNavigationBar(curDisplayId != INVALID_DISPLAY ? curDisplayId : DEFAULT_DISPLAY);
         final boolean imeDrawsImeNavBar = userData.mImeDrawsNavBar.get() && hasNavigationBar;
-        final boolean showImeSwitcherButton = shouldShowImeSwitcherButtonLocked(
-                InputMethodService.IME_ACTIVE | InputMethodService.IME_VISIBLE, userId);
+        final boolean showImeSwitcherButton = shouldShowImeSwitcherButtonLocked(userId);
         return (imeDrawsImeNavBar ? InputMethodNavButtonFlags.IME_DRAWS_IME_NAV_BAR : 0)
                 | (showImeSwitcherButton ? InputMethodNavButtonFlags.SHOW_IME_SWITCHER_BUTTON : 0);
     }
 
     /**
-     * Whether the IME Switcher Button should be shown for the given user.
+     * Whether the IME Switcher Button should be shown when the IME is shown, for the given user.
+     * Note, the caller is responsible for checking the provided IME visibility.
      *
-     * @param visibility the visibility of the IME.
-     * @param userId     the ID of the user to check.
+     * @param userId the ID of the user to check.
      */
     @GuardedBy("ImfLock.class")
-    private boolean shouldShowImeSwitcherButtonLocked(@ImeWindowVisibility int visibility,
-            @UserIdInt int userId) {
+    private boolean shouldShowImeSwitcherButtonLocked(@UserIdInt int userId) {
         // When the IME switcher dialog is shown, the IME switcher button should be hidden.
         // TODO(b/305849394): Make mMenuController multi-user aware.
         if (mMenuController.isShowing()) {
@@ -2691,10 +2689,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         }
         if (mWindowManagerInternal.isKeyguardShowingAndNotOccluded()
                 && mWindowManagerInternal.isKeyguardSecure(userId)) {
-            return false;
-        }
-        if ((visibility & InputMethodService.IME_ACTIVE) == 0
-                || (visibility & InputMethodService.IME_VISIBLE) == 0) {
             return false;
         }
 
@@ -2860,7 +2854,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 // the back button should be in the default state (as if the IME is not shown).
                 backDisposition = InputMethodService.BACK_DISPOSITION_ADJUST_NOTHING;
             }
-            final boolean showImeSwitcherButton = shouldShowImeSwitcherButtonLocked(vis, userId);
+            final boolean showImeSwitcherButton = shouldShowImeSwitcherButtonLocked(userId);
             if (mStatusBarManagerInternal != null) {
                 mStatusBarManagerInternal.setImeWindowStatus(curDisplayId, vis, backDisposition,
                         showImeSwitcherButton);
@@ -4209,8 +4203,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         final int callingUserId = UserHandle.getCallingUserId();
         synchronized (ImfLock.class) {
             final int userId = resolveImeUserIdLocked(callingUserId);
-            return shouldShowImeSwitcherButtonLocked(
-                    InputMethodService.IME_ACTIVE | InputMethodService.IME_VISIBLE, userId);
+            return shouldShowImeSwitcherButtonLocked(userId);
         }
     }
 
