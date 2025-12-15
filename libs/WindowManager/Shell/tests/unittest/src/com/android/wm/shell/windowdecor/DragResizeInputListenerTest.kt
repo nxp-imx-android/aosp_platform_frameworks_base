@@ -29,12 +29,12 @@ import android.view.IWindowSession
 import android.view.InputChannel
 import android.view.SurfaceControl
 import androidx.test.filters.SmallTest
+import com.android.testing.wm.util.StubTransaction
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestHandler
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.common.DisplayController
-import com.android.wm.shell.util.StubTransaction
 import com.android.wm.shell.windowdecor.DragResizeInputListener.TaskResizeInputEventReceiver
 import com.google.common.truth.Truth.assertThat
 import java.util.function.Consumer

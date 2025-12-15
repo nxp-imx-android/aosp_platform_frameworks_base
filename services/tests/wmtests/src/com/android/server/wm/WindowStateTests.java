@@ -137,8 +137,8 @@ import androidx.test.filters.SmallTest;
 import com.android.compatibility.common.util.SystemUtil;
 import com.android.internal.R;
 import com.android.server.inputmethod.InputMethodManagerInternal;
-import com.android.server.testutils.StubTransaction;
 import com.android.server.wm.SensitiveContentPackages.PackageInfo;
+import com.android.testing.wm.util.StubTransaction;
 import com.android.window.flags.Flags;
 
 import org.junit.After;

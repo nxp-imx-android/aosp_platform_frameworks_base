@@ -47,6 +47,7 @@ import android.window.WindowContainerTransaction;
 
 import androidx.test.filters.SmallTest;
 
+import com.android.testing.wm.util.StubTransaction;
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.common.DisplayController;
@@ -61,7 +62,6 @@ import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
 import com.android.wm.shell.splitscreen.SplitScreenController;
-import com.android.wm.shell.util.StubTransaction;
 
 import org.junit.Before;
 import org.junit.Rule;

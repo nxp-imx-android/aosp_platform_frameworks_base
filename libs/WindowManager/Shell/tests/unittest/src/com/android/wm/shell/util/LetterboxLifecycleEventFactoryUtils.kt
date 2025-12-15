@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.util
 
+import com.android.testing.wm.util.BaseChangeTestContext
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEvent
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEventFactory
 

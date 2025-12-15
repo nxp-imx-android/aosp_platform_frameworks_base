@@ -51,7 +51,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.internal.util.function.TriConsumer;
 import com.android.launcher3.icons.IconProvider;
-import com.android.server.testutils.StubTransaction;
+import com.android.testing.wm.util.StubTransaction;
 import com.android.testing.wm.util.TransitionInfoBuilder;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;

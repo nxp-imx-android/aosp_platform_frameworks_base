@@ -24,10 +24,10 @@ import android.view.SurfaceControl
 import android.view.View
 import android.view.ViewGroup
 import android.window.WindowContainerTransaction
+import com.android.testing.wm.util.StubTransaction
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
-import com.android.wm.shell.util.StubTransaction
 import com.android.wm.shell.windowdecor.TaskFocusStateConsumer
 import com.android.wm.shell.windowdecor.WindowDecoration2
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost

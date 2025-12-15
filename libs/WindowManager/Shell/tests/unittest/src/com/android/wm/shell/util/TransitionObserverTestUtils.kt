@@ -19,6 +19,7 @@ package com.android.wm.shell.util
 import android.os.IBinder
 import android.view.SurfaceControl.Transaction
 import android.window.TransitionInfo
+import com.android.testing.wm.util.TransitionInfoTestInputBuilder
 import com.android.wm.shell.transition.Transitions.TransitionObserver
 import org.mockito.kotlin.mock
 

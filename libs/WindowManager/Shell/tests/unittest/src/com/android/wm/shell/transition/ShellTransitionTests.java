@@ -100,6 +100,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.R;
 import com.android.internal.policy.TransitionAnimation;
+import com.android.testing.wm.util.StubTransaction;
 import com.android.testing.wm.util.TransitionInfoBuilder;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
@@ -118,7 +119,6 @@ import com.android.wm.shell.shared.IShellTransitions;
 import com.android.wm.shell.shared.TransactionPool;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
-import com.android.wm.shell.util.StubTransaction;
 
 import org.junit.Before;
 import org.junit.Test;

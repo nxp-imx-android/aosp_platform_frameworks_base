@@ -35,6 +35,7 @@ import android.view.WindowInsets
 import android.view.WindowInsetsController.APPEARANCE_TRANSPARENT_CAPTION_BAR_BACKGROUND
 import android.view.WindowManager.LayoutParams
 import com.android.internal.jank.InteractionJankMonitor
+import com.android.testing.wm.util.StubTransaction
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
@@ -52,7 +53,6 @@ import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
-import com.android.wm.shell.util.StubTransaction
 import com.android.wm.shell.windowdecor.WindowDecorationTestHelper.TestAppHeaderDimensions.Companion.CUSTOMIZABLE_REGION_MARGIN_START
 import com.android.wm.shell.windowdecor.common.CaptionVisibilityHelper
 import com.android.wm.shell.windowdecor.common.DrawableInsets
