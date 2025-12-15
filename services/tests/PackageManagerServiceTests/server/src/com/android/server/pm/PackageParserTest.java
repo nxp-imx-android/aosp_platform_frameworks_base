@@ -63,6 +63,7 @@ import android.content.pm.PackageManager.Property;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.Signature;
+import android.content.pm.SignedPackageParcel;
 import android.content.pm.SigningDetails;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -90,6 +91,7 @@ import com.android.internal.pm.parsing.pkg.ParsedPackage;
 import com.android.internal.pm.permission.CompatibilityPermissionInfo;
 import com.android.internal.pm.pkg.component.ParsedActivity;
 import com.android.internal.pm.pkg.component.ParsedActivityImpl;
+import com.android.internal.pm.pkg.component.ParsedAllowComponentAccessPolicy;
 import com.android.internal.pm.pkg.component.ParsedApexSystemService;
 import com.android.internal.pm.pkg.component.ParsedComponent;
 import com.android.internal.pm.pkg.component.ParsedInstrumentation;
@@ -174,6 +176,8 @@ public class PackageParserTest {
     private static final String TEST_APP_PCC_APK = "PackageParserTestPcc.apk";
     private static final String TEST_APP_PCC_AND_ISOLATED_SERVICE_APK =
             "PackageParserTestPccAndIsolatedService.apk";
+    private static final String TEST_APP_ALLOW_ACCESS_APK =
+            "PackageParserTestAllowComponentAccess.apk";
     private static final String PACKAGE_NAME = "com.android.servicestests.apps.packageparserapp";
 
     @Before
@@ -1181,6 +1185,55 @@ public class PackageParserTest {
         } catch (PackageParserException e) {
             assertThat(e.getMessage()).contains(
                     "Service has both isIsolatedProcess and privateComputeCore set.");
+        } finally {
+            testFile.delete();
+        }
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_ALLOW_COMPONENT_ACCESS)
+    public void testParseAllowComponentAccess() throws Exception {
+        final File testFile = extractFile(TEST_APP_ALLOW_ACCESS_APK);
+        try {
+            final ParsedPackage pkg = new TestPackageParser2().parsePackage(testFile, 0, false);
+
+            // 1. Verify Policy Existence
+            ParsedAllowComponentAccessPolicy policy = pkg.getParsedAllowComponentAccessPolicy();
+            assertNotNull("Policy should not be null", policy);
+
+            List<SignedPackageParcel> rules = policy.getParsedAllowlistedSignedPackages();
+            assertEquals("Should have parsed exactly 2 rules", 2, rules.size());
+
+            // 2. Verify Rule 1 (Name Only)
+            SignedPackageParcel rule1 = rules.get(0);
+            assertEquals("com.example.partner", rule1.packageName);
+            assertNull("Cert digest should be null for name-only rule", rule1.certificateDigest);
+
+            // 3. Verify Rule 2 (Name + Cert)
+            SignedPackageParcel rule2 = rules.get(1);
+            assertEquals("com.example.signed", rule2.packageName);
+
+            // Verify Hex Parsing (AA:BB:CC:DD -> 0xAABBCCDD)
+            byte[] expectedCert = new byte[] {(byte) 0xAA, (byte) 0xBB, (byte) 0xCC, (byte) 0xDD};
+            assertArrayEquals(
+                    "Cert digest did not parse correctly", expectedCert, rule2.certificateDigest);
+
+        } finally {
+            testFile.delete();
+        }
+    }
+
+    @Test
+    @RequiresFlagsDisabled(
+            android.app.privatecompute.flags.Flags.FLAG_ENABLE_ALLOW_COMPONENT_ACCESS)
+    public void testParseAllowComponentAccess_FlagDisabled() throws Exception {
+        final File testFile = extractFile(TEST_APP_ALLOW_ACCESS_APK);
+        try {
+            final ParsedPackage pkg = new TestPackageParser2().parsePackage(testFile, 0, false);
+
+            // Verify Policy is NULL when flag is disabled
+            ParsedAllowComponentAccessPolicy policy = pkg.getParsedAllowComponentAccessPolicy();
+            assertNull("Policy should be null when flag is disabled", policy);
         } finally {
             testFile.delete();
         }
