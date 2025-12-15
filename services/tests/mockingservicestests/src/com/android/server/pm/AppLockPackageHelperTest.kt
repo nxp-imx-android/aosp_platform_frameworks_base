@@ -23,11 +23,13 @@ import android.content.IntentFilter
 import android.content.pm.FeatureInfo
 import android.content.pm.PackageManager
 import android.content.pm.UserInfo
+import android.os.Binder
 import android.os.Process
 import android.os.UserHandle
 import android.util.ArrayMap
 import android.util.ArraySet
 import androidx.test.platform.app.InstrumentationRegistry
+import com.android.compatibility.common.util.SystemUtil.runWithShellPermissionIdentity
 import com.android.internal.pm.parsing.pkg.AndroidPackageInternal
 import com.android.internal.pm.pkg.component.ParsedActivity
 import com.android.internal.pm.pkg.component.ParsedActivityImpl
@@ -134,7 +136,8 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
                 EXEMPT_PACKAGE_NAME,
                 TEST_USER_ID_1,
                 newEnabledState,
-                Process.SYSTEM_UID
+                Process.SYSTEM_UID,
+                Binder.getCallingPid(),
             )
         ).isEqualTo(!newEnabledState)
         // Disk write occurs only if the current state was true, as exempt apps cannot have App Lock
@@ -166,7 +169,8 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
                 TEST_PACKAGE_NAME,
                 TEST_USER_ID_1,
                 newEnabledState,
-                Process.SYSTEM_UID
+                Process.SYSTEM_UID,
+                        Binder.getCallingPid(),
             )
         ).isEqualTo(!newEnabledState)
         // Disk write occurs only if the current state was true, as headless apps cannot have App
@@ -197,7 +201,8 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
                 TEST_PACKAGE_NAME,
                 TEST_USER_ID_1,
                 newEnabledState,
-                Process.SYSTEM_UID
+                Process.SYSTEM_UID,
+                Binder.getCallingPid(),
             )
         ).isEqualTo(!newEnabledState)
         // Disk write occurs only if the current state was true, as profile users cannot have App
@@ -227,7 +232,8 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
                 TEST_PACKAGE_NAME,
                 TEST_USER_ID_1,
                 newEnabledState,
-                Process.SYSTEM_UID
+                Process.SYSTEM_UID,
+                Binder.getCallingPid(),
             )
         ).isEqualTo(!newEnabledState)
         // Disk write occurs only if the current state was true, as profile users cannot have App
@@ -258,7 +264,8 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
                 TEST_PACKAGE_NAME,
                 TEST_USER_ID_1,
                 newEnabledState,
-                Process.SYSTEM_UID
+                Process.SYSTEM_UID,
+                Binder.getCallingPid(),
             )
         ).isEqualTo(!newEnabledState)
         // Disk write occurs only if the current state was true, as supervised users cannot have App
@@ -287,7 +294,8 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
                 TEST_PACKAGE_NAME,
                 TEST_USER_ID_1,
                 newEnabledState,
-                Process.SYSTEM_UID
+                Process.SYSTEM_UID,
+                Binder.getCallingPid(),
             )
         ).isEqualTo(!newEnabledState)
         // Disk write occurs only if the current state was true, as App Lock is not supported on
@@ -301,7 +309,7 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
 
     @Test
     @Throws(Exception::class)
-    fun setPackageAppLockEnabled_unauthorizedUid_throwsSecurityException_noDiskWrite(
+    fun setPackageAppLockEnabled_unauthorizedUidNoPermission_throwsSecurityException_noDiskWrite(
         @TestParameter currentEnabledState: Boolean,
         @TestParameter newEnabledState: Boolean,
         @TestParameter(valuesProvider = UnauthorizedUidProvider::class) callingUid: Int,
@@ -317,10 +325,34 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
                 TEST_PACKAGE_NAME,
                 TEST_USER_ID_1,
                 newEnabledState,
-                callingUid
+                callingUid,
+                Binder.getCallingPid(),
             )
         }
         verifyNoWriteOrPackageUpdate()
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun setPackageAppLockEnabled_unauthorizedUidWithTestPermission_noSecurityException_success() {
+        val currentEnabledState = false
+        val newEnabledState = true
+        setupTestForSetPackageAppLockEnabled(
+            deviceSecure = true,
+            currentEnabledState
+        )
+
+        runWithShellPermissionIdentity {
+            appLockPackageHelper.setPackageAppLockEnabled(
+                this::mockSnapshot,
+                TEST_PACKAGE_NAME,
+                TEST_USER_ID_1,
+                newEnabledState,
+                Process.SHELL_UID,
+                Binder.getCallingPid(),
+            )
+        }
+        verifyDiskWriteAndPackageUpdate(newEnabledState)
     }
 
     @Test
@@ -333,7 +365,7 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
         val targetState = appLockSupportedForSecureDevice && newEnabledState
         val expectDiskWrite = currentEnabledState != targetState
         // The value gets successfully set to the desired state if the desired state is false, or if
-        // if the desired state is true for a supported, secure device
+        // the desired state is true for a supported, secure device
         val successfullySet = !newEnabledState || appLockSupportedForSecureDevice
         setupTestForSetPackageAppLockEnabled(
             deviceSecure = true,
@@ -354,6 +386,7 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
                 TEST_USER_ID_1,
                 newEnabledState,
                 callingUid,
+                Binder.getCallingPid(),
             )
         ).isEqualTo(successfullySet)
         if (expectDiskWrite) {

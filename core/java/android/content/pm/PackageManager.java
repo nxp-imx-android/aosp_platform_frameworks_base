@@ -10709,7 +10709,9 @@ public abstract class PackageManager {
      * Set App Lock enablement state (enabled or disabled). This should only be called after a
      * successful authentication with either Device Credential or a Class 3 Biometric.
      *
-     * Only called by the system. This will do UID checks to verify the caller.
+     * Only called by the system or by test apps that hold the
+     * {@link Manifest.permission#TEST_LOCK_APPS} permission. This will do UID checks to verify the
+     * caller.
      *
      * @param packageName the package to enable or disable App Lock.
      * @param enabled true when the user would like to enable App Lock for the given package, false
@@ -10720,6 +10722,9 @@ public abstract class PackageManager {
      *
      * @hide
      */
+    @FlaggedApi(android.security.Flags.FLAG_APP_LOCK_APIS)
+    @RequiresPermission(Manifest.permission.TEST_LOCK_APPS)
+    @TestApi
     public boolean setPackageAppLockEnabled(@NonNull String packageName, boolean enabled) {
         throw new UnsupportedOperationException(
                 "setPackageAppLockEnabled has not been implemented");
