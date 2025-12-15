@@ -17,11 +17,13 @@
 package com.android.settingslib.widget
 
 import android.graphics.Rect
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.CallSuper
+import androidx.annotation.DrawableRes
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceGroup
@@ -99,6 +101,8 @@ abstract class SettingsBasePreferenceFragment : PreferenceFragmentCompat() {
     /**
      * Attaches a clickable footer to a preference and handles the UI refresh.
      *
+     * The footer text will appear below the preference content and will be clickable.
+     *
      * @param preferenceKey The key of the [Preference] to attach the footer to.
      * @param text The text to display in the footer.
      * @param listener The [View.OnClickListener] to be invoked when the footer is clicked.
@@ -108,18 +112,127 @@ abstract class SettingsBasePreferenceFragment : PreferenceFragmentCompat() {
         text: CharSequence,
         listener: View.OnClickListener,
     ) {
-        footerDataMap[preferenceKey] = FooterData(text = FooterData.TextContent(text, listener))
+        val data = FooterData(text = FooterData.TextContent(text, listener))
+        attachFooter(preferenceKey, data)
+    }
 
+    /**
+     * Attaches an image-only footer to a preference, using a drawable resource ID.
+     *
+     * The image will appear below the preference content. The `ImageView`'s width will match the
+     * preference width (respecting its parent's padding), and its height will adjust to maintain
+     * the drawable's aspect ratio. For best results and a consistent user experience, provide a
+     * pre-scaled [DrawableRes] with a reasonable aspect ratio (e.g., 4:1 or similar wide formats).
+     * Avoid using very tall images, which may lead to unexpectedly large preference items.
+     *
+     * @param preferenceKey The key of the [Preference] to attach the footer to.
+     * @param imageRes The drawable resource ID for the image.
+     * @param description Optional content description for the image (important for accessibility).
+     */
+    @JvmOverloads
+    fun attachFooter(
+        preferenceKey: String,
+        @DrawableRes imageRes: Int,
+        description: String? = null,
+    ) {
+        val imageContent = FooterData.ImageContent(imageRes = imageRes, description = description)
+        val data = FooterData(image = imageContent)
+        attachFooter(preferenceKey, data)
+    }
+
+    /**
+     * Attaches an image-only footer to a preference, using a [Drawable] object.
+     *
+     * The image will appear below the preference content. The `ImageView`'s width will match the
+     * preference width (respecting its parent's padding), and its height will adjust to maintain
+     * the drawable's aspect ratio. For best results and a consistent user experience, provide a
+     * pre-scaled [Drawable] with a reasonable aspect ratio (e.g., 4:1 or similar wide formats).
+     * Avoid using very tall images, which may lead to unexpectedly large preference items.
+     *
+     * @param preferenceKey The key of the [Preference] to attach the footer to.
+     * @param drawable The [Drawable] to be displayed.
+     * @param description Optional content description for the image (important for accessibility).
+     */
+    @JvmOverloads
+    fun attachFooter(
+        preferenceKey: String,
+        drawable: Drawable,
+        description: String? = null,
+    ) {
+        val imageContent = FooterData.ImageContent(imageDrawable = drawable, description = description)
+        val data = FooterData(image = imageContent)
+        attachFooter(preferenceKey, data)
+    }
+
+    /**
+     * Attaches a footer with both an image (from a drawable resource ID) and clickable text to a preference.
+     *
+     * The image will appear above the text, and both will be below the preference content. The
+     * `ImageView`'s width will match the preference width (respecting its parent's padding), and
+     * its height will adjust to maintain the drawable's aspect ratio. For best results and a
+     * consistent user experience, provide a pre-scaled [DrawableRes] with a reasonable aspect
+     * ratio (e.g., 4:1 or similar wide formats). Avoid using very tall images, which may lead to
+     * unexpectedly large preference items.
+     *
+     * @param preferenceKey The key of the [Preference] to attach the footer to.
+     * @param imageRes The drawable resource ID for the image.
+     * @param text The text to display in the footer.
+     * @param listener The [View.OnClickListener] for the text.
+     */
+    @JvmOverloads
+    fun attachFooter(
+        preferenceKey: String,
+        @DrawableRes imageRes: Int,
+        description: String? = null,
+        text: CharSequence,
+        listener: View.OnClickListener,
+    ) {
+        val imageContent = FooterData.ImageContent(imageRes = imageRes, description = description)
+        val textContent = FooterData.TextContent(text, listener)
+        val data = FooterData(image = imageContent, text = textContent)
+        attachFooter(preferenceKey, data)
+    }
+
+    /**
+     * Attaches a footer with both an image (from a [Drawable] object) and clickable text to a preference.
+     *
+     * The image will appear above the text, and both will be below the preference content. The
+     * `ImageView`'s width will match the preference width (respecting its parent's padding), and
+     * its height will adjust to maintain the drawable's aspect ratio. For best results and a
+     * consistent user experience, provide a pre-scaled [Drawable] with a reasonable aspect
+     * ratio (e.g., 4:1 or similar wide formats). Avoid using very tall images, which may lead to
+     * unexpectedly large preference items.
+     *
+     * @param preferenceKey The key of the [Preference] to attach the footer to.
+     * @param drawable The [Drawable] to be displayed.
+     * @param text The text to display in the footer.
+     * @param listener The [View.OnClickListener] for the text.
+     */
+    @JvmOverloads
+    fun attachFooter(
+        preferenceKey: String,
+        drawable: Drawable,
+        description: String? = null,
+        text: CharSequence,
+        listener: View.OnClickListener,
+    ) {
+        val imageContent = FooterData.ImageContent(imageDrawable = drawable, description = description)
+        val textContent = FooterData.TextContent(text, listener)
+        val data = FooterData(image = imageContent, text = textContent)
+        attachFooter(preferenceKey, data)
+    }
+
+    private fun attachFooter(preferenceKey: String, data: FooterData) {
+        footerDataMap[preferenceKey] = data
         val adapter = listView?.adapter as? SettingsPreferenceGroupAdapter
-
         if (adapter != null) {
             val preference = findPreference<Preference>(preferenceKey)
-
             if (preference != null) {
                 adapter.notifyPreferenceChanged(preference)
             }
         }
     }
+
 
     /**
      * Attaches a clickable footer to a preference.
