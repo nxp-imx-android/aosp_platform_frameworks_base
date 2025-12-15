@@ -26,7 +26,6 @@ import com.android.keyguard.keyguardUpdateMonitor
 import com.android.systemui.Flags.FLAG_COMMUNAL_HUB
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_BLURRED_BACKGROUND
 import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
-import com.android.systemui.Flags.FLAG_SHADE_APP_LAUNCH_ANIMATION_SKIP_IN_DESKTOP
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.communal.domain.interactor.setCommunalAvailable
 import com.android.systemui.communal.ui.viewmodel.communalTransitionViewModel
@@ -59,7 +58,6 @@ import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.util.kotlin.javaAdapter
 import com.android.wm.shell.desktopmode.api.DesktopMode
 import com.android.wm.shell.desktopmode.data.DesktopRepository
-import com.android.wm.shell.desktopmode.data.DesktopRepository.VisibleTasksListener
 import com.android.wm.shell.onehanded.OneHanded
 import com.android.wm.shell.onehanded.OneHandedEventCallback
 import com.android.wm.shell.onehanded.OneHandedTransitionCallback
@@ -158,11 +156,6 @@ class WMShellTest : SysuiTestCase() {
         kosmos.runTest {
             underTest.initDesktopMode(desktopMode)
             verify(desktopMode)
-                .addVisibleTasksListener(
-                    any(VisibleTasksListener::class.java),
-                    any(Executor::class.java),
-                )
-            verify(desktopMode)
                 .addDeskChangeListener(
                     any(DesktopRepository.DeskChangeListener::class.java),
                     any(Executor::class.java),
@@ -170,7 +163,6 @@ class WMShellTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_SHADE_APP_LAUNCH_ANIMATION_SKIP_IN_DESKTOP)
     fun onActiveDeskChanged_enterDesktop_desktopStateIsActive() =
         kosmos.runTest {
             val displayId = Display.DEFAULT_DISPLAY
@@ -199,7 +191,6 @@ class WMShellTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_SHADE_APP_LAUNCH_ANIMATION_SKIP_IN_DESKTOP)
     fun onActiveDeskChanged_exitDesktop_desktopStateIsNotActive() =
         kosmos.runTest {
             val displayId = Display.DEFAULT_DISPLAY
@@ -228,7 +219,6 @@ class WMShellTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_SHADE_APP_LAUNCH_ANIMATION_SKIP_IN_DESKTOP)
     fun onActiveDeskChanged_stayInDesktop_desktopStateIsActive() =
         kosmos.runTest {
             val displayId = Display.DEFAULT_DISPLAY
@@ -253,7 +243,6 @@ class WMShellTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_SHADE_APP_LAUNCH_ANIMATION_SKIP_IN_DESKTOP)
     fun onActiveDeskChanged_stayOutsideDesktop_desktopStateIsNotActive() =
         kosmos.runTest {
             val displayId = Display.DEFAULT_DISPLAY
