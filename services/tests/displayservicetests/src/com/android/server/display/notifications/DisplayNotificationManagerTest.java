@@ -109,13 +109,8 @@ public class DisplayNotificationManagerTest {
     }
 
     @Test
-    public void testNoErrorNotification(
-            @TestParameter final boolean isNotificationManagerAvailable) {
-        /* This case is tested by #testNotificationOnHotplugConnectionError,
-            #testNotificationOnDisplayPortLinkTrainingFailure,
-            #testNotificationOnCableNotCapableDisplayPort */
-        assumeFalse(isNotificationManagerAvailable);
-        var dnm = createDisplayNotificationManager(isNotificationManagerAvailable);
+    public void testNoErrorNotification() {
+        var dnm = createDisplayNotificationManager(/*isNotificationManagerAvailable=*/ false);
         // None of these methods should trigger a notification now.
         dnm.onHotplugConnectionError();
         dnm.onDisplayPortLinkTrainingFailure();
