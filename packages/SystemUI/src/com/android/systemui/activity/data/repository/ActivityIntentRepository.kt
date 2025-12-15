@@ -16,12 +16,35 @@
 
 package com.android.systemui.activity.data.repository
 
+import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
+import java.util.concurrent.Executor
 
+/**
+ * Repository to fetch information about activity intents. A modernized replacement of
+ * [com.android.systemui.ActivityIntentHelper] so flows and coroutines can be used.
+ */
 interface ActivityIntentRepository {
+    /**
+     * Determines if the given [intent] resolves to an Activity which is allowed to appear above the
+     * lock screen. This is a modern replacement for
+     * [com.android.systemui.ActivityIntentHelper.wouldShowOverLockscreen].
+     *
+     * Once the value is fetched, [callback] will be invoked on the given [executor]. The callback
+     * will be provided with [callbackParameters] as well as a boolean. The boolean will be true if
+     * the launched Activity would appear above the lock screen and false otherwise.
+     */
+    fun <T> wouldPendingIntentShowOverLockscreen(
+        intent: PendingIntent,
+        currentUserId: Int,
+        executor: Executor,
+        callbackParameters: T,
+        callback: WouldPendingIntentShowOverLockscreenCallback<T>,
+    )
+
     companion object {
         /** Returns true if the given activity info can show over lockscreen. */
         @JvmStatic
@@ -94,4 +117,15 @@ interface ActivityIntentRepository {
             return true
         }
     }
+}
+
+/**
+ * The callback that will be invoked when
+ * [ActivityIntentRepository.wouldPendingIntentShowOverLockscreen] value is fetched.
+ */
+fun interface WouldPendingIntentShowOverLockscreenCallback<T> {
+    fun onWouldPendingShowOverLockscreenFetched(
+        showOverLockscreen: Boolean,
+        additionalParameters: T,
+    )
 }

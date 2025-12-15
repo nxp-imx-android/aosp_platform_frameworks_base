@@ -23,6 +23,7 @@ import static com.android.systemui.statusbar.phone.ActivityStarterUtilsKt.addCoo
 import static com.android.systemui.statusbar.phone.ActivityStarterUtilsKt.createActivityOptions;
 import static com.android.systemui.statusbar.phone.CentralSurfaces.getActivityOptions;
 
+import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
 import android.app.KeyguardManager;
@@ -53,6 +54,7 @@ import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.systemui.ActivityIntentHelper;
 import com.android.systemui.EventLogTags;
+import com.android.systemui.activity.data.repository.ActivityIntentRepository;
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.assist.AssistManager;
 import com.android.systemui.dagger.SysUISingleton;
@@ -61,6 +63,7 @@ import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.power.domain.interactor.PowerInteractor;
+import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.ShadeController;
 import com.android.systemui.shade.ShadeDisplayAware;
@@ -101,13 +104,14 @@ import javax.inject.Inject;
  * Status bar implementation of {@link NotificationActivityStarter}.
  */
 @SysUISingleton
+@SuppressLint("MissingPermission")
 public class StatusBarNotificationActivityStarter implements NotificationActivityStarter {
 
     /**
      * Helps to avoid recalculation of values provided to
      * {@link #onDismiss(PendingIntent, boolean, boolean, boolean)}} method
      */
-    private interface OnKeyguardDismissedAction {
+    public interface OnKeyguardDismissedAction {
         /**
          * Invoked when keyguard is dismissed
          *
@@ -123,6 +127,7 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
     private final ShadeDialogContextInteractor mContextInteractor;
 
     private final Handler mMainThreadHandler;
+    private final Executor mMainExecutor;
     private final Executor mUiBgExecutor;
     private final CoroutineScope mApplicationScope;
 
@@ -143,6 +148,7 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
     private final LockPatternUtils mLockPatternUtils;
     private final StatusBarRemoteInputCallback mStatusBarRemoteInputCallback;
     private final ActivityIntentHelper mActivityIntentHelper;
+    private final ActivityIntentRepository mActivityIntentRepository;
     private final ShadeAnimationInteractor mShadeAnimationInteractor;
 
     private final MetricsLogger mMetricsLogger;
@@ -164,6 +170,7 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
             @ShadeDisplayAware Context context,
             ShadeDialogContextInteractor contextInteractor,
             @Main Handler mainThreadHandler,
+            @Main Executor mainExecutor,
             @Background Executor uiBgExecutor,
             @Application CoroutineScope applicationScope,
             NotificationVisibilityProvider visibilityProvider,
@@ -183,6 +190,7 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
             LockPatternUtils lockPatternUtils,
             StatusBarRemoteInputCallback remoteInputCallback,
             ActivityIntentHelper activityIntentHelper,
+            ActivityIntentRepository activityIntentRepository,
             MetricsLogger metricsLogger,
             StatusBarNotificationActivityStarterLogger logger,
             OnUserInteractionCallback onUserInteractionCallback,
@@ -198,6 +206,7 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
         mContext = context;
         mContextInteractor = contextInteractor;
         mMainThreadHandler = mainThreadHandler;
+        mMainExecutor = mainExecutor;
         mUiBgExecutor = uiBgExecutor;
         mApplicationScope = applicationScope;
         mVisibilityProvider = visibilityProvider;
@@ -217,6 +226,7 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
         mLockPatternUtils = lockPatternUtils;
         mStatusBarRemoteInputCallback = remoteInputCallback;
         mActivityIntentHelper = activityIntentHelper;
+        mActivityIntentRepository = activityIntentRepository;
         mPanelExpansionInteractor = panelExpansionInteractor;
         mNotificationShadeWindowController = notificationShadeWindowController;
         mShadeAnimationInteractor = shadeAnimationInteractor;
@@ -306,18 +316,52 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
                 mLockscreenUserManager.getCurrentUserId());
         final boolean animate = !willLaunchResolverActivity
                 && mActivityStarter.shouldAnimateLaunch(isActivityIntent);
-        boolean showOverLockscreen = mKeyguardStateController.isShowing() && intent != null
-                && mActivityIntentHelper.wouldPendingShowOverLockscreen(intent,
-                mLockscreenUserManager.getCurrentUserId());
+        final WouldPendingShowOverLockscreenCallbackParameters parameters =
+                new WouldPendingShowOverLockscreenCallbackParameters(
+                        action,
+                        intent,
+                        animate,
+                        willLaunchResolverActivity,
+                        isActivityIntent);
+
+        final boolean maybeShowOverLockscreen =
+                mKeyguardStateController.isShowing() && intent != null;
+        if (SceneContainerFlag.isEnabled()) {
+            if (!maybeShowOverLockscreen) {
+                onPendingShowOverLockscreenFetched(/* showOverLockscreen= */ false, parameters);
+            } else {
+                mActivityIntentRepository.wouldPendingIntentShowOverLockscreen(
+                        intent,
+                        mLockscreenUserManager.getCurrentUserId(),
+                        mMainExecutor,
+                        parameters,
+                        this::onPendingShowOverLockscreenFetched);
+            }
+        } else {
+            boolean showOverLockscreen =
+                    maybeShowOverLockscreen
+                            && mActivityIntentHelper.wouldPendingShowOverLockscreen(
+                                    intent, mLockscreenUserManager.getCurrentUserId());
+            onPendingShowOverLockscreenFetched(showOverLockscreen, parameters);
+        }
+    }
+
+    private void onPendingShowOverLockscreenFetched(
+            boolean showOverLockscreen,
+            WouldPendingShowOverLockscreenCallbackParameters params) {
         ActivityStarter.OnDismissAction postKeyguardAction = new ActivityStarter.OnDismissAction() {
             @Override
             public boolean onDismiss() {
-                return action.onDismiss(intent, isActivityIntent, animate, showOverLockscreen);
+                return params.getAction().onDismiss(
+                        params.getIntent(),
+                        params.isActivityIntent(),
+                        params.getAnimate(),
+                        showOverLockscreen);
             }
 
             @Override
             public boolean willRunAnimationOnKeyguard() {
-                return animate;
+                return params.getAnimate();
             }
         };
         if (showOverLockscreen) {
@@ -327,7 +371,7 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
             mActivityStarter.dismissKeyguardThenExecute(
                     postKeyguardAction,
                     null,
-                    willLaunchResolverActivity);
+                    params.getWillLaunchResolverActivity());
         }
     }
 

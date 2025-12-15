@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.systemui.activity
+package com.android.systemui.statusbar.phone
 
-import com.android.systemui.activity.data.repository.ActivityManagerRepository
-import com.android.systemui.activity.data.repository.ActivityManagerRepositoryImpl
-import com.android.systemui.dagger.SysUISingleton
-import dagger.Binds
-import dagger.Module
+import android.app.PendingIntent
 
-@Module
-interface ActivityManagerModule {
-    @Binds
-    @SysUISingleton
-    fun activityManagerRepository(impl: ActivityManagerRepositoryImpl): ActivityManagerRepository
-}
+/**
+ * A helper data class for [StatusBarNotificationActivityStarter.onPendingShowOverLockscreenFetched]
+ * method.
+ */
+data class WouldPendingShowOverLockscreenCallbackParameters(
+    val action: StatusBarNotificationActivityStarter.OnKeyguardDismissedAction,
+    val intent: PendingIntent?,
+    val animate: Boolean,
+    val willLaunchResolverActivity: Boolean,
+    val isActivityIntent: Boolean,
+)

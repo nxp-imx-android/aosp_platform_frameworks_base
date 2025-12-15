@@ -36,6 +36,9 @@ import javax.inject.Inject;
 
 /**
  * Contains useful methods for querying properties of an Activity Intent.
+ *
+ * Instead of adding new functionality here, please add new functionality to
+ * [com.android.systemui.activity.data.repository.ActivityIntentRepository].
  */
 @SysUISingleton
 @SuppressLint("MissingPermission")
@@ -110,7 +113,11 @@ public class ActivityIntentHelper {
 
     /**
      * @see #wouldShowOverLockscreen(Intent, int)
+     *
+     * @deprecated due to making binder calls on the main thread. Use
+     * [ActivityIntentRepository.wouldPendingShowOverLockscreen] instead.
      */
+    @Deprecated
     public boolean wouldPendingShowOverLockscreen(PendingIntent intent, int currentUserId) {
         ActivityInfo targetActivityInfo = getPendingTargetActivityInfo(intent, currentUserId);
         return wouldActivityInfoShowOverLockscreen(targetActivityInfo);
