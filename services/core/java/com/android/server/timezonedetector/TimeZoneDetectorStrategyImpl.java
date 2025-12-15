@@ -41,7 +41,6 @@ import android.app.timezonedetector.ManualTimeZoneSuggestion;
 import android.app.timezonedetector.TelephonyTimeZoneSuggestion;
 import android.content.Context;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.os.TimestampedValue;
 import android.os.UserHandle;
 import android.util.IndentingPrintWriter;
@@ -857,8 +856,8 @@ public final class TimeZoneDetectorStrategyImpl
             // whether the device / user sticks with it.
             TimeZoneChangeListener.TimeZoneChangeEvent changeEvent =
                     new TimeZoneChangeListener.TimeZoneChangeEvent(
-                            SystemClock.elapsedRealtime(),
-                            System.currentTimeMillis(),
+                            mEnvironment.elapsedRealtimeMillis(),
+                            mEnvironment.currentTimeMillis(),
                             origin,
                             userId,
                             currentZoneId,
