@@ -22,8 +22,11 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.TestApi;
 import android.compat.annotation.UnsupportedAppUsage;
+import android.os.Build;
 import android.os.Parcelable;
+import android.os.Process;
 import android.view.Display;
+import android.view.SurfaceView;
 import android.view.View;
 
 import java.util.ArrayList;
@@ -99,6 +102,7 @@ public class AccessibilityRecord {
     @UnsupportedAppUsage
     long mSourceNodeId = AccessibilityNodeInfo.UNDEFINED_NODE_ID;
     int mSourceWindowId = AccessibilityWindowInfo.UNDEFINED_WINDOW_ID;
+    int mEmbeddingHostWindowId = AccessibilityWindowInfo.UNDEFINED_WINDOW_ID;
     int mSourceDisplayId = Display.INVALID_DISPLAY;
 
     CharSequence mClassName;
@@ -245,11 +249,25 @@ public class AccessibilityRecord {
     }
 
     /**
-     * Gets the id of the window from which the event comes from.
+     * Returns the id of the window that sent this event, or owns UI that sent this event.
+     *
+     * <p>
+     * <strong>Note:</strong> If this event comes from a window that is embedded in another window
+     * using {@link SurfaceView} then the return value is the id of the window that embeds this
+     * event's window.
      *
      * @return The window id.
      */
     public int getWindowId() {
+        if (Flags.embeddedUiUsesHostWindowId()) {
+            if (Build.isDebuggable() && Process.myUid() == Process.SYSTEM_UID) {
+                throw new IllegalStateException(
+                        "Internal implementation logic should use getRealWindowId");
+            }
+            if (mEmbeddingHostWindowId != AccessibilityWindowInfo.UNDEFINED_WINDOW_ID) {
+                return mEmbeddingHostWindowId;
+            }
+        }
         return mSourceWindowId;
     }
 
@@ -266,6 +284,15 @@ public class AccessibilityRecord {
      */
     public int getRealWindowId() {
         return mSourceWindowId;
+    }
+
+    /**
+     * Sets the id of the window that embeds this event's window.
+     *
+     * @hide
+     */
+    public void setEmbeddingHostWindowId(int windowId) {
+        mEmbeddingHostWindowId = windowId;
     }
 
     /**
@@ -922,6 +949,7 @@ public class AccessibilityRecord {
         mParcelableData = record.mParcelableData;
         mText.addAll(record.mText);
         mSourceWindowId = record.mSourceWindowId;
+        mEmbeddingHostWindowId = record.mEmbeddingHostWindowId;
         mSourceNodeId = record.mSourceNodeId;
         mSourceDisplayId = record.mSourceDisplayId;
         mConnectionId = record.mConnectionId;
@@ -952,6 +980,7 @@ public class AccessibilityRecord {
         mText.clear();
         mSourceNodeId = AccessibilityNodeInfo.UNDEFINED_ITEM_ID;
         mSourceWindowId = AccessibilityWindowInfo.UNDEFINED_WINDOW_ID;
+        mEmbeddingHostWindowId = AccessibilityWindowInfo.UNDEFINED_WINDOW_ID;
         mSourceDisplayId = Display.INVALID_DISPLAY;
         mConnectionId = UNDEFINED;
     }
