@@ -21,37 +21,52 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
+import com.android.systemui.keyguard.ui.viewmodel.BurnInMovementState
 import com.android.systemui.keyguard.ui.viewmodel.BurnInParameters
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
-import com.android.systemui.plugins.keyguard.ui.clocks.ClockController
+import kotlin.math.ceil
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-/** Produces a [BurnInState] that can be used to query the `LockscreenBurnInViewModel` flows. */
+/** Produces a [BurnInTracker] that is used to track various input parameters required by burnin. */
 @Composable
-fun rememberBurnIn(clockViewModel: KeyguardClockViewModel): BurnInState {
+fun trackBurnInParameters(
+    burnInViewModel: AodBurnInViewModel,
+    burnInMovementState: BurnInMovementState,
+    clockViewModel: KeyguardClockViewModel,
+): BurnInTracker {
     val clock by clockViewModel.currentClock.collectAsStateWithLifecycle()
 
+    var cachedTranslation by remember { mutableStateOf<Offset>(Offset(0f, 0f)) }
     val (smartspaceTop, onSmartspaceTopChanged) = remember { mutableStateOf<Float?>(null) }
-    val (smallClockTop, onSmallClockTopChanged) = remember { mutableStateOf<Float?>(null) }
+    val (smallClockTop, onSmallClockTopChanged) = remember(clock) { mutableStateOf<Float?>(null) }
+    val topmostTop = ceil(min(smartspaceTop ?: 0f, smallClockTop ?: 0f)).roundToInt()
+    val topInset =
+        WindowInsets.systemBars.union(WindowInsets.displayCutout).getTop(LocalDensity.current)
+    val params =
+        remember(topInset, topmostTop) {
+            BurnInParameters(
+                topInset = topInset,
+                minViewY = topmostTop,
+                translationX = { cachedTranslation.x },
+                translationY = { cachedTranslation.y },
+            )
+        }
 
-    val topmostTop =
-        when {
-            smartspaceTop != null && smallClockTop != null -> min(smartspaceTop, smallClockTop)
-            smartspaceTop != null -> smartspaceTop
-            smallClockTop != null -> smallClockTop
-            else -> 0f
-        }.roundToInt()
-
-    val params = rememberBurnInParameters(clock, topmostTop)
+    LaunchedEffect(params) { burnInViewModel.updateBurnInParams(params) }
+    cachedTranslation = burnInMovementState.translation
 
     return remember(params, onSmartspaceTopChanged, onSmallClockTopChanged) {
-        BurnInState(
+        BurnInTracker(
             parameters = params,
             onSmartspaceTopChanged = onSmartspaceTopChanged,
             onSmallClockTopChanged = onSmallClockTopChanged,
@@ -59,24 +74,16 @@ fun rememberBurnIn(clockViewModel: KeyguardClockViewModel): BurnInState {
     }
 }
 
-@Composable
-private fun rememberBurnInParameters(clock: ClockController?, topmostTop: Int): BurnInParameters {
-    val density = LocalDensity.current
-    val topInset = WindowInsets.systemBars.union(WindowInsets.displayCutout).getTop(density)
-
-    return remember(clock, topInset, topmostTop) {
-        BurnInParameters(topInset = topInset, minViewY = topmostTop)
-    }
-}
-
-data class BurnInState(
+data class BurnInTracker(
     /** Parameters for use with the `LockscreenBurnInViewModel. */
     val parameters: BurnInParameters,
+
     /**
      * Callback to invoke when the top coordinate of the smartspace element is updated, pass `null`
      * when the element is not shown.
      */
     val onSmartspaceTopChanged: (Float?) -> Unit,
+
     /**
      * Callback to invoke when the top coordinate of the small clock element is updated, pass `null`
      * when the element is not shown.

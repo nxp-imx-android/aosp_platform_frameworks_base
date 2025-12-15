@@ -40,8 +40,7 @@ import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteract
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
-import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
-import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
+import com.android.systemui.keyguard.ui.viewmodel.BurnInMovementState
 import com.android.systemui.keyguard.ui.viewmodel.LightRevealScrimViewModel
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
@@ -93,8 +92,7 @@ constructor(
     val wallpaperViewModel: WallpaperViewModel,
     keyguardInteractor: KeyguardInteractor,
     keyguardTransitionInteractor: KeyguardTransitionInteractor,
-    val burnIn: AodBurnInViewModel,
-    val clock: KeyguardClockViewModel,
+    val burnInMovementFactory: BurnInMovementState.Factory,
     val dualShadeEducationalTooltipsViewModelFactory: DualShadeEducationalTooltipsViewModel.Factory,
     val animateQsTilesViewModelFactory: AnimateQsTilesViewModel.Factory,
     sceneTransitionBlurViewModelFactory: SceneTransitionBlurViewModel.Factory,
@@ -115,6 +113,8 @@ constructor(
     val isVisible: Boolean by hydrator.hydratedStateOf("isVisible", sceneInteractor.isVisible)
 
     val hapticsViewModel: SceneContainerHapticsViewModel = hapticsViewModelFactory.create()
+
+    val burnInMovementState: BurnInMovementState = burnInMovementFactory.create()
 
     val isAodOrDozing: Boolean by
         hydrator.hydratedStateOf(
@@ -205,6 +205,7 @@ constructor(
                 launch("NotificationContainerInteractor") {
                     notificationContainerInteractor.activate()
                 }
+                launch("BurnInMovementState") { burnInMovementState.activate() }
             }
             awaitCancellation()
         } finally {
