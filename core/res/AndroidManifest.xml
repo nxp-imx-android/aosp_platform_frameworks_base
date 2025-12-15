@@ -9032,6 +9032,19 @@
     <permission android:name="android.permission.LAUNCH_DEVICE_MANAGER_SETUP"
         android:protectionLevel="signature|role" />
 
+    <!-- @hide @SystemApi
+         @FlaggedApi(android.os.Flags.FLAG_INITIATE_BUGREPORT_AS_NON_ADMIN)
+         Allows a privileged app to initiate a bug report even when the active user is not an
+         admin user (e.g., a Guest or Secondary User). This is intended for use by designated
+         feedback applications on devices with specific multi-user configurations like HSUM.
+         <p>Protection level: signature|privileged
+         <p>Not for use by third-party applications.
+    -->
+    <permission
+        android:name="android.permission.INITIATE_BUGREPORT_AS_NON_ADMIN"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="android.os.initiate_bugreport_as_non_admin" />
+
     <!-- @SystemApi Allows an application to update certain device management related system
          resources.
          @hide -->
