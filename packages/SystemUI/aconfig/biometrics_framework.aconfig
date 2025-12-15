@@ -1,0 +1,12 @@
+package: "com.android.systemui"
+container: "system"
+
+# NOTE: Keep alphabetized to help limit merge conflicts from multiple simultaneous editors.
+
+flag {
+  name: "large_screen_bp"
+  namespace: "biometrics_framework"
+  description: "Adds large screen support for Biometric Prompt"
+  bug: "444268909"
+}
+
