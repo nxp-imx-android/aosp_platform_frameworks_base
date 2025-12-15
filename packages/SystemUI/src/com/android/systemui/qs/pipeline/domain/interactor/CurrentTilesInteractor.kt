@@ -87,6 +87,9 @@ interface CurrentTilesInteractor : ProtoDumpable {
     /** Current user with the corresponding tiles. */
     val userAndTiles: Flow<DataWithUserChange>
 
+    /** Whether the current user is a headless system user. */
+    val isCurrentUserHeadlessSystemUser: StateFlow<Boolean>
+
     /** List of specs corresponding to the last value of [currentTiles] */
     val currentTilesSpecs: List<TileSpec>
         get() = currentTiles.value.map(TileModel::spec)
@@ -173,6 +176,7 @@ constructor(
 
     private val currentUser = MutableStateFlow(userTracker.userId)
     override val userId = currentUser.asStateFlow()
+    override val isCurrentUserHeadlessSystemUser = userRepository.isCurrentUserHeadlessSystemUser
 
     private val _userContext = MutableStateFlow(userTracker.userContext)
     override val userContext = _userContext.asStateFlow()

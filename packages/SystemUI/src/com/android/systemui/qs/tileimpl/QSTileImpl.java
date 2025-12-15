@@ -57,6 +57,7 @@ import com.android.settingslib.RestrictedLockUtils;
 import com.android.settingslib.RestrictedLockUtilsInternal;
 import com.android.settingslib.graph.SignalDrawable;
 import com.android.systemui.Dumpable;
+import com.android.systemui.Flags;
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.animation.Expandable;
 import com.android.systemui.plugins.ActivityStarter;
@@ -118,6 +119,8 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
     private TState mTmpState;
     private final InstanceId mInstanceId;
     private boolean mAnnounceNextStateChange;
+    private boolean mPreviousHandlesLongClick;
+    private boolean mShouldResetHandlesLongClick;
 
     private String mTileSpec;
     @Nullable
@@ -447,6 +450,7 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
 
     protected final void handleRefreshState(@Nullable Object arg) {
         handleUpdateState(mTmpState, arg);
+        maybeUpdateHandlesLongClick();
         boolean changed = mTmpState.copyTo(mState);
         if (mReadyState == READY_STATE_READYING) {
             mReadyState = READY_STATE_READY;
@@ -471,6 +475,21 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
 
     protected void handleUserSwitch(int newUserId) {
         handleRefreshState(null);
+    }
+
+    private void maybeUpdateHandlesLongClick() {
+        if (!Flags.hsuQsChanges()) return;
+
+        if (mHost.isCurrentUserHeadlessSystemUser() && !mShouldResetHandlesLongClick) {
+            mPreviousHandlesLongClick = mTmpState.handlesLongClick;
+            mShouldResetHandlesLongClick = true;
+            mTmpState.handlesLongClick = false;
+            if (DEBUG) Log.d(TAG, "Setting handlesLongClick to false for HSU");
+        } else if (!mHost.isCurrentUserHeadlessSystemUser() && mShouldResetHandlesLongClick) {
+            mShouldResetHandlesLongClick = false;
+            mTmpState.handlesLongClick = mPreviousHandlesLongClick;
+            if (DEBUG) Log.d(TAG, "Resetting handlesLongClick to " + mPreviousHandlesLongClick);
+        }
     }
 
     private void handleSetListeningInternal(Object listener, boolean listening) {
