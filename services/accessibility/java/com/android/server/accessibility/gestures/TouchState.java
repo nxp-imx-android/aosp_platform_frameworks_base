@@ -197,7 +197,7 @@ public class TouchState {
                 break;
             case AccessibilityEvent.TYPE_VIEW_HOVER_ENTER:
             case AccessibilityEvent.TYPE_VIEW_HOVER_EXIT:
-                mLastTouchedWindowId = event.getWindowId();
+                mLastTouchedWindowId = event.getRealWindowId();
                 break;
             case AccessibilityEvent.TYPE_TOUCH_INTERACTION_END:
                 mAms.moveNonProxyTopFocusedDisplayToTopIfNeeded();

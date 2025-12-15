@@ -1861,7 +1861,7 @@ abstract class AbstractAccessibilityServiceConnection extends IAccessibilityServ
 
         final boolean includeNotImportantViews = (mFetchFlags
                 & AccessibilityNodeInfo.FLAG_SERVICE_REQUESTS_INCLUDE_NOT_IMPORTANT_VIEWS) != 0;
-        if ((event.getWindowId() != AccessibilityWindowInfo.UNDEFINED_WINDOW_ID)
+        if ((event.getRealWindowId() != AccessibilityWindowInfo.UNDEFINED_WINDOW_ID)
                 && !event.isImportantForAccessibility()
                 && !includeNotImportantViews) {
             return false;

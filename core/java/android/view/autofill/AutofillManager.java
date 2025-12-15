@@ -4380,7 +4380,7 @@ public final class AutofillManager {
             switch (type) {
                 case AccessibilityEvent.TYPE_VIEW_FOCUSED: {
                     synchronized (mLock) {
-                        if (mFocusedWindowId == event.getWindowId()
+                        if (mFocusedWindowId == event.getRealWindowId()
                                 && mFocusedNodeId == event.getSourceNodeId()) {
                             return event;
                         }
@@ -4391,7 +4391,7 @@ public final class AutofillManager {
                             mFocusedNodeId = AccessibilityNodeInfo.UNDEFINED_NODE_ID;
                             mFocusedBounds.set(0, 0, 0, 0);
                         }
-                        final int windowId = event.getWindowId();
+                        final int windowId = event.getRealWindowId();
                         final long nodeId = event.getSourceNodeId();
                         if (notifyViewEntered(windowId, nodeId, mFocusedBounds)) {
                             mFocusedWindowId = windowId;
@@ -4402,16 +4402,16 @@ public final class AutofillManager {
 
                 case AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED: {
                     synchronized (mLock) {
-                        if (mFocusedWindowId == event.getWindowId()
+                        if (mFocusedWindowId == event.getRealWindowId()
                                 && mFocusedNodeId == event.getSourceNodeId()) {
-                            notifyValueChanged(event.getWindowId(), event.getSourceNodeId());
+                            notifyValueChanged(event.getRealWindowId(), event.getSourceNodeId());
                         }
                     }
                 } break;
 
                 case AccessibilityEvent.TYPE_VIEW_CLICKED: {
                     synchronized (mLock) {
-                        notifyViewClicked(event.getWindowId(), event.getSourceNodeId());
+                        notifyViewClicked(event.getRealWindowId(), event.getSourceNodeId());
                     }
                 } break;
 
