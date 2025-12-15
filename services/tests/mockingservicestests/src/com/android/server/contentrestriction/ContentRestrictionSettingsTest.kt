@@ -17,11 +17,11 @@
 package com.android.server.contentrestriction
 
 import android.os.UserHandle
-import android.util.ArraySet
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import java.io.File
 import java.nio.file.Files
+import java.util.Collections
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -29,7 +29,8 @@ import org.junit.runner.RunWith
 /**
  * Unit tests for [ContentRestrictionSettings].
  *
- * Run with `atest ContentRestrictionSettingsTest`.
+ * Build/Install/Run:
+ * atest FrameworksMockingServicesTests:com.android.server.contentrestriction.ContentRestrictionSettingsTest
  */
 @RunWith(AndroidJUnit4::class)
 class ContentRestrictionSettingsTest {
@@ -84,6 +85,7 @@ class ContentRestrictionSettingsTest {
     @Test
     fun removeAndGetUserData_returnsNewInstanceOfUserData() {
         // Get and set user data
+        val oldUserData = mContentRestrictionSettings.getUserData(1)
         mContentRestrictionSettings.updateUserData(1, true)
 
         // Remove user data and get a new instance
@@ -91,15 +93,20 @@ class ContentRestrictionSettingsTest {
         val newUserData = mContentRestrictionSettings.getUserData(1)
 
         // Check that user data is not the old instance and has default values
-        assertThat(newUserData).isNotSameInstanceAs(mContentRestrictionSettings.getUserData(1))
+        assertThat(newUserData).isNotSameInstanceAs(oldUserData)
         assertThat(newUserData.contentRestrictionEnabled).isFalse()
+        assertThat(newUserData.contentRestrictionPackages).isEmpty()
     }
 
     @Test
-    fun saveAndLoadContentRestrictionUserData_hasRoleHolders_retrievesUserDataCorrectly() {
+    fun saveAndLoadContentRestrictionUserData_hasPackages_retrievesUserDataCorrectly() {
         // Get and set user data
-        val roleHolders = ArraySet<String>(setOf("package1", "package2", "package3"))
-        mContentRestrictionSettings.updateUserData(1, true, roleHolders)
+        val packages =
+                mapOf(
+                        "source1" to listOf("package1", "package2"),
+                        "source2" to listOf("package3"),
+                )
+        mContentRestrictionSettings.updateUserData(1, true, packages)
 
         // Save, change and load user data
         mContentRestrictionSettings.saveUserData()
@@ -107,7 +114,7 @@ class ContentRestrictionSettingsTest {
         val newSettings = ContentRestrictionSettings(tempContentRestrictionDir)
 
         // Check if user data was loaded correctly
-        newSettings.verifyUserData(1, true, roleHolders)
+        newSettings.verifyUserData(1, true, packages)
     }
 
     @Test
@@ -119,8 +126,7 @@ class ContentRestrictionSettingsTest {
             <contentrestriction_data>
                 <contentrestriction_user_data
                     user_id="1"
-                    contentrestriction_enabled="true"
-                    contentrestriction_app_package="package1"
+                    contentrestriction_enabled="true">
                     <unknown_tag>some value</unknown_tag>
                 </contentrestriction_user_data>
             </contentrestriction_data>
@@ -136,21 +142,21 @@ class ContentRestrictionSettingsTest {
 private fun ContentRestrictionSettings.updateUserData(
     userId: Int,
     enabled: Boolean,
-    roleHolders: ArraySet<String> = ArraySet<String>(),
+    packages: Map<String, List<String>> = Collections.emptyMap(),
 ) {
     getUserData(userId).let {
         it.contentRestrictionEnabled = enabled
-        it.contentRestrictionRoleHolders = roleHolders
+        it.contentRestrictionPackages = packages
     }
 }
 
 private fun ContentRestrictionSettings.verifyUserData(
     userId: Int,
     enabled: Boolean,
-    roleHolders: ArraySet<String> = ArraySet<String>(),
+    packages: Map<String, List<String>> = Collections.emptyMap(),
 ) {
     getUserData(userId).let {
         assertThat(it.contentRestrictionEnabled).isEqualTo(enabled)
-        assertThat(it.contentRestrictionRoleHolders).containsExactlyElementsIn(roleHolders)
+        assertThat(it.contentRestrictionPackages).isEqualTo(packages)
     }
 }
