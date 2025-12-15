@@ -63,6 +63,6 @@
 
     </LinearLayout>
 
-    <include layout="@layout/settingslib_expressive_link_footer"/>
+    <include layout="@layout/settingslib_expressive_preference_footer"/>
 
 </LinearLayout>
