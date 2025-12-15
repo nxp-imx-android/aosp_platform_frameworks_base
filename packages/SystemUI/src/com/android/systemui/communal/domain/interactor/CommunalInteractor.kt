@@ -214,7 +214,7 @@ constructor(
         keyguardTransitionInteractor
             .transition(Edge.create(to = KeyguardState.OCCLUDED))
             .map { it.from == KeyguardState.DREAMING }
-            .stateIn(scope = applicationScope, SharingStarted.Eagerly, false)
+            .stateIn(scope = applicationScope, SharingStarted.WhileSubscribed(), false)
 
     /**
      * Target scene as requested by the underlying [SceneTransitionLayout] or through [changeScene].
@@ -328,7 +328,7 @@ constructor(
             }
             .stateIn(
                 scope = applicationScope,
-                started = SharingStarted.Eagerly,
+                started = SharingStarted.WhileSubscribed(),
                 initialValue = false,
             )
 
