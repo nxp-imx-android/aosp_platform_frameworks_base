@@ -31,6 +31,7 @@ import com.android.settingslib.metadata.preferencesapi.preconditions.Allowed
 import com.android.settingslib.metadata.preferencesapi.preconditions.ApiPreconditions
 import com.android.settingslib.metadata.preferencesapi.preconditions.Disallowed
 import com.android.settingslib.metadata.preferencesapi.types.ApiType
+import kotlinx.coroutines.runBlocking
 
 /**
  * The context for an API-first operation, providing access to the application [Context] and
@@ -59,20 +60,20 @@ class PermissionsConfig(incomingPermissions: List<String>) {
 /** Configuration of the [ApiPreference] preconditions. */
 class PreconditionsConfig(
     @StringRes val description: Int,
-    val check: ApiOperationContext.() -> ApiPreconditions,
+    val check: suspend ApiOperationContext.() -> ApiPreconditions,
 )
 
 /** Configuration of the [ApiPreference] get. */
 class GetConfig<V : Any>(
     val permissions: PermissionsConfig? = null,
     val preconditions: PreconditionsConfig? = null,
-    val execute: ApiOperationContext.() -> V
+    val execute: suspend ApiOperationContext.() -> V
 )
 
 /** Configuration of the [ApiPreference] value preconditions. */
 class ValuePreconditionsConfig<V : Any>(
     @StringRes val description: Int,
-    val check: (ApiOperationContext.(V) -> ApiPreconditions),
+    val check: suspend (ApiOperationContext.(V) -> ApiPreconditions),
 )
 
 /** Configuration of the [ApiPreference] set. */
@@ -80,7 +81,7 @@ class SetConfig<V : Any>(
     val permissions: PermissionsConfig? = null,
     val preconditions: PreconditionsConfig? = null,
     val valuePreconditions: ValuePreconditionsConfig<V>? = null,
-    val execute: (ApiOperationContext.(V) -> Unit)
+    val execute: (suspend ApiOperationContext.(V) -> Unit)
 )
 
 /**
@@ -132,7 +133,7 @@ abstract class ApiPreference<V : Any>(val isFlagEnabled: Boolean) : PersistentPr
      * Returns the first precondition that is not [Allowed], or [Allowed] if all preconditions
      * are met.
      */
-    private fun evaluatePreconditions(
+    private suspend fun evaluatePreconditions(
         context: Context,
         operationPreconditions: PreconditionsConfig?
     ): ApiPreconditions {
@@ -156,15 +157,21 @@ abstract class ApiPreference<V : Any>(val isFlagEnabled: Boolean) : PersistentPr
     override fun getWritePermissions(context: Context) = buildPermissions(set?.permissions)
 
     override fun getReadPermit(context: Context, callingPid: Int, callingUid: Int) =
-        when (evaluatePreconditions(context, get.preconditions)) {
-            Allowed -> ReadWritePermit.ALLOW
-            else -> ReadWritePermit.DISALLOW
+        // TODO(b/469317113): This should run asynchronously
+        runBlocking {
+            when (evaluatePreconditions(context, get.preconditions)) {
+                Allowed -> ReadWritePermit.ALLOW
+                else -> ReadWritePermit.DISALLOW
+            }
         }
 
     override fun getWritePermit(context: Context, callingPid: Int, callingUid: Int) =
-        when (evaluatePreconditions(context, set?.preconditions)) {
-            Allowed -> ReadWritePermit.ALLOW
-            else -> ReadWritePermit.DISALLOW
+        // TODO(b/469317113): This should run asynchronously
+        runBlocking {
+            when (evaluatePreconditions(context, set?.preconditions)) {
+                Allowed -> ReadWritePermit.ALLOW
+                else -> ReadWritePermit.DISALLOW
+            }
         }
 
     override fun storage(context: Context): KeyValueStore =
@@ -174,20 +181,25 @@ abstract class ApiPreference<V : Any>(val isFlagEnabled: Boolean) : PersistentPr
             override fun contains(storeKey: String): Boolean = storeKey == key
 
             override fun <T : Any> getValue(storeKey: String, valueType: Class<T>): T? =
-                when {
-                    storeKey == key -> {
-                        get.execute(operationContext) as T?
-                    }
+                // TODO(b/469317113): This should run asynchronously
+                runBlocking {
+                    when {
+                        storeKey == key -> {
+                            get.execute(operationContext) as T?
+                        }
 
-                    else -> null
+                        else -> null
+                    }
                 }
 
-            override fun <T : Any> setValue(storeKey: String, valueType: Class<T>, value: T?) {
+            override fun <T : Any> setValue(storeKey: String, valueType: Class<T>, value: T?) =
+                // TODO(b/469317113): This should run asynchronously
+                runBlocking {
                 // Catalyst's KeyValueStore is designed to handle arbitrary key/value pairs.
                 // However, the API-first approach dictates that each [ApiPreference] instance
                 // is responsible for a single, specific key. Thus, ignoring calls for other keys.
                 if (storeKey != key) {
-                    return
+                    return@runBlocking
                 }
 
                 // If value type is not of the preference valueType (V), throw an exception
@@ -259,7 +271,7 @@ class PermissionsConfigBuilder(val permissions: List<String>) {
 @ApiPreferenceDsl
 class PreconditionsConfigBuilder(
     @StringRes val description: Int,
-    val lambda: ApiOperationContext.() -> ApiPreconditions
+    val lambda: suspend ApiOperationContext.() -> ApiPreconditions
 ) {
     internal fun build(): PreconditionsConfig {
         return PreconditionsConfig(
@@ -285,7 +297,7 @@ class PreconditionsConfigBuilder(
 class GetConfigBuilder<V : Any> {
     private var permissionsConfig: PermissionsConfig? = null
     private var preconditionsConfig: PreconditionsConfig? = null
-    private var executeBlock: (ApiOperationContext.() -> V)? = null
+    private var executeBlock: (suspend ApiOperationContext.() -> V)? = null
 
     /** Sets permissions for the get. */
     fun permissions(permissionsList: List<String>) {
@@ -301,7 +313,7 @@ class GetConfigBuilder<V : Any> {
     }
 
     /** Defines a precondition check that must pass for the get to be executed. */
-    fun preconditions(@StringRes description: Int, lambda: ApiOperationContext.() -> ApiPreconditions) {
+    fun preconditions(@StringRes description: Int, lambda: suspend ApiOperationContext.() -> ApiPreconditions) {
         if (preconditionsConfig != null) {
             error(getExceptionMessageMultipleDefines("preconditions"))
         }
@@ -314,7 +326,7 @@ class GetConfigBuilder<V : Any> {
     }
 
     /** Declare the execute block of the get. */
-    fun execute(lambda: ApiOperationContext.() -> V) {
+    fun execute(lambda: suspend ApiOperationContext.() -> V) {
         if (executeBlock != null) {
             error(getExceptionMessageMultipleDefines("execute"))
         }
@@ -348,7 +360,7 @@ class SetConfigBuilder<V : Any> {
     private var permissionsConfig: PermissionsConfig? = null
     private var preconditionsConfig: PreconditionsConfig? = null
     private var valuePreconditionsConfig: ValuePreconditionsConfig<V>? = null
-    private var executeBlock: (ApiOperationContext.(V) -> Unit)? = null
+    private var executeBlock: (suspend ApiOperationContext.(V) -> Unit)? = null
 
     /** Sets permissions for the set. */
     fun permissions(permissionsList: List<String>) {
@@ -377,7 +389,7 @@ class SetConfigBuilder<V : Any> {
     }
 
     /** Defines a value precondition check that must pass for the set to be executed. */
-    fun valuePreconditions(@StringRes description: Int, lambda: ApiOperationContext.(V) -> ApiPreconditions) {
+    fun valuePreconditions(@StringRes description: Int, lambda: suspend ApiOperationContext.(V) -> ApiPreconditions) {
         if (valuePreconditionsConfig != null) {
             error(getExceptionMessageMultipleDefines("valuePreconditions"))
         }
@@ -390,7 +402,7 @@ class SetConfigBuilder<V : Any> {
     }
 
     /** Declare the execute block of the set. */
-    fun execute(lambda: ApiOperationContext.(V) -> Unit) {
+    fun execute(lambda: suspend ApiOperationContext.(V) -> Unit) {
         if (executeBlock != null) {
             error(getExceptionMessageMultipleDefines("execute"))
         }

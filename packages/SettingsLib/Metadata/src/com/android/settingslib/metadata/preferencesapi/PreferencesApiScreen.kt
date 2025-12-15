@@ -308,7 +308,7 @@ abstract class PreferencesApiScreen(
 
     protected fun preconditions(
         @StringRes description: Int,
-        lambda: ApiOperationContext.() -> ApiPreconditions
+        lambda: suspend ApiOperationContext.() -> ApiPreconditions
     ) {
         if (screenPreconditions != null) {
             error(getExceptionMessageMultipleDefines("preconditions"))
