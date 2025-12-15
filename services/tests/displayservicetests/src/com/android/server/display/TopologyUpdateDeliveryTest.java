@@ -27,15 +27,12 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.platform.test.annotations.RequiresFlagsEnabled;
-import android.platform.test.flag.junit.CheckFlagsRule;
-import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.concurrent.LinkedBlockingQueue;
@@ -46,10 +43,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class TopologyUpdateDeliveryTest extends EventDeliveryTestBase {
     private static final String TAG = TopologyUpdateDeliveryTest.class.getSimpleName();
-
-    @Rule
-    public final CheckFlagsRule mCheckFlagsRule =
-            DeviceFlagsValueProvider.createCheckFlagsRule();
 
     private static final String TEST_PACKAGE = "com.android.servicestests.apps.topologytestapp";
     private static final String TEST_ACTIVITY = TEST_PACKAGE + ".TopologyUpdateActivity";

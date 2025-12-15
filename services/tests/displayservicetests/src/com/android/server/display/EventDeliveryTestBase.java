@@ -17,10 +17,12 @@
 package com.android.server.display;
 
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED;
+import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 
 import static org.junit.Assert.fail;
 
 import android.app.ActivityManager;
+import android.app.ActivityOptions;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.content.Intent;
@@ -31,12 +33,16 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Messenger;
 import android.platform.test.annotations.AppModeSdkSandbox;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.util.Log;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.compatibility.common.util.SystemUtil;
 import com.android.compatibility.common.util.TestUtils;
+
+import org.junit.Rule;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
@@ -65,6 +71,10 @@ public abstract class EventDeliveryTestBase {
     private Messenger mMessenger;
     protected int mPid;
     protected int mUid;
+    private final ActivityOptions mActivityOptions = ActivityOptions.makeBasic();
+
+    @Rule
+    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
     protected abstract String getTag();
 
@@ -97,6 +107,7 @@ public abstract class EventDeliveryTestBase {
         mHandler = getHandler(mHandlerThread.getLooper());
         mMessenger = new Messenger(mHandler);
         mPid = 0;
+        mActivityOptions.setLaunchWindowingMode(WINDOWING_MODE_FULLSCREEN);
     }
 
     protected void tearDown() throws Exception {
@@ -158,7 +169,7 @@ public abstract class EventDeliveryTestBase {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         SystemUtil.runWithShellPermissionIdentity(
                 () -> {
-                    mContext.startActivity(intent);
+                    mContext.startActivity(intent, mActivityOptions.toBundle());
                 },
                 android.Manifest.permission.START_ACTIVITIES_FROM_SDK_SANDBOX);
         waitLatch(mLatchActivityLaunch, "Failed to launch test activity");
@@ -185,7 +196,7 @@ public abstract class EventDeliveryTestBase {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         SystemUtil.runWithShellPermissionIdentity(
                 () -> {
-                    mContext.startActivity(intent);
+                    mContext.startActivity(intent, mActivityOptions.toBundle());
                 },
                 android.Manifest.permission.START_ACTIVITIES_FROM_SDK_SANDBOX);
     }
@@ -206,8 +217,8 @@ public abstract class EventDeliveryTestBase {
         intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         SystemUtil.runWithShellPermissionIdentity(
                 () -> {
-                    mInstrumentation.startActivitySync(intent);
-                    mInstrumentation.startActivitySync(intent2);
+                    mInstrumentation.startActivitySync(intent, mActivityOptions.toBundle());
+                    mInstrumentation.startActivitySync(intent2, mActivityOptions.toBundle());
                 },
                 android.Manifest.permission.START_ACTIVITIES_FROM_SDK_SANDBOX);
         waitLatch(mLatchActivityCached, "Failed to make test activity cached");
