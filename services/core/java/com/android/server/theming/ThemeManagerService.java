@@ -125,7 +125,6 @@ public class ThemeManagerService extends SystemService {
                     LocalServices.getService(UiModeManagerInternal.class), mThemeWallpaperManager);
             mUserLifecycle.onBootCompleteLoadUsers();
             mEventObserver.onServicesReady(mThemeWallpaperManager,
-                    LocalServices.getService(UserManagerInternal.class),
                     LocalServices.getService(ActivityManagerInternal.class),
                     LocalServices.getService(UiModeManagerInternal.class),
                     mContext.getSystemService(KeyguardManager.class));

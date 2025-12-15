@@ -76,10 +76,11 @@ public class ThemeUserLifecycle {
      */
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public void onUserStarting(@NonNull SystemService.TargetUser user) {
-        if (shouldIgnoreForHsum(user.getUserHandle(), "onUserStarting")) {
+        int userId = user.getUserHandle().getIdentifier();
+
+        if (shouldIgnoreForHsum(userId, "onUserStarting")) {
             return;
         }
-        int userId = user.getUserHandle().getIdentifier();
 
         // check if seed color comes from wallpaper or preset
         ThemeSettings userSettings = mThemeManagerInternal.getThemeSettingsOrDefault(userId);
@@ -105,7 +106,7 @@ public class ThemeUserLifecycle {
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public void onUserSwitching(@Nullable SystemService.TargetUser from,
             @NonNull SystemService.TargetUser to) {
-        if (shouldIgnoreForHsum(to.getUserHandle(), "onUserSwitching")) {
+        if (shouldIgnoreForHsum(to.getUserIdentifier(), "onUserSwitching")) {
             return;
         }
         Slog.d(TAG, "User switch from:" + (from != null ? from.getUserIdentifier() : "-") + " to: "
@@ -129,9 +130,9 @@ public class ThemeUserLifecycle {
      * Loads a user's theme state and notifies the state manager.
      */
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
-    public void loadUserStateAndNotifyStateManager(@UserIdInt int userId) {
-        if (shouldIgnoreForHsum(UserHandle.of(userId), "loadUserStateAndNotifyStateManager")) {
-            return;
+    public boolean loadUserStateAndNotifyStateManager(@UserIdInt int userId) {
+        if (shouldIgnoreForHsum(userId, "loadUserStateAndNotifyStateManager")) {
+            return false;
         }
 
         ThemeSettings userSettings = mThemeManagerInternal.getThemeSettingsOrDefault(userId);
@@ -143,6 +144,8 @@ public class ThemeUserLifecycle {
         mStateManager.onUserLoad(userId, isSetup, seedColor,
                 mUiModeManagerInternal.getContrast(userId),
                 userSettings.themeStyle());
+
+        return mStateManager.hasState(userId);
     }
 
     /**
@@ -151,16 +154,17 @@ public class ThemeUserLifecycle {
      * In HSUM, the system user (user 0) runs in the background and doesn't need its own theme.
      * It just uses the theme of the current user.
      *
-     * @param userHandle The user to check.
+     * @param userId     The user ID to check.
      * @param methodName The name of the method calling this check, for logging.
      * @return {@code true} if we should ignore this event for this user.
      */
-    private boolean shouldIgnoreForHsum(UserHandle userHandle, String methodName) {
+    boolean shouldIgnoreForHsum(int userId, String methodName) {
         if (mUserManagerInternal != null && mUserManagerInternal.isHeadlessSystemUserMode()
-                && userHandle.isSystem()) {
+                && userId == UserHandle.USER_SYSTEM) {
             Slog.d(TAG, "Ignoring " + methodName + " for system user in HSUM");
             return true;
         }
+
         return false;
     }
 
