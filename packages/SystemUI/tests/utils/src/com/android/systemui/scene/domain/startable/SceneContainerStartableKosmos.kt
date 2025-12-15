@@ -35,6 +35,7 @@ import com.android.systemui.keyguard.domain.interactor.keyguardDismissActionInte
 import com.android.systemui.keyguard.domain.interactor.keyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardOcclusionInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardShowWhileAwakeInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardSurfaceBehindInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardWakeDirectlyToGoneInteractor
 import com.android.systemui.keyguard.domain.interactor.trustInteractor
@@ -101,5 +102,6 @@ val Kosmos.sceneContainerStartable by Fixture {
         lockscreenUserManager = notificationLockscreenUserManager,
         keyguardDismissActionInteractor = keyguardDismissActionInteractor,
         wakeDirectlyToGoneInteractor = keyguardWakeDirectlyToGoneInteractor,
+        keyguardShowWhileAwakeInteractor = keyguardShowWhileAwakeInteractor,
     )
 }

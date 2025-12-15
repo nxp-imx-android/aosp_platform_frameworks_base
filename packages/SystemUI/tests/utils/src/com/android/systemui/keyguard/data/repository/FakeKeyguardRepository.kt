@@ -127,8 +127,6 @@ class FakeKeyguardRepository @Inject constructor() : KeyguardRepository {
 
     override val topClippingBounds = MutableStateFlow<Int?>(null)
 
-    private var isShowKeyguardWhenReenabled: Boolean = false
-
     private val _canIgnoreAuthAndReturnToGone = MutableStateFlow(false)
     override val canIgnoreAuthAndReturnToGone = _canIgnoreAuthAndReturnToGone.asStateFlow()
 
@@ -274,14 +272,6 @@ class FakeKeyguardRepository @Inject constructor() : KeyguardRepository {
 
     fun setIsEncryptedOrLockdown(value: Boolean) {
         _isEncryptedOrLockdown.value = value
-    }
-
-    override fun setShowKeyguardWhenReenabled(isShowKeyguardWhenReenabled: Boolean) {
-        this.isShowKeyguardWhenReenabled = isShowKeyguardWhenReenabled
-    }
-
-    override fun isShowKeyguardWhenReenabled(): Boolean {
-        return isShowKeyguardWhenReenabled
     }
 
     override fun setCanIgnoreAuthAndReturnToGone(canWake: Boolean) {

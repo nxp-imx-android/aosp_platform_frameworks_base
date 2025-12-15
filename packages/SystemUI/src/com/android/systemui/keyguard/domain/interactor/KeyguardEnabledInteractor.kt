@@ -18,9 +18,11 @@ package com.android.systemui.keyguard.domain.interactor
 
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.widget.LockPatternUtils
+import com.android.systemui.authentication.domain.interactor.AuthenticationInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.keyguard.data.repository.BiometricSettingsRepository
 import com.android.systemui.keyguard.data.repository.KeyguardRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
@@ -35,9 +37,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.withContext
 
 /**
@@ -66,6 +69,9 @@ constructor(
     private val lockPatternUtils: LockPatternUtils,
     keyguardDismissTransitionInteractor: dagger.Lazy<KeyguardDismissTransitionInteractor>,
     internalTransitionInteractor: InternalKeyguardTransitionInteractor,
+    deviceEntryInteractor: DeviceEntryInteractor,
+    authenticationInteractor: AuthenticationInteractor,
+    keyguardServiceShowLockscreenInteractor: KeyguardServiceShowLockscreenInteractor,
 ) {
 
     /**
@@ -85,22 +91,40 @@ constructor(
      */
     val isKeyguardEnabled: StateFlow<Boolean> = repository.isKeyguardEnabled
 
-    /**
-     * Whether we need to show the keyguard when the keyguard is re-enabled, since we hid it when it
-     * became disabled.
-     */
+    /** Whether we need to show the keyguard when the keyguard is re-enabled. */
     val showKeyguardWhenReenabled: Flow<Boolean> =
-        repository.isKeyguardEnabled
-            .onEach { SceneContainerFlag.assertInLegacyMode() }
-            // Whenever the keyguard is disabled...
-            .filter { enabled -> !enabled }
-            .sample(biometricSettingsRepository.isCurrentUserInLockdown, ::Pair)
-            .map { (_, inLockdown) ->
-                val transitionInfo = internalTransitionInteractor.currentTransitionInfoInternal()
-                // ...we hide the keyguard, if it's showing and we're not in lockdown. In that case,
-                // we want to remember that and re-show it when keyguard is enabled again.
-                transitionInfo.to != KeyguardState.GONE && !inLockdown
-            }
+        merge(
+            // If the keyguard is disabled while we were locked/showing keyguard, we want to re-show
+            // it when the keyguard is re-enabled.
+            repository.isKeyguardEnabled
+                .filter { enabled -> !enabled }
+                .sample(biometricSettingsRepository.isCurrentUserInLockdown, ::Pair)
+                .map { (_, inLockdown) ->
+                    if (SceneContainerFlag.isEnabled) {
+                        !deviceEntryInteractor.isDeviceEntered.value && !inLockdown
+                    } else {
+                        val transitionInfo =
+                            internalTransitionInteractor.currentTransitionInfoInternal()
+                        // ...we hide the keyguard, if it's showing and we're not in lockdown. In
+                        // that case, we want to remember that and re-show it when keyguard is
+                        // enabled again.
+                        transitionInfo.to != KeyguardState.GONE && !inLockdown
+                    }
+                },
+            // If we change to an insecure auth method, any pending re-show should be cleared.
+            authenticationInteractor.authenticationMethod
+                .map { it.isSecure }
+                .distinctUntilChanged()
+                .filter { secure -> !secure },
+            // If we timeout or lockNow while the keyguard is disabled, we won't show immediately,
+            // but need to re-show when we're re-enabled.
+            keyguardServiceShowLockscreenInteractor.showNowEvents
+                .filter {
+                    it == ShowWhileAwakeReason.KEYGUARD_TIMEOUT_WHILE_SCREEN_ON &&
+                        !isKeyguardEnabled.value
+                }
+                .map { true },
+        )
 
     init {
         /**
@@ -127,14 +151,6 @@ constructor(
 
     fun notifyKeyguardEnabled(enabled: Boolean) {
         repository.setKeyguardEnabled(enabled)
-    }
-
-    fun setShowKeyguardWhenReenabled(isShowKeyguardWhenReenabled: Boolean) {
-        repository.setShowKeyguardWhenReenabled(isShowKeyguardWhenReenabled)
-    }
-
-    fun isShowKeyguardWhenReenabled(): Boolean {
-        return repository.isShowKeyguardWhenReenabled()
     }
 
     /**

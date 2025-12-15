@@ -50,8 +50,10 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardDismissActionInte
 import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardOcclusionInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardShowWhileAwakeInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardSurfaceBehindInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardWakeDirectlyToGoneInteractor
+import com.android.systemui.keyguard.domain.interactor.ShowWhileAwakeReason
 import com.android.systemui.keyguard.domain.interactor.TrustInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.log.table.TableLogBuffer
@@ -114,7 +116,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -170,6 +171,7 @@ constructor(
     private val lockscreenUserManager: NotificationLockscreenUserManager,
     private val keyguardDismissActionInteractor: KeyguardDismissActionInteractor,
     private val wakeDirectlyToGoneInteractor: KeyguardWakeDirectlyToGoneInteractor,
+    private val keyguardShowWhileAwakeInteractor: KeyguardShowWhileAwakeInteractor,
 ) : CoreStartable {
     private val centralSurfaces: CentralSurfaces?
         get() = centralSurfacesOptLazy.get().getOrNull()
@@ -204,6 +206,7 @@ constructor(
             refreshLockscreenEnabled()
             hydrateActivityTransitionAnimationState()
             lockWhenDeviceBecomesUntrusted()
+            lockWhenKeyguardShowWhenAwake()
             hydrateLockScreenUserManager()
         } else {
             sceneLogger.logFrameworkEnabled(isEnabled = false)
@@ -1140,42 +1143,11 @@ constructor(
         // Automatically switches scenes when keyguard is enabled or disabled, as needed.
         applicationScope.launch {
             keyguardEnabledInteractor.isKeyguardEnabled
-                .sample(
-                    combine(
-                        deviceUnlockedInteractor.isInLockdown,
-                        deviceEntryInteractor.isDeviceEntered,
-                        ::Pair,
-                    )
-                ) { isKeyguardEnabled, (isInLockdown, isDeviceEntered) ->
-                    when {
-                        !isKeyguardEnabled && !isInLockdown && !isDeviceEntered -> {
-                            keyguardEnabledInteractor.setShowKeyguardWhenReenabled(true)
-                            Scenes.Gone to "Keyguard became disabled"
-                        }
-                        isKeyguardEnabled &&
-                            keyguardEnabledInteractor.isShowKeyguardWhenReenabled() -> {
-                            keyguardEnabledInteractor.setShowKeyguardWhenReenabled(false)
-                            Scenes.Lockscreen to "Keyguard became enabled"
-                        }
-                        else -> null
-                    }
-                }
-                .filterNotNull()
-                .collect { (targetScene, loggingReason) ->
-                    switchToScene(targetScene, loggingReason)
-                }
-        }
-
-        // Clears the showKeyguardWhenReenabled if the auth method changes to an insecure one.
-        applicationScope.launch {
-            authenticationInteractor
-                .get()
-                .authenticationMethod
-                .map { it.isSecure }
-                .distinctUntilChanged()
-                .collect { isAuthenticationMethodSecure ->
-                    if (!isAuthenticationMethodSecure) {
-                        keyguardEnabledInteractor.setShowKeyguardWhenReenabled(false)
+                .filter { enabled -> !enabled }
+                .sample(deviceUnlockedInteractor.isInLockdown)
+                .collect { inLockdown ->
+                    if (!inLockdown && !deviceEntryInteractor.isDeviceEntered.value) {
+                        switchToScene(Scenes.Gone, "Keyguard was disabled")
                     }
                 }
         }
@@ -1293,6 +1265,24 @@ constructor(
                     )
                 }
             }
+        }
+    }
+
+    private fun lockWhenKeyguardShowWhenAwake() {
+        applicationScope.launch {
+            keyguardShowWhileAwakeInteractor.showWhileAwakeEvents
+                .filter {
+                    it == ShowWhileAwakeReason.KEYGUARD_TIMEOUT_WHILE_SCREEN_ON ||
+                        it == ShowWhileAwakeReason.KEYGUARD_REENABLED
+                }
+                .collect {
+                    // If keyguard is enabled, lock and switch to Lockscreen scene. If it's not
+                    // enabled, it'll be re-shown when it's enabled again.
+                    if (keyguardEnabledInteractor.isKeyguardEnabled.value) {
+                        deviceEntryInteractor.lockNow("Screen timed out or WM#lockNow() called")
+                        switchToScene(Scenes.Lockscreen, "Keyguard re-enabled")
+                    }
+                }
         }
     }
 
