@@ -15,6 +15,8 @@
  */
 package com.android.internal.widget.remotecompose.player.accessibility;
 
+import android.annotation.NonNull;
+
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
 import com.android.internal.widget.remotecompose.core.semantics.AccessibilitySemantics;
 
@@ -55,18 +57,13 @@ public interface SemanticNodeApplier<N> {
      *     properties and actions to apply.
      */
     void applyComponent(
-            RemoteComposeDocumentAccessibility remoteComposeAccessibility,
-            N nodeInfo,
-            Component component,
-            List<AccessibilitySemantics> semantics);
+            @NonNull RemoteComposeDocumentAccessibility remoteComposeAccessibility,
+            @NonNull N nodeInfo,
+            @NonNull Component component,
+            @NonNull List<AccessibilitySemantics> semantics);
 
-    /**
-     * add children to the node
-     *
-     * @param nodeInfo
-     * @param childIds
-     */
-    void addChildren(N nodeInfo, List<Integer> childIds);
+    /** add children to the node */
+    void addChildren(@NonNull N nodeInfo, @NonNull List<Integer> childIds);
 
     String VIRTUAL_VIEW_ID_KEY = "VirtualViewId";
 }

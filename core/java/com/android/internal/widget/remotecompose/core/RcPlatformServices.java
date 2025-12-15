@@ -54,6 +54,14 @@ public interface RcPlatformServices {
     boolean isAlpha8Image(@NonNull Object image);
 
     /**
+     * This defines the interface for path array creators.
+     */
+    interface RcPathArrayCreator {
+        /** returns an array of float is remote compose format */
+        @NonNull float [] createFloatArray();
+    }
+
+    /**
      * Converts a platform-specific path object into a platform-independent float buffer
      *
      * @param path path object
@@ -100,6 +108,12 @@ public interface RcPlatformServices {
          * Vertical dimension of this text layout
          */
         float getHeight();
+
+        /**
+         * Returns the visible line count of this text layout
+         * @return
+         */
+        int getVisibleLineCount();
 
         /**
          * Returns true if contains hyphenated text

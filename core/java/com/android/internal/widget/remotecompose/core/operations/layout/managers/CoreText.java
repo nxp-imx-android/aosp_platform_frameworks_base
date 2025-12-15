@@ -224,7 +224,6 @@ public class CoreText extends LayoutManager implements VariableSupport, Accessib
                 Float.isNaN(mFontWeight)
                         ? context.getFloat(Utils.idFromNan(mFontWeight))
                         : mFontWeight;
-        System.out.println("Font Weight" + mFontWeightValue);
         mTextAlignValue = (short) (mTextAlign & 0xFFFF);
         if (mIsDynamicColorEnabled) {
             mColorValue = context.getColor(mColorId);
@@ -297,8 +296,8 @@ public class CoreText extends LayoutManager implements VariableSupport, Accessib
             int justificationMode,
             boolean useUnderline,
             boolean strikethrough,
-            @NonNull int [] fontAxis,
-            @NonNull float [] fontAxisValues,
+            @Nullable int [] fontAxis,
+            @Nullable float [] fontAxisValues,
             boolean autosize,
             int flags) {
         super(parent, componentId, animationId, x, y, width, height);
@@ -356,8 +355,8 @@ public class CoreText extends LayoutManager implements VariableSupport, Accessib
             int justificationMode,
             boolean useUnderline,
             boolean strikethrough,
-            @NonNull int [] fontAxis,
-            @NonNull float [] fontAxisValues,
+            @Nullable int [] fontAxis,
+            @Nullable float [] fontAxisValues,
             boolean autosize,
             int flags) {
         this(
@@ -628,7 +627,7 @@ public class CoreText extends LayoutManager implements VariableSupport, Accessib
             while (max - min >= stepSize) {
                 mPaint.setTextSize(current);
                 context.replacePaint(mPaint);
-                textLayout(context, maxWidth, bounds, true);
+                textLayout(context, maxWidth, maxHeight, bounds, true, true);
                 boolean hasHyphenation =
                         mComputedTextLayout != null && mComputedTextLayout.isHyphenatedText();
                 boolean invalid = mHyphenationFrequency == 0 && hasHyphenation;
@@ -644,7 +643,7 @@ public class CoreText extends LayoutManager implements VariableSupport, Accessib
             if ((current + stepSize) < maxFontSize) {
                 mPaint.setTextSize(current + stepSize);
                 context.replacePaint(mPaint);
-                textLayout(context, maxWidth, bounds, true);
+                textLayout(context, maxWidth, maxHeight, bounds, true, true);
                 boolean hasHyphenation =
                         mComputedTextLayout != null && mComputedTextLayout.isHyphenatedText();
                 boolean invalid = mHyphenationFrequency == 0 && hasHyphenation;
@@ -657,9 +656,9 @@ public class CoreText extends LayoutManager implements VariableSupport, Accessib
             mMeasureFontSize = current;
             mPaint.setTextSize(mFontSizeValue);
             context.replacePaint(mPaint);
-            textLayout(context, maxWidth, bounds, true);
+            textLayout(context, maxWidth, maxHeight, bounds, true, true);
         } else {
-            textLayout(context, maxWidth, bounds);
+            textLayout(context, maxWidth, maxHeight, bounds);
         }
 
         context.restorePaint();
@@ -674,16 +673,18 @@ public class CoreText extends LayoutManager implements VariableSupport, Accessib
     }
 
     private void textLayout(@NonNull PaintContext context, float maxWidth,
-            @NonNull float [] bounds) {
-        textLayout(context, maxWidth, bounds, false);
+            float maxHeight, @NonNull float [] bounds) {
+        textLayout(context, maxWidth, maxHeight, bounds, false, false);
     }
 
-    private void textLayout(@NonNull PaintContext context, float maxWidth,
-            @NonNull float [] bounds, boolean forceComplex) {
+    private void textLayout(@NonNull PaintContext context, float maxWidth, float maxHeight,
+            @NonNull float [] bounds, boolean forceComplex, boolean inAutosize) {
+        if (maxWidth < 0 || maxHeight < 0) {
+            return;
+        }
         int flags = PaintContext.TEXT_MEASURE_FONT_HEIGHT | PaintContext.TEXT_MEASURE_SPACES;
         if (forceComplex) {
             flags |= PaintContext.TEXT_COMPLEX;
-            flags |= PaintContext.TEXT_USE_CORE_TEXT;
         }
         if (mOverflow == OVERFLOW_START_ELLIPSIS
                 || mOverflow == OVERFLOW_MIDDLE_ELLIPSIS
@@ -691,12 +692,11 @@ public class CoreText extends LayoutManager implements VariableSupport, Accessib
             flags |= PaintContext.TEXT_COMPLEX;
             forceComplex = true;
         }
-        if (mLetterSpacing > 0f || mLineHeightMultiplier != 1f || mLineHeightAdd > 0f
+        if (mLetterSpacing != 0f || mLineHeightMultiplier != 1f || mLineHeightAdd > 0f
                 || mUnderline || mStrikethrough
                 || mJustificationMode > 0 || mLineBreakStrategy > 0
                 || mHyphenationFrequency > 0) {
             flags |= PaintContext.TEXT_COMPLEX;
-            flags |= PaintContext.TEXT_USE_CORE_TEXT;
             forceComplex = true;
         }
         if ((flags & PaintContext.TEXT_COMPLEX) != PaintContext.TEXT_COMPLEX) {
@@ -714,29 +714,57 @@ public class CoreText extends LayoutManager implements VariableSupport, Accessib
             mBaseline = -bounds[1];
         }
         if (forceComplex || (bounds[2] - bounds[1] > maxWidth && mMaxLines > 1 && maxWidth > 0f)) {
-            mComputedTextLayout =
-                    context.layoutComplexText(
-                            mTextId,
-                            0,
-                            mCachedString.length(),
-                            mTextAlign,
-                            mOverflow,
-                            mMaxLines,
-                            maxWidth,
-                            mLetterSpacing,
-                            mLineHeightAdd,
-                            mLineHeightMultiplier,
-                            mLineBreakStrategy,
-                            mHyphenationFrequency,
-                            mJustificationMode,
-                            mUnderline,
-                            mStrikethrough,
-                            flags);
-            if (mComputedTextLayout != null) {
-                bounds[0] = 0f;
-                bounds[1] = 0f;
-                bounds[2] = mComputedTextLayout.getWidth();
-                bounds[3] = mComputedTextLayout.getHeight();
+            if (inAutosize) {
+                flags |= PaintContext.TEXT_MEASURE_AUTOSIZE;
+            }
+            boolean done = false;
+            int maxLines = mMaxLines;
+            while (!done) {
+                mComputedTextLayout =
+                        context.layoutComplexText(
+                                mTextId,
+                                0,
+                                mCachedString.length(),
+                                mTextAlign,
+                                mOverflow,
+                                maxLines,
+                                maxWidth,
+                                maxHeight,
+                                mLetterSpacing,
+                                mLineHeightAdd,
+                                mLineHeightMultiplier,
+                                mLineBreakStrategy,
+                                mHyphenationFrequency,
+                                mJustificationMode,
+                                mUnderline,
+                                mStrikethrough,
+                                flags);
+                if (mComputedTextLayout != null) {
+                    bounds[0] = 0f;
+                    bounds[1] = 0f;
+                    bounds[2] = mComputedTextLayout.getWidth();
+                    bounds[3] = mComputedTextLayout.getHeight();
+                }
+                if (mComputedTextLayout != null
+                        && mComputedTextLayout.getHeight() > maxHeight
+                        && mOverflow == CoreText.OVERFLOW_ELLIPSIS) {
+                    // If the text is bigger than the available space *and* we have
+                    // OVERFLOW_ELLIPSIS, let's recompute the maxLines in order
+                    // to show the ellipsis.
+                    // Note: on Android, maxLines doesn't seem to apply when using
+                    // OVERFLOW_START_ELLIPSIS or OVERFLOW_MIDDLE_ELLIPSIS -- those seem
+                    // to only work with maxLines = 1.
+                    if (mComputedTextLayout.getVisibleLineCount() != maxLines) {
+                        maxLines = mComputedTextLayout.getVisibleLineCount();
+                    } else {
+                        maxLines--;
+                    }
+                    if (maxLines < 1) {
+                        done = true;
+                    }
+                } else {
+                    done = true;
+                }
             }
         } else {
             mComputedTextLayout = null;
@@ -808,8 +836,8 @@ public class CoreText extends LayoutManager implements VariableSupport, Accessib
             int justificationMode,
             boolean underline,
             boolean strikethrough,
-            @NonNull int [] fontAxis,
-            @NonNull float [] fontAxisValues,
+            @Nullable int [] fontAxis,
+            @Nullable float [] fontAxisValues,
             boolean autosize,
             int flags) {
         buffer.start(id());
@@ -835,10 +863,16 @@ public class CoreText extends LayoutManager implements VariableSupport, Accessib
         count += PARAMETERS.countIfNotDefault(P_UNDERLINE, underline);
         count += PARAMETERS.countIfNotDefault(P_STRIKETHROUGH, strikethrough);
         count += PARAMETERS.countIfNotDefault(P_AUTOSIZE, autosize);
-        if (fontAxis != null && fontAxisValues != null
-                && fontAxis.length > 0 && fontAxis.length == fontAxisValues.length) {
+        boolean hasFontAxis = fontAxis != null && fontAxis.length > 0;
+
+        if (fontAxis != null && fontAxis.length != fontAxisValues.length) {
+            throw new IllegalStateException("fontAxis and fontAxisValues must be the same length");
+        }
+
+        if (hasFontAxis) {
             count += 2;
         }
+        count += PARAMETERS.countIfNotDefault(P_FLAGS, flags);
         // TODO: text style id
         buffer.writeShort(count);
         PARAMETERS.write(buffer, P_COMPONENT_ID, componentId);
@@ -860,11 +894,12 @@ public class CoreText extends LayoutManager implements VariableSupport, Accessib
         PARAMETERS.write(buffer, P_JUSTIFICATION_MODE, justificationMode);
         PARAMETERS.write(buffer, P_UNDERLINE, underline);
         PARAMETERS.write(buffer, P_STRIKETHROUGH, strikethrough);
-        if (fontAxis != null && fontAxisValues != null) {
+        if (hasFontAxis) {
             PARAMETERS.write(buffer, P_FONT_AXIS, fontAxis);
             PARAMETERS.write(buffer, P_FONT_AXIS_VALUES, fontAxisValues);
         }
         PARAMETERS.write(buffer, P_AUTOSIZE, autosize);
+        PARAMETERS.write(buffer, P_FLAGS, flags);
     }
 
     /**
@@ -1004,7 +1039,7 @@ public class CoreText extends LayoutManager implements VariableSupport, Accessib
         }
         int[] fontAxis = null;
         float[] fontAxisValues = null;
-        if (fontAxisList.size() > 0 && fontAxisValuesList.size() == fontAxisList.size()) {
+        if (!fontAxisList.isEmpty() && fontAxisValuesList.size() == fontAxisList.size()) {
             fontAxis = new int[fontAxisList.size()];
             fontAxisValues = new float[fontAxisList.size()];
             for (int i = 0; i < fontAxisList.size(); i++) {

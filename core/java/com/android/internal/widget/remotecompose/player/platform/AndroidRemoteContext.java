@@ -21,8 +21,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.widget.EdgeEffect;
 
 import com.android.internal.widget.remotecompose.core.RemoteContext;
+import com.android.internal.widget.remotecompose.core.ScrollingEdgeEffect;
 import com.android.internal.widget.remotecompose.core.SystemClock;
 import com.android.internal.widget.remotecompose.core.TouchListener;
 import com.android.internal.widget.remotecompose.core.VariableSupport;
@@ -45,6 +47,8 @@ import java.util.HashMap;
  */
 public class AndroidRemoteContext extends RemoteContext {
     private static final boolean CHECK_DATA_SIZE = true;
+
+    public @Nullable EdgeEffectBuilder mEdgeEffectBuilder;
 
     private boolean mA11yAnimationEnabled = true;
 
@@ -97,9 +101,40 @@ public class AndroidRemoteContext extends RemoteContext {
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    // Data handling
+    // Edge effect handling
+    ///////////////////////////////////////////////////////////////////////////////////////////////
 
-    /// ////////////////////////////////////////////////////////////////////////////////////////////
+    /** EdgeEffectBuilder interface */
+    public interface EdgeEffectBuilder {
+        /**
+         * Create a new EdgeEffect
+         *
+         * @return
+         */
+        @NonNull
+        EdgeEffect create();
+    }
+
+    /**
+     * Set a builder for EdgeEffects
+     *
+     * @param builder
+     */
+    public void setEdgeEffectBuilder(@NonNull EdgeEffectBuilder builder) {
+        mEdgeEffectBuilder = builder;
+    }
+
+    @Override
+    public @Nullable ScrollingEdgeEffect createEdgeEffect(int direction) {
+        if (mEdgeEffectBuilder == null) {
+            return null;
+        }
+        return new AndroidEdgeEffect(mEdgeEffectBuilder.create(), direction);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // Data handling
+    ///////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
     public void loadPathData(int instanceId, int winding, @NonNull float[] floatPath) {

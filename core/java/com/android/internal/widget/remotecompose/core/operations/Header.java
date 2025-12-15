@@ -102,6 +102,9 @@ public class Header extends Operation implements RemoteComposeOperation {
     /** profiles */
     public static final short DOC_PROFILES = 14;
 
+    /** direct measure in paint, instead of wrap behavior */
+    public static final short FEATURE_PAINT_MEASURE = 15;
+
     /** The object is an integer */
     private static final short DATA_TYPE_INT = 0;
 
@@ -123,7 +126,8 @@ public class Header extends Operation implements RemoteComposeOperation {
         DOC_SOURCE,
         DOC_DATA_UPDATE,
         HOST_EXCEPTION_HANDLER,
-        DOC_PROFILES
+        DOC_PROFILES,
+            FEATURE_PAINT_MEASURE
     };
     private static final String[] KEY_NAMES = {
         "DOC_WIDTH",
@@ -134,7 +138,8 @@ public class Header extends Operation implements RemoteComposeOperation {
         "DOC_SOURCE",
         "DOC_DATA_UPDATE",
         "HOST_EXCEPTION_HANDLER",
-        "DOC_PROFILES"
+        "DOC_PROFILES",
+        "PAINT_MEASURE",
     };
 
     /**
@@ -193,7 +198,14 @@ public class Header extends Operation implements RemoteComposeOperation {
         return mProfiles;
     }
 
-    private int getInt(int key, int defaultValue) {
+    /**
+     * Check for a property on the header
+     *
+     * @param key
+     * @param defaultValue
+     * @return
+     */
+    public int getInt(int key, int defaultValue) {
         if (mProperties == null) {
             return defaultValue;
         }
@@ -347,7 +359,7 @@ public class Header extends Operation implements RemoteComposeOperation {
             @NonNull short [] type,
             @NonNull Object [] value) {
         buffer.start(OP_CODE);
-        if (apiLevel == CoreDocument.DOCUMENT_API_LEVEL) {
+        if (apiLevel >= 7) {
             buffer.writeInt(MAJOR_VERSION | MAGIC_NUMBER); // major version number of the protocol
             buffer.writeInt(MINOR_VERSION); // minor version number of the protocol
             buffer.writeInt(PATCH_VERSION); // patch version number of the protocol
@@ -490,6 +502,9 @@ public class Header extends Operation implements RemoteComposeOperation {
                 return -1;
             }
             majorVersion &= 0xFFFF;
+        }
+        if (majorVersion == 1 && minorVersion == 2) {
+            return 8;
         }
         if (majorVersion == 1 && minorVersion == 1) {
             return 7;
