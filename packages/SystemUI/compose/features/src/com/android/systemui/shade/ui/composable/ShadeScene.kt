@@ -519,8 +519,8 @@ private fun ContentScope.SplitShade(
 
                         NestedSceneTransitionLayout(
                             state = sceneState,
-                            modifier = Modifier.fillMaxSize(),
                             debugName = "SplitShade",
+                            modifier = Modifier.fillMaxSize(),
                         ) {
                             scene(QS) {
                                 val tileSquishiness by
