@@ -5239,7 +5239,8 @@ public class AudioManager {
             throw new NullPointerException("Illegal null AudioFocusRequest");
         }
         // this can only be checked now, not during the creation of the AudioFocusRequest instance
-        if (afr.locksFocus() && ap == null) {
+        if (afr.locksFocus() && ap == null && !"com.android.server.telecom".equals(
+                mApplicationContext.getOpPackageName())) {
             throw new IllegalArgumentException(
                     "Illegal null audio policy when locking audio focus");
         }
