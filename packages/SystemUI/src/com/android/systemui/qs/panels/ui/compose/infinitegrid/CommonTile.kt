@@ -96,6 +96,7 @@ import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.compose.modifiers.sysuiResTag
+import com.android.systemui.flags.DesktopSizing
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.SideIconHeight
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.SideIconWidth
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TILE_INITIAL_DELAY_MILLIS
@@ -240,7 +241,7 @@ fun SmallTileContent(
     iconProvider: Context.() -> Icon,
     color: Color,
     modifier: Modifier = Modifier,
-    size: @Composable () -> Dp = { CommonTileDefaults.IconSize },
+    size: @Composable () -> Dp = { CommonTileDefaults.SmallTileIconSize },
     animateToEnd: Boolean = false,
 ) {
     val context = LocalContext.current
@@ -423,11 +424,6 @@ object CommonTileDefaults {
         @ReadOnlyComposable
         get() = dimensionResource(id = R.dimen.common_tile_default_dual_target_end_padding)
 
-    val IconSize: Dp
-        @Composable
-        @ReadOnlyComposable
-        get() = dimensionResource(id = R.dimen.common_tile_default_icon_size)
-
     val InactiveIconCornerRadius: Dp
         @Composable
         @ReadOnlyComposable
@@ -438,10 +434,27 @@ object CommonTileDefaults {
         @ReadOnlyComposable
         get() = dimensionResource(id = R.dimen.common_tile_default_inactive_tile_corner_radius)
 
+    // The size of the icon in the tile with an icon and a label.
     val LargeTileIconSize: Dp
         @Composable
         @ReadOnlyComposable
-        get() = dimensionResource(id = R.dimen.common_tile_default_large_tile_icon_size)
+        get() =
+            if (DesktopSizing.isEnabled) {
+                smallIconSize
+            } else {
+                largeIconSize
+            }
+
+    // The size of the icon in the tile with an icon only.
+    val SmallTileIconSize: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() =
+            if (DesktopSizing.isEnabled) {
+                largeIconSize
+            } else {
+                smallIconSize
+            }
 
     val StartPadding: Dp
         @Composable
@@ -473,6 +486,16 @@ object CommonTileDefaults {
     @Composable
     fun longPressLabelMoreDetails() =
         stringResource(id = R.string.accessibility_long_click_tile_details)
+
+    private val largeIconSize: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = dimensionResource(id = R.dimen.common_tile_default_large_tile_icon_size)
+
+    private val smallIconSize: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = dimensionResource(id = R.dimen.common_tile_default_icon_size)
 }
 
 /** Same as Image, but it doesn't clip its content. */

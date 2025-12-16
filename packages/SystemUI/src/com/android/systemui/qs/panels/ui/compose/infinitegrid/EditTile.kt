@@ -1359,7 +1359,7 @@ fun EditTile(
     colors: TileColors = EditModeTileDefaults.editTileColors(),
 ) {
     val defaultStartPadding = CommonTileDefaults.StartPadding
-    val iconSizeDiff = CommonTileDefaults.IconSize - CommonTileDefaults.LargeTileIconSize
+    val iconSizeDiff = CommonTileDefaults.SmallTileIconSize - CommonTileDefaults.LargeTileIconSize
     val toggleTargetSize = ToggleTargetSize
     Row(
         horizontalArrangement = spacedBy(6.dp),
@@ -1415,7 +1415,7 @@ fun EditTile(
                 iconProvider = { tile.icon },
                 color = colors.icon,
                 animateToEnd = true,
-                size = { CommonTileDefaults.IconSize - iconSizeDiff * progress() },
+                size = { CommonTileDefaults.SmallTileIconSize - iconSizeDiff * progress() },
                 modifier = Modifier.align(Alignment.Center),
             )
         }
@@ -1433,7 +1433,7 @@ fun EditTile(
 private fun MeasureScope.iconHorizontalCenter(
     padding: Dp,
     containerSize: Int,
-    toggleTargetSize: Dp
+    toggleTargetSize: Dp,
 ): Float {
     return (containerSize - toggleTargetSize.roundToPx()) / 2f - padding.toPx()
 }

@@ -44,6 +44,8 @@ import com.android.systemui.flags.fake
 import com.android.systemui.flags.featureFlagsClassic
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.qs.panels.data.repository.defaultLargeTilesRepository
+import com.android.systemui.qs.panels.domain.interactor.iconTilesInteractor
 import com.android.systemui.qs.pipeline.domain.interactor.currentTilesInteractor
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.shade.ui.composable.WithStatusIconContext
@@ -118,7 +120,7 @@ class QuickSettingsShadeOverlayTest : SysuiTestCase() {
 
     @Test
     @WithDesktopTest
-    fun testCommonTileSize() =
+    fun testSmallTileSize() =
         kosmos.runTest {
             currentTilesInteractor.setTiles(listOf(TileSpec.create("airplane")))
 
@@ -131,12 +133,31 @@ class QuickSettingsShadeOverlayTest : SysuiTestCase() {
 
             composeTestRule
                 .onNodeWithTag(resIdToTestTag("qs_tile_icon"), useUnmergedTree = true)
-                .assertHeightIsEqualTo(if (DesktopSizing.isEnabled) 20.dp else 32.dp)
+                .assertHeightIsEqualTo(if (DesktopSizing.isEnabled) 24.dp else 32.dp)
 
             // Verify the QS shade overlay's width.
             composeTestRule
                 .onNodeWithTag(resIdToTestTag("quick_settings_panel"))
                 .assertWidthIsEqualTo(if (DesktopSizing.isEnabled) 376.dp else 474.dp)
+        }
+
+    @Test
+    @WithDesktopTest
+    fun testLargeTileSize() =
+        kosmos.runTest {
+            iconTilesInteractor.setLargeTiles(defaultLargeTilesRepository.defaultLargeTiles)
+            currentTilesInteractor.setTiles(listOf(TileSpec.create("dnd")))
+
+            composeTestRule.setQSShadeOverlay()
+            composeTestRule.waitForIdle()
+
+            composeTestRule
+                .onNodeWithTag("element:dnd")
+                .assertHeightIsEqualTo(if (DesktopSizing.isEnabled) 56.dp else 72.dp)
+
+            composeTestRule
+                .onNodeWithTag(resIdToTestTag("qs_tile_icon"), useUnmergedTree = true)
+                .assertHeightIsEqualTo(if (DesktopSizing.isEnabled) 20.dp else 28.dp)
         }
 
     @Test
