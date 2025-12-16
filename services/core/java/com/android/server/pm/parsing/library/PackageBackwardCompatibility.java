@@ -67,15 +67,15 @@ public class PackageBackwardCompatibility extends PackageSharedLibraryUpdater {
 
         boolean bootClassPathContainsATB = !addUpdaterForAndroidTestBase(packageUpdaters);
 
-        // ApexSharedLibraryUpdater should be the last one, to allow modifications introduced by
-        // mainline after dessert release.
-        packageUpdaters.add(new ApexSharedLibraryUpdater(
-                SystemConfig.getInstance().getSharedLibraries()));
-
         // Add window manager extensions for apps with app compat flags that require extensions.
         if (WindowManagerExtensionsUpdater.isFlagEnabled()) {
             packageUpdaters.add(new WindowManagerExtensionsUpdater());
         }
+
+        // ApexSharedLibraryUpdater should be the last one, to allow modifications introduced by
+        // mainline after dessert release.
+        packageUpdaters.add(new ApexSharedLibraryUpdater(
+                SystemConfig.getInstance().getSharedLibraries()));
 
         PackageSharedLibraryUpdater[] updaterArray = packageUpdaters
                 .toArray(new PackageSharedLibraryUpdater[0]);
