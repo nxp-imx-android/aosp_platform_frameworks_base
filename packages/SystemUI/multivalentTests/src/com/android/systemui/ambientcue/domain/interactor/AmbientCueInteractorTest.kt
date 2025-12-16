@@ -22,7 +22,6 @@ import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
-import com.android.systemui.Flags.FLAG_ENABLE_AMBIENT_CUE_WITH_IME_VISIBLE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.ambientcue.data.repository.ambientCueRepository
 import com.android.systemui.ambientcue.data.repository.fake
@@ -229,7 +228,6 @@ class AmbientCueInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_AMBIENT_CUE_WITH_IME_VISIBLE)
     fun actions_filtersDismissedItems() =
         kosmos.runTest {
             val actions by collectLastValue(ambientCueInteractor.actions)
@@ -248,7 +246,6 @@ class AmbientCueInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_AMBIENT_CUE_WITH_IME_VISIBLE)
     fun actions_showsExpiredDismissedItems() =
         kosmos.runTest {
             val actions by collectLastValue(ambientCueInteractor.actions)
