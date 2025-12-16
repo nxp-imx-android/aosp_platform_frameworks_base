@@ -121,7 +121,7 @@ constructor(
                         return@collect
                     }
 
-                    val isDreaming = keyguardInteractor.isAbleToDream.value
+                    val isDreaming = keyguardInteractor.isDreamingNotDozing.value
                     val isOccluded = keyguardInteractor.isKeyguardOccluded.value
                     val isIdleOnCommunal = communalSceneInteractor.isIdleOnCommunal.value
                     val isAodAvailable = keyguardInteractor.isAodAvailable.value

@@ -480,7 +480,7 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
     @DisableSceneContainer
     fun dreamingToGoneWithKeyguardNotShowing() =
         testScope.runTest {
-            // Setup - Move past initial delay with [KeyguardInteractor#isAbleToDream]
+            // Setup - Move past initial delay with [KeyguardInteractor#isDreamingNotDozing]
             advanceTimeBy(600L)
 
             // GIVEN a prior transition has run to DREAMING
@@ -952,7 +952,7 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
     @DisableFlags(FLAG_GLANCEABLE_HUB_V2)
     fun primaryBouncerToGlanceableHubWhileDreaming() =
         testScope.runTest {
-            // Setup - Move past initial delay with [KeyguardInteractor#isAbleToDream]
+            // Setup - Move past initial delay with [KeyguardInteractor#isDreamingNotDozing]
             advanceTimeBy(600L)
 
             // GIVEN the device is idle on the glanceable hub

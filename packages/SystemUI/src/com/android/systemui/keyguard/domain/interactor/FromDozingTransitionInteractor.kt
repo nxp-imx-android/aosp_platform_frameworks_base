@@ -125,10 +125,10 @@ constructor(
     private fun listenForDozingToDreaming() {
         if (SceneContainerFlag.isEnabled) return
         scope.launch {
-            keyguardInteractor.isAbleToDream
-                .filterRelevantKeyguardStateAnd { isAbleToDream -> isAbleToDream }
+            keyguardInteractor.isDreamingNotDozing
+                .filterRelevantKeyguardStateAnd { isDreamingNotDozing -> isDreamingNotDozing }
                 .collect {
-                    startTransitionTo(KeyguardState.DREAMING, ownerReason = "isAbleToDream")
+                    startTransitionTo(KeyguardState.DREAMING, ownerReason = "isDreamingNotDozing")
                 }
         }
     }

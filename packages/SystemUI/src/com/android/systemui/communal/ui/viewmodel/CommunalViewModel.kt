@@ -208,7 +208,7 @@ constructor(
                     stateWithoutSceneContainer = KeyguardState.GLANCEABLE_HUB,
                 ),
                 keyguardInteractor.isKeyguardOccluded,
-                not(keyguardInteractor.isAbleToDream),
+                not(keyguardInteractor.isDreamingNotDozing),
             )
             .distinctUntilChanged()
             .onEach { logger.d("isCommunalContentFlowFrozen: $it") }
