@@ -8275,12 +8275,14 @@ package android.hardware.usb {
     method @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void registerDisplayPortAltModeInfoListener(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.usb.UsbManager.DisplayPortAltModeInfoListener);
     method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void registerPowerProfileInfoListener(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.usb.UsbManager.PowerProfileInfoListener);
     method @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void resetUsbGadget();
+    method @FlaggedApi("android.hardware.usb.flags.enable_persistent_usb_device_permissions") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void revokePermission(@NonNull android.hardware.usb.UsbDevice, @NonNull String);
     method @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void setCurrentFunctions(long);
     method @FlaggedApi("android.hardware.usb.flags.enable_pci_tunnel_control") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void setPciTunnelingEnabled(boolean);
     method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void unregisterBc12TypeListener(@NonNull android.hardware.usb.UsbManager.Bc12TypeListener);
     method @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void unregisterDisplayPortAltModeInfoListener(@NonNull android.hardware.usb.UsbManager.DisplayPortAltModeInfoListener);
     method @FlaggedApi("android.hardware.usb.flags.enable_power_profile_reporting") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public void unregisterPowerProfileInfoListener(@NonNull android.hardware.usb.UsbManager.PowerProfileInfoListener);
     field @RequiresPermission(android.Manifest.permission.MANAGE_USB) public static final String ACTION_USB_ACCESSORY_HANDSHAKE = "android.hardware.usb.action.USB_ACCESSORY_HANDSHAKE";
+    field @FlaggedApi("android.hardware.usb.flags.enable_persistent_usb_device_permissions") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public static final String ACTION_USB_PERMISSION_CHANGED = "android.hardware.usb.action.USB_PERMISSION_CHANGED";
     field @RequiresPermission(android.Manifest.permission.MANAGE_USB) public static final String ACTION_USB_PORT_CHANGED = "android.hardware.usb.action.USB_PORT_CHANGED";
     field @RequiresPermission(android.Manifest.permission.MANAGE_USB) public static final String ACTION_USB_PORT_COMPLIANCE_CHANGED = "android.hardware.usb.action.USB_PORT_COMPLIANCE_CHANGED";
     field public static final String ACTION_USB_STATE = "android.hardware.usb.action.USB_STATE";

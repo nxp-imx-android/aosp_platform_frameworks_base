@@ -133,6 +133,10 @@ interface IUsbManager
     @EnforcePermission("MANAGE_USB")
     void grantAccessoryPermission(in UsbAccessory accessory, String packageName, int uid);
 
+    /* Revokes device access permission for the given packageName + UID */
+    @EnforcePermission("MANAGE_USB")
+    void revokeDevicePermission(in UsbDevice device, in String packageName, in int uid);
+
     /* Sets the authorization response for a device that needs user
      * authorization.
      */

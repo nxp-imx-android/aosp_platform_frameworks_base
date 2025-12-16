@@ -22,6 +22,7 @@ import static android.hardware.usb.UsbPortStatus.Bc12Type;
 import static android.hardware.usb.UsbPortStatus.DATA_STATUS_DISABLED_FORCE;
 
 import android.Manifest;
+import android.annotation.BroadcastBehavior;
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
@@ -155,6 +156,31 @@ public class UsbManager {
     @RequiresPermission(Manifest.permission.MANAGE_USB)
     public static final String ACTION_USB_PORT_COMPLIANCE_CHANGED =
             "android.hardware.usb.action.USB_PORT_COMPLIANCE_CHANGED";
+
+    /**
+     * Broadcast Action: A broadcast for USB permission changes.
+     *
+     * <p>This intent is sent when the permission for a USB device or accessory has changed. Only
+     * one of {@link #EXTRA_DEVICE} or {@link #EXTRA_ACCESSORY} will be provided depending on the
+     * source of the broadcast. This broadcast is only sent to registered intents (as it is
+     * informational).
+     *
+     * <ul>
+     *   <li>{@link #EXTRA_DEVICE} containing the {@link android.hardware.usb.UsbDevice} for the
+     *       attached device.
+     *   <li>{@link #EXTRA_ACCESSORY} containing the {@link android.hardware.usb.UsbAccessory} for
+     *       the attached accessory.
+     * </ul>
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS)
+    @SystemApi
+    @RequiresPermission(Manifest.permission.MANAGE_USB)
+    @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)
+    @BroadcastBehavior(registeredOnly = true)
+    public static final String ACTION_USB_PERMISSION_CHANGED =
+            "android.hardware.usb.action.USB_PERMISSION_CHANGED";
 
     /**
      * Activity intent sent when user attaches a USB device.
@@ -1483,11 +1509,17 @@ public class UsbManager {
     }
 
     /**
-     * Returns true if the caller has permission to access the device. It's similar to the
+     * Returns true if the package has permission to access the device. It's similar to the
      * {@link #hasPermission(UsbDevice)} but allows to specify a different package/uid/pid.
      *
      * <p>Not for third-party apps.</p>
      *
+     * @param device to check permissions for
+     * @param packageName to check permissions for
+     * @param pid of package to check
+     * @param uid of package to check
+     *
+     * @return true if provided package/uid/pid has permission for device
      * @hide
      */
     @RequiresPermission(Manifest.permission.MANAGE_USB)
@@ -1526,11 +1558,17 @@ public class UsbManager {
     }
 
     /**
-     * Returns true if the caller has permission to access the accessory. It's similar to the
+     * Returns true if the package has permission to access the accessory. It's similar to the
      * {@link #hasPermission(UsbAccessory)} but allows to specify a different uid/pid.
      *
      * <p>Not for third-party apps.</p>
      *
+     * @param accessory to check permissions for
+     * @param packageName to check permissions for
+     * @param pid of package to check
+     * @param uid of package to check
+     *
+     * @return true if provided package/uid/pid has permission for accessory
      * @hide
      */
     @RequiresPermission(Manifest.permission.MANAGE_USB)
@@ -1650,6 +1688,32 @@ public class UsbManager {
             grantPermission(device, packageName, uid);
         } catch (NameNotFoundException e) {
             Log.e(TAG, "Package " + packageName + " not found.", e);
+        }
+    }
+
+    /**
+     * Revoke access to the UsbDevice for the given app for the current user.
+     *
+     * <p>Note: If the revoked app is also the Default app for this USB device, that setting will
+     * also be removed.
+     *
+     * @param device - USB device to remove permissions from.
+     * @param packageName - App that should have access revoked.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS)
+    @SystemApi
+    @RequiresPermission(Manifest.permission.MANAGE_USB)
+    public void revokePermission(@NonNull UsbDevice device, @NonNull String packageName) {
+        try {
+            int uid =
+                    mContext.getPackageManager()
+                            .getPackageUidAsUser(packageName, mContext.getUserId());
+            mService.revokeDevicePermission(device, packageName, uid);
+        } catch (NameNotFoundException e) {
+            Log.e(TAG, "Package " + packageName + " not found.", e);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
         }
     }
 
