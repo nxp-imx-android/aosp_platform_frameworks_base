@@ -337,7 +337,7 @@ public final class Telephony {
          * The message is SMS Retriever OTP.
          * @hide
          */
-        @FlaggedApi(android.view.flags.Flags.FLAG_SMS_PROVIDER_REDACT_OTP_APP_COMPAT_API)
+        @FlaggedApi(android.view.flags.Flags.FLAG_REDACT_OTP_APP_COMPAT_API)
         @TestApi
         public static final int OTP_SUBTYPE_SMS_RETRIEVER_OTP = 1 << OTP_SUBTYPE_SHIFT;
 
@@ -345,7 +345,7 @@ public final class Telephony {
          * The message is WebOTP.
          * @hide
          */
-        @FlaggedApi(android.view.flags.Flags.FLAG_SMS_PROVIDER_REDACT_OTP_APP_COMPAT_API)
+        @FlaggedApi(android.view.flags.Flags.FLAG_REDACT_OTP_APP_COMPAT_API)
         @TestApi
         public static final int OTP_SUBTYPE_WEB_OTP = 2 << OTP_SUBTYPE_SHIFT;
     }

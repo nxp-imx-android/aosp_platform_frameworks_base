@@ -879,7 +879,7 @@ public class DomainVerificationService extends SystemService
         int size = levelToPackages.size();
         for (int index = 0; index < size; index++) {
             int level = levelToPackages.keyAt(index);
-            if (android.content.pm.Flags.enableQueryDomainVerification()
+            if (android.view.flags.Flags.redactWebOtpSmsApi()
                     && !includeUnverifiedOwners
                     && level != APPROVAL_LEVEL_VERIFIED) {
                 // We only want to include verified owners, hence skipping otherwise.

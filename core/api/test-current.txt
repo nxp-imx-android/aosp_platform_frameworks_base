@@ -3282,8 +3282,8 @@ package android.provider {
 
   public static interface Telephony.TextBasedSmsColumns {
     field @FlaggedApi("com.android.internal.telephony.flags.redact_otp_sms_api") public static final String CONTAINS_OTP = "contains_otp";
-    field @FlaggedApi("android.view.flags.sms_provider_redact_otp_app_compat_api") public static final int OTP_SUBTYPE_SMS_RETRIEVER_OTP = 256; // 0x100
-    field @FlaggedApi("android.view.flags.sms_provider_redact_otp_app_compat_api") public static final int OTP_SUBTYPE_WEB_OTP = 512; // 0x200
+    field @FlaggedApi("android.view.flags.redact_otp_app_compat_api") public static final int OTP_SUBTYPE_SMS_RETRIEVER_OTP = 256; // 0x100
+    field @FlaggedApi("android.view.flags.redact_otp_app_compat_api") public static final int OTP_SUBTYPE_WEB_OTP = 512; // 0x200
     field @FlaggedApi("com.android.internal.telephony.flags.redact_otp_sms_api") public static final int OTP_TYPE_CONTAINS_OTP = 1; // 0x1
     field @FlaggedApi("com.android.internal.telephony.flags.redact_otp_sms_api") public static final int OTP_TYPE_NONE = 0; // 0x0
     field @FlaggedApi("com.android.internal.telephony.flags.redact_otp_sms_api") public static final int OTP_TYPE_PENDING = 2; // 0x2
