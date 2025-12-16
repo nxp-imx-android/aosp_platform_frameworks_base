@@ -3369,8 +3369,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
 
         // Update the base density if there is a forced density ratio.
-        if (DesktopExperienceFlags.ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS.isTrue()
-                && mForcedDisplayDensityRatio != 0.0f) {
+        if (mForcedDisplayDensityRatio != 0.0f) {
             mBaseDisplayDensity = getBaseDensityFromRatio();
         }
 
@@ -3435,14 +3434,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     void setForcedDensityRatio(float ratio, int userId) {
         // Save the new density ratio to settings and update forced density with the ratio.
-        if (DesktopExperienceFlags.ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS.isTrue()) {
-            mForcedDisplayDensityRatio = ratio;
-            mWmService.mDisplayWindowSettings.setForcedDensityRatio(getDisplayInfo(),
-                    mForcedDisplayDensityRatio);
+        mForcedDisplayDensityRatio = ratio;
+        mWmService.mDisplayWindowSettings.setForcedDensityRatio(getDisplayInfo(),
+                mForcedDisplayDensityRatio);
 
-            // Set forced density from ratio.
-            setForcedDensity(getBaseDensityFromRatio(), userId);
-        }
+        // Set forced density from ratio.
+        setForcedDensity(getBaseDensityFromRatio(), userId);
     }
 
     void clearForcedDensityRatio() {
