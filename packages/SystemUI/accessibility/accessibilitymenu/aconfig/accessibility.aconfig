@@ -20,6 +20,13 @@ flag {
 }
 
 flag {
+    name: "catalyst_a11y_menu"
+    namespace: "accessibility"
+    description: "Migrate a11y menu settings to catalyst"
+    bug: "450090715"
+}
+
+flag {
     name: "hide_restricted_actions"
     namespace: "accessibility"
     description: "Hides shortcut buttons for possibly restricted actions like brightness/volume adjustment"
