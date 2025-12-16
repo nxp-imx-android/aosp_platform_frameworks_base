@@ -6065,6 +6065,17 @@
     <permission android:name="android.permission.BIND_COMPANION_DEVICE_SERVICE"
                 android:protectionLevel="signature" />
 
+    <!-- Must be required by {@link android.security.trusttoken.TrustTokenService}
+         to ensure that only the system can bind to it.
+         <p>Protection level: signature
+         @FlaggedApi(android.security.Flags.FLAG_TALISMAN_SERVICE_API)
+         @SystemApi
+         @hide -->
+    <permission
+        android:name="android.permission.BIND_TRUST_TOKEN_SERVICE"
+        android:protectionLevel="signature"
+        android:featureFlag="android.security.talisman_service_api" />
+
     <!-- @SystemApi Must be required by the RuntimePermissionPresenterService to ensure
          that only the system can bind to it.
          @hide -->
