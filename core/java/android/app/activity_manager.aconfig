@@ -86,13 +86,6 @@ flag {
 }
 
 flag {
-     namespace: "desktop_serviceability"
-     name: "get_free_memory"
-     description: "Add API to get free memory."
-     bug: "417906997"
-}
-
-flag {
      namespace: "serviceability"
      name: "get_free_memory_v2"
      is_exported: true
