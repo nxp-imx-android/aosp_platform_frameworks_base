@@ -37,7 +37,6 @@ import static android.internal.perfetto.protos.Windowmanagerservice.DisplayConte
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.CURRENT_FOCUS_IDENTIFIER;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.DISPLAY_FRAMES;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.DISPLAY_INFO;
-import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.DISPLAY_POLICY;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.DISPLAY_READY;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.DISPLAY_ROTATION;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.DPI;
@@ -49,7 +48,6 @@ import static android.internal.perfetto.protos.Windowmanagerservice.DisplayConte
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.INPUT_METHOD_CONTROL_TARGET_IDENTIFIER;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.INPUT_METHOD_INPUT_TARGET_IDENTIFIER;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.INPUT_METHOD_LAYERING_TARGET_IDENTIFIER;
-import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.INSETS_STATE_CONTROLLER;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.IS_SLEEPING;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.KEEP_CLEAR_AREAS;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.MIN_SIZE_OF_RESIZEABLE_TASK_DP;
@@ -3917,7 +3915,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             mCurrentFocus.writeIdentifierToProto(proto, CURRENT_FOCUS_IDENTIFIER);
         }
         if (mInsetsStateController != null) {
-            mInsetsStateController.dumpDebug(proto, INSETS_STATE_CONTROLLER);
+            mInsetsStateController.dumpDebug(proto, logLevel);
         }
         proto.write(IME_POLICY, getImePolicy());
         for (Rect r : mRestrictedKeepClearAreas) {
@@ -3929,8 +3927,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         if (com.android.window.flags.Flags.deviceEngagementMode()) {
             proto.write(ENGAGEMENT_MODE, mEngagementMode);
         }
-        mDisplayPolicy.dumpDebug(proto, DISPLAY_POLICY);
-        mInsetsPolicy.dumpDebug(proto, DisplayContentProto.INSETS_POLICY);
         proto.end(token);
     }
 
@@ -7443,7 +7439,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                     + "}";
         }
 
-        @Override
         public void writeIdentifierToProto(ProtoOutputStream proto, long fieldId) {
             final long token = proto.start(fieldId);
             proto.write(HASH_CODE, System.identityHashCode(this));

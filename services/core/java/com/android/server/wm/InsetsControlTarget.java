@@ -16,14 +16,9 @@
 
 package com.android.server.wm;
 
-import static android.internal.perfetto.protos.Windowmanagerservice.InsetsControlTargetProto.ANIMATING_TYPES;
-import static android.internal.perfetto.protos.Windowmanagerservice.InsetsControlTargetProto.IDENTIFIER;
-import static android.internal.perfetto.protos.Windowmanagerservice.InsetsControlTargetProto.REQUESTED_VISIBLE_TYPES;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.IBinder;
-import android.util.proto.ProtoOutputStream;
 import android.view.WindowInsets;
 import android.view.WindowInsets.Type.InsetsType;
 import android.view.inputmethod.ImeTracker;
@@ -31,7 +26,7 @@ import android.view.inputmethod.ImeTracker;
 /**
  * Generalization of an object that can control insets state.
  */
-interface InsetsControlTarget extends InsetsTarget, Identifiable {
+interface InsetsControlTarget extends InsetsTarget {
 
     /**
      * Notifies the control target that the insets control has changed.
@@ -114,22 +109,6 @@ interface InsetsControlTarget extends InsetsTarget, Identifiable {
      */
     default void setAnimatingTypes(@InsetsType int animatingTypes,
             @Nullable ImeTracker.Token statsToken) {
-    }
-
-
-    /**
-     * Write to a protocol buffer output stream.
-     * Protocol buffer message definition at {@link InsetsControlTargetProto}
-     *
-     * @param proto Stream to write the InsetsControlTarget object to.
-     * @param fieldId Field Id of the InsetsControlTarget as defined in the parent message.
-     */
-    default void dumpDebug(ProtoOutputStream proto, long fieldId) {
-        final long token = proto.start(fieldId);
-        writeIdentifierToProto(proto, IDENTIFIER);
-        proto.write(REQUESTED_VISIBLE_TYPES, getRequestedVisibleTypes());
-        proto.write(ANIMATING_TYPES, getAnimatingTypes());
-        proto.end(token);
     }
 
     /** Returns {@code target.getWindow()}, or null if {@code target} is {@code null}. */

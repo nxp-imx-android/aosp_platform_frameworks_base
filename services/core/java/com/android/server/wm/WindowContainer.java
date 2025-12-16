@@ -113,7 +113,7 @@ import java.util.function.Predicate;
  * changes are made to this class.
  */
 class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<E>
-        implements Comparable<WindowContainer>, Animatable, Identifiable {
+        implements Comparable<WindowContainer>, Animatable {
 
     private static final String TAG = TAG_WITH_CLASS_NAME ? "WindowContainer" : TAG_WM;
 
@@ -1323,8 +1323,7 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         return setVisibleRequested(newVisReq);
     }
 
-    @Override
-    public void writeIdentifierToProto(ProtoOutputStream proto, long fieldId) {
+    void writeIdentifierToProto(ProtoOutputStream proto, long fieldId) {
         final long token = proto.start(fieldId);
         proto.write(HASH_CODE, System.identityHashCode(this));
         proto.write(USER_ID, USER_NULL);

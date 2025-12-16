@@ -54,10 +54,8 @@ import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutPa
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.HEIGHT;
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.HORIZONTAL_MARGIN;
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.INPUT_FEATURE_FLAGS;
-import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.PARAMS_FOR_ROTATION;
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.PREFERRED_REFRESH_RATE;
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.PRIVATE_FLAGS;
-import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.PROVIDED_INSETS;
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.ROTATION_ANIMATION;
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.SCREEN_BRIGHTNESS;
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.SOFT_INPUT_MODE;
@@ -6051,18 +6049,6 @@ public interface WindowManager extends ViewManager {
             proto.write(FIT_INSETS_SIDES, mFitInsetsSides);
             proto.write(FIT_IGNORE_VISIBILITY, mFitInsetsIgnoringVisibility);
             proto.write(FORCIBLY_SHOWN_TYPES, forciblyShownTypes);
-            if (providedInsets != null) {
-                for (InsetsFrameProvider provider : providedInsets) {
-                    provider.dumpDebug(proto, PROVIDED_INSETS);
-                }
-            }
-            if (paramsForRotation != null) {
-                for (LayoutParams params : paramsForRotation) {
-                    if (params != null) {
-                        params.dumpDebug(proto, PARAMS_FOR_ROTATION);
-                    }
-                }
-            }
             proto.end(token);
         }
 

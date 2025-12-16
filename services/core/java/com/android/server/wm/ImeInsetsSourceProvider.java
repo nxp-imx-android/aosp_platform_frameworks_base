@@ -19,6 +19,7 @@ package com.android.server.wm;
 import static android.view.InsetsSource.ID_IME;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_IME;
+import static com.android.server.wm.ImeInsetsSourceProviderProto.INSETS_SOURCE_PROVIDER;
 import static com.android.server.wm.WindowManagerService.H.UPDATE_MULTI_WINDOW_STACKS;
 
 import android.annotation.NonNull;
@@ -27,6 +28,7 @@ import android.graphics.Rect;
 import android.os.IBinder;
 import android.os.UserHandle;
 import android.util.Slog;
+import android.util.proto.ProtoOutputStream;
 import android.view.InsetsSource;
 import android.view.InsetsSourceConsumer;
 import android.view.InsetsSourceControl;
@@ -673,6 +675,14 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
         pw.print(" mLastDrawn=");
         pw.print(mLastDrawn);
         pw.println();
+    }
+
+    @Override
+    void dumpDebug(@NonNull ProtoOutputStream proto, long fieldId,
+            @WindowTracingLogLevel int logLevel) {
+        final long token = proto.start(fieldId);
+        super.dumpDebug(proto, INSETS_SOURCE_PROVIDER, logLevel);
+        proto.end(token);
     }
 
     /**
