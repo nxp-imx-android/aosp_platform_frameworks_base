@@ -1274,7 +1274,7 @@ public class MmTelFeature extends ImsFeature {
 
     /**
      * Notify the framework of a change in the Voice Message count.
-     * @link count the new Voice Message count.
+     * @param count the new Voice Message count.
      * @hide
      */
     @SystemApi
