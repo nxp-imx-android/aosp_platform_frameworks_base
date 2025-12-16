@@ -756,16 +756,10 @@ constructor(
                     )
                 } else {
                     if (wakeDirectlyToGoneInteractor.canWakeDirectlyToGone.value) {
-                        val isTransitioningToLockscreen =
-                            sceneInteractor.transitioningTo.value == Scenes.Lockscreen
-                        if (!isTransitioningToLockscreen) {
-                            switchToScene(
-                                targetSceneKey = Scenes.Gone,
-                                loggingReason =
-                                    "device is waking up while we can wake directly to gone, and " +
-                                        "is not already en route to lockscreen",
-                            )
-                        }
+                        switchToScene(
+                            targetSceneKey = Scenes.Gone,
+                            loggingReason = "device is waking up while we can wake directly to gone",
+                        )
                     } else if (
                         authenticationInteractor.get().authenticationMethod.value ==
                             AuthenticationMethodModel.Sim
