@@ -18,6 +18,8 @@
 
 #include <SkPath.h>
 
+#include <optional>
+
 #include "Rect.h"
 #include "utils/MathUtils.h"
 
@@ -39,16 +41,9 @@ public:
         }
 
         mType = Type::RoundRect;
+        mPath.reset();  // updated lazily
         mBounds.set(left, top, right, bottom);
         mRadius = radius;
-
-        // update mPath to reflect new outline
-        const SkRect rect = SkRect::MakeLTRB(left, top, right, bottom);
-        if (MathUtils::isPositive(radius)) {
-            mPath = SkPath::RRect(rect, radius, radius);
-        } else {
-            mPath = SkPath::Rect(rect);
-        }
     }
 
     void setPath(const SkPath* outline, float alpha) {
@@ -100,7 +95,15 @@ public:
     const SkPath* getPath() const {
         if (mType == Type::None || mType == Type::Empty) return nullptr;
 
-        return &mPath;
+        if (!mPath) {
+            // Type::Path stores the path upfront, the only deferred case is Type::RoundRect.
+            LOG_ALWAYS_FATAL_IF(mType != Type::RoundRect, "Unexpected Outline type.");
+            const SkRect rect = mBounds.toSkRect();
+            mPath = MathUtils::isPositive(mRadius) ? SkPath::RRect(rect, mRadius, mRadius)
+                                                   : SkPath::Rect(rect);
+        }
+
+        return &mPath.value();
     }
 
     Type getType() const { return mType; }
@@ -115,7 +118,8 @@ private:
     Rect mBounds;
     float mRadius;
     float mAlpha;
-    SkPath mPath;
+
+    mutable std::optional<SkPath> mPath;
 };
 
 } /* namespace uirenderer */
