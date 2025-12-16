@@ -114,6 +114,7 @@ import android.view.InputDevice;
 import android.view.InsetsSourceControl;
 import android.view.InsetsState;
 import android.view.SurfaceControl;
+import android.view.SurfaceControlViewHost;
 import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager;
@@ -2261,6 +2262,114 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         mWm.systemReady();
 
         verify(appLockController).systemReady();
+    }
+
+    @Test
+    public void testAddTrustedTaskOverlay_nullOverlay_throwsException() {
+        WindowManagerInternal wmInternal = LocalServices.getService(WindowManagerInternal.class);
+        final Task task = createTask(mDisplayContent);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> wmInternal.addTrustedTaskOverlay(task.mTaskId, null));
+    }
+
+    @Test
+    public void testAddTrustedTaskOverlay_invalidSurfaceControl_throwsException() {
+        WindowManagerInternal wmInternal = LocalServices.getService(WindowManagerInternal.class);
+        final Task task = createTask(mDisplayContent);
+        SurfaceControlViewHost.SurfacePackage overlay =
+                mock(SurfaceControlViewHost.SurfacePackage.class);
+        SurfaceControl sc = mock(SurfaceControl.class);
+        when(overlay.getSurfaceControl()).thenReturn(sc);
+        when(sc.isValid()).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> wmInternal.addTrustedTaskOverlay(task.mTaskId, overlay));
+    }
+
+    @Test
+    public void testAddTrustedTaskOverlay_invalidTaskId_throwsException() {
+        WindowManagerInternal wmInternal = LocalServices.getService(WindowManagerInternal.class);
+        SurfaceControlViewHost.SurfacePackage overlay =
+                mock(SurfaceControlViewHost.SurfacePackage.class);
+        SurfaceControl sc = mock(SurfaceControl.class);
+        when(overlay.getSurfaceControl()).thenReturn(sc);
+        when(sc.isValid()).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> wmInternal.addTrustedTaskOverlay(9999, overlay));
+    }
+
+    @Test
+    public void testAddTrustedTaskOverlay_leafTask() {
+        WindowManagerInternal wmInternal = LocalServices.getService(WindowManagerInternal.class);
+        final Task rootTask = createTask(mDisplayContent);
+        final Task childTask = createTaskInRootTask(rootTask, 0);
+        spyOn(childTask);
+
+        SurfaceControlViewHost.SurfacePackage overlay =
+                mock(SurfaceControlViewHost.SurfacePackage.class);
+        SurfaceControl sc = mock(SurfaceControl.class);
+        when(overlay.getSurfaceControl()).thenReturn(sc);
+        when(sc.isValid()).thenReturn(true);
+
+        wmInternal.addTrustedTaskOverlay(childTask.mTaskId, overlay);
+
+        verify(childTask).addTrustedOverlay(eq(overlay), any());
+    }
+
+    @Test
+    public void testRemoveTrustedTaskOverlay_nullOverlay_throwsException() {
+        WindowManagerInternal wmInternal = LocalServices.getService(WindowManagerInternal.class);
+        final Task task = createTask(mDisplayContent);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> wmInternal.removeTrustedTaskOverlay(task.mTaskId, null));
+    }
+
+    @Test
+    public void testRemoveTrustedTaskOverlay_invalidSurfaceControl_throwsException() {
+        WindowManagerInternal wmInternal = LocalServices.getService(WindowManagerInternal.class);
+        final Task task = createTask(mDisplayContent);
+        SurfaceControlViewHost.SurfacePackage overlay =
+                mock(SurfaceControlViewHost.SurfacePackage.class);
+        SurfaceControl sc = mock(SurfaceControl.class);
+        when(overlay.getSurfaceControl()).thenReturn(sc);
+        when(sc.isValid()).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> wmInternal.removeTrustedTaskOverlay(task.mTaskId, overlay));
+    }
+
+    @Test
+    public void testRemoveTrustedTaskOverlay_invalidTaskId_throwsException() {
+        WindowManagerInternal wmInternal = LocalServices.getService(WindowManagerInternal.class);
+        SurfaceControlViewHost.SurfacePackage overlay =
+                mock(SurfaceControlViewHost.SurfacePackage.class);
+        SurfaceControl sc = mock(SurfaceControl.class);
+        when(overlay.getSurfaceControl()).thenReturn(sc);
+        when(sc.isValid()).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> wmInternal.removeTrustedTaskOverlay(9999, overlay));
+    }
+
+    @Test
+    public void testRemoveTrustedTaskOverlay_leafTask() {
+        WindowManagerInternal wmInternal = LocalServices.getService(WindowManagerInternal.class);
+        final Task rootTask = createTask(mDisplayContent);
+        final Task childTask = createTaskInRootTask(rootTask, 0);
+        spyOn(childTask);
+
+        SurfaceControlViewHost.SurfacePackage overlay =
+                mock(SurfaceControlViewHost.SurfacePackage.class);
+        SurfaceControl sc = mock(SurfaceControl.class);
+        when(overlay.getSurfaceControl()).thenReturn(sc);
+        when(sc.isValid()).thenReturn(true);
+
+        wmInternal.removeTrustedTaskOverlay(childTask.mTaskId, overlay);
+
+        verify(childTask).removeTrustedOverlay(overlay);
     }
 
     /**
