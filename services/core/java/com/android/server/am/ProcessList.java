@@ -1452,10 +1452,6 @@ public final class ProcessList extends ProcessListInternal
      * @hide
      */
     public static void setOomAdj(int pid, int uid, int amt) {
-        setOomAdj(pid, uid, amt, false);
-    }
-
-    public static void setOomAdj(int pid, int uid, int amt, boolean forLmkdOnly) {
         // This indicates that the process is not started yet and so no need to proceed further.
         if (pid <= 0) {
             return;
@@ -1464,12 +1460,11 @@ public final class ProcessList extends ProcessListInternal
             return;
 
         long start = SystemClock.elapsedRealtime();
-        ByteBuffer buf = ByteBuffer.allocate(4 * 5);
+        ByteBuffer buf = ByteBuffer.allocate(4 * 4);
         buf.putInt(LMK_PROCPRIO);
         buf.putInt(pid);
         buf.putInt(uid);
         buf.putInt(amt);
-        buf.putInt(forLmkdOnly ? 1 : 0);
         writeLmkd(buf, null);
         long now = SystemClock.elapsedRealtime();
         if ((now-start) > 250) {
@@ -1482,8 +1477,8 @@ public final class ProcessList extends ProcessListInternal
     // The max size for PROCS_PRIO cmd in LMKD
     private static final int MAX_PROCS_PRIO_PACKET_SIZE = 3;
 
-    // (4 bytes per field * 5 fields * 3 processes per batch) + 4 bytes for the LMKD cmd
-    private static final int MAX_OOM_ADJ_BATCH_LENGTH = ((4 * 5) * MAX_PROCS_PRIO_PACKET_SIZE) + 4;
+    // (4 bytes per field * 4 fields * 3 processes per batch) + 4 bytes for the LMKD cmd
+    private static final int MAX_OOM_ADJ_BATCH_LENGTH = ((4 * 4) * MAX_PROCS_PRIO_PACKET_SIZE) + 4;
 
     /**
      * Set the out-of-memory badness adjustment for a list of processes.
@@ -1517,8 +1512,6 @@ public final class ProcessList extends ProcessListInternal
             buf.putInt(uid);
             buf.putInt(amt);
             buf.putInt(0);  // Default proc type to PROC_TYPE_APP
-            // for_lmkd_only is not supported in batch updates.
-            buf.putInt(0);
             total_procs_in_buf++;
         }
         writeLmkd(buf, null);
