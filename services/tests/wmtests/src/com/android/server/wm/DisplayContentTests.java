@@ -28,6 +28,7 @@ import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_NOSENSOR;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowContainerChildProto.DISPLAY_CONTENT;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.view.Display.DEFAULT_DISPLAY;
@@ -90,6 +91,7 @@ import static com.android.server.wm.TransitionSubject.assertThat;
 import static com.android.server.wm.WindowContainer.AnimationFlags.PARENTS;
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
 import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_NORMAL;
+import static com.android.server.wm.WindowTracingLogLevel.ALL;
 import static com.android.window.flags.Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING;
 import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE;
@@ -141,6 +143,7 @@ import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.util.proto.ProtoOutputStream;
 import android.view.Display;
 import android.view.DisplayCutout;
 import android.view.DisplayInfo;
@@ -174,6 +177,8 @@ import com.android.server.policy.WindowManagerPolicy;
 import com.android.server.wm.utils.WmDisplayCutout;
 import com.android.window.flags.Flags;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -189,6 +194,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BooleanSupplier;
+
+import perfetto.protos.Windowmanagerservice.DisplayContentProto;
+import perfetto.protos.Windowmanagerservice.DisplayFramesProto;
+import perfetto.protos.Windowmanagerservice.WindowContainerChildProto;
 
 /**
  * Tests for the {@link DisplayContent} class.
@@ -3661,5 +3670,30 @@ public class DisplayContentTests extends WindowTestsBase {
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Test
+    public void testDumpDebug() throws InvalidProtocolBufferException {
+        final ProtoOutputStream proto = new ProtoOutputStream();
+
+        mDisplayContent.dumpDebug(proto, DISPLAY_CONTENT, ALL);
+        final DisplayFrames displayFrames = mDisplayContent.mDisplayFrames;
+
+        final DisplayContentProto displayContentProto =
+                WindowContainerChildProto.parseFrom(proto.getBytes()).getDisplayContent();
+        final DisplayFramesProto displayFramesProto = displayContentProto.getDisplayFrames();
+        assertEquals(mDisplayContent.getDisplayId(), displayContentProto.getId());
+        assertEquals(mDisplayContent.mBaseDisplayDensity, displayContentProto.getDpi());
+        assertEquals(displayFrames.mWidth, displayFramesProto.getWidth());
+        assertEquals(displayFrames.mHeight, displayFramesProto.getHeight());
+        assertEquals(displayFrames.mRotation, displayFramesProto.getRotation());
+        assertEquals(mDisplayContent.mMinSizeOfResizeableTaskDp,
+                displayContentProto.getMinSizeOfResizeableTaskDp());
+        assertEquals(mDisplayContent.isReady(), displayContentProto.getDisplayReady());
+        assertEquals(mDisplayContent.isSleeping(), displayContentProto.getIsSleeping());
+        assertEquals(0, displayContentProto.getSleepTokensCount());
+        assertEquals(mDisplayContent.getImePolicy(), displayContentProto.getImePolicy());
+        assertEquals(0, displayContentProto.getKeepClearAreasCount());
+        assertEquals(mDisplayContent.getEngagementMode(), displayContentProto.getEngagementMode());
     }
 }

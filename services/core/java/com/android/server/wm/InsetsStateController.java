@@ -16,8 +16,8 @@
 
 package com.android.server.wm;
 
-import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.IME_INSETS_SOURCE_PROVIDER;
-import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.INSETS_SOURCE_PROVIDERS;
+import static android.internal.perfetto.protos.Windowmanagerservice.InsetsStateControllerProto.INSETS_SOURCE_PROVIDERS;
+import static android.internal.perfetto.protos.Windowmanagerservice.InsetsStateControllerProto.INSETS_STATE;
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 import static android.view.InsetsSource.FLAG_FORCE_CONSUMING;
 import static android.view.InsetsSource.ID_IME;
@@ -564,15 +564,13 @@ class InsetsStateController {
                     + WindowInsets.Type.toString(mForcedConsumingTypes));
         }
     }
-
-    void dumpDebug(@NonNull ProtoOutputStream proto, @WindowTracingLogLevel int logLevel) {
+    void dumpDebug(@NonNull ProtoOutputStream proto, long fieldId) {
+        final long token = proto.start(fieldId);
+        mState.dumpDebug(proto, INSETS_STATE);
         for (int i = mProviders.size() - 1; i >= 0; i--) {
             final InsetsSourceProvider provider = mProviders.valueAt(i);
-            provider.dumpDebug(proto,
-                    provider.getSource().getType() == ime()
-                            ? IME_INSETS_SOURCE_PROVIDER
-                            : INSETS_SOURCE_PROVIDERS,
-                    logLevel);
+            provider.dumpDebug(proto, INSETS_SOURCE_PROVIDERS);
         }
+        proto.end(token);
     }
 }
