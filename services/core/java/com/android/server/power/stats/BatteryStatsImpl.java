@@ -5472,24 +5472,37 @@ public class BatteryStatsImpl extends BatteryStats {
                 display, Display.stateToString(state), Display.stateReasonToString(reason));
     }
 
-    @GuardedBy("this")
-    public void noteScreenStateLocked(int display, int state) {
-        noteScreenStateLocked(display, state, Display.STATE_REASON_UNKNOWN,
-                mClock.elapsedRealtime(), mClock.uptimeMillis(), mClock.currentTimeMillis());
+    /**
+     * Returns the display state priority, to be used for multiple displays for logging.
+     *
+     * @param state The display state to get priority for.
+     * @return The display state priority.
+     */
+    public static int getDisplayStatePriority(final int state) {
+        switch (state) {
+            case Display.STATE_ON:
+                return 4;
+            case Display.STATE_DOZE:
+                return 3;
+            case Display.STATE_DOZE_SUSPEND:
+                return 2;
+            case Display.STATE_OFF:
+                return 1;
+            case Display.STATE_UNKNOWN:
+            default:
+                return 0;
+        }
     }
 
-    @GuardedBy("this")
-    public void noteScreenStateLocked(int display, int displayState,
-            @Display.StateReason int displayStateReason, long elapsedRealtimeMs, long uptimeMs,
-            long currentTimeMs) {
-        if (Flags.batteryStatsScreenStateEvent()) {
-            mHistory.recordEvent(
-                    elapsedRealtimeMs, uptimeMs, HistoryItem.EVENT_DISPLAY_STATE_CHANGED,
-                    getScreenStateTag(display, displayState, displayStateReason),
-                    Process.INVALID_UID);
-        }
-        // Battery stats relies on there being 4 states. To accommodate this, new states beyond the
-        // original 4 are mapped to one of the originals.
+    /**
+     * Returns the state recognized by battery stats for the {@code displayState} passed in.
+     * BatteryStats relies on there being 4 states. To accommodate this, new states beyond the
+     * original 4 are mapped to one of the originals.
+     *
+     * @param displayState the display state for which the sanitized state is desired.
+     * @return the sanitized display state that BatteryStats understands.
+     */
+    public static int getSanitizedDisplayState(int displayState) {
         if (displayState > MAX_TRACKED_SCREEN_STATE) {
             if (Display.isOnState(displayState)) {
                 displayState = Display.STATE_ON;
@@ -5512,6 +5525,33 @@ public class BatteryStatsImpl extends BatteryStats {
         //  - Display.STATE_DOZE_SUSPEND
         //  - Display.STATE_OFF
         //  - Display.STATE_UNKNOWN
+        return displayState;
+    }
+
+    /**
+     * Updates display state and brightness.
+     */
+    @GuardedBy("this")
+    public void noteScreenStateLocked(int display, int state) {
+        noteScreenStateLocked(display, state, Display.STATE_REASON_UNKNOWN,
+                mClock.elapsedRealtime(), mClock.uptimeMillis(), mClock.currentTimeMillis());
+    }
+
+    /**
+     * Updates display state and brightness.
+     */
+    @GuardedBy("this")
+    public void noteScreenStateLocked(int display, int displayState,
+            @Display.StateReason int displayStateReason, long elapsedRealtimeMs, long uptimeMs,
+            long currentTimeMs) {
+        if (Flags.batteryStatsScreenStateEvent()) {
+            mHistory.recordEvent(
+                    elapsedRealtimeMs, uptimeMs, HistoryItem.EVENT_DISPLAY_STATE_CHANGED,
+                    getScreenStateTag(display, displayState, displayStateReason),
+                    Process.INVALID_UID);
+        }
+
+        displayState = getSanitizedDisplayState(displayState);
 
         int state;
         int overallBin = mScreenBrightnessBin;
@@ -5603,22 +5643,14 @@ public class BatteryStatsImpl extends BatteryStats {
                                     + " for display " + display);
             }
 
-            // Reevaluate most important display screen state.
+            // Reevaluate the most important display screen state.
             state = Display.STATE_UNKNOWN;
+            int currentPriority = 0;
             for (int i = 0; i < numDisplay; i++) {
-                final int tempState = mPerDisplayBatteryStats[i].screenState;
-                if (tempState == Display.STATE_ON
-                        || state == Display.STATE_ON) {
-                    state = Display.STATE_ON;
-                } else if (tempState == Display.STATE_DOZE
-                        || state == Display.STATE_DOZE) {
-                    state = Display.STATE_DOZE;
-                } else if (tempState == Display.STATE_DOZE_SUSPEND
-                        || state == Display.STATE_DOZE_SUSPEND) {
-                    state = Display.STATE_DOZE_SUSPEND;
-                } else if (tempState == Display.STATE_OFF
-                        || state == Display.STATE_OFF) {
-                    state = Display.STATE_OFF;
+                if (getDisplayStatePriority(mPerDisplayBatteryStats[i].screenState)
+                        > currentPriority) {
+                    state = mPerDisplayBatteryStats[i].screenState;
+                    currentPriority = getDisplayStatePriority(state);
                 }
             }
         }
