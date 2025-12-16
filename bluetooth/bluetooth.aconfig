@@ -11,3 +11,10 @@ flag {
     bug: "395709071"
 }
 
+flag {
+  name: "autonomous_repairing_initiation"
+  is_exported: true
+  namespace: "bluetooth"
+  description: "Enable Autonomous repairing changes for Android Bluetooth from 26Q2"
+  bug: "459761960"
+}
