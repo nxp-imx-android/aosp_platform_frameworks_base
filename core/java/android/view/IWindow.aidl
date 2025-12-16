@@ -143,4 +143,12 @@ oneway interface IWindow {
      * this process if *all* view roots for the process have requested animations to be disabled.
      */
      void requestViewAnimationsDisabled(boolean disabled);
+
+    /**
+     * Dispatches a command to scroll the main content to the top.
+     *
+     * @param x The x-coordinate of the scroll-to-top command, in the coordinate
+     *         space of this window.
+     */
+    void dispatchScrollToTop(int x);
 }

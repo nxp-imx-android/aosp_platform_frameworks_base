@@ -394,6 +394,12 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         rect.set(mInvisibleBounds);
     }
 
+    /** Copies the top-left and bottom-right stage bounds into the provided Rects */
+    public void getStageBounds(Rect topLeft, Rect bottomRight) {
+        copyTopLeftBounds(topLeft);
+        copyBottomRightBounds(bottomRight);
+    }
+
     /** Returns leash of the current divider bar. */
     @Nullable
     public SurfaceControl getDividerLeash() {

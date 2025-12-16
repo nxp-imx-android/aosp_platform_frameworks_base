@@ -30,6 +30,7 @@ import com.android.wm.shell.keyguard.KeyguardTransitions;
 import com.android.wm.shell.onehanded.OneHanded;
 import com.android.wm.shell.pip.Pip;
 import com.android.wm.shell.recents.RecentTasks;
+import com.android.wm.shell.scrolltotop.ScrollToTop;
 import com.android.wm.shell.shared.ShellTransitions;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.splitscreen.SplitScreen;
@@ -123,6 +124,9 @@ public interface WMComponent {
 
     @WMSingleton
     Optional<AppHandles> getAppHandles();
+
+    @WMSingleton
+    Optional<ScrollToTop> getScrollToTop();
 
     // Injector methods to support field injection
 

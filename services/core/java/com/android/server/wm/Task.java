@@ -1311,6 +1311,23 @@ class Task extends TaskFragment {
         mRootWindowContainer.updateUIDsPresentOnDisplay();
     }
 
+    /**
+     * Finds the top visible app window at the given x-coordinate.
+     */
+    @Nullable
+    WindowState getTopVisibleAppWindowAt(int x) {
+        return getWindow(w -> {
+            if (w.mActivityRecord == null) {
+                return false;
+            }
+            if (!w.isVisible()) {
+                return false;
+            }
+            final Rect bounds = w.getBounds();
+            return x >= bounds.left && x < bounds.right;
+        });
+    }
+
     boolean isOverrideBoundsAllowed() {
         Task parentTask = getParent() != null ? getParent().asTask() : null;
         while (parentTask != null) {

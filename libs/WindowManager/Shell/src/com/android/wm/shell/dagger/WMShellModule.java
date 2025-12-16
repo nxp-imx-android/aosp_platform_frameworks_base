@@ -209,6 +209,7 @@ import com.android.wm.shell.pip2.phone.PipScheduler;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
 import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.recents.RecentsTransitionHandler;
+import com.android.wm.shell.scrolltotop.ScrollToTopController;
 import com.android.wm.shell.shared.TransactionPool;
 import com.android.wm.shell.shared.annotations.ShellAnimationThread;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
@@ -764,6 +765,22 @@ public abstract class WMShellModule {
                 mainExecutor,
                 mainHandler);
     }
+
+    //
+    // Scroll To Top
+    //
+
+    @WMSingleton
+    @Provides
+    static ScrollToTopController provideScrollToTopController(
+            @ShellMainThread ShellExecutor mainExecutor,
+            IWindowManager windowManager,
+            Optional<SplitScreenController> splitScreenController) {
+        return new ScrollToTopController(mainExecutor, windowManager,
+                splitScreenController);
+    }
+
+
 
     //
     // Splitscreen

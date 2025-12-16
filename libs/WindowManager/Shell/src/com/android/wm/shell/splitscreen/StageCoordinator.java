@@ -617,6 +617,21 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         }
     }
 
+    /** Returns true if any of the stages in the split screen are focused, false otherwise */
+    public boolean isSplitScreenFocused() {
+        if (!isSplitActive() || !isSplitScreenVisible()) {
+            return false;
+        }
+
+        if (enableFlexibleSplit()) {
+            return mStageOrderOperator.getActiveStages().stream()
+                    .anyMatch(StageTaskListener::isFocused);
+        } else {
+            return mMainStage.isFocused() || mSideStage.isFocused();
+        }
+    }
+
+
     /**
      * @param includingTopTask reparents the current top task into the stage defined by index
      *                         (or mainStage in legacy split)
@@ -1596,6 +1611,21 @@ public class StageCoordinator extends StageCoordinatorAbstract {
                     ? mSideStage.getTopVisibleChildTaskId()
                     : mMainStage.getTopVisibleChildTaskId();
         }
+    }
+
+    int getTaskIdAt(int x, int displayId) {
+        if (!isSplitScreenVisible() || mDisplayId != displayId) {
+            return INVALID_TASK_ID;
+        }
+
+        mSplitLayout.getStageBounds(mTempRect1, mTempRect2);
+        // mTempRect1 is Top/Left, mTempRect2 is Bottom/Right
+        if (x >= mTempRect1.left && x < mTempRect1.right) {
+            return getTaskId(SPLIT_POSITION_TOP_OR_LEFT);
+        } else if (x >= mTempRect2.left && x < mTempRect2.right) {
+            return getTaskId(SPLIT_POSITION_BOTTOM_OR_RIGHT);
+        }
+        return INVALID_TASK_ID;
     }
 
     void switchSplitPosition(String reason) {

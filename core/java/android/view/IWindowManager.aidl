@@ -873,6 +873,17 @@ interface IWindowManager
             IScrollCaptureResponseListener listener);
 
     /**
+     * Dispatches a scroll to top command to the appropriate window on the given display.
+     *
+     * @param displayId The ID of the display.
+     * @param x The x-coordinate of the command in the display's coordinate space.
+     * @param targetTaskId The ID of the task that should receive the event, or -1 to use default
+     *                     focus logic.
+     */
+    @EnforcePermission("STATUS_BAR_SERVICE")
+    void dispatchScrollToTop(int displayId, int x, int targetTaskId);
+
+    /**
      * Holds the WM lock for the specified amount of milliseconds.
      * Intended for use by the tests that need to imitate lock contention.
      * The token should be obtained by
