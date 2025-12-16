@@ -20,31 +20,24 @@ import android.content.Intent
 import android.os.UserHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.compose.animation.scene.ObservableTransitionState
-import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
-import com.android.systemui.authentication.domain.interactor.authenticationInteractor
 import com.android.systemui.broadcast.mockBroadcastSender
-import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.advanceTimeBy
-import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
-import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.scene.SceneHelper.setDeviceEntered
+import com.android.systemui.scene.SceneHelper.setScene
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.policy.data.repository.fakeDeviceProvisioningRepository
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.time.Duration.Companion.milliseconds
-import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -218,29 +211,6 @@ class GrowthInteractorTest : SysuiTestCase() {
         overrideResource(R.string.config_growthAppPackageName, packageName)
         overrideResource(R.string.config_growthReceiverClassName, receiverClassName)
         overrideResource(R.integer.config_growthBroadcastDelayMillis, DELAY_200_MILLIS)
-    }
-
-    private suspend fun Kosmos.setDeviceEntered() {
-        val currentScene by collectLastValue(kosmos.sceneInteractor.currentScene)
-        val isDeviceEnteredDirectly by
-            collectLastValue(kosmos.deviceEntryInteractor.isDeviceEnteredDirectly)
-        assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-        assertThat(isDeviceEnteredDirectly).isFalse()
-
-        // Authenticate with PIN to unlock and dismiss the lockscreen.
-        kosmos.authenticationInteractor.authenticate(FakeAuthenticationRepository.DEFAULT_PIN)
-        kosmos.runCurrent()
-
-        assertThat(currentScene).isEqualTo(Scenes.Gone)
-        assertThat(isDeviceEnteredDirectly).isTrue()
-    }
-
-    private fun Kosmos.setScene(sceneKey: SceneKey) {
-        kosmos.sceneInteractor.changeScene(sceneKey, "test")
-        kosmos.sceneInteractor.setTransitionState(
-            flowOf<ObservableTransitionState>(ObservableTransitionState.Idle(sceneKey))
-        )
-        kosmos.runCurrent()
     }
 
     companion object {

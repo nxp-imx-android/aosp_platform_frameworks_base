@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.android.systemui.shade.ui.viewmodel
 
 import android.content.Intent
@@ -12,13 +28,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
-import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
-import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
@@ -30,6 +42,8 @@ import com.android.systemui.privacy.PrivacyApplication
 import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.privacy.PrivacyType
 import com.android.systemui.res.R
+import com.android.systemui.scene.SceneHelper.setDeviceEntered
+import com.android.systemui.scene.SceneHelper.setScene
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
@@ -38,7 +52,6 @@ import com.android.systemui.shade.domain.interactor.disableDualShade
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.ui.composable.ChipHighlightModel
-import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.fakeMobileIconsInteractor
 import com.android.systemui.statusbar.policy.configurationController
@@ -428,11 +441,6 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
             )
     }
 
-    private fun Kosmos.setScene(key: SceneKey) {
-        sceneInteractor.changeScene(key, "test")
-        sceneInteractor.setTransitionState(flowOf(ObservableTransitionState.Idle(key)))
-    }
-
     private fun Kosmos.setOverlay(key: OverlayKey) {
         sceneInteractor.showOverlay(key, "test")
         sceneInteractor.setTransitionState(
@@ -443,18 +451,6 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
                 )
             )
         )
-    }
-
-    private fun Kosmos.setDeviceEntered(isEntered: Boolean) {
-        if (isEntered) {
-            // Unlock the device marking the device has entered.
-            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
-                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
-            )
-        }
-        setScene(if (isEntered) Scenes.Gone else Scenes.Lockscreen)
-        assertThat(deviceEntryInteractor.isDeviceEntered.value).isEqualTo(isEntered)
     }
 
     private fun Kosmos.setUseDesktopStatusBar(enable: Boolean) {

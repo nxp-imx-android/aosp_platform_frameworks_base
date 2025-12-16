@@ -19,11 +19,8 @@ package com.android.systemui.shade
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.compose.animation.scene.ObservableTransitionState
-import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fakeFeatureFlagsClassic
@@ -34,6 +31,8 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testCase
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.scene.SceneHelper.setDeviceEntered
+import com.android.systemui.scene.SceneHelper.setScene
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
@@ -45,7 +44,6 @@ import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.mock
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -228,25 +226,6 @@ class ShadeControllerSceneImplTest : SysuiTestCase() {
 
             assertThat(currentScene).isEqualTo(homeScene)
         }
-
-    private fun Kosmos.setScene(key: SceneKey) {
-        sceneInteractor.changeScene(key, "test")
-        sceneInteractor.setTransitionState(
-            MutableStateFlow<ObservableTransitionState>(ObservableTransitionState.Idle(key))
-        )
-    }
-
-    private fun Kosmos.setDeviceEntered(isEntered: Boolean) {
-        if (isEntered) {
-            // Unlock the device marking the device has entered.
-            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
-                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
-            )
-        }
-        setScene(if (isEntered) Scenes.Gone else Scenes.Lockscreen)
-        assertThat(deviceEntryInteractor.isDeviceEntered.value).isEqualTo(isEntered)
-    }
 
     private fun Kosmos.setCollapsed() {
         setScene(Scenes.Gone)
