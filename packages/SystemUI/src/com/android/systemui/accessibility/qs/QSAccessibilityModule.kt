@@ -23,7 +23,6 @@ import com.android.systemui.qs.shared.model.TileCategory
 import com.android.systemui.qs.tileimpl.QSTileImpl
 import com.android.systemui.qs.tiles.ColorCorrectionTile
 import com.android.systemui.qs.tiles.ColorInversionTile
-import com.android.systemui.qs.tiles.DreamTile
 import com.android.systemui.qs.tiles.FontScalingTile
 import com.android.systemui.qs.tiles.HearingDevicesTile
 import com.android.systemui.qs.tiles.NightDisplayTile
@@ -102,12 +101,6 @@ interface QSAccessibilityModule {
     @IntoMap
     @StringKey(ColorCorrectionTile.TILE_SPEC)
     fun bindColorCorrectionTile(colorCorrectionTile: ColorCorrectionTile): QSTileImpl<*>
-
-    /** Inject DreamTile into tileMap in QSModule */
-    @Binds
-    @IntoMap
-    @StringKey(DreamTile.TILE_SPEC)
-    fun bindDreamTile(dreamTile: DreamTile): QSTileImpl<*>
 
     /** Inject FontScalingTile into tileMap in QSModule */
     @Binds
