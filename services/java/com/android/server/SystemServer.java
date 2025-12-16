@@ -2704,13 +2704,11 @@ public final class SystemServer implements Dumpable {
                 t.traceEnd();
             }
 
-            if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_LIVE_TV) || isTv) {
+            if (isTv || mPackageManager.hasSystemFeature(PackageManager.FEATURE_LIVE_TV)) {
                 t.traceBegin("StartTvInteractiveAppManager");
                 mSystemServiceManager.startService(TvInteractiveAppManagerService.class);
                 t.traceEnd();
-            }
 
-            if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_LIVE_TV) || isTv) {
                 t.traceBegin("StartTvInputManager");
                 mSystemServiceManager.startService(TvInputManagerService.class);
                 t.traceEnd();
