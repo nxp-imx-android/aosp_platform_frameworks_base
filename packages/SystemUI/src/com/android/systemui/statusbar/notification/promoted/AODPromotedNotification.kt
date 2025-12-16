@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.notification.promoted
 
 import android.app.Flags.apiMetricStyle
-import android.app.Flags.notificationsRedesignTemplates
 import android.app.Flags.richOngoingImprovements
 import android.app.Notification
 import android.content.Context
@@ -270,10 +269,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     private val closeButton: View? = root.findViewById(R.id.close_button)
     private val conversationIconBadge: View? = root.findViewById(R.id.conversation_icon_badge)
     private val conversationIcon: CachingIconView? = root.findViewById(R.id.conversation_icon)
-    private val conversationText: TextView? =
-        root.findViewById(
-            if (notificationsRedesignTemplates()) R.id.title else R.id.conversation_text
-        )
+    private val conversationText: TextView? = root.findViewById(R.id.title)
     private val expandButton: NotificationExpandButton? = root.findViewById(R.id.expand_button)
     // TODO : This is not used here! consider removing it with its divider.
     private val headerText: TextView? = root.findViewById(R.id.header_text)
@@ -336,16 +332,18 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         }
     private val defaultLargeIconSizePx: Int =
         root.context.resources.getDimensionPixelSize(R.dimen.notification_right_icon_size)
-    private val defaultTypeface: Typeface? = getNotificationTypeFace(root.context)
+
+    // TODO: This try-catch is unnecessary, consider removing it.
+    private val defaultTypeface: Typeface? =
+        try {
+            Typeface.create(FontStyles.GSF_BODY_MEDIUM, Typeface.NORMAL)
+        } catch (_: Throwable) {
+            Log.wtf(TAG, "Font is not found for Promoted Notifications")
+            null
+        }
 
     private val marginPx: Int =
-        if (notificationsRedesignTemplates()) {
-            root.context.resources.getDimensionPixelSize(R.dimen.notification_2025_margin)
-        } else {
-            root.context.resources.getDimensionPixelSize(
-                systemuiR.dimen.notification_shade_content_margin_horizontal
-            )
-        }
+        root.context.resources.getDimensionPixelSize(R.dimen.notification_2025_margin)
 
     private val progressStyleProgressThickness: Float =
         root.context.resources.getDimension(
@@ -385,14 +383,12 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         adjustPromotedNotificationTextColors()
         adjustPromotedNotificationTextFonts()
 
-        if (notificationsRedesignTemplates()) {
-            (mainColumn?.layoutParams as? MarginLayoutParams)?.let { mainColumnMargins ->
-                mainColumnMargins.topMargin =
-                    Notification.Builder.getContentMarginTop(
-                        root.context,
-                        R.dimen.notification_2025_content_margin_top,
-                    )
-            }
+        (mainColumn?.layoutParams as? MarginLayoutParams)?.let { mainColumnMargins ->
+            mainColumnMargins.topMargin =
+                Notification.Builder.getContentMarginTop(
+                    root.context,
+                    R.dimen.notification_2025_content_margin_top,
+                )
         }
     }
 
@@ -996,20 +992,6 @@ private class AODPromotedNotificationViewUpdater(root: View) {
             metricView.textValue?.let(::adjustTextViewFont)
         }
     }
-
-    private fun getNotificationTypeFace(context: Context): Typeface? =
-        try {
-            val defaultFontFamily =
-                if (notificationsRedesignTemplates()) {
-                    FontStyles.GSF_BODY_MEDIUM
-                } else {
-                    context.resources.getString(R.string.config_bodyFontFamily)
-                }
-            Typeface.create(defaultFontFamily, Typeface.NORMAL)
-        } catch (throwable: Throwable) {
-            Log.wtf(TAG, "Font is not found for Promoted Notifications")
-            null
-        }
 
     private fun adjustTextViewFont(view: TextView?) {
         view?.setTypeface(defaultTypeface, Typeface.NORMAL)

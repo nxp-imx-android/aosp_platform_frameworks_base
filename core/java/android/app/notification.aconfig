@@ -14,13 +14,6 @@ flag {
 }
 
 flag {
-  name: "notifications_redesign_templates"
-  namespace: "systemui"
-  description: "Notifications Redesign: Update notification templates"
-  bug: "378660052"
-}
-
-flag {
   name: "headline_prototypes"
   namespace: "notifications"
   description: "This flag adds static control for enabling prototypes for the headline project"

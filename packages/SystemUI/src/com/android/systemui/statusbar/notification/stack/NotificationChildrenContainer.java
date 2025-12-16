@@ -16,8 +16,6 @@
 
 package com.android.systemui.statusbar.notification.stack;
 
-import static android.app.Flags.notificationsRedesignTemplates;
-
 import android.app.Notification;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -190,18 +188,10 @@ public class NotificationChildrenContainer extends ViewGroup
         mDividerHeight = res.getDimensionPixelOffset(
                 R.dimen.notification_children_container_divider_height);
         mDividerAlpha = res.getFloat(R.dimen.notification_divider_alpha);
-        if (notificationsRedesignTemplates()) {
-            mHeaderHeight = res.getDimensionPixelSize(R.dimen.notification_2025_header_height);
-            mCollapsedHeaderMargin = Notification.Builder.getContentMarginTop(getContext(),
-                    R.dimen.notification_2025_children_container_margin_top);
-            mAdditionalExpandedHeaderMargin = getHeaderHeight() - getCollapsedHeaderMargin();
-        } else {
-            mCollapsedHeaderMargin = res.getDimensionPixelOffset(
-                    R.dimen.notification_children_container_margin_top);
-            mAdditionalExpandedHeaderMargin = res.getDimensionPixelOffset(
-                    R.dimen.notification_children_container_top_padding);
-            mHeaderHeight = getCollapsedHeaderMargin() + getAdditionalExpandedHeaderMargin();
-        }
+        mHeaderHeight = res.getDimensionPixelSize(R.dimen.notification_2025_header_height);
+        mCollapsedHeaderMargin = Notification.Builder.getContentMarginTop(getContext(),
+                R.dimen.notification_2025_children_container_margin_top);
+        mAdditionalExpandedHeaderMargin = getHeaderHeight() - getCollapsedHeaderMargin();
 
         mCollapsedBottomPadding = res.getDimensionPixelOffset(
                 R.dimen.notification_children_collapsed_bottom_padding);
@@ -916,29 +906,27 @@ public class NotificationChildrenContainer extends ViewGroup
                     "NotificationChildrenContainer.updateState.header");
             mHeaderViewState.setAlpha(mHeaderVisibleAmount, "header visible amount");
 
-            if (notificationsRedesignTemplates()) {
-                // While mUserLocked, the expandFactor reflects where in the drag-to-expand gesture
-                // we are so that we can calculate the intermediary translation needed for the
-                // header components. Otherwise, we just set the final desired translation based
-                // on whether the group is expanded or not.
-                float topLineTranslation = 0, expandButtonTranslation = 0;
-                if (mIsUserSwipingToExpandRow) {
-                    topLineTranslation = mGroupHeader.getTopLineTranslation() * expandFactor;
-                    expandButtonTranslation =
-                            mGroupHeader.getExpandButtonTranslation() * expandFactor;
-                } else if (mChildrenExpanded) {
-                    topLineTranslation = mGroupHeader.getTopLineTranslation();
-                    expandButtonTranslation = mGroupHeader.getExpandButtonTranslation();
-                }
-
-                mTopLineViewState = initStateForGroupHeader(mTopLineViewState);
-                mTopLineViewState.setYTranslation(topLineTranslation,
-                        "NotificationChildrenContainer.updateState.topLine");
-
-                mExpandButtonViewState = initStateForGroupHeader(mExpandButtonViewState);
-                mExpandButtonViewState.setYTranslation(expandButtonTranslation,
-                        "NotificationChildrenContainer.updateState.expandButton");
+            // While mUserLocked, the expandFactor reflects where in the drag-to-expand gesture
+            // we are so that we can calculate the intermediary translation needed for the
+            // header components. Otherwise, we just set the final desired translation based
+            // on whether the group is expanded or not.
+            float topLineTranslation = 0, expandButtonTranslation = 0;
+            if (mIsUserSwipingToExpandRow) {
+                topLineTranslation = mGroupHeader.getTopLineTranslation() * expandFactor;
+                expandButtonTranslation =
+                        mGroupHeader.getExpandButtonTranslation() * expandFactor;
+            } else if (mChildrenExpanded) {
+                topLineTranslation = mGroupHeader.getTopLineTranslation();
+                expandButtonTranslation = mGroupHeader.getExpandButtonTranslation();
             }
+
+            mTopLineViewState = initStateForGroupHeader(mTopLineViewState);
+            mTopLineViewState.setYTranslation(topLineTranslation,
+                    "NotificationChildrenContainer.updateState.topLine");
+
+            mExpandButtonViewState = initStateForGroupHeader(mExpandButtonViewState);
+            mExpandButtonViewState.setYTranslation(expandButtonTranslation,
+                    "NotificationChildrenContainer.updateState.expandButton");
         }
     }
 
@@ -1064,7 +1052,7 @@ public class NotificationChildrenContainer extends ViewGroup
         }
         // Only apply the special viewState for the header's children if we're not currently showing
         // the minimized header.
-        if (notificationsRedesignTemplates() && !showingAsLowPriority()) {
+        if (!showingAsLowPriority()) {
             if (mTopLineViewState != null) {
                 mTopLineViewState.applyToView(mGroupHeader.getTopLineView());
             }
@@ -1236,8 +1224,7 @@ public class NotificationChildrenContainer extends ViewGroup
                 mHeaderViewState.applyToView(mGroupHeader);
             }
 
-            if (notificationsRedesignTemplates()
-                    && mCurrentHeader instanceof NotificationHeaderView groupHeader) {
+            if (mCurrentHeader instanceof NotificationHeaderView groupHeader) {
                 if (mTopLineViewState != null) {
                     mTopLineViewState.animateTo(groupHeader.getTopLineView(), properties);
                 }

@@ -16,8 +16,6 @@
 
 package com.android.internal.widget;
 
-import static android.app.Flags.notificationsRedesignTemplates;
-
 import android.annotation.AttrRes;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -271,11 +269,7 @@ public class MessagingGroup extends NotificationOptimizedLinearLayout implements
     }
 
     private static int getMessagingGroupLayoutResource() {
-        if (notificationsRedesignTemplates()) {
-            return R.layout.notification_2025_messaging_group;
-        } else {
-            return R.layout.notification_template_messaging_group;
-        }
+        return R.layout.notification_2025_messaging_group;
     }
 
     public void removeMessage(MessagingMessage messagingMessage,
@@ -456,10 +450,8 @@ public class MessagingGroup extends NotificationOptimizedLinearLayout implements
     }
 
     private void updateIconVisibility() {
-        if (notificationsRedesignTemplates()) {
-            // We don't show any icon (other than the app or person icon) in the collapsed form.
-            mMessagingIconContainer.setVisibility(mIsCollapsed ? GONE : VISIBLE);
-        }
+        // We don't show any icon (other than the app or person icon) in the collapsed form.
+        mMessagingIconContainer.setVisibility(mIsCollapsed ? GONE : VISIBLE);
     }
 
     @Override
@@ -744,28 +736,7 @@ public class MessagingGroup extends NotificationOptimizedLinearLayout implements
     public void setIsInConversation(boolean isInConversation) {
         if (mIsInConversation != isInConversation) {
             mIsInConversation = isInConversation;
-
-            if (notificationsRedesignTemplates()) {
-                updateIconVisibility();
-                // No other alignment adjustments are necessary in the redesign, as the size of the
-                // icons in both conversations and old messaging notifications are the same.
-                return;
-            }
-
-            MarginLayoutParams layoutParams =
-                    (MarginLayoutParams) mMessagingIconContainer.getLayoutParams();
-            layoutParams.width = mIsInConversation
-                    ? mConversationContentStart
-                    : mNonConversationContentStart;
-            mMessagingIconContainer.setLayoutParams(layoutParams);
-            int imagePaddingStart = isInConversation ? 0 : mNonConversationPaddingStart;
-            mMessagingIconContainer.setPaddingRelative(imagePaddingStart, 0, 0, 0);
-
-            ViewGroup.LayoutParams avatarLayoutParams = mAvatarView.getLayoutParams();
-            int size = mIsInConversation ? mConversationAvatarSize : mNonConversationAvatarSize;
-            avatarLayoutParams.height = size;
-            avatarLayoutParams.width = size;
-            mAvatarView.setLayoutParams(avatarLayoutParams);
+            updateIconVisibility();
         }
     }
 

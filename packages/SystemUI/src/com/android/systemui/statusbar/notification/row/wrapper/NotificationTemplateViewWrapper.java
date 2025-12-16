@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.notification.row.wrapper;
 
-import static android.app.Flags.notificationsRedesignTemplates;
 import static android.view.View.VISIBLE;
 
 import static com.android.systemui.statusbar.notification.row.ExpandableNotificationRow.DEFAULT_HEADER_VISIBLE_AMOUNT;
@@ -156,12 +155,8 @@ public class NotificationTemplateViewWrapper extends NotificationHeaderViewWrapp
                 }, TRANSFORMING_VIEW_TEXT);
         int contentMargin = ctx.getResources().getDimensionPixelSize(
                 com.android.internal.R.dimen.notification_content_margin);
-        int contentMarginTop =
-                notificationsRedesignTemplates()
-                        ? Notification.Builder.getContentMarginTop(ctx,
-                            com.android.internal.R.dimen.notification_2025_content_margin_top)
-                        : ctx.getResources().getDimensionPixelSize(
-                            com.android.internal.R.dimen.notification_content_margin_top);
+        int contentMarginTop = Notification.Builder.getContentMarginTop(ctx,
+                        com.android.internal.R.dimen.notification_2025_content_margin_top);
         mFullHeaderTranslation = contentMargin - contentMarginTop;
     }
 
@@ -369,10 +364,6 @@ public class NotificationTemplateViewWrapper extends NotificationHeaderViewWrapp
     @Override
     public int getExtraMeasureHeight() {
         int extra = 0;
-        if (!notificationsRedesignTemplates() && mActions != null) {
-            // With the redesign, this should always be 0.
-            extra = mActions.getExtraMeasureHeight();
-        }
         if (mRemoteInputHistory != null && mRemoteInputHistory.getVisibility() != View.GONE) {
             extra += mRow.getContext().getResources().getDimensionPixelSize(
                     R.dimen.remote_input_history_extra_height);
