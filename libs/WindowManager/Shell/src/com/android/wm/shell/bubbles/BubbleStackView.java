@@ -3564,7 +3564,6 @@ public class BubbleStackView extends FrameLayout
     }
 
     private void dismissBubbleIfExists(@Nullable BubbleViewProvider bubble) {
-        android.util.Log.e("Liran", "BSV::dismissBubbleIfExists -- bubble = " + bubble);
         if (bubble != null && mBubbleData.hasBubbleInStackWithKey(bubble.getKey())) {
             if (mIsExpanded && mBubbleData.getBubbles().size() > 1
                     && Objects.equals(bubble, mExpandedBubble)) {
