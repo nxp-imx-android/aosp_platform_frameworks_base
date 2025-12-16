@@ -205,3 +205,13 @@ flag {
     description: "Allow global dispatch for TYPE_SPEECH_STATE_CHANGE"
     bug: "444032233"
 }
+
+flag {
+    name: "use_state_for_action_up_injection"
+    namespace: "accessibility"
+    description: "Uses the current injected pointer state from mState as the source of truth for the pointer bitmask when sending ACTION_UP, preventing injection failures."
+    bug: "445338326"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

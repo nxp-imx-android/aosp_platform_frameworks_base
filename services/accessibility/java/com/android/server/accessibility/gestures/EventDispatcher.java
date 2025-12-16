@@ -32,6 +32,7 @@ import android.view.accessibility.AccessibilityManager;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.accessibility.AccessibilityManagerService;
 import com.android.server.accessibility.EventStreamTransformation;
+import com.android.server.accessibility.Flags;
 import com.android.server.policy.WindowManagerPolicy;
 
 /**
@@ -421,6 +422,9 @@ public class EventDispatcher {
                 continue;
             }
             final int action = computeInjectionAction(MotionEvent.ACTION_POINTER_UP, i);
+            if (Flags.useStateForActionUpInjection() && action == MotionEvent.ACTION_UP) {
+                pointerIdBits = mState.getInjectedPointersDown();
+            }
             sendMotionEvent(prototype, action, mState.getLastReceivedRawEvent(),
                     pointerIdBits, policyFlags);
             pointerIdBits &= ~(1 << pointerId);
