@@ -352,7 +352,6 @@ public class SystemConfig {
     final ArrayMap<String, ArraySet<String>> mAllowedAssociations = new ArrayMap<>();
 
     private final ArraySet<String> mBugreportWhitelistedPackages = new ArraySet<>();
-    private final ArraySet<String> mNonAdminBugreportAllowedPackages = new ArraySet<>();
     private final ArraySet<String> mAppDataIsolationWhitelistedApps = new ArraySet<>();
 
     // These packages will be set as 'prevent disable', where they are no longer possible
@@ -541,10 +540,6 @@ public class SystemConfig {
 
     public ArraySet<String> getBugreportWhitelistedPackages() {
         return mBugreportWhitelistedPackages;
-    }
-
-    public ArraySet<String> getNonAdminBugreportAllowlistedPackages() {
-        return mNonAdminBugreportAllowedPackages;
     }
 
     public Set<String> getRollbackWhitelistedPackages() {
@@ -1031,9 +1026,6 @@ public class SystemConfig {
                         break;
                     case "bugreport-whitelisted":
                         readBugreportWhitelisted(parser, permFile, name);
-                        break;
-                    case "non-admin-bugreport-allowlisted":
-                        readNonAdminBugreportAllowlisted(parser, permFile, name);
                         break;
                     case "prevent-disable":
                         readPreventDisable(parser, permFile, name);
@@ -1784,18 +1776,6 @@ public class SystemConfig {
                     + " at " + parser.getPositionDescription());
         } else {
             mBugreportWhitelistedPackages.add(pkgname);
-        }
-        XmlUtils.skipCurrentTag(parser);
-    }
-
-    private void readNonAdminBugreportAllowlisted(XmlPullParser parser, File permFile, String name)
-            throws IOException, XmlPullParserException {
-        String pkgname = parser.getAttributeValue(null, "package");
-        if (pkgname == null) {
-            Slog.w(TAG, "<" + name + "> without package in " + permFile
-                    + " at " + parser.getPositionDescription());
-        } else {
-            mNonAdminBugreportAllowedPackages.add(pkgname);
         }
         XmlUtils.skipCurrentTag(parser);
     }
