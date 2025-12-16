@@ -53,6 +53,7 @@ android_test {
         "hamcrest-library",
         "kotlin-test",
         "mockingservicestests-utils-mockito",
+        "mockito-kotlin2",
         "mockito-target-extended-minus-junit4",
         "platform-compat-test-rules",
         "platform-parametric-runner-lib",
