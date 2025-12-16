@@ -212,7 +212,8 @@ public class SnapshotDrawerUtils {
             SurfaceControl rootSurface, TaskSnapshot snapshot,
             Rect windowBounds, Runnable reportDrawn) {
         new SnapshotSurface(rootSurface, snapshot, windowBounds, lp.getTitle())
-                .drawSnapshot(reportDrawn, true /* releaseAfterDraw */);
+                .drawSnapshot(reportDrawn, !com.android.window.flags.Flags
+                        .respectRequestedTaskSnapshotResolution() /* releaseAfterDraw */);
     }
 
     /**
