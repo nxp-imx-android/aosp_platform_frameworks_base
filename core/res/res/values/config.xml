@@ -3503,6 +3503,11 @@
     -->
     <bool name="config_allowPresentationOnInternalDisplay">false</bool>
 
+    <!-- When true, display moves between internal displays are NOT exempt from the self-kill
+         recovery logic.
+    -->
+    <bool name="config_enableSelfKillRecoveryBetweenInternalDisplays">false</bool>
+
     <!-- When true, udfps vote is ignored. This feature is disabled by default. -->
     <bool name="config_ignoreUdfpsVote">false</bool>
 
