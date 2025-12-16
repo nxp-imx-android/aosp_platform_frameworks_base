@@ -30,7 +30,7 @@ enum class PrivacyType(
     TYPE_CAMERA(
         R.string.privacy_type_camera,
         if (groupedPrivacyChip()) {
-            R.drawable.vd_camera
+            R.drawable.ic_privacy_camera
         } else {
             com.android.internal.R.drawable.perm_group_camera
         },
@@ -40,7 +40,7 @@ enum class PrivacyType(
     TYPE_MICROPHONE(
         R.string.privacy_type_microphone,
         if (groupedPrivacyChip()) {
-            R.drawable.vd_mic
+            R.drawable.ic_privacy_mic
         } else {
             com.android.internal.R.drawable.perm_group_microphone
         },
@@ -50,7 +50,7 @@ enum class PrivacyType(
     TYPE_LOCATION(
         R.string.privacy_type_location,
         if (groupedPrivacyChip()) {
-            R.drawable.vd_location
+            R.drawable.ic_privacy_location
         } else {
             com.android.internal.R.drawable.perm_group_location
         },
