@@ -4134,13 +4134,59 @@ public class PowerManagerServiceTest {
         assertThat(wakeLock.mDisabled).isFalse();
         advanceTime(1000);
 
-        mService.setForceDisableWakelocksInternal(true);
+        // empty array to signify all groups.
+        IntArray emptyGroups = new IntArray();
+        mService.setForceDisableWakelocksInternal(true, emptyGroups);
         advanceTime(1000);
         assertThat(wakeLock.mDisabled).isTrue();
 
-        mService.setForceDisableWakelocksInternal(false);
+        mService.setForceDisableWakelocksInternal(false, emptyGroups);
         advanceTime(1000);
         assertThat(wakeLock.mDisabled).isFalse();
+    }
+
+
+    @Test
+    @RequiresFlagsEnabled({Flags.FLAG_FORCE_DISABLE_WAKELOCKS})
+    public void testDisableWakelocks_certainGroups_whenForced() {
+        createService();
+        startSystem();
+        final int powerGroupId1 = 4;
+        final int displayId1 = 13;
+        final int powerGroupId2 = 8;
+        final int displayId2 = 26;
+
+        IBinder mockBinder = mock(IBinder.class);
+        IBinder mockBinder2 = mock(IBinder.class);
+        final DisplayInfo info1 = new DisplayInfo();
+        final DisplayInfo info2 = new DisplayInfo();
+        when(mDisplayManagerInternalMock.getDisplayInfo(displayId1)).thenReturn(info1);
+        when(mDisplayManagerInternalMock.getDisplayInfo(displayId2)).thenReturn(info2);
+        info1.displayGroupId = powerGroupId1;
+        info2.displayGroupId = powerGroupId2;
+
+        WakeLock wakeLock1 = acquireWakeLock("forceDisableTestWakeLock1",
+                PowerManager.PARTIAL_WAKE_LOCK, mockBinder, displayId1);
+        WakeLock wakeLock2 = acquireWakeLock("forceDisableTestWakeLock2",
+                PowerManager.PARTIAL_WAKE_LOCK, mockBinder2, displayId2);
+
+        assertThat(wakeLock1.mDisabled).isFalse();
+        assertThat(wakeLock2.mDisabled).isFalse();
+        advanceTime(1000);
+
+        IntArray singlePowerGroup = new IntArray();
+        singlePowerGroup.add(powerGroupId1);
+
+        // ensure that wakelock 2 is not affected by this action.
+        mService.setForceDisableWakelocksInternal(true, singlePowerGroup);
+        advanceTime(1000);
+        assertThat(wakeLock1.mDisabled).isTrue();
+        assertThat(wakeLock2.mDisabled).isFalse();
+
+        mService.setForceDisableWakelocksInternal(false, singlePowerGroup);
+        advanceTime(1000);
+        assertThat(wakeLock1.mDisabled).isFalse();
+        assertThat(wakeLock2.mDisabled).isFalse();
     }
 
     @Test
