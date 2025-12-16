@@ -158,7 +158,8 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cujTag = TAG_EXPAND,
             ) {
                 lockscreenToShadeSceneTransition(
-                    transitionDistancePx = lockscreenToShadeTransitionDistancePx
+                    transitionDistancePx = lockscreenToShadeTransitionDistancePx,
+                    seekAnimation = true,
                 )
             }
             from(

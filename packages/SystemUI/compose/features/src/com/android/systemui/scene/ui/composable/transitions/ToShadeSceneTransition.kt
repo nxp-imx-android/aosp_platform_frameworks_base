@@ -14,18 +14,26 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package com.android.systemui.scene.ui.composable.transitions
 
 import androidx.compose.animation.core.tween
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.ui.geometry.Offset
 import com.android.compose.animation.scene.Edge
 import com.android.compose.animation.scene.TransitionBuilder
+import com.android.compose.animation.scene.transformation.seekSharedElementToOffsetUntilRelease
 import com.android.systemui.notifications.ui.composable.Notifications
 import com.android.systemui.qs.shared.ui.QuickSettings
 import com.android.systemui.shade.ui.composable.Shade
 import com.android.systemui.shade.ui.composable.ShadeHeader
 import kotlin.time.Duration.Companion.milliseconds
 
-fun TransitionBuilder.toShadeSceneTransition(durationScale: Double = 1.0) {
+fun TransitionBuilder.toShadeSceneTransition(
+    durationScale: Double = 1.0,
+    seekAnimation: Boolean = false,
+) {
     spec = tween(durationMillis = (DefaultDuration * durationScale).inWholeMilliseconds.toInt())
 
     fractionRange(start = .58f) {
@@ -40,6 +48,13 @@ fun TransitionBuilder.toShadeSceneTransition(durationScale: Double = 1.0) {
     fade(Shade.Elements.BackgroundScrim)
 
     translate(Notifications.Elements.NotificationScrim, Edge.Top, false)
+
+    if (seekAnimation) {
+        seekSharedElementToOffsetUntilRelease(
+            matcher = Notifications.Elements.StackPlaceholder,
+            offset = { fromOffset, toOffset -> Offset(0f, maxOf(fromOffset.y, toOffset.y)) },
+        )
+    }
 }
 
 private val DefaultDuration = 500.milliseconds
