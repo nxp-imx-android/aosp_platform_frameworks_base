@@ -120,7 +120,8 @@
     <public name="alternateLauncherLabels"/>
     <!-- @hide No longer needed. -->
     <public name="removed_runInPccSandbox"/>
-    <!-- @FlaggedApi(android.service.dreams.Flags.FLAG_USER_SELECTABLE_METADATA) -->
+    <!-- @FlaggedApi(android.service.dreams.Flags.FLAG_USER_SELECTABLE_METADATA)
+    @hide @SystemApi -->
     <public name="userSelectable"/>
     <!-- @FlaggedApi(android.os.Flags.FLAG_NATIVE_FRAMEWORK_PROTOTYPE) -->
     <public name="nativeService"/>
