@@ -20,6 +20,7 @@ import android.app.ActivityManager.RecentTaskInfo
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.ActivityOptions
 import android.app.ActivityTaskManager.INVALID_TASK_ID
+import android.app.FullscreenRequestHandler.REQUEST_ALLOW_MODE_ENTER
 import android.app.TaskInfo
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED
@@ -174,13 +175,17 @@ class RootTaskDesksOrganizer(
                     ),
                 this,
             )
-        if (Flags.enableBackNavigationDesktopAppNoMinimize()) {
-            token?.let {
-                shellTaskOrganizer.applyTransaction(
-                    WindowContainerTransaction().apply {
-                        setInterceptBackPressedOnTaskRoot(token, /* interceptBackPressed= */ true)
-                    }
-                )
+        token?.let {
+            val wct = WindowContainerTransaction()
+            if (Flags.enableBackNavigationDesktopAppNoMinimize()) {
+                wct.setInterceptBackPressedOnTaskRoot(token, /* interceptBackPressed= */ true)
+            }
+            if (Flags.delegateRequestFullscreenHandlingToShell()) {
+                // Let any desktop task request to enter fullscreen mode.
+                wct.setFullscreenRequestAllowMode(token, REQUEST_ALLOW_MODE_ENTER)
+            }
+            if (!wct.isEmpty) {
+                shellTaskOrganizer.applyTransaction(wct)
             }
         }
     }

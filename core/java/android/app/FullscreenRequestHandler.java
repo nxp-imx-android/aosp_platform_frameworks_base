@@ -28,6 +28,9 @@ import android.util.Singleton;
 
 import com.android.internal.annotations.VisibleForTesting;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * @hide
  */
@@ -47,6 +50,44 @@ public class FullscreenRequestHandler {
     public static final int RESULT_FAILED_NOT_TOP_FOCUSED = 2;
     public static final int RESULT_FAILED_ALREADY_FULLY_EXPANDED = 3;
     public static final int RESULT_FAILED_NOT_SUPPORTED = 4;
+
+    /** @hide */
+    @IntDef(prefix = { "REQUEST_ALLOW_MODE_" }, value = {
+            REQUEST_ALLOW_MODE_INHERIT,
+            REQUEST_ALLOW_MODE_NONE,
+            REQUEST_ALLOW_MODE_ENTER,
+            REQUEST_ALLOW_MODE_EXIT,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface RequestAllowMode {}
+
+    /**
+     * Inherit the request allow mode of its parent window container.
+     *
+     * @hide
+     */
+    public static final int REQUEST_ALLOW_MODE_INHERIT = 0;
+
+    /**
+     * No request is allowed on the container.
+     *
+     * @hide
+     */
+    public static final int REQUEST_ALLOW_MODE_NONE = 1;
+
+    /**
+     * Enter fullscreen requests are allowed.
+     *
+     * @hide
+     */
+    public static final int REQUEST_ALLOW_MODE_ENTER = 2;
+
+    /**
+     * Exit fullscreen requests are allowed.
+     *
+     * @hide
+     */
+    public static final int REQUEST_ALLOW_MODE_EXIT = 3;
 
     public static final String REMOTE_CALLBACK_RESULT_KEY = "result";
 

@@ -17,6 +17,7 @@ package com.android.wm.shell.desktopmode.multidesks
 
 import android.app.ActivityManager
 import android.app.ActivityOptions
+import android.app.FullscreenRequestHandler.REQUEST_ALLOW_MODE_ENTER
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
@@ -293,6 +294,24 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
                             (change.value.changeMask and Change.CHANGE_INTERCEPT_BACK_PRESSED !=
                                 0) &&
                             change.value.interceptBackPressed
+                    }
+                }
+            )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_DELEGATE_REQUEST_FULLSCREEN_HANDLING_TO_SHELL)
+    fun testCreateDeskRoot_allowsFullscreenModeRequests() = runTest {
+        val desk = createDeskSuspending()
+
+        verify(mockShellTaskOrganizer)
+            .applyTransaction(
+                argThat { wct ->
+                    wct.changes.any { change ->
+                        change.key == desk.deskRoot.token.asBinder() &&
+                            (change.value.changeMask and
+                                Change.CHANGE_FULLSCREEN_REQUEST_ALLOW_MODE != 0) &&
+                            change.value.fullscreenRequestAllowMode == REQUEST_ALLOW_MODE_ENTER
                     }
                 }
             )
