@@ -62,6 +62,21 @@ java_defaults {
     defaults_visibility: [":__subpackages__"],
 }
 
+// TODO(b/470271435): Find a better home for this pod.
+java_library {
+    name: "com.android.systemui-api",
+    srcs: [
+        "src/api/**/*.java",
+    ],
+    static_libs: [
+        "androidx.annotation_annotation",
+        "SystemUILogLib",
+    ],
+    defaults: [
+        "SystemUI_pod_defaults_api",
+    ],
+}
+
 // Have all pod APIs in the same java_library so that new pods don't need to modify
 // packages/SystemUI/Android.bp.
 java_library {
