@@ -29,15 +29,13 @@ import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.platform.test.flag.junit.SetFlagsRule
 import android.util.ArraySet
-import android.util.Xml
+import androidx.annotation.XmlRes
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.frameworks.servicestests.R
 import com.google.common.truth.Truth.assertThat
-import java.io.DataOutputStream
 import java.io.File
 import java.nio.file.Files
-import java.nio.charset.StandardCharsets
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -273,16 +271,7 @@ class SupervisionSettingsTest {
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     fun loadUserData_withMixedPolicyIdentifiers_loadsKnownPoliciesCorrectly() {
-        val file = File(tempSupervisionDir, "supervision_settings.xml")
-        file.outputStream().use { fileOutputStream ->
-            val dataOutputStream = DataOutputStream(fileOutputStream)
-            val xmlIn = mResources.getXml(R.xml.supervision_user_data_v0)
-            val xmlOut = Xml.newBinarySerializer()
-
-            xmlOut.setOutput(dataOutputStream, StandardCharsets.UTF_8.name())
-            Xml.copy(xmlIn, xmlOut)
-            xmlOut.flush()
-        }
+        writeSupervisionSettingsFrom(R.xml.supervision_user_data_v0)
 
         mSupervisionSettings.loadUserData()
 
@@ -290,35 +279,21 @@ class SupervisionSettingsTest {
         assertThat(userData.policies.values).containsExactly(TEST_PACKAGE_POLICY)
     }
 
-     @Test
+    @Test
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     fun loadUserData_withUnknownTag_skipsTagAndLoadsCorrectly() {
-        // TODO: b/463800582 - Transition to a XML resource file.
-        val malformedFile = File(tempSupervisionDir, "supervision_settings.xml")
-        malformedFile.writeText(
-            """
-            <supervision_data>
-                <supervision_user_data
-                    user_id="1"
-                    supervision_enabled="true"
-                    supervision_app_package="package1"
-                    supervision_lockscreen_enabled="true">
-                    <unknown_tag>some value</unknown_tag>
-                    <supervision_lockscreen_options>
-                        <string name="id">id</string>
-                        <number name="key1" value="1" />
-                        <boolean name="key2" value="true" />
-                        <string name="key3">value</string>
-                        <number name="key4" value="4" />
-                    </supervision_lockscreen_options>
-                </supervision_user_data>
-            </supervision_data>
-            """.trimIndent()
-        )
+        writeSupervisionSettingsFrom(R.xml.supervision_user_data_malformed_v0)
 
         mSupervisionSettings.loadUserData()
 
         mSupervisionSettings.getUserData(1).checkUserData(true, "package1", true, BUNDLE_1)
+    }
+
+    private fun writeSupervisionSettingsFrom(@XmlRes resId: Int) {
+        val file = File(tempSupervisionDir, "supervision_settings.xml")
+        mResources.openRawResource(resId).use { inputStream ->
+            file.outputStream().use { outputStream -> inputStream.copyTo(outputStream) }
+        }
     }
 
     private companion object {
