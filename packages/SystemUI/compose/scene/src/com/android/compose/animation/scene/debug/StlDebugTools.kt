@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,24 +16,21 @@
 
 package com.android.compose.animation.scene.debug
 
+import android.graphics.Paint as NativePaint
 import android.util.Log
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
-import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.layout
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextMeasurer
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -60,18 +57,20 @@ import kotlin.math.absoluteValue
 internal val placedInContents = mutableMapOf<ElementKey, MutableSet<ContentKey>>()
 
 internal fun Modifier.debugElement(key: ElementKey): Modifier {
-    return composed {
-        val textMeasurer = rememberTextMeasurer()
-
-        drawWithCache {
+    return this.drawWithContent {
+        // Draw Content first (so border is on top)
+        drawContent()
+        val position = StlDebugConfig.elementLabelPosition
+        if (filterOutElement(key)) return@drawWithContent
+        Snapshot.withoutReadObservation {
             val seed = key.hashCode()
             val color = generateDebugColor(seed)
             val strokeWidth = 1.dp
-            val strokePx = strokeWidth.toPx()
 
             // We offset the track of the border randomly to one of 3 tracks to reduce overlapping
             // borders
             val trackIndex = (seed % 3).absoluteValue
+            val strokePx = strokeWidth.toPx()
             val inset = trackIndex * strokePx
 
             // Random dash pattern to further distinguish overlapping borders
@@ -83,127 +82,110 @@ internal fun Modifier.debugElement(key: ElementKey): Modifier {
                     phase = (dashSize * 2).toFloat(),
                 )
 
-            onDrawWithContent {
-                // Draw Content first (so border is on top)
-                drawContent()
+            if (StlDebugConfig.showElementBorders()) {
+                drawDebugBorder(
+                    color = color,
+                    strokeWidth = strokePx,
+                    pathEffect = pathEffect,
+                    inset = inset,
+                )
+            }
 
-                if (filterOutElement(key)) return@onDrawWithContent
-                if (StlDebugConfig.showElementBorders()) {
-                    drawDebugBorder(
-                        color = color,
-                        strokeWidth = strokePx,
-                        pathEffect = pathEffect,
-                        inset = inset,
-                    )
-                }
-
-                if (StlDebugConfig.showElementLabels()) {
-                    drawDebugLabel(
-                        textMeasurer = textMeasurer,
-                        text = listOf(key.debugName),
-                        color = color,
-                        position = StlDebugConfig.elementLabelPosition,
-                        verticalOffset = 0f,
-                        textSize = 12.sp,
-                    )
-                }
+            if (StlDebugConfig.showElementLabels()) {
+                drawDebugLabel(
+                    text = listOf(key.debugName),
+                    color = color,
+                    position = position,
+                    verticalOffset = 0f,
+                    textSize = 12.sp,
+                )
             }
         }
     }
 }
 
 internal fun Modifier.debugScene(key: SceneKey): Modifier {
-    return composed {
-        val textMeasurer = rememberTextMeasurer()
+    return this.drawWithContent {
+        val seed = key.hashCode()
+        val color = generateDebugColor(seed)
+        val strokeWidth = 2.dp.toPx()
 
-        drawWithCache {
-            val seed = key.hashCode()
-            val color = generateDebugColor(seed)
-            val strokeWidth = 2.dp.toPx()
+        if (StlDebugConfig.showSceneBorders()) {
+            Snapshot.withoutReadObservation {
+                // 1. Draw Border FIRST (so it ends up behind the content)
+                drawDebugBorder(
+                    color = color,
+                    strokeWidth = strokeWidth,
+                    pathEffect = null, // Solid
+                    inset = 0f,
+                )
+            }
+        }
+        // 2. Draw Content (Scenes usually contain elements, which should render on top of this
+        // border)
+        drawContent()
 
-            onDrawWithContent {
-                if (StlDebugConfig.showSceneBorders()) {
-                    // 1. Draw Border FIRST (so it ends up behind the content)
-                    drawDebugBorder(
-                        color = color,
-                        strokeWidth = strokeWidth,
-                        pathEffect = null, // Solid
-                        inset = 0f,
-                    )
-                }
-
-                // 2. Draw Content
-                drawContent()
-
-                if (StlDebugConfig.showSceneLabels()) {
-                    // 3. Draw Label (Always on top)
-                    drawDebugLabel(
-                        textMeasurer = textMeasurer,
-                        text = listOf("Scene: ${key.debugName}"),
-                        color = color,
-                        position = StlDebugConfig.sceneLabelPosition,
-                        textSize = 12.sp,
-                    )
-                }
+        if (StlDebugConfig.showSceneLabels()) {
+            val position = StlDebugConfig.sceneLabelPosition
+            Snapshot.withoutReadObservation {
+                // 3. Draw Label (Always on top)
+                drawDebugLabel(
+                    text = listOf("Scene: ${key.debugName}"),
+                    color = color,
+                    position = position,
+                    textSize = 12.sp,
+                )
             }
         }
     }
 }
 
 internal fun Modifier.debugStl(
-    state: WithoutReadObservation<SceneTransitionLayoutState>,
+    state: SceneTransitionLayoutState,
     debugName: String,
     nestingLevel: Int,
 ): Modifier {
-    return composed {
-        val textMeasurer = rememberTextMeasurer()
-
-        drawWithCache {
+    return this.drawWithContent {
+        drawContent()
+        val position = StlDebugConfig.stlLabelPosition
+        Snapshot.withoutReadObservation {
             val textSize = 12.sp
+            val isNested = nestingLevel > 0
             val seed = debugName.hashCode()
             val color = generateDebugColor(seed)
             val strokeWidth = 2.dp.toPx()
             val labelPadding = 8f
             val inset = nestingLevel * (textSize.toPx() + labelPadding) * 2
 
-            onDrawWithContent {
-                if (StlDebugConfig.showStlBorders()) {
-                    // 1. Draw Border
-                    drawDebugBorder(
-                        color = color,
-                        strokeWidth = strokeWidth,
-                        pathEffect = null,
-                        inset = 0f,
-                    )
+            if (StlDebugConfig.showStlBorders()) {
+                // 1. Draw Border
+                drawDebugBorder(
+                    color = color,
+                    strokeWidth = strokeWidth,
+                    pathEffect = null,
+                    inset = 0f,
+                )
+            }
+
+            // 2. Construct Status Text
+            val typeLabel = if (isNested) "[Nested($nestingLevel)]" else ""
+            val currentState = state.transitionState
+            val stateText =
+                when (currentState) {
+                    is TransitionState.Idle -> "Idle(${currentState.currentScene.debugName})"
+                    is TransitionState.Transition ->
+                        "[${currentState.fromContent.debugName} -> ${currentState.toContent.debugName}]"
                 }
 
-                // 2. Draw Content
-                drawContent()
-
-                val isNested = nestingLevel > 0
-                val typeLabel = if (isNested) "[Nested($nestingLevel)]" else ""
-
-                val stateText =
-                    state.read {
-                        when (val currentState = transitionState) {
-                            is TransitionState.Idle ->
-                                "Idle(${currentState.currentScene.debugName})"
-                            is TransitionState.Transition ->
-                                "[${currentState.fromContent.debugName} -> ${currentState.toContent.debugName}]"
-                        }
-                    }
-
-                if (StlDebugConfig.showStlLabels()) {
-                    // 3. Draw Label
-                    drawDebugLabel(
-                        textMeasurer = textMeasurer,
-                        text = listOf("$debugName$typeLabel:", stateText),
-                        color = color,
-                        position = StlDebugConfig.stlLabelPosition,
-                        textSize = textSize,
-                        verticalOffset = inset,
-                    )
-                }
+            if (StlDebugConfig.showStlLabels()) {
+                // 3. Draw Label
+                drawDebugLabel(
+                    text = listOf("$debugName$typeLabel:", stateText),
+                    color = color,
+                    position = position,
+                    textSize = textSize,
+                    verticalOffset = inset,
+                )
             }
         }
     }
@@ -237,82 +219,123 @@ private fun DrawScope.drawDebugBorder(
 }
 
 private fun DrawScope.drawDebugLabel(
-    textMeasurer: TextMeasurer,
     text: List<String>,
     color: Color,
     position: DebugLabelPosition,
     verticalOffset: Float = 0f,
     textSize: TextUnit = 12.sp,
-    padding: Float = 8f,
 ) {
-    val textLayout =
-        textMeasurer.measure(
-            text = AnnotatedString(text.joinToString("\n")),
-            style =
-                TextStyle(color = Color.Black, fontSize = textSize, fontWeight = FontWeight.Bold),
-        )
-    val backgroundSize =
-        Size(
-            width = textLayout.size.width + (padding * 2),
-            height = textLayout.size.height + (padding * 2),
-        )
+    drawIntoCanvas { canvas ->
+        val nativeCanvas = canvas.nativeCanvas
 
-    val topLeft = calculateLabelPosition(size, backgroundSize, position, verticalOffset)
-
-    drawRect(color = color, topLeft = topLeft, size = backgroundSize)
-    drawText(textLayoutResult = textLayout, topLeft = topLeft + Offset(padding, padding))
-}
-
-private fun calculateLabelPosition(
-    containerSize: Size,
-    boxSize: Size,
-    position: DebugLabelPosition,
-    verticalOffset: Float,
-): Offset {
-    val x =
-        when (position) {
-            DebugLabelPosition.TopLeft,
-            DebugLabelPosition.BottomLeft -> 0f
-            DebugLabelPosition.TopRight,
-            DebugLabelPosition.BottomRight -> containerSize.width - boxSize.width
-            else -> (containerSize.width - boxSize.width) / 2f
-        }
-
-    val y =
-        verticalOffset +
-            when (position) {
-                DebugLabelPosition.TopLeft,
-                DebugLabelPosition.TopRight,
-                DebugLabelPosition.CenterTop -> 0f
-                DebugLabelPosition.BottomLeft,
-                DebugLabelPosition.BottomRight,
-                DebugLabelPosition.CenterBottom -> containerSize.height - boxSize.height
-                DebugLabelPosition.Center -> (containerSize.height - boxSize.height) / 2f
-                DebugLabelPosition.CenterHigh -> (containerSize.height / 3f) - (boxSize.height / 2f)
-                DebugLabelPosition.CenterLow ->
-                    (containerSize.height * 2f / 3f) - (boxSize.height / 2f)
+        // 1. Configure Paint
+        val textPaint =
+            NativePaint().apply {
+                this.color = android.graphics.Color.BLACK
+                this.textSize = textSize.toPx()
+                isFakeBoldText = true
+                isAntiAlias = true
             }
 
-    return Offset(x, y)
+        val bgPaint =
+            NativePaint().apply {
+                this.color = color.toArgb() // Background matches the border color
+                style = NativePaint.Style.FILL
+            }
+
+        // 2. Measure Text
+        val fontMetrics = textPaint.fontMetrics
+        val lineHeight = fontMetrics.bottom - fontMetrics.top
+        var maxLineWidth = 0f
+        text.forEach { line ->
+            val bounds = android.graphics.Rect()
+            textPaint.getTextBounds(line, 0, line.length, bounds)
+            if (bounds.width() > maxLineWidth) {
+                maxLineWidth = bounds.width().toFloat()
+            }
+        }
+        val totalTextHeight = lineHeight * text.size
+
+        val padding = 8f
+        val boxWidth = maxLineWidth + (padding * 2)
+        val boxHeight = totalTextHeight + (padding * 2)
+
+        // 3. Calculate Position
+        val x: Float
+        val y: Float
+
+        when (position) {
+            DebugLabelPosition.TopLeft -> {
+                x = 0f
+                y = 0f + verticalOffset
+            }
+            DebugLabelPosition.TopRight -> {
+                x = size.width - boxWidth
+                y = 0f + verticalOffset
+            }
+            DebugLabelPosition.BottomLeft -> {
+                x = 0f
+                y = size.height - boxHeight - verticalOffset
+            }
+            DebugLabelPosition.BottomRight -> {
+                x = size.width - boxWidth
+                y = size.height - boxHeight - verticalOffset
+            }
+            DebugLabelPosition.Center -> {
+                x = (size.width - boxWidth) / 2f
+                y = (size.height - boxHeight) / 2f + verticalOffset
+            }
+            DebugLabelPosition.CenterTop -> {
+                x = (size.width - boxWidth) / 2f
+                y = 0f + verticalOffset
+            }
+            DebugLabelPosition.CenterBottom -> {
+                x = (size.width - boxWidth) / 2f
+                y = size.height - boxHeight - verticalOffset
+            }
+            DebugLabelPosition.CenterHigh -> {
+                x = (size.width - boxWidth) / 2f
+                y = (size.height / 3f) - (boxHeight / 2f) + verticalOffset
+            }
+            DebugLabelPosition.CenterLow -> {
+                x = (size.width - boxWidth) / 2f
+                y = (size.height * 2f / 3f) - (boxHeight / 2f) + verticalOffset
+            }
+        }
+
+        val bgRect = android.graphics.RectF(x, y, x + boxWidth, y + boxHeight)
+
+        // 4. Draw
+        nativeCanvas.drawRect(bgRect, bgPaint)
+        text.forEachIndexed { index, line ->
+            val lineY = y + padding - fontMetrics.top + (index * lineHeight)
+            nativeCanvas.drawText(line, x + padding, lineY, textPaint)
+        }
+    }
 }
 
 internal fun Modifier.logElementsOnTransitionChange(
-    layoutImpl: WithoutReadObservation<SceneTransitionLayoutImpl>,
+    layoutImpl: SceneTransitionLayoutImpl,
     logger: StateLogger,
 ): Modifier =
     this.layout { measurable, constraints ->
         val placeable = measurable.measure(constraints)
 
         layout(placeable.width, placeable.height) {
-            if (StlDebugConfig.logElements()) {
+            Snapshot.withoutReadObservation {
                 // Clear placedInContents so we only observe this frame
-                layoutImpl.read { elements.keys.forEach { placedInContents[it]?.clear() } }
+                if (StlDebugConfig.logElements()) {
+                    layoutImpl.elements.keys.forEach { placedInContents[it]?.clear() }
+                }
             }
             // place the root
             placeable.place(0, 0)
 
-            if (StlDebugConfig.logElements()) {
-                layoutImpl.read { logger.logOnNewTransition(this, state.transitionState) }
+            Snapshot.withoutReadObservation {
+                // Now placedInContents is up-to-date, we can log the results.
+                if (StlDebugConfig.logElements()) {
+                    logger.logOnNewTransition(layoutImpl, layoutImpl.state.transitionState)
+                }
             }
         }
     }

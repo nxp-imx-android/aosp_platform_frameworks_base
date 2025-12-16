@@ -64,7 +64,6 @@ import com.android.compose.animation.scene.debug.StlDebugConfig
 import com.android.compose.animation.scene.debug.debugScene
 import com.android.compose.animation.scene.debug.debugStl
 import com.android.compose.animation.scene.debug.logElementsOnTransitionChange
-import com.android.compose.animation.scene.debug.withoutReadObservation
 import com.android.compose.animation.scene.mechanics.UserActionGestureScope
 import com.android.compose.modifiers.thenIf
 import com.android.compose.ui.util.lerp
@@ -512,16 +511,13 @@ internal class SceneTransitionLayoutImpl(
                 .thenIf(implicitTestTags) { Modifier.testTag(SceneTransitionLayoutRootContentTag) }
                 .thenIf(StlDebugConfig.isDebuggingStl()) {
                     Modifier.debugStl(
-                        state = state.withoutReadObservation(),
+                        state = state,
                         debugName = debugName,
                         nestingLevel = ancestors.size,
                     )
                 }
                 .thenIf(StlDebugConfig.logElements() && stateLogger != null) {
-                    Modifier.logElementsOnTransitionChange(
-                        this.withoutReadObservation(),
-                        stateLogger!!,
-                    )
+                    Modifier.logElementsOnTransitionChange(this, stateLogger!!)
                 }
         ) {
             LookaheadScope {
