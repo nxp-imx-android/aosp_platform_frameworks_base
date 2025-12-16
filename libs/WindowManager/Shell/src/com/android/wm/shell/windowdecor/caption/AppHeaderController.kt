@@ -76,7 +76,6 @@ import com.android.wm.shell.windowdecor.MaximizeMenuController
 import com.android.wm.shell.windowdecor.MaximizeMenuFactory
 import com.android.wm.shell.windowdecor.WindowDecorLinearLayout
 import com.android.wm.shell.windowdecor.WindowDecoration2.RelayoutParams
-import com.android.wm.shell.windowdecor.WindowDecoration2.SurfaceControlViewHostFactory
 import com.android.wm.shell.windowdecor.WindowDecorationActions
 import com.android.wm.shell.windowdecor.WindowManagerWrapper
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
@@ -138,8 +137,6 @@ class AppHeaderController(
     private val surfaceControlTransactionSupplier: () -> SurfaceControl.Transaction = {
         SurfaceControl.Transaction()
     },
-    surfaceControlViewHostFactory: SurfaceControlViewHostFactory =
-        object : SurfaceControlViewHostFactory {},
 ) :
     CaptionController<WindowDecorLinearLayout>(
         taskInfo,
