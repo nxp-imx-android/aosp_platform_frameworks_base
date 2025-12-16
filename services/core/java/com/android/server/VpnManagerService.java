@@ -17,8 +17,8 @@
 package com.android.server;
 
 import static android.Manifest.permission.NETWORK_STACK;
-import static android.net.platform.flags.Flags.clearAppExclusionListUponVpnInstallUninstall;
 import static android.net.platform.flags.Flags.deleteVpnProfileWhenAppUninstalled;
+import static android.provider.Flags.exposeVpnAppExclusionSettings;
 
 import static com.android.net.module.util.PermissionUtils.enforceAnyPermissionOf;
 import static com.android.net.module.util.PermissionUtils.enforceNetworkStackPermission;
@@ -96,8 +96,7 @@ public class VpnManagerService extends IVpnManager.Stub {
     private final INetd mNetd;
     private final UserManager mUserManager;
     private final int mMainUserId;
-
-    private final boolean mClearAppExclusionListUponVpnInstallUninstall;
+    private final boolean mExposeVpnAppExclusionSettings;
 
     @VisibleForTesting
     @GuardedBy("mVpns")
@@ -170,8 +169,7 @@ public class VpnManagerService extends IVpnManager.Stub {
         mNetd = mDeps.getNetd();
         mUserManager = mContext.getSystemService(UserManager.class);
         mMainUserId = mDeps.getMainUserId();
-        mClearAppExclusionListUponVpnInstallUninstall =
-                clearAppExclusionListUponVpnInstallUninstall();
+        mExposeVpnAppExclusionSettings = exposeVpnAppExclusionSettings();
         registerReceivers();
         log("VpnManagerService starting up");
     }
@@ -715,7 +713,7 @@ public class VpnManagerService extends IVpnManager.Stub {
         intentFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
         intentFilter.addAction(Intent.ACTION_PACKAGE_REPLACED);
         intentFilter.addAction(Intent.ACTION_PACKAGE_REMOVED);
-        if (mClearAppExclusionListUponVpnInstallUninstall) {
+        if (mExposeVpnAppExclusionSettings) {
             intentFilter.addAction(Intent.ACTION_PACKAGE_DATA_CLEARED);
         }
 
@@ -773,7 +771,7 @@ public class VpnManagerService extends IVpnManager.Stub {
                         Intent.EXTRA_REPLACING, false);
                 onPackageAdded(packageName, uid, isReplacing);
             } else if (Intent.ACTION_PACKAGE_DATA_CLEARED.equals(action)
-                    && mClearAppExclusionListUponVpnInstallUninstall) {
+                    && mExposeVpnAppExclusionSettings) {
                 onPackageDataCleared(packageName, uid);
             } else {
                 Log.wtf(TAG, "received unexpected intent: " + action);
@@ -962,7 +960,7 @@ public class VpnManagerService extends IVpnManager.Stub {
      * @param packageName The package name for which the exclusion list should be cleared.
      */
     private void clearAppExclusionList(Vpn vpn, String packageName) {
-        if (mClearAppExclusionListUponVpnInstallUninstall) {
+        if (mExposeVpnAppExclusionSettings) {
             boolean cleared = vpn.clearAppExclusionList(packageName);
             if (cleared) {
                 log("clearAppExclusionList cleared for " + packageName);
