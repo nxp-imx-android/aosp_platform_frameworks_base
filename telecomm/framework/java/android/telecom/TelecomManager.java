@@ -1259,6 +1259,15 @@ public class TelecomManager {
     @FlaggedApi(android.telecom.flags.Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
     public static final int CALL_CONNECTED_INDICATOR_VIBRATION = (1 << 1);
 
+    /**
+     * Permission required by the TelecomUi to access telecom info.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_TELECOM_MAINLINE_API)
+    public static final String PERMISSION_TELECOM_UI_ACCESS =
+            "com.android.telephonycore.permission.TELECOM_UI_ACCESS";
+
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @FlaggedApi(android.telecom.flags.Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
