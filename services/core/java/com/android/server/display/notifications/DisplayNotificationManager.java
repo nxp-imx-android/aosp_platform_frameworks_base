@@ -179,9 +179,13 @@ public class DisplayNotificationManager implements ConnectedDisplayUsbErrorsDete
      * Send generic error notification.
      */
     @SuppressLint("AndroidFrameworkRequiresPermission")
-    private void sendErrorNotification(final Notification notification) {
+    private void sendErrorNotification(@Nullable final Notification notification) {
         if (mNotificationManager == null) {
             Slog.e(TAG, "Can't sendErrorNotification: NotificationManager is null");
+            return;
+        }
+        if (notification == null) {
+            Slog.w(TAG, "Can't sendErrorNotification: Notification is null");
             return;
         }
 
@@ -192,8 +196,14 @@ public class DisplayNotificationManager implements ConnectedDisplayUsbErrorsDete
     /**
      * @return a newly built notification about an issue with connected display.
      */
+    @Nullable
     private Notification createErrorNotification(final int titleId, final int messageId,
             final int icon) {
+        if (mNotificationManager == null) {
+            Slog.w(TAG, "createErrorNotification: NotificationManager is null");
+            return null;
+        }
+
         final Resources resources = mContext.getResources();
         final CharSequence title = resources.getText(titleId);
         final CharSequence message = resources.getText(messageId);
