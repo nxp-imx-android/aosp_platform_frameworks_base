@@ -182,13 +182,13 @@ public abstract class InputManagerInternal {
 
     /**
      * Increments keyboard backlight level if the device has an associated keyboard backlight
-     * {@see Light.LIGHT_TYPE_KEYBOARD_BACKLIGHT}
+     * @see Light.LIGHT_TYPE_KEYBOARD_BACKLIGHT
      */
     public abstract void incrementKeyboardBacklight(int deviceId);
 
     /**
      * Decrements keyboard backlight level if the device has an associated keyboard backlight
-     * {@see Light.LIGHT_TYPE_KEYBOARD_BACKLIGHT}
+     * @see Light.LIGHT_TYPE_KEYBOARD_BACKLIGHT
      */
     public abstract void decrementKeyboardBacklight(int deviceId);
 

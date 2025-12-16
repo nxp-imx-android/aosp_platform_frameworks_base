@@ -187,7 +187,7 @@ public abstract class NotificationListenerService extends Service {
      * the value is unavailable for any reason.  For example, before the notification listener
      * is connected.
      *
-     * {@see #onListenerConnected()}
+     * @see #onListenerConnected()
      */
     public static final int INTERRUPTION_FILTER_UNKNOWN
             = NotificationManager.INTERRUPTION_FILTER_UNKNOWN;
@@ -782,7 +782,7 @@ public abstract class NotificationListenerService extends Service {
      * <p>The service should wait for the {@link #onListenerConnected()} event
      * before performing this operation.
      *
-     * {@see #cancelNotification(String, String, int)}
+     * @see #cancelNotification(String, String, int)
      */
     public final void cancelAllNotifications() {
         cancelNotifications(null /*all*/);
@@ -799,7 +799,7 @@ public abstract class NotificationListenerService extends Service {
      *
      * @param keys Notifications to dismiss, or {@code null} to dismiss all.
      *
-     * {@see #cancelNotification(String, String, int)}
+     * @see #cancelNotification(String, String, int)
      */
     public final void cancelNotifications(String[] keys) {
         if (!isBound()) return;

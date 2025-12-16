@@ -314,7 +314,7 @@ public class VpnManager {
      * An {@link #EXTRA_ERROR_CODE} for {@link #CATEGORY_EVENT_NETWORK_ERROR} indicating a timeout.
      *
      * For Ikev2 VPNs, this happens typically after a retransmission failure.
-     * {@see android.net.ipsec.ike.exceptions.IkeTimeoutException}
+     * @see android.net.ipsec.ike.exceptions.IkeTimeoutException
      */
     public static final int ERROR_CODE_NETWORK_PROTOCOL_TIMEOUT = 1;
 

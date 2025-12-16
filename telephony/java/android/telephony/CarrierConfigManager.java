@@ -5324,7 +5324,7 @@ public class CarrierConfigManager {
      * {@link SubscriptionManager#USAGE_SETTING_DEFAULT default},
      * {@link SubscriptionManager#USAGE_SETTING_VOICE_CENTRIC voice-centric},
      * or {@link SubscriptionManager#USAGE_SETTING_DATA_CENTRIC data-centric}.
-     * {@see SubscriptionInfo#getUsageSetting}
+     * @see SubscriptionInfo#getUsageSetting
      *
      */
     public static final String KEY_CELLULAR_USAGE_SETTING_INT = "cellular_usage_setting_int";

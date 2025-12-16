@@ -919,7 +919,7 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
      * Remembers what line height was set to originally, before we broke it down into raw pixels.
      *
      * <p>This is stored as a complex dimension with both value and unit packed into one field!
-     * {@see TypedValue}
+     * @see TypedValue
      */
     private int mLineHeightComplexDimen;
 

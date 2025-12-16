@@ -3613,9 +3613,9 @@ final public class MediaCodec {
      * of the block as an input buffer to a codec, or get a block allocated by
      * codec as an output buffer from {@link OutputFrame}.
      *
-     * {@see QueueRequest#setLinearBlock}
-     * {@see QueueRequest#setEncryptedLinearBlock}
-     * {@see OutputFrame#getLinearBlock}
+     * @see QueueRequest#setLinearBlock
+     * @see QueueRequest#setEncryptedLinearBlock
+     * @see OutputFrame#getLinearBlock
      */
     public static final class LinearBlock {
         // No public constructors.

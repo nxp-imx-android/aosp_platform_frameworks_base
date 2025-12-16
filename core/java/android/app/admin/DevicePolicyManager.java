@@ -13551,7 +13551,6 @@ public class DevicePolicyManager {
 
     /**
      * Sets preferential network configurations.
-     * {@see PreferentialNetworkServiceConfig}
      *
      * An example of a supported preferential network service is the Enterprise
      * slice on 5G networks. For devices on 4G networks, the profile owner needs to additionally
@@ -13565,6 +13564,7 @@ public class DevicePolicyManager {
      *
      * @param preferentialNetworkServiceConfigs list of preferential network configurations.
      * @throws SecurityException if the caller is not the profile owner or device owner.
+     * @see PreferentialNetworkServiceConfig
      **/
     public void setPreferentialNetworkServiceConfigs(
             @NonNull List<PreferentialNetworkServiceConfig> preferentialNetworkServiceConfigs) {
@@ -13581,10 +13581,10 @@ public class DevicePolicyManager {
 
     /**
      * Get preferential network configuration
-     * {@see PreferentialNetworkServiceConfig}
      *
      * @return preferential network configuration.
      * @throws SecurityException if the caller is not the profile owner or device owner.
+     * @see PreferentialNetworkServiceConfig
      */
     public @NonNull List<PreferentialNetworkServiceConfig> getPreferentialNetworkServiceConfigs() {
         throwIfParentInstance("getPreferentialNetworkServiceConfigs");

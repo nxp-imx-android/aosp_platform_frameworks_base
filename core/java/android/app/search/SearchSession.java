@@ -120,10 +120,9 @@ public final class SearchSession implements AutoCloseable {
      * Notifies the search service of an search target event (e.g., user interaction
      * and lifecycle event of the search surface).
      *
-     * {@see SearchTargetEvent}
-     *
      * @param query input object associated with the event.
      * @param event The {@link SearchTargetEvent} that represents the search target event.
+     * @see SearchTargetEvent
      */
     public void notifyEvent(@NonNull Query query, @NonNull SearchTargetEvent event) {
         if (mIsClosed.get()) {
