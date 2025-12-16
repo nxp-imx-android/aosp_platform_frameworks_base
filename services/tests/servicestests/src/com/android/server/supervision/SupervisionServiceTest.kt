@@ -656,7 +656,7 @@ class SupervisionServiceTest {
     }
 
     @Test
-    fun createConfirmSupervisionCredentialsIntent_noSupervisingUserOrSupervisionApps_returnsNull() {
+    fun createConfirmSupervisionCredentialsIntent_noSupervisingUser_returnsNull() {
         service.mInternal.setSupervisionEnabledForUser(context.getUserId(), true)
         whenever(mockUserManagerInternal.getSupervisingProfileId()).thenReturn(UserHandle.USER_NULL)
 
@@ -664,26 +664,7 @@ class SupervisionServiceTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_SETTINGS_UI_UPDATES)
-    fun createConfirmSupervisionCredentialsIntent_hasSupervisionAppApprovalActivity_returnsValidIntent() {
-        val userId = context.getUserId()
-        service.mInternal.setSupervisionEnabledForUser(userId, true)
-        whenever(mockUserManagerInternal.getSupervisingProfileId()).thenReturn(UserHandle.USER_NULL)
-        injector.setRoleHoldersAsUser(
-            RoleManager.ROLE_SUPERVISION,
-            UserHandle.of(userId),
-            listOf(PACKAGE_NAME),
-        )
-        mockSupervisionApprovalActivity(PACKAGE_NAME)
-
-        val intent = checkNotNull(service.createConfirmSupervisionCredentialsIntent(userId))
-
-        assertThat(intent.getAction()).isEqualTo(ACTION_CONFIRM_SUPERVISION_CREDENTIALS)
-        assertThat(intent.getPackage()).isEqualTo(SETTINGS_PACKAGE_NAME)
-    }
-
-    @Test
-    fun createConfirmSupervisionCredentialsIntent_supervisingUserMissingSecureLock_noSupervisionApps_returnsNull() {
+    fun createConfirmSupervisionCredentialsIntent_supervisingUserMissingSecureLock_returnsNull() {
         service.mInternal.setSupervisionEnabledForUser(context.getUserId(), true)
         whenever(mockUserManagerInternal.getSupervisingProfileId()).thenReturn(SUPERVISING_USER_ID)
         whenever(mockKeyguardManager.isDeviceSecure(SUPERVISING_USER_ID)).thenReturn(false)
@@ -1052,8 +1033,22 @@ class SupervisionServiceTest {
             UserHandle.of(USER_ID),
             listOf(supervisionPackage),
         )
-        mockSupervisionApprovalActivity(supervisionPackage)
-
+        val activityInfo =
+            ActivityInfo().apply {
+                packageName = supervisionPackage
+                name = "Activity"
+            }
+        val resolveInfo = ResolveInfo().apply { this.activityInfo = activityInfo }
+        whenever(
+                mockPackageManager.queryIntentActivities(
+                    argThat { intent: Intent ->
+                        intent.action == SupervisionManager.ACTION_CONFIRM_SUPERVISION_APPROVAL &&
+                            intent.`package` == supervisionPackage
+                    },
+                    any<Int>(),
+                )
+            )
+            .thenReturn(listOf(resolveInfo))
         assertThat(service.canLaunchPinRecovery(USER_ID)).isTrue()
     }
 
@@ -1229,11 +1224,30 @@ class SupervisionServiceTest {
             UserHandle.of(USER_ID),
             listOf(supervisionPackage),
         )
-        mockSupervisionApprovalActivity(supervisionPackage)
+        val activityInfo =
+            ActivityInfo().apply {
+                packageName = supervisionPackage
+                name = "Activity"
+                applicationInfo = ApplicationInfo()
+            }
+        val resolveInfo =
+            ResolveInfo().apply {
+                this.activityInfo = activityInfo
+                nonLocalizedLabel = "Use supervision app"
+            }
+        whenever(
+                mockPackageManager.queryIntentActivities(
+                    argThat { intent: Intent ->
+                        intent.action == SupervisionManager.ACTION_CONFIRM_SUPERVISION_APPROVAL &&
+                            intent.`package` == supervisionPackage
+                    },
+                    any<Int>(),
+                )
+            )
+            .thenReturn(listOf(resolveInfo))
         whenever(mockPackageManager.getComponentEnabledSetting(any()))
             .thenReturn(PackageManager.COMPONENT_ENABLED_STATE_ENABLED)
         setSupervisionRecoveryInfo(state = STATE_PENDING)
-
         assertThat(service.hasValidRecoveryMethod(USER_ID)).isTrue()
     }
 
@@ -1421,13 +1435,23 @@ class SupervisionServiceTest {
             listOf(supervisionPackage),
         )
         val resolveInfo1 =
-            supervisionApprovalActivityResolveInfo(supervisionPackage, "Use supervision app")
+            mockSupervisionApprovalActivity(supervisionPackage, "Activity1", "Use supervision app")
         val resolveInfo2 =
-            supervisionApprovalActivityResolveInfo(
+            mockSupervisionApprovalActivity(
                 supervisionPackage,
+                "Activity2",
                 "Use another supervision app",
             )
-        mockSupervisionApprovalActivities(supervisionPackage, listOf(resolveInfo1, resolveInfo2))
+        whenever(
+                mockPackageManager.queryIntentActivities(
+                    argThat { intent: Intent ->
+                        intent.action == SupervisionManager.ACTION_CONFIRM_SUPERVISION_APPROVAL &&
+                            intent.`package` == supervisionPackage
+                    },
+                    any<Int>(),
+                )
+            )
+            .thenReturn(listOf(resolveInfo1, resolveInfo2))
 
         val result = service.querySupervisionApprovalActivities(USER_ID)
 
@@ -1508,8 +1532,16 @@ class SupervisionServiceTest {
         )
         whenever(mockUserManagerInternal.getUsers(any<UserFilter>()))
             .thenReturn(listOf(UserInfo(USER_ID, "user0", USER_ICON, FLAG_FULL, USER_TYPE)))
-        // Only return a supervision activity for one supervision package.
-        mockSupervisionApprovalActivity(supervisionPackage)
+        whenever(
+                mockPackageManager.queryIntentActivities(
+                    argThat { intent: Intent ->
+                        intent.action == SupervisionManager.ACTION_CONFIRM_SUPERVISION_APPROVAL &&
+                            intent.`package` == supervisionPackage
+                    },
+                    any<Int>(),
+                )
+            )
+            .thenReturn(listOf(mockSupervisionApprovalActivity(supervisionPackage, null, null)))
 
         val result = service.getUsersThatRequirePlatformCredential()
 
@@ -1541,8 +1573,17 @@ class SupervisionServiceTest {
                     UserInfo(USER_ID_SECONDARY, "user1", USER_ICON, FLAG_FULL, USER_TYPE),
                 )
             )
-        // Only return a supervision activity for one supervision package.
-        mockSupervisionApprovalActivity(supervisionPackage)
+        // Only return a supervision activity for one supervision  package
+        whenever(
+                mockPackageManager.queryIntentActivities(
+                    argThat { intent: Intent ->
+                        intent.action == SupervisionManager.ACTION_CONFIRM_SUPERVISION_APPROVAL &&
+                            intent.`package` == supervisionPackage
+                    },
+                    any<Int>(),
+                )
+            )
+            .thenReturn(listOf(mockSupervisionApprovalActivity(supervisionPackage, null, null)))
 
         val result = service.getUsersThatRequirePlatformCredential()
 
@@ -1588,42 +1629,21 @@ class SupervisionServiceTest {
         assertThat(result.map { it.id }).containsExactly(USER_ID)
     }
 
-    private fun supervisionApprovalActivityResolveInfo(
+    private fun mockSupervisionApprovalActivity(
         supervisionPackageName: String,
-        label: String = "Generic label",
+        activityName: String?,
+        label: String?,
     ): ResolveInfo {
         val activityInfo =
             ActivityInfo().apply {
                 packageName = supervisionPackageName
+                name = activityName ?: "Activity"
                 applicationInfo = ApplicationInfo()
             }
         return ResolveInfo().apply {
             this.activityInfo = activityInfo
-            nonLocalizedLabel = label
+            nonLocalizedLabel = label ?: "Generic label"
         }
-    }
-
-    private fun mockSupervisionApprovalActivity(packageName: String) {
-        mockSupervisionApprovalActivities(
-            packageName,
-            listOf(supervisionApprovalActivityResolveInfo(packageName)),
-        )
-    }
-
-    private fun mockSupervisionApprovalActivities(
-        packageName: String,
-        activities: List<ResolveInfo>,
-    ) {
-        whenever(
-                mockPackageManager.queryIntentActivities(
-                    argThat { intent: Intent ->
-                        intent.action == SupervisionManager.ACTION_CONFIRM_SUPERVISION_APPROVAL &&
-                            intent.`package` == packageName
-                    },
-                    any<Int>(),
-                )
-            )
-            .thenReturn(activities)
     }
 
     private fun addDefaultAndFullUsers() {
