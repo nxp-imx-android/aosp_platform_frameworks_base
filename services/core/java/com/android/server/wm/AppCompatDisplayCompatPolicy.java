@@ -22,6 +22,7 @@ import static android.content.pm.ActivityInfo.CONFIG_KEYBOARD;
 import static android.content.pm.ActivityInfo.CONFIG_KEYBOARD_HIDDEN;
 import static android.content.pm.ActivityInfo.CONFIG_NAVIGATION;
 import static android.content.pm.ActivityInfo.CONFIG_TOUCHSCREEN;
+import static android.content.pm.ActivityInfo.FLAG_EXCLUDE_FROM_RECENTS;
 import static android.view.Display.TYPE_INTERNAL;
 import static android.window.DesktopExperienceFlags.ENABLE_AUTO_RECOVERY_FROM_SELF_KILL;
 
@@ -336,7 +337,9 @@ class AppCompatDisplayCompatPolicy {
                 @NonNull DisplayContent newDisplay) {
             if (mActivityRecord.mAppCompatController.getTransparentPolicy().isRunning()
                     || mActivityRecord.getTask() == null
-                    || mActivityRecord != mActivityRecord.getTask().topRunningActivity()) {
+                    || mActivityRecord != mActivityRecord.getTask().topRunningActivity()
+                    || (mActivityRecord.intent.getFlags() & FLAG_EXCLUDE_FROM_RECENTS) != 0
+                    || !mActivityRecord.isActivityTypeStandardOrUndefined()) {
                 return;
             }
             final Transition displayMoveTransition =

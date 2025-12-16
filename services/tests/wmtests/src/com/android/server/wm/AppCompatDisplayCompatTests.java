@@ -21,6 +21,7 @@ import static android.content.pm.ActivityInfo.CONFIG_COLOR_MODE;
 import static android.content.pm.ActivityInfo.CONFIG_DENSITY;
 import static android.content.pm.ActivityInfo.CONFIG_RESOURCES_UNUSED;
 import static android.content.pm.ActivityInfo.CONFIG_TOUCHSCREEN;
+import static android.content.pm.ActivityInfo.FLAG_EXCLUDE_FROM_RECENTS;
 import static android.content.pm.ActivityInfo.OVERRIDE_AUTO_RESTART_ON_DISPLAY_MOVE;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
@@ -239,6 +240,24 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
 
     @EnableFlags(FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL)
     @Test
+    public void testSelfKillRecoveryOnDisplayMove_nonStandardTypeActivity() {
+        runTestScenario((robot) -> {
+            robot.useSelfKillState(s -> s.mUseNonStandardTypeActivity = true);
+            robot.selfKillOnDisplayMove();
+        });
+    }
+
+    @EnableFlags(FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL)
+    @Test
+    public void testSelfKillRecoveryOnDisplayMove_excludeFromRecents() {
+        runTestScenario((robot) -> {
+            robot.useSelfKillState(s -> s.mSetExcludeFromRecents = true);
+            robot.selfKillOnDisplayMove();
+        });
+    }
+
+    @EnableFlags(FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL)
+    @Test
     public void testSelfKillRecoveryOnDisplayMove_multipleActivities() {
         runTestScenario((robot) -> {
             robot.useSelfKillState(s -> {
@@ -283,6 +302,8 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
         boolean mRelaunchActivity = true;
         boolean mLaunchMultipleActivities = false;
         boolean mEnableRecoveryBetweenInternalDisplays = false;
+        boolean mUseNonStandardTypeActivity = false;
+        boolean mSetExcludeFromRecents = false;
         int mDisplayType = Display.TYPE_EXTERNAL;
         SelfKillType mSelfKillType = SelfKillType.FINISH_ACTIVITY;
     }
@@ -329,6 +350,14 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
             if (mSelfKillState.mLaunchMultipleActivities) {
                 activity().createActivityWithComponent();
             }
+            if (mSelfKillState.mUseNonStandardTypeActivity) {
+                spyOn(activity().top());
+                when(activity().top().isActivityTypeStandardOrUndefined()).thenReturn(false);
+            }
+            if (mSelfKillState.mSetExcludeFromRecents) {
+                activity().top().intent.addFlags(FLAG_EXCLUDE_FROM_RECENTS);
+            }
+
             activity().setTopActivityResumed();
             activity().setTopActivityConfigChanges(
                     mSelfKillState.mRelaunchActivity ? 0 : CONFIG_RESOURCES_UNUSED);
