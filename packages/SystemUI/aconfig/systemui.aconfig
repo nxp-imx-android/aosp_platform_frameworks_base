@@ -107,6 +107,16 @@ flag {
 }
 
 flag {
+    name: "broadcast_dispatcher_custom_executor"
+    namespace: "systemui"
+    description: "Default BroadcastDispatcher to use a custom executor instead of main executor"
+    bug: "466355597"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "captions_toggle_in_volume_dialog_v1"
     namespace: "systemui"
     description: "Bring the captions toggle back to the volume rocker."
