@@ -4381,13 +4381,7 @@ class DesktopTasksController(
         val repository = userRepositories.getProfile(userId)
         val anyDeskActive = repository.isAnyDeskActive(targetDisplayId)
         val sourceDisplayId = task.displayId
-        val sourceDeskId =
-            repository.getDeskIdForTask(task.taskId)
-                ?: if (enableAltTabKqsFlatenning.isTrue) {
-                    repository.getActiveDeskId(sourceDisplayId)
-                } else {
-                    null
-                }
+        val sourceDeskId = repository.getDeskIdForTask(task.taskId)
         val targetDeskId =
             if (suggestedTargetDeskId in repository.getDeskIds(targetDisplayId)) {
                 suggestedTargetDeskId
@@ -4525,10 +4519,7 @@ class DesktopTasksController(
             "handleFreeformTaskPlacement decided to place task in desktop mode but the target" +
                 " desk ID is null."
         }
-        if (
-            DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue ||
-                sourceDeskId != targetDeskId
-        ) {
+        if (sourceDeskId != targetDeskId) {
             desksOrganizer.moveTaskToDesk(wct, targetDeskId, task)
         }
 
