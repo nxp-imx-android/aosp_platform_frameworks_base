@@ -1197,6 +1197,15 @@ public class AudioTrack extends PlayerBase
         }
 
         /**
+         * @hide
+         * Internal accessor function for retrieving the AudioAttributes directly from the
+         * AudioTrack.Builder.
+         */
+        public @Nullable AudioAttributes getAudioAttributes() {
+            return mAttributes;
+        }
+
+        /**
          * Sets the format of the audio data to be played by the {@link AudioTrack}.
          * See {@link AudioFormat.Builder} for configuring the audio format parameters such
          * as encoding, channel mask and sample rate.
