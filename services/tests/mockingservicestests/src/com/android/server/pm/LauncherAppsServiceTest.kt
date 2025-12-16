@@ -21,13 +21,17 @@ import android.app.usage.UsageStatsManagerInternal
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.pm.IOnAppsChangedListener
 import android.content.pm.LauncherUserInfo
+import android.content.pm.PackageInstaller.SessionInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManagerInternal
 import android.content.pm.ParceledListSlice
+import android.content.pm.ResolveInfo
 import android.content.pm.ShortcutServiceInternal
 import android.content.pm.UserInfo
+import android.graphics.Rect
 import android.os.Binder
 import android.os.Bundle
 import android.os.IBinder
@@ -53,12 +57,15 @@ import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.ArgumentMatchers.eq
+import org.mockito.ArgumentMatchers.isNull
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.KArgumentCaptor
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.stub
@@ -435,6 +442,123 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
         launcherAppsService.removeOnAppsChangedListener(listener)
     }
 
+    @Test
+    fun startShortcut_passesCallingActivityTokenToAtm() {
+        mockPinnedShortcut(TEST_USER_ID, TEST_PACKAGE_2)
+        val callingActivityToken = Binder()
+
+        val result = launcherAppsService.startShortcut(
+            callingActivityToken,
+            TEST_PACKAGE_1, /* callingPackage */
+            TEST_PACKAGE_2, /* packageName */
+            null, /* featureId */
+            TEST_SHORTCUT_ID,
+            null, /* sourceBounds */
+            null, /* startActivityOptions */
+            TEST_USER_ID, /* targetUserId */
+        )
+
+        assertThat(result).isTrue()
+        verify(mockAtmInternal).startActivitiesAsPackage(
+            eq(callingActivityToken), /* callingActivityToken */
+            eq(TEST_PACKAGE_2), /* packageName */
+            isNull(), /* featureId */
+            eq(TEST_USER_ID),
+            any(), /* intents */
+            any(), /* bOptions */
+        )
+    }
+
+    @Test
+    fun startActivityAsUser_passesCallingActivityTokenToAtm() {
+        val component = ComponentName(TEST_PACKAGE_2, TEST_ACTIVITY)
+        mockLaunchableActivity(component)
+        val callingActivityToken = Binder()
+
+        launcherAppsService.startActivityAsUser(
+            callingActivityToken,
+            context.iApplicationThread,
+            TEST_PACKAGE_1, /* callingPackage */
+            null, /* callingFeatureId */
+            component,
+            Rect(0, 0, 100, 100), /* sourceBounds */
+            Bundle(), /* opts */
+            TEST_USER_HANDLE, /* user */
+        )
+
+        verify(mockAtmInternal).startActivityAsUser(
+            eq(context.iApplicationThread),
+            eq(TEST_PACKAGE_1), /* callingPackage */
+            isNull(), /* callingFeatureId */
+            any(), /* intent */
+            eq(callingActivityToken), /* resultTo */
+            anyInt(), /* flags */
+            any(), /* bOptions */
+            eq(TEST_USER_ID),
+        )
+    }
+
+    @Test
+    fun startSessionDetailsActivityAsUser_passesCallingActivityTokenToAtm() {
+        val callingActivityToken = Binder()
+
+        launcherAppsService.startSessionDetailsActivityAsUser(
+            callingActivityToken,
+            context.iApplicationThread,
+            TEST_PACKAGE_1, /* callingPackage */
+            null, /* callingFeatureId */
+            SessionInfo(), /* sessionInfo */
+            Rect(0, 0, 100, 100), /* sourceBounds */
+            Bundle(), /* opts */
+            TEST_USER_HANDLE,
+        )
+
+        verify(mockAtmInternal).startActivityAsUser(
+            eq(context.iApplicationThread),
+            eq(TEST_PACKAGE_1), /* callingPackage */
+            isNull(), /* callingFeatureId */
+            any(), /* intent */
+            eq(callingActivityToken), /* resultTo */
+            anyInt(), /* flags */
+            any(), /* bOptions */
+            eq(TEST_USER_ID),
+        )
+    }
+
+    @Test
+    fun showAppDetailsAsUser_passesCallingActivityTokenToAtm() {
+        val component = ComponentName(TEST_PACKAGE_2, TEST_ACTIVITY)
+        mockPackageVisibilityAndProfileAccess(
+            userId = TEST_USER_ID,
+            packageName = TEST_PACKAGE_2,
+            isProfileAccessible = true,
+            isPackageFiltered = false,
+        )
+        val callingActivityToken = Binder()
+
+        launcherAppsService.showAppDetailsAsUser(
+            callingActivityToken,
+            mock(), /* caller */
+            TEST_PACKAGE_1, /* callingPackage */
+            null, /* callingFeatureId */
+            component,
+            null, /* sourceBounds */
+            null, /* opts */
+            TEST_USER_HANDLE,
+        )
+
+        verify(mockAtmInternal).startActivityAsUser(
+            any(), /* caller */
+            eq(TEST_PACKAGE_1), /* callingPackage */
+            isNull(), /* callingFeatureId */
+            any(), /* intent */
+            eq(callingActivityToken), /* resultTo */
+            anyInt(), /* startFlags */
+            any(), /* options */
+            eq(TEST_USER_ID),
+        )
+    }
+
     private fun verifyCapturedFlagsHaveGetAppLockInfoFlag(
         appLocksPermissionGranted: Boolean,
         verification: KArgumentCaptor<Long>.() -> Unit,
@@ -491,6 +615,51 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
         assertThat(wasTriggered).isFalse()
         assertThat(listener.changedUser).isNull()
         assertThat(listener.changedPackageName).isNull()
+    }
+
+    private fun mockPinnedShortcut(targetUserId: Int, packageName: String) {
+        mockSsInternal.stub {
+            on {
+                isPinnedByCaller(
+                    anyInt(),
+                    any(),
+                    eq(packageName),
+                    any(),
+                    eq(targetUserId),
+                )
+            } doReturn true
+            on {
+                createShortcutIntents(
+                    anyInt(),
+                    any(),
+                    eq(packageName),
+                    any(),
+                    eq(targetUserId),
+                    anyInt(),
+                    anyInt(),
+                )
+            } doReturn arrayOf(Intent())
+        }
+    }
+
+    private fun mockLaunchableActivity(component: ComponentName) {
+        val activityInfo = ActivityInfo().apply {
+            exported = true
+            name = component.className
+            packageName = component.packageName
+        }
+        val resolvedApp = ResolveInfo().apply { this.activityInfo = activityInfo }
+        mockPmInternal.stub {
+            on {
+                queryIntentActivities(
+                    any(),
+                    anyOrNull(),
+                    anyLong(),
+                    anyInt(),
+                    anyInt(),
+                )
+            } doReturn listOf(resolvedApp)
+        }
     }
 
     private fun mockPackageVisibilityAndProfileAccess(
@@ -599,6 +768,8 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
     companion object {
         private const val PACKAGE_CALLBACK_LATCH_TIMEOUT_MS = 500L
         private const val TEST_CALLING_UID = 12345
+        private const val TEST_ACTIVITY = "TestActivity"
+        private const val TEST_SHORTCUT_ID = "Test Shortcut"
         private val TEST_USER_HANDLE = UserHandle.of(TEST_USER_ID)
     }
 }

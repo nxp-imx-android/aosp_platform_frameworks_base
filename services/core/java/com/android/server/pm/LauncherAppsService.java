@@ -97,6 +97,7 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.IInterface;
 import android.os.ParcelFileDescriptor;
 import android.os.Process;
@@ -1484,15 +1485,18 @@ public class LauncherAppsService extends SystemService {
         }
 
         @Override
-        public boolean startShortcut(String callingPackage, String packageName, String featureId,
+        public boolean startShortcut(@Nullable IBinder callingActivityToken,
+                String callingPackage, String packageName, String featureId,
                 String shortcutId, Rect sourceBounds, Bundle startActivityOptions,
                 int targetUserId) {
-            return startShortcutInner(injectBinderCallingUid(), injectBinderCallingPid(),
+            return startShortcutInner(callingActivityToken,
+                    injectBinderCallingUid(), injectBinderCallingPid(),
                     injectCallingUserId(), callingPackage, packageName, featureId, shortcutId,
                     sourceBounds, startActivityOptions, targetUserId);
         }
 
-        private boolean startShortcutInner(int callerUid, int callerPid, int callingUserId,
+        private boolean startShortcutInner(@Nullable IBinder callingActivityToken,
+                int callerUid, int callerPid, int callingUserId,
                 String callingPackage, String packageName, String featureId, String shortcutId,
                 Rect sourceBounds, Bundle startActivityOptions, int targetUserId) {
             verifyCallingPackage(callingPackage, callerUid);
@@ -1542,16 +1546,18 @@ public class LauncherAppsService extends SystemService {
                 }
                 startActivityOptions.putString(KEY_SPLASH_SCREEN_THEME, splashScreenThemeResName);
             }
-            return startShortcutIntentsAsPublisher(
+            return startShortcutIntentsAsPublisher(callingActivityToken,
                     intents, packageName, featureId, startActivityOptions, targetUserId);
         }
 
-        private boolean startShortcutIntentsAsPublisher(@NonNull Intent[] intents,
+        private boolean startShortcutIntentsAsPublisher(
+                @Nullable IBinder callingActivityToken, @NonNull Intent[] intents,
                 @NonNull String publisherPackage, @Nullable String publishedFeatureId,
                 Bundle startActivityOptions, int userId) {
             final int code;
             try {
-                code = mActivityTaskManagerInternal.startActivitiesAsPackage(publisherPackage,
+                code = mActivityTaskManagerInternal.startActivitiesAsPackage(
+                        callingActivityToken, publisherPackage,
                         publishedFeatureId, userId, intents,
                         getActivityOptionsForLauncher(startActivityOptions));
                 if (ActivityManager.isStartResultSuccessful(code)) {
@@ -1635,7 +1641,8 @@ public class LauncherAppsService extends SystemService {
         }
 
         @Override
-        public void startSessionDetailsActivityAsUser(IApplicationThread caller,
+        public void startSessionDetailsActivityAsUser(
+                @Nullable IBinder callingActivityToken, IApplicationThread caller,
                 String callingPackage, String callingFeatureId, SessionInfo sessionInfo,
                 Rect sourceBounds, Bundle opts, UserHandle userHandle) throws RemoteException {
             int userId = userHandle.getIdentifier();
@@ -1654,7 +1661,8 @@ public class LauncherAppsService extends SystemService {
             i.setSourceBounds(sourceBounds);
 
             mActivityTaskManagerInternal.startActivityAsUser(caller, callingPackage,
-                    callingFeatureId, i, /* resultTo= */ null, Intent.FLAG_ACTIVITY_NEW_TASK,
+                    callingFeatureId, i, callingActivityToken /* resultTo */,
+                    Intent.FLAG_ACTIVITY_NEW_TASK /* startFlags */,
                     getActivityOptionsForLauncher(opts), userId);
         }
 
@@ -1916,7 +1924,8 @@ public class LauncherAppsService extends SystemService {
         }
 
         @Override
-        public void startActivityAsUser(IApplicationThread caller, String callingPackage,
+        public void startActivityAsUser(@Nullable IBinder callingActivityToken,
+                IApplicationThread caller, String callingPackage,
                 String callingFeatureId, ComponentName component, Rect sourceBounds,
                 Bundle opts, UserHandle user) throws RemoteException {
             if (!canAccessProfile(user.getIdentifier(), "Cannot start activity")) {
@@ -1932,7 +1941,7 @@ public class LauncherAppsService extends SystemService {
             launchIntent.setSourceBounds(sourceBounds);
 
             mActivityTaskManagerInternal.startActivityAsUser(caller, callingPackage,
-                    callingFeatureId, launchIntent, /* resultTo= */ null,
+                    callingFeatureId, launchIntent, callingActivityToken /* resultTo */,
                     Intent.FLAG_ACTIVITY_NEW_TASK, getActivityOptionsForLauncher(opts),
                     user.getIdentifier());
         }
@@ -2116,7 +2125,8 @@ public class LauncherAppsService extends SystemService {
         }
 
         @Override
-        public void showAppDetailsAsUser(IApplicationThread caller,
+        public void showAppDetailsAsUser(
+                @Nullable IBinder callingActivityToken, IApplicationThread caller,
                 String callingPackage, String callingFeatureId, ComponentName component,
                 Rect sourceBounds, Bundle opts, UserHandle user) throws RemoteException {
             if (!canAccessProfile(user.getIdentifier(), "Cannot show app details")) {
@@ -2143,7 +2153,8 @@ public class LauncherAppsService extends SystemService {
                 Binder.restoreCallingIdentity(ident);
             }
             mActivityTaskManagerInternal.startActivityAsUser(caller, callingPackage,
-                    callingFeatureId, intent, /* resultTo= */ null, Intent.FLAG_ACTIVITY_NEW_TASK,
+                    callingFeatureId, intent, callingActivityToken /* resultTo */,
+                    Intent.FLAG_ACTIVITY_NEW_TASK /* startFlags */,
                     getActivityOptionsForLauncher(opts), user.getIdentifier());
         }
 
@@ -2975,7 +2986,8 @@ public class LauncherAppsService extends SystemService {
             public boolean startShortcut(int callerUid, int callerPid, String callingPackage,
                     String packageName, String featureId, String shortcutId, Rect sourceBounds,
                     Bundle startActivityOptions, int targetUserId) {
-                return LauncherAppsImpl.this.startShortcutInner(callerUid, callerPid,
+                return LauncherAppsImpl.this.startShortcutInner(
+                        null /* callingActivityToken */, callerUid, callerPid,
                         UserHandle.getUserId(callerUid), callingPackage, packageName, featureId,
                         shortcutId, sourceBounds, startActivityOptions, targetUserId);
             }

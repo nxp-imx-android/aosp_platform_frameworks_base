@@ -79,6 +79,7 @@ import android.app.PictureInPictureParams;
 import android.app.servertransaction.ClientTransactionItem;
 import android.app.servertransaction.EnterPipRequestedItem;
 import android.content.ComponentName;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
@@ -2222,5 +2223,21 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         } finally {
             session.finishMocking();
         }
+    }
+
+    @Test
+    public void testStartActivitiesAsPackage_passesCallingActivityToken() {
+        final IBinder callingActivityToken = new Binder();
+        final ActivityStartController mockStartController = mock(ActivityStartController.class);
+        doReturn(mockStartController).when(mAtm).getActivityStartController();
+
+        mAtm.mInternal.startActivitiesAsPackage(callingActivityToken,
+                DEFAULT_COMPONENT_PACKAGE_NAME, null /* featureId */, DEFAULT_USER_ID,
+                new Intent[]{}, null /* bOptions */);
+
+        verify(mockStartController).startActivitiesInPackage(
+                anyInt(), eq(DEFAULT_COMPONENT_PACKAGE_NAME), any(), any(), any(),
+                eq(callingActivityToken), any(), eq(DEFAULT_USER_ID), anyBoolean(), any(),
+                anyBoolean());
     }
 }

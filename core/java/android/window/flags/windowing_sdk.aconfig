@@ -211,3 +211,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    namespace: "windowing_sdk"
+    name: "use_caller_token_in_launcher_apps"
+    description: "Pass caller's activity token in LauncherApps to fix task property inheritance (e.g. launcher shortcut move bubbled task to fullscreen)"
+    bug: "389810202"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

@@ -182,8 +182,8 @@ public abstract class ActivityTaskManagerInternal implements ActiveUids.Observer
      *
      * @return error codes used by {@link IActivityManager#startActivity} and its siblings.
      */
-    public abstract int startActivitiesAsPackage(String packageName, String featureId,
-            int userId, Intent[] intents, Bundle bOptions);
+    public abstract int startActivitiesAsPackage(@Nullable IBinder callingActivityToken,
+            String packageName, String featureId, int userId, Intent[] intents, Bundle bOptions);
 
     /**
      * Start intents as a package.
