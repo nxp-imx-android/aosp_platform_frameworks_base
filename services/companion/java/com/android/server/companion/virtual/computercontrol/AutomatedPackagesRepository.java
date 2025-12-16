@@ -149,7 +149,9 @@ public final class AutomatedPackagesRepository {
                         .putExtra(Intent.EXTRA_PACKAGE_NAME, packageName)
                         .putExtra(Intent.EXTRA_USER_ID, userId)
                         .putExtra(EXTRA_AUTOMATING_PACKAGE_NAME, deviceOwner)
-                        .putExtra(Intent.EXTRA_RESULT_RECEIVER, resultReceiver.prepareForIpc());
+                        .putExtra(Intent.EXTRA_RESULT_RECEIVER, resultReceiver.prepareForIpc())
+                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                                | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
             }
         }
         return null;
