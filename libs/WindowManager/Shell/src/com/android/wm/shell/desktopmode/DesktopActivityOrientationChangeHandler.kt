@@ -102,10 +102,7 @@ class DesktopActivityOrientationChangeHandler(
                     ActivityInfo.isFixedOrientationPortrait(requestedOrientation)
         ) {
             val displayLayout = displayController.getDisplayLayout(task.displayId) ?: return
-            val captionInsets =
-                task.configuration.windowConfiguration.appBounds?.let {
-                    it.top - task.configuration.windowConfiguration.bounds.top
-                } ?: 0
+            val captionInsets = task.freeformCaptionInsets
             val newOrientationBounds =
                 calculateInitialBounds(
                     displayLayout = displayLayout,

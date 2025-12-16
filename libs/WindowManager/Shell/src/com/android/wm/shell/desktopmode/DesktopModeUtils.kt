@@ -190,10 +190,7 @@ fun calculateMaximizeBounds(displayLayout: DisplayLayout, taskInfo: RunningTaskI
     } else {
         // if non-resizable then calculate max bounds according to aspect ratio
         val activityAspectRatio = calculateAspectRatio(taskInfo)
-        val captionInsets =
-            taskInfo.configuration.windowConfiguration.appBounds?.let {
-                it.top - taskInfo.configuration.windowConfiguration.bounds.top
-            } ?: 0
+        val captionInsets = taskInfo.freeformCaptionInsets
         val newSize =
             maximizeSizeGivenAspectRatio(
                 taskInfo,
