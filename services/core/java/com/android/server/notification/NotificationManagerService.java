@@ -7464,7 +7464,9 @@ public class NotificationManagerService extends SystemService {
                     mAssistants.checkServiceTokenLocked(token);
                     for (Adjustment adjustment : adjustments) {
                         NotificationRecord r = mNotificationsByKey.get(adjustment.getKey());
-                        if (r != null && mAssistants.isSameUser(token, r.getUserId())) {
+                        if (r != null
+                                && adjustment.getUser() == r.getUserId()
+                                && mAssistants.isSameUser(token, r.getUserId())) {
                             applyAdjustmentLocked(r, adjustment, true);
                             // If the assistant has blocked the notification, cancel it
                             // This will trigger a sort, so we don't have to explicitly ask for
