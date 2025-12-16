@@ -198,6 +198,7 @@ applications that come with the platform
 
     <privapp-permissions package="com.android.contactspicker">
         <permission name="android.permission.MANAGE_CONTACTS_PICKER_SESSION" />
+        <permission name="android.permission.INTERACT_ACROSS_USERS" />
     </privapp-permissions>
 
     <privapp-permissions package="com.android.providers.calendar">
