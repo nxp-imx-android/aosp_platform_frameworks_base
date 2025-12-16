@@ -51,10 +51,12 @@ class ClientRegistry {
      * @param renderToken the {@link RenderToken} token for the client
      */
     public void addClient(InsightSurfaceClientInfo clientInfo, RenderToken renderToken) {
-        final UUID clientId = clientInfo.getId();
-        mClients.put(clientId, clientInfo);
-        mRenderTokensByClientId.put(clientId, renderToken);
-        mClientIdsByRenderToken.put(renderToken, clientId);
+        synchronized (mClients) {
+            final UUID clientId = clientInfo.getId();
+            mClients.put(clientId, clientInfo);
+            mRenderTokensByClientId.put(clientId, renderToken);
+            mClientIdsByRenderToken.put(renderToken, clientId);
+        }
     }
 
     /**
@@ -64,12 +66,14 @@ class ClientRegistry {
      * @return the client that was removed, or {@code null} if the client was not found
      */
     public InsightSurfaceClientInfo removeClient(UUID clientId) {
-        final InsightSurfaceClientInfo clientInfo = mClients.remove(clientId);
-        final RenderToken renderToken = mRenderTokensByClientId.remove(clientId);
-        if (renderToken != null) {
-            mClientIdsByRenderToken.remove(renderToken);
+        synchronized (mClients) {
+            final InsightSurfaceClientInfo clientInfo = mClients.remove(clientId);
+            final RenderToken renderToken = mRenderTokensByClientId.remove(clientId);
+            if (renderToken != null) {
+                mClientIdsByRenderToken.remove(renderToken);
+            }
+            return clientInfo;
         }
-        return clientInfo;
     }
 
     /**
@@ -80,8 +84,10 @@ class ClientRegistry {
      *         the render token was not found
      */
     public InsightSurfaceClientInfo getClientForRenderToken(RenderToken renderToken) {
-        final UUID clientId = mClientIdsByRenderToken.get(renderToken);
-        return mClients.get(clientId);
+        synchronized (mClients) {
+            final UUID clientId = mClientIdsByRenderToken.get(renderToken);
+            return mClients.get(clientId);
+        }
     }
 
     /**
