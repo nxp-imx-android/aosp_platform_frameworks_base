@@ -803,6 +803,9 @@ class DragDownHelper(
     var isDraggingDown = false
         private set
 
+    var isDraggingUp = false
+        private set
+
     private val isFalseTouch: Boolean
         get() {
             return if (!dragDownCallback.isFalsingCheckNeeded) {
@@ -834,6 +837,7 @@ class DragDownHelper(
             MotionEvent.ACTION_DOWN -> {
                 draggedFarEnough = false
                 isDraggingDown = false
+                isDraggingUp = false
                 startingChild = null
                 initialShadeLockdown = false
                 initialTouchY = y
@@ -863,6 +867,19 @@ class DragDownHelper(
                     }
                     initialShadeLockdown = dragDownCallback.isLockdownShade()
                     return intercepted
+                } else {
+                    if (SceneContainerFlag.isEnabled) {
+                        // Check if we're dragging upwards and if we're not in the locked, open shade
+                        val dragUpH = -1 * h
+                        if (
+                            dragUpH > touchSlop &&
+                                dragUpH > Math.abs(x - initialTouchX) &&
+                                !dragDownCallback.isLockdownShade()
+                        ) {
+                            isDraggingUp = true
+                            return true
+                        }
+                    }
                 }
             }
         }
@@ -870,7 +887,7 @@ class DragDownHelper(
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (!isDraggingDown) {
+        if (!isDraggingDown && !isDraggingUp) {
             return false
         }
         val y = event.y
@@ -918,6 +935,7 @@ class DragDownHelper(
                         startingChild = null
                     }
                     isDraggingDown = false
+                    isDraggingUp = false
                     shadeRepository.setLegacyLockscreenShadeTracking(false)
                     return true
                 } else {
@@ -1001,6 +1019,7 @@ class DragDownHelper(
             startingChild = null
         }
         isDraggingDown = false
+        isDraggingUp = false
         shadeRepository.setLegacyLockscreenShadeTracking(false)
         dragDownCallback.onDragDownReset()
     }
