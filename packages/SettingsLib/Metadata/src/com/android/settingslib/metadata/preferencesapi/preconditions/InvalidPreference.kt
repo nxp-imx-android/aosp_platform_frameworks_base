@@ -25,8 +25,19 @@ import com.android.settingslib.metadata.KeyParametersSchema
  * parameterised). The reason should explain what is wrong.
  */
 class InvalidPreference(
-    otherPreferenceScreenKey: Int,
-    otherPreferenceKey: Int,
+    otherPreferenceScreenKey: String,
+    otherPreferenceKey: String,
     otherPreferenceParams: KeyParametersSchema?,
     override val reason: Int
-) : Disallowed
+) : Disallowed {
+    constructor(
+        otherPreferenceScreenKey: String,
+        otherPreferenceKey: String,
+        reason: Int
+    ) : this(
+        otherPreferenceScreenKey,
+        otherPreferenceKey,
+        null,
+        reason
+    )
+}
