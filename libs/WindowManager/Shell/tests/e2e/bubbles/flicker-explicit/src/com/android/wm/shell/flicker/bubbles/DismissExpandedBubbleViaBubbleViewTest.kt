@@ -31,7 +31,6 @@ import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import com.android.wm.shell.flicker.bubbles.utils.RunOncePerParameterRule
 import org.junit.FixMethodOrder
 import org.junit.Rule
-import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import org.junit.runners.Parameterized
@@ -57,7 +56,7 @@ import org.junit.runners.Parameterized.Parameters
  * - [BubbleFlickerTestBase]
  * - [DismissSingleExpandedBubbleTestCases]
  */
-@FlakyTest(bugId = 427850786)
+@FlakyTest(bugId = 468919596)
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -91,16 +90,4 @@ class DismissExpandedBubbleViaBubbleViewTest(navBar: NavBar) :
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
-
-    @FlakyTest(bugId = 396020056)
-    @Test
-    override fun appLayerBecomesInvisible() {
-        super.appLayerBecomesInvisible()
-    }
-
-    @FlakyTest(bugId = 396020056)
-    @Test
-    override fun visibleLayersShownMoreThanOneConsecutiveEntry() {
-        super.visibleLayersShownMoreThanOneConsecutiveEntry()
-    }
 }
