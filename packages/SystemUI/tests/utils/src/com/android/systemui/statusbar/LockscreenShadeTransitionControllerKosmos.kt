@@ -19,6 +19,7 @@ package com.android.systemui.statusbar
 import android.content.applicationContext
 import com.android.systemui.classifier.falsingCollector
 import com.android.systemui.classifier.falsingManager
+import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.keyguard.domain.interactor.naturalScrollingSettingObserver
 import com.android.systemui.keyguard.wakefulnessLifecycle
@@ -61,5 +62,6 @@ var Kosmos.lockscreenShadeTransitionController by Fixture {
         splitShadeStateController = splitShadeStateController,
         shadeLockscreenInteractorLazy = { shadeLockscreenInteractor },
         naturalScrollingSettingObserver = naturalScrollingSettingObserver,
+        deviceEntryInteractor = deviceEntryInteractor,
     )
 }
