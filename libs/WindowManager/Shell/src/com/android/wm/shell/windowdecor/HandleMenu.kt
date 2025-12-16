@@ -143,12 +143,16 @@ private constructor(
     private val shouldShowBrowserPill: Boolean
         get() = openInAppOrBrowserIntent != null
 
+    private val shouldShowGameControlsButton: Boolean
+        get() = DesktopExperienceFlags.ENABLE_GAME_CONTROLS_ENTRY_IN_HANDLE_MENU.isTrue
+
     private val shouldShowMoreActionsPill: Boolean
         get() =
             SHOULD_SHOW_SCREENSHOT_BUTTON ||
                 shouldShowNewWindowButton ||
                 shouldShowManageWindowsButton ||
                 shouldShowChangeAspectRatioButton ||
+                shouldShowGameControlsButton ||
                 shouldShowRestartButton
 
     private var loadAppInfoJob: Job? = null
@@ -210,6 +214,7 @@ private constructor(
                     shouldShowNewWindowButton = shouldShowNewWindowButton,
                     shouldShowManageWindowsButton = shouldShowManageWindowsButton,
                     shouldShowChangeAspectRatioButton = shouldShowChangeAspectRatioButton,
+                    shouldShowGameControlsButton = shouldShowGameControlsButton,
                     shouldShowDesktopModeButton = shouldShowDesktopModeButton,
                     shouldShowRestartButton = shouldShowRestartButton,
                     isBrowserApp = isBrowserApp,
@@ -484,6 +489,10 @@ private constructor(
             menuHeight -=
                 loadDimensionPixelSize(R.dimen.desktop_mode_handle_menu_change_aspect_ratio_height)
         }
+        if (!shouldShowGameControlsButton) {
+            menuHeight -=
+                loadDimensionPixelSize(R.dimen.desktop_mode_handle_menu_game_controls_height)
+        }
         if (!shouldShowRestartButton) {
             menuHeight -=
                 loadDimensionPixelSize(R.dimen.desktop_mode_handle_menu_restart_button_height)
@@ -532,6 +541,7 @@ private constructor(
         private val shouldShowNewWindowButton: Boolean,
         private val shouldShowManageWindowsButton: Boolean,
         private val shouldShowChangeAspectRatioButton: Boolean,
+        private val shouldShowGameControlsButton: Boolean,
         private val shouldShowDesktopModeButton: Boolean,
         private val shouldShowRestartButton: Boolean,
         private val isBrowserApp: Boolean,
@@ -610,6 +620,8 @@ private constructor(
             moreActionsPill.requireViewById<HandleMenuActionButton>(R.id.manage_windows_button)
         private val changeAspectRatioBtn =
             moreActionsPill.requireViewById<HandleMenuActionButton>(R.id.change_aspect_ratio_button)
+        private val gameControlsBtn =
+            moreActionsPill.requireViewById<HandleMenuActionButton>(R.id.game_controls_button)
 
         // Restart Pill.
         private val restartPill = rootView.requireViewById<View>(R.id.handle_menu_restart_pill)
@@ -630,6 +642,7 @@ private constructor(
             listOf(
                 newWindowBtn,
                 changeAspectRatioBtn,
+                gameControlsBtn,
                 restartBtn,
                 manageWindowBtn,
                 collapseMenuButton,
@@ -674,6 +687,9 @@ private constructor(
                 }
                 R.id.change_aspect_ratio_button -> {
                     windowDecorationActions.onChangeAspectRatio(taskInfo)
+                }
+                R.id.game_controls_button -> {
+                    // TODO: tkachenkoo - Implement game controls button listener.
                 }
                 R.id.handle_menu_restart_button -> {
                     windowDecorationActions.onRestart(taskInfo.taskId)
@@ -798,6 +814,7 @@ private constructor(
                     newWindowBtn to shouldShowNewWindowButton,
                     manageWindowBtn to shouldShowManageWindowsButton,
                     changeAspectRatioBtn to shouldShowChangeAspectRatioButton,
+                    gameControlsBtn to shouldShowGameControlsButton,
                     restartBtn to shouldShowRestartButton,
                 )
             val firstVisible = buttons.find { it.second }?.first
