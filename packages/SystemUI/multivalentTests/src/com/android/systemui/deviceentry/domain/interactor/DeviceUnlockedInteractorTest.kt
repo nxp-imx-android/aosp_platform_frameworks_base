@@ -669,6 +669,53 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             assertThat(isUnlocked).isTrue()
         }
 
+    // Regression test for b/457867010
+    @Test
+    fun deviceUnlockStatus_doesLock_whenLockNowIsCalled_beforeAuthenticationMethodChanges() =
+        testScope.runTest {
+            val isUnlocked by collectLastValue(underTest.deviceUnlockStatus.map { it.isUnlocked })
+
+            authenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.None)
+            runCurrent()
+            assertThat(isUnlocked).isTrue()
+
+            // Simulate user switch, where lock requesting is coming in before authentication method
+            // is switched.
+            underTest.lockNow("test-reason")
+            authenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Password)
+            runCurrent()
+
+            // After the user switch, authenticationMethod.collectLatest should re-trigger
+            // handleLockAndUnlockEvents, which will then collect the buffered lockNow request.
+            assertThat(isUnlocked).isFalse()
+        }
+
+    @Test
+    fun deviceUnlockStatus_doesNotLock_afterUserSwitch_fromSecureToInsecureUser() =
+        testScope.runTest {
+            val isUnlocked by collectLastValue(underTest.deviceUnlockStatus.map { it.isUnlocked })
+
+            // 1. Start with User A, who has a PIN.
+            authenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)
+            runCurrent()
+
+            // 2. Lock the device for User A.
+            underTest.lockNow("test")
+            runCurrent()
+            assertThat(isUnlocked).isFalse()
+
+            // 3. Switch to User B, who has no lock method. The device should be unlocked.
+            authenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.None)
+            runCurrent()
+            assertThat(isUnlocked).isTrue()
+
+            // 4. Now, set a PIN for User B. The device should REMAIN unlocked. The lock request
+            //    from User A should have already been consumed.
+            authenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)
+            runCurrent()
+            assertThat(isUnlocked).isTrue()
+        }
+
     @Test
     fun deviceUnlockStatus_isResetToFalse_whenDeviceGoesToSleep_fromSleepButton() =
         testScope.runTest {

@@ -241,7 +241,7 @@ constructor(
         get() = deviceUnlockStatus.value.isUnlocked
 
     /** A [Channel] of "lock now" requests where the values are the debugging reasons. */
-    private val lockNowRequests = Channel<String>()
+    private val lockNowRequests = Channel<String>(Channel.CONFLATED)
 
     /**
      * A [Channel] of "unlock now" requests where the values are the debugging reasons. Currently
