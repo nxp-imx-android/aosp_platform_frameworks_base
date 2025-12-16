@@ -96,6 +96,7 @@ class AppFunctionManagerServiceImplTest {
             dynamicRegistry,
             appInteractionService,
             MoreExecutors.directExecutor(),
+            mock<AppFunctionMetadataReader>()
         )
 
     @After

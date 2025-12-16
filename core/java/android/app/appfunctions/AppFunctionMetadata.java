@@ -23,15 +23,12 @@ import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCT
 import static java.util.Objects.requireNonNull;
 
 import android.annotation.FlaggedApi;
-import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.appsearch.GenericDocument;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.Objects;
 
 /**
@@ -125,49 +122,19 @@ public final class AppFunctionMetadata implements AbstractAppFunctionMetadata, P
     public static final String PROPERTY_ENABLED_BY_DEFAULT = "enabledByDefault";
 
     /**
-     * Function implementation is declared statically and execution uses {link @AppFunctionService}
+     * Internal property which stores service name which should be used to execute App Function.
+     * {@link #DYNAMIC_APP_FUNCTIONS_SERVICE_NAME} is set for dynamic app functions.
      *
      * @hide
      */
-    public static final int FUNCTION_TYPE_STATIC = 0;
+    public static final String PROPERTY_SERVICE_NAME = "serviceName";
 
     /**
-     * Function should be registered at runtime using {@link AppFunctionManager#registerAppFunction}
-     * API.
+     * Expected value for {@link #PROPERTY_SERVICE_NAME} in case AppFunction is dynamic.
      *
      * @hide
      */
-    public static final int FUNCTION_TYPE_DYNAMIC = 1;
-
-    /**
-     * The type of app function.
-     *
-     * <p>This is used for determining execution logic and logging.
-     *
-     * @hide
-     */
-    @IntDef(
-            prefix = "FUNCTION_TYPE_",
-            value = {
-                FUNCTION_TYPE_STATIC,
-                FUNCTION_TYPE_DYNAMIC,
-            })
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface AppFunctionType {}
-
-    /**
-     * Returns the type of the app function.
-     *
-     * @hide
-     */
-    @AppFunctionType
-    public static int getAppFunctionType(@NonNull String functionIdentifier) {
-        // TODO(b/438413084): move to check the type in metadata
-        if (functionIdentifier.startsWith("context")) {
-            return FUNCTION_TYPE_DYNAMIC;
-        }
-        return FUNCTION_TYPE_STATIC;
-    }
+    public static final String DYNAMIC_APP_FUNCTIONS_SERVICE_NAME = "@null";
 
     @NonNull
     public static final Creator<AppFunctionMetadata> CREATOR =
