@@ -7577,6 +7577,9 @@ public class NotificationManagerService extends SystemService {
                 return;
             }
 
+            cancelAllNotificationsInt(MY_UID, MY_PID, pkg, channelId, 0, 0,
+                    user.getIdentifier(), REASON_CHANNEL_REMOVED);
+
             deleteNotificationChannelDirectly(pkg, uid, user.getIdentifier(),
                     channelId,MY_UID,true);
         }
