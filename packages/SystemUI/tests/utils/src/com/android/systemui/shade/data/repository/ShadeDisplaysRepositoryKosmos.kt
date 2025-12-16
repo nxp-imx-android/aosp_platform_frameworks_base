@@ -51,7 +51,7 @@ val Kosmos.statusBarTouchShadeDisplayPolicy: StatusBarTouchShadeDisplayPolicy by
     }
 val Kosmos.shadeExpansionIntent: ShadeExpansionIntent by
     Kosmos.Fixture { statusBarTouchShadeDisplayPolicy }
-val Kosmos.shadeDisplaysRepository: ShadeDisplaysRepository by
+var Kosmos.shadeDisplaysRepository: ShadeDisplaysRepository by
     Kosmos.Fixture {
         ShadeDisplaysRepositoryImpl(
             bgScope = testScope.backgroundScope,
