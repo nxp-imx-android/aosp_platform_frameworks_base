@@ -60,7 +60,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.layout.size
@@ -164,7 +163,6 @@ import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.common.ui.icons.Undo
 import com.android.systemui.compose.modifiers.sysuiResTag
-import com.android.systemui.qs.flags.QsEditModeV2
 import com.android.systemui.qs.panels.shared.model.SizedTileImpl
 import com.android.systemui.qs.panels.ui.compose.DragAndDropState
 import com.android.systemui.qs.panels.ui.compose.DragType
@@ -250,9 +248,7 @@ fun DefaultEditTileGrid(
 ) {
     val selectionState = rememberSelectionState()
 
-    if (QsEditModeV2.isEnabled) {
-        AutoSelectTiles(listState, selectionState)
-    }
+    AutoSelectTiles(listState, selectionState)
 
     LaunchedEffect(selectionState.placementEvent) {
         selectionState.placementEvent?.let { event ->
@@ -267,24 +263,12 @@ fun DefaultEditTileGrid(
         AnimatedVisibility(snapshotViewModel.canUndo, enter = fadeIn(), exit = fadeOut()) {
             IconButton(
                 enabled = snapshotViewModel.canUndo,
-                onClick = {
-                    if (!QsEditModeV2.isEnabled) {
-                        selectionState.unSelect()
-                    }
-                    snapshotViewModel.undo()
-                },
+                onClick = snapshotViewModel::undo,
                 colors =
-                    if (QsEditModeV2.isEnabled) {
-                        IconButtonDefaults.iconButtonColors(
-                            containerColor = LocalAndroidColorScheme.current.surfaceEffect1,
-                            contentColor = MaterialTheme.colorScheme.onSurface,
-                        )
-                    } else {
-                        IconButtonDefaults.iconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                        )
-                    },
+                    IconButtonDefaults.iconButtonColors(
+                        containerColor = LocalAndroidColorScheme.current.surfaceEffect1,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                    ),
             ) {
                 Icon(
                     Undo,
@@ -294,12 +278,7 @@ fun DefaultEditTileGrid(
         }
     }
 
-    val scrollBehavior =
-        if (QsEditModeV2.isEnabled) {
-            TopAppBarDefaults.enterAlwaysScrollBehavior()
-        } else {
-            null
-        }
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     // Using current and available tiles to avoid the remove button's state rapidly toggling off and
     // on when adding a new tile
     val isTileRemovable: (TileSpec) -> Boolean by rememberUpdatedState { spec ->
@@ -309,52 +288,41 @@ fun DefaultEditTileGrid(
         modifier =
             modifier
                 .consumeWindowInsets(WindowInsets.displayCutout)
-                .thenIf(scrollBehavior != null) {
-                    Modifier.nestedScroll(scrollBehavior!!.nestedScrollConnection)
-                }
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .sysuiResTag(EDIT_MODE_ROOT_TEST_TAG),
         containerColor = Color.Transparent,
         topBar = {
-            if (QsEditModeV2.isEnabled) {
-                EditModeExpandableTopBar(
-                    onStopEditing = onStopEditing,
-                    subtitle = { expanded: Boolean ->
-                        if (expanded) {
-                            TopBarSubtitle(
-                                listState,
-                                selectionState,
-                                modifier = Modifier.fillMaxWidth(),
-                            )
-                        }
-                    },
-                    modifier = Modifier.statusBarsPadding(),
-                    scrollBehavior = scrollBehavior,
-                    collapsibleActions = topBarActions,
-                    actions = {
-                        undoAction()
+            EditModeExpandableTopBar(
+                onStopEditing = onStopEditing,
+                subtitle = { expanded: Boolean ->
+                    if (expanded) {
+                        TopBarSubtitle(
+                            listState,
+                            selectionState,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                },
+                modifier = Modifier.statusBarsPadding(),
+                scrollBehavior = scrollBehavior,
+                collapsibleActions = topBarActions,
+                actions = {
+                    undoAction()
 
-                        RemoveButton(
-                            enabled = selectionState.selection?.let { isTileRemovable(it) } ?: false
-                        ) {
-                            selectionState.selection?.let { currentSelection ->
-                                // Auto-select an adjacent tile when removing the selection,
-                                // prioritizing the next tile and falling back to the previous tile
-                                listState
-                                    .findNeighboringTile(currentSelection)
-                                    ?.let(selectionState::select)
-                                onEditAction(EditAction.RemoveTile(currentSelection))
-                            }
+                    RemoveButton(
+                        enabled = selectionState.selection?.let { isTileRemovable(it) } ?: false
+                    ) {
+                        selectionState.selection?.let { currentSelection ->
+                            // Auto-select an adjacent tile when removing the selection,
+                            // prioritizing the next tile and falling back to the previous tile
+                            listState
+                                .findNeighboringTile(currentSelection)
+                                ?.let(selectionState::select)
+                            onEditAction(EditAction.RemoveTile(currentSelection))
                         }
-                    },
-                )
-            } else {
-                EditModeTopBar(
-                    onStopEditing = onStopEditing,
-                    modifier = Modifier.statusBarsPadding(),
-                    collapsibleActions = topBarActions,
-                    actions = undoAction,
-                )
-            }
+                    }
+                },
+            )
         },
     ) { innerPadding ->
         CompositionLocalProvider(
@@ -376,15 +344,7 @@ fun DefaultEditTileGrid(
                 scrollState = scrollState,
                 onEditAction = onEditAction,
             ) {
-                if (QsEditModeV2.isEnabled) {
-                    Spacer(Modifier.height(16.dp))
-                } else {
-                    CurrentTilesGridHeader(
-                        listState,
-                        selectionState,
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                    )
-                }
+                Spacer(Modifier.height(16.dp))
 
                 CurrentTilesGrid(
                     listState = listState,
@@ -548,35 +508,6 @@ private fun rememberEditModeState(
     }
 
     return editGridHeaderState
-}
-
-@Composable
-private fun CurrentTilesGridHeader(
-    listState: EditTileListState,
-    selectionState: MutableSelectionState,
-    modifier: Modifier = Modifier,
-) {
-    val editGridHeaderState by rememberEditModeState(listState, selectionState)
-
-    AnimatedContent(
-        targetState = editGridHeaderState,
-        label = "QSEditHeader",
-        contentAlignment = Alignment.Center,
-        modifier = modifier,
-    ) { state ->
-        EditGridHeader {
-            when (state) {
-                EditModeHeaderState.Place -> {
-                    EditGridCenteredText(text = stringResource(id = R.string.tap_to_position_tile))
-                }
-                EditModeHeaderState.Idle -> {
-                    EditGridCenteredText(
-                        text = stringResource(id = R.string.select_to_rearrange_tiles)
-                    )
-                }
-            }
-        }
-    }
 }
 
 @Composable
@@ -773,12 +704,7 @@ private fun AnimatedAvailableTilesGrid(
                 )
 
                 TextButton(
-                    onClick = {
-                        if (!QsEditModeV2.isEnabled) {
-                            selectionState.unSelect()
-                        }
-                        onEditAction(EditAction.ResetGrid)
-                    },
+                    onClick = { onEditAction(EditAction.ResetGrid) },
                     colors =
                         ButtonDefaults.textButtonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
@@ -954,24 +880,9 @@ private fun rememberTileState(
 ): State<TileState> {
     val tileState = remember { mutableStateOf(TileState.New) }
 
-    if (QsEditModeV2.isEnabled) {
-        LaunchedEffect(selectionState.selection, selectionState.placementEnabled) {
-            tileState.value =
-                selectionState.tileStateFor(
-                    tile.tileSpec,
-                    tileState.value,
-                    canShowRemovalBadge = false,
-                )
-        }
-    } else {
-        LaunchedEffect(
-            selectionState.selection,
-            selectionState.placementEnabled,
-            tile.isRemovable,
-        ) {
-            tileState.value =
-                selectionState.tileStateFor(tile.tileSpec, tileState.value, tile.isRemovable)
-        }
+    LaunchedEffect(selectionState.selection, selectionState.placementEnabled) {
+        tileState.value =
+            selectionState.tileStateFor(tile.tileSpec, tileState.value, canShowRemovalBadge = false)
     }
 
     return tileState
@@ -1093,11 +1004,7 @@ private fun LazyGridItemScope.TileGridCell(
                 dragAndDropState,
                 DragType.Move,
             ) {
-                if (QsEditModeV2.isEnabled) {
-                    selectionState.select(cell.tile.tileSpec)
-                } else {
-                    selectionState.unSelect()
-                }
+                selectionState.select(cell.tile.tileSpec)
             }
 
         val toggleSelectionLabel = stringResource(R.string.accessibility_qs_edit_toggle_selection)
@@ -1159,12 +1066,7 @@ private fun LazyGridItemScope.TileGridCell(
                 }
                 .thenIf(isSelectable) { selectableModifier }
         ) {
-            EditTile(
-                tile = cell.tile,
-                tileState = tileState,
-                state = resizingState,
-                progress = resizingState::progress,
-            )
+            EditTile(tile = cell.tile, state = resizingState, progress = resizingState::progress)
         }
     }
 }
@@ -1245,11 +1147,7 @@ private fun AvailableTileGridCell(
                         dragAndDropState,
                         DragType.Add,
                     ) {
-                        if (QsEditModeV2.isEnabled) {
-                            selectionState.select(cell.tileSpec)
-                        } else {
-                            selectionState.unSelect()
-                        }
+                        selectionState.select(cell.tileSpec)
                     }
                 }
             Box(
@@ -1353,7 +1251,6 @@ private fun SpacerGridCell(modifier: Modifier = Modifier) {
 @Composable
 fun EditTile(
     tile: EditTileViewModel,
-    tileState: TileState,
     state: ResizingState,
     progress: () -> Float,
     colors: TileColors = EditModeTileDefaults.editTileColors(),
@@ -1433,7 +1330,7 @@ fun EditTile(
 private fun MeasureScope.iconHorizontalCenter(
     padding: Dp,
     containerSize: Int,
-    toggleTargetSize: Dp
+    toggleTargetSize: Dp,
 ): Float {
     return (containerSize - toggleTargetSize.roundToPx()) / 2f - padding.toPx()
 }
