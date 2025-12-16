@@ -24,6 +24,8 @@ import static com.android.server.am.psc.Constants.FOREGROUND_APP_ADJ;
 import android.app.ActivityManager.ProcessCapability;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
+import java.util.ArrayList;
+
 /** The class that computes capabilities and CPU time reasons for processes. */
 @RavenwoodKeepWholeClass
 class CapabilityController {
@@ -55,5 +57,16 @@ class CapabilityController {
         } else {
             return PROCESS_CAPABILITY_NONE;
         }
+    }
+
+    /** Performs a partial update from a list of edges. */
+    void update(ArrayList<GraphEdge> edges) {
+        for (int i = 0, size = edges.size(); i < size; i++) {
+            final GraphEdge edge = edges.get(i);
+            edge.updateCachedCapabilityFilter();
+            // TODO(b/466961280): Set edge target to be reachable.
+        }
+
+        // TODO(b/466961280): Search for all other reachable nodes and propagate capabilities.
     }
 }
