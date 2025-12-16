@@ -41,6 +41,7 @@ class FakeAccessibilityShortcutsRepository(
         const val FAKE_COLOR_INVERSION_TARGET_NAME = "com.android.test/.FakeColorInversion"
         const val FAKE_MAGNIFICATION_TARGET_NAME = "com.android.test/.FakeMagnification"
         const val FAKE_TALKBACK_TARGET_NAME = "com.android.test/.FakeTalkBack"
+        const val FAKE_SELECT_TO_SPEAK_TARGET_NAME = "com.android.test/.FakeSelectToSpeak"
         const val FAKE_VOICE_ACCESS_TARGET_NAME = "com.android.test/.FakeVoiceAccess"
     }
 
@@ -54,6 +55,7 @@ class FakeAccessibilityShortcutsRepository(
         listOf(
             TargetInfo(FAKE_TALKBACK_TARGET_NAME, "Screen Reader", true),
             TargetInfo(FAKE_MAGNIFICATION_TARGET_NAME, "Magnification", false),
+            TargetInfo(FAKE_SELECT_TO_SPEAK_TARGET_NAME, "Select to Speak", false),
             TargetInfo(FAKE_VOICE_ACCESS_TARGET_NAME, "Voice Access", true),
         )
 

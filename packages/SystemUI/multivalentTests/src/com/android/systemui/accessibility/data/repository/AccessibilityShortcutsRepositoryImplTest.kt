@@ -145,13 +145,14 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
     fun getKeyGestureConfirmInfo_onMagnificationTypeReceived_getExpectedInfo() =
         kosmos.runTest {
             val metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON
+            val keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION
 
             val info =
                 underTest.getKeyGestureConfirmInfo(
-                    KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
+                    keyGestureType,
                     metaState,
                     KeyEvent.KEYCODE_M,
-                    getTargetNameByType(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION),
+                    getTargetNameByType(keyGestureType),
                     DEFAULT_DISPLAY,
                 )
 
@@ -171,45 +172,62 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun getKeyGestureConfirmInfo_serviceUninstalled_isNull() =
+    fun getKeyGestureConfirmInfo_onSelectToSpeakTypeReceived_getExpectedInfo() =
         kosmos.runTest {
             val metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON
-            // If voice access isn't installed on device.
-            whenever(accessibilityManager.getInstalledServiceInfoWithComponentName(anyOrNull()))
-                .thenReturn(null)
+            val keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK
 
-            val info =
-                underTest.getKeyGestureConfirmInfo(
-                    KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS,
-                    metaState,
-                    KeyEvent.KEYCODE_V,
-                    getTargetNameByType(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS),
-                    DEFAULT_DISPLAY,
-                )
-
-            assertThat(info).isNull()
-        }
-
-    @Test
-    fun getKeyGestureConfirmInfo_onVoiceAccessTypeReceived_getExpectedInfo() =
-        kosmos.runTest {
-            val metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON
-            val type = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS
-
-            val a11yServiceInfo = spy(getMockAccessibilityServiceInfo("Voice Access"))
+            val a11yServiceInfo = spy(getMockAccessibilityServiceInfo("Select to Speak"))
             whenever(
                     accessibilityManager.getInstalledServiceInfoWithComponentName(
-                        ComponentName.unflattenFromString(getTargetNameByType(type))
+                        ComponentName.unflattenFromString(getTargetNameByType(keyGestureType))
                     )
                 )
                 .thenReturn(a11yServiceInfo)
 
             val info =
                 underTest.getKeyGestureConfirmInfo(
-                    type,
+                    keyGestureType,
+                    metaState,
+                    KeyEvent.KEYCODE_S,
+                    getTargetNameByType(keyGestureType),
+                    DEFAULT_DISPLAY,
+                )
+
+            assertThat(info).isNotNull()
+            assertThat(info!!.title).isEqualTo("Turn on Select to Speak keyboard shortcut?")
+            val contentText = info.contentText
+            assertThat(hasExpectedAnnotation(contentText)).isTrue()
+            // `contentText` here is an instance of SpannableStringBuilder, so we only need to
+            // compare its value here.
+            assertThat(contentText.toString())
+                .isEqualTo(
+                    "Action icon + Alt + S is the keyboard shortcut to use Select to Speak. " +
+                        "This allows you to customize font and spacing and hear text read " +
+                        "aloud right on your device."
+                )
+        }
+
+    @Test
+    fun getKeyGestureConfirmInfo_onVoiceAccessTypeReceived_getExpectedInfo() =
+        kosmos.runTest {
+            val metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON
+            val keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS
+
+            val a11yServiceInfo = spy(getMockAccessibilityServiceInfo("Voice Access"))
+            whenever(
+                    accessibilityManager.getInstalledServiceInfoWithComponentName(
+                        ComponentName.unflattenFromString(getTargetNameByType(keyGestureType))
+                    )
+                )
+                .thenReturn(a11yServiceInfo)
+
+            val info =
+                underTest.getKeyGestureConfirmInfo(
+                    keyGestureType,
                     metaState,
                     KeyEvent.KEYCODE_V,
-                    getTargetNameByType(type),
+                    getTargetNameByType(keyGestureType),
                     DEFAULT_DISPLAY,
                 )
 
@@ -227,25 +245,25 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun getTitleToContentForKeyGestureDialog_onScreenReaderTypeReceived_getExpectedInfo() =
+    fun getKeyGestureConfirmInfo_onScreenReaderTypeReceived_getExpectedInfo() =
         kosmos.runTest {
             val metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON
-            val type = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER
+            val keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER
 
             val a11yServiceInfo = spy(getMockAccessibilityServiceInfo("TalkBack"))
             whenever(
                     accessibilityManager.getInstalledServiceInfoWithComponentName(
-                        ComponentName.unflattenFromString(getTargetNameByType(type))
+                        ComponentName.unflattenFromString(getTargetNameByType(keyGestureType))
                     )
                 )
                 .thenReturn(a11yServiceInfo)
 
             val info =
                 underTest.getKeyGestureConfirmInfo(
-                    type,
+                    keyGestureType,
                     metaState,
                     KeyEvent.KEYCODE_T,
-                    getTargetNameByType(type),
+                    getTargetNameByType(keyGestureType),
                     DEFAULT_DISPLAY,
                 )
 
@@ -283,6 +301,26 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
                     "It can track your interactions with an app or a hardware sensor, and" +
                         " interact with apps on your behalf."
                 )
+        }
+
+    @Test
+    fun getKeyGestureConfirmInfo_serviceUninstalled_isNull() =
+        kosmos.runTest {
+            val metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON
+            // If voice access isn't installed on device.
+            whenever(accessibilityManager.getInstalledServiceInfoWithComponentName(anyOrNull()))
+                .thenReturn(null)
+
+            val info =
+                underTest.getKeyGestureConfirmInfo(
+                    KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS,
+                    metaState,
+                    KeyEvent.KEYCODE_V,
+                    getTargetNameByType(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS),
+                    DEFAULT_DISPLAY,
+                )
+
+            assertThat(info).isNull()
         }
 
     @Test
