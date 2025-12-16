@@ -226,7 +226,7 @@ public class PipTransitionState {
                 || state == SCHEDULED_BOUNDS_CHANGE || state == CHANGING_PIP_BOUNDS) {
             // States listed above require extra bundles to be provided.
             Preconditions.checkArgument(extra != null && !extra.isEmpty(),
-                    "No extra bundle for " + stateToString(state) + " state.");
+                    "No extra bundle for %s state.", stateToString(state));
         }
         if (!shouldTransitionToState(state)) {
             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
