@@ -29,11 +29,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -54,7 +52,6 @@ import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.animation.scene.observableTransitionState
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
-import com.android.compose.animation.scene.transitions
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffectFactory
 import com.android.compose.snapshot.ObserveReads
 import com.android.systemui.keyguard.ui.composable.modifier.burnInAware
@@ -66,7 +63,6 @@ import com.android.systemui.scene.shared.model.SceneDataSourceDelegator
 import com.android.systemui.scene.ui.view.SceneJankMonitor
 import com.android.systemui.scene.ui.viewmodel.SceneContainerViewModel
 import com.android.systemui.shade.ui.composable.OverlayShade
-import com.android.systemui.shade.ui.composable.isFullWidthShade
 import kotlinx.coroutines.CoroutineScope
 import platform.test.motion.compose.values.isRunningMotionTest
 
@@ -107,6 +103,38 @@ fun SceneContainer(
     modifier: Modifier = Modifier,
     swipeVelocityThreshold: Dp = SceneContainerDefaults.SwipeVelocityThreshold,
 ) {
+    WithSceneContainerPreloadedResources {
+        InternalSceneContainer(
+            viewModel = viewModel,
+            sceneByKey = sceneByKey,
+            overlayByKey = overlayByKey,
+            initialSceneKey = initialSceneKey,
+            transitionsBuilder = transitionsBuilder,
+            dataSourceDelegator = dataSourceDelegator,
+            sceneJankMonitorFactory = sceneJankMonitorFactory,
+            onTransitionStart = onTransitionStart,
+            onSnap = onSnap,
+            modifier = modifier,
+            swipeVelocityThreshold = swipeVelocityThreshold,
+        )
+    }
+}
+
+@Composable
+private fun InternalSceneContainer(
+    viewModel: SceneContainerViewModel,
+    sceneByKey: Map<SceneKey, Scene>,
+    overlayByKey: Map<OverlayKey, Overlay>,
+    initialSceneKey: SceneKey,
+    transitionsBuilder: SceneContainerTransitionsBuilder,
+    dataSourceDelegator: SceneDataSourceDelegator,
+    sceneJankMonitorFactory: SceneJankMonitor.Factory,
+    onTransitionStart:
+        (transition: TransitionState.Transition, animationScope: CoroutineScope) -> Unit,
+    onSnap: (idle: TransitionState.Idle) -> Unit,
+    modifier: Modifier = Modifier,
+    swipeVelocityThreshold: Dp = SceneContainerDefaults.SwipeVelocityThreshold,
+) {
     val coroutineScope = rememberCoroutineScope()
 
     val view = LocalView.current
@@ -114,7 +142,8 @@ fun SceneContainer(
         rememberActivated(traceName = "sceneJankMonitor") { sceneJankMonitorFactory.create() }
 
     val hapticFeedback = LocalHapticFeedback.current
-    val shadeExpansionMotion = OverlayShade.rememberShadeExpansionMotion(isFullWidthShade())
+    val isFullWidthShade = LocalSceneContainerPreloadedResources.current.isFullWidthShade
+    val shadeExpansionMotion = OverlayShade.rememberShadeExpansionMotion(isFullWidthShade)
     val animateQsTilesViewModel =
         rememberViewModel(traceName = "SceneContainer.animateQsTilesViewModel") {
             viewModel.animateQsTilesViewModelFactory.create()
@@ -221,7 +250,11 @@ fun SceneContainer(
     val offsetOverscrollEffectFactory = rememberOffsetOverscrollEffectFactory()
     val stretchOverscrollEffectFactory = checkNotNull(LocalOverscrollFactory.current)
     val overlayEffectFactory =
-        if (isFullWidthShade()) stretchOverscrollEffectFactory else offsetOverscrollEffectFactory
+        if (isFullWidthShade) {
+            stretchOverscrollEffectFactory
+        } else {
+            offsetOverscrollEffectFactory
+        }
 
     Box(
         modifier =

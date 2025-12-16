@@ -48,6 +48,7 @@ import com.android.systemui.qs.panels.data.repository.defaultLargeTilesRepositor
 import com.android.systemui.qs.panels.domain.interactor.iconTilesInteractor
 import com.android.systemui.qs.pipeline.domain.interactor.currentTilesInteractor
 import com.android.systemui.qs.pipeline.shared.TileSpec
+import com.android.systemui.scene.ui.composable.WithSceneContainerPreloadedResources
 import com.android.systemui.shade.ui.composable.WithStatusIconContext
 import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
@@ -89,8 +90,10 @@ class QuickSettingsShadeOverlayTest : SysuiTestCase() {
         setContent {
             PlatformTheme {
                 WithStatusIconContext(kosmos.tintedIconManagerFactory) {
-                    with(kosmos.quickSettingsShadeOverlay) {
-                        TestContentScope { Content(Modifier) }
+                    WithSceneContainerPreloadedResources {
+                        with(kosmos.quickSettingsShadeOverlay) {
+                            TestContentScope { Content(Modifier) }
+                        }
                     }
                 }
             }
