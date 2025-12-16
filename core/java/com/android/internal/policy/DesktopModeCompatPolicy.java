@@ -33,7 +33,6 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.window.DesktopExperienceFlags;
 
 import com.android.internal.R;
 import com.android.window.flags.Flags;
@@ -125,8 +124,7 @@ public class DesktopModeCompatPolicy {
             return false;
         }
         // Dream activities should be fullscreen and thus should be forced out of desktop.
-        if (DesktopExperienceFlags.ENABLE_DREAM_ACTIVITY_WINDOWING_EXCLUSION.isTrue()
-                && topActivityType == ACTIVITY_TYPE_DREAM) {
+        if (topActivityType == ACTIVITY_TYPE_DREAM) {
             return true;
         }
         // TODO: b/434943016 - Replace with permission.
@@ -185,8 +183,7 @@ public class DesktopModeCompatPolicy {
             return true;
         }
         // Dream activities should be fullscreen and thus not allowed to enter desktop.
-        if (DesktopExperienceFlags.ENABLE_DREAM_ACTIVITY_WINDOWING_EXCLUSION.isTrue()
-                && topActivityType == ACTIVITY_TYPE_DREAM) {
+        if (topActivityType == ACTIVITY_TYPE_DREAM) {
             return true;
         }
         // If activity belongs to system ui package, hide desktop entry point.

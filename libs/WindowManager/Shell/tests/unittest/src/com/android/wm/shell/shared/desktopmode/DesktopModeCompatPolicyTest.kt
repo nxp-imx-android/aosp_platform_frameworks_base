@@ -319,7 +319,6 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DREAM_ACTIVITY_WINDOWING_EXCLUSION)
     fun testIsTopActivityExemptFromDesktopWindowing_dreamActivity() {
         assertTrue(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
             createFreeformTask()
@@ -414,7 +413,6 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DREAM_ACTIVITY_WINDOWING_EXCLUSION)
     fun testShouldDisableDesktopEntryPoints_dreamActivity() {
         assertTrue(desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(
             createFreeformTask()
