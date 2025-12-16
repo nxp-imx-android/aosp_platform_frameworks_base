@@ -532,11 +532,12 @@ private fun ContentScope.CardForegroundContent(
 
     Column(
         modifier =
-            modifier.combinedClickable(
-                onClick = { viewModel.onClick(expandable) },
-                onLongClick = viewModel.onLongClick,
-                onClickLabel = viewModel.onClickLabel,
-            )
+            modifier
+                .combinedClickable(
+                    onClick = { viewModel.onClick(expandable) },
+                    onLongClick = viewModel.onLongClick,
+                )
+                .clearAndSetSemantics { contentDescription = viewModel.contentDescription }
     ) {
         // Always add the first/top row, regardless of presentation style.
         Box(modifier = Modifier.fillMaxWidth()) {
@@ -755,10 +756,8 @@ private fun ContentScope.CompactCardForeground(
         verticalAlignment = Alignment.CenterVertically,
         modifier =
             modifier
-                .clickable(
-                    onClick = { viewModel.onClick(expandable) },
-                    onClickLabel = viewModel.onClickLabel,
-                )
+                .clickable(onClick = { viewModel.onClick(expandable) })
+                .clearAndSetSemantics { contentDescription = viewModel.contentDescription }
                 .background(MaterialTheme.colorScheme.surfaceContainer)
                 .padding(16.dp),
     ) {
