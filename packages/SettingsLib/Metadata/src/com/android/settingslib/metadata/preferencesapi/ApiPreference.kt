@@ -47,6 +47,9 @@ class ApiOperationContext(
     val parameters: ValidatedKeyParameters
 )
 
+/** Configuration of the [ApiPreference] flag. */
+class FlagConfig(val check: () -> Boolean)
+
 /** Configuration of the [ApiPreference] permissions. */
 class PermissionsConfig(incomingPermissions: List<String>) {
     // Create a new, immutable list from the incoming one, avoiding unforeseen changes to the list
@@ -87,7 +90,7 @@ class SetConfig<V : Any>(
  * "Lightweight" way. It sets suitable defaults, and converts between the code we are asking
  * partner teams to write and the methods which Catalyst expects.
  */
-abstract class ApiPreference<V : Any>() : PersistentPreference<V> {
+abstract class ApiPreference<V : Any>(val isFlagEnabled: Boolean) : PersistentPreference<V> {
     companion object {
         private const val VALUE_TYPE_MISMATCH_ERROR = "Value type mismatch. Expected %s, got %s"
 
@@ -236,6 +239,13 @@ abstract class ApiPreference<V : Any>() : PersistentPreference<V> {
 
 @DslMarker
 internal annotation class ApiPreferenceDsl
+
+@ApiPreferenceDsl
+class FlagConfigBuilder(val lambda: () -> Boolean) {
+    internal fun build(): FlagConfig {
+        return FlagConfig(check = lambda)
+    }
+}
 
 @ApiPreferenceDsl
 class PermissionsConfigBuilder(val permissions: List<String>) {
@@ -400,18 +410,35 @@ class SetConfigBuilder<V : Any> {
 
 /** Configuration builder for an [ApiPreference]. */
 @ApiPreferenceDsl
-class ApiPreferenceConfigBuilder<V : Any>(val key: String,
-                                          @StringRes val purpose: Int,
-                                          val type: ApiType<V>,
-                                          val valueType: Class<V>,
-                                          val screenPermissions: PermissionsConfig?,
-                                          val screenPreconditions: PreconditionsConfig?,
-                                          val screenParameters: ValidatedKeyParameters?)
-{
+class ApiPreferenceConfigBuilder<V : Any>(
+    val key: String,
+    @StringRes val purpose: Int,
+    val type: ApiType<V>,
+    val valueType: Class<V>,
+    val screenPermissions: PermissionsConfig?,
+    val screenPreconditions: PreconditionsConfig?,
+    val screenParameters: ValidatedKeyParameters?
+) {
+    private var flagConfig: FlagConfig? = null
     private var permissionsConfig: PermissionsConfig? = null
     private var preconditionsConfig: PreconditionsConfig? = null
     private var getConfig: GetConfig<V>? = null
     private var setConfig: SetConfig<V>? = null
+
+    /**
+     * Build the [FlagConfig] from the given [FlagConfigBuilder] block.
+     */
+    fun flag(lambda: () -> Boolean) {
+        if (flagConfig != null) {
+            error(getExceptionMessageMultipleDefines("flag"))
+        }
+
+        if (permissionsConfig != null || preconditionsConfig != null || getConfig != null || setConfig != null) {
+            error(getExceptionMessageWrongOrder("flag"))
+        }
+
+        flagConfig = FlagConfigBuilder(lambda).build()
+    }
 
     /**
      * Build the [PermissionsConfig] from the given [PermissionsConfigBuilder] block.
@@ -474,7 +501,7 @@ class ApiPreferenceConfigBuilder<V : Any>(val key: String,
     }
 
     /** Create an instance of [ApiPreference] from its configuration. */
-    fun build() = object : ApiPreference<V>() {
+    fun build() = object : ApiPreference<V>(flagConfig?.check() ?: true) {
         override val screenPermissions = this@ApiPreferenceConfigBuilder.screenPermissions
         override val screenPreconditions = this@ApiPreferenceConfigBuilder.screenPreconditions
         override val permissions: PermissionsConfig? = permissionsConfig

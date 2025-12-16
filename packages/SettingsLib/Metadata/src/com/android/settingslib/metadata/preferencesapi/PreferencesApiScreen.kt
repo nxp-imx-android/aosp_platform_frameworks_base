@@ -104,16 +104,22 @@ abstract class PreferencesApiScreen(
 ) : PreferenceScreenMetadata, ProvidesParametersNonStatically {
     override fun fragmentClass(): Class<out Fragment>? = fragment.java
 
+    override fun isFlagEnabled(context: Context): Boolean =
+        flag?.check() ?: super.isFlagEnabled(context)
+
     override fun getPreferenceHierarchy(
         context: Context,
         coroutineScope: CoroutineScope,
     ): PreferenceHierarchy =
         preferenceHierarchy(context) {
             for (preference in preferences) {
-                +preference
+                if (preference.isFlagEnabled) {
+                    +preference
+                }
             }
         }
 
+    var flag: FlagConfig? = null
     var parametersSchema: KeyParametersSchema? = null
     var screenPermissions: PermissionsConfig? = null
     var screenPreconditions: PreconditionsConfig? = null
@@ -138,6 +144,7 @@ abstract class PreferencesApiScreen(
      *     purpose = R.string.my_preference_purpose,
      *     type = AnyString
      * ) {
+     *     flag { Flags.FooBarFlag() }
      *     permissions(listOf(Manifest.permission.PERMISSION))
      *     preconditions("My precondition description") { context ->
      *         if (conditionFoo(context)) {
@@ -225,6 +232,18 @@ abstract class PreferencesApiScreen(
      * @return A [Flow] emitting all possible [ValidatedKeyParameters].
      */
     override fun getAllPossibleParameters(context: Context) = allPossibleParameters(context).asFlow()
+
+    protected fun flag(lambda: () -> Boolean) {
+        if (flag != null) {
+            error(getExceptionMessageMultipleDefines("flag"))
+        }
+
+        if (parametersSchema != null || preferences.isNotEmpty() || screenPermissions != null || screenPreconditions != null) {
+            error(getExceptionMessageWrongOrder("flag"))
+        }
+
+        flag = FlagConfig(lambda)
+    }
 
     /**
      * Declares the parameterization for this preference screen.
