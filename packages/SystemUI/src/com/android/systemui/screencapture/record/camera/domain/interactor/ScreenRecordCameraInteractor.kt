@@ -125,16 +125,9 @@ constructor(
     // TODO: apotapov - Replace 0's with actual display values.
     suspend fun startStream(surface: Surface, width: Int, height: Int) {
         val optimalSize = repository.configureViewport(0, 0)
-        if (optimalSize == null) {
-            Log.wtf(TAG, "Couldn't get optimal size. Skipping stream start")
-            return
-        }
-        if (width != optimalSize.width || height != optimalSize.height) {
-            Log.wtf(
-                TAG,
-                "Surface dimensions aren't optimal: optimal=$optimalSize, width=$width, height=$height",
-            )
-            return
+        require(optimalSize != null) { "Couldn't get optimal size. Skipping stream start" }
+        require(width == optimalSize.width && height == optimalSize.height) {
+            "Surface dimensions aren't optimal: optimal=$optimalSize, width=$width, height=$height"
         }
         repository.startStream(surface, optimalSize)
         Log.i(TAG, "Started a stream with size=$optimalSize")
