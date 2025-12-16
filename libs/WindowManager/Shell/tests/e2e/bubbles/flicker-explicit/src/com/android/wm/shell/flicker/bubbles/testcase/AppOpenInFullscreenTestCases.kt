@@ -16,39 +16,39 @@
 
 package com.android.wm.shell.flicker.bubbles.testcase
 
-import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerSubjects
 import org.junit.Test
 
 /**
- * Verifies that the test app opens in fullscreen from invisible at the end of the transition.
+ * Verifies that the [testApp] opens in fullscreen from invisible at the end of the transition.
  *
  * This verifies:
- * - The test app window is visible and fullscreen at the end of the trace.
- * - The test app layer is visible and covers the entire screen at the end of the trace.
- * - The test app window becomes visible and fullscreen during the transition.
+ * - The [previousApp] (launcher) is replaced by [testApp]: [AppReplacesPreviousAppTestCases]
+ * - The [testApp] window stays in fullscreen as soon as it becomes visible.
+ * - The [testApp] layer covers the entire screen at the end of the trace.
  */
-interface AppOpenInFullscreenTestCases : BubbleFlickerSubjects {
+interface AppOpenInFullscreenTestCases : AppReplacesPreviousAppTestCases {
 
-    /** Verifies the test app window is visible and fullscreen at the end of the transition. */
+    /** Launcher should be occluded by the fullscreen [testApp]. */
+    override fun shouldAssertPreviousBecomesInvisible() = true
+
+    /** Verifies the [testApp] window is fullscreen at the end of the transition. */
     @Test
-    fun appWindowIsVisibleAndFullscreenAtEnd() {
-        wmStateSubjectAtEnd.isAppWindowVisible(testApp)
+    fun appWindowIsFullscreenAtEnd() {
         wmStateSubjectAtEnd.isFullscreen(testApp)
     }
 
-    /** Verifies the test app layer is visible and covers the entire screen at the end. */
+    /** Verifies the [testApp] layer is visible and covers the entire screen at the end. */
     @Test
-    fun appLayerIsVisibleAndCoversFullScreenAtEnd() {
-        layerTraceEntrySubjectAtEnd.isVisible(testApp)
+    fun appLayerCoversFullScreenAtEnd() {
         val displayBounds =
             layerTraceEntrySubjectAtEnd.entry.physicalDisplayBounds
                 ?: error("Missing physical display bounds")
         layerTraceEntrySubjectAtEnd.visibleRegion(testApp).coversExactly(displayBounds)
     }
 
-    /** Verifies the test app window becomes visible and fullscreen. */
+    /** Verifies the [testApp] window becomes visible and fullscreen at the same time. */
     @Test
-    fun appWindowBecomesVisibleAndFullscreen() {
+    override fun appWindowBecomesVisible() {
         wmTraceSubject
             .isAppWindowInvisible(testApp)
             .then()
