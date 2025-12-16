@@ -190,7 +190,7 @@ class TalismanSqliteDatabase extends TalismanDatabase {
                 TalismanSet talisman =
                         new TalismanSet.Builder()
                                 .setType(type)
-                                .setPublicKey(key.publicKey())
+                                .setPublicKey(key.getPublicKey())
                                 .setTalismanSet(
                                         cursor.getBlob(
                                                 cursor.getColumnIndexOrThrow(
@@ -213,15 +213,15 @@ class TalismanSqliteDatabase extends TalismanDatabase {
         }
 
         void insertTalisman(TalismanSetWithKey talismanSetWithKey) {
-            TalismanKey key = talismanSetWithKey.key();
-            TalismanSet talisman = talismanSetWithKey.talismanSet();
+            TalismanKey key = talismanSetWithKey.getKey();
+            TalismanSet talisman = talismanSetWithKey.getTalismanSet();
             ContentValues values = new ContentValues();
-            values.put(Schema.Talisman.PUBLIC_KEY, key.publicKey().toByteArray());
-            values.put(Schema.Talisman.PRIVATE_KEY, key.privateKey().toByteArray());
-            values.put(Schema.Talisman.TYPE, talisman.type());
-            values.put(Schema.Talisman.TALISMAN_SET, talisman.talismanSet().toByteArray());
-            values.put(Schema.Talisman.CREATED_AT, talisman.createdAt().toEpochMilli());
-            values.put(Schema.Talisman.EXPIRE_AT, talisman.expireAt().toEpochMilli());
+            values.put(Schema.Talisman.PUBLIC_KEY, key.getPublicKey());
+            values.put(Schema.Talisman.PRIVATE_KEY, key.getPrivateKey());
+            values.put(Schema.Talisman.TYPE, talisman.getType());
+            values.put(Schema.Talisman.TALISMAN_SET, talisman.getTalismanSet());
+            values.put(Schema.Talisman.CREATED_AT, talisman.getCreatedAt().toEpochMilli());
+            values.put(Schema.Talisman.EXPIRE_AT, talisman.getExpireAt().toEpochMilli());
             try {
                 mDatabase.insertWithOnConflict(
                         Schema.Talisman.name(),
