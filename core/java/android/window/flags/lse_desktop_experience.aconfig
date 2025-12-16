@@ -1245,13 +1245,6 @@ flag {
 }
 
 flag {
-    name: "enable_windowing_scaled_resizing"
-    namespace: "lse_desktop_experience"
-    description: "Enables the resizing of non-resizable apps through scaling their bounds up/down"
-    bug: "319844447"
-}
-
-flag {
     name: "enable_windowing_transition_handlers_observers"
     namespace: "lse_desktop_experience"
     description: "Whether to enable desktop windowing transition handler and observer instead of task listeners."

@@ -794,10 +794,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             // Task cannot be resized in full immersive.
             return false;
         }
-        if (DesktopModeFlags.ENABLE_WINDOWING_SCALED_RESIZING.isTrue()) {
-            return taskInfo.isFreeform();
-        }
-        return taskInfo.isFreeform() && taskInfo.isResizeable;
+        return taskInfo.isFreeform();
     }
 
     private void notifyCaptionStateChanged() {
