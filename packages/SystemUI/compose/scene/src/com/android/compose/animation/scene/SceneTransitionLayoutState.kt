@@ -321,6 +321,7 @@ sealed interface HoistedSceneTransitionLayoutState : BaseMutableSceneTransitionL
  *   `from` overlay by `to` overlay.
  * @param onTransitionStart callback called right when a transition is started.
  * @param onTransitionEnd callback called right when a transition has ended.
+ * @param onSnap callback called right when a snap happens.
  * @param deferTransitionProgress whether we should wait for the first composition to be done before
  *   changing the progress of a transition. This can help reduce perceivable jank at the start of a
  *   transition in case the first composition of a content takes a lot of time and we are going to
@@ -335,6 +336,7 @@ fun HoistedSceneTransitionLayoutState(
     canReplaceOverlay: (from: OverlayKey, to: OverlayKey) -> Boolean = { _, _ -> true },
     onTransitionStart: (TransitionState.Transition) -> Unit = {},
     onTransitionEnd: (TransitionState.Transition) -> Unit = {},
+    onSnap: (TransitionState.Idle) -> Unit = {},
 
     // TODO(b/400688335): Turn on by default and remove this flag before flexiglass is released.
     deferTransitionProgress: Boolean = false,
@@ -348,6 +350,7 @@ fun HoistedSceneTransitionLayoutState(
         canReplaceOverlay,
         onTransitionStart,
         onTransitionEnd,
+        onSnap,
         deferTransitionProgress,
     )
 }
@@ -392,6 +395,7 @@ fun MutableSceneTransitionLayoutState(
     canReplaceOverlay: (from: OverlayKey, to: OverlayKey) -> Boolean = { _, _ -> true },
     onTransitionStart: (TransitionState.Transition) -> Unit = {},
     onTransitionEnd: (TransitionState.Transition) -> Unit = {},
+    onSnap: (TransitionState.Idle) -> Unit = {},
 
     // TODO(b/400688335): Turn on by default and remove this flag before flexiglass is released.
     deferTransitionProgress: Boolean = false,
@@ -412,6 +416,7 @@ fun MutableSceneTransitionLayoutState(
         canReplaceOverlay,
         onTransitionStart,
         onTransitionEnd,
+        onSnap,
         deferTransitionProgress,
         { uiDelegate },
     )
@@ -428,6 +433,7 @@ fun rememberMutableSceneTransitionLayoutState(
     canReplaceOverlay: (from: OverlayKey, to: OverlayKey) -> Boolean = { _, _ -> true },
     onTransitionStart: (TransitionState.Transition) -> Unit = {},
     onTransitionEnd: (TransitionState.Transition) -> Unit = {},
+    onSnap: (TransitionState.Idle) -> Unit = {},
 
     // TODO(b/400688335): Turn on by default and remove this flag before flexiglass is released.
     deferTransitionProgress: Boolean = false,
@@ -454,6 +460,7 @@ fun rememberMutableSceneTransitionLayoutState(
             canReplaceOverlay,
             onTransitionStart,
             onTransitionEnd,
+            onSnap,
             deferTransitionProgress,
             { uiDelegate },
         )
@@ -468,6 +475,7 @@ fun rememberMutableSceneTransitionLayoutState(
         layoutState.canReplaceOverlay = canReplaceOverlay
         layoutState.onTransitionStart = onTransitionStart
         layoutState.onTransitionEnd = onTransitionEnd
+        layoutState.onSnap = onSnap
         layoutState.deferTransitionProgress = deferTransitionProgress
     }
 
@@ -485,6 +493,7 @@ internal class MutableSceneTransitionLayoutStateImpl(
     internal var canReplaceOverlay: (from: OverlayKey, to: OverlayKey) -> Boolean,
     internal var onTransitionStart: (TransitionState.Transition) -> Unit,
     internal var onTransitionEnd: (TransitionState.Transition) -> Unit,
+    internal var onSnap: (TransitionState.Idle) -> Unit,
     // TODO(b/400688335): Turn on by default and remove this flag before flexiglass is released.
     internal var deferTransitionProgress: Boolean,
     private val uiDelegate: () -> UiDelegate,
@@ -770,7 +779,9 @@ internal class MutableSceneTransitionLayoutStateImpl(
 
         check(transitionStates.size == 1)
         check(currentTransitions.isEmpty())
-        transitionStates = listOf(TransitionState.Idle(scene, overlays))
+        val idle = TransitionState.Idle(scene, overlays)
+        transitionStates = listOf(idle)
+        onSnap(idle)
     }
 
     override fun showOverlay(
@@ -956,6 +967,7 @@ internal class HoistedSceneTransitionLayoutStateImpl(
     canReplaceOverlay: (from: OverlayKey, to: OverlayKey) -> Boolean,
     onTransitionStart: (TransitionState.Transition) -> Unit,
     onTransitionEnd: (TransitionState.Transition) -> Unit,
+    onSnap: (TransitionState.Idle) -> Unit,
     deferTransitionProgress: Boolean,
 ) : HoistedSceneTransitionLayoutState {
     /**
@@ -972,6 +984,7 @@ internal class HoistedSceneTransitionLayoutStateImpl(
             canReplaceOverlay,
             onTransitionStart,
             onTransitionEnd,
+            onSnap,
             deferTransitionProgress,
             { uiDelegate },
         )
