@@ -58,6 +58,7 @@ android_library {
         "SystemUIPluginLib",
         "SystemUIUnfoldLib",
         "SystemUISharedLib-Keyguard",
+        "SystemUIFlagsLib",
         "WindowManager-Shell-shared",
         "//frameworks/libs/systemui:tracinglib-platform",
         "androidx.dynamicanimation_dynamicanimation",
@@ -89,9 +90,7 @@ android_library {
 
 java_library {
     name: "SystemUI-flag-types",
-    srcs: [
-        "src/com/android/systemui/flags/Flag.kt",
-    ],
+    srcs: ["flag/types/src/**/*.kt"],
     include_srcs: true,
     static_kotlin_stdlib: false,
     java_version: "1.8",
@@ -100,9 +99,7 @@ java_library {
 
 java_library {
     name: "SystemUIFlagsLib",
-    srcs: [
-        "src/com/android/systemui/flags/**/*.kt",
-    ],
+    srcs: ["flag/src/**/*.kt"],
     static_kotlin_stdlib: false,
     libs: [
         "androidx.concurrent_concurrent-futures",
