@@ -271,6 +271,9 @@ constructor(
                 fromContent.isLockscreenOrNull() && toContent.isLockscreenOrNull()
             val isTransitioningBetweenDesiredScenes =
                 sceneInteractor.transitionState.value.isTransitioning(fromContent, toContent)
+            val isSnapToTransitionBetweenDesiredScenes =
+                sceneTransitionPair.value.previousValue.isIdle(fromContent) &&
+                    sceneInteractor.transitionState.value.isIdle(toContent)
 
             // When in STL A -> B settles in A we can't do the same in KTF as KTF requires us to
             // start B -> A to get back to A. [LockscreenSceneTransitionInteractor] will emit these
@@ -292,6 +295,7 @@ constructor(
                     sceneTransitionPair.value.previousValue.isTransitioning(fromContent, toContent)
 
             return@filterTraced isTransitioningBetweenLockscreenStates ||
+                isSnapToTransitionBetweenDesiredScenes ||
                 isTransitioningBetweenDesiredScenes ||
                 terminalStepBelongsToPreviousTransition ||
                 belongsToInstantReversedTransition
