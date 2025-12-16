@@ -39050,6 +39050,7 @@ package android.provider {
     method @FlaggedApi("android.provider.enable_documents_trash_api") @Nullable public static android.net.Uri restoreDocumentFromTrash(@NonNull android.content.ContentResolver, @NonNull android.net.Uri, @Nullable android.net.Uri) throws java.io.FileNotFoundException;
     method @FlaggedApi("android.provider.enable_documents_trash_api") @Nullable public static android.net.Uri trashDocument(@NonNull android.content.ContentResolver, @NonNull android.net.Uri) throws java.io.FileNotFoundException;
     field public static final String ACTION_DOCUMENT_SETTINGS = "android.provider.action.DOCUMENT_SETTINGS";
+    field @FlaggedApi("android.provider.category_approved_document_handler") public static final String CATEGORY_APPROVED_DOCUMENT_HANDLER = "android.provider.category.APPROVED_DOCUMENT_HANDLER";
     field public static final String EXTRA_ERROR = "error";
     field public static final String EXTRA_EXCLUDE_SELF = "android.provider.extra.EXCLUDE_SELF";
     field public static final String EXTRA_INFO = "info";

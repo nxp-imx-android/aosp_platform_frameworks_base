@@ -22,6 +22,8 @@ import static com.android.internal.util.Preconditions.checkCollectionNotEmpty;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SdkConstant;
+import android.annotation.SdkConstant.SdkConstantType;
 import android.annotation.SystemApi;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.ContentProvider;
@@ -253,6 +255,37 @@ public final class DocumentsContract {
     @SystemApi
     public static final String
             ACTION_DOCUMENT_ROOT_SETTINGS = "android.provider.action.DOCUMENT_ROOT_SETTINGS";
+
+    /**
+     * Intent category to filter out activities that can handle document intents.
+     *
+     * <p>Indicates that an approved activity can receive intents {@link Intent#ACTION_SEND} and/or
+     * {@link Intent#ACTION_SEND_MULTIPLE}. The activity's package must be allowlisted by the system
+     * file manager. The activity will appear in the system file manager as a menu item when
+     * acceptable files are selected. The activity must also define an `android:label` to be
+     * accepted as a menu item.
+     *
+     * <p>Optionally, the activity can declare the intent to be shown as an action button instead of
+     * a menu item in `AndroidManifest.xml`. It must include an `android:icon` and a meta-data entry
+     * `android.approvedtarget.as_button` with a value of `true`.
+     *
+     * <p>An example declaration:
+     *
+     * <pre>
+     * &lt;activity android:name=".ApprovedDocumentHandlerActivity"
+     *         ...
+     *   &lt;intent-filter&gt;
+     *       &lt;action android:name="android.intent.action.SEND" /&gt;
+     *       &lt;category android:name="android.provider.category.APPROVED_DOCUMENT_HANDLER" /&gt;
+     *       &lt;data android:mimeType="text/plain" /&gt;
+     *   &lt;/intent-filter&gt;
+     * &lt;/activity&gt;
+     * </pre>
+     */
+    @SdkConstant(SdkConstantType.INTENT_CATEGORY)
+    @FlaggedApi(Flags.FLAG_CATEGORY_APPROVED_DOCUMENT_HANDLER)
+    public static final String CATEGORY_APPROVED_DOCUMENT_HANDLER =
+            "android.provider.category.APPROVED_DOCUMENT_HANDLER";
 
     /**
      * External Storage Provider's authority string
