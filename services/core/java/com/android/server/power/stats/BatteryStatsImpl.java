@@ -297,7 +297,6 @@ public class BatteryStatsImpl extends BatteryStats {
     private final GnssPowerStatsCollector mGnssPowerStatsCollector;
     private final CustomEnergyConsumerPowerStatsCollector mCustomEnergyConsumerPowerStatsCollector;
     private final SparseBooleanArray mPowerStatsCollectorEnabled = new SparseBooleanArray();
-    private boolean mMoveWscLoggingToNotifierEnabled = false;
 
     static class BatteryStatsSession {
         private final BatteryStatsHistory mHistory;
@@ -2025,20 +2024,6 @@ public class BatteryStatsImpl extends BatteryStats {
             // and isolated uids rather than only the parent uid.
             FrameworkStatsLog.write(FrameworkStatsLog.UID_PROCESS_STATE_CHANGED, uid,
                     ActivityManager.processStateAmToProto(state));
-        }
-
-        public void wakelockStateChanged(int uid, WorkChain wc, String name,
-                int procState, boolean acquired, int powerManagerWakeLockLevel) {
-            int event = acquired
-                    ? FrameworkStatsLog.WAKELOCK_STATE_CHANGED__STATE__ACQUIRE
-                    : FrameworkStatsLog.WAKELOCK_STATE_CHANGED__STATE__RELEASE;
-            if (wc != null) {
-                FrameworkStatsLog.write(FrameworkStatsLog.WAKELOCK_STATE_CHANGED, wc.getUids(),
-                        wc.getTags(), powerManagerWakeLockLevel, name, event, procState);
-            } else {
-                FrameworkStatsLog.write_non_chained(FrameworkStatsLog.WAKELOCK_STATE_CHANGED, uid,
-                        null, powerManagerWakeLockLevel, name, event, procState);
-            }
         }
 
         public void kernelWakeupReported(long deltaUptimeUs, String lastWakeupReason,
@@ -5024,11 +5009,6 @@ public class BatteryStatsImpl extends BatteryStats {
 
             Uid uidStats = getUidStatsLocked(mappedUid, elapsedRealtimeMs, uptimeMs);
             uidStats.noteStartWakeLocked(pid, name, type, elapsedRealtimeMs);
-            if (!mMoveWscLoggingToNotifierEnabled) {
-                mFrameworkStatsLogger.wakelockStateChanged(mapIsolatedUid(uid), wc, name,
-                        uidStats.mProcessState, true /* acquired */,
-                        getPowerManagerWakeLockLevel(type));
-            }
         }
     }
 
@@ -5070,12 +5050,6 @@ public class BatteryStatsImpl extends BatteryStats {
 
             Uid uidStats = getUidStatsLocked(mappedUid, elapsedRealtimeMs, uptimeMs);
             uidStats.noteStopWakeLocked(pid, name, type, elapsedRealtimeMs);
-
-            if (!mMoveWscLoggingToNotifierEnabled) {
-                mFrameworkStatsLogger.wakelockStateChanged(mapIsolatedUid(uid), wc, name,
-                        uidStats.mProcessState, false/* acquired */,
-                        getPowerManagerWakeLockLevel(type));
-            }
 
             if (mappedUid != uid) {
                 // Decrement the ref count for the isolated uid and delete the mapping if uneeded.
@@ -14448,15 +14422,6 @@ public class BatteryStatsImpl extends BatteryStats {
         }
     }
 
-    /**
-     * Controls where the logging of the WakelockStateChanged atom occurs:
-     *   true = Notifier, false = BatteryStatsImpl.
-     */
-    public void setMoveWscLoggingToNotifierEnabled(boolean enabled) {
-        synchronized (this) {
-            mMoveWscLoggingToNotifierEnabled = enabled;
-        }
-    }
     @GuardedBy("this")
     public void systemServicesReady(Context context) {
         mConstants.startObserving(context.getContentResolver());

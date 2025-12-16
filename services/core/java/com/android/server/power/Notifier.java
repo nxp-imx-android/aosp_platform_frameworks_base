@@ -283,13 +283,8 @@ public class Notifier {
         FrameworkStatsLog.write(FrameworkStatsLog.INTERACTIVE_STATE_CHANGED,
                 FrameworkStatsLog.INTERACTIVE_STATE_CHANGED__STATE__ON);
 
-        if (mFlags.isMoveWscLoggingToNotifierEnabled()) {
-            mBatteryStatsInternal = mInjector.getBatteryStatsInternal();
-            mFrameworkStatsLogger = mInjector.getFrameworkStatsLogger();
-        } else {
-            mBatteryStatsInternal = null;
-            mFrameworkStatsLogger = null;
-        }
+        mBatteryStatsInternal = mInjector.getBatteryStatsInternal();
+        mFrameworkStatsLogger = mInjector.getFrameworkStatsLogger();
     }
 
     /**
