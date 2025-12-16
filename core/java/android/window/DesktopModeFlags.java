@@ -83,8 +83,6 @@ public enum DesktopModeFlags {
     ENABLE_THEMED_APP_HEADERS(Flags::enableThemedAppHeaders, true),
     ENABLE_WINDOWING_EDGE_DRAG_RESIZE(Flags::enableWindowingEdgeDragResize, true),
     ENABLE_WINDOWING_SCALED_RESIZING(Flags::enableWindowingScaledResizing, true),
-    IGNORE_ASPECT_RATIO_RESTRICTIONS_FOR_RESIZEABLE_FREEFORM_ACTIVITIES(
-            Flags::ignoreAspectRatioRestrictionsForResizeableFreeformActivities, true),
     INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC(
             Flags::includeTopTransparentFullscreenTaskInDesktopHeuristic, true),
     SKIP_DECOR_VIEW_RELAYOUT_WHEN_CLOSING_BUGFIX(
