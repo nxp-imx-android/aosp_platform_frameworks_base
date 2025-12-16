@@ -19,6 +19,7 @@ package android.widget;
 import static android.view.flags.Flags.viewVelocityApi;
 
 import android.annotation.ColorInt;
+import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.app.jank.AppJankStats;
 import android.app.jank.JankTracker;
@@ -233,6 +234,11 @@ public class ScrollView extends FrameLayout {
     private HapticScrollFeedbackProvider mHapticScrollFeedbackProvider;
 
     /**
+     * Whether this view should respond to system-level scroll-to-top commands.
+     */
+    private boolean mScrollToTopEnabled = true;
+
+    /**
      * Sentinel value for no current active pointer.
      * Used by {@link #mActivePointerId}.
      */
@@ -264,7 +270,10 @@ public class ScrollView extends FrameLayout {
                 attrs, a, defStyleAttr, defStyleRes);
 
         setFillViewport(a.getBoolean(R.styleable.ScrollView_fillViewport, false));
-
+        if (Flags.scrollToTop()) {
+            setScrollToTopEnabled(a.getBoolean(
+                    com.android.internal.R.styleable.ScrollView_isScrollToTopEnabled, true));
+        }
         a.recycle();
 
         if (context.getResources().getConfiguration().uiMode == Configuration.UI_MODE_TYPE_WATCH) {
@@ -1639,6 +1648,45 @@ public class ScrollView extends FrameLayout {
                 mFlingStrictSpan = null;
             }
         }
+    }
+
+    /**
+     * Sets whether this ScrollView should consume system-level scroll-to-top events.
+     * <p>
+     * When set to true (default), this view will scroll to the top when a system trigger
+     * (e.g., status bar tap) occurs, provided the view is visible, and currently scrolled down.
+     *
+     * @param enabled true to enable scroll-to-top behavior, false to disable.
+     */
+    @FlaggedApi(Flags.FLAG_SCROLL_TO_TOP)
+    public void setScrollToTopEnabled(boolean enabled) {
+        mScrollToTopEnabled = enabled;
+    }
+
+    /**
+     * Indicates whether this ScrollView allows system-level scroll-to-top event consumption.
+     *
+     * @return True if scroll-to-top consumption is enabled, false otherwise.
+     */
+    @FlaggedApi(Flags.FLAG_SCROLL_TO_TOP)
+    public boolean isScrollToTopEnabled() {
+        return mScrollToTopEnabled;
+    }
+
+    /**
+     * Called when a scroll-to-top command is received.
+     *
+     * @param x the x coordinate of the triggering event.
+     * @return true if the event was consumed and the view was scrolled to top.
+     */
+    @Override
+    @FlaggedApi(Flags.FLAG_SCROLL_TO_TOP)
+    public boolean onScrollToTop(int x) {
+        if (mScrollToTopEnabled && getScrollY() > 0) {
+            smoothScrollTo(0, 0);
+            return true;
+        }
+        return super.onScrollToTop(x);
     }
 
     /**

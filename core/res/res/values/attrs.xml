@@ -4882,6 +4882,9 @@
              will use only the number of items in the adapter and the number of items visible
              on screen to determine the scrollbar's properties. -->
         <attr name="smoothScrollbar" format="boolean" />
+        <!-- Defines whether the ListView should consume scroll-to-top events or not. -->
+        <!-- @FlaggedApi(android.view.flags.Flags.FLAG_SCROLL_TO_TOP) -->
+        <attr name="isScrollToTopEnabled" format="boolean" />
         <!-- Defines the choice behavior for the view. By default, lists do not have
              any choice behavior. By setting the choiceMode to singleChoice, the list
              allows up to one item to be in a chosen state. By setting the choiceMode to
@@ -6382,6 +6385,9 @@
     <declare-styleable name="ScrollView">
         <!-- Defines whether the scrollview should stretch its content to fill the viewport. -->
         <attr name="fillViewport" format="boolean" />
+        <!-- Defines whether the ScrollView should consume scroll-to-top events or not. -->
+        <!-- @FlaggedApi(android.view.flags.Flags.FLAG_SCROLLS_TO_TOP) -->
+        <attr name="isScrollToTopEnabled" format="boolean" />
     </declare-styleable>
     <declare-styleable name="HorizontalScrollView">
         <!-- Defines whether the scrollview should stretch its content to fill the viewport. -->
@@ -10692,6 +10698,9 @@
         <attr name="spanCount" format="integer"/>
         <attr name="reverseLayout" format="boolean" />
         <attr name="stackFromEnd" format="boolean" />
+        <!-- Defines whether the RecyclerView should consume scroll-to-top events or not. -->
+        <!-- @FlaggedApi(android.view.flags.Flags.FLAG_SCROLL_TO_TOP) -->
+        <attr name="isScrollToTopEnabled" format="boolean" />
     </declare-styleable>
 
     <attr name="lockPatternStyle" format="reference" />

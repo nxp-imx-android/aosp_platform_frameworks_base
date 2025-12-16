@@ -21,6 +21,7 @@ import static android.view.flags.Flags.viewVelocityApi;
 
 import android.annotation.ColorInt;
 import android.annotation.DrawableRes;
+import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.TestApi;
 import android.app.ActivityThread;
@@ -492,6 +493,11 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
      * bitmap cache after scrolling.
      */
     boolean mScrollingCacheEnabled;
+
+    /**
+     * Whether this view should respond to system-level scroll-to-top commands.
+     */
+    private boolean mScrollToTopEnabled = true;
 
     /**
      * Whether or not to enable the fast scroll feature on this list
@@ -1005,6 +1011,11 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
                 R.styleable.AbsListView_fastScrollStyle, 0));
         setFastScrollAlwaysVisible(a.getBoolean(
                 R.styleable.AbsListView_fastScrollAlwaysVisible, false));
+
+        if (android.view.flags.Flags.scrollToTop()) {
+            setScrollToTopEnabled(a.getBoolean(
+                    com.android.internal.R.styleable.AbsListView_isScrollToTopEnabled, true));
+        }
 
         a.recycle();
 
@@ -1595,6 +1606,51 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
     @InspectableProperty(name = "smoothScrollbar")
     public boolean isSmoothScrollbarEnabled() {
         return mSmoothScrollbarEnabled;
+    }
+
+    /**
+     * Sets whether this AbsListView should consume system-level scroll-to-top events.
+     * <p>
+     * When set to true (default), this view will scroll to the top when a system trigger
+     * (e.g., status bar tap) occurs, provided the view is visible, and currently scrolled down.
+     *
+     * @param enabled true to enable scroll-to-top behavior, false to disable.
+     */
+    @FlaggedApi(android.view.flags.Flags.FLAG_SCROLL_TO_TOP)
+    public void setScrollToTopEnabled(boolean enabled) {
+        mScrollToTopEnabled = enabled;
+    }
+
+    /**
+     * Indicates whether this AbsListView allows system-level scroll-to-top event consumption.
+     *
+     * @return True if scroll-to-top consumption is enabled, false otherwise.
+     */
+    @FlaggedApi(android.view.flags.Flags.FLAG_SCROLL_TO_TOP)
+    public boolean isScrollToTopEnabled() {
+        return mScrollToTopEnabled;
+    }
+
+    /**
+     * Called when a scroll-to-top command is received.
+     *
+     * @param x the x coordinate of the triggering event.
+     * @return true if the event was consumed and the view was scrolled to top.
+     */
+    @Override
+    @FlaggedApi(android.view.flags.Flags.FLAG_SCROLL_TO_TOP)
+    public boolean onScrollToTop(int x) {
+        if (!mScrollToTopEnabled) {
+            return false;
+        }
+        final View firstChild = getChildAt(0);
+        final boolean isAlreadyAtTop = (getFirstVisiblePosition() == 0 && firstChild != null
+                && firstChild.getTop() >= mListPadding.top);
+        if (!isAlreadyAtTop) {
+            smoothScrollToPosition(0);
+            return true;
+        }
+        return super.onScrollToTop(x);
     }
 
     /**
