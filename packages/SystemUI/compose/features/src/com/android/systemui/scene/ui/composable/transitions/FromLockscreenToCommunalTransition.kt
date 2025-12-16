@@ -63,6 +63,7 @@ private fun TransitionBuilder.lockscreenToCommunalTransition() {
 
         // Lockscreen fade out
         fade(LockscreenElementKeys.Root)
+        fade(LockscreenElementKeys.BehindScrim)
 
         // Status text position y translation
         translate(LockscreenElementKeys.IndicationArea, y = (-10).dp)
