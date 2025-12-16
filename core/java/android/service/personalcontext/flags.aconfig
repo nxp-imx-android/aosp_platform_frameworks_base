@@ -15,3 +15,10 @@ flag {
      description: "Enable TextClassifier hint and insight for Personal Context Service"
      bug: "445425545"
 }
+
+flag {
+    namespace: "communal"
+    name: "enable_personal_context_security_checks"
+    description: "Enables security checks for Personal Context components and services"
+    bug: "450547433"
+}
