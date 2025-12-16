@@ -19,7 +19,7 @@ package com.android.systemui.communal
 import android.annotation.SuppressLint
 import android.app.DreamManager
 import android.os.PowerManager
-import android.service.dreams.Flags.allowDreamWhenPostured
+
 import com.android.app.tracing.coroutines.launchInTraced
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.CoreStartable
@@ -105,9 +105,6 @@ constructor(
 
     @SuppressLint("MissingPermission")
     override fun start() {
-        if (!allowDreamWhenPostured()) {
-            return
-        }
 
         isDevicePluggedIn
             .logDiffsForTable(

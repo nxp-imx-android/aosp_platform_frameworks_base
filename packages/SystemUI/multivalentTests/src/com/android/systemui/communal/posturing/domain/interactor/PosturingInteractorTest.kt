@@ -19,7 +19,6 @@ package com.android.systemui.communal.posturing.domain.interactor
 import android.hardware.Sensor
 import android.hardware.TriggerEventListener
 import android.platform.test.annotations.EnableFlags
-import android.service.dreams.Flags.FLAG_ALLOW_DREAM_WHEN_POSTURED
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -49,7 +48,6 @@ import org.mockito.kotlin.stub
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(FLAG_ALLOW_DREAM_WHEN_POSTURED)
 class PosturingInteractorTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()

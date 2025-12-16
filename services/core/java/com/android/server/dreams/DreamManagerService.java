@@ -21,7 +21,7 @@ import static android.app.WindowConfiguration.ACTIVITY_TYPE_ASSISTANT;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_DREAM;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
 import static android.os.BatteryManager.EXTRA_CHARGING_STATUS;
-import static android.service.dreams.Flags.allowDreamWhenPostured;
+
 import static android.service.dreams.Flags.allowDreamWithChargeLimit;
 import static android.service.dreams.Flags.cleanupDreamSettingsOnUninstall;
 import static android.service.dreams.Flags.dreamHandlesBeingObscured;
@@ -1563,10 +1563,6 @@ public final class DreamManagerService extends SystemService {
 
         @Override
         public void setDevicePostured(boolean isPostured) {
-            if (!allowDreamWhenPostured()) {
-                return;
-            }
-
             checkPermission(android.Manifest.permission.WRITE_DREAM_STATE);
 
             final long ident = Binder.clearCallingIdentity();
