@@ -42,6 +42,7 @@ import android.annotation.SystemService;
 import android.annotation.TestApi;
 import android.annotation.UserHandleAware;
 import android.annotation.UserIdInt;
+import android.annotation.WorkerThread;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
@@ -1052,6 +1053,38 @@ public final class CompanionDeviceManager {
 
         try {
             return mService.getAllAssociationsForUser(userId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Gets all trusted {@link AssociationInfo}s.
+     *
+     * Trusted associations are those that are allowed to use Private Compute Core (PCC) messaging.
+     * Associations can be trusted as user-owned devices after they have connected via the system
+     * data transport and verified the connection via the trusted-device handshake.
+     *
+     * @return the associations list
+     * @see #addOnAssociationsChangedListener(Executor, OnAssociationsChangedListener)
+     * @see #removeOnAssociationsChangedListener(OnAssociationsChangedListener)
+     * @see #attachSystemDataTransport(int, InputStream, OutputStream)
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_TRUSTED_DEVICES)
+    @SystemApi
+    @UserHandleAware
+    @WorkerThread
+    @RequiresPermission(android.Manifest.permission.ACCESS_COMPANION_MESSAGE_PCC)
+    @NonNull
+    public List<AssociationInfo> getTrustedAssociations() {
+        if (mService == null) {
+            Log.w(TAG, "CompanionDeviceManager service is not available.");
+            return Collections.emptyList();
+        }
+
+        try {
+            return mService.getTrustedAssociationsForUser(mContext.getUserId());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
