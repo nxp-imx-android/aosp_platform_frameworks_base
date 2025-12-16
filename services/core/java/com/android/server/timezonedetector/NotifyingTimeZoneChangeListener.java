@@ -57,8 +57,6 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.notification.SystemNotificationChannels;
 import com.android.server.LocalServices;
-import com.android.server.flags.Flags;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -556,7 +554,7 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
             @UserIdInt int userId, TimeZoneChangeRecord trackedChangeEvent) {
         TimeZoneChangeEvent changeEvent = trackedChangeEvent.getEvent();
 
-        if (!Flags.datetimeNotifications() || !areNotificationsEnabled()) {
+        if (!areNotificationsEnabled()) {
             return;
         }
 

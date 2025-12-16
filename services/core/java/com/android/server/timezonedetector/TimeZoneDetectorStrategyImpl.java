@@ -851,22 +851,20 @@ public final class TimeZoneDetectorStrategyImpl
         }
         mEnvironment.setDeviceTimeZoneAndConfidence(newZoneId, newConfidence, logInfo);
 
-        if (com.android.server.flags.Flags.datetimeNotifications()) {
-            // Record the fact that the time zone was changed so that it can be tracked, i.e.
-            // whether the device / user sticks with it.
-            TimeZoneChangeListener.TimeZoneChangeEvent changeEvent =
-                    new TimeZoneChangeListener.TimeZoneChangeEvent(
-                            mEnvironment.elapsedRealtimeMillis(),
-                            mEnvironment.currentTimeMillis(),
-                            origin,
-                            userId,
-                            currentZoneId,
-                            newZoneId,
-                            currentConfidence,
-                            newConfidence,
-                            cause);
-            mChangeTracker.process(changeEvent);
-        }
+        // Record the fact that the time zone was changed so that it can be tracked, i.e.
+        // whether the device / user sticks with it.
+        TimeZoneChangeListener.TimeZoneChangeEvent changeEvent =
+                new TimeZoneChangeListener.TimeZoneChangeEvent(
+                        mEnvironment.elapsedRealtimeMillis(),
+                        mEnvironment.currentTimeMillis(),
+                        origin,
+                        userId,
+                        currentZoneId,
+                        newZoneId,
+                        currentConfidence,
+                        newConfidence,
+                        cause);
+        mChangeTracker.process(changeEvent);
     }
 
     @GuardedBy("this")
@@ -982,12 +980,10 @@ public final class TimeZoneDetectorStrategyImpl
         mTelephonySuggestionsBySlotIndex.dump(ipw);
         ipw.decreaseIndent(); // level 2
 
-        if (com.android.server.flags.Flags.datetimeNotifications()) {
-            ipw.println("Time zone change tracker:");
-            ipw.increaseIndent(); // level 2
-            mChangeTracker.dump(ipw);
-            ipw.decreaseIndent(); // level 2
-        }
+        ipw.println("Time zone change tracker:");
+        ipw.increaseIndent(); // level 2
+        mChangeTracker.dump(ipw);
+        ipw.decreaseIndent(); // level 2
 
         if (android.timezone.flags.Flags.enableFusedTimeZoneDetector()) {
             mFusedTimeZoneDetector.dump(ipw, args);

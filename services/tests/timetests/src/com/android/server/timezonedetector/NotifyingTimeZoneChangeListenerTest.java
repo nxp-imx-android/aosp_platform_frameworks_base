@@ -53,7 +53,6 @@ import android.platform.test.flag.junit.SetFlagsRule;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import com.android.server.flags.Flags;
 import com.android.server.timezonedetector.NotifyingTimeZoneChangeListener.TimeZoneChangeRecord;
 import com.android.server.timezonedetector.TimeZoneChangeListener.TimeZoneChangeEvent;
 
@@ -78,7 +77,6 @@ import java.util.TimeZone;
 
 /** White-box unit tests for {@link NotifyingTimeZoneChangeListener}. */
 @RunWith(JUnitParamsRunner.class)
-@EnableFlags(Flags.FLAG_DATETIME_NOTIFICATIONS)
 public class NotifyingTimeZoneChangeListenerTest {
 
     @ClassRule public static final SetFlagsRule.ClassRule mClassRule = new SetFlagsRule.ClassRule();
