@@ -18,10 +18,6 @@ package android.os;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.app.compat.CompatChanges;
-import android.compat.annotation.ChangeId;
-import android.compat.annotation.EnabledSince;
-import android.compat.annotation.Overridable;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.util.Log;
 import android.util.Printer;
@@ -112,20 +108,6 @@ public final class Looper {
      * True if a message delivery takes longer than {@link #mSlowDeliveryThresholdMs}.
      */
     private boolean mSlowDeliveryDetected;
-
-    /**
-     * Whether Looper clears Thread.interrupted() between tasks.
-     *
-     * When enabled, tasks don't propagate and pollute each other's interrupted state.
-     * When disabled, the backwards-compatible behavior is kept,
-     * preserving the legacy behavior and any associated app bugs.
-     *
-     * @hide
-     */
-    @ChangeId
-    @EnabledSince(targetSdkVersion = android.os.Build.VERSION_CODES.CINNAMON_BUN)
-    @Overridable // Can be overridden on user builds
-    public static final long LOOPER_CLEARS_THREAD_INTERRUPTED = 458413887L;
 
     /** Initialize the current thread as a looper.
       * This gives you a chance to create handlers that then reference
@@ -285,11 +267,6 @@ public final class Looper {
         long origWorkSource = ThreadLocalWorkSource.setUid(msg.workSourceUid);
         try {
             msg.target.dispatchMessage(msg);
-            if (CompatChanges.isChangeEnabled(LOOPER_CLEARS_THREAD_INTERRUPTED)) {
-                // Clear the interrupted state of the thread after dispatching the message.
-                // This ensures that a new message dispatch starts with a clean interrupted state.
-                Thread.interrupted();
-            }
             if (observer != null) {
                 observer.messageDispatched(token, msg);
             }
