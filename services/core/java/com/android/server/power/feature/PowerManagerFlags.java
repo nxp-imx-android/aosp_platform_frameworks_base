@@ -54,9 +54,6 @@ public class PowerManagerFlags {
             Flags::policyReasonInDisplayPowerRequest
     );
 
-    private final FlagState mMoveWscLoggingToNotifier =
-            new FlagState(Flags.FLAG_MOVE_WSC_LOGGING_TO_NOTIFIER, Flags::moveWscLoggingToNotifier);
-
     private final FlagState mLockOnUnplug =
             new FlagState(Flags.FLAG_LOCK_ON_UNPLUG,
                     Flags::lockOnUnplug);
@@ -109,14 +106,6 @@ public class PowerManagerFlags {
      */
     public boolean isPolicyReasonInDisplayPowerRequestEnabled() {
         return mPolicyReasonInDisplayPowerRequest.isEnabled();
-    }
-
-    /**
-     * @return Whether we move WakelockStateChanged atom logging to Notifier (enabled) or leave it
-     *     in BatteryStatsImpl (disabled).
-     */
-    public boolean isMoveWscLoggingToNotifierEnabled() {
-        return mMoveWscLoggingToNotifier.isEnabled();
     }
 
     /**
@@ -178,7 +167,6 @@ public class PowerManagerFlags {
         pw.println(" " + mEarlyScreenTimeoutDetectorFlagState);
         pw.println(" " + mImproveWakelockLatency);
         pw.println(" " + mPerDisplayWakeByTouch);
-        pw.println(" " + mMoveWscLoggingToNotifier);
         pw.println(" " + mLockOnUnplug);
         pw.println(" " + mDisableFrozenProcessWakelocks);
         pw.println(" " + mForceDisableWakelocks);

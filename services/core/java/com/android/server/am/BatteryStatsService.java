@@ -121,7 +121,6 @@ import com.android.server.LocalServices;
 import com.android.server.Watchdog;
 import com.android.server.net.BaseNetworkObserver;
 import com.android.server.pm.UserManagerInternal;
-import com.android.server.power.feature.PowerManagerFlags;
 import com.android.server.power.optimization.Flags;
 import com.android.server.power.stats.BatteryExternalStatsWorker;
 import com.android.server.power.stats.BatteryStatsDumpHelperImpl;
@@ -191,7 +190,6 @@ public final class BatteryStatsService extends IBatteryStats.Stub
     private final BatteryStats.BatteryStatsDumpHelper mDumpHelper;
     private final PowerStatsUidResolver mPowerStatsUidResolver = new PowerStatsUidResolver();
     private final PowerAttributor mPowerAttributor;
-    private final PowerManagerFlags mPowerManagerFlags = new PowerManagerFlags();
 
     private volatile boolean mMonitorEnabled = true;
     private boolean mRailsStatsCollectionEnabled = true;
@@ -521,9 +519,6 @@ public final class BatteryStatsService extends IBatteryStats.Stub
         // By convention POWER_COMPONENT_ANY represents custom Energy Consumers
         mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_ANY, true);
         attributor.setPowerComponentSupported(BatteryConsumer.POWER_COMPONENT_ANY, true);
-
-        mStats.setMoveWscLoggingToNotifierEnabled(
-                mPowerManagerFlags.isMoveWscLoggingToNotifierEnabled());
 
         mWorker.systemServicesReady();
         mStats.systemServicesReady(mContext);
