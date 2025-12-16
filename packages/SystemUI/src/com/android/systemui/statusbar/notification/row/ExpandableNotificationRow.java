@@ -344,6 +344,11 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     private boolean mShowGroupBackgroundWhenExpanded;
 
     /**
+     * Whether or not to enable expand the notification by default.
+     */
+    private boolean mEnablePinnedHunExpansion;
+
+    /**
      * True if we always show the collapsed layout on lockscreen because vertical space is low.
      */
     private boolean mSaveSpaceOnLockscreen;
@@ -1331,9 +1336,17 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         if (intrinsicHeight != getIntrinsicHeight()) {
             notifyHeightChanged(/* needsAnimation= */ false, "ENR.setPinnedStatus");
         }
+
+        // Mark the notification as user-expanded if it was previously expanded while pinned, or
+        // if the `defaultHunExpansion` feature is enabled. This ensures it renders in its expanded
+        // state in the shade.
+        final boolean expandHun = mEnablePinnedHunExpansion && Flags.defaultHunExpansion();
         if (pinnedStatus.isPinned()) {
             setAnimationRunning(true);
-            mExpandedWhenPinned = false;
+            mExpandedWhenPinned = expandHun;
+            if (expandHun) {
+                setUserExpanded(true);
+            }
         } else if (mExpandedWhenPinned) {
             setUserExpanded(true);
         }
@@ -2349,6 +2362,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 res.getBoolean(R.bool.config_enableNonGroupedNotificationExpand);
         mShowGroupBackgroundWhenExpanded =
                 res.getBoolean(R.bool.config_showGroupNotificationBgWhenExpanded);
+        mEnablePinnedHunExpansion =
+                res.getBoolean(R.bool.config_enableHUNExpansion);
     }
 
     NotificationInlineImageResolver getImageResolver() {
@@ -4639,6 +4654,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             pw.print(", isOnKeyguard: " + isOnKeyguard());
             pw.print(", isSummaryWithChildren: " + mIsSummaryWithChildren);
             pw.print(", enableNonGroupedExpand: " + mEnableNonGroupedNotificationExpand);
+            pw.print(", mEnablePinnedHunExpansion: " + mEnablePinnedHunExpansion);
             pw.print(", isPinned: " + isPinned());
             pw.print(", expandedWhenPinned: " + mExpandedWhenPinned);
             pw.print(", isMinimized: " + mIsMinimized);
