@@ -255,42 +255,36 @@
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-open-OpenAppFromAllAppsTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-open-OpenAppFromTaskbarTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-open-OpenAppInBrowserTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-open-OpenAppsInDesktopModeTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-open-OpenTrampolineAppInDesktopModeTaskLimitTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-open-OpenUnlimitedAppsTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
