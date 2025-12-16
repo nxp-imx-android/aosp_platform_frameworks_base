@@ -1161,9 +1161,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
             final String packageName = name.getPackageName();
             synchronized (ActivityManagerService.this) {
-                String processRecordName = Flags.appStartInfoProcessNameFix()
-                        ? processName : packageName;
-                ProcessRecord record = getProcessRecordLocked(processRecordName, uid);
+                ProcessRecord record = getProcessRecordLocked(processName, uid);
                 mProcessList.getAppStartInfoTracker().onActivityLaunched(id, name, temperature,
                         record);
             }

@@ -262,16 +262,6 @@ flag {
 }
 
 flag {
-    name: "app_start_info_process_name_fix"
-    namespace: "system_performance"
-    description: "Use process name to lookup ProcessRecord."
-    bug: "443136429"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "service_check_calling_pkg"
     namespace: "backstage_power"
     description: "Throw security exception on service APIs if calling package doesn't match calling uid."
