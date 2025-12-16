@@ -110,7 +110,7 @@ public final class TapToShareClient {
 
     private final ITapToShareCallback mCallback = new ITapToShareCallback.Stub() {
         @Override
-        public void doTapToShare() {
+        public void performTapToShare() {
             Executor executor;
             SessionListener listener;
             synchronized (mLock) {

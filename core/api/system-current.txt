@@ -14018,11 +14018,11 @@ package android.service.chooser {
 
   @FlaggedApi("android.service.chooser.tap_to_share") public abstract class TapToShareService extends android.app.Service {
     ctor public TapToShareService();
-    method public final void doTapToShare();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
     method public abstract void onSessionEnd();
     method public abstract void onSessionStart();
     method public final boolean onUnbind(@Nullable android.content.Intent);
+    method public final void performTapToShare();
   }
 
 }
