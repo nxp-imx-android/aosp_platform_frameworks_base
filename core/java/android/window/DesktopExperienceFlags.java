@@ -56,9 +56,6 @@ import java.util.function.BooleanSupplier;
 @RavenwoodKeepWholeClass
 public enum DesktopExperienceFlags {
     // go/keep-sorted start
-    BASE_DENSITY_FOR_EXTERNAL_DISPLAYS(
-            com.android.server.display.feature.flags.Flags::baseDensityForExternalDisplays, true,
-            com.android.server.display.feature.flags.Flags.FLAG_BASE_DENSITY_FOR_EXTERNAL_DISPLAYS),
     CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT(
             Flags::closeFullscreenAndSplitscreenKeyboardShortcut, false,
             Flags.FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT),
@@ -176,8 +173,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS),
     ENABLE_MIRROR_DISPLAY_NO_ACTIVITY(Flags::enableMirrorDisplayNoActivity, true,
             Flags.FLAG_ENABLE_MIRROR_DISPLAY_NO_ACTIVITY),
-    ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT(Flags::enableMoveToNextDisplayShortcut, true,
-            Flags.FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT),
     ENABLE_MULTIDISPLAY_TRACKPAD_BACK_GESTURE(Flags::enableMultidisplayTrackpadBackGesture, true,
             Flags.FLAG_ENABLE_MULTIDISPLAY_TRACKPAD_BACK_GESTURE),
     ENABLE_MULTIPLE_DESKTOPS_ACTIVATION_IN_DESKTOP_FIRST_DISPLAYS(

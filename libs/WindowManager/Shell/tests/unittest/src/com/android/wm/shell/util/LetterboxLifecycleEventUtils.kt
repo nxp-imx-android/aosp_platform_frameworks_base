@@ -17,6 +17,7 @@
 package com.android.wm.shell.util
 
 import android.window.TransitionInfo.Change
+import com.android.testing.wm.util.BaseChangeTestContext
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEventFactory
 
 @DslMarker

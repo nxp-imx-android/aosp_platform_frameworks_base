@@ -175,17 +175,18 @@ public class PackageUpdateManagerTests extends WindowTestsBase {
 
         mManager.onPackageUpdateFinished(PKG_1, 123);
 
-        assertThat(o.mUpdatedTasks.get(0).taskId).isEqualTo(task2.mTaskId);
-        assertThat(o.mUpdatedTasks.get(1).taskId).isEqualTo(task1.mTaskId);
+        assertThat(o.mUpdatedTaskIds).containsExactly(task1.mTaskId, task2.mTaskId);
     }
 
     static class PackageUpdateOrganizer extends StubOrganizer {
-        List<ActivityManager.RunningTaskInfo> mUpdatedTasks = new ArrayList<>();
+        List<Integer> mUpdatedTaskIds = new ArrayList<>();
 
         @Override
         public void onPackageUpdateFinished(
                 List<ActivityManager.RunningTaskInfo> updatedTasks) {
-            mUpdatedTasks = updatedTasks;
+            for (int i = 0; i < updatedTasks.size(); i++) {
+                mUpdatedTaskIds.add(updatedTasks.get(i).taskId);
+            }
         }
     }
 

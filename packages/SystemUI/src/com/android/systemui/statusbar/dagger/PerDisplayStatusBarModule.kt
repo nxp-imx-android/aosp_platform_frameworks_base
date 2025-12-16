@@ -52,6 +52,9 @@ import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProviderImpl
 import com.android.systemui.statusbar.phone.ConfigurationControllerImpl
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStatusBarInteractor
+import com.android.systemui.statusbar.quickactions.av.domain.interactor.AvControlsChipInteractor
+import com.android.systemui.statusbar.quickactions.av.domain.interactor.AvControlsChipInteractorImpl
+import com.android.systemui.statusbar.quickactions.av.domain.interactor.NoOpAvControlsChipInteractor
 import com.android.systemui.statusbar.ui.SystemBarUtilsState
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
@@ -60,6 +63,7 @@ import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoSet
+import javax.inject.Provider
 import kotlinx.coroutines.CoroutineScope
 
 /**
@@ -275,6 +279,27 @@ interface PerDisplayStatusBarModule {
         @DisplayAware
         fun provideStatusBarWindowResources(@DisplayAwareStatusBar context: Context): Resources {
             return context.resources
+        }
+
+        @Provides
+        @PerDisplaySingleton
+        @DisplayAware
+        fun avControlsChipInteractor(
+            avControlsChipNotSupported: Provider<NoOpAvControlsChipInteractor>,
+            defaultInteractorLazy: Lazy<AvControlsChipInteractor>,
+            factory: AvControlsChipInteractorImpl.Factory,
+            @DisplayAware scope: CoroutineScope,
+            @DisplayAware displayId: Int,
+        ): AvControlsChipInteractor {
+            return if (Flags.expandedPrivacyIndicatorsOnLargeScreen()) {
+                if (Flags.avControlsChipPerDisplay()) {
+                    factory.create(scope, displayId)
+                } else {
+                    defaultInteractorLazy.get()
+                }
+            } else {
+                avControlsChipNotSupported.get()
+            }
         }
     }
 }

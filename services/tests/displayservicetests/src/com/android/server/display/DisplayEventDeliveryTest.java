@@ -34,8 +34,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.platform.test.annotations.RequiresFlagsEnabled;
-import android.platform.test.flag.junit.CheckFlagsRule;
-import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -47,7 +45,6 @@ import com.android.server.display.feature.flags.Flags;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -93,9 +90,6 @@ public class DisplayEventDeliveryTest extends EventDeliveryTestBase {
     @GuardedBy("mLock")
     private SparseArray<DisplayBundle> mDisplayBundles;
     private DisplayBundle mSnapshotBundle;
-
-    @Rule
-    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
     /**
      * Helper class to store VirtualDisplay and its corresponding display events expected to be

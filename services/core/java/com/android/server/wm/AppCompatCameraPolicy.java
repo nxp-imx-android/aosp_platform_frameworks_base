@@ -35,6 +35,8 @@ import com.android.internal.annotations.VisibleForTesting;
  */
 class AppCompatCameraPolicy {
 
+    static final String TAG_CAMERA_COMPAT = "AppCompatCamera";
+
     @Nullable
     @VisibleForTesting
     final CameraStateMonitor mCameraStateMonitor;

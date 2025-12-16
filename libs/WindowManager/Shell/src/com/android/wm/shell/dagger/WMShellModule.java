@@ -114,9 +114,11 @@ import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxCleanupAdapter
 import com.android.wm.shell.compatui.letterbox.state.LetterboxTaskListenerAdapter;
 import com.android.wm.shell.crashhandling.ShellCrashHandler;
 import com.android.wm.shell.dagger.back.ShellBackAnimationModule;
+import com.android.wm.shell.dagger.desktop.DesktopModule;
 import com.android.wm.shell.dagger.pinnedlayer.PinnedLayerModule;
 import com.android.wm.shell.dagger.pip.PipModule;
 import com.android.wm.shell.desktopmode.CloseDesktopTaskTransitionHandler;
+import com.android.wm.shell.desktopmode.DesksController;
 import com.android.wm.shell.desktopmode.DesktopActivityOrientationChangeHandler;
 import com.android.wm.shell.desktopmode.DesktopBackNavTransitionObserver;
 import com.android.wm.shell.desktopmode.DesktopDisplayEventHandler;
@@ -266,7 +268,8 @@ import java.util.Optional;
                 PipModule.class,
                 ShellBackAnimationModule.class,
                 LetterboxModule.class,
-                PinnedLayerModule.class
+                PinnedLayerModule.class,
+                DesktopModule.class
         })
 public abstract class WMShellModule {
 
@@ -771,9 +774,7 @@ public abstract class WMShellModule {
             DesktopState desktopState,
             IActivityTaskManager activityTaskManager,
             MSDLPlayer msdlPlayer,
-            Optional<BubbleController> bubbleController,
-            FocusTransitionObserver focusTransitionObserver,
-            InputManager inputManager) {
+            Optional<BubbleController> bubbleController) {
         return new SplitScreenController(
                 context,
                 shellInit,
@@ -803,9 +804,7 @@ public abstract class WMShellModule {
                 desktopState,
                 activityTaskManager,
                 msdlPlayer,
-                bubbleController,
-                focusTransitionObserver,
-                inputManager);
+                bubbleController);
     }
 
     //
@@ -1063,7 +1062,8 @@ public abstract class WMShellModule {
             PipTransitionState pipTransitionState,
             LockTaskChangeListener lockTaskChangeListener,
             LauncherApps launcherApps,
-            TransitionStateHolder transitionStateHolder) {
+            TransitionStateHolder transitionStateHolder,
+            DesksController desksController) {
         return new DesktopTasksController(
                 context,
                 shellInit,
@@ -1119,7 +1119,8 @@ public abstract class WMShellModule {
                         : Optional.empty(),
                 lockTaskChangeListener,
                 launcherApps,
-                transitionStateHolder);
+                transitionStateHolder,
+                desksController);
     }
 
     @WMSingleton

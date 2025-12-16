@@ -774,8 +774,7 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"Перамясціце тэлефон ніжэй"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"Перамясціце тэлефон улева"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"Перамясціце тэлефон управа"</string>
-    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
-    <skip />
+    <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"Глядзіце прама ў камеру"</string>
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"Не відаць твару. Трымайце тэлефон на ўзроўні вачэй."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"Трымайце прыладу нерухома. Трымайце тэлефон роўна."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Паўтарыце рэгістрацыю твару."</string>
@@ -1455,12 +1454,9 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"Краніце, каб наладзіць"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"Ваш часавы пояс зменены"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"Ваш часавы пояс: <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
-    <!-- no translation found for time_zone_offset_change_notification_title (8232305835199459588) -->
-    <skip />
-    <!-- no translation found for time_zone_offset_change_notification_body_forward (1299493962341887576) -->
-    <skip />
-    <!-- no translation found for time_zone_offset_change_notification_body_backward (6643532078142642118) -->
-    <skip />
+    <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"Перавод гадзінніка"</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"Гадзіннікі пераведзены наперад на <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. Ваш часавы пояс: <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
+    <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"Гадзіннікі пераведзены назад на <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. Ваш часавы пояс: <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"Задаць час"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"Задаць дату"</string>
     <string name="date_time_set" msgid="4603445265164486816">"Задаць"</string>
@@ -2112,6 +2108,7 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"Праграма \"<xliff:g id="APP_NAME_0">%1$s</xliff:g>\" цяпер недаступная. Яна кіруецца праграмай \"<xliff:g id="APP_NAME_1">%2$s</xliff:g>\"."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"Даведацца больш"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"Скасаваць прыпыненне для праграмы"</string>
+    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"Праграма \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" заблакіравана"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"Уключыць працоўныя праграмы?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Уключыць"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Экстранны выпадак"</string>
@@ -2551,6 +2548,10 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"Клон"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"Супольны"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"Прыватная прастора"</string>
+    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
+    <skip />
+    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
+    <skip />
     <string name="redacted_notification_message" msgid="1520587845842228816">"Канфідэнцыяльнае змесціва ў апавяшчэннях схавана"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Змесціва праграмы выключана з абагульвання экрана ў мэтах бяспекі"</string>

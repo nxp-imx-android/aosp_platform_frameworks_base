@@ -42,6 +42,7 @@ import android.window.DesktopExperienceFlags
 import com.android.dx.mockito.inline.extended.StaticMockitoSession
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.policy.DesktopModeCompatPolicy
+import com.android.testing.wm.util.StubTransaction
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
@@ -86,7 +87,6 @@ import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
-import com.android.wm.shell.util.StubTransaction
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel.DesktopModeKeyguardChangeListener
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel.DesktopModeOnInsetsChangedListener
 import com.android.wm.shell.windowdecor.common.CaptionVisibilityHelper

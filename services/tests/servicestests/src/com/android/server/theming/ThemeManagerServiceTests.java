@@ -169,7 +169,7 @@ public class ThemeManagerServiceTests {
                 pair.getCurrentState().timeStamp());
 
         verify(mThemeUserLifecycle).onServicesReady(any(), any(), any());
-        verify(mThemeEventObserver).onServicesReady(any(), any(), any(), any(), any());
+        verify(mThemeEventObserver).onServicesReady(any(), any(), any(), any());
         verify(mThemeEventObserver).registerListeners();
     }
 

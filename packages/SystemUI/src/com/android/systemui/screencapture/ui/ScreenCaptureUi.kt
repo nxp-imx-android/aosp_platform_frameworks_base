@@ -22,11 +22,8 @@ import android.view.Display
 import android.view.Window
 import android.view.WindowManager
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
@@ -38,7 +35,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.TransformOrigin
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
@@ -56,8 +52,6 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlin.coroutines.resume
 import kotlinx.coroutines.suspendCancellableCoroutine
-
-private val scaleTransformOrigin = TransformOrigin(pivotFractionX = 0.5f, pivotFractionY = 0f)
 
 class ScreenCaptureUi
 @AssistedInject
@@ -135,14 +129,8 @@ constructor(
             }
         }
 
-        AnimatedVisibility(
-            visibleState = visibleState,
-            // TODO(b/458745633) Let each capture type (screenshots, recording) control their own
-            // animations. Note, for screen sharing, which should be fine here, as it will not go
-            // through the logic here.
-            enter = scaleIn(transformOrigin = scaleTransformOrigin) + slideInVertically(),
-            exit = scaleOut(transformOrigin = scaleTransformOrigin) + slideOutVertically(),
-        ) {
+        // Individual screen capture content control their own animation transitions.
+        AnimatedVisibility(visibleState = visibleState, enter = EnterTransition.None) {
             val builder: ScreenCaptureUiComponent.Builder =
                 componentBuilders.getValue(parameters.screenCaptureType)
             val coroutineScope = rememberCoroutineScope()

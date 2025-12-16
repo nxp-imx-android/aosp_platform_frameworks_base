@@ -121,7 +121,7 @@ package android.app {
     method @RequiresPermission(android.Manifest.permission.CHANGE_CONFIGURATION) public boolean updateMccMncConfiguration(@NonNull String, @NonNull String);
     method @RequiresPermission(android.Manifest.permission.DUMP) public void waitForBroadcastIdle();
     field public static final long LOCK_DOWN_CLOSE_SYSTEM_DIALOGS = 174664365L; // 0xa692aadL
-    field public static final int PROCESS_CAPABILITY_ALL_IMPLICIT = 6; // 0x6
+    field public static final int PROCESS_CAPABILITY_ALL_IMPLICIT = 70; // 0x46
     field public static final int PROCESS_CAPABILITY_POWER_RESTRICTED_NETWORK = 8; // 0x8
     field public static final int PROCESS_CAPABILITY_USER_RESTRICTED_NETWORK = 32; // 0x20
     field public static final int PROCESS_STATE_BOUND_FOREGROUND_SERVICE = 5; // 0x5
@@ -580,6 +580,7 @@ package android.app.admin {
     method @NonNull public java.util.Set<java.lang.String> getDisallowedSystemApps(@NonNull android.content.ComponentName, int, @NonNull String);
     method @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public int getHeadlessDeviceOwnerMode();
     method public int getIntegerPolicy(@NonNull String, int);
+    method public int getIntegerResolvedPerUserPolicy(@NonNull String);
     method public long getLastBugReportRequestTime();
     method public long getLastNetworkLogRetrievalTime();
     method public long getLastSecurityLogRetrievalTime();
@@ -2640,7 +2641,6 @@ package android.os {
 
   public abstract class CombinedVibration implements android.os.Parcelable {
     method public abstract long getDuration();
-    method @NonNull public static android.os.CombinedVibration.SequentialCombination startSequential();
   }
 
   public static final class CombinedVibration.Mono extends android.os.CombinedVibration {
@@ -2648,22 +2648,6 @@ package android.os {
     method @NonNull public android.os.VibrationEffect getEffect();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.os.CombinedVibration.Mono> CREATOR;
-  }
-
-  public static final class CombinedVibration.Sequential extends android.os.CombinedVibration {
-    method @NonNull public java.util.List<java.lang.Integer> getDelays();
-    method public long getDuration();
-    method @NonNull public java.util.List<android.os.CombinedVibration> getEffects();
-    method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.os.CombinedVibration.Sequential> CREATOR;
-  }
-
-  public static final class CombinedVibration.SequentialCombination {
-    method @NonNull public android.os.CombinedVibration.SequentialCombination addNext(int, @NonNull android.os.VibrationEffect);
-    method @NonNull public android.os.CombinedVibration.SequentialCombination addNext(int, @NonNull android.os.VibrationEffect, int);
-    method @NonNull public android.os.CombinedVibration.SequentialCombination addNext(@NonNull android.os.CombinedVibration);
-    method @NonNull public android.os.CombinedVibration.SequentialCombination addNext(@NonNull android.os.CombinedVibration, int);
-    method @NonNull public android.os.CombinedVibration combine();
   }
 
   public static final class CombinedVibration.Stereo extends android.os.CombinedVibration {

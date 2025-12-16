@@ -101,8 +101,8 @@ import com.android.server.pm.UserManagerInternal;
 import com.android.server.pm.UserManagerService;
 import com.android.server.policy.PermissionPolicyInternal;
 import com.android.server.statusbar.StatusBarManagerInternal;
-import com.android.server.testutils.StubTransaction;
 import com.android.server.uri.UriGrantsManagerInternal;
+import com.android.testing.wm.util.StubTransaction;
 
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;

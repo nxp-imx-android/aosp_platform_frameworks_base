@@ -91,6 +91,7 @@ import android.os.PowerManager;
 import android.os.PowerManagerInternal;
 import android.os.PowerSaveState;
 import android.os.Process;
+import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.test.FakePermissionEnforcer;
@@ -1716,6 +1717,28 @@ public class UiModeManagerServiceTest extends UiServiceTestCase {
                 PACKAGE_NAME,
                 testUserId);
 
+        assertThat(mService.getForceInvertOverrideState(testUserId, PACKAGE_NAME))
+                .isEqualTo(FORCE_INVERT_PACKAGE_ALWAYS_DISABLE);
+    }
+
+    @Test
+    @EnableFlags(android.view.accessibility.Flags.FLAG_FORCE_INVERT_COLOR)
+    public void getForceInvertOverrideState_addPackageInDisableList_returnsDisable()
+            throws Exception {
+        when(mPackageManager.getPackageUidAsUser(eq(PACKAGE_NAME), anyInt()))
+                .thenReturn(TestInjector.DEFAULT_CALLING_UID);
+        int testUserId = 9;
+        switchUser(testUserId);
+        mUiManagerService.mUiModeManagerCallbacks.put(testUserId, new RemoteCallbackList<>());
+        assertThat(mService.getForceInvertOverrideState(testUserId, PACKAGE_NAME))
+                .isEqualTo(FORCE_INVERT_PACKAGE_ALLOWED);
+        Settings.System.putStringForUser(
+                mContentResolver,
+                Settings.System.ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_DISABLE,
+                PACKAGE_NAME,
+                testUserId);
+
+        mUiManagerService.mForceInvertOverrideObserver.onChange(/* selfChange= */ true);
         assertThat(mService.getForceInvertOverrideState(testUserId, PACKAGE_NAME))
                 .isEqualTo(FORCE_INVERT_PACKAGE_ALWAYS_DISABLE);
     }

@@ -61,6 +61,7 @@ import android.window.WindowContainerTransaction;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.android.testing.wm.util.StubTransaction;
 import com.android.testing.wm.util.TransitionInfoBuilder;
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
@@ -76,7 +77,6 @@ import com.android.wm.shell.pip2.phone.PipInteractionHandler;
 import com.android.wm.shell.pip2.phone.PipScheduler;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
 import com.android.wm.shell.splitscreen.SplitScreenController;
-import com.android.wm.shell.util.StubTransaction;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -92,6 +92,7 @@ import platform.test.runner.parameterized.Parameters;
 
 import java.util.List;
 import java.util.Optional;
+
 
 /**
  * Unit test against {@link PipExpandHandler}

@@ -100,6 +100,11 @@ oneway interface ILauncherProxy {
     void onNavigationBarLumaSamplingEnabled(int displayId, boolean enable) = 23;
 
     /**
+     * Sent when split keyboard shortcut is triggered to enter stage split.
+     */
+    void enterStageSplitFromRunningApp(int displayId, boolean leftOrTop) = 25;
+
+    /**
      * Sent when the task bar stash state is toggled.
      */
     void onTaskbarToggled() = 27;

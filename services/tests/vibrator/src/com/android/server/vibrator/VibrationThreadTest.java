@@ -34,7 +34,6 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -88,7 +87,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -1474,54 +1472,6 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_REMOVE_SEQUENTIAL_COMBINATION)
-    public void vibrate_multipleSequential_runsVibrationInOrderWithDelays() {
-        mockVibrators(1, 2, 3);
-        mVibratorHelpers.get(1).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
-        mVibratorHelpers.get(2).setCapabilities(IVibrator.CAP_COMPOSE_EFFECTS);
-        mVibratorHelpers.get(2).setSupportedPrimitives(PRIMITIVE_CLICK);
-        mVibratorHelpers.get(3).setSupportedEffects(EFFECT_CLICK);
-
-        VibrationEffect composed = VibrationEffect.startComposition()
-                .addPrimitive(PRIMITIVE_CLICK)
-                .compose();
-        CombinedVibration effect = CombinedVibration.startSequential()
-                .addNext(3, VibrationEffect.get(EFFECT_CLICK), /* delay= */ 50)
-                .addNext(1, VibrationEffect.createOneShot(10, 100), /* delay= */ 50)
-                .addNext(2, composed, /* delay= */ 50)
-                .combine();
-        HalVibration vibration = startThreadAndDispatcher(effect);
-
-        waitForCompletion();
-        InOrder verifier = inOrder(mHalCallbacks);
-        verifier.verify(mHalCallbacks).onVibrationStepComplete(eq(3), eq(vibration.id), anyLong());
-        verifier.verify(mHalCallbacks).onVibrationStepComplete(eq(1), eq(vibration.id), anyLong());
-        verifier.verify(mHalCallbacks).onVibrationStepComplete(eq(2), eq(vibration.id), anyLong());
-
-        InOrder batteryVerifier = inOrder(mManagerHooks);
-        batteryVerifier.verify(mManagerHooks).noteVibratorOn(eq(UID), eq(20L));
-        batteryVerifier.verify(mManagerHooks).noteVibratorOff(eq(UID));
-        batteryVerifier.verify(mManagerHooks).noteVibratorOn(eq(UID), eq(10L));
-        batteryVerifier.verify(mManagerHooks).noteVibratorOff(eq(UID));
-        batteryVerifier.verify(mManagerHooks).noteVibratorOn(eq(UID), eq(20L));
-        batteryVerifier.verify(mManagerHooks).noteVibratorOff(eq(UID));
-
-        verifyCallbacksTriggered(vibration, Status.FINISHED);
-        assertThat(mVibrators.get(1).isVibrating()).isFalse();
-        assertThat(mVibrators.get(2).isVibrating()).isFalse();
-        assertThat(mVibrators.get(3).isVibrating()).isFalse();
-
-        assertThat(mVibratorHelpers.get(1).getEffectSegments())
-                .containsExactly(expectedOneShot(10)).inOrder();
-        assertThat(mVibratorHelpers.get(1).getAmplitudes())
-                .containsExactlyElementsIn(expectedAmplitudes(100)).inOrder();
-        assertThat(mVibratorHelpers.get(2).getEffectSegments())
-                .containsExactly(expectedPrimitive(PRIMITIVE_CLICK, 1, 0)).inOrder();
-        assertThat(mVibratorHelpers.get(3).getEffectSegments())
-                .containsExactly(expectedPrebaked(EFFECT_CLICK)).inOrder();
-    }
-
-    @Test
     public void vibrate_multipleSyncedCallbackTriggered_finishSteps() throws Exception {
         int[] vibratorIds = new int[]{1, 2};
         mockVibrators(vibratorIds);
@@ -2280,53 +2230,6 @@ public class VibrationThreadTest {
 
         // No more segments.
         assertThat(nextSegment).isEqualTo(actualSegments.size());
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_REMOVE_SEQUENTIAL_COMBINATION)
-    public void vibrate_multipleVibratorsSequentialInSession_runsInOrderWithoutDelaysAndNoOffs() {
-        mockVibrators(1, 2, 3);
-        mVibratorHelpers.get(1).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
-        mVibratorHelpers.get(2).setCapabilities(IVibrator.CAP_COMPOSE_EFFECTS);
-        mVibratorHelpers.get(2).setSupportedPrimitives(PRIMITIVE_CLICK);
-        mVibratorHelpers.get(3).setSupportedEffects(EFFECT_CLICK);
-
-        CombinedVibration effect = CombinedVibration.startSequential()
-                .addNext(3, VibrationEffect.get(EFFECT_CLICK), /* delay= */ TEST_TIMEOUT_MILLIS)
-                .addNext(1,
-                        VibrationEffect.createWaveform(
-                                new long[] {TEST_TIMEOUT_MILLIS, TEST_TIMEOUT_MILLIS}, -1),
-                        /* delay= */ TEST_TIMEOUT_MILLIS)
-                .addNext(2,
-                        VibrationEffect.startComposition()
-                                .addPrimitive(PRIMITIVE_CLICK, 1, /* delay= */ TEST_TIMEOUT_MILLIS)
-                                .compose(),
-                        /* delay= */ TEST_TIMEOUT_MILLIS)
-                .combine();
-        HalVibration vibration = startThreadAndDispatcher(effect, /* isInSession= */ true);
-
-        // Should not timeout as delays will not affect in session playback time.
-        waitForCompletion();
-
-        // Vibrating state remains ON until session resets it.
-        verifyCallbacksTriggered(vibration, Status.FINISHED);
-        assertThat(mVibrators.get(1).isVibrating()).isTrue();
-        assertThat(mVibrators.get(2).isVibrating()).isTrue();
-        assertThat(mVibrators.get(3).isVibrating()).isTrue();
-
-        // Off only called once during initialization.
-        assertThat(mVibratorHelpers.get(1).getOffCount()).isEqualTo(1);
-        assertThat(mVibratorHelpers.get(2).getOffCount()).isEqualTo(1);
-        assertThat(mVibratorHelpers.get(3).getOffCount()).isEqualTo(1);
-        assertThat(mVibratorHelpers.get(1).getEffectSegments())
-                .containsExactly(expectedOneShot(TEST_TIMEOUT_MILLIS)).inOrder();
-        assertThat(mVibratorHelpers.get(1).getAmplitudes())
-                .containsExactlyElementsIn(expectedAmplitudes(255)).inOrder();
-        assertThat(mVibratorHelpers.get(2).getEffectSegments())
-                .containsExactly(expectedPrimitive(PRIMITIVE_CLICK, 1, TEST_TIMEOUT_MILLIS))
-                .inOrder();
-        assertThat(mVibratorHelpers.get(3).getEffectSegments())
-                .containsExactly(expectedPrebaked(EFFECT_CLICK)).inOrder();
     }
 
     private void mockVibrators(int... vibratorIds) {

@@ -269,7 +269,8 @@ final class UiModeManagerService extends SystemService {
     private final IUiModeManager.Stub mService;
 
     @GuardedBy("mLock")
-    private final SparseArray<RemoteCallbackList<IUiModeManagerCallback>> mUiModeManagerCallbacks =
+    @VisibleForTesting
+    final SparseArray<RemoteCallbackList<IUiModeManagerCallback>> mUiModeManagerCallbacks =
             new SparseArray<>();
 
     @GuardedBy("mLock")
@@ -450,9 +451,10 @@ final class UiModeManagerService extends SystemService {
         }
     };
 
-    private final ContentObserver mForceInvertOverrideObserver = new ContentObserver(mHandler) {
+    @VisibleForTesting
+    final ContentObserver mForceInvertOverrideObserver = new ContentObserver(mHandler) {
         @Override
-        public void onChange(boolean selfChange, Uri uri) {
+        public void onChange(boolean selfChange) {
             updateForceInvertOverrideStates();
         }
     };
@@ -492,13 +494,16 @@ final class UiModeManagerService extends SystemService {
 
         synchronized (mLock) {
             for (var i = 0; i < mUiModeManagerCallbacks.size(); i++) {
+                // We don't use the return value of `updateForceInvertOverrideStateLocked` here
+                // since the Settings values are already updated by the states in the setter.
+                // Therefore, calling `updateForceInvertOverrideStateLocked` here will always return
+                // false if the Settings value is changed by `setForceInvertOverrideStateLocked`.
                 var userId = mUiModeManagerCallbacks.keyAt(i);
-                if (updateForceInvertOverrideStateLocked(userId)) {
-                    mUiModeManagerCallbacks.valueAt(i).broadcast(ignoreRemoteException(
-                            callback -> callback
-                                    .notifyForceInvertOverrideStateChanged()
-                    ));
-                }
+                updateForceInvertOverrideStateLocked(userId);
+                mUiModeManagerCallbacks.valueAt(i).broadcast(ignoreRemoteException(
+                        callback -> callback
+                                .notifyForceInvertOverrideStateChanged()
+                ));
             }
         }
     }
@@ -1725,6 +1730,7 @@ final class UiModeManagerService extends SystemService {
             int userId, String packageName,
             @ForceInvertPackageOverrideState int newState) {
         var states = mForceInvertOverrideStates.get(userId);
+
         if (states == null && mSystemReady) {
             updateForceInvertOverrideStateLocked(userId);
             states = mForceInvertOverrideStates.get(userId);

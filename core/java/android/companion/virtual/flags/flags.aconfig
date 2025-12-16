@@ -265,16 +265,6 @@ flag {
 }
 
 flag {
-    name: "computer_control_allowlists"
-    namespace: "virtual_devices"
-    description: "Use DeviceConfig to configure allowlists (agents, automatable apps) for ComputerControl."
-    bug: "432678187"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "virtual_camera_support_api"
     namespace: "virtual_devices"
     description: "API for checking if virtual camera is supported on the device"

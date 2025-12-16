@@ -87,7 +87,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @SystemApi
 @FlaggedApi(Flags.FLAG_FMCQ_API)
-public class DataFlowSource implements AutoCloseable {
+public final class DataFlowSource implements AutoCloseable {
     private static final String TAG = "DataFlowSource";
 
     /** The configuration of data sent over this data flow. */

@@ -19,14 +19,15 @@ package com.android.systemui.statusbar.quickactions.av.ui.viewmodel
 import androidx.compose.runtime.getValue
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.AvControlsChipInteractor
 import com.android.systemui.statusbar.quickactions.av.shared.model.AvControlsChipModel
 import com.android.systemui.statusbar.quickactions.av.shared.model.SensorActivityModel
-import com.android.systemui.statusbar.quickactions.popups.ui.model.ColorsModel
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupChipViewModel
+import com.android.systemui.statusbar.quickactions.ui.compose.ChipColors
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipIcon
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.HoverBehavior
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
@@ -38,7 +39,7 @@ import kotlinx.coroutines.flow.map
 /** ViewModel for the VC Privacy Chip */
 class AvControlsChipViewModel
 @AssistedInject
-constructor(avControlsChipInteractor: AvControlsChipInteractor) :
+constructor(@DisplayAware avControlsChipInteractor: AvControlsChipInteractor) :
     StatusBarPopupChipViewModel, ExclusiveActivatable() {
     companion object {
         val CAMERA_DRAWABLE: Int = com.android.internal.R.drawable.perm_group_camera
@@ -67,7 +68,7 @@ constructor(avControlsChipInteractor: AvControlsChipInteractor) :
                     chipId = chipId,
                     icons = icons(sensorActivityModel = sensorActivityModel),
                     chipText = null,
-                    colors = ColorsModel.AvControlsTheme,
+                    colors = ChipColors.AvControlsTheme,
                     hoverBehavior = HoverBehavior.None,
                     contentDescription =
                         contentDescription(sensorActivityModel = sensorActivityModel),

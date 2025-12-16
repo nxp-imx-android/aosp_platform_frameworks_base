@@ -1039,6 +1039,7 @@ public class DisplayModeDirectorTest {
         final int initialRefreshRate = 60;
         mInjector.getDeviceConfig().setRefreshRateInLowZone(initialRefreshRate);
         director.start(sensorManager);
+        waitForIdleSync();
         assertThat(director.getBrightnessObserver().getRefreshRateInLowZone())
                 .isEqualTo(initialRefreshRate);
 
@@ -1063,6 +1064,7 @@ public class DisplayModeDirectorTest {
         config.setLowDisplayBrightnessThresholds(initialDisplayThresholds);
         config.setLowAmbientBrightnessThresholds(initialAmbientThresholds);
         director.start(sensorManager);
+        waitForIdleSync();
 
         float[] expectedDisplayThresholds = { BrightnessSynchronizer.brightnessIntToFloat(10) };
         float[] expectedAmbientThresholds = { 20 };
@@ -1101,6 +1103,7 @@ public class DisplayModeDirectorTest {
         config.setLowAmbientBrightnessThresholds(new int[] { 20 });
 
         director.start(createMockSensorManager(createLightSensor()));
+        waitForIdleSync();
 
         ArgumentCaptor<DisplayListener> displayListenerCaptor =
                 ArgumentCaptor.forClass(DisplayListener.class);
@@ -1132,6 +1135,7 @@ public class DisplayModeDirectorTest {
         config.setLowAmbientBrightnessThresholds(new int[] { 20 });
 
         director.start(createMockSensorManager(createLightSensor()));
+        waitForIdleSync();
 
         ArgumentCaptor<DisplayListener> displayListenerCaptor =
                 ArgumentCaptor.forClass(DisplayListener.class);
@@ -1167,6 +1171,7 @@ public class DisplayModeDirectorTest {
         config.setLowAmbientBrightnessThresholds(new int[] { 20 });
 
         director.start(createMockSensorManager(createLightSensor()));
+        waitForIdleSync();
 
         ArgumentCaptor<DisplayListener> displayListenerCaptor =
                 ArgumentCaptor.forClass(DisplayListener.class);
@@ -1202,6 +1207,7 @@ public class DisplayModeDirectorTest {
         SensorManager sensorManager = createMockSensorManager(lightSensor);
 
         director.start(sensorManager);
+        waitForIdleSync();
 
         ArgumentCaptor<DisplayListener> displayListenerCaptor =
                   ArgumentCaptor.forClass(DisplayListener.class);
@@ -1307,6 +1313,7 @@ public class DisplayModeDirectorTest {
         SensorManager sensorManager = createMockSensorManager(lightSensor);
 
         director.start(sensorManager);
+        waitForIdleSync();
         director.injectSupportedModesByDisplay(supportedModesByDisplay);
         director.getSettingsObserver().setDefaultRefreshRate(90);
 
@@ -1372,6 +1379,7 @@ public class DisplayModeDirectorTest {
         SensorManager sensorManager = createMockSensorManager(lightSensor);
 
         director.start(sensorManager);
+        waitForIdleSync();
 
         ArgumentCaptor<DisplayListener> displayListenerCaptor =
                   ArgumentCaptor.forClass(DisplayListener.class);
@@ -1470,6 +1478,7 @@ public class DisplayModeDirectorTest {
         Sensor lightSensor = createLightSensor();
         SensorManager sensorManager = createMockSensorManager(lightSensor);
         director.start(sensorManager);
+        waitForIdleSync();
 
         // Get the sensor listener so that we can give it new light sensor events
         ArgumentCaptor<SensorEventListener> listenerCaptor =
@@ -1543,6 +1552,7 @@ public class DisplayModeDirectorTest {
         Sensor lightSensor = createLightSensor();
         SensorManager sensorManager = createMockSensorManager(lightSensor);
         director.start(sensorManager);
+        waitForIdleSync();
 
         // Get the display listener so that we can send it new brightness events
         ArgumentCaptor<DisplayListener> displayListenerCaptor =
@@ -1643,6 +1653,7 @@ public class DisplayModeDirectorTest {
         Sensor lightSensor = createLightSensor();
         SensorManager sensorManager = createMockSensorManager(lightSensor);
         director.start(sensorManager);
+        waitForIdleSync();
 
         // Get the display listener so that we can send it new brightness events
         ArgumentCaptor<DisplayListener> displayListenerCaptor =
@@ -1735,6 +1746,7 @@ public class DisplayModeDirectorTest {
         Sensor lightSensor = createLightSensor();
         SensorManager sensorManager = createMockSensorManager(lightSensor);
         director.start(sensorManager);
+        waitForIdleSync();
         director.injectSupportedModesByDisplay(supportedModesByDisplay);
 
         // Disable Smooth Display
@@ -1770,6 +1782,7 @@ public class DisplayModeDirectorTest {
         Sensor lightSensor = createLightSensor();
         SensorManager sensorManager = createMockSensorManager(lightSensor);
         director.start(sensorManager);
+        waitForIdleSync();
 
         // Disable Smooth Display
         setPeakRefreshRate(RefreshRateSettingsUtils.DEFAULT_REFRESH_RATE);
@@ -1797,6 +1810,7 @@ public class DisplayModeDirectorTest {
         Sensor lightSensor = createLightSensor();
         SensorManager sensorManager = createMockSensorManager(lightSensor);
         director.start(sensorManager);
+        waitForIdleSync();
 
         mInjector.setEnabledDisplays(Map.of(DISPLAY_ID, Display.TYPE_EXTERNAL,
                     DISPLAY_ID_2, Display.TYPE_EXTERNAL));
@@ -1857,6 +1871,7 @@ public class DisplayModeDirectorTest {
         Sensor lightSensor = createLightSensor();
         SensorManager sensorManager = createMockSensorManager(lightSensor);
         director.start(sensorManager);
+        waitForIdleSync();
 
         setPeakRefreshRate(Float.POSITIVE_INFINITY);
 
@@ -1903,6 +1918,7 @@ public class DisplayModeDirectorTest {
         Sensor lightSensor = createLightSensor();
         SensorManager sensorManager = createMockSensorManager(lightSensor);
         director.start(sensorManager);
+        waitForIdleSync();
         director.injectSupportedModesByDisplay(supportedModesByDisplay);
 
         // Disable Smooth Display
@@ -1948,6 +1964,7 @@ public class DisplayModeDirectorTest {
 
         DisplayModeDirector director = createDirectorFromModeArray(TEST_MODES, DEFAULT_MODE_60);
         director.start(createMockSensorManager());
+        waitForIdleSync();
 
         SparseArray<Vote> votes = new SparseArray<>();
         votes.put(Vote.PRIORITY_LOW_POWER_MODE_RENDER_RATE, Vote.forRenderFrameRates(0, 50f));
@@ -1989,6 +2006,7 @@ public class DisplayModeDirectorTest {
         Sensor lightSensor = createLightSensor();
         SensorManager sensorManager = createMockSensorManager(lightSensor);
         director.start(sensorManager);
+        waitForIdleSync();
         director.injectSupportedModesByDisplay(supportedModesByDisplay);
 
         // Disable Force Peak Refresh Rate
@@ -2024,6 +2042,7 @@ public class DisplayModeDirectorTest {
         Sensor lightSensor = createLightSensor();
         SensorManager sensorManager = createMockSensorManager(lightSensor);
         director.start(sensorManager);
+        waitForIdleSync();
 
         // Disable Force Peak Refresh Rate
         setMinRefreshRate(0);
@@ -2056,6 +2075,7 @@ public class DisplayModeDirectorTest {
         Sensor lightSensor = createLightSensor();
         SensorManager sensorManager = createMockSensorManager(lightSensor);
         director.start(sensorManager);
+        waitForIdleSync();
 
         setMinRefreshRate(Float.POSITIVE_INFINITY);
 
@@ -2103,6 +2123,7 @@ public class DisplayModeDirectorTest {
         Sensor lightSensor = createLightSensor();
         SensorManager sensorManager = createMockSensorManager(lightSensor);
         director.start(sensorManager);
+        waitForIdleSync();
         director.injectSupportedModesByDisplay(supportedModesByDisplay);
 
         // Disable Force Peak Refresh Rate
@@ -2155,6 +2176,7 @@ public class DisplayModeDirectorTest {
         Sensor lightSensor = createLightSensor();
         SensorManager sensorManager = createMockSensorManager(lightSensor);
         director.start(sensorManager);
+        waitForIdleSync();
         director.injectSupportedModesByDisplay(supportedModesByDisplay);
 
         // Disable Force Peak Refresh Rate and Smooth Display
@@ -2200,6 +2222,7 @@ public class DisplayModeDirectorTest {
         SensorManager sensorManager = createMockSensorManager(lightSensor);
 
         director.start(sensorManager);
+        waitForIdleSync();
         ArgumentCaptor<SensorEventListener> listenerCaptor =
                 ArgumentCaptor.forClass(SensorEventListener.class);
         verify(sensorManager, Mockito.timeout(TimeUnit.SECONDS.toMillis(1)))
@@ -2240,6 +2263,7 @@ public class DisplayModeDirectorTest {
         DisplayModeDirector director =
                 createDirectorFromRefreshRateArray(new float[] {60.f, 90.f, 110.f}, 0);
         director.start(createMockSensorManager());
+        waitForIdleSync();
         director.onBootCompleted();
         ArgumentCaptor<IUdfpsRefreshRateRequestCallback> captor =
                 ArgumentCaptor.forClass(IUdfpsRefreshRateRequestCallback.class);
@@ -2703,6 +2727,7 @@ public class DisplayModeDirectorTest {
         DisplayModeDirector director =
                 createDirectorFromRefreshRateArray(new float[]{60.f, 90.f}, 0);
         director.start(createMockSensorManager());
+        waitForIdleSync();
 
         ArgumentCaptor<ProximityActiveListener> ProximityCaptor =
                 ArgumentCaptor.forClass(ProximityActiveListener.class);
@@ -2773,6 +2798,7 @@ public class DisplayModeDirectorTest {
         mInjector.getDeviceConfig().setRefreshRateInHbmHdr(hbmRefreshRate);
 
         director.start(createMockSensorManager());
+        waitForIdleSync();
 
         ArgumentCaptor<DisplayListener> captor =
                   ArgumentCaptor.forClass(DisplayListener.class);
@@ -2861,6 +2887,7 @@ public class DisplayModeDirectorTest {
         final int initialRefreshRate = 60;
         mInjector.getDeviceConfig().setRefreshRateInHbmSunlight(initialRefreshRate);
         director.start(createMockSensorManager());
+        waitForIdleSync();
         assertThat(director.getHbmObserver().getRefreshRateInHbmSunlight())
                 .isEqualTo(initialRefreshRate);
 
@@ -2880,6 +2907,7 @@ public class DisplayModeDirectorTest {
         final int initialRefreshRate = 60;
         mInjector.getDeviceConfig().setRefreshRateInHbmHdr(initialRefreshRate);
         director.start(createMockSensorManager());
+        waitForIdleSync();
         assertThat(director.getHbmObserver().getRefreshRateInHbmHdr())
                 .isEqualTo(initialRefreshRate);
 
@@ -2896,6 +2924,7 @@ public class DisplayModeDirectorTest {
         DisplayModeDirector director =
                 createDirectorFromRefreshRateArray(new float[] {60.0f, 90.0f}, 0);
         director.start(createMockSensorManager());
+        waitForIdleSync();
 
         ArgumentCaptor<DisplayListener> captor =
                   ArgumentCaptor.forClass(DisplayListener.class);
@@ -2971,6 +3000,7 @@ public class DisplayModeDirectorTest {
         DisplayModeDirector director =
                 createDirectorFromRefreshRateArray(new float[] {60.0f, 90.0f}, 0);
         director.start(createMockSensorManager());
+        waitForIdleSync();
 
         ArgumentCaptor<DisplayListener> captor =
                   ArgumentCaptor.forClass(DisplayListener.class);
@@ -3011,6 +3041,7 @@ public class DisplayModeDirectorTest {
         DisplayModeDirector director =
                 createDirectorFromRefreshRateArray(new float[] {60.0f, 90.0f}, 0);
         director.start(createMockSensorManager());
+        waitForIdleSync();
 
         ArgumentCaptor<DisplayListener> captor =
                   ArgumentCaptor.forClass(DisplayListener.class);
@@ -3097,6 +3128,7 @@ public class DisplayModeDirectorTest {
         final int hdrRr = 60;
         mInjector.getDeviceConfig().setRefreshRateInHbmHdr(hdrRr);
         director.start(createMockSensorManager());
+        waitForIdleSync();
 
         ArgumentCaptor<DisplayListener> captor = ArgumentCaptor.forClass(DisplayListener.class);
         verify(mInjector).registerDisplayListener(captor.capture(), any(Handler.class),
@@ -3135,6 +3167,7 @@ public class DisplayModeDirectorTest {
         DisplayModeDirector director =
                 createDirectorFromRefreshRateArray(new float[] {60.0f, 90.0f}, 0);
         director.start(createMockSensorManager());
+        waitForIdleSync();
 
         ArgumentCaptor<DisplayListener> captor =
                   ArgumentCaptor.forClass(DisplayListener.class);
@@ -3172,6 +3205,7 @@ public class DisplayModeDirectorTest {
         DisplayModeDirector director =
                 createDirectorFromRefreshRateArray(new float[] {60.0f, 90.0f}, 0);
         director.start(createMockSensorManager());
+        waitForIdleSync();
 
         ArgumentCaptor<IThermalEventListener> thermalEventListener =
                 ArgumentCaptor.forClass(IThermalEventListener.class);
@@ -3230,6 +3264,7 @@ public class DisplayModeDirectorTest {
                 createDirectorFromRefreshRateArray(new float[]{60.0f, 90.0f}, 0);
         SensorManager sensorManager = createMockSensorManager(createLightSensor());
         director.start(sensorManager);
+        waitForIdleSync();
         // We don't expect any interaction with DeviceConfig when the director is initialized
         // because we explicitly avoid doing this as this can lead to a latency spike in the
         // startup of DisplayManagerService
@@ -3383,6 +3418,7 @@ public class DisplayModeDirectorTest {
         SensorManager sensorManager = createMockSensorManager(lightSensorOne, lightSensorTwo);
         when(sensorManager.getDefaultSensor(5)).thenReturn(lightSensorOne, lightSensorTwo);
         director.start(sensorManager);
+        waitForIdleSync();
         ArgumentCaptor<SensorEventListener> listenerCaptor =
                 ArgumentCaptor.forClass(SensorEventListener.class);
         verify(sensorManager, Mockito.timeout(TimeUnit.SECONDS.toMillis(1)))
@@ -3437,6 +3473,7 @@ public class DisplayModeDirectorTest {
         DisplayModeDirector director =
                 createDirectorFromRefreshRateArray(new float[]{60.0f, 90.0f}, 0);
         director.start(createMockSensorManager());
+        waitForIdleSync();
         director.onBootCompleted();
         ArgumentCaptor<IUdfpsRefreshRateRequestCallback> captor =
                 ArgumentCaptor.forClass(IUdfpsRefreshRateRequestCallback.class);
@@ -3470,6 +3507,7 @@ public class DisplayModeDirectorTest {
         DisplayModeDirector director =
                 createDirectorFromRefreshRateArray(new float[]{60.0f, 90.0f}, 0);
         director.start(createMockSensorManager());
+        waitForIdleSync();
         director.onBootCompleted();
         ArgumentCaptor<IUdfpsRefreshRateRequestCallback> captor =
                 ArgumentCaptor.forClass(IUdfpsRefreshRateRequestCallback.class);
@@ -3486,6 +3524,7 @@ public class DisplayModeDirectorTest {
         DisplayModeDirector director =
                 createDirectorFromRefreshRateArray(new float[]{60.0f, 90.0f}, 0);
         director.start(createMockSensorManager());
+        waitForIdleSync();
 
         ArgumentCaptor<DisplayListener> displayListenerCaptor =
                 ArgumentCaptor.forClass(DisplayListener.class);
@@ -3518,6 +3557,7 @@ public class DisplayModeDirectorTest {
         DisplayModeDirector director =
                 createDirectorFromRefreshRateArray(new float[]{60.0f, 90.0f}, 0);
         director.start(createMockSensorManager());
+        waitForIdleSync();
 
         ArgumentCaptor<DisplayListener> displayListenerCaptor =
                 ArgumentCaptor.forClass(DisplayListener.class);
@@ -3541,6 +3581,7 @@ public class DisplayModeDirectorTest {
         DisplayModeDirector director =
                 createDirectorFromRefreshRateArray(new float[]{60.0f, 90.0f}, 0);
         director.start(createMockSensorManager());
+        waitForIdleSync();
 
         ArgumentCaptor<DisplayListener> displayListenerCaptor =
                 ArgumentCaptor.forClass(DisplayListener.class);
@@ -3569,6 +3610,7 @@ public class DisplayModeDirectorTest {
         DisplayModeDirector director =
                 createDirectorFromRefreshRateArray(new float[]{60.0f, 90.0f}, 0);
         director.start(createMockSensorManager());
+        waitForIdleSync();
 
         ArgumentCaptor<DisplayListener> displayListenerCaptor =
                 ArgumentCaptor.forClass(DisplayListener.class);

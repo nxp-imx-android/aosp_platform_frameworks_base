@@ -31,6 +31,9 @@ java_library {
     visibility: [
         "//frameworks/base/libs/WindowManager/Shell/tests/unittest",
         "//frameworks/base/libs/WindowManager/Shell/multivalentTests",
+        "//frameworks/base/tests/VirtualDeviceTests/services",
+        "//frameworks/base/services/tests/wmtests",
+        "//packages/services/Car/tests/CarServiceUnitTest",
         "//packages/services/Car/libs/car-wm-shell-lib/tests/unittest",
     ],
     srcs: [

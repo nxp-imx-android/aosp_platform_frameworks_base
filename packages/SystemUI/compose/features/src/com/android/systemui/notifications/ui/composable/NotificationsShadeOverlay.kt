@@ -197,7 +197,6 @@ constructor(
                     isTransparencyEnabled = viewModel.isTransparencyEnabled,
                     stackTopPadding = notificationStackPadding,
                     stackBottomPadding = notificationStackPadding,
-                    shouldFillMaxSize = false,
                     shouldDrawScrimBackground = false,
                     modifier =
                         Modifier.fillMaxWidth().focusProperties {

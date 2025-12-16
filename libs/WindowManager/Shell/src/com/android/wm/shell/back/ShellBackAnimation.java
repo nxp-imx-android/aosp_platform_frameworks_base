@@ -47,7 +47,7 @@ public abstract class ShellBackAnimation {
      * @return true if this type of back animation should override the default.
      */
     public boolean prepareNextAnimation(BackNavigationInfo.CustomAnimationInfo animationInfo,
-            int letterboxColor, float cornerRadius) {
+            int letterboxColor) {
         return false;
     }
 

@@ -30,6 +30,7 @@ import static android.view.Surface.ROTATION_270;
 import static android.view.Surface.ROTATION_90;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_CAMERA_COMPAT;
+import static com.android.server.wm.AppCompatCameraPolicy.TAG_CAMERA_COMPAT;
 import static com.android.server.wm.AppCompatConfiguration.MIN_FIXED_ORIENTATION_LETTERBOX_ASPECT_RATIO;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
@@ -149,7 +150,7 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
             ProtoLog.v(WM_DEBUG_CAMERA_COMPAT,
                     "%s: Display id=%d is notified that Camera %s is closed but activity is"
                             + " still refreshing. Rescheduling an update.",
-                    TAG, topActivity.getDisplayContent().mDisplayId, cameraId);
+                    TAG_CAMERA_COMPAT, topActivity.getDisplayContent().mDisplayId, cameraId);
             return false;
         }
         return true;
@@ -195,14 +196,15 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
         compatibilityInfo.cameraCompatibilityInfo = getCameraCompatibilityInfo(activityRecord);
         try {
             ProtoLog.i(WM_DEBUG_CAMERA_COMPAT, "%s: Updating CameraCompatibilityInfo"
-                    + " for package: %s to: %s.", app.mInfo.packageName,
-                    TAG, compatibilityInfo.cameraCompatibilityInfo);
+                    + " for package: %s to: %s.", TAG_CAMERA_COMPAT, app.mInfo.packageName,
+                    compatibilityInfo.cameraCompatibilityInfo);
             // TODO(b/380840084): Consider using a ClientTransaction for this update.
             app.getThread().updatePackageCompatibilityInfo(app.mInfo.packageName,
                     compatibilityInfo);
         } catch (RemoteException e) {
             ProtoLog.w(WM_DEBUG_CAMERA_COMPAT,
-                    "%s: Unable to update CompatibilityInfo for app %s", TAG, app);
+                    "%s: Unable to update CompatibilityInfo for app %s",
+                    TAG_CAMERA_COMPAT, app);
             return false;
         }
 

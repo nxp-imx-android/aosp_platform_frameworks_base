@@ -163,6 +163,20 @@ class PerDisplayInstanceRepositoryImplTest : SysuiTestCase() {
         }
 
     @Test
+    fun allowedDisplays_lifecycleManagerReturnsEmpty_fallsBackToDefaultDisplay() =
+        testScope.runTest {
+            val underTest =
+                kosmos.createPerDisplayInstanceRepository(
+                    overrideLifecycleManager = lifecycleManager
+                )
+
+            lifecycleManager.displayIds.value = emptySet()
+
+            assertThat(underTest[DEFAULT_DISPLAY_ID]).isNotNull()
+            assertThat(underTest[NON_DEFAULT_DISPLAY_ID]).isNull()
+        }
+
+    @Test
     fun perDisplay_lifecycleManagerDoesNotContainIt_displayRepositoryDoes_returnsNull() =
         testScope.runTest {
             val underTest =

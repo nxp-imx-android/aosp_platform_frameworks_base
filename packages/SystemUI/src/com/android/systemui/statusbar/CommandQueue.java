@@ -283,10 +283,11 @@ public class CommandQueue extends IStatusBar.Stub implements
         /**
          * Sets the new IME window status.
          *
-         * @param displayId The id of the display to which the IME is bound.
-         * @param vis The IME window visibility.
-         * @param backDisposition The IME back disposition mode.
-         * @param showImeSwitcherButton Whether the IME Switcher button should be shown.
+         * @param displayId             The ID of the display where the IME should be shown.
+         * @param vis                   The IME window visibility.
+         * @param backDisposition       The IME back disposition mode.
+         * @param showImeSwitcherButton Whether the IME Switcher button should be shown when the IME
+         *                              is shown.
          */
         default void setImeWindowStatus(int displayId, @ImeWindowVisibility int vis,
                 @BackDispositionMode int backDisposition, boolean showImeSwitcherButton) { }
@@ -567,6 +568,11 @@ public class CommandQueue extends IStatusBar.Stub implements
          * @see IStatusBar#moveFocusedTaskToFullscreen
          */
         default void moveFocusedTaskToFullscreen(int displayId) {}
+
+        /**
+         * @see IStatusBar#moveFocusedTaskToStageSplit
+         */
+        default void moveFocusedTaskToStageSplit(int displayId, boolean leftOrTop) {}
 
         /**
          * @see IStatusBar#setSplitscreenFocus
@@ -1461,6 +1467,17 @@ public class CommandQueue extends IStatusBar.Stub implements
     }
 
     @Override
+    public void moveFocusedTaskToStageSplit(int displayId, boolean leftOrTop) {
+        synchronized (mLock) {
+            SomeArgs args = SomeArgs.obtain();
+            args.argi1 = displayId;
+            args.argi2 = leftOrTop ? 1 : 0;
+            mHandler.obtainMessage(MSG_MOVE_FOCUSED_TASK_TO_STAGE_SPLIT,
+                    args).sendToTarget();
+        }
+    }
+
+    @Override
     public void setSplitscreenFocus(boolean leftOrTop) {
         synchronized (mLock) {
             mHandler.obtainMessage(MSG_SET_SPLITSCREEN_FOCUS, leftOrTop).sendToTarget();
@@ -2072,6 +2089,15 @@ public class CommandQueue extends IStatusBar.Stub implements
                     int displayId = args.argi1;
                     for (Callbacks callback : mCallbacks) {
                         callback.moveFocusedTaskToFullscreen(displayId);
+                    }
+                    break;
+                }
+                case MSG_MOVE_FOCUSED_TASK_TO_STAGE_SPLIT: {
+                    args = (SomeArgs) msg.obj;
+                    int displayId = args.argi1;
+                    boolean leftOrTop = args.argi2 != 0;
+                    for (Callbacks callback : mCallbacks) {
+                        callback.moveFocusedTaskToStageSplit(displayId, leftOrTop);
                     }
                     break;
                 }

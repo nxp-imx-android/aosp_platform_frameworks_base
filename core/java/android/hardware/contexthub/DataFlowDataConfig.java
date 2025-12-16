@@ -36,7 +36,7 @@ import java.lang.annotation.RetentionPolicy;
  */
 @SystemApi
 @FlaggedApi(Flags.FLAG_FMCQ_API)
-public class DataFlowDataConfig {
+public final class DataFlowDataConfig {
     /** Format for data flows with elements of fixed size and alignment. */
     public static final int FORMAT_FIXED_SIZE = 0;
 

@@ -16,7 +16,6 @@
 
 package android.content.pm;
 
-import static android.content.pm.ActivityInfo.FLAG_ALWAYS_FOCUSABLE;
 import static android.content.pm.ActivityInfo.FLAG_SUPPORTS_PICTURE_IN_PICTURE;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_FORCE_RESIZABLE_LANDSCAPE_ONLY;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_FORCE_RESIZABLE_PORTRAIT_ONLY;
@@ -42,8 +41,6 @@ import static android.content.pm.PackageManager.MATCH_DISABLED_UNTIL_USED_COMPON
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Trace.TRACE_TAG_PACKAGE_MANAGER;
 import static android.view.WindowManager.LayoutParams.ROTATION_ANIMATION_UNSPECIFIED;
-
-import static com.android.internal.pm.pkg.component.ParsedActivityUtils.RECREATE_ON_CONFIG_CHANGES_MASK;
 
 import android.annotation.IntDef;
 import android.annotation.IntRange;
@@ -224,6 +221,17 @@ public class PackageParser {
     public static final String METADATA_SUPPORTS_SIZE_CHANGES = "android.supports_size_changes";
     public static final String METADATA_ACTIVITY_WINDOW_LAYOUT_AFFINITY =
             "android.activity_window_layout_affinity";
+
+    /**
+     * Bit mask of all the valid bits that can be set in recreateOnConfigChanges.
+     * @hide
+     */
+    private static final int RECREATE_ON_CONFIG_CHANGES_MASK =
+            com.android.window.flags.Flags.enableLessActivityRecreationOnConfigChange() ?
+                    ActivityInfo.CONFIG_MCC | ActivityInfo.CONFIG_MNC | ActivityInfo.CONFIG_KEYBOARD
+                            | ActivityInfo.CONFIG_KEYBOARD_HIDDEN | ActivityInfo.CONFIG_NAVIGATION
+                            | ActivityInfo.CONFIG_TOUCHSCREEN | ActivityInfo.CONFIG_COLOR_MODE
+                    : ActivityInfo.CONFIG_MCC | ActivityInfo.CONFIG_MNC;
 
     // These are the tags supported by child packages
     public static final Set<String> CHILD_PACKAGE_TAGS = new ArraySet<>();
@@ -4458,10 +4466,6 @@ public class PackageParser {
             if (sa.getBoolean(R.styleable.AndroidManifestActivity_supportsPictureInPicture,
                     false)) {
                 a.info.flags |= FLAG_SUPPORTS_PICTURE_IN_PICTURE;
-            }
-
-            if (sa.getBoolean(R.styleable.AndroidManifestActivity_alwaysFocusable, false)) {
-                a.info.flags |= FLAG_ALWAYS_FOCUSABLE;
             }
 
             if (sa.hasValue(R.styleable.AndroidManifestActivity_maxAspectRatio)

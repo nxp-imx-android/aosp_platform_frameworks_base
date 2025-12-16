@@ -31,6 +31,7 @@ import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEvent
 import com.android.systemui.statusbar.gesture.SwipeStatusBarAwayGestureHandler
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
 import com.android.systemui.statusbar.phone.SysuiDarkIconDispatcher
+import com.android.systemui.statusbar.quickactions.av.domain.interactor.AvControlsChipInteractor
 import com.android.systemui.statusbar.ui.SystemBarUtilsState
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
 import dagger.BindsInstance
@@ -51,6 +52,8 @@ import kotlinx.coroutines.CoroutineScope
 @PerDisplaySingleton
 @Subcomponent(modules = [PerDisplaySystemUIModule::class])
 interface SystemUIDisplaySubcomponent {
+
+    @get:DisplayAware val avControlsChipInteractor: AvControlsChipInteractor
 
     @get:DisplayAware val displayCoroutineScope: CoroutineScope
 

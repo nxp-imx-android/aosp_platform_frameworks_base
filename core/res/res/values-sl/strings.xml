@@ -774,8 +774,7 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"Telefon premaknite nižje"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"Telefon premaknite v svojo levo"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"Telefon premaknite v svojo desno"</string>
-    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
-    <skip />
+    <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"Glejte bolj naravnost v fotoaparat"</string>
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"Obraz ni viden. Držite telefon v višini oči."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"Preveč se premikate. Držite telefon pri miru."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Znova registrirajte svoj obraz."</string>
@@ -2109,6 +2108,7 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"Aplikacija <xliff:g id="APP_NAME_0">%1$s</xliff:g> trenutno ni na voljo. To upravlja aplikacija <xliff:g id="APP_NAME_1">%2$s</xliff:g>."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"Več o tem"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"Prekliči začasno zaustavitev aplikacije"</string>
+    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> je zaklenjena"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"Želite znova aktivirati delovne aplikacije?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Znova aktiviraj"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Nujni primer"</string>
@@ -2548,6 +2548,10 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"Klon"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"Skupno"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"Zasebni prostor"</string>
+    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
+    <skip />
+    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
+    <skip />
     <string name="redacted_notification_message" msgid="1520587845842228816">"Občutljiva vsebina obvestila je bila skrita"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Pri deljenju zaslona je vsebina aplikacije skrita zaradi varnosti"</string>

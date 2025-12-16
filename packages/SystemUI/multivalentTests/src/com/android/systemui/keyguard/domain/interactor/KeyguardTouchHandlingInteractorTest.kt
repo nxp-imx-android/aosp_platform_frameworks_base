@@ -33,6 +33,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryFaceAuthInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
+import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.inputdevice.data.repository.pointerDeviceRepository
 import com.android.systemui.keyguard.data.repository.FakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.KeyguardRepository
@@ -45,7 +46,7 @@ import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.securelockdevice.domain.interactor.secureLockDeviceInteractor
-import com.android.systemui.shade.pulsingGestureListener
+import com.android.systemui.shade.PulsingGestureListener
 import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager
 import com.android.systemui.statusbar.phone.statusBarKeyguardViewManager
@@ -94,6 +95,7 @@ class KeyguardTouchHandlingInteractorTest : SysuiTestCase() {
     private lateinit var sceneInteractor: SceneInteractor
     private lateinit var statusBarKeyguardViewManager: StatusBarKeyguardViewManager
 
+    @Mock private lateinit var pulsingGestureListener: PulsingGestureListener
     @Mock private lateinit var powerManager: PowerManager
 
     @Before
@@ -136,6 +138,13 @@ class KeyguardTouchHandlingInteractorTest : SysuiTestCase() {
                 }
             }
         }
+
+    @Test
+    @EnableSceneContainer
+    fun onSceneClickNotifiesPulsingGestureListener() {
+        underTest.onSceneClick(1f, 2f)
+        verify(pulsingGestureListener).onSingleTapUp(1f, 2f)
+    }
 
     @Test
     fun isLongPressEnabled_alwaysFalseWhenQuickSettingsAreVisible() =
@@ -438,7 +447,7 @@ class KeyguardTouchHandlingInteractorTest : SysuiTestCase() {
                 broadcastDispatcher = fakeBroadcastDispatcher,
                 accessibilityManager = kosmos.accessibilityManagerWrapper,
                 statusBarKeyguardViewManager = statusBarKeyguardViewManager,
-                pulsingGestureListener = kosmos.pulsingGestureListener,
+                pulsingGestureListener = pulsingGestureListener,
                 faceAuthInteractor = kosmos.deviceEntryFaceAuthInteractor,
                 deviceEntryInteractor = kosmos.deviceEntryInteractor,
                 powerInteractor = kosmos.powerInteractor,

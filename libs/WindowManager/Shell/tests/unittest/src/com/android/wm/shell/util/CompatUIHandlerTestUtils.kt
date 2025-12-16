@@ -17,6 +17,8 @@
 package com.android.wm.shell.util
 
 import android.app.ActivityManager.RunningTaskInfo
+import com.android.testing.wm.util.RunningTaskInfoTestInputBuilder
+import com.android.testing.wm.util.TestInputBuilder
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.compatui.api.CompatUIEvent
 import com.android.wm.shell.compatui.api.CompatUIHandler

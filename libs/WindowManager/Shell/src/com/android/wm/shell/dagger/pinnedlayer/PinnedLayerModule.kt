@@ -20,6 +20,7 @@ import android.content.Context
 import android.view.SurfaceControl
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.dagger.WMShellBaseModule
 import com.android.wm.shell.dagger.WMSingleton
@@ -79,6 +80,7 @@ object PinnedLayerModule {
         windowRepositionAnimationHandler: PinnedWindowRepositionAnimationHandler,
         transactionPool: TransactionPool,
         rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
+        multiDisplayDragMoveIndicatorController: MultiDisplayDragMoveIndicatorController,
     ): Optional<PinnedLayerController> {
         if (PinnedLayerFlags.isPinnedLayerEnabled()) {
             return Optional.of(
@@ -92,6 +94,8 @@ object PinnedLayerModule {
                     windowRepositionAnimationHandler = windowRepositionAnimationHandler,
                     transactionPool = transactionPool,
                     desktopState = desktopState,
+                    multiDisplayDragMoveIndicatorController =
+                        multiDisplayDragMoveIndicatorController,
                 )
             )
         }

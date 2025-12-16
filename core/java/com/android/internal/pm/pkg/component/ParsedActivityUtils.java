@@ -26,7 +26,6 @@ import static com.android.internal.pm.pkg.parsing.ParsingUtils.parseKnownActivit
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityTaskManager;
-import android.app.compat.CompatChanges;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
@@ -81,12 +80,12 @@ public class ParsedActivityUtils {
     /**
      * Bit mask of all the valid bits that can be set in recreateOnConfigChanges.
      */
-    public static final int RECREATE_ON_CONFIG_CHANGES_MASK =
-            ActivityInfo.CONFIG_MCC | ActivityInfo.CONFIG_MNC
-                    | (shouldSkipActivityRecreationOnConfigChange() ? (ActivityInfo.CONFIG_KEYBOARD
-                    | ActivityInfo.CONFIG_KEYBOARD_HIDDEN | ActivityInfo.CONFIG_NAVIGATION
-                    | ActivityInfo.CONFIG_TOUCHSCREEN | ActivityInfo.CONFIG_COLOR_MODE)
-                    : 0);
+    private static final int RECREATE_ON_CONFIG_CHANGES_MASK =
+            com.android.window.flags.Flags.enableLessActivityRecreationOnConfigChange() ?
+                    ActivityInfo.CONFIG_MCC | ActivityInfo.CONFIG_MNC | ActivityInfo.CONFIG_KEYBOARD
+                            | ActivityInfo.CONFIG_KEYBOARD_HIDDEN | ActivityInfo.CONFIG_NAVIGATION
+                            | ActivityInfo.CONFIG_TOUCHSCREEN | ActivityInfo.CONFIG_COLOR_MODE
+                    : ActivityInfo.CONFIG_MCC | ActivityInfo.CONFIG_MNC;
 
     @NonNull
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
@@ -158,7 +157,6 @@ public class ParsedActivityUtils {
             if (!receiver) {
                 activity.setFlags(activity.getFlags() | (flag(ActivityInfo.FLAG_HARDWARE_ACCELERATED, R.styleable.AndroidManifestActivity_hardwareAccelerated, pkg.isHardwareAccelerated(), sa)
                                         | flag(ActivityInfo.FLAG_ALLOW_EMBEDDED, R.styleable.AndroidManifestActivity_allowEmbedded, sa)
-                                        | flag(ActivityInfo.FLAG_ALWAYS_FOCUSABLE, R.styleable.AndroidManifestActivity_alwaysFocusable, sa)
                                         | flag(ActivityInfo.FLAG_AUTO_REMOVE_FROM_RECENTS, R.styleable.AndroidManifestActivity_autoRemoveFromRecents, sa)
                                         | flag(ActivityInfo.FLAG_RELINQUISH_TASK_IDENTITY, R.styleable.AndroidManifestActivity_relinquishTaskIdentity, sa)
                                         | flag(ActivityInfo.FLAG_RESUME_WHILE_PAUSING, R.styleable.AndroidManifestActivity_resumeWhilePausing, sa)
@@ -694,20 +692,6 @@ public class ParsedActivityUtils {
             layout.windowLayoutAffinity = windowLayoutAffinity;
         }
         return input.success(layout);
-    }
-
-    /**
-     * Whether we should skip the activity recreation by default on config change of
-     * {@link ActivityInfo#CONFIG_KEYBOARD}, {@link ActivityInfo#CONFIG_KEYBOARD_HIDDEN},
-     * {@link ActivityInfo#CONFIG_NAVIGATION}, {@link ActivityInfo#CONFIG_TOUCHSCREEN} and
-     * {@link ActivityInfo#CONFIG_COLOR_MODE}.
-     *
-     * @hide
-     */
-    public static boolean shouldSkipActivityRecreationOnConfigChange() {
-        return com.android.window.flags.Flags.enableLessActivityRecreationOnConfigChange()
-                && CompatChanges.isChangeEnabled(
-                        ActivityInfo.SKIP_ACTIVITY_RECREATION_ON_CONFIG_CHANGE);
     }
 
     /**

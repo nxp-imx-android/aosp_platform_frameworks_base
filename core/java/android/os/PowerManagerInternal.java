@@ -21,6 +21,7 @@ import android.os.PowerManager.GoToSleepReason;
 import android.os.PowerManager.UserActivityEvent;
 import android.os.PowerManager.UserActivityFlag;
 import android.os.PowerManager.WakeReason;
+import android.util.IntArray;
 import android.view.Display;
 import android.view.KeyEvent;
 
@@ -309,6 +310,31 @@ public abstract class PowerManagerInternal {
      * @param force {@code true} to activate force disable wakelocks, {@code false} to turn it off.
      */
     public abstract void setForceDisableWakelocks(boolean force);
+
+    /**
+     * Used to put certain power groups specifically to sleep.
+     *
+     * @param groupIds power groups that should be put to sleep
+     * @param eventTime when the request was issued
+     * @param reason reason for going to sleep - any of
+     * {@link android.os.PowerManager.GoToSleepReason}
+     * @param flags PowerManager sleep flags
+     */
+    public abstract void goToSleepPerGroup(IntArray groupIds, long eventTime, int reason,
+            int flags);
+
+    /**
+     * Used to wake up certain power groups.
+     *
+     * @param groupIds Power groups that should be woken up
+     * @param eventTime When the request was issued
+     * @param reason Reason for waking - any of {@link android.os.PowerManager.WakeReason}
+     * @param details Details about the event.
+     * @param opPackageName The Package name used for AppOps.
+     * @param uid The uid used for AppOps.
+     */
+    public abstract void wakeupPerGroup(IntArray groupIds, long eventTime, int reason,
+            String details, String opPackageName, int uid);
 
     /**
      * Boost: It is sent when user interacting with the device, for example,

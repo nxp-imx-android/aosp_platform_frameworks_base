@@ -8553,6 +8553,8 @@ package android.app.admin {
     method @NonNull public java.util.List<android.app.admin.PreferentialNetworkServiceConfig> getPreferentialNetworkServiceConfigs();
     method @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCK_CREDENTIALS, conditional=true) public int getRequiredPasswordComplexity();
     method public long getRequiredStrongAuthTimeout(@Nullable android.content.ComponentName);
+    method @FlaggedApi("android.app.admin.flags.policy_streamlining") @Nullable public <T> T getResolvedDeviceWidePolicy(@NonNull android.app.admin.PolicyIdentifier<T>);
+    method @FlaggedApi("android.app.admin.flags.policy_streamlining") @Nullable public <T> T getResolvedPerUserPolicy(@NonNull android.app.admin.PolicyIdentifier<T>);
     method @NonNull public android.app.admin.DevicePolicyResourcesManager getResources();
     method public boolean getScreenCaptureDisabled(@Nullable android.content.ComponentName);
     method public java.util.List<android.os.UserHandle> getSecondaryUsers(@NonNull android.content.ComponentName);
@@ -43808,8 +43810,8 @@ package android.service.personalcontext.hint {
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ConversationEvent {
+    method @NonNull public java.time.Instant getClientEventTimestamp();
     method @NonNull public String getConversationSessionId();
-    method @NonNull public java.time.Instant getEventTimestamp();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ConversationEvent.ConversationEnterEvent extends android.service.personalcontext.hint.ConversationEvent {
@@ -43818,7 +43820,8 @@ package android.service.personalcontext.hint {
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ConversationEvent.ConversationExitEvent extends android.service.personalcontext.hint.ConversationEvent {
-    ctor public ConversationEvent.ConversationExitEvent(@NonNull String, @NonNull java.time.Instant);
+    ctor public ConversationEvent.ConversationExitEvent(@NonNull String, @NonNull java.time.Instant, @NonNull java.time.Instant);
+    method @NonNull public java.time.Instant getConversationExitTimestamp();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ConversationEvent.ConversationProcessingEvent extends android.service.personalcontext.hint.ConversationEvent {
@@ -43828,8 +43831,9 @@ package android.service.personalcontext.hint {
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ConversationEvent.ConversationUpdateEvent extends android.service.personalcontext.hint.ConversationEvent {
-    ctor public ConversationEvent.ConversationUpdateEvent(@NonNull String, @NonNull java.time.Instant, @NonNull android.service.personalcontext.hint.ConversationData);
+    ctor public ConversationEvent.ConversationUpdateEvent(@NonNull String, @NonNull java.time.Instant, @NonNull java.time.Instant, @NonNull android.service.personalcontext.hint.ConversationData);
     method @NonNull public android.service.personalcontext.hint.ConversationData getConversationData();
+    method @NonNull public java.time.Instant getConversationUpdateTimestamp();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ConversationHint extends android.service.personalcontext.hint.ContextHint {
@@ -43843,10 +43847,6 @@ package android.service.personalcontext.hint {
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class NotificationEvent {
-    method public abstract int getEventType();
-    field public static final int EVENT_TYPE_ENQUEUED = 1; // 0x1
-    field public static final int EVENT_TYPE_REMOVED = 2; // 0x2
-    field public static final int EVENT_TYPE_UNKNOWN = -1; // 0xffffffff
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class NotificationEvent.NotificationEnqueuedEvent extends android.service.personalcontext.hint.NotificationEvent {

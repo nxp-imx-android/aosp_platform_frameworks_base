@@ -52,6 +52,7 @@ import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.LargeScreenStopRecordingPopupViewModel
+import com.android.systemui.statusbar.core.StatusBarForDesktop
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -60,7 +61,12 @@ import kotlinx.coroutines.launch
 fun LargeScreenStopRecordingPopupUI(viewModel: LargeScreenStopRecordingPopupViewModel) {
     Column(
         verticalArrangement = Arrangement.spacedBy(4.dp),
-        horizontalAlignment = Alignment.End,
+        horizontalAlignment =
+            if (StatusBarForDesktop.isEnabled) {
+                Alignment.End
+            } else {
+                Alignment.Start
+            },
         modifier =
             Modifier.fillMaxSize()
                 .windowInsetsPadding(

@@ -813,6 +813,16 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
         }
 
         @Override
+        public void moveFocusedTaskToStageSplit(int displayId, boolean leftOrTop) {
+            IStatusBar bar = mBar;
+            if (bar != null) {
+                try {
+                    bar.moveFocusedTaskToStageSplit(displayId, leftOrTop);
+                } catch (RemoteException ex) { }
+            }
+        }
+
+        @Override
         public void setSplitscreenFocus(boolean leftOrTop) {
             runWithStatusBarIfPresent(bar -> bar.setSplitscreenFocus(leftOrTop));
         }
@@ -1360,10 +1370,13 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
         private String mPackageName = "none";
         private int mDisabled1 = 0;
         private int mDisabled2 = 0;
+        /** The IME window visibility. */
         @ImeWindowVisibility
         private int mImeWindowVis = 0;
+        /** The IME back disposition mode. */
         @BackDispositionMode
         private int mImeBackDisposition = BACK_DISPOSITION_DEFAULT;
+        /** Whether the IME Switcher button should be shown when the IME is shown. */
         private boolean mShowImeSwitcherButton = false;
         private LetterboxDetails[] mLetterboxDetails = new LetterboxDetails[0];
 

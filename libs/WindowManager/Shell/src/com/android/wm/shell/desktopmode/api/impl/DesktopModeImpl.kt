@@ -92,6 +92,18 @@ class DesktopModeImpl(
         }
     }
 
+    override fun moveFocusedTaskToStageSplit(
+        displayId: Int,
+        leftOrTop: Boolean
+    ) {
+        ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: moveFocusedTaskToStageSplit", TAG)
+        mainExecutor.execute {
+            desktopTasksController
+                .getOrNull()
+                ?.enterSplit(displayId = displayId, leftOrTop = leftOrTop)
+        }
+    }
+
     override fun toggleFocusedTaskFullscreenState(
         displayId: Int,
         transitionSource: DesktopModeTransitionSource,

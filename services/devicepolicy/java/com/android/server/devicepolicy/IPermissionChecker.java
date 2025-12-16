@@ -33,4 +33,12 @@ public interface IPermissionChecker {
      */
     void enforce(@NonNull String permission, @NonNull CallerIdentity caller)
             throws SecurityException;
+
+    /**
+     * Checks if the calling process has been granted a specific permission.
+     * @param permission The name of the permission being checked.
+     * @param caller The identity of the calling application.
+     * @return true if the permission has been granted.
+     */
+    boolean hasPermission(@NonNull String permission, @NonNull CallerIdentity caller);
 }

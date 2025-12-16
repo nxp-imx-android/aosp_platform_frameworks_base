@@ -44,6 +44,7 @@ import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import androidx.test.filters.SmallTest
 import com.android.internal.jank.InteractionJankMonitor
+import com.android.testing.wm.util.StubTransaction
 import com.android.window.flags.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
@@ -65,7 +66,6 @@ import com.android.wm.shell.freeform.FreeformTaskTransitionHandler
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TransitionFinishCallback
-import com.android.wm.shell.util.StubTransaction
 import com.google.common.truth.Truth.assertThat
 import java.util.Optional
 import org.junit.Assert.assertFalse
@@ -74,7 +74,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.verify

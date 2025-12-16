@@ -22,8 +22,13 @@ import android.view.Window
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -66,6 +71,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.stringResource
@@ -88,6 +94,8 @@ import javax.inject.Inject
 import kotlin.math.roundToInt
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+
+private val scaleTransformOrigin = TransformOrigin(pivotFractionX = 0.5f, pivotFractionY = 0f)
 
 @ScreenCaptureUiScope
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -116,184 +124,202 @@ constructor(
             }
         }
 
-        Column(
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier =
-                Modifier.fillMaxSize()
-                    .windowInsetsPadding(
-                        WindowInsets.safeContent.only(
-                            WindowInsetsSides.Top + WindowInsetsSides.Horizontal
-                        )
-                    )
-                    .padding(horizontal = 30.dp),
+        val uiVisibilityState = remember { MutableTransitionState(false) }
+
+        // When the component loads, animate in.
+        LaunchedEffect(Unit) { uiVisibilityState.targetState = true }
+
+        AnimatedVisibility(
+            visibleState = uiVisibilityState,
+            enter = scaleIn(transformOrigin = scaleTransformOrigin) + slideInVertically(),
+            exit = scaleOut(transformOrigin = scaleTransformOrigin) + slideOutVertically(),
         ) {
-            // TODO(b/428686600) use Toolbar shared with the large screen
-            Surface(
-                shape = FloatingToolbarDefaults.ContainerShape,
-                color = MaterialTheme.colorScheme.surface,
-                shadowElevation = 6.dp,
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier =
-                    Modifier.fillBoundsInWindowIf(
-                        region = toolbarBounds,
-                        condition = viewTreeObserver != null,
-                    ),
+                    Modifier.fillMaxSize()
+                        .windowInsetsPadding(
+                            WindowInsets.safeContent.only(
+                                WindowInsetsSides.Top + WindowInsetsSides.Horizontal
+                            )
+                        )
+                        .padding(horizontal = 30.dp),
             ) {
-                Row(
-                    modifier = Modifier.height(64.dp).padding(horizontal = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    PlatformIconButton(
-                        onClick = { viewModel.dismiss() },
-                        contentDescription =
-                            stringResource(id = R.string.underlay_close_button_content_description),
-                        colors =
-                            IconButtonDefaults.iconButtonColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
-                            ),
-                        iconResource = R.drawable.ic_close,
-                    )
-                    AnimatedVisibility(visible = viewModel.shouldShowSettingsButton) {
-                        ToggleToolbarButton(
-                            checked = viewModel.detailsPopup == RecordDetailsPopupType.Settings,
-                            onCheckedChanged = {
-                                if (it) {
-                                    viewModel.showSettings()
-                                } else {
-                                    viewModel.resetDetailsPopup()
-                                }
-                            },
-                            icon = {
-                                LoadingIcon(
-                                    icon =
-                                        loadIcon(
-                                                viewModel = viewModel,
-                                                resId = R.drawable.ic_settings,
-                                                contentDescription = null,
-                                            )
-                                            .value,
-                                    modifier = Modifier.size(24.dp),
-                                )
-                            },
-                        )
-                    }
-                    AnimatedVisibility(visible = viewModel.shouldShowMarkupButton) {
-                        ToggleToolbarButton(
-                            checked = viewModel.markupEnabled == true,
-                            onCheckedChanged = { viewModel.setMarkupEnabled(it) },
-                            icon = {
-                                LoadingIcon(
-                                    icon =
-                                        loadIcon(
-                                                viewModel = viewModel,
-                                                resId = R.drawable.ic_markup,
-                                                contentDescription = null,
-                                            )
-                                            .value,
-                                    modifier = Modifier.size(24.dp),
-                                )
-                            },
-                        )
-                    }
-                    AnimatedVisibility(
-                        visible =
-                            viewModel.shouldShowMarkupButton && viewModel.markupEnabled == true
-                    ) {
-                        ToggleToolbarButton(
-                            checked =
-                                viewModel.detailsPopup ==
-                                    RecordDetailsPopupType.MarkupColorSelector,
-                            onCheckedChanged = {
-                                if (it) {
-                                    viewModel.showMarkupColorSelector()
-                                } else {
-                                    viewModel.resetDetailsPopup()
-                                }
-                            },
-                            icon = {
-                                val colorInt =
-                                    viewModel.recordDetailsMarkupColorPickerViewModel.color
-                                        ?: return@ToggleToolbarButton
-                                MarkupColorItem(
-                                    color = Color(colorInt),
-                                    selected = false,
-                                    modifier = Modifier.size(20.dp),
-                                )
-                            },
-                        )
-                    }
-
-                    Spacer(Modifier.width(12.dp))
-
-                    val coroutineScope = rememberCoroutineScope()
-                    var buttonJob: Job? by remember { mutableStateOf(null) }
-                    ToolbarPrimaryButton(
-                        recording = viewModel.isRecording,
-                        onClick = {
-                            if (buttonJob == null) {
-                                buttonJob =
-                                    coroutineScope.launch {
-                                        viewModel.onPrimaryButtonTapped()
-                                        buttonJob = null
-                                    }
-                            }
-                        },
-                        viewModel = viewModel,
-                        modifier = Modifier.height(40.dp),
-                    )
-                }
-            }
-
-            AnimatedVisibility(
-                visible = viewModel.detailsPopup != RecordDetailsPopupType.Invisible,
-                enter = fadeIn(),
-                exit = fadeOut(),
-                modifier =
-                    Modifier.fillBoundsInWindowIf(
-                        region = settingsBounds,
-                        condition = viewTreeObserver != null,
-                    ),
-            ) {
+                // TODO(b/428686600) use Toolbar shared with the large screen
                 Surface(
+                    shape = FloatingToolbarDefaults.ContainerShape,
                     color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(28.dp),
-                    shadowElevation = 2.dp,
-                    modifier = Modifier.animateContentSize(),
+                    shadowElevation = 6.dp,
+                    modifier =
+                        Modifier.fillBoundsInWindowIf(
+                            region = toolbarBounds,
+                            condition = viewTreeObserver != null,
+                        ),
                 ) {
-                    AnimatedContent(
-                        targetState = viewModel.detailsPopup,
-                        contentAlignment = Alignment.Center,
-                        transitionSpec = { fadeIn() togetherWith fadeOut() },
-                        modifier = Modifier.widthIn(max = 352.dp),
-                    ) { currentPopup ->
-                        val contentModifier = Modifier.fillMaxWidth()
-                        when (currentPopup) {
-                            RecordDetailsPopupType.Settings ->
-                                RecordDetailsSettings(
-                                    parametersViewModel =
-                                        viewModel.recordDetailsParametersViewModel,
-                                    targetViewModel = viewModel.recordDetailsTargetViewModel,
-                                    drawableLoaderViewModel = viewModel,
-                                    onAppSelectorClicked = { viewModel.showAppSelector() },
-                                    modifier = contentModifier,
-                                )
-                            RecordDetailsPopupType.AppSelector ->
-                                RecordDetailsAppSelector(
-                                    viewModel = viewModel.recordDetailsAppSelectorViewModel,
-                                    onBackPressed = { viewModel.showSettings() },
-                                    onTaskSelected = {
-                                        viewModel.recordDetailsTargetViewModel.selectTask(it)
+                    Row(
+                        modifier = Modifier.height(64.dp).padding(horizontal = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        PlatformIconButton(
+                            onClick = { viewModel.dismiss() },
+                            contentDescription =
+                                stringResource(
+                                    id = R.string.underlay_close_button_content_description
+                                ),
+                            colors =
+                                IconButtonDefaults.iconButtonColors(
+                                    containerColor =
+                                        MaterialTheme.colorScheme.surfaceContainerHighest
+                                ),
+                            iconResource = R.drawable.ic_close,
+                        )
+                        AnimatedVisibility(visible = viewModel.shouldShowSettingsButton) {
+                            ToggleToolbarButton(
+                                checked = viewModel.detailsPopup == RecordDetailsPopupType.Settings,
+                                onCheckedChanged = {
+                                    if (it) {
                                         viewModel.showSettings()
-                                    },
-                                    modifier = contentModifier,
-                                )
-                            RecordDetailsPopupType.MarkupColorSelector ->
-                                RecordDetailsMarkupColorPicker(
-                                    viewModel = viewModel.recordDetailsMarkupColorPickerViewModel,
-                                    modifier = contentModifier,
-                                )
-                            RecordDetailsPopupType.Invisible -> {
-                                /* do nothing */
+                                    } else {
+                                        viewModel.resetDetailsPopup()
+                                    }
+                                },
+                                icon = {
+                                    LoadingIcon(
+                                        icon =
+                                            loadIcon(
+                                                    viewModel = viewModel,
+                                                    resId = R.drawable.ic_settings,
+                                                    contentDescription = null,
+                                                )
+                                                .value,
+                                        modifier = Modifier.size(24.dp),
+                                    )
+                                },
+                            )
+                        }
+                        AnimatedVisibility(visible = viewModel.shouldShowMarkupButton) {
+                            ToggleToolbarButton(
+                                checked = viewModel.markupEnabled == true,
+                                onCheckedChanged = { viewModel.setMarkupEnabled(it) },
+                                icon = {
+                                    LoadingIcon(
+                                        icon =
+                                            loadIcon(
+                                                    viewModel = viewModel,
+                                                    resId = R.drawable.ic_markup,
+                                                    contentDescription = null,
+                                                )
+                                                .value,
+                                        modifier = Modifier.size(24.dp),
+                                    )
+                                },
+                            )
+                        }
+                        AnimatedVisibility(
+                            visible =
+                                viewModel.shouldShowMarkupButton && viewModel.markupEnabled == true
+                        ) {
+                            ToggleToolbarButton(
+                                checked =
+                                    viewModel.detailsPopup ==
+                                        RecordDetailsPopupType.MarkupColorSelector,
+                                onCheckedChanged = {
+                                    if (it) {
+                                        viewModel.showMarkupColorSelector()
+                                    } else {
+                                        viewModel.resetDetailsPopup()
+                                    }
+                                },
+                                icon = {
+                                    val colorInt =
+                                        viewModel.recordDetailsMarkupColorPickerViewModel.color
+                                            ?: return@ToggleToolbarButton
+                                    MarkupColorItem(
+                                        color = Color(colorInt),
+                                        selected = false,
+                                        modifier = Modifier.size(20.dp),
+                                    )
+                                },
+                            )
+                        }
+
+                        Spacer(Modifier.width(12.dp))
+
+                        val coroutineScope = rememberCoroutineScope()
+                        var buttonJob: Job? by remember { mutableStateOf(null) }
+                        ToolbarPrimaryButton(
+                            recording = viewModel.isRecording,
+                            onClick = {
+                                if (buttonJob == null) {
+                                    buttonJob =
+                                        coroutineScope.launch {
+                                            viewModel.onPrimaryButtonTapped()
+                                            buttonJob = null
+                                        }
+                                }
+                            },
+                            viewModel = viewModel,
+                            modifier = Modifier.height(40.dp),
+                        )
+                    }
+                }
+
+                AnimatedVisibility(
+                    visible = viewModel.detailsPopup != RecordDetailsPopupType.Invisible,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                    modifier =
+                        Modifier.fillBoundsInWindowIf(
+                            region = settingsBounds,
+                            condition = viewTreeObserver != null,
+                        ),
+                ) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.surface,
+                        shape = RoundedCornerShape(28.dp),
+                        shadowElevation = 2.dp,
+                        modifier = Modifier.animateContentSize(),
+                    ) {
+                        AnimatedContent(
+                            targetState = viewModel.detailsPopup,
+                            contentAlignment = Alignment.Center,
+                            transitionSpec = { fadeIn() togetherWith fadeOut() },
+                            modifier = Modifier.widthIn(max = 352.dp),
+                        ) { currentPopup ->
+                            val contentModifier = Modifier.fillMaxWidth()
+                            when (currentPopup) {
+                                RecordDetailsPopupType.Settings ->
+                                    RecordDetailsSettings(
+                                        parametersViewModel =
+                                            viewModel.recordDetailsParametersViewModel,
+                                        targetViewModel = viewModel.recordDetailsTargetViewModel,
+                                        drawableLoaderViewModel = viewModel,
+                                        onAppSelectorClicked = { viewModel.showAppSelector() },
+                                        modifier = contentModifier,
+                                    )
+
+                                RecordDetailsPopupType.AppSelector ->
+                                    RecordDetailsAppSelector(
+                                        viewModel = viewModel.recordDetailsAppSelectorViewModel,
+                                        onBackPressed = { viewModel.showSettings() },
+                                        onTaskSelected = {
+                                            viewModel.recordDetailsTargetViewModel.selectTask(it)
+                                            viewModel.showSettings()
+                                        },
+                                        modifier = contentModifier,
+                                    )
+
+                                RecordDetailsPopupType.MarkupColorSelector ->
+                                    RecordDetailsMarkupColorPicker(
+                                        viewModel =
+                                            viewModel.recordDetailsMarkupColorPickerViewModel,
+                                        modifier = contentModifier,
+                                    )
+
+                                RecordDetailsPopupType.Invisible -> {
+                                    /* do nothing */
+                                }
                             }
                         }
                     }

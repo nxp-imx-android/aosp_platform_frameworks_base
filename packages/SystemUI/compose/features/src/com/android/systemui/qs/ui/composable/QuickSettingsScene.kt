@@ -316,6 +316,7 @@ private fun ContentScope.QuickSettingsScene(
             viewModel = notificationsPlaceholderViewModel,
             jankMonitor = jankMonitor,
             shouldPunchHoleBehindScrim = true,
+            shouldFillMaxSize = true,
             isTransparencyEnabled = viewModel.isTransparencyEnabled,
             stackTopPadding = dimensionResource(id = R.dimen.notification_side_paddings),
             stackBottomPadding =

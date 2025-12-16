@@ -24,6 +24,7 @@ import android.provider.DeviceConfig
 import android.provider.DeviceConfig.NAMESPACE_PRIVACY
 import com.android.internal.annotations.VisibleForTesting
 import com.android.systemui.Flags
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.LogLevel
@@ -37,10 +38,12 @@ import com.android.systemui.util.time.SystemClock
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 /**
  * Listens for system events (battery, privacy, connectivity) and allows listeners to show status
@@ -56,6 +59,7 @@ constructor(
     @Assisted private val scope: CoroutineScope,
     connectedDisplayInteractor: ConnectedDisplayInteractor,
     @SystemEventCoordinatorLog private val logBuffer: LogBuffer,
+    @Main private val mainCoroutineContext: CoroutineContext,
 ) {
 
     @AssistedFactory
@@ -115,9 +119,17 @@ constructor(
                 contentDescription = context.getString(R.string.connected_display_icon_desc)
             }
         connectedDisplayCollectionJob =
-            onDisplayConnectedFlow
-                .onEach { scheduler.onStatusEvent(connectedDisplayEvent) }
-                .launchIn(scope)
+            if (Flags.systemStatusAnimationPerDisplay()) {
+                scope.launch(mainCoroutineContext) {
+                    onDisplayConnectedFlow.collect {
+                        scheduler.onStatusEvent(connectedDisplayEvent)
+                    }
+                }
+            } else {
+                onDisplayConnectedFlow
+                    .onEach { scheduler.onStatusEvent(connectedDisplayEvent) }
+                    .launchIn(scope)
+            }
     }
 
     private val batteryStateListener =

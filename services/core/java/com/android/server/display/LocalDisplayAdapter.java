@@ -555,8 +555,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
         private int getLogicalDensity() {
             DensityMapping densityMapping = getDisplayDeviceConfig().getDensityMapping();
             if (densityMapping == null) {
-                if (getFeatureFlags().isBaseDensityForExternalDisplaysEnabled()
-                        && !mStaticDisplayInfo.isInternal) {
+                if (!mStaticDisplayInfo.isInternal) {
                     // Return 0 for external displays as the base density will be calculated in
                     // the LogicalDisplay.
                     return 0;

@@ -73,7 +73,7 @@ import com.android.systemui.statusbar.pipeline.battery.ui.composable.UnifiedBatt
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel
 import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
-import com.android.systemui.statusbar.quickactions.popups.ui.compose.StatusBarPopupChipsContainer
+import com.android.systemui.statusbar.quickactions.ui.compose.QuickActionChipsContainer
 import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
 import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIcons
 import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIconsLegacy
@@ -162,7 +162,7 @@ fun DesktopStatusBar(
             }
 
             if (StatusBarPopupChips.isEnabled) {
-                StatusBarPopupChipsContainer(
+                QuickActionChipsContainer(
                     chips = viewModel.popupChips,
                     mediaViewModelFactory = mediaViewModelFactory,
                     mediaHost = mediaHost,

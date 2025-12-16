@@ -138,7 +138,7 @@ constructor(
         }
     }
 
-    fun startToLockscreenOrGlanceableHubTransition(openHub: Boolean) {
+    fun startTransitionFromDream(openHub: Boolean) {
         scope.launch {
             if (
                 transitionInteractor.startedKeyguardTransitionStep.value.to ==
@@ -155,10 +155,17 @@ constructor(
                                 else null,
                         )
                     } else {
-                        startTransitionTo(
-                            KeyguardState.LOCKSCREEN,
-                            ownerReason = "Dream has ended and device is awake",
-                        )
+                        if (isDismissible()) {
+                            startTransitionTo(
+                                KeyguardState.GONE,
+                                ownerReason = "Dream has ended and device is dismissible",
+                            )
+                        } else {
+                            startTransitionTo(
+                                KeyguardState.LOCKSCREEN,
+                                ownerReason = "Dream has ended and device is awake",
+                            )
+                        }
                     }
                 }
             }
@@ -183,11 +190,7 @@ constructor(
                 .debounce(100.milliseconds)
                 .filterRelevantKeyguardStateAnd { (isOccluded, isDreaming) -> !isDreaming }
                 .collect { (isOccluded, isDreaming) ->
-                    val isDismissible =
-                        keyguardInteractor.isKeyguardDismissible.value &&
-                            !keyguardInteractor.isKeyguardShowing.value
-
-                    if (isDismissible) {
+                    if (isDismissible()) {
                         startTransitionTo(
                             KeyguardState.GONE,
                             ownerReason = "No longer dreaming; dismissable",
@@ -242,6 +245,11 @@ constructor(
                     else -> DEFAULT_DURATION
                 }.inWholeMilliseconds
         }
+    }
+
+    private fun isDismissible(): Boolean {
+        return keyguardInteractor.isKeyguardDismissible.value &&
+            !keyguardInteractor.isKeyguardShowing.value
     }
 
     companion object {

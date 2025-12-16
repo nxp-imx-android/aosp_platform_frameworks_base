@@ -62,6 +62,7 @@ import android.view.WindowInsets.Type.statusBars
 import android.window.WindowContainerTransaction
 import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito
+import com.android.testing.wm.util.StubTransaction
 import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.common.DisplayController
@@ -78,7 +79,6 @@ import com.android.wm.shell.recents.RecentsTransitionStateListener
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
 import com.android.wm.shell.splitscreen.SplitScreenController
-import com.android.wm.shell.util.StubTransaction
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel.DefaultWindowDecorationActions
 import com.google.common.truth.Truth.assertThat
 import junit.framework.Assert.assertFalse

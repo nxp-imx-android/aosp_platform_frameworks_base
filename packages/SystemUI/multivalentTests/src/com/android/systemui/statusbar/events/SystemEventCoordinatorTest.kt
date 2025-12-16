@@ -89,15 +89,17 @@ class SystemEventCoordinatorTest(flags: FlagsParameterization) : SysuiTestCase()
     fun setup() {
         MockitoAnnotations.initMocks(this)
         overrideResource(R.string.config_cameraGesturePackage, DEFAULT_CAMERA_PACKAGE_NAME)
+        val scope = TestScope(UnconfinedTestDispatcher())
         systemEventCoordinator =
             SystemEventCoordinator(
                     fakeSystemClock,
                     batteryController,
                     privacyController,
                     context,
-                    TestScope(UnconfinedTestDispatcher()),
+                    scope,
                     connectedDisplayInteractor,
                     logcatLogBuffer("SystemEventCoordinatorTest"),
+                    scope.coroutineContext,
                 )
                 .apply { attachScheduler(scheduler) }
     }

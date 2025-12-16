@@ -22,28 +22,47 @@ import android.window.BackEvent
 import com.android.window.flags.Flags.fixCrossActivityBackAnimationInBubbles
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
+import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.shared.animation.Interpolators
 import com.android.wm.shell.shared.annotations.ShellMainThread
+import java.util.Optional
 import javax.inject.Inject
 import kotlin.math.max
 import kotlin.math.min
 
 /** Class that defines cross-activity animation. */
-class DefaultCrossActivityBackAnimation
-@Inject
-constructor(
+class DefaultCrossActivityBackAnimation(
     context: Context,
     background: BackAnimationBackground,
     rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
-    @ShellMainThread handler: Handler,
+    handler: Handler,
+    bubbleController: Optional<BubbleController>,
+    transaction: SurfaceControl.Transaction,
 ) :
     CrossActivityBackAnimation(
         context,
         background,
         rootTaskDisplayAreaOrganizer,
-        SurfaceControl.Transaction(),
+        transaction,
         handler,
+        bubbleController,
     ) {
+
+    @Inject
+    constructor(
+        context: Context,
+        background: BackAnimationBackground,
+        rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
+        @ShellMainThread handler: Handler,
+        bubbleController: Optional<BubbleController>,
+    ) : this(
+        context,
+        background,
+        rootTaskDisplayAreaOrganizer,
+        handler,
+        bubbleController,
+        SurfaceControl.Transaction(),
+    )
 
     private val postCommitInterpolator = Interpolators.EMPHASIZED
     private val enteringStartOffset =

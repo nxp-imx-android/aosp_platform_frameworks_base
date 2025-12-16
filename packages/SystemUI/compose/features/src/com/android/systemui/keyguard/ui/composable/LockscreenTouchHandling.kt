@@ -22,6 +22,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -31,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardTouchHandlingViewModel
 import com.android.systemui.lifecycle.rememberViewModel
@@ -51,6 +53,15 @@ fun LockscreenTouchHandling(
         modifier =
             modifier
                 .pointerInput(Unit) {
+                    awaitEachGesture {
+                        awaitFirstDown(pass = PointerEventPass.Initial)
+                        val press = waitForUpOrCancellation(pass = PointerEventPass.Initial)
+                        if (press != null) {
+                            // Detect any tap on any composable on the initial pass but do not
+                            // consume to let child composables handle
+                            viewModel.onSceneClick(press.position.x, press.position.y)
+                        }
+                    }
                     detectTapGestures(
                         onTap = { viewModel.onClick(it.x, it.y) },
                         onDoubleTap = { viewModel.onDoubleClick() },

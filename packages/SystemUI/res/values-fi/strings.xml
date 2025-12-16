@@ -67,7 +67,7 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Salli"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"Langatonta virheenkorjausta ei sallita"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"Laitteelle tällä hetkellä kirjautunut käyttäjä ei voi laittaa langatonta virheenkorjausta päälle. Vaihda järjestelmänvalvojaksi, jotta voit käyttää tätä ominaisuutta."</string>
-    <string name="change_connected_wifi_text" msgid="6346095920396568246">"Voit muuttaa asetusta kirjautumisen jälkeen"</string>
+    <string name="change_connected_wifi_text" msgid="6346095920396568246">"Voit muuttaa asetusta kirjauduttuasi sisään"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB-portti poistettu käytöstä"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"Laitteen suojaamiseksi nesteiltä ja lialta USB-portti on poistettu käytöstä, eikä se havaitse lisävarusteita.\n\nSaat ilmoituksen, kun USB-porttia voi taas käyttää."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"USB-portti on käytössä ja voi havaita latureita sekä lisävarusteita"</string>
@@ -376,6 +376,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"Tyhjennä kaikki ilmoitukset."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Ilmoitukset"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4316411266975554038) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{+# ilmoitus ryhmässä.}other{+# ilmoitusta ryhmässä.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Ruutu on lukittu vaakasuuntaan."</string>
@@ -1175,8 +1177,7 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Laitetaanko pikanäppäinyhdistelmä (<xliff:g id="ID_1">%1$s</xliff:g>) päälle?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Älä laita päälle"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Laita pikanäppäin päälle"</string>
-    <!-- no translation found for accessibility_key_gesture_color_inversion_dialog_content (8831745570619953566) -->
-    <skip />
+    <string name="accessibility_key_gesture_color_inversion_dialog_content" msgid="8831745570619953566">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"kuvake"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> on pikanäppäin, jolla voit käyttää käänteisiä värejä. Käänteiset värit muuttaa kirkkaat näytöt tummiksi. Se myös muuttaa tummat näytöt vaaleiksi."</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Pikanäppäin (<xliff:g id="ID_1">%1$s</xliff:g>) laitettu päälle"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_4">^4</xliff:g> (saavutettavuusominaisuus) on käytettävissä pikanäppäinyhdistelmällä <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"kuvake"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>. Näin voit lähentää näyttöä nopeasti, jotta näet sisällön suurempana. Kun suurennus on päällä, säädä zoomausta painamalla <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"kuvaketta"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> ja \"+\" tai \"–\"."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Laita pikanäppäin pois päältä"</string>
@@ -1586,10 +1587,8 @@
     <string name="keyguard_unlock_to_customize_ls" msgid="2068542308086253819">"Voit muokata lukitusnäyttöä, kun avaat lukituksen"</string>
     <string name="wifi_unavailable_dream_overlay_content_description" msgid="2024166212194640100">"Wi-Fi-yhteys ei ole käytettävissä"</string>
     <string name="location_active_dream_overlay_content_description" msgid="6208885541020673916">"Aktiivinen sijainti"</string>
-    <!-- no translation found for camera_privacy_dream_overlay_content_description (4503818441101346249) -->
-    <skip />
-    <!-- no translation found for mic_privacy_dream_overlay_content_description (1164197684411086751) -->
-    <skip />
+    <string name="camera_privacy_dream_overlay_content_description" msgid="4503818441101346249">"Kamera on aktiivinen"</string>
+    <string name="mic_privacy_dream_overlay_content_description" msgid="1164197684411086751">"Mikrofoni on aktiivinen"</string>
     <string name="camera_blocked_dream_overlay_content_description" msgid="4074759493559418130">"Kamera estetty"</string>
     <string name="camera_and_microphone_blocked_dream_overlay_content_description" msgid="7891078093416249764">"Kamera ja mikrofoni estetty"</string>
     <string name="microphone_blocked_dream_overlay_content_description" msgid="5466897982130007033">"Mikrofoni estetty"</string>
@@ -1760,6 +1759,7 @@
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Edellinen"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Seuraava"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"siirtyäksesi seuraavalle sivulle"</string>
+    <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"Siirry takaisin"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"automaattinen täyttö"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"laajenna"</string>
     <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Jaa tarkka sijainti"</string>

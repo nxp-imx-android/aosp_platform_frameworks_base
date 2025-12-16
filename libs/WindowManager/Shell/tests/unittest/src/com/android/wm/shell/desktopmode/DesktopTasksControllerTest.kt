@@ -112,7 +112,6 @@ import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE
 import com.android.window.flags.Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION
 import com.android.window.flags.Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS
 import com.android.window.flags.Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP
-import com.android.window.flags.Flags.FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT
 import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.android.window.flags.Flags.FLAG_ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY
 import com.android.wm.shell.R
@@ -344,6 +343,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     private lateinit var desktopState: FakeDesktopState
     private lateinit var shellDesktopState: FakeShellDesktopState
     private lateinit var desktopConfig: FakeDesktopConfig
+    private lateinit var desksController: DesksController
 
     private val shellExecutor = TestShellExecutor()
     private val bgExecutor = TestShellExecutor()
@@ -490,6 +490,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         whenever(transactionPool.acquire()).thenReturn(surfaceControlTransaction)
         whenever(splitScreenController.multiDisplayProvider).thenReturn(splitMultiDisplayProvider)
 
+        desksController = DesksController(shellController, userRepositories, desktopConfig)
+
         controller = createController()
         controller.setSplitScreenController(splitScreenController)
         controller.freeformTaskTransitionStarter = freeformTaskTransitionStarter
@@ -579,6 +581,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             lockTaskChangeListener,
             launcherApps,
             transitionStateHolder,
+            desksController,
         )
 
     @After
@@ -3919,7 +3922,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT)
     fun moveToNextDisplay_sizeInDpPreserved() {
         // Set up two display ids
         taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = 2)
@@ -3957,7 +3959,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT)
     fun moveToNextDisplay_shiftWithinDestinationDisplayBounds() {
         // Set up two display ids
         taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = 2)
@@ -3993,7 +3994,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT)
     fun moveToNextDisplay_maximizedTask() {
         // Set up two display ids
         whenever(rootTaskDisplayAreaOrganizer.displayIds)
@@ -4027,7 +4027,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT)
     fun moveToNextDisplay_maximizeWhenDestinationTooSmall() {
         taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
         // Set up two display ids
@@ -4067,10 +4066,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS,
-        FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT,
-    )
+    @EnableFlags(FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS)
     fun moveToNextDisplay_destinationGainGlobalFocus() {
         taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
         // Set up two display ids
@@ -4321,10 +4317,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS,
-        FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT,
-    )
+    @EnableFlags(FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS)
     fun moveToNextDisplay_resetLauncherOnSourceDisplay() {
         taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
         // Set up two display ids
@@ -4370,7 +4363,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT)
     fun moveToNextDesktopDisplay_projectedMode_movesToFullscreenOnDefaultDisplay() {
         // Setup state where a desktop task is running on a secondary display while the device is in
         // projected mode
@@ -4406,7 +4398,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT)
     fun moveToNextDesktopDisplay_projectedMode_cleansUpSourceDisplay() {
         // Setup state where a desktop task is running on a secondary display while the device is in
         // projected mode
@@ -4449,7 +4440,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT, FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun moveToNextDesktopDisplay_projectedMode_movesToDesktopOnConnectedDisplay() {
         // Setup state where a desktop task is running on a secondary display while the device is in
         // projected mode
@@ -4470,7 +4461,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT, FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun moveToNextDesktopDisplay_projectedMode_movesToDesktopOnConnectedDisplay_skipTasksWithDisabledEntryPoints() {
         // Setup state where a desktop task is running on a secondary display while the device is in
         // projected mode

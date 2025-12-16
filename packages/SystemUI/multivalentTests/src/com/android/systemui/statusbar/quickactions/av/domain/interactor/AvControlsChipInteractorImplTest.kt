@@ -16,9 +16,12 @@
 
 package com.android.systemui.statusbar.quickactions.av.domain.interactor
 
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags.FLAG_AV_CONTROLS_CHIP_PER_DISPLAY
 import com.android.systemui.Flags.FLAG_EXPANDED_PRIVACY_INDICATORS_ON_LARGE_SCREEN
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.shade.data.repository.fakePrivacyChipRepository
@@ -85,4 +88,32 @@ class AvControlsChipInteractorImplTest() : AvControlsChipInteractorTestBase() {
             fakeStatusBarModeRepository.defaultDisplay.isInFullscreenMode.value = true
             assertThat(underTest.isShowingAvChip.first()).isEqualTo(false)
         }
+
+    @Test
+    @EnableFlags(FLAG_AV_CONTROLS_CHIP_PER_DISPLAY)
+    fun cameraActive_fullscreenOnTestDisplayId_perDisplayFlagEnabled_shouldNotShowAvChip() =
+        kosmos.runTest {
+            val underTest = createAvControlsChipInteractorImplForDisplay(TEST_DISPLAY_ID)
+            fakePrivacyChipRepository.setPrivacyItems(listOf(cameraItem))
+            fakeStatusBarModeRepository.forDisplay(TEST_DISPLAY_ID).isInFullscreenMode.value = true
+            fakeStatusBarModeRepository.defaultDisplay.isInFullscreenMode.value = false
+
+            assertThat(underTest.isShowingAvChip.first()).isEqualTo(false)
+        }
+
+    @Test
+    @DisableFlags(FLAG_AV_CONTROLS_CHIP_PER_DISPLAY)
+    fun cameraActive_fullscreenOnTestDisplayId_perDisplayFlagEnabled_shouldShowAvChip() =
+        kosmos.runTest {
+            val underTest = createAvControlsChipInteractorImplForDisplay(TEST_DISPLAY_ID)
+            fakePrivacyChipRepository.setPrivacyItems(listOf(cameraItem))
+            fakeStatusBarModeRepository.forDisplay(TEST_DISPLAY_ID).isInFullscreenMode.value = true
+            fakeStatusBarModeRepository.defaultDisplay.isInFullscreenMode.value = false
+
+            assertThat(underTest.isShowingAvChip.first()).isEqualTo(true)
+        }
+
+    private companion object {
+        const val TEST_DISPLAY_ID = Display.DEFAULT_DISPLAY + 1234
+    }
 }

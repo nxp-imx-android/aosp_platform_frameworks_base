@@ -322,8 +322,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
     @Override
     public void addMoveSplitPairToDisplayChanges(int oldDisplayId, int destinationDisplayId,
             @NonNull WindowContainerTransaction wct, boolean onTop) {
-        if (!DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue()
-                || !DesktopExperienceFlags.ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT.isTrue()) {
+        if (!DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue()) {
             return;
         }
 

@@ -20,57 +20,22 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
-import android.util.proto.ProtoInputStream;
-import android.util.proto.ProtoOutputStream;
-import java.io.IOException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
-public class HandoffRequestMessageTest {
+public class HandoffRequestMessageTest extends ProtoCreatorTest<HandoffRequestMessage> {
 
     @Test
-    public void testConstructor_fromTaskId() {
-        int taskId = 1;
-        HandoffRequestMessage handoffRequestMessage = new HandoffRequestMessage(taskId);
-        assertThat(handoffRequestMessage.taskId()).isEqualTo(taskId);
+    public void testHandoffRequestMessage_fromProtoStream_setsToDefaultValues() throws Exception {
+        verifyDefaultValue(HandoffRequestMessage.CREATOR, new HandoffRequestMessage(0));
     }
 
     @Test
-    public void testConstructor_fromProto() throws IOException {
-        int taskId = 1;
-        final ProtoOutputStream pos = new ProtoOutputStream();
-        pos.write(android.companion.HandoffRequestMessage.TASK_ID, taskId);
-        pos.flush();
-
-        ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
-        HandoffRequestMessage handoffRequestMessage = HandoffRequestMessage.readFromProto(pis);
-
-        assertThat(handoffRequestMessage.taskId()).isEqualTo(taskId);
-    }
-
-    @Test
-    public void testConstructor_fromProto_noTaskId_returnsZero() throws IOException {
-        final ProtoOutputStream pos = new ProtoOutputStream();
-        pos.flush();
-        ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
-        HandoffRequestMessage handoffRequestMessage = HandoffRequestMessage.readFromProto(pis);
-        assertThat(handoffRequestMessage.taskId()).isEqualTo(0);
-    }
-
-    @Test
-    public void testWriteAndRead_roundTrip_works() throws IOException {
-        HandoffRequestMessage expectedMessage = new HandoffRequestMessage(1);
-
-        final ProtoOutputStream pos = new ProtoOutputStream();
-        expectedMessage.writeToProto(pos);
-        pos.flush();
-
-        final ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
-        final HandoffRequestMessage actualMessage = HandoffRequestMessage.readFromProto(pis);
-
-        assertThat(actualMessage).isEqualTo(expectedMessage);
+    public void testWriteAndRead_roundTrip_works() throws Exception {
+        HandoffRequestMessage handoffRequestMessage = new HandoffRequestMessage(1);
+        verifyRoundTrip(HandoffRequestMessage.CREATOR, handoffRequestMessage);
     }
 
     @Test

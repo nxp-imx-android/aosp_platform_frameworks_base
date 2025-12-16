@@ -24,9 +24,11 @@ import android.graphics.drawable.Drawable
 import android.hardware.SensorPrivacyManager
 import android.os.UserHandle
 import android.permission.PermissionManager
+import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.privacy.PrivacyType
 import com.android.systemui.shade.data.repository.PrivacyChipRepository
+import com.android.systemui.statusbar.data.repository.StatusBarModePerDisplayRepository
 import com.android.systemui.statusbar.data.repository.StatusBarModeRepositoryStore
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider
 import com.android.systemui.statusbar.policy.IndividualSensorPrivacyController
@@ -35,6 +37,9 @@ import com.android.systemui.statusbar.quickactions.av.shared.model.Sensor
 import com.android.systemui.statusbar.quickactions.av.shared.model.SensorAccess
 import com.android.systemui.statusbar.quickactions.av.shared.model.SensorActivityModel
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -46,6 +51,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
@@ -97,9 +103,10 @@ class NoOpAvControlsChipInteractor @Inject constructor() : AvControlsChipInterac
 }
 
 class AvControlsChipInteractorImpl
-@Inject
+@AssistedInject
 constructor(
-    @Background private val backgroundScope: CoroutineScope,
+    @Assisted private val backgroundScope: CoroutineScope,
+    @Assisted private val displayId: Int,
     @Background private val bgDispatcher: CoroutineDispatcher,
     privacyChipRepository: PrivacyChipRepository,
     statusBarModeRepositoryStore: StatusBarModeRepositoryStore,
@@ -111,6 +118,11 @@ constructor(
     private val appOpsManager: AppOpsManager,
     private val activityManager: IActivityManager,
 ) : AvControlsChipInteractor {
+
+    @AssistedFactory
+    fun interface Factory {
+        fun create(backgroundScope: CoroutineScope, displayId: Int): AvControlsChipInteractorImpl
+    }
 
     private data class BlockedSensorInfo(
         val cameraBlocked: Boolean = false,
@@ -288,8 +300,18 @@ constructor(
                     AvControlsChipModel(sensorActivityModel = SensorActivityModel.Inactive),
             )
 
+    private val statusBarModePerDisplayRepository: StatusBarModePerDisplayRepository? =
+        if (Flags.avControlsChipPerDisplay()) {
+            statusBarModeRepositoryStore.forDisplay(displayId)
+        } else {
+            statusBarModeRepositoryStore.defaultDisplay
+        }
+
+    private val isStatusBarModeFullScreen: Flow<Boolean> =
+        statusBarModePerDisplayRepository?.isInFullscreenMode ?: flowOf(false)
+
     override val isShowingAvChip: StateFlow<Boolean> =
-        combine(model, statusBarModeRepositoryStore.defaultDisplay.isInFullscreenMode) {
+        combine(model, isStatusBarModeFullScreen) {
                 chipModel: AvControlsChipModel,
                 isInFullscreenMode: Boolean ->
                 when (chipModel.sensorActivityModel) {

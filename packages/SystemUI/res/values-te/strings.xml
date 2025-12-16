@@ -376,6 +376,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"అన్ని నోటిఫికేషన్‌లను క్లియర్ చేయండి."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"నోటిఫికేషన్‌లు"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4316411266975554038) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{లోపల మరో # నోటిఫికేషన్ ఉంది.}other{లోపల మరో # నోటిఫికేషన్‌లు ఉన్నాయి.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"స్క్రీన్ ల్యాండ్‌స్కేప్ దృగ్విన్యాసంలో లాక్ చేయబడుతుంది."</string>
@@ -1175,8 +1177,7 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> కీబోర్డ్ షార్ట్‌కట్‌ను ఆన్ చేయాలా?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"ఆన్ చేయవద్దు"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"షార్ట్‌కట్‌ను ఆన్ చేయండి"</string>
-    <!-- no translation found for accessibility_key_gesture_color_inversion_dialog_content (8831745570619953566) -->
-    <skip />
+    <string name="accessibility_key_gesture_color_inversion_dialog_content" msgid="8831745570619953566">"కలర్ మార్పిడిని ఉపయోగించడానికి <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"చిహ్నం"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> కీబోర్డ్ షార్ట్‌కట్. కలర్ మార్పిడి ప్రకాశవంతంగా వుండే స్క్రీన్‌లను ముదురు రంగులోకి మారుస్తుంది ఇది ముదురు రంగు స్క్రీన్‌లను ప్రకాశవంతంగా మారుస్తుంది."</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> కీబోర్డ్ షార్ట్‌కట్ ఆన్ అయింది"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"చిహ్నం"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> అనేది <xliff:g id="ID_4">^4</xliff:g>‌ను ఉపయోగించడానికి సంబంధించిన కీబోర్డ్ షార్ట్‌కట్, ఇది ఒక యాక్సెసిబిలిటీ ఫీచర్. కంటెంట్‌ను మరింత పెద్దగా డిస్‌ప్లే చేయడానికి, స్క్రీన్‌ను క్విక్‌గా జూమ్ - ఇన్ చేసే వీలును ఇది మీకు కల్పిస్తుంది. మ్యాగ్నిఫికేషన్ ఆన్ అయిన తర్వాత, జూమ్‌ను అడ్జస్ట్ చేయడానికి, <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"చిహ్నం"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> కీలను నొక్కి, \"+\" లేదా \"-\" నొక్కండి."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"షార్ట్‌కట్‌ను ఆఫ్ చేయండి"</string>
@@ -1758,6 +1759,7 @@
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"మునుపటి"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"తర్వాత"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"తర్వాతి పేజీకి నావిగేట్ చేయండి"</string>
+    <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"వెనుకకు వెళ్లండి"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ఆటోఫిల్ చేయండి"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"విస్తరించండి"</string>
     <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"ఖచ్చితమైన లొకేషన్‌ను షేర్ చేయండి"</string>

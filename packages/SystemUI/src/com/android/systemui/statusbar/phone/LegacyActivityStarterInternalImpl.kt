@@ -36,7 +36,6 @@ import com.android.app.displaylib.PerDisplayRepository
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.systemui.ActivityIntentHelper
 import com.android.systemui.Flags
-import com.android.systemui.Flags.shadeAppLaunchAnimationSkipInDesktop
 import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.animation.DelegateTransitionAnimatorController
 import com.android.systemui.assist.AssistManager
@@ -817,7 +816,6 @@ constructor(
     ): Boolean {
         // TODO(b/294418322): always support launch animations when occluded.
         val ignoreOcclusion = showOverLockscreen || isCommunalWidgetLaunch()
-        val skipInDesktopFlag = shadeAppLaunchAnimationSkipInDesktop()
         val isDesktopMode = isInDesktopModeOnCurrentShadeDisplay
         val isDesktopFirst = desktopFirstRepository.isDisplayDesktopFirst(currentShadeDisplayId)
         val keyguardShowing = keyguardStateController.isShowing
@@ -828,7 +826,6 @@ constructor(
                 "isActivityIntent=$isActivityIntent, " +
                 "showOverLockscreen=$showOverLockscreen, " +
                 "ignoreOcclusion=$ignoreOcclusion, " +
-                "skipInDesktopFlag=$skipInDesktopFlag, " +
                 "isInDesktopModeOnCurrentShadeDisplay=$isDesktopMode, " +
                 "isDisplayDesktopFirst=$isDesktopFirst, " +
                 "isKeyguardShowing=$keyguardShowing",
@@ -838,9 +835,8 @@ constructor(
         }
 
         if (
-            skipInDesktopFlag &&
-                (isInDesktopModeOnCurrentShadeDisplay ||
-                    desktopFirstRepository.isDisplayDesktopFirst(currentShadeDisplayId))
+            isInDesktopModeOnCurrentShadeDisplay ||
+                desktopFirstRepository.isDisplayDesktopFirst(currentShadeDisplayId)
         ) {
             return false
         }

@@ -5,6 +5,7 @@ import android.database.ContentObserver
 import android.provider.Settings
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.Flags.hsuQsChanges
+import com.android.systemui.Flags.qsDeleteUninstalledTileService
 import com.android.systemui.common.coroutine.ConflatedCallbackFlow
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -162,6 +163,12 @@ constructor(
         changeEvents.emit(ChangeTiles(tiles))
     }
 
+    suspend fun onPackageRemoved(packageName: String) {
+        if (qsDeleteUninstalledTileService()) {
+            changeEvents.emit(PackageRemoved(packageName))
+        }
+    }
+
     private fun parseTileSpecs(fromSettings: List<TileSpec>, user: Int): List<TileSpec> {
         return if (fromSettings.isNotEmpty()) {
             fromSettings.also { logger.logParsedTiles(it, false, user) }
@@ -260,6 +267,14 @@ constructor(
 
         override fun apply(currentTiles: List<TileSpec>): List<TileSpec> {
             return reconcileTiles(currentTiles, currentAutoAdded, restoreData)
+        }
+    }
+
+    private data class PackageRemoved(val packageName: String) : ChangeAction {
+        override fun apply(currentTiles: List<TileSpec>): List<TileSpec> {
+            return currentTiles.filterNot {
+                it is TileSpec.CustomTileSpec && it.componentName.packageName == packageName
+            }
         }
     }
 

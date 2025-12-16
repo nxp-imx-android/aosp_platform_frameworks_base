@@ -772,8 +772,7 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"ଫୋନ୍‌କୁ ତଳକୁ ମୁଭ କରନ୍ତୁ"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"ଫୋନକୁ ଆପଣଙ୍କ ବାମ ପଟକୁ ମୁଭ କରନ୍ତୁ"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"ଫୋନକୁ ଆପଣଙ୍କ ଡାହାଣ ପଟକୁ ମୁଭ କରନ୍ତୁ"</string>
-    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
-    <skip />
+    <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"ଆପଣଙ୍କ କେମେରାକୁ ସିଧାସଳଖ ଦେଖନ୍ତୁ"</string>
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"ଆପଣଙ୍କ ଫେସ ଦେଖାଯାଉନାହିଁ। ଆପଣଙ୍କ ଫୋନକୁ ଆଖି ସିଧାରେ ଧରି ରଖନ୍ତୁ।"</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"ଅତ୍ୟଧିକ ଅସ୍ଥିର। ଫୋନ୍‍କୁ ସ୍ଥିର ଭାବେ ଧରନ୍ତୁ।"</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"ଦୟାକରି ଆପଣଙ୍କର ମୁହଁ ପୁଣି-ଏନ୍‍ରୋଲ୍ କରନ୍ତୁ।"</string>
@@ -1453,12 +1452,9 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"ଏହା ସେଟଅପ୍‌ କରିବା ପାଇଁ ଟାପ୍‌ କରନ୍ତୁ"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"ଆପଣଙ୍କ ଟାଇମ ଜୋନ ପରିବର୍ତ୍ତନ ହୋଇଛି"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"ଆପଣ ବର୍ତ୍ତମାନ <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)ରେ ଅଛନ୍ତି"</string>
-    <!-- no translation found for time_zone_offset_change_notification_title (8232305835199459588) -->
-    <skip />
-    <!-- no translation found for time_zone_offset_change_notification_body_forward (1299493962341887576) -->
-    <skip />
-    <!-- no translation found for time_zone_offset_change_notification_body_backward (6643532078142642118) -->
-    <skip />
+    <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"ଘଣ୍ଟାରେ ପରିବର୍ତ୍ତନ"</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"ଘଣ୍ଟାଗୁଡ଼ିକୁ <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> ଆଗକୁ ମୁଭ କରାଯାଇଛି। ଆପଣ ବର୍ତ୍ତମାନ <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)ରେ ଅଛନ୍ତି।"</string>
+    <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"ଘଣ୍ଟାଗୁଡ଼ିକୁ <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> ପଛକୁ ମୁଭ କରାଯାଇଛି। ଆପଣ ବର୍ତ୍ତମାନ <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)ରେ ଅଛନ୍ତି।"</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"ସମୟ ସେଟ୍ କରନ୍ତୁ"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"ତାରିଖ ସେଟ୍‍ କରନ୍ତୁ"</string>
     <string name="date_time_set" msgid="4603445265164486816">"ସେଟ୍‍ କରନ୍ତୁ"</string>
@@ -2110,6 +2106,7 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"ବର୍ତ୍ତମାନ <xliff:g id="APP_NAME_0">%1$s</xliff:g> ଉପଲବ୍ଧ ନାହିଁ। ଏହା <xliff:g id="APP_NAME_1">%2$s</xliff:g> ଦ୍ଵାରା ପରିଚାଳିତ ହେଉଛି।"</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"ଅଧିକ ଜାଣନ୍ତୁ"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"ଆପ ପୁଣି ଆରମ୍ଭ କରନ୍ତୁ"</string>
+    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> ଲକ କରାଯାଇଛି"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"ୱାର୍କ ଆପ୍ସକୁ ପୁଣି ଚାଲୁ କରିବେ?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"ପୁଣି ଚାଲୁ କରନ୍ତୁ"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"ଜରୁରୀକାଳୀନ"</string>
@@ -2549,6 +2546,10 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"କ୍ଲୋନ"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"କମ୍ୟୁନାଲ"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"ପ୍ରାଇଭେଟ ସ୍ପେସ"</string>
+    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
+    <skip />
+    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
+    <skip />
     <string name="redacted_notification_message" msgid="1520587845842228816">"ସମ୍ୱେଦନଶୀଳ ବିଜ୍ଞପ୍ତି ବିଷୟବସ୍ତୁକୁ ଲୁଚାଯାଇଛି"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"ସୁରକ୍ଷା ପାଇଁ ସ୍କ୍ରିନ ସେୟାରରୁ ଆପ ବିଷୟବସ୍ତୁକୁ ଲୁଚାଯାଇଛି"</string>

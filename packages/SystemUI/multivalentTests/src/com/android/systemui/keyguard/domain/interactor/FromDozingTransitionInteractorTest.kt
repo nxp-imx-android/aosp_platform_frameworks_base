@@ -54,7 +54,6 @@ import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
-import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAsleepForTest
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
 import com.android.systemui.power.domain.interactor.powerInteractor
@@ -84,7 +83,6 @@ class FromDozingTransitionInteractorTest(flags: FlagsParameterization?) : SysuiT
             this.keyguardTransitionRepository = fakeKeyguardTransitionRepositorySpy
             this.fakeCommunalSceneRepository =
                 spy(FakeCommunalSceneRepository(applicationScope = applicationCoroutineScope))
-            fakeCommunalSceneRepository.activateIn(testScope)
         }
 
     private val Kosmos.underTest by Kosmos.Fixture { fromDozingTransitionInteractor }

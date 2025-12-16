@@ -202,7 +202,7 @@ fun ContentScope.ScrollingNotificationPanel(
     stackTopPadding: Dp,
     stackBottomPadding: Dp,
     modifier: Modifier = Modifier,
-    shouldFillMaxSize: Boolean = true,
+    shouldFillMaxSize: Boolean = false,
     shouldIncludeHeadsUpSpace: Boolean = true,
     shouldDrawScrimBackground: Boolean = true,
     isActivated: Boolean = true,

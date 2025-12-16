@@ -114,8 +114,9 @@ public class Utilities {
      * @param backDisposition       the IME back disposition mode. Only takes effect if
      *                              {@code isImeVisible} is {@code true}.
      * @param isImeVisible          whether the IME is currently visible.
-     * @param showImeSwitcherButton whether the IME Switcher button should be shown. Only takes
-     *                              effect if {@code isImeVisible} is {@code true}.
+     * @param showImeSwitcherButton whether the IME Switcher button should be shown when the IME
+     *                              is shown. Only takes effect if {@code isImeVisible}
+     *                              is {@code true}.
      */
     @NavbarFlags
     public static int updateNavbarFlagsFromIme(@NavbarFlags int oldFlags,

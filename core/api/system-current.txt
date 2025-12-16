@@ -5715,7 +5715,7 @@ package android.hardware.camera2.params {
 package android.hardware.contexthub {
 
   @FlaggedApi("android.chre.flags.fmcq_api") public interface DataFlowCallback {
-    method public void onDataFlowSinkEvent(@NonNull android.hardware.contexthub.DataFlowSink, int, @Nullable android.hardware.contexthub.DataFlowCallback.SinkEventData);
+    method public void onDataFlowSinkEvent(@NonNull android.hardware.contexthub.DataFlowSink, int);
     method public void onDataFlowSourceEvent(@NonNull android.hardware.contexthub.DataFlowSource, int, @Nullable android.hardware.contexthub.DataFlowCallback.SourceEventData);
     method public void onReceivedDataFlowSink(@NonNull android.hardware.contexthub.DataFlowSink, @NonNull android.hardware.contexthub.HubEndpointInfo, @Nullable android.hardware.contexthub.HubEndpointSession, @Nullable android.hardware.contexthub.HubMessage);
     field public static final int SINK_EVENT_READABLE = 0; // 0x0
@@ -5724,22 +5724,18 @@ package android.hardware.contexthub {
     field public static final int SOURCE_EVENT_WRITABLE = 0; // 0x0
   }
 
-  public static class DataFlowCallback.SinkEventData {
-    ctor public DataFlowCallback.SinkEventData();
-  }
-
   @FlaggedApi("android.chre.flags.fmcq_api") public static class DataFlowCallback.SourceEventData {
     ctor public DataFlowCallback.SourceEventData(@NonNull android.hardware.contexthub.HubEndpointInfo);
     method @Nullable public android.hardware.contexthub.HubEndpointInfo getSink();
   }
 
-  @FlaggedApi("android.chre.flags.fmcq_api") public class DataFlowData {
+  @FlaggedApi("android.chre.flags.fmcq_api") public final class DataFlowData {
     ctor public DataFlowData(@NonNull java.nio.ByteBuffer, @NonNull android.hardware.contexthub.DataFlowDataConfig);
     ctor public DataFlowData(@NonNull @Size(min=1) java.util.List<java.nio.ByteBuffer>, @NonNull android.hardware.contexthub.DataFlowDataConfig);
     method @NonNull public java.util.List<java.nio.ByteBuffer> getBuffers();
   }
 
-  @FlaggedApi("android.chre.flags.fmcq_api") public class DataFlowDataConfig {
+  @FlaggedApi("android.chre.flags.fmcq_api") public final class DataFlowDataConfig {
     method @NonNull public static android.hardware.contexthub.DataFlowDataConfig createFixedSize(@IntRange(from=1, to=java.lang.Short.MAX_VALUE) int, @IntRange(from=1, to=java.lang.Short.MAX_VALUE) int);
     method @NonNull public static android.hardware.contexthub.DataFlowDataConfig createVariableSize();
     method @NonNull public static android.hardware.contexthub.DataFlowDataConfig createVariableSizeAligned(@IntRange(from=1, to=java.lang.Short.MAX_VALUE) int);
@@ -5751,7 +5747,7 @@ package android.hardware.contexthub {
     field public static final int FORMAT_VARIABLE_SIZE_ALIGNED = 2; // 0x2
   }
 
-  @FlaggedApi("android.chre.flags.fmcq_api") public class DataFlowNewDataAlertPolicy {
+  @FlaggedApi("android.chre.flags.fmcq_api") public final class DataFlowNewDataAlertPolicy {
     method @NonNull public static android.hardware.contexthub.DataFlowNewDataAlertPolicy createHighWatermarkPolicy(@IntRange(from=1) int);
     method @NonNull public static android.hardware.contexthub.DataFlowNewDataAlertPolicy createNeverNotifyPolicy();
     method @NonNull public static android.hardware.contexthub.DataFlowNewDataAlertPolicy createOpportunisticPolicy(@IntRange(from=1) int);
@@ -5764,19 +5760,19 @@ package android.hardware.contexthub {
     field public static final int POLICY_TYPE_STREAMING = 4; // 0x4
   }
 
-  @FlaggedApi("android.chre.flags.fmcq_api") public class DataFlowSink implements java.lang.AutoCloseable {
+  @FlaggedApi("android.chre.flags.fmcq_api") public final class DataFlowSink implements java.lang.AutoCloseable {
     method @NonNull @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public android.hardware.contexthub.DataFlowData awaitData(@Size(min=1) int, @Nullable java.time.Duration) throws java.util.concurrent.TimeoutException;
     method @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public void awaitDataAsync(@Size(min=1) int, @Nullable android.os.CancellationSignal, @Nullable java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.hardware.contexthub.DataFlowData,java.lang.Throwable>);
+    method @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public boolean canSourceOverwriteReadPosition();
     method @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public void close();
     method @NonNull @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public android.hardware.contexthub.DataFlowDataConfig getDataFlowConfig();
     method @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public boolean isEmpty();
-    method @Nullable @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public android.hardware.contexthub.DataFlowData requestData(@Size(min=1) int, boolean);
+    method @Nullable @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public android.hardware.contexthub.DataFlowData readData(@Size(min=1) int, boolean);
+    method @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public void seekToSource(@IntRange(from=0) int);
     method @IntRange(from=0) @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public int size();
-    method @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public boolean sourceCanOverwriteReadPosition();
-    method @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public void syncToSource(@IntRange(from=0) int);
   }
 
-  @FlaggedApi("android.chre.flags.fmcq_api") public class DataFlowSource implements java.lang.AutoCloseable {
+  @FlaggedApi("android.chre.flags.fmcq_api") public final class DataFlowSource implements java.lang.AutoCloseable {
     method @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public void close();
     method @NonNull @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public java.util.List<android.hardware.contexthub.HubEndpointInfo> getCurrentSinks();
     method @NonNull @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB) public android.hardware.contexthub.DataFlowDataConfig getDataFlowConfig();

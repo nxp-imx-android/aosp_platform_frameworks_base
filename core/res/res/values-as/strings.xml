@@ -75,7 +75,7 @@
     <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"এই এপ্‌টো ১৬ কেবিৰ সমিল নহয়। ELFৰ শাৰীবিন্যাস পৰীক্ষা বিফল হৈছে। এই এপ্‌টো পৃষ্ঠাৰ আকাৰৰ সমিল ম’ড ব্যৱহাৰ কৰি চলোৱা হ’ব। উত্তম সমিলতাৰ বাবে, অনুগ্ৰহ কৰি এপ্লিকেশ্বনটো ১৬ কেবিৰ সমৰ্থনৰ সৈতে পুনৰ সংকলন কৰক। অধিক তথ্যৰ বাবে, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; চাওক। তলত উল্লেখিত লাইব্ৰেৰীসমূহৰ ১৬ কেবিৰ শাৰীবিন্যাস কৰা হোৱা নাই: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"এই এপ্‌টো ১৬ কেবিৰ সমিল নহয়। APK আৰু ELFৰ শাৰীবিন্যাস পৰীক্ষা বিফল হৈছে। এই এপ্‌টো পৃষ্ঠাৰ আকাৰৰ সমিল ম’ড ব্যৱহাৰ কৰি চলোৱা হ’ব। উত্তম সমিলতাৰ বাবে, অনুগ্ৰহ কৰি এপ্লিকেশ্বনটো ১৬ কেবিৰ সমৰ্থনৰ সৈতে পুনৰ সংকলন কৰক। অধিক তথ্যৰ বাবে, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; চাওক। তলত উল্লেখিত লাইব্ৰেৰীসমূহৰ ১৬ কেবিৰ শাৰীবিন্যাস কৰা হোৱা নাই: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"এই সকীয়নি দেখুওৱা হৈছে কাৰণ এইটো এটা ডিবাগ কৰিব পৰা এপ্‌ যিটো বৰ্তমান পৰীক্ষা কৰি থকা হৈছে। যদি আপুনি বিকাশকৰ্তাগৰাকী নহয়, তেন্তে অনুগ্ৰহ কৰি বিকাশকৰ্তাগৰাকীক এইটো ৰিপ’ৰ্ট কৰক আৰু এটা ডিবাগ কৰিব নোৱাৰা এপৰ বাবে অনুৰোধ কৰক। &lt;br&gt;&lt;br&gt; এই এপ্‌টো ১৬ কেবিৰ সমিল নহয়। APKৰ শাৰীবিন্যাস পৰীক্ষা বিফল হৈছে। অনুগ্ৰহ কৰি &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt;ত দিয়া পদক্ষেপসমূহ অনুসৰণ কৰক তলত উল্লেখিত লাইব্ৰেৰীসমূহৰ ১৬ কেবিৰ শাৰীবিন্যাস কৰা হোৱা নাই: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"এই সকীয়নি দেখুওৱা হৈছে কাৰণ এইটো এটা ডিবাগ কৰিব পৰা এপ্‌ যিটো বৰ্তমান পৰীক্ষা কৰি থকা হৈছে। যদি আপুনি বিকাশকৰ্তাগৰাকী নহয়, তেন্তে অনুগ্ৰহ কৰি বিকাশকৰ্তাগৰাকীক এইটো ৰিপ’ৰ্ট কৰক আৰু এটা ডিবাগ কৰিব নোৱাৰা এপৰ বাবে অনুৰোধ কৰক। &lt;br&gt;&lt;br&gt; এই এপ্‌টো ১৬ কেবিৰ সমিল নহয়। ELFৰ শাৰীবিন্যাস পৰীক্ষা বিফল হৈছে। অনুগ্ৰহ কৰি &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt;ত দিয়া পদক্ষেপসমূহ অনুসৰণ কৰক তলত উল্লেখিত লাইব্ৰেৰীসমূহৰ ১৬ কেবিৰ শাৰীবিন্যাস কৰা হোৱা নাই: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"এই সকীয়নি দেখুওৱা হৈছে কাৰণ এইটো এটা ডিবাগ কৰিব পৰা এপ্‌ যিটো বৰ্তমান পৰীক্ষা কৰি থকা হৈছে। যদি আপুনি বিকাশকৰ্তাগৰাকী নহয়, তেন্তে অনুগ্ৰহ কৰি বিকাশকৰ্তাগৰাকীক এইটো ৰিপ’ৰ্ট কৰক আৰু এটা ডিবাগ কৰিব নোৱৰা এপৰ বাবে অনুৰোধ কৰক। &lt;br&gt;&lt;br&gt; এই এপ্‌টো ১৬ কেবিৰ সমিল নহয়। ELFৰ শাৰীবিন্যাস পৰীক্ষা বিফল হৈছে। অনুগ্ৰহ কৰি &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt;ত দিয়া পদক্ষেপসমূহ অনুসৰণ কৰক, তলত উল্লেখিত লাইব্ৰেৰীসমূহৰ ১৬ কেবিৰ শাৰীবিন্যাস কৰা হোৱা নাই: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"এই সকীয়নি দেখুওৱা হৈছে কাৰণ এইটো এটা ডিবাগ কৰিব পৰা এপ্‌ যিটো বৰ্তমান পৰীক্ষা কৰি থকা হৈছে। যদি আপুনি বিকাশকৰ্তাগৰাকী নহয়, তেন্তে অনুগ্ৰহ কৰি বিকাশকৰ্তাগৰাকীক এইটো ৰিপ’ৰ্ট কৰক আৰু এটা ডিবাগ কৰিব নোৱাৰা এপৰ বাবে অনুৰোধ কৰক। &lt;br&gt;&lt;br&gt; এই এপ্‌টো ১৬ কেবিৰ সমিল নহয়। APK আৰু ELFৰ শাৰীবিন্যাস পৰীক্ষা বিফল হৈছে। অনুগ্ৰহ কৰি &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;ত দিয়া পদক্ষেপসমূহ অনুসৰণ কৰক। &lt;br&gt;&lt;br&gt; তলত উল্লেখিত লাইব্ৰেৰীসমূহৰ ১৬ কেবিৰ শাৰীবিন্যাস কৰা হোৱা নাই: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"পুনৰাই নেদেখুৱাব"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android এপৰ সামঞ্জস্যতা"</string>
@@ -772,8 +772,7 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"ফ’নটো তললৈ নিয়ক"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"ফ’নটো আপোনাৰ বাওঁফাললৈ নিয়ক"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"ফ’নটো আপোনাৰ সোঁফাললৈ নিয়ক"</string>
-    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
-    <skip />
+    <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"আপোনাৰ কেমেৰালৈ আৰু পোনকৈ চাওক"</string>
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"আপোনাৰ মুখাৱয়ব দেখা নাই। আপোনাৰ ফ’নটো চকুৰ স্তৰত ধৰি ৰাখক।"</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"বেছি লৰচৰ কৰি আছে। ফ’নটো স্থিৰকৈ ধৰক।"</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"আপোনাৰ মুখমণ্ডল পুনৰ পঞ্জীয়ন কৰক।"</string>
@@ -1033,7 +1032,7 @@
     <string name="relationTypeManager" msgid="2272860813153171857">"মেনেজাৰ"</string>
     <string name="relationTypeMother" msgid="2331762740982699460">"মাতৃ"</string>
     <string name="relationTypeParent" msgid="4177920938333039882">"অভিভাৱক"</string>
-    <string name="relationTypePartner" msgid="4018017075116766194">"সংগী"</string>
+    <string name="relationTypePartner" msgid="4018017075116766194">"অংশীদাৰ"</string>
     <string name="relationTypeReferredBy" msgid="5285082289602849400">"মাধ্যমেৰে"</string>
     <string name="relationTypeRelative" msgid="3396498519818009134">"সম্বন্ধীয়"</string>
     <string name="relationTypeSister" msgid="3721676005094140671">"ভনী"</string>
@@ -1147,7 +1146,7 @@
     <string name="password_keyboard_label_symbol_key" msgid="2716255580853511949">"?১২৩"</string>
     <string name="password_keyboard_label_alpha_key" msgid="5294837425652726684">"ABC"</string>
     <string name="password_keyboard_label_alt_key" msgid="8528261816395508841">"ALT"</string>
-    <string name="granularity_label_character" msgid="8903387663153706317">"বর্ণ"</string>
+    <string name="granularity_label_character" msgid="8903387663153706317">"বর্ণসংখ্য়া"</string>
     <string name="granularity_label_word" msgid="3686589158760620518">"শব্দ"</string>
     <string name="granularity_label_link" msgid="9007852307112046526">"লিংক"</string>
     <string name="granularity_label_line" msgid="376204904280620221">"লাইন"</string>
@@ -1453,12 +1452,9 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"ছেট আপ কৰিবলৈ টিপক"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"আপোনাৰ সময় মণ্ডল সলনি হৈছে"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"আপুনি এতিয়া <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g>ত (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>) আছে"</string>
-    <!-- no translation found for time_zone_offset_change_notification_title (8232305835199459588) -->
-    <skip />
-    <!-- no translation found for time_zone_offset_change_notification_body_forward (1299493962341887576) -->
-    <skip />
-    <!-- no translation found for time_zone_offset_change_notification_body_backward (6643532078142642118) -->
-    <skip />
+    <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"ঘড়ী সলনি কৰা"</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"ঘড়ীৰ সময় <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> আগলৈ নিয়া হৈছে। আপুনি এতিয়া <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g>ত (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>) আছে।"</string>
+    <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"ঘড়ীৰ সময় <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> পিছলৈ নিয়া হৈছে। আপুনি এতিয়া <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g>ত (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>) আছে।"</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"সময় ছেট কৰক"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"তাৰিখ ছেট কৰক"</string>
     <string name="date_time_set" msgid="4603445265164486816">"ছেট কৰক"</string>
@@ -2110,6 +2106,7 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"এই মুহূৰ্তত <xliff:g id="APP_NAME_0">%1$s</xliff:g> উপলব্ধ নহয়। ইয়াক <xliff:g id="APP_NAME_1">%2$s</xliff:g>এ পৰিচালনা কৰে।"</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"অধিক জানক"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"এপ্‌ আনপজ কৰক"</string>
+    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> লক কৰা আছে"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"কাম সম্পৰ্কীয় এপ্ আনপজ কৰিবনে?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"আনপজ কৰক"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"জৰুৰীকালীন"</string>
@@ -2549,6 +2546,10 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"ক্ল’ন"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"সম্প্ৰদায়ৰ সৈতে জড়িত"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"প্ৰাইভেট স্পে’চ"</string>
+    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
+    <skip />
+    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
+    <skip />
     <string name="redacted_notification_message" msgid="1520587845842228816">"সংবেদনশীল জাননী লুকুওৱা হৈছে"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"সুৰক্ষাৰ বাবে এপৰ সমল স্ক্ৰীণ শ্বেয়াৰ কৰাৰ পৰা লুকুৱাই ৰখা হৈছে"</string>

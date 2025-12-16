@@ -116,6 +116,11 @@ constructor(
         interactor.onClick(x, y)
     }
 
+    /** Notifies that anything in the lockscreen scene has been clicked at position [x], [y]. */
+    fun onSceneClick(x: Float, y: Float) {
+        interactor.onSceneClick(x, y)
+    }
+
     /** Notifies that the lockscreen has been double clicked. */
     fun onDoubleClick() {
         if (SceneContainerFlag.isEnabled && falsingManager.isFalseDoubleTap()) return

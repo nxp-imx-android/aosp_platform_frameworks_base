@@ -772,8 +772,7 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"Телефонды төменірек ұстаңыз"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"Телефонды солға қарай жылжытыңыз"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"Телефонды оңға қарай жылжытыңыз"</string>
-    <!-- no translation found for face_acquired_poor_gaze (6746437451436776485) -->
-    <skip />
+    <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"Камераға барынша тура қараңыз."</string>
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"Бетіңіз көрінбей тұр. Телефонды көз деңгейінде ұстаңыз."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"Қозғалыс тым көп. Телефонды қозғалтпаңыз."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Қайта тіркеліңіз."</string>
@@ -1453,12 +1452,9 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"Оны орнату үшін түртіңіз"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"Уақыт белдеуі өзгертілді"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"Қазір <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>) белдеуіндесіз."</string>
-    <!-- no translation found for time_zone_offset_change_notification_title (8232305835199459588) -->
-    <skip />
-    <!-- no translation found for time_zone_offset_change_notification_body_forward (1299493962341887576) -->
-    <skip />
-    <!-- no translation found for time_zone_offset_change_notification_body_backward (6643532078142642118) -->
-    <skip />
+    <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"Уақыттың өзгеруі"</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"Уақыт <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> алға қойылды. Қазір <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>) белдеуіндесіз."</string>
+    <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"Уақыт <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> артқа қойылды. Қазір <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>) белдеуіндесіз."</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"Уақытты реттеу"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"Мезгілін реттеу"</string>
     <string name="date_time_set" msgid="4603445265164486816">"Орнату"</string>
@@ -2110,6 +2106,8 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> дәл қазір қолжетімді емес. Ол <xliff:g id="APP_NAME_1">%2$s</xliff:g> арқылы басқарылады."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"Толық ақпарат"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"Қолданбаны қайта қосу"</string>
+    <!-- no translation found for locked_app_biometric_prompt_description (6853122652400451464) -->
+    <skip />
     <string name="work_mode_off_title" msgid="6367463960165135829">"Жұмыс қолданбаларын қайта қосасыз ба?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Қайта қосу"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Құтқару қызметіне қоңырау шалу"</string>
@@ -2549,6 +2547,10 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"Клон"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"Жалпы"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"Құпия кеңістік"</string>
+    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
+    <skip />
+    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
+    <skip />
     <string name="redacted_notification_message" msgid="1520587845842228816">"Хабарландырудың құпия контенті жасырылған."</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Қауіпсіздік мақсатында қолданба контенті экранды бөлісу кезінде жасырылды."</string>

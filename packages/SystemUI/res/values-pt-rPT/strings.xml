@@ -376,6 +376,8 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"Limpar todas as notificações."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Notificações"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistente"</string>
+    <!-- no translation found for accessibility_status_bar_input_method_indicator (4316411266975554038) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Mais # notificação no grupo.}many{Mais # notificações no grupo.}other{Mais # notificações no grupo.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"O ecrã está bloqueado na orientação horizontal."</string>
@@ -761,7 +763,7 @@
     <string name="monitoring_financed_description_named_management" msgid="6108439201399938668">"A <xliff:g id="ORGANIZATION_NAME_0">%1$s</xliff:g> pode conseguir aceder aos dados associados a este dispositivo, gerir apps e alterar as definições do mesmo.\n\nSe tiver perguntas, contacte a <xliff:g id="ORGANIZATION_NAME_1">%2$s</xliff:g>."</string>
     <string name="monitoring_description_management" msgid="4308879039175729014">"Este dispositivo pertence à sua organização.\n\nO administrador de TI pode monitorizar e gerir as definições, o acesso empresarial, as apps, os dados associados ao dispositivo e as informações de localização do mesmo.\n\nContacte o administrador de TI para mais informações."</string>
     <string name="monitoring_description_management_ca_certificate" msgid="7785013130658110130">"A sua entidade instalou uma autoridade de certificação neste dispositivo. O tráfego da sua rede segura pode ser monitorizado ou alterado."</string>
-    <string name="monitoring_description_managed_profile_ca_certificate" msgid="7904323416598435647">"A sua entidade instalou uma autoridade de certificação no seu perfil de trabalho. O tráfego da sua rede segura pode ser monitorizado ou alterado."</string>
+    <string name="monitoring_description_managed_profile_ca_certificate" msgid="7904323416598435647">"A sua organização instalou uma autoridade de certificação no seu perfil de trabalho. O tráfego da sua rede segura pode ser monitorizado ou alterado."</string>
     <string name="monitoring_description_ca_certificate" msgid="448923057059097497">"Está instalada uma autoridade de certificação neste dispositivo. O tráfego da sua rede segura pode ser monitorizado ou alterado."</string>
     <string name="monitoring_description_management_network_logging" msgid="216983105036994771">"O gestor ativou os registos de rede, que monitorizam o tráfego no seu dispositivo."</string>
     <string name="monitoring_description_managed_profile_network_logging" msgid="6932303843097006037">"O seu administrador ativou os registos de rede, que monitorizam o tráfego no seu perfil de trabalho, mas não no seu perfil pessoal."</string>
@@ -1757,6 +1759,7 @@
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Anterior"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Seguinte"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"navegar para a página seguinte"</string>
+    <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"retroceder"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"preencher automaticamente"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"expandir"</string>
     <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Partilhar localização exata"</string>

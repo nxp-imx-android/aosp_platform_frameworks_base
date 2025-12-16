@@ -376,6 +376,7 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"Clear all notifications."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Notifications"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
+    <string name="accessibility_status_bar_input_method_indicator" msgid="4316411266975554038">"Input method"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# more notification inside.}other{# more notifications inside.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Screen is locked in landscape orientation."</string>
@@ -1757,6 +1758,7 @@
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Previous"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Next"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"navigate to the next page"</string>
+    <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"go back"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"autofill"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"expand"</string>
     <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Share precise location"</string>
