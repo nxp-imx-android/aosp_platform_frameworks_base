@@ -235,6 +235,9 @@ public final class ColorSequence implements Parcelable {
 
         /**
          * Appends the provided ColorSequence to this sequence.
+         * <p>
+         * If the two color sequences have different interpolation modes, the interpolation mode of
+         * the builder takes precedence over the interpolation mode from the argument.
          *
          * @see #addControlPoint(int, int) for details.
          *
@@ -262,6 +265,8 @@ public final class ColorSequence implements Parcelable {
          */
         @NonNull
         public ColorSequence build() {
+            Preconditions.checkState(mDelaysMillis.size() > 0);
+            Preconditions.checkState(mColors.size() > 0);
             return new ColorSequence(
                     mInterpolationMode,
                     mDelaysMillis.toArray(),
