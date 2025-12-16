@@ -38,12 +38,12 @@
         android:visibility="invisible"
         android:indeterminate="true" />
 
+    <!-- This layout's parent tile details view applies a minimum height. -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scroll_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="21dp"
-        android:minHeight="@dimen/bluetooth_dialog_scroll_view_min_height"
         android:fillViewport="true"
         app:layout_constrainedHeight="true"
         app:layout_constraintStart_toStartOf="parent"
