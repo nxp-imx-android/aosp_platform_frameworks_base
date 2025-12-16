@@ -33,7 +33,7 @@ import com.android.settingslib.metadata.preferencesapi.preconditions.HardwareUns
 import com.android.settingslib.metadata.preferencesapi.types.AnyBoolean
 import com.android.settingslib.metadata.preferencesapi.types.AnyInt
 import com.android.settingslib.metadata.preferencesapi.types.GeneratedParameterType
-import com.android.settingslib.metadata.preferencesapi.types.ResultValue
+import com.android.settingslib.metadata.preferencesapi.types.GeneratedValue
 import kotlinx.coroutines.test.runTest
 import com.android.settingslib.preference.PreferenceFragment
 import com.google.common.truth.Truth.assertThat
@@ -332,7 +332,7 @@ class PreferencesApiScreenTest {
                             "description",
                             true,
                             GeneratedParameterType(R.string.parameter_type_description) {
-                                listOf(ResultValue("type_description", "value"))
+                                listOf(GeneratedValue("type_description", "value"))
                             }
                         )
                     }
@@ -362,7 +362,7 @@ class PreferencesApiScreenTest {
                             "description",
                             true,
                             GeneratedParameterType(R.string.parameter_type_description) {
-                                listOf(ResultValue("type_description", "value"))
+                                listOf(GeneratedValue("type_description", "value"))
                             }
                         )
                     }
@@ -410,7 +410,7 @@ class PreferencesApiScreenTest {
                             "description",
                             true,
                             GeneratedParameterType(R.string.parameter_type_description) {
-                                listOf(ResultValue("type_description", "value"))
+                                listOf(GeneratedValue("type_description", "value"))
                             }
                         )
                     }
@@ -421,7 +421,7 @@ class PreferencesApiScreenTest {
                             "description",
                             true,
                             GeneratedParameterType(R.string.parameter_type_description) {
-                                listOf(ResultValue("type_description", "value"))
+                                listOf(GeneratedValue("type_description", "value"))
                             }
                         )
                     }
@@ -478,7 +478,7 @@ class PreferencesApiScreenTest {
                             "description",
                             true,
                             GeneratedParameterType(R.string.parameter_type_description) {
-                                listOf(ResultValue("type_description", "value"))
+                                listOf(GeneratedValue("type_description", "value"))
                             }
                         )
                         parameter(
@@ -486,7 +486,7 @@ class PreferencesApiScreenTest {
                             "description",
                             true,
                             GeneratedParameterType(R.string.parameter_type_description) {
-                                listOf(ResultValue("type_description", "value"))
+                                listOf(GeneratedValue("type_description", "value"))
                             }
                         )
                     }
@@ -514,7 +514,7 @@ class PreferencesApiScreenTest {
                         "description",
                         true,
                         GeneratedParameterType(R.string.parameter_type_description) {
-                            listOf(ResultValue("type_description", "value"))
+                            listOf(GeneratedValue("type_description", "value"))
                         }
                     )
                 }
