@@ -43,24 +43,28 @@ constructor(
      * @param context the [Context] in which the dialog will be constructed.
      * @param dismissOnDeviceLock whether the dialog should be automatically dismissed when the
      *   device is locked (true by default).
+     * @param isTransient transient dialogs pass through touches and should take care of dismissing
+     *   themselves.
      */
     fun create(
         context: Context = this.applicationContext,
         theme: Int = SystemUIDialog.DEFAULT_THEME,
         dismissOnDeviceLock: Boolean = SystemUIDialog.DEFAULT_DISMISS_ON_DEVICE_LOCK,
         dialogDelegate: DialogDelegate<SystemUIDialog> = object : DialogDelegate<SystemUIDialog> {},
+        isTransient: Boolean = false,
     ): ComponentSystemUIDialog {
         Assert.isMainThread()
 
         return ComponentSystemUIDialog(
-            context,
-            theme,
-            dismissOnDeviceLock,
-            dialogManager,
-            broadcastDispatcher,
-            dialogTransitionAnimator,
-            blurInteractor,
-            dialogDelegate,
+            context = context,
+            theme = theme,
+            dismissOnDeviceLock = dismissOnDeviceLock,
+            dialogManager = dialogManager,
+            broadcastDispatcher = broadcastDispatcher,
+            dialogTransitionAnimator = dialogTransitionAnimator,
+            blurInteractor = blurInteractor,
+            delegate = dialogDelegate,
+            isTransient = isTransient,
         )
     }
 }

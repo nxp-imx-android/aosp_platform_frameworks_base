@@ -86,6 +86,8 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
     private final Handler mHandler = new Handler();
     private final SystemUIDialogManager mDialogManager;
 
+    private final boolean mIsTransient;
+
     private int mLastWidth = Integer.MIN_VALUE;
     private int mLastHeight = Integer.MIN_VALUE;
     private int mLastConfigurationWidthDp = -1;
@@ -206,7 +208,8 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
                     mDialogTransitionAnimator,
                     mBlurInteractor,
                     dialogDelegate,
-                    shouldAcsdDismissDialog);
+                    shouldAcsdDismissDialog,
+                    false);
         }
     }
 
@@ -228,7 +231,8 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
                 blurInteractor,
                 new DialogDelegate<>() {
                 },
-                true /* shouldAcsdDismissDialog */);
+                /* shouldAcsdDismissDialog= */ true,
+                /* isTransient= */ false);
     }
 
     public SystemUIDialog(
@@ -249,7 +253,8 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
                 dialogTransitionAnimator,
                 blurInteractor,
                 delegate,
-                true /* shouldAcsdDismissDialog */);
+                /* shouldAcsdDismissDialog= */ true,
+                /* isTransient= */ false);
     }
 
     public SystemUIDialog(
@@ -261,12 +266,14 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
             DialogTransitionAnimator dialogTransitionAnimator,
             WindowRootViewBlurInteractor blurInteractor,
             DialogDelegate<SystemUIDialog> delegate,
-            boolean shouldAcsdDismissDialog) {
+            boolean shouldAcsdDismissDialog,
+            boolean isTransient) {
         super(context, theme);
         mContext = context;
         mDialogTransitionAnimator = dialogTransitionAnimator;
         mBlurInteractor = blurInteractor;
         mDelegate = delegate;
+        mIsTransient = isTransient;
 
         applyFlags(this);
         WindowManager.LayoutParams attrs = getWindow().getAttributes();
@@ -359,7 +366,10 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
         // Listen for configuration changes to resize this dialog window. This is mostly necessary
         // for foldables that often go from large <=> small screen when folding/unfolding.
         ViewRootImpl.addConfigCallback(this);
-        mDialogManager.setShowing(/* dialog= */ this, /* showing= */ true);
+        if (!mIsTransient) {
+            // TODO(b/471161535) Register transient dialogs too
+            mDialogManager.setShowing(/* dialog= */ this, /* showing= */true);
+        }
 
         mDelegate.onStart(this);
         start();
@@ -383,7 +393,10 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
         }
 
         ViewRootImpl.removeConfigCallback(this);
-        mDialogManager.setShowing(/* dialog= */ this, /* showing= */ false);
+        if (!mIsTransient) {
+            // TODO(b/471161535) Register transient dialogs too
+            mDialogManager.setShowing(/* dialog= */ this, /* showing= */false);
+        }
 
         mDelegate.onStop(this);
         stop();
@@ -407,7 +420,10 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
             // correct when this dialog regains focus after another dialog was closed. This is
             // otherwise implicitly handled by the `SystemUIDialogManager.setShowing` call.
             // See b/386871258
-            mDialogManager.setShowing(/* dialog= */ this, /* showing= */ true);
+            if (!mIsTransient) {
+                // TODO(b/471161535) Register transient dialogs too
+                mDialogManager.setShowing(/* dialog= */ this, /* showing= */true);
+            }
         }
     }
 

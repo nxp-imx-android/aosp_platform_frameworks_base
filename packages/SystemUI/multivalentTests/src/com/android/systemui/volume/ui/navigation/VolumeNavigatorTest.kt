@@ -56,7 +56,16 @@ class VolumeNavigatorTest : SysuiTestCase() {
                 activityStarter,
                 volumePanelViewModelFactory,
                 mock {
-                    on { create(any(), anyInt(), anyBoolean(), any()) }.thenReturn(mock {})
+                    on {
+                            create(
+                                context = any(),
+                                theme = anyInt(),
+                                dismissOnDeviceLock = anyBoolean(),
+                                dialogDelegate = any(),
+                                isTransient = anyBoolean(),
+                            )
+                        }
+                        .thenReturn(mock {})
                     on { applicationContext }.thenReturn(context)
                 },
                 uiEventLoggerFake,
