@@ -738,8 +738,8 @@ class Task extends TaskFragment {
         mDisableAppCompatRoundedCorners = disableAppCompatRoundedCorners;
         EventLogTags.writeWmTaskCreated(mTaskId);
 
-        if (android.security.Flags.appLockCore()) {
-            mWmService.mAppLockOverlayController.registerTask(this);
+        if (mWmService.mAppLockController != null) {
+            mWmService.mAppLockController.registerTask(this);
         }
     }
 

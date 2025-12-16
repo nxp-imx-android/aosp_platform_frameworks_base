@@ -249,7 +249,7 @@ final class AppLockOverlayController {
         }
         final String packageName = task.realActivity.getPackageName();
         final int userId = task.mUserId;
-        if (mWmService.isPackageLockedByAppLock(packageName, userId)) {
+        if (mWmService.isPackageLockedByAppLockLocked(packageName, userId)) {
             // TODO(b/462423789): Remove hasOtherVisibleTask check once AppLockLocalService listens
             //  to task visibility changes.
             // The entire task belongs to the locked package, so apply a task-level overlay if
@@ -268,7 +268,8 @@ final class AppLockOverlayController {
                 if (activity.finishing) {
                     return;
                 }
-                if (mWmService.isPackageLockedByAppLock(activity.packageName, activity.mUserId)) {
+                if (mWmService.isPackageLockedByAppLockLocked(activity.packageName,
+                        activity.mUserId)) {
                     // Since we traverse top-to-bottom, the first time we see an activity for a
                     // given package, it is the topmost one.
                     topmostActivitiesByPackage.putIfAbsent(activity.packageName, activity);

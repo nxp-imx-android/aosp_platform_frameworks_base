@@ -184,7 +184,7 @@ public final class AppLockLocalService implements AppLockInternal,
     }
 
     @Override
-    public SparseArray<Set<String>> getAppLockEnabledPackages() {
+    public @NonNull SparseArray<Set<String>> getAppLockEnabledPackages() {
         final SparseArray<Set<String>> appLockEnabledPackages = new SparseArray<>();
         synchronized (mLock) {
             for (int i = 0; i < mAppLockLockedStatesForUser.size(); i++) {

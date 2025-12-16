@@ -1791,6 +1791,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         private DisplayContent mTargetDisplay;
         private int mWindowingMode = WINDOWING_MODE_FULLSCREEN;
         private WindowToken mWindowToken;
+        private String mOwningPackage = "test";
 
         WindowStateBuilder(String name, int type, WindowManagerService windowManagerService,
                 DisplayContent dc, IWindow iWindow, Supplier<WindowToken, Session> sessionSupplier,
@@ -1845,12 +1846,17 @@ public class WindowTestsBase extends SystemServiceTestsBase {
             return this;
         }
 
+        WindowStateBuilder setOwningPackage(String owningPackage) {
+            mOwningPackage = owningPackage;
+            return this;
+        }
+
         WindowState build() {
             SystemServicesTestRule.checkHoldsLock(mWm.mGlobalLock);
 
             final WindowManager.LayoutParams attrs = new WindowManager.LayoutParams(mType);
             attrs.setTitle(mName);
-            attrs.packageName = "test";
+            attrs.packageName = mOwningPackage;
 
             assertFalse(
                     "targetDisplay shouldn't be specified together with windowToken, since"
