@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.metadata.apifirst.types
+package com.android.settingslib.metadata.preferencesapi.preconditions
 
-/** A boolean value. */
-object AnyBoolean : ApiFirstType<Boolean>
+/**
+ * Any failure reason not covered by the above. This should be rare so please discuss with the
+ * settings team if you feel you need to use this - it may be appropriate for us to create a new
+ * result type.
+ */
+class Custom(override val reason: Int) : Disallowed

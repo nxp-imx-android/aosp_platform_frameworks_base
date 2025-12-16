@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.metadata.apifirst.types
+package com.android.settingslib.metadata.preferencesapi.types
 
-class ResultValue(
-    val description: String,
-    val value: String,
-)
+/** Any string value. */
+object AnyString: ApiType<String>

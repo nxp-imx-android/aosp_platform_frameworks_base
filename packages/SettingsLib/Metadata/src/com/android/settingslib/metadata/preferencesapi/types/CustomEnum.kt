@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.metadata.apifirst.types
+package com.android.settingslib.metadata.preferencesapi.types
 
 import kotlin.reflect.KClass
 
 /** An entry from the enum. */
-class CustomEnum<T, E>(enumClass: KClass<E>) : ApiFirstType<E> where E : Enum<E>, E : EnumApi<T> {
+class CustomEnum<T, E>(enumClass: KClass<E>) : ApiType<E> where E : Enum<E>, E : EnumApi<T> {
 
     @Suppress("UNCHECKED_CAST")
     private val entries: Array<E> = enumClass.java.enumConstants ?: (emptyArray<Any>() as Array<E>)

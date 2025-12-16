@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.metadata.apifirst.preconditions
+package com.android.settingslib.metadata.preferencesapi.preconditions
 
 /**
- * Any failure reason not covered by the above. This should be rare so please discuss with the
- * settings team if you feel you need to use this - it may be appropriate for us to create a new
- * result type.
+ * The getter is unavailable due to some enterprise restriction. The reason should explain which
+ * restriction.
  */
-class Custom(override val reason: Int) : Disallowed
+class EnterpriseRestriction(override val reason: Int) : Disallowed

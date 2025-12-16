@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.metadata.apifirst.category
+package com.android.settingslib.metadata.preferencesapi.category
 
 /**
  * The category describing which option in the settings home page must be chosen to reach the

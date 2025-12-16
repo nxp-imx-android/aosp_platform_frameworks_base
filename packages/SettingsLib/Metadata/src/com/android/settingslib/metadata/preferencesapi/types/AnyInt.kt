@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.metadata.apifirst.types
+package com.android.settingslib.metadata.preferencesapi.types
 
-/** Any string value. */
-object AnyString: ApiFirstType<String>
+/** Any int value. */
+object AnyInt: ApiType<Int>

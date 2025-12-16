@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.metadata.apifirst
+package com.android.settingslib.metadata.preferencesapi
 
 import android.content.Context
 import androidx.annotation.StringRes
@@ -22,16 +22,16 @@ import androidx.fragment.app.Fragment
 import com.android.settingslib.metadata.KeyParametersSchema
 import com.android.settingslib.metadata.PreferenceHierarchy
 import com.android.settingslib.metadata.PreferenceScreenMetadata
-import com.android.settingslib.metadata.apifirst.ExceptionMessagesFormatter.getExceptionMessageMultipleDefines
-import com.android.settingslib.metadata.apifirst.ExceptionMessagesFormatter.getExceptionMessageWrongOrder
-import com.android.settingslib.metadata.apifirst.category.Category
+import com.android.settingslib.metadata.preferencesapi.ExceptionMessagesFormatter.getExceptionMessageMultipleDefines
+import com.android.settingslib.metadata.preferencesapi.ExceptionMessagesFormatter.getExceptionMessageWrongOrder
+import com.android.settingslib.metadata.preferencesapi.category.Category
 import com.android.settingslib.metadata.ValidatedKeyParameters
-import com.android.settingslib.metadata.apifirst.ExceptionMessagesFormatter.EXCEPTION_MESSAGE_NO_PARAMETER_DEFINED
-import com.android.settingslib.metadata.apifirst.ExceptionMessagesFormatter.getExceptionMessageMultipleParametersDefined
-import com.android.settingslib.metadata.apifirst.preconditions.ApiFirstPreconditions
-import com.android.settingslib.metadata.apifirst.types.ApiFirstType
-import com.android.settingslib.metadata.apifirst.types.GeneratedParameterType
-import com.android.settingslib.metadata.apifirst.types.GeneratedTypeContext
+import com.android.settingslib.metadata.preferencesapi.ExceptionMessagesFormatter.EXCEPTION_MESSAGE_NO_PARAMETER_DEFINED
+import com.android.settingslib.metadata.preferencesapi.ExceptionMessagesFormatter.getExceptionMessageMultipleParametersDefined
+import com.android.settingslib.metadata.preferencesapi.preconditions.ApiPreconditions
+import com.android.settingslib.metadata.preferencesapi.types.ApiType
+import com.android.settingslib.metadata.preferencesapi.types.GeneratedParameterType
+import com.android.settingslib.metadata.preferencesapi.types.GeneratedTypeContext
 import com.android.settingslib.metadata.preferenceHierarchy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -50,14 +50,14 @@ interface ProvidesParametersNonStatically {
  * Scope for parameterization-related declarations.
  */
 class ParameterizationConfig {
-    internal class ApiFirstParameterDefinition(
+    internal class ApiParameterDefinition(
         val name: String,
         val purpose: String,
         val required: Boolean,
         val type: GeneratedParameterType
     )
 
-    internal val parameters = mutableMapOf<String, ApiFirstParameterDefinition>()
+    internal val parameters = mutableMapOf<String, ApiParameterDefinition>()
 
     /**
      * Defines a parameter and adds it to the schema.
@@ -78,7 +78,7 @@ class ParameterizationConfig {
         if (parameters.containsKey(name)) {
             throw IllegalArgumentException("Parameter '$name' is already defined.")
         }
-        parameters[name] = ApiFirstParameterDefinition(name, purpose, required, type)
+        parameters[name] = ApiParameterDefinition(name, purpose, required, type)
     }
 
     /**
@@ -95,7 +95,7 @@ class ParameterizationConfig {
  * Container for all information and preferences on a Settings screen which is intended to be
  * exposed via API using 2026 "Lightweight" way.
  */
-abstract class ApiFirstPreferenceScreen(
+abstract class PreferencesApiScreen(
     override val key: String,
     val topLevelSettingsCategory: Category,
     val fragment: KClass<out Fragment>,
@@ -126,10 +126,10 @@ abstract class ApiFirstPreferenceScreen(
     private var allPossibleParameters: ((Context) -> Collection<ValidatedKeyParameters>) = { emptyList() }
     val preferencesPermissions = mutableListOf<String>()
 
-    val preferences = mutableListOf<ApiFirstPreference<*>>()
+    val preferences = mutableListOf<ApiPreference<*>>()
 
     /**
-     * A factory function to create an instance of [ApiFirstPreference].
+     * A factory function to create an instance of [ApiPreference].
      * This is a convenient way to instantiate a preference without creating a new concrete class.
      *
      * ```
@@ -191,10 +191,10 @@ abstract class ApiFirstPreferenceScreen(
     protected inline fun <reified V : Any> preference(
         key: String,
         purpose: Int,
-        type: ApiFirstType<V>,
-        lambda: ApiFirstPreferenceConfigBuilder<V>.() -> Unit
+        type: ApiType<V>,
+        lambda: ApiPreferenceConfigBuilder<V>.() -> Unit
     ) {
-        val builder = ApiFirstPreferenceConfigBuilder(
+        val builder = ApiPreferenceConfigBuilder(
             key,
             purpose,
             type,
@@ -263,9 +263,9 @@ abstract class ApiFirstPreferenceScreen(
 
             val parameterToUse = scope.parameters.values.first()
 
-            this@ApiFirstPreferenceScreen.allPossibleParameters = { context ->
+            this@PreferencesApiScreen.allPossibleParameters = { context ->
                 parameterToUse.type.lambda.invoke(GeneratedTypeContext(context)).map { parameterOption ->
-                    this@ApiFirstPreferenceScreen.parametersSchema!!.prepare(
+                    this@PreferencesApiScreen.parametersSchema!!.prepare(
                         parameterToUse.name to parameterOption.value
                     )
                 }
@@ -289,7 +289,7 @@ abstract class ApiFirstPreferenceScreen(
 
     protected fun preconditions(
         @StringRes description: Int,
-        lambda: ApiFirstOperationContext.() -> ApiFirstPreconditions
+        lambda: ApiOperationContext.() -> ApiPreconditions
     ) {
         if (screenPreconditions != null) {
             error(getExceptionMessageMultipleDefines("preconditions"))

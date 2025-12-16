@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.metadata.apifirst.types
+package com.android.settingslib.metadata.preferencesapi.types
 
-/**
- * The Ssid of a network which is either currently connected, able to be connected to, or saved to
- * the device.
- */
-class WifiSsid : ApiFirstType<String>
+/** Any package installed on the device. */
+object InstalledPackageName: ApiType<String>

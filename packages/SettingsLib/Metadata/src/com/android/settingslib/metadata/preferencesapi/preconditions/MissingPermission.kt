@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.metadata.apifirst.types
+package com.android.settingslib.metadata.preferencesapi.preconditions
 
-/** Any int value. */
-object AnyInt: ApiFirstType<Int>
+/** The getter is unavailable due to some missing permissions. */
+class MissingPermission(permissions: List<String>, override val reason: Int) : Disallowed

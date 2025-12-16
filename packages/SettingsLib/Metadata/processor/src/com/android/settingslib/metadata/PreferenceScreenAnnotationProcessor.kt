@@ -446,7 +446,7 @@ class PreferenceScreenAnnotationProcessor : AbstractProcessor() {
     }
 
     private fun TypeElement.inheritsFromProvidesParametersNonStatically(): Boolean {
-        val providesParametersNonStaticallyFqcn = "com.android.settingslib.metadata.apifirst.ProvidesParametersNonStatically"
+        val providesParametersNonStaticallyFqcn = "com.android.settingslib.metadata.preferencesapi.ProvidesParametersNonStatically"
         val providesParametersNonStaticallyElement = processingEnv.elementUtils.getTypeElement(providesParametersNonStaticallyFqcn)
             ?: return false // ProvidesParametersNonStatically not found
 
