@@ -728,7 +728,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
         }
 
         final Context context = mInjector.context;
-        return new SupervisionSettingsUpgrader(
+        return new SupervisionPolicyMigrator(
                         context,
                         mInjector.getUserManagerInternal(),
                         context.getSystemService(RoleManager.class),

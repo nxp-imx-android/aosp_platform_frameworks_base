@@ -37,13 +37,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-class SupervisionSettingsUpgrader {
+class SupervisionPolicyMigrator {
     private final Context mContext;
     private final UserManagerInternal mUserManagerInternal;
     private final RoleManager mRoleManager;
     private final DevicePolicyManager mDpm;
 
-    SupervisionSettingsUpgrader(
+    SupervisionPolicyMigrator(
             Context context,
             @NonNull UserManagerInternal userManagerInternal,
             @NonNull RoleManager roleManager,
