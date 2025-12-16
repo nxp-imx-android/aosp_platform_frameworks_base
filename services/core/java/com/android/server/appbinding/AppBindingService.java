@@ -274,7 +274,7 @@ public class AppBindingService extends Binder {
                             }
                         }
                     };
-            supervisionManager.registerSupervisionListener(listener);
+            supervisionManager.registerSupervisionListenerForUser(UserHandle.USER_ALL, listener);
         }
     }
 
