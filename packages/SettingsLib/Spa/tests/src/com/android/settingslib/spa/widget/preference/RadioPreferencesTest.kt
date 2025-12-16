@@ -146,6 +146,25 @@ class RadioPreferencesTest {
         composeTestRule.onNodeWithText("B").assertIsDisplayed().assertIsNotEnabled()
     }
 
+    @Test
+    fun summary_displayed() {
+        composeTestRule.setContent {
+            RadioPreferences(remember {
+                object : ListPreferenceModel {
+                    override val title = TITLE
+                    override val options = listOf(
+                        ListPreferenceOption(id = 1, text = "A", summary = "Summary A"),
+                        ListPreferenceOption(id = 2, text = "B", summary = "Summary B"),
+                    )
+                    override val selectedId = mutableIntStateOf(1)
+                    override val onIdSelected: (Int) -> Unit = {}
+                }
+            })
+        }
+        composeTestRule.onNodeWithText("Summary A").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Summary B").assertIsDisplayed()
+    }
+
     private companion object {
         const val TITLE = "Title"
     }
