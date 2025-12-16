@@ -904,7 +904,7 @@ public class PipController implements PipTransitionController.PipTransitionCallb
     }
 
     /**
-     * If {@param keyguardShowing} is {@code false} and {@param animating} is {@code true},
+     * If {@code keyguardShowing} is {@code false} and {@code animating} is {@code true},
      * we would wait till the dismissing animation of keyguard and surfaces behind to be
      * finished first to reset the visibility of PiP window.
      * See also {@link #onKeyguardDismissAnimationFinished()}

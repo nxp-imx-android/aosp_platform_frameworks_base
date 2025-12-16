@@ -1074,7 +1074,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
     }
 
     /**
-     * @return whether {@param r} is a source of actions in this transition.
+     * @return whether {@code r} is a source of actions in this transition.
      */
     boolean isSourceActivity(ActivityRecord r) {
         if (mSourceActivities == null) return false;

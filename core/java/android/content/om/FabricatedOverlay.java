@@ -130,7 +130,7 @@ public class FabricatedOverlay {
          * @param owningPackage the name of the package that owns the fabricated overlay (must
          *                      be a package name of this UID).
          * @param name a name used to uniquely identify the fabricated overlay owned by
-         *             {@param owningPackageName}
+         *             {@code owningPackage}
          * @param targetPackage the name of the package to overlay
          */
         public Builder(@NonNull String owningPackage, @NonNull String name,

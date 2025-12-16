@@ -2833,8 +2833,8 @@ final class ActivityRecord extends WindowToken {
     }
 
     /**
-     * Reparents this activity into {@param newTaskFrag} at the provided {@param position}. The
-     * caller should ensure that the {@param newTaskFrag} is not already the parent of this
+     * Reparents this activity into {@code newTaskFrag} at the provided {@code position}. The
+     * caller should ensure that the {@code newTaskFrag} is not already the parent of this
      * activity.
      */
     void reparent(TaskFragment newTaskFrag, int position, String reason) {

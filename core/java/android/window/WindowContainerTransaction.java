@@ -759,8 +759,8 @@ public final class WindowContainerTransaction implements Parcelable {
     }
 
     /**
-     * Reparent's all children tasks or the top task of {@param currentParent} in the specified
-     * overridden {@param windowingMode} and {@param activityType} to {@param newParent} in their
+     * Reparent's all children tasks or the top task of {@code currentParent} in the specified
+     * overridden {@code windowingModes} and {@code activityTypes} to {@code newParent} in their
      * current z-order.
      *
      * @param currentParent of the tasks to perform the operation no.
@@ -774,8 +774,8 @@ public final class WindowContainerTransaction implements Parcelable {
      *                        and activityTypes.
      * @param clearWindowingMode When {@code true}, clear the override windowing mode of newly
      *                           reparented tasks by this operation. Note that this doesn't mean
-     *                           clearing the windowing mode of {@param currentParent},
-     *                           {@param newParent} or the existing children of {@param newParent}.
+     *                           clearing the windowing mode of {@code currentParent},
+     *                           {@code newParent} or the existing children of {@code newParent}.
      * @hide
      */
     @NonNull
@@ -795,8 +795,8 @@ public final class WindowContainerTransaction implements Parcelable {
     }
 
     /**
-     * Reparent's all children tasks or the top task of {@param currentParent} in the specified
-     * overridden {@param windowingMode} and {@param activityType} to {@param newParent} in their
+     * Reparent's all children tasks or the top task of {@code currentParent} in the specified
+     * overridden {@code windowingModes} and {@code activityTypes} to {@code newParent} in their
      * current z-order.
      *
      * @param currentParent of the tasks to perform the operation no.
@@ -820,8 +820,8 @@ public final class WindowContainerTransaction implements Parcelable {
 
 
     /**
-     * Reparent's all children tasks of {@param currentParent} in the specified
-     * {@param windowingMode} and {@param activityType} to {@param newParent} in their current
+     * Reparent's all children tasks of {@code currentParent} in the specified
+     * {@code windowingModes} and {@code activityTypes} to {@code newParent} in their current
      * z-order.
      *
      * @param currentParent of the tasks to perform the operation no.
@@ -1310,7 +1310,7 @@ public final class WindowContainerTransaction implements Parcelable {
 
     /**
      * When this {@link WindowContainerTransaction} failed to finish on the server side, it will
-     * trigger callback with this {@param errorCallbackToken}.
+     * trigger callback with this {@code errorCallbackToken}.
      * @param errorCallbackToken    client provided token that will be passed back as parameter in
      *                              the callback if there is an error on the server side.
      * @see com.android.server.wm.TaskFragmentOrganizerController#onTaskFragmentError

@@ -958,7 +958,7 @@ public class SystemConfigTest {
     }
 
     /**
-     * Create an {@link XmlPullParser} for {@param permissionFile} and begin parsing it until
+     * Create an {@link XmlPullParser} for {@code permissionFile} and begin parsing it until
      * reaching the root tag.
      */
     private XmlPullParser readXmlUntilStartTag(File permissionFile)

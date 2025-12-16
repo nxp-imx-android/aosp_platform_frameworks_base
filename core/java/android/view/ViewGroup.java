@@ -893,7 +893,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
     }
 
     /**
-     * Clears the default-focus chain from {@param child} up to the first parent which has another
+     * Clears the default-focus chain from {@code child} up to the first parent which has another
      * default-focusable branch below it or until there is no default-focus chain.
      *
      * @param child

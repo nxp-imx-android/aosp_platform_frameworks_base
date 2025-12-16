@@ -360,7 +360,7 @@ public class RestrictedLockUtilsInternal extends RestrictedLockUtils {
      * @param userId user to create the resultant {@link EnforcedAdmin} as.
      * @param check filter predicate.
      *
-     * @return {@code null} if none of the {@param admins} match.
+     * @return {@code null} if none of the {@code admins} match.
      *         An {@link EnforcedAdmin} if exactly one of the admins matches.
      *         Otherwise, {@link EnforcedAdmin#MULTIPLE_ENFORCED_ADMIN} for multiple matches.
      */
@@ -843,7 +843,7 @@ public class RestrictedLockUtilsInternal extends RestrictedLockUtils {
      * Checks whether any of the user's profiles enforce the lock setting. A managed profile is only
      * included if it does not have a separate challenge.
      *
-     * The user identified by {@param userId} is always included.
+     * The user identified by {@code userId} is always included.
      */
     private static EnforcedAdmin checkForLockSetting(
             Context context, @UserIdInt int userId, LockSettingCheck check) {

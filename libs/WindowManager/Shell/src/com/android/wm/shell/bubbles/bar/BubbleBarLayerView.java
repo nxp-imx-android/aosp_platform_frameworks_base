@@ -314,7 +314,7 @@ public class BubbleBarLayerView extends FrameLayout
     }
 
     /**
-     * @return whether it's possible to expand {@param b} right now. This is {@code false} if
+     * @return whether it's possible to expand {@code b} right now. This is {@code false} if
      * the bubble has no view or if the bubble is already showing.
      */
     @Override

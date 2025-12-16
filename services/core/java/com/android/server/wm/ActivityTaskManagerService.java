@@ -5220,9 +5220,9 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
      * The caller should not hold lock when calling this method because it will wait for the
      * activities to complete the dump.
      *
-     * @param dumpVisibleRootTasksOnly dump activity with {@param name} only if in a visible root
+     * @param dumpVisibleRootTasksOnly dump activity with {@code name} only if in a visible root
      *                                 task
-     * @param dumpFocusedRootTaskOnly  dump activity with {@param name} only if in the focused
+     * @param dumpFocusedRootTaskOnly  dump activity with {@code name} only if in the focused
      *                                 root task
      */
     protected boolean dumpActivity(FileDescriptor fd, PrintWriter pw, String name, String[] args,
@@ -7037,7 +7037,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         /**
          * Called after virtual display Id is updated by
          * {@link com.android.server.vr.Vr2dDisplay} with a specific
-         * {@param vrVr2dDisplayId}.
+         * {@code vrVr2dDisplayId}.
          */
         @Override
         public void setVr2dDisplayId(int vr2dDisplayId) {

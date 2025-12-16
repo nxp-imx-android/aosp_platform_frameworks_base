@@ -93,7 +93,7 @@ public abstract class WMShellConcurrencyModule {
 
     /**
      * Creates a shell main thread to be injected into the shell components.  This does not provide
-     * the {@param HandleThread}, but is used to create the thread prior to initializing the
+     * the {@code HandleThread}, but is used to create the thread prior to initializing the
      * WM component, and is explicitly bound.
      *
      * See {@link com.android.systemui.SystemUIFactory#init(Context, boolean)}.

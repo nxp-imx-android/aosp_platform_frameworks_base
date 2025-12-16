@@ -1812,7 +1812,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
     }
 
     /**
-     * Removes the root task associated with the given {@param rootTask}. If the {@param rootTask}
+     * Removes the root task associated with the given {@code rootTask}. If the {@code rootTask}
      * is the pinned task, then its child tasks are not explicitly removed when the root task is
      * destroyed, but instead moved back onto the TaskDisplayArea.
      */

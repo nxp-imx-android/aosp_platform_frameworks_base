@@ -1013,7 +1013,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
     }
 
     /**
-     * Sets/unsets the forced-hidden state flag for this task depending on {@param set}.
+     * Sets/unsets the forced-hidden state flag for this task depending on {@code set}.
      * @return Whether the force hidden state changed
      */
     boolean setForceHidden(@FlagForceHidden int flags, boolean set) {

@@ -273,7 +273,7 @@ public abstract class ActivityTaskManagerInternal implements ActiveUids.Observer
     /**
      * Called after virtual display Id is updated by
      * {@link com.android.server.vr.Vr2dDisplay} with a specific
-     * {@param vr2dDisplayId}.
+     * {@code vr2dDisplayId}.
      */
     public abstract void setVr2dDisplayId(int vr2dDisplayId);
 

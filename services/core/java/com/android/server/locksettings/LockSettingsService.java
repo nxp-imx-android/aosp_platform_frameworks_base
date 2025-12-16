@@ -2071,10 +2071,10 @@ public class LockSettingsService extends ILockSettings.Stub {
 
     /**
      * Set a new LSKF for the given user/profile. Only succeeds if the synthetic password for the
-     * user is protected by the given {@param savedCredential}.
+     * user is protected by the given {@code savedCredential}.
      *
      * <p>When setting a new credential where there was none, updates the strong auth state for
-     * {@param userId} to <tt>STRONG_AUTH_NOT_REQUIRED</tt>.
+     * {@code userId} to <tt>STRONG_AUTH_NOT_REQUIRED</tt>.
      *
      * @param savedCredential if the user is a profile with unified challenge and savedCredential is
      *     empty, LSS will try to re-derive the profile password internally. TODO (b/80170828): Fix

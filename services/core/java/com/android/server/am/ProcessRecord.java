@@ -1633,8 +1633,8 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     }
 
     /**
-     * Allows background activity starts using token {@param entity}. Optionally, you can provide
-     * {@param originatingToken} if you have one such originating token, this is useful for tracing
+     * Allows background activity starts using token {@code entity}. Optionally, you can provide
+     * {@code originatingToken} if you have one such originating token, this is useful for tracing
      * back the grant in the case of the notification token.
      */
     void addOrUpdateBackgroundStartPrivileges(@NonNull Binder entity,

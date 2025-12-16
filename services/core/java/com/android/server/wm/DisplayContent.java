@@ -2161,7 +2161,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      * inadvertently in a wrong orientation.
      *
      * @param r The launching activity which may change display orientation.
-     * @param orientationSrc It may be different from {@param r} if the launching activity uses
+     * @param orientationSrc It may be different from {@code r} if the launching activity uses
      *                       "behind" orientation.
      * @param checkOpening Whether to check if the activity is animating by transition. Set to
      *                     {@code true} if the caller is not sure whether the activity is launching.
@@ -5955,7 +5955,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     /**
-     * Returns whether the {@param windowingMode} is supported on this display.
+     * Returns whether the {@code windowingMode} is supported on this display.
      * @param windowingMode The windowing mode to check for.
      * @return Whether this windowing mode is supported.
      */
@@ -6287,9 +6287,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     /**
-     * Fills {@param outRestricted} with all keep-clear areas from visible, relevant windows
+     * Fills {@code outRestricted} with all keep-clear areas from visible, relevant windows
      * on this display, which set restricted keep-clear areas.
-     * Fills {@param outUnrestricted} with keep-clear areas from visible, relevant windows on this
+     * Fills {@code outUnrestricted} with keep-clear areas from visible, relevant windows on this
      * display, which set unrestricted keep-clear areas.
      *
      * For context on restricted vs unrestricted keep-clear areas, see

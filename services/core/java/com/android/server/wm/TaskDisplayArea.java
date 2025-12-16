@@ -1244,7 +1244,7 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
     }
 
     /**
-     * Returns whether the {@param windowingMode} is supported.
+     * Returns whether the {@code windowingMode} is supported.
      * @param windowingMode The windowing mode to check for.
      * @return Whether this windowing mode is supported.
      */
@@ -1255,7 +1255,7 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
     }
 
     /**
-     * Returns true if the {@param windowingMode} is supported based on other parameters passed in.
+     * Returns true if the {@code windowingMode} is supported based on other parameters passed in.
      *
      * @param windowingMode       The windowing mode we are checking support for.
      * @param supportsMultiWindow If we should consider support for multi-window mode in general.
@@ -1590,8 +1590,8 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
     }
 
     /**
-     * Moves the {@param rootTask} behind the given {@param behindRootTask} if possible. If
-     * {@param behindRootTask} is not currently in the display, then then the root task is moved
+     * Moves the {@code rootTask} behind the given {@code behindRootTask} if possible. If
+     * {@code behindRootTask} is not currently in the display, then then the root task is moved
      * to the back.
      */
     void moveRootTaskBehindRootTask(Task rootTask, Task behindRootTask) {
@@ -1621,8 +1621,8 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
     }
 
     /**
-     * @return the root task currently above the {@param rootTask}. Can be null if the
-     * {@param rootTask} is already top-most.
+     * @return the root task currently above the {@code rootTask}. Can be null if the
+     * {@code rootTask} is already top-most.
      */
     static Task getRootTaskAbove(Task rootTask) {
         final WindowContainer wc = rootTask.getParent();

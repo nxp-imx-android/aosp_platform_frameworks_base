@@ -696,8 +696,8 @@ public class StatusBarIconView extends AnimatedImageView implements StatusIconDi
     }
 
     /**
-     * Updates {@param array} such that it represents a matrix that changes RGB to {@param color}
-     * and multiplies the alpha channel with the color's alpha+{@param alphaBoost}.
+     * Updates {@code array} such that it represents a matrix that changes RGB to {@code color}
+     * and multiplies the alpha channel with the color's alpha+{@code alphaBoost}.
      */
     private static void updateTintMatrix(float[] array, int color, float alphaBoost) {
         Arrays.fill(array, 0);

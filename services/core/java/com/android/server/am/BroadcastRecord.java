@@ -1342,7 +1342,7 @@ final class BroadcastRecord extends Binder {
 
     /**
      * Uses the {@link BroadcastProcessedEventRecord} pojo to store the logging information related
-     * to {@param receiver} object.
+     * to {@code receiver} object.
      */
     public void updateBroadcastProcessedEventRecord(@NonNull Object receiver, long timeMillis) {
         final String receiverProcessName = getReceiverProcessName(receiver);

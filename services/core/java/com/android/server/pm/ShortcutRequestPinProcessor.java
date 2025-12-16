@@ -260,7 +260,7 @@ class ShortcutRequestPinProcessor {
      * Handle {@link android.content.pm.ShortcutManager#requestPinShortcut)} and
      * {@link android.appwidget.AppWidgetManager#requestPinAppWidget}.
      * In this flow the PinItemRequest is delivered directly to the default launcher app.
-     * One of {@param inShortcut} and {@param inAppWidget} is always non-null and the other is
+     * One of {@code inShortcut} and {@code inAppWidget} is always non-null and the other is
      * always null.
      */
     public boolean requestPinItemLocked(ShortcutInfo inShortcut, AppWidgetProviderInfo inAppWidget,

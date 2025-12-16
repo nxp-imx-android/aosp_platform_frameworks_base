@@ -817,8 +817,8 @@ public class RecentTasksController implements TaskStackListenerCallback,
     }
 
     /**
-     * Only to be called from `generateList()`. If the given {@param taskInfo} has a paired task,
-     * then a split grouped task with the pair is added to {@param tasksOut}.
+     * Only to be called from `generateList()`. If the given {@code taskInfo} has a paired task,
+     * then a split grouped task with the pair is added to {@code tasksOut}.
      *
      * @return whether a split task was extracted and added to the given list
      */
@@ -852,7 +852,7 @@ public class RecentTasksController implements TaskStackListenerCallback,
     }
 
     /**
-     * Returns the top running leaf task ignoring {@param ignoreTaskToken} if it is specified.
+     * Returns the top running leaf task ignoring {@code ignoreTaskToken} if it is specified.
      * NOTE: This path currently makes assumptions that ignoreTaskToken is for the top task.
      */
     @Nullable
@@ -873,7 +873,7 @@ public class RecentTasksController implements TaskStackListenerCallback,
 
     /**
      * Find the background task that match the given component.  Ignores tasks match
-     * {@param ignoreTaskToken} if it is non-null.
+     * {@code ignoreTaskToken} if it is non-null.
      */
     @Nullable
     public RecentTaskInfo findTaskInBackground(ComponentName componentName,

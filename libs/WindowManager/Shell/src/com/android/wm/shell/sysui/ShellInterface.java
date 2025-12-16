@@ -95,7 +95,7 @@ public interface ShellInterface {
     }
 
     /**
-     * Updates the given {@param bundle} with the set of exposed interfaces.
+     * Updates the given {@code bundle} with the set of exposed interfaces.
      */
     default void createExternalInterfaces(Bundle bundle) {}
 

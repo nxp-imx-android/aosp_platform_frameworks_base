@@ -562,7 +562,7 @@ public class VpnManagerService extends IVpnManager.Stub {
     }
 
     /**
-     * Starts the always-on VPN {@link VpnService} for user {@param userId}, which should perform
+     * Starts the always-on VPN {@link VpnService} for user {@code userId}, which should perform
      * some setup and then call {@code establish()} to connect.
      *
      * @return {@code true} if the service was started, the service was already connected, or there

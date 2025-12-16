@@ -324,9 +324,9 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
     /**
      * Freeze IME insets source state when required.
      *
-     * <p>When setting {@param frozen} as {@code true}, the IME insets provider will freeze the
+     * <p>When setting {@code frozen} as {@code true}, the IME insets provider will freeze the
      * current IME insets state and pending the IME insets state update until setting
-     * {@param frozen} as {@code false}.</p>
+     * {@code frozen} as {@code false}.</p>
      */
     void setFrozen(boolean frozen) {
         if (mFrozen == frozen) {

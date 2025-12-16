@@ -122,7 +122,7 @@ public class SizeChangeAnimation {
     /**
      * Initialize a size-change animation for a view containing the leash surface(s).
      *
-     * Note that this **will** apply {@param startToApply}!
+     * Note that this **will** apply {@code startToApply}!
      */
     public void initialize(View view, SurfaceControl leash, SurfaceControl snapshot,
             SurfaceControl.Transaction startToApply) {

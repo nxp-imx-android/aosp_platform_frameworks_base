@@ -13017,7 +13017,7 @@ public class BatteryStatsImpl extends BatteryStats {
 
     /**
      * Take a snapshot of the cpu times spent by each uid and update the corresponding counters.
-     * If {@param partialTimers} is not null and empty, then we assign a portion of cpu times to
+     * If {@code partialTimers} is not null and empty, then we assign a portion of cpu times to
      * wakelock holders.
      *
      * @param partialTimers The wakelock holders among which the cpu times will be distributed.

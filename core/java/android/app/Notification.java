@@ -8618,10 +8618,10 @@ public class Notification implements Parcelable
         }
 
         /**
-         * Removes RemoteViews that were created for compatibility from {@param n}, if they did not
+         * Removes RemoteViews that were created for compatibility from {@code n}, if they did not
          * change.
          *
-         * @return {@param n}, if no stripping is needed, otherwise a stripped clone of {@param n}
+         * @return {@code n}, if no stripping is needed, otherwise a stripped clone of {@code n}
          *
          * @hide
          */
@@ -16142,7 +16142,7 @@ public class Notification implements Parcelable
             /**
              * Creates a {@link BubbleMetadata.Builder} based on a {@link ShortcutInfo}. To create
              * a shortcut bubble, ensure that the shortcut associated with the provided
-             * {@param shortcutId} is published as a dynamic shortcut that was built with
+             * {@code shortcutId} is published as a dynamic shortcut that was built with
              * {@link ShortcutInfo.Builder#setLongLived(boolean)} being true, otherwise your
              * notification will not be able to bubble.
              *

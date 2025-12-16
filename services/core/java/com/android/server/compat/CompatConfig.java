@@ -597,8 +597,8 @@ final class CompatConfig {
     }
 
     /**
-     * Enables all changes with enabledSinceTargetSdk == {@param targetSdkVersion} for
-     * {@param packageName}.
+     * Enables all changes with enabledSinceTargetSdk == {@code targetSdkVersion} for
+     * {@code packageName}.
      *
      * @return the number of changes that were toggled
      */
@@ -617,8 +617,8 @@ final class CompatConfig {
     }
 
     /**
-     * Disables all changes with enabledSinceTargetSdk == {@param targetSdkVersion} for
-     * {@param packageName}.
+     * Disables all changes with enabledSinceTargetSdk == {@code targetSdkVersion} for
+     * {@code packageName}.
      *
      * @return the number of changes that were toggled
      */

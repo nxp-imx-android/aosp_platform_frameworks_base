@@ -226,7 +226,7 @@ public final class TaskFragmentInfo implements Parcelable {
 
     /**
      * Returns {@code true} if the parameters that are important for task fragment organizers are
-     * equal between this {@link TaskFragmentInfo} and {@param that}.
+     * equal between this {@link TaskFragmentInfo} and {@code that}.
      * Note that this method is usually called with
      * {@link com.android.server.wm.WindowOrganizerController#configurationsAreEqualForOrganizer(
      * Configuration, Configuration)} to determine if this {@link TaskFragmentInfo} should

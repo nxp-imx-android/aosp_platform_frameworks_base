@@ -1552,7 +1552,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
     }
 
     /**
-     * Checks if {@param packageName} is an installer package and if so, clear the installer
+     * Checks if {@code packageName} is an installer package and if so, clear the installer
      * package name of the packages that are installed by this.
      */
     private void removeInstallerPackageStatus(String packageName) {

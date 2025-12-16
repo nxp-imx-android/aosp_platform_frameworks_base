@@ -3985,7 +3985,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
      * @param userHandle user to check for. This must be a real user and not, for example,
      *        {@link UserHandle#ALL}.
      * @param installedCertificates the full set of certificate authorities currently installed for
-     *        {@param userHandle}. After calling this function, {@code mAcceptedCaCertificates} will
+     *        {@code userHandle}. After calling this function, {@code mAcceptedCaCertificates} will
      *        correspond to some subset of this.
      */
     protected void onInstalledCertificatesChanged(final UserHandle userHandle,

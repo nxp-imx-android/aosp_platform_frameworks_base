@@ -106,7 +106,7 @@ public class PipDisplayLayoutState {
     }
 
     /**
-     * Returns the inset bounds the PIP window can be visible on a given {@param displayLayout}
+     * Returns the inset bounds the PIP window can be visible on a given {@code displayLayout}
      */
     public Rect getInsetBounds(DisplayLayout displayLayout) {
         final Rect insetBounds = new Rect();

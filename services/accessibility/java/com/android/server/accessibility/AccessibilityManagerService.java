@@ -5049,7 +5049,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     }
 
     /**
-     * Enables accessibility service specified by {@param componentName} for the {@param userId}.
+     * Enables accessibility service specified by {@code componentName} for the {@code userId}.
      */
     private void enableAccessibilityServiceLocked(ComponentName componentName, int userId) {
         mTempComponentNameSet.clear();
@@ -5066,7 +5066,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     }
 
     /**
-     * Disables accessibility service specified by {@param componentName} for the {@param userId}.
+     * Disables accessibility service specified by {@code componentName} for the {@code userId}.
      */
     private void disableAccessibilityServiceLocked(ComponentName componentName, int userId) {
         mTempComponentNameSet.clear();

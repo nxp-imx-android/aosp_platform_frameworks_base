@@ -47,7 +47,7 @@ import java.util.concurrent.Executor;
 @UiThread
 public interface AttachedSurfaceControl {
     /**
-     * Create a transaction which will reparent {@param child} to the View hierarchy
+     * Create a transaction which will reparent {@code child} to the View hierarchy
      * root SurfaceControl. See
      * {@link SurfaceControl.Transaction#reparent}. This transacton must be applied
      * or merged in to another transaction by the caller, otherwise it will have

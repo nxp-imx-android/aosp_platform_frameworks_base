@@ -314,7 +314,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
     }
 
     /**
-     * Finds an existing controller for the provided {@param displayId}.
+     * Finds an existing controller for the provided {@code displayId}.
      */
     @Nullable
     private RecentsController findControllerForDisplay(int displayId) {
@@ -328,7 +328,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
     }
 
     /**
-     * Finds an existing controller for the provided {@param transition}, or {@code null} if none
+     * Finds an existing controller for the provided {@code transition}, or {@code null} if none
      * exists.
      */
     @Nullable

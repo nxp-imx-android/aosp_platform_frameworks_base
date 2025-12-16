@@ -4843,7 +4843,7 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
      * mode, and app idle).
      *
      * @param deviceIdleMode if true then we don't consider
-     *        {@link #mPowerSaveWhitelistExceptIdleAppIds} for checking if the {@param uid} is
+     *        {@link #mPowerSaveWhitelistExceptIdleAppIds} for checking if the {@code uid} is
      *        allowlisted.
      */
     @GuardedBy("mUidRulesFirstLock")

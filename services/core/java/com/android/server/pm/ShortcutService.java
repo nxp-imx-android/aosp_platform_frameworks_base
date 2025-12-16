@@ -2408,7 +2408,7 @@ public class ShortcutService extends IShortcutService.Stub {
     /**
      * Handles {@link #requestPinShortcut} and {@link ShortcutServiceInternal#requestPinAppWidget}.
      * After validating the caller, it passes the request to {@link #mShortcutRequestPinProcessor}.
-     * Either {@param shortcut} or {@param appWidget} should be non-null.
+     * Either {@code shortcut} or {@code appWidget} should be non-null.
      */
     private boolean requestPinItem(String callingPackage, int userId, ShortcutInfo shortcut,
             AppWidgetProviderInfo appWidget, Bundle extras, IntentSender resultIntent) {

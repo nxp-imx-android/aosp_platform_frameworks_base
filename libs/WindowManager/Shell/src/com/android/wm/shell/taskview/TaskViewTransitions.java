@@ -277,7 +277,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         return null;
     }
 
-    /** Looks through the pending transitions for one matching {@param claimed} */
+    /** Looks through the pending transitions for one matching {@code claimed} */
     @VisibleForTesting
     public PendingTransition findPending(IBinder claimed) {
         for (int i = 0; i < mPending.size(); ++i) {

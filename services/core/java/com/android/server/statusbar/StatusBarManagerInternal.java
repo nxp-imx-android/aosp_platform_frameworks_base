@@ -254,7 +254,7 @@ public interface StatusBarManagerInternal {
 
     /**
      * Change the split screen focus to the left / top app or the right / bottom app based on
-     * {@param leftOrTop}.
+     * {@code leftOrTop}.
      *
      * @see com.android.internal.statusbar.IStatusBar#setSplitscreenFocus
      */

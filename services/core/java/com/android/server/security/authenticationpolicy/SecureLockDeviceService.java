@@ -699,7 +699,7 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
     }
 
     /**
-     * Notifies registered listeners associated with {@param targetUserId} about availability
+     * Notifies registered listeners associated with {@code targetUserId} about availability
      * updates to secure lock device. This is called on user-specific events like biometric
      * enrollment changes.
      *

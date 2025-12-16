@@ -17299,8 +17299,8 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         /**
          * Called after the network policy rules are updated by
-         * {@link com.android.server.net.NetworkPolicyManagerService} for a specific {@param uid}
-         * and {@param procStateSeq}.
+         * {@link com.android.server.net.NetworkPolicyManagerService} for a specific {@code uid}
+         * and {@code procStateSeq}.
          */
         @Override
         public void notifyNetworkPolicyRulesUpdated(int uid, long procStateSeq) {

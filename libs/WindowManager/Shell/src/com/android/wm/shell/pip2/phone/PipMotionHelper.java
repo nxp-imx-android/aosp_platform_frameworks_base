@@ -245,7 +245,7 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
     }
 
     /**
-     * Tries to move the pinned stack to the given {@param toBounds} on the current display ID.
+     * Tries to move the pinned stack to the given {@code toBounds} on the current display ID.
      */
     void movePip(Rect toBounds) {
         movePip(toBounds, false /* isDragging */,
@@ -254,7 +254,7 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
 
 
     /**
-     * Tries to move the pinned stack to {@param toBounds} on the {@param focusedDisplayId} which
+     * Tries to move the pinned stack to {@code toBounds} on the {@code focusedDisplayId} which
      * follows the cursor's focus.
      */
     void movePip(Rect toBounds, int focusedDisplayId) {
@@ -741,7 +741,7 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
     }
 
     /**
-     * Directly resizes the PiP to the given {@param bounds}.
+     * Directly resizes the PiP to the given {@code bounds}.
      */
     private void resizePipUnchecked(Rect toBounds) {
         if (DEBUG) {
@@ -755,7 +755,7 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
     }
 
     /**
-     * Directly resizes the PiP to the given {@param bounds}.
+     * Directly resizes the PiP to the given {@code bounds}.
      */
     void resizeAndAnimatePipUnchecked(Rect toBounds, int duration) {
         if (mPipBoundsState.getMotionBoundsState().isInMotion()) {

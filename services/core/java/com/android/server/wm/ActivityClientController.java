@@ -1132,10 +1132,10 @@ class ActivityClientController extends IActivityClientController.Stub {
     }
 
     /**
-     * Checks the state of the system and the activity associated with the given {@param token} to
+     * Checks the state of the system and the activity associated with the given {@code token} to
      * verify that picture-in-picture is supported for that activity.
      *
-     * @return the activity record for the given {@param token} if all the checks pass.
+     * @return the activity record for the given {@code token} if all the checks pass.
      */
     private ActivityRecord ensureValidPictureInPictureActivityParams(String caller,
             IBinder token, PictureInPictureParams params) {

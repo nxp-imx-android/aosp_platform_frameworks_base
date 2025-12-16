@@ -2609,9 +2609,9 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     /**
-     * Updates {@link #mDisplay} to the display object corresponding to {@param displayId}.
+     * Updates {@link #mDisplay} to the display object corresponding to {@code displayId}.
      * Uses DEFAULT_DISPLAY if there isn't a display object in the system corresponding
-     * to {@param displayId}.
+     * to {@code displayId}.
      */
     private void updateInternalDisplay(int displayId, Resources resources) {
         final Display preferredDisplay =
