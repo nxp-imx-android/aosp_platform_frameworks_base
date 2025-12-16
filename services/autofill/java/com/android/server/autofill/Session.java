@@ -4777,7 +4777,7 @@ final class Session
                 final ViewState viewState = mViewStates.valueAt(viewStateNum);
 
                 final AutofillId id = viewState.id;
-                final AutofillValue value = viewState.getCurrentValue();
+                AutofillValue value = viewState.getCurrentValue();
                 if (value == null) {
                     if (sVerbose) Slog.v(TAG, "updateValuesForSaveLocked(): skipping " + id);
                     continue;
@@ -4787,6 +4787,24 @@ final class Session
                     Slog.w(TAG, "callSaveLocked(): did not find node with id " + id);
                     continue;
                 }
+
+                if (Flags.useCandidateSaveValueWhenUpdateSaveAssistStructure()) {
+                    AutofillValue candidateSaveValue = viewState.getCandidateSaveValue();
+                    if (value.isText()
+                            && value.getTextValue().isEmpty()
+                            && candidateSaveValue != null
+                            && candidateSaveValue.isText()
+                            && !candidateSaveValue.isEmpty()) {
+                        if (sVerbose) {
+                            Slog.v(
+                                    TAG,
+                                    "updateValuesForSaveLocked(): current value is empty, update to"
+                                            + " use candidate save value in assist structure");
+                        }
+                        value = candidateSaveValue;
+                    }
+                }
+
                 if (sVerbose) {
                     Slog.v(TAG, "updateValuesForSaveLocked(): updating " + id + " to " + value);
                 }
