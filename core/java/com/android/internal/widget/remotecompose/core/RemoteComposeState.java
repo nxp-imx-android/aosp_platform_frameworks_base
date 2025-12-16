@@ -28,7 +28,6 @@ import com.android.internal.widget.remotecompose.core.operations.utilities.IntMa
 import com.android.internal.widget.remotecompose.core.operations.utilities.NanMap;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -37,13 +36,11 @@ import java.util.HashMap;
  */
 public class RemoteComposeState implements CollectionsAccess {
     public static final int START_ID = 42;
-    //    private static final int MAX_FLOATS = 500;
-    private static int sMaxColors = 200;
 
     /** Offset added to bitmap to cache bitmap textures */
     public static final int BITMAP_TEXTURE_ID_OFFSET = 2000;
 
-    private static final int MAX_DATA = 1000;
+    private static final int MAX_DATA = 10000;
     private final IntMap<Object> mIntDataMap = new IntMap<>();
     private final IntMap<Boolean> mIntWrittenMap = new IntMap<>();
     private final HashMap<Object, Integer> mDataIntMap = new HashMap<>();
@@ -58,7 +55,7 @@ public class RemoteComposeState implements CollectionsAccess {
     private final IntMap<float[]> mPathData = new IntMap<>();
     private final IntIntMap mPathWinding = new IntIntMap();
 
-    private boolean[] mColorOverride = new boolean[sMaxColors];
+    private final IntIntMap mColorOverride = new IntIntMap();
     @NonNull private final IntMap<ArrayAccess> mCollectionMap = new IntMap<>();
 
     private final boolean[] mDataOverride = new boolean[MAX_DATA];
@@ -343,7 +340,7 @@ public class RemoteComposeState implements CollectionsAccess {
      * @param color color (as an int)
      */
     public void updateColor(int id, int color) {
-        if (id < sMaxColors && mColorOverride[id]) {
+        if (mColorOverride.contains(id)) {
             return;
         }
         mColorMap.put(id, color);
@@ -367,18 +364,14 @@ public class RemoteComposeState implements CollectionsAccess {
      * @param color color (as an int)
      */
     public void overrideColor(int id, int color) {
-        if (id >= sMaxColors) {
-            sMaxColors *= 2;
-            mColorOverride = Arrays.copyOf(mColorOverride, sMaxColors);
-        }
-        mColorOverride[id] = true;
+        mColorOverride.put(id, 1);
         mColorMap.put(id, color);
         updateListeners(id);
     }
 
     /** Clear the color Overrides */
     public void clearColorOverride() {
-        Arrays.fill(mColorOverride, false);
+        mColorOverride.clear();
     }
 
     /**

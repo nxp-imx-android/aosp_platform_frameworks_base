@@ -216,7 +216,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      *
      * @param value the document to update variables in the current document width
      */
-    public void updateDocument(RemoteDocument value) {
+    public void updateDocument(@NonNull RemoteDocument value) {
         AndroidRemoteContext tmpContext = new AndroidRemoteContext(value.getClock());
         tmpContext.setAccessibilityAnimationEnabled(
                 SettingsRetriever.animationsEnabled(getContext()));
@@ -234,25 +234,25 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      *
      * @param buffer the document to update variables in the current document width
      */
-    public void updateDocument(byte[] buffer) {
+    public void updateDocument(@NonNull byte[] buffer) {
         RemoteDocument document = new RemoteDocument(buffer);
         updateDocument(document);
     }
 
     /** Set a document on the player */
-    public void setDocument(byte[] buffer) {
+    public void setDocument(@NonNull byte[] buffer) {
         RemoteDocument document = new RemoteDocument(buffer);
         setDocument(document);
     }
 
     /** Set a document on the player */
-    public void setDocument(InputStream inputStream) {
+    public void setDocument(@NonNull InputStream inputStream) {
         RemoteDocument document = new RemoteDocument(inputStream);
         setDocument(document);
     }
 
     /** Set a document on the player */
-    public void setDocument(@NonNull RemoteDocument value) {
+    public void setDocument(@Nullable RemoteDocument value) {
         if (value != null) {
             if (value.canBeDisplayed(
                     MAX_SUPPORTED_MAJOR_VERSION, MAX_SUPPORTED_MINOR_VERSION, 0L)) {
@@ -269,7 +269,8 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
 
             RemoteComposeTouchHelper.REGISTRAR.setAccessibilityDelegate(this, value.getDocument());
         } else {
-            mInner.setDocument(null);
+            // TODO discuss with Nico
+            //            mInner.setDocument(null);
 
             RemoteComposeTouchHelper.REGISTRAR.clearAccessibilityDelegate(this);
         }
@@ -330,7 +331,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
         }
     }
 
-    private void init(Context context, AttributeSet attrs, int defStyleAttr) {
+    private void init(@NonNull Context context, @NonNull AttributeSet attrs, int defStyleAttr) {
         LayoutParams layoutParams =
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         setBackgroundColor(Color.TRANSPARENT);
@@ -361,7 +362,8 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      * @param name name of the string
      * @param content content of the string
      */
-    public void setLocalString(String domain, String name, String content) {
+    public void setLocalString(
+            @NonNull String domain, @NonNull String name, @NonNull String content) {
         mInner.setLocalString(domain + ":" + name, content);
     }
 
@@ -371,7 +373,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      * @param domain domain (SYSTEM or USER)
      * @param name name of the string
      */
-    public void clearLocalString(String domain, String name) {
+    public void clearLocalString(@NonNull String domain, @NonNull String name) {
         mInner.clearLocalString(domain + ":" + name);
     }
 
@@ -381,7 +383,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      * @param name name of the string
      * @param content content of the string
      */
-    public void setUserLocalString(String name, String content) {
+    public void setUserLocalString(@NonNull String name, @NonNull String content) {
         mInner.setLocalString("USER:" + name, content);
     }
 
@@ -391,7 +393,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      * @param name name of the int
      * @param value value of the int
      */
-    public void setUserLocalInt(String name, int value) {
+    public void setUserLocalInt(@NonNull String name, int value) {
         mInner.setLocalInt("USER:" + name, value);
     }
 
@@ -401,7 +403,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      * @param name name of the int
      * @param value value of the int
      */
-    public void setUserLocalColor(String name, int value) {
+    public void setUserLocalColor(@NonNull String name, int value) {
         mInner.setLocalColor("USER:" + name, value);
     }
 
@@ -411,7 +413,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      * @param name name of the float
      * @param value value of the float
      */
-    public void setUserLocalFloat(String name, float value) {
+    public void setUserLocalFloat(@NonNull String name, float value) {
         mInner.setLocalFloat("USER:" + name, value);
     }
 
@@ -421,7 +423,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      * @param name name of the int
      * @param value value of the int
      */
-    public void setUserLocalBitmap(String name, Bitmap value) {
+    public void setUserLocalBitmap(@NonNull String name, @NonNull Bitmap value) {
         mInner.setLocalBitmap("USER:" + name, value);
     }
 
@@ -430,7 +432,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      *
      * @param name name of the bitmap
      */
-    public void clearUserLocalBitmap(String name) {
+    public void clearUserLocalBitmap(@NonNull String name) {
         mInner.clearLocalBitmap("USER:" + name);
     }
 
@@ -439,7 +441,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      *
      * @param name name of the string
      */
-    public void clearUserLocalString(String name) {
+    public void clearUserLocalString(@NonNull String name) {
         mInner.clearLocalString("USER:" + name);
     }
 
@@ -448,7 +450,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      *
      * @param name name of the int
      */
-    public void clearUserLocalInt(String name) {
+    public void clearUserLocalInt(@NonNull String name) {
         mInner.clearLocalInt("USER:" + name);
     }
 
@@ -457,7 +459,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      *
      * @param name name of the color
      */
-    public void clearUserLocalColor(String name) {
+    public void clearUserLocalColor(@NonNull String name) {
         mInner.clearLocalColor("USER:" + name);
     }
 
@@ -466,7 +468,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      *
      * @param name name of the int
      */
-    public void clearUserLocalFloat(String name) {
+    public void clearUserLocalFloat(@NonNull String name) {
         mInner.clearLocalFloat("USER:" + name);
     }
 
@@ -476,7 +478,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      * @param name name of the string
      * @param content content of the string
      */
-    public void setSystemLocalString(String name, String content) {
+    public void setSystemLocalString(@NonNull String name, @NonNull String content) {
         mInner.setLocalString("SYSTEM:" + name, content);
     }
 
@@ -485,7 +487,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      *
      * @param name name of the string
      */
-    public void clearSystemLocalString(String name) {
+    public void clearSystemLocalString(@NonNull String name) {
         mInner.clearLocalString("SYSTEM:" + name);
     }
 
@@ -502,6 +504,12 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
     @VisibleForTesting
     public void setUseChoreographer(boolean value) {
         mInner.setUseChoreographer(value);
+    }
+
+    /** Reload the palette colors */
+    public void reloadPalette() {
+        mThemeSupport.mapColors(getContext(), mInner);
+        invalidate();
     }
 
     /** Id action callback interface */
@@ -552,7 +560,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      *
      * @return the names of named Strings or null
      */
-    public String[] getNamedColors() {
+    public @NonNull String[] getNamedColors() {
         return mInner.getNamedColors();
     }
 
@@ -561,7 +569,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      *
      * @return return the names of named floats in the document
      */
-    public String[] getNamedFloats() {
+    public @NonNull String[] getNamedFloats() {
         return mInner.getNamedVariables(NamedVariable.FLOAT_TYPE);
     }
 
@@ -570,7 +578,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      *
      * @return the name of named string (not the string itself)
      */
-    public String[] getNamedStrings() {
+    public @NonNull String[] getNamedStrings() {
         return mInner.getNamedVariables(NamedVariable.STRING_TYPE);
     }
 
@@ -579,7 +587,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      *
      * @return the name of named images in the document
      */
-    public String[] getNamedImages() {
+    public @NonNull String[] getNamedImages() {
         return mInner.getNamedVariables(NamedVariable.IMAGE_TYPE);
     }
 
@@ -589,7 +597,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      * @param colorName Name of the color
      * @param colorValue The new color value
      */
-    public void setColor(String colorName, int colorValue) {
+    public void setColor(@NonNull String colorName, int colorValue) {
         mInner.setColor(colorName, colorValue);
     }
 
@@ -599,7 +607,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
      * @param name Name of the color
      * @param value The new long value
      */
-    public void setLong(String name, long value) {
+    public void setLong(@NonNull String name, long value) {
         mInner.setLong(name, value);
     }
 

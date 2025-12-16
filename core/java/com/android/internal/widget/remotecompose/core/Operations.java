@@ -33,6 +33,7 @@ import com.android.internal.widget.remotecompose.core.operations.ClipRect;
 import com.android.internal.widget.remotecompose.core.operations.ColorAttribute;
 import com.android.internal.widget.remotecompose.core.operations.ColorConstant;
 import com.android.internal.widget.remotecompose.core.operations.ColorExpression;
+import com.android.internal.widget.remotecompose.core.operations.ColorTheme;
 import com.android.internal.widget.remotecompose.core.operations.ComponentValue;
 import com.android.internal.widget.remotecompose.core.operations.ConditionalOperations;
 import com.android.internal.widget.remotecompose.core.operations.DataDynamicListFloat;
@@ -102,6 +103,7 @@ import com.android.internal.widget.remotecompose.core.operations.TextLookupInt;
 import com.android.internal.widget.remotecompose.core.operations.TextMeasure;
 import com.android.internal.widget.remotecompose.core.operations.TextMerge;
 import com.android.internal.widget.remotecompose.core.operations.TextSubtext;
+import com.android.internal.widget.remotecompose.core.operations.TextTransform;
 import com.android.internal.widget.remotecompose.core.operations.Theme;
 import com.android.internal.widget.remotecompose.core.operations.TimeAttribute;
 import com.android.internal.widget.remotecompose.core.operations.TouchExpression;
@@ -292,7 +294,9 @@ public class Operations {
     public static final int ID_LOOKUP = 192;
     public static final int PATH_EXPRESSION = 193;
     public static final int PARTICLE_COMPARE = 194;
-
+    public static final int UPDATE = 195; // TODO
+    public static final int COLOR_THEME = 196;
+    public static final int TEXT_TRANSFORM = 199;
     ///////////////////////////////////////// ======================
 
     ////////////////////////////////////////
@@ -386,7 +390,12 @@ public class Operations {
      */
     public static boolean valid(int opId, int apiLevel, int profiles) {
         switch (apiLevel) {
-            case 7:
+            case 6:
+                if (sMapV6 == null) {
+                    sMapV6 = createMapV6();
+                }
+                return sMapV6.get(opId) != null;
+            default: // 7 and above
                 if (sMapV7 == null) {
                     sMapV7 = createMapV7(sMapV7, profiles);
                 }
@@ -396,13 +405,7 @@ public class Operations {
                     map = sMapV7.get(profiles);
                 }
                 return map.get(opId) != null;
-            case 6:
-                if (sMapV6 == null) {
-                    sMapV6 = createMapV6();
-                }
-                return sMapV6.get(opId) != null;
         }
-        return false;
     }
 
     /**
@@ -415,18 +418,17 @@ public class Operations {
     public static @Nullable UniqueIntMap<CompanionOperation> getOperations(
             int apiLevel, int profiles) {
         switch (apiLevel) {
-            case 7:
-                if (sMapV7 == null || !sMapV7.containsKey(profiles)) {
-                    sMapV7 = createMapV7(sMapV7, profiles);
-                }
-                return sMapV7.get(profiles);
             case 6:
                 if (sMapV6 == null) {
                     sMapV6 = createMapV6();
                 }
                 return sMapV6;
+            default: // 7 and above
+                if (sMapV7 == null || !sMapV7.containsKey(profiles)) {
+                    sMapV7 = createMapV7(sMapV7, profiles);
+                }
+                return sMapV7.get(profiles);
         }
-        return null;
     }
 
     private static UniqueIntMap<CompanionOperation> createMapV6() {
@@ -465,6 +467,9 @@ public class Operations {
             sMapV7AndroidXExperimental.put(MODIFIER_ALIGN_BY, AlignByModifierOperation::read);
             sMapV7AndroidXExperimental.put(LAYOUT_COMPUTE, LayoutComputeOperation::read);
             sMapV7AndroidXExperimental.put(CORE_TEXT, CoreText::read);
+            sMapV7AndroidXExperimental.put(TEXT_TRANSFORM, TextTransform::read);
+            sMapV7AndroidXExperimental.put(COLOR_THEME, ColorTheme::read);
+
         }
         return sMapV7AndroidXExperimental;
     }
@@ -492,6 +497,7 @@ public class Operations {
             sMapV7Widgets.put(PARTICLE_COMPARE, ParticlesCompare::read);
             sMapV7Widgets.put(DYNAMIC_FLOAT_LIST, DataDynamicListFloat::read);
             sMapV7Widgets.put(UPDATE_DYNAMIC_FLOAT_LIST, UpdateDynamicFloatList::read);
+
         }
         return sMapV7Widgets;
     }
@@ -503,6 +509,9 @@ public class Operations {
             sMapV7WidgetsExperimental.put(MODIFIER_ALIGN_BY, AlignByModifierOperation::read);
             sMapV7WidgetsExperimental.put(LAYOUT_COMPUTE, LayoutComputeOperation::read);
             sMapV7WidgetsExperimental.put(CORE_TEXT, CoreText::read);
+            sMapV7WidgetsExperimental.put(TEXT_TRANSFORM, TextTransform::read);
+            sMapV7WidgetsExperimental.put(COLOR_THEME, ColorTheme::read);
+
         }
         return sMapV7WidgetsExperimental;
     }

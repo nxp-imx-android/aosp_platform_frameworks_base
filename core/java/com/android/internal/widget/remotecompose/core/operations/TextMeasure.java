@@ -25,6 +25,8 @@ import com.android.internal.widget.remotecompose.core.Operation;
 import com.android.internal.widget.remotecompose.core.Operations;
 import com.android.internal.widget.remotecompose.core.PaintContext;
 import com.android.internal.widget.remotecompose.core.PaintOperation;
+import com.android.internal.widget.remotecompose.core.RemoteContext;
+import com.android.internal.widget.remotecompose.core.VariableSupport;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
@@ -32,7 +34,7 @@ import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
 import java.util.List;
 
 /** Operation to Measure Text data */
-public class TextMeasure extends PaintOperation {
+public class TextMeasure extends PaintOperation implements VariableSupport {
     private static final int OP_CODE = Operations.TEXT_MEASURE;
     private static final String CLASS_NAME = "TextMeasure";
     public int mId;
@@ -56,6 +58,14 @@ public class TextMeasure extends PaintOperation {
         this.mTextId = textId;
         this.mType = type;
     }
+
+    @Override
+    public void registerListening(@NonNull RemoteContext context) {
+        context.listensTo(mTextId, this);
+    }
+
+    @Override
+    public void updateVariables(@NonNull RemoteContext context) {}
 
     @Override
     public void write(@NonNull WireBuffer buffer) {

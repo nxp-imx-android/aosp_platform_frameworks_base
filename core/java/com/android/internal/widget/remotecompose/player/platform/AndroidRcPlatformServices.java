@@ -33,7 +33,7 @@ public class AndroidRcPlatformServices implements RcPlatformServices {
     private static final String LOG_TAG = "RemoteCompose";
 
     @Override
-    public byte[] imageToByteArray(@NonNull Object image) {
+    public @Nullable byte[] imageToByteArray(@NonNull Object image) {
         if (image instanceof Bitmap) {
             // let's create a bitmap
             ByteArrayOutputStream byteArrayBitmapStream = new ByteArrayOutputStream();
@@ -69,9 +69,9 @@ public class AndroidRcPlatformServices implements RcPlatformServices {
 
     @Override
     public @Nullable float[] pathToFloatArray(@NonNull Object path) {
-        //        if (path is RemotePath) {
-        //            return path.createFloatArray()
-        //        }
+        if (path instanceof RcPlatformServices.RcPathArrayCreator) {
+            return ((RcPlatformServices.RcPathArrayCreator) path).createFloatArray();
+        }
 
         if (path instanceof Path) {
             return androidPathToFloatArray((Path) path);
