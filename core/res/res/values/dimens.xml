@@ -561,8 +561,8 @@
     <!-- Extra spacing before and after images in messaging style -->
     <dimen name="messaging_image_extra_spacing">8dp</dimen>
 
-    <!-- The max width used for value of the single promoted Notification.MetricStyle -->
-    <dimen name="notification_single_promoted_metric_value_max_width">142dp</dimen>
+    <!-- The max fraction for the value of the single promoted Notification.MetricStyle -->
+    <item type="fraction" name="notification_single_promoted_metric_value_max_fraction">60%</item>
 
     <!-- Preferred width and height of the search view. -->
     <dimen name="search_view_preferred_width">320dip</dimen>
