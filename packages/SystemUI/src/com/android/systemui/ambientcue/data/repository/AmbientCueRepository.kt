@@ -434,15 +434,22 @@ constructor(
             )
 
     override val isRootViewAttached: StateFlow<Boolean> =
-        combine(isDeactivated, globallyFocusedTaskId, unfilteredActions, isAmbientCueEnabled) {
+        combine(
                 isDeactivated,
                 globallyFocusedTaskId,
+                targetTaskId,
+                unfilteredActions,
+                isAmbientCueEnabled,
+            ) {
+                isDeactivated,
+                globallyFocusedTaskId,
+                targetTaskId,
                 unfilteredActions,
                 isAmbientCueEnabled ->
                 unfilteredActions.isNotEmpty() &&
                     isAmbientCueEnabled &&
                     !isDeactivated &&
-                    globallyFocusedTaskId == targetTaskId.value
+                    globallyFocusedTaskId == targetTaskId
             }
             .onEach { isAttached ->
                 if (isAttached && !isSessionStarted) {

@@ -264,6 +264,37 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
         }
 
     @Test
+    fun isRootViewAttached_globalTaskIdUpdate_isRootViewAttachedReEvaluates() =
+        kosmos.runTest {
+            val actions by collectLastValue(underTest.actions)
+            val isRootViewAttached by collectLastValue(underTest.isRootViewAttached)
+            secureSettingsRepository.setInt(
+                AmbientCueRepositoryImpl.AMBIENT_CUE_SETTING,
+                AmbientCueRepositoryImpl.OPTED_IN,
+            )
+            runCurrent()
+            verify(smartSpaceSession)
+                .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
+            // Set Target Task ID
+            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(listOf(autofillTarget))
+            advanceUntilIdle()
+            // Set Global Task to MISMATCH (TASK_ID_2)
+            taskStackChangeListeners.listenerImpl.onTaskMovedToFront(
+                RunningTaskInfo().apply { taskId = TASK_ID_2 }
+            )
+            advanceTimeBy(DEBOUNCE_DELAY_MS)
+            assertThat(isRootViewAttached).isFalse()
+
+            // Set Global Task to MATCH (TASK_ID)
+            taskStackChangeListeners.listenerImpl.onTaskMovedToFront(
+                RunningTaskInfo().apply { taskId = TASK_ID }
+            )
+            advanceTimeBy(DEBOUNCE_DELAY_MS)
+
+            assertThat(isRootViewAttached).isTrue()
+        }
+
+    @Test
     fun isRootViewAttached_ambientCueDisabled_false() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
