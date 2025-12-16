@@ -814,10 +814,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         writeXmlAndReload(USER_ALL);
 
         ArrayList<String> expected = new ArrayList<>(List.of(DEFAULT_ALLOWED_ADJUSTMENTS));
-
-        if (android.app.Flags.nmSummarizationOnboardingUi()) {
-            expected.remove(KEY_SUMMARIZATION);
-        }
+        expected.remove(KEY_SUMMARIZATION);
 
         assertThat(mAssistants.getAllowedAssistantAdjustments(mZero.id))
                 .containsExactlyElementsIn(expected);
@@ -887,8 +884,6 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI, Flags.FLAG_NM_SUMMARIZATION,
-            Flags.FLAG_NM_SUMMARIZATION_UI})
     public void testSetAdjustmentSupportedForPackage_allowsAndDenies() {
         // Given that a package (for user 0) is allowed to have summarization adjustments
         String key = KEY_SUMMARIZATION;
@@ -931,8 +926,6 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI, Flags.FLAG_NM_SUMMARIZATION,
-            Flags.FLAG_NM_SUMMARIZATION_UI})
     public void testSetAdjustmentSupportedForPackage_deniesMultiple() {
         // Given packages not allowed to have summarizations applied
         String key = KEY_SUMMARIZATION;
@@ -963,8 +956,6 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI, Flags.FLAG_NM_SUMMARIZATION,
-            Flags.FLAG_NM_SUMMARIZATION_UI})
     public void testSetAdjustmentSupportedForPackage_readWriteXml_singleAdjustment()
             throws Exception {
         mAssistants.loadDefaultsFromConfig(true);
@@ -985,8 +976,6 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI, Flags.FLAG_NM_SUMMARIZATION,
-            Flags.FLAG_NM_SUMMARIZATION_UI})
     public void testSetAdjustmentSupportedForPackage_readWriteXml_multipleAdjustments()
             throws Exception {
         mAssistants.loadDefaultsFromConfig(true);
@@ -1012,8 +1001,6 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI, Flags.FLAG_NM_SUMMARIZATION,
-            Flags.FLAG_NM_SUMMARIZATION_UI})
     public void testSetAdjustmentSupportedForPackage_readWriteXml_multipleUsers()
             throws Exception {
         mAssistants.loadDefaultsFromConfig(true);
@@ -1047,8 +1034,6 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
 
     @Test
     @SuppressWarnings("GuardedBy")
-    @EnableFlags({Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI, Flags.FLAG_NM_SUMMARIZATION,
-            Flags.FLAG_NM_SUMMARIZATION_UI})
     public void testPullAdjustmentPreferencesStats_fillsOutStatsEvent()
             throws Exception {
         mAssistants.loadDefaultsFromConfig(true);

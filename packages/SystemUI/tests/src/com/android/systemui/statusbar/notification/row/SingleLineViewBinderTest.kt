@@ -214,10 +214,6 @@ class SingleLineViewBinderTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        android.app.Flags.FLAG_NM_SUMMARIZATION_UI,
-        android.app.Flags.FLAG_NM_SUMMARIZATION,
-    )
     fun bindSummarizedGroupConversationSingleLineView() {
         // GIVEN a row with a group conversation notification
         val user = Person.Builder().setName(USER_NAME).build()

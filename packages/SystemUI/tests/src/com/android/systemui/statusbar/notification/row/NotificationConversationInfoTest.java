@@ -436,7 +436,6 @@ public class NotificationConversationInfoTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NM_SUMMARIZATION, Flags.FLAG_NM_SUMMARIZATION_UI})
     public void testBindNotification_SetsFeedbackLink_ifSummaryInRanking() {
         mEntry.setRanking(new RankingBuilder(mEntry.getRanking())
                 .setSummarization("something").build());

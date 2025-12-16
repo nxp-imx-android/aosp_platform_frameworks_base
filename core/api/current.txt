@@ -6628,7 +6628,7 @@ package android.app {
     method public long getTimeoutAfter();
     method public boolean hasImage();
     method public boolean hasPromotableCharacteristics();
-    method @FlaggedApi("android.app.nm_summarization") public boolean hasSummarizedContent();
+    method public boolean hasSummarizedContent();
     method @FlaggedApi("android.app.opt_in_rich_ongoing") public boolean isRequestPromotedOngoing();
     method @FlaggedApi("android.app.api_notification_chip") @NonNull public android.app.Notification.ResolvedCompactContent resolveCompactContent(@NonNull android.content.Context);
     method public void writeToParcel(android.os.Parcel, int);
@@ -6985,7 +6985,7 @@ package android.app {
     method @NonNull public android.app.Notification.Builder setGroup(String);
     method @NonNull public android.app.Notification.Builder setGroupAlertBehavior(int);
     method @NonNull public android.app.Notification.Builder setGroupSummary(boolean);
-    method @FlaggedApi("android.app.nm_summarization") @NonNull public android.app.Notification.Builder setHasSummarizedContent(boolean);
+    method @NonNull public android.app.Notification.Builder setHasSummarizedContent(boolean);
     method @NonNull public android.app.Notification.Builder setLargeIcon(android.graphics.Bitmap);
     method @NonNull public android.app.Notification.Builder setLargeIcon(android.graphics.drawable.Icon);
     method @Deprecated public android.app.Notification.Builder setLights(@ColorInt int, int, int);
@@ -43499,7 +43499,7 @@ package android.service.notification {
     method public int getRank();
     method @NonNull public java.util.List<android.app.Notification.Action> getSmartActions();
     method @NonNull public java.util.List<java.lang.CharSequence> getSmartReplies();
-    method @FlaggedApi("android.app.nm_summarization") @Nullable public String getSummarization();
+    method @Nullable public String getSummarization();
     method public int getSuppressedVisualEffects();
     method public int getUserSentiment();
     method public boolean isAmbient();

@@ -1020,7 +1020,6 @@ public class NotificationRecordTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_NM_SUMMARIZATION)
     public void testSummarization_null() {
         StatusBarNotification sbn = getNotification(PKG_O, true /* noisy */,
                 true /* defaultSound */, false /* buzzy */, false /* defaultBuzz */,
@@ -1039,7 +1038,6 @@ public class NotificationRecordTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_NM_SUMMARIZATION)
     public void testSummarization_charSequence() {
         CharSequence summary = "hello";
         StatusBarNotification sbn = getNotification(PKG_O, true /* noisy */,
@@ -1059,7 +1057,6 @@ public class NotificationRecordTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_NM_SUMMARIZATION)
     public void testSummarization_string() {
         String summary = "hello";
         StatusBarNotification sbn = getNotification(PKG_O, true /* noisy */,

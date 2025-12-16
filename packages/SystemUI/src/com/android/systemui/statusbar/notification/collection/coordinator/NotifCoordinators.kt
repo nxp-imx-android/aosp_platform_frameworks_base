@@ -24,7 +24,6 @@ import com.android.systemui.statusbar.notification.collection.provider.SectionSt
 import com.android.systemui.statusbar.notification.shared.NmHighlights
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism
-import com.android.systemui.statusbar.notification.shared.NotificationSummarizationOnboardingUi
 import javax.inject.Inject
 
 /**
@@ -110,9 +109,7 @@ constructor(
         if (NotificationBundleUi.isEnabled) {
             mCoordinators.add(bundleCoordinator)
         }
-        if (NotificationSummarizationOnboardingUi.isEnabled) {
-            mCoordinators.add(summarizationCoordinator)
-        }
+        mCoordinators.add(summarizationCoordinator)
         mCoordinators.add(statsLoggerCoordinator)
         if (NmHighlights.isEnabled) {
             mCoordinators.add(highlightsCoordinator)
