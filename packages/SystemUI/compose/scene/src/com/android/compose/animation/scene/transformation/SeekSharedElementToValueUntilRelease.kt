@@ -117,8 +117,10 @@ private fun <T, V : AnimationVector> TransitionBuilder.seekSharedElementToValueU
             override val property = property
 
             private var seekValue = undefinedValue
+            private var lastFromValue = undefinedValue
+            private var lastToValue = undefinedValue
             private var lastValue = undefinedValue
-            private var animation: Animatable<T, V>? = null
+            private var triggerAnimatable: Animatable<T, V>? = null
 
             override fun PropertyTransformationScope.transform(
                 element: ElementKey,
@@ -146,7 +148,9 @@ private fun <T, V : AnimationVector> TransitionBuilder.seekSharedElementToValueU
                 fromValue: T,
                 toValue: T,
             ): T {
-                if (seekValue == undefinedValue) {
+                if (lastFromValue != fromValue || lastToValue != toValue) {
+                    lastFromValue = fromValue
+                    lastToValue = toValue
                     seekValue = value(fromValue, toValue)
                     check(seekValue != undefinedValue) {
                         "seekValue of $seekValue is not supported"
@@ -163,20 +167,26 @@ private fun <T, V : AnimationVector> TransitionBuilder.seekSharedElementToValueU
                 fromValue: T,
                 toValue: T,
             ): T {
-                fun createAnimatable(): Animatable<T, V> {
-                    val targetValue =
-                        if (transition.isAnimatingToToContent()) toValue else fromValue
+                val targetValue = if (transition.isAnimatingToToContent()) toValue else fromValue
+
+                val triggerAnimatable = triggerAnimatable
+                return if (triggerAnimatable != null) {
+                    if (triggerAnimatable.targetValue != targetValue) {
+                        transitionScope.launch {
+                            triggerAnimatable.animateTo(targetValue, animationSpec)
+                        }
+                    }
+                    triggerAnimatable.value
+                } else {
                     val animatable =
                         Animatable(
                             lastValue.takeIf { it != undefinedValue } ?: targetValue,
                             typeConverter,
                         )
                     transitionScope.launch { animatable.animateTo(targetValue, animationSpec) }
-                    return animatable
+                    this.triggerAnimatable = animatable
+                    animatable.value
                 }
-
-                val animation = this.animation ?: createAnimatable().also { animation = it }
-                return animation.value
             }
 
             private fun TransitionState.Transition.isAnimatingToToContent(): Boolean {
