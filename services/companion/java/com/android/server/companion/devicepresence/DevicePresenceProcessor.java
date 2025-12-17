@@ -236,7 +236,7 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
 
             final ObservableUuid observableUuid = new ObservableUuid(userId, requestUuid,
                     callingPackage, System.currentTimeMillis());
-            mObservableUuidStore.writeObservableUuid(userId, observableUuid);
+            mObservableUuidStore.addObservableUuid(userId, observableUuid);
         } else if (deviceId != null) {
             enforceCallerCanObserveDevicePresenceByDeviceId(mContext);
 
@@ -529,7 +529,7 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
         final List<AssociationInfo> packageAssociations =
                 mAssociationStore.getActiveAssociationsByPackage(userId, packageName);
         final List<ObservableUuid> observableUuids =
-                mObservableUuidStore.getObservableUuidsForPackage(userId, packageName);
+                mObservableUuidStore.readObservableUuidsForPackage(userId, packageName);
         final List<AssociationInfo> associationInfos =
                 mAssociationStore.getActiveAssociationsByUser(userId);
 
@@ -539,7 +539,7 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
         }
 
         for (ObservableUuid uuid : observableUuids) {
-            if (isDeviceUuidPresent(uuid.getUuid())) {
+            if (isDeviceUuidPresent(uuid.uuid())) {
                 return true;
             }
         }
@@ -919,14 +919,14 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
         Slog.i(TAG, "onDevicePresenceEventByUuid ObservableUuid=[" + uuid + "], event=[" + eventType
                 + "]...");
 
-        final ParcelUuid parcelUuid = uuid.getUuid();
-        final int userId = uuid.getUserId();
+        final ParcelUuid parcelUuid = uuid.uuid();
+        final int userId = uuid.userId();
         if (!mUserManager.isUserUnlockingOrUnlocked(userId)) {
             onDeviceLocked(NO_ASSOCIATION, userId, eventType, parcelUuid);
             return;
         }
 
-        final String packageName = uuid.getPackageName();
+        final String packageName = uuid.packageName();
         final DevicePresenceEvent event = new DevicePresenceEvent(NO_ASSOCIATION, eventType,
                 parcelUuid);
 
@@ -1126,7 +1126,7 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
         boolean shouldScheduleRebind = false;
         boolean shouldScheduleRebindForUuid = false;
         final List<ObservableUuid> uuids =
-                mObservableUuidStore.getObservableUuidsForPackage(userId, packageName);
+                mObservableUuidStore.readObservableUuidsForPackage(userId, packageName);
 
         for (AssociationInfo ai :
                 mAssociationStore.getActiveAssociationsByPackage(userId, packageName)) {
@@ -1149,7 +1149,7 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
         }
 
         for (ObservableUuid uuid : uuids) {
-            if (isDeviceUuidPresent(uuid.getUuid())) {
+            if (isDeviceUuidPresent(uuid.uuid())) {
                 shouldScheduleRebindForUuid = true;
                 break;
             }
@@ -1296,13 +1296,13 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
             return;
         }
         final List<ObservableUuid> observableUuids =
-                mObservableUuidStore.getObservableUuidsForUser(userId);
+                mObservableUuidStore.readObservableUuids(userId);
         // Notify and bind the app after the phone is unlocked.
         for (DevicePresenceEvent deviceEvent : deviceEvents) {
             boolean isUuid = deviceEvent.getUuid() != null;
             if (isUuid) {
                 for (ObservableUuid uuid : observableUuids) {
-                    if (uuid.getUuid().equals(deviceEvent.getUuid())) {
+                    if (uuid.uuid().equals(deviceEvent.getUuid())) {
                         onDevicePresenceEventByUuid(uuid, EVENT_BT_CONNECTED);
                     }
                 }
