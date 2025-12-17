@@ -69,6 +69,7 @@ import com.android.systemui.scene.ui.viewmodel.SceneContainerViewModel
 import com.android.systemui.shade.ui.composable.OverlayShade
 import com.android.systemui.shade.ui.composable.isFullWidthShade
 import kotlinx.coroutines.CoroutineScope
+import platform.test.motion.compose.values.isRunningMotionTest
 
 /**
  * Renders a container of a collection of "scenes" that the user can switch between using certain
@@ -244,6 +245,7 @@ fun SceneContainer(
             swipeSourceDetector = viewModel.swipeSourceDetector,
             swipeDetector =
                 remember { PassthroughSwipeDetector(velocityThreshold = swipeVelocityThreshold) },
+            implicitTestTags = isRunningMotionTest,
             debugName = "SceneContainer",
         ) {
             sceneByKey.forEach { (sceneKey, scene) ->
