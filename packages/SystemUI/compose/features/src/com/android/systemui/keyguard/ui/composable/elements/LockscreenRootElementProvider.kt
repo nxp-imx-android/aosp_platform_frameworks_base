@@ -40,6 +40,7 @@ import com.android.systemui.keyguard.ui.viewmodel.LockscreenRootViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.plugins.keyguard.ui.composable.elements.BaseLockscreenElement.ElementSource
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext.BurnInModifiers
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.AmbientIndicationArea
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Clock
@@ -84,13 +85,21 @@ constructor(
             LockscreenTouchHandling(viewModel.touchHandlingFactory) { onSettingsMenuPlaced ->
                 val innerContext =
                     context.copy(
-                        burnInModifierBuilder = { isClock ->
-                            Modifier.burnInAware(
-                                viewModel = aodBurnInViewModel,
-                                params = burnIn.parameters,
-                                isClock = isClock,
-                            )
-                        },
+                        burnInModifiers =
+                            BurnInModifiers(
+                                clock =
+                                    Modifier.burnInAware(
+                                        viewModel = aodBurnInViewModel,
+                                        params = burnIn.parameters,
+                                        isClock = true,
+                                    ),
+                                nonClock =
+                                    Modifier.burnInAware(
+                                        viewModel = aodBurnInViewModel,
+                                        params = burnIn.parameters,
+                                        isClock = false,
+                                    ),
+                            ),
                         onElementPositioned = { key, rect ->
                             when (key) {
                                 Clock.Small -> {
