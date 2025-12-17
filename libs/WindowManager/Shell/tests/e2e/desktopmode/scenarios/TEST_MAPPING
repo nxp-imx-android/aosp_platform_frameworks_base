@@ -43,6 +43,12 @@
       ]
     },
     {
+      "name": "FunctionalTestsDesktopMode-clientfullscreenrequest-FullscreenModeRequestFromDesktopAndBackTest",
+      "keywords": [
+        "desktop"
+      ]
+    },
+    {
       "name": "FunctionalTestsDesktopMode-drag-DragAppWindowMultiWindowAndPipTest",
       "keywords": [
         "desktop"
