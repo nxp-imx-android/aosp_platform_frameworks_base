@@ -373,6 +373,8 @@ private fun ContentScope.SingleShade(
                     stackScrollView = notificationStackScrollView,
                     viewModel = notificationsPlaceholderViewModel,
                     shouldPunchHoleBehindScrim = true,
+                    shouldContentFillMaxSize = true,
+                    shouldScrimBackgroundFillMaxHeight = true,
                     isTransparencyEnabled = viewModel.isTransparencyEnabled,
                     stackTopPadding = notificationStackPadding,
                     stackBottomPadding = navBarHeight,
@@ -595,6 +597,7 @@ private fun ContentScope.SplitShade(
                     jankMonitor = jankMonitor,
                     stackTopPadding = notificationStackPadding,
                     stackBottomPadding = notificationStackPadding,
+                    shouldFillMaxHeight = true,
                     shouldPunchHoleBehindScrim = false,
                     isTransparencyEnabled = viewModel.isTransparencyEnabled,
                     onEmptySpaceClick =
