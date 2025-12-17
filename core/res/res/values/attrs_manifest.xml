@@ -1943,7 +1943,7 @@
         -->
         <flag name="mediaProcessing" value="0x2000" />
         <!-- Use cases that can't be categorized into any other foreground service types, but also
-            can't use @link android.app.job.JobInfo.Builder} APIs.
+            can't use {@link android.app.job.JobInfo.Builder} APIs.
             See {@link android.content.pm.ServiceInfo#FOREGROUND_SERVICE_TYPE_SPECIAL_USE} for the
             best practice of the use of this type.
 
@@ -3212,7 +3212,7 @@
          for a particular process (if specified under the
          {@link #AndroidManifestProcess process} tag) or by default for all
          processes {if specified under the
-         @link #AndroidManifestProcesses processes} tag).
+         {@link #AndroidManifestProcesses processes} tag).
 
          <p>This appears as a child tag of the
          {@link #AndroidManifestProcesses processes} and
