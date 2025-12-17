@@ -117,6 +117,7 @@ import android.util.ArraySet;
 import android.util.Pair;
 import android.view.Display;
 import android.view.DisplayInfo;
+import android.view.IWindowManager;
 import android.view.WindowManager;
 import android.virtualdevice.cts.common.VirtualDeviceRule;
 
@@ -245,6 +246,8 @@ public class VirtualDeviceManagerServiceTest {
     private DisplayManagerInternal mDisplayManagerInternalMock;
     @Mock
     private IDisplayManager mIDisplayManager;
+    @Mock
+    private IWindowManager mIWindowManager;
     @Mock
     private IVirtualMouse mVirtualMouse;
     @Mock
@@ -1376,6 +1379,30 @@ public class VirtualDeviceManagerServiceTest {
                 DISPLAY_ID_1, Configuration.UI_MODE_TYPE_UNDEFINED);
     }
 
+    @EnableFlags(Flags.FLAG_DEVICE_AWARE_TOUCH_MODE)
+    @Test
+    public void setDisplayInTouchMode_untrustedDisplay_throws() {
+        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1);
+        assertThrows(SecurityException.class, () -> mDeviceImpl.setDisplayInTouchMode(
+                DISPLAY_ID_1, true));
+    }
+
+    @EnableFlags(Flags.FLAG_DEVICE_AWARE_TOUCH_MODE)
+    @Test
+    public void setDisplayInTouchMode_unownedDisplay_throws() {
+        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1);
+        assertThrows(SecurityException.class, () -> mDeviceImpl.setDisplayInTouchMode(
+                Display.DEFAULT_DISPLAY, true));
+    }
+
+    @EnableFlags(Flags.FLAG_DEVICE_AWARE_TOUCH_MODE)
+    @Test
+    public void setDisplayInTouchMode_setsDisplayInTouchMode() throws Exception {
+        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
+        mDeviceImpl.setDisplayInTouchMode(DISPLAY_ID_1, true);
+        verify(mIWindowManager).setInTouchMode(true, DISPLAY_ID_1);
+    }
+
     @Test
     public void openNonBlockedAppOnVirtualDisplay_succeeds() {
         addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1);
@@ -1671,6 +1698,7 @@ public class VirtualDeviceManagerServiceTest {
                         mSoundEffectListener,
                         params,
                         new DisplayManagerGlobal(mIDisplayManager),
+                        mIWindowManager,
                         new VirtualCameraController(DEVICE_POLICY_DEFAULT, virtualDeviceId),
                         mViewConfigurationControllerMock);
         mVdms.addVirtualDevice(virtualDeviceImpl);
