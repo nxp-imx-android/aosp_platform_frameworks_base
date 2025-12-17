@@ -180,8 +180,7 @@ public class DragPositioningCallbackUtility {
         // If the application is unresizeable and any bounds have been set back to their old
         // location or to a stable bound edge, reset all the bounds to maintain the applications
         // aspect ratio.
-        if (DesktopModeFlags.ENABLE_WINDOWING_SCALED_RESIZING.isTrue()
-                && !isAspectRatioMaintained && !windowDecoration.getTaskInfo().isResizeable) {
+        if (!isAspectRatioMaintained && !windowDecoration.getTaskInfo().isResizeable) {
             repositionTaskBounds.top = oldTop;
             repositionTaskBounds.bottom = oldBottom;
             repositionTaskBounds.right = oldRight;

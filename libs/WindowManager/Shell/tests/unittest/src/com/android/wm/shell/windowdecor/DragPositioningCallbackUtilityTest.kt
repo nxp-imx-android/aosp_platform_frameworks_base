@@ -152,7 +152,6 @@ class DragPositioningCallbackUtilityTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOWING_SCALED_RESIZING)
     fun testChangeBounds_unresizeableApp_heightLessThanMin_resetToStartingBounds() {
         mockWindowDecoration.taskInfo.isResizeable = false
         val startingPoint = PointF(STARTING_BOUNDS.right.toFloat(), STARTING_BOUNDS.top.toFloat())
@@ -183,7 +182,6 @@ class DragPositioningCallbackUtilityTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOWING_SCALED_RESIZING)
     fun testChangeBounds_unresizeableApp_initialHeightLessThanMin_increasingBounds_resizeAllowed() {
         mockWindowDecoration.taskInfo.isResizeable = false
         val startingPoint =
@@ -219,7 +217,6 @@ class DragPositioningCallbackUtilityTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOWING_SCALED_RESIZING)
     fun testChangeBounds_unresizeableApp_initialHeightMoreThanMax_decreasingBounds_resizeAllowed() {
         mockWindowDecoration.taskInfo.isResizeable = false
         val startingPoint =
@@ -255,7 +252,6 @@ class DragPositioningCallbackUtilityTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOWING_SCALED_RESIZING)
     fun testChangeBounds_unresizeableApp_widthLessThanMin_resetToStartingBounds() {
         mockWindowDecoration.taskInfo.isResizeable = false
         val startingPoint = PointF(STARTING_BOUNDS.right.toFloat(), STARTING_BOUNDS.top.toFloat())
@@ -286,7 +282,6 @@ class DragPositioningCallbackUtilityTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOWING_SCALED_RESIZING)
     fun testChangeBounds_unresizeableApp_initialWidthLessThanMin_increasingBounds_resizeAllowed() {
         mockWindowDecoration.taskInfo.isResizeable = false
         val startingPoint =
@@ -319,7 +314,6 @@ class DragPositioningCallbackUtilityTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOWING_SCALED_RESIZING)
     fun testChangeBounds_unresizeableApp_initialWidthMoreThanMax_decreasingBounds_resizeAllowed() {
         mockWindowDecoration.taskInfo.isResizeable = false
         val startingPoint =
@@ -534,7 +528,6 @@ class DragPositioningCallbackUtilityTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOWING_SCALED_RESIZING)
     fun testChangeBounds_unresizeableApp_beyondStableBounds_resetToStartingBounds() {
         mockWindowDecoration.taskInfo.isResizeable = false
         val startingPoint =

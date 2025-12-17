@@ -16,8 +16,6 @@
 
 package com.android.wm.shell.windowdecor;
 
-import static android.window.DesktopModeFlags.ENABLE_WINDOWING_SCALED_RESIZING;
-
 import static com.android.wm.shell.windowdecor.DragResizeWindowGeometry.getFineResizeCornerSize;
 import static com.android.wm.shell.windowdecor.DragResizeWindowGeometry.getLargeResizeCornerSize;
 import static com.android.wm.shell.windowdecor.DragResizeWindowGeometry.getResizeEdgeHandleSize;
@@ -269,10 +267,6 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
             boolean applyStartTransactionOnDraw, boolean shouldSetTaskVisibilityPositionAndCrop,
             boolean hasGlobalFocus,
             @NonNull Region globalExclusionRegion, boolean inSyncWithTransition) {
-        final boolean isFreeform =
-                taskInfo.getWindowingMode() == WindowConfiguration.WINDOWING_MODE_FREEFORM;
-        final boolean isDragResizeable = ENABLE_WINDOWING_SCALED_RESIZING.isTrue()
-                ? isFreeform : isFreeform && taskInfo.isResizeable;
 
         final WindowDecorLinearLayout oldRootView = mResult.mRootView;
         final SurfaceControl oldDecorationSurface = mDecorationContainerSurface;
@@ -301,7 +295,9 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
 
         bindData(mResult.mRootView, taskInfo);
 
-        if (!isDragResizeable) {
+        if (!taskInfo.isFreeform()) {
+            // Non-freeform tasks are not drag resizeable and thus the drag resize listener can be
+            // closed.
             closeDragResizeListener();
             return;
         }

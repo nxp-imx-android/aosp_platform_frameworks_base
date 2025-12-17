@@ -2299,11 +2299,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             transactionFactory,
                             desktopState);
 
-            if (DesktopModeFlags.ENABLE_WINDOWING_SCALED_RESIZING.isTrue()) {
-                return new FixedAspectRatioTaskPositionerDecorator(windowDecoration,
+            return new FixedAspectRatioTaskPositionerDecorator(windowDecoration,
                         taskPositioner);
-            }
-            return taskPositioner;
         }
     }
 }
