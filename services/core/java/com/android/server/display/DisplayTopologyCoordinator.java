@@ -133,17 +133,18 @@ class DisplayTopologyCoordinator {
             mTopology.addDisplay(
                     info.displayId, info.logicalWidth, info.logicalHeight, info.logicalDensityDpi);
             Slog.i(TAG, "Display " + info.displayId + " added, new topology: " + mTopology);
-            restoreTopologyLocked();
-            sendTopologyUpdateLocked();
-        }
 
-        if (mFlags.isDefaultDisplayInTopologySwitchEnabled()) {
             // If the default display should not be included in the topology, then when a
             // non-default display is added, remove the default display from the topology.
-            if (info.displayId != Display.DEFAULT_DISPLAY
+            if (mFlags.isDefaultDisplayInTopologySwitchEnabled()
+                    && info.displayId != Display.DEFAULT_DISPLAY
                     && !mShouldIncludeDefaultDisplayInTopology.getAsBoolean()
                     && mTopology.hasMultipleDisplays()) {
                 onDisplayRemoved(Display.DEFAULT_DISPLAY);
+                // onDisplayRemoved will send the update, so no need to send it here.
+            } else {
+                restoreTopologyLocked();
+                sendTopologyUpdateLocked();
             }
         }
     }
@@ -184,18 +185,19 @@ class DisplayTopologyCoordinator {
             if (mTopology.removeDisplay(displayId)) {
                 Slog.i(TAG, "Display " + displayId + " removed, new topology: " + mTopology);
                 removeDisplayIdMappingLocked(displayId);
-                restoreTopologyLocked();
-                sendTopologyUpdateLocked();
-            }
-        }
 
-        // If the default display should not be included in the topology, then when all non-default
-        // displays are removed, add the default display back to the topology.
-        if (mFlags.isDefaultDisplayInTopologySwitchEnabled()) {
-            if (displayId != Display.DEFAULT_DISPLAY
-                    && !mShouldIncludeDefaultDisplayInTopology.getAsBoolean()
-                    && mTopology.isEmpty()) {
-                onDisplayAdded(mDisplayInfoProvider.get(Display.DEFAULT_DISPLAY));
+                // If the default display should not be included in the topology, then when all
+                // non-default displays are removed, add the default display back to the topology.
+                if (mFlags.isDefaultDisplayInTopologySwitchEnabled()
+                        && displayId != Display.DEFAULT_DISPLAY
+                        && !mShouldIncludeDefaultDisplayInTopology.getAsBoolean()
+                        && mTopology.isEmpty()) {
+                    onDisplayAdded(mDisplayInfoProvider.get(Display.DEFAULT_DISPLAY));
+                    // onDisplayAdded will send the update, so no need to send it here.
+                } else {
+                    restoreTopologyLocked();
+                    sendTopologyUpdateLocked();
+                }
             }
         }
     }

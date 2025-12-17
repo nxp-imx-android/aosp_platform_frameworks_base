@@ -234,10 +234,18 @@ class DisplayTopologyCoordinatorTest {
         displayInfos[0].type = Display.TYPE_INTERNAL
         coordinator.onDisplayAdded(displayInfos[0])
         displayInfos[1].displayId = Display.DEFAULT_DISPLAY + 1
+        whenever(mockTopology.removeDisplay(Display.DEFAULT_DISPLAY)).thenReturn(true)
         displayInfos[1].type = Display.TYPE_EXTERNAL
         coordinator.onDisplayAdded(displayInfos[1])
 
         verify(mockTopology).removeDisplay(displayInfos[0].displayId)
+        verify(mockTopologyChangedCallback, times(2)).invoke(
+            android.util.Pair(
+                mockTopologyCopy,
+                mockTopologyGraph
+            )
+        )
+        verify(mockTopologyStore, times(2)).restoreTopology(mockTopology)
     }
 
     @Test
@@ -255,6 +263,13 @@ class DisplayTopologyCoordinatorTest {
         coordinator.onDisplayAdded(displayInfos[1])
 
         verify(mockTopology, never()).removeDisplay(anyInt())
+        verify(mockTopologyChangedCallback, times(2)).invoke(
+            android.util.Pair(
+                mockTopologyCopy,
+                mockTopologyGraph
+            )
+        )
+        verify(mockTopologyStore, times(2)).restoreTopology(mockTopology)
     }
 
     @Test
@@ -272,6 +287,13 @@ class DisplayTopologyCoordinatorTest {
         coordinator.onDisplayAdded(displayInfos[1])
 
         verify(mockTopology, never()).removeDisplay(anyInt())
+        verify(mockTopologyChangedCallback, times(2)).invoke(
+            android.util.Pair(
+                mockTopologyCopy,
+                mockTopologyGraph
+            )
+        )
+        verify(mockTopologyStore, times(2)).restoreTopology(mockTopology)
     }
 
     @Test
@@ -512,6 +534,13 @@ class DisplayTopologyCoordinatorTest {
 
         verify(mockTopology).addDisplay(displayInfos[0].displayId, displayInfos[0].logicalWidth,
             displayInfos[0].logicalHeight, displayInfos[0].logicalDensityDpi)
+        verify(mockTopologyChangedCallback).invoke(
+            android.util.Pair(
+                mockTopologyCopy,
+                mockTopologyGraph
+            )
+        )
+        verify(mockTopologyStore).restoreTopology(mockTopology)
     }
 
     @Test
@@ -530,6 +559,13 @@ class DisplayTopologyCoordinatorTest {
         coordinator.onDisplayRemoved(displayInfos[1].displayId)
 
         verify(mockTopology, never()).addDisplay(anyInt(), anyInt(), anyInt(), anyInt())
+        verify(mockTopologyChangedCallback).invoke(
+            android.util.Pair(
+                mockTopologyCopy,
+                mockTopologyGraph
+            )
+        )
+        verify(mockTopologyStore).restoreTopology(mockTopology)
     }
 
     @Test
@@ -548,6 +584,13 @@ class DisplayTopologyCoordinatorTest {
         coordinator.onDisplayRemoved(displayInfos[1].displayId)
 
         verify(mockTopology, never()).addDisplay(anyInt(), anyInt(), anyInt(), anyInt())
+        verify(mockTopologyChangedCallback).invoke(
+            android.util.Pair(
+                mockTopologyCopy,
+                mockTopologyGraph
+            )
+        )
+        verify(mockTopologyStore).restoreTopology(mockTopology)
     }
 
     @Test
