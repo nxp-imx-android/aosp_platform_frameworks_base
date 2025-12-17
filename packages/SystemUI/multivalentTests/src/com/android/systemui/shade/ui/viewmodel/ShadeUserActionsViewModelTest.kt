@@ -206,6 +206,7 @@ class ShadeUserActionsViewModelTest : SysuiTestCase() {
     @Test
     fun upOrBackTransitionSceneKey_backToCommunal() =
         kosmos.runTest {
+            enableSingleShade()
             val actions by collectLastValue(underTest.actions)
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
