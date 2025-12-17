@@ -46,6 +46,7 @@ import android.view.SurfaceControl;
 import com.android.server.display.feature.flags.Flags;
 import com.android.server.display.layout.Layout;
 import com.android.server.display.mode.DisplayModeDirector;
+import com.android.server.display.utils.DebugTransactionDetails;
 import com.android.server.display.utils.DebugUtils;
 import com.android.server.wm.utils.InsetUtils;
 
@@ -883,31 +884,28 @@ final class LogicalDisplay {
 
         mDisplayPosition.set(mTempDisplayRect.left, mTempDisplayRect.top);
 
+        final DebugTransactionDetails debugTransactionDetails = DEBUG ?
+                new DebugTransactionDetails() : null;
+
         if (mSyncedResolutionSwitchEnabled || displayDeviceInfo.type == Display.TYPE_VIRTUAL) {
-            if (DEBUG) {
-                Slog.d(TAG, "Configuring Display Size. width=" + displayLogicalWidth
-                        + " height=" + displayLogicalHeight);
-            }
-            device.configureDisplaySizeLocked(t);
+            device.configureDisplaySizeLocked(t, debugTransactionDetails);
         }
+        device.setProjectionLocked(t, orientation, mTempLayerStackRect, mTempDisplayRect,
+                debugTransactionDetails);
+
         if (DEBUG) {
-            Slog.d(TAG, "Setting Projection. orientation=" + orientation
-                    + " mTempLayerStackRect=" + mTempLayerStackRect + " mTempDisplayRect="
-                    + mTempDisplayRect + ".");
-        }
-        device.setProjectionLocked(t, orientation, mTempLayerStackRect, mTempDisplayRect);
-        if (DEBUG) {
-            final int requestedLogicalWidth = displayLogicalWidth;
-            final int requestedLogicalHeight = displayLogicalHeight;
-            final int requestedOrientation = orientation;
-            final Rect requestedDisplayRect = new Rect(mTempDisplayRect);
-            final Rect requestedLayerStackRect = new Rect(mTempLayerStackRect);
+            final long transactionId = t.getId();
+            final String displayDescription = "[Display " + displayDeviceInfo.uniqueId + " " +
+                    Display.typeToString(displayInfo.type) + "]";
+
+            Slog.d(TAG, displayDescription + " configureDisplayLocked: "
+                    + "populated transaction " + debugTransactionDetails + ", "
+                    + "txId = " + transactionId);
+
             t.addTransactionCommittedListener(executor, () -> {
-                Slog.d(TAG, "Committed transaction for display configuration - width="
-                        + requestedLogicalWidth + " height=" + requestedLogicalHeight
-                        + " orientation=" + requestedOrientation + " mTempLayerStackRect="
-                        + requestedLayerStackRect + " mTempDisplayRect=" + requestedDisplayRect
-                        + ".");
+                Slog.d(TAG, displayDescription + " Committed transaction for "
+                        + "display configuration: " + debugTransactionDetails + ", "
+                        + "txId = " + transactionId);
             });
         }
         device.configureSurfaceLocked(t);

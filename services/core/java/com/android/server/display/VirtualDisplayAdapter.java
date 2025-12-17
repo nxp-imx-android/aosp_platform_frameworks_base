@@ -64,6 +64,7 @@ import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.display.brightness.BrightnessUtils;
 import com.android.server.display.feature.DisplayManagerFlags;
+import com.android.server.display.utils.DebugTransactionDetails;
 
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -537,9 +538,10 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
         }
 
         @Override
-        public void configureDisplaySizeLocked(SurfaceControl.Transaction t) {
+        public void configureDisplaySizeLocked(SurfaceControl.Transaction t,
+                DebugTransactionDetails debugTransactionDetails) {
             if ((mPendingChanges & PENDING_RESIZE) != 0) {
-                setDisplaySizeLocked(t, mWidth, mHeight);
+                setDisplaySizeLocked(t, mWidth, mHeight, debugTransactionDetails);
                 mPendingChanges &= ~PENDING_RESIZE;
             }
         }
