@@ -15,6 +15,10 @@
  */
 package com.android.systemui.locationbutton.ui.session
 
+import android.app.permissionui.ILocationButtonClient
+import android.app.permissionui.ILocationButtonSession
+import android.app.permissionui.LocationButtonRequest
+import android.app.permissionui.LocationButtonSession.TextType
 import android.content.Context
 import android.content.res.Configuration
 import android.hardware.display.DisplayManager
@@ -24,10 +28,6 @@ import android.os.RemoteException
 import android.util.Slog
 import android.view.SurfaceControlViewHost
 import android.view.WindowManager
-import android.widget.location.ILocationButtonClient
-import android.widget.location.ILocationButtonSession
-import android.widget.location.LocationButtonRequest
-import android.widget.location.LocationButtonSession.TextType
 import android.window.TrustedPresentationThresholds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
@@ -266,19 +266,19 @@ class LocationButtonSession(
 
     private fun getTextResourceId(@TextType textType: Int): Int? {
         return when (textType) {
-            android.widget.location.LocationButtonSession.TEXT_TYPE_PRECISE_LOCATION ->
+            android.app.permissionui.LocationButtonSession.TEXT_TYPE_PRECISE_LOCATION ->
                 R.string.location_button_text_precise_location
 
-            android.widget.location.LocationButtonSession.TEXT_TYPE_SHARE_PRECISE_LOCATION ->
+            android.app.permissionui.LocationButtonSession.TEXT_TYPE_SHARE_PRECISE_LOCATION ->
                 R.string.location_button_text_share_precise_location
 
-            android.widget.location.LocationButtonSession.TEXT_TYPE_USE_PRECISE_LOCATION ->
+            android.app.permissionui.LocationButtonSession.TEXT_TYPE_USE_PRECISE_LOCATION ->
                 R.string.location_button_text_use_precise_location
 
-            android.widget.location.LocationButtonSession.TEXT_TYPE_NEAR_PRECISE_LOCATION ->
+            android.app.permissionui.LocationButtonSession.TEXT_TYPE_NEAR_PRECISE_LOCATION ->
                 R.string.location_button_text_near_precise_location
 
-            android.widget.location.LocationButtonSession.TEXT_TYPE_NONE -> null
+            android.app.permissionui.LocationButtonSession.TEXT_TYPE_NONE -> null
             else -> {
                 Slog.w("LocationButton", "Text type $textType is not supported. Using no text.")
                 null

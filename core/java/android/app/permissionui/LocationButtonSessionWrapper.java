@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package android.widget.location;
+package android.app.permissionui;
 
-import static android.widget.location.LocationButtonProviderFactory.LocationButtonProviderImpl;
+import static android.app.permissionui.LocationButtonProviderFactory.LocationButtonProviderImpl;
 
 import android.annotation.NonNull;
 import android.content.res.Configuration;

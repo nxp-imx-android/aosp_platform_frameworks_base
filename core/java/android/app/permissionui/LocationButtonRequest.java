@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package android.widget.location;
+package android.app.permissionui;
 
 import android.annotation.ColorInt;
 import android.annotation.FlaggedApi;
@@ -21,7 +21,7 @@ import android.annotation.NonNull;
 import android.content.res.Configuration;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.widget.flags.Flags;
+import android.permission.flags.Flags;
 
 import java.util.Objects;
 

@@ -16,6 +16,10 @@
 package com.android.systemui.locationbutton
 
 import android.app.Service
+import android.app.permissionui.ILocationButtonClient
+import android.app.permissionui.ILocationButtonService
+import android.app.permissionui.LocationButtonRequest
+import android.app.permissionui.LocationButtonSessionResponse
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Binder
@@ -23,12 +27,8 @@ import android.os.IBinder
 import android.os.ParcelableException
 import android.os.RemoteException
 import android.os.UserHandle
+import android.permission.flags.Flags
 import android.util.Slog
-import android.widget.flags.Flags
-import android.widget.location.ILocationButtonClient
-import android.widget.location.ILocationButtonService
-import android.widget.location.LocationButtonRequest
-import android.widget.location.LocationButtonSessionResponse
 import com.android.server.ServiceThread
 import com.android.systemui.locationbutton.domain.interactor.LocationButtonInteractor
 import com.android.systemui.locationbutton.ui.session.LocationButtonSession
@@ -53,8 +53,8 @@ import javax.inject.Inject
  * thread [LocationButtonThread] to avoid blocking the main thread.
  *
  * @see com.android.systemui.locationbutton.ui.session.LocationButtonSession
- * @see android.widget.location.LocationButtonProvider
- * @see android.widget.location.ILocationButtonService
+ * @see android.app.permissionui.LocationButtonProvider
+ * @see android.app.permissionui.ILocationButtonService
  */
 class LocationButtonRenderService
 @Inject

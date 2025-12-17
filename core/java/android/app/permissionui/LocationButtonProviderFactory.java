@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package android.widget.location;
+package android.app.permissionui;
 
 import static java.util.Objects.requireNonNull;
 
@@ -26,8 +26,8 @@ import android.content.ServiceConnection;
 import android.os.DeadObjectException;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.permission.flags.Flags;
 import android.util.Log;
-import android.widget.flags.Flags;
 
 import com.android.internal.R;
 

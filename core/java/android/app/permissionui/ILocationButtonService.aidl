@@ -13,7 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package android.widget.location;
+package android.app.permissionui;
 
-/** @hide */
-parcelable LocationButtonRequest;
+import android.app.permissionui.ILocationButtonClient;
+import android.app.permissionui.LocationButtonRequest;
+import android.os.IBinder;
+
+/**
+ * The binder interface for creating location button sessions.
+ *
+ * @hide
+ */
+oneway interface ILocationButtonService {
+    void openSession(in String packageName,
+            in IBinder hostToken,
+            int displayId,
+            in LocationButtonRequest request,
+            in ILocationButtonClient client
+            );
+}
