@@ -486,7 +486,7 @@ public final class DomainVerificationManager {
      *
      * @hide
      */
-    @FlaggedApi(android.content.pm.Flags.FLAG_ENABLE_QUERY_DOMAIN_VERIFICATION)
+    @FlaggedApi(android.view.flags.Flags.FLAG_REDACT_WEB_OTP_SMS_API)
     @SystemApi
     @NonNull
     @RequiresPermission(android.Manifest.permission.QUERY_DOMAIN_VERIFICATION)

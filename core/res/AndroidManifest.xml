@@ -7732,12 +7732,12 @@
 
     <!-- @SystemApi @hide Allows an application to query domain verification.
          <p>Not for use by third-party applications.
-         @FlaggedApi(android.content.pm.Flags.FLAG_ENABLE_QUERY_DOMAIN_VERIFICATION)
+         @FlaggedApi(android.view.flags.Flags.FLAG_REDACT_WEB_OTP_SMS_API)
     -->
     <permission
         android:name="android.permission.QUERY_DOMAIN_VERIFICATION"
         android:protectionLevel="signature|module"
-        android:featureFlag="android.content.pm.enable_query_domain_verification" />
+        android:featureFlag="android.view.flags.redact_web_otp_sms_api" />
 
     <!-- @SystemApi Allows applications to access serial ports via the SerialManager.
          @hide -->

@@ -271,7 +271,7 @@ public interface TextClassifier {
     /**
      * Extra specifying a list of trusted packages which can receive or view the OTP.
      */
-    @FlaggedApi(android.view.flags.Flags.FLAG_REDACT_OTP_APP_COMPAT_API)
+    @FlaggedApi(android.view.flags.Flags.FLAG_REDACT_WEB_OTP_SMS_API)
     String EXTRA_OTP_TRUSTED_PACKAGES = "android.view.textclassifier.extra.OTP_TRUSTED_PACKAGES";
 
     /**

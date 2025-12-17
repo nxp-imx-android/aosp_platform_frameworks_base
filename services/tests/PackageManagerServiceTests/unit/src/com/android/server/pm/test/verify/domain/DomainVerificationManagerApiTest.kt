@@ -508,7 +508,7 @@ class DomainVerificationManagerApiTest {
         }
     }
 
-    @EnableFlags(android.content.pm.Flags.FLAG_ENABLE_QUERY_DOMAIN_VERIFICATION)
+    @EnableFlags(android.view.flags.Flags.FLAG_REDACT_WEB_OTP_SMS_API)
     @Test
     fun getVerifiedOwnersForDomain() {
         // Arrange.
