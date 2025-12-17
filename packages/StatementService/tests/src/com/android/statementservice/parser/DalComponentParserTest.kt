@@ -31,20 +31,25 @@ class DalComponentParserTest {
     @Test
     fun parseExpressions() {
         validateParsedExpression("foobar", PATTERN_LITERAL, "foobar")
-        validateParsedExpression("foo.bar", PATTERN_LITERAL, "foo\\.bar")
+        validateParsedExpression("foo.bar", PATTERN_SIMPLE_GLOB, "foo\\.bar")
         validateParsedExpression("foo*", PATTERN_PREFIX, "foo")
+        validateParsedExpression("foo.*", PATTERN_SIMPLE_GLOB, "foo\\..*")
         validateParsedExpression("*bar", PATTERN_SIMPLE_GLOB, ".*bar")
         validateParsedExpression("foo*bar", PATTERN_SIMPLE_GLOB, "foo.*bar")
         validateParsedExpression("foo.*bar", PATTERN_SIMPLE_GLOB, "foo\\..*bar")
+        validateParsedExpression("foo*.bar", PATTERN_SIMPLE_GLOB, "foo.*\\.bar")
         validateParsedExpression("*foo*bar", PATTERN_SIMPLE_GLOB, ".*foo.*bar")
         validateParsedExpression("foo?bar", PATTERN_SIMPLE_GLOB, "foo.bar")
         validateParsedExpression("foo.?bar", PATTERN_SIMPLE_GLOB, "foo\\..bar")
+        validateParsedExpression("foo?.bar", PATTERN_SIMPLE_GLOB, "foo.\\.bar")
         validateParsedExpression("?bar", PATTERN_SIMPLE_GLOB, ".bar")
         validateParsedExpression("foo?", PATTERN_SIMPLE_GLOB, "foo.")
         validateParsedExpression("fo?b*r", PATTERN_SIMPLE_GLOB, "fo.b.*r")
         validateParsedExpression("?*bar", PATTERN_ADVANCED_GLOB, ".+bar")
         validateParsedExpression("foo?*bar", PATTERN_ADVANCED_GLOB, "foo.+bar")
         validateParsedExpression("foo?*bar*", PATTERN_ADVANCED_GLOB, "foo.+bar.*")
+        validateParsedExpression("foo?*bar.", PATTERN_ADVANCED_GLOB, "foo.+bar\\.")
+        validateParsedExpression("foo?*bar.*", PATTERN_ADVANCED_GLOB, "foo.+bar\\..*")
         validateParsedExpression("foo*?bar", PATTERN_SIMPLE_GLOB, "foo.*.bar")
 
         // set matches are not supported in DAL
