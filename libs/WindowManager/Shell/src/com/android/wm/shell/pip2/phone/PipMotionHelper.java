@@ -227,7 +227,9 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
 
     @Override
     public void moveToBounds(@NonNull Rect bounds) {
-        animateToBounds(bounds, mConflictResolutionSpringConfig);
+        mPipTransitionState.setOnIdlePipTransitionStateRunnable(() -> {
+            resizeAndAnimatePipUnchecked(bounds, SHIFT_DURATION);
+        });
     }
 
     /**
@@ -501,22 +503,6 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
 
         startBoundsAnimator(xEndValue /* toX */, estimatedFlingYEndValue /* toY */,
                 postBoundsUpdateCallback);
-    }
-
-    /**
-     * Animates PIP to the provided bounds, using physics animations and the given spring
-     * configuration
-     */
-    void animateToBounds(Rect bounds, PhysicsAnimator.SpringConfig springConfig) {
-        if (!mTemporaryBoundsPhysicsAnimator.isRunning()) {
-            // Animate from the current bounds if we're not already animating.
-            mPipBoundsState.getMotionBoundsState().setBoundsInMotion(getBounds());
-        }
-
-        mTemporaryBoundsPhysicsAnimator
-                .spring(FloatProperties.RECT_X, bounds.left, springConfig)
-                .spring(FloatProperties.RECT_Y, bounds.top, springConfig);
-        startBoundsAnimator(bounds.left /* toX */, bounds.top /* toY */);
     }
 
     /**

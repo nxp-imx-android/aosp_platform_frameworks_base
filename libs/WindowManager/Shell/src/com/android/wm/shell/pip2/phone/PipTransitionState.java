@@ -231,12 +231,12 @@ public class PipTransitionState {
         if (!shouldTransitionToState(state)) {
             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
                     "%s: Attempted to transition to an invalid state=%s, while in %s",
-                    TAG, stateToString(state), this);
+                    TAG, stateToString(state, extra), this);
             return;
         }
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
                 "%s setState from=%s to=%s",
-                TAG, stateToString(mState), stateToString(state));
+                TAG, stateToString(mState), stateToString(state, extra));
         if (mState != state) {
             final int prevState = mState;
             mState = state;
@@ -498,7 +498,7 @@ public class PipTransitionState {
         }
     }
 
-    private static String stateToString(int state) {
+    private static String stateToString(@TransitionState int state) {
         switch (state) {
             case UNDEFINED: return "undefined";
             case SWIPING_TO_PIP: return "swiping_to_pip";
@@ -512,6 +512,10 @@ public class PipTransitionState {
             case EXITED_PIP: return "exited-pip";
             default: return "custom-state(" + state + ")";
         }
+    }
+
+    private static String stateToString(@TransitionState int state, @Nullable Bundle extra) {
+        return String.format("state=%s with extra=%s", stateToString(state), extra);
     }
 
     public boolean isPipStateIdle() {
