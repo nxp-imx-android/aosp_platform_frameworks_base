@@ -204,12 +204,12 @@ public class PersonalContextManagerService extends SystemService {
                                     userContext,
                                     userContext.getPackageManager(),
                                     new ContextActionResolver(userContext)));
-            final EmbeddedInsightRenderer embeddedInsightRenderer = new EmbeddedInsightRenderer();
 
             TextClassificationActionRenderer textClassificationActionRenderer =
                     new TextClassificationActionRenderer();
-            mUserStates.put(
-                    userId,
+            final EmbeddedInsightRenderer embeddedInsightRenderer = new EmbeddedInsightRenderer(
+                    userContext, Executors.newSingleThreadExecutor());
+            mUserStates.put(userId,
                     new UserState(
                             componentManager,
                             monitor,
@@ -242,6 +242,8 @@ public class PersonalContextManagerService extends SystemService {
         componentManager.register(userState.notificationActionRenderer());
         componentManager.register(userState.embeddedInsightRenderer());
         componentManager.register(userState.textClassificationActionRenderer());
+
+        userState.embeddedInsightRenderer().onRegistered();
 
         if (Log.isLoggable(TAG, Log.DEBUG)) {
             Slog.d(TAG, "Registering external components for user " + userId);
@@ -337,13 +339,14 @@ public class PersonalContextManagerService extends SystemService {
             return;
         }
 
-        final RenderToken renderToken =
-                userState.embeddedInsightRenderer.registerInsightSurfaceClient(clientInfo);
-        if (renderToken == null) {
-            Slog.e(TAG, "No render token for client " + clientInfo.getId());
-            return;
-        }
-        startRefinerWorkflow(userId, processId, clientHints, renderToken);
+        userState.embeddedInsightRenderer.registerInsightSurfaceClient(
+                clientInfo, renderToken -> {
+                    if (renderToken == null) {
+                        Slog.e(TAG, "No render token for client " + clientInfo.getId());
+                        return;
+                    }
+                    startRefinerWorkflow(userId, processId, clientHints, renderToken);
+                });
     }
 
     private void unregisterInsightSurfaceClient(int userId, UUID id) {
