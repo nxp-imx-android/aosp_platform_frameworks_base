@@ -25,8 +25,8 @@ import java.lang.annotation.RetentionPolicy;
 
 /**
  * Data about the current brightness state.
- * {@see android.view.Display.getBrightnessInfo()}
  *
+ * @see android.view.Display.getBrightnessInfo()
  * @hide
  */
 public final class BrightnessInfo implements Parcelable {

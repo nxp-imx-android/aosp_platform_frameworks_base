@@ -78,7 +78,7 @@ public class CompatibilityInfo implements Parcelable {
     
     /**
      * A flag mask to tell if the application needs scaling (when mApplicationScale != 1.0f)
-     * {@see compatibilityFlag}
+     * @see compatibilityFlag
      */
     private static final int SCALING_REQUIRED = 1; 
 

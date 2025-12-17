@@ -28,7 +28,7 @@ import java.util.Objects;
 /**
  * Data about a brightness settings change.
  *
- * {@see DisplayManager.getBrightnessEvents()}
+ * @see DisplayManager.getBrightnessEvents()
  * @hide
  */
 @SystemApi
@@ -108,7 +108,7 @@ public final class BrightnessChangeEvent implements Parcelable {
      * For example if we had {100, 50, 30, 20}, value component was onscreen for 100 pixel
      * milliseconds in range 0x00->0x3F, 30 pixel milliseconds in range 0x40->0x7F, etc.
      *
-     * {@see #colorSampleDuration}
+     * @see #colorSampleDuration
      */
     @Nullable
     public final long[] colorValueBuckets;
@@ -118,7 +118,7 @@ public final class BrightnessChangeEvent implements Parcelable {
      * not support color sampling or {@link BrightnessConfiguration#shouldCollectColorSamples()} is
      * false the value will be 0L.
      *
-     * {@see #colorValueBuckets}
+     * @see #colorValueBuckets
      */
     public final long colorSampleDuration;
 

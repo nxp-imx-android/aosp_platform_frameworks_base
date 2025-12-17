@@ -4836,8 +4836,8 @@ public interface WindowManager extends ViewManager {
          * dispatch. Requires the {@link android.Manifest.permission#INTERNAL_SYSTEM_WINDOW}
          * permission.
          *
-         * {@see android.view.MotionEvent#FLAG_WINDOW_IS_OBSCURED}
-         * {@see android.view.MotionEvent#FLAG_WINDOW_IS_PARTIALLY_OBSCURED}
+         * @see android.view.MotionEvent#FLAG_WINDOW_IS_OBSCURED
+         * @see android.view.MotionEvent#FLAG_WINDOW_IS_PARTIALLY_OBSCURED
          * @hide
          */
         public void setTrustedOverlay() {

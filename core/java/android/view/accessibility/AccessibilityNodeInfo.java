@@ -881,7 +881,7 @@ public class AccessibilityNodeInfo implements Parcelable {
      * <p>
      * Note that character locations returned are modified by changes in display magnification.
      *
-     * {@see #refreshWithExtraData(String, Bundle)}
+     * @see #refreshWithExtraData(String, Bundle)
      */
     public static final String EXTRA_DATA_TEXT_CHARACTER_LOCATION_KEY =
             "android.view.accessibility.extra.DATA_TEXT_CHARACTER_LOCATION_KEY";
@@ -910,7 +910,7 @@ public class AccessibilityNodeInfo implements Parcelable {
      * Note that character locations in window bounds are not modified by
      * changes in display magnification.
      *
-     * {@see #refreshWithExtraData(String, Bundle)}
+     * @see #refreshWithExtraData(String, Bundle)
      */
     @FlaggedApi(Flags.FLAG_A11Y_CHARACTER_IN_WINDOW_API)
     public static final String EXTRA_DATA_TEXT_CHARACTER_LOCATION_IN_WINDOW_KEY =

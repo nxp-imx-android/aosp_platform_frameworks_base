@@ -5938,9 +5938,9 @@ public class NotificationManagerService extends SystemService {
         /**
          * Allow an INotificationListener to simulate a "clear all" operation.
          *
-         * {@see com.android.server.StatusBarManagerService.NotificationCallbacks#onClearAllNotifications}
-         *
          * @param token The binder for the listener, to check that the caller is allowed
+         *
+         * @see com.android.server.StatusBarManagerService.NotificationCallbacks#onClearAllNotifications
          */
         @Override
         public void cancelNotificationsFromListener(INotificationListener token, String[] keys) {
@@ -6107,9 +6107,9 @@ public class NotificationManagerService extends SystemService {
         /**
          * Allow an INotificationListener to simulate clearing (dismissing) a single notification.
          *
-         * {@see com.android.server.StatusBarManagerService.NotificationCallbacks#onNotificationClear}
-         *
          * @param info The binder for the listener, to check that the caller is allowed
+         *
+         * @see com.android.server.StatusBarManagerService.NotificationCallbacks#onNotificationClear
          */
         @GuardedBy("mNotificationLock")
         private void cancelNotificationFromListenerLocked(ManagedServiceInfo info,
@@ -6248,9 +6248,9 @@ public class NotificationManagerService extends SystemService {
         /**
          * Allow an INotificationListener to simulate clearing (dismissing) a single notification.
          *
-         * {@see com.android.server.StatusBarManagerService.NotificationCallbacks#onNotificationClear}
-         *
          * @param token The binder for the listener, to check that the caller is allowed
+         *
+         * @see com.android.server.StatusBarManagerService.NotificationCallbacks#onNotificationClear
          */
         @Override
         public void cancelNotificationFromListener(INotificationListener token, String pkg,
