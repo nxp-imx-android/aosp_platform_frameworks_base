@@ -46,7 +46,6 @@ import static org.mockito.Mockito.when;
 import android.annotation.Nullable;
 import android.annotation.SpecialUsers.CanBeNULL;
 import android.annotation.UserIdInt;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.UserInfo;
 import android.content.pm.UserInfo.UserInfoFlag;
@@ -125,8 +124,6 @@ public final class HsumBootUserInitializerInitMethodTest {
     private PackageManagerService mMockPms;
     @Mock
     private Context mMockContext;
-    @Mock
-    private ContentResolver mMockContentResolver;
 
     @Nullable // Must be created in the same thread that it's used
     private TimingsTraceAndSlog mTracer;
@@ -352,9 +349,8 @@ public final class HsumBootUserInitializerInitMethodTest {
     // FLAG_CREATE_INITIAL_USER; should be set on @BeforeMethod once flag is ramped up
     private HsumBootUserInitializer createHsumBootUserInitializer() {
         mTracer = new TimingsTraceAndSlog(TAG);
-        return new HsumBootUserInitializer(mMockUms, mMockAms, mMockPms, mMockContentResolver,
-                mShouldAlwaysHaveMainUser, mShouldCreateInitialUser,
-                mIsManagedDevice , mMockContext);
+        return new HsumBootUserInitializer(mMockUms, mMockAms, mMockPms, mShouldAlwaysHaveMainUser,
+                mShouldCreateInitialUser, mIsManagedDevice , mMockContext);
     }
 
     private void expectMainUserCreated() {

@@ -44,7 +44,6 @@ import android.app.admin.DevicePolicySafetyChecker;
 import android.app.appfunctions.AppFunctionManagerConfiguration;
 import android.app.usage.UsageStatsManagerInternal;
 import android.content.ComponentName;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageItemInfo;
@@ -520,7 +519,6 @@ public final class SystemServer implements Dumpable {
     private DisplayManagerService mDisplayManagerService;
     private PackageManagerService mPackageManagerService;
     private PackageManager mPackageManager;
-    private ContentResolver mContentResolver;
     private EntropyMixer mEntropyMixer;
     private DataLoaderManagerService mDataLoaderManagerService;
     private long mIncrementalServiceHandle = 0;
@@ -1637,8 +1635,6 @@ public final class SystemServer implements Dumpable {
             t.traceBegin("StartEntropyMixer");
             mEntropyMixer = new EntropyMixer(context);
             t.traceEnd();
-
-            mContentResolver = context.getContentResolver();
 
             // The AccountManager must come before the ContentService
             t.traceBegin("StartAccountManagerService");
@@ -3136,8 +3132,7 @@ public final class SystemServer implements Dumpable {
                 HsumBootUserInitializer.createInstance(mUserManagerService, mActivityManagerService,
                         // NOTE: there is no need to pass the whole dpms because it just need to
                         // to check if the device is managed (at boot time).
-                        mPackageManagerService, dpms.isDeviceManaged(), mContentResolver,
-                        mSystemContext);
+                        mPackageManagerService, dpms.isDeviceManaged(), mSystemContext);
         if (hsumBootUserInitializer != null) {
             t.traceBegin("HsumBootUserInitializer.init");
             hsumBootUserInitializer.init(t);
