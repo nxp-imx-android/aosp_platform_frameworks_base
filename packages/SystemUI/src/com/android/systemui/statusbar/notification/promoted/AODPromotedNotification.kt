@@ -261,7 +261,6 @@ private class FrameLayoutWithMaxHeight(maxHeight: Int, context: Context) : Frame
 private class AODPromotedNotificationViewUpdater(root: View) {
     private val alertedIcon: ImageView? = root.findViewById(R.id.alerted_icon)
     private val alternateExpandTarget: View? = root.findViewById(R.id.alternate_expand_target)
-    private val appNameDivider: TextView? = root.findViewById(R.id.app_name_divider)
     private val appNameText: TextView? = root.findViewById(R.id.app_name_text)
     private val bigText: ImageFloatingTextView? = root.findViewById(R.id.big_text)
     private var chronometerStub: ViewStub? = null
@@ -655,11 +654,10 @@ private class AODPromotedNotificationViewUpdater(root: View) {
 
             val hasHeader = !content.title.isNullOrEmpty() && !hideTitle
             val hasChronometer = content.time is When.Chronometer
-            val hasTextBeforeAppName = hasHeader
             val hasTextBeforeSubText = hasAppName || hasHeader
             val hasTextBeforeTime = hasAppName || hasSubText || hasHeader
 
-            val showDividerBeforeAppName = hasTextBeforeAppName && hasAppName
+            val showDividerBeforeAppName = hasHeader && hasAppName
             val showDividerBeforeSubText = hasTextBeforeSubText && hasSubText
             val showDividerBeforeTime = hasTextBeforeTime && hasChronometer
 
@@ -672,11 +670,10 @@ private class AODPromotedNotificationViewUpdater(root: View) {
             val hasHeader = !content.title.isNullOrEmpty() && !hideTitle
             val hasTimeOrChronometer = content.time != null
 
-            val hasTextBeforeSubText = hasAppName
             val hasTextBeforeHeader = hasAppName || hasSubText
             val hasTextBeforeTime = hasAppName || hasSubText || hasHeader
 
-            val showDividerBeforeSubText = hasTextBeforeSubText && hasSubText
+            val showDividerBeforeSubText = hasAppName && hasSubText
             val showDividerBeforeHeader = hasTextBeforeHeader && hasHeader
             val showDividerBeforeTime = hasTextBeforeTime && hasTimeOrChronometer
 
@@ -714,15 +711,12 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         val hasVerification =
             !content.verificationIcon.isNullOrEmpty() || content.verificationText != null
 
-        val hasTextBeforeAppName = hasTitle
         val hasTextBeforeTime = hasTitle || hasAppName
         val hasTextBeforeVerification = hasTitle || hasAppName || hasTimeOrChronometer
 
-        val showDividerBeforeAppName = hasTextBeforeAppName && hasAppName
         val showDividerBeforeTime = hasTextBeforeTime && hasTimeOrChronometer
         val showDividerBeforeVerification = hasTextBeforeVerification && hasVerification
 
-        appNameDivider?.isVisible = showDividerBeforeAppName
         timeDivider?.isVisible = showDividerBeforeTime
         verificationDivider?.isVisible = showDividerBeforeVerification
     }
@@ -955,7 +949,6 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     }
 
     private fun adjustPromotedNotificationTextColors() {
-        setTextViewColor(appNameDivider, SecondaryText)
         setTextViewColor(headerTextDivider, SecondaryText)
         setTextViewColor(headerTextSecondaryDivider, SecondaryText)
         setTextViewColor(timeDivider, SecondaryText)
@@ -970,7 +963,6 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     }
 
     private fun adjustPromotedNotificationTextFonts() {
-        adjustTextViewFont(appNameDivider)
         adjustTextViewFont(appNameText)
         adjustTextViewFont(bigText)
         adjustTextViewFont(conversationText)
