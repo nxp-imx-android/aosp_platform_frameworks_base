@@ -38,8 +38,8 @@ class ScreenRecordCameraRepositoryImpl @Inject constructor() : ScreenRecordCamer
 
     override suspend fun stopStream() {}
 
-    override suspend fun configureViewport(
-        displayType: Int,
+    override suspend fun prepareStream(
+        displayId: Int,
         displayOrientation: Int,
     ): Size? = null
 
