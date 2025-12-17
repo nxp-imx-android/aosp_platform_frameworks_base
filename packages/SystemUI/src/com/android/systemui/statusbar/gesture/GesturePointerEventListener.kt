@@ -45,35 +45,34 @@ import javax.inject.Inject
 class GesturePointerEventListener
 @Inject
 constructor(context: Context, gestureDetector: GesturePointerEventDetector) : CoreStartable {
-    private val context: Context
-    private val handler = Handler(Looper.getMainLooper())
-    private var gestureDetector: GesturePointerEventDetector
-    private var flingGestureDetector: GestureDetector? = null
-    private var displayCutoutTouchableRegionSize = 0
+    private val mContext: Context
+    private val mHandler = Handler(Looper.getMainLooper())
+    private var mGestureDetector: GesturePointerEventDetector
+    private var mFlingGestureDetector: GestureDetector? = null
+    private var mDisplayCutoutTouchableRegionSize = 0
 
     // The thresholds for each edge of the display
-    private val swipeStartThreshold = Rect()
-    private var swipeDistanceThreshold = 0
-    private var callbacks: Callbacks? = null
-    private val downPointerId = IntArray(MAX_TRACKED_POINTERS)
-    private val downX = FloatArray(MAX_TRACKED_POINTERS)
-    private val downY = FloatArray(MAX_TRACKED_POINTERS)
-    private val downTime = LongArray(MAX_TRACKED_POINTERS)
-    private var screenHeight = 0
-    private var screenWidth = 0
-    private var downPointers = 0
-    private var swipeFireable = false
-    private var debugFireable = false
-    private var mouseHoveringAtLeft = false
-    private var mouseHoveringAtTop = false
-    private var mouseHoveringAtRight = false
-    private var mouseHoveringAtBottom = false
-    private var lastFlingTime: Long = 0
+    private val mSwipeStartThreshold = Rect()
+    private var mSwipeDistanceThreshold = 0
+    private var mCallbacks: Callbacks? = null
+    private val mDownPointerId = IntArray(MAX_TRACKED_POINTERS)
+    private val mDownX = FloatArray(MAX_TRACKED_POINTERS)
+    private val mDownY = FloatArray(MAX_TRACKED_POINTERS)
+    private val mDownTime = LongArray(MAX_TRACKED_POINTERS)
+    var screenHeight = 0
+    var screenWidth = 0
+    private var mDownPointers = 0
+    private var mSwipeFireable = false
+    private var mDebugFireable = false
+    private var mMouseHoveringAtLeft = false
+    private var mMouseHoveringAtTop = false
+    private var mMouseHoveringAtRight = false
+    private var mMouseHoveringAtBottom = false
+    private var mLastFlingTime: Long = 0
 
     init {
-        this@GesturePointerEventListener.context = checkNull("context", context)
-        this@GesturePointerEventListener.gestureDetector =
-            checkNull("gesture detector", gestureDetector)
+        mContext = checkNull("context", context)
+        mGestureDetector = checkNull("gesture detector", gestureDetector)
         onConfigurationChanged()
     }
 
@@ -81,10 +80,11 @@ constructor(context: Context, gestureDetector: GesturePointerEventDetector) : Co
         if (!Flags.enableTransientGestureInSystemUi()) {
             return
         }
-        gestureDetector.addOnGestureDetectedCallback(TAG) { ev -> onInputEvent(ev) }
-        gestureDetector.startGestureListening()
+        mGestureDetector.addOnGestureDetectedCallback(TAG) { ev -> onInputEvent(ev) }
+        mGestureDetector.startGestureListening()
 
-        flingGestureDetector = object : GestureDetector(context, FlingGestureDetector(), handler) {}
+        mFlingGestureDetector =
+            object : GestureDetector(mContext, FlingGestureDetector(), mHandler) {}
     }
 
     fun onDisplayInfoChanged(info: DisplayInfo) {
@@ -97,56 +97,57 @@ constructor(context: Context, gestureDetector: GesturePointerEventDetector) : Co
         if (!Flags.enableTransientGestureInSystemUi()) {
             return
         }
-        val r = context.resources
+        val r = mContext.resources
         val startThreshold = r.getDimensionPixelSize(R.dimen.system_gestures_start_threshold)
-        swipeStartThreshold[startThreshold, startThreshold, startThreshold] = startThreshold
-        swipeDistanceThreshold = r.getDimensionPixelSize(R.dimen.system_gestures_distance_threshold)
-        val display = DisplayManagerGlobal.getInstance().getRealDisplay(context.displayId)
+        mSwipeStartThreshold[startThreshold, startThreshold, startThreshold] = startThreshold
+        mSwipeDistanceThreshold =
+            r.getDimensionPixelSize(R.dimen.system_gestures_distance_threshold)
+        val display = DisplayManagerGlobal.getInstance().getRealDisplay(mContext.displayId)
         val displayCutout = display?.cutout
         if (displayCutout != null) {
             // Expand swipe start threshold such that we can catch touches that just start beyond
             // the notch area
-            displayCutoutTouchableRegionSize =
+            mDisplayCutoutTouchableRegionSize =
                 r.getDimensionPixelSize(R.dimen.display_cutout_touchable_region_size)
             val bounds = displayCutout.boundingRectsAll
             if (bounds[DisplayCutout.BOUNDS_POSITION_LEFT] != null) {
-                swipeStartThreshold.left =
+                mSwipeStartThreshold.left =
                     Math.max(
-                        swipeStartThreshold.left,
+                        mSwipeStartThreshold.left,
                         bounds[DisplayCutout.BOUNDS_POSITION_LEFT]!!.width() +
-                            displayCutoutTouchableRegionSize,
+                            mDisplayCutoutTouchableRegionSize,
                     )
             }
             if (bounds[DisplayCutout.BOUNDS_POSITION_TOP] != null) {
-                swipeStartThreshold.top =
+                mSwipeStartThreshold.top =
                     Math.max(
-                        swipeStartThreshold.top,
+                        mSwipeStartThreshold.top,
                         bounds[DisplayCutout.BOUNDS_POSITION_TOP]!!.height() +
-                            displayCutoutTouchableRegionSize,
+                            mDisplayCutoutTouchableRegionSize,
                     )
             }
             if (bounds[DisplayCutout.BOUNDS_POSITION_RIGHT] != null) {
-                swipeStartThreshold.right =
+                mSwipeStartThreshold.right =
                     Math.max(
-                        swipeStartThreshold.right,
+                        mSwipeStartThreshold.right,
                         bounds[DisplayCutout.BOUNDS_POSITION_RIGHT]!!.width() +
-                            displayCutoutTouchableRegionSize,
+                            mDisplayCutoutTouchableRegionSize,
                     )
             }
             if (bounds[DisplayCutout.BOUNDS_POSITION_BOTTOM] != null) {
-                swipeStartThreshold.bottom =
+                mSwipeStartThreshold.bottom =
                     Math.max(
-                        swipeStartThreshold.bottom,
+                        mSwipeStartThreshold.bottom,
                         bounds[DisplayCutout.BOUNDS_POSITION_BOTTOM]!!.height() +
-                            displayCutoutTouchableRegionSize,
+                            mDisplayCutoutTouchableRegionSize,
                     )
             }
         }
         if (DEBUG)
             Log.d(
                 TAG,
-                "swipeStartThreshold=$swipeStartThreshold" +
-                    " swipeDistanceThreshold=$swipeDistanceThreshold",
+                "mSwipeStartThreshold=$mSwipeStartThreshold" +
+                    " mSwipeDistanceThreshold=$mSwipeDistanceThreshold",
             )
     }
 
@@ -156,75 +157,75 @@ constructor(context: Context, gestureDetector: GesturePointerEventDetector) : Co
         }
         if (DEBUG) Log.d(TAG, "Received motion event $ev")
         if (ev.isTouchEvent) {
-            flingGestureDetector?.onTouchEvent(ev)
+            mFlingGestureDetector?.onTouchEvent(ev)
         }
         when (ev.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
-                swipeFireable = true
-                debugFireable = true
-                downPointers = 0
+                mSwipeFireable = true
+                mDebugFireable = true
+                mDownPointers = 0
                 captureDown(ev, 0)
-                if (mouseHoveringAtLeft) {
-                    mouseHoveringAtLeft = false
-                    callbacks?.onMouseLeaveFromLeft()
+                if (mMouseHoveringAtLeft) {
+                    mMouseHoveringAtLeft = false
+                    mCallbacks?.onMouseLeaveFromLeft()
                 }
-                if (mouseHoveringAtTop) {
-                    mouseHoveringAtTop = false
-                    callbacks?.onMouseLeaveFromTop()
+                if (mMouseHoveringAtTop) {
+                    mMouseHoveringAtTop = false
+                    mCallbacks?.onMouseLeaveFromTop()
                 }
-                if (mouseHoveringAtRight) {
-                    mouseHoveringAtRight = false
-                    callbacks?.onMouseLeaveFromRight()
+                if (mMouseHoveringAtRight) {
+                    mMouseHoveringAtRight = false
+                    mCallbacks?.onMouseLeaveFromRight()
                 }
-                if (mouseHoveringAtBottom) {
-                    mouseHoveringAtBottom = false
-                    callbacks?.onMouseLeaveFromBottom()
+                if (mMouseHoveringAtBottom) {
+                    mMouseHoveringAtBottom = false
+                    mCallbacks?.onMouseLeaveFromBottom()
                 }
-                callbacks?.onDown()
+                mCallbacks?.onDown()
             }
             MotionEvent.ACTION_POINTER_DOWN -> {
                 captureDown(ev, ev.actionIndex)
-                if (debugFireable) {
-                    debugFireable = ev.pointerCount < 5
-                    if (!debugFireable) {
+                if (mDebugFireable) {
+                    mDebugFireable = ev.pointerCount < 5
+                    if (!mDebugFireable) {
                         if (DEBUG) Log.d(TAG, "Firing debug")
-                        callbacks?.onDebug()
+                        mCallbacks?.onDebug()
                     }
                 }
             }
             MotionEvent.ACTION_MOVE ->
-                if (swipeFireable) {
+                if (mSwipeFireable) {
                     val trackpadSwipe = detectTrackpadThreeFingerSwipe(ev)
-                    swipeFireable = trackpadSwipe == TRACKPAD_SWIPE_NONE
-                    if (!swipeFireable) {
+                    mSwipeFireable = trackpadSwipe == TRACKPAD_SWIPE_NONE
+                    if (!mSwipeFireable) {
                         if (trackpadSwipe == TRACKPAD_SWIPE_FROM_TOP) {
                             if (DEBUG) Log.d(TAG, "Firing onSwipeFromTop from trackpad")
-                            callbacks?.onSwipeFromTop()
+                            mCallbacks?.onSwipeFromTop()
                         } else if (trackpadSwipe == TRACKPAD_SWIPE_FROM_BOTTOM) {
                             if (DEBUG) Log.d(TAG, "Firing onSwipeFromBottom from trackpad")
-                            callbacks?.onSwipeFromBottom()
+                            mCallbacks?.onSwipeFromBottom()
                         } else if (trackpadSwipe == TRACKPAD_SWIPE_FROM_RIGHT) {
                             if (DEBUG) Log.d(TAG, "Firing onSwipeFromRight from trackpad")
-                            callbacks?.onSwipeFromRight()
+                            mCallbacks?.onSwipeFromRight()
                         } else if (trackpadSwipe == TRACKPAD_SWIPE_FROM_LEFT) {
                             if (DEBUG) Log.d(TAG, "Firing onSwipeFromLeft from trackpad")
-                            callbacks?.onSwipeFromLeft()
+                            mCallbacks?.onSwipeFromLeft()
                         }
                     } else {
                         val swipe = detectSwipe(ev)
-                        swipeFireable = swipe == SWIPE_NONE
+                        mSwipeFireable = swipe == SWIPE_NONE
                         if (swipe == SWIPE_FROM_TOP) {
                             if (DEBUG) Log.d(TAG, "Firing onSwipeFromTop")
-                            callbacks?.onSwipeFromTop()
+                            mCallbacks?.onSwipeFromTop()
                         } else if (swipe == SWIPE_FROM_BOTTOM) {
                             if (DEBUG) Log.d(TAG, "Firing onSwipeFromBottom")
-                            callbacks?.onSwipeFromBottom()
+                            mCallbacks?.onSwipeFromBottom()
                         } else if (swipe == SWIPE_FROM_RIGHT) {
                             if (DEBUG) Log.d(TAG, "Firing onSwipeFromRight")
-                            callbacks?.onSwipeFromRight()
+                            mCallbacks?.onSwipeFromRight()
                         } else if (swipe == SWIPE_FROM_LEFT) {
                             if (DEBUG) Log.d(TAG, "Firing onSwipeFromLeft")
-                            callbacks?.onSwipeFromLeft()
+                            mCallbacks?.onSwipeFromLeft()
                         }
                     }
                 }
@@ -232,47 +233,47 @@ constructor(context: Context, gestureDetector: GesturePointerEventDetector) : Co
                 if (ev.isFromSource(InputDevice.SOURCE_MOUSE)) {
                     val eventX = ev.x
                     val eventY = ev.y
-                    if (!mouseHoveringAtLeft && eventX == 0f) {
-                        callbacks?.onMouseHoverAtLeft()
-                        mouseHoveringAtLeft = true
-                    } else if (mouseHoveringAtLeft && eventX > 0) {
-                        callbacks?.onMouseLeaveFromLeft()
-                        mouseHoveringAtLeft = false
+                    if (!mMouseHoveringAtLeft && eventX == 0f) {
+                        mCallbacks?.onMouseHoverAtLeft()
+                        mMouseHoveringAtLeft = true
+                    } else if (mMouseHoveringAtLeft && eventX > 0) {
+                        mCallbacks?.onMouseLeaveFromLeft()
+                        mMouseHoveringAtLeft = false
                     }
-                    if (!mouseHoveringAtTop && eventY == 0f) {
-                        callbacks?.onMouseHoverAtTop()
-                        mouseHoveringAtTop = true
-                    } else if (mouseHoveringAtTop && eventY > 0) {
-                        callbacks?.onMouseLeaveFromTop()
-                        mouseHoveringAtTop = false
+                    if (!mMouseHoveringAtTop && eventY == 0f) {
+                        mCallbacks?.onMouseHoverAtTop()
+                        mMouseHoveringAtTop = true
+                    } else if (mMouseHoveringAtTop && eventY > 0) {
+                        mCallbacks?.onMouseLeaveFromTop()
+                        mMouseHoveringAtTop = false
                     }
-                    if (!mouseHoveringAtRight && eventX >= screenWidth - 1) {
-                        callbacks?.onMouseHoverAtRight()
-                        mouseHoveringAtRight = true
-                    } else if (mouseHoveringAtRight && eventX < screenWidth - 1) {
-                        callbacks?.onMouseLeaveFromRight()
-                        mouseHoveringAtRight = false
+                    if (!mMouseHoveringAtRight && eventX >= screenWidth - 1) {
+                        mCallbacks?.onMouseHoverAtRight()
+                        mMouseHoveringAtRight = true
+                    } else if (mMouseHoveringAtRight && eventX < screenWidth - 1) {
+                        mCallbacks?.onMouseLeaveFromRight()
+                        mMouseHoveringAtRight = false
                     }
-                    if (!mouseHoveringAtBottom && eventY >= screenHeight - 1) {
-                        callbacks?.onMouseHoverAtBottom()
-                        mouseHoveringAtBottom = true
-                    } else if (mouseHoveringAtBottom && eventY < screenHeight - 1) {
-                        callbacks?.onMouseLeaveFromBottom()
-                        mouseHoveringAtBottom = false
+                    if (!mMouseHoveringAtBottom && eventY >= screenHeight - 1) {
+                        mCallbacks?.onMouseHoverAtBottom()
+                        mMouseHoveringAtBottom = true
+                    } else if (mMouseHoveringAtBottom && eventY < screenHeight - 1) {
+                        mCallbacks?.onMouseLeaveFromBottom()
+                        mMouseHoveringAtBottom = false
                     }
                 }
             MotionEvent.ACTION_UP,
             MotionEvent.ACTION_CANCEL -> {
-                swipeFireable = false
-                debugFireable = false
-                callbacks?.onUpOrCancel()
+                mSwipeFireable = false
+                mDebugFireable = false
+                mCallbacks?.onUpOrCancel()
             }
             else -> if (DEBUG) Log.d(TAG, "Ignoring $ev")
         }
     }
 
     fun setCallbacks(callbacks: Callbacks) {
-        this@GesturePointerEventListener.callbacks = callbacks
+        mCallbacks = callbacks
     }
 
     private fun captureDown(event: MotionEvent, pointerIndex: Int) {
@@ -280,42 +281,43 @@ constructor(context: Context, gestureDetector: GesturePointerEventDetector) : Co
         val i = findIndex(pointerId)
         if (DEBUG) Log.d(TAG, "pointer $pointerId down pointerIndex=$pointerIndex trackingIndex=$i")
         if (i != UNTRACKED_POINTER) {
-            downX[i] = event.getX(pointerIndex)
-            downY[i] = event.getY(pointerIndex)
-            downTime[i] = event.eventTime
-            if (DEBUG) Log.d(TAG, "pointer " + pointerId + " down x=" + downX[i] + " y=" + downY[i])
+            mDownX[i] = event.getX(pointerIndex)
+            mDownY[i] = event.getY(pointerIndex)
+            mDownTime[i] = event.eventTime
+            if (DEBUG)
+                Log.d(TAG, "pointer " + pointerId + " down x=" + mDownX[i] + " y=" + mDownY[i])
         }
     }
 
     protected fun currentGestureStartedInRegion(r: Region): Boolean {
-        return r.contains(downX[0].toInt(), downY[0].toInt())
+        return r.contains(mDownX[0].toInt(), mDownY[0].toInt())
     }
 
     private fun findIndex(pointerId: Int): Int {
-        for (i in 0 until downPointers) {
-            if (downPointerId[i] == pointerId) {
+        for (i in 0 until mDownPointers) {
+            if (mDownPointerId[i] == pointerId) {
                 return i
             }
         }
-        if (downPointers == MAX_TRACKED_POINTERS || pointerId == MotionEvent.INVALID_POINTER_ID) {
+        if (mDownPointers == MAX_TRACKED_POINTERS || pointerId == MotionEvent.INVALID_POINTER_ID) {
             return UNTRACKED_POINTER
         }
-        downPointerId[downPointers++] = pointerId
-        return downPointers - 1
+        mDownPointerId[mDownPointers++] = pointerId
+        return mDownPointers - 1
     }
 
     private fun detectTrackpadThreeFingerSwipe(move: MotionEvent): Int {
         if (!isTrackpadThreeFingerSwipe(move)) {
             return TRACKPAD_SWIPE_NONE
         }
-        val dx = move.x - downX[0]
-        val dy = move.y - downY[0]
+        val dx = move.x - mDownX[0]
+        val dy = move.y - mDownY[0]
         if (Math.abs(dx) < Math.abs(dy)) {
-            if (Math.abs(dy) > swipeDistanceThreshold) {
+            if (Math.abs(dy) > mSwipeDistanceThreshold) {
                 return if (dy > 0) TRACKPAD_SWIPE_FROM_TOP else TRACKPAD_SWIPE_FROM_BOTTOM
             }
         } else {
-            if (Math.abs(dx) > swipeDistanceThreshold) {
+            if (Math.abs(dx) > mSwipeDistanceThreshold) {
                 return if (dx > 0) TRACKPAD_SWIPE_FROM_LEFT else TRACKPAD_SWIPE_FROM_RIGHT
             }
         }
@@ -353,14 +355,14 @@ constructor(context: Context, gestureDetector: GesturePointerEventDetector) : Co
     }
 
     private fun detectSwipe(i: Int, time: Long, x: Float, y: Float): Int {
-        val fromX = downX[i]
-        val fromY = downY[i]
-        val elapsed = time - downTime[i]
+        val fromX = mDownX[i]
+        val fromY = mDownY[i]
+        val elapsed = time - mDownTime[i]
         if (DEBUG)
             Log.d(
                 TAG,
                 "pointer " +
-                    downPointerId[i] +
+                    mDownPointerId[i] +
                     " moved (" +
                     fromX +
                     "->" +
@@ -373,29 +375,29 @@ constructor(context: Context, gestureDetector: GesturePointerEventDetector) : Co
                     elapsed,
             )
         if (
-            fromY <= swipeStartThreshold.top &&
-                y > fromY + swipeDistanceThreshold &&
+            fromY <= mSwipeStartThreshold.top &&
+                y > fromY + mSwipeDistanceThreshold &&
                 elapsed < SWIPE_TIMEOUT_MS
         ) {
             return SWIPE_FROM_TOP
         }
         if (
-            fromY >= screenHeight - swipeStartThreshold.bottom &&
-                y < fromY - swipeDistanceThreshold &&
+            fromY >= screenHeight - mSwipeStartThreshold.bottom &&
+                y < fromY - mSwipeDistanceThreshold &&
                 elapsed < SWIPE_TIMEOUT_MS
         ) {
             return SWIPE_FROM_BOTTOM
         }
         if (
-            fromX >= screenWidth - swipeStartThreshold.right &&
-                x < fromX - swipeDistanceThreshold &&
+            fromX >= screenWidth - mSwipeStartThreshold.right &&
+                x < fromX - mSwipeDistanceThreshold &&
                 elapsed < SWIPE_TIMEOUT_MS
         ) {
             return SWIPE_FROM_RIGHT
         }
         return if (
-            fromX <= swipeStartThreshold.left &&
-                x > fromX + swipeDistanceThreshold &&
+            fromX <= mSwipeStartThreshold.left &&
+                x > fromX + mSwipeDistanceThreshold &&
                 elapsed < SWIPE_TIMEOUT_MS
         ) {
             SWIPE_FROM_LEFT
@@ -406,23 +408,23 @@ constructor(context: Context, gestureDetector: GesturePointerEventDetector) : Co
         val inner = "$prefix  "
         pw.println(prefix + TAG + ":")
         pw.print(inner)
-        pw.print("displayCutoutTouchableRegionSize=")
-        pw.println(displayCutoutTouchableRegionSize)
+        pw.print("mDisplayCutoutTouchableRegionSize=")
+        pw.println(mDisplayCutoutTouchableRegionSize)
         pw.print(inner)
-        pw.print("swipeStartThreshold=")
-        pw.println(swipeStartThreshold)
+        pw.print("mSwipeStartThreshold=")
+        pw.println(mSwipeStartThreshold)
         pw.print(inner)
-        pw.print("swipeDistanceThreshold=")
-        pw.println(swipeDistanceThreshold)
+        pw.print("mSwipeDistanceThreshold=")
+        pw.println(mSwipeDistanceThreshold)
     }
 
     private inner class FlingGestureDetector internal constructor() :
         GestureDetector.SimpleOnGestureListener() {
-        private val overscroller: OverScroller = OverScroller(context)
+        private val mOverscroller: OverScroller = OverScroller(mContext)
 
         override fun onSingleTapUp(e: MotionEvent): Boolean {
-            if (!overscroller.isFinished) {
-                overscroller.forceFinished(true)
+            if (!mOverscroller.isFinished) {
+                mOverscroller.forceFinished(true)
             }
             return true
         }
@@ -433,12 +435,12 @@ constructor(context: Context, gestureDetector: GesturePointerEventDetector) : Co
             velocityX: Float,
             velocityY: Float,
         ): Boolean {
-            overscroller.computeScrollOffset()
+            mOverscroller.computeScrollOffset()
             val now = SystemClock.uptimeMillis()
-            if (lastFlingTime != 0L && now > lastFlingTime + MAX_FLING_TIME_MILLIS) {
-                overscroller.forceFinished(true)
+            if (mLastFlingTime != 0L && now > mLastFlingTime + MAX_FLING_TIME_MILLIS) {
+                mOverscroller.forceFinished(true)
             }
-            overscroller.fling(
+            mOverscroller.fling(
                 0,
                 0,
                 velocityX.toInt(),
@@ -448,12 +450,12 @@ constructor(context: Context, gestureDetector: GesturePointerEventDetector) : Co
                 Int.MIN_VALUE,
                 Int.MAX_VALUE,
             )
-            var duration = overscroller.duration
+            var duration = mOverscroller.duration
             if (duration > MAX_FLING_TIME_MILLIS) {
                 duration = MAX_FLING_TIME_MILLIS
             }
-            lastFlingTime = now
-            callbacks?.onFling(duration)
+            mLastFlingTime = now
+            mCallbacks?.onFling(duration)
             return true
         }
     }
