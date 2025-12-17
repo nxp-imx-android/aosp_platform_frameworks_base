@@ -445,12 +445,22 @@ public class MultiResolutionImageReader implements AutoCloseable {
          * rare cases, {@link CameraCaptureSession#onCaptureBufferLost} is called if the buffer
          * is dropped.</p>
          *
+         * <p>The {@code timestamp} can be used to correlate between the
+         * {@code activeOutputSurfaces} and the images being output from those surfaces. The
+         * timestamp can be start of exposure or start of readout depending on whether
+         * {@link android.hardware.camera2.params.OutputConfiguration#setReadoutTimestampEnabled}
+         * was called on the outputs. Similarly, the timestamp can be either in the same time base
+         * as in {@link android.os.SystemClock#uptimeMillis} or
+         * {@link android.os.SystemClock#elapsedRealtime} depending on the timestamp base of the
+         * outputs. See {@link OutputConfiguration#setTimestampBase} for details.</p>
+         *
          * @param activeOutputSurfaces the active output surfaces to expect an output from.
-         * @param timestamp the timestamp at the start of this capture.
+         * @param timestamp the timestamp of the capture.
          * @param frameNumber the frame number of this capture.
          *
          * @see ImageReader
          * @see CameraCaptureSession
+         * @see OutputConfiguration
          */
         void onActiveOutputSurfaces(@NonNull List<Surface> activeOutputSurfaces,
                 long timestamp, long frameNumber);
