@@ -831,11 +831,7 @@ public class RecentTasksControllerTest extends ShellTestCase {
                 List.of(task3.taskId)));
     }
 
-    @Test
-    @EnableFlags({Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-            Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_FRONTEND})
     public void generateList_emptyTaskList_multipleDesktopsEnabled_shouldIncludeEmptyDesks() {
-        mDesktopState.setEnableMultipleDesktops(true);
         Set<Integer> deskIds = Set.of(101, 102);
         when(mDesktopUserRepositories.getCurrent().getAllDeskIds()).thenReturn(deskIds);
 
@@ -859,11 +855,7 @@ public class RecentTasksControllerTest extends ShellTestCase {
                 deskIds.containsAll(actualDeskIdsInGroupedTasks));
     }
 
-    @Test
-    @EnableFlags({Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-            Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_FRONTEND})
     public void generateList_emptyTaskList_multipleDesktopsEnabled_noDesks_returnsEmptyList() {
-        mDesktopState.setEnableMultipleDesktops(true);
         when(mDesktopUserRepositories.getCurrent().getAllDeskIds()).thenReturn(Set.of());
 
         ArrayList<GroupedTaskInfo> groupedTasks =
@@ -875,27 +867,7 @@ public class RecentTasksControllerTest extends ShellTestCase {
                 groupedTasks.isEmpty());
     }
 
-
-    @Test
-    @DisableFlags({Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-            Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_FRONTEND})
-    public void generateList_emptyTaskList_multipleDesktopsDisabled_shouldNotIncludeEmptyDesks() {
-        mDesktopState.setEnableMultipleDesktops(false);
-        when(mDesktopUserRepositories.getCurrent().getAllDeskIds()).thenReturn(Set.of(101));
-
-        ArrayList<GroupedTaskInfo> groupedTasks =
-                mRecentTasksControllerReal.generateList(List.of(), "test_no_empty_desks");
-
-        // Verification: Should return an empty list
-        assertTrue("Expected empty list when multiple desktops disabled even there are"
-                + " empty desks", groupedTasks.isEmpty());
-    }
-
-    @Test
-    @EnableFlags({Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-            Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_FRONTEND})
     public void getRecentTask_transparentAppInDesktopTask_addedToSameDesktopTask() {
-        mDesktopState.setEnableMultipleDesktops(true);
         RecentTaskInfo task1 = makeTaskInfo(1);
         task1.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
         RecentTaskInfo task2 = makeTaskInfo(2);
@@ -930,11 +902,7 @@ public class RecentTasksControllerTest extends ShellTestCase {
         assertThat(deskTasks).containsExactly(task1, task2);
     }
 
-    @Test
-    @EnableFlags({Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-            Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_FRONTEND})
     public void getRecentTask_transparentAppNotInExistingDesktopTask_shownAsFullScreenTask() {
-        mDesktopState.setEnableMultipleDesktops(true);
         RecentTaskInfo task1 = makeTaskInfo(1);
         task1.isTopActivityTransparent = true;
         RecentTaskInfo task2 = makeTaskInfo(2);
@@ -970,11 +938,7 @@ public class RecentTasksControllerTest extends ShellTestCase {
         assertThat(deskTasks).containsExactly(task2, task3);
     }
 
-    @Test
-    @EnableFlags({Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-            Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_FRONTEND})
     public void getRecentTask_transparentAppInDifferentDesktopTask_notAddedToActiveDesk() {
-        mDesktopState.setEnableMultipleDesktops(true);
         RecentTaskInfo task1 = makeTaskInfo(1);
         task1.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
         RecentTaskInfo task2 = makeTaskInfo(2);
