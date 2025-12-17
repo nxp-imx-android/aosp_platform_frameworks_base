@@ -64,7 +64,6 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry.EditedSuggestionInfo;
 import com.android.systemui.statusbar.notification.collection.render.NotificationVisibilityProvider;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.shared.NotificationLocationHelperKt;
 import com.android.systemui.statusbar.phone.ExpandHeadsUpOnInlineReply;
 import com.android.systemui.statusbar.policy.RemoteInputUriController;
@@ -121,8 +120,6 @@ public class NotificationRemoteInputManager implements CoreStartable {
     protected Callback mCallback;
 
     private final List<RemoteInputController.Callback> mControllerCallbacks = new ArrayList<>();
-    private final ListenerSet<Consumer<NotificationEntry>> mActionPressListeners =
-            new ListenerSet<>();
 
     private final InteractionHandler mInteractionHandler = new InteractionHandler() {
 
@@ -166,11 +163,7 @@ public class NotificationRemoteInputManager implements CoreStartable {
                              row.getLoggingKey(), pendingIntent, actionIndex);
                     boolean started = RemoteViews.startPendingIntent(view, pendingIntent, options);
                     if (started) {
-                        if (NotificationBundleUi.isEnabled()) {
-                            releaseNotificationIfKeptForRemoteInputHistory(row.getEntryAdapter());
-                        } else {
-                            releaseNotificationIfKeptForRemoteInputHistory(row.getEntryLegacy());
-                        }
+                        releaseNotificationIfKeptForRemoteInputHistory(row.getEntryAdapter());
                     }
                     return started;
             });
@@ -184,15 +177,10 @@ public class NotificationRemoteInputManager implements CoreStartable {
                 return null;
             }
             StatusBarNotification statusBarNotification = null;
-            if (NotificationBundleUi.isEnabled()) {
-                if (row.getEntryAdapter() != null) {
-                    statusBarNotification = row.getEntryAdapter().getSbn();
-                }
-            } else {
-                if (row.getEntryLegacy() != null) {
-                    statusBarNotification = row.getEntryLegacy().getSbn();
-                }
+            if (row.getEntryAdapter() != null) {
+                statusBarNotification = row.getEntryAdapter().getSbn();
             }
+
             if (statusBarNotification == null) {
                 Log.w(TAG, "Couldn't determine notification for click.");
                 return null;
@@ -397,24 +385,6 @@ public class NotificationRemoteInputManager implements CoreStartable {
         } else {
             mControllerCallbacks.remove(callback);
         }
-    }
-
-    /**
-     * Use {@link com.android.systemui.statusbar.notification.row.NotificationActionClickManager}
-     * instead
-     */
-    public void addActionPressListener(Consumer<NotificationEntry> listener) {
-        NotificationBundleUi.assertInLegacyMode();
-        mActionPressListeners.addIfAbsent(listener);
-    }
-
-    /**
-     * Use {@link com.android.systemui.statusbar.notification.row.NotificationActionClickManager}
-     * instead
-     */
-    public void removeActionPressListener(Consumer<NotificationEntry> listener) {
-        NotificationBundleUi.assertInLegacyMode();
-        mActionPressListeners.remove(listener);
     }
 
     /**
@@ -699,25 +669,6 @@ public class NotificationRemoteInputManager implements CoreStartable {
                     entryAdapter.getKey());
         }
         entryAdapter.onNotificationActionClicked();
-    }
-
-    /**
-     * Checks if the notification is being kept due to the user sending an inline reply, and if
-     * so, releases that hold.  This is called anytime an action on the notification is dispatched
-     * (after unlock, if applicable), and will then wait a short time to allow the app to update the
-     * notification in response to the action.
-     */
-    private void releaseNotificationIfKeptForRemoteInputHistory(NotificationEntry entry) {
-        NotificationBundleUi.assertInLegacyMode();
-        if (entry == null) {
-            return;
-        }
-        if (mRemoteInputListener != null) {
-            mRemoteInputListener.releaseNotificationIfKeptForRemoteInputHistory(entry.getKey());
-        }
-        for (Consumer<NotificationEntry> listener : mActionPressListeners) {
-            listener.accept(entry);
-        }
     }
 
     /** Returns whether the notification should be lifetime extended for smart reply history */

@@ -37,7 +37,6 @@ import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
 import com.android.systemui.statusbar.notification.shared.NmContextualDisplay
 import com.android.systemui.statusbar.notification.shared.NmHighlights
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.stack.StackScrollAlgorithm.SectionProvider
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.util.foldToSparseArray
@@ -157,9 +156,7 @@ internal constructor(
             view === peopleHeaderView -> BUCKET_PEOPLE
             view === alertingHeaderView -> BUCKET_ALERTING
             view === highlightsHeaderView -> BUCKET_HIGHLIGHTS
-            view is ExpandableNotificationRow ->
-                if (NotificationBundleUi.isEnabled) view.entryAdapter?.sectionBucket
-                else view.entryLegacy.bucket
+            view is ExpandableNotificationRow -> view.entryAdapter?.sectionBucket
             else -> null
         }
 
@@ -306,9 +303,9 @@ internal constructor(
      * rounded just because a neighbor is rounded
      */
     @VisibleForTesting
-     fun hasIntrinsicTopRoundness(view : ExpandableView): Boolean {
-        return view.getTopRoundnessSources().contains(BUNDLE)
-                || view.getTopRoundnessSources().contains(GROUPING_DISABLED_SECTION)
+    fun hasIntrinsicTopRoundness(view: ExpandableView): Boolean {
+        return view.getTopRoundnessSources().contains(BUNDLE) ||
+            view.getTopRoundnessSources().contains(GROUPING_DISABLED_SECTION)
     }
 
     /**
@@ -316,9 +313,9 @@ internal constructor(
      * rounded just because a neighbor is rounded
      */
     @VisibleForTesting
-    fun hasIntrinsicBottomRoundness(view : ExpandableView): Boolean {
-        return view.getBottomRoundnessSources().contains(BUNDLE)
-                || view.getBottomRoundnessSources().contains(GROUPING_DISABLED_SECTION)
+    fun hasIntrinsicBottomRoundness(view: ExpandableView): Boolean {
+        return view.getBottomRoundnessSources().contains(BUNDLE) ||
+            view.getBottomRoundnessSources().contains(GROUPING_DISABLED_SECTION)
     }
 
     private fun logSections(sections: List<NotificationSection>) {

@@ -54,7 +54,6 @@ import com.android.systemui.statusbar.StatusBarState;
 import com.android.systemui.statusbar.SysuiStatusBarStateController;
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManager;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.util.kotlin.JavaAdapter;
@@ -217,11 +216,7 @@ public class StatusBarRemoteInputCallback implements Callback, Callbacks,
             if (ExpandHeadsUpOnInlineReply.isEnabled()) {
                 if (row.isChildInGroup() && !row.areChildrenExpanded()) {
                     // The group isn't expanded, let's make sure it's visible!
-                    if (NotificationBundleUi.isEnabled()) {
-                        mGroupExpansionManager.toggleGroupExpansion(row.getEntryAdapter());
-                    } else {
-                        mGroupExpansionManager.toggleGroupExpansion(row.getEntryLegacy());
-                    }
+                    mGroupExpansionManager.toggleGroupExpansion(row.getEntryAdapter());
                 } else if (!row.isChildInGroup()) {
                     final boolean expandNotification;
                     if (row.isPinned()) {
@@ -239,11 +234,7 @@ public class StatusBarRemoteInputCallback implements Callback, Callbacks,
             } else {
                 if (row.isChildInGroup() && !row.areChildrenExpanded()) {
                     // The group isn't expanded, let's make sure it's visible!
-                    if (NotificationBundleUi.isEnabled()) {
-                        mGroupExpansionManager.toggleGroupExpansion(row.getEntryAdapter());
-                    } else {
-                        mGroupExpansionManager.toggleGroupExpansion(row.getEntryLegacy());
-                    }
+                    mGroupExpansionManager.toggleGroupExpansion(row.getEntryAdapter());
                 }
 
                 // TODO(b/346976443) Group and normal notification expansions are two different

@@ -38,7 +38,6 @@ import com.android.internal.widget.ImageFloatingTextView;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.NotificationContentView;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -61,14 +60,10 @@ public class NotificationGroupingUtil {
     static final DataExtractor ICON_EXTRACTOR = new DataExtractor() {
         @Override
         public Object extractData(ExpandableNotificationRow row) {
-            if (NotificationBundleUi.isEnabled()) {
-                if (row.getEntryAdapter().getSbn() != null) {
-                    return row.getEntryAdapter().getSbn().getNotification();
-                }
-                return null;
-            } else {
-                return row.getEntryLegacy().getSbn().getNotification();
+            if (row.getEntryAdapter().getSbn() != null) {
+                return row.getEntryAdapter().getSbn().getNotification();
             }
+            return null;
         }
     };
 
@@ -250,12 +245,9 @@ public class NotificationGroupingUtil {
 
     @VisibleForTesting
     boolean showsTime(ExpandableNotificationRow row) {
-        StatusBarNotification sbn;
-        if (NotificationBundleUi.isEnabled()) {
-            sbn = row.getEntryAdapter() != null ? row.getEntryAdapter().getSbn() : null;
-        } else {
-            sbn = row.getEntryLegacy().getSbn();
-        }
+        StatusBarNotification sbn =
+                row.getEntryAdapter() != null ? row.getEntryAdapter().getSbn() : null;
+
         return (sbn != null && sbn.getNotification().showsTime());
     }
 

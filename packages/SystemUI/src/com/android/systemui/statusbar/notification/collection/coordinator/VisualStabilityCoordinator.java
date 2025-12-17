@@ -48,7 +48,6 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.plugga
 import com.android.systemui.statusbar.notification.collection.provider.VisualStabilityProvider;
 import com.android.systemui.statusbar.notification.data.repository.HeadsUpRepository;
 import com.android.systemui.statusbar.notification.domain.interactor.SeenNotificationsInteractor;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.util.concurrency.DelayableExecutor;
@@ -528,9 +527,6 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
      * @param now current time SystemClock.elapsedRealtime
      */
     public void temporarilyAllowFreeMovement(@NonNull NotificationEntry entry, long now) {
-        if (NotificationBundleUi.isUnexpectedlyInLegacyMode()) {
-            return;
-        }
         final String entryKey = entry.getKey();
         final Runnable existing = mEntriesThatCanMoveFreely.get(entryKey);
         final boolean wasAllowedToMoveFreely = existing != null;
@@ -585,9 +581,6 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
     }
 
     private boolean canFreelyMoveEntry(@NonNull GroupEntry entry) {
-        if (!NotificationBundleUi.isEnabled()) {
-            return false;
-        }
         @Nullable NotificationEntry representativeEntry = entry.getRepresentativeEntry();
         if (representativeEntry == null) {
             return false;
@@ -596,11 +589,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
     }
 
     private boolean canFreelyMoveEntry(@NonNull NotificationEntry entry) {
-        if (NotificationBundleUi.isEnabled()) {
-            return mEntriesThatCanMoveFreely.containsKey(entry.getKey());
-        } else {
-            return false;
-        }
+        return mEntriesThatCanMoveFreely.containsKey(entry.getKey());
     }
 
     final StatusBarStateController.StateListener mStatusBarStateControllerListener =

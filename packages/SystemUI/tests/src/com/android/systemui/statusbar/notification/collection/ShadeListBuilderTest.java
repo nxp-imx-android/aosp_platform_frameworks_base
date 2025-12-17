@@ -81,7 +81,6 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.plugga
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifStabilityManager;
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.Pluggable;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CollectionReadyForBuildListener;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.util.time.FakeSystemClock;
 
 import org.junit.Assert;
@@ -281,7 +280,6 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testSingleNotifPromotedOutOfGroupInBundle() {
         mListBuilder.setBundler(TestBundler.INSTANCE);
 
@@ -625,31 +623,6 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(NotificationBundleUi.FLAG_NAME)
-    public void testFilter_resetsInitalizationTime() {
-        // GIVEN a NotifFilter that filters out a specific package
-        NotifFilter filter1 = spy(new PackageFilter(PACKAGE_1));
-        mListBuilder.addFinalizeFilter(filter1);
-
-        // GIVEN a notification that was initialized 1 second ago that will be filtered out
-        final NotificationEntry entry = new NotificationEntryBuilder()
-                .setPkg(PACKAGE_1)
-                .setId(nextId(PACKAGE_1))
-                .setRank(nextRank())
-                .build();
-        entry.setInitializationTime(SystemClock.elapsedRealtime() - 1000);
-        assertTrue(entry.hasFinishedInitialization());
-
-        // WHEN the pipeline is kicked off
-        mReadyForBuildListener.onBuildList(singletonList(entry), "test");
-        mPipelineChoreographer.runIfScheduled();
-
-        // THEN the entry's initialization time is reset
-        assertFalse(entry.hasFinishedInitialization());
-    }
-
-    @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testFilter_resetsInitializationTime_onRow() throws Exception {
         // GIVEN a NotifFilter that filters out a specific package
         NotifFilter filter1 = spy(new PackageFilter(PACKAGE_1));
@@ -948,7 +921,6 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBundle_singleNotif() {
         mListBuilder.setBundler(TestBundler.INSTANCE);
 
@@ -966,7 +938,6 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBundle_combineTwoNotifs_intoOneGroup() {
         mListBuilder.setBundler(TestBundler.INSTANCE);
 
@@ -1001,7 +972,6 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBundle_multipleBundles() {
         mListBuilder.setBundler(TestBundler.INSTANCE);
 
@@ -1030,7 +1000,6 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBundle_notifNotPromoted() {
         final int promotableId = 123;
 
@@ -1051,7 +1020,6 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBundle_groupNotifNotPromoted() {
         final int promotableId = 123;
 
@@ -1083,7 +1051,6 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBundle_bundleChildrenAreSorted() {
         mListBuilder.setBundler(TestBundler.INSTANCE);
         // GIVEN a simple pipeline
@@ -1106,7 +1073,6 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBundle_groupChildrenAreSorted() {
         mListBuilder.setBundler(TestBundler.INSTANCE);
 
@@ -1134,7 +1100,6 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBundle_childrenAssignedSection() {
         mListBuilder.setBundler(TestBundler.INSTANCE);
 
@@ -1422,7 +1387,6 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBundle_filterOutNotif() {
         mListBuilder.setBundler(TestBundler.INSTANCE);
 
@@ -1445,7 +1409,6 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBundle_filterOutGroupChild() {
         mListBuilder.setBundler(TestBundler.INSTANCE);
 
@@ -1474,7 +1437,6 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBundle_pruneIncompleteGroup() {
         mListBuilder.setBundler(TestBundler.INSTANCE);
 
@@ -1495,7 +1457,6 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBundle_pruneIncompleteGroup_postFinalizeFilter() {
         mListBuilder.setBundler(TestBundler.INSTANCE);
 
@@ -1515,7 +1476,6 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBundle_pruneEmptyBundle() {
         mListBuilder.setBundler(TestBundler.INSTANCE);
 

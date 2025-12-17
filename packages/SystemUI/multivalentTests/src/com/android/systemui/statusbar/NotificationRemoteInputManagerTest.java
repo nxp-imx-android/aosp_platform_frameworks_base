@@ -56,7 +56,6 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
 import com.android.systemui.statusbar.notification.collection.render.NotificationVisibilityProvider;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.policy.RemoteInputUriController;
 import com.android.systemui.util.kotlin.JavaAdapter;
 
@@ -83,7 +82,7 @@ public class NotificationRemoteInputManagerTest extends SysuiTestCase {
 
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
-        return FlagsParameterization.allCombinationsOf(NotificationBundleUi.FLAG_NAME);
+        return FlagsParameterization.allCombinationsOf();
     }
 
     private static final String TEST_PACKAGE_NAME = "test";
@@ -194,11 +193,6 @@ public class NotificationRemoteInputManagerTest extends SysuiTestCase {
         View actionView = ((LinearLayout) row.getPrivateLayout().getExpandedChild().findViewById(
                 com.android.internal.R.id.actions)).getChildAt(0);
         Notification n = getNotification(row);
-        CountDownLatch latch = new CountDownLatch(1);
-        Consumer<NotificationEntry> consumer = notificationEntry -> latch.countDown();
-        if (!NotificationBundleUi.isEnabled()) {
-            mRemoteInputManager.addActionPressListener(consumer);
-        }
 
         mRemoteInputManager.getRemoteViewsOnClickHandler().onInteraction(
                 actionView,
@@ -216,20 +210,11 @@ public class NotificationRemoteInputManagerTest extends SysuiTestCase {
                 row.getKey(), n.actions[0].actionIntent, 0);
 
         verify(mRemoteInputListener).releaseNotificationIfKeptForRemoteInputHistory(row.getKey());
-        if (NotificationBundleUi.isEnabled()) {
-            verify(mKosmos.getMockNotificationActionClickManager())
-                    .onNotificationActionClicked(any());
-        } else {
-            latch.await(10, TimeUnit.MILLISECONDS);
-        }
+        verify(mKosmos.getMockNotificationActionClickManager()).onNotificationActionClicked(any());
     }
 
     private Notification getNotification(ExpandableNotificationRow row) {
-        if (NotificationBundleUi.isEnabled()) {
-            return row.getEntryAdapter().getSbn().getNotification();
-        } else {
-            return row.getEntryLegacy().getSbn().getNotification();
-        }
+        return row.getEntryAdapter().getSbn().getNotification();
     }
 
     private ExpandableNotificationRow getRowWithReplyAction() throws Exception {

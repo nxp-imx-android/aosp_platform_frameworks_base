@@ -47,7 +47,6 @@ import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.utils.leaks.LeakCheckedTest;
 
 import org.junit.Before;
@@ -76,12 +75,8 @@ public class NotificationMenuRowTest extends LeakCheckedTest {
         NotificationEntry entry = new NotificationEntryBuilder()
                 .setChannel(new NotificationChannel("hi", "hi", 2))
                 .build();
-        if (NotificationBundleUi.isEnabled()) {
-            EntryAdapter entryAdapter = mKosmos.getEntryAdapterFactory().create(entry);
-            when(mRow.getEntryAdapter()).thenReturn(entryAdapter);
-        } else {
-            when(mRow.getEntryLegacy()).thenReturn(entry);
-        }
+        EntryAdapter entryAdapter = mKosmos.getEntryAdapterFactory().create(entry);
+        when(mRow.getEntryAdapter()).thenReturn(entryAdapter);
 
     }
 

@@ -51,7 +51,6 @@ import com.android.systemui.statusbar.notification.ImageTransformState;
 import com.android.systemui.statusbar.notification.TransformState;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.HybridNotificationView;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import java.util.function.Consumer;
 
@@ -275,9 +274,7 @@ public class NotificationTemplateViewWrapper extends NotificationHeaderViewWrapp
     public void onContentUpdated(ExpandableNotificationRow row) {
         // Reinspect the notification. Before the super call, because the super call also updates
         // the transformation types and we need to have our values set by then.
-        resolveTemplateViews(NotificationBundleUi.isEnabled()
-                ? row.getEntryAdapter().getSbn()
-                : row.getEntryLegacy().getSbn());
+        resolveTemplateViews(row.getEntryAdapter().getSbn());
         super.onContentUpdated(row);
         // With the modern templates, a large icon visually overlaps the header, so we can't
         // hide the header, we must show it.

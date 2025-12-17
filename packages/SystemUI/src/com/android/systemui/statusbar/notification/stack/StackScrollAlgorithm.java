@@ -40,7 +40,6 @@ import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimator;
 import com.android.systemui.statusbar.notification.row.ActivatableNotificationView;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.shared.NotificationHeadsUpCycling;
 
 import java.util.ArrayList;
@@ -511,22 +510,9 @@ public class StackScrollAlgorithm {
         for (int i = 0; i < state.visibleChildren.size(); i++) {
             final ExpandableView view = state.visibleChildren.get(i);
 
-            if (NotificationBundleUi.isEnabled()) {
-                currentY += getGapHeightForChild(ambientState.getSectionProvider(), i, view,
-                        getPreviousView(i, state), ambientState.getFractionToShade(),
-                        ambientState.isOnKeyguard());
-            } else {
-                final boolean applyGapHeight = childNeedsGapHeight(
-                        ambientState.getSectionProvider(), i,
-                        view, getPreviousView(i, state));
-                if (applyGapHeight) {
-                    final boolean isGroupingDisabled =
-                            ambientState.getSectionProvider().isGroupingDisabled(view);
-                    currentY += getGapForLocation(
-                            ambientState.getFractionToShade(), ambientState.isOnKeyguard(),
-                            isGroupingDisabled);
-                }
-            }
+            currentY += getGapHeightForChild(ambientState.getSectionProvider(), i, view,
+                    getPreviousView(i, state), ambientState.getFractionToShade(),
+                    ambientState.isOnKeyguard());
 
             if (ambientState.getShelf() != null) {
                 // TODO(b/443808383): the shelfStart calculated here does not equal to the value
@@ -557,13 +543,7 @@ public class StackScrollAlgorithm {
             if (row.isSummaryWithChildren() && children != null) {
                 for (ExpandableNotificationRow childRow : children) {
                     if (childRow.getVisibility() != View.GONE) {
-                        if (NotificationBundleUi.isEnabled()) {
-                            notGoneIndex = updateNotGoneIndex(notGoneIndex, childRow);
-                        } else {
-                            ExpandableViewState childState = childRow.getViewState();
-                            childState.notGoneIndex = notGoneIndex;
-                            notGoneIndex++;
-                        }
+                        notGoneIndex = updateNotGoneIndex(notGoneIndex, childRow);
                     }
                 }
             }
@@ -697,27 +677,12 @@ public class StackScrollAlgorithm {
                 algorithmState, ambientState);
 
         // Add gap between sections.
-        if (NotificationBundleUi.isEnabled()) {
-            final float gap = getGapHeightForChild(ambientState.getSectionProvider(), i, view,
-                    getPreviousView(i, algorithmState), ambientState.getFractionToShade(),
-                    ambientState.isOnKeyguard());
+        final float gap = getGapHeightForChild(ambientState.getSectionProvider(), i, view,
+                getPreviousView(i, algorithmState), ambientState.getFractionToShade(),
+                ambientState.isOnKeyguard());
 
-            algorithmState.mCurrentYPosition += expansionFraction * gap;
-            algorithmState.mCurrentExpandedYPosition += gap;
-        } else {
-            final boolean applyGapHeight =
-                    childNeedsGapHeight(
-                            ambientState.getSectionProvider(), i,
-                            view, getPreviousView(i, algorithmState));
-            if (applyGapHeight) {
-                final float gap = getGapForLocation(
-                        ambientState.getFractionToShade(), ambientState.isOnKeyguard(),
-                        ambientState.getSectionProvider().isGroupingDisabled(view)
-                );
-                algorithmState.mCurrentYPosition += expansionFraction * gap;
-                algorithmState.mCurrentExpandedYPosition += gap;
-            }
-        }
+        algorithmState.mCurrentYPosition += expansionFraction * gap;
+        algorithmState.mCurrentExpandedYPosition += gap;
 
         // Must set viewState.yTranslation _before_ use.
         // Incoming views have yTranslation=0 by default.
@@ -846,7 +811,7 @@ public class StackScrollAlgorithm {
             float fractionToShade,
             boolean onKeyguard) {
 
-        if (NotificationBundleUi.isEnabled() && childNeedsBundleGap(child, previousChild))  {
+        if (childNeedsBundleGap(child, previousChild))  {
             if (childNeedsBundleExpandedGap(child, previousChild)) {
                 return mBundleExpandedGapHeight;
             } else {
@@ -1011,9 +976,7 @@ public class StackScrollAlgorithm {
                 if (SceneContainerFlag.isEnabled()) {
                     if (shouldHunBeVisibleWhenScrolled(row.isHeadsUp(),
                             childState.headsUpIsVisible, row.showingPulsing(),
-                            ambientState.isOnKeyguard(), NotificationBundleUi.isEnabled()
-                                    ? row.getEntryAdapter().canPeek()
-                                    : row.getEntryLegacy().isStickyAndNotDemoted())) {
+                            ambientState.isOnKeyguard(), row.getEntryAdapter().canPeek())) {
                         // the height of this child before clamping it to the top
                         float unmodifiedChildHeight = childState.height;
 
@@ -1075,9 +1038,7 @@ public class StackScrollAlgorithm {
                 } else {
                     if (shouldHunBeVisibleWhenScrolled(row.mustStayOnScreen(),
                             childState.headsUpIsVisible, row.showingPulsing(),
-                            ambientState.isOnKeyguard(), NotificationBundleUi.isEnabled()
-                                    ? row.getEntryAdapter().canPeek()
-                                    : row.getEntryLegacy().isStickyAndNotDemoted())) {
+                            ambientState.isOnKeyguard(), row.getEntryAdapter().canPeek())) {
                         // Ensure that the heads up is always visible even when scrolled off.
                         // NSSL y starts at top of screen in non-split-shade, but below the qs
                         // offset

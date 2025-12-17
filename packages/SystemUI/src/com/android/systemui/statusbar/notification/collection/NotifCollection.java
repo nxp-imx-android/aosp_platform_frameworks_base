@@ -101,7 +101,6 @@ import com.android.systemui.statusbar.notification.collection.notifcollection.Ra
 import com.android.systemui.statusbar.notification.collection.notifcollection.RankingUpdatedEvent;
 import com.android.systemui.statusbar.notification.collection.notifcollection.UpdateSource;
 import com.android.systemui.statusbar.notification.collection.provider.NotificationDismissibilityProvider;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.util.Assert;
 import com.android.systemui.util.NamedListenerSet;
 import com.android.systemui.util.time.SystemClock;
@@ -378,11 +377,7 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
     }
 
     private NotificationEntry getEntryFromDismissalStats(EntryWithDismissStats stats) {
-        if (NotificationBundleUi.isEnabled()) {
-           return mNotificationSet.get(stats.getKey());
-        } else {
-            return stats.getEntry();
-        }
+        return mNotificationSet.get(stats.getKey());
     }
 
     /**
@@ -392,7 +387,6 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
             NotificationEntry entry,
             @NonNull DismissedByUserStats stats) {
         final EntryWithDismissStats withStats = new EntryWithDismissStats(
-                NotificationBundleUi.isEnabled() ? null : entry,
                 stats, entry.getKey(), entry.hashCode());
         dismissNotifications(List.of(withStats), /* fromBundle= */ false);
     }
@@ -1317,7 +1311,7 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
                     final DismissedByUserStats stats =
                             mStatsCreator.createDismissedByUserStats(summaryToDismiss);
                     final EntryWithDismissStats entryAndStats =
-                            new EntryWithDismissStats(null, stats,
+                            new EntryWithDismissStats(stats,
                                     summaryToDismiss.getKey(), summaryToDismiss.hashCode());
                     toDismiss.add(entryAndStats);
                 }
@@ -1325,7 +1319,7 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
                 final DismissedByUserStats stats =
                         mStatsCreator.createDismissedByUserStats(childEntry);
                 final EntryWithDismissStats entryAndStats =
-                        new EntryWithDismissStats(null, stats, childEntry.getKey(),
+                        new EntryWithDismissStats(stats, childEntry.getKey(),
                                 childEntry.hashCode());
                 toDismiss.add(entryAndStats);
             }

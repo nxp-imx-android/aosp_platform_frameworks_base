@@ -3,7 +3,6 @@ package com.android.systemui.statusbar.notification.stack
 import android.os.UserHandle
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
-import android.service.notification.StatusBarNotification
 import android.testing.TestableLooper.RunWithLooper
 import android.view.LayoutInflater
 import android.widget.FrameLayout
@@ -21,10 +20,8 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.transition.LargeScreenShadeInterpolator
 import com.android.systemui.statusbar.NotificationShelf
 import com.android.systemui.statusbar.StatusBarIconView
-import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism
 import com.android.systemui.statusbar.notification.shelf.NotificationShelfIconContainer
 import com.android.systemui.statusbar.notification.stack.StackScrollAlgorithm.StackScrollAlgorithmState
@@ -1037,13 +1034,8 @@ open class NotificationShelfTest(flags: FlagsParameterization) : SysuiTestCase()
         expansionFraction: Float,
         expectedAlpha: Float,
     ) {
-        val sbnMock: StatusBarNotification = mock()
-        val mockEntry = mock<NotificationEntry>().apply { whenever(this.sbn).thenReturn(sbnMock) }
-        val row =
-            when (NotificationBundleUi.isEnabled) {
-                true -> ExpandableNotificationRow(mContext, null, UserHandle.CURRENT)
-                false -> ExpandableNotificationRow(mContext, null, mockEntry)
-            }
+        val row = ExpandableNotificationRow(mContext, null, UserHandle.CURRENT)
+
         whenever(ambientState.lastVisibleBackgroundChild).thenReturn(row)
         whenever(ambientState.isExpansionChanging).thenReturn(true)
         whenever(ambientState.expansionFraction).thenReturn(expansionFraction)

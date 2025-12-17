@@ -124,7 +124,6 @@ import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView;
 import com.android.systemui.statusbar.notification.row.StackScrollerDecorView;
 import com.android.systemui.statusbar.notification.shared.NmContextualDisplay;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.shared.NotificationHeadsUpCycling;
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism;
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun;
@@ -1060,12 +1059,8 @@ public class NotificationStackScrollLayout
                         || !(view instanceof ExpandableNotificationRow row)) {
                     continue;
                 }
-                int bucket = NotificationBundleUi.isEnabled()
-                        ? row.getEntryAdapter().getSectionBucket()
-                        : row.getEntryLegacy().getBucket();
-                boolean isAmbient = NotificationBundleUi.isEnabled()
-                        ? row.getEntryAdapter().isAmbient()
-                        : row.getEntryLegacy().isAmbient();
+                int bucket = row.getEntryAdapter().getSectionBucket();
+                boolean isAmbient = row.getEntryAdapter().isAmbient();
                 currentIndex++;
                 boolean beforeSpeedBump;
                 if (mHighPriorityBeforeSpeedBump) {
@@ -1631,14 +1626,9 @@ public class NotificationStackScrollLayout
 
     private boolean canClipChildRow(ExpandableNotificationRow row) {
         ExpandableNotificationRow notifParent = row.getNotificationParent();
-        if (NotificationBundleUi.isEnabled()) {
-            return notifParent.isGroupExpanded()
-                    && !notifParent.isGroupExpansionChanging()
-                    && (!notifParent.isChildInGroup() || canClipChildRow(notifParent));
-        } else {
-            return notifParent.isGroupExpanded()
-                    && !notifParent.isGroupExpansionChanging();
-        }
+        return notifParent.isGroupExpanded()
+                && !notifParent.isGroupExpansionChanging()
+                && (!notifParent.isChildInGroup() || canClipChildRow(notifParent));
     }
 
     private void updateScrollStateForAddedChildren() {
@@ -2100,19 +2090,9 @@ public class NotificationStackScrollLayout
 
     private ExpandableNotificationRow getTopHeadsUpRow() {
         ExpandableNotificationRow row = mTopHeadsUpRow;
-        if (NotificationBundleUi.isEnabled()) {
-            if (mGroupMembershipManager.isChildInGroup(row.getEntryAdapter())
-                    && row.isChildInGroup()) {
-                row = row.getNotificationParent();
-            }
-        } else {
-            if (row.isChildInGroup()) {
-                final NotificationEntry groupSummary =
-                        mGroupMembershipManager.getGroupSummary(row.getEntryLegacy());
-                if (groupSummary != null) {
-                    row = groupSummary.getRow();
-                }
-            }
+        if (mGroupMembershipManager.isChildInGroup(row.getEntryAdapter())
+                && row.isChildInGroup()) {
+            row = row.getNotificationParent();
         }
         return row;
     }
@@ -2258,16 +2238,9 @@ public class NotificationStackScrollLayout
                     && touchY >= top && touchY <= bottom && touchX >= left && touchX <= right) {
                 if (slidingChild instanceof ExpandableNotificationRow row) {
                     boolean isEntrySummaryForTopHun;
-                    if (NotificationBundleUi.isEnabled()) {
-                        isEntrySummaryForTopHun = Objects.equals(
-                                ((ExpandableNotificationRow) slidingChild).getNotificationParent(),
-                                mTopHeadsUpRow);
-                    } else {
-                        NotificationEntry entry = row.getEntryLegacy();
-                        isEntrySummaryForTopHun = mTopHeadsUpRow != null &&
-                                mGroupMembershipManager.getGroupSummary(
-                                        mTopHeadsUpRow.getEntryLegacy()) == entry;
-                    }
+                    isEntrySummaryForTopHun = Objects.equals(
+                            ((ExpandableNotificationRow) slidingChild).getNotificationParent(),
+                            mTopHeadsUpRow);
                     if (!mIsExpanded && row.isHeadsUp() && row.isPinned()
                             && mTopHeadsUpRow != row
                             && !isEntrySummaryForTopHun) {
@@ -3164,13 +3137,8 @@ public class NotificationStackScrollLayout
         }
         child.setOnHeightChangedListener(null);
         if (child instanceof ExpandableNotificationRow row) {
-            if (NotificationBundleUi.isEnabled()) {
-                row.getEntryAdapter().removeOnSensitivityChangedListener(
-                        mOnChildSensitivityChangedListener);
-            } else {
-                NotificationEntry entry = ((ExpandableNotificationRow) child).getEntryLegacy();
-                entry.removeOnSensitivityChangedListener(mOnChildSensitivityChangedListener);
-            }
+            row.getEntryAdapter().removeOnSensitivityChangedListener(
+                    mOnChildSensitivityChangedListener);
         }
         if (!SceneContainerFlag.isEnabled()) {
             updateScrollStateForRemovedChild(child);
@@ -3261,9 +3229,7 @@ public class NotificationStackScrollLayout
     private boolean isChildInGroup(View child) {
         if (child instanceof ExpandableNotificationRow) {
             ExpandableNotificationRow childRow = (ExpandableNotificationRow) child;
-            return NotificationBundleUi.isEnabled()
-                    ? mGroupMembershipManager.isChildInGroup(childRow.getEntryAdapter())
-                    : mGroupMembershipManager.isChildInGroup(childRow.getEntryLegacy());
+            return mGroupMembershipManager.isChildInGroup(childRow.getEntryAdapter());
         }
         return false;
     }
@@ -3371,11 +3337,7 @@ public class NotificationStackScrollLayout
         } else if (startingPosition < getOwnScrollY() - scrollBoundaryStart) {
             // This child is currently being scrolled into, set the scroll position to the
             // start of this child
-            if (NotificationBundleUi.isEnabled()) {
-                setOwnScrollY(getOwnScrollY() - childHeight);
-            } else {
-                setOwnScrollY(startingPosition + scrollBoundaryStart);
-            }
+            setOwnScrollY(getOwnScrollY() - childHeight);
         }
     }
 
@@ -3467,13 +3429,8 @@ public class NotificationStackScrollLayout
         updateHideSensitiveForChild(child);
         child.setOnHeightChangedListener(mOnChildHeightChangedListener);
         if (child instanceof ExpandableNotificationRow row) {
-            if (NotificationBundleUi.isEnabled()) {
-                row.getEntryAdapter().addOnSensitivityChangedListener(
-                        mOnChildSensitivityChangedListener);
-            } else {
-                NotificationEntry entry = ((ExpandableNotificationRow) child).getEntryLegacy();
-                entry.addOnSensitivityChangedListener(mOnChildSensitivityChangedListener);
-            }
+            row.getEntryAdapter().addOnSensitivityChangedListener(
+                    mOnChildSensitivityChangedListener);
             if (SceneContainerFlag.isEnabled()) {
                 row.setOnKeyguard(mIsOnLockscreen);
             }
@@ -3798,16 +3755,9 @@ public class NotificationStackScrollLayout
         for (ExpandableView child : mChildrenChangingPositions) {
             Integer duration = null;
             if (child instanceof ExpandableNotificationRow row) {
-                if (NotificationBundleUi.isEnabled()) {
-                    if (row.getEntryAdapter().isMarkedForUserTriggeredMovement()) {
-                        duration = StackStateAnimator.ANIMATION_DURATION_PRIORITY_CHANGE;
-                        row.getEntryAdapter().markForUserTriggeredMovement(false);
-                    }
-                } else {
-                    if (row.getEntryLegacy().isMarkedForUserTriggeredMovement()) {
-                        duration = StackStateAnimator.ANIMATION_DURATION_PRIORITY_CHANGE;
-                        row.getEntryLegacy().markForUserTriggeredMovement(false);
-                    }
+                if (row.getEntryAdapter().isMarkedForUserTriggeredMovement()) {
+                    duration = StackStateAnimator.ANIMATION_DURATION_PRIORITY_CHANGE;
+                    row.getEntryAdapter().markForUserTriggeredMovement(false);
                 }
             }
             AnimationEvent animEvent = duration == null
@@ -5461,13 +5411,9 @@ public class NotificationStackScrollLayout
         boolean hasStatusBarChip = statusBarChipBounds != null;
         boolean addAnimation =
                 mAnimationsEnabled && (isHeadsUp || mHeadsUpGoingAwayAnimationsAllowed);
-        boolean hasBackingData = NotificationBundleUi.isEnabled()
-                ? row.getEntryAdapter() != null
-                : row.getEntryLegacy() != null;
+        boolean hasBackingData = row.getEntryAdapter() != null;
         boolean isSeenInShade = hasBackingData
-                ? (NotificationBundleUi.isEnabled()
-                    ? row.getEntryAdapter().isSeenInShade()
-                    : row.getEntryLegacy().isSeenInShade())
+                ? row.getEntryAdapter().isSeenInShade()
                 : false;
         if (NotificationThrottleHun.isEnabled()) {
             final boolean closedAndSeenInShade = !mIsExpanded && isSeenInShade;
@@ -6007,9 +5953,7 @@ public class NotificationStackScrollLayout
     }
 
     public boolean isVisibleOrIsVisibleInShelf(ExpandableNotificationRow row) {
-        return isVisible(row)
-                || (NotificationBundleUi.isEnabled()
-                && mShelf.getVisibility() != GONE && row.isInShelf());
+        return isVisible(row) || (mShelf.getVisibility() != GONE && row.isInShelf());
     }
 
     /** Whether the group is expanded to show the child notifications, and they are visible. */
@@ -6867,9 +6811,7 @@ public class NotificationStackScrollLayout
     static boolean matchesSelection(
             ExpandableNotificationRow row,
             @SelectedRows int selection) {
-        int bucket = NotificationBundleUi.isEnabled()
-                ? row.getEntryAdapter().getSectionBucket()
-                : row.getEntryLegacy().getBucket();
+        int bucket = row.getEntryAdapter().getSectionBucket();
         switch (selection) {
             case ROWS_ALL:
                 return true;
@@ -6878,14 +6820,12 @@ public class NotificationStackScrollLayout
             case ROWS_GENTLE:
                 if (NmContextualDisplay.isEnabled()) {
                     return bucket == BUCKET_SILENT;
-                } else if (NotificationBundleUi.isEnabled()) {
+                } else {
                     return bucket == BUCKET_SILENT
                             || bucket == BUCKET_PROMO
                             || bucket == BUCKET_RECS
                             || bucket == BUCKET_SOCIAL
                             || bucket == BUCKET_NEWS;
-                } else {
-                    return bucket == BUCKET_SILENT;
                 }
             default:
                 throw new IllegalArgumentException("Unknown selection: " + selection);

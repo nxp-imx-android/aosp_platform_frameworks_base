@@ -29,7 +29,6 @@ import com.android.internal.widget.NotificationRowIconView.NotificationIconProvi
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.NotifRemoteViewsFactory
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import javax.inject.Inject
 
 /**
@@ -65,7 +64,7 @@ constructor(
         row: ExpandableNotificationRow,
         context: Context,
     ): NotificationIconProvider {
-        val sbn = if (NotificationBundleUi.isEnabled) row.entryAdapter.sbn else row.entryLegacy.sbn
+        val sbn = row.entryAdapter.sbn
         if (sbn == null) {
             return object : NotificationIconProvider {
                 @IconType

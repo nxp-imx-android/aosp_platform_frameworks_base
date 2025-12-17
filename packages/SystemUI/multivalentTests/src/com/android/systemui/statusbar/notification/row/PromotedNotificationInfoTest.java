@@ -164,7 +164,6 @@ public class PromotedNotificationInfoTest extends SysuiTestCase {
                 TEST_PACKAGE_NAME,
                 mRanking,
                 mSbn,
-                mEntry,
                 mEntryAdapter,
                 null,
                 null,

@@ -55,7 +55,6 @@ import com.android.systemui.statusbar.notification.row.NotifInflationErrorManage
 import com.android.systemui.statusbar.notification.row.NotifInflationErrorManager.NotifInflationErrorListener;
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -342,7 +341,7 @@ public class PreparationCoordinator implements Coordinator {
     private void inflateAllRequiredViews(List<PipelineEntry> entries) {
         for (int i = 0, size = entries.size(); i < size; i++) {
             PipelineEntry entry = entries.get(i);
-            if (NotificationBundleUi.isEnabled() && entry instanceof BundleEntry bundleEntry) {
+            if (entry instanceof BundleEntry bundleEntry) {
                 for (ListEntry listEntry : bundleEntry.getChildren()) {
                     BundleCoordinator.debugBundleLog(TAG, () -> " inflate bundle with "
                             + bundleEntry.getChildren().size() + " children");

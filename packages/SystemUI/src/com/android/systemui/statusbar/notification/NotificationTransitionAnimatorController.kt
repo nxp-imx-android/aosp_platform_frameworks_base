@@ -27,7 +27,6 @@ import com.android.systemui.statusbar.notification.domain.interactor.Notificatio
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager
 import com.android.systemui.statusbar.notification.headsup.HeadsUpUtil
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer
 import kotlin.math.ceil
 import kotlin.math.max
@@ -163,9 +162,7 @@ class NotificationTransitionAnimatorController(
 
     private val headsUpNotificationRow: ExpandableNotificationRow?
         get() {
-            val pipelineParent =
-                if (NotificationBundleUi.isEnabled) notification.entryAdapter?.parent
-                else notification.entryLegacy.parent
+            val pipelineParent = notification.entryAdapter?.parent
             val summaryEntry = (pipelineParent as? GroupEntry)?.summary
             return when {
                 headsUpManager.isHeadsUpEntry(notificationKey) -> notification

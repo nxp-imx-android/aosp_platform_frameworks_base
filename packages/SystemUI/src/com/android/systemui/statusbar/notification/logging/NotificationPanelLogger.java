@@ -59,8 +59,6 @@ public interface NotificationPanelLogger {
      *
      * @param draggedNotification the notification that is being dragged
      */
-    void logNotificationDrag(NotificationEntry draggedNotification);
-
     void logNotificationDrag(EntryAdapter draggedNotification);
 
     enum NotificationPanelEvent implements UiEventLogger.UiEventEnum {

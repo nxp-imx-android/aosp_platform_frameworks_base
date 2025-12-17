@@ -89,7 +89,6 @@ import com.android.systemui.statusbar.notification.init.NotificationsController;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.NotificationGutsManager;
 import com.android.systemui.statusbar.notification.shared.GroupHunAnimationFix;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayoutController.NotificationPanelEvent;
 import com.android.systemui.statusbar.notification.stack.NotificationSwipeHelper.NotificationCallback;
 import com.android.systemui.statusbar.notification.stack.ui.viewbinder.NotificationListViewBinder;
@@ -565,13 +564,8 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
     @Test
     public void testOnMenuShownLogging() {
         ExpandableNotificationRow row = mock(ExpandableNotificationRow.class, RETURNS_DEEP_STUBS);
-        if (NotificationBundleUi.isEnabled()) {
-            when(row.getEntryAdapter().getSbn().getLogMaker()).thenReturn(new LogMaker(
-                    MetricsProto.MetricsEvent.VIEW_UNKNOWN));
-        } else {
-            when(row.getEntryLegacy().getSbn().getLogMaker()).thenReturn(new LogMaker(
-                    MetricsProto.MetricsEvent.VIEW_UNKNOWN));
-        }
+        when(row.getEntryAdapter().getSbn().getLogMaker()).thenReturn(new LogMaker(
+                MetricsProto.MetricsEvent.VIEW_UNKNOWN));
 
         ArgumentCaptor<OnMenuEventListener> onMenuEventListenerArgumentCaptor =
                 ArgumentCaptor.forClass(OnMenuEventListener.class);
@@ -584,11 +578,7 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
 
         onMenuEventListener.onMenuShown(row);
         // This writes most of the log data
-        if (NotificationBundleUi.isEnabled()) {
-            verify(row.getEntryAdapter().getSbn()).getLogMaker();
-        } else {
-            verify(row.getEntryLegacy().getSbn()).getLogMaker();
-        }
+        verify(row.getEntryAdapter().getSbn()).getLogMaker();
         verify(mMetricsLogger).write(logMatcher(MetricsProto.MetricsEvent.ACTION_REVEAL_GEAR,
                 MetricsProto.MetricsEvent.TYPE_ACTION));
     }
@@ -628,13 +618,9 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
     @Test
     public void testOnMenuClickedLogging() {
         ExpandableNotificationRow row = mock(ExpandableNotificationRow.class, RETURNS_DEEP_STUBS);
-        if (NotificationBundleUi.isEnabled()) {
-            when(row.getEntryAdapter().getSbn().getLogMaker()).thenReturn(new LogMaker(
-                    MetricsProto.MetricsEvent.VIEW_UNKNOWN));
-        } else {
-            when(row.getEntryLegacy().getSbn().getLogMaker()).thenReturn(new LogMaker(
-                    MetricsProto.MetricsEvent.VIEW_UNKNOWN));
-        }
+        when(row.getEntryAdapter().getSbn().getLogMaker()).thenReturn(new LogMaker(
+                MetricsProto.MetricsEvent.VIEW_UNKNOWN));
+
 
         ArgumentCaptor<OnMenuEventListener> onMenuEventListenerArgumentCaptor =
                 ArgumentCaptor.forClass(OnMenuEventListener.class);
@@ -648,11 +634,7 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
         onMenuEventListener.onMenuClicked(row, 0, 0, mock(
                 NotificationMenuRowPlugin.MenuItem.class));
         // This writes most of the log data
-        if (NotificationBundleUi.isEnabled()) {
-            verify(row.getEntryAdapter().getSbn()).getLogMaker();
-        } else {
-            verify(row.getEntryLegacy().getSbn()).getLogMaker();
-        }
+        verify(row.getEntryAdapter().getSbn()).getLogMaker();
         verify(mMetricsLogger).write(logMatcher(MetricsProto.MetricsEvent.ACTION_TOUCH_GEAR,
                 MetricsProto.MetricsEvent.TYPE_ACTION));
     }

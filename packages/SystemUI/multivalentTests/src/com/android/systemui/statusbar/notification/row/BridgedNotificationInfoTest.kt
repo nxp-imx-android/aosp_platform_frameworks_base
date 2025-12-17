@@ -256,7 +256,6 @@ class BridgedNotificationInfoTest : SysuiTestCase() {
             pkg,
             entry.ranking,
             entry.sbn,
-            entry,
             entryAdapter,
             onSettingsClick,
             onAppSettingsClick,

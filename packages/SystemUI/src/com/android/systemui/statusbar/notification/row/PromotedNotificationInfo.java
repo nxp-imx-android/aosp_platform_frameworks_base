@@ -35,7 +35,6 @@ import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.UiEventLogger;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.collection.EntryAdapter;
-import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor;
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
@@ -67,7 +66,6 @@ public class PromotedNotificationInfo extends NotificationInfo {
             String pkg,
             NotificationListenerService.Ranking ranking,
             StatusBarNotification sbn,
-            NotificationEntry entry,
             EntryAdapter entryAdapter,
             OnSettingsClickListener onSettingsClick,
             OnAppSettingsClickListener onAppSettingsClick,
@@ -81,7 +79,7 @@ public class PromotedNotificationInfo extends NotificationInfo {
         super.bindNotification(pm, iNotificationManager, appIconProvider, iconStyleProvider,
                 onUserInteractionCallback, channelEditorDialogController,
                 packageDemotionInteractor, pkg, ranking, sbn,
-                entry, entryAdapter, onSettingsClick, onAppSettingsClick, feedbackClickListener,
+                entryAdapter, onSettingsClick, onAppSettingsClick, feedbackClickListener,
                 uiEventLogger, isDeviceProvisioned, isNonblockable, isDismissable,
                 wasShownHighPriority, metricsLogger, onCloseClick);
 
