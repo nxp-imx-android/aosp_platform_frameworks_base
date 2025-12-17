@@ -289,7 +289,9 @@ class BrightnessPowerModifier implements BrightnessStateModifier,
                     }
                 }
             } else { // Current power consumed is under the quota.
-                targetBrightnessCap = PowerManager.BRIGHTNESS_MAX;
+                float brightnessCap =
+                    (powerQuota / mCurrentAvgPowerConsumed) * mCurrentBrightness;
+                targetBrightnessCap = Math.min(brightnessCap, PowerManager.BRIGHTNESS_MAX);
             }
         }
 
