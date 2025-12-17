@@ -27,6 +27,7 @@
     DevicePolicyManager.setApplicationHidden policy.
     -->
     <string-array translatable="false" name="application_hidden_policy_exempt_apps">
+        <item>@string/config_systemUi</item>
         <item>com.android.nfc</item>
         <item>com.android.settings</item>
         <item>com.android.providers.settings</item>

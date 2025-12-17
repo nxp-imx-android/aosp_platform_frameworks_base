@@ -6094,11 +6094,9 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 return false;
             }
 
-            // Don't allow hiding "android" or SysUI as it makes device unusable.
-            if ("android".equals(packageName)
-                    || LocalServices.getService(PackageManagerInternal.class)
-                            .getSystemUiServiceComponent().getPackageName().equals(packageName)) {
-                Slog.w(TAG, "Cannot hide package: " + packageName);
+            // Don't allow hiding "android" package.
+            if ("android".equals(packageName)) {
+                Slog.w(TAG, "Cannot hide package: android");
                 return false;
             }
 
