@@ -25,6 +25,10 @@ interface ISerialManager {
     /** Returns a list of all available serial ports */
     List<SerialPortInfo> getSerialPorts();
 
+    /** Returns a list of port names in the system configuration */
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.SERIAL_PORT)")
+    String[] getSerialPortsInConfig();
+
     /** Registers a listener to monitor serial port connections and disconnections. */
     void registerSerialPortListener(in ISerialPortListener listener);
 

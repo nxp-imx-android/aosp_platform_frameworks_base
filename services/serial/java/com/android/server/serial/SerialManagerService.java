@@ -16,6 +16,7 @@
 
 package com.android.server.serial;
 
+import static android.hardware.serial.SerialPort.INVALID_ID;
 import static android.hardware.serial.SerialPort.OPEN_FLAG_DATA_SYNC;
 import static android.hardware.serial.SerialPort.OPEN_FLAG_NONBLOCK;
 import static android.hardware.serial.SerialPort.OPEN_FLAG_READ_ONLY;
@@ -31,6 +32,7 @@ import android.annotation.RequiresNoPermission;
 import android.annotation.RequiresPermission;
 import android.annotation.UserIdInt;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.hardware.serial.ISerialManager;
 import android.hardware.serial.ISerialPortListener;
@@ -192,6 +194,15 @@ public class SerialManagerService extends ISerialManager.Stub {
     }
 
     @Override
+    @RequiresPermission(Manifest.permission.SERIAL_PORT)
+    public String[] getSerialPortsInConfig() {
+        mContext.enforceCallingPermission(
+                Manifest.permission.SERIAL_PORT,
+                "The caller doesn't have SERIAL_PORT permission.");
+        return mPortsInConfig;
+    }
+
+    @Override
     public void registerSerialPortListener(@NonNull ISerialPortListener listener) {
         synchronized (mLock) {
             connectToNativeService();
@@ -265,10 +276,19 @@ public class SerialManagerService extends ISerialManager.Stub {
                 return;
             }
             SerialPortInfo port = mSerialPorts.get(portName);
+            if (port == null && hasSerialPortPermission(mContext, callingPid, callingUid)) {
+                for (int i = 0; i < mPortsInConfig.length; ++i) {
+                    if (portName.equals(mPortsInConfig[i])) {
+                        port = new SerialPortInfo(portName, INVALID_ID, INVALID_ID);
+                        break;
+                    }
+                }
+            }
             if (port == null) {
                 deliverErrorToCallback(callback, ErrorCode.ERROR_PORT_NOT_FOUND, portName);
                 return;
             }
+            final SerialPortInfo portToOpen = port;
             final SerialUserAccessManagerInterface accessManager = getOrCreateAccessManager(userId);
             accessManager.requestAccess(portName, callingPid, callingUid, packageName,
                     (resultPort, pid, uid, granted) -> {
@@ -277,7 +297,7 @@ public class SerialManagerService extends ISerialManager.Stub {
                                     "User denied " + packageName + " access to " + portName);
                             return;
                         }
-                        nativeOpen(port, toOsConstants(flags), exclusive, callback);
+                        nativeOpen(portToOpen, toOsConstants(flags), exclusive, callback);
                     });
         }
     }
@@ -516,6 +536,11 @@ public class SerialManagerService extends ISerialManager.Stub {
         mContext.enforceCallingPermission(Manifest.permission.MANAGE_SERIAL_PORTS,
                 "The caller doesn't have MANAGE_SERIAL_PORTS permission.");
         (new SerialShellCommand(this)).exec(this, in, out, err, args, callback, resultReceiver);
+    }
+
+    static boolean hasSerialPortPermission(Context context, int pid, int uid) {
+        return context.checkPermission(Manifest.permission.SERIAL_PORT, pid, uid)
+                == PackageManager.PERMISSION_GRANTED;
     }
 
     /**
