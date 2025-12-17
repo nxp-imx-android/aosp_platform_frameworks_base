@@ -206,7 +206,6 @@ cc_defaults {
         "android.system.suspend.control-V1-cpp",
         "android.system.suspend.control.internal-cpp",
         "android.system.suspend-V1-ndk",
-        "android_location_flags_c_lib",
         "server_configurable_flags",
         "service.incremental",
     ],
