@@ -30,11 +30,10 @@ import java.security.Signature;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
 
 @RunWith(AndroidJUnit4.class)
 public final class TalismanMasterKeyTest {
-    static final String TAG = "TalismanMasterKeyTest";
-
     @Test
     public void generateMasterKey_success() throws Exception {
         TalismanMasterKey.generateMasterKey("talisman-");
@@ -87,5 +86,31 @@ public final class TalismanMasterKeyTest {
         TalismanKey talismanKey = masterKey1.generatePerTalismanKey();
         byte[] message = "talisman".getBytes();
         assertThrows(IllegalArgumentException.class, () -> masterKey2.sign(talismanKey, message));
+    }
+
+    @Test
+    public void attest_success() throws Exception {
+        var masterKey = TalismanMasterKey.generateMasterKey("talisman-");
+        TalismanKey talismanKey = masterKey.generatePerTalismanKey();
+        TalismanBatchAttestation attestation = masterKey.attest(Arrays.asList(talismanKey));
+        assertThat(attestation.batchHash().length).isGreaterThan(0);
+        assertThat(attestation.signature().length).isGreaterThan(0);
+        assertThat(attestation.certificates().size()).isAtLeast(2);
+        // TODO(b/468195017): Change to Ed25519 once the issue with loading Ed25519 keys is
+        // resolved.
+        var verifier = Signature.getInstance("SHA256WithECDSA");
+        verifier.initVerify(attestation.certificates().get(attestation.certificates().size() - 1));
+        verifier.update(attestation.batchHash());
+        assertThat(verifier.verify(attestation.signature())).isTrue();
+    }
+
+    @Test
+    public void attest_key_not_owned() throws Exception {
+        var masterKey1 = TalismanMasterKey.generateMasterKey("talisman1-");
+        var masterKey2 = TalismanMasterKey.generateMasterKey("talisman2-");
+        TalismanKey talismanKey = masterKey1.generatePerTalismanKey();
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> masterKey2.attest(Arrays.asList(talismanKey)));
     }
 }
