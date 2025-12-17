@@ -487,7 +487,6 @@
     {
       "name": "FunctionalTestsDesktopMode-overview-ClearOpenAppsFromOverviewTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
@@ -500,28 +499,24 @@
     {
       "name": "FunctionalTestsDesktopMode-overview-EnterDesktopViaMenuOfLiveOverviewTaskTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-overview-EnterDesktopViaMenuOfStaticOverviewTaskTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-overview-EnterDesktopViaStaticDesktopOverviewTaskTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-overview-SwitchBetweenDesktopAndSplitScreenTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
