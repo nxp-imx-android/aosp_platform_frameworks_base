@@ -1173,9 +1173,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         }
     }
 
-    @GuardedBy("getLockObject()")
-    final SparseArray<DevicePolicyData> mUserData;
-
     final Handler mHandler;
     final Handler mBackgroundHandler;
 
@@ -1249,7 +1246,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 synchronized (getLockObject()) {
                     maybeSendAdminEnabledBroadcastLocked(userHandle);
                     // Reset the policy data
-                    mUserData.remove(userHandle);
+                    mDeviceAdmins.removeUserData(userHandle);
                 }
                 handlePackagesChanged(null /* check all admins */, userHandle);
                 updatePersonalAppsSuspensionOnUserStart(userHandle);
@@ -2249,13 +2246,12 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         // "Lite" interface is available even when the device doesn't have the feature
         LocalServices.addService(DevicePolicyManagerLiteInternal.class, mLocalService);
 
-        // Policy version upgrade must not depend on either mOwners or mUserData, so they are
+        // Policy version upgrade must not depend on either mOwners or mDeviceAdmins, so they are
         // initialized only after performing the upgrade.
         if (!isDeviceAdminFeatureDisabled()) {
             performPolicyVersionUpgrade();
         }
 
-        mUserData = new SparseArray<>();
         mOwners = makeOwners(injector, pathProvider);
         mDeviceAdmins = new DeviceAdmins(mLock, mInjector, mOwners, this);
 
@@ -2385,25 +2381,33 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     }
 
     /**
-     * Creates and loads the policy data from xml.
+     * Loads the policy data from xml.
+     *
      * @param userHandle the user for whom to load the policy data
      * @return
      */
     @NonNull
     @Override
-    public DevicePolicyData getUserData(int userHandle) {
+    public void initializePolicyDataFromXml(int userHandle, DevicePolicyData policy) {
         synchronized (getLockObject()) {
-            DevicePolicyData policy = mUserData.get(userHandle);
-            if (policy == null) {
-                policy = new DevicePolicyData(userHandle);
-                mUserData.append(userHandle, policy);
-                loadSettingsLocked(policy, userHandle);
-                if (userHandle == UserHandle.USER_SYSTEM) {
-                    mStateCache.setDeviceProvisioned(policy.mUserSetupComplete);
-                }
+            loadSettingsLocked(policy, userHandle);
+            if (userHandle == UserHandle.USER_SYSTEM) {
+                mStateCache.setDeviceProvisioned(policy.mUserSetupComplete);
             }
-            return policy;
         }
+    }
+
+    /**
+     * Returns the policy data for the given user.
+     *
+     * If the policy data is not loaded yet, this will load the policy data from
+     * XML.
+     * @param userHandle the user for whom to load the policy data
+     * @return
+     */
+    @NonNull
+    DevicePolicyData getUserData(int userHandle) {
+        return mDeviceAdmins.getUserData(userHandle);
     }
 
     /**
@@ -2447,10 +2451,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             mOwners.removeProfileOwner(userHandle);
             mOwners.writeProfileOwner(userHandle);
 
-            DevicePolicyData policy = mUserData.get(userHandle);
-            if (policy != null) {
-                mUserData.remove(userHandle);
-            }
+            mDeviceAdmins.removeUserData(userHandle);
 
             File policyFile =
                     new File(mPathProvider.getUserSystemDirectory(userHandle), DEVICE_POLICIES_XML);
@@ -3932,24 +3933,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     private void cleanUpOldUsers() {
         // This is needed in case the broadcast {@link Intent.ACTION_USER_REMOVED} was not handled
         // before reboot
-        Set<Integer> usersWithProfileOwners;
-        Set<Integer> usersWithData;
-        synchronized (getLockObject()) {
-            usersWithProfileOwners = mOwners.getProfileOwnerKeys();
-            usersWithData = new ArraySet<>();
-            for (int i = 0; i < mUserData.size(); i++) {
-                usersWithData.add(mUserData.keyAt(i));
-            }
-        }
-        List<UserInfo> allUsers = mUserManager.getUsers();
-
-        Set<Integer> deletedUsers = new ArraySet<>();
-        deletedUsers.addAll(usersWithProfileOwners);
-        deletedUsers.addAll(usersWithData);
-        for (UserInfo userInfo : allUsers) {
-            deletedUsers.remove(userInfo.id);
-        }
-        for (Integer userId : deletedUsers) {
+        for (Integer userId : mDeviceAdmins.getDeletedUsers()) {
             removeManagedEmbeddedSubscriptionsForUser(userId);
             removeUserData(userId);
             mDevicePolicyEngine.handleUserRemoved(userId);
@@ -11392,16 +11376,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         PersonalAppsSuspensionHelper.forUser(mContext, UserHandle.USER_SYSTEM).dump(pw);
     }
 
-    private void dumpPerUserPolicyData(IndentingPrintWriter pw) {
-        int userCount = mUserData.size();
-        for (int i = 0; i < userCount; i++) {
-            int userId = mUserData.keyAt(i);
-            DevicePolicyData policy = getUserData(userId);
-            policy.dump(pw);
-            pw.println();
-        }
-    }
-
     @Override
     protected void dump(FileDescriptor fd, PrintWriter printWriter, String[] args) {
         if (!DumpUtils.checkDumpPermission(mContext, LOG_TAG, printWriter)) return;
@@ -11416,7 +11390,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 pw.println();
                 mDeviceAdminServiceController.dump(pw);
                 pw.println();
-                dumpPerUserPolicyData(pw);
+                mDeviceAdmins.dumpPerUserPolicyData(pw);
                 pw.println();
                 mConstants.dump(pw);
                 pw.println();
@@ -17639,13 +17613,11 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 return STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED;
             }
             // There must be no users that have completed setup.
-            for (int i = 0; i < mUserData.size(); i++) {
-                int userId = mUserData.keyAt(i);
-                if (mInjector.hasUserSetupCompleted(getUserData(userId))) {
-                    Slogf.d(LOG_TAG, "checkMultiUserDeviceProvisioningPreCondition: User %d has "
-                            + "completed setup", userId);
-                    return STATUS_USER_SETUP_COMPLETED;
-                }
+            int userId = mDeviceAdmins.getUserWithSetupCompleted();
+            if (userId != UserHandle.USER_NULL) {
+                Slogf.d(LOG_TAG, "checkMultiUserDeviceProvisioningPreCondition: User %d has "
+                        + "completed setup", userId);
+                return STATUS_USER_SETUP_COMPLETED;
             }
         }
         return STATUS_OK;

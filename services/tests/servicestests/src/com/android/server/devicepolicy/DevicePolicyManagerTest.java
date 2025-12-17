@@ -1867,7 +1867,7 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         dpm.setApplicationRestrictionsManagingPackage(admin1, RESTRICTIONS_DELEGATE);
 
         // DPMS correctly stores and retrieves the delegates
-        DevicePolicyData policy = dpms.mUserData.get(userHandle);
+        DevicePolicyData policy = dpms.mDeviceAdmins.mUserData.get(userHandle);
         assertThat(policy.mDelegationMap.size()).isEqualTo(2);
         MoreAsserts.assertContentsInAnyOrder(policy.mDelegationMap.get(CERT_DELEGATE),
             DELEGATION_CERT_INSTALL);
@@ -4064,7 +4064,7 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         // GIVEN userComplete is true in DPM
         DevicePolicyData userData = new DevicePolicyData(userId);
         userData.mUserSetupComplete = true;
-        dpms.mUserData.put(userId, userData);
+        dpms.mDeviceAdmins.mUserData.put(userId, userData);
 
         assertThat(dpms.hasUserSetupCompleted()).isTrue();
 
