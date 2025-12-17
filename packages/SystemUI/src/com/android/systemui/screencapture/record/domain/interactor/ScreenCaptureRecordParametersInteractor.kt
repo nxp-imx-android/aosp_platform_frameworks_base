@@ -43,6 +43,20 @@ constructor(
     }
 
     fun setShouldShowFrontCamera(shouldShowFrontCamera: Boolean) {
-        repository.updateParameters { it.copy(shouldShowFrontCamera = shouldShowFrontCamera) }
+        repository.updateParameters {
+            if (shouldShowFrontCamera) {
+                it.copy(audioSource = it.audioSource.withEnabledMic(), shouldShowFrontCamera = true)
+            } else {
+                it.copy(shouldShowFrontCamera = false)
+            }
+        }
     }
 }
+
+private fun ScreenRecordingAudioSource.withEnabledMic(): ScreenRecordingAudioSource =
+    when (this) {
+        ScreenRecordingAudioSource.MIC -> this
+        ScreenRecordingAudioSource.MIC_AND_INTERNAL -> this
+        ScreenRecordingAudioSource.NONE -> ScreenRecordingAudioSource.MIC
+        ScreenRecordingAudioSource.INTERNAL -> ScreenRecordingAudioSource.MIC_AND_INTERNAL
+    }
