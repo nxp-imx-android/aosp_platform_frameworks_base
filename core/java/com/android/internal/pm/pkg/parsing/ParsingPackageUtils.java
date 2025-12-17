@@ -101,6 +101,7 @@ import com.android.internal.pm.pkg.component.InstallConstraintsTagParser;
 import com.android.internal.pm.pkg.component.ParsedActivity;
 import com.android.internal.pm.pkg.component.ParsedActivityImpl;
 import com.android.internal.pm.pkg.component.ParsedActivityUtils;
+import com.android.internal.pm.pkg.component.ParsedAllowComponentAccessPolicyUtils;
 import com.android.internal.pm.pkg.component.ParsedApexSystemService;
 import com.android.internal.pm.pkg.component.ParsedApexSystemServiceUtils;
 import com.android.internal.pm.pkg.component.ParsedAttribution;
@@ -1105,7 +1106,10 @@ public class ParsingPackageUtils {
             case TAG_QUERIES:
                 return parseQueries(input, pkg, res, parser);
             case TAG_ALLOW_COMPONENT_ACCESS:
-                // TODO(b/454054660): Implement parsing logic in a follow-up CL.
+                if (android.app.privatecompute.flags.Flags.enableAllowComponentAccess()) {
+                    return ParsedAllowComponentAccessPolicyUtils.parseAllowComponentAccessPolicy(
+                            input, pkg, res, parser);
+                }
                 XmlUtils.skipCurrentTag(parser);
                 return input.success(pkg);
             default:
