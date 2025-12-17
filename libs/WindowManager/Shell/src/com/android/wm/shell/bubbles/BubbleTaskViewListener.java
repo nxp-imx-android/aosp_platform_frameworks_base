@@ -253,8 +253,11 @@ public class BubbleTaskViewListener implements TaskView.Listener {
             final ActivityManager.RunningTaskInfo taskInfo = tvc.getTaskInfo();
             if (taskInfo != null && taskInfo.isRunning
                     && mExpandedViewManager.isAppBubbleTask(taskInfo)) {
+                // this task is being removed and this WCT is not applied in a transition, so don't
+                // reparent the task to TDA, keep it in the root task, otherwise it may cause a
+                // flicker
                 final WindowContainerTransaction wct = getExitBubbleTransaction(taskInfo.token,
-                        mTaskView.getCaptionInsetsOwner());
+                        mTaskView.getCaptionInsetsOwner(), /* reparentToTda= */ false);
                 tvc.getTaskOrganizer().applyTransaction(wct);
             }
             mTaskView.release();
