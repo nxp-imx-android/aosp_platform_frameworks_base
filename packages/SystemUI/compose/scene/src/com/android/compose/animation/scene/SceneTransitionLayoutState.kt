@@ -295,9 +295,7 @@ sealed interface HoistedSceneTransitionLayoutState : BaseMutableSceneTransitionL
      * @return a mirror of this state that is a [MutableSceneTransitionLayoutState].
      */
     @Composable
-    fun rememberUiBoundState(
-        transitions: SceneTransitions = SceneTransitions.Empty
-    ): MutableSceneTransitionLayoutState
+    fun rememberUiBoundState(transitions: SceneTransitions): MutableSceneTransitionLayoutState
 }
 
 /**
