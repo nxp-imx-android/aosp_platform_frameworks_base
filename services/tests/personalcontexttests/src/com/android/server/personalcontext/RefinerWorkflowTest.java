@@ -40,12 +40,15 @@ import com.android.server.personalcontext.component.Refiner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
+
+import javax.crypto.spec.SecretKeySpec;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
@@ -103,7 +106,8 @@ public class RefinerWorkflowTest {
     }
 
     @Test
-    public void testWorkflowWithNoRefiners() {
+    public void testWorkflowWithNoRefiners() throws GeneralSecurityException {
+        final SecretKeySpec key = ContextHintTestUtils.generateSignedHintKey();
         final RefinerWorkflow.EventListener listener = mock(RefinerWorkflow.EventListener.class);
         final RefinerWorkflow.ComponentProvider provider =
                 mock(RefinerWorkflow.ComponentProvider.class);
@@ -112,9 +116,13 @@ public class RefinerWorkflowTest {
 
         RefinerWorkflow.start(
                 provider,
-                Set.of(new BundleHint.Builder().build(), new BundleHint.Builder().build()),
+                Set.of(
+                        new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+                                .build(),
+                        new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+                                .build()),
                 /* renderToken= */ null,
-                ContextHintTestUtils.generateSignedHintKey(),
+                key,
                 listener,
                 INLINE_EXECUTOR);
 
@@ -124,7 +132,8 @@ public class RefinerWorkflowTest {
     }
 
     @Test
-    public void testWorkflowWithSingleRefinerHintsInParallel() {
+    public void testWorkflowWithSingleRefinerHintsInParallel() throws GeneralSecurityException {
+        final SecretKeySpec key = ContextHintTestUtils.generateSignedHintKey();
         final RefinerWorkflow.EventListener listener = mock(RefinerWorkflow.EventListener.class);
         final RefinerWorkflow.ComponentProvider provider =
                 mock(RefinerWorkflow.ComponentProvider.class);
@@ -139,7 +148,11 @@ public class RefinerWorkflowTest {
 
         RefinerWorkflow.start(
                 provider,
-                Set.of(new BundleHint.Builder().build(), new BundleHint.Builder().build()),
+                Set.of(
+                        new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+                                .build(),
+                        new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+                                .build()),
                 /* renderToken= */ null,
                 ContextHintTestUtils.generateSignedHintKey(),
                 listener,
@@ -152,7 +165,8 @@ public class RefinerWorkflowTest {
     }
 
     @Test
-    public void testWorkflowWithSingleRefinerHintsInSeries() {
+    public void testWorkflowWithSingleRefinerHintsInSeries() throws GeneralSecurityException {
+        final SecretKeySpec key = ContextHintTestUtils.generateSignedHintKey();
         final RefinerWorkflow.EventListener listener = mock(RefinerWorkflow.EventListener.class);
         final RefinerWorkflow.ComponentProvider provider =
                 mock(RefinerWorkflow.ComponentProvider.class);
@@ -167,9 +181,13 @@ public class RefinerWorkflowTest {
 
         RefinerWorkflow.start(
                 provider,
-                Set.of(new BundleHint.Builder().build(), new BundleHint.Builder().build()),
+                Set.of(
+                        new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+                                .build(),
+                        new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+                                .build()),
                 /* renderToken= */ null,
-                ContextHintTestUtils.generateSignedHintKey(),
+                key,
                 listener,
                 INLINE_EXECUTOR);
 
@@ -180,7 +198,8 @@ public class RefinerWorkflowTest {
     }
 
     @Test
-    public void testWorkflowWithSeriesRefiners() {
+    public void testWorkflowWithSeriesRefiners() throws GeneralSecurityException {
+        final SecretKeySpec key = ContextHintTestUtils.generateSignedHintKey();
         final BundleHint hint1 = new BundleHint.Builder().build();
         final BundleHint hint2 = new BundleHint.Builder().build();
 
@@ -228,7 +247,7 @@ public class RefinerWorkflowTest {
 
         RefinerWorkflow.start(
                 provider,
-                Set.of(hint1),
+                Set.of(new ContextHintWithSignature.Builder(hint1, key).build()),
                 /* renderToken= */ null,
                 ContextHintTestUtils.generateSignedHintKey(),
                 listener,
@@ -243,7 +262,8 @@ public class RefinerWorkflowTest {
     }
 
     @Test
-    public void testNoWorkExpireWaitsForSlowRefiner() {
+    public void testNoWorkExpireWaitsForSlowRefiner() throws GeneralSecurityException {
+        final SecretKeySpec key = ContextHintTestUtils.generateSignedHintKey();
         final RefinerWorkflow.EventListener listener = mock(RefinerWorkflow.EventListener.class);
         final RefinerWorkflow.ComponentProvider provider =
                 mock(RefinerWorkflow.ComponentProvider.class);
@@ -255,9 +275,13 @@ public class RefinerWorkflowTest {
 
         final RefinerWorkflow workflow = RefinerWorkflow.start(
                 provider,
-                Set.of(new BundleHint.Builder().build(), new BundleHint.Builder().build()),
+                Set.of(
+                        new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+                                .build(),
+                        new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+                                .build()),
                 /* renderToken= */ null,
-                ContextHintTestUtils.generateSignedHintKey(),
+                key,
                 listener,
                 INLINE_EXECUTOR);
 
