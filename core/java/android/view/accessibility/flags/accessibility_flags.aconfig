@@ -267,16 +267,6 @@ flag {
 }
 
 flag {
-    name: "prevent_volume_shortcut_ringtone_exhaustion"
-    namespace: "accessibility"
-    description: "Prevents audio resource exhaustion by stopping the previous ringtone before a new one is played when the accessibility shortcut is repeatedly triggered."
-    bug: "429376017"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "quick_access_shortcut_type"
     namespace: "accessibility"
     description: "Add a new QUICK_ACCESS accessibility shortcut type used by the Quick Access dialog"

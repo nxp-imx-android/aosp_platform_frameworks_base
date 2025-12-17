@@ -18,7 +18,6 @@ package com.android.internal.accessibility;
 
 import static android.accessibilityservice.AccessibilityServiceInfo.FEEDBACK_ALL_MASK;
 import static android.view.WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG;
-import static android.view.accessibility.Flags.preventVolumeShortcutRingtoneExhaustion;
 
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.HARDWARE;
 import static com.android.internal.accessibility.dialog.AccessibilityTargetHelper.getTargets;
@@ -492,18 +491,12 @@ public class AccessibilityShortcutController {
      */
     @VisibleForTesting
     public void playNotificationTone() {
-        if (preventVolumeShortcutRingtoneExhaustion()) {
-            if (mCurrentRingtone != null) {
-                mCurrentRingtone.stop();
-            }
-            mCurrentRingtone =
-                    mFrameworkObjectProvider.getDefaultAccessibilityNotificationRingtone(mContext);
-            AccessibilityUtils.playNotificationTone(mContext, mCurrentRingtone);
-        } else {
-            Ringtone tone =
-                    mFrameworkObjectProvider.getDefaultAccessibilityNotificationRingtone(mContext);
-            AccessibilityUtils.playNotificationTone(mContext, tone);
+        if (mCurrentRingtone != null) {
+            mCurrentRingtone.stop();
         }
+        mCurrentRingtone =
+                mFrameworkObjectProvider.getDefaultAccessibilityNotificationRingtone(mContext);
+        AccessibilityUtils.playNotificationTone(mContext, mCurrentRingtone);
     }
 
     /**
