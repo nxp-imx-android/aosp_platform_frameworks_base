@@ -16,11 +16,15 @@
 
 package com.android.settingslib.safetycenter
 
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import android.os.UserHandle
 import android.safetycenter.SafetyCenterEntry
 import android.safetycenter.SafetyCenterIssue
 import android.safetycenter.SafetyCenterStaticEntry
 import android.safetycenter.SafetyCenterStatus
+import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -29,6 +33,7 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class SafetyCenterUiDataTest {
 
+    private val context: Context = ApplicationProvider.getApplicationContext()
     private val user0 = UserHandle.of(0)
     private val user10 = UserHandle.of(10)
 
@@ -64,8 +69,15 @@ class SafetyCenterUiDataTest {
         user: UserHandle,
         sourceId: String,
         title: String = "Entry $id",
+        summary: CharSequence? = null,
+        severityLevel: Int = SafetyCenterEntry.ENTRY_SEVERITY_LEVEL_UNSPECIFIED,
+        pendingIntent: PendingIntent? = null,
     ): SafetyCenterEntry {
-        return SafetyCenterEntry.Builder(id, title, user, sourceId).build()
+        return SafetyCenterEntry.Builder(id, title, user, sourceId)
+            .setSummary(summary)
+            .setSeverityLevel(severityLevel)
+            .setPendingIntent(pendingIntent)
+            .build()
     }
 
     // Helper to create a minimal SafetyCenterStaticEntry
@@ -73,8 +85,13 @@ class SafetyCenterUiDataTest {
         user: UserHandle,
         sourceId: String,
         title: String = "Static entry",
+        summary: CharSequence? = null,
+        pendingIntent: PendingIntent? = null,
     ): SafetyCenterStaticEntry {
-        return SafetyCenterStaticEntry.Builder(title, user, sourceId).build()
+        return SafetyCenterStaticEntry.Builder(title, user, sourceId)
+            .setSummary(summary)
+            .setPendingIntent(pendingIntent)
+            .build()
     }
 
     private val entry1 = createEntry("entry1", user0, "sourceA")
@@ -337,5 +354,69 @@ class SafetyCenterUiDataTest {
 
         val expectedUiData = testSafetyCenterUiData.copy(resolvedIssues = resolved)
         assertThat(updatedUiData).isEqualTo(expectedUiData)
+    }
+
+    /** Verifies that all fields from a [SafetyCenterEntry] are correctly mapped. */
+    @Test
+    fun fromSafetyCenterEntry_mapsAllFieldsCorrectly() {
+        // Setup: Create a detailed SafetyCenterEntry
+        val intent = Intent("FAKE_ACTION")
+        val pendingIntent =
+            PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+        val entry =
+            createEntry(
+                id = "entry_id",
+                user = user0,
+                sourceId = "source_id",
+                title = "Title",
+                summary = "Summary",
+                severityLevel = SafetyCenterEntry.ENTRY_SEVERITY_LEVEL_RECOMMENDATION,
+                pendingIntent = pendingIntent,
+            )
+
+        // Action: Convert to SafetyCenterUiEntry
+        val uiEntry = SafetyCenterUiEntry.fromSafetyCenterEntry(entry)
+
+        // Assertions: Verify all fields are mapped correctly
+        assertThat(uiEntry.title).isEqualTo("Title")
+        assertThat(uiEntry.summary).isEqualTo("Summary")
+        assertThat(uiEntry.severityLevel)
+            .isEqualTo(SafetyCenterEntry.ENTRY_SEVERITY_LEVEL_RECOMMENDATION)
+        assertThat(uiEntry.safetySourceId).isEqualTo("source_id")
+        assertThat(uiEntry.user).isEqualTo(user0)
+        assertThat(uiEntry.pendingIntent).isSameInstanceAs(pendingIntent)
+    }
+
+    /**
+     * Verifies that all fields from a [SafetyCenterStaticEntry] are correctly mapped, with
+     * severity level set to UNSPECIFIED.
+     */
+    @Test
+    fun fromSafetyCenterStaticEntry_mapsAllFieldsCorrectly() {
+        // Setup: Create a detailed SafetyCenterStaticEntry
+        val intent = Intent("FAKE_ACTION")
+        val pendingIntent =
+            PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+        val staticEntry =
+            createStaticEntry(
+                user = user0,
+                sourceId = "source_id",
+                title = "Title",
+                summary = "Summary",
+                pendingIntent = pendingIntent,
+            )
+
+        // Action: Convert to SafetyCenterUiEntry
+        val uiEntry = SafetyCenterUiEntry.fromSafetyCenterStaticEntry(staticEntry)
+
+        // Assertions: Verify all fields are mapped correctly
+        assertThat(uiEntry.title).isEqualTo("Title")
+        assertThat(uiEntry.summary).isEqualTo("Summary")
+        // Static entries should always have an UNSPECIFIED severity level
+        assertThat(uiEntry.severityLevel)
+            .isEqualTo(SafetyCenterEntry.ENTRY_SEVERITY_LEVEL_UNSPECIFIED)
+        assertThat(uiEntry.safetySourceId).isEqualTo("source_id")
+        assertThat(uiEntry.user).isEqualTo(user0)
+        assertThat(uiEntry.pendingIntent).isSameInstanceAs(pendingIntent)
     }
 }
