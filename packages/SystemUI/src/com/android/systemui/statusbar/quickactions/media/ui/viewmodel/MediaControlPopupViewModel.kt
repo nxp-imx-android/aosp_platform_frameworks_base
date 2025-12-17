@@ -16,11 +16,33 @@
 
 package com.android.systemui.statusbar.quickactions.media.ui.viewmodel
 
+import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
+import com.android.systemui.media.controls.ui.view.MediaHost
+import com.android.systemui.media.controls.ui.view.MediaHostState
+import com.android.systemui.media.dagger.MediaModule
+import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupViewModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import javax.inject.Named
 
-class MediaControlPopupViewModel @AssistedInject constructor() : StatusBarPopupViewModel {
+class MediaControlPopupViewModel
+@AssistedInject
+constructor(
+    val mediaViewModelFactory: MediaViewModel.Factory,
+    @param:Named(MediaModule.POPUP) val mediaHost: MediaHost,
+) : StatusBarPopupViewModel {
+
+    init {
+        with(mediaHost) {
+            expansion = MediaHostState.EXPANDED
+            expandedMatchesParentHeight = true
+            showsOnlyActiveMedia = true
+            falsingProtectionNeeded = false
+            disableScrolling = true
+            init(MediaHierarchyManager.LOCATION_STATUS_BAR_POPUP)
+        }
+    }
 
     @AssistedFactory
     interface Factory : StatusBarPopupViewModel.Factory.MediaControl {

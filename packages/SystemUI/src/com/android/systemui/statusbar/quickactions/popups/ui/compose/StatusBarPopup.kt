@@ -37,8 +37,6 @@ import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.android.systemui.Flags
-import com.android.systemui.media.controls.ui.view.MediaHost
-import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.av.ui.compose.AvControlsChipPopup
 import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.AvControlsPopupViewModel
@@ -53,12 +51,7 @@ import com.android.systemui.statusbar.quickactions.sharescreen.ui.viewmodel.Shar
  * status bar.
  */
 @Composable
-fun StatusBarPopup(
-    popupViewModel: StatusBarPopupViewModel,
-    onDismiss: () -> Unit,
-    mediaViewModelFactory: MediaViewModel.Factory,
-    mediaHost: MediaHost,
-) {
+fun StatusBarPopup(popupViewModel: StatusBarPopupViewModel, onDismiss: () -> Unit) {
     val density = Density(LocalContext.current)
 
     Popup(
@@ -91,10 +84,7 @@ fun StatusBarPopup(
                             override val lifecycle: Lifecycle = lifecycle
                         }
                     CompositionLocalProvider(LocalOnBackPressedDispatcherOwner provides owner) {
-                        MediaControlPopup(
-                            viewModelFactory = mediaViewModelFactory,
-                            mediaHost = mediaHost,
-                        )
+                        MediaControlPopup(viewModel = popupViewModel)
                     }
                 }
                 is AvControlsPopupViewModel -> {

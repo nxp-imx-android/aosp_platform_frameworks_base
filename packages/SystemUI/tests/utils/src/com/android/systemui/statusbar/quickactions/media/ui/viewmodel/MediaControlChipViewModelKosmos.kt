@@ -18,12 +18,18 @@ package com.android.systemui.statusbar.quickactions.media.ui.viewmodel
 
 import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.media.controls.ui.view.qsMediaHost
+import com.android.systemui.media.remedia.ui.viewmodel.factory.mediaViewModelFactory
 import com.android.systemui.statusbar.quickactions.media.domain.interactor.mediaControlChipInteractor
 
 private val Kosmos.mediaControlPopupViewModelFactory by
     Kosmos.Fixture {
         object : MediaControlPopupViewModel.Factory {
-            override fun create() = MediaControlPopupViewModel()
+            override fun create() =
+                MediaControlPopupViewModel(
+                    mediaHost = qsMediaHost,
+                    mediaViewModelFactory = mediaViewModelFactory,
+                )
         }
     }
 

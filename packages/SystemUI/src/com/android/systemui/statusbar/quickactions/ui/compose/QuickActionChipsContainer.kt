@@ -19,38 +19,20 @@ package com.android.systemui.statusbar.quickactions.ui.compose
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.media.controls.ui.view.MediaHost
-import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
-import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.statusbar.quickactions.popups.ui.compose.StatusBarPopup
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 
 /** Container view that holds all right hand side chips in the status bar. */
 @Composable
 fun QuickActionChipsContainer(
     chips: List<QuickActionChipUiState.PopupChip>,
-    mediaViewModelFactory: MediaViewModel.Factory,
-    mediaHost: MediaHost,
-    onMediaControlPopupVisibilityChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    if (!SceneContainerFlag.isEnabled) {
-        val isMediaControlPopupShown =
-            remember(chips) {
-                chips.any { it.chipId == QuickActionChipId.MediaControl && it.isPopupShown }
-            }
 
-        LaunchedEffect(isMediaControlPopupShown) {
-            onMediaControlPopupVisibilityChanged(isMediaControlPopupShown)
-        }
-    }
-
+    //    TODO(b/385353140): Add padding and spacing for this container according to UX specs.
     Box {
         Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
             chips.forEach { chip ->
@@ -69,12 +51,7 @@ fun QuickActionChipsContainer(
                             rememberViewModel("StatusBarPopupViewModel-${chip.chipId}") {
                                 chip.popupViewModelFactory.create()
                             }
-                        StatusBarPopup(
-                            popupViewModel = popupViewModel,
-                            onDismiss = chip.hidePopup,
-                            mediaViewModelFactory = mediaViewModelFactory,
-                            mediaHost = mediaHost,
-                        )
+                        StatusBarPopup(popupViewModel = popupViewModel, onDismiss = chip.hidePopup)
                     }
                 }
             }
