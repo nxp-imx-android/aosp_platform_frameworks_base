@@ -217,8 +217,12 @@ fun ContentScope.ScrollingNotificationPanel(
     if (isActivated && isAlwaysComposedContentVisible()) {
         val composeViewRoot = LocalView.current
         // whether the stack is moving due to a swipe or fling
-        val isScrollInProgress =
-            contentScrollState.isScrollInProgress || contentOverscrollEffect.isInProgress
+        val isScrollInProgress by
+            remember(contentScrollState, contentOverscrollEffect) {
+                derivedStateOf {
+                    contentScrollState.isScrollInProgress || contentOverscrollEffect.isInProgress
+                }
+            }
 
         LaunchedEffect(isScrollInProgress) {
             if (isScrollInProgress) {
@@ -230,9 +234,8 @@ fun ContentScope.ScrollingNotificationPanel(
             }
         }
 
-        val shadeScrollState by
-            shadeSession.rememberSession(key = "ScrollingNotificationPanelScrollState") {
-                derivedStateOf {
+        LaunchedEffect(contentScrollState) {
+            snapshotFlow {
                     ShadeScrollState(
                         // we are not scrolled to the top unless the scroll position is zero,
                         isScrolledToTop = contentScrollState.value == 0,
@@ -240,8 +243,8 @@ fun ContentScope.ScrollingNotificationPanel(
                         maxScrollPosition = contentScrollState.maxValue,
                     )
                 }
-            }
-        LaunchedEffect(shadeScrollState) { viewModel.setScrollState(shadeScrollState) }
+                .collect { viewModel.setScrollState(it) }
+        }
     }
 
     NestedScrollingNotificationPanel(
