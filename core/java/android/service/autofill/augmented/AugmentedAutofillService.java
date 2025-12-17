@@ -270,7 +270,6 @@ public abstract class AugmentedAutofillService extends Service {
                     cancellationSignal);
             mAutofillProxies.put(sessionId,  proxy);
         } else {
-            // TODO(b/123099468): figure out if it's ok to reuse the proxy; add logging
             if (sDebug) Log.d(TAG, "Reusing proxy for session " + sessionId);
             proxy.update(focusedId, focusedValue, callback, cancellationSignal);
         }
@@ -457,7 +456,6 @@ public abstract class AugmentedAutofillService extends Service {
             mFocusedValue = focusedValue;
             mFirstRequestTime = requestTime;
             mCancellationSignal = cancellationSignal;
-            // TODO(b/123099468): linkToDeath
         }
 
         @NonNull
