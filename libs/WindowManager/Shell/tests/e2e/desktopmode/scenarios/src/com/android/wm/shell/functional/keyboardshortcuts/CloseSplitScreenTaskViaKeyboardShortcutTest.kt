@@ -17,13 +17,11 @@
 package com.android.wm.shell.functional.keyboardshortcuts
 
 import android.platform.test.annotations.Postsubmit
-import android.platform.test.annotations.RequiresDesktopDevice
 import com.android.wm.shell.scenarios.CloseSplitScreenTaskViaKeyboardShortcut
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
 /* Functional test for [CloseSplitScreenTaskViaKeyboardShortcut]. */
 @RunWith(BlockJUnit4ClassRunner::class)
-@RequiresDesktopDevice
 @Postsubmit //b/441619131
 class CloseSplitScreenTaskViaKeyboardShortcutTest : CloseSplitScreenTaskViaKeyboardShortcut()

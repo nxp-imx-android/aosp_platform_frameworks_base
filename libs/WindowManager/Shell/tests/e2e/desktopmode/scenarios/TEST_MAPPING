@@ -304,98 +304,84 @@
     {
       "name": "FunctionalTestsDesktopMode-immersive-EnterImmersiveViaHeaderMenuTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-ActionTabSwitchToDesktopAppTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-AltTabSwitchInDesktopModeTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-AltTabSwitchOutDesktopModeTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-AltTabSwitchToUnminimizeInDesktopModeFlickerTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-CloseFullscreenTaskViaKeyboardShortcutTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-CloseSplitScreenTaskViaKeyboardShortcutTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-CloseTaskViaKeyboardShortcutTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-EnterDesktopFromKeyboardShortcutTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-ExitDesktopFromKeyboardShortcutTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-ExitImmersiveToDesktopWithKeyboardShortcutTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-OpenAppFromAllAppsUsingKeyboardTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-OpenBrowserWithKeyboardShortcutTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-ToggleFullscreenViaFullscreenKeyTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
