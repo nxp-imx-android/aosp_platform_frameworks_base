@@ -164,6 +164,28 @@ class LockscreenToPrimaryBouncerTransitionViewModelTest(flags: FlagsParameteriza
         }
 
     @Test
+    @DisableSceneContainer
+    fun deviceEntryParentViewAlpha_onCancel() =
+        testScope.runTest {
+            val actual by collectLastValue(underTest.deviceEntryParentViewAlpha)
+            shadeExpanded(false)
+            runCurrent()
+
+            // start fade out
+            repository.sendTransitionStep(step(0f, TransitionState.STARTED))
+            assertThat(actual).isEqualTo(1f)
+
+            repository.sendTransitionStep(step(.1f))
+            assertThat(actual).isIn(Range.open(.1f, .9f))
+
+            // WHEN transition cancelled
+            repository.sendTransitionStep(step(.2f, TransitionState.CANCELED))
+
+            // THEN end state is immediately updated to 0f
+            assertThat(actual).isEqualTo(0f)
+        }
+
+    @Test
     @EnableFlags(FLAG_NOTIFICATION_SHADE_BLUR)
     @BrokenWithSceneContainer(388068805)
     fun blurRadiusIsMaxWhenShadeIsExpanded() =
