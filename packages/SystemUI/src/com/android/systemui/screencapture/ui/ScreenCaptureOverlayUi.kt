@@ -44,8 +44,6 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
 import androidx.core.graphics.toRegion
-import androidx.ink.authoring.compose.InProgressStrokes
-import com.android.compose.modifiers.thenIf
 import com.android.internal.R as internalR
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.rememberViewModel
@@ -53,14 +51,12 @@ import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ScreenCaptureScope
 import com.android.systemui.screencapture.record.camera.ui.viewmodel.ScreenCaptureCameraTransformationViewModel
 import com.android.systemui.screencapture.record.camera.ui.viewmodel.ScreenCaptureCameraViewModel
-import com.android.systemui.screencapture.record.markup.ui.viewmodel.ScreenCaptureMarkupOverlayViewModel
 import com.android.systemui.statusbar.phone.EdgeToEdgeDialogDelegate
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
 import com.android.systemui.statusbar.phone.create
 import com.android.systemui.util.view.listenToComputeInternalInsets
 import javax.inject.Inject
 import kotlin.coroutines.resume
-import kotlin.math.roundToInt
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 @ScreenCaptureScope
@@ -71,7 +67,6 @@ constructor(
     dialogFactory: SystemUIDialogFactory,
     private val cameraViewModelFactory: ScreenCaptureCameraViewModel.Factory,
     private val cameraTransformationViewModel: ScreenCaptureCameraTransformationViewModel.Factory,
-    private val markupViewModelFactory: ScreenCaptureMarkupOverlayViewModel.Factory,
 ) {
 
     private val dialog =
@@ -118,40 +113,7 @@ constructor(
             }
         }
         Box(modifier = Modifier.fillMaxSize()) {
-            DrawingView(outTouchableRegion = drawingTouchableRegion, modifier = Modifier)
             Camera(outTouchableRegion = cameraTouchableRegion, modifier = Modifier)
-        }
-    }
-
-    @Composable
-    private fun DrawingView(outTouchableRegion: Region, modifier: Modifier = Modifier) {
-        val viewModel =
-            rememberViewModel("ScreenCaptureMarkupOverlayViewModel") {
-                markupViewModelFactory.create()
-            }
-        ConditionalLaunchedEffect(!viewModel.shouldShowMarkup) { outTouchableRegion.setEmpty() }
-        AnimatedVisibility(
-            visible = viewModel.shouldShowMarkup,
-            modifier =
-                modifier.fillMaxSize().thenIf(viewModel.shouldShowMarkup) {
-                    Modifier.onGloballyPositioned { layoutCoordinates ->
-                        // Enabling markup prohibits passing touches throughout the whole overlay
-                        // because user can draw everywhere
-                        val bounds = layoutCoordinates.boundsInWindow(false)
-                        outTouchableRegion.set(
-                            bounds.left.roundToInt(),
-                            bounds.top.roundToInt(),
-                            bounds.right.roundToInt(),
-                            bounds.bottom.roundToInt(),
-                        )
-                    }
-                },
-        ) {
-            InProgressStrokes(
-                defaultBrush = null,
-                nextBrush = { viewModel.brush },
-                onStrokesFinished = { /* do nothing */ },
-            )
         }
     }
 
