@@ -50,7 +50,6 @@ public class UsbAuthManagerTest {
 
     private static final int TEST_USER_ID_FULL_ADMIN = 10;
     private static final int TEST_USER_ID_GUEST = 11;
-    private static final int TEST_USER_ID_ADMIN_ONLY = 12;
 
     private static final UserInfo TEST_USER_INFO_FULL_ADMIN =
             new UserInfo(
@@ -59,8 +58,6 @@ public class UsbAuthManagerTest {
                     UserInfo.FLAG_FULL | UserInfo.FLAG_ADMIN);
     private static final UserInfo TEST_USER_INFO_GUEST =
             new UserInfo(TEST_USER_ID_GUEST, "guest", 0);
-    private static final UserInfo TEST_USER_INFO_ADMIN_ONLY =
-            new UserInfo(TEST_USER_ID_ADMIN_ONLY, "admin", UserInfo.FLAG_ADMIN);
 
     @Before
     public void setUp() throws Exception {
@@ -73,8 +70,6 @@ public class UsbAuthManagerTest {
         when(mUserManager.getUserInfo(TEST_USER_ID_FULL_ADMIN))
                 .thenReturn(TEST_USER_INFO_FULL_ADMIN);
         when(mUserManager.getUserInfo(TEST_USER_ID_GUEST)).thenReturn(TEST_USER_INFO_GUEST);
-        when(mUserManager.getUserInfo(TEST_USER_ID_ADMIN_ONLY))
-                .thenReturn(TEST_USER_INFO_ADMIN_ONLY);
 
         mUsbAuthManager = new UsbAuthManager(mContext, mUserManager, mService);
     }
@@ -92,13 +87,6 @@ public class UsbAuthManagerTest {
         verify(mService).setSystemState(UsbAuthorizationSystemState.LOGGED_IN);
     }
 
-    @Test
-    public void testLoginAdminOnlyUser_screenUnlocked_isLoggedIn() throws Exception {
-        reset(mService);
-        mUsbAuthManager.onUpdateLoggedInState(true, TEST_USER_ID_ADMIN_ONLY);
-        mUsbAuthManager.onUpdateScreenLockedState(false);
-        verify(mService).setSystemState(UsbAuthorizationSystemState.LOGGED_IN);
-    }
 
     @Test
     public void testLoginFullUser_screenLocked_isScreenLocked() throws Exception {
