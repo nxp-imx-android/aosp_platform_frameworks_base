@@ -1441,7 +1441,7 @@ public class PowerManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_INTERACTIVE_DOZE_EXPERIENCE)
+    @EnableFlags({Flags.FLAG_INTERACTIVE_DOZE_EXPERIENCE, FLAG_SEPARATE_TIMEOUTS})
     public void testWakeUpDelegate_delegateImpactsOnlyPrimaryPowerGroup() {
         final AtomicReference<DisplayManagerInternal.DisplayGroupListener> listener =
                 new AtomicReference<>();
