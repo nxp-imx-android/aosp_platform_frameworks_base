@@ -24,6 +24,7 @@ import static android.media.codec.Flags.FLAG_NULL_OUTPUT_SURFACE;
 import static android.media.codec.Flags.FLAG_REGION_OF_INTEREST;
 import static android.media.codec.Flags.FLAG_APV_SUPPORT;
 import static android.media.codec.Flags.FLAG_VVC_SUPPORT;
+import static android.media.codec.Flags.FLAG_TEMPORAL_LAYER_ENCODING;
 import static android.media.Utils.intersectSortedDistinctRanges;
 import static android.media.Utils.sortDistinctRanges;
 import static android.media.MediaCodec.GetFlag;
@@ -4989,6 +4990,8 @@ public final class MediaCodecInfo {
 
             public boolean isBitrateModeSupported(int mode);
 
+            @FlaggedApi(FLAG_TEMPORAL_LAYER_ENCODING) public String[] getSupportedLayeringSchemas();
+
             public void getDefaultFormat(MediaFormat format);
 
             public boolean supportsFormat(MediaFormat format);
@@ -4999,6 +5002,7 @@ public final class MediaCodecInfo {
 
             private Range<Integer> mQualityRange;
             private Range<Integer> mComplexityRange;
+            private String[] mSupportedLayeringSchemas;
 
             public Range<Integer> getQualityRange() {
                 return mQualityRange;
@@ -5033,6 +5037,10 @@ public final class MediaCodecInfo {
                 return false;
             }
 
+            public String[] getSupportedLayeringSchemas() {
+                return mSupportedLayeringSchemas;
+            }
+
             /* no public constructor */
             private EncoderCapsLegacyImpl() { }
 
@@ -5054,6 +5062,7 @@ public final class MediaCodecInfo {
                 mComplexityRange = Range.create(0, 0);
                 mQualityRange = Range.create(0, 0);
                 mBitControl = (1 << BITRATE_MODE_VBR);
+                mSupportedLayeringSchemas = new String[0];
 
                 applyLevelLimits();
                 parseFromInfo(info);
@@ -5096,6 +5105,14 @@ public final class MediaCodecInfo {
                         mBitControl |= (1 << parseBitrateMode(mode));
                     }
                 }
+                if (info.containsKey("ts-schemas")) {
+                    List<String> schemas = new ArrayList<String>();
+                    for (String schema : info.getString("ts-schemas").split(";")) {
+                        schemas.add(schema);
+                    }
+                    mSupportedLayeringSchemas = new String[schemas.size()];
+                    schemas.toArray(mSupportedLayeringSchemas);
+                }
 
                 try {
                     mDefaultComplexity = Integer.parseInt((String)map.get("complexity-default"));
@@ -5108,8 +5125,7 @@ public final class MediaCodecInfo {
                 mQualityScale = (String)map.get("quality-scale");
             }
 
-            private boolean supports(
-                    Integer complexity, Integer quality, Integer profile) {
+            private boolean supports(Integer complexity, Integer quality, Integer profile) {
                 boolean ok = true;
                 if (ok && complexity != null) {
                     ok = mComplexityRange.contains(complexity);
@@ -5218,6 +5234,10 @@ public final class MediaCodecInfo {
                 return native_isBitrateModeSupported(mode);
             }
 
+            public String[] getSupportedLayeringSchemas() {
+                return native_getSupportedLayeringSchemas();
+            }
+
             // This API is for internal Java implementation only. Should not be called.
             public void getDefaultFormat(MediaFormat format) {
                 throw new UnsupportedOperationException(
@@ -5231,6 +5251,7 @@ public final class MediaCodecInfo {
             }
 
             private native boolean native_isBitrateModeSupported(int mode);
+            private native String[] native_getSupportedLayeringSchemas();
             private static native void native_init();
 
             static {
@@ -5280,6 +5301,18 @@ public final class MediaCodecInfo {
          */
         public boolean isBitrateModeSupported(int mode) {
             return mImpl.isBitrateModeSupported(mode);
+        }
+
+        /**
+         * Returns the array of layering schemas supported by the encoder.
+         * Return empty array if the encoder's layers encoding capability is unknown or not
+         * supported.
+         * @see MediaFormat.KEY_TEMPORAL_LAYERING for the meaning of the schema.
+         */
+        @FlaggedApi(FLAG_TEMPORAL_LAYER_ENCODING)
+        @NonNull
+        public String[] getSupportedLayeringSchemas() {
+            return mImpl.getSupportedLayeringSchemas();
         }
 
         /** @hide */
