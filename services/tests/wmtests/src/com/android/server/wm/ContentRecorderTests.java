@@ -52,10 +52,8 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.media.projection.StopReason;
 import android.os.IBinder;
-import android.os.Process;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.view.ContentRecordingSession;
 import android.view.Display;
 import android.view.DisplayInfo;
@@ -526,7 +524,6 @@ public class ContentRecorderTests extends WindowTestsBase {
     }
 
     @EnableFlags(Flags.FLAG_RECORDING_OVERLAY)
-    @RequiresFlagsEnabled(com.android.graphics.surfaceflinger.flags.Flags.FLAG_STOP_LAYER)
     @Test
     public void testStartRecording_notifiesCallback_overlaySession() {
         defaultInit();
@@ -586,7 +583,6 @@ public class ContentRecorderTests extends WindowTestsBase {
     }
 
     @EnableFlags(Flags.FLAG_RECORDING_OVERLAY)
-    @RequiresFlagsEnabled(com.android.graphics.surfaceflinger.flags.Flags.FLAG_STOP_LAYER)
     @Test
     public void testStartRecording_overlayRecording_recordingStarted() {
         defaultInit();
