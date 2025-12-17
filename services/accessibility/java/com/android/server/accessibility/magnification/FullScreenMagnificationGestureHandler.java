@@ -68,6 +68,7 @@ import com.android.internal.accessibility.util.AccessibilityStatsLogUtils;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.modules.expresslog.Histogram;
 import com.android.server.accessibility.AccessibilityManagerService;
+import com.android.server.accessibility.AccessibilityMotionEventBuilder;
 import com.android.server.accessibility.AccessibilityTraceManager;
 import com.android.server.accessibility.Flags;
 import com.android.server.accessibility.gestures.GestureUtils;
@@ -1228,8 +1229,17 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
                 MotionEventInfo info = mDelayedEventQueue;
                 mDelayedEventQueue = info.mNext;
 
-                info.event.setDownTime(info.event.getDownTime() + offset);
-                handleTouchEventWith(mDelegatingState, info.event, info.rawEvent, info.policyFlags);
+                if (Flags.enableMagnificationRebasedDelayedMotionEvent()) {
+                    MotionEvent newEvent = AccessibilityMotionEventBuilder.fromBaseEvent(info.event)
+                            .setTimeOffset(offset).build();
+                    handleTouchEventWith(mDelegatingState, newEvent, info.rawEvent,
+                            info.policyFlags);
+                    newEvent.recycle();
+                } else {
+                    info.event.setDownTime(info.event.getDownTime() + offset);
+                    handleTouchEventWith(mDelegatingState,
+                            info.event, info.rawEvent, info.policyFlags);
+                }
 
                 info.recycle();
             } while (mDelayedEventQueue != null);
