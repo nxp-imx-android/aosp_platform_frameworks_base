@@ -116,6 +116,12 @@
                   android:exported="false" />
 
         <!-- started from UsbDeviceSettingsManager -->
+        <activity android:name="com.android.systemui.usb.UsbConfirmActivityTest$UsbConfirmActivityTestable"
+            android:exported="false"
+            android:theme="@style/Theme.SystemUI.Dialog.Alert"
+            android:finishOnCloseSystemDialogs="true"
+            android:excludeFromRecents="true" />
+
         <activity android:name="com.android.systemui.usb.UsbPermissionActivityTest$UsbPermissionActivityTestable"
                   android:exported="false"
                   android:theme="@style/Theme.SystemUI.Dialog.Alert"
