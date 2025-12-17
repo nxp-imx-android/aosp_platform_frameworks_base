@@ -39,6 +39,7 @@ import android.hardware.usb.PowerProfileInfo;
 import android.hardware.usb.PowerProfileMatchInfo;
 import android.hardware.usb.PowerProfileMatchResult;
 import android.hardware.usb.PowerProfileVendor;
+import android.hardware.usb.StaticPortInformation;
 import android.hardware.usb.Status;
 import android.hardware.usb.TypecDefault;
 import android.hardware.usb.UsbManager.UsbHalVersion;
@@ -1048,6 +1049,35 @@ public final class UsbPortAidl implements UsbPortHal {
                         "notifyResetUsbPortStatus: Failed to call onOperationComplete",
                         e);
             }
+        }
+
+        @Override
+        public void notifyQueryStaticPortInformation(
+                String portName, StaticPortInformation portInfo, int retval, long operationID) {
+            if (!Flags.enableUsbCapabilitiesReporting()) {
+                return;
+            }
+            if (retval != Status.SUCCESS) {
+                UsbPortManager.logAndPrint(
+                        Log.ERROR,
+                        mPw,
+                        "notifyQueryStaticPortInformation: "
+                                + portName
+                                + ": opID: "
+                                + operationID
+                                + " failed. err: "
+                                + retval);
+                return;
+            }
+            UsbPortManager.logAndPrint(
+                    Log.INFO,
+                    mPw,
+                    "notifyQueryStaticPortInformation: "
+                            + portName
+                            + ": opID: "
+                            + operationID
+                            + " successful. portInfo: "
+                            + portInfo);
         }
 
         @Override
