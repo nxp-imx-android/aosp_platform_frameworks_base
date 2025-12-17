@@ -5,6 +5,8 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import android.testing.ViewUtils
 import android.view.View
@@ -17,6 +19,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.jank.Cuj
 import com.android.internal.policy.DecorView
+import com.android.systemui.Flags.FLAG_ENABLE_DIALOG_SPRING_ANIMATION
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.testKosmos
@@ -26,6 +29,7 @@ import junit.framework.Assert.assertFalse
 import junit.framework.Assert.assertNotNull
 import junit.framework.Assert.assertNull
 import junit.framework.Assert.assertTrue
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertThrows
@@ -58,7 +62,8 @@ class DialogTransitionAnimatorTest : SysuiTestCase() {
     }
 
     @Test
-    fun testShowDialogFromView_withInterceptorViewFlagEnabled() {
+    @DisableFlags(FLAG_ENABLE_DIALOG_SPRING_ANIMATION)
+    fun testShowDialogFromView_withInterceptorViewFlagEnabled_linearAnimation() {
         // Show the dialog. showFromView() must be called on the main thread with a dialog created
         // on the main thread too.
         val dialog = createAndShowDialog()
@@ -101,7 +106,54 @@ class DialogTransitionAnimatorTest : SysuiTestCase() {
     }
 
     @Test
-    fun testStackedDialogsDismissesAll() {
+    @EnableFlags(FLAG_ENABLE_DIALOG_SPRING_ANIMATION)
+    fun testShowDialogFromView_withInterceptorViewFlagEnabled_springAnimation() {
+        // Show the dialog. showFromView() must be called on the main thread with a dialog created
+        // on the main thread too.
+        val dialog = createAndShowDialog()
+        sleepForSpringAnimation()
+
+        assertTrue(dialog.isShowing)
+
+        // The dialog is now fullscreen.
+        val window = checkNotNull(dialog.window)
+        val decorView = window.decorView as DecorView
+        assertEquals(MATCH_PARENT, window.attributes.width)
+        assertEquals(MATCH_PARENT, window.attributes.height)
+        assertEquals(MATCH_PARENT, decorView.layoutParams.width)
+        assertEquals(MATCH_PARENT, decorView.layoutParams.height)
+
+        // The single transparent background child is a fake window with the same size and
+        // background as the dialog initially had and a touchInterceptor view behind background
+        // for consuming click to stop its dismissal during animation.\
+
+        val transparentBackground = decorView.getChildAt(0) as ViewGroup
+        val dialogContentWithBackground = transparentBackground.getChildAt(1) as ViewGroup
+        val touchInterceptorView = transparentBackground.getChildAt(0) as ViewGroup
+
+        assertEquals(2, transparentBackground.childCount)
+        touchInterceptorView.apply {
+            assertEquals(View.GONE, visibility)
+            assertEquals(TestDialog.DIALOG_WIDTH, layoutParams.width)
+            assertEquals(TestDialog.DIALOG_HEIGHT, layoutParams.height)
+        }
+
+        assertEquals(TestDialog.DIALOG_WIDTH, dialogContentWithBackground.layoutParams.width)
+        assertEquals(TestDialog.DIALOG_HEIGHT, dialogContentWithBackground.layoutParams.height)
+        assertEquals(dialog.windowBackground, dialogContentWithBackground.background)
+
+        // The dialog content is inside this fake window view.
+        assertNotNull(dialogContentWithBackground.findViewByPredicate { it === dialog.contentView })
+
+        // Clicking the transparent background should dismiss the dialog.
+        runOnMainThreadAndWaitForIdleSync { transparentBackground.performClick() }
+        sleepForSpringAnimation()
+        assertFalse(dialog.isShowing)
+    }
+
+    @Test
+    @DisableFlags(FLAG_ENABLE_DIALOG_SPRING_ANIMATION)
+    fun testStackedDialogsDismissesAll_linearAnimation() {
         val firstDialog = createAndShowDialog()
         val secondDialog = createDialogAndShowFromDialog(firstDialog)
 
@@ -109,6 +161,21 @@ class DialogTransitionAnimatorTest : SysuiTestCase() {
         assertTrue(secondDialog.isShowing)
         runOnMainThreadAndWaitForIdleSync { mDialogTransitionAnimator.dismissStack(secondDialog) }
 
+        assertFalse(firstDialog.isShowing)
+        assertFalse(secondDialog.isShowing)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_DIALOG_SPRING_ANIMATION)
+    fun testStackedDialogsDismissesAll_springAnimation() {
+        val firstDialog = createAndShowDialog()
+        val secondDialog = createDialogAndShowFromDialog(firstDialog)
+
+        assertTrue(firstDialog.isShowing)
+        assertTrue(secondDialog.isShowing)
+        runOnMainThreadAndWaitForIdleSync { mDialogTransitionAnimator.dismissStack(secondDialog) }
+
+        sleepForSpringAnimation()
         assertFalse(firstDialog.isShowing)
         assertFalse(secondDialog.isShowing)
     }
@@ -188,7 +255,8 @@ class DialogTransitionAnimatorTest : SysuiTestCase() {
     }
 
     @Test
-    fun testCujSpecificationLogsInteraction() {
+    @DisableFlags(FLAG_ENABLE_DIALOG_SPRING_ANIMATION)
+    fun testCujSpecificationLogsInteraction_linearAnimation() {
         val touchSurface = createTouchSurface()
         runOnMainThreadAndWaitForIdleSync {
             val dialog = TestDialog(context)
@@ -204,7 +272,26 @@ class DialogTransitionAnimatorTest : SysuiTestCase() {
     }
 
     @Test
-    fun testShowFromDialogCujSpecificationLogsInteraction() {
+    @EnableFlags(FLAG_ENABLE_DIALOG_SPRING_ANIMATION)
+    fun testCujSpecificationLogsInteraction_springAnimation() {
+        val touchSurface = createTouchSurface()
+        runOnMainThreadAndWaitForIdleSync {
+            val dialog = TestDialog(context)
+            mDialogTransitionAnimator.showFromView(
+                dialog,
+                touchSurface,
+                cuj = DialogCuj(Cuj.CUJ_SHADE_DIALOG_OPEN),
+            )
+        }
+
+        sleepForSpringAnimation()
+        verify(kosmos.interactionJankMonitor).begin(any())
+        verify(kosmos.interactionJankMonitor).end(Cuj.CUJ_SHADE_DIALOG_OPEN)
+    }
+
+    @Test
+    @DisableFlags(FLAG_ENABLE_DIALOG_SPRING_ANIMATION)
+    fun testShowFromDialogCujSpecificationLogsInteractionWithLinearAnimation() {
         val firstDialog = createAndShowDialog()
         runOnMainThreadAndWaitForIdleSync {
             val dialog = TestDialog(context)
@@ -220,7 +307,26 @@ class DialogTransitionAnimatorTest : SysuiTestCase() {
     }
 
     @Test
-    fun testAnimationDoesNotChangeLaunchableViewVisibility_viewVisible() {
+    @EnableFlags(FLAG_ENABLE_DIALOG_SPRING_ANIMATION)
+    fun testShowFromDialogCujSpecificationLogsInteractionWithSpringAnimation() {
+        val firstDialog = createAndShowDialog()
+        runOnMainThreadAndWaitForIdleSync {
+            val dialog = TestDialog(context)
+            mDialogTransitionAnimator.showFromDialog(
+                dialog,
+                firstDialog,
+                cuj = DialogCuj(Cuj.CUJ_USER_DIALOG_OPEN),
+            )
+            dialog
+        }
+        sleepForSpringAnimation()
+        verify(kosmos.interactionJankMonitor).begin(any())
+        verify(kosmos.interactionJankMonitor).end(Cuj.CUJ_USER_DIALOG_OPEN)
+    }
+
+    @Test
+    @DisableFlags(FLAG_ENABLE_DIALOG_SPRING_ANIMATION)
+    fun testAnimationDoesNotChangeLaunchableViewVisibility_viewVisible_linearAnimation() {
         val touchSurface = createTouchSurface()
 
         // View is VISIBLE when starting the animation.
@@ -232,6 +338,25 @@ class DialogTransitionAnimatorTest : SysuiTestCase() {
 
         // View is visible again when the dialog is dismissed.
         runOnMainThreadAndWaitForIdleSync { dialog.dismiss() }
+        assertThat(touchSurface.visibility).isEqualTo(View.VISIBLE)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_DIALOG_SPRING_ANIMATION)
+    fun testAnimationDoesNotChangeLaunchableViewVisibility_viewVisible_springAnimation() {
+        val touchSurface = createTouchSurface()
+
+        // View is VISIBLE when starting the animation.
+        runOnMainThreadAndWaitForIdleSync { touchSurface.visibility = View.VISIBLE }
+
+        // View is invisible while the dialog is shown.
+        val dialog = showDialogFromView(touchSurface)
+        sleepForSpringAnimation()
+        assertThat(touchSurface.visibility).isEqualTo(View.INVISIBLE)
+
+        // View is visible again when the dialog is dismissed.
+        runOnMainThreadAndWaitForIdleSync { dialog.dismiss() }
+        sleepForSpringAnimation()
         assertThat(touchSurface.visibility).isEqualTo(View.VISIBLE)
     }
 
@@ -252,7 +377,8 @@ class DialogTransitionAnimatorTest : SysuiTestCase() {
     }
 
     @Test
-    fun testAnimationDoesNotChangeLaunchableViewVisibility_viewVisibleThenGone() {
+    @DisableFlags(FLAG_ENABLE_DIALOG_SPRING_ANIMATION)
+    fun testAnimationDoesNotChangeLaunchableViewVisibility_viewVisibleThenGone_linearAnimation() {
         val touchSurface = createTouchSurface()
 
         // View is VISIBLE when starting the animation.
@@ -269,6 +395,30 @@ class DialogTransitionAnimatorTest : SysuiTestCase() {
 
         // View is restored to GONE once the dialog is dismissed.
         runOnMainThreadAndWaitForIdleSync { dialog.dismiss() }
+        assertThat(touchSurface.visibility).isEqualTo(View.GONE)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_DIALOG_SPRING_ANIMATION)
+    fun testAnimationDoesNotChangeLaunchableViewVisibility_viewVisibleThenGone_springAnimation() {
+        val touchSurface = createTouchSurface()
+
+        // View is VISIBLE when starting the animation.
+        runOnMainThreadAndWaitForIdleSync { touchSurface.visibility = View.VISIBLE }
+
+        // View is INVISIBLE while the dialog is shown.
+        val dialog = showDialogFromView(touchSurface)
+        sleepForSpringAnimation()
+        assertThat(touchSurface.visibility).isEqualTo(View.INVISIBLE)
+
+        // Some external call makes the View GONE. It remains INVISIBLE while the dialog is shown,
+        // as all visibility changes should be blocked.
+        runOnMainThreadAndWaitForIdleSync { touchSurface.visibility = View.GONE }
+        assertThat(touchSurface.visibility).isEqualTo(View.INVISIBLE)
+
+        // View is restored to GONE once the dialog is dismissed.
+        runOnMainThreadAndWaitForIdleSync { dialog.dismiss() }
+        sleepForSpringAnimation()
         assertThat(touchSurface.visibility).isEqualTo(View.GONE)
     }
 
@@ -331,6 +481,10 @@ class DialogTransitionAnimatorTest : SysuiTestCase() {
         context.mainExecutor.execute { result = f() }
         waitForIdleSync()
         return result
+    }
+
+    private fun sleepForSpringAnimation(delay: Long = 500) {
+        runBlocking { Thread.sleep(delay) }
     }
 
     private class TouchSurfaceView(context: Context) : FrameLayout(context), LaunchableView {
