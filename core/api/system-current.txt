@@ -14610,10 +14610,30 @@ package android.service.personalcontext.hint {
 
 package android.service.personalcontext.refiner {
 
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class HintFilter implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public java.util.Set<java.lang.String> getHintClasses();
+    method @NonNull public java.util.Set<android.service.personalcontext.Token> getHintTokens();
+    method @NonNull public java.util.Set<java.lang.String> getPackages();
+    method @NonNull public java.util.Set<java.lang.String> getRequiredHintClasses();
+    method @NonNull public java.util.Set<android.service.personalcontext.Token> getRequiredHintTokens();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.refiner.HintFilter> CREATOR;
+  }
+
+  public static final class HintFilter.Builder {
+    ctor public HintFilter.Builder();
+    method @NonNull public android.service.personalcontext.refiner.HintFilter.Builder addHintClass(@NonNull Class<? extends android.service.personalcontext.hint.ContextHint>, boolean);
+    method @NonNull public android.service.personalcontext.refiner.HintFilter.Builder addHintToken(@NonNull android.service.personalcontext.Token, boolean);
+    method @NonNull public android.service.personalcontext.refiner.HintFilter.Builder addPackage(@NonNull String);
+    method @NonNull public android.service.personalcontext.refiner.HintFilter build();
+  }
+
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class HintRefinerService extends android.app.Service {
     ctor public HintRefinerService();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
     method public void onConnected();
+    method @NonNull public abstract android.service.personalcontext.refiner.HintFilter onInitializeFilter();
     method public abstract void onRefine(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @NonNull java.util.function.Consumer<java.util.List<android.service.personalcontext.hint.ContextHint>>);
   }
 
@@ -14654,6 +14674,7 @@ package android.service.personalcontext.understander {
     ctor public ContextUnderstanderService();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
     method public void onConnected();
+    method @NonNull public abstract android.service.personalcontext.refiner.HintFilter onInitializeFilter();
     method public abstract void onUnderstand(@NonNull java.util.List<android.service.personalcontext.hint.ContextHintWithSignature>);
     method public final void understood(@NonNull java.util.List<android.service.personalcontext.insight.ContextInsight>);
   }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.service.personalcontext;
+package android.service.personalcontext.refiner;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -29,8 +29,6 @@ import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.service.personalcontext.hint.BundleHint;
 import android.service.personalcontext.hint.ContextHint;
-import android.service.personalcontext.refiner.HintRefinerService;
-import android.service.personalcontext.refiner.IRefiner;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -67,10 +65,8 @@ public class HintRefinerServiceTest {
 
     @Test
     public void testOnRefineList() throws RemoteException {
-        final List<ContextHint> inputHints = Arrays.asList(
-                new BundleHint.Builder().build(), new BundleHint.Builder().build());
-        final List<ContextHint> outputHints = Arrays.asList(
-                new BundleHint.Builder().build(), new BundleHint.Builder().build());
+        final List<ContextHint> inputHints = Arrays.asList(new BundleHint(), new BundleHint());
+        final List<ContextHint> outputHints = Arrays.asList(new BundleHint(), new BundleHint());
 
         doAnswer(invocation -> {
             assertThat(inputHints).containsExactlyElementsIn((List<?>) invocation.getArgument(0));

@@ -18,6 +18,7 @@ package android.service.personalcontext.refiner;
 
 import android.os.ParcelUuid;
 import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.refiner.IGetFilterCallback;
 import android.service.personalcontext.refiner.IRefineCallback;
 
 /**
@@ -25,14 +26,17 @@ import android.service.personalcontext.refiner.IRefineCallback;
  *
  * @hide
  */
-interface IRefiner {
+oneway interface IRefiner {
     /** Provides configuration information to the refiner. */
-    oneway void configure(in ParcelUuid componentId);
+    void configure(in ParcelUuid componentId);
 
     /**
      * Requests that a set of new hints be refined. All of the hints in inputHints will be
      * hints that this refiner hasn't seen before. The callback may be called exactly once,
      * with a new set of hints.
      */
-    oneway void refine(in List<ContextHintWithSignature> inputHints, in IRefineCallback callback);
+    void refine(in List<ContextHintWithSignature> inputHints, in IRefineCallback callback);
+
+    /** Gets a filter to be used when deciding whether to send an insight to this refiner. */
+    void getFilter(in IGetFilterCallback callback);
 }

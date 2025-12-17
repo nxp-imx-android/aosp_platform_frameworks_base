@@ -85,6 +85,18 @@ public abstract class HintRefinerService extends Service {
     }
 
     /**
+     * The refiner must return a {@link HintFilter} that will be used to filter the hints
+     * that this refiner's {@link #onRefine} method will be called with.
+     *
+     * The result of this method will be cached and re-used between service bindings. If the filter
+     * returned by this method changes, the changes will be ignored.
+     *
+     * @return a filter that restricts the {@link ContextHint}s this refiner will receive
+     */
+    @NonNull
+    public abstract HintFilter onInitializeFilter();
+
+    /**
      * Called when there are hints to be generated or refined.
      *
      * <p>Use the callback to provide new hints to the Personal Context system. Do *not* use
@@ -137,6 +149,11 @@ public abstract class HintRefinerService extends Service {
                             Log.i(TAG, "Could not return refined hints", e);
                         }
                     });
+        }
+
+        @Override
+        public void getFilter(IGetFilterCallback callback) throws RemoteException {
+            callback.updateFilter(getServiceOrThrow().onInitializeFilter());
         }
     }
 }

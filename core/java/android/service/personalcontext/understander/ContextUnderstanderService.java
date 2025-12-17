@@ -27,8 +27,11 @@ import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.PersonalContextManager;
+import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.insight.ContextInsight;
+import android.service.personalcontext.refiner.HintFilter;
+import android.service.personalcontext.refiner.IGetFilterCallback;
 import android.service.personalcontext.refiner.IRefineCallback;
 import android.service.personalcontext.refiner.IRefiner;
 import android.util.Log;
@@ -86,6 +89,18 @@ public abstract class ContextUnderstanderService extends Service {
     public void onConnected() {
         // Default implementation does nothing.
     }
+
+    /**
+     * The understander should return a {@link HintFilter} that will be used to filter the
+     * hints that this understander's {@link #onUnderstand} method will be called with.
+     *
+     * The result of this method will be cached and re-used between service bindings. If the filter
+     * returned by this method changes, the changes will be ignored.
+     *
+     * @return a filter that restricts the {@link ContextHint}s this understander will receive
+     */
+    @NonNull
+    public abstract HintFilter onInitializeFilter();
 
     /**
      * Called when a new hint is available.
@@ -157,6 +172,11 @@ public abstract class ContextUnderstanderService extends Service {
             callback.onHintsRefined(Collections.emptyList());
 
             getServiceOrThrow().onUnderstand(inputHints);
+        }
+
+        @Override
+        public void getFilter(IGetFilterCallback callback) throws RemoteException {
+            callback.updateFilter(getServiceOrThrow().onInitializeFilter());
         }
     }
 }

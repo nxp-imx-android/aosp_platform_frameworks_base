@@ -25,6 +25,8 @@ import android.os.RemoteException;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWrapper;
+import android.service.personalcontext.refiner.HintFilter;
+import android.service.personalcontext.refiner.IGetFilterCallback;
 import android.service.personalcontext.refiner.IRefineCallback;
 import android.service.personalcontext.refiner.IRefiner;
 import android.util.Slog;
@@ -47,20 +49,36 @@ import java.util.function.Consumer;
  * @hide
  */
 public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> implements Refiner {
+    private HintFilter mFilter = null;
+
     public ServiceClientRefiner(Context context, UUID componentId, ServiceInfo serviceInfo) {
         super(context, componentId, serviceInfo);
+
+        runWithBinder(binder -> {
+            try {
+                binder.getFilter(new IGetFilterCallback.Stub() {
+                    @PermissionManuallyEnforced
+                    @Override
+                    public void updateFilter(HintFilter filter) {
+                        mFilter = filter;
+                    }
+                });
+            } catch (RemoteException e) {
+                Slog.e(TAG, "Failed to get renderer filter", e);
+            }
+        });
     }
 
     @Override
     public Set<Set<ContextHintWithSignature>> getInterestedHintClusters(
             Set<ContextHintWithSignature> allContextHints, Set<UUID> seenIDs, boolean isFirstRun) {
-        // TODO(b/452425564): Implement this to use a filter in the package's manifest.
-        // For now this runs hints through the refiner one-by-one.
-        final Set<Set<ContextHintWithSignature>> eachHint = new HashSet<>();
-        for (ContextHintWithSignature hint : allContextHints) {
-            if (!seenIDs.contains(hint.getContextHint().getHintId())) eachHint.add(Set.of(hint));
+        if (mFilter == null) {
+            return null;
+        } else {
+            final Set<ContextHintWithSignature> hints = mFilter.getInterestedHintClusters(
+                    allContextHints, seenIDs);
+            return hints == null || hints.isEmpty() ? null : Set.of(hints);
         }
-        return eachHint;
     }
 
     @Override
