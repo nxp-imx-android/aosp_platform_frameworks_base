@@ -21693,8 +21693,8 @@ package android.hardware.lights {
   @FlaggedApi("com.android.server.lights.feature.flags.enable_light_animations") public final class ColorSequence implements android.os.Parcelable {
     method public int describeContents();
     method @ColorInt @NonNull public int[] getColors();
-    method @NonNull public int[] getDelaysMillis();
-    method public int getDurationMillis();
+    method @NonNull public long[] getDelaysMillis();
+    method public long getDurationMillis();
     method public int getInterpolationMode();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.hardware.lights.ColorSequence> CREATOR;
@@ -21704,8 +21704,8 @@ package android.hardware.lights {
 
   public static final class ColorSequence.Builder {
     ctor public ColorSequence.Builder();
-    method @NonNull public android.hardware.lights.ColorSequence.Builder addControlPoint(int, @ColorInt int);
-    method @NonNull public android.hardware.lights.ColorSequence.Builder addControlPoints(@NonNull int[], @ColorInt @NonNull int[]);
+    method @NonNull public android.hardware.lights.ColorSequence.Builder addControlPoint(long, @ColorInt int);
+    method @NonNull public android.hardware.lights.ColorSequence.Builder addControlPoints(@NonNull long[], @ColorInt @NonNull int[]);
     method @NonNull public android.hardware.lights.ColorSequence.Builder addControlPoints(@NonNull android.hardware.lights.ColorSequence);
     method @NonNull public android.hardware.lights.ColorSequence build();
     method @NonNull public android.hardware.lights.ColorSequence.Builder setInterpolationMode(int);
@@ -21714,7 +21714,7 @@ package android.hardware.lights {
   public final class Light implements android.os.Parcelable {
     method public int describeContents();
     method public int getId();
-    method @FlaggedApi("com.android.server.lights.feature.flags.enable_light_animations") public int getMinUpdatePeriodMillis();
+    method @FlaggedApi("com.android.server.lights.feature.flags.enable_light_animations") public long getMinUpdatePeriodMillis();
     method @NonNull public String getName();
     method public int getOrdinal();
     method public int getType();

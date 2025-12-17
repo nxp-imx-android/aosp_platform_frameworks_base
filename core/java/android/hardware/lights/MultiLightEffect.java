@@ -299,8 +299,8 @@ public final class MultiLightEffect implements Parcelable {
      * @return the estimated duration of one iteration of this light effect in milliseconds.
      * @hide
      */
-    public int getIterationDurationMillis() {
-        int duration = 0;
+    public long getIterationDurationMillis() {
+        long duration = 0;
         for (ColorSequence sequence : mColorSequences) {
             duration = Math.max(duration, sequence.getDurationMillis());
         }
@@ -315,7 +315,7 @@ public final class MultiLightEffect implements Parcelable {
      * @return the estimated duration of this light effect.
      * @hide
      */
-    public int getTotalDurationMillis() {
+    public long getTotalDurationMillis() {
         return getIterationDurationMillis() * mIterations;
     }
 

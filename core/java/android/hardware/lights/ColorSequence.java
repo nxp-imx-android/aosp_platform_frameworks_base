@@ -17,6 +17,7 @@
 package android.hardware.lights;
 
 import android.annotation.ColorInt;
+import android.annotation.DurationMillisLong;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -24,6 +25,7 @@ import android.annotation.SuppressLint;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.IntArray;
+import android.util.LongArray;
 
 import com.android.internal.util.Preconditions;
 import com.android.server.lights.feature.flags.Flags;
@@ -82,7 +84,7 @@ public final class ColorSequence implements Parcelable {
     public @interface InterpolationMode {}
 
     private final @InterpolationMode int mInterpolationMode;
-    private final int[] mDelaysMillis;
+    private final long[] mDelaysMillis;
     private final @ColorInt int[] mColors;
 
     /**
@@ -90,7 +92,7 @@ public final class ColorSequence implements Parcelable {
      */
     private ColorSequence(@NonNull Parcel in) {
         this.mInterpolationMode = in.readInt();
-        this.mDelaysMillis = Objects.requireNonNull(in.createIntArray());
+        this.mDelaysMillis = Objects.requireNonNull(in.createLongArray());
         this.mColors = Objects.requireNonNull(in.createIntArray());
     }
 
@@ -101,7 +103,7 @@ public final class ColorSequence implements Parcelable {
      */
     ColorSequence(
             @InterpolationMode int interpolationMode,
-            @NonNull int[] delaysMillis,
+            @NonNull long[] delaysMillis,
             @NonNull @ColorInt int[] colors) {
         this.mInterpolationMode = interpolationMode;
         this.mDelaysMillis = delaysMillis;
@@ -118,7 +120,7 @@ public final class ColorSequence implements Parcelable {
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeInt(mInterpolationMode);
-        dest.writeIntArray(mDelaysMillis);
+        dest.writeLongArray(mDelaysMillis);
         dest.writeIntArray(mColors);
     }
 
@@ -140,7 +142,7 @@ public final class ColorSequence implements Parcelable {
     public static final class Builder {
         private @InterpolationMode int mInterpolationMode = INTERPOLATION_MODE_LINEAR;
         private IntArray mColors = new IntArray();
-        private IntArray mDelaysMillis = new IntArray();
+        private LongArray mDelaysMillis = new LongArray();
 
         public Builder() {
         }
@@ -193,7 +195,7 @@ public final class ColorSequence implements Parcelable {
          */
         @SuppressLint("MissingGetterMatchingBuilder")
         @NonNull
-        public Builder addControlPoint(int delayMillis, @ColorInt int color) {
+        public Builder addControlPoint(long delayMillis, @ColorInt int color) {
             // Validate that initial delays only happen at index 0.
             Preconditions.checkArgument(
                     delayMillis > 0 || (delayMillis == 0  && mColors.size() == 0));
@@ -209,7 +211,7 @@ public final class ColorSequence implements Parcelable {
          * Both arrays provided MUST have the same size and be in the order in which they should
          * be inserted.
          *
-         * @see #addControlPoint(int, int) for details.
+         * @see #addControlPoint(long, int) for details.
          *
          * @throws IllegalArgumentException if the arrays have different sizes or the sequence
          *         contains invalid values.
@@ -222,7 +224,7 @@ public final class ColorSequence implements Parcelable {
         @SuppressLint("MissingGetterMatchingBuilder")
         @NonNull
         public Builder addControlPoints(
-                @NonNull int[] delaysMillis, @NonNull @ColorInt int[] colors) {
+                @NonNull long[] delaysMillis, @NonNull @ColorInt int[] colors) {
             Preconditions.checkNotNull(delaysMillis);
             Preconditions.checkNotNull(colors);
             Preconditions.checkArgument(delaysMillis.length == colors.length, "Uneven arrays");
@@ -239,7 +241,7 @@ public final class ColorSequence implements Parcelable {
          * If the two color sequences have different interpolation modes, the interpolation mode of
          * the builder takes precedence over the interpolation mode from the argument.
          *
-         * @see #addControlPoint(int, int) for details.
+         * @see #addControlPoint(long, int) for details.
          *
          * @throws IllegalArgumentException if the sequence would cause the final sequence to be
          *         invalid.
@@ -289,7 +291,8 @@ public final class ColorSequence implements Parcelable {
      * @return Array of delays configured for this effect.
      */
     @NonNull
-    public int[] getDelaysMillis() {
+    @DurationMillisLong
+    public long[] getDelaysMillis() {
         return mDelaysMillis;
     }
 
@@ -310,9 +313,10 @@ public final class ColorSequence implements Parcelable {
      *
      * @return the estimated duration of one iteration of this light effect in number of frames.
      */
-    public int getDurationMillis() {
-        int duration = 0;
-        for (int delay : mDelaysMillis) {
+    @DurationMillisLong
+    public long getDurationMillis() {
+        long duration = 0;
+        for (long delay : mDelaysMillis) {
             duration += delay;
         }
         return duration;
