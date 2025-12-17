@@ -208,7 +208,6 @@
   <java-symbol type="id" name="action2" />
   <java-symbol type="id" name="action3" />
   <java-symbol type="id" name="action4" />
-  <java-symbol type="id" name="notification_media_content" />
   <java-symbol type="id" name="big_picture" />
   <java-symbol type="id" name="big_text" />
   <java-symbol type="id" name="chronometer" />
@@ -1639,7 +1638,6 @@
   <java-symbol type="layout" name="search_view" />
   <java-symbol type="layout" name="select_dialog" />
   <java-symbol type="layout" name="simple_dropdown_hint" />
-  <java-symbol type="layout" name="status_bar_latest_event_content" />
   <java-symbol type="layout" name="system_user_home" />
   <java-symbol type="layout" name="text_edit_action_popup_text" />
   <java-symbol type="layout" name="text_drag_thumbnail" />
@@ -1706,7 +1704,6 @@
   <java-symbol type="layout" name="zoom_container" />
   <java-symbol type="layout" name="zoom_controls" />
   <java-symbol type="layout" name="zoom_magnify" />
-  <java-symbol type="layout" name="notification_intruder_content" />
   <java-symbol type="layout" name="sms_short_code_confirmation_dialog" />
   <java-symbol type="layout" name="action_bar_up_container" />
   <java-symbol type="layout" name="app_not_authorized" />
@@ -2500,7 +2497,6 @@
   <java-symbol type="bool" name="config_notificationReviewPermissions" />
 
   <java-symbol type="layout" name="notification_material_action" />
-  <java-symbol type="layout" name="notification_material_action_list" />
   <java-symbol type="layout" name="notification_material_action_tombstone" />
   <java-symbol type="layout" name="notification_2025_template_collapsed_base" />
   <java-symbol type="layout" name="notification_2025_template_collapsed_metric" />
@@ -2523,20 +2519,6 @@
   <java-symbol type="layout" name="notification_2025_template_expanded_messaging" />
   <java-symbol type="layout" name="notification_2025_template_expanded_progress" />
   <java-symbol type="layout" name="notification_2025_template_promoted_progress" />
-  <java-symbol type="layout" name="notification_template_material_base" />
-  <java-symbol type="layout" name="notification_template_material_heads_up_base" />
-  <java-symbol type="layout" name="notification_template_material_compact_heads_up_base" />
-  <java-symbol type="layout" name="notification_template_material_messaging_compact_heads_up" />
-  <java-symbol type="layout" name="notification_template_material_big_base" />
-  <java-symbol type="layout" name="notification_template_material_big_picture" />
-  <java-symbol type="layout" name="notification_template_material_inbox" />
-  <java-symbol type="layout" name="notification_template_material_media" />
-  <java-symbol type="layout" name="notification_template_material_big_media" />
-  <java-symbol type="layout" name="notification_template_material_big_text" />
-  <java-symbol type="layout" name="notification_template_material_progress" />
-  <java-symbol type="layout" name="notification_template_material_messaging" />
-  <java-symbol type="layout" name="notification_template_material_big_messaging" />
-  <java-symbol type="layout" name="notification_template_header" />
   <java-symbol type="layout" name="notification_material_media_action" />
   <java-symbol type="color" name="notification_progress_background_color" />
   <java-symbol type="id" name="media_actions" />
@@ -3336,7 +3318,6 @@
 
   <java-symbol type="string" name="notification_hidden_text" />
   <java-symbol type="id" name="app_name_text" />
-  <java-symbol type="id" name="app_name_divider" />
   <java-symbol type="id" name="header_text" />
   <java-symbol type="id" name="header_text_secondary" />
   <java-symbol type="id" name="expand_button" />
@@ -3620,8 +3601,6 @@
   <java-symbol type="string" name="notification_metric_label_separator" />
 
   <!-- Notifications: CallStyle -->
-  <java-symbol type="layout" name="notification_template_material_call" />
-  <java-symbol type="layout" name="notification_template_material_big_call" />
   <java-symbol type="layout" name="notification_2025_template_collapsed_call" />
   <java-symbol type="layout" name="notification_2025_template_expanded_call" />
   <java-symbol type="string" name="call_notification_answer_action" />
@@ -3649,7 +3628,6 @@
   <java-symbol type="bool" name="config_supportPreRebootSecurityLogs" />
 
   <java-symbol type="dimen" name="notification_2025_actions_margin_start"/>
-  <java-symbol type="id" name="notification_action_list_margin_target" />
   <java-symbol type="dimen" name="notification_actions_padding_start"/>
   <java-symbol type="dimen" name="notification_actions_collapsed_priority_width"/>
   <!--prefer to use disabled content and surface alpha values for disabled actions-->
@@ -4367,7 +4345,6 @@
 
   <java-symbol type="layout" name="notification_template_messaging_text_message" />
   <java-symbol type="layout" name="notification_template_messaging_image_message" />
-  <java-symbol type="layout" name="notification_template_messaging_group" />
   <java-symbol type="layout" name="notification_2025_messaging_group" />
   <java-symbol type="id" name="message_text" />
   <java-symbol type="id" name="message_name" />
@@ -4872,18 +4849,13 @@
   <java-symbol type="id" name="conversation_icon_badge" />
   <java-symbol type="id" name="conversation_icon_badge_ring" />
   <java-symbol type="id" name="conversation_icon_badge_bg" />
-  <java-symbol type="id" name="expand_button_container" />
-  <java-symbol type="id" name="expand_button_a11y_container" />
   <java-symbol type="id" name="expand_button_touch_container" />
   <java-symbol type="id" name="reply_action_container" />
   <java-symbol type="id" name="messaging_group_content_container" />
-  <java-symbol type="id" name="expand_button_and_content_container" />
-  <java-symbol type="id" name="conversation_header" />
   <java-symbol type="id" name="conversation_face_pile_bottom_background" />
   <java-symbol type="id" name="conversation_face_pile_bottom" />
   <java-symbol type="id" name="conversation_face_pile_top" />
   <java-symbol type="id" name="conversation_face_pile" />
-  <java-symbol type="id" name="conversation_text" />
   <java-symbol type="id" name="message_icon_container" />
   <java-symbol type="id" name="conversation_image_message_container" />
   <java-symbol type="id" name="conversation_icon_container" />
@@ -4906,12 +4878,10 @@
   <java-symbol type="dimen" name="conversation_header_expanded_padding_end" />
   <java-symbol type="dimen" name="conversation_icon_container_top_padding" />
   <java-symbol type="dimen" name="conversation_icon_container_top_padding_small_avatar" />
-  <java-symbol type="layout" name="notification_template_material_conversation" />
   <java-symbol type="layout" name="notification_2025_template_collapsed_conversation" />
   <java-symbol type="layout" name="notification_2025_template_expanded_conversation" />
   <java-symbol type="dimen" name="button_padding_horizontal_material" />
   <java-symbol type="dimen" name="button_inset_horizontal_material" />
-  <java-symbol type="layout" name="conversation_face_pile_layout" />
   <java-symbol type="layout" name="notification_2025_conversation_face_pile_layout" />
   <java-symbol type="string" name="unread_convo_overflow" />
   <java-symbol type="drawable" name="conversation_badge_background" />
@@ -5417,7 +5387,6 @@
   <java-symbol type="string" name="ui_translation_accessibility_translated_text" />
   <java-symbol type="string" name="ui_translation_accessibility_translation_finished" />
 
-  <java-symbol type="layout" name="notification_expand_button"/>
   <java-symbol type="id" name="close_button" />
   <java-symbol type="layout" name="notification_close_button"/>
 
