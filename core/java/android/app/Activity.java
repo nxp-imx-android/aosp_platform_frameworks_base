@@ -5968,6 +5968,20 @@ public class Activity extends ContextThemeWrapper
      * Gets whether you should show UI with rationale before requesting a permission.
      *
      * @param permission A permission your app wants to request.
+     * @return Whether you should show permission rationale UI.
+     *
+     * @see #checkSelfPermission
+     * @see #requestPermissions
+     * @see #onRequestPermissionsResult
+     */
+    public boolean shouldShowRequestPermissionRationale(@NonNull String permission) {
+        return getPackageManager().shouldShowRequestPermissionRationale(permission);
+    }
+
+    /**
+     * Gets whether you should show UI with rationale before requesting a permission.
+     *
+     * @param permission A permission your app wants to request.
      * @param deviceId The app is requesting permissions for this device. The primary/physical
      *                 device is assigned {@link Context#DEVICE_ID_DEFAULT}, and virtual devices
      *                 are assigned unique device Ids.

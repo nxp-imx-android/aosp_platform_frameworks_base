@@ -4754,6 +4754,7 @@ package android.app {
     method public final void setVolumeControlStream(int);
     method public void setVrModeEnabled(boolean, @NonNull android.content.ComponentName) throws android.content.pm.PackageManager.NameNotFoundException;
     method public boolean shouldDockBigOverlays();
+    method public boolean shouldShowRequestPermissionRationale(@NonNull String);
     method @FlaggedApi("android.permission.flags.device_aware_permission_apis_enabled") public boolean shouldShowRequestPermissionRationale(@NonNull String, int);
     method public boolean shouldUpRecreateTask(android.content.Intent);
     method public boolean showAssist(android.os.Bundle);
@@ -11566,7 +11567,6 @@ package android.content {
     method public abstract void setTheme(@StyleRes int);
     method @Deprecated public abstract void setWallpaper(android.graphics.Bitmap) throws java.io.IOException;
     method @Deprecated public abstract void setWallpaper(java.io.InputStream) throws java.io.IOException;
-    method @FlaggedApi("android.permission.flags.should_show_permission_rationale_in_context_enabled") public boolean shouldShowRequestPermissionRationale(@NonNull String);
     method public abstract void startActivities(@RequiresPermission android.content.Intent[]);
     method public abstract void startActivities(@RequiresPermission android.content.Intent[], android.os.Bundle);
     method public abstract void startActivity(@RequiresPermission android.content.Intent);
