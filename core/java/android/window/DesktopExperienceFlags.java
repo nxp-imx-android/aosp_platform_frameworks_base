@@ -151,8 +151,6 @@ public enum DesktopExperienceFlags {
     ENABLE_DRAG_TO_MAXIMIZE(Flags::enableDragToMaximize, true, Flags.FLAG_ENABLE_DRAG_TO_MAXIMIZE),
     ENABLE_DRAWING_APP_HANDLE(Flags::enableDrawingAppHandle, false,
             Flags.FLAG_ENABLE_DRAWING_APP_HANDLE),
-    ENABLE_DREAM_ACTIVITY_WINDOWING_EXCLUSION(Flags::enableDreamActivityWindowingExclusion, false,
-            Flags.FLAG_ENABLE_DREAM_ACTIVITY_WINDOWING_EXCLUSION),
     ENABLE_FREEFORM_BOX_SHADOWS_V2(Flags::enableFreeformBoxShadowsV2, false,
             Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS_V2),
     ENABLE_FULLSCREEN_WINDOW_CONTROLS(Flags::enableFullscreenWindowControls, false,
