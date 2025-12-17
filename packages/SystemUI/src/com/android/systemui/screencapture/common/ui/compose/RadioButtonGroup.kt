@@ -53,6 +53,7 @@ data class RadioButtonGroupItem(
     val contentDescription: String? = null,
     val hasTooltip: Boolean = false,
     val onClick: () -> Unit,
+    val modifier: Modifier = Modifier,
 ) {
     /** Secondary constructor for cases where the icon is different when selected vs unselected. */
     constructor(
@@ -63,6 +64,7 @@ data class RadioButtonGroupItem(
         onClick: () -> Unit,
         contentDescription: String? = null,
         hasTooltip: Boolean = false,
+        modifier: Modifier = Modifier,
     ) : this(
         label = label,
         icon = if (isSelected) selectedIcon else unselectedIcon,
@@ -70,6 +72,7 @@ data class RadioButtonGroupItem(
         onClick = onClick,
         contentDescription = contentDescription,
         hasTooltip = hasTooltip,
+        modifier = modifier,
     )
 }
 
@@ -100,7 +103,7 @@ fun RadioButtonGroup(
                         item = item,
                         colors = colors,
                         shapes = shapes,
-                        modifier = modifier,
+                        modifier = item.modifier,
                     )
                 }
 
