@@ -2140,8 +2140,25 @@ public class MediaQualityContract {
         public static final String PARAMETER_DTS_DRC = "dts_drc";
 
         /**
-         * @hide
+         * Key used to enable or disable Dolby Audio Processing (DAP).
+         *
+         * <p><b>Value Type:</b> String</p>
+         * <p><b>Valid Values:</b>
+         * <ul>
+         * <li>{@code "on"} - Enables Dolby post-processing (volume leveling, dialogue enhancement,
+         * surround virtualization).</li>
+         * <li>{@code "off"} - Disables processing (audio is passed through without modification).
+         * </li>
+         * </ul>
+         * </p>
+         * <p><b>Default Value:</b> {@code "off"}</p>
+         *
+         * <p>When set to {@code "on"}, the audio engine applies the currently configured
+         * Dolby profile to the output mix. When set to {@code "off"}, the system operates
+         * in a "passthrough" or reference mode, preserving the original dynamic range
+         * and frequency response of the content.</p>
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_DOLBY_AUDIO_PROCESSING = "dolby_audio_processing";
 
         /**
@@ -2233,8 +2250,20 @@ public class MediaQualityContract {
         public static final String PARAMETER_DIALOGUE_ENHANCER = "dialogue_enhancer";
 
         /**
-         * @hide
+         * Enable/disable DTS Virtual:X.
+         *
+         * <p>DTS Virtual:X is an audio post-processing technology that provides an immersive
+         * listening experience by virtualizing a height and surround soundstage from any input
+         * source. When enabled, it aims to create a wider and taller sound field, enhancing
+         * spatial perception without the need for additional speakers.
+         *
+         * <p>Type: BOOLEAN
+         * <p>Possible values: {@code true} to enable, {@code false} to disable.
+         * The default value is {@code false}.
+         * <p>
+         * Note: When this set to false, other dts relate parameter should also be false.
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_DTS_VIRTUAL_X = "dts_virtual_x";
 
         /**
@@ -2336,11 +2365,80 @@ public class MediaQualityContract {
         public static final String PARAMETER_DIGITAL_OUTPUT_MODE = "digital_output_mode";
 
         /**
-         * @hide
+         * The sound style of this profile.
+         * <p>Must be one of the following values, defined in {@link SoundQuality.SoundStyleValue}:
+         * <ul>
+         *   <li>{@link #SOUND_STYLE_USER}</li>
+         *   <li>{@link #SOUND_STYLE_STANDARD}</li>
+         *   <li>{@link #SOUND_STYLE_VIVID}</li>
+         *   <li>{@link #SOUND_STYLE_SPORTS}</li>
+         *   <li>{@link #SOUND_STYLE_MOVIE}</li>
+         *   <li>{@link #SOUND_STYLE_MUSIC}</li>
+         *   <li>{@link #SOUND_STYLE_NEWS}</li>
+         *   <li>{@link #SOUND_STYLE_AUTO}</li>
+         * </ul>
+         * The default value is {@link #SOUND_STYLE_STANDARD}.
+         *
+         * <p>Type: STRING
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_SOUND_STYLE = "sound_style";
 
+        /**
+         * Controls the output routing of the Audio Description track to the internal speakers.
+         * <p>If set to {@code true}, the AD track will be mixed with the main audio
+         * and played through the device's built-in speakers.</p>
+         * <p><b>Dependency:</b> This setting is ignored if the device does not have
+         * internal speakers or if audio routing is forcibly overridden by system policy.</p>
+         */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+        public static final String PARAMETER_AD_SPEAKER_ENABLE = "ad_speaker_enable";
 
+        /**
+         * Controls the output routing of the Audio Description track to connected headphones.
+         * <p>If set to {@code true}, the AD track will be mixed and played through
+         * wired or Bluetooth headsets.</p>
+         * <p><b>Note:</b> This enables independent consumption of AD content if the
+         * audio engine supports dual-routing (e.g., AD on headphones, Main Audio on speakers).</p>
+         */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+        public static final String PARAMETER_AD_HEADPHONE_ENABLE = "ad_headphone_enable";
+
+        /**
+         * Sets the relative volume gain for the Audio Description track.
+         *
+         * <p><b>Unit:</b> Integer Percentage (0-100)</p>
+         * <p><b>Default:</b> Typically defaults to 50 or the system-wide accessibility volume
+         * preference.</p>
+         *
+         * <p>This value controls the mixing level of the secondary audio stream (AD)
+         * before it is combined with the main program audio.
+         * <ul>
+         * <li>{@code 0}: AD track is muted.</li>
+         * <li>{@code 100}: AD track is at maximum mixing volume.</li>
+         * </ul>
+         * </p>
+         *
+         * Range: An integer between 0 and 100.
+         */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+        public static final String PARAMETER_AD_VOLUME = "ad_volume";
+
+        /**
+         * Enables automatic Pan and Fade (Ducking) behavior for the main audio.
+         * <p>When set to {@code true}, the audio engine will apply standard broadcast mixing rules:
+         * <ul>
+         * <li><b>Fade:</b> The main program audio volume is lowered ("ducked") when
+         * audio description is present to ensure the narrator is intelligible.</li>
+         * <li><b>Pan:</b> The main audio may be spatially shifted (e.g., to background channels)
+         * to center the audio description track.</li>
+         * </ul>
+         * </p>
+         * * <p>If set to {@code false}, the AD track is mixed simply as an overlay without
+         * modifying the volume or position of the main audio track.</p>
+         */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+        public static final String PARAMETER_PAN_FADE_ENABLE = "pan_fade_enable";
 
         private SoundQuality() {
         }

@@ -179,7 +179,11 @@ public final class MediaQualityUtils {
             SoundQuality.PARAMETER_DTS_VIRTUAL_X,
             SoundQuality.PARAMETER_DIGITAL_OUTPUT_DELAY_MILLIS,
             SoundQuality.PARAMETER_DIGITAL_OUTPUT_MODE,
-            SoundQuality.PARAMETER_SOUND_STYLE
+            SoundQuality.PARAMETER_SOUND_STYLE,
+            SoundQuality.PARAMETER_AD_SPEAKER_ENABLE,
+            SoundQuality.PARAMETER_AD_HEADPHONE_ENABLE,
+            SoundQuality.PARAMETER_AD_VOLUME,
+            SoundQuality.PARAMETER_PAN_FADE_ENABLE
     ));
 
     private static final Set<String> VALID_STREAM_STATUS = new HashSet<>(Arrays.asList(
@@ -1522,6 +1526,21 @@ public final class MediaQualityUtils {
                                 false);
                     }
                     break;
+                case SoundParameter.adSpeakerEnable:
+                    bundle.putBoolean(SoundQuality.PARAMETER_AD_SPEAKER_ENABLE,
+                            sp.getAdSpeakerEnable());
+                    break;
+                case SoundParameter.adHeadphoneEnable:
+                    bundle.putBoolean(SoundQuality.PARAMETER_AD_HEADPHONE_ENABLE,
+                            sp.getAdHeadphoneEnable());
+                    break;
+                case SoundParameter.adVolume:
+                    bundle.putInt(SoundQuality.PARAMETER_AD_VOLUME, sp.getAdVolume());
+                    break;
+                case SoundParameter.panFadeEnable:
+                    bundle.putBoolean(SoundQuality.PARAMETER_PAN_FADE_ENABLE,
+                            sp.getPanFadeEnable());
+                    break;
                 default:
                     Log.e(TAG, "Invalid sound parameter tag: " + tag);
                     break;
@@ -1780,6 +1799,26 @@ public final class MediaQualityUtils {
                 params.remove(SoundQuality.PARAMETER_DTS_VIRTUAL_X_HEIGHT);
             }
             soundParams.add(SoundParameter.dtsVirtualX(dts));
+        }
+        if (params.containsKey(SoundQuality.PARAMETER_AD_SPEAKER_ENABLE)) {
+            soundParams.add(SoundParameter.adSpeakerEnable(params.getBoolean(
+                    SoundQuality.PARAMETER_AD_SPEAKER_ENABLE)));
+            params.remove(SoundQuality.PARAMETER_AD_SPEAKER_ENABLE);
+        }
+        if (params.containsKey(SoundQuality.PARAMETER_AD_HEADPHONE_ENABLE)) {
+            soundParams.add(SoundParameter.adHeadphoneEnable(params.getBoolean(
+                    SoundQuality.PARAMETER_AD_HEADPHONE_ENABLE)));
+            params.remove(SoundQuality.PARAMETER_AD_HEADPHONE_ENABLE);
+        }
+        if (params.containsKey(SoundQuality.PARAMETER_AD_VOLUME)) {
+            soundParams.add(SoundParameter.adVolume(params.getInt(
+                    SoundQuality.PARAMETER_AD_VOLUME)));
+            params.remove(SoundQuality.PARAMETER_AD_VOLUME);
+        }
+        if (params.containsKey(SoundQuality.PARAMETER_PAN_FADE_ENABLE)) {
+            soundParams.add(SoundParameter.panFadeEnable(params.getBoolean(
+                    SoundQuality.PARAMETER_PAN_FADE_ENABLE)));
+            params.remove(SoundQuality.PARAMETER_PAN_FADE_ENABLE);
         }
         return soundParams.toArray(new SoundParameter[0]);
     }
@@ -2267,6 +2306,18 @@ public final class MediaQualityUtils {
         if (nameMap.contains(SoundQuality.PARAMETER_SOUND_STYLE)) {
             bytes.add(ParameterName.SOUND_STYLE);
         }
+        if (nameMap.contains(SoundQuality.PARAMETER_AD_HEADPHONE_ENABLE)) {
+            bytes.add(ParameterName.AD_HEADPHONE_ENABLE);
+        }
+        if (nameMap.contains(SoundQuality.PARAMETER_AD_SPEAKER_ENABLE)) {
+            bytes.add(ParameterName.AD_SPEAKER_ENABLE);
+        }
+        if (nameMap.contains(SoundQuality.PARAMETER_AD_VOLUME)) {
+            bytes.add(ParameterName.AD_VOLUME);
+        }
+        if (nameMap.contains(SoundQuality.PARAMETER_PAN_FADE_ENABLE)) {
+            bytes.add(ParameterName.PAN_FADE_ENABLE);
+        }
 
         byte[] byteArray = new byte[bytes.size()];
         for (int i = 0; i < bytes.size(); i++) {
@@ -2460,6 +2511,12 @@ public final class MediaQualityUtils {
         parameterNameMap.put(ParameterName.DIGITAL_OUTPUT_DELAY_MS,
                 SoundQuality.PARAMETER_DIGITAL_OUTPUT_DELAY_MILLIS);
         parameterNameMap.put(ParameterName.SOUND_STYLE, SoundQuality.PARAMETER_SOUND_STYLE);
+        parameterNameMap.put(ParameterName.AD_HEADPHONE_ENABLE,
+                SoundQuality.PARAMETER_AD_HEADPHONE_ENABLE);
+        parameterNameMap.put(ParameterName.AD_SPEAKER_ENABLE,
+                SoundQuality.PARAMETER_AD_SPEAKER_ENABLE);
+        parameterNameMap.put(ParameterName.AD_VOLUME, SoundQuality.PARAMETER_AD_VOLUME);
+        parameterNameMap.put(ParameterName.PAN_FADE_ENABLE, SoundQuality.PARAMETER_PAN_FADE_ENABLE);
 
         return parameterNameMap.get(pn);
     }
