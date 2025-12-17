@@ -875,6 +875,24 @@ public class UsbService extends IUsbManager.Stub {
 
     @android.annotation.EnforcePermission(android.Manifest.permission.MANAGE_USB)
     @Override
+    public List<String> getPackagesWithDevicePermission(UsbDevice device) {
+        getPackagesWithDevicePermission_enforcePermission();
+        final int uid = Binder.getCallingUid();
+        final int userId = UserHandle.getUserId(uid);
+
+        final long token = Binder.clearCallingIdentity();
+        try {
+            UsbDeviceFingerprint fingerprint =
+                    getConnectedDeviceFingerprintForAddress(device.getDeviceName());
+            return getPermissionsForUser(userId)
+                    .getPackagesWithDevicePermission(device, fingerprint);
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
+    }
+
+    @android.annotation.EnforcePermission(android.Manifest.permission.MANAGE_USB)
+    @Override
     public void setAuthorizationResponse(
             UsbDevice device, @UsbAuthorizationStatus int response, boolean isPersistent) {
         setAuthorizationResponse_enforcePermission();

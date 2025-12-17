@@ -137,6 +137,13 @@ interface IUsbManager
     @EnforcePermission("MANAGE_USB")
     void revokeDevicePermission(in UsbDevice device, in String packageName, in int uid);
 
+    /* Returns the list of package names that have permission to access this
+     * device for the current user. Both temporary and persisted permissions
+     * are returned in no enforced order.
+     */
+    @EnforcePermission("MANAGE_USB")
+    List<String> getPackagesWithDevicePermission(in UsbDevice device);
+
     /* Sets the authorization response for a device that needs user
      * authorization.
      */

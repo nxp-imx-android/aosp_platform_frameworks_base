@@ -1718,6 +1718,25 @@ public class UsbManager {
     }
 
     /**
+     * Returns the list of packages that have permission to access the given USB Device for the
+     * current user.
+     *
+     * <p>This includes the Default app if one was configured.
+     *
+     * @param device - USB device to check for permissions.
+     * @return List of package names.
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.MANAGE_USB)
+    public @NonNull List<String> getPackagesWithPermission(@NonNull UsbDevice device) {
+        try {
+            return mService.getPackagesWithDevicePermission(device);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Returns true if the specified USB function is currently enabled when in device mode.
      * <p>
      * USB functions represent interfaces which are published to the host to access

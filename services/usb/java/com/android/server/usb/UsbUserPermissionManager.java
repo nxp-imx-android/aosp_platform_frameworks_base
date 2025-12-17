@@ -68,7 +68,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * UsbUserPermissionManager manages usb device or accessory access permissions.
@@ -962,5 +964,38 @@ class UsbUserPermissionManager {
         if (removed) {
             permissionChangedBroadcastIntent(device, null);
         }
+    }
+
+    /**
+     * Get a list of packages that have both temporary and persistent permissions for given device.
+     *
+     * @param device - USB device to check
+     * @return list of packages that have permissions to this UsbDevice.
+     */
+    public List<String> getPackagesWithDevicePermission(
+            UsbDevice device, UsbDeviceFingerprint fingerprint) {
+        ArraySet<String> packages = new ArraySet<>();
+
+        if (android.hardware.usb.flags.Flags.enablePersistentUsbDevicePermissions()) {
+            synchronized (mLock) {
+                String deviceAddr = device.getDeviceName();
+                if (fingerprint != null
+                        && mPersistentDevicePermissionMap.get(fingerprint) != null) {
+                    for (PackageAndUid entry : mPersistentDevicePermissionMap.get(fingerprint)) {
+                        packages.add(entry.packageName);
+                    }
+                }
+
+                ArraySet<PackageAndUid> tmpPermissions =
+                        mTemporaryDevicePermissionMap.get(deviceAddr);
+                if (tmpPermissions != null) {
+                    for (PackageAndUid entry : tmpPermissions) {
+                        packages.add(entry.packageName);
+                    }
+                }
+            }
+        }
+
+        return new ArrayList<String>(packages);
     }
 }

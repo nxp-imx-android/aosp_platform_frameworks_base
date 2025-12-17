@@ -58,6 +58,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.List;
 
 /** Unit tests for {@link com.android.server.usb.UsbUserPermissionManager}. */
 @RunWith(AndroidJUnit4.class)
@@ -352,5 +353,25 @@ public class UsbUserPermissionManagerTest {
                 outputPermissions
                         .get(mUsbDeviceFingerprint)
                         .contains(new PackageAndUid(validNew.packageName, validNew.uid)));
+    }
+
+    @Test
+    public void testGetPackagesWithDevicePermission() {
+        grantDevicePersistedAndTemporaryInitial();
+        TestData temporary = mTestData.get(TEMPORARY_PACKAGE);
+        TestData persisted = mTestData.get(PERSISTED_PACKAGE);
+
+        ArraySet<String> expectedPackages = new ArraySet<>();
+        expectedPackages.add(persisted.packageName);
+        expectedPackages.add(temporary.packageName);
+
+        List<String> actualPackagesList =
+                mPermissionManager.getPackagesWithDevicePermission(
+                        mUsbDevice, mUsbDeviceFingerprint);
+        ArraySet<String> actualPackages = new ArraySet<>(actualPackagesList);
+
+        // Expect there not to be any duplicates and to match expected packages
+        assertEquals(actualPackages.size(), actualPackagesList.size());
+        assertEquals(actualPackages, expectedPackages);
     }
 }
