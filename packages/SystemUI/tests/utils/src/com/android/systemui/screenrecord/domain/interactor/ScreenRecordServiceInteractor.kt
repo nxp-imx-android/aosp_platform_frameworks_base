@@ -19,5 +19,5 @@ package com.android.systemui.screenrecord.domain.interactor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.screenrecord.data.repository.screenRecordingServiceRepository
 
-val Kosmos.screenRecordingServiceInteractor: ScreenRecordingServiceInteractor by
+var Kosmos.screenRecordingServiceInteractor: ScreenRecordingServiceInteractor by
     Kosmos.Fixture { ScreenRecordingServiceInteractor(screenRecordingServiceRepository) }
