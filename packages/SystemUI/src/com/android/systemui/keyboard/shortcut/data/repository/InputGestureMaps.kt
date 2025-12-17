@@ -33,6 +33,7 @@ import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_LOCK_SCREEN
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_MINIMIZE_FREEFORM_WINDOW
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_MOVE_TO_NEXT_DISPLAY
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_MULTI_WINDOW_NAVIGATION
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_OPEN_NOTES
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_OPEN_SHORTCUT_HELPER
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS
@@ -78,6 +79,7 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
             KEY_GESTURE_TYPE_LAUNCH_VOICE_ASSISTANT to System,
             KEY_GESTURE_TYPE_ALL_APPS to System,
             KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH to System,
+            KEY_GESTURE_TYPE_OPEN_NOTES to System,
 
             // Multitasking Category
             KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER to MultiTasking,
@@ -132,6 +134,7 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
                 R.string.shortcut_helper_category_system_apps,
             KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH to
                 R.string.shortcut_helper_category_system_apps,
+            KEY_GESTURE_TYPE_OPEN_NOTES to R.string.shortcut_helper_category_system_apps,
 
             // Multitasking Category
             KEY_GESTURE_TYPE_SPLIT_SCREEN_NAVIGATION_LEFT to
@@ -198,6 +201,7 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
                 R.string.group_system_access_google_assistant,
             KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH to
                 R.string.group_system_access_contextual_search,
+            KEY_GESTURE_TYPE_OPEN_NOTES to R.string.group_system_quick_memo,
 
             // Multitasking Category
             KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER to R.string.group_system_cycle_forward,
