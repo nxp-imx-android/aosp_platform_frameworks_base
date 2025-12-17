@@ -1289,6 +1289,15 @@ public class Bubble implements BubbleViewProvider {
         }
     }
 
+    /**
+     * Marks whether the bubble task should be removed during the cleanup process
+     */
+    public void setTaskShouldBeRemoved(boolean taskShouldBeRemoved) {
+        if (mBubbleTaskView != null) {
+            mBubbleTaskView.setTaskShouldBeRemoved(taskShouldBeRemoved);
+        }
+    }
+
     public void setIsBubble(final boolean isBubble) {
         mIsBubble = isBubble;
     }
