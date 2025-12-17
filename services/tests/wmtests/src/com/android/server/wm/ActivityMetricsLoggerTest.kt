@@ -18,6 +18,7 @@ package com.android.server.wm
 
 import android.platform.test.annotations.Presubmit
 import androidx.test.filters.SmallTest
+import com.android.server.wm.WindowTestsBase.ActivityBuilder.DEFAULT_FAKE_UID
 import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -38,7 +39,10 @@ class ActivityMetricsLoggerTest : WindowTestsBase() {
 
     @Test
     fun testNotifyActivityLaunching_taskTrampoline_tracksOriginator() {
-        val activityA = createActivityRecord(mDisplayContent)
+        val uidA = DEFAULT_FAKE_UID + 1
+        val activityA = createActivityRecord(mDisplayContent).apply {
+            info.applicationInfo.uid = uidA
+        }
         val launchingState = metricsLogger.notifyActivityLaunching(
             activityA.intent,
             activityA,
@@ -46,12 +50,12 @@ class ActivityMetricsLoggerTest : WindowTestsBase() {
         )
 
         assertWithMessage("First launch must track caller as originator")
-            .that(launchingState.tracksOriginator(activityA))
-            .isEqualTo(activityA)
+            .that(launchingState.tracksOriginator(activityA.uid))
+            .isEqualTo(uidA)
 
         val activityB = createActivityRecord(mDisplayContent)
         assertWithMessage("Subsequent launch in same sequence must return original caller")
-            .that(launchingState.tracksOriginator(activityB))
-            .isEqualTo(activityA)
+            .that(launchingState.tracksOriginator(activityB.uid))
+            .isEqualTo(uidA)
     }
 }
