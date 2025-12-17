@@ -86,8 +86,7 @@ constructor(
             visibleState = transitionState,
             enter = if (isVisible.isAnimating) fadeIn() else EnterTransition.None,
             exit = if (isVisible.isAnimating) fadeOut() else ExitTransition.None,
-            modifier =
-                modifier.then(context.burnInModifiers.nonClock).then(context.nonAuthUIModifier),
+            modifier = modifier.burnInAware(isClock = false).nonAuthUI(),
         ) {
             AODPromotedNotification(
                 viewModelFactory = aodPromotedNotificationViewModelFactory,
