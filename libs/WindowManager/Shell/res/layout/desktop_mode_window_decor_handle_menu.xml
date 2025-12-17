@@ -111,6 +111,13 @@
             android:src="@drawable/desktop_mode_ic_handle_menu_change_aspect_ratio"
             style="@style/DesktopModeHandleMenuActionButton"/>
 
+        <com.android.wm.shell.windowdecor.HandleMenuActionButton
+            android:id="@+id/game_controls_button"
+            android:contentDescription="@string/handle_menu_game_controls_text"
+            android:text="@string/handle_menu_game_controls_text"
+            android:src="@drawable/desktop_mode_ic_handle_menu_game_controls"
+            style="@style/DesktopModeHandleMenuActionButton"/>
+
         <LinearLayout
             android:id="@+id/handle_menu_restart_pill"
             android:layout_width="@dimen/desktop_mode_handle_menu_width"
