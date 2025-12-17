@@ -111,6 +111,7 @@ class BubbleBarLayerViewTest {
     @get:Rule val animatorTestRule: AnimatorTestRule = AnimatorTestRule(this)
 
     private val context = ApplicationProvider.getApplicationContext<Context>()
+    private val bubbleHelper = mock<BubbleHelper>()
 
     private lateinit var bubbleBarLayerView: BubbleBarLayerView
     private lateinit var uiEventLoggerFake: UiEventLoggerFake
@@ -209,7 +210,8 @@ class BubbleBarLayerViewTest {
         bubbleBarLayerView =
             BubbleBarLayerView(context, bubbleController, bubbleData, bubbleLogger, mainExecutor)
 
-        expandedViewManager = FakeBubbleExpandedViewManager(bubbleBar = true, expanded = true)
+        expandedViewManager =
+            FakeBubbleExpandedViewManager(bubbleHelper, bubbleBar = true, expanded = true)
     }
 
     @After
@@ -284,7 +286,7 @@ class BubbleBarLayerViewTest {
             { false },
             sessionTracker,
             bubbleViewInfoTaskFactory,
-            mock<BubbleHelper>(),
+            bubbleHelper,
         )
     }
 

@@ -178,7 +178,8 @@ public class BubblesTransitionObserver implements Transitions.TransitionObserver
                     + "removing bubble for task launching into split taskId=%d", taskInfo.taskId);
             final TaskViewTaskController controller = bubble.getTaskView().getController();
             final ShellTaskOrganizer taskOrganizer = controller.getTaskOrganizer();
-            final WindowContainerTransaction wct = getExitBubbleTransaction(taskInfo.token,
+            final WindowContainerTransaction wct = getExitBubbleTransaction(
+                    mBubbleController.getBubbleHelper(), taskInfo.token,
                     bubble.getTaskView().getCaptionInsetsOwner(), false /* reparentToTda */);
 
             // Notify the task removal, but block all TaskViewTransitions during removal so we can

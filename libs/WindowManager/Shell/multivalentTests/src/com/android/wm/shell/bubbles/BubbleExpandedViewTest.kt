@@ -66,8 +66,11 @@ class BubbleExpandedViewTest {
             on { taskOrganizer } doReturn taskOrganizer
             on { taskToken } doReturn taskViewTaskToken
         }
-    private val bubbleController = mock<BubbleController>()
-
+    private val bubbleHelper = mock<BubbleHelper>()
+    private val bubbleController =
+        mock<BubbleController> { on { bubbleHelper } doReturn bubbleHelper }
+    private val bubbleExpandedViewManager =
+        mock<BubbleExpandedViewManager> { on { getBubbleHelper() } doReturn bubbleHelper }
     private lateinit var taskView: TaskView
     private lateinit var bubbleTaskView: BubbleTaskView
     private lateinit var expandedView: BubbleExpandedView
@@ -90,7 +93,7 @@ class BubbleExpandedViewTest {
 
         expandedView = view
         expandedView.initialize(
-            mock<BubbleExpandedViewManager>(),
+            bubbleExpandedViewManager,
             mock<BubbleStackView>(),
             mock<BubblePositioner>(),
             false /* isOverflow */,
@@ -194,7 +197,7 @@ class BubbleExpandedViewTest {
         localExpandedView.onFinishInflate()
 
         localExpandedView.initialize(
-            mock<BubbleExpandedViewManager>(),
+            bubbleExpandedViewManager,
             mock<BubbleStackView>(),
             mock<BubblePositioner>(),
             false /* isOverflow */,

@@ -98,7 +98,10 @@ class BubbleTaskViewListenerTest {
     private var listenerCallback = mock<BubbleTaskViewListener.Callback>()
     private val binder = Binder()
     private val rootTaskToken = mock<WindowContainerToken> { on { asBinder() } doReturn binder }
-    private var expandedViewManager = mock<BubbleExpandedViewManager>()
+    private val bubbleHelper =
+        mock<BubbleHelper> { on { getAppBubbleRootTaskToken() } doReturn rootTaskToken }
+    private val expandedViewManager =
+        mock<BubbleExpandedViewManager> { on { getBubbleHelper() } doReturn bubbleHelper }
 
     private lateinit var bubbleTaskViewListener: BubbleTaskViewListener
     private lateinit var taskView: TaskView
@@ -205,7 +208,9 @@ class BubbleTaskViewListenerTest {
         assertThat((intentFlags and Intent.FLAG_ACTIVITY_NEW_DOCUMENT) != 0).isTrue()
         assertThat((intentFlags and Intent.FLAG_ACTIVITY_MULTIPLE_TASK) != 0).isTrue()
         assertThat(optionsCaptor.lastValue.launchedFromBubble).isTrue()
-        assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
+        if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+            assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
+        }
     }
 
     @Test
@@ -229,7 +234,9 @@ class BubbleTaskViewListenerTest {
             .startShortcutActivity(any(), eq(shortcutInfo), optionsCaptor.capture(), any())
         assertThat(optionsCaptor.lastValue.launchedFromBubble).isTrue()
         assertThat(optionsCaptor.lastValue.isApplyActivityFlagsForBubbles).isTrue()
-        assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
+        if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+            assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
+        }
     }
 
     @EnableFlags(FLAG_ENABLE_BUBBLE_ANYTHING)
@@ -255,7 +262,9 @@ class BubbleTaskViewListenerTest {
         assertThat(optionsCaptor.lastValue.launchedFromBubble).isFalse() // chat only
         assertThat(optionsCaptor.lastValue.isApplyActivityFlagsForBubbles).isFalse() // chat only
         assertThat(optionsCaptor.lastValue.isApplyMultipleTaskFlagForShortcut).isTrue()
-        assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
+        if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+            assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
+        }
     }
 
     @Test
@@ -277,7 +286,7 @@ class BubbleTaskViewListenerTest {
 
         assertThat(optionsCaptor.lastValue.launchedFromBubble).isFalse() // chat only
         assertThat(optionsCaptor.lastValue.isApplyActivityFlagsForBubbles).isFalse() // chat only
-        if (!com.android.window.flags.Flags.enableBubbleRootTask()) {
+        if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
             assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
         }
     }
@@ -301,7 +310,9 @@ class BubbleTaskViewListenerTest {
 
         assertThat(optionsCaptor.lastValue.launchedFromBubble).isFalse() // chat only
         assertThat(optionsCaptor.lastValue.isApplyActivityFlagsForBubbles).isFalse() // chat only
-        assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
+        if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+            assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
+        }
     }
 
     @Test
@@ -323,7 +334,9 @@ class BubbleTaskViewListenerTest {
 
         assertThat(optionsCaptor.lastValue.launchedFromBubble).isFalse() // chat only
         assertThat(optionsCaptor.lastValue.isApplyActivityFlagsForBubbles).isFalse() // chat only
-        assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
+        if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+            assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
+        }
     }
 
     @Test
@@ -413,7 +426,7 @@ class BubbleTaskViewListenerTest {
             wct,
             taskViewTaskToken.asBinder(),
             b.isApp || b.isShortcut,
-            rootTaskToken = expandedViewManager.getAppBubbleRootTaskToken()?.asBinder(),
+            rootTaskToken = binder,
         )
     }
 
@@ -478,7 +491,7 @@ class BubbleTaskViewListenerTest {
 
         taskInfo.isRunning = true
         taskInfo.token = taskViewTaskToken
-        whenever(expandedViewManager.isAppBubbleTask(eq(taskInfo))).doReturn(true)
+        bubbleHelper.stub { on { isAppBubbleTask(eq(taskInfo)) } doReturn true }
         getInstrumentation().runOnMainSync { bubbleTaskViewListener.onTaskRemovalStarted(1) }
 
         verify(expandedViewManager).removeBubble(eq(b.key), eq(Bubbles.DISMISS_TASK_FINISHED))
@@ -582,7 +595,7 @@ class BubbleTaskViewListenerTest {
             whenever(pendingIntent.intent).thenReturn(target)
             return Bubble.createAppBubble(pendingIntent, mock<UserHandle>())
         }
-        expandedViewManager.stub {
+        bubbleHelper.stub {
             on { getAppBubbleRootTaskToken() } doReturn
                 rootTaskToken.takeIf { BubbleAnythingFlagHelper.enableRootTaskForBubble() }
         }

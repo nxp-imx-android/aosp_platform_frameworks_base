@@ -17,6 +17,7 @@
 package com.android.wm.shell.taskview;
 
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
+import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_NONE;
@@ -46,6 +47,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Slog;
 import android.view.SurfaceControl;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
@@ -436,8 +438,28 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         if (taskToken == null) return;
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.moveTaskViewToFullscreen(): taskView=%d",
                 taskView.hashCode());
-        final WindowContainerTransaction wct =
-                getExitBubbleTransaction(taskToken, taskView.getCaptionInsetsOwner());
+        final WindowContainerTransaction wct;
+        if (mBubbleHelper.isPresent()) {
+            wct = getExitBubbleTransaction(mBubbleHelper.get(), taskToken,
+                    taskView.getCaptionInsetsOwner());
+        } else {
+            // Not a Bubble TaskView, reset all overrides.
+            wct = new WindowContainerTransaction();
+            wct.setWindowingMode(taskToken, WINDOWING_MODE_UNDEFINED);
+            wct.setInterceptBackPressedOnTaskRoot(taskToken, false);
+            wct.setTaskForceExcludedFromRecents(taskToken, false);
+            wct.setDisablePip(taskToken, false);
+            wct.setDisableLaunchAdjacent(taskToken, false);
+            wct.setAlwaysOnTop(taskToken, false);
+            wct.setBounds(taskToken, new Rect());
+            if (taskView.getCaptionInsetsOwner() != null) {
+                wct.removeInsetsSource(
+                        taskToken,
+                        taskView.getCaptionInsetsOwner(),
+                        0 /* index */,
+                        WindowInsets.Type.captionBar());
+            }
+        }
         mShellExecutor.execute(() -> {
             mPending.add(new PendingTransition(TRANSIT_CHANGE, wct, taskView, null /* cookie */));
             startNextTransition();

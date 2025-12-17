@@ -16,8 +16,6 @@
 
 package com.android.wm.shell.bubbles
 
-import android.app.ActivityManager
-import android.window.WindowContainerToken
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation
 
 /** Manager interface for bubble expanded views. */
@@ -50,9 +48,7 @@ interface BubbleExpandedViewManager {
         @BubbleBarLocation.UpdateSource source: Int,
     )
 
-    fun getAppBubbleRootTaskToken(): WindowContainerToken?
-
-    fun isAppBubbleTask(taskInfo: ActivityManager.RunningTaskInfo): Boolean
+    fun getBubbleHelper(): BubbleHelper
 
     companion object {
         /**
@@ -109,11 +105,7 @@ interface BubbleExpandedViewManager {
                     controller.setBubbleBarLocation(location, source)
                 }
 
-                override fun getAppBubbleRootTaskToken(): WindowContainerToken? =
-                    controller.bubbleHelper.getAppBubbleRootTaskToken()
-
-                override fun isAppBubbleTask(taskInfo: ActivityManager.RunningTaskInfo): Boolean =
-                    controller.bubbleHelper.isAppBubbleTask(taskInfo)
+                override fun getBubbleHelper(): BubbleHelper = controller.bubbleHelper
             }
         }
     }

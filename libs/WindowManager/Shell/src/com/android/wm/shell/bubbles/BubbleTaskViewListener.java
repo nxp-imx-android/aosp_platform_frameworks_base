@@ -124,7 +124,7 @@ public class BubbleTaskViewListener implements TaskView.Listener {
                     getBubbleKey(), mBubble.getCurrentTransition() != null);
             try {
                 final WindowContainerToken rootToken =
-                        mExpandedViewManager.getAppBubbleRootTaskToken();
+                        mExpandedViewManager.getBubbleHelper().getAppBubbleRootTaskToken();
                 if (rootToken == null) {
                     options.setTaskAlwaysOnTop(true /* alwaysOnTop */);
                 }
@@ -227,7 +227,7 @@ public class BubbleTaskViewListener implements TaskView.Listener {
         Rect launchBounds = new Rect();
         mTaskView.getBoundsOnScreen(launchBounds);
         final WindowContainerTransaction wct = getEnterBubbleTransaction(
-                tvc.getTaskToken(), mExpandedViewManager.getAppBubbleRootTaskToken(), launchBounds,
+                mExpandedViewManager.getBubbleHelper(), tvc.getTaskToken(), launchBounds,
                 isAppBubble);
         tvc.getTaskOrganizer().applyTransaction(wct);
 
@@ -252,11 +252,12 @@ public class BubbleTaskViewListener implements TaskView.Listener {
             final TaskViewTaskController tvc = mTaskView.getController();
             final ActivityManager.RunningTaskInfo taskInfo = tvc.getTaskInfo();
             if (taskInfo != null && taskInfo.isRunning
-                    && mExpandedViewManager.isAppBubbleTask(taskInfo)) {
+                    && mExpandedViewManager.getBubbleHelper().isAppBubbleTask(taskInfo)) {
                 // this task is being removed and this WCT is not applied in a transition, so don't
                 // reparent the task to TDA, keep it in the root task, otherwise it may cause a
                 // flicker
-                final WindowContainerTransaction wct = getExitBubbleTransaction(taskInfo.token,
+                final WindowContainerTransaction wct = getExitBubbleTransaction(
+                        mExpandedViewManager.getBubbleHelper(), taskInfo.token,
                         mTaskView.getCaptionInsetsOwner(), /* reparentToTda= */ false);
                 tvc.getTaskOrganizer().applyTransaction(wct);
             }

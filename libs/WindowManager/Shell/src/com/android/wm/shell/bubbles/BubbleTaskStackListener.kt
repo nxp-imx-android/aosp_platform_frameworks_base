@@ -61,7 +61,11 @@ class BubbleTaskStackListener(
         bubbleData.getBubbleInStackWithTaskId(taskId)?.let { bubble ->
             when {
                 task.isBubbleToFullscreen() -> {
-                    DefaultBubblePolicyHelper.moveExistingTaskOutOfBubble(bubble, task)
+                    DefaultBubblePolicyHelper.moveExistingTaskOutOfBubble(
+                        bubbleHelper,
+                        bubble,
+                        task,
+                    )
                     if (bubbleData.isExpanded) bubbleData.isExpanded = false
                 }
                 task.isBubbleToSplit(splitScreenController) -> return // skip split task restarts
@@ -79,7 +83,7 @@ class BubbleTaskStackListener(
                 bubble.key,
             )
             if (task.isBubbleToFullscreen()) {
-                DefaultBubblePolicyHelper.moveExistingTaskOutOfBubble(bubble, task)
+                DefaultBubblePolicyHelper.moveExistingTaskOutOfBubble(bubbleHelper, bubble, task)
                 if (bubbleData.isExpanded) bubbleData.isExpanded = false
             }
         }
