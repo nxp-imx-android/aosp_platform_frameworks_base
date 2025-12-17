@@ -515,6 +515,11 @@ func createMergedTxts(
 
 	var textFiles []MergedTxtDefinition
 
+	tagPrefix := ""
+	if exportableStubsType {
+		tagPrefix = ".exportable"
+	}
+
 	tagSuffix := []string{
 		fmt.Sprintf(".%sapi.txt}", checkedInPrefix),
 		fmt.Sprintf(".%sremoved-api.txt}", checkedInPrefix),
@@ -526,7 +531,7 @@ func createMergedTxts(
 			DistFilename: distFilename[i],
 			BaseTxt:      ":" + baseTxtModulePrefix + f,
 			Modules:      bootclasspath,
-			ModuleTag:    "{.public" + tagSuffix[i],
+			ModuleTag:    "{" + tagPrefix + ".public" + tagSuffix[i],
 			Scope:        "public",
 		})
 		textFiles = append(textFiles, MergedTxtDefinition{
@@ -534,7 +539,7 @@ func createMergedTxts(
 			DistFilename: distFilename[i],
 			BaseTxt:      ":" + baseTxtModulePrefix + "system-" + f,
 			Modules:      bootclasspath,
-			ModuleTag:    "{.system" + tagSuffix[i],
+			ModuleTag:    "{" + tagPrefix + ".system" + tagSuffix[i],
 			Scope:        "system",
 		})
 		// Only non-updatable modules have test APIs.
@@ -543,7 +548,7 @@ func createMergedTxts(
 			DistFilename: distFilename[i],
 			BaseTxt:      ":" + baseTxtModulePrefix + "test-" + f,
 			Modules:      configurableNonUpdatableModules,
-			ModuleTag:    "{.test" + tagSuffix[i],
+			ModuleTag:    "{" + tagPrefix + ".test" + tagSuffix[i],
 			Scope:        "test",
 		})
 		textFiles = append(textFiles, MergedTxtDefinition{
@@ -551,7 +556,7 @@ func createMergedTxts(
 			DistFilename: distFilename[i],
 			BaseTxt:      ":" + baseTxtModulePrefix + "module-lib-" + f,
 			Modules:      bootclasspath,
-			ModuleTag:    "{.module-lib" + tagSuffix[i],
+			ModuleTag:    "{" + tagPrefix + ".module-lib" + tagSuffix[i],
 			Scope:        "module-lib",
 		})
 		textFiles = append(textFiles, MergedTxtDefinition{
@@ -559,7 +564,7 @@ func createMergedTxts(
 			DistFilename: distFilename[i],
 			BaseTxt:      ":" + baseTxtModulePrefix + "system-server-" + f,
 			Modules:      system_server_classpath,
-			ModuleTag:    "{.system-server" + tagSuffix[i],
+			ModuleTag:    "{" + tagPrefix + ".system-server" + tagSuffix[i],
 			Scope:        "system-server",
 		})
 	}
