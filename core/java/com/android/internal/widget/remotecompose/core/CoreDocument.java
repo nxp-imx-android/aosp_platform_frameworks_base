@@ -77,7 +77,7 @@ public class CoreDocument implements Serializable {
 
     // We also keep a more fine-grained BUILD number, exposed as
     // ID_API_LEVEL = DOCUMENT_API_LEVEL + BUILD
-    static final float BUILD = 0.6f;
+    static final float BUILD = 0.61f;
 
     private static final boolean UPDATE_VARIABLES_BEFORE_LAYOUT = false;
 
