@@ -3662,6 +3662,7 @@ public final class Settings {
         private final ArraySet<String> mReadableFields;
         private final ArraySet<String> mAllFields;
         private final ArrayMap<String, Integer> mReadableFieldsWithMaxTargetSdk;
+        private final ArrayMap<String, String> mReadableFieldsWithRedactedValue;
 
         // Mapping of key to generation trackers for queried settings.
         // Key is composed by the setting's name and deviceId, value is the generation tracker.
@@ -3702,8 +3703,9 @@ public final class Settings {
             mReadableFields = new ArraySet<>();
             mAllFields = new ArraySet<>();
             mReadableFieldsWithMaxTargetSdk = new ArrayMap<>();
+            mReadableFieldsWithRedactedValue = new ArrayMap<>();
             getPublicSettingsForClass(callerClass, mAllFields, mReadableFields,
-                    mReadableFieldsWithMaxTargetSdk);
+                    mReadableFieldsWithMaxTargetSdk, mReadableFieldsWithRedactedValue);
         }
 
         public boolean putStringForUser(ContentResolver cr, String name, String value,
@@ -3792,6 +3794,16 @@ public final class Settings {
             final GenerationTracker.Key key = new GenerationTracker.Key(name, deviceId);
             final boolean useCache = isSelf && !isInSystemServer();
             boolean needsGenerationTracker = false;
+
+            // Check if there is a redacted value for this setting
+            if (Flags.enableRedactedValueForReadable()
+                    && mReadableFieldsWithRedactedValue.containsKey(name)) {
+                String redactedValue = mReadableFieldsWithRedactedValue.get(name);
+                if (redactedValue != null && !redactedValue.isEmpty()) {
+                    return redactedValue;
+                }
+            }
+
             if (useCache) {
                 synchronized (NameValueCache.this) {
                     final GenerationTracker generationTracker = mGenerationTrackers.get(key);
@@ -4242,11 +4254,13 @@ public final class Settings {
     @Retention(RetentionPolicy.RUNTIME)
     private @interface Readable {
         int maxTargetSdk() default 0;
+        String redactedValue() default "";
     }
 
     private static <T extends NameValueTable> void getPublicSettingsForClass(
             Class<T> callerClass, Set<String> allKeys, Set<String> readableKeys,
-            ArrayMap<String, Integer> keysWithMaxTargetSdk) {
+            ArrayMap<String, Integer> keysWithMaxTargetSdk,
+            ArrayMap<String, String> keysWithRedactedValue) {
         final Field[] allFields = callerClass.getDeclaredFields();
         try {
             for (int i = 0; i < allFields.length; i++) {
@@ -4264,9 +4278,13 @@ public final class Settings {
                 if (annotation != null) {
                     final String key = (String) value;
                     final int maxTargetSdk = annotation.maxTargetSdk();
+                    final String redactedValue = annotation.redactedValue();
                     readableKeys.add(key);
                     if (maxTargetSdk != 0) {
                         keysWithMaxTargetSdk.put(key, maxTargetSdk);
+                    }
+                    if (redactedValue != null && !redactedValue.isEmpty()) {
+                        keysWithRedactedValue.put(key, redactedValue);
                     }
                 }
             }
@@ -4491,9 +4509,10 @@ public final class Settings {
 
         /** @hide */
         public static void getPublicSettings(Set<String> allKeys, Set<String> readableKeys,
-                ArrayMap<String, Integer> readableKeysWithMaxTargetSdk) {
+                ArrayMap<String, Integer> readableKeysWithMaxTargetSdk,
+                ArrayMap<String, String> readableKeysWithRedactedValue) {
             getPublicSettingsForClass(System.class, allKeys, readableKeys,
-                    readableKeysWithMaxTargetSdk);
+                    readableKeysWithMaxTargetSdk, readableKeysWithRedactedValue);
         }
 
         /**
@@ -7455,9 +7474,10 @@ public final class Settings {
 
         /** @hide */
         public static void getPublicSettings(Set<String> allKeys, Set<String> readableKeys,
-                ArrayMap<String, Integer> readableKeysWithMaxTargetSdk) {
+                ArrayMap<String, Integer> readableKeysWithMaxTargetSdk,
+                ArrayMap<String, String> readableKeysWithRedactedValue) {
             getPublicSettingsForClass(Secure.class, allKeys, readableKeys,
-                    readableKeysWithMaxTargetSdk);
+                    readableKeysWithMaxTargetSdk, readableKeysWithRedactedValue);
         }
 
         /**
@@ -14528,9 +14548,10 @@ public final class Settings {
         public static final String CUSTOM_BUGREPORT_HANDLER_USER = "custom_bugreport_handler_user";
 
         /**
-         * Whether ADB over USB is enabled.
+         * Whether ADB over USB is enabled (0 = false, 1 = true).
+         * This will always return 0 for all third-party apps.
          */
-        @Readable
+        @Readable(redactedValue = "0")
         public static final String ADB_ENABLED = "adb_enabled";
 
         /**
@@ -14813,9 +14834,10 @@ public final class Settings {
                 "wm_display_settings_path";
 
         /**
-        * Whether user has enabled development settings.
+        * Whether user has enabled development settings (0 = false, 1 = true).
+        * This will always return 0 for all third-party apps.
         */
-        @Readable
+        @Readable(redactedValue = "0")
         public static final String DEVELOPMENT_SETTINGS_ENABLED = "development_settings_enabled";
 
         /**
@@ -19403,14 +19425,15 @@ public final class Settings {
 
         /** @hide */
         public static void getPublicSettings(Set<String> allKeys, Set<String> readableKeys,
-                ArrayMap<String, Integer> readableKeysWithMaxTargetSdk) {
+                ArrayMap<String, Integer> readableKeysWithMaxTargetSdk,
+                ArrayMap<String, String> readableKeysWithRedactedValue) {
             getPublicSettingsForClass(Global.class, allKeys, readableKeys,
-                    readableKeysWithMaxTargetSdk);
+                    readableKeysWithMaxTargetSdk, readableKeysWithRedactedValue);
             // Add Global.Wearable keys on watches.
             if (ActivityThread.currentApplication().getApplicationContext().getPackageManager()
                     .hasSystemFeature(PackageManager.FEATURE_WATCH)) {
                 getPublicSettingsForClass(Global.Wearable.class, allKeys, readableKeys,
-                        readableKeysWithMaxTargetSdk);
+                        readableKeysWithMaxTargetSdk, readableKeysWithRedactedValue);
             }
         }
 
