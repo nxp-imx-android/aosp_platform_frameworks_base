@@ -9,16 +9,6 @@ flag {
 }
 
 flag {
-  name: "hidl_service_died_fix"
-  namespace: "biometrics_framework"
-  description: "This bugfix flag is for setting user id and session to null when HIDL HAL service dies"
-  bug: "446125611"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "return_credential_not_enrolled"
   namespace: "biometrics_framework"
   description: "This bugfix flag is to prioritize credential not enrolled error"

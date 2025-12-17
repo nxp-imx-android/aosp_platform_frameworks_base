@@ -40,14 +40,12 @@ import android.os.Handler;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.test.TestLooper;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.testing.TestableContext;
 
 import androidx.test.core.app.ApplicationProvider;
 
-import com.android.server.biometrics.Flags;
 import com.android.server.biometrics.log.BiometricContext;
 import com.android.server.biometrics.log.BiometricLogger;
 import com.android.server.biometrics.sensors.AuthSessionCoordinator;
@@ -223,7 +221,6 @@ public class HidlToAidlSensorAdapterTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_HIDL_SERVICE_DIED_FIX)
     public void serviceDiedTest() {
         mHidlToAidlSensorAdapter.setScheduler(mBiometricScheduler);
         mHidlToAidlSensorAdapter.serviceDied(0 /* cookie */);
