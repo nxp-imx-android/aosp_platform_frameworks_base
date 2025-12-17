@@ -655,7 +655,6 @@ class SupervisionServiceTest {
     }
 
     @Test
-    @Ignore("b/469667231") // TODO(b/469667231): fix and re-enable.
     fun shouldAllowBypassingSupervisionRoleQualification_returnsTrue() {
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
         assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isTrue()
@@ -665,13 +664,44 @@ class SupervisionServiceTest {
     }
 
     @Test
-    @Ignore("b/469667231") // TODO(b/469667231): fix and re-enable.
     fun shouldAllowBypassingSupervisionRoleQualification_returnsFalse() {
         setSupervisionEnabledForUser(USER_ID, false)
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
         assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isTrue()
 
         addDefaultAndTestUsers()
+        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isTrue()
+
+        // Enabling supervision on any user will disallow bypassing
+        setSupervisionEnabledForUser(USER_ID, true)
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isTrue()
+        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isFalse()
+
+        // Adding non-default users should also disallow bypassing
+        addDefaultAndFullUsers()
+        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isFalse()
+
+        // Turning off supervision with non-default users should still disallow bypassing
+        setSupervisionEnabledForUser(USER_ID, false)
+        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isFalse()
+    }
+
+    @Test
+    fun shouldAllowBypassingSupervisionRoleQualification_hsum_returnsTrue() {
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
+        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isTrue()
+
+        addDefaultAndTestUsersHsum()
+        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isTrue()
+    }
+
+    @Test
+    fun shouldAllowBypassingSupervisionRoleQualification_hsum_returnsFalse() {
+        setSupervisionEnabledForUser(USER_ID, false)
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
+        assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isTrue()
+
+        addDefaultAndTestUsersHsum()
         assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isTrue()
 
         // Enabling supervision on any user will disallow bypassing
@@ -1466,9 +1496,22 @@ class SupervisionServiceTest {
         context.sendBroadcastAsUser(intent, UserHandle.of(userId))
     }
 
-    private fun addDefaultAndTestUsers() {
+    private fun addDefaultAndTestUsersHsum() {
+        whenever(mockUserManagerInternal.isHeadlessSystemUserMode()).thenReturn(true)
         val userInfos =
             userData.map { (userId, flags) ->
+                UserInfo(userId, "user$userId", USER_ICON, flags, USER_TYPE)
+            }
+        whenever(mockUserManagerInternal.getUsers(any<Boolean>())).thenReturn(userInfos)
+    }
+
+    private fun addDefaultAndTestUsers() {
+        whenever(mockUserManagerInternal.isHeadlessSystemUserMode()).thenReturn(false)
+        val userInfos =
+            mapOf(
+                USER_SYSTEM to (FLAG_SYSTEM or FLAG_MAIN or FLAG_FULL),
+                MIN_SECONDARY_USER_ID to (FLAG_FULL or FLAG_FOR_TESTING),
+            ).map { (userId, flags) ->
                 UserInfo(userId, "user$userId", USER_ICON, flags, USER_TYPE)
             }
         whenever(mockUserManagerInternal.getUsers(any<Boolean>())).thenReturn(userInfos)
