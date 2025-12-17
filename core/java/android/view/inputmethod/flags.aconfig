@@ -247,3 +247,13 @@ flag {
   description: "Maintain a binding to the IME of all active users, to enable a warm restart when switching across user profile apps"
   bug: "293644773"
 }
+
+flag {
+  name: "ime_switcher_menu_systemui"
+  namespace: "input_method"
+  description: "Migration of the IME Switcher Menu to SystemUi"
+  bug: "460776726"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
