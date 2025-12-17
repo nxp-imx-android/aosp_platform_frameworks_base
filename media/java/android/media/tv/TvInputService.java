@@ -641,6 +641,36 @@ public abstract class TvInputService extends Service {
         }
 
         /**
+         * Informs the application that the current channel is re-tuned for some reason and the
+         * session now displays the content from a new channel. This function takes in an additional
+         * args parameter to pass to the application to handle special cases such as HBBTV quiet
+         * tune. {@link TvInputService.Session#notifyChannelRetuned(Uri)} should be preferred over
+         * this function in most cases. This should be only used if there are special use cases that
+         * absolutely require additional arguments to be passed to the application.
+         *
+         * @param channelUri The URI of the new channel.
+         * @param args Optional arguments of the event.
+         *
+         * @hide
+         */
+        public void notifyChannelRetuned(final Uri channelUri, final Bundle args) {
+            executeOrPostRunnableOnMainThread(new Runnable() {
+                @MainThread
+                @Override
+                public void run() {
+                    try {
+                        if (DEBUG) Log.d(TAG, "notifyChannelRetuned");
+                        if (mSessionCallback != null) {
+                            mSessionCallback.onChannelRetunedWithExtraInfo(channelUri, args);
+                        }
+                    } catch (RemoteException e) {
+                        Log.w(TAG, "error in notifyChannelRetuned", e);
+                    }
+                }
+            });
+        }
+
+        /**
          * Informs the application that this session has been tuned to the given channel.
          *
          * @param channelUri The URI of the tuned channel.
