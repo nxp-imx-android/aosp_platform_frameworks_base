@@ -53,6 +53,7 @@ fun ContentScope.QuickSettingsContent(
     viewModel: QuickSettingsContainerViewModel,
     mediaInRow: Boolean,
     modifier: Modifier = Modifier,
+    mediaSquishiness: () -> Float = { 1f },
 ) {
     QuickSettingsPanelLayout(
         brightness =
@@ -111,6 +112,7 @@ fun ContentScope.QuickSettingsContent(
                             presentationStyle = MediaPresentationStyle.Default,
                             behavior = QuickSettingsContainerViewModel.mediaUiBehavior,
                             onDismissed = viewModel::onMediaSwipeToDismiss,
+                            mediaSquishiness = mediaSquishiness,
                             location = Media.Location.QS,
                         )
                     }

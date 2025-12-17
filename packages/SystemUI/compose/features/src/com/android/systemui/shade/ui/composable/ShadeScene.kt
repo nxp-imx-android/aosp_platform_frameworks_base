@@ -552,6 +552,7 @@ private fun ContentScope.SplitShade(
                                             QuickSettingsContent(
                                                 qsContainerViewModel,
                                                 mediaInRow = false,
+                                                mediaSquishiness = { tileSquishiness },
                                             )
                                         }
                                         FooterActionsWithAnimatedVisibility(
