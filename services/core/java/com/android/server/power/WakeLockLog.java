@@ -35,6 +35,7 @@ import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.TimeZone;
 import java.util.TreeMap;
 
 /**
@@ -466,6 +467,7 @@ final class WakeLockLog {
          */
         private String toStringInternal(SimpleDateFormat dateFormat) {
             StringBuilder sb = new StringBuilder();
+            dateFormat.setTimeZone(TimeZone.getDefault());
             if (type == TYPE_TIME_RESET) {
                 return dateFormat.format(new Date(time)) + " - RESET";
             }
