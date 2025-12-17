@@ -471,7 +471,6 @@ public class NotificationConversationInfoTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
     public void testBindNotification_SetsFeedbackLink_ifClassified() {
         mEntry.setRanking(new RankingBuilder(mEntry.getRanking())
                 .setChannel(new NotificationChannel(
