@@ -118,8 +118,8 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
         mHideTaskWithSurface = hideTaskWithSurface;
     }
 
-    @VisibleForTesting
-    SurfaceControl getTaskLeash() {
+    /** @return the {@link SurfaceControl} of the task associated with the task view. */
+    public SurfaceControl getTaskLeash() {
         return mTaskLeash;
     }
 

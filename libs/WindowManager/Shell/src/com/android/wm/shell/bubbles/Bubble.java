@@ -712,9 +712,15 @@ public class Bubble implements BubbleViewProvider {
         mCurrentTransition = transit;
     }
 
-    /** Whether this bubble is currently converting to bubble bar. */
+    /** Whether this bubble is currently converting from floating to bubble bar. */
     public boolean isConvertingToBar() {
         return getCurrentTransition() != null && getCurrentTransition().isConvertingBubbleToBar();
+    }
+
+    /** Whether this bubble is currently converting from bar to floating. */
+    public boolean isConvertingToFloating() {
+        return getCurrentTransition() != null
+                && getCurrentTransition().isConvertingBubbleToFloating();
     }
 
     /** Whether this bubble is currently switching to expanded from another bubble using jumpcut. */
@@ -1347,6 +1353,7 @@ public class Bubble implements BubbleViewProvider {
         pw.println("  bubbleMetadataFlagListener null?: " + (mBubbleMetadataFlagListener == null));
         pw.println("  mCurrentTransition null?: " + (mCurrentTransition == null));
         pw.println("  isConvertingToBar: " + isConvertingToBar());
+        pw.println("  isConvertingToFloating: " + isConvertingToFloating());
         pw.println("  isCleanupDeferred: " + mIsCleanupDeferred);
         if (mExpandedView != null) {
             mExpandedView.dump(pw, "  ");
