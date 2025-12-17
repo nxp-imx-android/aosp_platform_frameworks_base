@@ -20,16 +20,38 @@ import static android.view.Display.INVALID_DISPLAY;
 
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.hardware.display.DisplayManager;
 import android.os.StrictMode;
+import android.util.Log;
+import android.view.Display;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.UiContext;
 
 /**
  * Utility class for UI Context operations.
  */
 final class UiContextUtils {
 
+    private static final String TAG = UiContextUtils.class.getSimpleName();
+
     private UiContextUtils() {
+    }
+
+    @NonNull
+    @UiContext
+    static Context getOrCreateUiContext(@NonNull Context context) {
+        if (context.isUiContext()) {
+            return context;
+        }
+        final int displayId = context.getDisplayId();
+        final Display display = context.getSystemService(DisplayManager.class)
+                .getDisplay(displayId);
+        Log.w(TAG, "Requested context is a non-UI Context. Creating a UI-Context with display: "
+                + displayId + ". Context: " + dumpAllBaseContextToString(context));
+        return context.createWindowContext(
+                display, WindowManager.LayoutParams.TYPE_APPLICATION, null /* options */);
     }
 
     @NonNull
