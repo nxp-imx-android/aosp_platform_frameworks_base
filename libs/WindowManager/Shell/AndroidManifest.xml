@@ -20,10 +20,8 @@
     <!-- System permission required by WM Shell Task Organizer. -->
     <uses-permission android:name="android.permission.CAPTURE_BLACKOUT_CONTENT" />
     <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS_FULL" />
-    <uses-permission android:name="android.permission.LOG_COMPAT_CHANGE" />
     <uses-permission android:name="android.permission.ROTATE_SURFACE_FLINGER" />
     <uses-permission android:name="android.permission.WAKEUP_SURFACE_FLINGER" />
-    <uses-permission android:name="android.permission.READ_COMPAT_CHANGE_CONFIG" />
     <uses-permission android:name="android.permission.READ_FRAME_BUFFER" />
     <uses-permission android:name="android.permission.SET_WALLPAPER_DIM_AMOUNT" />
     <uses-permission android:name="android.permission.SUBSCRIBE_TO_KEYGUARD_LOCKED_STATE" />
