@@ -170,3 +170,11 @@ flag {
   is_exported: true
   bug: "437043173"
 }
+
+flag {
+    name: "surface_view_set_blur_regions"
+    namespace: "core_graphics"
+    description: "Add API to set blur regions for SurfaceView"
+    is_exported: true
+    bug: "425418052"
+}

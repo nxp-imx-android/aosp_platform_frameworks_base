@@ -52491,6 +52491,20 @@ package android.view {
     method public void onBufferTransformHintChanged(int);
   }
 
+  @FlaggedApi("android.view.flags.surface_view_set_blur_regions") public abstract class BlurRegion {
+    method @NonNull public abstract android.view.BlurRegion copy();
+    method public float getAlpha();
+    method public float getBlurRadius();
+    method public void setAlpha(@FloatRange(from=0.0, to=1.0) float);
+    method public void setBlurRadius(float);
+  }
+
+  public abstract static class BlurRegion.Builder<T extends android.view.BlurRegion.Builder<T>> {
+    method @NonNull public abstract android.view.BlurRegion build();
+    method @NonNull public T setAlpha(@FloatRange(from=0.0, to=1.0) float);
+    method @NonNull public T setBlurRadius(float);
+  }
+
   public final class Choreographer {
     method public static android.view.Choreographer getInstance();
     method public void postFrameCallback(android.view.Choreographer.FrameCallback);
@@ -54004,6 +54018,27 @@ package android.view {
     field public static final int TYPE_ZOOM_OUT = 1019; // 0x3fb
   }
 
+  @FlaggedApi("android.view.flags.surface_view_set_blur_regions") public final class RRectBlurRegion extends android.view.BlurRegion {
+    ctor public RRectBlurRegion(@NonNull android.view.RRectBlurRegion);
+    method @NonNull public android.view.RRectBlurRegion copy();
+    method public float getBottom();
+    method @NonNull public float[] getCornerRadius();
+    method public float getLeft();
+    method public float getRight();
+    method public float getTop();
+    method public void setBottom(float);
+    method public void setCornerRadius(@NonNull float[]);
+    method public void setLeft(float);
+    method public void setRight(float);
+    method public void setTop(float);
+  }
+
+  public static final class RRectBlurRegion.Builder extends android.view.BlurRegion.Builder<android.view.RRectBlurRegion.Builder> {
+    ctor public RRectBlurRegion.Builder(@NonNull android.view.RRectBlurRegion);
+    ctor public RRectBlurRegion.Builder(float, float, float, float, @Nullable float[]);
+    method @NonNull public android.view.RRectBlurRegion build();
+  }
+
   public final class RoundedCorner implements android.os.Parcelable {
     ctor public RoundedCorner(int, int, int, int);
     method public int describeContents();
@@ -54350,11 +54385,13 @@ package android.view {
     ctor public SurfaceView(android.content.Context, android.util.AttributeSet, int, int);
     method public void applyTransactionToFrame(@NonNull android.view.SurfaceControl.Transaction);
     method @FlaggedApi("android.view.flags.surface_view_get_surface_package") public void clearChildSurfacePackage();
+    method @FlaggedApi("android.view.flags.surface_view_set_blur_regions") @NonNull public java.util.List<android.view.BlurRegion> getBlurRegions();
     method @FlaggedApi("android.view.flags.surface_view_get_surface_package") @Nullable public android.view.SurfaceControlViewHost.SurfacePackage getChildSurfacePackage();
     method @FlaggedApi("android.view.flags.surface_view_set_composition_order") public int getCompositionOrder();
     method public android.view.SurfaceHolder getHolder();
     method @Deprecated @Nullable public android.os.IBinder getHostToken();
     method public android.view.SurfaceControl getSurfaceControl();
+    method @FlaggedApi("android.view.flags.surface_view_set_blur_regions") public void setBlurRegions(@Nullable java.util.Collection<android.view.BlurRegion>);
     method public void setChildSurfacePackage(@NonNull android.view.SurfaceControlViewHost.SurfacePackage);
     method @FlaggedApi("android.view.flags.surface_view_set_composition_order") public void setCompositionOrder(int);
     method public void setDesiredHdrHeadroom(@FloatRange(from=0.0f, to=10000.0) float);
