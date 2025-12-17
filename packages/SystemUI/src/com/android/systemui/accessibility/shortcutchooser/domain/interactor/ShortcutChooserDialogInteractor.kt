@@ -20,6 +20,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.UserHandle
+import android.util.Log
 import android.view.Display.INVALID_DISPLAY
 import android.view.accessibility.Flags as AccessibilityFlags
 import androidx.annotation.VisibleForTesting
@@ -32,6 +33,7 @@ import com.android.systemui.accessibility.shortcutchooser.shared.model.DialogReq
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.broadcast.BroadcastSender
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode
 import javax.inject.Inject
@@ -44,6 +46,7 @@ class ShortcutChooserDialogInteractor
 @Inject
 constructor(
     private val repository: AccessibilityShortcutsRepository,
+    private val displayRepository: DisplayRepository,
     private val broadcastDispatcher: BroadcastDispatcher,
     private val broadcastSender: BroadcastSender,
     private val userRepository: UserRepository,
@@ -80,6 +83,32 @@ constructor(
 
     fun getAssignedAccessibilityTargetsCount(@UserShortcutType shortcutType: Int): Int =
         repository.getSelectedAccessibilityTargetsInfo(shortcutType).size
+
+    /**
+     * Returns a [Context] for the given [dialogDisplayId]. If the requested display is not the
+     * existing one, a new display-specific context is created. Falls back to the
+     * [applicationContext] if the requested display does not exist.
+     *
+     * @param dialogDisplayId The display ID from the dialog request
+     * @param applicationContext The existing application context
+     * @return The context to create the dialog
+     */
+    fun getDialogContextByDisplayId(dialogDisplayId: Int, applicationContext: Context): Context =
+        if (applicationContext.displayId == dialogDisplayId) {
+            applicationContext
+        } else {
+            displayRepository.getDisplay(dialogDisplayId)?.let { display ->
+                applicationContext.createDisplayContext(display)
+            }
+                ?: run {
+                    Log.d(
+                        TAG,
+                        "Display $dialogDisplayId not found when creating display context." +
+                            "Falling back to existing context.",
+                    )
+                    applicationContext
+                }
+        }
 
     fun enableShortcutForTarget(
         enable: Boolean,
@@ -167,5 +196,7 @@ constructor(
         const val QUICK_ACCESS_PERMISSION =
             "com.android.systemui.permission.LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG"
         @VisibleForTesting const val SYSTEMUI_PACKAGE = "com.android.systemui"
+
+        private val TAG = ShortcutChooserDialogInteractor::class.simpleName
     }
 }
