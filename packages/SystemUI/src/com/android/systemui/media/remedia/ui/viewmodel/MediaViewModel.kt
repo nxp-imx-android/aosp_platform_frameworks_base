@@ -27,7 +27,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
-import com.android.internal.logging.InstanceId
 import com.android.systemui.animation.Expandable
 import com.android.systemui.classifier.Classifier
 import com.android.systemui.common.shared.model.ContentDescription
@@ -138,7 +137,7 @@ constructor(
                                     mediaUiEventLogger.logSeek(
                                         session.uid,
                                         session.packageName,
-                                        session.key as InstanceId,
+                                        session.key,
                                     )
                                     interactor.seek(
                                         sessionKey = session.key,
@@ -208,7 +207,7 @@ constructor(
                                                     mediaUiEventLogger.logLongPressDismiss(
                                                         session.uid,
                                                         session.packageName,
-                                                        session.key as InstanceId,
+                                                        session.key,
                                                     )
                                                     interactor.hide(
                                                         session.key,
@@ -261,7 +260,7 @@ constructor(
                                                 mediaUiEventLogger.logLongPressSettings(
                                                     session.uid,
                                                     session.packageName,
-                                                    session.key as InstanceId,
+                                                    session.key,
                                                 )
                                                 interactor.openMediaSettings()
                                             }
@@ -308,7 +307,7 @@ constructor(
                                         mediaUiEventLogger.logOpenOutputSwitcher(
                                             session.uid,
                                             session.packageName,
-                                            session.key as InstanceId,
+                                            session.key,
                                         )
                                         session.outputDevice.onClick(expandable)
                                     }
@@ -335,7 +334,7 @@ constructor(
                             mediaUiEventLogger.logTapContentView(
                                 session.uid,
                                 session.packageName,
-                                session.key as InstanceId,
+                                session.key,
                             )
                             session.onClick(expandable)
                         }
@@ -346,7 +345,7 @@ constructor(
                         mediaUiEventLogger.logLongPressOpen(
                             session.uid,
                             session.packageName,
-                            session.key as InstanceId,
+                            session.key,
                         )
                         interactor.setIsGutsVisible(true)
                     }
@@ -433,7 +432,7 @@ constructor(
                                         id,
                                         session.uid,
                                         session.packageName,
-                                        session.key as InstanceId,
+                                        session.key,
                                     )
                                     it()
                                 }
@@ -460,7 +459,7 @@ constructor(
                                         id,
                                         session.uid,
                                         session.packageName,
-                                        session.key as InstanceId,
+                                        session.key,
                                     )
                                     it()
                                 }

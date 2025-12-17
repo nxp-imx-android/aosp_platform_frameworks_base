@@ -17,6 +17,7 @@
 package com.android.systemui.media.remedia.domain.model
 
 import androidx.compose.runtime.Stable
+import com.android.internal.logging.InstanceId
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.media.remedia.shared.model.MediaCardActionButtonLayout
@@ -27,7 +28,7 @@ import com.android.systemui.media.remedia.shared.model.MediaSessionState
 @Stable
 interface MediaSessionModel {
     /** Unique identifier. */
-    val key: Any
+    val key: InstanceId
 
     val uid: Int
 
