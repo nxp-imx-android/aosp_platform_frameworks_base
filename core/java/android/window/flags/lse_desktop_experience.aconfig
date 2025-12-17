@@ -974,13 +974,6 @@ flag {
 }
 
 flag {
-    name: "enable_persisting_display_size_for_connected_displays"
-    namespace: "lse_desktop_experience"
-    description: "Enables persisting display size on resolution change for connected displays."
-    bug: "392855657"
-}
-
-flag {
     name: "enable_pinning_app_with_context_menu"
     namespace: "lse_desktop_experience"
     description: "Add options to pin/unpin to taskbar to app context menus."

@@ -191,9 +191,6 @@ public enum DesktopExperienceFlags {
         Flags.FLAG_ENABLE_NO_WINDOW_DECORATION_FOR_DESKS),
     ENABLE_PARALLEL_CD_TRANSITIONS_DURING_RECENTS(Flags::parallelCdTransitionsDuringRecents, true,
             Flags.FLAG_PARALLEL_CD_TRANSITIONS_DURING_RECENTS),
-    ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS(
-            Flags::enablePersistingDisplaySizeForConnectedDisplays, true,
-            Flags.FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS),
     ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY(Flags::enablePerDisplayDesktopWallpaperActivity,
             true, Flags.FLAG_ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY),
     ENABLE_PINNING_APP_WITH_CONTEXT_MENU(Flags::enablePinningAppWithContextMenu, true,
