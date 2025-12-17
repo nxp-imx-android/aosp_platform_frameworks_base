@@ -1967,6 +1967,7 @@ class ActivityClientController extends IActivityClientController.Stub {
                     // pressed callback.
                     return;
                 }
+
                 if (shouldMoveTaskToBack(r, root)) {
                     moveActivityTaskToBackInner(task);
                     return;
@@ -1980,6 +1981,15 @@ class ActivityClientController extends IActivityClientController.Stub {
         }
     }
 
+    private static boolean isOnComputerControlDisplay(ActivityRecord r) {
+        // TODO(b/459913303): remove ComputerControl special casing, replace by display flag.
+        if (!android.companion.virtualdevice.flags.Flags.computerControlAccess()) {
+            return false;
+        }
+        final var vdm = r.mAtmService.mTaskSupervisor.getVirtualDeviceManagerInternal();
+        return vdm != null && vdm.isComputerControlDisplay(r.getDisplayId());
+    }
+
     static boolean shouldMoveTaskToBack(ActivityRecord r, ActivityRecord rootActivity) {
         if (r != rootActivity && !isRelativeTaskRootActivity(r, rootActivity)) {
             return false;
@@ -1991,10 +2001,13 @@ class ActivityClientController extends IActivityClientController.Stub {
         final boolean alwaysMoveTaskToBackOnBackPressed = Resources.getSystem().getBoolean(
                 com.android.internal.R.bool.config_alwaysMoveTaskToBackOnBackPressed);
 
-        if (alwaysMoveTaskToBackOnBackPressedFeatureFlag() && alwaysMoveTaskToBackOnBackPressed) {
-            // Should move the task to back if the config flag is set to true and the activity is
-            // the last running activity in the task and the current activity is the base activity
-            // for the task.
+        final boolean isOnComputerControlDisplay = isOnComputerControlDisplay(r);
+
+        if (alwaysMoveTaskToBackOnBackPressedFeatureFlag() && alwaysMoveTaskToBackOnBackPressed
+                || isOnComputerControlDisplay) {
+            // If the device is configured this way, or on ComputerControl displays:
+            // Should move the task to back if the activity is the last running activity in
+            // the task and the current activity is the base activity for the task.
             return baseActivityIntent != null
                     && isTopActivityInTaskFragment(r);
         }

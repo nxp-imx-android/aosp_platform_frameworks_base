@@ -1428,7 +1428,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         return mPermissionManager;
     }
 
-    private VirtualDeviceManagerInternal getVirtualDeviceManagerInternal() {
+    VirtualDeviceManagerInternal getVirtualDeviceManagerInternal() {
         if (mVirtualDeviceManagerInternal == null && mService.mHasCompanionDeviceSetupFeature) {
             mVirtualDeviceManagerInternal =
                     LocalServices.getService(VirtualDeviceManagerInternal.class);

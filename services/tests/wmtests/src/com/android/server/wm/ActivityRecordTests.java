@@ -80,6 +80,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.reset;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.times;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
 import static com.android.server.wm.ActivityRecord.FINISH_RESULT_CANCELLED;
 import static com.android.server.wm.ActivityRecord.FINISH_RESULT_REMOVED;
 import static com.android.server.wm.ActivityRecord.FINISH_RESULT_REQUESTED;
@@ -120,6 +121,7 @@ import android.app.ActivityOptions;
 import android.app.AppOpsManager;
 import android.app.HandoffActivityData;
 import android.app.HandoffActivityParams;
+import android.app.IRequestFinishCallback;
 import android.app.PictureInPictureParams;
 import android.app.servertransaction.ActivityConfigurationChangeItem;
 import android.app.servertransaction.ClientTransaction;
@@ -160,6 +162,8 @@ import android.window.TaskSnapshot;
 import androidx.test.filters.MediumTest;
 
 import com.android.internal.R;
+import com.android.server.LocalServices;
+import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import com.android.server.wm.ActivityRecord.State;
 import com.android.server.wm.LockTaskController;
 import com.android.window.flags.Flags;
@@ -194,6 +198,9 @@ public class ActivityRecordTests extends WindowTestsBase {
     @Rule
     public TestRule compatChangeRule = new PlatformCompatChangeRule();
 
+    private final VirtualDeviceManagerInternal mVirtualDeviceManagerInternal =
+            mock(VirtualDeviceManagerInternal.class);
+
     private final String mPackageName = getInstrumentation().getTargetContext().getPackageName();
 
     private static final int ORIENTATION_CONFIG_CHANGES =
@@ -207,6 +214,9 @@ public class ActivityRecordTests extends WindowTestsBase {
         doReturn(false).when(mRootWindowContainer).resumeHomeActivity(any(), anyString(), any());
         // Do not execute the transaction, because we can't verify the parameter after it recycles.
         doReturn(true).when(mClientLifecycleManager).scheduleTransaction(any());
+
+        LocalServices.removeServiceForTest(VirtualDeviceManagerInternal.class);
+        LocalServices.addService(VirtualDeviceManagerInternal.class, mVirtualDeviceManagerInternal);
     }
 
     private TestStartingWindowOrganizer registerTestStartingWindowOrganizer() {
@@ -3436,6 +3446,23 @@ public class ActivityRecordTests extends WindowTestsBase {
 
         mAtm.mActivityClientController.onBackPressed(ar.token, null /* callback */);
         verify(task).moveTaskToBack(any());
+    }
+
+    @Test
+    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_ACCESS)
+    public void testBackOnTaskRoot_onComputerControlDisplay_movesToBack() throws Throwable {
+        final var callback = mock(IRequestFinishCallback.class);
+        final Task task = createTask(mDisplayContent);
+        final ActivityRecord ar = createActivityRecord(task);
+        task.realActivity = ar.mActivityComponent;
+        ar.mAtmService.mHasCompanionDeviceSetupFeature = true;
+        when(mVirtualDeviceManagerInternal.isComputerControlDisplay(ar.getDisplayId()))
+            .thenReturn(true);
+
+        mAtm.mActivityClientController.onBackPressed(ar.token, callback);
+
+        verify(task).moveTaskToBack(any());
+        verify(callback, never()).requestFinish();
     }
 
     /**
