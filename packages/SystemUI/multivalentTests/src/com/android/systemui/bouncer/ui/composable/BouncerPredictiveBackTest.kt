@@ -175,6 +175,8 @@ class BouncerPredictiveBackTest : SysuiTestCase() {
                                 overlayByKey = mapOf(Overlays.Bouncer to bouncerScene),
                                 dataSourceDelegator = kosmos.sceneDataSourceDelegator,
                                 sceneJankMonitorFactory = kosmos.sceneJankMonitorFactory,
+                                onTransitionStart = { _, _ -> },
+                                onSnap = {},
                             )
                         }
                     },
