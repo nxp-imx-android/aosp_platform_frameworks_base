@@ -22,6 +22,7 @@ import com.android.internal.widget.remotecompose.core.Operation;
 import com.android.internal.widget.remotecompose.core.OperationInterface;
 import com.android.internal.widget.remotecompose.core.PaintContext;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
+import com.android.internal.widget.remotecompose.core.ScrollingEdgeEffect;
 import com.android.internal.widget.remotecompose.core.TouchListener;
 import com.android.internal.widget.remotecompose.core.VariableSupport;
 import com.android.internal.widget.remotecompose.core.operations.BitmapData;
@@ -159,13 +160,21 @@ public class LayoutComponent extends Component {
     protected LayoutComponentContent mContent = null;
 
     // Should be removed after ImageLayout is in
-    private static final boolean USE_IMAGE_TEMP_FIX = true;
+    private static final boolean USE_IMAGE_TEMP_FIX = false;
 
     /**
      * Set canvas operations op on this component
      */
     public void setCanvasOperations(@Nullable CanvasOperations operations) {
         mDrawContentOperations = operations;
+    }
+
+    /**
+     * Allow override of the behavior
+     */
+    protected void getComponentsData(@NonNull LayoutComponentContent content,
+            @NonNull ArrayList<Operation> data) {
+        content.getData(data);
     }
 
     @Override
@@ -205,10 +214,10 @@ public class LayoutComponent extends Component {
                             canvasContent.inflate();
                         }
                     } else {
-                        content.getData(data);
+                        getComponentsData(content, data);
                     }
                 } else {
-                    content.getData(data);
+                    getComponentsData(content, data);
                 }
             } else if (op instanceof ModifierOperation) {
                 // TODO: refactor to introduce a common interface
@@ -401,6 +410,14 @@ public class LayoutComponent extends Component {
 
     protected final HashMap<Integer, Object> mCachedAttributes = new HashMap<>();
 
+    /**
+     * This allow subclasses to handle the list of operations differently
+     */
+    protected void handleOperations(@NonNull RemoteContext context,
+            @NonNull ArrayList<Operation> operations) {
+        // nothing here
+    }
+
     @Override
     public void paintingComponent(@NonNull PaintContext context) {
         Component prev = context.getContext().mLastComponent;
@@ -437,6 +454,17 @@ public class LayoutComponent extends Component {
         float tx = mPaddingLeft + getScrollX();
         float ty = mPaddingTop + getScrollY();
         context.translate(tx, ty);
+        handleOperations(remoteContext, mList);
+        if (mHorizontalScrollDelegate != null) {
+            context.save();
+            mHorizontalScrollDelegate.applyEdgeEffect(context, this,
+                    ScrollingEdgeEffect.PRE_DRAW);
+        }
+        if (mVerticalScrollDelegate != null) {
+            context.save();
+            mVerticalScrollDelegate.applyEdgeEffect(context, this,
+                    ScrollingEdgeEffect.PRE_DRAW);
+        }
         if (mChildrenHaveZIndex) {
             // TODO -- should only sort when something has changed
             ArrayList<Component> sorted = new ArrayList<Component>(mChildrenComponents);
@@ -461,6 +489,16 @@ public class LayoutComponent extends Component {
         }
         if (mGraphicsLayerModifier != null) {
             context.endGraphicsLayer();
+        }
+        if (mHorizontalScrollDelegate != null) {
+            mHorizontalScrollDelegate.applyEdgeEffect(context, this,
+                    ScrollingEdgeEffect.POST_DRAW);
+            context.restore();
+        }
+        if (mVerticalScrollDelegate != null) {
+            mVerticalScrollDelegate.applyEdgeEffect(context, this,
+                    ScrollingEdgeEffect.POST_DRAW);
+            context.restore();
         }
         context.translate(-tx, -ty);
         context.restore();

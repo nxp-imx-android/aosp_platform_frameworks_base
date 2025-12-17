@@ -89,7 +89,7 @@ public class FloatsToPath {
                     i++;
                     break;
                 default:
-                    System.err.println(" Odd command " + idFromNan(floatPath[i]));
+                    throw new RuntimeException(" Odd command " + idFromNan(floatPath[i]));
             }
         }
 

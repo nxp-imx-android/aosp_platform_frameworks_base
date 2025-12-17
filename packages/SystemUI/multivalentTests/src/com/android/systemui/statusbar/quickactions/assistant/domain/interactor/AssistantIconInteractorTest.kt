@@ -22,16 +22,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
-import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
-import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.res.R
-import com.android.systemui.scene.domain.interactor.sceneInteractor
-import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.statusbar.phone.BiometricUnlockController
+import com.android.systemui.scene.SceneHelper.setDeviceEntered
 import com.android.systemui.statusbar.policy.data.repository.fakeDeviceProvisioningRepository
 import com.android.systemui.statusbar.policy.data.repository.fakeUserSetupRepository
 import com.android.systemui.statusbar.policy.domain.interactor.deviceProvisioningInteractor
@@ -180,15 +176,6 @@ class AssistantIconInteractorTest : SysuiTestCase() {
             assertThat(assistantIconSharedModel!!.assistInfo).isNotNull()
             assertThat(assistantIconSharedModel!!.isStatusBarAssistantPackage).isTrue()
         }
-
-    private fun setDeviceEntered() {
-        kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-            unlockStateInt = BiometricUnlockController.MODE_DISMISS,
-            biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
-        )
-        kosmos.sceneInteractor.changeScene(Scenes.Gone, "test")
-        assertThat(kosmos.deviceEntryInteractor.isDeviceEntered.value).isTrue()
-    }
 
     private fun setUserLoggedIn(isLoggedIn: Boolean) {
         // Note: logout enabled means the user is currently in logged in status.

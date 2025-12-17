@@ -21,6 +21,8 @@ import static android.Manifest.permission.ACCESS_HIDDEN_PROFILES;
 import static android.Manifest.permission.ACCESS_HIDDEN_PROFILES_FULL;
 import static android.Manifest.permission.READ_FRAME_BUFFER;
 
+import static com.android.window.flags.Flags.useCallerTokenInLauncherApps;
+
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
@@ -61,6 +63,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Flags;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Parcel;
@@ -1044,8 +1047,9 @@ public class LauncherApps {
         if (DEBUG) {
             Log.i(TAG, "StartMainActivity " + component + " " + user.getIdentifier());
         }
+        final IBinder caller = useCallerTokenInLauncherApps() ? mContext.getActivityToken() : null;
         try {
-            mService.startActivityAsUser(mContext.getIApplicationThread(),
+            mService.startActivityAsUser(caller, mContext.getIApplicationThread(),
                     mContext.getPackageName(), mContext.getAttributionTag(),
                     component, sourceBounds, opts, user);
         } catch (RemoteException re) {
@@ -1144,8 +1148,9 @@ public class LauncherApps {
      */
     public void startPackageInstallerSessionDetailsActivity(@NonNull SessionInfo sessionInfo,
             @Nullable Rect sourceBounds, @Nullable Bundle opts) {
+        final IBinder caller = useCallerTokenInLauncherApps() ? mContext.getActivityToken() : null;
         try {
-            mService.startSessionDetailsActivityAsUser(mContext.getIApplicationThread(),
+            mService.startSessionDetailsActivityAsUser(caller, mContext.getIApplicationThread(),
                     mContext.getPackageName(), mContext.getAttributionTag(), sessionInfo,
                     sourceBounds, opts, sessionInfo.getUser());
         } catch (RemoteException re) {
@@ -1174,8 +1179,9 @@ public class LauncherApps {
     public void startAppDetailsActivity(ComponentName component, UserHandle user,
             Rect sourceBounds, Bundle opts) {
         logErrorForInvalidProfileAccess(user);
+        final IBinder caller = useCallerTokenInLauncherApps() ? mContext.getActivityToken() : null;
         try {
-            mService.showAppDetailsAsUser(mContext.getIApplicationThread(),
+            mService.showAppDetailsAsUser(caller, mContext.getIApplicationThread(),
                     mContext.getPackageName(), mContext.getAttributionTag(),
                     component, sourceBounds, opts, user);
         } catch (RemoteException re) {
@@ -1978,8 +1984,10 @@ public class LauncherApps {
     private void startShortcut(@NonNull String packageName, @NonNull String shortcutId,
             @Nullable Rect sourceBounds, @Nullable Bundle startActivityOptions,
             int userId) {
+        final IBinder caller = useCallerTokenInLauncherApps() ? mContext.getActivityToken() : null;
         try {
-            final boolean success = mService.startShortcut(mContext.getPackageName(), packageName,
+            final boolean success = mService.startShortcut(
+                    caller, mContext.getPackageName(), packageName,
                     null /* default featureId */, shortcutId, sourceBounds, startActivityOptions,
                     userId);
             if (!success) {

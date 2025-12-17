@@ -91,7 +91,6 @@ public interface DreamModule {
     String DREAM_SUPPORTED = "dream_supported";
     String DREAM_OVERLAY_WINDOW_TITLE = "dream_overlay_window_title";
     String HOME_CONTROL_PANEL_DREAM_COMPONENT = "home_control_panel_dream_component";
-    String DREAM_TILE_SPEC = "dream";
     String LOW_LIGHT_DREAM_SERVICE = "low_light_dream_component";
 
     String LOW_LIGHT_CLOCK_DREAM = "low_light_clock_dream";
@@ -210,23 +209,6 @@ public interface DreamModule {
     @Named(DREAM_OVERLAY_WINDOW_TITLE)
     static String providesDreamOverlayWindowTitle(@Main Resources resources) {
         return resources.getString(R.string.app_label);
-    }
-
-    /** Provides config for the dream tile */
-    @Provides
-    @IntoMap
-    @StringKey(DREAM_TILE_SPEC)
-    static QSTileConfig provideDreamTileConfig(QsEventLogger uiEventLogger) {
-        TileSpec tileSpec = TileSpec.create(DREAM_TILE_SPEC);
-        return new QSTileConfig(tileSpec,
-                new QSTileUIConfig.Resource(
-                        R.drawable.ic_qs_screen_saver,
-                        R.string.quick_settings_screensaver_label),
-                uiEventLogger.getNewInstanceId(),
-                TileCategory.UTILITIES,
-                tileSpec.getSpec(),
-                QSTilePolicy.NoRestrictions.INSTANCE
-                );
     }
 
     /**

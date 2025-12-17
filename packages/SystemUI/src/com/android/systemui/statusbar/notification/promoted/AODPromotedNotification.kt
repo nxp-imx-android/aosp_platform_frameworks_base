@@ -21,6 +21,7 @@ import android.app.Flags.notificationsRedesignTemplates
 import android.app.Flags.richOngoingImprovements
 import android.app.Notification
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.Rect
@@ -467,6 +468,10 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         inflateOldProgressBar()
 
         val oldProgressBar = oldProgressBar ?: return
+
+        if (richOngoingImprovements()) {
+            oldProgressBar.progressTintList = ColorStateList.valueOf(SecondaryText.colorInt)
+        }
 
         oldProgressBar.progress = content.oldProgress.progress
         oldProgressBar.max = content.oldProgress.max

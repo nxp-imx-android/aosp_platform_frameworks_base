@@ -97,6 +97,7 @@ import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.Process;
 import android.os.UserHandle;
@@ -120,8 +121,8 @@ import com.android.server.pm.ShortcutService.FileOutputStreamWithPath;
 
 import org.junit.ClassRule;
 import org.junit.Rule;
-import org.junit.runner.RunWith;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.xmlpull.v1.XmlPullParser;
@@ -3621,8 +3622,12 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
             // Not launchable.
             doReturn(ActivityManager.START_CLASS_NOT_FOUND)
                     .when(mMockActivityTaskManagerInternal).startActivitiesAsPackage(
-                    anyStringOrNull(), anyStringOrNull(), anyInt(),
-                    anyOrNull(Intent[].class), anyOrNull(Bundle.class));
+                            anyOrNull(IBinder.class) /* callingActivity */,
+                            anyStringOrNull() /* packageName */,
+                            anyStringOrNull() /* featureId */,
+                            anyInt() /* userId */,
+                            anyOrNull(Intent[].class),
+                            anyOrNull(Bundle.class));
             assertStartShortcutThrowsException(CALLING_PACKAGE_1, "s1", USER_10,
                     ActivityNotFoundException.class);
 
@@ -3630,8 +3635,12 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
             doReturn(ActivityManager.START_CLASS_NOT_FOUND)
                     .when(mMockActivityTaskManagerInternal)
                     .startActivitiesAsPackage(
-                            anyStringOrNull(), anyStringOrNull(), anyInt(),
-                            anyOrNull(Intent[].class), anyOrNull(Bundle.class));
+                            anyOrNull(IBinder.class) /* callingActivity */,
+                            anyStringOrNull() /* packageName */,
+                            anyStringOrNull() /* featureId */,
+                            anyInt() /* userId */,
+                            anyOrNull(Intent[].class),
+                            anyOrNull(Bundle.class));
             assertStartShortcutThrowsException(CALLING_PACKAGE_1, "s1", USER_10,
                     ActivityNotFoundException.class);
         });

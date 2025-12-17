@@ -539,7 +539,6 @@ public class NotifierTest {
 
     @Test
     public void testOnWakeLockReleased_FrameworkStatsLogged_NoChains() {
-        when(mPowerManagerFlags.isMoveWscLoggingToNotifierEnabled()).thenReturn(true);
         createNotifier();
 
         clearInvocations(mLogger, mWakeLockLog, mBatteryStats, mAppOpsManager);
@@ -1452,7 +1451,6 @@ public class NotifierTest {
     }
 
     private void testWorkSource(WorkSource ws) {
-        when(mPowerManagerFlags.isMoveWscLoggingToNotifierEnabled()).thenReturn(true);
         createNotifier();
         clearInvocations(
                 mBatteryStatsInternal, mLogger, mWakeLockLog, mBatteryStats, mAppOpsManager);

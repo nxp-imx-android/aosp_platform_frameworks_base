@@ -16,98 +16,28 @@
 
 package com.android.wm.shell.flicker.bubbles.testcase
 
-import android.tools.traces.component.ComponentNameMatcher
 import android.tools.traces.component.ComponentNameMatcher.Companion.BUBBLE
 import android.tools.traces.component.ComponentNameMatcher.Companion.BUBBLE_TASK_VIEW
-import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
-import android.tools.traces.component.IComponentNameMatcher
 import com.android.server.wm.flicker.helpers.ImeAppHelper
-import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerSubjects
 import org.junit.Test
 
 /**
- * The test cases to verify [testApp] goes to expanded bubble state, which verifies [testApp]
- * replaces [previousApp] to be top and visible and has rounded corner at the end of transition.
+ * Verifies that the [testApp] goes to expanded bubble state.
+ *
+ * This verifies:
+ * - The [previousApp] is replaced by [testApp]: [AppReplacesPreviousAppTestCases]
+ * - The [testApp] has rounded corner at the end of transition.
+ * - The [BUBBLE] covers the [testApp] at the end of transition.
  */
-interface BubbleAppBecomesExpandedTestCases : BubbleFlickerSubjects {
+interface BubbleAppBecomesExpandedTestCases : AppReplacesPreviousAppTestCases {
 
-    val previousApp: IComponentNameMatcher
-        get() = LAUNCHER
-
-    /** Verifies the focus changed from [previousApp] to bubble app. */
-    @Test
-    fun focusChanges() {
-        eventLogSubject.focusChanges(previousApp.toWindowName(), testApp.toWindowName())
-    }
-
-    /** Verifies the bubble app replaces [previousApp] to be the top window. */
-    @Test
-    fun appWindowReplacesPreviousAppAsTopWindow() {
-        wmTraceSubject
-            .isAppWindowOnTop(previousApp)
-            .then()
-            .isAppWindowOnTop(
-                ComponentNameMatcher.SNAPSHOT.or(ComponentNameMatcher.SPLASH_SCREEN),
-                isOptional = true,
-            )
-            .then()
-            .isAppWindowOnTop(testApp)
-            .forAllEntries()
-    }
-
-    /** Verifies the bubble app is the top window at the end of transition. */
-    @Test
-    fun appWindowAsTopWindowAtEnd() {
-        wmStateSubjectAtEnd.isAppWindowOnTop(testApp)
-    }
-
-    /** Verifies the bubble app becomes the top window. */
-    @Test
-    fun appWindowBecomesTopWindow() {
-        wmTraceSubject
-            .skipUntilFirstAssertion()
-            .isAppWindowNotOnTop(testApp)
-            .then()
-            .isAppWindowOnTop(testApp)
-            .forAllEntries()
-    }
-
-    /** Verifies the bubble app window becomes visible. */
-    @Test
-    fun appWindowBecomesVisible() {
-        wmTraceSubject
-            .skipUntilFirstAssertion()
-            .isAppWindowInvisible(testApp)
-            .then()
-            .isAppWindowVisible(testApp)
-            .forAllEntries()
-    }
-
-    /** Verifies the bubble app layer becomes visible. */
-    @Test
-    fun appLayerBecomesVisible() {
-        layersTraceSubject.isInvisible(testApp).then().isVisible(testApp).forAllEntries()
-    }
-
-    /** Verifies the bubble app window is visible at the end of transition. */
-    @Test
-    fun appWindowIsVisibleAtEnd() {
-        wmStateSubjectAtEnd.isAppWindowVisible(testApp)
-    }
-
-    /** Verifies the bubble app layer is visible at the end of transition. */
-    @Test
-    fun appLayerIsVisibleAtEnd() {
-        layerTraceEntrySubjectAtEnd.isVisible(testApp)
-    }
-
-    /** Verifies the bubble app layer has rounded corners at the end of transition. */
+    /** Verifies the bubbled [testApp] layer has rounded corners at the end of transition. */
     @Test
     fun appLayerHasRoundedCorner() {
         layerTraceEntrySubjectAtEnd.hasRoundedCorners(testApp)
     }
 
-    /** Verifies the bubble window covers the bubble app. */
+    /** Verifies the bubble window covers the bubbled [testApp]. */
     @Test
     fun bubbleWindowCoversBubbleAppWindow() {
         wmStateSubjectAtEnd
@@ -115,7 +45,7 @@ interface BubbleAppBecomesExpandedTestCases : BubbleFlickerSubjects {
             .coversAtLeast(wmStateSubjectAtEnd.visibleRegion(testApp).region)
     }
 
-    /** Verifies the bubble layer covers the bubble app. */
+    /** Verifies the bubble layer covers the bubbled [testApp]. */
     @Test
     fun bubbleLayerCoversBubbleAppLayer() {
         layerTraceEntrySubjectAtEnd

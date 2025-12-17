@@ -31,7 +31,7 @@ import static android.os.PowerManagerInternal.WAKEFULNESS_DOZING;
 import static android.os.PowerManagerInternal.WAKEFULNESS_DREAMING;
 import static android.os.PowerManagerInternal.WakeUpDelegate;
 import static android.os.PowerManagerInternal.wakefulnessToString;
-import static android.service.dreams.Flags.allowDreamWhenPostured;
+
 import static android.service.dreams.Flags.dreamsV2;
 import static android.service.dreams.Flags.napWhenDreamEnabled;
 
@@ -2197,10 +2197,16 @@ public final class PowerManagerService extends SystemService
             if (groupId == Display.INVALID_DISPLAY_GROUP) {
                 return;
             }
-            if (userActivityNoUpdateLocked(mPowerGroups.get(groupId), eventTime, event, flags,
-                    uid)) {
-                updatePowerStateLocked();
-            }
+
+            userActivityGroup(groupId, eventTime, event, flags, uid);
+        }
+    }
+
+    @VisibleForTesting
+    void userActivityGroup(int groupId, long eventTime,
+            @PowerManager.UserActivityEvent int event, int flags, int uid) {
+        if (userActivityNoUpdateLocked(mPowerGroups.get(groupId), eventTime, event, flags, uid)) {
+            updatePowerStateLocked();
         }
     }
 
@@ -4816,9 +4822,6 @@ public final class PowerManagerService extends SystemService
     }
 
     private void setDevicePosturedInternal(boolean isPostured) {
-        if (!allowDreamWhenPostured()) {
-            return;
-        }
         synchronized (mLock) {
             mDevicePostured = isPostured;
             mDirty |= DIRTY_POSTURED_STATE;
@@ -4883,6 +4886,14 @@ public final class PowerManagerService extends SystemService
     boolean wasDeviceIdleForInternal(long ms) {
         synchronized (mLock) {
             return mPowerGroups.get(Display.DEFAULT_DISPLAY_GROUP).getLastUserActivityTimeLocked()
+                    + ms < mClock.uptimeMillis();
+        }
+    }
+
+    @VisibleForTesting
+    boolean wasPowerGroupIdleForInternal(int groupId, long ms) {
+        synchronized (mLock) {
+            return mPowerGroups.get(groupId).getLastUserActivityTimeLocked()
                     + ms < mClock.uptimeMillis();
         }
     }
@@ -7973,11 +7984,33 @@ public final class PowerManagerService extends SystemService
             int stateIdentifier = deviceState.getIdentifier();
             if (mDeviceState != stateIdentifier) {
                 mDeviceState = stateIdentifier;
-                // Device-state interactions are applied to the default display so that they
-                // are reflected only with the default power group.
-                userActivityInternal(Display.DEFAULT_DISPLAY, mClock.uptimeMillis(),
-                        PowerManager.USER_ACTIVITY_EVENT_DEVICE_STATE, /* flags= */0,
-                        Process.SYSTEM_UID);
+
+                final long uptime = mClock.uptimeMillis();
+                if (!com.android.server.power.feature.flags.Flags.nudgeUserActivityOnFold()) {
+                    // Device-state interactions are applied to the default display so that they
+                    // are reflected only with the default power group.
+                    userActivityInternal(Display.DEFAULT_DISPLAY, uptime,
+                            PowerManager.USER_ACTIVITY_EVENT_DEVICE_STATE, /* flags= */0,
+                            Process.SYSTEM_UID);
+                } else {
+                    // Nudge user activity on all displays that are default or adjacent, and awake.
+                    synchronized (mLock) {
+                        for (int i = 0; i < mPowerGroups.size(); i++) {
+                            PowerGroup pg = mPowerGroups.valueAt(i);
+                            final int groupId = pg.getGroupId();
+                            if (groupId == Display.DEFAULT_DISPLAY_GROUP) {
+                                userActivityInternal(Display.DEFAULT_DISPLAY, uptime,
+                                        PowerManager.USER_ACTIVITY_EVENT_DEVICE_STATE,
+                                        /* flags= */ 0, Process.SYSTEM_UID);
+                            } else if (pg.isDefaultGroupAdjacent()
+                                    && pg.getWakefulnessLocked() == WAKEFULNESS_AWAKE) {
+                                userActivityGroup(groupId, uptime,
+                                        PowerManager.USER_ACTIVITY_EVENT_DEVICE_STATE,
+                                        /* flags= */ 0, Process.SYSTEM_UID);
+                            }
+                        }
+                    }
+                }
             }
         }
     };

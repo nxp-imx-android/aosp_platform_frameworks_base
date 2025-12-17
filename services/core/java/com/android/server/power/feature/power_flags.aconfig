@@ -22,6 +22,16 @@ flag {
 }
 
 flag {
+    name: "nudge_user_activity_on_fold"
+    namespace: "display_manager"
+    description: "Nudge user activity on fold/unfold"
+    bug: "446941468"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "improve_wakelock_latency"
     namespace: "power"
     description: "Feature flag for tracking the optimizations to improve the latency of acquiring and releasing a wakelock."
@@ -53,13 +63,6 @@ flag {
     description: "Whether the policy reason is populted in DisplayPowerRequest."
     bug: "364349703"
     is_fixed_read_only: true
-}
-
-flag {
-    name: "move_wsc_logging_to_notifier"
-    namespace: "power"
-    description: "Feature flag to move logging of WakelockStateChanged atoms from BatteryStatsImpl to Notifier."
-    bug: "352602149"
 }
 
 flag {

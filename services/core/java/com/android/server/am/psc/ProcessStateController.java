@@ -1080,19 +1080,6 @@ public class ProcessStateController {
         proc.clearHostingComponentType(HOSTING_COMPONENT_TYPE_BROADCAST_RECEIVER);
     }
 
-    /**
-     * Sets whether the zram memory of this process was written back to disk.
-     */
-    @GuardedBy({"mLock", "mProcLock"})
-    public void setIsZramWrittenBack(@NonNull ProcessRecordInternal proc,
-            boolean isZramWrittenBack) {
-        if (proc.isZramWrittenBack() == isZramWrittenBack) {
-            return;
-        }
-        proc.setIsZramWrittenBack(isZramWrittenBack);
-        mOomAdjuster.onZramWritebackStateChanged(proc, isZramWrittenBack);
-    }
-
     @GuardedBy("mLock")
     private void commitStagedEvents() {
         mGlobalState.commitStagedState();

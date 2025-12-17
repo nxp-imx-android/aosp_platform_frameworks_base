@@ -16,6 +16,7 @@
 
 package android.companion.datatransfer.continuity;
 
+import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -32,6 +33,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 /**
  * This class facilitates task continuity between devices owned by the same user. This includes
@@ -48,8 +50,8 @@ public class TaskContinuityManager {
     private final Context mContext;
     private final ITaskContinuityManager mService;
 
-    private final ArrayMap<RemoteTaskListener, RemoteTaskListenerHolder>
-            mRemoteTaskListenerHolders = new ArrayMap<>();
+    private final ArrayMap<Consumer<List<RemoteTask>>, RemoteTaskConsumerHolder>
+            mRemoteTaskConsumerHolders = new ArrayMap<>();
     private final ArrayMap<HandoffFeatureStateListener, HandoffFeatureStateListenerHolder>
             mHandoffFeatureStateListenerHolders = new ArrayMap<>();
 
@@ -148,16 +150,6 @@ public class TaskContinuityManager {
         mService = service;
     }
 
-    /** Listener to be notified when the list of remote tasks changes. */
-    public interface RemoteTaskListener {
-        /**
-         * Invoked when the list of remote tasks changes.
-         *
-         * @param remoteTasks The list of remote tasks.
-         */
-        void onRemoteTasksChanged(@NonNull List<RemoteTask> remoteTasks);
-    }
-
     /**
      * Listener to the feature state of Handoff on the current device. Feature state includes
      * whether Handoff is available on the current device, as well is if it is currently enabled.
@@ -193,25 +185,24 @@ public class TaskContinuityManager {
      * Registers a listener to be notified when the list of remote tasks changes.
      *
      * @param executor The executor to be used to invoke the listener.
-     * @param listener The listener to be registered.
-     * @throws SecurityException if the caller does not hold the {@link
-     *     android.Manifest.permission#READ_REMOTE_TASKS} permission.
+     * @param onRemoteTasksChanged The callback to be invoked when the list of remote tasks changes.
      */
     @RequiresPermission(android.Manifest.permission.READ_REMOTE_TASKS)
     @UserHandleAware
     public void registerRemoteTaskListener(
-            @NonNull Executor executor, @NonNull RemoteTaskListener listener) {
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull Consumer<List<RemoteTask>> onRemoteTasksChanged) {
 
         Objects.requireNonNull(executor);
-        Objects.requireNonNull(listener);
+        Objects.requireNonNull(onRemoteTasksChanged);
 
         try {
-            synchronized (mRemoteTaskListenerHolders) {
-                if (!mRemoteTaskListenerHolders.containsKey(listener)) {
-                    RemoteTaskListenerHolder holder =
-                            new RemoteTaskListenerHolder(executor, listener);
+            synchronized (mRemoteTaskConsumerHolders) {
+                if (!mRemoteTaskConsumerHolders.containsKey(onRemoteTasksChanged)) {
+                    RemoteTaskConsumerHolder holder =
+                            new RemoteTaskConsumerHolder(executor, onRemoteTasksChanged);
                     mService.registerRemoteTaskListener(mContext.getUserId(), holder);
-                    mRemoteTaskListenerHolders.put(listener, holder);
+                    mRemoteTaskConsumerHolders.put(onRemoteTasksChanged, holder);
                 }
             }
         } catch (RemoteException e) {
@@ -222,24 +213,24 @@ public class TaskContinuityManager {
     /**
      * Unregisters a listener previously registered with {@link #registerRemoteTaskListener}.
      *
-     * @param listener The listener to be unregistered.
-     * @throws SecurityException if the caller does not hold the {@link
-     *     android.Manifest.permission#READ_REMOTE_TASKS} permission.
+     * @param onRemoteTasksChanged The callback to be unregistered.
      */
     @RequiresPermission(android.Manifest.permission.READ_REMOTE_TASKS)
     @UserHandleAware
-    public void unregisterRemoteTaskListener(@NonNull RemoteTaskListener listener) {
-        Objects.requireNonNull(listener);
+    public void unregisterRemoteTaskListener(
+            @NonNull Consumer<List<RemoteTask>> onRemoteTasksChanged) {
+        Objects.requireNonNull(onRemoteTasksChanged);
 
         try {
-            synchronized (mRemoteTaskListenerHolders) {
-                RemoteTaskListenerHolder holder = mRemoteTaskListenerHolders.get(listener);
+            synchronized (mRemoteTaskConsumerHolders) {
+                RemoteTaskConsumerHolder holder =
+                        mRemoteTaskConsumerHolders.get(onRemoteTasksChanged);
                 if (holder == null) {
                     return;
                 }
 
                 mService.unregisterRemoteTaskListener(mContext.getUserId(), holder);
-                mRemoteTaskListenerHolders.remove(listener);
+                mRemoteTaskConsumerHolders.remove(onRemoteTasksChanged);
             }
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
@@ -254,8 +245,6 @@ public class TaskContinuityManager {
      * @param remoteTaskId The remote task to hand off.
      * @param executor The executor to be used to invoke the callback.
      * @param callback The callback to be invoked when the handoff request is finished.
-     * @throws SecurityException if the caller does not hold the {@link
-     *     android.Manifest.permission#REQUEST_TASK_HANDOFF} permission.
      */
     @RequiresPermission(android.Manifest.permission.REQUEST_TASK_HANDOFF)
     @UserHandleAware
@@ -303,8 +292,6 @@ public class TaskContinuityManager {
      *
      * @param executor The executor to be used to invoke the listener.
      * @param listener The listener to be registered.
-     * @throws SecurityException if the caller does not hold the {@link
-     *     android.Manifest.permission#READ_HANDOFF_SETTINGS} permission.
      */
     @RequiresPermission(android.Manifest.permission.READ_HANDOFF_SETTINGS)
     @UserHandleAware
@@ -332,8 +319,6 @@ public class TaskContinuityManager {
      * #registerHandoffFeatureStateListener}.
      *
      * @param listener The listener to be unregistered.
-     * @throws SecurityException if the caller does not hold the {@link
-     *     android.Manifest.permission#READ_HANDOFF_SETTINGS} permission.
      */
     @RequiresPermission(android.Manifest.permission.READ_HANDOFF_SETTINGS)
     @UserHandleAware
@@ -410,23 +395,24 @@ public class TaskContinuityManager {
      * IRemoteTaskListener, which is lazily registered with ITaskContinuityManager if there is a
      * single registered listener.
      */
-    private final class RemoteTaskListenerHolder extends IRemoteTaskListener.Stub {
+    private final class RemoteTaskConsumerHolder extends IRemoteTaskListener.Stub {
 
         @GuardedBy("this")
         private final Executor mExecutor;
 
         @GuardedBy("this")
-        private final RemoteTaskListener mListener;
+        private final Consumer<List<RemoteTask>> mConsumer;
 
-        RemoteTaskListenerHolder(@NonNull Executor executor, @NonNull RemoteTaskListener listener) {
+        RemoteTaskConsumerHolder(
+                @NonNull Executor executor, @NonNull Consumer<List<RemoteTask>> consumer) {
             mExecutor = Objects.requireNonNull(executor);
-            mListener = Objects.requireNonNull(listener);
+            mConsumer = Objects.requireNonNull(consumer);
         }
 
         @Override
         public void onRemoteTasksChanged(List<RemoteTask> remoteTasks) throws RemoteException {
             synchronized (this) {
-                mExecutor.execute(() -> mListener.onRemoteTasksChanged(remoteTasks));
+                mExecutor.execute(() -> mConsumer.accept(remoteTasks));
             }
         }
     }

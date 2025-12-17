@@ -210,7 +210,7 @@ constructor(
         return when (ringerMode.value) {
             RINGER_MODE_SILENT ->
                 RingerButtonViewModel(
-                    imageResId = R.drawable.ic_speaker_mute,
+                    imageResId = R.drawable.ic_notifications_off,
                     contentDescriptionResId =
                         if (isSelectedButton) {
                             R.string.volume_ringer_status_silent
@@ -222,7 +222,7 @@ constructor(
                 )
             RINGER_MODE_VIBRATE ->
                 RingerButtonViewModel(
-                    imageResId = R.drawable.ic_volume_ringer_vibrate,
+                    imageResId = R.drawable.ic_mobile_vibrate,
                     contentDescriptionResId =
                         if (isSelectedButton) {
                             R.string.volume_ringer_status_vibrate
@@ -238,9 +238,9 @@ constructor(
                         RingerButtonViewModel(
                             imageResId =
                                 if (isSelectedButton) {
-                                    R.drawable.ic_speaker_mute
+                                    R.drawable.ic_notifications_off
                                 } else {
-                                    R.drawable.ic_speaker_on
+                                    R.drawable.ic_notifications_active
                                 },
                             contentDescriptionResId =
                                 if (isSelectedButton) {
@@ -253,7 +253,7 @@ constructor(
                         )
                     availableModes.contains(RingerMode(RINGER_MODE_VIBRATE)) ->
                         RingerButtonViewModel(
-                            imageResId = R.drawable.ic_speaker_on,
+                            imageResId = R.drawable.ic_notifications_active,
                             contentDescriptionResId =
                                 if (isSelectedButton) {
                                     R.string.volume_ringer_status_normal
@@ -265,7 +265,7 @@ constructor(
                         )
                     else ->
                         RingerButtonViewModel(
-                            imageResId = R.drawable.ic_speaker_on,
+                            imageResId = R.drawable.ic_notifications_active,
                             contentDescriptionResId =
                                 if (isSelectedButton) {
                                     R.string.volume_ringer_status_normal

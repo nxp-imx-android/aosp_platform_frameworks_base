@@ -98,27 +98,10 @@ flag {
 }
 
 flag {
-  name: "nm_summarization_ui"
-  namespace: "systemui"
-  description: "Shows summarized notifications in the UI"
-  bug: "390217880"
-}
-
-flag {
   name: "nm_collapsed_lines"
   namespace: "systemui"
   description: "Shows 2 lines for collapsed notifications by default"
   bug: "390217880"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
-  name: "nm_summarization_onboarding_ui"
-  namespace: "systemui"
-  description: "Shows summarizatino onboarding UI"
-  bug: "391568054"
   metadata {
     purpose: PURPOSE_BUGFIX
   }
@@ -142,6 +125,13 @@ flag {
   metadata {
     purpose: PURPOSE_BUGFIX
   }
+}
+
+flag {
+  name: "modes_auto_reply_message"
+  namespace: "systemui"
+  description: "When enabled, auto reply messages for a specific mode when it is turned on."
+  bug: "467758845"
 }
 
 # Start: exported flags that cannot be removed

@@ -3706,11 +3706,11 @@ package android.companion.datatransfer.continuity {
 
   @FlaggedApi("android.companion.task_continuity") public class TaskContinuityManager {
     method @RequiresPermission(android.Manifest.permission.READ_HANDOFF_SETTINGS) public void registerHandoffFeatureStateListener(@NonNull java.util.concurrent.Executor, @NonNull android.companion.datatransfer.continuity.TaskContinuityManager.HandoffFeatureStateListener);
-    method @RequiresPermission(android.Manifest.permission.READ_REMOTE_TASKS) public void registerRemoteTaskListener(@NonNull java.util.concurrent.Executor, @NonNull android.companion.datatransfer.continuity.TaskContinuityManager.RemoteTaskListener);
+    method @RequiresPermission(android.Manifest.permission.READ_REMOTE_TASKS) public void registerRemoteTaskListener(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.util.List<android.companion.datatransfer.continuity.RemoteTask>>);
     method @RequiresPermission(android.Manifest.permission.REQUEST_TASK_HANDOFF) public void requestHandoff(int, int, @NonNull java.util.concurrent.Executor, @NonNull android.companion.datatransfer.continuity.TaskContinuityManager.HandoffRequestCallback);
     method @RequiresPermission(android.Manifest.permission.MODIFY_HANDOFF_SETTINGS) public void setHandoffForDeviceEnabled(boolean);
     method @RequiresPermission(android.Manifest.permission.READ_HANDOFF_SETTINGS) public void unregisterHandoffFeatureStateListener(@NonNull android.companion.datatransfer.continuity.TaskContinuityManager.HandoffFeatureStateListener);
-    method @RequiresPermission(android.Manifest.permission.READ_REMOTE_TASKS) public void unregisterRemoteTaskListener(@NonNull android.companion.datatransfer.continuity.TaskContinuityManager.RemoteTaskListener);
+    method @RequiresPermission(android.Manifest.permission.READ_REMOTE_TASKS) public void unregisterRemoteTaskListener(@NonNull java.util.function.Consumer<java.util.List<android.companion.datatransfer.continuity.RemoteTask>>);
     field public static final int HANDOFF_AVAILABILITY_STATUS_AVAILABLE = 0; // 0x0
     field public static final int HANDOFF_AVAILABILITY_STATUS_DISABLED_BY_POLICY = 1; // 0x1
     field public static final int HANDOFF_AVAILABILITY_STATUS_UNSUPPORTED_HARDWARE = 2; // 0x2
@@ -3730,10 +3730,6 @@ package android.companion.datatransfer.continuity {
 
   public static interface TaskContinuityManager.HandoffRequestCallback {
     method public void onHandoffRequestFinished(int, int, int);
-  }
-
-  public static interface TaskContinuityManager.RemoteTaskListener {
-    method public void onRemoteTasksChanged(@NonNull java.util.List<android.companion.datatransfer.continuity.RemoteTask>);
   }
 
 }
@@ -14018,11 +14014,11 @@ package android.service.chooser {
 
   @FlaggedApi("android.service.chooser.tap_to_share") public abstract class TapToShareService extends android.app.Service {
     ctor public TapToShareService();
-    method public final void doTapToShare();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
     method public abstract void onSessionEnd();
     method public abstract void onSessionStart();
     method public final boolean onUnbind(@Nullable android.content.Intent);
+    method public final void performTapToShare();
   }
 
 }
@@ -14387,7 +14383,7 @@ package android.service.notification {
     field public static final String KEY_RANKING_SCORE = "key_ranking_score";
     field public static final String KEY_SENSITIVE_CONTENT = "key_sensitive_content";
     field public static final String KEY_SNOOZE_CRITERIA = "key_snooze_criteria";
-    field @FlaggedApi("android.app.nm_summarization") public static final String KEY_SUMMARIZATION = "key_summarization";
+    field public static final String KEY_SUMMARIZATION = "key_summarization";
     field public static final String KEY_TEXT_REPLIES = "key_text_replies";
     field public static final String KEY_TYPE = "key_type";
     field public static final String KEY_USER_SENTIMENT = "key_user_sentiment";
@@ -14435,8 +14431,8 @@ package android.service.notification {
     method public final void unsnoozeNotification(@NonNull String);
     field public static final String ACTION_NOTIFICATION_ASSISTANT_DETAIL_SETTINGS = "android.service.notification.action.NOTIFICATION_ASSISTANT_DETAIL_SETTINGS";
     field public static final String ACTION_NOTIFICATION_ASSISTANT_FEEDBACK_SETTINGS = "android.service.notification.action.NOTIFICATION_ASSISTANT_FEEDBACK_SETTINGS";
-    field @FlaggedApi("android.app.nm_summarization") public static final String EXTRA_NOTIFICATION_ADJUSTMENT = "android.service.notification.extra.NOTIFICATION_ADJUSTMENT";
-    field @FlaggedApi("android.app.nm_summarization") public static final String EXTRA_NOTIFICATION_ADJUSTMENTS = "android.service.notification.extra.NOTIFICATION_ADJUSTMENTS";
+    field public static final String EXTRA_NOTIFICATION_ADJUSTMENT = "android.service.notification.extra.NOTIFICATION_ADJUSTMENT";
+    field public static final String EXTRA_NOTIFICATION_ADJUSTMENTS = "android.service.notification.extra.NOTIFICATION_ADJUSTMENTS";
     field public static final String EXTRA_NOTIFICATION_KEY = "android.service.notification.extra.NOTIFICATION_KEY";
     field public static final String FEEDBACK_RATING = "feedback.rating";
     field public static final String SERVICE_INTERFACE = "android.service.notification.NotificationAssistantService";

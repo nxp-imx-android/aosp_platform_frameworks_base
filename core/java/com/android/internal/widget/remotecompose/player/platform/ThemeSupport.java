@@ -15,25 +15,45 @@
  */
 package com.android.internal.widget.remotecompose.player.platform;
 
+import android.annotation.NonNull;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Color;
+import android.util.Log;
 import android.util.TypedValue;
 
+import com.android.internal.widget.remotecompose.core.operations.ColorTheme;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /** Implement color theme support */
 public class ThemeSupport {
-
     RemoteComposeView mInner;
     Context mContext;
     HashMap<String, Integer> mColorMap = null;
+    HashMap<String, ColorEngine> mColorEngineMap = new HashMap<>();
+
+    { // This is done this way to simplify injecting other color engines
+        mColorEngineMap.put("android", new AndroidColorEngine());
+    }
 
     /** Map system colors to document */
-    public void mapColors(Context context, RemoteComposeView view) {
+    public void mapColors(@NonNull Context context, @NonNull RemoteComposeView view) {
         mContext = context;
         mInner = view;
 
+        ArrayList<ColorTheme> colorTheme = mInner.getThemedColors();
+
+        if (!colorTheme.isEmpty()) {
+            for (ColorTheme theme : colorTheme) {
+                ColorEngine colorEngine = mColorEngineMap.get(theme.mColorGroupName);
+                if (colorEngine == null) {
+                    Log.e("THEME", "Color engine not found for " + theme.mColorGroupName);
+                    continue;
+                }
+                colorEngine.getColors(context, theme);
+            }
+        }
         String[] name = mInner.getNamedColors();
 
         // make every effort to terminate early
@@ -46,11 +66,11 @@ public class ThemeSupport {
             if (name[i].startsWith(prefix)) {
                 int id = lookupColor(name[i].substring(prefix.length()));
                 if (id != -1) {
-                    // setRColor(name[i], id);
-                    mInner.setColor(name[i], context.getColor(id));
-                    int color = context.getColor(id);
-                    float[] hsb = new float[3];
-                    Color.colorToHSV(color, hsb);
+                    try {
+                        mInner.setColor(name[i], context.getColor(id));
+                    } catch (Exception e) {
+                        Log.e("THEME", "Color " + name[i] + " not found");
+                    }
                 }
             }
         }
@@ -262,207 +282,209 @@ public class ThemeSupport {
         }
     }
 
-    private int lookupColor(String name) {
+    static class AndroidColors {
 
-        int[] colors = {
-            android.R.color.background_dark,
-            android.R.color.background_light,
-            android.R.color.black,
-            android.R.color.darker_gray,
-            android.R.color.holo_blue_bright,
-            android.R.color.holo_blue_dark,
-            android.R.color.holo_blue_light,
-            android.R.color.holo_green_dark,
-            android.R.color.holo_green_light,
-            android.R.color.holo_orange_dark,
-            android.R.color.holo_orange_light,
-            android.R.color.holo_purple,
-            android.R.color.holo_red_dark,
-            android.R.color.holo_red_light,
-            android.R.color.system_accent1_0,
-            android.R.color.system_accent1_10,
-            android.R.color.system_accent1_100,
-            android.R.color.system_accent1_1000,
-            android.R.color.system_accent1_200,
-            android.R.color.system_accent1_300,
-            android.R.color.system_accent1_400,
-            android.R.color.system_accent1_50,
-            android.R.color.system_accent1_500,
-            android.R.color.system_accent1_600,
-            android.R.color.system_accent1_700,
-            android.R.color.system_accent1_800,
-            android.R.color.system_accent1_900,
-            android.R.color.system_accent2_0,
-            android.R.color.system_accent2_10,
-            android.R.color.system_accent2_100,
-            android.R.color.system_accent2_1000,
-            android.R.color.system_accent2_200,
-            android.R.color.system_accent2_300,
-            android.R.color.system_accent2_400,
-            android.R.color.system_accent2_50,
-            android.R.color.system_accent2_500,
-            android.R.color.system_accent2_600,
-            android.R.color.system_accent2_700,
-            android.R.color.system_accent2_800,
-            android.R.color.system_accent2_900,
-            android.R.color.system_accent3_0,
-            android.R.color.system_accent3_10,
-            android.R.color.system_accent3_100,
-            android.R.color.system_accent3_1000,
-            android.R.color.system_accent3_200,
-            android.R.color.system_accent3_300,
-            android.R.color.system_accent3_400,
-            android.R.color.system_accent3_50,
-            android.R.color.system_accent3_500,
-            android.R.color.system_accent3_600,
-            android.R.color.system_accent3_700,
-            android.R.color.system_accent3_800,
-            android.R.color.system_accent3_900,
-            android.R.color.system_background_dark,
-            android.R.color.system_background_light,
-            android.R.color.system_control_activated_dark,
-            android.R.color.system_control_activated_light,
-            android.R.color.system_control_highlight_dark,
-            android.R.color.system_control_highlight_light,
-            android.R.color.system_control_normal_dark,
-            android.R.color.system_control_normal_light,
-            android.R.color.system_error_0,
-            android.R.color.system_error_10,
-            android.R.color.system_error_100,
-            android.R.color.system_error_1000,
-            android.R.color.system_error_200,
-            android.R.color.system_error_300,
-            android.R.color.system_error_400,
-            android.R.color.system_error_50,
-            android.R.color.system_error_500,
-            android.R.color.system_error_600,
-            android.R.color.system_error_700,
-            android.R.color.system_error_800,
-            android.R.color.system_error_900,
-            android.R.color.system_error_container_dark,
-            android.R.color.system_error_container_light,
-            android.R.color.system_error_dark,
-            android.R.color.system_error_light,
-            android.R.color.system_neutral1_0,
-            android.R.color.system_neutral1_10,
-            android.R.color.system_neutral1_100,
-            android.R.color.system_neutral1_1000,
-            android.R.color.system_neutral1_200,
-            android.R.color.system_neutral1_300,
-            android.R.color.system_neutral1_400,
-            android.R.color.system_neutral1_50,
-            android.R.color.system_neutral1_500,
-            android.R.color.system_neutral1_600,
-            android.R.color.system_neutral1_700,
-            android.R.color.system_neutral1_800,
-            android.R.color.system_neutral1_900,
-            android.R.color.system_neutral2_0,
-            android.R.color.system_neutral2_10,
-            android.R.color.system_neutral2_100,
-            android.R.color.system_neutral2_1000,
-            android.R.color.system_neutral2_200,
-            android.R.color.system_neutral2_300,
-            android.R.color.system_neutral2_400,
-            android.R.color.system_neutral2_50,
-            android.R.color.system_neutral2_500,
-            android.R.color.system_neutral2_600,
-            android.R.color.system_neutral2_700,
-            android.R.color.system_neutral2_800,
-            android.R.color.system_neutral2_900,
-            android.R.color.system_on_background_dark,
-            android.R.color.system_on_background_light,
-            android.R.color.system_on_error_container_dark,
-            android.R.color.system_on_error_container_light,
-            android.R.color.system_on_error_dark,
-            android.R.color.system_on_error_light,
-            android.R.color.system_on_primary_container_dark,
-            android.R.color.system_on_primary_container_light,
-            android.R.color.system_on_primary_dark,
-            android.R.color.system_on_primary_fixed,
-            android.R.color.system_on_primary_fixed_variant,
-            android.R.color.system_on_primary_light,
-            android.R.color.system_on_secondary_container_dark,
-            android.R.color.system_on_secondary_container_light,
-            android.R.color.system_on_secondary_dark,
-            android.R.color.system_on_secondary_fixed,
-            android.R.color.system_on_secondary_fixed_variant,
-            android.R.color.system_on_secondary_light,
-            android.R.color.system_on_surface_dark,
-            android.R.color.system_on_surface_disabled,
-            android.R.color.system_on_surface_light,
-            android.R.color.system_on_surface_variant_dark,
-            android.R.color.system_on_surface_variant_light,
-            android.R.color.system_on_tertiary_container_dark,
-            android.R.color.system_on_tertiary_container_light,
-            android.R.color.system_on_tertiary_dark,
-            android.R.color.system_on_tertiary_fixed,
-            android.R.color.system_on_tertiary_fixed_variant,
-            android.R.color.system_on_tertiary_light,
-            android.R.color.system_outline_dark,
-            android.R.color.system_outline_disabled,
-            android.R.color.system_outline_light,
-            android.R.color.system_outline_variant_dark,
-            android.R.color.system_outline_variant_light,
-            android.R.color.system_palette_key_color_neutral_dark,
-            android.R.color.system_palette_key_color_neutral_light,
-            android.R.color.system_palette_key_color_neutral_variant_dark,
-            android.R.color.system_palette_key_color_neutral_variant_light,
-            android.R.color.system_palette_key_color_primary_dark,
-            android.R.color.system_palette_key_color_primary_light,
-            android.R.color.system_palette_key_color_secondary_dark,
-            android.R.color.system_palette_key_color_secondary_light,
-            android.R.color.system_palette_key_color_tertiary_dark,
-            android.R.color.system_palette_key_color_tertiary_light,
-            android.R.color.system_primary_container_dark,
-            android.R.color.system_primary_container_light,
-            android.R.color.system_primary_dark,
-            android.R.color.system_primary_fixed,
-            android.R.color.system_primary_fixed_dim,
-            android.R.color.system_primary_light,
-            android.R.color.system_secondary_container_dark,
-            android.R.color.system_secondary_container_light,
-            android.R.color.system_secondary_dark,
-            android.R.color.system_secondary_fixed,
-            android.R.color.system_secondary_fixed_dim,
-            android.R.color.system_secondary_light,
-            android.R.color.system_surface_bright_dark,
-            android.R.color.system_surface_bright_light,
-            android.R.color.system_surface_container_dark,
-            android.R.color.system_surface_container_high_dark,
-            android.R.color.system_surface_container_high_light,
-            android.R.color.system_surface_container_highest_dark,
-            android.R.color.system_surface_container_highest_light,
-            android.R.color.system_surface_container_light,
-            android.R.color.system_surface_container_low_dark,
-            android.R.color.system_surface_container_low_light,
-            android.R.color.system_surface_container_lowest_dark,
-            android.R.color.system_surface_container_lowest_light,
-            android.R.color.system_surface_dark,
-            android.R.color.system_surface_dim_dark,
-            android.R.color.system_surface_dim_light,
-            android.R.color.system_surface_disabled,
-            android.R.color.system_surface_light,
-            android.R.color.system_surface_variant_dark,
-            android.R.color.system_surface_variant_light,
-            android.R.color.system_tertiary_container_dark,
-            android.R.color.system_tertiary_container_light,
-            android.R.color.system_tertiary_dark,
-            android.R.color.system_tertiary_fixed,
-            android.R.color.system_tertiary_fixed_dim,
-            android.R.color.system_tertiary_light,
-            android.R.color.system_text_hint_inverse_dark,
-            android.R.color.system_text_hint_inverse_light,
-            android.R.color.system_text_primary_inverse_dark,
-            android.R.color.system_text_primary_inverse_disable_only_dark,
-            android.R.color.system_text_primary_inverse_disable_only_light,
-            android.R.color.system_text_primary_inverse_light,
-            android.R.color.system_text_secondary_and_tertiary_inverse_dark,
-            android.R.color.system_text_secondary_and_tertiary_inverse_disabled_dark,
-            android.R.color.system_text_secondary_and_tertiary_inverse_disabled_light,
-            android.R.color.system_text_secondary_and_tertiary_inverse_light,
-            android.R.color.tab_indicator_text
-        };
-        String[] colorNames = {
+        int[] mId =
+                new int[] {
+                    android.R.color.background_dark,
+                    android.R.color.background_light,
+                    android.R.color.black,
+                    android.R.color.darker_gray,
+                    android.R.color.holo_blue_bright,
+                    android.R.color.holo_blue_dark,
+                    android.R.color.holo_blue_light,
+                    android.R.color.holo_green_dark,
+                    android.R.color.holo_green_light,
+                    android.R.color.holo_orange_dark,
+                    android.R.color.holo_orange_light,
+                    android.R.color.holo_purple,
+                    android.R.color.holo_red_dark,
+                    android.R.color.holo_red_light,
+                    android.R.color.system_accent1_0,
+                    android.R.color.system_accent1_10,
+                    android.R.color.system_accent1_100,
+                    android.R.color.system_accent1_1000,
+                    android.R.color.system_accent1_200,
+                    android.R.color.system_accent1_300,
+                    android.R.color.system_accent1_400,
+                    android.R.color.system_accent1_50,
+                    android.R.color.system_accent1_500,
+                    android.R.color.system_accent1_600,
+                    android.R.color.system_accent1_700,
+                    android.R.color.system_accent1_800,
+                    android.R.color.system_accent1_900,
+                    android.R.color.system_accent2_0,
+                    android.R.color.system_accent2_10,
+                    android.R.color.system_accent2_100,
+                    android.R.color.system_accent2_1000,
+                    android.R.color.system_accent2_200,
+                    android.R.color.system_accent2_300,
+                    android.R.color.system_accent2_400,
+                    android.R.color.system_accent2_50,
+                    android.R.color.system_accent2_500,
+                    android.R.color.system_accent2_600,
+                    android.R.color.system_accent2_700,
+                    android.R.color.system_accent2_800,
+                    android.R.color.system_accent2_900,
+                    android.R.color.system_accent3_0,
+                    android.R.color.system_accent3_10,
+                    android.R.color.system_accent3_100,
+                    android.R.color.system_accent3_1000,
+                    android.R.color.system_accent3_200,
+                    android.R.color.system_accent3_300,
+                    android.R.color.system_accent3_400,
+                    android.R.color.system_accent3_50,
+                    android.R.color.system_accent3_500,
+                    android.R.color.system_accent3_600,
+                    android.R.color.system_accent3_700,
+                    android.R.color.system_accent3_800,
+                    android.R.color.system_accent3_900,
+                    android.R.color.system_background_dark,
+                    android.R.color.system_background_light,
+                    android.R.color.system_control_activated_dark,
+                    android.R.color.system_control_activated_light,
+                    android.R.color.system_control_highlight_dark,
+                    android.R.color.system_control_highlight_light,
+                    android.R.color.system_control_normal_dark,
+                    android.R.color.system_control_normal_light,
+                    android.R.color.system_error_0,
+                    android.R.color.system_error_10,
+                    android.R.color.system_error_100,
+                    android.R.color.system_error_1000,
+                    android.R.color.system_error_200,
+                    android.R.color.system_error_300,
+                    android.R.color.system_error_400,
+                    android.R.color.system_error_50,
+                    android.R.color.system_error_500,
+                    android.R.color.system_error_600,
+                    android.R.color.system_error_700,
+                    android.R.color.system_error_800,
+                    android.R.color.system_error_900,
+                    android.R.color.system_error_container_dark,
+                    android.R.color.system_error_container_light,
+                    android.R.color.system_error_dark,
+                    android.R.color.system_error_light,
+                    android.R.color.system_neutral1_0,
+                    android.R.color.system_neutral1_10,
+                    android.R.color.system_neutral1_100,
+                    android.R.color.system_neutral1_1000,
+                    android.R.color.system_neutral1_200,
+                    android.R.color.system_neutral1_300,
+                    android.R.color.system_neutral1_400,
+                    android.R.color.system_neutral1_50,
+                    android.R.color.system_neutral1_500,
+                    android.R.color.system_neutral1_600,
+                    android.R.color.system_neutral1_700,
+                    android.R.color.system_neutral1_800,
+                    android.R.color.system_neutral1_900,
+                    android.R.color.system_neutral2_0,
+                    android.R.color.system_neutral2_10,
+                    android.R.color.system_neutral2_100,
+                    android.R.color.system_neutral2_1000,
+                    android.R.color.system_neutral2_200,
+                    android.R.color.system_neutral2_300,
+                    android.R.color.system_neutral2_400,
+                    android.R.color.system_neutral2_50,
+                    android.R.color.system_neutral2_500,
+                    android.R.color.system_neutral2_600,
+                    android.R.color.system_neutral2_700,
+                    android.R.color.system_neutral2_800,
+                    android.R.color.system_neutral2_900,
+                    android.R.color.system_on_background_dark,
+                    android.R.color.system_on_background_light,
+                    android.R.color.system_on_error_container_dark,
+                    android.R.color.system_on_error_container_light,
+                    android.R.color.system_on_error_dark,
+                    android.R.color.system_on_error_light,
+                    android.R.color.system_on_primary_container_dark,
+                    android.R.color.system_on_primary_container_light,
+                    android.R.color.system_on_primary_dark,
+                    android.R.color.system_on_primary_fixed,
+                    android.R.color.system_on_primary_fixed_variant,
+                    android.R.color.system_on_primary_light,
+                    android.R.color.system_on_secondary_container_dark,
+                    android.R.color.system_on_secondary_container_light,
+                    android.R.color.system_on_secondary_dark,
+                    android.R.color.system_on_secondary_fixed,
+                    android.R.color.system_on_secondary_fixed_variant,
+                    android.R.color.system_on_secondary_light,
+                    android.R.color.system_on_surface_dark,
+                    android.R.color.system_on_surface_disabled,
+                    android.R.color.system_on_surface_light,
+                    android.R.color.system_on_surface_variant_dark,
+                    android.R.color.system_on_surface_variant_light,
+                    android.R.color.system_on_tertiary_container_dark,
+                    android.R.color.system_on_tertiary_container_light,
+                    android.R.color.system_on_tertiary_dark,
+                    android.R.color.system_on_tertiary_fixed,
+                    android.R.color.system_on_tertiary_fixed_variant,
+                    android.R.color.system_on_tertiary_light,
+                    android.R.color.system_outline_dark,
+                    android.R.color.system_outline_disabled,
+                    android.R.color.system_outline_light,
+                    android.R.color.system_outline_variant_dark,
+                    android.R.color.system_outline_variant_light,
+                    android.R.color.system_palette_key_color_neutral_dark,
+                    android.R.color.system_palette_key_color_neutral_light,
+                    android.R.color.system_palette_key_color_neutral_variant_dark,
+                    android.R.color.system_palette_key_color_neutral_variant_light,
+                    android.R.color.system_palette_key_color_primary_dark,
+                    android.R.color.system_palette_key_color_primary_light,
+                    android.R.color.system_palette_key_color_secondary_dark,
+                    android.R.color.system_palette_key_color_secondary_light,
+                    android.R.color.system_palette_key_color_tertiary_dark,
+                    android.R.color.system_palette_key_color_tertiary_light,
+                    android.R.color.system_primary_container_dark,
+                    android.R.color.system_primary_container_light,
+                    android.R.color.system_primary_dark,
+                    android.R.color.system_primary_fixed,
+                    android.R.color.system_primary_fixed_dim,
+                    android.R.color.system_primary_light,
+                    android.R.color.system_secondary_container_dark,
+                    android.R.color.system_secondary_container_light,
+                    android.R.color.system_secondary_dark,
+                    android.R.color.system_secondary_fixed,
+                    android.R.color.system_secondary_fixed_dim,
+                    android.R.color.system_secondary_light,
+                    android.R.color.system_surface_bright_dark,
+                    android.R.color.system_surface_bright_light,
+                    android.R.color.system_surface_container_dark,
+                    android.R.color.system_surface_container_high_dark,
+                    android.R.color.system_surface_container_high_light,
+                    android.R.color.system_surface_container_highest_dark,
+                    android.R.color.system_surface_container_highest_light,
+                    android.R.color.system_surface_container_light,
+                    android.R.color.system_surface_container_low_dark,
+                    android.R.color.system_surface_container_low_light,
+                    android.R.color.system_surface_container_lowest_dark,
+                    android.R.color.system_surface_container_lowest_light,
+                    android.R.color.system_surface_dark,
+                    android.R.color.system_surface_dim_dark,
+                    android.R.color.system_surface_dim_light,
+                    android.R.color.system_surface_disabled,
+                    android.R.color.system_surface_light,
+                    android.R.color.system_surface_variant_dark,
+                    android.R.color.system_surface_variant_light,
+                    android.R.color.system_tertiary_container_dark,
+                    android.R.color.system_tertiary_container_light,
+                    android.R.color.system_tertiary_dark,
+                    android.R.color.system_tertiary_fixed,
+                    android.R.color.system_tertiary_fixed_dim,
+                    android.R.color.system_tertiary_light,
+                    android.R.color.system_text_hint_inverse_dark,
+                    android.R.color.system_text_hint_inverse_light,
+                    android.R.color.system_text_primary_inverse_dark,
+                    android.R.color.system_text_primary_inverse_disable_only_dark,
+                    android.R.color.system_text_primary_inverse_disable_only_light,
+                    android.R.color.system_text_primary_inverse_light,
+                    android.R.color.system_text_secondary_and_tertiary_inverse_dark,
+                    android.R.color.system_text_secondary_and_tertiary_inverse_disabled_dark,
+                    android.R.color.system_text_secondary_and_tertiary_inverse_disabled_light,
+                    android.R.color.system_text_secondary_and_tertiary_inverse_light,
+                    android.R.color.tab_indicator_text
+                };
+
+        String[] mName = {
             "background_dark",
             "background_light",
             "black",
@@ -660,10 +682,15 @@ public class ThemeSupport {
             "system_text_secondary_and_tertiary_inverse_light",
             "tab_indicator_text"
         };
+    }
+
+    AndroidColors mAndroid = new AndroidColors();
+
+    private int lookupColor(String name) {
         if (mColorMap == null) {
             mColorMap = new HashMap<>();
-            for (int i = 0; i < colorNames.length; i++) {
-                mColorMap.put(colorNames[i], colors[i]);
+            for (int i = 0; i < mAndroid.mName.length; i++) {
+                mColorMap.put(mAndroid.mName[i], mAndroid.mId[i]);
             }
         }
         Integer ret = mColorMap.get(name);
@@ -671,5 +698,46 @@ public class ThemeSupport {
             return ret;
         }
         return -1;
+    }
+
+    interface ColorEngine {
+        void getColors(Context context, ColorTheme theme);
+    }
+
+    static class AndroidColorEngine implements ColorEngine {
+        AndroidColors mColors = new AndroidColors();
+
+        @Override
+        public void getColors(Context context, ColorTheme theme) {
+            if (theme.mDarkModeIndex >= 0 && theme.mDarkModeIndex < mColors.mId.length) {
+                try {
+                    theme.mDarkMode = context.getColor(mColors.mId[theme.mDarkModeIndex]);
+                } catch (Exception ex) {
+                    Log.e("THEME", "Color " + mColors.mName[theme.mDarkModeIndex] + " not found");
+                }
+            } else {
+                Log.e(
+                        "THEME",
+                        "mDarkModeId "
+                                + theme.mDarkModeIndex
+                                + " not found "
+                                + theme.mColorGroupName);
+            }
+            if (theme.mLightModeIndex >= 0 && theme.mLightModeIndex < mColors.mId.length) {
+                try {
+                    theme.mLightMode = context.getColor(mColors.mId[theme.mLightModeIndex]);
+                } catch (Exception ex) {
+                    Log.e("THEME", "Color " + mColors.mName[theme.mLightModeIndex] + " not found");
+                }
+            } else {
+
+                Log.e(
+                        "THEME",
+                        "mLightMode "
+                                + theme.mLightModeIndex
+                                + " not found "
+                                + theme.mColorGroupName);
+            }
+        }
     }
 }

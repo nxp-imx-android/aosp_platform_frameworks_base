@@ -20,6 +20,7 @@ import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
 import android.tools.device.apphelpers.MessagingAppHelper
+import android.tools.traces.component.ComponentNameMatcher
 import android.tools.traces.component.ComponentNameMatcher.Companion.BUBBLE
 import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
 import androidx.test.filters.RequiresDevice
@@ -34,6 +35,7 @@ import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import com.android.wm.shell.flicker.bubbles.utils.RunOncePerParameterRule
 import org.junit.FixMethodOrder
 import org.junit.Rule
+import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import org.junit.runners.Parameterized
@@ -105,6 +107,7 @@ class EnterBubbleViaOverflowMenuTest(navBar: NavBar) :
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
 
+    @Test
     override fun focusChanges() {
         eventLogSubject.focusChanges(
             messageApp.toWindowName(),
@@ -115,12 +118,18 @@ class EnterBubbleViaOverflowMenuTest(navBar: NavBar) :
         )
     }
 
+    @Test
     override fun appWindowReplacesPreviousAppAsTopWindow() {
         wmTraceSubject
             // Before clicking the overflow, the focused app is messageApp.
             .isAppWindowOnTop(messageApp)
             .then()
             .isAppWindowOnTop(LAUNCHER)
+            .then()
+            .isAppWindowOnTop(
+                ComponentNameMatcher.SNAPSHOT.or(ComponentNameMatcher.SPLASH_SCREEN),
+                isOptional = true,
+            )
             .then()
             .isAppWindowOnTop(testApp)
             .forAllEntries()

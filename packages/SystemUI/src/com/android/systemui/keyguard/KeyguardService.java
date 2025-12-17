@@ -656,6 +656,8 @@ public class KeyguardService extends Service {
             trace("doKeyguardTimeout");
             checkPermission();
 
+            // TODO(b/466145787): Remove this and use the KeyguardEnabledInteractor lockNowEvent
+            // flow to call this in that interactor.
             if (SceneContainerFlag.isEnabled()) {
                 mDeviceEntryInteractorLazy.get().lockNow("doKeyguardTimeout");
             }

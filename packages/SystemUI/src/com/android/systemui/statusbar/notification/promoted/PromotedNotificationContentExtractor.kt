@@ -52,8 +52,6 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_NONE
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.RedactionType
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
-import com.android.systemui.statusbar.notification.promoted.AutomaticPromotionCoordinator.Companion.EXTRA_AUTOMATICALLY_EXTRACTED_SHORT_CRITICAL_TEXT
-import com.android.systemui.statusbar.notification.promoted.AutomaticPromotionCoordinator.Companion.EXTRA_WAS_AUTOMATICALLY_PROMOTED
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Metric
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.NotifIcon
@@ -205,7 +203,7 @@ constructor(
                         else -> Style.CollapsedBase
                     }
                 copyNonSensitiveFields(privateModel = privateModel, publicBuilder = publicBuilder)
-                publicBuilder.shortCriticalText = publicNotification.shortCriticalText()
+                publicBuilder.shortCriticalText = publicNotification.shortCriticalText
                 publicBuilder.subText = publicNotification.subText()
                 // The standard public version is extracted as a collapsed notification,
                 //  so avoid using bigTitle or bigText, and instead get the collapsed versions.
@@ -237,9 +235,6 @@ constructor(
         // TODO: Pitch a fit if style is unsupported or mandatory fields are missing once
         // FLAG_PROMOTED_ONGOING is set reliably and we're not testing status bar chips.
 
-        contentBuilder.wasPromotedAutomatically =
-            notification.extras.getBoolean(EXTRA_WAS_AUTOMATICALLY_PROMOTED, false)
-
         contentBuilder.skeletonNotifIcon =
             sbn.skeletonAppIcon(packageContext)
                 ?: notification.skeletonSmallIcon(imageModelProvider)
@@ -251,7 +246,7 @@ constructor(
         if (NotificationChipFromCompactContent.isEnabled) {
             contentBuilder.compactContent = notification.resolveCompactContent(packageContext)
         } else {
-            contentBuilder.shortCriticalText = notification.shortCriticalText()
+            contentBuilder.shortCriticalText = notification.shortCriticalText
         }
         contentBuilder.lastAudiblyAlertedMs = lastAudiblyAlertedMs
         contentBuilder.profileBadgeBitmap = Notification.getProfileBadge(packageContext)
@@ -387,16 +382,6 @@ constructor(
 
     private fun Notification.subText(): CharSequence? =
         getCharSequenceExtraUnlessEmpty(EXTRA_SUB_TEXT)
-
-    private fun Notification.shortCriticalText(): String? {
-        if (shortCriticalText != null) {
-            return shortCriticalText
-        }
-        if (Flags.promoteNotificationsAutomatically()) {
-            return getStringExtraUnlessEmpty(EXTRA_AUTOMATICALLY_EXTRACTED_SHORT_CRITICAL_TEXT)
-        }
-        return null
-    }
 
     private fun Notification.chronometerCountDown(): Boolean =
         extras?.getBoolean(EXTRA_CHRONOMETER_COUNT_DOWN, /* defaultValue= */ false) ?: false

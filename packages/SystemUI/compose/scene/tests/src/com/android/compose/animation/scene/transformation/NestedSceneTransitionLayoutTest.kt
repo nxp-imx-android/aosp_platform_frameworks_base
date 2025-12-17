@@ -107,8 +107,8 @@ class NestedSceneTransitionLayoutTest {
                 scene(parentSceneB) {
                     NestedSceneTransitionLayout(
                         state = nestedState,
-                        modifier = Modifier.fillMaxSize(),
                         debugName = "NestedStl",
+                        modifier = Modifier.fillMaxSize(),
                     ) {
                         // The nested layout starts with the element present...
                         scene(nestedSceneC) { Box(Modifier.element(testElement)) }
@@ -195,7 +195,7 @@ class NestedSceneTransitionLayoutTest {
                 SceneTransitionLayout(state = parentState) {
                     scene(SceneA) {
                         val childState = rememberMutableSceneTransitionLayoutState(SceneC)
-                        NestedSceneTransitionLayout(state = childState, Modifier, "NestedStl") {
+                        NestedSceneTransitionLayout(state = childState, "NestedStl") {
                             scene(SceneC) { Box(Modifier.element(Foo).fillMaxSize()) }
                         }
                     }

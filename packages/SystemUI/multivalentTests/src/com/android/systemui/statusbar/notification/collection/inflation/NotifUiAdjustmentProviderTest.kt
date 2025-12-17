@@ -226,7 +226,6 @@ class NotifUiAdjustmentProviderTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_NM_SUMMARIZATION_UI)
     fun changeIsSummarization_needReInflation_newlySummarized() {
         // Given: an Entry with no summarization
         val oldAdjustment = adjustmentProvider.calculateAdjustment(entry)
@@ -244,7 +243,6 @@ class NotifUiAdjustmentProviderTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_NM_SUMMARIZATION_UI)
     fun changeIsSummarization_needReInflation_summarizationChanged() {
         // Given: an Entry with no summarization
         val rb = RankingBuilder(entry.ranking)

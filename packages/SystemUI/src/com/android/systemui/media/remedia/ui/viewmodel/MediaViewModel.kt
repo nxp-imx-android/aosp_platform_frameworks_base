@@ -340,8 +340,13 @@ constructor(
                             session.onClick(expandable)
                         }
                     }
-                    override val onClickLabel =
-                        context.getString(R.string.controls_media_playing_item_description)
+                    override val contentDescription =
+                        context.getString(
+                            R.string.controls_media_playing_item_description,
+                            session.title,
+                            session.subtitle,
+                            session.appName,
+                        )
                     override val onLongClick = {
                         mediaUiEventLogger.logLongPressOpen(
                             session.uid,

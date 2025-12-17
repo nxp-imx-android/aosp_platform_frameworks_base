@@ -348,19 +348,9 @@ final class VoiceInteractionSessionConnection implements ServiceConnection,
                                 == 0;
 
                 // Ensure that the current activity supports assist data
-                boolean isAssistDataAllowed = false;
-                if (com.android.window.flags.Flags.supportGeminiOnMultiDisplay()) {
-                    isAssistDataAllowed =
-                            mActivityTaskManagerInternal.isAssistDataForActivitiesAllowed(
-                                    topActivitiesToken);
-                } else {
-                    try {
-                        isAssistDataAllowed = mActivityTaskManager.isAssistDataAllowed();
-                    } catch (RemoteException e) {
-                        // Should never happen
-                    }
-                }
-
+                boolean isAssistDataAllowed =
+                        mActivityTaskManagerInternal.isAssistDataForActivitiesAllowed(
+                                topActivitiesToken);
                 // TODO: Refactor to have all assist data allowed checks in one place.
                 if (fetchDataAllowed && isAssistDataAllowed) {
                     ArrayList<ComponentName> topComponents = new ArrayList<>(topActivitiesCount);

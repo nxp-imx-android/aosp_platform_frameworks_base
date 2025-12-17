@@ -356,10 +356,6 @@ final class GenericWindowPolicyController extends DisplayWindowPolicyController 
             // The error dialog alerting users that streaming is blocked is always allowed.
             return true;
         }
-        if (!activityUser.isSystem() && !mAllowedUsers.contains(activityUser)) {
-            logActivityLaunchBlocked("Activity launch disallowed from user " + activityUser);
-            return false;
-        }
         if (!activityMatchesDisplayCategory(activityInfo)) {
             logActivityLaunchBlocked("The activity's required display category '"
                     + activityInfo.requiredDisplayCategory

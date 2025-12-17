@@ -5492,8 +5492,10 @@ public final class DisplayManagerService extends SystemService {
             // Any app can get information about available wifi displays.
             // Except for configure wifi display permission, which is required to get the wifi
             // display address.
-            final boolean hasConfigureWifiDisplayPermission = checkCallingPermission(
-                    android.Manifest.permission.CONFIGURE_WIFI_DISPLAY, "getWifiDisplayStatus()");
+            final int callingUid = Binder.getCallingUid();
+            final boolean hasConfigureWifiDisplayPermission = (callingUid == Process.SYSTEM_UID)
+                    || checkCallingPermission(android.Manifest.permission.CONFIGURE_WIFI_DISPLAY,
+                            "getWifiDisplayStatus()");
             final long token = Binder.clearCallingIdentity();
             try {
                 return getWifiDisplayStatusInternal(hasConfigureWifiDisplayPermission);

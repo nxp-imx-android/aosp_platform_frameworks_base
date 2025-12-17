@@ -229,7 +229,6 @@ public abstract class OomAdjuster {
     public @interface ImplicitCpuTimeReasons {
     }
 
-    public static final int DEFAULT_ZRAM_WRITEBACK_OOM_ADJ = 249;
     /**
      * Return a human readable string for OomAdjuster updates with {@link OomAdjReason}.
      */
@@ -307,7 +306,7 @@ public abstract class OomAdjuster {
 
     /**
      * The handler to execute {@link Callback#onProcessGroupUpdated} (it may be heavy if the process
-     * has many threads) for reducing the time spent in {@link #applyResultsLSP}.
+     * has many threads) for reducing the time spent in {@link #applyOomAdjLSP}.
      */
     private final Handler mProcessGroupHandler;
 
@@ -549,8 +548,8 @@ public abstract class OomAdjuster {
         }
 
         /** Sets the OOM adjustment score for a single process. */
-        public void setOomAdj(int pid, int uid, int adj, boolean forLmkdOnly) {
-            ProcessList.setOomAdj(pid, uid, adj, forLmkdOnly);
+        public void setOomAdj(int pid, int uid, int adj) {
+            ProcessList.setOomAdj(pid, uid, adj);
         }
 
         /** Sets the priority of a specific thread. */
@@ -1335,7 +1334,7 @@ public abstract class OomAdjuster {
                 if (!Flags.fixApplyOomadjOrder()) {
                     // We don't need to apply the update for the process which didn't get computed
                     if (app.getCompletedAdjSeq() == mAdjSeq) {
-                        applyResultsLSP(app, doingAll, now, nowElapsed, oomAdjReason, true);
+                        applyOomAdjLSP(app, doingAll, now, nowElapsed, oomAdjReason, true);
                     }
                 }
 
@@ -1446,7 +1445,7 @@ public abstract class OomAdjuster {
                 // We don't need to apply the update for the process which didn't get computed
                 if (!app.isKilledByAm() && app.isProcessRunning()
                         && app.getCompletedAdjSeq() == mAdjSeq) {
-                    applyResultsLSP(app, doingAll, now, nowElapsed, oomAdjReason, true);
+                    applyOomAdjLSP(app, doingAll, now, nowElapsed, oomAdjReason, true);
                 }
             }
         }
@@ -1936,11 +1935,7 @@ public abstract class OomAdjuster {
             }
         }
 
-        if (app.isZramWrittenBack()) {
-            app.setCurAdj(Math.min(adj, getAdjForZramWriteback()));
-        } else {
-            app.setCurAdj(adj);
-        }
+        app.setCurAdj(adj);
         return schedGroup;
     }
 
@@ -2206,9 +2201,11 @@ public abstract class OomAdjuster {
         mCallback.onReportOomAdjMessage(msg);
     }
 
-    /** Applies the computed oomadj. */
+    /** Applies the computed oomadj, procstate and sched group values and freezes them in set* */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    protected void applyOomAdjLSP(ProcessRecordInternal state, boolean isBatchingOomAdj) {
+    protected boolean applyOomAdjLSP(ProcessRecordInternal state, boolean doingAll, long now,
+            long nowElapsed, @OomAdjReason int oomAdjReason, boolean isBatchingOomAdj) {
+        boolean success = true;
         final UidRecordInternal uidRec = state.getUidRecord();
 
         final boolean reportDebugMsgs = DEBUG_SWITCH || DEBUG_OOM_ADJ
@@ -2217,6 +2214,8 @@ public abstract class OomAdjuster {
         if (state.getCurRawAdj() != state.getSetRawAdj()) {
             state.setSetRawAdj(state.getCurRawAdj());
         }
+
+        int changes = 0;
 
         if (state.getCurAdj() != state.getSetAdj()) {
             mCallback.onOomAdjustChanged(state.getSetAdj(), state.getCurAdj(), state);
@@ -2227,11 +2226,7 @@ public abstract class OomAdjuster {
             if (isBatchingOomAdj && mOomConstants.mEnableBatchingOomAdj) {
                 mProcsToOomAdj.add(state);
             } else {
-                boolean forLmkdOnly = false;
-                if (state.isZramWrittenBack()) {
-                    forLmkdOnly = true;
-                }
-                mInjector.setOomAdj(state.getPid(), state.uid, state.getCurAdj(), forLmkdOnly);
+                mInjector.setOomAdj(state.getPid(), state.uid, state.getCurAdj());
             }
 
             if (reportDebugMsgs) {
@@ -2245,18 +2240,7 @@ public abstract class OomAdjuster {
             }
             state.setVerifiedAdj(INVALID_ADJ);
         }
-    }
 
-    /** Applies the computed oomadj, procstate and sched group values and freezes them in set* */
-    @GuardedBy({"mServiceLock", "mProcLock"})
-    protected boolean applyResultsLSP(ProcessRecordInternal state, boolean doingAll, long now,
-            long nowElapsed, @OomAdjReason int oomAdjReason, boolean isBatchingOomAdj) {
-        final boolean reportDebugMsgs = DEBUG_SWITCH || DEBUG_OOM_ADJ
-                        || mGlobalState.isDebugEnabled(state);
-        final int oldOomAdj = state.getSetAdj();
-        boolean success = true;
-        int changes = 0;
-        applyOomAdjLSP(state, isBatchingOomAdj);
         final int curSchedGroup = state.getCurrentSchedulingGroup();
         if (state.getWaitingToKill() != null && !state.getReceivers().isReceivingBroadcast()
                 && ActivityManager.isProcStateBackground(state.getCurProcState())
@@ -2421,7 +2405,7 @@ public abstract class OomAdjuster {
         // Zygote#START_AS_TOP_APP_ARG), so boost the thread priority of its default UI thread.
         if (app.getHasForegroundActivities()) {
             try {
-                // The priority must be the same as how does {@link #applyResultsLSP} set for
+                // The priority must be the same as how does {@link #applyOomAdjLSP} set for
                 // {@link SCHED_GROUP_TOP_APP}. We don't check render thread because it
                 // is not ready when attaching.
                 app.notifyTopProcChanged();
@@ -2579,24 +2563,10 @@ public abstract class OomAdjuster {
     public abstract void onProcessEndLocked(@NonNull ProcessRecordInternal app);
 
     /**
-     * Called when the zram writeback state of a process has changed.
-     */
-    @GuardedBy("mServiceLock")
-    public abstract void onZramWritebackStateChanged(@NonNull ProcessRecordInternal app,
-            boolean inZramWritebackState);
-
-    /**
      * Called when the process state is changed outside of the OomAdjuster.
      */
     @GuardedBy("mServiceLock")
     abstract void onProcessStateChanged(@NonNull ProcessRecordInternal app, int prevProcState);
-
-    /**
-     * Configure the oom_score_adj for zram writeback.
-     */
-    protected abstract int getAdjForZramWriteback();
-
-    public abstract void configureAdjForZramWriteback(int adj);
 
     /**
      * Called when the oom adj is changed outside of the OomAdjuster.

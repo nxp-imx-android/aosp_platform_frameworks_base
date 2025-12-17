@@ -580,7 +580,6 @@ class NotificationRowContentBinderImplTest(flags: FlagsParameterization) : Sysui
 
     @Test
     @Throws(java.lang.Exception::class)
-    @EnableFlags(android.app.Flags.FLAG_NM_SUMMARIZATION)
     @DisableFlags(android.app.Flags.FLAG_NM_SUMMARIZATION_ALL)
     fun testAllMessagingStyleProcessedAsConversations() {
         val displayName = "Display Name"

@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.compatui.letterbox
 
+import com.android.window.flags.Flags
 import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy.LetterboxMode.MULTIPLE_SURFACES
 import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy.LetterboxMode.SINGLE_SURFACE
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEvent
@@ -41,6 +42,8 @@ constructor(private val letterboxConfiguration: LetterboxConfiguration) {
 
     @Volatile private var supportsInputSurface: Boolean = false
 
+    @Volatile private var supportsShellRoundedCorners: Boolean = false
+
     fun configureLetterboxMode(event: LetterboxLifecycleEvent) {
         // Decides whether to use a single surface or multiple surfaces for the letterbox.
         // The primary trade-off is memory usage versus rendering performance.
@@ -56,6 +59,11 @@ constructor(private val letterboxConfiguration: LetterboxConfiguration) {
                 else -> SINGLE_SURFACE
             }
         supportsInputSurface = event.supportsInput
+        supportsShellRoundedCorners =
+            Flags.appCompatRefactoringRoundedCornersOnTransparent() &&
+                event.isTranslucent &&
+                !event.mainWindowHasRoundedCorners &&
+                letterboxConfiguration.isLetterboxActivityCornersRounded()
     }
 
     /** @return The specific mode to use for implementing letterboxing for the given [request]. */
@@ -63,4 +71,7 @@ constructor(private val letterboxConfiguration: LetterboxConfiguration) {
 
     /** Tells if the input surface should be created or not. This enabled reachability. */
     fun shouldSupportInputSurface(): Boolean = supportsInputSurface
+
+    /** Tells if the rounded corners controller should be created or not. */
+    fun shouldSupportShellRoundedCorners(): Boolean = supportsShellRoundedCorners
 }

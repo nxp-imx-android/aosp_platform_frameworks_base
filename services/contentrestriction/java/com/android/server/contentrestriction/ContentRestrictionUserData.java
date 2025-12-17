@@ -19,14 +19,18 @@ package com.android.server.contentrestriction;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
-import android.util.ArraySet;
 import android.util.IndentingPrintWriter;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /** User specific data, used internally by the {@link ContentRestrictionService}. */
 public class ContentRestrictionUserData {
     public final @UserIdInt int userId;
     public boolean contentRestrictionEnabled;
-    ArraySet<String> contentRestrictionRoleHolders = new ArraySet<>();
+    public Map<String, List<String>> contentRestrictionPackages = new HashMap<>();
 
     public ContentRestrictionUserData(@UserIdInt int userId) {
         this.userId = userId;
@@ -37,7 +41,7 @@ public class ContentRestrictionUserData {
         pw.println("User " + userId + ":");
         pw.increaseIndent();
         pw.println("contentRestrictionEnabled: " + contentRestrictionEnabled);
-        pw.println("contentRestrictionRoleHolders: " + contentRestrictionRoleHolders);
+        pw.println("contentRestrictionPackages: " + contentRestrictionPackages);
         pw.decreaseIndent();
     }
 }

@@ -619,16 +619,23 @@ public abstract class IContextHubWrapper {
             for (android.hardware.contexthub.HubInfo halHub : halHubs) {
                 /* HAL -> API Type conversion */
                 final HubInfo hubInfo;
+                boolean dataFlowsSupported = false;
+                if (Flags.fmcqImplementation()) {
+                    android.hardware.contexthub.SharedDataCapabilities capabilities =
+                            halHub.sharedDataCapabilities;
+                    dataFlowsSupported =
+                            capabilities != null ? capabilities.dataFlowsSupported : false;
+                }
                 switch (halHub.hubDetails.getTag()) {
                     case android.hardware.contexthub.HubInfo.HubDetails.contextHubInfo:
                         ContextHubInfo contextHubInfo =
                                 new ContextHubInfo(halHub.hubDetails.getContextHubInfo());
-                        hubInfo = new HubInfo(halHub.hubId, contextHubInfo);
+                        hubInfo = new HubInfo(halHub.hubId, contextHubInfo, dataFlowsSupported);
                         break;
                     case android.hardware.contexthub.HubInfo.HubDetails.vendorHubInfo:
                         VendorHubInfo vendorHubInfo =
                                 new VendorHubInfo(halHub.hubDetails.getVendorHubInfo());
-                        hubInfo = new HubInfo(halHub.hubId, vendorHubInfo);
+                        hubInfo = new HubInfo(halHub.hubId, vendorHubInfo, dataFlowsSupported);
                         break;
                     default:
                         Log.w(TAG, "getHubs: invalid hub: " + halHub);

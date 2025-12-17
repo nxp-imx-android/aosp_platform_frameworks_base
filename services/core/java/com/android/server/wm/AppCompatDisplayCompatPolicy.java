@@ -22,6 +22,7 @@ import static android.content.pm.ActivityInfo.CONFIG_KEYBOARD;
 import static android.content.pm.ActivityInfo.CONFIG_KEYBOARD_HIDDEN;
 import static android.content.pm.ActivityInfo.CONFIG_NAVIGATION;
 import static android.content.pm.ActivityInfo.CONFIG_TOUCHSCREEN;
+import static android.content.pm.ActivityInfo.FLAG_EXCLUDE_FROM_RECENTS;
 import static android.view.Display.TYPE_INTERNAL;
 import static android.window.DesktopExperienceFlags.ENABLE_AUTO_RECOVERY_FROM_SELF_KILL;
 
@@ -78,6 +79,7 @@ class AppCompatDisplayCompatPolicy {
 
     /**
      * {@code true} if the activity has moved to a different display and has not been restarted yet.
+     * This is only set true when an external monitor is involved.
      */
     private boolean mDisplayChangedWithoutRestart;
 
@@ -121,7 +123,12 @@ class AppCompatDisplayCompatPolicy {
                 && newDisplay.getDisplayInfo().type == TYPE_INTERNAL) {
             // A transition between internal displays (fold<->unfold on foldable) is not considered
             // display move here for now because they generally have many configurations in common,
-            // thus are less likely to cause compat issues.
+            // thus are less likely to cause compat issues. However, for foldables whose display
+            // different densities, we provide the option to enable self-kill recovery logic.
+            if (mActivityRecord.mWmService.mAppCompatConfiguration
+                    .isSelfKillRecoveryBetweenInternalDisplaysEnabled()) {
+                mSelfKillStateMachine.onMovedToDisplay(previousDisplay, newDisplay);
+            }
             return;
         }
 
@@ -330,7 +337,9 @@ class AppCompatDisplayCompatPolicy {
                 @NonNull DisplayContent newDisplay) {
             if (mActivityRecord.mAppCompatController.getTransparentPolicy().isRunning()
                     || mActivityRecord.getTask() == null
-                    || mActivityRecord != mActivityRecord.getTask().topRunningActivity()) {
+                    || mActivityRecord != mActivityRecord.getTask().topRunningActivity()
+                    || (mActivityRecord.intent.getFlags() & FLAG_EXCLUDE_FROM_RECENTS) != 0
+                    || !mActivityRecord.isActivityTypeStandardOrUndefined()) {
                 return;
             }
             final Transition displayMoveTransition =

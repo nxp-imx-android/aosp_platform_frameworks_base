@@ -19,7 +19,6 @@ package com.android.virtualdevicemanager;
 import android.app.Activity;
 import android.app.ActivityOptions;
 import android.app.Dialog;
-import android.companion.virtual.IVirtualDeviceManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.IntentSender;
@@ -28,7 +27,6 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.ResultReceiver;
-import android.os.ServiceManager;
 import android.util.Slog;
 import android.view.View;
 import android.widget.ImageView;
@@ -127,24 +125,20 @@ public class AutomatedAppLaunchWarningActivityFragment  extends DialogFragment {
     }
 
     private void onStop(View view) {
-        var vdm = IVirtualDeviceManager.Stub.asInterface(
-                ServiceManager.getService(Context.VIRTUAL_DEVICE_SERVICE));
-        if (vdm == null) {
-            Slog.e(TAG, "Failed to get VDM");
-            requireActivity().finish();
-        }
-
         mResultReceiver.send(Activity.RESULT_OK, null);
+        startIntentSender(requireActivity(), mTarget);
+        requireActivity().finish();
+    }
 
+    static void startIntentSender(@NonNull Context context, @NonNull IntentSender target) {
         final Bundle activityOptions = ActivityOptions.makeBasic()
                 .setPendingIntentBackgroundActivityStartMode(
                         ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED)
                 .toBundle();
         try {
-            mTarget.sendIntent(requireActivity(), 0, null, null, activityOptions, null, null);
+            target.sendIntent(context, 0, null, null, activityOptions, null, null);
         } catch (IntentSender.SendIntentException e) {
-            Slog.e(TAG, "Error while starting intent " + mTarget, e);
+            Slog.e(TAG, "Error while starting intent " + target, e);
         }
-        requireActivity().finish();
     }
 }

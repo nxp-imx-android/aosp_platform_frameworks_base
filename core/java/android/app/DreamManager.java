@@ -246,7 +246,6 @@ public class DreamManager {
      *
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_ALLOW_DREAM_WHEN_POSTURED)
     @RequiresPermission(android.Manifest.permission.WRITE_DREAM_STATE)
     public void setDevicePostured(boolean isPostured) {
         try {

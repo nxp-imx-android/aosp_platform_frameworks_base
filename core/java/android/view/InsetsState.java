@@ -744,11 +744,17 @@ public class InsetsState implements Parcelable {
         }
     }
 
-    void dumpDebug(@NonNull ProtoOutputStream proto, long fieldId) {
+    /**
+     * Write to a protocol buffer output stream.
+     * Protocol buffer message definition at {@link InsetsStateProto}
+     *
+     * @param proto Stream to write the InsetsState object to.
+     * @param fieldId Field Id of the InsetsState as defined in the parent message.
+     */
+    public void dumpDebug(@NonNull ProtoOutputStream proto, long fieldId) {
         final long token = proto.start(fieldId);
-        final InsetsSource source = mSources.get(InsetsSource.ID_IME);
-        if (source != null) {
-            source.dumpDebug(proto, SOURCES);
+        for (int i = 0, size = mSources.size(); i < size; i++) {
+            mSources.valueAt(i).dumpDebug(proto, SOURCES);
         }
         mDisplayFrame.dumpDebug(proto, DISPLAY_FRAME);
         mDisplayCutout.get().dumpDebug(proto, DISPLAY_CUTOUT);

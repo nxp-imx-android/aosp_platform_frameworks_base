@@ -159,7 +159,9 @@ class BridgedNotificationInfoTest : SysuiTestCase() {
         val bridgedMetadata =
             BridgedNotificationMetadata(
                 BridgedNotificationMetadata.BRIDGED_METADATA_TYPE_PHONE,
+                "test_display_name",
                 "test_package",
+                "test_channel_id",
                 icon,
             )
         val notification =

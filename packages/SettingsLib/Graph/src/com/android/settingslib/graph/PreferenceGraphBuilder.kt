@@ -61,6 +61,7 @@ import com.android.settingslib.metadata.PreferenceTitleProvider
 import com.android.settingslib.metadata.ReadWritePermit
 import com.android.settingslib.metadata.SensitivityLevel.Companion.HIGH_SENSITIVITY
 import com.android.settingslib.metadata.SensitivityLevel.Companion.UNKNOWN_SENSITIVITY
+import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreen
 import com.android.settingslib.metadata.getPreferenceIcon
 import com.android.settingslib.metadata.isPreferenceIndexable
 import com.android.settingslib.preference.PreferenceScreenCreator
@@ -311,10 +312,16 @@ private constructor(
     }
 
     private fun checkScreenFlag(metadata: PreferenceScreenMetadata): Boolean {
-        if (
-            !forceIncludeAllScreens &&
-                (metadata as? PreferenceScreenCreator)?.isFlagEnabled(context) == false
-        ) {
+        val isFlagDisabled = when (metadata) {
+            is PreferenceScreenCreator, is PreferencesApiScreen-> {
+                !metadata.isFlagEnabled(context)
+            }
+            else -> {
+                false
+            }
+        }
+
+        if (!forceIncludeAllScreens && isFlagDisabled) {
             Log.w(TAG, "Ignore ${metadata.key} as the flag is disabled")
             return false
         }

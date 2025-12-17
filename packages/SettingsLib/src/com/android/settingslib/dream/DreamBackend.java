@@ -16,8 +16,6 @@
 
 package com.android.settingslib.dream;
 
-import static android.service.dreams.Flags.allowDreamWhenPostured;
-
 import android.annotation.IntDef;
 import android.content.ComponentName;
 import android.content.Context;
@@ -556,19 +554,17 @@ public class DreamBackend {
     }
 
     public boolean isActivatedOnPostured() {
-        return allowDreamWhenPostured()
-                && getBoolean(Settings.Secure.SCREENSAVER_ACTIVATE_ON_POSTURED,
-                        mDreamsActivatedOnPosturedByDefault);
+        return getBoolean(
+                Settings.Secure.SCREENSAVER_ACTIVATE_ON_POSTURED,
+                mDreamsActivatedOnPosturedByDefault);
     }
 
     /**
      * Sets whether dreams should be activated when the device is postured (stationary and upright)
      */
     public void setActivatedOnPostured(boolean value) {
-        if (allowDreamWhenPostured()) {
-            logd("setActivatedOnPostured(%s)", value);
-            setBoolean(Settings.Secure.SCREENSAVER_ACTIVATE_ON_POSTURED, value);
-        }
+        logd("setActivatedOnPostured(%s)", value);
+        setBoolean(Settings.Secure.SCREENSAVER_ACTIVATE_ON_POSTURED, value);
     }
 
     private boolean getBoolean(String key, boolean def) {

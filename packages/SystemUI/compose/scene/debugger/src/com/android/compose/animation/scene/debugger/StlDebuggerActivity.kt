@@ -19,13 +19,12 @@ package com.android.compose.animation.scene.debugger
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material3.Text
 import com.android.compose.theme.PlatformTheme
 
 class StlDebuggerActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { PlatformTheme { Text("Hello StlDebugger") } }
+        setContent { PlatformTheme { StlDebuggerScreen() } }
     }
 }

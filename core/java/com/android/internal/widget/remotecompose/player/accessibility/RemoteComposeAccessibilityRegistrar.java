@@ -15,6 +15,7 @@
  */
 package com.android.internal.widget.remotecompose.player.accessibility;
 
+import android.annotation.NonNull;
 import android.view.View;
 
 import com.android.internal.widget.remotecompose.core.CoreDocument;
@@ -39,7 +40,8 @@ public interface RemoteComposeAccessibilityRegistrar {
      * @param document The CoreDocument containing the accessibility information for the UI
      *     elements.
      */
-    void setAccessibilityDelegate(View remoteComposePlayer, CoreDocument document);
+    void setAccessibilityDelegate(
+            @NonNull View remoteComposePlayer, @NonNull CoreDocument document);
 
     /**
      * Clears the accessibility delegate for the given remote compose player. Used when the document
@@ -50,5 +52,5 @@ public interface RemoteComposeAccessibilityRegistrar {
      *
      * @param remoteComposePlayer The View representing the remote compose player.
      */
-    void clearAccessibilityDelegate(View remoteComposePlayer);
+    void clearAccessibilityDelegate(@NonNull View remoteComposePlayer);
 }

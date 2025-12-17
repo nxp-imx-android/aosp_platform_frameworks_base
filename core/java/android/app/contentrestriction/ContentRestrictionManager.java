@@ -90,7 +90,7 @@ public class ContentRestrictionManager {
     public boolean isContentRestrictionEnabled() {
         if (mService != null) {
             try {
-                return mService.isContentRestrictionEnabled(mContext.getUserId());
+                return mService.isContentRestrictionEnabledForUser(mContext.getUserId());
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }

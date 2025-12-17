@@ -603,6 +603,23 @@ java_library {
     apex_available: ["//apex_available:platform"],
 }
 
+// "framework-minus-internal-res" is identical to "framework.jar", except that
+// com.android.internal.R is removed. This module is used only by the build
+// system for product apps which are allowlisted to use select hidden APIs.
+// Internal resources must not be used when the target app may be unbundled,
+// so this module explicitly removes such internal resources, while retaining
+// hidden APIs as-is.
+java_library {
+    name: "framework-minus-internal-res",
+    installable: false,
+    static_libs: [
+        "framework",
+    ],
+    jarjar_rules: "framework-minus-internal-res-jarjar-rules.txt",
+    sdk_version: "core_platform",
+    apex_available: ["//apex_available:platform"],
+}
+
 java_library {
     name: "framework-minus-apex-install-dependencies",
     required: [

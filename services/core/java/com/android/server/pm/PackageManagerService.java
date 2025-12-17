@@ -4846,7 +4846,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 }
             });
             // Send UNSTOPPED broadcast if necessary
-            if (wasStopped && Flags.stayStopped()) {
+            if (wasStopped) {
                 Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, "unstoppedBroadcast");
                 final PackageManagerInternal pmi =
                         mInjector.getLocalService(PackageManagerInternal.class);
@@ -7408,23 +7408,15 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             final Bundle extras = new Bundle();
             extras.putInt(Intent.EXTRA_UID, uid);
             extras.putInt(Intent.EXTRA_USER_HANDLE, userId);
-            if (android.content.pm.Flags.stayStopped()) {
-                extras.putLong(Intent.EXTRA_TIME, SystemClock.elapsedRealtime());
-                // Sent async using the PM handler, to maintain ordering with PACKAGE_UNSTOPPED
-                mHandler.post(() -> {
-                    mBroadcastHelper.sendPackageBroadcast(Intent.ACTION_PACKAGE_RESTARTED,
-                            packageName, extras, flags, null /* targetPkg */,
-                            null /* finishedReceiver */, userIds, null /* instantUserIds */,
-                            broadcastAllowList, null /* filterExtrasForReceiver */,
-                            null /* bOptions */, null /* requiredPermissions */);
-                });
-            } else {
+            extras.putLong(Intent.EXTRA_TIME, SystemClock.elapsedRealtime());
+            // Sent async using the PM handler, to maintain ordering with PACKAGE_UNSTOPPED
+            mHandler.post(() -> {
                 mBroadcastHelper.sendPackageBroadcast(Intent.ACTION_PACKAGE_RESTARTED,
                         packageName, extras, flags, null /* targetPkg */,
                         null /* finishedReceiver */, userIds, null /* instantUserIds */,
-                        broadcastAllowList, null /* filterExtrasForReceiver */, null /* bOptions */,
-                        null /* requiredPermissions */);
-            }
+                        broadcastAllowList, null /* filterExtrasForReceiver */,
+                        null /* bOptions */, null /* requiredPermissions */);
+            });
             mPackageMonitorCallbackHelper.notifyPackageMonitor(Intent.ACTION_PACKAGE_RESTARTED,
                     packageName, extras, userIds, null /* instantUserIds */,
                     broadcastAllowList, mHandler, null /* filterExtras */);

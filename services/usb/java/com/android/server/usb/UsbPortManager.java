@@ -82,8 +82,11 @@ import com.android.server.usb.hal.port.UsbPortHalInstance;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Allows trusted components to control the properties of physical USB ports
@@ -178,10 +181,45 @@ public class UsbPortManager implements IBinder.DeathRecipient {
 
     private long mTransactionId;
 
+    // Debounce fields for returning PowerProfileInfo change callback
+    private static final int POWER_PROFILE_INFO_DEBOUNCE_MS = 3000;
+
+    private Debouncer mPowerProfileInfoDebouncer = new Debouncer(POWER_PROFILE_INFO_DEBOUNCE_MS);
+
     public UsbPortManager(Context context) {
         mContext = context;
         mUsbPortHal = UsbPortHalInstance.getInstance(this, null);
         logAndPrint(Log.DEBUG, null, "getInstance done");
+    }
+
+    // Debouncer used for directed callbacks where intermediate states can trigger and are
+    // unnecessary
+    private class Debouncer {
+        private final long mDelayMs;
+        private Timer mTimer;
+        private Runnable mAction;
+
+        Debouncer(long delayMs) {
+            mDelayMs = delayMs;
+        }
+
+        public void debounce(Runnable action) {
+            if (mTimer != null) {
+                mTimer.cancel();
+            }
+
+            mAction = action;
+
+            mTimer = new Timer();
+            mTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    if (mAction != null) {
+                        mAction.run();
+                    }
+                }
+            }, mDelayMs);
+        }
     }
 
     public void systemReady() {
@@ -1298,15 +1336,15 @@ public class UsbPortManager implements IBinder.DeathRecipient {
         sendBc12TypeCallbackLocked(portInfo, pw);
     }
 
-    private void handlePowerProfileInfoChangedLocked(PortInfo portInfo, IndentingPrintWriter pw) {
-        UsbPortStatus portStatus = portInfo.mUsbPortStatus;
-        StringBuilder mString = new StringBuilder("USB port power profiles changed: portId=");
-        mString.append(portInfo.mUsbPort.getId());
-        mString.append(", ");
-        mString.append(portStatus.getPowerProfileInfoString());
+    private void debouncePowerProfileInfoChanged(PortInfo portInfo, IndentingPrintWriter pw) {
+        synchronized (mPowerProfileInfoListenerLock) {
+            mPowerProfileInfoDebouncer.debounce(() -> sendPowerProfileInfoCallbackLocked(
+                    portInfo, pw));
+        }
+    }
 
-        logAndPrint(Log.INFO, pw, mString.toString());
-        sendPowerProfileInfoCallbackLocked(portInfo, pw);
+    private void handlePowerProfileInfoChangedLocked(PortInfo portInfo, IndentingPrintWriter pw) {
+        debouncePowerProfileInfoChanged(portInfo, pw);
     }
 
     private void handlePortRemovedLocked(PortInfo portInfo, IndentingPrintWriter pw) {
@@ -1442,6 +1480,13 @@ public class UsbPortManager implements IBinder.DeathRecipient {
 
     private void sendPowerProfileInfoCallbackLocked(PortInfo portInfo, IndentingPrintWriter pw) {
         ParcelableUsbPort parcelablePort = ParcelableUsbPort.of(portInfo.mUsbPort);
+        UsbPortStatus portStatus = portInfo.mUsbPortStatus;
+        StringBuilder mString = new StringBuilder("USB port power profiles changed: portId=");
+        mString.append(portInfo.mUsbPort.getId());
+        mString.append(", ");
+        mString.append(portStatus.getPowerProfileInfoString());
+
+        logAndPrint(Log.INFO, pw, mString.toString());
 
         synchronized (mPowerProfileInfoListenerLock) {
             for (IPowerProfileInfoListener mListener : mPowerProfileInfoListeners.values()) {
@@ -1625,7 +1670,6 @@ public class UsbPortManager implements IBinder.DeathRecipient {
         public int mBc12TypeChanged;
         // default initialized to 0 which means unchanged
         public int mPowerProfileInfoChanged;
-
 
         PortInfo(@NonNull UsbManager usbManager, @NonNull String portId, int supportedModes,
                 int supportedContaminantProtectionModes,

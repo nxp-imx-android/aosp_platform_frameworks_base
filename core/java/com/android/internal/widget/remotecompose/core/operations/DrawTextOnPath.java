@@ -59,6 +59,7 @@ public class DrawTextOnPath extends PaintOperation implements VariableSupport, S
 
     @Override
     public void registerListening(@NonNull RemoteContext context) {
+        context.listensTo(mTextId, this);
         if (Float.isNaN(mHOffset)) {
             context.listensTo(Utils.idFromNan(mHOffset), this);
         }

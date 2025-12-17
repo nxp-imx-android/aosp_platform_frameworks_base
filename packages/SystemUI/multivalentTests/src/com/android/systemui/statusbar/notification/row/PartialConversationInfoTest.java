@@ -360,24 +360,6 @@ public class PartialConversationInfoTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags({Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI, Flags.FLAG_NM_SUMMARIZATION,
-            Flags.FLAG_NM_SUMMARIZATION_UI})
-    public void testBindNotification_HidesFeedbackLink_flagOff() {
-        mInfo.bindNotification(
-                mMockPackageManager,
-                mMockINotificationManager,
-                mChannelEditorDialogController,
-                TEST_PACKAGE_NAME,
-                mEntry.getRanking(),
-                mSbn,
-                null,
-                null,
-                true,
-                true);
-        assertThat(mInfo.findViewById(R.id.feedback).getVisibility()).isEqualTo(GONE);
-    }
-
-    @Test
     @EnableFlags(Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI)
     public void testBindNotification_SetsFeedbackLink_isReservedChannel() {
         mEntry.setRanking(
@@ -408,7 +390,6 @@ public class PartialConversationInfoTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NM_SUMMARIZATION_UI)
     public void testBindNotification_SetsFeedbackLink_hasSummarization() {
         mEntry.setRanking(
                 new RankingBuilder(mEntry.getRanking())

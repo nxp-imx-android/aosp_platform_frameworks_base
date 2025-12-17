@@ -79,19 +79,11 @@ flag {
     bug: "407149510"
 }
 
- flag {
-     namespace: "windowing_sdk"
-     name: "enable_bubble_root_task"
-     description: "Using a root task to manage Bubble tasks"
-     bug: "407669465"
- }
-
 flag {
     namespace: "windowing_sdk"
-    name: "support_gemini_on_multi_display"
-    description: "Launch Gemini on a multi-display environment"
-    bug: "400351723"
-    is_fixed_read_only: true
+    name: "enable_bubble_root_task"
+    description: "Using a root task to manage Bubble tasks"
+    bug: "407669465"
 }
 
 flag {
@@ -215,6 +207,16 @@ flag {
     name: "clear_lock_task_when_task_end"
     description: "Clear the lock task when the last activity in the task finishes"
     bug: "461662709"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    namespace: "windowing_sdk"
+    name: "use_caller_token_in_launcher_apps"
+    description: "Pass caller's activity token in LauncherApps to fix task property inheritance (e.g. launcher shortcut move bubbled task to fullscreen)"
+    bug: "389810202"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

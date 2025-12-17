@@ -21,7 +21,6 @@ import android.annotation.UserIdInt;
 import android.os.Environment;
 import android.util.AtomicFile;
 import android.util.Slog;
-import android.util.ArraySet;
 import android.util.SparseArray;
 import android.util.Xml;
 import com.android.internal.annotations.VisibleForTesting;
@@ -32,6 +31,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import org.xmlpull.v1.XmlPullParserException;
 
 /**
@@ -51,8 +53,10 @@ public class ContentRestrictionSettings {
     private static final String PREF_USER_DATA = "contentrestriction_user_data";
     private static final String KEY_USER_ID = "user_id";
     private static final String KEY_ENABLED = "contentrestriction_enabled";
-    private static final String KEY_ROLE_HOLDERS_LIST = "contentrestriction_role_holders_list";
-    private static final String KEY_ROLE_HOLDER = "contentrestriction_role_holder";
+    private static final String KEY_PACKAGES = "contentrestriction_packages";
+    private static final String KEY_SOURCE = "contentrestriction_source";
+    private static final String KEY_PACKAGE = "contentrestriction_package";
+    private static final String ATTR_NAME = "name";
 
     private AtomicFile userDataFile =
             new AtomicFile(
@@ -131,15 +135,26 @@ public class ContentRestrictionSettings {
                 xml.startTag(null, PREF_USER_DATA);
                 xml.attributeInt(null, KEY_USER_ID, data.userId);
                 xml.attributeBoolean(null, KEY_ENABLED, data.contentRestrictionEnabled);
-                if (data.contentRestrictionRoleHolders != null
-                        && !data.contentRestrictionRoleHolders.isEmpty()) {
-                    xml.startTag(null, KEY_ROLE_HOLDERS_LIST);
-                    for (String roleHolder : data.contentRestrictionRoleHolders) {
-                        xml.startTag(null, KEY_ROLE_HOLDER);
-                        xml.attribute(null, "package", roleHolder);
-                        xml.endTag(null, KEY_ROLE_HOLDER);
+                if (data.contentRestrictionPackages != null
+                        && !data.contentRestrictionPackages.isEmpty()) {
+                    xml.startTag(null, KEY_PACKAGES);
+                    for (Map.Entry<String, List<String>> entry :
+                            data.contentRestrictionPackages.entrySet()) {
+                        final String sourceName = entry.getKey();
+                        final List<String> packageNames = entry.getValue();
+                        if (packageNames == null || packageNames.isEmpty()) {
+                            continue;
+                        }
+                        xml.startTag(null, KEY_SOURCE);
+                        xml.attribute(null, ATTR_NAME, sourceName);
+                        for (String packageName : packageNames) {
+                            xml.startTag(null, KEY_PACKAGE);
+                            xml.attribute(null, ATTR_NAME, packageName);
+                            xml.endTag(null, KEY_PACKAGE);
+                        }
+                        xml.endTag(null, KEY_SOURCE);
                     }
-                    xml.endTag(null, KEY_ROLE_HOLDERS_LIST);
+                    xml.endTag(null, KEY_PACKAGES);
                 }
                 xml.endTag(null, PREF_USER_DATA);
             }
@@ -157,14 +172,13 @@ public class ContentRestrictionSettings {
         final int userId = parser.getAttributeInt(null, KEY_USER_ID);
         final ContentRestrictionUserData data = getUserData(userId);
 
-        data.contentRestrictionRoleHolders = new ArraySet<>();
         data.contentRestrictionEnabled = parser.getAttributeBoolean(null, KEY_ENABLED);
 
         final int depth = parser.getDepth();
         while (XmlUtils.nextElementWithin(parser, depth)) {
             final String tagName = parser.getName();
-            if (KEY_ROLE_HOLDERS_LIST.equals(tagName)) {
-                parseRoleHolders(parser, data);
+            if (KEY_PACKAGES.equals(tagName)) {
+                parsePackages(parser, data);
             } else if (tagName != null) {
                 Slog.w(TAG, "Unknown tag under <" + PREF_USER_DATA + ">: " + tagName);
                 XmlUtils.skipCurrentTag(parser);
@@ -172,16 +186,31 @@ public class ContentRestrictionSettings {
         }
     }
 
-    private void parseRoleHolders(TypedXmlPullParser parser, ContentRestrictionUserData data)
+    private void parsePackages(TypedXmlPullParser parser, ContentRestrictionUserData data)
             throws IOException, XmlPullParserException {
-        final int roleHoldersDepth = parser.getDepth();
-        while (XmlUtils.nextElementWithin(parser, roleHoldersDepth)) {
-            if (KEY_ROLE_HOLDER.equals(parser.getName())) {
-                final String roleHolder = parser.getAttributeValue(null, "package");
-                if (roleHolder != null) {
-                    data.contentRestrictionRoleHolders.add(roleHolder);
+        final int packagesDepth = parser.getDepth();
+        while (XmlUtils.nextElementWithin(parser, packagesDepth)) {
+            if (KEY_SOURCE.equals(parser.getName())) {
+                final String sourceName = parser.getAttributeValue(null, ATTR_NAME);
+                if (sourceName != null) {
+                    data.contentRestrictionPackages.put(sourceName, parseSourcePackages(parser));
                 }
             }
         }
+    }
+
+    private List<String> parseSourcePackages(TypedXmlPullParser parser)
+            throws IOException, XmlPullParserException {
+        final List<String> packageNames = new ArrayList<>();
+        final int sourceDepth = parser.getDepth();
+        while (XmlUtils.nextElementWithin(parser, sourceDepth)) {
+            if (KEY_PACKAGE.equals(parser.getName())) {
+                final String packageName = parser.getAttributeValue(null, ATTR_NAME);
+                if (packageName != null) {
+                    packageNames.add(packageName);
+                }
+            }
+        }
+        return packageNames;
     }
 }

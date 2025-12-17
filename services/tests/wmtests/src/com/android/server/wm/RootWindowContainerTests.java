@@ -1829,6 +1829,43 @@ public class RootWindowContainerTests extends WindowTestsBase {
         verify(mAtm, times(2)).onTaskMoveAllowedChanged();
     }
 
+    @Test
+    public void testUpdateFocusedWindowLocked_skipsRemovingOrRemovedDisplay() {
+        // Create a second display and spy on it and the default display.
+        final TestDisplayContent secondDisplay =
+                addNewDisplayContentAt(DisplayContent.POSITION_TOP);
+        spyOn(mDisplayContent);
+        spyOn(secondDisplay);
+
+        // Case 1: Test that a "removing" display is skipped.
+        doReturn(true).when(secondDisplay).isRemoving();
+
+        // Update focused window.
+        mRootWindowContainer.updateFocusedWindowLocked(
+                WindowManagerService.UPDATE_FOCUS_NORMAL, true /* updateInputWindows */);
+
+        // Verify that updateFocusedWindowLocked is called on the default display.
+        verify(mDisplayContent).updateFocusedWindowLocked(anyInt(), anyBoolean(), anyInt());
+        // Verify that updateFocusedWindowLocked is NOT called on the removing display.
+        verify(secondDisplay, never()).updateFocusedWindowLocked(anyInt(), anyBoolean(), anyInt());
+
+        // Reset mocks for the next case.
+        reset(mDisplayContent, secondDisplay);
+
+        // Case 2: Test that a "removed" display is skipped.
+        doReturn(false).when(secondDisplay).isRemoving(); // ensure previous mock is gone
+        doReturn(true).when(secondDisplay).isRemoved();
+
+        // Update focused window again.
+        mRootWindowContainer.updateFocusedWindowLocked(
+                WindowManagerService.UPDATE_FOCUS_NORMAL, true /* updateInputWindows */);
+
+        // Verify that updateFocusedWindowLocked is called on the default display.
+        verify(mDisplayContent).updateFocusedWindowLocked(anyInt(), anyBoolean(), anyInt());
+        // Verify that updateFocusedWindowLocked is NOT called on the removed display.
+        verify(secondDisplay, never()).updateFocusedWindowLocked(anyInt(), anyBoolean(), anyInt());
+    }
+
     /**
      * Mock {@link RootWindowContainer#resolveHomeActivity} for returning consistent activity
      * info for test cases.

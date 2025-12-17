@@ -15,6 +15,8 @@
  */
 package com.android.internal.widget.remotecompose.player.platform;
 
+import android.annotation.NonNull;
+
 import com.android.internal.widget.remotecompose.core.CoreDocument;
 
 /** Provides haptic support */
@@ -54,7 +56,7 @@ public class HapticSupport {
      *
      * @param view
      */
-    public void setupHaptics(RemoteComposeView view) {
+    public void setupHaptics(@NonNull RemoteComposeView view) {
         view.setHapticEngine(
                 new CoreDocument.HapticEngine() {
 

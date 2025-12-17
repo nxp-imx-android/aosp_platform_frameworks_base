@@ -1493,7 +1493,6 @@ public class UserManagerService extends IUserManager.Stub {
 
     void setBootUserIdUnchecked(@UserIdInt int userId) {
         synchronized (mUsersLock) {
-            // TODO(b/263381643): Change to EventLog.
             Slogf.i(LOG_TAG, "setBootUser %d", userId);
             mBootUser = userId;
         }

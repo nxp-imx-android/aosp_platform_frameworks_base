@@ -21,7 +21,6 @@ import android.content.SharedPreferences
 import android.graphics.Rect
 import androidx.core.content.edit
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepository
-import com.android.systemui.ambientcue.shared.flag.AmbientCueFlag
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.domain.interactor.SharedPreferencesInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
@@ -59,13 +58,12 @@ constructor(
     val actions: Flow<List<ActionModel>> =
         combine(repository.actions, repository.dismissedGroups) { actions, dismissedGroupsMap ->
             // Filter Dismissed Actions
-            actions.filterNot { action: ActionModel ->
-                val groupId = action.dismissalGroupId
-                if (groupId.isNullOrEmpty() || !AmbientCueFlag.isAmbientCueWithImeVisibleEnabled) {
-                    return@filterNot false
-                }
-                val expiry = dismissedGroupsMap[groupId] ?: return@filterNot false
-                clock.currentTime().isBefore(expiry)
+            actions.filter { action: ActionModel ->
+                val groupId =
+                    action.dismissalGroupId.takeIf { !it.isNullOrEmpty() } ?: return@filter true
+                val expiry = dismissedGroupsMap[groupId] ?: return@filter true
+                // If current time is after dismissal expiry, keep the action
+                clock.currentTime().isAfter(expiry)
             }
         }
     val isImeVisible: StateFlow<Boolean> = repository.isImeVisible

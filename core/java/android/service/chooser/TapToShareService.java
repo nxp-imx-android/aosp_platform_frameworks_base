@@ -73,7 +73,7 @@ import android.service.chooser.Flags;
  * </ul>
  *
  * <p>When a compatible device is detected via an NFC tap, the subclass must call
- * {@link #doTapToShare()} to notify the system sharesheet that a device is ready to
+ * {@link #performTapToShare()} to notify the system sharesheet that a device is ready to
  * receive the shared content.
  *
  * <p>The Tap-To-Share feature is enabled by a configuration that defines two key components:
@@ -166,8 +166,8 @@ public abstract class TapToShareService extends Service {
      * This method is primarily responsible for informing the sharesheet that device discovery has
      * occurred, and does not handle the data transfer directly.
      */
-    public final void doTapToShare() {
-        mHandler.post(this::handleDoTapToShare);
+    public final void performTapToShare() {
+        mHandler.post(this::handlePerformTapToShare);
     }
 
     private void handleSetActiveCallback(ITapToShareCallback callback) {
@@ -216,16 +216,16 @@ public abstract class TapToShareService extends Service {
         }
     }
 
-    private void handleDoTapToShare() {
+    private void handlePerformTapToShare() {
         if (mActiveCallback != null) {
             try {
-                mActiveCallback.doTapToShare();
+                mActiveCallback.performTapToShare();
             } catch (RemoteException e) {
                 Log.e(TAG, "Error invoking ITapToShareCallback, client may have died.", e);
                 handleClearActiveCallback(mActiveCallback);
             }
         } else {
-            Log.d(TAG, "doTapToShare called but no callback registered.");
+            Log.d(TAG, "performTapToShare called but no callback registered.");
         }
     }
 }

@@ -267,7 +267,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
         if (UserHandle.getUserId(Binder.getCallingUid()) != userId) {
             enforcePermission(INTERACT_ACROSS_USERS);
         }
-        if (!isSupervisionEnabledForUser(userId) || !hasAnySupervisionApprovalMethods(userId)) {
+        if (!isSupervisionEnabledForUser(userId) || !hasSupervisionCredentials()) {
             return null;
         }
         final Intent intent = new Intent(ACTION_CONFIRM_SUPERVISION_CREDENTIALS);
@@ -337,10 +337,6 @@ public class SupervisionService extends ISupervisionManager.Stub {
         return true;
     }
 
-    private boolean hasAnySupervisionApprovalMethods(@UserIdInt int userId) {
-        return hasSupervisionCredentials() || hasAnySupervisionAppApprovalMethods(userId);
-    }
-
     @Override
     public boolean hasSupervisionCredentials() {
         enforceAnyPermission(QUERY_USERS, MANAGE_USERS);
@@ -357,13 +353,6 @@ public class SupervisionService extends ISupervisionManager.Stub {
             Binder.restoreCallingIdentity(token);
         }
         return true;
-    }
-
-    private boolean hasAnySupervisionAppApprovalMethods(@UserIdInt int userId) {
-        if (!Flags.enableSupervisionSettingsUiUpdates()) {
-            return false;
-        }
-        return !querySupervisionApprovalActivities(userId).isEmpty();
     }
 
     @Override
@@ -679,13 +668,12 @@ public class SupervisionService extends ISupervisionManager.Stub {
      * <p>This excludes the system and main user(s) as those users are created by default.
      */
     private boolean hasNonTestDefaultUsers() {
-        List<UserInfo> users = mInjector.getUserManagerInternal().getUsers(true);
-        for (var user : users) {
-            if (!user.isForTesting() && !user.isMain() && !isSystemUser(user)) {
-                return true;
-            }
-        }
-        return false;
+        UserManagerInternal userManager = mInjector.getUserManagerInternal();
+        // Headless system user mode has two default users: system and main/primary users.
+        int numOfDefaultUsers = userManager.isHeadlessSystemUserMode()
+                ? 2 : 1;
+        List<UserInfo> users = userManager.getUsers(true);
+        return users.stream().filter(user -> !user.isForTesting()).count() > numOfDefaultUsers;
     }
 
     private static boolean isSystemUser(UserInfo userInfo) {
@@ -739,7 +727,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
         }
 
         final Context context = mInjector.context;
-        return new SupervisionSettingsUpgrader(
+        return new SupervisionPolicyMigrator(
                         context,
                         mInjector.getUserManagerInternal(),
                         context.getSystemService(RoleManager.class),

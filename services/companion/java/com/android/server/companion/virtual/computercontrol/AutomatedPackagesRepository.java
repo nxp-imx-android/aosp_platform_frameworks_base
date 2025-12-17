@@ -83,11 +83,6 @@ public final class AutomatedPackagesRepository {
     @GuardedBy("mLock")
     private final SparseArray<String> mDeviceOwnerPackageNames = new SparseArray<>();
 
-    // Set of userId and package pairs that have been intercepted and the user chose to proceed
-    // with launching. These should not be intercepted again.
-    @GuardedBy("mLock")
-    private final ArraySet<Pair<Integer, String>> mInterceptedLaunches = new ArraySet<>();
-
     public AutomatedPackagesRepository(Handler handler) {
         mHandler = handler;
     }
@@ -131,14 +126,7 @@ public final class AutomatedPackagesRepository {
             @Nullable String callingPackageName,
             @Nullable String deviceOwnerForLaunchDisplayId,
             @NonNull Consumer<Integer> closeVirtualDevice) {
-        final Pair<Integer, String> uidPackagePair = new Pair<>(userId, packageName);
         synchronized (mLock) {
-            if (mInterceptedLaunches.remove(uidPackagePair)) {
-                // This package/userId pair has already been intercepted and the user chose to
-                // proceed with the launch.
-                return null;
-            }
-
             for (int i = 0; i < mDevicePackages.size(); ++i) {
                 if (!mDevicePackages.valueAt(i).get(userId, EMPTY_SET).contains(packageName)) {
                     // This package/userId pair is not automated.
@@ -154,16 +142,31 @@ public final class AutomatedPackagesRepository {
 
                 final int deviceId = mDevicePackages.keyAt(i);
                 final var resultReceiver = new StopAutomationResultReceiver(
-                        uidPackagePair, () -> closeVirtualDevice.accept(deviceId));
+                        deviceId, deviceOwner, () -> closeVirtualDevice.accept(deviceId));
 
                 return new Intent()
                         .setComponent(AUTOMATED_APP_LAUNCH_WARNING_ACTIVITY)
                         .putExtra(Intent.EXTRA_PACKAGE_NAME, packageName)
+                        .putExtra(Intent.EXTRA_USER_ID, userId)
                         .putExtra(EXTRA_AUTOMATING_PACKAGE_NAME, deviceOwner)
-                        .putExtra(Intent.EXTRA_RESULT_RECEIVER, resultReceiver.prepareForIpc());
+                        .putExtra(Intent.EXTRA_RESULT_RECEIVER, resultReceiver.prepareForIpc())
+                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                                | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
             }
         }
         return null;
+    }
+
+    /** Validates the intent to warn the user about launching an automated application. */
+    public boolean validateAutomatedAppLaunchWarningIntent(@NonNull Intent intent) {
+        String packageName = intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME);
+        int userId = intent.getIntExtra(Intent.EXTRA_USER_ID, UserHandle.USER_NULL);
+        for (int i = 0; i < mDevicePackages.size(); ++i) {
+            if (mDevicePackages.valueAt(i).get(userId, EMPTY_SET).contains(packageName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Update the list of packages running on a device. */
@@ -284,13 +287,15 @@ public final class AutomatedPackagesRepository {
 
     private final class StopAutomationResultReceiver extends ResultReceiver {
 
-        private final Pair<Integer, String> mUidPackagePair;
+        private final int mDeviceId;
+        private final String mDeviceOwnerPackageName;
         private final Runnable mCloseVirtualDevice;
 
-        StopAutomationResultReceiver(@NonNull Pair<Integer, String> uidPackagePair,
+        StopAutomationResultReceiver(int deviceId, @NonNull String deviceOwnerPackageName,
                 @NonNull Runnable closeVirtualDevice) {
             super(mHandler);
-            mUidPackagePair = uidPackagePair;
+            mDeviceId = deviceId;
+            mDeviceOwnerPackageName = deviceOwnerPackageName;
             mCloseVirtualDevice = closeVirtualDevice;
         }
 
@@ -298,7 +303,9 @@ public final class AutomatedPackagesRepository {
         protected void onReceiveResult(int resultCode, Bundle data) {
             if (resultCode == Activity.RESULT_OK) {
                 synchronized (mLock) {
-                    mInterceptedLaunches.add(mUidPackagePair);
+                    // Prevent subsequent interception. We're closing the device now, so just clear
+                    // everything that we know is running there right now.
+                    updateLocked(mDeviceId, mDeviceOwnerPackageName, new ArraySet<>());
                 }
                 mHandler.post(mCloseVirtualDevice);
             }

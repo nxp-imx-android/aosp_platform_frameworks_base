@@ -435,32 +435,6 @@ public final class VirtualDeviceManager {
     }
 
     /**
-     * Returns the intent to warn the user about launching an application that is being automated.
-     *
-     * <p>If the given package is not being automated for this user, or if no intent interception
-     * is needed, returns {@code null}.</p>
-     *
-     * @param packageName the app being launched
-     * @param userId the user associated with that app
-     *
-     * @hide
-     */
-    @Nullable
-    public Intent createAutomatedAppLaunchWarningIntent(
-            @NonNull String packageName, @UserIdInt int userId) {
-        if (mService == null) {
-            Log.w(TAG, "Failed to create intent, no virtual device manager service");
-            return null;
-        }
-        try {
-            return mService.createAutomatedAppLaunchWarningIntent(
-                    Objects.requireNonNull(packageName), userId);
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
-    }
-
-    /**
      * Returns the device policy for the given virtual device and policy type.
      *
      * <p>In case the virtual device identifier is not valid,

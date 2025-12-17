@@ -41,7 +41,6 @@ import android.widget.TextView;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.systemui.res.R;
-import com.android.systemui.statusbar.notification.NmSummarizationUiFlag;
 import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 
@@ -292,29 +291,17 @@ public class PartialConversationInfo extends LinearLayout implements
         return false;
     }
 
-    private boolean showSummarizationFeedback() {
-        return NmSummarizationUiFlag.isEnabled();
-    }
-
-    private boolean showClassificationFeedback() {
-        return Flags.notificationClassificationUi();
-    }
-
     private void bindFeedback() {
         View feedbackButton = findViewById(R.id.feedback);
-        if (!showSummarizationFeedback() && !showClassificationFeedback()) {
+        Intent intent = NotificationInfo.getAssistantFeedbackIntent(
+                mINotificationManager, mPm, mSbn.getKey(), mRanking);
+        if (intent == null) {
             feedbackButton.setVisibility(GONE);
         } else {
-            Intent intent = NotificationInfo.getAssistantFeedbackIntent(
-                    mINotificationManager, mPm, mSbn.getKey(), mRanking);
-            if (intent == null) {
-                feedbackButton.setVisibility(GONE);
-            } else {
-                feedbackButton.setVisibility(VISIBLE);
-                feedbackButton.setOnClickListener((View v) -> {
-                    mFeedbackClickListener.onClick(v, intent);
-                });
-            }
+            feedbackButton.setVisibility(VISIBLE);
+            feedbackButton.setOnClickListener((View v) -> {
+                mFeedbackClickListener.onClick(v, intent);
+            });
         }
     }
 }

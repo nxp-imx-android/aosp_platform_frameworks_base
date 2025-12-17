@@ -364,10 +364,7 @@ public class NotificationListenerServiceTest extends UiServiceTestCase {
     }
 
     public static String getSummarization(int index) {
-        if ((android.app.Flags.nmSummarizationUi() || android.app.Flags.nmSummarization())) {
-            return "summary " + index;
-        }
-        return null;
+        return "summary " + index;
     }
 
     private boolean isBubble(int index) {

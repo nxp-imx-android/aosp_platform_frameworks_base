@@ -15,9 +15,9 @@ import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.TransitionKeys
+import com.android.systemui.scene.shared.model.TransitionKeys.ShadeExpandedToAlwaysOnDisplay
 import com.android.systemui.scene.shared.model.TransitionKeys.SlightlyFasterShadeTransition
 import com.android.systemui.scene.shared.model.TransitionKeys.SystemCommunalTransition
-import com.android.systemui.scene.shared.model.TransitionKeys.ToAlwaysOnDisplay
 import com.android.systemui.scene.shared.model.TransitionKeys.ToSplitShade
 import com.android.systemui.scene.ui.composable.transitions.bouncerToGoneTransition
 import com.android.systemui.scene.ui.composable.transitions.bouncerToLockscreenTransition
@@ -158,7 +158,8 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cujTag = TAG_EXPAND,
             ) {
                 lockscreenToShadeSceneTransition(
-                    transitionDistancePx = lockscreenToShadeTransitionDistancePx
+                    transitionDistancePx = lockscreenToShadeTransitionDistancePx,
+                    seekAnimation = true,
                 )
             }
             from(
@@ -292,7 +293,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
             from(
                 Scenes.Shade,
                 to = Scenes.Lockscreen,
-                key = ToAlwaysOnDisplay,
+                key = ShadeExpandedToAlwaysOnDisplay,
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
             ) {
                 shadeToAlwaysOnDisplayTransition()

@@ -133,6 +133,23 @@ public final class UsbPortAidl implements UsbPortHal {
      * USB device mode disabled due to docking event.
      */
     public static final int AIDL_USB_DATA_STATUS_DISABLED_DOCK_DEVICE_MODE = 8;
+    /**
+     * The maximum voltage limit in mV as defined by the Type-C Connector Specification
+     */
+    private static final int AIDL_POWER_PROFILE_VOLTAGE_LIMIT_MV = 48000;
+    /**
+     * The maximum current limit in mA as defined by the Type-C Connector Specification
+     */
+    private static final int AIDL_POWER_PROFILE_CURRENT_LIMIT_MA = 5000;
+    /**
+     * The maximum power limit in mW as defined by the Type-C Connector Specification
+     */
+    private static final int AIDL_POWER_PROFILE_POWER_LIMIT_MW = 240000;
+    /**
+     * The maximum name length for a PowerProfile of type {@link #POWER_PROFILE_TYPE_VENDOR}
+     */
+    private static final int AIDL_POWER_PROFILE_VENDOR_NAME_MAX_LENGTH = 64;
+
 
     public @UsbHalVersion int getUsbHalVersion() throws RemoteException {
         synchronized (mLock) {
@@ -666,6 +683,36 @@ public final class UsbPortAidl implements UsbPortHal {
             return null;
         }
 
+        private int formatPowerProfileCurrentMa(int currentMa) {
+            if (currentMa < 0) {
+                return PowerProfileInfo.POWER_PROFILE_ERROR_FIELD_NOT_SUPPORTED;
+            }
+            if (currentMa > AIDL_POWER_PROFILE_CURRENT_LIMIT_MA) {
+                return AIDL_POWER_PROFILE_CURRENT_LIMIT_MA;
+            }
+            return currentMa;
+        }
+
+        private int formatPowerProfileVoltageMv(int voltageMv) {
+            if (voltageMv < 0) {
+                return PowerProfileInfo.POWER_PROFILE_ERROR_FIELD_NOT_SUPPORTED;
+            }
+            if (voltageMv > AIDL_POWER_PROFILE_VOLTAGE_LIMIT_MV) {
+                return AIDL_POWER_PROFILE_VOLTAGE_LIMIT_MV;
+            }
+            return voltageMv;
+        }
+
+        private int formatPowerProfilePowerMw(int powerMw) {
+            if (powerMw < 0) {
+                return PowerProfileInfo.POWER_PROFILE_ERROR_FIELD_NOT_SUPPORTED;
+            }
+            if (powerMw > AIDL_POWER_PROFILE_POWER_LIMIT_MW) {
+                return AIDL_POWER_PROFILE_POWER_LIMIT_MW;
+            }
+            return powerMw;
+        }
+
         private PowerProfileInfo[] populatePowerProfileInfo(
                     android.hardware.usb.PowerProfile[] profiles) {
             PowerProfileInfo[] profileInfoList = new PowerProfileInfo[profiles.length];
@@ -678,7 +725,8 @@ public final class UsbPortAidl implements UsbPortHal {
                         TypecDefault defaultProfile = profiles[i].getTypecDefaultProfile();
                         builder.setPowerProfileType(PowerProfileInfo.POWER_PROFILE_TYPE_RP_DEFAULT);
                         builder.setMaxVoltageMv(5000);
-                        builder.setMaxCurrentMa(defaultProfile.maxCurrentMa);
+                        builder.setMaxCurrentMa(formatPowerProfileCurrentMa(
+                                defaultProfile.maxCurrentMa));
                         break;
                     case PowerProfile.typec15AProfile:
                         builder.setPowerProfileType(PowerProfileInfo.POWER_PROFILE_TYPE_RP_1_5A);
@@ -693,55 +741,66 @@ public final class UsbPortAidl implements UsbPortHal {
                     case PowerProfile.fixedProfile:
                         UsbPdFixed fixedProfile = profiles[i].getFixedProfile();
                         builder.setPowerProfileType(PowerProfileInfo.POWER_PROFILE_TYPE_FIXED);
-                        builder.setMaxVoltageMv(fixedProfile.voltageMv);
-                        builder.setMaxCurrentMa(fixedProfile.maxCurrentMa);
+                        builder.setMaxVoltageMv(formatPowerProfileVoltageMv(
+                                fixedProfile.voltageMv));
+                        builder.setMaxCurrentMa(formatPowerProfileCurrentMa(
+                                fixedProfile.maxCurrentMa));
                         break;
                     case PowerProfile.variableProfile:
                         UsbPdVariable variableProfile = profiles[i].getVariableProfile();
                         builder.setPowerProfileType(PowerProfileInfo.POWER_PROFILE_TYPE_VARIABLE);
-                        builder.setMaxVoltageMv(variableProfile.maxVoltageMv);
-                        builder.setMinVoltageMv(variableProfile.minVoltageMv);
-                        builder.setMaxCurrentMa(variableProfile.maxCurrentMa);
+                        builder.setMaxVoltageMv(formatPowerProfileVoltageMv(
+                                variableProfile.maxVoltageMv));
+                        builder.setMinVoltageMv(formatPowerProfileVoltageMv(
+                                variableProfile.minVoltageMv));
+                        builder.setMaxCurrentMa(formatPowerProfileCurrentMa(
+                                variableProfile.maxCurrentMa));
                         break;
                     case PowerProfile.batteryProfile:
                         UsbPdBattery batteryProfile = profiles[i].getBatteryProfile();
                         builder.setPowerProfileType(PowerProfileInfo.POWER_PROFILE_TYPE_BATTERY);
-                        builder.setMaxVoltageMv(batteryProfile.maxVoltageMv);
-                        builder.setMinVoltageMv(batteryProfile.minVoltageMv);
-                        builder.setMaxPowerMw(batteryProfile.maxPowerMw);
+                        builder.setMaxVoltageMv(formatPowerProfileVoltageMv(
+                                batteryProfile.maxVoltageMv));
+                        builder.setMinVoltageMv(formatPowerProfileVoltageMv(
+                                batteryProfile.minVoltageMv));
+                        builder.setMaxPowerMw(formatPowerProfilePowerMw(
+                                batteryProfile.maxPowerMw));
                         break;
                     case PowerProfile.sprPpsProfile:
                         UsbPdSprPps sprPpsProfile = profiles[i].getSprPpsProfile();
                         builder.setPowerProfileType(PowerProfileInfo.POWER_PROFILE_TYPE_SPR_PPS);
-                        builder.setMaxVoltageMv(sprPpsProfile.maxVoltageMv);
-                        builder.setMinVoltageMv(sprPpsProfile.minVoltageMv);
-                        builder.setMaxCurrentMa(sprPpsProfile.maxCurrentMa);
+                        builder.setMaxVoltageMv(formatPowerProfileVoltageMv(
+                                sprPpsProfile.maxVoltageMv));
+                        builder.setMinVoltageMv(formatPowerProfileVoltageMv(
+                                sprPpsProfile.minVoltageMv));
+                        builder.setMaxCurrentMa(formatPowerProfileCurrentMa(
+                                sprPpsProfile.maxCurrentMa));
                         break;
                     case PowerProfile.sprAvsProfile:
                         UsbPdSprAvs sprAvsProfile = profiles[i].getSprAvsProfile();
                         builder.setPowerProfileType(PowerProfileInfo.POWER_PROFILE_TYPE_SPR_AVS);
-                        builder.setMaxCurrentMa(sprAvsProfile.maxCurrent15vMa);
-                        builder.setMinCurrentMa(sprAvsProfile.maxCurrent20vMa);
+                        builder.setMaxCurrentMa(formatPowerProfileCurrentMa(
+                                sprAvsProfile.maxCurrent15vMa));
+                        builder.setMinCurrentMa(formatPowerProfileCurrentMa(
+                                sprAvsProfile.maxCurrent20vMa));
                         break;
                     case PowerProfile.vendorProfile:
                         PowerProfileVendor vendorProfile = profiles[i].getVendorProfile();
                         builder.setPowerProfileType(PowerProfileInfo.POWER_PROFILE_TYPE_VENDOR);
-                        builder.setName(vendorProfile.name);
-                        if (vendorProfile.maxVoltageMv >= 0) {
-                            builder.setMaxVoltageMv(vendorProfile.maxVoltageMv);
-                        }
-                        if (vendorProfile.minVoltageMv >= 0) {
-                            builder.setMinVoltageMv(vendorProfile.minVoltageMv);
-                        }
-                        if (vendorProfile.maxCurrentMa >= 0) {
-                            builder.setMaxCurrentMa(vendorProfile.maxCurrentMa);
-                        }
-                        if (vendorProfile.minCurrentMa >= 0) {
-                            builder.setMinCurrentMa(vendorProfile.minCurrentMa);
-                        }
-                        if (vendorProfile.maxPowerMw >= 0) {
-                            builder.setMaxPowerMw(vendorProfile.maxPowerMw);
-                        }
+                        // Take a max length for security purposes
+                        builder.setName(vendorProfile.name.substring(
+                                Math.min(vendorProfile.name.length(),
+                                AIDL_POWER_PROFILE_VENDOR_NAME_MAX_LENGTH)));
+                        builder.setMaxVoltageMv(formatPowerProfileVoltageMv(
+                                vendorProfile.maxVoltageMv));
+                        builder.setMinVoltageMv(formatPowerProfileVoltageMv(
+                                vendorProfile.minVoltageMv));
+                        builder.setMaxCurrentMa(formatPowerProfileCurrentMa(
+                                vendorProfile.maxCurrentMa));
+                        builder.setMinCurrentMa(formatPowerProfileCurrentMa(
+                                vendorProfile.minCurrentMa));
+                        builder.setMaxPowerMw(formatPowerProfilePowerMw(
+                                vendorProfile.maxPowerMw));
                         break;
                     default:
                         break;

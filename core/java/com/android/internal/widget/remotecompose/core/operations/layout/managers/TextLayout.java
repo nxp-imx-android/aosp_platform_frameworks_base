@@ -486,6 +486,7 @@ public class TextLayout extends LayoutManager implements VariableSupport, Access
                             mOverflow,
                             mMaxLines,
                             maxWidth,
+                            maxHeight,
                             0f,
                             0f,
                             1f,

@@ -21,6 +21,7 @@ import static android.content.pm.ActivityInfo.CONFIG_COLOR_MODE;
 import static android.content.pm.ActivityInfo.CONFIG_DENSITY;
 import static android.content.pm.ActivityInfo.CONFIG_RESOURCES_UNUSED;
 import static android.content.pm.ActivityInfo.CONFIG_TOUCHSCREEN;
+import static android.content.pm.ActivityInfo.FLAG_EXCLUDE_FROM_RECENTS;
 import static android.content.pm.ActivityInfo.OVERRIDE_AUTO_RESTART_ON_DISPLAY_MOVE;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
@@ -33,11 +34,13 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.compat.testing.PlatformCompatChangeRule;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.view.Display;
 
 import androidx.annotation.NonNull;
 import androidx.test.filters.MediumTest;
@@ -237,12 +240,52 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
 
     @EnableFlags(FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL)
     @Test
+    public void testSelfKillRecoveryOnDisplayMove_nonStandardTypeActivity() {
+        runTestScenario((robot) -> {
+            robot.useSelfKillState(s -> s.mUseNonStandardTypeActivity = true);
+            robot.selfKillOnDisplayMove();
+        });
+    }
+
+    @EnableFlags(FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL)
+    @Test
+    public void testSelfKillRecoveryOnDisplayMove_excludeFromRecents() {
+        runTestScenario((robot) -> {
+            robot.useSelfKillState(s -> s.mSetExcludeFromRecents = true);
+            robot.selfKillOnDisplayMove();
+        });
+    }
+
+    @EnableFlags(FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL)
+    @Test
     public void testSelfKillRecoveryOnDisplayMove_multipleActivities() {
         runTestScenario((robot) -> {
             robot.useSelfKillState(s -> {
                 s.mShouldRecoverFromSelfKill = true;
                 s.mLaunchMultipleActivities = true;
             });
+            robot.selfKillOnDisplayMove();
+        });
+    }
+
+    @EnableFlags(FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL)
+    @Test
+    public void testSelfKillRecoveryOnDisplayMove_betweenInternalDisplays_flagEnabled() {
+        runTestScenario((robot) -> {
+            robot.useSelfKillState(s -> {
+                s.mDisplayType = Display.TYPE_INTERNAL;
+                s.mShouldRecoverFromSelfKill = true;
+                s.mEnableRecoveryBetweenInternalDisplays = true;
+            });
+            robot.selfKillOnDisplayMove();
+        });
+    }
+
+    @EnableFlags(FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL)
+    @Test
+    public void testSelfKillRecoveryOnDisplayMove_betweenInternalDisplays_flagDisabled() {
+        runTestScenario((robot) -> {
+            robot.useSelfKillState(s -> s.mDisplayType = Display.TYPE_INTERNAL);
             robot.selfKillOnDisplayMove();
         });
     }
@@ -258,6 +301,10 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
         boolean mRemoveDisplay = false;
         boolean mRelaunchActivity = true;
         boolean mLaunchMultipleActivities = false;
+        boolean mEnableRecoveryBetweenInternalDisplays = false;
+        boolean mUseNonStandardTypeActivity = false;
+        boolean mSetExcludeFromRecents = false;
+        int mDisplayType = Display.TYPE_EXTERNAL;
         SelfKillType mSelfKillType = SelfKillType.FINISH_ACTIVITY;
     }
 
@@ -299,14 +346,29 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
         }
 
         void selfKillOnDisplayMove() {
-            activity().createActivityWithComponentInSecondaryDisplay();
+            activity().createActivityWithComponentInSecondaryDisplay(mSelfKillState.mDisplayType);
             if (mSelfKillState.mLaunchMultipleActivities) {
                 activity().createActivityWithComponent();
             }
+            if (mSelfKillState.mUseNonStandardTypeActivity) {
+                spyOn(activity().top());
+                when(activity().top().isActivityTypeStandardOrUndefined()).thenReturn(false);
+            }
+            if (mSelfKillState.mSetExcludeFromRecents) {
+                activity().top().intent.addFlags(FLAG_EXCLUDE_FROM_RECENTS);
+            }
+
             activity().setTopActivityResumed();
             activity().setTopActivityConfigChanges(
                     mSelfKillState.mRelaunchActivity ? 0 : CONFIG_RESOURCES_UNUSED);
             activity().clearInvocationsForActivity();
+
+            if (mSelfKillState.mEnableRecoveryBetweenInternalDisplays) {
+                spyOn(activity().top().mWmService.mAppCompatConfiguration);
+                when(activity().top().mWmService.mAppCompatConfiguration
+                        .isSelfKillRecoveryBetweenInternalDisplaysEnabled())
+                        .thenReturn(true);
+            }
 
             if (mSelfKillState.mMoveDisplays) {
                 if (mSelfKillState.mRemoveDisplay) {

@@ -19,7 +19,6 @@ package android.app;
 import static android.annotation.Dimension.DP;
 import static android.app.Flags.FLAG_BRIDGED_NOTIFICATIONS;
 import static android.app.Flags.FLAG_HIDE_STATUS_BAR_NOTIFICATION;
-import static android.app.Flags.FLAG_NM_SUMMARIZATION;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION_ALL;
 import static android.app.Flags.FLAG_NOTIFICATION_IS_ANIMATED_ACTION_API;
 import static android.app.Flags.apiMetricStyle;
@@ -3537,7 +3536,7 @@ public class Notification implements Parcelable
         }
 
         if (mBridgedNotificationMetadata != null) {
-            visitIconUri(visitor, mBridgedNotificationMetadata.getIcon());
+            visitIconUri(visitor, mBridgedNotificationMetadata.getAppIcon());
         }
 
         if (extras != null && extras.containsKey(WearableExtender.EXTRA_WEARABLE_EXTENSIONS)) {
@@ -5150,7 +5149,6 @@ public class Notification implements Parcelable
          * other sources. The OS may choose to display this notification with different styling or
          * choose not to summarize this content if this is true.
          */
-        @FlaggedApi(Flags.FLAG_NM_SUMMARIZATION)
         @NonNull
         public Builder setHasSummarizedContent(boolean hasSummarizedContent) {
             mN.extras.putBoolean(EXTRA_CONTAINS_SUMMARIZATION, hasSummarizedContent);
@@ -5167,9 +5165,7 @@ public class Notification implements Parcelable
         @NonNull
         public Builder setSummarizedContent(@Nullable CharSequence summarizedContent) {
             mN.extras.putCharSequence(EXTRA_APP_SUMMARIZATION, summarizedContent);
-            if (Flags.nmSummarization()) {
-                setHasSummarizedContent(!TextUtils.isEmpty(summarizedContent));
-            }
+            setHasSummarizedContent(!TextUtils.isEmpty(summarizedContent));
             return this;
         }
 
@@ -8921,14 +8917,14 @@ public class Notification implements Parcelable
 
         if (mBridgedNotificationMetadata != null
                 // Only bitmap icons can be downscaled.
-                && (mBridgedNotificationMetadata.getIcon().getType() == Icon.TYPE_BITMAP
-                        || mBridgedNotificationMetadata.getIcon().getType()
+                && (mBridgedNotificationMetadata.getAppIcon().getType() == Icon.TYPE_BITMAP
+                        || mBridgedNotificationMetadata.getAppIcon().getType()
                         == Icon.TYPE_ADAPTIVE_BITMAP)) {
             Resources resources = context.getResources();
             int maxSize = resources.getDimensionPixelSize(
                     isLowRam ? R.dimen.notification_small_icon_size_low_ram
                             : R.dimen.notification_small_icon_size);
-            mBridgedNotificationMetadata.getIcon().scaleDownIfNecessary(maxSize, maxSize);
+            mBridgedNotificationMetadata.getAppIcon().scaleDownIfNecessary(maxSize, maxSize);
         }
 
         if (mLargeIcon != null || largeIcon != null) {
@@ -9184,7 +9180,6 @@ public class Notification implements Parcelable
      * some surfaces and may add styling to indicate to the user that this was computationally
      * generated.
      */
-    @FlaggedApi(FLAG_NM_SUMMARIZATION)
     public boolean hasSummarizedContent() {
         return extras != null && extras.getBoolean(EXTRA_CONTAINS_SUMMARIZATION);
     }
@@ -16442,15 +16437,24 @@ public class Notification implements Parcelable
 
         private int mOriginDeviceType = BRIDGED_METADATA_TYPE_UNKNOWN;
         @NonNull
+        private String mOriginDeviceName;
+        @NonNull
         private String mPackageName;
         @NonNull
-        private Icon mIcon;
+        private String mChannelId;
+        @NonNull
+        private Icon mAppIcon;
 
         public BridgedNotificationMetadata(@BridgedMetadataType int type,
-                                           @NonNull String packageName, @NonNull Icon icon) {
+                                           @NonNull String originDeviceName,
+                                           @NonNull String packageName,
+                                           @NonNull String channelId,
+                                           @NonNull Icon appIcon) {
             mOriginDeviceType = type;
+            mOriginDeviceName = originDeviceName;
             mPackageName = requireNonNull(packageName);
-            mIcon = requireNonNull(icon);
+            mChannelId = requireNonNull(channelId);
+            mAppIcon = requireNonNull(appIcon);
         }
 
         private BridgedNotificationMetadata(Parcel in) {
@@ -16458,10 +16462,16 @@ public class Notification implements Parcelable
                 mOriginDeviceType = in.readInt();
             }
             if (in.readInt() != 0) {
+                mOriginDeviceName = in.readString8();
+            }
+            if (in.readInt() != 0) {
                 mPackageName = in.readString8();
             }
             if (in.readInt() != 0) {
-                mIcon = Icon.CREATOR.createFromParcel(in);
+                mChannelId = in.readString8();
+            }
+            if (in.readInt() != 0) {
+                mAppIcon = Icon.CREATOR.createFromParcel(in);
             }
         }
 
@@ -16492,10 +16502,16 @@ public class Notification implements Parcelable
             out.writeInt(mOriginDeviceType);
 
             out.writeInt(1);
+            out.writeString8(mOriginDeviceName);
+
+            out.writeInt(1);
             out.writeString8(mPackageName);
 
             out.writeInt(1);
-            mIcon.writeToParcel(out, 0);
+            out.writeString8(mChannelId);
+
+            out.writeInt(1);
+            mAppIcon.writeToParcel(out, 0);
         }
 
         /**
@@ -16507,6 +16523,14 @@ public class Notification implements Parcelable
         }
 
         /**
+         * The name of the device the notification originated from (e.g. "Jane's phone").
+         */
+        @NonNull
+        public String getOriginDeviceName() {
+            return mOriginDeviceName;
+        }
+
+        /**
          * The package name of the application the notification originated from.
          */
         @NonNull
@@ -16515,11 +16539,22 @@ public class Notification implements Parcelable
         }
 
         /**
+         * The channel ID for the notification on the origin device. Generally this should match
+         * the channel ID that the notification would have gone to on the local device if the
+         * app is installed in both places. This is used for blocking bridged notifications
+         * if the user has muted notifications for the applications channel on the local device.
+         */
+        @NonNull
+        public String getChannelId() {
+            return mChannelId;
+        }
+
+        /**
          * An icon representing the application the notification originated from.
          */
         @NonNull
-        public Icon getIcon() {
-            return mIcon;
+        public Icon getAppIcon() {
+            return mAppIcon;
         }
     }
 

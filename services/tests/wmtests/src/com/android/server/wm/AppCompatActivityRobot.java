@@ -25,6 +25,7 @@ import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 import static android.content.pm.ApplicationInfo.CATEGORY_GAME;
 import static android.content.pm.ApplicationInfo.CATEGORY_UNDEFINED;
 import static android.view.Display.TYPE_INTERNAL;
+import static android.view.WindowManager.TRANSIT_CHANGE;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
@@ -214,6 +215,10 @@ class AppCompatActivityRobot {
         final DisplayContent newDisplay =
                 mTaskStack.top().getDisplayId() == mDisplayContent.getDisplayId()
                         ? mSecondaryDisplayContent : mDisplayContent;
+        if (!mTaskStack.top().mTransitionController.isCollecting()) {
+            mTaskStack.top().mTransitionController.requestTransitionIfNeeded(TRANSIT_CHANGE,
+                    0 /* flags */, null /* trigger */, newDisplay, ActionChain.test());
+        }
         mTaskStack.top().reparent(newDisplay.getDefaultTaskDisplayArea(),
                 true /* onTop */);
         mActivityStack.top().ensureActivityConfiguration();
@@ -398,9 +403,10 @@ class AppCompatActivityRobot {
     void createNewDisplay() {
         createNewDisplay(TYPE_INTERNAL, false /* asSecondaryDisplay */);
     }
+
     void createNewDisplay(int type, boolean asSecondaryDisplay) {
         if (asSecondaryDisplay) {
-            createSecondaryDisplay();
+            createSecondaryDisplay(type);
         } else {
             mDisplayContent = new TestDisplayContent.Builder(mAtm, mDisplayWidth, mDisplayHeight)
                     .setType(type)
@@ -411,14 +417,18 @@ class AppCompatActivityRobot {
         }
     }
 
+    void createSecondaryDisplay() {
+        createSecondaryDisplay(Display.TYPE_EXTERNAL);
+    }
+
     /**
      * Creates a secondary display. Its density, color mode, and touchscreen are intentionally set
      * different from those of the default display to emulate common physical environments.
      */
-    void createSecondaryDisplay() {
+    private void createSecondaryDisplay(int displayType) {
         final DisplayInfo displayInfo = new DisplayInfo();
         displayInfo.copyFrom(mDisplayContent.getDisplayInfo());
-        displayInfo.type = Display.TYPE_EXTERNAL;
+        displayInfo.type = displayType;
         final int[] hdrTypesWithDv = new int[] {1, 2, 3, 4};
         displayInfo.hdrCapabilities = new Display.HdrCapabilities(hdrTypesWithDv, 0, 0, 0);
         doReturn(true).when(mAtm.mWindowManager).hasHdrSupport();
@@ -620,9 +630,9 @@ class AppCompatActivityRobot {
         }
     }
 
-    void createActivityWithComponentInSecondaryDisplay() {
+    void createActivityWithComponentInSecondaryDisplay(int displayType) {
         createActivityWithComponentInNewTask(true /* inNewTask */, true /* inNewTask */,
-                true /* inSecondaryDisplay */, Display.TYPE_EXTERNAL);
+                true /* inSecondaryDisplay */, displayType);
     }
 
     private void createActivityWithComponentInNewTask(boolean inNewTask, boolean inNewDisplay) {

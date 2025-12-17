@@ -100,6 +100,7 @@ import android.util.AtomicFile;
 import android.util.IndentingPrintWriter;
 import android.util.Slog;
 import android.util.StatsEvent;
+import android.view.Display;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
@@ -121,7 +122,6 @@ import com.android.server.LocalServices;
 import com.android.server.Watchdog;
 import com.android.server.net.BaseNetworkObserver;
 import com.android.server.pm.UserManagerInternal;
-import com.android.server.power.feature.PowerManagerFlags;
 import com.android.server.power.optimization.Flags;
 import com.android.server.power.stats.BatteryExternalStatsWorker;
 import com.android.server.power.stats.BatteryStatsDumpHelperImpl;
@@ -191,7 +191,10 @@ public final class BatteryStatsService extends IBatteryStats.Stub
     private final BatteryStats.BatteryStatsDumpHelper mDumpHelper;
     private final PowerStatsUidResolver mPowerStatsUidResolver = new PowerStatsUidResolver();
     private final PowerAttributor mPowerAttributor;
-    private final PowerManagerFlags mPowerManagerFlags = new PowerManagerFlags();
+
+    private final Object mDisplayStatesLock = new Object();
+    @GuardedBy("mDisplayStatesLock")
+    private int[] mDisplayStates;
 
     private volatile boolean mMonitorEnabled = true;
     private boolean mRailsStatsCollectionEnabled = true;
@@ -389,6 +392,9 @@ public final class BatteryStatsService extends IBatteryStats.Stub
         mStats = new BatteryStatsImpl(mBatteryStatsConfig, Clock.SYSTEM_CLOCK, mMonotonicClock,
                 systemDir, mHandler, this, this, mUserManagerUserInfoProvider, mPowerProfile,
                 mCpuScalingPolicies, mPowerStatsUidResolver);
+        if (mStats.getDisplayCount() > 0) {
+            mDisplayStates = new int[mStats.getDisplayCount()];
+        }
         mWorker = new BatteryExternalStatsWorker(context, mStats, mHandler, mClock);
         mStats.setExternalStatsSyncLocked(mWorker);
         mStats.setRadioScanningTimeoutLocked(mContext.getResources().getInteger(
@@ -521,9 +527,6 @@ public final class BatteryStatsService extends IBatteryStats.Stub
         // By convention POWER_COMPONENT_ANY represents custom Energy Consumers
         mStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_ANY, true);
         attributor.setPowerComponentSupported(BatteryConsumer.POWER_COMPONENT_ANY, true);
-
-        mStats.setMoveWscLoggingToNotifierEnabled(
-                mPowerManagerFlags.isMoveWscLoggingToNotifierEnabled());
 
         mWorker.systemServicesReady();
         mStats.systemServicesReady(mContext);
@@ -687,6 +690,23 @@ public final class BatteryStatsService extends IBatteryStats.Stub
             } catch (InterruptedException e) {
                 // Keep looping
             }
+        }
+    }
+
+    /**
+     * Sets the number of displays to track in BatteryStats. Mainly for testing.
+     *
+     * @param displayCount The number of displays.
+     * @hide
+     */
+    // TODO(b/467244575) : Use stricter checks to restrict for test usage only.
+    @VisibleForTesting
+    void setDisplayCount(final int displayCount) {
+        synchronized (mDisplayStatesLock) {
+            mDisplayStates = new int[displayCount];
+        }
+        synchronized (mStats) {
+            mStats.setDisplayCountLocked(displayCount);
         }
     }
 
@@ -1785,7 +1805,34 @@ public final class BatteryStatsService extends IBatteryStats.Stub
     @EnforcePermission(UPDATE_DEVICE_STATS)
     public void noteScreenState(final int displayId, final int state, final int reason) {
         super.noteScreenState_enforcePermission();
-        FrameworkStatsLog.write(FrameworkStatsLog.SCREEN_STATE_CHANGED, state);
+        if (com.android.server.am.Flags.batteryStatsLogCombinedDisplayState()) {
+            int combinedState = Display.STATE_UNKNOWN;
+            synchronized (mDisplayStatesLock) {
+                if (mDisplayStates == null) {
+                    Slog.w(TAG, "noteScreenState called with displayId: " + displayId
+                            + ", but mDisplayStates is null.");
+                    return;
+                }
+                if (displayId < 0 || displayId >= mDisplayStates.length) {
+                    Slog.w(TAG, "noteScreenState called with out of bounds displayId: " + displayId
+                            + ", mDisplayStates.length=" + mDisplayStates.length);
+                    return;
+                }
+                mDisplayStates[displayId] = BatteryStatsImpl.getSanitizedDisplayState(state);
+                combinedState = mDisplayStates[displayId];
+                int currentPriority = BatteryStatsImpl.getDisplayStatePriority(combinedState);
+                for (int i = 0; i < mDisplayStates.length; i++) {
+                    if (BatteryStatsImpl.getDisplayStatePriority(mDisplayStates[i])
+                            > currentPriority) {
+                        combinedState = mDisplayStates[i];
+                        currentPriority = BatteryStatsImpl.getDisplayStatePriority(combinedState);
+                    }
+                }
+            }
+            FrameworkStatsLog.write(FrameworkStatsLog.SCREEN_STATE_CHANGED, combinedState);
+        } else {
+            FrameworkStatsLog.write(FrameworkStatsLog.SCREEN_STATE_CHANGED, state);
+        }
 
         synchronized (mClock) {
             final long elapsedRealtime = mClock.elapsedRealtime();

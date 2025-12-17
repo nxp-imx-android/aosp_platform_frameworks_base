@@ -137,6 +137,14 @@
     {
       "name": "WMShellExplicitFlickerTestsBubbles-RelaunchBubbleIntoSplitScreenTest",
       "keywords": ["device"]
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-RelaunchBubbleToFullscreenViaAppIconTest",
+      "keywords": ["device"]
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-RelaunchBubbleToFullscreenViaShortcutTest",
+      "keywords": ["device"]
     }
   ]
 }

@@ -161,7 +161,10 @@ public abstract class AppFunctionService extends Service {
                                                         }
                                                     };
                                     try {
-                                        if (Flags.enableAppFunctionPermissionV2()) {
+                                        // Checking onExecuteFunction2 != null to ensure sidecar
+                                        // usage would not break.
+                                        if (Flags.enableAppFunctionPermissionV2()
+                                                && onExecuteFunction2 != null) {
                                             Objects.requireNonNull(onExecuteFunction2)
                                                     .perform(
                                                             request,

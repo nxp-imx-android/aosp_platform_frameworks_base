@@ -682,17 +682,8 @@ public class VirtualDeviceManagerService extends SystemService {
         }
 
         @Override // Binder call
-        @Nullable
-        public Intent createAutomatedAppLaunchWarningIntent(
-                @NonNull String packageName, @UserIdInt int userId) {
-            // TODO(b/442624418): Replace this with a permission check.
-            if (!mActivityTaskManagerInternal.isCallerRecents(Binder.getCallingUid())) {
-                throw new SecurityException("Caller is not recents");
-            }
-            return mAutomatedPackagesRepository.createAutomatedAppLaunchWarningIntent(
-                    packageName, userId, /* callingPackageName= */ null,
-                    /* deviceOwnerForLaunchDisplayId= */ null,
-                    mComputerControlSessionProcessor::closeSessionByUserIntent);
+        public boolean validateAutomatedAppLaunchWarningIntent(@NonNull Intent intent) {
+            return mAutomatedPackagesRepository.validateAutomatedAppLaunchWarningIntent(intent);
         }
 
         @Override // Binder call

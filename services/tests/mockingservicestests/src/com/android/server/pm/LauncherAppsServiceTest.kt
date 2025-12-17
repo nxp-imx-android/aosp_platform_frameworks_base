@@ -21,13 +21,17 @@ import android.app.usage.UsageStatsManagerInternal
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.pm.IOnAppsChangedListener
 import android.content.pm.LauncherUserInfo
+import android.content.pm.PackageInstaller.SessionInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManagerInternal
 import android.content.pm.ParceledListSlice
+import android.content.pm.ResolveInfo
 import android.content.pm.ShortcutServiceInternal
 import android.content.pm.UserInfo
+import android.graphics.Rect
 import android.os.Binder
 import android.os.Bundle
 import android.os.IBinder
@@ -40,7 +44,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.LocalServices
 import com.android.server.extendedtestutils.wheneverStatic
 import com.android.server.testutils.mock
-import com.android.server.testutils.whenever
 import com.android.server.wm.ActivityTaskManagerInternal
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.junit.testparameterinjector.TestParameter
@@ -51,15 +54,21 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.ArgumentMatchers.eq
+import org.mockito.ArgumentMatchers.isNull
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
+import org.mockito.kotlin.KArgumentCaptor
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.stub
 
 /**
  * Build/Install/Run:
@@ -88,13 +97,13 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
         super.setup()
 
         mockUmInternal = rule.mocks().userManagerInternal
+        mockUmInternal.stub {
+            on { userInfos } doReturn arrayOf(mockUserInfo)
+            on { getUserInfo(eq(TEST_USER_ID)) } doReturn mockUserInfo
+        }
 
         wheneverStatic { LocalServices.getService(UserManagerInternal::class.java) }
             .thenReturn(mockUmInternal)
-        whenever(mockUmInternal.getUserInfos())
-            .thenReturn(arrayOf(mockUserInfo))
-        whenever(mockUmInternal.getUserInfo(TEST_USER_ID))
-            .thenReturn(mockUserInfo)
         wheneverStatic { LocalServices.getService(UsageStatsManagerInternal::class.java) }
             .thenReturn(mockUsmInternal)
         wheneverStatic { LocalServices.getService(ActivityManagerInternal::class.java) }
@@ -404,7 +413,9 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
         val onPackageChangedLatch = CountDownLatch(1)
         val listener = TestOnAppsChangedListener(onPackageChangedLatch)
         val spyPackageMonitor = spy(launcherAppsService.mPackageMonitor)
-        whenever(spyPackageMonitor.changingUserId).thenReturn(changedUserId)
+        spyPackageMonitor.stub {
+            on { changingUserId } doReturn changedUserId
+        }
         mockPackageVisibilityAndProfileAccess(
             changedUserId, changedPackage, isProfileAccessible, isPackageFiltered
         )
@@ -431,9 +442,126 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
         launcherAppsService.removeOnAppsChangedListener(listener)
     }
 
+    @Test
+    fun startShortcut_passesCallingActivityTokenToAtm() {
+        mockPinnedShortcut(TEST_USER_ID, TEST_PACKAGE_2)
+        val callingActivityToken = Binder()
+
+        val result = launcherAppsService.startShortcut(
+            callingActivityToken,
+            TEST_PACKAGE_1, /* callingPackage */
+            TEST_PACKAGE_2, /* packageName */
+            null, /* featureId */
+            TEST_SHORTCUT_ID,
+            null, /* sourceBounds */
+            null, /* startActivityOptions */
+            TEST_USER_ID, /* targetUserId */
+        )
+
+        assertThat(result).isTrue()
+        verify(mockAtmInternal).startActivitiesAsPackage(
+            eq(callingActivityToken), /* callingActivityToken */
+            eq(TEST_PACKAGE_2), /* packageName */
+            isNull(), /* featureId */
+            eq(TEST_USER_ID),
+            any(), /* intents */
+            any(), /* bOptions */
+        )
+    }
+
+    @Test
+    fun startActivityAsUser_passesCallingActivityTokenToAtm() {
+        val component = ComponentName(TEST_PACKAGE_2, TEST_ACTIVITY)
+        mockLaunchableActivity(component)
+        val callingActivityToken = Binder()
+
+        launcherAppsService.startActivityAsUser(
+            callingActivityToken,
+            context.iApplicationThread,
+            TEST_PACKAGE_1, /* callingPackage */
+            null, /* callingFeatureId */
+            component,
+            Rect(0, 0, 100, 100), /* sourceBounds */
+            Bundle(), /* opts */
+            TEST_USER_HANDLE, /* user */
+        )
+
+        verify(mockAtmInternal).startActivityAsUser(
+            eq(context.iApplicationThread),
+            eq(TEST_PACKAGE_1), /* callingPackage */
+            isNull(), /* callingFeatureId */
+            any(), /* intent */
+            eq(callingActivityToken), /* resultTo */
+            anyInt(), /* flags */
+            any(), /* bOptions */
+            eq(TEST_USER_ID),
+        )
+    }
+
+    @Test
+    fun startSessionDetailsActivityAsUser_passesCallingActivityTokenToAtm() {
+        val callingActivityToken = Binder()
+
+        launcherAppsService.startSessionDetailsActivityAsUser(
+            callingActivityToken,
+            context.iApplicationThread,
+            TEST_PACKAGE_1, /* callingPackage */
+            null, /* callingFeatureId */
+            SessionInfo(), /* sessionInfo */
+            Rect(0, 0, 100, 100), /* sourceBounds */
+            Bundle(), /* opts */
+            TEST_USER_HANDLE,
+        )
+
+        verify(mockAtmInternal).startActivityAsUser(
+            eq(context.iApplicationThread),
+            eq(TEST_PACKAGE_1), /* callingPackage */
+            isNull(), /* callingFeatureId */
+            any(), /* intent */
+            eq(callingActivityToken), /* resultTo */
+            anyInt(), /* flags */
+            any(), /* bOptions */
+            eq(TEST_USER_ID),
+        )
+    }
+
+    @Test
+    fun showAppDetailsAsUser_passesCallingActivityTokenToAtm() {
+        val component = ComponentName(TEST_PACKAGE_2, TEST_ACTIVITY)
+        mockPackageVisibilityAndProfileAccess(
+            userId = TEST_USER_ID,
+            packageName = TEST_PACKAGE_2,
+            isProfileAccessible = true,
+            isPackageFiltered = false,
+        )
+        val callingActivityToken = Binder()
+
+        launcherAppsService.showAppDetailsAsUser(
+            callingActivityToken,
+            mock(), /* caller */
+            TEST_PACKAGE_1, /* callingPackage */
+            null, /* callingFeatureId */
+            component,
+            null, /* sourceBounds */
+            null, /* opts */
+            TEST_USER_HANDLE,
+        )
+
+        verify(mockAtmInternal).startActivityAsUser(
+            any(), /* caller */
+            eq(TEST_PACKAGE_1), /* callingPackage */
+            isNull(), /* callingFeatureId */
+            any(), /* intent */
+            eq(callingActivityToken), /* resultTo */
+            anyInt(), /* startFlags */
+            any(), /* options */
+            eq(TEST_USER_ID),
+        )
+    }
+
     private fun verifyCapturedFlagsHaveGetAppLockInfoFlag(
         appLocksPermissionGranted: Boolean,
-        verification: ArgumentCaptor<Long>.() -> Unit,
+        verification: KArgumentCaptor<Long>.() -> Unit,
     ) {
         verifyCapturedFlagsForAppLockInfoFlag(
             appLockApisEnabled = true,
@@ -443,7 +571,7 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
     }
 
     private fun verifyCapturedFlagsDoNotHaveGetAppLockInfoFlag(
-        verification: ArgumentCaptor<Long>.() -> Unit
+        verification: KArgumentCaptor<Long>.() -> Unit
     ) {
         verifyCapturedFlagsForAppLockInfoFlag(
             appLockApisEnabled = false,
@@ -455,15 +583,16 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
     private fun verifyCapturedFlagsForAppLockInfoFlag(
         appLockApisEnabled: Boolean,
         appLocksPermissionGranted: Boolean,
-        verification: ArgumentCaptor<Long>.() -> Unit,
+        verification: KArgumentCaptor<Long>.() -> Unit,
     ) {
-        val flagsArgCaptor = ArgumentCaptor.forClass(Long::class.java)
+        val flagsArgCaptor = argumentCaptor<Long>()
         verification(flagsArgCaptor)
+        val expectedFlags = PackageManager.GET_APP_LOCK_INFO
         for (capturedFlags in flagsArgCaptor.allValues) {
             if (appLockApisEnabled && appLocksPermissionGranted) {
-                assertThat(capturedFlags and PackageManager.GET_APP_LOCK_INFO).isNotEqualTo(0L)
+                assertThat(capturedFlags and expectedFlags).isEqualTo(expectedFlags)
             } else {
-                assertThat(capturedFlags and PackageManager.GET_APP_LOCK_INFO).isEqualTo(0L)
+                assertThat(capturedFlags and expectedFlags).isEqualTo(0L)
             }
         }
     }
@@ -488,22 +617,74 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
         assertThat(listener.changedPackageName).isNull()
     }
 
+    private fun mockPinnedShortcut(targetUserId: Int, packageName: String) {
+        mockSsInternal.stub {
+            on {
+                isPinnedByCaller(
+                    anyInt(),
+                    any(),
+                    eq(packageName),
+                    any(),
+                    eq(targetUserId),
+                )
+            } doReturn true
+            on {
+                createShortcutIntents(
+                    anyInt(),
+                    any(),
+                    eq(packageName),
+                    any(),
+                    eq(targetUserId),
+                    anyInt(),
+                    anyInt(),
+                )
+            } doReturn arrayOf(Intent())
+        }
+    }
+
+    private fun mockLaunchableActivity(component: ComponentName) {
+        val activityInfo = ActivityInfo().apply {
+            exported = true
+            name = component.className
+            packageName = component.packageName
+        }
+        val resolvedApp = ResolveInfo().apply { this.activityInfo = activityInfo }
+        mockPmInternal.stub {
+            on {
+                queryIntentActivities(
+                    any(),
+                    anyOrNull(),
+                    anyLong(),
+                    anyInt(),
+                    anyInt(),
+                )
+            } doReturn listOf(resolvedApp)
+        }
+    }
+
     private fun mockPackageVisibilityAndProfileAccess(
         userId: Int, packageName: String, isProfileAccessible: Boolean, isPackageFiltered: Boolean
     ) {
-        whenever(
-            mockUmInternal.isProfileAccessible(
-                anyInt(), eq(userId), anyString(), anyBoolean()
-            )
-        ).thenReturn(isProfileAccessible)
-        whenever(
-            mockPmInternal.filterAppAccess(
-                eq(packageName),
-                anyInt(),
-                eq(userId),
-                eq(false)
-            )
-        ).thenReturn(isPackageFiltered)
+        mockUmInternal.stub {
+            on {
+                isProfileAccessible(
+                    anyInt(), /* callingUserId */
+                    eq(userId),
+                    anyString(), /* debugMsg */
+                    anyBoolean(), /* throwSecurityException */
+                )
+            } doReturn isProfileAccessible
+        }
+        mockPmInternal.stub {
+            on {
+                filterAppAccess(
+                    eq(packageName),
+                    anyInt(), /* callingUserId */
+                    eq(userId),
+                    eq(false), /* filterUninstalled */
+                )
+            } doReturn isPackageFiltered
+        }
     }
 
     private class TestOnAppsChangedListener(val onPackageChangedLatch: CountDownLatch) :
@@ -587,6 +768,8 @@ class LauncherAppsServiceTest : PackageHelperTestBase() {
     companion object {
         private const val PACKAGE_CALLBACK_LATCH_TIMEOUT_MS = 500L
         private const val TEST_CALLING_UID = 12345
+        private const val TEST_ACTIVITY = "TestActivity"
+        private const val TEST_SHORTCUT_ID = "Test Shortcut"
         private val TEST_USER_HANDLE = UserHandle.of(TEST_USER_ID)
     }
 }

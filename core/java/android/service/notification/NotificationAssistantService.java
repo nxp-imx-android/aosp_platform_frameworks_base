@@ -142,7 +142,6 @@ public abstract class NotificationAssistantService extends NotificationListenerS
      *
      * Extra for {@link #ACTION_NOTIFICATION_ASSISTANT_FEEDBACK_SETTINGS}.
      */
-    @FlaggedApi(android.app.Flags.FLAG_NM_SUMMARIZATION)
     public static final String EXTRA_NOTIFICATION_ADJUSTMENT
             = "android.service.notification.extra.NOTIFICATION_ADJUSTMENT";
 
@@ -152,7 +151,6 @@ public abstract class NotificationAssistantService extends NotificationListenerS
      *
      * Extra for {@link #ACTION_NOTIFICATION_ASSISTANT_FEEDBACK_SETTINGS}.
      */
-    @FlaggedApi(android.app.Flags.FLAG_NM_SUMMARIZATION)
     public static final String EXTRA_NOTIFICATION_ADJUSTMENTS
             = "android.service.notification.extra.NOTIFICATION_ADJUSTMENTS";
 

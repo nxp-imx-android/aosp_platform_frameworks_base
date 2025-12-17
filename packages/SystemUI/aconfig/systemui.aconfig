@@ -3,16 +3,6 @@ container: "system"
 
 # go/keep-sorted start block=yes newline_separated=yes by_regex=name:\s*"([^"]+)"
 flag {
-    name: "activity_starter_display_aware"
-    namespace: "systemui"
-    description: "Fix non display aware calls in ActivityStarter"
-    bug: "432402434"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "ambient_cue_plugin"
     namespace: "ailabs"
     description: "Enable plugin for ambient cue project"
@@ -1337,15 +1327,6 @@ flag {
    namespace: "systemui"
    description: "Enables styled focus states on pin input field if keyboard is connected"
    bug: "316106516"
-}
-
-flag {
-    name: "promote_notifications_automatically"
-    namespace: "systemui"
-    description: "Flag to automatically turn certain notifications into promoted notifications so "
-        " we can test promoted notifications with teamfooders. This flag should *never* be released "
-        "to trunkfood or nextfood."
-    bug: "367705002"
 }
 
 flag {

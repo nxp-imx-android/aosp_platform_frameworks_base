@@ -608,8 +608,9 @@ public class ParsedActivityUtils {
                 widthFraction = sw.getFraction(R.styleable.AndroidManifestLayout_defaultWidth, 1, 1,
                         -1);
             } else if (widthType == TypedValue.TYPE_DIMENSION) {
-                final TypedValue vOut = new TypedValue();
-                if (sw.getValue(R.styleable.AndroidManifestLayout_defaultWidth, vOut)) {
+                final TypedValue vOut =
+                        sw.peekValue(R.styleable.AndroidManifestLayout_defaultWidth);
+                if (vOut != null) {
                     complexWidth = vOut.data;
                 }
             }
@@ -621,8 +622,9 @@ public class ParsedActivityUtils {
                 heightFraction = sw.getFraction(R.styleable.AndroidManifestLayout_defaultHeight, 1,
                         1, -1);
             } else if (heightType == TypedValue.TYPE_DIMENSION) {
-                final TypedValue vOut = new TypedValue();
-                if (sw.getValue(R.styleable.AndroidManifestLayout_defaultHeight, vOut)) {
+                final TypedValue vOut =
+                        sw.peekValue(R.styleable.AndroidManifestLayout_defaultHeight);
+                if (vOut != null) {
                     complexHeight = vOut.data;
                 }
             }
@@ -632,8 +634,9 @@ public class ParsedActivityUtils {
             int complexMinWidth = -1;
             final int minWidthType = sw.getType(R.styleable.AndroidManifestLayout_minWidth);
             if (minWidthType == TypedValue.TYPE_DIMENSION) {
-                final TypedValue vOut = new TypedValue();
-                if (sw.getValue(R.styleable.AndroidManifestLayout_minWidth, vOut)) {
+                final TypedValue vOut =
+                        sw.peekValue(R.styleable.AndroidManifestLayout_minWidth);
+                if (vOut != null) {
                     complexMinWidth = vOut.data;
                 }
             }
@@ -641,8 +644,9 @@ public class ParsedActivityUtils {
             int complexMinHeight = -1;
             final int minHeightType = sw.getType(R.styleable.AndroidManifestLayout_minHeight);
             if (minHeightType == TypedValue.TYPE_DIMENSION) {
-                final TypedValue vOut = new TypedValue();
-                if (sw.getValue(R.styleable.AndroidManifestLayout_minHeight, vOut)) {
+                final TypedValue vOut =
+                        sw.peekValue(R.styleable.AndroidManifestLayout_minHeight);
+                if (vOut != null) {
                     complexMinHeight = vOut.data;
                 }
             }

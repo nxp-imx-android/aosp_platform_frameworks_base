@@ -5511,7 +5511,7 @@ package android.app {
     method public int getStartType();
     method public int getStartupState();
     method @NonNull public java.util.Map<java.lang.Integer,java.lang.Long> getStartupTimestamps();
-    method @FlaggedApi("android.content.pm.stay_stopped") public boolean wasForceStopped();
+    method public boolean wasForceStopped();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.ApplicationStartInfo> CREATOR;
     field public static final int LAUNCH_MODE_SINGLE_INSTANCE = 2; // 0x2
@@ -6628,7 +6628,7 @@ package android.app {
     method public long getTimeoutAfter();
     method public boolean hasImage();
     method public boolean hasPromotableCharacteristics();
-    method @FlaggedApi("android.app.nm_summarization") public boolean hasSummarizedContent();
+    method public boolean hasSummarizedContent();
     method @FlaggedApi("android.app.opt_in_rich_ongoing") public boolean isRequestPromotedOngoing();
     method @FlaggedApi("android.app.api_notification_chip") @NonNull public android.app.Notification.ResolvedCompactContent resolveCompactContent(@NonNull android.content.Context);
     method public void writeToParcel(android.os.Parcel, int);
@@ -6892,9 +6892,11 @@ package android.app {
   }
 
   @FlaggedApi("android.app.bridged_notifications") public static final class Notification.BridgedNotificationMetadata implements android.os.Parcelable {
-    ctor public Notification.BridgedNotificationMetadata(int, @NonNull String, @NonNull android.graphics.drawable.Icon);
+    ctor public Notification.BridgedNotificationMetadata(int, @NonNull String, @NonNull String, @NonNull String, @NonNull android.graphics.drawable.Icon);
     method public int describeContents();
-    method @NonNull public android.graphics.drawable.Icon getIcon();
+    method @NonNull public android.graphics.drawable.Icon getAppIcon();
+    method @NonNull public String getChannelId();
+    method @NonNull public String getOriginDeviceName();
     method public int getOriginDeviceType();
     method @NonNull public String getPackageName();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
@@ -6983,7 +6985,7 @@ package android.app {
     method @NonNull public android.app.Notification.Builder setGroup(String);
     method @NonNull public android.app.Notification.Builder setGroupAlertBehavior(int);
     method @NonNull public android.app.Notification.Builder setGroupSummary(boolean);
-    method @FlaggedApi("android.app.nm_summarization") @NonNull public android.app.Notification.Builder setHasSummarizedContent(boolean);
+    method @NonNull public android.app.Notification.Builder setHasSummarizedContent(boolean);
     method @NonNull public android.app.Notification.Builder setLargeIcon(android.graphics.Bitmap);
     method @NonNull public android.app.Notification.Builder setLargeIcon(android.graphics.drawable.Icon);
     method @Deprecated public android.app.Notification.Builder setLights(@ColorInt int, int, int);
@@ -12170,7 +12172,7 @@ package android.content {
     field public static final String ACTION_PACKAGE_REMOVED = "android.intent.action.PACKAGE_REMOVED";
     field public static final String ACTION_PACKAGE_REPLACED = "android.intent.action.PACKAGE_REPLACED";
     field public static final String ACTION_PACKAGE_RESTARTED = "android.intent.action.PACKAGE_RESTARTED";
-    field @FlaggedApi("android.content.pm.stay_stopped") public static final String ACTION_PACKAGE_UNSTOPPED = "android.intent.action.PACKAGE_UNSTOPPED";
+    field public static final String ACTION_PACKAGE_UNSTOPPED = "android.intent.action.PACKAGE_UNSTOPPED";
     field public static final String ACTION_PACKAGE_VERIFIED = "android.intent.action.PACKAGE_VERIFIED";
     field public static final String ACTION_PASTE = "android.intent.action.PASTE";
     field public static final String ACTION_PICK = "android.intent.action.PICK";
@@ -14005,7 +14007,7 @@ package android.content.pm {
     method public abstract boolean isInstantApp();
     method public abstract boolean isInstantApp(@NonNull String);
     method @FlaggedApi("android.content.pm.quarantined_enabled") public boolean isPackageQuarantined(@NonNull String) throws android.content.pm.PackageManager.NameNotFoundException;
-    method @FlaggedApi("android.content.pm.stay_stopped") public boolean isPackageStopped(@NonNull String) throws android.content.pm.PackageManager.NameNotFoundException;
+    method public boolean isPackageStopped(@NonNull String) throws android.content.pm.PackageManager.NameNotFoundException;
     method public boolean isPackageSuspended(@NonNull String) throws android.content.pm.PackageManager.NameNotFoundException;
     method public boolean isPackageSuspended();
     method @CheckResult public abstract boolean isPermissionRevokedByPolicy(@NonNull String, @NonNull String);
@@ -23186,7 +23188,7 @@ package android.media {
     method @NonNull public android.media.VolumeShaper createVolumeShaper(@NonNull android.media.VolumeShaper.Configuration);
     method protected void finalize();
     method public void flush();
-    method @FlaggedApi("android.media.audio.partial_flush_for_pcm_offload") @CheckResult public long flushFromFrame(long, int);
+    method @FlaggedApi("android.media.audio.partial_flush_for_pcm_offload") @CheckResult public long flushWrittenFramesFromPosition(long, int);
     method @NonNull public android.media.AudioAttributes getAudioAttributes();
     method public float getAudioDescriptionMixLeveldB();
     method public int getAudioFormat();
@@ -23223,6 +23225,7 @@ package android.media {
     method public int getStreamType();
     method public boolean getTimestamp(android.media.AudioTimestamp);
     method public int getUnderrunCount();
+    method @FlaggedApi("android.media.audio.partial_flush_for_pcm_offload") public long getWrittenFramesCount();
     method @Deprecated public static boolean isDirectPlaybackSupported(@NonNull android.media.AudioFormat, @NonNull android.media.AudioAttributes);
     method public boolean isOffloadedPlayback();
     method public void pause() throws java.lang.IllegalStateException;
@@ -43496,7 +43499,7 @@ package android.service.notification {
     method public int getRank();
     method @NonNull public java.util.List<android.app.Notification.Action> getSmartActions();
     method @NonNull public java.util.List<java.lang.CharSequence> getSmartReplies();
-    method @FlaggedApi("android.app.nm_summarization") @Nullable public String getSummarization();
+    method @Nullable public String getSummarization();
     method public int getSuppressedVisualEffects();
     method public int getUserSentiment();
     method public boolean isAmbient();
