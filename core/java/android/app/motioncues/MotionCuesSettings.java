@@ -17,6 +17,7 @@
 package android.app.motioncues;
 
 import android.annotation.FlaggedApi;
+import android.annotation.SystemApi;
 import android.app.Flags;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -30,6 +31,7 @@ import androidx.annotation.NonNull;
  *
  * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
 public final class MotionCuesSettings implements Parcelable {
     private final int mHorizontalSpacingDp;
@@ -56,7 +58,9 @@ public final class MotionCuesSettings implements Parcelable {
      * in dp.
      *
      * @return The horizontal spacing in dp.
+     * @hide
      */
+    @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
     public int getHorizontalSpacingDp() {
         return mHorizontalSpacingDp;
@@ -67,7 +71,9 @@ public final class MotionCuesSettings implements Parcelable {
      * in dp.
      *
      * @return The vertical spacing in dp.
+     * @hide
      */
+    @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
     public int getVerticalSpacingDp() {
         return mVerticalSpacingDp;
@@ -77,7 +83,9 @@ public final class MotionCuesSettings implements Parcelable {
      * Gets the margin size around the area where motion cues can be drawn, in dp.
      *
      * @return The margin size in dp.
+     * @hide
      */
+    @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
     public int getMarginSize() {
         return mMarginSize;
@@ -87,7 +95,9 @@ public final class MotionCuesSettings implements Parcelable {
      * Gets the base radius of the motion cues, in dp.
      *
      * @return The radius in dp.
+     * @hide
      */
+    @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
     public int getRadius() {
         return mRadius;
@@ -97,6 +107,7 @@ public final class MotionCuesSettings implements Parcelable {
      * Standard Parcelable CREATOR field.
      * @hide
      */
+    @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
     public static final @NonNull Creator<MotionCuesSettings> CREATOR =
             new Creator<MotionCuesSettings>() {
@@ -111,12 +122,14 @@ public final class MotionCuesSettings implements Parcelable {
                 }
             };
 
+    /** @hide */
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
     @Override
     public int describeContents() {
         return 0;
     }
 
+    /** @hide */
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
@@ -130,7 +143,9 @@ public final class MotionCuesSettings implements Parcelable {
      * Builder class for creating {@link MotionCuesSettings} instances.
      *
      * <p>This builder allows for a flexible construction of the settings object.
+     * @hide
      */
+    @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
     public static final class Builder {
         private int mHorizontalSpacingDp;
@@ -138,7 +153,12 @@ public final class MotionCuesSettings implements Parcelable {
         private int mMarginSize;
         private int mRadius;
 
-        /** Creates a new Builder with default values. */
+        /**
+         * Creates a new Builder with default values.
+         *
+         * @hide
+         */
+        @SystemApi
         @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
         public Builder() {}
 
@@ -147,7 +167,9 @@ public final class MotionCuesSettings implements Parcelable {
          * MotionCuesSettings}.
          *
          * @param original The {@link MotionCuesSettings} instance to copy values from.
+         * @hide
          */
+        @SystemApi
         @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
         public Builder(@NonNull MotionCuesSettings original) {
             mHorizontalSpacingDp = original.mHorizontalSpacingDp;
@@ -161,7 +183,9 @@ public final class MotionCuesSettings implements Parcelable {
          *
          * @param horizontalSpacingDp The horizontal spacing in dp.
          * @return This Builder instance for chaining.
+         * @hide
          */
+        @SystemApi
         @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
         public @NonNull Builder setHorizontalSpacingDp(int horizontalSpacingDp) {
             mHorizontalSpacingDp = horizontalSpacingDp;
@@ -173,7 +197,9 @@ public final class MotionCuesSettings implements Parcelable {
          *
          * @param verticalSpacingDp The vertical spacing in dp.
          * @return This Builder instance for chaining.
+         * @hide
          */
+        @SystemApi
         @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
         public @NonNull Builder setVerticalSpacingDp(int verticalSpacingDp) {
             mVerticalSpacingDp = verticalSpacingDp;
@@ -185,7 +211,9 @@ public final class MotionCuesSettings implements Parcelable {
          *
          * @param marginSize The margin size in dp.
          * @return This Builder instance for chaining.
+         * @hide
          */
+        @SystemApi
         @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
         public @NonNull Builder setMarginSize(int marginSize) {
             mMarginSize = marginSize;
@@ -197,7 +225,9 @@ public final class MotionCuesSettings implements Parcelable {
          *
          * @param radius The bubble radius in dp.
          * @return This Builder instance for chaining.
+         * @hide
          */
+        @SystemApi
         @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
         public @NonNull Builder setRadius(int radius) {
             mRadius = radius;
@@ -208,7 +238,9 @@ public final class MotionCuesSettings implements Parcelable {
          * Builds and returns the {@link MotionCuesSettings} instance.
          *
          * @return A new {@link MotionCuesSettings} instance with the configured values.
+         * @hide
          */
+        @SystemApi
         @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
         public @NonNull MotionCuesSettings build() {
             return new MotionCuesSettings(this);

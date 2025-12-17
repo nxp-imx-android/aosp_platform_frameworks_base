@@ -1242,6 +1242,7 @@ package android.app {
   }
 
   public class StatusBarManager {
+    method @FlaggedApi("android.app.enable_motion_cues") @RequiresPermission(android.Manifest.permission.DRAW_MOTION_CUES) public void endMotionCuesSession();
     method @NonNull @RequiresPermission(android.Manifest.permission.STATUS_BAR) public android.app.StatusBarManager.DisableInfo getDisableInfo();
     method @RequiresPermission(android.Manifest.permission.STATUS_BAR) public int getNavBarMode();
     method @RequiresPermission(android.Manifest.permission.MEDIA_CONTENT_CONTROL) public void registerNearbyMediaDevicesProvider(@NonNull android.media.NearbyMediaDevicesProvider);
@@ -1249,6 +1250,7 @@ package android.app {
     method @RequiresPermission(android.Manifest.permission.STATUS_BAR) public void setDisabledForSetup(boolean);
     method @FlaggedApi("android.telecom.flags.release_icon_as_api") @RequiresPermission(android.Manifest.permission.STATUS_BAR) public void setIcon(@NonNull String, @DrawableRes int, int, @Nullable String);
     method @RequiresPermission(android.Manifest.permission.STATUS_BAR) public void setNavBarMode(int);
+    method @FlaggedApi("android.app.enable_motion_cues") @RequiresPermission(android.Manifest.permission.DRAW_MOTION_CUES) public void startMotionCuesSession(@NonNull android.content.ComponentName, @NonNull android.app.motioncues.MotionCuesSettings);
     method @RequiresPermission(android.Manifest.permission.MEDIA_CONTENT_CONTROL) public void unregisterNearbyMediaDevicesProvider(@NonNull android.media.NearbyMediaDevicesProvider);
     method @RequiresPermission(android.Manifest.permission.MEDIA_CONTENT_CONTROL) public void updateMediaTapToTransferReceiverDisplay(int, @NonNull android.media.MediaRoute2Info, @Nullable android.graphics.drawable.Icon, @Nullable CharSequence);
     method @RequiresPermission(android.Manifest.permission.MEDIA_CONTENT_CONTROL) public void updateMediaTapToTransferSenderDisplay(int, @NonNull android.media.MediaRoute2Info, @Nullable java.util.concurrent.Executor, @Nullable Runnable);
@@ -2471,6 +2473,50 @@ package android.app.modes {
     method public void registerModeSyncEnabledListener(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Boolean>);
     method @RequiresPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS) public void setModeSyncEnabled(boolean);
     method public void unregisterModeSyncEnabledListener(@NonNull java.util.function.Consumer<java.lang.Boolean>);
+  }
+
+}
+
+package android.app.motioncues {
+
+  @FlaggedApi("android.app.enable_motion_cues") public final class MotionCuesData implements android.os.Parcelable {
+    ctor @FlaggedApi("android.app.enable_motion_cues") public MotionCuesData(@ColorInt int, @DrawableRes int);
+    ctor @FlaggedApi("android.app.enable_motion_cues") public MotionCuesData(@NonNull android.app.motioncues.MotionCuesData);
+    method @FlaggedApi("android.app.enable_motion_cues") public int describeContents();
+    method @FlaggedApi("android.app.enable_motion_cues") @ColorInt public int getColor();
+    method @FlaggedApi("android.app.enable_motion_cues") @DrawableRes public int getShapeRes();
+    method @FlaggedApi("android.app.enable_motion_cues") public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @FlaggedApi("android.app.enable_motion_cues") @NonNull public static final android.os.Parcelable.Creator<android.app.motioncues.MotionCuesData> CREATOR;
+  }
+
+  @FlaggedApi("android.app.enable_motion_cues") public abstract class MotionCuesService extends android.app.Service {
+    ctor public MotionCuesService();
+    method @FlaggedApi("android.app.enable_motion_cues") @Nullable @RequiresPermission(android.Manifest.permission.BIND_MOTION_CUES_SERVICE) public final android.os.IBinder onBind(@Nullable android.content.Intent);
+    method @FlaggedApi("android.app.enable_motion_cues") public abstract void onClientConnected();
+    method @FlaggedApi("android.app.enable_motion_cues") public abstract void onClientDisconnected();
+    method @FlaggedApi("android.app.enable_motion_cues") public final void updateBubblePixelPos(float, float);
+    method @FlaggedApi("android.app.enable_motion_cues") public final void updateMotionCuesData(@NonNull android.app.motioncues.MotionCuesData);
+    field @FlaggedApi("android.app.enable_motion_cues") public static final String EXTRA_API_CALLBACK = "android.app.motioncues.extra.API_CALLBACK";
+  }
+
+  @FlaggedApi("android.app.enable_motion_cues") public final class MotionCuesSettings implements android.os.Parcelable {
+    method @FlaggedApi("android.app.enable_motion_cues") public int describeContents();
+    method @FlaggedApi("android.app.enable_motion_cues") public int getHorizontalSpacingDp();
+    method @FlaggedApi("android.app.enable_motion_cues") public int getMarginSize();
+    method @FlaggedApi("android.app.enable_motion_cues") public int getRadius();
+    method @FlaggedApi("android.app.enable_motion_cues") public int getVerticalSpacingDp();
+    method @FlaggedApi("android.app.enable_motion_cues") public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @FlaggedApi("android.app.enable_motion_cues") @NonNull public static final android.os.Parcelable.Creator<android.app.motioncues.MotionCuesSettings> CREATOR;
+  }
+
+  @FlaggedApi("android.app.enable_motion_cues") public static final class MotionCuesSettings.Builder {
+    ctor @FlaggedApi("android.app.enable_motion_cues") public MotionCuesSettings.Builder();
+    ctor @FlaggedApi("android.app.enable_motion_cues") public MotionCuesSettings.Builder(@NonNull android.app.motioncues.MotionCuesSettings);
+    method @FlaggedApi("android.app.enable_motion_cues") @NonNull public android.app.motioncues.MotionCuesSettings build();
+    method @FlaggedApi("android.app.enable_motion_cues") @NonNull public android.app.motioncues.MotionCuesSettings.Builder setHorizontalSpacingDp(int);
+    method @FlaggedApi("android.app.enable_motion_cues") @NonNull public android.app.motioncues.MotionCuesSettings.Builder setMarginSize(int);
+    method @FlaggedApi("android.app.enable_motion_cues") @NonNull public android.app.motioncues.MotionCuesSettings.Builder setRadius(int);
+    method @FlaggedApi("android.app.enable_motion_cues") @NonNull public android.app.motioncues.MotionCuesSettings.Builder setVerticalSpacingDp(int);
   }
 
 }

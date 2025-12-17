@@ -2581,10 +2581,13 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
      */
     @Override
     public void startMotionCuesSession(
-            @NonNull ComponentName componentName, @NonNull MotionCuesSettings motionCuesSettings) {
+            @NonNull ComponentName componentName,@NonNull MotionCuesSettings motionCuesSettings) {
         enforceMotionCuesDrawingControl();
+        final int callingUid = Binder.getCallingUid();
+        final int userId = UserHandle.getUserId(callingUid);
+        checkCallingUidPackage(componentName.getPackageName(), callingUid, userId);
         runWithStatusBarIfPresent(
-                bar -> bar.startMotionCuesSession(componentName, motionCuesSettings),
+                bar -> bar.startMotionCuesSession(componentName, userId, motionCuesSettings),
                 "startMotionCuesSession");
     }
 

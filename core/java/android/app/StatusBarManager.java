@@ -1517,6 +1517,7 @@ public class StatusBarManager {
      *                           and layout of the motion cues.
      * @hide
      */
+    @SystemApi
     @RequiresPermission(android.Manifest.permission.DRAW_MOTION_CUES)
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
     public void startMotionCuesSession(
@@ -1540,6 +1541,7 @@ public class StatusBarManager {
      *
      * @hide
      */
+    @SystemApi
     @RequiresPermission(android.Manifest.permission.DRAW_MOTION_CUES)
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
     public void endMotionCuesSession() {
