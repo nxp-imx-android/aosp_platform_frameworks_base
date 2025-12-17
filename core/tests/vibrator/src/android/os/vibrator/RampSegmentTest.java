@@ -29,11 +29,7 @@ import android.hardware.vibrator.IVibrator;
 import android.os.Parcel;
 import android.os.VibrationEffect;
 import android.os.VibratorInfo;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
-import android.platform.test.flag.junit.SetFlagsRule;
 
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -41,9 +37,6 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class RampSegmentTest {
     private static final float TOLERANCE = 1e-2f;
-
-    @Rule
-    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Test
     public void testCreation() {
@@ -106,32 +99,7 @@ public class RampSegmentTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_HAPTICS_SCALE_V2_ENABLED)
-    public void testScale_withLegacyScaling_halfAndFullAmplitudes() {
-        RampSegment initial = new RampSegment(0.5f, 1, 0, 0, 0);
-
-        assertEquals(0.5f, initial.scale(1).getStartAmplitude(), TOLERANCE);
-        assertEquals(0.17f, initial.scale(0.5f).getStartAmplitude(), TOLERANCE);
-        // The original value was not scaled up, so this only scales it down.
-        assertEquals(0.86f, initial.scale(1.5f).getStartAmplitude(), TOLERANCE);
-        assertEquals(0.47f, initial.scale(1.5f).scale(2 / 3f).getStartAmplitude(), TOLERANCE);
-        // Does not restore to the exact original value because scale up is a bit offset.
-        assertEquals(0.35f, initial.scale(0.8f).getStartAmplitude(), TOLERANCE);
-        assertEquals(0.5f, initial.scale(0.8f).scale(1.25f).getStartAmplitude(), TOLERANCE);
-
-        assertEquals(1f, initial.scale(1).getEndAmplitude(), TOLERANCE);
-        assertEquals(0.34f, initial.scale(0.5f).getEndAmplitude(), TOLERANCE);
-        // The original value was not scaled up, so this only scales it down.
-        assertEquals(1f, initial.scale(1.5f).getEndAmplitude(), TOLERANCE);
-        assertEquals(0.53f, initial.scale(1.5f).scale(2 / 3f).getEndAmplitude(), TOLERANCE);
-        // Does not restore to the exact original value because scale up is a bit offset.
-        assertEquals(0.71f, initial.scale(0.8f).getEndAmplitude(), TOLERANCE);
-        assertEquals(0.84f, initial.scale(0.8f).scale(1.25f).getEndAmplitude(), TOLERANCE);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_HAPTICS_SCALE_V2_ENABLED)
-    public void testScale_withScalingV2_halfAndFullAmplitudes() {
+    public void testScale_halfAndFullAmplitudes() {
         RampSegment initial = new RampSegment(0.5f, 1, 0, 0, 0);
 
         assertEquals(0.5f, initial.scale(1).getStartAmplitude(), TOLERANCE);
@@ -165,33 +133,37 @@ public class RampSegmentTest {
     }
 
     @Test
-    public void testScaleLinearly() {
+    public void testApplyAdaptiveScale() {
         RampSegment initial = new RampSegment(0, 1, 0, 0, 0);
 
-        assertEquals(0f, initial.scaleLinearly(1f).getStartAmplitude(), TOLERANCE);
-        assertEquals(0f, initial.scaleLinearly(0.5f).getStartAmplitude(), TOLERANCE);
-        assertEquals(0f, initial.scaleLinearly(1.5f).getStartAmplitude(), TOLERANCE);
-        assertEquals(0f, initial.scaleLinearly(1.5f).scaleLinearly(2 / 3f).getStartAmplitude(),
+        assertEquals(0f, initial.applyAdaptiveScale(1f).getStartAmplitude(), TOLERANCE);
+        assertEquals(0f, initial.applyAdaptiveScale(0.5f).getStartAmplitude(), TOLERANCE);
+        assertEquals(0f, initial.applyAdaptiveScale(1.5f).getStartAmplitude(), TOLERANCE);
+        assertEquals(0f,
+                initial.applyAdaptiveScale(1.5f).applyAdaptiveScale(2 / 3f).getStartAmplitude(),
                 TOLERANCE);
-        assertEquals(0f, initial.scaleLinearly(0.8f).scaleLinearly(1.25f).getStartAmplitude(),
+        assertEquals(0f,
+                initial.applyAdaptiveScale(0.8f).applyAdaptiveScale(1.25f).getStartAmplitude(),
                 TOLERANCE);
 
-        assertEquals(1f, initial.scaleLinearly(1f).getEndAmplitude(), TOLERANCE);
-        assertEquals(0.5f, initial.scaleLinearly(0.5f).getEndAmplitude(), TOLERANCE);
-        assertEquals(1f, initial.scaleLinearly(1.5f).getEndAmplitude(), TOLERANCE);
-        assertEquals(0.8f, initial.scaleLinearly(0.8f).getEndAmplitude(), TOLERANCE);
-        // Restores back to the exact original value since this is a linear scaling.
-        assertEquals(0.8f, initial.scaleLinearly(1.5f).scaleLinearly(0.8f).getEndAmplitude(),
+        assertEquals(1f, initial.applyAdaptiveScale(1f).getEndAmplitude(), TOLERANCE);
+        assertEquals(0.5f, initial.applyAdaptiveScale(0.5f).getEndAmplitude(), TOLERANCE);
+        assertEquals(1f, initial.applyAdaptiveScale(1.5f).getEndAmplitude(), TOLERANCE);
+        assertEquals(0.8f, initial.applyAdaptiveScale(0.8f).getEndAmplitude(), TOLERANCE);
+        // Restores back to the exact original value.
+        assertEquals(0.8f,
+                initial.applyAdaptiveScale(1.5f).applyAdaptiveScale(0.8f).getEndAmplitude(),
                 TOLERANCE);
 
         initial = new RampSegment(0.5f, 1, 0, 0, 0);
 
-        assertEquals(0.5f, initial.scaleLinearly(1).getStartAmplitude(), TOLERANCE);
-        assertEquals(0.25f, initial.scaleLinearly(0.5f).getStartAmplitude(), TOLERANCE);
-        assertEquals(0.75f, initial.scaleLinearly(1.5f).getStartAmplitude(), TOLERANCE);
-        assertEquals(0.4f, initial.scaleLinearly(0.8f).getStartAmplitude(), TOLERANCE);
-        // Restores back to the exact original value since this is a linear scaling.
-        assertEquals(0.5f, initial.scaleLinearly(0.8f).scaleLinearly(1.25f).getStartAmplitude(),
+        assertEquals(0.5f, initial.applyAdaptiveScale(1).getStartAmplitude(), TOLERANCE);
+        assertEquals(0.25f, initial.applyAdaptiveScale(0.5f).getStartAmplitude(), TOLERANCE);
+        assertEquals(0.75f, initial.applyAdaptiveScale(1.5f).getStartAmplitude(), TOLERANCE);
+        assertEquals(0.4f, initial.applyAdaptiveScale(0.8f).getStartAmplitude(), TOLERANCE);
+        // Restores back to the exact original value.
+        assertEquals(0.5f,
+                initial.applyAdaptiveScale(0.8f).applyAdaptiveScale(1.25f).getStartAmplitude(),
                 TOLERANCE);
     }
 

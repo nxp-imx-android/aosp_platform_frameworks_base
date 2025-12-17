@@ -22,6 +22,7 @@ import android.annotation.TestApi;
 import android.os.Parcel;
 import android.os.VibrationEffect;
 import android.os.VibratorInfo;
+import android.util.MathUtils;
 
 import com.android.internal.util.Preconditions;
 
@@ -153,9 +154,9 @@ public final class BasicPwleSegment extends VibrationEffectSegment {
     /** @hide */
     @NonNull
     @Override
-    public BasicPwleSegment scaleLinearly(float scaleFactor) {
-        float newStartIntensity = VibrationEffect.scaleLinearly(mStartIntensity, scaleFactor);
-        float newEndIntensity = VibrationEffect.scaleLinearly(mEndIntensity, scaleFactor);
+    public BasicPwleSegment applyAdaptiveScale(float scaleFactor) {
+        float newStartIntensity = MathUtils.constrain(mStartIntensity * scaleFactor, 0f, 1f);
+        float newEndIntensity = MathUtils.constrain(mEndIntensity * scaleFactor, 0f, 1f);
         if (Float.compare(mStartIntensity, newStartIntensity) == 0
                 && Float.compare(mEndIntensity, newEndIntensity) == 0) {
             return this;
