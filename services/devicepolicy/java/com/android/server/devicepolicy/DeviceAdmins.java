@@ -60,7 +60,7 @@ class DeviceAdmins {
         int getTargetSdk(String packageName, int userId);
     }
 
-    final DevicePolicyManagerService.Injector mInjector;
+    final Injector mInjector;
     final Owners mOwners;
 
     @VisibleForTesting final SparseArray<DevicePolicyData> mUserData = new SparseArray<>();
@@ -70,7 +70,7 @@ class DeviceAdmins {
 
     DeviceAdmins(
             Lock lock,
-            DevicePolicyManagerService.Injector injector,
+            Injector injector,
             Owners owners,
             Delegate delegate) {
         mLock = lock;
