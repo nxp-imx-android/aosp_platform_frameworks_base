@@ -16,12 +16,12 @@
 
 package com.android.wm.shell.functional.externaldisplay
 
-import android.platform.test.annotations.Presubmit
+import android.platform.test.annotations.Postsubmit
 import com.android.wm.shell.scenarios.MoveToNextDisplayProjected
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
 /* Functional test for [MoveToNextDisplayProjected]. */
 @RunWith(BlockJUnit4ClassRunner::class)
-@Presubmit
+@Postsubmit
 class MoveToNextDisplayProjectedTest : MoveToNextDisplayProjected()
