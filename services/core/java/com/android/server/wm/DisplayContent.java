@@ -1993,6 +1993,19 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         return (int) TypedValue.complexToFloat(value.data);
     }
 
+    @Nullable
+    private ActivityRecord getTopActivityFollowingBehindOrientation() {
+        final ActivityRecord top = topRunningActivity();
+        if (top != null) {
+            final int orientation = top.getRequestedOrientation();
+            if ((orientation == SCREEN_ORIENTATION_UNSPECIFIED && !top.providesOrientation())
+                    || (orientation == ActivityInfo.SCREEN_ORIENTATION_BEHIND)) {
+                return top;
+            }
+        }
+        return null;
+    }
+
     private boolean updateOrientation(boolean forceUpdate) {
         final WindowContainer prevOrientationSource = mLastOrientationSource;
         final int orientation = getOrientation();
@@ -2011,9 +2024,16 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 mAtmService.getTaskChangeNotificationController()
                         .notifyTaskRequestedOrientationChanged(task.mTaskId, orientation);
             }
-            // The orientation source may not be the top if it uses SCREEN_ORIENTATION_BEHIND.
-            final ActivityRecord topCandidate = !r.isVisibleRequested() ? topRunningActivity() : r;
-            if (topCandidate != null && handleTopActivityLaunchingInDifferentOrientation(
+            // The orientation source may not be the top if it uses SCREEN_ORIENTATION_BEHIND,
+            // or it is a translucent SCREEN_ORIENTATION_UNSPECIFIED activity.
+            ActivityRecord topCandidate = r;
+            if (r != mFocusedApp && !r.isOnTop()) {
+                final ActivityRecord topFollowBehind = getTopActivityFollowingBehindOrientation();
+                if (topFollowBehind != null) {
+                    topCandidate = topFollowBehind;
+                }
+            }
+            if (handleTopActivityLaunchingInDifferentOrientation(
                     topCandidate, r, true /* checkOpening */)) {
                 // Display orientation should be deferred until the top fixed rotation is finished.
                 return false;
@@ -2077,9 +2097,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 orientation = nextCandidate.getRequestedOrientation();
             }
         }
-        if (orientation == topOrientation) {
-            if (mFixedRotationLaunchingApp != null
-                    && orientation == mFixedRotationLaunchingApp.getRequestedOrientation()) {
+        if (orientation == topOrientation || orientation == SCREEN_ORIENTATION_UNSPECIFIED) {
+            if (mFixedRotationLaunchingApp != null) {
                 // Reuse the transform if the non-top-visible activity has the same orientation as
                 // the rotated launching top.
                 ar.linkFixedRotationTransform(mFixedRotationLaunchingApp);
