@@ -158,6 +158,7 @@ public class TaskSnapshotWindow {
             };
             SnapshotDrawerUtils.drawSnapshotOnSurface(layoutParams, surfaceControl, snapshot,
                     info.taskBounds, reportDrawn);
+            snapshotSurface.mRootSurface = surfaceControl;
             return snapshotSurface.mHasDrawn ? snapshotSurface : null;
         }
 
