@@ -14676,7 +14676,8 @@ package android.service.personalcontext.understander {
     method public void onConnected();
     method @NonNull public abstract android.service.personalcontext.refiner.HintFilter onInitializeFilter();
     method public abstract void onUnderstand(@NonNull java.util.List<android.service.personalcontext.hint.ContextHintWithSignature>);
-    method public final void understood(@NonNull java.util.List<android.service.personalcontext.insight.ContextInsight>);
+    method @Deprecated public final void understood(@NonNull java.util.List<android.service.personalcontext.insight.ContextInsight>);
+    method public final void understood(@NonNull android.service.personalcontext.insight.ContextInsight);
   }
 
 }
