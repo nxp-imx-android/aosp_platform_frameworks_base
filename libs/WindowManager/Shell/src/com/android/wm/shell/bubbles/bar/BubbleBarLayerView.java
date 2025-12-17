@@ -410,6 +410,11 @@ public class BubbleBarLayerView extends FrameLayout
 
             DragListener dragListener = inDismiss -> {
                 if (inDismiss && mExpandedBubble != null) {
+                    if (com.android.wm.shell.Flags.bugDontRemoveTaskBubble()) {
+                        if (mExpandedBubble instanceof Bubble) {
+                            ((Bubble) mExpandedBubble).setTaskShouldBeRemoved(true);
+                        }
+                    }
                     mBubbleController.dismissBubble(mExpandedBubble.getKey(), DISMISS_USER_GESTURE);
                     logBubbleEvent(BubbleLogger.Event.BUBBLE_BAR_BUBBLE_DISMISSED_DRAG_EXP_VIEW);
                 }

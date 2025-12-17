@@ -1556,8 +1556,7 @@ public class BubbleController implements ConfigurationChangeListener,
         final String selectedBubbleKey = mBubbleData.getSelectedBubbleKey();
         final Bubble bubbleToDismiss = mBubbleData.getAnyBubbleWithKey(bubbleKey);
         if (bubbleToDismiss != null) {
-            bubbleToDismiss.getOrCreateBubbleTaskView(
-                    mBubbleTaskViewFactory).setTaskShouldBeRemoved(true);
+            bubbleToDismiss.setTaskShouldBeRemoved(true);
             mBubbleData.dismissBubbleWithKey(
                     bubbleKey, Bubbles.DISMISS_USER_GESTURE_FROM_LAUNCHER, timestamp);
             mLogger.log(bubbleToDismiss,
