@@ -214,21 +214,18 @@
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-focus-FocusAppFromAllAppsTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-focus-FocusAppFromTaskbarOverflowTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-focus-FocusAppFromTaskbarTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
@@ -271,42 +268,36 @@
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-switching-SwitchBetweenDesktopAndFullScreenViaOverviewTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-switching-SwitchBetweenDesktopAndFullScreenViaQuickSwitchTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-switching-SwitchFocusBetweenAppsTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-switching-SwitchToDesktopFromOverviewTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-switching-SwitchToHomeFromDesktopTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-switching-SwitchToOverviewFromDesktopTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
