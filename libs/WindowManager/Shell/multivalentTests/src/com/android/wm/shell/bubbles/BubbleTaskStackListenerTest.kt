@@ -17,6 +17,7 @@
 package com.android.wm.shell.bubbles
 
 import android.app.ActivityManager
+import android.app.ActivityTaskManager
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.os.Binder
@@ -90,6 +91,7 @@ class BubbleTaskStackListenerTest {
     @Test
     fun onActivityRestartAttempt_inStackAppBubbleRestart_selectsAndExpandsStack() {
         bubbleData.stub { on { getBubbleInStackWithTaskId(bubbleTaskId) } doReturn bubble }
+        task.apply { parentTaskId = ActivityTaskManager.INVALID_TASK_ID }
 
         bubbleTaskStackListener.onActivityRestartAttempt(
             task,

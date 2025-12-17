@@ -85,6 +85,7 @@ object BubbleTestUtils {
         wct: WindowContainerTransaction,
         taskToken: IBinder,
         captionInsetsOwner: IBinder? = null,
+        resetBounds: Boolean = true,
     ) {
         // Verify hierarchy ops
         if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
@@ -107,16 +108,24 @@ object BubbleTestUtils {
         }
 
         // Verify Change
-        assertThat(wct.changes[taskToken]).isNotNull()
-        val change = wct.changes[taskToken]!!
         if (!com.android.window.flags.Flags.enableBubbleRootTask()) {
+            assertThat(wct.changes[taskToken]).isNotNull()
+            val change = wct.changes[taskToken]!!
             assertThat(change.windowingMode).isEqualTo(WindowConfiguration.WINDOWING_MODE_UNDEFINED)
-            assertThat(change.launchNextToBubble).isFalse()
             assertThat(change.interceptBackPressed).isFalse()
+            assertThat(change.forceExcludedFromRecents).isFalse()
+            assertThat(change.disablePip).isFalse()
+            assertThat(change.launchNextToBubble).isFalse()
+            assertThat(change.disableLaunchAdjacent).isFalse()
+            assertThat(change.configuration.windowConfiguration.bounds).isEqualTo(Rect())
+        } else {
+            if (resetBounds) {
+                assertThat(wct.changes[taskToken]).isNotNull()
+                val change = wct.changes[taskToken]!!
+                assertThat(change.configuration.windowConfiguration.bounds).isEqualTo(Rect())
+            } else {
+                assertThat(wct.changes[taskToken]).isNull()
+            }
         }
-        assertThat(change.forceExcludedFromRecents).isFalse()
-        assertThat(change.disablePip).isFalse()
-        assertThat(change.disableLaunchAdjacent).isFalse()
-        assertThat(change.configuration.windowConfiguration.bounds).isEqualTo(Rect())
     }
 }

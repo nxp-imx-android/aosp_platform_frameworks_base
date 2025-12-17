@@ -698,7 +698,12 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
             return pending != null && taskInfo.containsLaunchCookie(pending.mLaunchCookie);
         }
         if (isTaskViewTask(taskInfo)) {
-            return true;
+            if (!BubbleAnythingFlagHelper.enableRootTaskForBubble() || !taskInfo.hasParentTask()) {
+                return true;
+            }
+            if (mBubbleHelper.isPresent() && mBubbleHelper.get().isAppBubbleTask(taskInfo)) {
+                return true;
+            }
         }
 
         // In some cases, findTaskView returns null but the change is still a task view:

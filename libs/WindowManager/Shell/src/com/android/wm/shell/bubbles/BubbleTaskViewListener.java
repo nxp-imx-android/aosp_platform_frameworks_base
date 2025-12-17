@@ -258,7 +258,8 @@ public class BubbleTaskViewListener implements TaskView.Listener {
                 // flicker
                 final WindowContainerTransaction wct = getExitBubbleTransaction(
                         mExpandedViewManager.getBubbleHelper(), taskInfo.token,
-                        mTaskView.getCaptionInsetsOwner(), /* reparentToTda= */ false);
+                        mTaskView.getCaptionInsetsOwner(), /* resetBounds= */ true,
+                        /* reparentToTda= */ false);
                 tvc.getTaskOrganizer().applyTransaction(wct);
             }
             mTaskView.release();
