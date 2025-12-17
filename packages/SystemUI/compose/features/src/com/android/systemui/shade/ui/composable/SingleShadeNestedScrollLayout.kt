@@ -114,10 +114,14 @@ fun ContentScope.SingleShadeNestedScrollLayout(
     // this is to remove these side effects when the content is not visible.
     if (isAlwaysComposedContentVisible()) {
         // whether the stack is moving due to a swipe or fling
-        val isScrollInProgress =
-            contentScrollState.isScrollInProgress ||
-                contentOverScrollEffect.isInProgress ||
-                scrimOffset.isRunning
+        val isScrollInProgress by
+            remember(contentScrollState, contentOverScrollEffect) {
+                derivedStateOf {
+                    contentScrollState.isScrollInProgress ||
+                        contentOverScrollEffect.isInProgress ||
+                        scrimOffset.isRunning
+                }
+            }
 
         LaunchedEffect(isScrollInProgress) {
             if (isScrollInProgress) {
@@ -128,9 +132,9 @@ fun ContentScope.SingleShadeNestedScrollLayout(
                 jankMonitor.end(CUJ_NOTIFICATION_SHADE_SCROLL_FLING)
             }
         }
-        val shadeScrollState by
-            shadeSession.rememberSession(key = "SingleShadeScrollState") {
-                derivedStateOf {
+
+        LaunchedEffect(contentScrollState, scrimOffset) {
+            snapshotFlow {
                     ShadeScrollState(
                         // we are not scrolled to the top unless the scroll position is zero,
                         // and the scrim is at its maximum offset
@@ -139,8 +143,8 @@ fun ContentScope.SingleShadeNestedScrollLayout(
                         maxScrollPosition = contentScrollState.maxValue,
                     )
                 }
-            }
-        LaunchedEffect(shadeScrollState) { viewModel.setScrollState(shadeScrollState) }
+                .collect { shadeScrollState -> viewModel.setScrollState(shadeScrollState) }
+        }
     }
 
     val isContentOverscrolledOnTop by
