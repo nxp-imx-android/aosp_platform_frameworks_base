@@ -1228,33 +1228,6 @@ public class DisplayContentTests extends WindowTestsBase {
     }
 
     @Test
-    public void testUnspecifiedOrientationTranslucentTop() {
-        mDisplayContent.setIgnoreOrientationRequest(false);
-        final ActivityRecord bottom = new ActivityBuilder(mAtm).setVisible(false)
-                .setCreateTask(true)
-                .setScreenOrientation(getRotatedOrientation(mDisplayContent)).build();
-        final ActivityRecord translucentTop = new ActivityBuilder(mAtm).setVisible(false)
-                .setTask(bottom.getTask())
-                .setActivityTheme(android.R.style.Theme_Translucent)
-                .setScreenOrientation(SCREEN_ORIENTATION_UNSPECIFIED).build();
-        requestTransition(translucentTop, WindowManager.TRANSIT_OPEN);
-        doCallRealMethod().when(mRootWindowContainer).ensureActivitiesVisible(
-                any() /* starting */, anyBoolean() /* notifyClients */);
-        // Make 'translucentTop' and 'bottom' visible with updating orientation.
-        mRootWindowContainer.ensureVisibilityAndConfig(translucentTop, mDisplayContent,
-                false /* deferResume */);
-
-        assertEquals("The orientation source is the bottom because a translucent activity"
-                        + " with unspecified orientation won't affect parent orientation",
-                bottom, mDisplayContent.getLastOrientationSource());
-        assertTrue("The translucent activity doesn't provide orientation, so it uses the"
-                        + " orientation from the bottom which provides a rotated orientation",
-                translucentTop.hasFixedRotationTransform());
-        assertTrue("The non-top visible activity shares the same transform",
-                bottom.hasFixedRotationTransform(translucentTop));
-    }
-
-    @Test
     public void testFixedToUserRotationChanged() {
         final DisplayContent dc = createNewDisplay();
         dc.setIgnoreOrientationRequest(false);
