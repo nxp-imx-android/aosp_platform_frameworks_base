@@ -36,6 +36,10 @@ public class Main {
         String legacyTargets = null;
         String legacyPreMethods = null;
         String legacyPostMethods = null;
+        String legacyTraceBeforeAcquireMethods = null;
+        String legacyTraceAfterAcquireMethods = null;
+        String legacyTraceBeforeReleaseMethods = null;
+        String legacyTraceAfterReleaseMethods = null;
         List<LockTarget> targets = new ArrayList<>();
         for (int i = 0; i < args.length; i++) {
             if ("-i".equals(args[i].trim())) {
@@ -53,6 +57,18 @@ public class Main {
             } else if ("--post".equals(args[i].trim())) {
                 i++;
                 legacyPostMethods = args[i].trim();
+            } else if ("--trace-before-acquire".equals(args[i].trim())) {
+                i++;
+                legacyTraceBeforeAcquireMethods = args[i].trim();
+            } else if ("--trace-after-acquire".equals(args[i].trim())) {
+                i++;
+                legacyTraceAfterAcquireMethods = args[i].trim();
+            } else if ("--trace-before-release".equals(args[i].trim())) {
+                i++;
+                legacyTraceBeforeReleaseMethods = args[i].trim();
+            } else if ("--trace-after-release".equals(args[i].trim())) {
+                i++;
+                legacyTraceAfterReleaseMethods = args[i].trim();
             } else if ("--scoped".equals(args[i].trim())) {
                 i++;
                 targets.add(Utils.getScopedTarget(args[i].trim()));
@@ -71,7 +87,9 @@ public class Main {
         ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(outJar));
         if (legacyTargets != null) {
             targets.addAll(Utils.getTargetsFromLegacyJackConfig(legacyTargets, legacyPreMethods,
-                                                                legacyPostMethods));
+                    legacyPostMethods, legacyTraceBeforeAcquireMethods,
+                    legacyTraceAfterAcquireMethods, legacyTraceBeforeReleaseMethods,
+                    legacyTraceAfterReleaseMethods));
         }
 
         Enumeration<? extends ZipEntry> srcEntries = zipSrc.entries();

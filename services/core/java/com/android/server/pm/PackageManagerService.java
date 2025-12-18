@@ -1013,12 +1013,10 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
      * @hide
      */
     public static void boostPriorityForPackageManagerTracedLockedSection() {
-        PerfettoTrace.begin(BIG_LOCKS_V3, "pms_lock_acquire").emit();
         if (ENABLE_BOOST) {
             sThreadPriorityBooster.boost();
         }
     }
-
 
     /**
      * Restore the priority of the thread after release the PM traced lock.
@@ -1028,6 +1026,26 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         if (ENABLE_BOOST) {
             sThreadPriorityBooster.reset();
         }
+    }
+
+    /**
+     * Emits a trace event indicating the start of an attempt to acquire the main PMS lock.
+     */
+    public static void traceBeforePmsLock() {
+        PerfettoTrace.instant(BIG_LOCKS_V3, "pms_lock_acquire").emit();
+    }
+
+    /**
+     * Emits a trace event indicating that the main PMS lock has been acquired and is now held.
+     */
+    public static void traceAfterPmsLock() {
+        PerfettoTrace.begin(BIG_LOCKS_V3, "pms_lock_held").emit();
+    }
+
+    /**
+     * Emits a trace event indicating the end of the critical section protected by the PMS lock.
+     */
+    public static void traceAfterPmsUnlock() {
         PerfettoTrace.end(BIG_LOCKS_V3).emit();
     }
 

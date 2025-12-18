@@ -875,20 +875,59 @@ public class ActivityManagerService extends IActivityManager.Stub
             THREAD_PRIORITY_FOREGROUND, LockGuard.INDEX_ACTIVITY);
 
     static void boostPriorityForLockedSection() {
-        PerfettoTrace.begin(BIG_LOCKS_V3, "ams_lock_acquire").emit();
         sThreadPriorityBooster.boost();
     }
 
     static void resetPriorityAfterLockedSection() {
         sThreadPriorityBooster.reset();
-        PerfettoTrace.end(BIG_LOCKS_V3).emit();
     }
 
     private static ThreadPriorityBooster sProcThreadPriorityBooster = new ThreadPriorityBooster(
             THREAD_PRIORITY_FOREGROUND, LockGuard.INDEX_PROC);
 
+    /**
+     * Emits a trace event indicating the start of an attempt to acquire the main AMS lock.
+     */
+    public static void traceBeforeAmsLock() {
+        PerfettoTrace.instant(BIG_LOCKS_V3, "ams_lock_acquire").emit();
+    }
+
+    /**
+     * Emits a trace event indicating that the main AMS lock has been acquired and is now held.
+     */
+    public static void traceAfterAmsLock() {
+        PerfettoTrace.begin(BIG_LOCKS_V3, "ams_lock_held").emit();
+    }
+
+    /**
+     * Emits a trace event indicating the end of the critical section protected by the AMS lock.
+     */
+    public static void traceAfterAmsUnlock() {
+        PerfettoTrace.end(BIG_LOCKS_V3).emit();
+    }
+
+    /**
+     * Emits a trace event indicating the start of an attempt to acquire the process lock.
+     */
+    public static void traceBeforeProcLock() {
+        PerfettoTrace.instant(BIG_LOCKS_V3, "proc_lock_acquire").emit();
+    }
+
+    /**
+     * Emits a trace event indicating that the process lock has been acquired and is now held.
+     */
+    public static void traceAfterProcLock() {
+        PerfettoTrace.begin(BIG_LOCKS_V3, "proc_lock_held").emit();
+    }
+
+    /**
+     * Emits a trace event indicating the end of the critical section protected by the process lock.
+     */
+    public static void traceAfterProcUnlock() {
+        PerfettoTrace.end(BIG_LOCKS_V3).emit();
+    }
+
     static void boostPriorityForProcLockedSection() {
-        PerfettoTrace.begin(BIG_LOCKS_V3, "proc_lock_acquire").emit();
         if (ENABLE_PROC_LOCK) {
             sProcThreadPriorityBooster.boost();
         } else {
@@ -902,7 +941,6 @@ public class ActivityManagerService extends IActivityManager.Stub
         } else {
             sThreadPriorityBooster.reset();
         }
-        PerfettoTrace.end(BIG_LOCKS_V3).emit();
     }
 
     /**

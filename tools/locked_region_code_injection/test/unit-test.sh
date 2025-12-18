@@ -81,6 +81,10 @@ $EXE \
     --targets 'Llockedregioncodeinjection/TestTarget;' \
     --pre     'lockedregioncodeinjection/TestTarget.boost' \
     --post    'lockedregioncodeinjection/TestTarget.unboost' \
+    --trace-before-acquire 'lockedregioncodeinjection/TestTarget.traceBeforeAcquire' \
+    --trace-after-acquire 'lockedregioncodeinjection/TestTarget.traceAfterAcquire' \
+    --trace-before-release 'lockedregioncodeinjection/TestTarget.traceBeforeRelease' \
+    --trace-after-release 'lockedregioncodeinjection/TestTarget.traceAfterRelease' \
     --scoped  'Llockedregioncodeinjection/TestScopedLock;,monitorEnter,monitorExit'
 
 # Run unit tests.
