@@ -52,7 +52,9 @@ constructor(
 
     private var reviewGrantedConsentRequired: Boolean = false
     private lateinit var hostUserHandle: UserHandle
-    private var uid: Int = -1
+    var uid: Int = -1
+        private set
+
     private lateinit var packageName: String
     private var initialDisplayId: Int = -1
 

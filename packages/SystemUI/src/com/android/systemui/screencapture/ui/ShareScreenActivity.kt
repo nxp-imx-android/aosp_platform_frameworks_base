@@ -47,7 +47,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.android.compose.theme.PlatformTheme
-import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
 import com.android.systemui.screencapture.common.ScreenCaptureComponent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
@@ -60,12 +59,8 @@ import kotlinx.coroutines.flow.onEach
 /**
  * An activity that hosts the pre screen share UI, started from MediaProjectionPermissionActivity.
  */
-class ShareScreenActivity
-@Inject
-constructor(
-    private val builder: ScreenCaptureComponent.Builder,
-    private val mediaProjectionMetricsLogger: MediaProjectionMetricsLogger,
-) : ComponentActivity() {
+class ShareScreenActivity @Inject constructor(private val builder: ScreenCaptureComponent.Builder) :
+    ComponentActivity() {
 
     // Controls the visibility and animation state of the Compose UI.
     private val visibleState = MutableTransitionState(false)
@@ -89,8 +84,6 @@ constructor(
             finish()
             return
         }
-
-        mediaProjectionMetricsLogger.notifyPermissionRequestDisplayed(uid)
 
         val parameters = ScreenCaptureUiParameters.ShareScreen(hostAppUserHandle = hostUserHandle)
         val component = builder.setScope(lifecycleScope).setParameters(parameters).build()
