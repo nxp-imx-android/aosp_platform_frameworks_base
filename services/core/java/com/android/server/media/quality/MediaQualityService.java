@@ -1672,7 +1672,9 @@ public class MediaQualityService extends SystemService {
                     if (pcHal != null) {
                         String name = MediaQualityUtils.getParameterName(pcHal.name);
                         boolean isSupported = pcHal.isSupported;
-                        boolean isMutable = isSupported && pcHal.commonParamCapability.isMutable;
+                        // commonParamCapability is optional. If not present, assume mutable.
+                        boolean isMutable = isSupported && (pcHal.commonParamCapability == null
+                                || pcHal.commonParamCapability.isMutable);
                         int type = pcHal.defaultValue == null ? 0 : pcHal.defaultValue.getTag() + 1;
                         Bundle bundle = MediaQualityUtils.convertToCaps(type, pcHal.range);
                         putParamCapDefaultValueIntoBundle(bundle, pcHal.defaultValue);
@@ -1688,7 +1690,9 @@ public class MediaQualityService extends SystemService {
                     if (vpcHal != null) {
                         String name = MediaQualityUtils.getVendorParameterName(vpcHal);
                         boolean isSupported = vpcHal.isSupported;
-                        boolean isMutable = isSupported && vpcHal.commonParamCapability.isMutable;
+                        // commonParamCapability is optional. If not present, assume mutable.
+                        boolean isMutable = isSupported && (vpcHal.commonParamCapability == null
+                                || vpcHal.commonParamCapability.isMutable);
                         // The default value for VendorParamCapability in HAL is IntValue = 0,
                         // LongValue = 1, DoubleValue = 2, StringValue = 3. The default value for
                         // ParameterCapability in the framework is None = 0, IntValue = 1,
@@ -2321,7 +2325,9 @@ public class MediaQualityService extends SystemService {
             for (ParamCapability cap: caps) {
                 String name = MediaQualityUtils.getParameterName(cap.name);
                 boolean isSupported = cap.isSupported;
-                boolean isMutable = isSupported && cap.commonParamCapability.isMutable;
+                // commonParamCapability is optional. If not present, assume mutable.
+                boolean isMutable = isSupported && (cap.commonParamCapability == null
+                        || cap.commonParamCapability.isMutable);
                 int type = cap.defaultValue == null ? 0 : cap.defaultValue.getTag() + 1;
                 Bundle bundle = MediaQualityUtils.convertToCaps(type, cap.range);
                 putParamCapDefaultValueIntoBundle(bundle, cap.defaultValue);
@@ -2547,7 +2553,9 @@ public class MediaQualityService extends SystemService {
                 for (ParamCapability cap: caps) {
                     String name = MediaQualityUtils.getParameterName(cap.name);
                     boolean isSupported = cap.isSupported;
-                    boolean isMutable = isSupported && cap.commonParamCapability.isMutable;
+                    // commonParamCapability is optional. If not present, assume mutable.
+                    boolean isMutable = isSupported && (cap.commonParamCapability == null
+                            || cap.commonParamCapability.isMutable);
                     //Reason for +1: please see getParameterCapabilityList()
                     int type = cap.defaultValue == null ? 0 : cap.defaultValue.getTag() + 1;
                     Bundle bundle = MediaQualityUtils.convertToCaps(type, cap.range);
@@ -2570,7 +2578,9 @@ public class MediaQualityService extends SystemService {
                 for (VendorParamCapability vpcHal: caps) {
                     String name = MediaQualityUtils.getVendorParameterName(vpcHal);
                     boolean isSupported = vpcHal.isSupported;
-                    boolean isMutable = isSupported && vpcHal.commonParamCapability.isMutable;
+                    // commonParamCapability is optional. If not present, assume mutable.
+                    boolean isMutable = isSupported && (vpcHal.commonParamCapability == null
+                            || vpcHal.commonParamCapability.isMutable);
                     //Reason for +1: please see getParameterCapabilityList()
                     int type = vpcHal.defaultValue
                             == null ? 0 : vpcHal.defaultValue.getTag() + 1;
