@@ -3330,6 +3330,11 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         // relayout, and it won't redraw for resize.
         if (mStartingData instanceof SnapshotStartingData) {
             mLastConfigReportedToClient = true;
+            // Because snapshot starting window finishes draw immediately, put the reparent in sync
+            // transaction in case the transition starts before the pending transaction is applied.
+            if (mSyncState != SYNC_STATE_NONE) {
+                getSyncTransaction().reparent(surface, mSurfaceControl);
+            }
         }
     }
 
