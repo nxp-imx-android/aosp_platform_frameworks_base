@@ -70,6 +70,7 @@ import org.w3c.dom.Node
  */
 object SystemFeaturesGenerator {
     private const val OUTPUT_ARG = "--output="
+    private const val PROGUARD_RULES_ARG = "--output-proguard-rules="
     private const val FEATURE_ARG = "--feature="
     private const val FEATURE_XML_FILES_ARG = "--feature-xml-files="
     private const val UNAVAILABLE_FEATURE_XML_FILES_ARG = "--unavailable-feature-xml-files="
@@ -88,7 +89,9 @@ object SystemFeaturesGenerator {
     private fun usage() {
         println("Usage: SystemFeaturesGenerator <outputClassName> [options]")
         println(" Options:")
-        println("  --output=\$OUTPUT_FILE   The output file. If not specified, stdout will be used.")
+        println("  --output=\$OUTPUT_FILE   The output file. If unspecified, stdout will be used.")
+        println("  --output-proguard-rules=\$OUTPUT_FILE")
+        println("                           Optional output file for companion Proguard rules.")
         println("  --readonly=true|false    Whether to encode features as build-time constants")
         println("  --feature=\$NAME:\$VER     A feature+version pair, where \$VER can be:")
         println("                             * blank/empty == undefined (variable API)")
@@ -144,10 +147,13 @@ object SystemFeaturesGenerator {
         // somewhat infrequently, but this decouples the codegen from the framework completely.
         val featureApiArgs = mutableSetOf<String>()
         var outputFile: String? = null
+        var proguardRulesFile: String? = null
         for (arg in args) {
             when {
                 arg.startsWith(OUTPUT_ARG) ->
                     outputFile = arg.substring(OUTPUT_ARG.length)
+                arg.startsWith(PROGUARD_RULES_ARG) ->
+                    proguardRulesFile = arg.substring(PROGUARD_RULES_ARG.length)
                 arg.startsWith(READONLY_ARG) ->
                     readonly = arg.substring(READONLY_ARG.length).toBoolean()
                 arg.startsWith(METADATA_ONLY_ARG) ->
@@ -227,11 +233,12 @@ object SystemFeaturesGenerator {
         }
 
         // TODO(b/203143243): Add validation of build vs runtime values to ensure consistency.
+        val javaFileArgs = args.filter { !it.startsWith(PROGUARD_RULES_ARG) }
         val javaFile = JavaFile.builder(outputClassName.packageName(), classBuilder.build())
             .indent("    ")
             .skipJavaLangImports(true)
             .addFileComment("This file is auto-generated. DO NOT MODIFY.\n")
-            .addFileComment("Args: ${args.joinToString(" \\\n           ")}")
+            .addFileComment("Args: ${javaFileArgs.joinToString(" \\\n           ")}")
             .build()
 
         if (output != null) {
@@ -244,6 +251,10 @@ object SystemFeaturesGenerator {
             }
         } else {
             javaFile.writeTo(System.out)
+        }
+
+        if (proguardRulesFile != null) {
+            writeProguardRules(proguardRulesFile, features.values)
         }
     }
 
@@ -519,6 +530,40 @@ object SystemFeaturesGenerator {
 
         builder.addMethod(methodBuilder.build())
     }
+
+    private fun writeProguardRules(outputFile: String, features: Collection<FeatureInfo>) {
+        val readOnlyFeatures = features.filter { it.readonly }
+        if (readOnlyFeatures.isEmpty()) {
+            File(outputFile)
+                .writeText("# No read-only system features for -assumevalues rule generation.\n")
+            return
+        }
+
+        val pkgManagerName = PACKAGEMANAGER_CLASS.reflectionName()
+        val fileContent = buildString {
+            appendLine("-assumevalues class $pkgManagerName {")
+            for (feature in readOnlyFeatures) {
+                appendLine(feature.toR8Rule(pkgManagerName))
+            }
+            appendLine("}")
+        }
+        File(outputFile).writeText(fileContent)
+    }
+
+    private fun FeatureInfo.toR8Rule(pkgManagerR8Name: String): String {
+        val field = "$pkgManagerR8Name.$name"
+        val hasBasicFeature = (version ?: -1) >= 0
+        val basicRule =
+            "  public boolean hasSystemFeature(java.lang.String = $field) return $hasBasicFeature;"
+        val versionRule =
+            if (version != null) {
+                "  public boolean hasSystemFeature(java.lang.String = $field, int = ${Integer.MIN_VALUE}..$version) return true;"
+            } else {
+                "  public boolean hasSystemFeature(java.lang.String = $field, int) return false;"
+            }
+        return "$basicRule\n$versionRule"
+    }
+
 
     private data class FeatureInfo(val name: String, val version: Int?, val readonly: Boolean) {
         // Turn "FEATURE_FOO" into "hasFeatureFoo".
