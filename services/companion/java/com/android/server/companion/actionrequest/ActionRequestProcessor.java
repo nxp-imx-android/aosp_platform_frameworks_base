@@ -137,7 +137,7 @@ public class ActionRequestProcessor implements AssociationStore.OnChangeListener
     /**
      * Unregisters the listener for action request results for the given service name.
      */
-    public void removeOnActionResultListener(@NonNull String serviceName) {
+    public void clearOnActionResultListener(@NonNull String serviceName) {
         Slog.i(TAG, "Removing action result listener for service: " + serviceName);
 
         mActionResultListeners.removeIf(l -> l.mServiceName.equals(serviceName));

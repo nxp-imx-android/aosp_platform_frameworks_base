@@ -38,11 +38,13 @@ import static com.android.server.companion.association.DisassociationProcessor.R
 import static com.android.server.companion.association.DisassociationProcessor.REASON_REVOKED;
 import static com.android.server.companion.utils.PackageUtils.enforceUsesCompanionDeviceFeature;
 import static com.android.server.companion.utils.PackageUtils.isRestrictedSettingsAllowed;
+import static com.android.server.companion.utils.PermissionsUtils.checkPccPermissionAndTrustedAssociations;
 import static com.android.server.companion.utils.PermissionsUtils.enforceCallerCanInteractWithSystemDataSyncFlags;
 import static com.android.server.companion.utils.PermissionsUtils.enforceCallerCanManageAssociationsForPackage;
 import static com.android.server.companion.utils.PermissionsUtils.enforceCallerIsSystemOr;
 import static com.android.server.companion.utils.PermissionsUtils.enforceCallerIsSystemOrCanInteractWithUserId;
 import static com.android.server.companion.utils.PermissionsUtils.enforceMessagePermissions;
+import static com.android.server.companion.utils.PermissionsUtils.enforceRequestActionPermissions;
 
 import static java.util.Objects.requireNonNull;
 
@@ -94,7 +96,6 @@ import android.os.RemoteException;
 import android.os.Trace;
 import android.os.UserHandle;
 import android.os.UserManager;
-import android.permission.flags.Flags;
 import android.util.ExceptionUtils;
 import android.util.Slog;
 
@@ -129,6 +130,7 @@ import com.android.server.wm.ActivityTaskManagerInternal;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -534,7 +536,7 @@ public class CompanionDeviceManagerService extends SystemService {
                 if (!isRestrictedSettingsAllowed(getContext(), callingPackage, callingUid)) {
                     Slog.e(TAG, "Side loaded app must enable restricted "
                             + "setting before request the notification access");
-                    if (Flags.enhancedConfirmationModeApisEnabled()) {
+                    if (android.permission.flags.Flags.enhancedConfirmationModeApisEnabled()) {
                         intent = getContext()
                                 .getSystemService(EnhancedConfirmationManager.class)
                                 .createRestrictedSettingDialogIntent(callingPackage,
@@ -752,10 +754,22 @@ public class CompanionDeviceManagerService extends SystemService {
         }
 
         @Override
-        @EnforcePermission(USE_COMPANION_TRANSPORTS)
-        public void requestAction(@NonNull ActionRequest request,
-                @NonNull String serviceName, int[] associationIds) {
+        @EnforcePermission(anyOf = { USE_COMPANION_TRANSPORTS, ACCESS_COMPANION_MESSAGE_PCC})
+        public void requestAction(@NonNull ActionRequest request, @NonNull String serviceName,
+                @NonNull String callingPackageName, int[] associationIds) {
             requestAction_enforcePermission();
+
+            final List<AssociationInfo> associations = new ArrayList<>();
+            for (int associationId : associationIds) {
+                AssociationInfo associationInfo = mAssociationStore.getAssociationById(
+                        associationId);
+                if (associationInfo != null) {
+                    associations.add(associationInfo);
+                }
+            }
+
+            enforceRequestActionPermissions(
+                    getContext(), associations, serviceName, callingPackageName);
 
             android.os.Trace.asyncTraceForTrackBegin(
                     Trace.TRACE_TAG_SYSTEM_SERVER,
@@ -933,29 +947,53 @@ public class CompanionDeviceManagerService extends SystemService {
         }
 
         @Override
-        @EnforcePermission(USE_COMPANION_TRANSPORTS)
-        public void setOnActionResultListener(int[] associationIds, String serviceName,
-                IOnActionResultListener listener, int userId) {
+        @EnforcePermission(anyOf = { USE_COMPANION_TRANSPORTS, ACCESS_COMPANION_MESSAGE_PCC })
+        public void setOnActionResultListener(@NonNull int[] associationIds,
+                @NonNull String serviceName, @NonNull String callingPackageName,
+                IOnActionResultListener listener) {
             setOnActionResultListener_enforcePermission();
-            enforceCallerIsSystemOrCanInteractWithUserId(getContext(), userId);
+
+            final List<AssociationInfo> associations = new ArrayList<>();
+            for (int associationId : associationIds) {
+                AssociationInfo associationInfo = mAssociationStore.getAssociationById(
+                        associationId);
+                if (associationInfo != null) {
+                    associations.add(associationInfo);
+                }
+            }
+
+            enforceRequestActionPermissions(getContext(), associations,
+                    serviceName, callingPackageName);
 
             mActionRequestProcessor.setOnActionResultListener(
                     associationIds, serviceName, listener);
         }
 
         @Override
-        @EnforcePermission(USE_COMPANION_TRANSPORTS)
-        public void removeOnActionResultListener(@NonNull String serviceName,
-                int userId) {
-            removeOnActionResultListener_enforcePermission();
-            enforceCallerIsSystemOrCanInteractWithUserId(getContext(), userId);
+        @EnforcePermission(anyOf = { USE_COMPANION_TRANSPORTS, ACCESS_COMPANION_MESSAGE_PCC })
+        public void clearOnActionResultListener(@NonNull String serviceName,
+                @NonNull String callingPackageName) {
+            clearOnActionResultListener_enforcePermission();
 
-            mActionRequestProcessor.removeOnActionResultListener(serviceName);
+            enforceRequestActionPermissions(getContext(),
+                    new ArrayList<>(), serviceName, callingPackageName);
+
+            mActionRequestProcessor.clearOnActionResultListener(serviceName);
         }
 
         @Override
+        @PermissionManuallyEnforced
         public boolean isSystemDataTransportAttached(int associationId) {
-            mAssociationStore.getAssociationWithCallerChecks(associationId);
+            final List<AssociationInfo> associations = new ArrayList<>();
+            AssociationInfo associationInfo = mAssociationStore.getAssociationById(
+                    associationId);
+            if (associationInfo != null) {
+                associations.add(associationInfo);
+            }
+
+            if (!checkPccPermissionAndTrustedAssociations(getContext(), associations)) {
+                mAssociationStore.getAssociationWithCallerChecks(associationId);
+            }
 
             List<AssociationInfo> associationInfos =
                     mTransportManager.getAssociationsWithTransport();

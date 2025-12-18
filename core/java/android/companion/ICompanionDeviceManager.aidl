@@ -184,18 +184,19 @@ interface ICompanionDeviceManager {
     @EnforcePermission("REQUEST_COMPANION_SELF_MANAGED")
     void notifyDevicePresence(in int associationId, in DevicePresenceEvent event);
 
-    @EnforcePermission("USE_COMPANION_TRANSPORTS")
-    void requestAction(in ActionRequest request, in String serviceName, in int[] associationIds);
+    @EnforcePermission(anyOf = { "USE_COMPANION_TRANSPORTS", "ACCESS_COMPANION_MESSAGE_PCC" })
+    void requestAction(in ActionRequest request, in String serviceName, in String packageName, in int[] associationIds);
 
     void notifyActionResult(in int associationId, in ActionResult result);
 
-    @EnforcePermission("USE_COMPANION_TRANSPORTS")
-    void setOnActionResultListener(in int[] associationIds, in String serviceName,
-            in IOnActionResultListener listener, in int userId);
+    @EnforcePermission(anyOf = { "USE_COMPANION_TRANSPORTS", "ACCESS_COMPANION_MESSAGE_PCC" })
+    void setOnActionResultListener(in int[] associationIds, in String serviceName, in String callingPackageName,
+            in IOnActionResultListener listener);
 
-    @EnforcePermission("USE_COMPANION_TRANSPORTS")
-    void removeOnActionResultListener(in String serviceName, in int userId);
+    @EnforcePermission(anyOf = { "USE_COMPANION_TRANSPORTS", "ACCESS_COMPANION_MESSAGE_PCC" })
+    void clearOnActionResultListener(in String serviceName, in String callingPackageName);
 
+    @PermissionManuallyEnforced
     boolean isSystemDataTransportAttached(in int associationId);
 
     @EnforcePermission("USE_COMPANION_TRANSPORTS")
