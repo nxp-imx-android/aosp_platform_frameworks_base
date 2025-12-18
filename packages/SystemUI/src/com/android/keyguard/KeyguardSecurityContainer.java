@@ -108,6 +108,7 @@ import com.android.systemui.classifier.Classifier;
 import com.android.systemui.classifier.FalsingA11yDelegate;
 import com.android.systemui.plugins.FalsingManager;
 import com.android.systemui.res.R;
+import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.shade.TouchLogger;
 import com.android.systemui.shared.system.SysUiStatsLog;
 import com.android.systemui.statusbar.policy.BaseUserSwitcherAdapter;
@@ -1158,6 +1159,9 @@ public class KeyguardSecurityContainer extends ConstraintLayout {
         }
 
         private void findLargeUserIcon(int userId, Consumer<Drawable> consumer) {
+            if (SceneContainerFlag.isEnabled()) {
+                return;
+            }
             mBgExecutor.execute(() -> {
                 Drawable icon;
                 Bitmap userIcon = UserManager.get(mView.getContext()).getUserIcon(userId);
