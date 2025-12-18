@@ -19,7 +19,9 @@ package com.android.internal.telephony;
 import static com.android.internal.telephony.SmsConstants.ENCODING_UNKNOWN;
 
 import android.compat.annotation.UnsupportedAppUsage;
+import android.annotation.Nullable;
 import android.os.Build;
+import android.telephony.NetworkSecurityEvent;
 import android.telephony.SmsMessage;
 import android.text.TextUtils;
 import android.util.Patterns;
@@ -526,5 +528,15 @@ public abstract class SmsMessageBase {
 
     public int getReceivedEncodingType() {
         return mReceivedEncodingType;
+    }
+
+    /**
+     * Returns the network security event associated with this message.
+     *
+     * @return The {@link NetworkSecurityEvent}, or null if not present.
+     */
+    @Nullable
+    public NetworkSecurityEvent getNetworkSecurityEvent() {
+        return null;
     }
 }
