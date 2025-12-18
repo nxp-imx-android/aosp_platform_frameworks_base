@@ -807,7 +807,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
-    @EnableFlags(com.android.server.flags.Flags.FLAG_KEYSTORE_IN_MEMORY_CLEANUP)
+    @EnableFlags(com.android.server.flags.Flags.FLAG_FIX_KEYSTORE_MEMORY_CLEANUP)
     public void testLockUser_locksCeStorageAndKeystore() throws Exception {
         final int userId = PRIMARY_USER_ID;
         final LockscreenCredential password = newPassword("password");
