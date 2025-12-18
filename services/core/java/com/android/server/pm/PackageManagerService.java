@@ -7771,8 +7771,9 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             Intent intent, @AppIdInt int recipientAppId, int visibleUid, boolean direct,
             boolean retainOnUpdate) {
         final AndroidPackage visiblePackage = snapshot.getPackage(visibleUid);
-        final int recipientUid = UserHandle.getUid(userId, recipientAppId);
-        if (visiblePackage == null || snapshot.getPackage(recipientUid) == null) {
+        int recipientUid = UserHandle.getUid(userId, recipientAppId);
+        final AndroidPackage recipientPackage = snapshot.getPackage(recipientUid);
+        if (visiblePackage == null || recipientPackage == null) {
             return;
         }
 
@@ -7789,6 +7790,14 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             accessGranted = mInstantAppRegistry.grantInstantAccess(userId, intent,
                     recipientAppId, UserHandle.getAppId(visibleUid) /*instantAppId*/);
         } else {
+            // pcc visibility always relies on the visibility of its own app uids
+            // so make sure that we grant impilict access on app uids rather than pcc uids
+            if (Process.isPrivateComputeCoreUid(recipientUid)) {
+                recipientUid = UserHandle.getUid(userId, recipientPackage.getUid());
+            }
+            if (Process.isPrivateComputeCoreUid(visibleUid)) {
+                visibleUid = UserHandle.getUid(userId, visiblePackage.getUid());
+            }
             accessGranted = mAppsFilter.grantImplicitAccess(recipientUid, visibleUid,
                     retainOnUpdate);
         }
