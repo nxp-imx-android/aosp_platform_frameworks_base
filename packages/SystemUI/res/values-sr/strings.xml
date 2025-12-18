@@ -186,6 +186,10 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Направи снимак целог екрана"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Сними цео екран"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Подешавања снимања екрана"</string>
+    <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"Дели снимак екрана"</string>
+    <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"Отвори снимак екрана у менаџеру фајлова"</string>
+    <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"Избриши снимак екрана"</string>
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"Отвори снимак екрана у приказивачу видеа"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Прикажи кликове и кључеве"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"Звук уређаја"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Микрофон"</string>
@@ -376,8 +380,7 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"Обриши сва обавештења."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Обавештења"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Помоћник"</string>
-    <!-- no translation found for accessibility_status_bar_input_method_indicator (4316411266975554038) -->
-    <skip />
+    <string name="accessibility_status_bar_input_method_indicator" msgid="4316411266975554038">"Метод уноса"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"и још <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Унутра је још # обавештење.}one{Унутра је још # обавештење.}few{Унутра су још # обавештења.}other{Унутра је још # обавештења.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Екран је закључан у хоризонталном положају."</string>
@@ -419,7 +422,6 @@
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"Аутоматска ротација"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Аутоматско ротирање екрана"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Локација"</string>
-    <string name="quick_settings_screensaver_label" msgid="1495003469366524120">"Чувар екрана"</string>
     <string name="quick_settings_camera_label" msgid="5612076679385269339">"Приступ камери"</string>
     <string name="quick_settings_mic_label" msgid="8392773746295266375">"Приступ микрофону"</string>
     <string name="quick_settings_camera_mic_available" msgid="1453719768420394314">"Доступно"</string>
@@ -645,8 +647,11 @@
     <string name="communal_widget_picker_title" msgid="1953369090475731663">"Виџети за закључани екран"</string>
     <string name="communal_widget_picker_description" msgid="6927728582371632782">"Сви могу да виде виџете на закључаном екрану, чак и када је уређај закључан."</string>
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"поништи избор виџета"</string>
+    <string name="accessibility_action_label_resize_widget" msgid="639756010934310745">"Промени величину виџета"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"Смањи висину"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"Повећај висину"</string>
+    <string name="accessibility_announcement_expand_widget" msgid="1123324821904704150">"Висина је повећана"</string>
+    <string name="accessibility_announcement_shrink_widget" msgid="2720176058287945622">"Висина је смањена"</string>
     <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"Прикажите следеће"</string>
     <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"Прикажите претходно"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"Виџети за закључани екран"</string>
@@ -732,7 +737,7 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"Звук и број упозорења на уређају се аутоматски смањују на 2 минута када добијете превише обавештења."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Искључи"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Откључајте за старија обавештења"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="5560100935261229784">"Неким подешавањима управља родитељ"</string>
+    <string name="quick_settings_disclosure_parental_controls" msgid="9196246842317344981">"Родитељски надзор је активан"</string>
     <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"Овим уређајем управља родитељ"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Нека подешавања уређаја су заштићена PIN-ом."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Организација је власник уређаја и може да надгледа мрежни саобраћај"</string>
@@ -1189,7 +1194,23 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Може да чита сав садржај на екрану и приказује га у другим апликацијама."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Преглед и обављање радњи"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Може да прати интеракције са апликацијом или сензором хардвера и да користи апликације уместо вас."</string>
+    <!-- no translation found for accessibility_key_gesture_select_to_speak_dialog_content (2241403419620826861) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Када притиснете "<annotation id="action_key_icon">"икону"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>, укључује се функција приступачности – <xliff:g id="ID_4">^4</xliff:g>. То вам омогућава да контролишете уређај хендсфри."</string>
+    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_title (4659318395231105188) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_content (7058726404278534674) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text (7095579813773247709) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcutchooser_editor_dialog_title (7881631878787325869) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcutchooser_done_button (5288975589451082156) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcutchooser_picker_dialog_title (6067291073174568750) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcutchooser_edit_button (1924449663239985111) -->
+    <skip />
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Приступачност"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Закључан екран"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Искључује се…"</string>
@@ -1606,7 +1627,8 @@
     <string name="start_desktop_mode" msgid="5459815912537830841">"Рачунар"</string>
     <string name="start_mirroring" msgid="3611044878130481882">"Пресликај"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Екран је повезан"</string>
-    <string name="connected_display_extended_mode_text" msgid="2457269692913653696">"Повезано са спољним екраном"</string>
+    <string name="connected_display_connection_text" msgid="6787771675124372815">"Повезано са спољним екраном"</string>
+    <string name="connected_display_removal_text" msgid="8270253839172935318">"Спољни екран је искључен"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"Микрофон, камера и локација"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Недавно коришћено у апликацијама"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Прикажи недавни приступ"</string>

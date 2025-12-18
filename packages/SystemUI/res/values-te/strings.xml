@@ -186,6 +186,10 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"ఫుల్ స్క్రీన్ తాలూకు స్క్రీన్‌షాట్‌ను తీయండి"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"ఫుల్ స్క్రీన్‌ను రికార్డ్ చేయండి"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"స్క్రీన్ క్యాప్చర్ సెట్టింగ్‌లు"</string>
+    <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"స్క్రీన్ రికార్డింగ్‌ను షేర్ చేయండి"</string>
+    <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"ఫైల్ మేనేజర్‌లో స్క్రీన్ రికార్డింగ్‌ను తెరవండి"</string>
+    <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"స్క్రీన్ రికార్డింగ్‌ను తొలగించండి"</string>
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"వీడియో వ్యూయర్‌లో స్క్రీన్ రికార్డింగ్‌ను తెరవండి"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"క్లిక్‌లు, కీలను చూపండి"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"డివైజ్ ఆడియో"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"మైక్రోఫోన్"</string>
@@ -376,8 +380,7 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"అన్ని నోటిఫికేషన్‌లను క్లియర్ చేయండి."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"నోటిఫికేషన్‌లు"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
-    <!-- no translation found for accessibility_status_bar_input_method_indicator (4316411266975554038) -->
-    <skip />
+    <string name="accessibility_status_bar_input_method_indicator" msgid="4316411266975554038">"ఇన్‌పుట్ విధానం"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{లోపల మరో # నోటిఫికేషన్ ఉంది.}other{లోపల మరో # నోటిఫికేషన్‌లు ఉన్నాయి.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"స్క్రీన్ ల్యాండ్‌స్కేప్ దృగ్విన్యాసంలో లాక్ చేయబడుతుంది."</string>
@@ -419,7 +422,6 @@
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"ఆటో-రొటేట్‌"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"స్క్రీన్ ఆటో-రొటేట్‌"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"లొకేషన్"</string>
-    <string name="quick_settings_screensaver_label" msgid="1495003469366524120">"స్క్రీన్ సేవర్"</string>
     <string name="quick_settings_camera_label" msgid="5612076679385269339">"కెమెరా యాక్సెస్"</string>
     <string name="quick_settings_mic_label" msgid="8392773746295266375">"మైక్ యాక్సెస్"</string>
     <string name="quick_settings_camera_mic_available" msgid="1453719768420394314">"అందుబాటులో ఉంది"</string>
@@ -645,8 +647,11 @@
     <string name="communal_widget_picker_title" msgid="1953369090475731663">"లాక్ స్క్రీన్ విడ్జెట్‌లు"</string>
     <string name="communal_widget_picker_description" msgid="6927728582371632782">"మీ డివైజ్ లాక్ చేసి ఉన్నా, మీ లాక్ స్క్రీన్‌లో విడ్జెట్‌లను ఎవరైనా చూడవచ్చు."</string>
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"విడ్జెట్ ఎంపిక రద్దు చేయండి"</string>
+    <string name="accessibility_action_label_resize_widget" msgid="639756010934310745">"విడ్జెట్ సైజ్‌ను మార్చండి"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"ఎత్తును తగ్గించండి"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"ఎత్తును పెంచండి"</string>
+    <string name="accessibility_announcement_expand_widget" msgid="1123324821904704150">"విడ్జెట్ ఎత్తు విస్తరించబడింది"</string>
+    <string name="accessibility_announcement_shrink_widget" msgid="2720176058287945622">"విడ్జెట్ ఎత్తు కుదించబడింది"</string>
     <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"తర్వాతది చూడండి"</string>
     <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"మునుపటి దాన్ని చూడండి"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"లాక్ స్క్రీన్ విడ్జెట్‌లు"</string>
@@ -732,7 +737,7 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"ఒకేసారి పలు నోటిఫికేషన్లు వస్తే, పరికర వాల్యూమ్, అలర్ట్స్ ఆటోమేటిగ్గా 2 నిమిషాలకు తగ్గించబడతాయి."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"ఆఫ్ చేయండి"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"పాత నోటిఫికేషన్‌ల కోసం అన్‌లాక్ చేయండి"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="5560100935261229784">"కొన్ని సెట్టింగ్‌లను మీ తల్లి/తండ్రి మేనేజ్ చేస్తున్నారు"</string>
+    <string name="quick_settings_disclosure_parental_controls" msgid="9196246842317344981">"తల్లిదండ్రుల కంట్రోల్స్ యాక్టివ్‌గా ఉన్నాయి"</string>
     <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"ఈ డివైజ్‌ను మీ తల్లి/తండ్రి మేనేజ్ చేస్తున్నారు"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"కొన్ని డివైజ్ సెట్టింగ్‌లకు PIN రక్షణ ఉంటుంది."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"ఈ పరికరం మీ సంస్థకు చెందినది, కాబట్టి అది నెట్‌వర్క్ ట్రాఫిక్‌ను పర్యవేక్షించవచ్చు"</string>
@@ -1189,7 +1194,23 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"ఇది స్క్రీన్‌పై ఉండే కంటెంట్ మొత్తాన్ని చదవగలుగుతుంది, ఇతర యాప్‌లలో కూడా ఈ కంటెంట్‌ను డిస్‌ప్లే చేస్తుంది."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"చర్యలను చూసి, అమలు చేయండి"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"ఇది యాప్ లేదా హార్డ్‌వేర్ సెన్సార్‌తో మీ ఇంటరాక్షన్‌లను ట్రాక్ చేయగలదు, మీ తరపున యాప్‌లతో ఇంటరాక్ట్ అవ్వగలదు."</string>
+    <!-- no translation found for accessibility_key_gesture_select_to_speak_dialog_content (2241403419620826861) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"చిహ్నం"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>‌ను నొక్కితే, యాక్సెసిబిలిటీ ఫీచర్ అయిన <xliff:g id="ID_4">^4</xliff:g> ఆన్ అవుతుంది. మీ డివైజ్‌ను హ్యాండ్స్-ఫ్రీగా కంట్రోల్ చేసే వీలును ఇది మీకు కల్పిస్తుంది."</string>
+    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_title (4659318395231105188) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_content (7058726404278534674) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text (7095579813773247709) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcutchooser_editor_dialog_title (7881631878787325869) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcutchooser_done_button (5288975589451082156) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcutchooser_picker_dialog_title (6067291073174568750) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcutchooser_edit_button (1924449663239985111) -->
+    <skip />
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"యాక్సెసిబిలిటీ"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"లాక్ స్క్రీన్"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"షట్ డౌన్ చేయబడుతోంది…"</string>
@@ -1300,7 +1321,7 @@
     <string name="magnification_drag_corner_to_resize" msgid="1249766311052418130">"సైజ్ మార్చడానికి మూలను లాగండి"</string>
     <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"డయాగోనల్ స్క్రోలింగ్‌ను అనుమతించండి"</string>
     <string name="accessibility_magnify_typing" msgid="4450037184548427852">"టైపింగ్‌ను ఫాలో అవ్వండి"</string>
-    <string name="accessibility_magnify_keyboard" msgid="3083531635742744841">"కీబోర్డ్‌ను మాగ్నిఫై చేయండి"</string>
+    <string name="accessibility_magnify_keyboard" msgid="3083531635742744841">"కీబోర్డ్‌ను మ్యాగ్నిఫై చేయండి"</string>
     <string name="accessibility_resize" msgid="5733759136600611551">"సైజ్ మార్చండి"</string>
     <string name="accessibility_change_magnification_type" msgid="666000085077432421">"మ్యాగ్నిఫికేషన్ రకాన్ని మార్చండి"</string>
     <string name="accessibility_magnification_end_resizing" msgid="4881690585800302628">"సైజ్‌ను మార్చడం ముగించండి"</string>
@@ -1606,7 +1627,8 @@
     <string name="start_desktop_mode" msgid="5459815912537830841">"డెస్క్‌టాప్"</string>
     <string name="start_mirroring" msgid="3611044878130481882">"మిర్రర్"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"డిస్‌ప్లే కనెక్ట్ చేయబడింది"</string>
-    <string name="connected_display_extended_mode_text" msgid="2457269692913653696">"ఎక్స్‌టర్నల్ డిస్‌ప్లేకు కనెక్ట్ అయింది"</string>
+    <string name="connected_display_connection_text" msgid="6787771675124372815">"ఎక్స్‌టర్నల్ డిస్‌ప్లేకు కనెక్ట్ అయింది"</string>
+    <string name="connected_display_removal_text" msgid="8270253839172935318">"ఎక్స్‌టర్నల్ డిస్‌ప్లే డిస్‌కనెక్ట్ అయింది"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"మైక్రోఫోన్, కెమెరా &amp; లొకేషన్"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"ఇటీవలి యాప్ వినియోగం"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"ఇటీవలి యాక్సెస్‌ను చూడండి"</string>
