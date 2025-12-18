@@ -189,7 +189,7 @@ public final class SearchTarget implements Parcelable {
     }
 
     /**
-     * Retrieves the result type {@see SearchResultType}.
+     * Retrieves the result type.
      */
     public @SearchResultType int getResultType() {
         return mResultType;

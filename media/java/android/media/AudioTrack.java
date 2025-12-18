@@ -1618,9 +1618,9 @@ public class AudioTrack extends PlayerBase
      * stream.
      * After the end of stream, previously set padding and delay values are ignored.
      * Can only be called only if the AudioTrack is opened in offload mode
-     * {@see Builder#setOffloadedPlayback(boolean)}.
-     * Can only be called only if the AudioTrack is in state {@link #PLAYSTATE_PLAYING}
-     * {@see #getPlayState()}.
+     * see {@link Builder#setOffloadedPlayback(boolean)}.
+     * Can only be called only if the AudioTrack is in state {@link #PLAYSTATE_PLAYING};
+     * see {@link #getPlayState()}.
      * Use this method in the same thread as any write() operation.
      */
     public void setOffloadEndOfStream() {
@@ -3882,8 +3882,7 @@ public class AudioTrack extends PlayerBase
      * Attaches an auxiliary effect to the audio track. A typical auxiliary
      * effect is a reverberation effect which can be applied on any sound source
      * that directs a certain amount of its energy to this effect. This amount
-     * is defined by setAuxEffectSendLevel().
-     * {@see #setAuxEffectSendLevel(float)}.
+     * is defined by {@link #setAuxEffectSendLevel(float)}.
      * <p>After creating an auxiliary effect (e.g.
      * {@link android.media.audiofx.EnvironmentalReverb}), retrieve its ID with
      * {@link android.media.audiofx.AudioEffect#getId()} and use it when calling

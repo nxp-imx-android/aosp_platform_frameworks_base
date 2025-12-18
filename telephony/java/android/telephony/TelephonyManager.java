@@ -6205,7 +6205,7 @@ public class TelephonyManager {
     }
 
     /**
-     * Returns the IMS home network domain name that was loaded from the ISIM {@see #APPTYPE_ISIM}.
+     * Returns the IMS home network domain name that was loaded from the ISIM {@link #APPTYPE_ISIM}.
      * @return the IMS domain name. Returns {@code null} if ISIM hasn't been loaded or IMS domain
      * hasn't been loaded or isn't present on the ISIM.
      *

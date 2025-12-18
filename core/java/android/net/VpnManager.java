@@ -306,7 +306,8 @@ public class VpnManager {
      * network host isn't known.
      *
      * This happens when domain name resolution could not resolve an IP address for the
-     * specified host. {@see java.net.UnknownHostException}
+     * specified host.
+     * @see java.net.UnknownHostException
      */
     public static final int ERROR_CODE_NETWORK_UNKNOWN_HOST = 0;
 
@@ -323,7 +324,7 @@ public class VpnManager {
      * network connectivity was lost.
      *
      * The most common reason for this error is that the underlying network was disconnected,
-     * {@see android.net.ipsec.ike.exceptions.IkeNetworkLostException}.
+     * see {@link android.net.ipsec.ike.exceptions.IkeNetworkLostException}.
      */
     public static final int ERROR_CODE_NETWORK_LOST = 2;
 
@@ -332,7 +333,8 @@ public class VpnManager {
      * input/output error.
      *
      * This code happens when reading or writing to sockets on the underlying networks was
-     * terminated by an I/O error. {@see IOException}.
+     * terminated by an I/O error.
+     * @see IOException
      */
     public static final int ERROR_CODE_NETWORK_IO = 3;
 
