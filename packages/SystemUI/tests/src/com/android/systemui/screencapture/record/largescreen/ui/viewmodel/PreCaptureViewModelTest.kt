@@ -203,6 +203,19 @@ class PreCaptureViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun updateCaptureType_whenPartialRecordingIsSelected_toolBarOpacityIsUpdated() =
+        kosmos.runTest {
+            setupViewModel(
+                LargeScreenCaptureUiParameters(defaultCaptureRegion = ScreenCaptureRegion.PARTIAL)
+            )
+
+            viewModel.updateCaptureType(ScreenCaptureType.RECORDING)
+            val toolbarViewModel = viewModel.toolbarViewModel
+
+            assertThat(toolbarViewModel.toolbarOpacity).isEqualTo(1f)
+        }
+
+    @Test
     fun updateCaptureRegion_toPartial_logsPartialScreenshot() =
         kosmos.runTest {
             setupViewModel()
