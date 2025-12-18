@@ -2240,7 +2240,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK)
     fun launchNewTask_topTransparentFullscreenTaskIdPassedToClear() {
         setUpLandscapeDisplay()
         val topTransparentTask =
@@ -6439,7 +6438,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK)
     fun handleRequest_newTaskLaunch_topTransparentFullscreenTaskIdPassedToClear() {
         val transition = Binder()
         val topTransparentTask = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
@@ -6460,7 +6458,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK)
     fun handleRequest_newTaskLaunch_sameAsTopTransparentFullscreenTask_clearsTopTransparent() {
         val transition = Binder()
         val topTransparentTask = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)

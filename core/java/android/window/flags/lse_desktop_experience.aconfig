@@ -1269,17 +1269,6 @@ flag {
 }
 
 flag {
-    name: "force_close_top_transparent_fullscreen_task"
-    namespace: "lse_desktop_experience"
-    description: "If a top transparent fullscreen task is on top of desktop mode, force it to /n"
-                 "close if another task is opened or brought to front."
-    bug: "395041610"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "form_factor_based_desktop_first_switch"
     namespace: "lse_desktop_experience"
     description: "Enables the desktop-first mode switching logic based on its form factor."

@@ -5540,7 +5540,6 @@ class DesktopTasksController(
         launchingTaskId: Int?,
         userId: Int,
     ): Int? {
-        if (!DesktopExperienceFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue) return null
         val repository = userRepositories.getProfile(userId)
         val data = repository.getTopTransparentFullscreenTaskData(deskId) ?: return null
 
