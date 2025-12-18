@@ -1329,17 +1329,6 @@ flag {
 }
 
 flag {
-    name: "include_top_transparent_fullscreen_task_in_desktop_heuristic"
-    namespace: "lse_desktop_experience"
-    description: "Whether to include any top transparent fullscreen task launched in desktop /n"
-                 "mode in the heuristic for if desktop windowing is showing or not."
-    bug: "379543275"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "keep_desk_active_on_keyguard_appear"
     namespace: "lse_desktop_experience"
     description: "Keeps the active desk active if keyguard appears"

@@ -4770,13 +4770,7 @@ class DesktopTasksController(
         )
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             if (!inDesktop && !isDesktopFirstLegacy(displayId)) return null
-            if (
-                isTransparentTask &&
-                    (DesktopExperienceFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue ||
-                        DesktopModeFlags
-                            .INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
-                            .isTrue)
-            ) {
+            if (isTransparentTask) {
                 // Only update task repository for transparent task.
                 val deskId = repository.getActiveDeskId(displayId)
                 deskId?.let { repository.setTopTransparentFullscreenTaskData(it, task) }
@@ -4803,12 +4797,7 @@ class DesktopTasksController(
             logD("handleIncompatibleTaskLaunch not in desktop, not a freeform task, nothing to do")
             return null
         }
-        if (
-            isTransparentTask &&
-                (DesktopExperienceFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue ||
-                    DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
-                        .isTrue)
-        ) {
+        if (isTransparentTask) {
             // Only update task repository for transparent task.
             val deskId = repository.getActiveDeskId(displayId)
             deskId?.let { repository.setTopTransparentFullscreenTaskData(it, task) }
@@ -6843,9 +6832,9 @@ class DesktopTasksController(
     fun isDisplayInDesktopMode(displayId: Int): Boolean =
         desktopState.isDesktopModeSupportedOnDisplay(displayId) &&
             // TODO: b/440645027 - Simplify this call.
-            userRepositories.current
-                .getDeskDisplayStateForRemote()
-                .any { it.displayId == displayId && it.activeDeskId != INVALID_DISPLAY }
+            userRepositories.current.getDeskDisplayStateForRemote().any {
+                it.displayId == displayId && it.activeDeskId != INVALID_DISPLAY
+            }
 
     private fun updateTaskBarAndWallpaperDimIfNeeded(
         displayId: Int,
