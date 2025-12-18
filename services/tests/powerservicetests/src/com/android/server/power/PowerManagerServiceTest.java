@@ -5526,6 +5526,7 @@ public class PowerManagerServiceTest {
     }
 
     @Test
+    @EnableFlags(FLAG_SEPARATE_TIMEOUTS)
     @DisableFlags(Flags.FLAG_TAP_TO_WAKE_CD)
     public void testDefaultPowerGroupSleepsWhenGroup2IsOn_tapToWakeCdFlagIsOff() {
         doAnswer(inv -> {
@@ -5570,7 +5571,7 @@ public class PowerManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_TAP_TO_WAKE_CD)
+    @EnableFlags({Flags.FLAG_TAP_TO_WAKE_CD, FLAG_SEPARATE_TIMEOUTS})
     public void testDefaultPowerGroupDozesWhenGroup2IsOn_tapToWakeCdFlagIsOn() {
         doAnswer(inv -> {
             when(mDreamManagerInternalMock.isDreaming()).thenReturn(true);
