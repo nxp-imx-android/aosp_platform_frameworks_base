@@ -19,7 +19,6 @@ package com.android.settingslib.metadata.preferencesapi.types
 import android.content.Context
 import androidx.annotation.StringRes
 
-typealias GeneratedParameterType = GeneratedType<ResultValue>
 
 /**
  * The context for a GeneratedType, providing access to the [Context] and any necessary
@@ -29,7 +28,28 @@ typealias GeneratedParameterType = GeneratedType<ResultValue>
  */
 class GeneratedTypeContext(val context: Context)
 
-class GeneratedType<V : Any>(
-    @StringRes val description: Int,
-    val lambda: GeneratedTypeContext.() -> Collection<V>
-) : ApiType<V>
+/**
+ * Represents a single possible value for a [GeneratedType].
+ *
+ * Each result type provides a specific value and a human-readable description,
+ * which can be used by clients to better understand the value.
+ *
+ * For example, if the value represents the UUID of an app, then the description should be the
+ * the app package name or the app name.
+ *
+ * @param T The underlying data type of the value.
+ * @property description A human-readable description of this specific value.
+ * @property value The actual value.
+ */
+class GeneratedValue<T>(
+    val description: String,
+    val value: T,
+)
+
+class GeneratedType<T: Any>(
+    @field:StringRes val description: Int,
+    val lambda: GeneratedTypeContext.() -> Collection<GeneratedValue<T>>
+) : ApiType<GeneratedValue<T>>
+
+
+typealias GeneratedParameterType = GeneratedType<String>
