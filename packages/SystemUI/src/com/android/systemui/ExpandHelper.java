@@ -564,6 +564,13 @@ public class ExpandHelper implements Gefingerpoken {
             if (DEBUG) Log.d(TAG, "working on an expandable child");
             mNaturalHeight = mScaler.getNaturalHeight();
             mSmallSize = v.getCollapsedHeight();
+            if (Flags.notificationExpandBundleHeaderSize()) {
+                // Ensure small size is at most equal to oldHeight
+                // fixes expanding Bundle headers
+                if (mSmallSize > mOldHeight) {
+                    mSmallSize = (int) mOldHeight;
+                }
+            }
         } else {
             if (DEBUG) Log.d(TAG, "working on a non-expandable child");
             mNaturalHeight = mOldHeight;

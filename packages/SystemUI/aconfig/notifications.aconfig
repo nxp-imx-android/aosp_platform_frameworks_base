@@ -33,4 +33,11 @@ flag {
     bug: "254512751"
 }
 
+flag {
+    name: "notification_expand_bundle_header_size"
+    namespace: "notifications"
+    description: "Fixes expansion of notification bundle headers."
+    bug: "467266483"
+}
+
 # go/keep-sorted end
