@@ -17,30 +17,6 @@
 package com.android.server.wm;
 
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
-import static android.internal.perfetto.protos.Windowmanagerservice.DecorInsetsInfoProto.OVERRIDE_CONFIG_FRAME;
-import static android.internal.perfetto.protos.Windowmanagerservice.DecorInsetsInfoProto.OVERRIDE_CONFIG_INSETS;
-import static android.internal.perfetto.protos.Windowmanagerservice.DecorInsetsInfoProto.OVERRIDE_NON_DECOR_FRAME;
-import static android.internal.perfetto.protos.Windowmanagerservice.DecorInsetsInfoProto.OVERRIDE_NON_DECOR_INSETS;
-import static android.internal.perfetto.protos.Windowmanagerservice.DecorInsetsProto.DECOR_INSETS_INFO;
-import static android.internal.perfetto.protos.Windowmanagerservice.DisplayPolicyProto.BOTTOM_GESTURE_HOST_IDENTIFIER;
-import static android.internal.perfetto.protos.Windowmanagerservice.DisplayPolicyProto.CACHED_DECOR_INSETS;
-import static android.internal.perfetto.protos.Windowmanagerservice.DisplayPolicyProto.DECOR_INSETS;
-import static android.internal.perfetto.protos.Windowmanagerservice.DisplayPolicyProto.FORCE_SHOW_NAVIGATION_BAR_ENABLED;
-import static android.internal.perfetto.protos.Windowmanagerservice.DisplayPolicyProto.IME_INSETS_CONSUMED;
-import static android.internal.perfetto.protos.Windowmanagerservice.DisplayPolicyProto.LAST_APPEARANCE;
-import static android.internal.perfetto.protos.Windowmanagerservice.DisplayPolicyProto.LAST_BEHAVIOR;
-import static android.internal.perfetto.protos.Windowmanagerservice.DisplayPolicyProto.LAST_DISABLE_FLAGS;
-import static android.internal.perfetto.protos.Windowmanagerservice.DisplayPolicyProto.LAST_STATUS_BAR_APPEARANCE_REGIONS;
-import static android.internal.perfetto.protos.Windowmanagerservice.DisplayPolicyProto.LEFT_GESTURE_HOST_IDENTIFIER;
-import static android.internal.perfetto.protos.Windowmanagerservice.DisplayPolicyProto.NAV_BAR_BACKGROUND_WINDOW_CANDIDATE_IDENTIFIER;
-import static android.internal.perfetto.protos.Windowmanagerservice.DisplayPolicyProto.RIGHT_GESTURE_HOST_IDENTIFIER;
-import static android.internal.perfetto.protos.Windowmanagerservice.DisplayPolicyProto.SHOWING_TRANSIENT_INSETS_TYPES;
-import static android.internal.perfetto.protos.Windowmanagerservice.DisplayPolicyProto.STATUS_BAR_BACKGROUND_WINDOWS_IDENTIFIER;
-import static android.internal.perfetto.protos.Windowmanagerservice.DisplayPolicyProto.SYSTEM_BAR_VISIBILITY_OVERRIDE;
-import static android.internal.perfetto.protos.Windowmanagerservice.DisplayPolicyProto.TOP_GESTURE_HOST_IDENTIFIER;
-import static android.internal.perfetto.protos.Windowmanagerservice.SystemBarVisibilityOverrideProto.CALLER;
-import static android.internal.perfetto.protos.Windowmanagerservice.SystemBarVisibilityOverrideProto.SHOW;
-import static android.internal.perfetto.protos.Windowmanagerservice.SystemBarVisibilityOverrideProto.HIDE;
 import static android.view.InsetsFrameProvider.SOURCE_ARBITRARY_RECTANGLE;
 import static android.view.InsetsFrameProvider.SOURCE_CONTAINER_BOUNDS;
 import static android.view.InsetsFrameProvider.SOURCE_DISPLAY;
@@ -131,7 +107,6 @@ import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Slog;
 import android.util.SparseArray;
-import android.util.proto.ProtoOutputStream;
 import android.view.DisplayInfo;
 import android.view.InsetsFlags;
 import android.view.InsetsFrameProvider;
@@ -2133,26 +2108,6 @@ public class DisplayPolicy {
                         + ", overrideConfigFrame=" + mOverrideConfigFrame.toShortString(tmpSb)
                         + '}';
             }
-
-            /**
-             * Write to a protocol buffer output stream.
-             * Protocol buffer message definition at {@link DecorInsetsInfoProto}
-             *
-             * @param proto      Stream to write the Info object to.
-             * @param fieldId    Field Id of the Info as defined in the parent message
-             * @param rotation   Rotation index of the Info object in the DecorInsets object
-             * @hide
-             */
-            public void dumpDebug(@NonNull ProtoOutputStream proto, long fieldId,
-                    int rotation) {
-                final long token = proto.start(fieldId);
-                proto.write(DecorInsetsInfoProto.ROTATION, rotation);
-                mOverrideConfigInsets.dumpDebug(proto, OVERRIDE_CONFIG_INSETS);
-                mOverrideNonDecorInsets.dumpDebug(proto, OVERRIDE_NON_DECOR_INSETS);
-                mOverrideConfigFrame.dumpDebug(proto, OVERRIDE_CONFIG_FRAME);
-                mOverrideNonDecorFrame.dumpDebug(proto, OVERRIDE_NON_DECOR_FRAME);
-                proto.end(token);
-            }
         }
 
         private final DisplayContent mDisplayContent;
@@ -2192,22 +2147,6 @@ public class DisplayPolicy {
                 final DecorInsets.Info info = mInfoForRotation[rotation];
                 pw.println(prefix + Surface.rotationToString(rotation) + "=" + info);
             }
-        }
-
-        /**
-         * Write to a protocol buffer output stream.
-         * Protocol buffer message definition at {@link DecorInsetsProto}
-         *
-         * @param proto      Stream to write the DecorInsets object to.
-         * @param fieldId    Field Id of the DecorInsets as defined in the parent message
-         * @hide
-         */
-        public void dumpDebug(@NonNull ProtoOutputStream proto, long fieldId) {
-            final long token = proto.start(fieldId);
-            for (int rotation = 0; rotation < mInfoForRotation.length; rotation++) {
-                mInfoForRotation[rotation].dumpDebug(proto, DECOR_INSETS_INFO, rotation);
-            }
-            proto.end(token);
         }
 
         private static class Cache {
@@ -2559,24 +2498,6 @@ public class DisplayPolicy {
             return "SystemBarVisibilityOverride{@" + Integer.toHexString(mCaller.hashCode())
                     + " show:[" + Type.toString(mForciblyShowingInsetsTypes)
                     + "] hide: [" + Type.toString(mForciblyHidingInsetsTypes) + "]}";
-        }
-
-
-        /**
-         * Write to a protocol buffer output stream.
-         * Protocol buffer message definition at {@link SystemBarVisibilityOverrideProto}
-         *
-         * @param proto   Stream to write the SystemBarVisibilityOverride object to.
-         * @param fieldId Field Id of the SystemBarVisibilityOverride as defined in the
-         *                parent message
-         * @hide
-         */
-        public void dumpDebug(@NonNull ProtoOutputStream proto, long fieldId) {
-            final long token = proto.start(fieldId);
-            proto.write(CALLER, mCaller.hashCode());
-            proto.write(SHOW, mForciblyShowingInsetsTypes);
-            proto.write(HIDE, mForciblyHidingInsetsTypes);
-            proto.end(token);
         }
     }
 
@@ -3257,67 +3178,6 @@ public class DisplayPolicy {
         if (!com.android.window.flags.Flags.enableTransientGestureInSystemUi()) {
             mSystemGestures.dump(pw, prefix);
         }
-    }
-
-    /**
-     * Write to a protocol buffer output stream.
-     * Protocol buffer message definition at {@link DisplayPolicyProto}
-     *
-     * @param proto Stream to write the DisplayPolicy object to.
-     * @param fieldId Field Id of the DisplayPolicy as defined in the parent message
-     * @hide
-     */
-    public void dumpDebug(@NonNull ProtoOutputStream proto, long fieldId) {
-        final long token = proto.start(fieldId);
-        mDecorInsets.dumpDebug(proto, DECOR_INSETS);
-        if (mCachedDecorInsets != null) {
-            mCachedDecorInsets.mDecorInsets.dumpDebug(proto, CACHED_DECOR_INSETS);
-        }
-        if (mLastDisableFlags != 0) {
-            proto.write(LAST_DISABLE_FLAGS, mLastDisableFlags);
-        }
-        if (mLastAppearance != 0) {
-            proto.write(LAST_APPEARANCE, mLastAppearance);
-        }
-        if (mLastBehavior != 0) {
-            proto.write(LAST_BEHAVIOR, mLastBehavior);
-        }
-        if (mLeftGestureHost != null) {
-            mLeftGestureHost.writeIdentifierToProto(proto, LEFT_GESTURE_HOST_IDENTIFIER);
-        }
-        if (mTopGestureHost != null) {
-            mTopGestureHost.writeIdentifierToProto(proto, TOP_GESTURE_HOST_IDENTIFIER);
-        }
-        if (mRightGestureHost != null) {
-            mRightGestureHost.writeIdentifierToProto(proto, RIGHT_GESTURE_HOST_IDENTIFIER);
-        }
-        if (mBottomGestureHost != null) {
-            mBottomGestureHost.writeIdentifierToProto(proto, BOTTOM_GESTURE_HOST_IDENTIFIER);
-        }
-        if (mNavBarBackgroundWindowCandidate != null) {
-            mNavBarBackgroundWindowCandidate.writeIdentifierToProto(proto,
-                    NAV_BAR_BACKGROUND_WINDOW_CANDIDATE_IDENTIFIER);
-        }
-        if (mLastStatusBarAppearanceRegions != null) {
-            for (int i = mLastStatusBarAppearanceRegions.length - 1; i >= 0; i--) {
-                mLastStatusBarAppearanceRegions[i].dumpDebug(proto,
-                        LAST_STATUS_BAR_APPEARANCE_REGIONS);
-            }
-        }
-        for (int i = mStatusBarBackgroundWindows.size() - 1; i >= 0; i--) {
-            final WindowState win = mStatusBarBackgroundWindows.get(i);
-            win.writeIdentifierToProto(proto, STATUS_BAR_BACKGROUND_WINDOWS_IDENTIFIER);
-        }
-        if (mShowingTransientInsetsTypes != 0) {
-            proto.write(SHOWING_TRANSIENT_INSETS_TYPES, mShowingTransientInsetsTypes);
-        }
-        for (int i = mSystemBarVisibilityOverrideMap.size() - 1; i >= 0; i--) {
-            mSystemBarVisibilityOverrideMap.valueAt(i).dumpDebug(proto,
-                    SYSTEM_BAR_VISIBILITY_OVERRIDE);
-        }
-        proto.write(IME_INSETS_CONSUMED, mImeInsetsConsumed);
-        proto.write(FORCE_SHOW_NAVIGATION_BAR_ENABLED, mForceShowNavigationBarEnabled);
-        proto.end(token);
     }
 
     private boolean supportsPointerLocation() {
