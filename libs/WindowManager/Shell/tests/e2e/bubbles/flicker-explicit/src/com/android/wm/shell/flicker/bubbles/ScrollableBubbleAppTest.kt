@@ -65,7 +65,7 @@ import org.junit.runners.Parameterized.Parameters
  * - [BubbleFlickerTestBase]
  * - [DismissSingleExpandedBubbleTestCases]
  */
-@FlakyTest(bugId = 433241651)
+@FlakyTest(bugId = 468919756)
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
