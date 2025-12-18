@@ -1406,28 +1406,28 @@ public class JobStatusTest {
     }
 
     @Test
-    public void testJobName_NoTagNoNamespace() {
+    public void testJobName_WithoutTraceTagWithoutNamespaceWithoutTag() {
         final JobInfo jobInfo = new JobInfo.Builder(101, new ComponentName("foo", "bar")).build();
         JobStatus jobStatus = createJobStatus(jobInfo, null, -1, null, null);
         assertEquals("foo/bar", jobStatus.getBatteryName());
     }
 
     @Test
-    public void testJobName_NoTagWithNamespace() {
+    public void testJobName_WithoutTraceTagWithNamespaceWithoutTag() {
         final JobInfo jobInfo = new JobInfo.Builder(101, new ComponentName("foo", "bar")).build();
         JobStatus jobStatus = createJobStatus(jobInfo, null, -1, "TestNamespace", null);
         assertEquals("@TestNamespace@foo/bar", jobStatus.getBatteryName());
     }
 
     @Test
-    public void testJobName_WithTagNoNamespace() {
+    public void testJobName_WithoutTraceTagWithoutNamespaceWithTag() {
         final JobInfo jobInfo = new JobInfo.Builder(101, new ComponentName("foo", "bar")).build();
         JobStatus jobStatus = createJobStatus(jobInfo, SOURCE_PACKAGE, 0, null, "TestTag");
         assertEquals("TestTag:foo", jobStatus.getBatteryName());
     }
 
     @Test
-    public void testJobName_WithTagAndNamespace() {
+    public void testJobName_WithoutTraceTagWithNamespaceWithTag() {
         final JobInfo jobInfo = new JobInfo.Builder(101, new ComponentName("foo", "bar")).build();
         JobStatus jobStatus = createJobStatus(jobInfo, SOURCE_PACKAGE, 0,
                 "TestNamespace", "TestTag");
@@ -1435,11 +1435,8 @@ public class JobStatusTest {
     }
 
     @Test
-    @EnableFlags({
-        com.android.server.job.Flags.FLAG_INCLUDE_TRACE_TAG_IN_JOB_NAME,
-        android.app.job.Flags.FLAG_JOB_DEBUG_INFO_APIS
-    })
-    public void testJobName_NotTagNoNamespace_IncludeTraceTagInJobNameEnabled() {
+    @EnableFlags(android.app.job.Flags.FLAG_JOB_DEBUG_INFO_APIS)
+    public void testJobName_WithTraceTagWithoutNamespaceWithoutTag() {
         JobInfo jobInfo = new JobInfo.Builder(101, new ComponentName("foo", "bar"))
                         .setTraceTag("TestTraceTag")
                         .build();
@@ -1448,11 +1445,8 @@ public class JobStatusTest {
     }
 
     @Test
-    @EnableFlags({
-        com.android.server.job.Flags.FLAG_INCLUDE_TRACE_TAG_IN_JOB_NAME,
-        android.app.job.Flags.FLAG_JOB_DEBUG_INFO_APIS
-    })
-    public void testJobName_NoTagWithNamespace_IncludeTraceTagInJobNameEnabled() {
+    @EnableFlags(android.app.job.Flags.FLAG_JOB_DEBUG_INFO_APIS)
+    public void testJobName_WithTraceTagWithNamespaceWithoutTag() {
         JobInfo jobInfo = new JobInfo.Builder(101, new ComponentName("foo", "bar"))
                         .setTraceTag("TestTraceTag")
                         .build();
@@ -1461,11 +1455,8 @@ public class JobStatusTest {
     }
 
     @Test
-    @EnableFlags({
-        com.android.server.job.Flags.FLAG_INCLUDE_TRACE_TAG_IN_JOB_NAME,
-        android.app.job.Flags.FLAG_JOB_DEBUG_INFO_APIS
-    })
-    public void testJobName_WithTagNoNamespace_IncludeTraceTagInJobNameEnabled() {
+    @EnableFlags(android.app.job.Flags.FLAG_JOB_DEBUG_INFO_APIS)
+    public void testJobName_WithTraceTagWithoutNamespaceWithTag() {
         JobInfo jobInfo = new JobInfo.Builder(101, new ComponentName("foo", "bar"))
                         .setTraceTag("TestTraceTag")
                         .build();
@@ -1474,37 +1465,8 @@ public class JobStatusTest {
     }
 
     @Test
-    @EnableFlags({
-        com.android.server.job.Flags.FLAG_INCLUDE_TRACE_TAG_IN_JOB_NAME,
-        android.app.job.Flags.FLAG_JOB_DEBUG_INFO_APIS
-    })
-    public void testJobName_FilteredTraceTagEmail_IncludeTraceTagInJobNameEnabled() {
-        JobInfo jobInfo = new JobInfo.Builder(101, new ComponentName("foo", "bar"))
-                        .setTraceTag("test@email.com")
-                        .build();
-        JobStatus jobStatus = createJobStatus(jobInfo, SOURCE_PACKAGE, 0, null, "TestTag");
-        assertEquals("#[EMAIL]#TestTag:foo", jobStatus.getBatteryName());
-    }
-
-    @Test
-    @EnableFlags({
-        com.android.server.job.Flags.FLAG_INCLUDE_TRACE_TAG_IN_JOB_NAME,
-        android.app.job.Flags.FLAG_JOB_DEBUG_INFO_APIS
-    })
-    public void testJobName_FilteredTraceTagPhone_IncludeTraceTagInJobNameEnabled() {
-        JobInfo jobInfo = new JobInfo.Builder(101, new ComponentName("foo", "bar"))
-                        .setTraceTag("123-456-7890")
-                        .build();
-        JobStatus jobStatus = createJobStatus(jobInfo, SOURCE_PACKAGE, 0, null, "TestTag");
-        assertEquals("#[PHONE]#TestTag:foo", jobStatus.getBatteryName());
-    }
-
-    @Test
-    @EnableFlags({
-        com.android.server.job.Flags.FLAG_INCLUDE_TRACE_TAG_IN_JOB_NAME,
-        android.app.job.Flags.FLAG_JOB_DEBUG_INFO_APIS
-    })
-    public void testJobName_WithTagAndNamespace_IncludeTraceTagInJobNameEnabled() {
+    @EnableFlags(android.app.job.Flags.FLAG_JOB_DEBUG_INFO_APIS)
+    public void testJobName_WithTraceTagWithNamespaceWithTag() {
         JobInfo jobInfo =
                 new JobInfo.Builder(101, new ComponentName("foo", "bar"))
                         .setTraceTag("TestTraceTag")
@@ -1512,6 +1474,25 @@ public class JobStatusTest {
         JobStatus jobStatus =
                 createJobStatus(jobInfo, SOURCE_PACKAGE, 0, "TestNamespace", "TestTag");
         assertEquals("#TestTraceTag#@TestNamespace@TestTag:foo", jobStatus.getBatteryName());
+    }
+
+    @Test
+    @EnableFlags(android.app.job.Flags.FLAG_JOB_DEBUG_INFO_APIS)
+    public void testJobName_FilteredTraceTagEmail() {
+        JobInfo jobInfo = new JobInfo.Builder(101, new ComponentName("foo", "bar"))
+                        .setTraceTag("test@email.com")
+                        .build();
+        JobStatus jobStatus = createJobStatus(jobInfo, SOURCE_PACKAGE, 0, null, "TestTag");
+        assertEquals("#[EMAIL]#TestTag:foo", jobStatus.getBatteryName());
+    }
+    @Test
+    @EnableFlags(android.app.job.Flags.FLAG_JOB_DEBUG_INFO_APIS)
+    public void testJobName_FilteredTraceTagPhone() {
+        JobInfo jobInfo = new JobInfo.Builder(101, new ComponentName("foo", "bar"))
+                        .setTraceTag("123-456-7890")
+                        .build();
+        JobStatus jobStatus = createJobStatus(jobInfo, SOURCE_PACKAGE, 0, null, "TestTag");
+        assertEquals("#[PHONE]#TestTag:foo", jobStatus.getBatteryName());
     }
 
     @Test

@@ -57,16 +57,6 @@ flag {
 }
 
 flag {
-    name: "include_trace_tag_in_job_name"
-    namespace: "backstage_power"
-    description: "Add the trace tag to the job name"
-    bug: "354795473"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "use_perfetto_sdk_for_tracing"
     namespace: "backstage_power"
     description: "Enable JobScheduler tracing via the Perfetto SDK."
