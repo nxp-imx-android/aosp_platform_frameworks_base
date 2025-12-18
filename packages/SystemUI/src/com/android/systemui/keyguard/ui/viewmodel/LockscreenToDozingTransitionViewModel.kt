@@ -70,7 +70,11 @@ constructor(
             if (isUdfpsEnrolledAndEnabled) {
                 transitionAnimation.immediatelyTransitionTo(1f)
             } else {
-                transitionAnimation.sharedFlow(duration = 250.milliseconds, onStep = { 1f - it })
+                transitionAnimation.sharedFlow(
+                    duration = 250.milliseconds,
+                    onStep = { 1f - it },
+                    onCancel = { 0f },
+                )
             }
         }
 }
