@@ -74,7 +74,7 @@ class IncludeRunWithAnnotationDetector : Detector(), SourceCodeScanner {
     }
 
     companion object {
-        private const val SYSUI_SCENARIO_TEST_DIRECTORY = "platform.test.scenario.sysui"
+        const val SYSUI_SCENARIO_TEST_DIRECTORY = "platform.test.scenario.sysui"
         private const val RUN_WITH_IMPORT = "import org.junit.runner.RunWith"
         private const val TEST_ANNOTATION = "org.junit.Test"
 

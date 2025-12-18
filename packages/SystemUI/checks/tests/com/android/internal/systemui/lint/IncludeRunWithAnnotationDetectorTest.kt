@@ -177,7 +177,7 @@ src/android/platform/test/scenario/sysui/example/TestClass.kt:6: Warning: @Test 
     }
 
     companion object {
-        private val testStub: TestFile =
+        val jUnitTestStub: TestFile =
             kotlin(
                 """
                 package org.junit
@@ -189,7 +189,7 @@ src/android/platform/test/scenario/sysui/example/TestClass.kt:6: Warning: @Test 
 
         private val stubs =
             arrayOf(
-                testStub,
+                jUnitTestStub,
                 NoMetricInParameterizedDetectorKotlinTest.runWithStub,
                 NoMetricInParameterizedDetectorKotlinTest.functionalStub,
             )
