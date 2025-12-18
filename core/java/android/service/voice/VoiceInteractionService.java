@@ -18,7 +18,6 @@ package android.service.voice;
 
 import android.Manifest;
 import android.annotation.CallbackExecutor;
-import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
@@ -49,7 +48,6 @@ import android.os.ServiceManager;
 import android.os.SharedMemory;
 import android.os.SystemProperties;
 import android.provider.Settings;
-import android.service.voice.flags.Flags;
 import android.util.ArraySet;
 import android.util.Log;
 
@@ -1174,11 +1172,7 @@ public class VoiceInteractionService extends Service {
      * @throws SecurityException if the caller is not the current active
      * {@link android.service.voice.VoiceInteractionService}.
      */
-    @FlaggedApi(Flags.FLAG_SET_INVOCATION_EFFECT_ENABLED_API)
     public final void setInvocationEffectEnabled(boolean enabled) {
-        if (!Flags.setInvocationEffectEnabledApi()) {
-            throw new UnsupportedOperationException("Flagged API usage while flag disabled.");
-        }
         try {
             mSystemService.setInvocationEffectEnabled(enabled);
         } catch (RemoteException e) {
