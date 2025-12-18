@@ -93,11 +93,14 @@ import com.android.systemui.keyguard.domain.interactor.keyguardSurfaceBehindInte
 import com.android.systemui.keyguard.domain.interactor.scenetransition.lockscreenSceneTransitionInteractor
 import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.keyguard.shared.model.DismissAction
+import com.android.systemui.keyguard.shared.model.DozeStateModel
+import com.android.systemui.keyguard.shared.model.DozeTransitionModel
 import com.android.systemui.keyguard.shared.model.FailFingerprintAuthenticationStatus
 import com.android.systemui.keyguard.shared.model.KeyguardDone
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticationStatus
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
@@ -2585,6 +2588,33 @@ class SceneContainerStartableTest : SysuiTestCase() {
             runCurrent()
 
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+        }
+
+    @Test
+    fun switchToDream_whenKeyguardBecomesEnabled_afterHidingWhenDisabled_ifDreaming() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            keyguardInteractor.setDreaming(true)
+            fakeKeyguardRepository.setDozeTransitionModel(
+                DozeTransitionModel(from = DozeStateModel.DOZE, to = DozeStateModel.FINISH)
+            )
+            advanceTimeBy(600L)
+            runCurrent()
+            prepareState()
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            underTest.start()
+            runCurrent()
+            fakeBiometricSettingsRepository.setIsUserInLockdown(false)
+            runCurrent()
+            keyguardEnabledInteractor.notifyKeyguardEnabled(false)
+            runCurrent()
+            assertThat(currentScene).isEqualTo(Scenes.Gone)
+
+            keyguardEnabledInteractor.notifyKeyguardEnabled(true)
+            runCurrent()
+
+            // Shouldn't go to Lockscreen, DreamStartable will take us to Scenes.Dream.
+            assertThat(currentScene).isEqualTo(Scenes.Gone)
         }
 
     @Test

@@ -1279,11 +1279,15 @@ constructor(
                         it == ShowWhileAwakeReason.KEYGUARD_REENABLED
                 }
                 .collect {
-                    // If keyguard is enabled, lock and switch to Lockscreen scene. If it's not
-                    // enabled, it'll be re-shown when it's enabled again.
+                    // If keyguard is enabled, lock and switch to Lockscreen scene if needed.
+                    // If it's not enabled, it'll be re-shown when it's enabled again.
                     if (keyguardEnabledInteractor.isKeyguardEnabled.value) {
                         deviceEntryInteractor.lockNow("Screen timed out or WM#lockNow() called")
-                        switchToScene(Scenes.Lockscreen, "Keyguard re-enabled")
+
+                        // If we're dreaming, DreamStartable will take us to Scenes.Dream.
+                        if (!keyguardInteractor.isDreamingNotDozing.value) {
+                            switchToScene(Scenes.Lockscreen, "Not dreaming, and $it")
+                        }
                     }
                 }
         }
