@@ -576,7 +576,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
                 normalLayerController.moveTaskToNormalLayer(
                     normalLayerTransition,
                     requireNotNull(normalLayerRequestInfo.triggerTask),
-                    null,
+                    normalLayerCallback,
                 )
             )
             .thenReturn(WindowContainerTransaction())

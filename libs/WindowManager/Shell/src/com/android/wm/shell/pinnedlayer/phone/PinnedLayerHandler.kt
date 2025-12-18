@@ -130,7 +130,7 @@ class PinnedLayerHandler(
             moveToAnotherLayerIfNeeded(
                 transition,
                 triggerTask,
-                windowingLayerChange?.windowingLayer ?: WINDOWING_LAYER_UNDEFINED,
+                windowingLayerChange,
                 wct,
             )
         }
@@ -141,17 +141,22 @@ class PinnedLayerHandler(
     private fun moveToAnotherLayerIfNeeded(
         transition: IBinder,
         targetTask: RunningTaskInfo,
-        layer: Int,
+        windowingLayerChange: WindowingLayerChange?,
         wct: WindowContainerTransaction,
     ) {
-        when (layer) {
+        when (windowingLayerChange?.windowingLayer) {
             WINDOWING_LAYER_NORMAL_APP -> {
                 val normalLayerWct =
-                    normalLayerController.moveTaskToNormalLayer(transition, targetTask)
+                    normalLayerController.moveTaskToNormalLayer(
+                        transition,
+                        targetTask,
+                        windowingLayerChange.remoteCallback,
+                    )
                 wct.merge(normalLayerWct, true)
             }
             WINDOWING_LAYER_PINNED,
-            WINDOWING_LAYER_UNDEFINED -> {}
+            WINDOWING_LAYER_UNDEFINED,
+            null -> {}
             else -> {
                 logW("PinnedLayerHandler tried to move a task=%s, but the layer=%s is skipped.")
             }
