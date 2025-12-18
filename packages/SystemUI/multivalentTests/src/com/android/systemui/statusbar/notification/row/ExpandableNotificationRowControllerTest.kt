@@ -20,7 +20,7 @@ package com.android.systemui.statusbar.notification.row
 import android.net.Uri
 import android.os.UserHandle
 import android.service.notification.StatusBarNotification
-import android.testing.TestableLooper
+import android.testing.TestableLooper.RunWithLooper
 import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -77,7 +77,7 @@ import org.mockito.kotlin.atLeastOnce
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@TestableLooper.RunWithLooper
+@RunWithLooper
 class ExpandableNotificationRowControllerTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
@@ -121,10 +121,11 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
+        allowTestableLooperAsMainThread()
+
         entry = kosmos.buildNotificationEntry()
         view = spy(kosmos.createRowWithEntry(entry))
 
-        allowTestableLooperAsMainThread()
         controller = initController(view)
     }
 

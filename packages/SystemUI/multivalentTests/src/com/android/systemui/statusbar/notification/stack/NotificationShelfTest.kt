@@ -73,6 +73,7 @@ open class NotificationShelfTest(flags: FlagsParameterization) : SysuiTestCase()
 
     @Before
     fun setUp() {
+        allowTestableLooperAsMainThread()
         MockitoAnnotations.initMocks(this)
         mDependency.injectTestDependency(FeatureFlags::class.java, flags)
         val root = FrameLayout(context)

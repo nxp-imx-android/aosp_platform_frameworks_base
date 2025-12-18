@@ -37,7 +37,7 @@ import android.content.Intent;
 import android.os.SystemClock;
 import android.os.UserHandle;
 import android.platform.test.flag.junit.FlagsParameterization;
-import android.testing.TestableLooper;
+import android.testing.TestableLooper.RunWithLooper;
 import android.util.Pair;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -78,7 +78,7 @@ import platform.test.runner.parameterized.Parameters;
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4.class)
-@TestableLooper.RunWithLooper
+@RunWithLooper
 public class NotificationRemoteInputManagerTest extends SysuiTestCase {
 
     @Parameters(name = "{0}")
@@ -118,6 +118,7 @@ public class NotificationRemoteInputManagerTest extends SysuiTestCase {
 
     @Before
     public void setUp() throws Exception {
+        allowTestableLooperAsMainThread();
         MockitoAnnotations.initMocks(this);
 
         mSpyContext = spy(mContext);
