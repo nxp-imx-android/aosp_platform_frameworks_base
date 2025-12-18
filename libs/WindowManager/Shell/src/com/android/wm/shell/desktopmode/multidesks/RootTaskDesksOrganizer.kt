@@ -175,6 +175,7 @@ class RootTaskDesksOrganizer(
                     ),
                 this,
             )
+
         token?.let {
             val wct = WindowContainerTransaction()
             if (Flags.enableBackNavigationDesktopAppNoMinimize()) {
@@ -183,6 +184,9 @@ class RootTaskDesksOrganizer(
             if (Flags.delegateRequestFullscreenHandlingToShell()) {
                 // Let any desktop task request to enter fullscreen mode.
                 wct.setFullscreenRequestAllowMode(token, REQUEST_ALLOW_MODE_ENTER)
+            }
+            if (Flags.enableAppRestartAfterUpdate()) {
+                wct.setHandlePackageUpdateForRootContainer(token, /* handlePackageUpdate= */ true)
             }
             if (!wct.isEmpty) {
                 shellTaskOrganizer.applyTransaction(wct)
