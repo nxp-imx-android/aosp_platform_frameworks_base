@@ -26,6 +26,7 @@ import com.android.internal.inputmethod.IImeSwitcherMenuListener;
 oneway interface IImeSwitcherMenu {
 
     /** An item in the IME Switcher Menu list. */
+    @JavaDerive(equals = true, toString = true)
     parcelable Item {
 
         /** The input method's name. */
