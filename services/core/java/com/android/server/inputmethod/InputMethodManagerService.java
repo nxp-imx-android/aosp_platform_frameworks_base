@@ -486,14 +486,18 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     menuItem.imeName = item.mImeName;
                     menuItem.subtypeName = item.mSubtypeName;
                     menuItem.layoutName = item.mLayoutName;
-                    menuItem.imi = item.mImi;
+                    menuItem.imeId = item.mImi.getId();
                     menuItem.subtypeIndex = item.mSubtypeIndex;
                     menuItems.add(menuItem);
                 }
 
+                final InputMethodSettings settings = InputMethodSettingsRepository.get(userId);
+                final var selectedImi = settings.getMethodMap().get(selectedImeId);
+                final var selectedImeSettingsIntent = selectedImi != null
+                        ? selectedImi.createImeLanguageSettingsActivityIntent() : null;
                 try {
                     mIImeSwitcherMenu.show(menuItems, selectedImeId, selectedSubtypeIndex,
-                            isScreenLocked, displayId, userId);
+                            selectedImeSettingsIntent, isScreenLocked, displayId, userId);
                 } catch (RemoteException e) {
                     Slog.w(TAG, "Failed show IME Switcher Menu for user: " + userId
                             + " on display: " + displayId, e);
@@ -505,10 +509,9 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         public void hide(int displayId, @UserIdInt int userId) {
             if (mIImeSwitcherMenu != null) {
                 try {
-                    mIImeSwitcherMenu.hide(displayId, userId);
+                    mIImeSwitcherMenu.hide(userId);
                 } catch (RemoteException e) {
-                    Slog.w(TAG, "Failed to hide IME Switcher Menu for user: " + userId
-                            + " on display: " + displayId, e);
+                    Slog.w(TAG, "Failed to hide IME Switcher Menu for user: " + userId, e);
                 }
             }
         }
@@ -793,6 +796,10 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             if (Intent.ACTION_CLOSE_SYSTEM_DIALOGS.equals(action)) {
+                if (Flags.imeSwitcherMenuSystemui()) {
+                    // Tracked by the IME Switcher Menu Controller.
+                    return;
+                }
                 final PendingResult pendingResult = getPendingResult();
                 if (pendingResult == null) {
                     return;

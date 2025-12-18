@@ -2360,6 +2360,8 @@
   <java-symbol type="string" name="fallback_wallpaper_component" />
   <java-symbol type="bool" name="config_isLiveWallpaperSupportedInDesktopExperience" />
   <java-symbol type="string" name="input_method_binding_label" />
+  <java-symbol type="string" name="input_method_language_settings" />
+  <java-symbol type="string" name="input_method_switcher_settings_button" />
   <java-symbol type="string" name="input_method_ime_switch_long_click_action_desc" />
   <java-symbol type="string" name="launch_warning_original" />
   <java-symbol type="string" name="launch_warning_replace" />
