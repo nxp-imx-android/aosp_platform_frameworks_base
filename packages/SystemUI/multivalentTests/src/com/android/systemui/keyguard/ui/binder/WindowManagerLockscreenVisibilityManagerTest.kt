@@ -336,6 +336,46 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
 
     @Test
     @RequiresFlagsDisabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING_BUG_FIX)
+    fun lockscreenReshown_evenIfAlreadyShowing_ifSurfaceInvisible() {
+        underTest.setLockscreenShown(true)
+        underTest.setSurfaceBehindVisibility(true)
+
+        uiBgExecutor.runAllReady()
+
+        verify(activityTaskManagerService).setLockScreenShown(eq(true), any())
+        verify(activityTaskManagerService).keyguardGoingAway(anyInt())
+
+        underTest.onKeyguardGoingAwayRemoteAnimationCancelled()
+        executor.runAllReady()
+
+        underTest.setSurfaceBehindVisibility(false)
+        uiBgExecutor.runAllReady()
+
+        verify(activityTaskManagerService, times(2)).setLockScreenShown(eq(true), any())
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING_BUG_FIX)
+    fun lockscreenReshown_evenIfAlreadyShowing_ifSurfaceInvisible_shellTransitions() {
+        underTest.setLockscreenShown(true)
+        underTest.setSurfaceBehindVisibility(true)
+
+        uiBgExecutor.runAllReady()
+
+        verify(activityTaskManagerService).setLockScreenShown(eq(true), any())
+        verify(activityTaskManagerService).keyguardGoingAway(anyInt())
+
+        underTest.onKeyguardGoingAwayRemoteAnimationCancelled()
+        executor.runAllReady()
+
+        underTest.setSurfaceBehindVisibility(false)
+        uiBgExecutor.runAllReady()
+
+        verify(activityTaskManagerService, times(2)).setLockScreenShown(eq(true), any())
+    }
+
+    @Test
+    @RequiresFlagsDisabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING_BUG_FIX)
     fun lockscreenEventuallyShown_ifReshown_afterGoingAwayExecutionDelayed() {
         underTest.setLockscreenShown(true)
         uiBgExecutor.runAllReady()
