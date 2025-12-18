@@ -20,6 +20,7 @@ import static android.accessibilityservice.MagnificationConfig.MAGNIFICATION_MOD
 
 import static com.android.server.accessibility.magnification.FullScreenMagnificationController.MagnificationInfoChangedCallback;
 import static com.android.server.accessibility.magnification.MockMagnificationConnection.TEST_DISPLAY;
+import static com.android.server.accessibility.magnification.MockMagnificationConnection.TEST_SOURCE_TEXT_CURSOR;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -70,6 +71,7 @@ import androidx.test.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.internal.R;
+import com.android.internal.accessibility.util.AccessibilityUtils;
 import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.ConcurrentUtils;
 import com.android.internal.util.test.FakeSettingsProvider;
@@ -170,6 +172,20 @@ public class FullScreenMagnificationControllerTest {
 
     private float mOriginalMagnificationPersistedScale;
 
+    private static class FakeSystemClock extends MagnificationSystemClock {
+        private long mUptimeMillis = 1984;
+
+        @Override
+        public long uptimeMillis() {
+            return mUptimeMillis;
+        }
+
+        public void advanceTime(long ms) {
+            mUptimeMillis += ms;
+        }
+    }
+    private FakeSystemClock mSystemClock;
+
     @Before
     public void setUp() {
         Context realContext = InstrumentationRegistry.getContext();
@@ -201,6 +217,7 @@ public class FullScreenMagnificationControllerTest {
         LocalServices.addService(DisplayManagerInternal.class, mDisplayManagerInternalMock);
 
         mScaleProvider = new MagnificationScaleProvider(mMockContext);
+        mSystemClock = new FakeSystemClock();
 
         // Assume the connection is established by default
         mMockMagnificationConnectionState = true;
@@ -214,7 +231,8 @@ public class FullScreenMagnificationControllerTest {
                         ConcurrentUtils.DIRECT_EXECUTOR,
                         () -> mMockScroller,
                         () -> mMockTimeAnimator,
-                        () -> mMockMagnificationConnectionState);
+                        () -> mMockMagnificationConnectionState,
+                        mSystemClock);
     }
 
     @After
@@ -1322,6 +1340,46 @@ public class FullScreenMagnificationControllerTest {
         mMessageCapturingHandler.sendAllMessages();
         assertThat(getCurrentMagnificationSpec(displayId), closeTo(startSpec));
         verifyNoMoreInteractions(mMockWindowManager);
+    }
+
+    @Test
+    public void requestRectOnScreen_onCursorMoveViewport_shouldIgnoreFocusChangeBeforeTimeout() {
+        register(DISPLAY_0);
+        zoomIn2xToMiddle(DISPLAY_0);
+        mMessageCapturingHandler.sendAllMessages();
+        Mockito.reset(mMockWindowManager);
+        MagnificationSpec startSpec = getCurrentMagnificationSpec(DISPLAY_0);
+        mFullScreenMagnificationController.setMagnificationFollowTypingEnabled(true);
+
+        mFullScreenMagnificationController.onCursorMoveViewport();
+        mFullScreenMagnificationController.onRectangleOnScreenRequested(DISPLAY_0, 0, 0, 1, 1,
+                TEST_SOURCE_TEXT_CURSOR);
+        mMessageCapturingHandler.sendAllMessages();
+
+        assertThat(getCurrentMagnificationSpec(DISPLAY_0), closeTo(startSpec));
+        verify(mMockWindowManager, never()).setMagnificationSpec(eq(DISPLAY_0), any());
+    }
+
+    @Test
+    public void requestRectOnScreen_onCursorMoveViewport_shouldNotIgnoreFocusChangeAfterTimeout() {
+        register(DISPLAY_0);
+        zoomIn2xToMiddle(DISPLAY_0);
+        mMessageCapturingHandler.sendAllMessages();
+        Mockito.reset(mMockWindowManager);
+        MagnificationSpec expectedEndSpec = getMagnificationSpec(2.0f, 0, 0);
+        mFullScreenMagnificationController.setMagnificationFollowTypingEnabled(true);
+
+        mFullScreenMagnificationController.onCursorMoveViewport();
+        mSystemClock.advanceTime(
+                AccessibilityUtils
+                        .MAGNIFICATION_IGNORE_FOCUS_UPDATES_AFTER_CURSOR_MOVE_TIMEOUT_MS + 1);
+        mFullScreenMagnificationController.onRectangleOnScreenRequested(DISPLAY_0, 0, 0, 1, 1,
+                TEST_SOURCE_TEXT_CURSOR);
+        mMessageCapturingHandler.sendAllMessages();
+
+        assertThat(getCurrentMagnificationSpec(DISPLAY_0), closeTo(expectedEndSpec));
+        verify(mMockWindowManager).setMagnificationSpec(eq(DISPLAY_0),
+                argThat(closeTo(expectedEndSpec)));
     }
 
     @Test
