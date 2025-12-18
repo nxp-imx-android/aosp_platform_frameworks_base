@@ -258,9 +258,8 @@ public final class VirtualDeviceParams implements Parcelable {
      *
      * @see VirtualDeviceManager.VirtualDevice#addActivityPolicyExemption
      * @see VirtualDeviceManager.VirtualDevice#removeActivityPolicyExemption
+     * @see #POLICY_TYPE_BLOCKED_ACTIVITY
      */
-    // TODO(b/333443509): Update the documentation of custom policy and link to the new policy
-    // POLICY_TYPE_BLOCKED_ACTIVITY
     public static final int POLICY_TYPE_ACTIVITY = 3;
 
     /**
@@ -306,9 +305,9 @@ public final class VirtualDeviceParams implements Parcelable {
      *     {@link VirtualDeviceManager.ActivityListener#onActivityLaunchBlocked} to provide custom
      *     experience on the virtual device.
      * </ul>
+     *
+     * @see #POLICY_TYPE_ACTIVITY
      */
-    // TODO(b/333443509): Link to POLICY_TYPE_ACTIVITY
-    @FlaggedApi(Flags.FLAG_ACTIVITY_CONTROL_API)
     public static final int POLICY_TYPE_BLOCKED_ACTIVITY = 6;
 
     /**
@@ -1446,10 +1445,6 @@ public final class VirtualDeviceParams implements Parcelable {
 
             if (!Flags.defaultDeviceCameraAccessPolicy()) {
                 mDevicePolicies.delete(POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS);
-            }
-
-            if (!Flags.activityControlApi()) {
-                mDevicePolicies.delete(POLICY_TYPE_BLOCKED_ACTIVITY);
             }
 
             if ((mAudioPlaybackSessionId != AUDIO_SESSION_ID_GENERATE

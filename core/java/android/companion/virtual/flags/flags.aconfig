@@ -11,14 +11,6 @@ package: "android.companion.virtualdevice.flags"
 container: "system"
 
 flag {
-     namespace: "virtual_devices"
-     name: "activity_control_api"
-     description: "Enable APIs for fine grained activity policy, fallback and callbacks"
-     bug: "333443509"
-     is_exported: true
-}
-
-flag {
     name: "virtual_rotary"
     is_exported: true
     namespace: "virtual_devices"
