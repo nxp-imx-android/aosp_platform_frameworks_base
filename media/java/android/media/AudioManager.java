@@ -9239,8 +9239,10 @@ public class AudioManager {
      * Set whether or not there is an active RTT call.
      * This method should be called by Telecom service.
      * @hide
-     * TODO: make this a @SystemApi
      */
+    @SystemApi
+    @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_TELECOM_MAINLINE_API)
     public static void setRttEnabled(boolean rttEnabled) {
         try {
             getService().setRttEnabled(rttEnabled);
