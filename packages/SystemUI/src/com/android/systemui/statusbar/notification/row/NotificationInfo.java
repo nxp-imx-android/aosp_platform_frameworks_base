@@ -337,24 +337,7 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
 
         bindSummarizer();
 
-        if (Flags.notificationClassificationUi()) {
-            bindFeedback();
-        } else {
-            // Set up app settings link (i.e. Customize)
-            View settingsLinkView = findViewById(R.id.app_settings);
-            Intent settingsIntent = getAppSettingsIntent(mPm, mPackageName,
-                    mSingleNotificationChannel,
-                    mSbn.getId(), mSbn.getTag());
-            if (settingsIntent != null
-                    && !TextUtils.isEmpty(mSbn.getNotification().getSettingsText())) {
-                settingsLinkView.setVisibility(VISIBLE);
-                settingsLinkView.setOnClickListener((View view) -> {
-                    mAppSettingsClickListener.onClick(view, settingsIntent);
-                });
-            } else {
-                settingsLinkView.setVisibility(View.GONE);
-            }
-        }
+        bindFeedback();
 
         // If the notification is a bridged notification, the settings button doesn't exist so skip
         // setting it.

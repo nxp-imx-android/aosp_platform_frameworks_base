@@ -360,7 +360,6 @@ public class PartialConversationInfoTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI)
     public void testBindNotification_SetsFeedbackLink_isReservedChannel() {
         mEntry.setRanking(
                 new RankingBuilder(mEntry.getRanking())

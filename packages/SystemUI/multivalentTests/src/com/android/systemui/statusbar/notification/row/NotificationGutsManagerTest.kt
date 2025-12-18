@@ -172,9 +172,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf(
-                    android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI
-                )
+            return FlagsParameterization.allCombinationsOf()
                 .andSceneContainer()
         }
     }

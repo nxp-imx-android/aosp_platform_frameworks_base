@@ -150,7 +150,6 @@ public class PromotedNotificationInfoTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI)
     public void testBindNotification_setsOnClickListenerForFeedback() throws Exception {
 
         // Bind the notification to the Info object

@@ -832,7 +832,6 @@ class NotificationInfoTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI)
     @Throws(RemoteException::class)
     fun testBindNotification_SetsFeedbackLink_isReservedChannel() {
         entry.setRanking(

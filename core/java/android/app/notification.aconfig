@@ -91,13 +91,6 @@ flag {
 }
 
 flag {
-  name: "notification_classification_ui"
-  namespace: "systemui"
-  description: "Adds UI for NAS classification of notifications"
-  bug: "367996732"
-}
-
-flag {
   name: "nm_collapsed_lines"
   namespace: "systemui"
   description: "Shows 2 lines for collapsed notifications by default"
