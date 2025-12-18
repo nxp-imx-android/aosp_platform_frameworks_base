@@ -75,6 +75,7 @@ flag {
   namespace: "private_compute"
   description: "Controls the deprecation of the ContentCaptureManager#setContentCaptureEnabled method."
   bug: "454307959"
+  is_exported: true
 }
 
 flag {
@@ -82,4 +83,5 @@ flag {
     namespace: "ailabs"
     description: "Feature flag to enable content interaction API."
     bug: "460569434"
+    is_exported: true
 }

@@ -124,7 +124,7 @@ flag {
     namespace: "responsible_apis"
     description: "New APIs for dynamic instrumentation."
     bug: "412739902"
-    is_exported: false
+    is_exported: true
 }
 
 flag {
@@ -252,6 +252,7 @@ flag {
     namespace: "permissions"
     description: "Flag for strict mode violation for implicit uri grants"
     bug: "295238578"
+    is_exported: true
 }
 
 flag {
@@ -259,5 +260,6 @@ flag {
    namespace: "responsible_apis"
    description: "Flag that enables the uprobestats bridge system service"
    bug: "408041227"
+   is_exported: true
 }
 # keep-sorted end

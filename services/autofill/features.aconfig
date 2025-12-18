@@ -6,6 +6,7 @@ flag {
   namespace: "autofill"
   description: "Guards against new metrics definitions introduced in W"
   bug: "342676602"
+  is_exported: true
 }
 
 flag {
@@ -87,6 +88,7 @@ flag {
   namespace: "autofill"
   description: "Make autofill service name in context a public API"
   bug: "390180715"
+  is_exported: true
 }
 
 flag {

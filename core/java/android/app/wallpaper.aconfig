@@ -31,6 +31,7 @@ flag {
   namespace: "systemui"
   description: "Expose setComponent method in WallpaperDescription"
   bug: "448138290"
+  is_exported: true
 }
 
 flag {

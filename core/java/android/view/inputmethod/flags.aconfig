@@ -191,6 +191,7 @@ flag {
   namespace: "input_method"
   description: "Deprecate unsupported show/hide flags."
   bug: "322992891"
+  is_exported: true
 }
 
 flag {
