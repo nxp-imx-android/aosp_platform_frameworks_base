@@ -52,6 +52,8 @@ val Kosmos.lockscreenAlphaViewModelFactory by Fixture {
                 keyguardInteractor = keyguardInteractor,
                 dozingTransitionFlows = dozingTransitionFlows,
                 viewStateAccessor = viewStateAccessor,
+                toLockscreenEndStateTransitionViewModel = toLockscreenEndStateTransitionViewModel,
+                toAodEndStateTransitionViewModel = toAodEndStateTransitionViewModel,
             )
         }
     }

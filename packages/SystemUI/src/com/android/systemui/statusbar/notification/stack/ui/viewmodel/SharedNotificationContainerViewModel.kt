@@ -81,6 +81,9 @@ import com.android.systemui.keyguard.ui.viewmodel.OccludedToLockscreenTransition
 import com.android.systemui.keyguard.ui.viewmodel.OffToLockscreenTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.PrimaryBouncerToGoneTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.PrimaryBouncerToLockscreenTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.ToAodEndStateTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.ToDozingEndStateTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.ToLockscreenEndStateTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.ViewStateAccessor
 import com.android.systemui.log.table.Diffable
 import com.android.systemui.log.table.TableLogBuffer
@@ -200,6 +203,9 @@ constructor(
     private val primaryBouncerToGoneTransitionViewModel: PrimaryBouncerToGoneTransitionViewModel,
     private val primaryBouncerToLockscreenTransitionViewModel:
         PrimaryBouncerToLockscreenTransitionViewModel,
+    private val toLockscreenEndStateTransitionViewModel: ToLockscreenEndStateTransitionViewModel,
+    private val toAodEndStateTransitionViewModel: ToAodEndStateTransitionViewModel,
+    private val toDozingEndStateTransitionViewModel: ToDozingEndStateTransitionViewModel,
     private val primaryBouncerTransitions: Set<@JvmSuppressWildcards PrimaryBouncerTransition>,
     aodBurnInViewModel: AodBurnInViewModel,
     private val communalSceneInteractor: CommunalSceneInteractor,
@@ -735,6 +741,9 @@ constructor(
             glanceableHubToAodTransitionViewModel.lockscreenAlpha to "glanceableHubToAod",
             lockscreenToGlanceableHubTransitionViewModel.keyguardAlpha to
                 "lockscreenToGlanceableHub",
+            toLockscreenEndStateTransitionViewModel.lockscreenAlpha to "toLockscreenEndState",
+            toAodEndStateTransitionViewModel.lockscreenAlpha to "toAodEndState",
+            toDozingEndStateTransitionViewModel.notificationAlpha to "toDozingEndState",
             if (SceneContainerFlag.isEnabled) {
                 dozingToGoneTransitionViewModel.lockscreenAlpha(viewState)
             } else {
@@ -823,6 +832,7 @@ constructor(
                     merge(
                             lockscreenToGlanceableHubTransitionViewModel.zoomOut,
                             glanceableHubToLockscreenTransitionViewModel.zoomOut,
+                            toLockscreenEndStateTransitionViewModel.zoomOut,
                         )
                         .map {
                             // Rate limit the zoom out by 5% step to avoid jank.

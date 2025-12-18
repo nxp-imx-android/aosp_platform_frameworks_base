@@ -154,6 +154,9 @@ constructor(
     private val alternateBouncerToDozingTransitionViewModel:
         AlternateBouncerToDozingTransitionViewModel,
     private val glanceableHubToDozingTransitionViewModel: GlanceableHubToDozingTransitionViewModel,
+    private val toLockscreenEndStateTransitionViewModel: ToLockscreenEndStateTransitionViewModel,
+    private val toAodEndStateTransitionViewModel: ToAodEndStateTransitionViewModel,
+    private val toDozingEndStateTransitionViewModel: ToDozingEndStateTransitionViewModel,
     private val screenOffAnimationController: ScreenOffAnimationController,
     private val aodBurnInViewModel: AodBurnInViewModel,
     shadeInteractor: ShadeInteractor,
@@ -253,6 +256,8 @@ constructor(
                                 glanceableHubToLockscreenTransitionViewModel.zoomOut,
                                 aodToGlanceableHubTransitionViewModel.zoomOut,
                                 glanceableHubToAodTransitionViewModel.zoomOut,
+                                toLockscreenEndStateTransitionViewModel.zoomOut,
+                                toAodEndStateTransitionViewModel.zoomOut,
                             )
                             .map {
                                 // rate limit the zoom out by 5% step to avoid jank
@@ -367,6 +372,9 @@ constructor(
                         primaryBouncerToDozingTransitionViewModel.lockscreenAlpha,
                         primaryBouncerToGoneTransitionViewModel.lockscreenAlpha,
                         primaryBouncerToLockscreenTransitionViewModel.lockscreenAlpha(viewState),
+                        toLockscreenEndStateTransitionViewModel.lockscreenAlpha,
+                        toAodEndStateTransitionViewModel.lockscreenAlpha,
+                        toDozingEndStateTransitionViewModel.lockscreenAlpha,
                     )
                     .onStart { emit(0f) },
             ) { hideKeyguard, alpha ->

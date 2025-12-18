@@ -38,6 +38,9 @@ import com.android.systemui.keyguard.ui.viewmodel.lockscreenToPrimaryBouncerTran
 import com.android.systemui.keyguard.ui.viewmodel.occludedToLockscreenTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.offToLockscreenTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.primaryBouncerToLockscreenTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.toAodEndStateTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.toDozingEndStateTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.toLockscreenEndStateTransitionViewModel
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.shade.domain.interactor.shadeInteractor
@@ -76,6 +79,10 @@ val Kosmos.lockscreenLowerRegionElementProvider by
                         lockscreenToPrimaryBouncerTransitionViewModel,
                     lockscreenToGlanceableHubTransitionViewModel =
                         lockscreenToGlanceableHubTransitionViewModel,
+                    toAodEndStateTransitionViewModel = toAodEndStateTransitionViewModel,
+                    toDozingEndStateTransitionViewModel = toDozingEndStateTransitionViewModel,
+                    toLockscreenEndStateTransitionViewModel =
+                        toLockscreenEndStateTransitionViewModel,
                     transitionInteractor = keyguardTransitionInteractor,
                 ),
         )
