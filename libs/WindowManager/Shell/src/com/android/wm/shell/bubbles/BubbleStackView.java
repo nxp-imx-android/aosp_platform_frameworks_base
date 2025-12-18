@@ -268,7 +268,7 @@ public class BubbleStackView extends FrameLayout
     private FrameLayout mAnimatingOutSurfaceContainer;
 
     /** Animator for animating the alpha value of the animating out SurfaceView. */
-    private final ValueAnimator mAnimatingOutSurfaceAlphaAnimator = ValueAnimator.ofFloat(0f, 1f);
+    private final ValueAnimator mAnimatingOutSurfaceAlphaAnimator = ValueAnimator.ofFloat(1f, 0f);
 
     /**
      * Buffer containing a screenshot of the animating-out bubble. This is drawn into the
@@ -2575,7 +2575,7 @@ public class BubbleStackView extends FrameLayout
                 });
             } catch (Exception e) {
                 showNewlySelectedBubble(bubbleToSelect);
-                e.printStackTrace();
+                Log.e(TAG, "setSelectedBubble screenshot failed", e);
             }
         } else {
             showNewlySelectedBubble(bubbleToSelect);
@@ -3263,7 +3263,7 @@ public class BubbleStackView extends FrameLayout
         // it out (and then release the GraphicBuffer).
         PhysicsAnimator.getInstance(mAnimatingOutSurfaceContainer).cancel();
 
-        mAnimatingOutSurfaceAlphaAnimator.reverse();
+        mAnimatingOutSurfaceAlphaAnimator.start();
         mExpandedViewAlphaAnimator.start();
 
         if (mExpandedBubble != null) {
