@@ -397,6 +397,7 @@ package android {
     field public static final String REMOVE_TASKS = "android.permission.REMOVE_TASKS";
     field public static final String RENOUNCE_PERMISSIONS = "android.permission.RENOUNCE_PERMISSIONS";
     field public static final String REPORT_USAGE_STATS = "android.permission.REPORT_USAGE_STATS";
+    field @FlaggedApi("android.permission.flags.location_button_enabled") public static final String REQUEST_LOCATION_BUTTON_PERMISSIONS = "android.permission.REQUEST_LOCATION_BUTTON_PERMISSIONS";
     field @Deprecated public static final String REQUEST_NETWORK_SCORES = "android.permission.REQUEST_NETWORK_SCORES";
     field public static final String REQUEST_NOTIFICATION_ASSISTANT_SERVICE = "android.permission.REQUEST_NOTIFICATION_ASSISTANT_SERVICE";
     field @FlaggedApi("android.companion.task_continuity") public static final String REQUEST_TASK_HANDOFF = "android.permission.REQUEST_TASK_HANDOFF";
@@ -2525,6 +2526,15 @@ package android.app.people {
 
   @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public final class PeopleManager {
     method @RequiresPermission(android.Manifest.permission.READ_PEOPLE_DATA) public boolean isConversation(@NonNull String, @NonNull String);
+  }
+
+}
+
+package android.app.permissionui {
+
+  @FlaggedApi("android.permission.flags.location_button_enabled") public interface LocationButtonClient {
+    field @FlaggedApi("android.permission.flags.location_button_enabled") public static final String ACTION_REQUEST_LOCATION_BUTTON_PERMISSIONS = "android.app.permissionui.action.REQUEST_LOCATION_BUTTON_PERMISSIONS";
+    field @FlaggedApi("android.permission.flags.location_button_enabled") public static final String EXTRA_PERMISSION_RESULT = "android.app.permissionui.extra.PERMISSION_RESULT";
   }
 
 }

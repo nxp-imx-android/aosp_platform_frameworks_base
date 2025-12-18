@@ -17,6 +17,7 @@ package android.app.permissionui;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.SystemApi;
 import android.permission.flags.Flags;
 
 import java.util.concurrent.Executor;
@@ -37,6 +38,32 @@ import java.util.concurrent.Executor;
  */
 @FlaggedApi(Flags.FLAG_LOCATION_BUTTON_ENABLED)
 public interface LocationButtonClient {
+
+    /**
+     * Intent action to request location permission when a user clicks a location button.
+     * <p>
+     * This intent is handled by PermissionController to grant temporary location access. The
+     * intent is created by the system component rendering the button and started by the host
+     * application.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(android.permission.flags.Flags.FLAG_LOCATION_BUTTON_ENABLED)
+    String ACTION_REQUEST_LOCATION_BUTTON_PERMISSIONS =
+            "android.app.permissionui.action.REQUEST_LOCATION_BUTTON_PERMISSIONS";
+
+    /**
+     * Intent extra: The grant result of a permission request.
+     * <p>
+     * Type: boolean
+     * </p>
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(android.permission.flags.Flags.FLAG_LOCATION_BUTTON_ENABLED)
+    String EXTRA_PERMISSION_RESULT = "android.app.permissionui.extra.PERMISSION_RESULT";
 
     /**
      * Called when the location button session is successfully created.

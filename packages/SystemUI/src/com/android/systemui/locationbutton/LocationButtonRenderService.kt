@@ -80,6 +80,7 @@ constructor(
      */
     private fun openSession(
         hostPackageName: String,
+        hostPackageUid: Int,
         hostToken: IBinder,
         displayId: Int,
         request: LocationButtonRequest,
@@ -93,6 +94,7 @@ constructor(
                     hostToken,
                     displayId,
                     hostPackageName,
+                    hostPackageUid,
                     request,
                     client,
                     executor,
@@ -150,6 +152,7 @@ constructor(
                 try {
                     this@LocationButtonRenderService.openSession(
                         packageName,
+                        callerUid,
                         hostToken,
                         displayId,
                         request,

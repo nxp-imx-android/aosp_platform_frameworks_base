@@ -9366,6 +9366,18 @@
         android:protectionLevel="normal"
         android:featureFlag="android.permission.flags.location_button_enabled" />
 
+    <!-- @hide @SystemApi
+        Allows an application to start the location button consent activity in
+        PermissionController. This permission should only be held by the system component rendering
+        the location button.
+        <p>Protection level: signature
+        @FlaggedApi(android.permission.flags.Flags.FLAG_LOCATION_BUTTON_ENABLED)
+    -->
+    <permission
+        android:name="android.permission.REQUEST_LOCATION_BUTTON_PERMISSIONS"
+        android:protectionLevel="signature"
+        android:featureFlag="android.permission.flags.location_button_enabled" />
+
     <!-- @SystemApi Allows an app to query apps in clone profile. The permission is
          bidirectional in nature, i.e. cloned apps would be able to query apps in root user.
          The permission is not meant for 3P apps as of now.
