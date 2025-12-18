@@ -30,6 +30,7 @@ import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ScreenCapture
 import com.android.systemui.screencapture.common.ScreenCaptureScope
 import com.android.systemui.screencapture.record.camera.data.repository.ScreenRecordCameraRepository
+import com.android.systemui.settings.DisplayTracker
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -52,6 +53,7 @@ constructor(
     @Main resources: Resources,
     @ScreenCapture private val coroutineScope: CoroutineScope,
     private val repository: ScreenRecordCameraRepository,
+    private val displayTracker: DisplayTracker,
 ) {
 
     val cameraBackgroundColors: List<Int> =
@@ -95,10 +97,15 @@ constructor(
                 null,
             )
             .filterNotNull()
-    // TODO: apotapov - Replace 0's with actual display values.
     val optimalCameraStreamSize: Flow<Size> =
         repository.isConnected
-            .map { repository.configureViewport(0, 0) }
+            .map {
+                repository.prepareStream(
+                    displayId = displayTracker.defaultDisplayId,
+                    displayOrientation =
+                        displayTracker.getDisplay(displayTracker.defaultDisplayId).rotation,
+                )
+            }
             .stateInTraced(
                 "ScreenRecordCameraInteractor#optimalCameraStreamSize",
                 coroutineScope,
@@ -122,9 +129,13 @@ constructor(
         continuation.invokeOnCancellation { repository.disconnect() }
     }
 
-    // TODO: apotapov - Replace 0's with actual display values.
     suspend fun startStream(surface: Surface, width: Int, height: Int) {
-        val optimalSize = repository.configureViewport(0, 0)
+        val optimalSize =
+            repository.prepareStream(
+                displayId = displayTracker.defaultDisplayId,
+                displayOrientation =
+                    displayTracker.getDisplay(displayTracker.defaultDisplayId).rotation,
+            )
         require(optimalSize != null) { "Couldn't get optimal size. Skipping stream start" }
         require(width == optimalSize.width && height == optimalSize.height) {
             "Surface dimensions aren't optimal: optimal=$optimalSize, width=$width, height=$height"
