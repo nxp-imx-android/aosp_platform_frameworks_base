@@ -478,7 +478,7 @@ class AccessibilityInputFilterInputTest {
      * interleaved.
      */
     @Test
-    @EnableFlags(Flags.FLAG_HANDLE_MULTI_DEVICE_INPUT)
+    @EnableFlags(Flags.FLAG_HANDLE_MULTI_DEVICE_INPUT, Flags.FLAG_USE_STATE_FOR_ACTION_UP_INJECTION)
     fun testMultiDeviceEventsWithoutA11yFeatures() {
         enableFeatures(0)
 
@@ -523,7 +523,7 @@ class AccessibilityInputFilterInputTest {
      * interleaved.
      */
     @Test
-    @EnableFlags(Flags.FLAG_HANDLE_MULTI_DEVICE_INPUT)
+    @EnableFlags(Flags.FLAG_HANDLE_MULTI_DEVICE_INPUT, Flags.FLAG_USE_STATE_FOR_ACTION_UP_INJECTION)
     fun testMultiDeviceEventsWithAllA11yFeatures() {
         enableFeatures(ALL_A11Y_FEATURES)
 
@@ -601,7 +601,7 @@ class AccessibilityInputFilterInputTest {
      * while stylus is active. Check that the latest device is always given preference.
      */
     @Test
-    @EnableFlags(Flags.FLAG_HANDLE_MULTI_DEVICE_INPUT)
+    @EnableFlags(Flags.FLAG_HANDLE_MULTI_DEVICE_INPUT, Flags.FLAG_USE_STATE_FOR_ACTION_UP_INJECTION)
     fun testStylusWithTouchInTheMiddle() {
         enableFeatures(ALL_A11Y_FEATURES)
 
