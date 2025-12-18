@@ -41,6 +41,7 @@ class NotificationRowIconViewInflaterFactory
 constructor(
     private val appIconProvider: AppIconProvider,
     private val iconStyleProvider: NotificationIconStyleProvider,
+    private val bridgedIconProvider: BridgedIconProvider,
 ) : NotifRemoteViewsFactory {
     override fun instantiate(
         row: ExpandableNotificationRow,
@@ -103,12 +104,8 @@ constructor(
             }
 
             override fun getBridgedIcon(): Drawable? {
-                val bridgedMetadata = sbn.getNotification().getBridgedNotificationMetadata()
-                if (bridgedMetadata != null) {
-                    // TODO(b/438827600): Add plate overlay to the icon.
-                    return bridgedMetadata.getAppIcon().loadDrawable(context)
-                }
-                return null
+                val bridgedMetadata = sbn.notification.bridgedNotificationMetadata ?: return null
+                return bridgedIconProvider.getBridgedIcon(context, bridgedMetadata)
             }
 
             override fun getLauncherIcon(): Drawable {

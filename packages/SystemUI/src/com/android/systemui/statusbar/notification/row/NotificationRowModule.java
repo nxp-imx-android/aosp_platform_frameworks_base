@@ -19,6 +19,8 @@ package com.android.systemui.statusbar.notification.row;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.AppIconProviderImpl;
+import com.android.systemui.statusbar.notification.row.icon.BridgedIconProvider;
+import com.android.systemui.statusbar.notification.row.icon.BridgedIconProviderImpl;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProviderImpl;
 
@@ -68,6 +70,10 @@ public abstract class NotificationRowModule {
     @Binds
     @SysUISingleton
     public abstract AppIconProvider provideAppIconProvider(AppIconProviderImpl impl);
+
+    @Binds
+    @SysUISingleton
+    public abstract BridgedIconProvider provideBridgedIconProvider(BridgedIconProviderImpl impl);
 
     /**
      * Provides notification icon style provider instance.
