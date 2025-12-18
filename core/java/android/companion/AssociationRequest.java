@@ -908,7 +908,7 @@ public final class AssociationRequest implements Parcelable {
             return this;
         }
 
-        /** @inheritDoc */
+        /** {@inheritDoc} */
         @NonNull
         @Override
         public AssociationRequest build() {

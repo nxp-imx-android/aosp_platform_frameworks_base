@@ -210,7 +210,7 @@ public final class BluetoothDeviceFilter implements DeviceFilter<BluetoothDevice
             return this;
         }
 
-        /** @inheritDoc */
+        /** {@inheritDoc} */
         @Override
         @NonNull
         public BluetoothDeviceFilter build() {
