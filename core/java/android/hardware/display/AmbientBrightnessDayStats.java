@@ -31,7 +31,7 @@ import java.util.Objects;
 /**
  * AmbientBrightnessDayStats stores and manipulates brightness stats over a single day.
  *
- * @see DisplayManager.getAmbientBrightnessStats()
+ * @see DisplayManager#getAmbientBrightnessStats()
  * @hide
  */
 @SystemApi

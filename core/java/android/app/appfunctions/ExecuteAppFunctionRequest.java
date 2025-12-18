@@ -229,7 +229,7 @@ public final class ExecuteAppFunctionRequest implements Parcelable {
         /**
          * Sets the function parameters.
          *
-         * @see #ExecuteAppFunctionRequest#getParameters()
+         * @see ExecuteAppFunctionRequest#getParameters()
          */
         @NonNull
         public Builder setParameters(@NonNull GenericDocument parameters) {

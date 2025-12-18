@@ -13408,7 +13408,7 @@ public class Intent implements Parcelable, Cloneable {
      * <ul>
      *     <li> {@link BroadcastReceiver#onReceive(Context, Intent)}
      *     <li> {@link Activity#getIntent()}
-     *     <li> {@link Activity#onNewIntent)}
+     *     <li> {@link Activity#onNewIntent(Intent)}
      *     <li> {@link android.app.Service#onStartCommand(Intent, int, int)}
      *     <li> {@link android.app.Service#onBind(Intent)}
      * </ul>

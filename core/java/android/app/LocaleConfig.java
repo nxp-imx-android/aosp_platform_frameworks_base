@@ -108,7 +108,7 @@ public class LocaleConfig implements Parcelable {
      *
      * @param context the context of the application.
      *
-     * @see Context#createPackageContext(String, int).
+     * @see Context#createPackageContext(String, int)
      */
     @RavenwoodKeep(comment = "Locale override (LocaleManager) not supported on Ravenwood")
     public LocaleConfig(@NonNull Context context) {
@@ -126,7 +126,7 @@ public class LocaleConfig implements Parcelable {
      *
      * @param context the context of the application.
      *
-     * @see Context#createPackageContext(String, int).
+     * @see Context#createPackageContext(String, int)
      */
     @NonNull
     public static LocaleConfig fromContextIgnoringOverride(@NonNull Context context) {

@@ -2313,7 +2313,7 @@ public final class ContactsContract {
          * @param contactUri the contact whose photo should be used. This can be used with
          * either a {@link #CONTENT_URI} or a {@link #CONTENT_LOOKUP_URI} URI.
          * @return an InputStream of the photo, or null if no photo is present
-         * @see #openContactPhotoInputStream(ContentResolver, Uri, boolean), if instead
+         * @see #openContactPhotoInputStream(ContentResolver, Uri, boolean) if instead
          * of the thumbnail the high-res picture is preferred
          */
         public static InputStream openContactPhotoInputStream(ContentResolver cr, Uri contactUri) {

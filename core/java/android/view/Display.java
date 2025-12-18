@@ -763,7 +763,7 @@ public final class Display {
      * Unique id is different from display id because physical displays have stable unique id across
      * reboots.
      *
-     * @see com.android.service.display.DisplayDevice#hasStableUniqueId().
+     * @see com.android.service.display.DisplayDevice#hasStableUniqueId()
      * @hide
      */
     @TestApi

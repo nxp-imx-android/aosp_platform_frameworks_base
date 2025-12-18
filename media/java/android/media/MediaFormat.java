@@ -553,7 +553,7 @@ public final class MediaFormat {
      * A key describing the hardware AV sync id.
      * The associated value is an integer
      *
-     * @see android.media.tv.tuner.Tuner#getAvSyncHwId.
+     * @see android.media.tv.tuner.Tuner#getAvSyncHwId
      */
     public static final String KEY_HARDWARE_AV_SYNC_ID = "hw-av-sync-id";
 

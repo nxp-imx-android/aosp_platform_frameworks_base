@@ -9464,7 +9464,7 @@ public class AppOpsManager {
      * without an executor parameter.
      *
      * <p> Note that the listener will be called on the main thread using
-     * {@link Context.getMainThread()}. To specify the execution thread, use
+     * {@link Context#getMainThread()}. To specify the execution thread, use
      * {@link #startWatchingNoted(String[], Executor, OnOpNotedListener)}.
      *
      * @param ops      the ops to watch
@@ -11432,7 +11432,7 @@ public class AppOpsManager {
      * and 4.
      *
      * Note that even with {@link #OP_NOTED_CALLBACK_FLAG_IGNORE_ASYNC},
-     * {@link #OnOpNotedCallback.onAsyncNoted} may still be invoked. This happens for sync events
+     * {@link OnOpNotedCallback#onAsyncNoted} may still be invoked. This happens for sync events
      * that were collected before a callback is registered.
      *
      * @param asyncExecutor executor to execute {@link OnOpNotedCallback#onAsyncNoted} on, {@code
