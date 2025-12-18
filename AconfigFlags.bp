@@ -2008,6 +2008,7 @@ java_aconfig_library {
     name: "android.content.flags-aconfig-java",
     aconfig_declarations: "android.content.flags-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
+    mode: "exported",
     min_sdk_version: "30",
 }
 
