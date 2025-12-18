@@ -29,7 +29,7 @@ oneway interface IImeSwitcherMenu {
     @JavaDerive(equals = true, toString = true)
     parcelable Item {
 
-        /** The input method's name. */
+        /** The IME's name. */
         CharSequence imeName;
 
         /** The subtype's name, or {@code null} if this item doesn't have a subtype. */
@@ -43,27 +43,27 @@ oneway interface IImeSwitcherMenu {
         @nullable
         CharSequence layoutName;
 
-        /** The ID of the Input Method associated with this item. */
+        /** The ID of the IME associated with this item. */
         String imeId;
 
         /**
-         * The index of the subtype in the input method's array of subtypes, or {@code -1} if this
-         * item doesn't have a subtype.
+         * The index of the subtype in the IME's array of subtypes, or {@code -1} if this item
+         * doesn't have a subtype.
          */
         int subtypeIndex;
     }
 
     /**
-     * Shows the Input Method Switcher Menu, with a list of IMEs and their subtypes.
+     * Shows the IME Switcher Menu, with a list of IMEs and their subtypes.
      *
-     * @param items                     the list of input method and subtype items.
-     * @param selectedImeId             the ID of the selected input method.
-     * @param selectedSubtypeIndex      the index of the selected subtype in the input method's
-     *                                  array of subtypes, or {@code -1} if no subtype is selected.
+     * @param items                     the list of IME and subtype items.
+     * @param selectedImeId             the ID of the selected IME.
+     * @param selectedSubtypeIndex      the index of the selected subtype in the IME's array of
+     *                                  subtypes, or {@code -1} if no subtype is selected.
      * @param selectedImeSettingsIntent the intent for the settings activity of the selected IME, or
      *                                  {@code null} if no IME is selected, or the selected IME does
      *                                  not have a settings activity.
-     * @param isScreenLocked            whether the screen is current locked.
+     * @param isScreenLocked            whether the screen is currently locked.
      * @param displayId                 the ID of the display where the menu was requested.
      * @param userId                    the ID of the user that requested the menu.
      */
@@ -72,9 +72,9 @@ oneway interface IImeSwitcherMenu {
             int userId);
 
     /**
-     * Hides the Input Method Switcher Menu.
+     * Hides the IME Switcher Menu.
      *
-     * @param userId    the ID of the user for which the menu should be hidden.
+     * @param userId the ID of the user for which the menu should be hidden.
      */
     void hide(int userId);
 
@@ -84,4 +84,19 @@ oneway interface IImeSwitcherMenu {
      * @param listener the listener to receive callbacks on.
      */
     void registerListener(in IImeSwitcherMenuListener listener);
+
+    /**
+     * Notifies the IME Switcher Menu that the selected IME and subtype of the given user
+     * have changed.
+     *
+     * @param selectedImeId             the ID of the new selected IME.
+     * @param selectedSubtypeIndex      the index of the new selected subtype in the IME's array of
+     *                                  subtypes, or {@code -1} if no subtype is seelcted.
+     * @param selectedImeSettingsIntent the intent for the settings activity of the new selected
+     *                                  IME, or {@code null} if no IME is selected, or the selected
+     *                                  IME does not have a settings activity.
+     * @param userId                    the ID of the user whose selected IME and subtype changed.
+     */
+    void notifyImeAndSubtypeChanged(in @nullable String selectedImeId, int selectedSubtypeIndex,
+            in @nullable Intent selectedImeSettingsIntent, int userId);
 }

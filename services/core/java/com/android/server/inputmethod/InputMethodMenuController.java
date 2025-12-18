@@ -192,6 +192,12 @@ final class InputMethodMenuController implements ImeSwitcherMenu {
     }
 
     @Override
+    public void onImeAndSubtypeChanged(@Nullable String imeId, int subtypeIndex,
+            @Nullable Intent settingsIntent, @UserIdInt int userId) {
+        // Not implemented, only handled in new ImeSwitcherMenu.
+    }
+
+    @Override
     public void dump(@NonNull Printer pw, @NonNull String prefix) {
         final boolean showing = isShowing(null /* userData */);
         pw.println(prefix + "isShowing: " + showing);
