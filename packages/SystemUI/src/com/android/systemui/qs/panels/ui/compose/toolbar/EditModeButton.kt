@@ -31,7 +31,6 @@ import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -58,6 +57,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupPositionProvider
+import com.android.compose.lifecycle.DisposableEffectWithLifecycle
 import com.android.systemui.common.ui.icons.Edit
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.qs.panels.ui.compose.toolbar.EditModeButtonDefaults.SpacingBetweenTooltipAndAnchor
@@ -102,6 +102,8 @@ fun EditModeButton(
         val caretPath = remember { mutableStateOf(Path()) }
         val coroutineScope = rememberCoroutineScope()
 
+        DisposableEffectWithLifecycle(Unit) { onDispose(viewModel::onTooltipDisposed) }
+
         TooltipBox(
             modifier = modifier,
             positionProvider = rememberTooltipPositionProvider(),
@@ -114,7 +116,6 @@ fun EditModeButton(
                 viewModel.onTooltipDisposed()
             },
             tooltip = {
-                DisposableEffect(Unit) { onDispose(viewModel::onTooltipDisposed) }
                 PlainTooltip(
                     shape = RoundedCornerShape(16.dp),
                     containerColor = tertiaryColor,
