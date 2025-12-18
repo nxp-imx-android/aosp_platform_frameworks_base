@@ -620,6 +620,7 @@ public interface RILConstants {
     int RIL_UNSOL_DISPLAY_NETWORK_TYPE_CHANGED = 1058;
     int RIL_UNSOL_NETWORK_SECURITY_EVENTS = 1059;
     int RIL_UNSOL_PRIORITIZED_SCAN_MODE_CHANGED = 1060;
+    int RIL_UNSOL_RESPONSE_NEW_SECURE_SMS = 1061;
 
     /* The following unsols are not defined in RIL.h */
     int RIL_UNSOL_HAL_NON_RIL_BASE = 1100;
