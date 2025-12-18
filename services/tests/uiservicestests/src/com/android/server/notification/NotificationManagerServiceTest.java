@@ -7462,6 +7462,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         assertTrue(posted.getNotification().extras.containsKey(EXTRA_ALLOW_DURING_SETUP));
     }
 
+    @DisableFlags(android.app.Flags.FLAG_PREFER_SMALL_ICON)
     @Test
     public void testNoPreferSmallIconPermission() throws Exception {
         mContext.getTestablePermissions().setPermission(

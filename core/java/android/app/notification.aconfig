@@ -289,6 +289,14 @@ flag {
   is_exported: true
 }
 
+flag {
+  name: "prefer_small_icon"
+  namespace: "notifications"
+  description: "Makes prefer small icon fully public"
+  bug: "469460575"
+  is_exported: true
+}
+
 # End: exported flags that cannot be removed
 
 
