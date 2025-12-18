@@ -34,11 +34,9 @@ import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.window.TransitionInfo.FLAG_IS_DISPLAY;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER;
 
-import static com.android.window.flags.Flags.exitSplitOnDisplayMoveBugfix;
 import static com.android.window.flags.Flags.enableNonDefaultDisplaySplitBugfix;
 import static com.android.wm.shell.Flags.enableFlexibleSplit;
 import static com.android.wm.shell.Flags.enableFlexibleTwoAppSplit;
-
 import static com.android.wm.shell.common.split.SplitLayout.PARALLAX_ALIGN_CENTER;
 import static com.android.wm.shell.common.split.SplitLayout.PARALLAX_FLEX_HYBRID;
 import static com.android.wm.shell.common.split.SplitLayout.RESTING_DIM_LAYER;
@@ -326,18 +324,13 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             return;
         }
 
-        DisplayAreaInfo newDisplayAreaInfo =
-                mRootTDAOrganizer.getDisplayAreaInfo(destinationDisplayId);
-        if (newDisplayAreaInfo == null) {
+        if (mSplitRootTaskInfo.displayId != oldDisplayId) {
+            ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "No SplitScreen RootTask found on"
+                    + " displayID %d", oldDisplayId);
             return;
         }
 
-        WindowContainerToken stageCoordinatorRootTaskToken = mSplitRootTaskInfo.token;
-        if (stageCoordinatorRootTaskToken == null || mSplitRootTaskInfo.displayId != oldDisplayId) {
-            ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "No SplitScreen RootTask found");
-            return;
-        }
-        wct.reparent(stageCoordinatorRootTaskToken, newDisplayAreaInfo.token, onTop);
+        prepareMovingSplitScreenRoot(wct, destinationDisplayId, onTop);
     }
 
     @Override
