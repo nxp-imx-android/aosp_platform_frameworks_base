@@ -40,9 +40,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toAndroidRectF
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.changedToUp
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.util.fastAll
 import androidx.core.graphics.toRegion
 import com.android.internal.R as internalR
 import com.android.systemui.dagger.qualifiers.Application
@@ -163,6 +167,22 @@ constructor(
                                         translationX = offsetX
                                         translationY = offsetY
                                         rotationZ = rotation
+                                    }
+                                }
+                                .pointerInput(Unit) {
+                                    awaitPointerEventScope {
+                                        while (true) {
+                                            with(awaitPointerEvent()) {
+                                                when {
+                                                    type == PointerEventType.Press ->
+                                                        transformationViewModel
+                                                            .onTransformationStarted()
+                                                    changes.fastAll { it.changedToUp() } ->
+                                                        transformationViewModel
+                                                            .onTransformationEnded()
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                                 .transformable(state)

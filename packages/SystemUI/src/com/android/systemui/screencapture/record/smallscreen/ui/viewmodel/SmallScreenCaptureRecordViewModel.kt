@@ -33,6 +33,7 @@ import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarge
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
+import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenCaptureCameraTransformationInteractor
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screencapture.record.smallscreen.domain.interactor.RecordDetailsStateInteractor
 import com.android.systemui.screencapture.record.smallscreen.domain.interactor.RecordDetailsTargetInteractor
@@ -57,6 +58,8 @@ class SmallScreenCaptureRecordViewModel
 constructor(
     @Background private val bgContext: CoroutineContext,
     private val screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
+    private val screenCaptureCameraTransformationInteractor:
+        ScreenCaptureCameraTransformationInteractor,
     recordDetailsAppSelectorViewModelFactory: RecordDetailsAppSelectorViewModel.Factory,
     screenCaptureRecordParametersViewModelFactory: ScreenCaptureRecordParametersViewModel.Factory,
     recordDetailsTargetViewModelFactory: RecordDetailsTargetViewModel.Factory,
@@ -66,7 +69,7 @@ constructor(
     private val markupInteractor: ScreenCaptureMarkupInteractor,
     private val activityManager: ActivityManagerWrapper,
     private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
-    private val recordDetailsTargetInteractor: RecordDetailsTargetInteractor,
+    recordDetailsTargetInteractor: RecordDetailsTargetInteractor,
     private val recordDetailsStateInteractor: RecordDetailsStateInteractor,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
 
@@ -115,6 +118,8 @@ constructor(
     }
 
     val shouldShowSettingsButton: Boolean by derivedStateOf { isRecording }
+
+    val isTransient: Boolean by screenCaptureCameraTransformationInteractor::isTransforming
 
     override suspend fun onActivated() {
         coroutineScope {
