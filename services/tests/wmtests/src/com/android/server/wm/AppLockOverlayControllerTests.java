@@ -40,6 +40,7 @@ import android.content.Intent;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.security.Flags;
+import android.view.Display;
 
 import androidx.test.filters.MediumTest;
 
@@ -51,6 +52,9 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 
 /**
@@ -619,6 +623,45 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
         final ActivityRecord overlay = task.getActivity(
                 activity -> overlayIdentifier.toString().equals(activity.intent.getIdentifier()));
         verify(overlay).finishIfPossible(eq("target-finishing"), anyBoolean());
+    }
+
+    @Test
+    public void getPackagesWithVisibleAppLockOverlay() {
+        final Task task = getTestTask();
+        // Create mock activities
+        ActivityRecord overlayActivity1 = createOverlayActivity(task, TEST_PACKAGE_1,
+                TEST_USER_ID_1);
+        ActivityRecord overlayActivity2 = createOverlayActivity(task, TEST_PACKAGE_2,
+                TEST_USER_ID_1);
+        ActivityRecord regularActivity = new ActivityBuilder(mAtm)
+                .setComponent(TEST_COMPONENT_3)
+                .build();
+        ActivityRecord overlayActivityUser2 = createOverlayActivity(task, "some.other.package.1",
+                TEST_USER_ID_2);
+        ActivityRecord overlayActivityNotFromSystem = new ActivityBuilder(mAtm)
+                .setComponent(new ComponentName("some.other.package.2",
+                        LockedAppActivity.class.getName()))
+                .build();
+
+        final List<ActivityRecord> visibleActivities = new ArrayList<>();
+        visibleActivities.add(overlayActivity1);
+        visibleActivities.add(overlayActivity2);
+        visibleActivities.add(regularActivity);
+        visibleActivities.add(overlayActivityUser2);
+        visibleActivities.add(overlayActivityNotFromSystem);
+
+        doReturn(visibleActivities).when(mRootWindowContainer).getTopVisibleActivities(
+                Display.INVALID_DISPLAY);
+
+        final Set<String> result = mAppLockOverlayController
+                .getPackagesWithVisibleAppLockOverlay(TEST_USER_ID_1);
+
+        assertThat(result).isNotNull();
+        assertThat(result).containsExactly(TEST_PACKAGE_1, TEST_PACKAGE_2);
+        assertThat(result).doesNotContain(TEST_PACKAGE_3);
+        assertThat(result).doesNotContain("some.other.package.1");
+        assertThat(result).doesNotContain("some.other.package.2");
+        verify(mRootWindowContainer).getTopVisibleActivities(Display.INVALID_DISPLAY);
     }
 
     @Test

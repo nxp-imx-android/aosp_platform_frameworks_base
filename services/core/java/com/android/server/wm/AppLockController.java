@@ -254,4 +254,21 @@ final class AppLockController {
 
         mAppLockOverlayController.addLockedByAppLockActivityOverlay(activity);
     }
+
+    /**
+     * Returns a set of package names that currently have a visible App Lock overlay for the
+     * specified user.
+     *
+     * <p>This delegates to {@link AppLockOverlayController} to scan visible activities. This is
+     * used in multi-window scenarios to identify all apps that are pending authentication. When
+     * a user authenticates one app, this list can be used to simultaneously authenticate all
+     * other visible locked apps, reducing user friction.
+     *
+     * @param userId The user ID for whom to find packages with visible App Lock overlay.
+     * @return A set of package names corresponding to the visible App Lock overlay.
+     */
+    @GuardedBy("mWmService.mGlobalLock")
+    Set<String> getPackagesWithVisibleAppLockOverlayLocked(int userId) {
+        return mAppLockOverlayController.getPackagesWithVisibleAppLockOverlay(userId);
+    }
 }

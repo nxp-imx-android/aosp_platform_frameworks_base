@@ -27,8 +27,10 @@ import android.app.ProfilerInfo;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.UserHandle;
 import android.util.ArrayMap;
 import android.util.ArraySet;
+import android.view.Display;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -36,7 +38,9 @@ import com.android.internal.app.LockedAppActivity;
 import com.android.internal.protolog.ProtoLog;
 
 import java.lang.ref.WeakReference;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -385,6 +389,44 @@ final class AppLockOverlayController {
     }
 
     /**
+     * Returns a set of package names that currently have a visible App Lock overlay for the
+     * specified user.
+     *
+     * <p>This scans all visible activities in the system and identifies those that are instances
+     * of {@link LockedAppActivity} acting as an App Lock overlay. It then extracts the target
+     * package name from these overlay activities for the given user ID.
+     *
+     * <p>This is used in multi-window scenarios to identify all apps that are pending
+     * authentication. When a user authenticates one app, this list can be used to simultaneously
+     * authenticate all other visible locked apps, reducing user friction.
+     *
+     * @param userId The user ID for whom to find packages with visible App Lock overlay.
+     * @return A set of package names corresponding to the visible App Lock overlay.
+     */
+    Set<String> getPackagesWithVisibleAppLockOverlay(int userId) {
+        final List<ActivityRecord> visibleActivities = mAtmService.mRootWindowContainer
+                .getTopVisibleActivities(Display.INVALID_DISPLAY);
+
+        final ArraySet<String> packages = new ArraySet<>();
+        if (visibleActivities == null) {
+            return packages;
+        }
+
+        for (int i = 0; i < visibleActivities.size(); i++) {
+            final ActivityRecord activity = visibleActivities.get(i);
+            if (activity == null || getAppLockOverlayTargetUserId(activity) != userId) {
+                continue;
+            }
+
+            final String targetPackage = getAppLockOverlayTargetPackage(activity);
+            if (targetPackage != null) {
+                packages.add(targetPackage);
+            }
+        }
+        return packages;
+    }
+
+    /**
      * Finalizes the setup of an activity-level overlay after it has been successfully launched.
      *
      * <p>This method is invoked as a callback from {@link #startLockedAppActivityAsync} once the
@@ -518,8 +560,9 @@ final class AppLockOverlayController {
      * </ul>
      *
      * Note that the overlay will always be the top activity due to
-     * {@link ActivityOptions#setTaskOverlay} in {@link #startLockedAppActivityAsUserUncheckedAsync}, so
-     * there is no need to check whether the overlay is on top of the target activity.
+     * {@link ActivityOptions#setTaskOverlay} in
+     * {@link #startLockedAppActivityAsUserUncheckedAsync}, so there is no need to check whether the
+     * overlay is on top of the target activity.
      *
      * @param overlay the overlay activity.
      * @param target  the target activity being locked.
@@ -660,7 +703,8 @@ final class AppLockOverlayController {
         }
     }
 
-    /** Returns {@code true} if the given activity is a {@link LockedAppActivity}. */
+    /** Returns {@code true} if the given activity is the App Lock overlay, i.e.
+     * {@link LockedAppActivity}. */
     private boolean isActivityAppLockOverlay(@NonNull ActivityRecord activity) {
         Objects.requireNonNull(activity);
 
@@ -674,16 +718,39 @@ final class AppLockOverlayController {
     }
 
     /**
-     * Returns {@code true} if the given activity is a {@link LockedAppActivity} for the specified
-     * package and user.
+     * Returns {@code true} if the given activity is the App Lock overlay defined by
+     * {@link #isActivityAppLockOverlay(ActivityRecord)} for the specified package and user.
      */
     private boolean isActivityAppLockOverlayForPackage(@NonNull ActivityRecord activity,
             @NonNull String packageName, int userId) {
         Objects.requireNonNull(activity);
 
+        return packageName.equals(getAppLockOverlayTargetPackage(activity))
+                && userId == getAppLockOverlayTargetUserId(activity);
+    }
+
+    /**
+     * Returns the target package name if the given activity is the App Lock overlay defined by
+     * {@link #isActivityAppLockOverlay(ActivityRecord)}.
+     */
+    @Nullable
+    private String getAppLockOverlayTargetPackage(@NonNull ActivityRecord activity) {
+        Objects.requireNonNull(activity);
+
         return isActivityAppLockOverlay(activity)
-                && packageName.equals(activity.intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME))
-                && userId == activity.mUserId;
+                ? activity.intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME) : null;
+    }
+
+    /**
+     * Returns the target user ID if the given activity is the App Lock overlay defined by
+     * {@link #isActivityAppLockOverlay(ActivityRecord)}.
+     */
+    private int getAppLockOverlayTargetUserId(@NonNull ActivityRecord activity) {
+        Objects.requireNonNull(activity);
+
+        return isActivityAppLockOverlay(activity)
+                ? activity.intent.getIntExtra(Intent.EXTRA_USER_ID, UserHandle.USER_NULL)
+                : UserHandle.USER_NULL;
     }
 
     private void finishActivitySafe(@NonNull ActivityRecord activity, @NonNull String reason) {
