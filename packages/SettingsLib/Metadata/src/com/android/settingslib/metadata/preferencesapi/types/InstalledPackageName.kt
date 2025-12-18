@@ -16,5 +16,9 @@
 
 package com.android.settingslib.metadata.preferencesapi.types
 
-/** Any package installed on the device. */
+import android.content.Context
+
+/** Any package installed on the device.
+ * TODO(b/470198761) extend FiniteOptionsType
+ */
 object InstalledPackageName: ApiType<String>
