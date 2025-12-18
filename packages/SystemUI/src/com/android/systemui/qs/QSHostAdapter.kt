@@ -120,6 +120,10 @@ constructor(
         return interactor.userId.value
     }
 
+    override fun isCurrentUserHeadlessSystemUser(): Boolean {
+        return interactor.isCurrentUserHeadlessSystemUser.value
+    }
+
     override fun createTile(tileSpec: String): QSTile? {
         return interactor.createTileSync(TileSpec.create(tileSpec))
     }

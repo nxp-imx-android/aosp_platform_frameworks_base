@@ -58,6 +58,11 @@ public interface QSHost {
     void removeTile(String tileSpec);
     void removeTiles(Collection<String> specs);
 
+    /**
+     * Returns if the current user is the headless system user (i.e. not a full "human" user).
+     */
+    boolean isCurrentUserHeadlessSystemUser();
+
     List<String> getSpecs();
 
     /** Create a {@link QSTile} of a {@code tileSpec} type.
