@@ -29,18 +29,18 @@ interface IVirtualKeyboard {
     /**
      * Inject a virtual key event.
      */
-    @EnforcePermission(anyOf={"INJECT_EVENTS", "INJECT_KEY_EVENTS"})
+    @RequiresNoPermission
     boolean sendKeyEvent(in VirtualKeyEvent event);
 
     /**
      * Remove the input device from the system.
      */
-    @EnforcePermission(anyOf={"INJECT_EVENTS", "INJECT_KEY_EVENTS"})
+    @RequiresNoPermission
     void close();
 
     /**
      * Returns the ID of the underlying input device.
-    */
-    @EnforcePermission(anyOf={"INJECT_EVENTS", "INJECT_KEY_EVENTS"})
+     */
+    @RequiresNoPermission
     int getInputDeviceId();
 }

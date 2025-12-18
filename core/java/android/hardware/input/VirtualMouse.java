@@ -16,6 +16,7 @@
 
 package android.hardware.input;
 
+import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.SystemApi;
 import android.app.compat.CompatChanges;
@@ -25,7 +26,10 @@ import android.graphics.PointF;
 import android.os.Build;
 import android.os.RemoteException;
 import android.util.Log;
+import android.view.InputDevice;
 import android.view.MotionEvent;
+
+import java.io.Closeable;
 
 /**
  * A virtual mouse representing a relative input mechanism on a remote device, such as a mouse or
@@ -37,7 +41,9 @@ import android.view.MotionEvent;
  * @hide
  */
 @SystemApi
-public class VirtualMouse extends VirtualInputDevice {
+public class VirtualMouse implements Closeable {
+
+    private static final String TAG = "VirtualMouse";
 
     /**
      * If enabled, the {@link #getCursorPosition()} API now returns in logical display coordinates
@@ -47,9 +53,32 @@ public class VirtualMouse extends VirtualInputDevice {
     @EnabledSince(targetSdkVersion = Build.VERSION_CODES.CUR_DEVELOPMENT)
     static final long VIRTUAL_MOUSE_CURSOR_POTION_IN_LOGICAL_COORDINATES = 431622043;
 
+
+    private final IVirtualMouse mVirtualMouse;
+
+    private final VirtualMouseConfig mConfig;
+
     /** @hide */
-    public VirtualMouse(VirtualMouseConfig config, IVirtualInputDevice virtualInputDevice) {
-        super(config, virtualInputDevice);
+    public VirtualMouse(VirtualMouseConfig config, IVirtualMouse virtualMouse) {
+        mConfig = config;
+        mVirtualMouse = virtualMouse;
+    }
+
+    /**
+     * Returns the ID of the underlying input device.
+     *
+     * @return The input device id of this device.
+     * @see InputDevice#getId()
+     * @hide
+     */
+    @FlaggedApi(com.android.hardware.input.Flags.FLAG_CREATE_VIRTUAL_KEYBOARD_API)
+    @SystemApi
+    public int getInputDeviceId() {
+        try {
+            return mVirtualMouse.getInputDeviceId();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     /**
@@ -61,7 +90,7 @@ public class VirtualMouse extends VirtualInputDevice {
      */
     public void sendButtonEvent(@NonNull VirtualMouseButtonEvent event) {
         try {
-            if (!mVirtualInputDevice.sendMouseButtonEvent(event)) {
+            if (!mVirtualMouse.sendMouseButtonEvent(event)) {
                 Log.w(TAG, "Failed to send button event to virtual mouse "
                         + mConfig.getInputDeviceName());
             }
@@ -80,7 +109,7 @@ public class VirtualMouse extends VirtualInputDevice {
      */
     public void sendScrollEvent(@NonNull VirtualMouseScrollEvent event) {
         try {
-            if (!mVirtualInputDevice.sendMouseScrollEvent(event)) {
+            if (!mVirtualMouse.sendMouseScrollEvent(event)) {
                 Log.w(TAG, "Failed to send scroll event to virtual mouse "
                         + mConfig.getInputDeviceName());
             }
@@ -98,7 +127,7 @@ public class VirtualMouse extends VirtualInputDevice {
      */
     public void sendRelativeEvent(@NonNull VirtualMouseRelativeEvent event) {
         try {
-            if (!mVirtualInputDevice.sendMouseRelativeEvent(event)) {
+            if (!mVirtualMouse.sendMouseRelativeEvent(event)) {
                 Log.w(TAG, "Failed to send relative event to virtual mouse "
                         + mConfig.getInputDeviceName());
             }
@@ -122,9 +151,9 @@ public class VirtualMouse extends VirtualInputDevice {
             final PointF cursorPosition;
             if (CompatChanges.isChangeEnabled(
                     VIRTUAL_MOUSE_CURSOR_POTION_IN_LOGICAL_COORDINATES)) {
-                cursorPosition = mVirtualInputDevice.getCursorPositionInLogicalDisplay();
+                cursorPosition = mVirtualMouse.getCursorPositionInLogicalDisplay();
             } else {
-                cursorPosition = mVirtualInputDevice.getCursorPositionInPhysicalDisplay();
+                cursorPosition = mVirtualMouse.getCursorPositionInPhysicalDisplay();
             }
             // TODO(b/410677781): Returning PointF(NaN, NaN) on invalid displayId is different with
             // what the javadoc states, consider updating this (or the javadoc).
@@ -132,5 +161,20 @@ public class VirtualMouse extends VirtualInputDevice {
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
+    }
+
+    @Override
+    public void close() {
+        Log.d(TAG, "Closing virtual mouse " + mConfig.getInputDeviceName());
+        try {
+            mVirtualMouse.close();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    @Override
+    public String toString() {
+        return mConfig.toString();
     }
 }

@@ -63,9 +63,14 @@ import android.hardware.input.IKeyGestureHandler;
 import android.hardware.input.IKeyboardBacklightListener;
 import android.hardware.input.IStickyModifierStateListener;
 import android.hardware.input.ITabletModeChangedListener;
+import android.hardware.input.IVirtualDpad;
 import android.hardware.input.IVirtualGamepad;
-import android.hardware.input.IVirtualInputDevice;
 import android.hardware.input.IVirtualKeyboard;
+import android.hardware.input.IVirtualMouse;
+import android.hardware.input.IVirtualNavigationTouchpad;
+import android.hardware.input.IVirtualRotaryEncoder;
+import android.hardware.input.IVirtualStylus;
+import android.hardware.input.IVirtualTouchscreen;
 import android.hardware.input.InputDeviceIdentifier;
 import android.hardware.input.InputGestureData;
 import android.hardware.input.InputManager;
@@ -2001,23 +2006,6 @@ public class InputManagerService extends IInputManager.Stub
     IVirtualKeyboard createVirtualKeyboardInternal(@NonNull IBinder token,
             @NonNull VirtualKeyboardConfig config) {
         return mVirtualInputDeviceController.createKeyboard(config.getInputDeviceName(),
-                config.getVendorId(), config.getProductId(), token,
-                InputManagerService.this.getTargetDisplayIdForInput(
-                        config.getAssociatedDisplayId()),
-                config.getLanguageTag(), config.getLayoutType());
-    }
-
-    /**
-     * Creates a virtual keyboard that is to be used by internal local services, such as VDM.
-     * Returns a {@link IVirtualInputDevice} that is not safe for client processes (can send
-     * non-keyboard events) to own but is safe for internal services dependent on the
-     * template.
-     */
-    @NonNull
-    IVirtualInputDevice createVirtualInputKeyboardDeviceInternal(@NonNull IBinder token,
-            @NonNull VirtualKeyboardConfig config) {
-        return mVirtualInputDeviceController.createVirtualInputKeyboardDevice(
-                config.getInputDeviceName(),
                 config.getVendorId(), config.getProductId(), token,
                 InputManagerService.this.getTargetDisplayIdForInput(
                         config.getAssociatedDisplayId()),
@@ -4163,14 +4151,14 @@ public class InputManagerService extends IInputManager.Stub
 
         @NonNull
         @Override
-        public IVirtualInputDevice createVirtualKeyboard(@NonNull IBinder token,
+        public IVirtualKeyboard createVirtualKeyboard(@NonNull IBinder token,
                 @NonNull VirtualKeyboardConfig config) {
-            return InputManagerService.this.createVirtualInputKeyboardDeviceInternal(token, config);
+            return InputManagerService.this.createVirtualKeyboardInternal(token, config);
         }
 
         @NonNull
         @Override
-        public IVirtualInputDevice createVirtualMouse(@NonNull IBinder token,
+        public IVirtualMouse createVirtualMouse(@NonNull IBinder token,
                 @NonNull VirtualMouseConfig config) {
             return mVirtualInputDeviceController.createMouse(config.getInputDeviceName(),
                     config.getVendorId(), config.getProductId(), token,
@@ -4179,7 +4167,7 @@ public class InputManagerService extends IInputManager.Stub
 
         @NonNull
         @Override
-        public IVirtualInputDevice createVirtualTouchscreen(@NonNull IBinder token,
+        public IVirtualTouchscreen createVirtualTouchscreen(@NonNull IBinder token,
                 @NonNull VirtualTouchscreenConfig config) {
             return mVirtualInputDeviceController.createTouchscreen(config.getInputDeviceName(),
                     config.getVendorId(), config.getProductId(), token,
@@ -4188,7 +4176,7 @@ public class InputManagerService extends IInputManager.Stub
 
         @NonNull
         @Override
-        public IVirtualInputDevice createVirtualNavigationTouchpad(@NonNull IBinder token,
+        public IVirtualNavigationTouchpad createVirtualNavigationTouchpad(@NonNull IBinder token,
                 @NonNull VirtualNavigationTouchpadConfig config) {
             return mVirtualInputDeviceController.createNavigationTouchpad(
                     config.getInputDeviceName(), config.getVendorId(),
@@ -4200,7 +4188,7 @@ public class InputManagerService extends IInputManager.Stub
 
         @NonNull
         @Override
-        public IVirtualInputDevice createVirtualDpad(@NonNull IBinder token,
+        public IVirtualDpad createVirtualDpad(@NonNull IBinder token,
                 @NonNull VirtualDpadConfig config) {
             return mVirtualInputDeviceController.createDpad(config.getInputDeviceName(),
                     config.getVendorId(), config.getProductId(), token,
@@ -4210,7 +4198,7 @@ public class InputManagerService extends IInputManager.Stub
 
         @NonNull
         @Override
-        public IVirtualInputDevice createVirtualStylus(@NonNull IBinder token,
+        public IVirtualStylus createVirtualStylus(@NonNull IBinder token,
                 @NonNull VirtualStylusConfig config) {
             return mVirtualInputDeviceController.createStylus(config.getInputDeviceName(),
                     config.getVendorId(), config.getProductId(), token,
@@ -4219,7 +4207,7 @@ public class InputManagerService extends IInputManager.Stub
 
         @NonNull
         @Override
-        public IVirtualInputDevice createVirtualRotaryEncoder(
+        public IVirtualRotaryEncoder createVirtualRotaryEncoder(
                 @NonNull IBinder token,
                 @NonNull VirtualRotaryEncoderConfig config) {
             return mVirtualInputDeviceController.createRotaryEncoder(config.getInputDeviceName(),

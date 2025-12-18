@@ -85,7 +85,8 @@ import android.hardware.display.DisplayManagerInternal;
 import android.hardware.display.IDisplayManager;
 import android.hardware.display.IVirtualDisplayCallback;
 import android.hardware.display.VirtualDisplayConfig;
-import android.hardware.input.IVirtualInputDevice;
+import android.hardware.input.IVirtualKeyboard;
+import android.hardware.input.IVirtualMouse;
 import android.hardware.input.VirtualDpadConfig;
 import android.hardware.input.VirtualKeyboardConfig;
 import android.hardware.input.VirtualMouseConfig;
@@ -245,7 +246,9 @@ public class VirtualDeviceManagerServiceTest {
     @Mock
     private IDisplayManager mIDisplayManager;
     @Mock
-    private IVirtualInputDevice mIVirtualInputDevice;
+    private IVirtualMouse mVirtualMouse;
+    @Mock
+    private IVirtualKeyboard mVirtualKeyboard;
     @Mock
     private WindowManager mWindowManager;
     @Mock
@@ -333,10 +336,10 @@ public class VirtualDeviceManagerServiceTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        when(mInputManagerInternalMock.createVirtualTouchscreen(any(), any()))
-                .thenReturn(mIVirtualInputDevice);
-        when(mInputManagerInternalMock.createVirtualKeyboard(any(), any()))
-                .thenReturn(mIVirtualInputDevice);
+        when(mInputManagerInternalMock.createVirtualKeyboard(eq(BINDER), any()))
+                .thenReturn(mVirtualKeyboard);
+        when(mInputManagerInternalMock.createVirtualMouse(eq(BINDER), any()))
+                .thenReturn(mVirtualMouse);
         doNothing().when(mInputManagerInternalMock).setPointerIconVisible(anyBoolean(), anyInt());
         LocalServices.removeServiceForTest(InputManagerInternal.class);
         LocalServices.addService(InputManagerInternal.class, mInputManagerInternalMock);
@@ -784,11 +787,11 @@ public class VirtualDeviceManagerServiceTest {
 
     @Test
     public void testIsInputDeviceOwnedByVirtualDevice() throws RemoteException {
-        when(mIVirtualInputDevice.getInputDeviceId()).thenReturn(INPUT_DEVICE_ID);
+        when(mVirtualMouse.getInputDeviceId()).thenReturn(INPUT_DEVICE_ID);
 
         assertThat(mLocalService.isInputDeviceOwnedByVirtualDevice(INPUT_DEVICE_ID)).isFalse();
 
-        mInputController.addDevice(BINDER, mIVirtualInputDevice);
+        mInputController.createMouse(BINDER, MOUSE_CONFIG);
         assertThat(mLocalService.isInputDeviceOwnedByVirtualDevice(INPUT_DEVICE_ID)).isTrue();
 
         mInputController.removeDeviceForTesting(BINDER);
@@ -914,6 +917,9 @@ public class VirtualDeviceManagerServiceTest {
 
         addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
         addVirtualDisplay(secondDevice, DISPLAY_ID_2, Display.FLAG_TRUSTED);
+
+        when(mInputManagerInternalMock.createVirtualKeyboard(eq(secondBinder), any()))
+                .thenReturn(mVirtualKeyboard);
 
         mDeviceImpl.createVirtualKeyboard(firstKeyboardConfig, BINDER);
         secondDevice.createVirtualKeyboard(secondKeyboardConfig, secondBinder);
@@ -1283,6 +1289,9 @@ public class VirtualDeviceManagerServiceTest {
 
     @Test
     public void setShowPointerIcon_setsValueForAllDisplays() {
+        when(mInputManagerInternalMock.createVirtualMouse(eq(BINDER), any()))
+                .thenReturn(mVirtualMouse);
+
         addVirtualDisplay(mDeviceImpl, 1, Display.FLAG_TRUSTED);
         addVirtualDisplay(mDeviceImpl, 2, Display.FLAG_TRUSTED);
         addVirtualDisplay(mDeviceImpl, 3, Display.FLAG_TRUSTED);

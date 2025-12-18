@@ -24,14 +24,20 @@ import android.Manifest;
 import android.annotation.EnforcePermission;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.RequiresNoPermission;
 import android.annotation.StringDef;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.PointF;
 import android.hardware.display.DisplayManagerInternal;
+import android.hardware.input.IVirtualDpad;
 import android.hardware.input.IVirtualGamepad;
-import android.hardware.input.IVirtualInputDevice;
 import android.hardware.input.IVirtualKeyboard;
+import android.hardware.input.IVirtualMouse;
+import android.hardware.input.IVirtualNavigationTouchpad;
+import android.hardware.input.IVirtualRotaryEncoder;
+import android.hardware.input.IVirtualStylus;
+import android.hardware.input.IVirtualTouchscreen;
 import android.hardware.input.InputDeviceIdentifier;
 import android.hardware.input.InputManager.InputDeviceListener;
 import android.hardware.input.InputManagerGlobal;
@@ -66,7 +72,6 @@ import java.io.PrintWriter;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -135,30 +140,16 @@ class VirtualInputDeviceController {
         mThreadVerifier = threadVerifier;
     }
 
-    IVirtualInputDevice createDpad(@NonNull String deviceName, int vendorId, int productId,
+    IVirtualDpad createDpad(@NonNull String deviceName, int vendorId, int productId,
             @NonNull IBinder deviceToken, int displayId) {
         final String phys = createPhys(PHYS_TYPE_DPAD);
         try {
-            return createDeviceInternal(InputDeviceDescriptor.TYPE_DPAD, deviceName, vendorId,
+            final InputDeviceDescriptor device = createDeviceInternal(
+                    InputDeviceDescriptor.TYPE_DPAD, deviceName, vendorId,
                     productId, deviceToken, displayId, phys,
                     () -> mNativeWrapper.openUinputDpad(deviceName, vendorId, productId, phys));
+            return new VirtualDpadDevice(device);
         } catch (DeviceCreationException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
-    IVirtualInputDevice createVirtualInputKeyboardDevice(
-            @NonNull String deviceName, int vendorId, int productId,
-            @NonNull IBinder deviceToken, int displayId, @NonNull String languageTag,
-            @NonNull String layoutType) {
-        final String phys = createPhys(PHYS_TYPE_KEYBOARD);
-        mService.addKeyboardLayoutAssociation(phys, languageTag, layoutType);
-        try {
-            return createDeviceInternal(InputDeviceDescriptor.TYPE_KEYBOARD, deviceName, vendorId,
-                    productId, deviceToken, displayId, phys,
-                    () -> mNativeWrapper.openUinputKeyboard(deviceName, vendorId, productId, phys));
-        } catch (DeviceCreationException e) {
-            mService.removeKeyboardLayoutAssociation(phys);
             throw new IllegalArgumentException(e);
         }
     }
@@ -195,67 +186,77 @@ class VirtualInputDeviceController {
         }
     }
 
-    IVirtualInputDevice createMouse(@NonNull String deviceName, int vendorId, int productId,
+    IVirtualMouse createMouse(@NonNull String deviceName, int vendorId, int productId,
             @NonNull IBinder deviceToken, int displayId) {
         final String phys = createPhys(PHYS_TYPE_MOUSE);
         try {
-            return createDeviceInternal(InputDeviceDescriptor.TYPE_MOUSE, deviceName, vendorId,
+            final InputDeviceDescriptor device = createDeviceInternal(
+                    InputDeviceDescriptor.TYPE_MOUSE, deviceName, vendorId,
                     productId, deviceToken, displayId, phys,
                     () -> mNativeWrapper.openUinputMouse(deviceName, vendorId, productId, phys));
+            return new VirtualMouseDevice(device);
         } catch (DeviceCreationException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
-    IVirtualInputDevice createTouchscreen(@NonNull String deviceName, int vendorId, int productId,
+    IVirtualTouchscreen createTouchscreen(@NonNull String deviceName, int vendorId, int productId,
             @NonNull IBinder deviceToken, int displayId, int height, int width) {
         final String phys = createPhys(PHYS_TYPE_TOUCHSCREEN);
         try {
-            return createDeviceInternal(InputDeviceDescriptor.TYPE_TOUCHSCREEN, deviceName,
-                    vendorId, productId, deviceToken, displayId, phys,
+            final InputDeviceDescriptor device = createDeviceInternal(
+                    InputDeviceDescriptor.TYPE_TOUCHSCREEN, deviceName, vendorId, productId,
+                    deviceToken, displayId, phys,
                     () -> mNativeWrapper.openUinputTouchscreen(deviceName, vendorId, productId,
                             phys, height, width));
+            return new VirtualTouchscreenDevice(device);
         } catch (DeviceCreationException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
-    IVirtualInputDevice createNavigationTouchpad(@NonNull String deviceName, int vendorId,
+    IVirtualNavigationTouchpad createNavigationTouchpad(@NonNull String deviceName, int vendorId,
             int productId, @NonNull IBinder deviceToken, int displayId, int height, int width) {
         final String phys = createPhys(PHYS_TYPE_NAVIGATION_TOUCHPAD);
         mService.setTypeAssociationInternal(phys, NAVIGATION_TOUCHPAD_DEVICE_TYPE);
         try {
-            return createDeviceInternal(InputDeviceDescriptor.TYPE_NAVIGATION_TOUCHPAD, deviceName,
+            final InputDeviceDescriptor device = createDeviceInternal(
+                    InputDeviceDescriptor.TYPE_NAVIGATION_TOUCHPAD, deviceName,
                     vendorId, productId, deviceToken, displayId, phys,
                     () -> mNativeWrapper.openUinputTouchscreen(deviceName, vendorId, productId,
                             phys, height, width));
+            return new VirtualNavigationTouchpadDevice(device);
         } catch (DeviceCreationException e) {
             mService.unsetTypeAssociationInternal(phys);
             throw new IllegalArgumentException(e);
         }
     }
 
-    IVirtualInputDevice createStylus(@NonNull String deviceName, int vendorId, int productId,
+    IVirtualStylus createStylus(@NonNull String deviceName, int vendorId, int productId,
             @NonNull IBinder deviceToken, int displayId, int height, int width) {
         final String phys = createPhys(PHYS_TYPE_STYLUS);
         try {
-            return createDeviceInternal(InputDeviceDescriptor.TYPE_STYLUS, deviceName, vendorId,
+            final InputDeviceDescriptor device = createDeviceInternal(
+                    InputDeviceDescriptor.TYPE_STYLUS, deviceName, vendorId,
                     productId, deviceToken, displayId, phys,
                     () -> mNativeWrapper.openUinputStylus(deviceName, vendorId, productId, phys,
                             height, width));
+            return new VirtualStylusDevice(device);
         } catch (DeviceCreationException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
-    IVirtualInputDevice createRotaryEncoder(@NonNull String deviceName, int vendorId, int productId,
-            @NonNull IBinder deviceToken, int displayId) {
+    IVirtualRotaryEncoder createRotaryEncoder(@NonNull String deviceName, int vendorId,
+            int productId, @NonNull IBinder deviceToken, int displayId) {
         final String phys = createPhys(PHYS_TYPE_ROTARY_ENCODER);
         try {
-            return createDeviceInternal(InputDeviceDescriptor.TYPE_ROTARY_ENCODER, deviceName,
+            final InputDeviceDescriptor device = createDeviceInternal(
+                    InputDeviceDescriptor.TYPE_ROTARY_ENCODER, deviceName,
                     vendorId, productId, deviceToken, displayId, phys,
                     () -> mNativeWrapper.openUinputRotaryEncoder(deviceName, vendorId, productId,
                             phys));
+            return new VirtualRotaryEncoderDevice(device);
         } catch (DeviceCreationException e) {
             throw new IllegalArgumentException(e);
         }
@@ -296,19 +297,6 @@ class VirtualInputDeviceController {
     }
 
     /**
-     * @return the device id for a given token (identifiying a device)
-     */
-    int getInputDeviceId(IBinder token) {
-        synchronized (mLock) {
-            final InputDeviceDescriptor inputDeviceDescriptor = mInputDeviceDescriptors.get(token);
-            if (inputDeviceDescriptor == null) {
-                throw new IllegalArgumentException("Could not get device id for given token");
-            }
-            return inputDeviceDescriptor.getInputDeviceId();
-        }
-    }
-
-    /**
      * Validates a device name by checking whether a device with the same name already exists.
      * @param deviceName The name of the device to be validated
      * @throws DeviceCreationException if {@code deviceName} is not valid.
@@ -335,148 +323,6 @@ class VirtualInputDeviceController {
         mService.addUniqueIdAssociationByPort(phys, displayUniqueId);
     }
 
-    boolean sendDpadKeyEvent(@NonNull IBinder token, @NonNull VirtualKeyEvent event) {
-        synchronized (mLock) {
-            final InputDeviceDescriptor inputDeviceDescriptor = mInputDeviceDescriptors.get(
-                    token);
-            if (inputDeviceDescriptor == null) {
-                return false;
-            }
-            return mNativeWrapper.writeDpadKeyEvent(inputDeviceDescriptor.getNativePointer(),
-                    event.getKeyCode(), event.getAction(), event.getEventTimeNanos());
-        }
-    }
-
-    boolean sendKeyEvent(@NonNull IBinder token, @NonNull VirtualKeyEvent event) {
-        synchronized (mLock) {
-            final InputDeviceDescriptor inputDeviceDescriptor = mInputDeviceDescriptors.get(
-                    token);
-            if (inputDeviceDescriptor == null) {
-                return false;
-            }
-            return mNativeWrapper.writeKeyEvent(inputDeviceDescriptor.getNativePointer(),
-                    event.getKeyCode(), event.getAction(), event.getEventTimeNanos());
-        }
-    }
-
-    boolean sendMouseButtonEvent(@NonNull IBinder token, @NonNull VirtualMouseButtonEvent event) {
-        synchronized (mLock) {
-            final InputDeviceDescriptor inputDeviceDescriptor = mInputDeviceDescriptors.get(
-                    token);
-            if (inputDeviceDescriptor == null) {
-                return false;
-            }
-            return mNativeWrapper.writeButtonEvent(inputDeviceDescriptor.getNativePointer(),
-                    event.getButtonCode(), event.getAction(), event.getEventTimeNanos());
-        }
-    }
-
-    boolean sendTouchEvent(@NonNull IBinder token, @NonNull VirtualTouchEvent event) {
-        synchronized (mLock) {
-            final InputDeviceDescriptor inputDeviceDescriptor = mInputDeviceDescriptors.get(
-                    token);
-            if (inputDeviceDescriptor == null) {
-                return false;
-            }
-            return mNativeWrapper.writeTouchEvent(inputDeviceDescriptor.getNativePointer(),
-                    event.getPointerId(), event.getToolType(), event.getAction(), event.getX(),
-                    event.getY(), event.getPressure(), event.getMajorAxisSize(),
-                    event.getEventTimeNanos());
-        }
-    }
-
-    boolean sendMouseRelativeEvent(@NonNull IBinder token,
-            @NonNull VirtualMouseRelativeEvent event) {
-        synchronized (mLock) {
-            final InputDeviceDescriptor inputDeviceDescriptor = mInputDeviceDescriptors.get(
-                    token);
-            if (inputDeviceDescriptor == null) {
-                return false;
-            }
-            return mNativeWrapper.writeRelativeEvent(inputDeviceDescriptor.getNativePointer(),
-                    event.getRelativeX(), event.getRelativeY(), event.getEventTimeNanos());
-        }
-    }
-
-    boolean sendMouseScrollEvent(@NonNull IBinder token, @NonNull VirtualMouseScrollEvent event) {
-        synchronized (mLock) {
-            final InputDeviceDescriptor inputDeviceDescriptor = mInputDeviceDescriptors.get(
-                    token);
-            if (inputDeviceDescriptor == null) {
-                return false;
-            }
-            return mNativeWrapper.writeScrollEvent(inputDeviceDescriptor.getNativePointer(),
-                    event.getXAxisMovement(), event.getYAxisMovement(), event.getEventTimeNanos());
-        }
-    }
-
-    public PointF getCursorPositionInPhysicalDisplay(@NonNull IBinder token) {
-        synchronized (mLock) {
-            final InputDeviceDescriptor inputDeviceDescriptor = mInputDeviceDescriptors.get(
-                    token);
-            if (inputDeviceDescriptor == null) {
-                throw new IllegalArgumentException(
-                        "Could not get cursor position for input device for given token");
-            }
-            return Binder.withCleanCallingIdentity(
-                    () -> mService.getCursorPositionInPhysicalDisplay(
-                            inputDeviceDescriptor.getAssociatedDisplayId()));
-        }
-    }
-
-    public PointF getCursorPositionInLogicalDisplay(@NonNull IBinder token) {
-        synchronized (mLock) {
-            final InputDeviceDescriptor inputDeviceDescriptor = mInputDeviceDescriptors.get(
-                    token);
-            if (inputDeviceDescriptor == null) {
-                throw new IllegalArgumentException(
-                        "Could not get cursor position for input device for given token");
-            }
-            return Binder.withCleanCallingIdentity(() -> mService.getCursorPositionInLogicalDisplay(
-                    inputDeviceDescriptor.getAssociatedDisplayId()));
-        }
-    }
-
-    boolean sendStylusMotionEvent(@NonNull IBinder token, @NonNull VirtualStylusMotionEvent event) {
-        synchronized (mLock) {
-            final InputDeviceDescriptor inputDeviceDescriptor = mInputDeviceDescriptors.get(
-                    token);
-            if (inputDeviceDescriptor == null) {
-                return false;
-            }
-            return mNativeWrapper.writeStylusMotionEvent(inputDeviceDescriptor.getNativePointer(),
-                    event.getToolType(), event.getAction(), event.getX(), event.getY(),
-                    event.getPressure(), event.getTiltX(), event.getTiltY(),
-                    event.getEventTimeNanos());
-        }
-    }
-
-    boolean sendStylusButtonEvent(@NonNull IBinder token, @NonNull VirtualStylusButtonEvent event) {
-        synchronized (mLock) {
-            final InputDeviceDescriptor inputDeviceDescriptor = mInputDeviceDescriptors.get(
-                    token);
-            if (inputDeviceDescriptor == null) {
-                return false;
-            }
-            return mNativeWrapper.writeStylusButtonEvent(inputDeviceDescriptor.getNativePointer(),
-                    event.getButtonCode(), event.getAction(), event.getEventTimeNanos());
-        }
-    }
-
-    boolean sendRotaryEncoderScrollEvent(@NonNull IBinder token,
-            @NonNull VirtualRotaryEncoderScrollEvent event) {
-        synchronized (mLock) {
-            final InputDeviceDescriptor inputDeviceDescriptor = mInputDeviceDescriptors.get(
-                    token);
-            if (inputDeviceDescriptor == null) {
-                return false;
-            }
-            return mNativeWrapper.writeRotaryEncoderScrollEvent(
-                    inputDeviceDescriptor.getNativePointer(), event.getScrollAmount(),
-                    event.getEventTimeNanos());
-        }
-    }
-
     public void dump(@NonNull PrintWriter fout) {
         fout.println("VirtualInputController: ");
         synchronized (mLock) {
@@ -493,24 +339,6 @@ class VirtualInputDeviceController {
                 fout.println("      inputDeviceId: " + inputDeviceDescriptor.getInputDeviceId());
             }
         }
-    }
-
-    @VisibleForTesting
-    void addDeviceForTesting(IBinder deviceToken, long ptr, int type, int displayId, String phys,
-            String deviceName, int inputDeviceId) {
-        synchronized (mLock) {
-            mInputDeviceDescriptors.put(deviceToken, new InputDeviceDescriptor(this, ptr, () -> {},
-                    type, displayId, phys, deviceName, inputDeviceId, deviceToken));
-        }
-    }
-
-    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
-    Map<IBinder, InputDeviceDescriptor> getInputDeviceDescriptors() {
-        final Map<IBinder, InputDeviceDescriptor> inputDeviceDescriptors = new ArrayMap<>();
-        synchronized (mLock) {
-            inputDeviceDescriptors.putAll(mInputDeviceDescriptors);
-        }
-        return inputDeviceDescriptors;
     }
 
     private static native long nativeOpenUinputDpad(String deviceName, int vendorId, int productId,
@@ -656,8 +484,7 @@ class VirtualInputDeviceController {
         }
     }
 
-    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
-    static final class InputDeviceDescriptor extends IVirtualInputDevice.Stub {
+    private static final class InputDeviceDescriptor {
 
         static final int TYPE_KEYBOARD = 1;
         static final int TYPE_MOUSE = 2;
@@ -687,7 +514,7 @@ class VirtualInputDeviceController {
 
         // Pointer to the native input device object.
         private final long mPtr;
-        private final DeathRecipient mDeathRecipient;
+        private final IBinder.DeathRecipient mDeathRecipient;
         private final @Type int mType;
         private final int mDisplayId;
         private final String mPhys;
@@ -703,7 +530,7 @@ class VirtualInputDeviceController {
         private final IBinder mToken;
 
         InputDeviceDescriptor(VirtualInputDeviceController controller, long ptr,
-                DeathRecipient deathRecipient, @Type int type, int displayId, String phys,
+                IBinder.DeathRecipient deathRecipient, @Type int type, int displayId, String phys,
                 String name, int inputDeviceId, IBinder token) {
             mController = controller;
             mPtr = ptr;
@@ -729,7 +556,7 @@ class VirtualInputDeviceController {
             return mType == TYPE_MOUSE;
         }
 
-        public DeathRecipient getDeathRecipient() {
+        public IBinder.DeathRecipient getDeathRecipient() {
             return mDeathRecipient;
         }
 
@@ -742,74 +569,16 @@ class VirtualInputDeviceController {
             return mPhys;
         }
 
-        @Override
         public void close() {
             mController.unregisterInputDevice(mToken);
         }
 
-        @Override
         public int getInputDeviceId() {
             return mInputDeviceId;
         }
 
-        @Override
         public int getAssociatedDisplayId() {
             return mDisplayId;
-        }
-
-        @Override
-        public boolean sendDpadKeyEvent(VirtualKeyEvent event) {
-            return mController.sendDpadKeyEvent(mToken, event);
-        }
-
-        @Override
-        public boolean sendKeyEvent(VirtualKeyEvent event) {
-            return mController.sendKeyEvent(mToken, event);
-        }
-
-        @Override
-        public boolean sendMouseButtonEvent(VirtualMouseButtonEvent event) {
-            return mController.sendMouseButtonEvent(mToken, event);
-        }
-
-        @Override
-        public boolean sendMouseRelativeEvent(VirtualMouseRelativeEvent event) {
-            return mController.sendMouseRelativeEvent(mToken, event);
-        }
-
-        @Override
-        public boolean sendMouseScrollEvent(VirtualMouseScrollEvent event) {
-            return mController.sendMouseScrollEvent(mToken, event);
-        }
-
-        @Override
-        public boolean sendTouchEvent(VirtualTouchEvent event) {
-            return mController.sendTouchEvent(mToken, event);
-        }
-
-        @Override
-        public boolean sendStylusMotionEvent(VirtualStylusMotionEvent event) {
-            return mController.sendStylusMotionEvent(mToken, event);
-        }
-
-        @Override
-        public boolean sendStylusButtonEvent(VirtualStylusButtonEvent event) {
-            return mController.sendStylusButtonEvent(mToken, event);
-        }
-
-        @Override
-        public boolean sendRotaryEncoderScrollEvent(VirtualRotaryEncoderScrollEvent event) {
-            return mController.sendRotaryEncoderScrollEvent(mToken, event);
-        }
-
-        @Override
-        public PointF getCursorPositionInPhysicalDisplay() {
-            return mController.getCursorPositionInPhysicalDisplay(mToken);
-        }
-
-        @Override
-        public PointF getCursorPositionInLogicalDisplay() {
-            return mController.getCursorPositionInLogicalDisplay(mToken);
         }
 
         @Override
@@ -1051,7 +820,7 @@ class VirtualInputDeviceController {
         return false;
     }
 
-    /** A wrapper for an IVirtualInputDevice that exposes it as an IVirtualGamepad. */
+    /** A wrapper for an InputDeviceDescriptor that exposes it as an IVirtualGamepad. */
     private final class VirtualGamepadDevice extends IVirtualGamepad.Stub {
         private final InputDeviceDescriptor mDevice;
         private final boolean mRegisterTriggerAxes;
@@ -1127,7 +896,7 @@ class VirtualInputDeviceController {
         }
     }
 
-    /** A wrapper for an IVirtualInputDevice that exposes it as an IVirtualKeyboard. */
+    /** A wrapper for an InputDeviceDescriptor that exposes it as an IVirtualKeyboard. */
     private final class VirtualKeyboardDevice extends IVirtualKeyboard.Stub {
         private final InputDeviceDescriptor mDevice;
 
@@ -1135,28 +904,232 @@ class VirtualInputDeviceController {
             mDevice = device;
         }
 
+        @RequiresNoPermission
         @Override
-        @EnforcePermission(anyOf = {
-                Manifest.permission.INJECT_EVENTS, Manifest.permission.INJECT_KEY_EVENTS})
         public void close() {
-            close_enforcePermission();
             mDevice.close();
         }
 
+        @RequiresNoPermission
         @Override
-        @EnforcePermission(anyOf = {
-                Manifest.permission.INJECT_EVENTS, Manifest.permission.INJECT_KEY_EVENTS})
         public boolean sendKeyEvent(VirtualKeyEvent event) {
-            sendKeyEvent_enforcePermission();
             return mNativeWrapper.writeKeyEvent(mDevice.getNativePointer(),
                     event.getKeyCode(), event.getAction(), event.getEventTimeNanos());
         }
 
+        @RequiresNoPermission
         @Override
-        @EnforcePermission(anyOf = {
-                Manifest.permission.INJECT_EVENTS, Manifest.permission.INJECT_KEY_EVENTS})
         public int getInputDeviceId() {
-            getInputDeviceId_enforcePermission();
+            return mDevice.getInputDeviceId();
+        }
+    }
+
+    /** A wrapper for an InputDeviceDescriptor that exposes it as an IVirtualTouchscreen. */
+    private final class VirtualTouchscreenDevice extends IVirtualTouchscreen.Stub {
+        private final InputDeviceDescriptor mDevice;
+
+        VirtualTouchscreenDevice(@NonNull InputDeviceDescriptor device) {
+            mDevice = device;
+        }
+
+        @RequiresNoPermission
+        @Override
+        public void close() {
+            mDevice.close();
+        }
+
+        @RequiresNoPermission
+        @Override
+        public boolean sendTouchEvent(VirtualTouchEvent event) {
+            return mNativeWrapper.writeTouchEvent(mDevice.getNativePointer(),
+                    event.getPointerId(), event.getToolType(), event.getAction(), event.getX(),
+                    event.getY(), event.getPressure(), event.getMajorAxisSize(),
+                    event.getEventTimeNanos());
+        }
+
+        @RequiresNoPermission
+        @Override
+        public int getInputDeviceId() {
+            return mDevice.getInputDeviceId();
+        }
+    }
+
+    /** A wrapper for an InputDeviceDescriptor that exposes it as an IVirtualDpad. */
+    private final class VirtualDpadDevice extends IVirtualDpad.Stub {
+        private final InputDeviceDescriptor mDevice;
+
+        VirtualDpadDevice(@NonNull InputDeviceDescriptor device) {
+            mDevice = device;
+        }
+
+        @RequiresNoPermission
+        @Override
+        public void close() {
+            mDevice.close();
+        }
+
+        @RequiresNoPermission
+        @Override
+        public boolean sendDpadKeyEvent(VirtualKeyEvent event) {
+            return mNativeWrapper.writeDpadKeyEvent(mDevice.getNativePointer(),
+                    event.getKeyCode(), event.getAction(), event.getEventTimeNanos());
+        }
+
+        @RequiresNoPermission
+        @Override
+        public int getInputDeviceId() {
+            return mDevice.getInputDeviceId();
+        }
+    }
+
+    /** A wrapper for an InputDeviceDescriptor that exposes it as an IVirtualNavigationTouchpad. */
+    private final class VirtualNavigationTouchpadDevice extends IVirtualNavigationTouchpad.Stub {
+        private final InputDeviceDescriptor mDevice;
+
+        VirtualNavigationTouchpadDevice(@NonNull InputDeviceDescriptor device) {
+            mDevice = device;
+        }
+
+        @RequiresNoPermission
+        @Override
+        public void close() {
+            mDevice.close();
+        }
+
+        @RequiresNoPermission
+        @Override
+        public boolean sendTouchEvent(VirtualTouchEvent event) {
+            return mNativeWrapper.writeTouchEvent(mDevice.getNativePointer(),
+                    event.getPointerId(), event.getToolType(), event.getAction(), event.getX(),
+                    event.getY(), event.getPressure(), event.getMajorAxisSize(),
+                    event.getEventTimeNanos());
+        }
+
+        @RequiresNoPermission
+        @Override
+        public int getInputDeviceId() {
+            return mDevice.getInputDeviceId();
+        }
+    }
+
+    /** A wrapper for an InputDeviceDescriptor that exposes it as an IVirtualMouse. */
+    private final class VirtualMouseDevice extends IVirtualMouse.Stub {
+        private final InputDeviceDescriptor mDevice;
+
+        VirtualMouseDevice(@NonNull InputDeviceDescriptor device) {
+            mDevice = device;
+        }
+
+        @RequiresNoPermission
+        @Override
+        public void close() {
+            mDevice.close();
+        }
+
+        @RequiresNoPermission
+        @Override
+        public boolean sendMouseButtonEvent(@NonNull VirtualMouseButtonEvent event) {
+            return mNativeWrapper.writeButtonEvent(mDevice.getNativePointer(),
+                    event.getButtonCode(), event.getAction(), event.getEventTimeNanos());
+        }
+
+        @RequiresNoPermission
+        @Override
+        public boolean sendMouseRelativeEvent(@NonNull VirtualMouseRelativeEvent event) {
+            return mNativeWrapper.writeRelativeEvent(mDevice.getNativePointer(),
+                    event.getRelativeX(), event.getRelativeY(), event.getEventTimeNanos());
+        }
+
+        @RequiresNoPermission
+        @Override
+        public boolean sendMouseScrollEvent(@NonNull VirtualMouseScrollEvent event) {
+            return mNativeWrapper.writeScrollEvent(mDevice.getNativePointer(),
+                    event.getXAxisMovement(), event.getYAxisMovement(), event.getEventTimeNanos());
+        }
+
+        @RequiresNoPermission
+        @Override
+        public PointF getCursorPositionInPhysicalDisplay() {
+            return Binder.withCleanCallingIdentity(
+                    () -> mService.getCursorPositionInPhysicalDisplay(
+                                mDevice.getAssociatedDisplayId()));
+        }
+
+        @RequiresNoPermission
+        @Override
+        public PointF getCursorPositionInLogicalDisplay() {
+            return Binder.withCleanCallingIdentity(() -> mService.getCursorPositionInLogicalDisplay(
+                        mDevice.getAssociatedDisplayId()));
+        }
+
+        @RequiresNoPermission
+        @Override
+        public int getInputDeviceId() {
+            return mDevice.getInputDeviceId();
+        }
+    }
+
+    /** A wrapper for an InputDeviceDescriptor that exposes it as an IVirtualRotaryEncoder. */
+    private final class VirtualRotaryEncoderDevice extends IVirtualRotaryEncoder.Stub {
+        private final InputDeviceDescriptor mDevice;
+
+        VirtualRotaryEncoderDevice(@NonNull InputDeviceDescriptor device) {
+            mDevice = device;
+        }
+
+        @RequiresNoPermission
+        @Override
+        public void close() {
+            mDevice.close();
+        }
+
+        @RequiresNoPermission
+        @Override
+        public boolean sendRotaryEncoderScrollEvent(VirtualRotaryEncoderScrollEvent event) {
+            return mNativeWrapper.writeRotaryEncoderScrollEvent(mDevice.getNativePointer(),
+                    event.getScrollAmount(), event.getEventTimeNanos());
+        }
+
+        @RequiresNoPermission
+        @Override
+        public int getInputDeviceId() {
+            return mDevice.getInputDeviceId();
+        }
+    }
+
+    /** A wrapper for an InputDeviceDescriptor that exposes it as an IVirtualStylus. */
+    private final class VirtualStylusDevice extends IVirtualStylus.Stub {
+        private final InputDeviceDescriptor mDevice;
+
+        VirtualStylusDevice(@NonNull InputDeviceDescriptor device) {
+            mDevice = device;
+        }
+
+        @RequiresNoPermission
+        @Override
+        public void close() {
+            mDevice.close();
+        }
+
+        @RequiresNoPermission
+        @Override
+        public boolean sendStylusMotionEvent(VirtualStylusMotionEvent event) {
+            return mNativeWrapper.writeStylusMotionEvent(mDevice.getNativePointer(),
+                    event.getToolType(), event.getAction(), event.getX(), event.getY(),
+                    event.getPressure(), event.getTiltX(), event.getTiltY(),
+                    event.getEventTimeNanos());
+        }
+
+        @RequiresNoPermission
+        @Override
+        public boolean sendStylusButtonEvent(VirtualStylusButtonEvent event) {
+            return mNativeWrapper.writeStylusButtonEvent(mDevice.getNativePointer(),
+                    event.getButtonCode(), event.getAction(), event.getEventTimeNanos());
+        }
+
+        @RequiresNoPermission
+        @Override
+        public int getInputDeviceId() {
             return mDevice.getInputDeviceId();
         }
     }
