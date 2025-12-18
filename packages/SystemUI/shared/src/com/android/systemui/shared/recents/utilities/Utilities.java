@@ -101,7 +101,7 @@ public class Utilities {
     }
 
     /**
-     * @return the clamped {@param value} between the provided {@param min} and {@param max}.
+     * @return the clamped {@code value} between the provided {@code min} and {@code max}.
      */
     public static float clamp(float value, float min, float max) {
         return Math.max(min, Math.min(max, value));
@@ -151,13 +151,13 @@ public class Utilities {
         return flags;
     }
 
-    /** @return whether or not {@param context} represents that of a large screen device or not */
+    /** @return whether or not {@code context} represents that of a large screen device or not */
     @TargetApi(Build.VERSION_CODES.R)
     public static boolean isLargeScreen(Context context) {
         return isLargeScreen(WindowManagerUtils.getWindowManager(context), context.getResources());
     }
 
-    /** @return whether or not {@param context} represents that of a large screen device or not */
+    /** @return whether or not {@code context} represents that of a large screen device or not */
     public static boolean isLargeScreen(WindowManager windowManager, Resources resources) {
         final Rect bounds = windowManager.getCurrentWindowMetrics().getBounds();
 

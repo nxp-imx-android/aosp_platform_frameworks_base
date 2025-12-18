@@ -311,14 +311,14 @@ class AppCompatCameraStateStrategyForTask {
         }
 
         /**
-         * @return true if camera open was pending for given {@param cameraAppInfo}.
+         * @return true if camera open was pending for given {@code cameraAppInfo}.
          */
         boolean removePendingCameraOpen(@NonNull CameraAppInfo cameraAppInfo) {
             return mPendingCameraStateMap.remove(cameraAppInfo, PendingCameraState.OPENED);
         }
 
         /**
-         * @return true if camera close was pending for given {@param cameraAppInfo}.
+         * @return true if camera close was pending for given {@code cameraAppInfo}.
          */
         boolean removePendingCameraClose(@NonNull CameraAppInfo cameraAppInfo) {
             return mPendingCameraStateMap.remove(cameraAppInfo, PendingCameraState.CLOSED);

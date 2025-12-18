@@ -816,7 +816,7 @@ public class NetworkPolicyManager {
     }
 
     /**
-     * Returns true if {@param procState} is considered foreground and as such will be allowed
+     * Returns true if {@code procState} is considered foreground and as such will be allowed
      * to access network when the device is idle or in battery saver mode. Otherwise, false.
      * @hide
      */
@@ -861,7 +861,7 @@ public class NetworkPolicyManager {
     }
 
     /**
-     * Returns true if {@param procState} is considered foreground and as such will be allowed
+     * Returns true if {@code procState} is considered foreground and as such will be allowed
      * to access network when the device is in data saver mode. Otherwise, false.
      * @hide
      */

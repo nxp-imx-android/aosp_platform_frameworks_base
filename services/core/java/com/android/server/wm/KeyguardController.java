@@ -425,9 +425,9 @@ class KeyguardController {
     }
 
     /**
-     * Checks whether {@param r} should be visible depending on Keyguard state.
+     * Checks whether {@code r} should be visible depending on Keyguard state.
      *
-     * @return true if {@param r} is visible taken Keyguard state into account, false otherwise
+     * @return true if {@code r} is visible taken Keyguard state into account, false otherwise
      */
     boolean checkKeyguardVisibility(ActivityRecord r) {
         if (r.mDisplayContent.canShowWithInsecureKeyguard() && canDismissKeyguard()) {

@@ -153,7 +153,7 @@ public final class AccessibilityUtils {
     }
 
     /**
-     * Changes an accessibility component's state for {@param userId}.
+     * Changes an accessibility component's state for {@code userId}.
      */
     public static void setAccessibilityServiceState(Context context, ComponentName componentName,
             boolean enabled, int userId) {

@@ -139,7 +139,7 @@ public abstract class ContentSuggestionsService extends Service {
 
     /**
      * Called by the system to provide the snapshot for the task associated with the given
-     * {@param taskId}.
+     * {@code taskId}.
      */
     public abstract void onProcessContextImage(
             int taskId, @Nullable Bitmap contextImage, @NonNull Bundle extras);

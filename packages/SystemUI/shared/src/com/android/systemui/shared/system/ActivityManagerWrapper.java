@@ -131,7 +131,7 @@ public class ActivityManagerWrapper {
     }
 
     /**
-     * @return the task snapshot for the given {@param taskId}.
+     * @return the task snapshot for the given {@code taskId}.
      */
     public @NonNull ThumbnailData getTaskThumbnail(int taskId, boolean isLowResolution) {
         TaskSnapshot snapshot = null;

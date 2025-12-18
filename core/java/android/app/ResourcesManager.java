@@ -602,7 +602,7 @@ public class ResourcesManager {
 
     /**
      * Retrieves a list of apk keys representing the ApkAssets that should be loaded for
-     * AssetManagers mapped to the {@param key}.
+     * AssetManagers mapped to the {@code key}.
      */
     private static @NonNull ArrayList<ApkKey> extractApkKeys(@NonNull final ResourcesKey key) {
         final ArrayList<ApkKey> apkKeys = new ArrayList<>();
@@ -1123,7 +1123,7 @@ public class ResourcesManager {
     }
 
     /**
-     * Creates an {@link ApkAssetsSupplier} and loads all the ApkAssets required by the {@param key}
+     * Creates an {@link ApkAssetsSupplier} and loads all the ApkAssets required by the {@code key}
      * into the supplier. This should be done while the lock is not held to prevent performing I/O
      * while holding the lock.
      */
@@ -1778,8 +1778,8 @@ public class ResourcesManager {
     }
 
     /**
-     * Creates an array with the contents of {@param overlayPaths} and the unique elements of
-     * {@param resourceDirs}.
+     * Creates an array with the contents of {@code overlayPaths} and the unique elements of
+     * {@code resourceDirs}.
      *
      * {@link ApplicationInfo#resourceDirs} only contains paths of overlays APKs.
      * {@link ApplicationInfo#overlayPaths} was created to contain paths of overlay of varying file

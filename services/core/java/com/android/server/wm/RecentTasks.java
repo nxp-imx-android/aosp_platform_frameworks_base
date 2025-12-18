@@ -337,7 +337,7 @@ class RecentTasks {
     }
 
     /**
-     * Commits the frozen recent task list order, moving the provided {@param topTask} to the
+     * Commits the frozen recent task list order, moving the provided {@code topTask} to the
      * front of the list.
      */
     void resetFreezeTaskListReordering(Task topTask) {
@@ -604,7 +604,7 @@ class RecentTasks {
     }
 
     /**
-     * @return whether the {@param taskId} is currently in use for the given user.
+     * @return whether the {@code taskId} is currently in use for the given user.
      */
     boolean containsTaskId(int taskId, int userId) {
         final SparseBooleanArray taskIds = mPersistedTaskIds.get(userId);
@@ -961,7 +961,7 @@ class RecentTasks {
     }
 
     /**
-     * @return whether the given {@param task} can be added to the list without causing another
+     * @return whether the given {@code task} can be added to the list without causing another
      * task to be trimmed as a result of that add.
      */
     private boolean canAddTaskWithoutTrim(Task task) {
@@ -1151,7 +1151,7 @@ class RecentTasks {
     }
 
     /**
-     * @return the task in the task list with the given {@param id} if one exists.
+     * @return the task in the task list with the given {@code id} if one exists.
      */
     Task getTask(int id) {
         final int recentsCount = mTasks.size();
@@ -1675,7 +1675,7 @@ class RecentTasks {
             return removeIndex;
         }
 
-        // There is a similar task that will be removed for the addition of {@param task}, but it
+        // There is a similar task that will be removed for the addition of {@code task}, but it
         // can be the same task, and if so, the task will be re-added in add(), so skip the
         // callbacks here.
         final Task removedTask = mTasks.remove(removeIndex);
@@ -1699,7 +1699,7 @@ class RecentTasks {
     }
 
     /**
-     * Find the task that would be removed if the given {@param task} is added to the recent tasks
+     * Find the task that would be removed if the given {@code task} is added to the recent tasks
      * list (if any).
      */
     private int findRemoveIndexForAddTask(Task task) {

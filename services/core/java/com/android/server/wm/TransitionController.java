@@ -639,7 +639,7 @@ class TransitionController {
     }
 
     /**
-     * @return A pair of the transition and restore-behind target for the given {@param container}.
+     * @return A pair of the transition and restore-behind target for the given {@code container}.
      * @param container An ancestor of a transient-launch activity
      */
     @Nullable
@@ -656,7 +656,7 @@ class TransitionController {
     }
 
     /**
-     * @return The playing transition that is transiently-hiding the given {@param container}, or
+     * @return The playing transition that is transiently-hiding the given {@code container}, or
      *         null if there isn't one
      * @param container A participant of a transient-hide transition
      */
@@ -755,7 +755,7 @@ class TransitionController {
     }
 
     /**
-     * @return {@code true} if {@param ar} is part of a transient-launch activity in the
+     * @return {@code true} if {@code ar} is part of a transient-launch activity in the
      * collecting transition.
      */
     boolean isTransientCollect(@NonNull ActivityRecord ar) {
@@ -763,7 +763,7 @@ class TransitionController {
     }
 
     /**
-     * @return {@code true} if {@param ar} is part of a transient-launch activity in an active
+     * @return {@code true} if {@code ar} is part of a transient-launch activity in an active
      * transition.
      */
     boolean isTransientLaunch(@NonNull ActivityRecord ar) {
@@ -1589,7 +1589,7 @@ class TransitionController {
     }
 
     /**
-     * Record that the launch of {@param activity} is transient (meaning its lifecycle is currently
+     * Record that the launch of {@code activity} is transient (meaning its lifecycle is currently
      * tied to the transition).
      * @param restoreBelowTask If non-null, the activity's task will be ordered right below this
      *                         task if requested.

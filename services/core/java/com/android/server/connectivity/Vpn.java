@@ -1910,7 +1910,7 @@ public class Vpn {
      * Creates a {@link Set} of non-intersecting {@code Range<Integer>} objects including all UIDs
      * associated with one user, and any restricted profiles attached to that user.
      *
-     * <p>If one of {@param allowedApplications} or {@param disallowedApplications} is provided,
+     * <p>If one of {@code allowedApplications} or {@code disallowedApplications} is provided,
      * the UID ranges will match the app list specified there. Otherwise, all UIDs
      * in each user and profile will be included.
      *
@@ -1950,12 +1950,12 @@ public class Vpn {
      * Updates a {@link Set} of non-intersecting {@code Range<Integer>} objects to include all UIDs
      * associated with one user.
      *
-     * <p>If one of {@param allowedApplications} or {@param disallowedApplications} is provided,
+     * <p>If one of {@code allowedApplications} or {@code disallowedApplications} is provided,
      * the UID ranges will match the app allowlist or denylist specified there. Otherwise, all UIDs
      * in the user will be included.
      *
      * @param ranges {@link Set} of {@code Range<Integer>}s to which to add.
-     * @param userId The userId to add to {@param ranges}.
+     * @param userId The userId to add to {@code ranges}.
      * @param allowedApplications (optional) allowlist of applications to include.
      * @param disallowedApplications (optional) denylist of applications to exclude.
      */
@@ -2106,7 +2106,7 @@ public class Vpn {
      * The exception for the VPN UID isn't technically necessary -- setup should use protected
      * sockets -- but in practice it saves apps that don't protect their sockets from breaking.
      *
-     * Calling multiple times with {@param enforce} = {@code true} will recreate the set of UIDs to
+     * Calling multiple times with {@code enforce} = {@code true} will recreate the set of UIDs to
      * block every time, and if anything has changed update using {@link #setAllowOnlyVpnForUids}.
      *
      * @param enforce {@code true} to require that all traffic under the jurisdiction of this
@@ -2168,7 +2168,7 @@ public class Vpn {
      * {@code protect()} called on them.
      *
      * @param enforce {@code true} to add to the denylist, {@code false} to remove.
-     * @param ranges {@link Collection} of {@link UidRangeParcel}s to add (if {@param enforce} is
+     * @param ranges {@link Collection} of {@link UidRangeParcel}s to add (if {@code enforce} is
      *               {@code true}) or to remove.
      * @return {@code true} if all of the UIDs were added/removed. {@code false} otherwise,
      *         including added ranges that already existed or removed ones that didn't.

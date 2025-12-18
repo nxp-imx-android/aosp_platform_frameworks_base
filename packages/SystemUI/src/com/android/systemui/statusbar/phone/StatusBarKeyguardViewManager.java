@@ -1005,7 +1005,7 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
     }
 
     /**
-     * Adds a {@param runnable} to be executed after Keyguard is gone.
+     * Adds a {@code runnable} to be executed after Keyguard is gone.
      */
     public void addAfterKeyguardGoneRunnable(Runnable runnable) {
         if (SceneContainerFlag.isEnabled()) {

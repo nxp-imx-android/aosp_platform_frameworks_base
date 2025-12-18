@@ -126,7 +126,7 @@ public class PipDisplayTransferHandler implements
     }
 
     /**
-     * Restricts {@param bounds} to the allowed min/max size constraints and snaps bounds to the
+     * Restricts {@code bounds} to the allowed min/max size constraints and snaps bounds to the
      * correct edge based on the snap fraction.
      */
     private void snapBoundsWithinMinMaxSize(Rect bounds) {

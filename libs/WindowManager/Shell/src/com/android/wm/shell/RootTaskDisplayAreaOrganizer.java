@@ -125,9 +125,9 @@ public class RootTaskDisplayAreaOrganizer extends DisplayAreaOrganizer {
     }
 
     /**
-     * Sets the layer of {@param sc} to be relative to the TDA on {@param displayId}.
+     * Sets the layer of {@code sc} to be relative to the TDA on {@code displayId}.
      *
-     * @throws NoSuchElementException if {@param displayId} has not appeared or has been removed.
+     * @throws NoSuchElementException if {@code displayId} has not appeared or has been removed.
      */
     public void relZToDisplayArea(int displayId, SurfaceControl sc, SurfaceControl.Transaction t,
             int z) {

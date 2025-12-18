@@ -610,7 +610,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
     }
 
     /**
-     * Return the pixel width {@param dialog} should be so that it is {@param widthInDp} wide,
+     * Return the pixel width {@code dialog} should be so that it is {@code widthInDp} wide,
      * taking its background insets into consideration.
      */
     private static int calculateDialogWidthWithInsets(Dialog dialog, int widthInDp) {

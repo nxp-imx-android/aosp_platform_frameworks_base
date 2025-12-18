@@ -1352,7 +1352,7 @@ public abstract class Connection extends Conferenceable {
         }
 
         /**
-         * Writes the string {@param input} into the text stream to the UI for this RTT call. Since
+         * Writes the string {@code input} into the text stream to the UI for this RTT call. Since
          * RTT transmits text in real-time, this method should be called as often as text snippets
          * are received from the remote user, even if it is only one character.
          * <p>

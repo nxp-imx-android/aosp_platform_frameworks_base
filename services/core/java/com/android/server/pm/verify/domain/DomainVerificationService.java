@@ -1549,7 +1549,7 @@ public class DomainVerificationService extends SystemService
     }
 
     /**
-     * Determine whether or not a broadcast should be sent at boot for the given {@param pkgState}.
+     * Determine whether or not a broadcast should be sent at boot for the given {@code pkgState}.
      * Sends only if the only states recorded are default as decided by {@link
      * DomainVerificationState#isDefault(int)}.
      *

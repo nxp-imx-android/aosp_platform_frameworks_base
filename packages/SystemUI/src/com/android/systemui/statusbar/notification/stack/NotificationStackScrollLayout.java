@@ -2325,7 +2325,7 @@ public class NotificationStackScrollLayout
     }
 
     /**
-     * @return the scroll necessary to make the bottom edge of {@param v} align with the top of
+     * @return the scroll necessary to make the bottom edge of {@code v} align with the top of
      * the IME.
      */
     private int targetScrollForView(ExpandableView v, int positionInLinearLayout) {

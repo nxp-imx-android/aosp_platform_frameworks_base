@@ -82,7 +82,7 @@ public abstract class NetworkPolicyManagerInternal {
      * Sets a list of packages which are restricted by admin from accessing metered data.
      *
      * @param packageNames the list of restricted packages.
-     * @param userId the userId in which {@param packagesNames} are restricted.
+     * @param userId the userId in which {@code packageNames} are restricted.
      */
     public abstract void setMeteredRestrictedPackages(
             Set<String> packageNames, int userId);

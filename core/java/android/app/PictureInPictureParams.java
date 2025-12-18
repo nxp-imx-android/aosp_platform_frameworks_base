@@ -546,7 +546,7 @@ public final class PictureInPictureParams implements Parcelable {
     }
 
     /**
-     * Truncates the set of actions to the given {@param size}.
+     * Truncates the set of actions to the given {@code size}.
      *
      * @hide
      */

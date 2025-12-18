@@ -647,7 +647,7 @@ class DragState {
     }
 
     /**
-     * @return whether the given window {@param targetWin} can intercept global drags.
+     * @return whether the given window {@code targetWin} can intercept global drags.
      */
     public boolean targetInterceptsGlobalDrag(@Nullable WindowState targetWin) {
         if (targetWin == null) {

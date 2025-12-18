@@ -89,9 +89,9 @@ public class AssistDataRequester extends IAssistDataReceiver.Stub {
 
         /**
          * Called when we receive asynchronous assist data. This call is only made if the
-         * {@param fetchData} argument to requestAssistData() is true, and if the current activity
+         * {@code fetchData} argument to requestAssistData() is true, and if the current activity
          * allows assist data to be fetched.  In addition, the callback will be made with the
-         * {@param mCallbacksLock} held, and only if {@link #canHandleReceivedAssistDataLocked()}
+         * {@code mCallbacksLock} held, and only if {@link #canHandleReceivedAssistDataLocked()}
          * is true.
          */
         @GuardedBy("mCallbacksLock")
@@ -101,9 +101,9 @@ public class AssistDataRequester extends IAssistDataReceiver.Stub {
 
         /**
          * Called when we receive asynchronous assist screenshot. This call is only made if
-         * {@param fetchScreenshot} argument to requestAssistData() is true, and if the current
+         * {@code fetchScreenshot} argument to requestAssistData() is true, and if the current
          * activity allows assist data to be fetched.  In addition, the callback will be made with
-         * the {@param mCallbacksLock} held, and only if
+         * the {@code mCallbacksLock} held, and only if
          * {@link #canHandleReceivedAssistDataLocked()} is true.
          */
         @GuardedBy("mCallbacksLock")
@@ -114,7 +114,7 @@ public class AssistDataRequester extends IAssistDataReceiver.Stub {
         /**
          * Called when there is no more pending assist data or screenshots for the last request.
          * If the request was canceled, then this callback will not be made. In addition, the
-         * callback will be made with the {@param mCallbacksLock} held, and only if
+         * callback will be made with the {@code mCallbacksLock} held, and only if
          * {@link #canHandleReceivedAssistDataLocked()} is true.
          */
         @GuardedBy("mCallbacksLock")
@@ -126,7 +126,7 @@ public class AssistDataRequester extends IAssistDataReceiver.Stub {
     /**
      * @param callbacks The callbacks to handle the asynchronous reply with the assist data.
      * @param callbacksLock The lock for the requester to hold when calling any of the
-     *                     {@param callbacks}. The owner should also take care in locking
+     *                     {@code callbacks}. The owner should also take care in locking
      *                     appropriately when calling into this requester.
      * @param requestStructureAppOps The app ops to check before requesting the assist structure
      * @param requestScreenshotAppOps The app ops to check before requesting the assist screenshot.

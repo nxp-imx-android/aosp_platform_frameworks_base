@@ -358,7 +358,7 @@ public class SurfaceControlViewHost {
      * Construct a new SurfaceControlViewHost. The root Surface will be
      * allocated internally and is accessible via getSurfacePackage().
      *
-     * The {@param hostToken} parameter, primarily used for ANR reporting,
+     * The {@code hostToken} parameter, primarily used for ANR reporting,
      * must be obtained from whomever will be hosting the embedded hierarchy.
      * It's accessible from {@link SurfaceView#getHostToken}.
      *
@@ -394,7 +394,7 @@ public class SurfaceControlViewHost {
      * Construct a new SurfaceControlViewHost. The root Surface will be
      * allocated internally and is accessible via getSurfacePackage().
      *
-     * The {@param hostToken} parameter, primarily used for ANR reporting,
+     * The {@code hostToken} parameter, primarily used for ANR reporting,
      * must be obtained from whomever will be hosting the embedded hierarchy.
      * It's accessible from {@link SurfaceView#getHostToken}.
      *

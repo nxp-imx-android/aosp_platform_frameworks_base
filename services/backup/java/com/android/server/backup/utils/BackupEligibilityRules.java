@@ -479,7 +479,7 @@ public class BackupEligibilityRules {
     }
 
     /**
-     * Returns whether the signatures stored {@param storedSigs}, coming from the source apk, match
+     * Returns whether the signatures stored {@code storedSigs}, coming from the source apk, match
      * the signatures of the apk installed on the device, the target apk. If the target resides in
      * the system partition we return true. Otherwise it's considered a match if both conditions
      * hold:
@@ -494,7 +494,7 @@ public class BackupEligibilityRules {
      * is only supported for apps ever signed with one key, and those apps will not be allowed to be
      * signed by more certificates in the future
      *
-     * <p>Note that if {@param target} is null we return false.
+     * <p>Note that if {@code target} is null we return false.
      */
     public boolean signaturesMatch(Signature[] storedSigs, PackageInfo target) {
         if (target == null || target.packageName == null) {

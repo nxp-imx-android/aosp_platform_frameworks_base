@@ -145,8 +145,8 @@ public class LightsService extends SystemService {
         }
 
         /**
-         * Updates the set of light requests for {@param token} with additions and removals from
-         * {@param lightIds} and {@param lightStates}.
+         * Updates the set of light requests for {@code token} with additions and removals from
+         * {@code lightIds} and {@code lightStates}.
          *
          * <p>Null values mean that the request should be removed, and the light turned off if it
          * is not being used by anything else.

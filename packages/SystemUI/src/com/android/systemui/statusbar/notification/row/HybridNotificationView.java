@@ -76,7 +76,7 @@ public class HybridNotificationView extends AlphaOptimizedLinearLayout
     }
 
     /**
-     * Get layout resource for this view based on {@param isConversation}.
+     * Get layout resource for this view based on {@code isConversation}.
      */
     public static int getLayoutResource(boolean isConversation) {
         if (Flags.notificationsRedesignTemplates()) {

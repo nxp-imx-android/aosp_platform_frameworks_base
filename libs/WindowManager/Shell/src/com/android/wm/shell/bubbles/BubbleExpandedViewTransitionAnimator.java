@@ -43,13 +43,13 @@ public interface BubbleExpandedViewTransitionAnimator {
     boolean isExpanded();
 
     /**
-     * Whether it's possible to expand {@param bubble} right now. This is {@code false} if the
+     * Whether it's possible to expand {@code bubble} right now. This is {@code false} if the
      * bubble has no view or if the bubble is already showing.
      */
     boolean canExpandView(BubbleViewProvider bubble);
 
     /**
-     * Call to prepare the provided {@param bubble} to be animated.
+     * Call to prepare the provided {@code bubble} to be animated.
      *
      * <p>Should make the current expanded bubble visible immediately so it gets a surface that can
      * be animated. Since the surface may not be ready yet, it should keep the TaskView alpha=0.

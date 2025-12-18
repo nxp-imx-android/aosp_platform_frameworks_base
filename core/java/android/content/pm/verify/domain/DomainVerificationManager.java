@@ -302,7 +302,7 @@ public final class DomainVerificationManager {
     }
 
     /**
-     * Change the verification status of the {@param domains} of the package associated with {@param
+     * Change the verification status of the {@code domains} of the package associated with {@code
      * domainSetId}.
      *
      * @param domainSetId See {@link DomainVerificationInfo#getIdentifier()}.
@@ -368,7 +368,7 @@ public final class DomainVerificationManager {
     }
 
     /**
-     * Update the recorded user selection for the given {@param domains} for the given {@param
+     * Update the recorded user selection for the given {@code domains} for the given {@code
      * domainSetId}. This state is recorded for the lifetime of a domain for a package on device,
      * and will never be reset by the system short of an app data clear.
      * <p>
