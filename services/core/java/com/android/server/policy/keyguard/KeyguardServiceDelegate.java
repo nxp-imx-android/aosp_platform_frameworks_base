@@ -55,8 +55,7 @@ public class KeyguardServiceDelegate {
     private static final int INTERACTIVE_STATE_AWAKE = 2;
     private static final int INTERACTIVE_STATE_GOING_TO_SLEEP = 3;
 
-    private IKeyguardService mKeyguardService;
-    private KeyguardStateMonitor mKeyguardStateMonitor;
+    protected KeyguardServiceWrapper mKeyguardService;
     private final Context mContext;
     private final Handler mHandler;
     private final KeyguardState mKeyguardState = new KeyguardState();
@@ -189,48 +188,49 @@ public class KeyguardServiceDelegate {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             if (DEBUG) Log.v(TAG, "*** Keyguard connected (yay!)");
-            mKeyguardService = IKeyguardService.Stub.asInterface(service);
-            mKeyguardStateMonitor = new KeyguardStateMonitor(mContext, mKeyguardService, mCallback);
+            mKeyguardService = new KeyguardServiceWrapper(mContext,
+                    IKeyguardService.Stub.asInterface(service), mCallback);
             if (mKeyguardState.systemIsReady) {
                 // If the system is ready, it means keyguard crashed and restarted.
-                onSystemReady();
+                mKeyguardService.onSystemReady();
                 if (mKeyguardState.currentUser != UserHandle.USER_NULL) {
                     // There has been a user switch earlier
-                    setCurrentUser(mKeyguardState.currentUser);
+                    mKeyguardService.setCurrentUser(mKeyguardState.currentUser);
                 }
                 // This is used to hide the scrim once keyguard displays.
                 if (mKeyguardState.interactiveState == INTERACTIVE_STATE_AWAKE
                         || mKeyguardState.interactiveState == INTERACTIVE_STATE_WAKING) {
-                    onStartedWakingUp(PowerManager.WAKE_REASON_UNKNOWN,
+                    mKeyguardService.onStartedWakingUp(PowerManager.WAKE_REASON_UNKNOWN,
                             false /* powerButtonLaunchGestureTriggered */);
                 }
                 if (mKeyguardState.interactiveState == INTERACTIVE_STATE_AWAKE) {
-                    onFinishedWakingUp();
+                    mKeyguardService.onFinishedWakingUp();
                 }
                 if (mKeyguardState.screenState == SCREEN_STATE_ON
                         || mKeyguardState.screenState == SCREEN_STATE_TURNING_ON) {
-                    onScreenTurningOn(SCREEN_TURNING_ON_REASON_UNKNOWN,
-                            mDrawnListenerWhenConnect);
+                    mKeyguardService.onScreenTurningOn(SCREEN_TURNING_ON_REASON_UNKNOWN,
+                            new KeyguardShowDelegate(mDrawnListenerWhenConnect));
                 }
                 if (mKeyguardState.screenState == SCREEN_STATE_ON) {
-                    onScreenTurnedOn();
+                    mKeyguardService.onScreenTurnedOn();
                 }
                 mDrawnListenerWhenConnect = null;
             }
             if (mKeyguardState.bootCompleted) {
-                onBootCompleted();
+                mKeyguardService.onBootCompleted();
             }
             if (mKeyguardState.occluded) {
-                setOccluded(mKeyguardState.occluded);
+                mKeyguardService.setOccluded(mKeyguardState.occluded, false /* animate */);
             }
             if (!mKeyguardState.enabled) {
-                setKeyguardEnabled(mKeyguardState.enabled);
+                mKeyguardService.setKeyguardEnabled(mKeyguardState.enabled);
             }
             if (mKeyguardState.dreaming) {
-                onDreamingStarted();
+                mKeyguardService.onDreamingStarted();
             }
             if (mKeyguardState.doKeyguardTimeoutRequested) {
-                doKeyguardTimeout(mKeyguardState.doKeyguardTimeoutRequestedOptions);
+                mKeyguardService.doKeyguardTimeout(
+                        mKeyguardState.doKeyguardTimeoutRequestedOptions);
                 mKeyguardState.doKeyguardTimeoutRequested = false;
                 mKeyguardState.doKeyguardTimeoutRequestedOptions = null;
             }
@@ -240,7 +240,6 @@ public class KeyguardServiceDelegate {
         public void onServiceDisconnected(ComponentName name) {
             if (DEBUG) Log.v(TAG, "*** Keyguard disconnected (boo!)");
             mKeyguardService = null;
-            mKeyguardStateMonitor = null;
             // Remember the keyguard enabled state when the service is disconnected.
             boolean wasEnabled = mKeyguardState.enabled;
             mKeyguardState.reset();
@@ -257,15 +256,15 @@ public class KeyguardServiceDelegate {
     };
 
     public boolean isShowing() {
-        if (mKeyguardStateMonitor != null) {
-            mKeyguardState.showing = mKeyguardStateMonitor.isShowing();
+        if (mKeyguardService != null) {
+            mKeyguardState.showing = mKeyguardService.isShowing();
         }
         return mKeyguardState.showing;
     }
 
     public boolean isTrusted() {
-        if (mKeyguardStateMonitor != null) {
-            return mKeyguardStateMonitor.isTrusted();
+        if (mKeyguardService != null) {
+            return mKeyguardService.isTrusted();
         }
         return false;
     }
@@ -275,19 +274,15 @@ public class KeyguardServiceDelegate {
     }
 
     public boolean isInputRestricted() {
-        if (mKeyguardStateMonitor != null) {
-            mKeyguardState.inputRestricted = mKeyguardStateMonitor.isInputRestricted();
+        if (mKeyguardService != null) {
+            mKeyguardState.inputRestricted = mKeyguardService.isInputRestricted();
         }
         return mKeyguardState.inputRestricted;
     }
 
     public void verifyUnlock(final OnKeyguardExitResult onKeyguardExitResult) {
         if (mKeyguardService != null) {
-            try {
-                mKeyguardService.verifyUnlock(new KeyguardExitDelegate(onKeyguardExitResult));
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+            mKeyguardService.verifyUnlock(new KeyguardExitDelegate(onKeyguardExitResult));
         }
     }
 
@@ -299,11 +294,7 @@ public class KeyguardServiceDelegate {
                     0 /* animate */,
                     0 /* transit */,
                     "setOccluded");
-            try {
-                mKeyguardService.setOccluded(isOccluded, false /* animate */);
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+            mKeyguardService.setOccluded(isOccluded, false /* animate */);
         }
         mKeyguardState.occluded = isOccluded;
     }
@@ -314,39 +305,27 @@ public class KeyguardServiceDelegate {
 
     public void dismiss(IKeyguardDismissCallback callback, CharSequence message) {
         if (mKeyguardService != null) {
-            try {
-                mKeyguardService.dismiss(callback, message);
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+            mKeyguardService.dismiss(callback, message);
         }
     }
 
     public boolean isSecure(int userId) {
-        if (mKeyguardStateMonitor != null) {
-            mKeyguardState.secure = mKeyguardStateMonitor.isSecure(userId);
+        if (mKeyguardService != null) {
+            mKeyguardState.secure = mKeyguardService.isSecure(userId);
         }
         return mKeyguardState.secure;
     }
 
     public void onDreamingStarted() {
         if (mKeyguardService != null) {
-            try {
-                mKeyguardService.onDreamingStarted();
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+            mKeyguardService.onDreamingStarted();
         }
         mKeyguardState.dreaming = true;
     }
 
     public void onDreamingStopped() {
         if (mKeyguardService != null) {
-            try {
-                mKeyguardService.onDreamingStopped();
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+            mKeyguardService.onDreamingStopped();
         }
         mKeyguardState.dreaming = false;
     }
@@ -355,11 +334,7 @@ public class KeyguardServiceDelegate {
             @PowerManager.WakeReason int pmWakeReason, boolean powerButtonLaunchGestureTriggered) {
         if (mKeyguardService != null) {
             if (DEBUG) Log.v(TAG, "onStartedWakingUp()");
-            try {
-                mKeyguardService.onStartedWakingUp(pmWakeReason, powerButtonLaunchGestureTriggered);
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+            mKeyguardService.onStartedWakingUp(pmWakeReason, powerButtonLaunchGestureTriggered);
         }
         mKeyguardState.interactiveState = INTERACTIVE_STATE_WAKING;
     }
@@ -367,11 +342,7 @@ public class KeyguardServiceDelegate {
     public void onFinishedWakingUp() {
         if (mKeyguardService != null) {
             if (DEBUG) Log.v(TAG, "onFinishedWakingUp()");
-            try {
-                mKeyguardService.onFinishedWakingUp();
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+            mKeyguardService.onFinishedWakingUp();
         }
         mKeyguardState.interactiveState = INTERACTIVE_STATE_AWAKE;
     }
@@ -379,11 +350,7 @@ public class KeyguardServiceDelegate {
     public void onScreenTurningOff() {
         if (mKeyguardService != null) {
             if (DEBUG) Log.v(TAG, "onScreenTurningOff()");
-            try {
-                mKeyguardService.onScreenTurningOff();
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+            mKeyguardService.onScreenTurningOff();
         }
         mKeyguardState.screenState = SCREEN_STATE_TURNING_OFF;
     }
@@ -391,11 +358,7 @@ public class KeyguardServiceDelegate {
     public void onScreenTurnedOff() {
         if (mKeyguardService != null) {
             if (DEBUG) Log.v(TAG, "onScreenTurnedOff()");
-            try {
-                mKeyguardService.onScreenTurnedOff();
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+            mKeyguardService.onScreenTurnedOff();
         }
         mKeyguardState.screenState = SCREEN_STATE_OFF;
     }
@@ -404,12 +367,7 @@ public class KeyguardServiceDelegate {
         if (mKeyguardService != null) {
             if (DEBUG) Log.v(TAG, "onScreenTurnedOn(reason = " + reason
                     + ", showListener = " + drawnListener + ")");
-            try {
-                mKeyguardService.onScreenTurningOn(reason,
-                        new KeyguardShowDelegate(drawnListener));
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+            mKeyguardService.onScreenTurningOn(reason,  new KeyguardShowDelegate(drawnListener));
         } else {
             // try again when we establish a connection
             Slog.w(TAG, "onScreenTurningOn(): no keyguard service!");
@@ -423,22 +381,14 @@ public class KeyguardServiceDelegate {
     public void onScreenTurnedOn() {
         if (mKeyguardService != null) {
             if (DEBUG) Log.v(TAG, "onScreenTurnedOn()");
-            try {
-                mKeyguardService.onScreenTurnedOn();
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+            mKeyguardService.onScreenTurnedOn();
         }
         mKeyguardState.screenState = SCREEN_STATE_ON;
     }
 
     public void onStartedGoingToSleep(@PowerManager.GoToSleepReason int pmSleepReason) {
         if (mKeyguardService != null) {
-            try {
-                mKeyguardService.onStartedGoingToSleep(pmSleepReason);
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+            mKeyguardService.onStartedGoingToSleep(pmSleepReason);
         }
         mKeyguardState.offReason =
                 WindowManagerPolicyConstants.translateSleepReasonToOffReason(pmSleepReason);
@@ -449,34 +399,22 @@ public class KeyguardServiceDelegate {
             @PowerManager.GoToSleepReason int pmSleepReason,
             boolean powerButtonLaunchGestureTriggered) {
         if (mKeyguardService != null) {
-            try {
-                mKeyguardService.onFinishedGoingToSleep(pmSleepReason,
-                        powerButtonLaunchGestureTriggered);
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+            mKeyguardService.onFinishedGoingToSleep(pmSleepReason,
+                    powerButtonLaunchGestureTriggered);
         }
         mKeyguardState.interactiveState = INTERACTIVE_STATE_SLEEP;
     }
 
     public void setKeyguardEnabled(boolean enabled) {
         if (mKeyguardService != null) {
-            try {
-                mKeyguardService.setKeyguardEnabled(enabled);
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+            mKeyguardService.setKeyguardEnabled(enabled);
         }
         mKeyguardState.enabled = enabled;
     }
 
     public void onSystemReady() {
         if (mKeyguardService != null) {
-            try {
-                mKeyguardService.onSystemReady();
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+            mKeyguardService.onSystemReady();
         } else {
             mKeyguardState.systemIsReady = true;
         }
@@ -484,17 +422,7 @@ public class KeyguardServiceDelegate {
 
     public void doKeyguardTimeout(Bundle options) {
         if (mKeyguardService != null) {
-            int userId = mKeyguardStateMonitor.getCurrentUser();
-            if (mKeyguardStateMonitor.isSecure(userId)) {
-                // Preemptively inform the cache that the keyguard will soon be showing, as calls to
-                // doKeyguardTimeout are a signal to lock the device as soon as possible.
-                mKeyguardStateMonitor.onShowingStateChanged(true, userId);
-            }
-            try {
-                mKeyguardService.doKeyguardTimeout(options);
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+            mKeyguardService.doKeyguardTimeout(options);
         } else {
             mKeyguardState.doKeyguardTimeoutRequested = true;
             if (options != null) {
@@ -508,83 +436,50 @@ public class KeyguardServiceDelegate {
      */
     public void showDismissibleKeyguard() {
         if (mKeyguardService != null) {
-            try {
-                mKeyguardService.showDismissibleKeyguard();
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+            mKeyguardService.showDismissibleKeyguard();
         }
     }
 
     public void setCurrentUser(int newUserId) {
         if (mKeyguardService != null) {
-            mKeyguardStateMonitor.setCurrentUser(newUserId);
-            try {
-                mKeyguardService.setCurrentUser(newUserId);
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+            mKeyguardService.setCurrentUser(newUserId);
         }
         mKeyguardState.currentUser = newUserId;
     }
 
     public void setSwitchingUser(boolean switching) {
         if (mKeyguardService != null) {
-            try {
-                mKeyguardService.setSwitchingUser(switching);
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+            mKeyguardService.setSwitchingUser(switching);
         }
     }
 
     public void startKeyguardExitAnimation(long startTime) {
         if (mKeyguardService != null) {
-            try {
-                mKeyguardService.startKeyguardExitAnimation(startTime, 0);
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+            mKeyguardService.startKeyguardExitAnimation(startTime, 0);
         }
     }
 
     public void onBootCompleted() {
         if (mKeyguardService != null) {
-            try {
-                mKeyguardService.onBootCompleted();
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+            mKeyguardService.onBootCompleted();
         }
         mKeyguardState.bootCompleted = true;
     }
 
     public void onShortPowerPressedGoHome() {
         if (mKeyguardService != null) {
-            try {
-                mKeyguardService.onShortPowerPressedGoHome();
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+            mKeyguardService.onShortPowerPressedGoHome();
         }
     }
 
     public void dismissKeyguardToLaunch(Intent intentToLaunch) {
         if (mKeyguardService != null) {
-            try {
-                mKeyguardService.dismissKeyguardToLaunch(intentToLaunch);
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+            mKeyguardService.dismissKeyguardToLaunch(intentToLaunch);
         }
     }
     public void onSystemKeyPressed(int keycode) {
         if (mKeyguardService != null) {
-            try {
-                mKeyguardService.onSystemKeyPressed(keycode);
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Remote Exception", e);
-            }
+            mKeyguardService.onSystemKeyPressed(keycode);
         }
     }
 
@@ -616,8 +511,8 @@ public class KeyguardServiceDelegate {
         pw.println(prefix + "screenState=" + screenStateToString(mKeyguardState.screenState));
         pw.println(prefix + "interactiveState=" +
                 interactiveStateToString(mKeyguardState.interactiveState));
-        if (mKeyguardStateMonitor != null) {
-            mKeyguardStateMonitor.dump(prefix, pw);
+        if (mKeyguardService != null) {
+            mKeyguardService.dump(prefix, pw);
         }
     }
 
