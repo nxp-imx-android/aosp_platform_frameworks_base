@@ -271,7 +271,8 @@ public class ResolverListAdapter extends BaseAdapter {
             List<ResolvedComponentInfo> currentResolveList = new ArrayList<>();
             mResolverListController.addResolveListDedupe(currentResolveList,
                     mResolverListCommunicator.getTargetIntent(),
-                    mBaseResolveList);
+                    mBaseResolveList,
+                    /* preferredActivity */ null);
             return currentResolveList;
         } else {
             return mResolverListController.getResolversForIntent(
@@ -508,6 +509,7 @@ public class ResolverListAdapter extends BaseAdapter {
                 dri = new DisplayResolveInfo(intent, add,
                 replaceIntent != null ? replaceIntent : defaultIntent, makePresentationGetter(add));
         dri.setPinned(rci.isPinned());
+        dri.setPreferredActivity(rci.isPreferredActivity());
         if (rci.isPinned()) {
             Log.i(TAG, "Pinned item: " + rci.name);
         }
