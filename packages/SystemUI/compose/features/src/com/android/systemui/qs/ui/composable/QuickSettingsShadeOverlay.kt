@@ -523,6 +523,7 @@ object QuickSettingsShade {
             @ReadOnlyComposable
             get() =
                 VolumeSliderDimensions(
+                    sliderIconSize,
                     volumeThumbHeight,
                     volumeThumbWidth,
                     volumeTrackHeight,
