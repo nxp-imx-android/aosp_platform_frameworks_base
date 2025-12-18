@@ -7255,18 +7255,29 @@ public class AudioService extends IAudioService.Stub
                     + ", uid=" + uid + ", caller=" + callingPackage + ")");
         }
 
-        if (!hasAudioSettingsPrivilegedOrAudioRoutingPermission(/*withSelf=*/false)) {
-            if (mode == MODE_ASSISTANT_CONVERSATION) {
-                Log.w(TAG,
-                        "MODIFY_AUDIO_SETTINGS_PRIVILEGED Permission Denial for "
-                                + "MODE_ASSISTANT_CONVERSATION: setMode() from pid="
-                                + Binder.getCallingPid() + ", uid=" + Binder.getCallingUid());
-                return;
-            } else if (!checkAudioSettingsPermission("setMode()") && (
-                    !manageAssistantAudioPermission() || mContext.checkCallingOrSelfPermission(
-                            MANAGE_ASSISTANT_AUDIO) != PackageManager.PERMISSION_GRANTED)) {
-                Slog.w(TAG, "Missing permission for setMode()");
-                return;
+        if (!checkAudioSettingsPermission("setMode()")) {
+            Slog.w(TAG, "Missing permission for setMode()");
+            return;
+        }
+
+        if (mode == MODE_ASSISTANT_CONVERSATION) {
+            if (manageAssistantAudioPermission()) {
+                if (mContext.checkCallingOrSelfPermission(
+                        MANAGE_ASSISTANT_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                    Log.w(TAG,
+                            "Missing Permission MANAGE_ASSISTANT_AUDIO for "
+                                    + "MODE_ASSISTANT_CONVERSATION: setMode() from pid="
+                                    + Binder.getCallingPid() + ", uid=" + Binder.getCallingUid());
+                    return;
+                }
+            } else {
+                if (!hasAudioSettingsPrivilegedOrAudioRoutingPermission(/*withSelf=*/false)) {
+                    Log.w(TAG,
+                            "MODIFY_AUDIO_SETTINGS_PRIVILEGED Permission Denial for "
+                                    + "MODE_ASSISTANT_CONVERSATION: setMode() from pid="
+                                    + Binder.getCallingPid() + ", uid=" + Binder.getCallingUid());
+                    return;
+                }
             }
         }
 
