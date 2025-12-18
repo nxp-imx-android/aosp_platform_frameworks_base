@@ -178,6 +178,7 @@ flag {
     namespace: "cross_device_authentication"
     description: "Enable the Talisman service API."
     bug: "433283951"
+    is_exported: true
 }
 
 flag {
