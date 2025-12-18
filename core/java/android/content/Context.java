@@ -17,8 +17,8 @@
 package android.content;
 
 import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_MANAGER;
-import static android.app.ondeviceintelligence.flags.Flags.FLAG_ENABLE_ON_DEVICE_INTELLIGENCE_MODULE;
 import static android.app.lskfreset.flags.Flags.FLAG_ENABLE_LSKF_RESET_MANAGER;
+import static android.app.ondeviceintelligence.flags.Flags.FLAG_ENABLE_ON_DEVICE_INTELLIGENCE_MODULE;
 import static android.content.flags.Flags.FLAG_ENABLE_BIND_PACKAGE_ISOLATED_PROCESS;
 import static android.content.flags.Flags.FLAG_ENABLE_UPDATE_SERVICE_BINDINGS;
 import static android.security.Flags.FLAG_SECURE_LOCKDOWN;
@@ -7521,6 +7521,24 @@ public abstract class Context {
     @CheckResult
     @PermissionRequestState
     public int getPermissionRequestState(@NonNull String permission) {
+        throw new RuntimeException("Not implemented. Must override in a subclass.");
+    }
+
+    /**
+     * Gets whether you should show UI with rationale before requesting a permission. If the
+     * permission does not exist on this SDK level or is not visible to this app, the method will
+     * return {@code false}.
+     *
+     * @param permission A permission your app wants to request.
+     * @return Whether you should show permission rationale UI.
+     *
+     * @see Activity#checkSelfPermission
+     * @see Activity#requestPermissions(String[], int)
+     * @see Activity#onRequestPermissionsResult(int, String[], int[])
+     */
+    @FlaggedApi(
+            android.permission.flags.Flags.FLAG_SHOULD_SHOW_PERMISSION_RATIONALE_IN_CONTEXT_ENABLED)
+    public boolean shouldShowRequestPermissionRationale(@NonNull String permission) {
         throw new RuntimeException("Not implemented. Must override in a subclass.");
     }
 
