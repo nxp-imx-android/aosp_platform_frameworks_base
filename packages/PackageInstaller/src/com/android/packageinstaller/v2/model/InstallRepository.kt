@@ -1213,6 +1213,7 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
         legacyStatus: Int,
         message: String?,
         serviceId: Int,
+        intent: Intent?
     ) {
         setStageBasedOnResult(status, legacyStatus, message)
     }
