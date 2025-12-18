@@ -371,6 +371,7 @@ private fun ContentScope.QuickSettingsLayout(
                 behavior = QuickSettingsContainerViewModel.mediaUiBehavior,
                 onDismissed = qsContainerViewModel::onMediaSwipeToDismiss,
                 modifier = Modifier,
+                location = Media.Location.QS,
             )
 
             if (qsContainerViewModel.showMedia) {

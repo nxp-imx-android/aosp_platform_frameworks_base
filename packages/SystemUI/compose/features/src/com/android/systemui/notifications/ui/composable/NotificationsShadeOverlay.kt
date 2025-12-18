@@ -182,6 +182,7 @@ constructor(
                             presentationStyle = MediaPresentationStyle.Default,
                             behavior = viewModel.mediaUiBehavior,
                             onDismissed = viewModel::onMediaSwipeToDismiss,
+                            location = Media.Location.SHADE,
                         )
                     }
                 }

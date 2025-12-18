@@ -168,6 +168,7 @@ import com.android.systemui.media.remedia.ui.viewmodel.MediaPlayPauseActionViewM
 import com.android.systemui.media.remedia.ui.viewmodel.MediaSecondaryActionViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaSettingsButtonViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
+import com.android.systemui.qs.panels.ui.compose.infinitegrid.verticalSquish
 import com.android.systemui.res.R
 import kotlin.math.abs
 import kotlin.math.max
@@ -188,6 +189,8 @@ fun Media(
     onDismissed: () -> Unit,
     modifier: Modifier = Modifier,
     visible: () -> Boolean = { true },
+    mediaSquishiness: () -> Float = { 1f },
+    location: Media.Location,
 ) {
     val context = LocalContext.current
     val viewModel: MediaViewModel =
@@ -200,12 +203,15 @@ fun Media(
 
     LaunchedEffect(visible) { viewModel.setVisibility(visible) }
 
+    viewModel.mediaUiEventLogger.logCarouselLocation(location)
+
     CardCarousel(
         viewModel = viewModel,
         presentationStyle = presentationStyle,
         behavior = behavior,
         onDismissed = onDismissed,
         modifier = modifier,
+        mediaSquishiness = mediaSquishiness,
     )
 }
 
@@ -224,6 +230,7 @@ private fun CardCarousel(
     behavior: MediaUiBehavior,
     onDismissed: () -> Unit,
     modifier: Modifier = Modifier,
+    mediaSquishiness: () -> Float,
 ) {
     AnimatedVisibility(
         visible = viewModel.isCarouselVisible,
@@ -236,6 +243,7 @@ private fun CardCarousel(
             presentationStyle = presentationStyle,
             behavior = behavior,
             onDismissed = onDismissed,
+            mediaSquishiness = mediaSquishiness,
         )
     }
 }
@@ -247,6 +255,7 @@ private fun CardCarouselContent(
     behavior: MediaUiBehavior,
     onDismissed: () -> Unit,
     modifier: Modifier = Modifier,
+    mediaSquishiness: () -> Float,
 ) {
     val pagerState = rememberPagerState { viewModel.cards.size }
     LaunchedEffect(viewModel.currentIndex) {
@@ -296,6 +305,7 @@ private fun CardCarouselContent(
                         presentationStyle = presentationStyle,
                         modifier =
                             Modifier.clip(roundedCornerShape).sysuiResTag(MediaRes.MEDIA_CONTROLS),
+                        mediaSquishiness = mediaSquishiness,
                     )
                 }
 
@@ -353,6 +363,7 @@ private fun Card(
     viewModel: MediaCardViewModel,
     presentationStyle: MediaPresentationStyle,
     modifier: Modifier = Modifier,
+    mediaSquishiness: () -> Float,
 ) {
     val stlState =
         rememberMutableSceneTransitionLayoutState(
@@ -380,6 +391,7 @@ private fun Card(
             controller =
                 rememberExpandableController(color = Color.Transparent, shape = RectangleShape),
             useModifierBasedImplementation = true,
+            modifier = Modifier.verticalSquish(mediaSquishiness),
         ) {
             key(stlState) {
                 SceneTransitionLayout(state = stlState, debugName = "Media Card") {
@@ -1679,6 +1691,14 @@ object Media {
         CardForeground,
         CardGuts,
         CardRevealedContent,
+    }
+
+    enum class Location {
+        QS,
+        SHADE,
+        LOCKSCREEN,
+        COMMUNAL_HUB,
+        STATUS_BAR_POPUP,
     }
 
     const val TAG = "Media"

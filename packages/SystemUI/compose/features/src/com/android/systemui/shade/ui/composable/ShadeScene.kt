@@ -354,6 +354,7 @@ private fun ContentScope.SingleShade(
                                             },
                                         behavior = ShadeSceneContentViewModel.qqsMediaUiBehavior,
                                         onDismissed = viewModel::onMediaSwipeToDismiss,
+                                        location = Media.Location.SHADE,
                                     )
                                 }
                             }
@@ -559,6 +560,7 @@ private fun ContentScope.SplitShade(
                                             QuickSettingsContent(
                                                 qsContainerViewModel,
                                                 mediaInRow = false,
+                                                mediaSquishiness = { tileSquishiness },
                                             )
                                         }
                                         FooterActionsWithAnimatedVisibility(
