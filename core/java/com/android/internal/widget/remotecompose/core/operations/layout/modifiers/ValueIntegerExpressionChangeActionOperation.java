@@ -15,8 +15,6 @@
  */
 package com.android.internal.widget.remotecompose.core.operations.layout.modifiers;
 
-import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.INT;
-
 import android.annotation.NonNull;
 
 import com.android.internal.widget.remotecompose.core.CoreDocument;
@@ -25,6 +23,7 @@ import com.android.internal.widget.remotecompose.core.Operations;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
+import com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.ActionOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
 import com.android.internal.widget.remotecompose.core.operations.utilities.StringSerializer;
@@ -37,6 +36,7 @@ import java.util.List;
 public class ValueIntegerExpressionChangeActionOperation extends Operation
         implements ActionOperation {
     private static final int OP_CODE = Operations.VALUE_INTEGER_EXPRESSION_CHANGE_ACTION;
+    private static final String CLASS_NAME = "ValueIntegerExpressionChangeActionOperation";
 
     long mTargetValueId = -1;
     long mValueExpressionId = -1;
@@ -69,7 +69,8 @@ public class ValueIntegerExpressionChangeActionOperation extends Operation
     }
 
     @Override
-    public void apply(@NonNull RemoteContext context) {}
+    public void apply(@NonNull RemoteContext context) {
+    }
 
     @NonNull
     @Override
@@ -78,7 +79,8 @@ public class ValueIntegerExpressionChangeActionOperation extends Operation
     }
 
     @Override
-    public void write(@NonNull WireBuffer buffer) {}
+    public void write(@NonNull WireBuffer buffer) {
+    }
 
     @Override
     public void runAction(
@@ -93,9 +95,9 @@ public class ValueIntegerExpressionChangeActionOperation extends Operation
     /**
      * Write the operation to the buffer
      *
-     * @param buffer a WireBuffer
+     * @param buffer  a WireBuffer
      * @param valueId the long id pointing to an int value
-     * @param value the value to set (long id)`
+     * @param value   the value to set (long id)`
      */
     public static void apply(@NonNull WireBuffer buffer, long valueId, long value) {
         buffer.start(OP_CODE);
@@ -106,7 +108,7 @@ public class ValueIntegerExpressionChangeActionOperation extends Operation
     /**
      * Read this operation and add it to the list of operations
      *
-     * @param buffer the buffer to read
+     * @param buffer     the buffer to read
      * @param operations the list of operations that will be added to
      */
     public static void read(@NonNull WireBuffer buffer, @NonNull List<Operation> operations) {
@@ -121,12 +123,12 @@ public class ValueIntegerExpressionChangeActionOperation extends Operation
      * @param doc to append the description to.
      */
     public static void documentation(@NonNull DocumentationBuilder doc) {
-        doc.operation("Layout Operations", OP_CODE, "ValueIntegerExpressionChangeActionOperation")
-                .description(
-                        "ValueIntegerExpressionChange action. "
-                                + " This operation represents a value change for the given id")
-                .field(INT, "TARGET_VALUE_ID", "Value ID")
-                .field(INT, "VALUE_ID", "id of the value to be assigned to the target");
+        doc.operation("Actions & Events Operations", OP_CODE, CLASS_NAME)
+                .description("Action that updates an integer variable via a dynamic expression")
+                .field(DocumentedOperation.LONG, "targetValueId",
+                        "The ID of the integer variable to update")
+                .field(DocumentedOperation.LONG, "valueExpressionId",
+                        "The ID of the expression to evaluate");
     }
 
     @Override

@@ -1049,9 +1049,9 @@ public class AndroidPaintContext extends PaintContext {
                         mPathCache.put(fontName, null);
                         return null;
                     }
-                    fontName = fontName.toLowerCase(Locale.ROOT);
+                    String fontNameLower = fontName.toLowerCase(Locale.ROOT);
                     for (File fontFile : fontFiles) {
-                        if (fontFile.getName().toLowerCase(Locale.ROOT).contains(fontName)) {
+                        if (fontFile.getName().toLowerCase(Locale.ROOT).contains(fontNameLower)) {
                             mPathCache.put(fontName, fontFile.getAbsolutePath());
                             return fontFile.getAbsolutePath();
                         }

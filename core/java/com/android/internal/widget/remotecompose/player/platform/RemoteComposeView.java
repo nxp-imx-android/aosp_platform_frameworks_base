@@ -225,7 +225,16 @@ public class RemoteComposeView extends FrameLayout
         mARContext.loadFloat(RemoteContext.ID_TOUCH_EVENT_TIME, -Float.MAX_VALUE);
         mARContext.loadFloat(RemoteContext.ID_FONT_SIZE, getDefaultTextSize());
 
+        mDocument.applyDataOperations(mARContext);
+
         invalidate();
+        Integer debug = (Integer) mDocument.getDocument().getProperty(Header.DEBUG);
+        if (debug != null) {
+            if (debug > 0) {
+                System.out.println("Debug level set to " + debug);
+                setDebug(debug);
+            }
+        }
         Integer fps = (Integer) mDocument.getDocument().getProperty(Header.DOC_DESIRED_FPS);
         if (fps != null && fps > 0) {
             mMaxFrameRate = fps;

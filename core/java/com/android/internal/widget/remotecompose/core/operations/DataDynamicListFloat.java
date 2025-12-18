@@ -15,9 +15,6 @@
  */
 package com.android.internal.widget.remotecompose.core.operations;
 
-import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.FLOAT_ARRAY;
-import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.INT;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
@@ -119,10 +116,9 @@ public class DataDynamicListFloat extends Operation
      */
     public static void documentation(@NonNull DocumentationBuilder doc) {
         doc.operation("Data Operations", OP_CODE, CLASS_NAME)
-                .description("a list of Floats")
-                .field(DocumentedOperation.INT, "id", "id the array (2xxxxx)")
-                .field(INT, "length", "number of floats")
-                .field(FLOAT_ARRAY, "values", "length", "array of floats");
+                .description("A dynamic list of floats")
+                .field(DocumentedOperation.INT, "id", "The ID of the list")
+                .field(DocumentedOperation.FLOAT, "length", "The length of the list");
     }
 
     @NonNull
@@ -153,7 +149,6 @@ public class DataDynamicListFloat extends Operation
 
     /**
      * Update the values
-     * @param values
      */
     public void updateValues(@NonNull float [] values) {
         mValues = Arrays.copyOf(values, values.length);
