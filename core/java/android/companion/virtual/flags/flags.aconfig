@@ -196,6 +196,7 @@ flag {
     namespace: "virtual_devices"
     description: "Device and display awareness for UiModeManager"
     bug: "340667076"
+    is_exported: true
 }
 
 flag {
