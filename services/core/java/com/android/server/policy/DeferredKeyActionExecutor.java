@@ -19,6 +19,8 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 
+import com.android.internal.annotations.GuardedBy;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -117,9 +119,11 @@ public class DeferredKeyActionExecutor {
 
     /** A buffer holding a gesture down time and its corresponding actions. */
     private static class TimedActionsBuffer {
+        @GuardedBy("this")
         private final List<Runnable> mActions = new ArrayList<>();
         private final int mKeyCode;
         private final long mDownTime;
+        @GuardedBy("this")
         private boolean mExecutable;
 
         TimedActionsBuffer(int keyCode, long downTime) {
@@ -131,7 +135,7 @@ public class DeferredKeyActionExecutor {
             return mDownTime;
         }
 
-        void addAction(Runnable action) {
+        synchronized void addAction(Runnable action) {
             if (mExecutable) {
                 if (DEBUG) {
                     Log.i(
@@ -146,24 +150,33 @@ public class DeferredKeyActionExecutor {
         }
 
         void setExecutable() {
-            mExecutable = true;
-            if (DEBUG && !mActions.isEmpty()) {
-                Log.i(
-                        TAG,
-                        "setExecutable: execute actions for key "
-                                + KeyEvent.keyCodeToString(mKeyCode));
+            // Defensive copy to avoid ConcurrentModificationException.
+            Runnable[] actionsToRun;
+
+            synchronized (this) {
+                mExecutable = true;
+                if (DEBUG && !mActions.isEmpty()) {
+                    Log.i(
+                            TAG,
+                            "setExecutable: execute actions for key "
+                                    + KeyEvent.keyCodeToString(mKeyCode));
+                }
+                actionsToRun = mActions.toArray(new Runnable[0]);
+
+                // Clear the original list immediately to ensure clean state before execution start,
+                // and prevents any double-execution scenarios if an exception is thrown.
+                mActions.clear();
             }
-            for (Runnable action : mActions) {
+            for (Runnable action : actionsToRun) {
                 action.run();
             }
+        }
+
+        synchronized void clear() {
             mActions.clear();
         }
 
-        void clear() {
-            mActions.clear();
-        }
-
-        void dump(String prefix, PrintWriter pw) {
+        synchronized void dump(String prefix, PrintWriter pw) {
             if (mExecutable) {
                 pw.println(prefix + "  " + KeyEvent.keyCodeToString(mKeyCode) + ": executable");
             } else {

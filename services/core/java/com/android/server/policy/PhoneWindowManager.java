@@ -2878,14 +2878,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         // planed. So, we temporarily allow Wear device to override it. Such exempt will be
         // removed as soon as Wear's keycode remapping is done.
         // TODO(b/422274999): remove this temporary override exemption when remapping is done.
-        if (!mHasFeatureWatch || !com.android.server.policy.Flags.wearKeyGestureHandling()) {
+        final boolean useMigratedKeyGestureHandlingForWear =
+                mHasFeatureWatch && com.android.server.policy.Flags.wearKeyGestureHandling();
+        if (!useMigratedKeyGestureHandlingForWear) {
             mSingleKeyGestureDetector.addRule(new PowerKeyRule());
+            if (hasStemPrimaryBehavior()) {
+                mSingleKeyGestureDetector.addRule(new StemPrimaryKeyRule());
+            }
         }
         if (hasLongPressOnBackBehavior()) {
             mSingleKeyGestureDetector.addRule(new BackKeyRule());
-        }
-        if (hasStemPrimaryBehavior()) {
-            mSingleKeyGestureDetector.addRule(new StemPrimaryKeyRule());
         }
         mSingleKeyGestureDetector.addRule(new StylusTailButtonRule());
     }
