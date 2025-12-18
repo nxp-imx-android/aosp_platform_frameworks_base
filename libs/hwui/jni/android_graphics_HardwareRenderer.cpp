@@ -921,12 +921,19 @@ static void android_view_ThreadedRenderer_initDisplayInfo(
     DeviceInfo::setSupportMixedColorSpaces(supportMixedColorSpaces);
 }
 
-static void android_view_ThreadedRenderer_setDrawingEnabled(JNIEnv*, jclass, jboolean enabled) {
+static void android_view_ThreadedRenderer_setDrawingEnabledForProcess(JNIEnv*, jclass,
+                                                                      jboolean enabled) {
     Properties::setDrawingEnabled(enabled);
 }
 
-static jboolean android_view_ThreadedRenderer_isDrawingEnabled(JNIEnv*, jclass) {
+static jboolean android_view_ThreadedRenderer_isDrawingEnabledForProcess(JNIEnv*, jclass) {
     return Properties::isDrawingEnabled();
+}
+
+static void android_view_ThreadedRenderer_setDrawingEnabledForProxy(JNIEnv*, jclass, jlong proxyPtr,
+                                                                    jboolean enabled) {
+    RenderProxy* proxy = reinterpret_cast<RenderProxy*>(proxyPtr);
+    proxy->setDrawingEnabled(enabled);
 }
 
 // ----------------------------------------------------------------------------
@@ -1087,8 +1094,12 @@ static const JNINativeMethod gMethods[] = {
          (void*)android_view_ThreadedRenderer_preInitBufferAllocator},
         {"isWebViewOverlaysEnabled", "()Z",
          (void*)android_view_ThreadedRenderer_isWebViewOverlaysEnabled},
-        {"nSetDrawingEnabled", "(Z)V", (void*)android_view_ThreadedRenderer_setDrawingEnabled},
-        {"nIsDrawingEnabled", "()Z", (void*)android_view_ThreadedRenderer_isDrawingEnabled},
+        {"nSetDrawingEnabledForProcess", "(Z)V",
+         (void*)android_view_ThreadedRenderer_setDrawingEnabledForProcess},
+        {"nIsDrawingEnabledForProcess", "()Z",
+         (void*)android_view_ThreadedRenderer_isDrawingEnabledForProcess},
+        {"nSetDrawingEnabledForProxy", "(JZ)V",
+         (void*)android_view_ThreadedRenderer_setDrawingEnabledForProxy},
         {"nSetRtAnimationsEnabled", "(Z)V",
          (void*)android_view_ThreadedRenderer_setRtAnimationsEnabled},
         {"nSetRtAnimationsEnabledForContext", "(JZ)V",

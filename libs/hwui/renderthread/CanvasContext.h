@@ -204,6 +204,8 @@ public:
 
     void setForceDark(ForceDarkType type) { mForceDarkType = type; }
 
+    void setDrawingEnabled(bool enabled) { mDrawingEnabled = enabled; }
+
     ForceDarkType getForceDarkType() { return mForceDarkType; }
 
     SkISize getNextFrameSize() const;
@@ -338,6 +340,10 @@ private:
     ForceDarkType mForceDarkType = ForceDarkType::NONE;
     LightInfo mLightInfo;
     LightGeometry mLightGeometry = {{0, 0, 0}, 0};
+
+    // Whether drawing is enabled for this CanvasContext, separate from whether drawing is enabled
+    // globally through Properties::isDrawingEnabled().
+    bool mDrawingEnabled = true;
 
     bool mHaveNewSurface = false;
     DamageAccumulator mDamageAccumulator;

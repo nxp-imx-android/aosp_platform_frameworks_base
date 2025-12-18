@@ -657,6 +657,26 @@ public class HardwareRenderer {
     }
 
     /**
+     * Toggles whether or not this HardwareRenderer instance will produce drawing output.
+     *
+     * Unlike the global {@link #setDrawingEnabled(boolean)} toggle which applies to all
+     * HardwareRenderer instances, this toggle only applies to the instance on which it is applied.
+     * This renderer will only produce output if and only if drawing is enabled via BOTH
+     * {@link #setDrawingEnabled(boolean)} and this method. Drawing is enabled by default.
+     *
+     * This can be toggled on and off at will to enable screenshot-based system features. For
+     * example, you can toggle drawing on, force a frame to be drawn (e.g. by calling
+     * view#invalidate()), and toggle it back off once the frame is drawn to produce a single frame
+     * output.
+     *
+     * @see #setDrawingEnabled(boolean)
+     * @hide
+     */
+    public void setRendererDrawingEnabled(boolean enabled) {
+        nSetDrawingEnabledForProxy(mNativeProxy, enabled);
+    }
+
+    /**
      * Allocate buffers ahead of time to avoid allocation delays during rendering.
      *
      * <p>Typically a Surface will allocate buffers lazily. This is usually fine and reduces the
@@ -1346,7 +1366,7 @@ public class HardwareRenderer {
      * emulators or if {@link #setDrawingEnabled(boolean)} is used.
      */
     public static boolean isDrawingEnabled() {
-        return nIsDrawingEnabled();
+        return nIsDrawingEnabledForProcess();
     }
 
     /**
@@ -1368,7 +1388,7 @@ public class HardwareRenderer {
      */
     // TODO(b/194195794): Add link to androidx's Screenshot library for help with this
     public static void setDrawingEnabled(boolean drawingEnabled) {
-        nSetDrawingEnabled(drawingEnabled);
+        nSetDrawingEnabledForProcess(drawingEnabled);
     }
 
     /**
@@ -1757,9 +1777,11 @@ public class HardwareRenderer {
             boolean supportsFp16ForHdr, boolean isRgba10101010SupportedForHdr,
             boolean nSupportMixedColorSpaces);
 
-    private static native void nSetDrawingEnabled(boolean drawingEnabled);
+    private static native void nSetDrawingEnabledForProcess(boolean drawingEnabled);
 
-    private static native boolean nIsDrawingEnabled();
+    private static native boolean nIsDrawingEnabledForProcess();
+
+    private static native void nSetDrawingEnabledForProxy(long nativeProxy, boolean enabled);
 
     private static native void nSetRtAnimationsEnabled(boolean rtAnimationsEnabled);
 
