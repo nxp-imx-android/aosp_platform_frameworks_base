@@ -35,6 +35,8 @@ import static android.os.VibrationEffect.EFFECT_STRENGTH_STRONG;
 import static android.os.VibrationEffect.EFFECT_THUD;
 import static android.os.VibrationEffect.EFFECT_TICK;
 
+import com.android.server.LocalServices;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -148,6 +150,7 @@ import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import com.android.server.pm.BackgroundUserSoundNotifier;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.vibrator.VibrationSession.Status;
+import com.android.server.vibrator.VibratorManagerInternal;
 
 import com.google.common.truth.Truth;
 
@@ -338,6 +341,7 @@ public class VibratorManagerServiceTest {
         LocalServices.removeServiceForTest(PackageManagerInternal.class);
         LocalServices.removeServiceForTest(PowerManagerInternal.class);
         LocalServices.removeServiceForTest(VirtualDeviceManagerInternal.class);
+        LocalServices.removeServiceForTest(VibratorManagerInternal.class);
         if (mInputManagerGlobalSession != null) {
             mInputManagerGlobalSession.close();
         }
@@ -345,6 +349,8 @@ public class VibratorManagerServiceTest {
 
     private VibratorManagerService createSystemReadyService() {
         VibratorManagerService service = createService();
+        // Trigger all Lifecycle events for testing a ready service.
+        service.publishLocalServices();
         service.systemReady();
         return service;
     }
@@ -4375,6 +4381,116 @@ public class VibratorManagerServiceTest {
         byte[] buffer = new byte[10];
         int bytesRead = stream.read(buffer);
         assertThat(bytesRead).isEqualTo(HalVibratorManagerHelper.READ_STATUS_ERROR_CLOSED);
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_TRUSTED_CALLERS)
+    public void vibrateFromLocalService_flagDisabled_localServiceIsNotPublished() {
+        VibratorManagerService service = createSystemReadyService();
+        assertThat(service).isNotNull();
+
+        // Make sure the local service was not published since the flag is disabled.
+        VibratorManagerInternal localService =
+                LocalServices.getService(VibratorManagerInternal.class);
+        assertNull("Local service should not be published when flag is disabled", localService);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_TRUSTED_CALLERS)
+    public void localService_flagEnabled_vibrateWithoutPermissionCheck_Succeeds() throws Exception {
+        // Configure the fake HAL *before* the service is created.
+        mHalHelper.setVibratorIds(new int[] {1});
+        mHalHelper.getVibratorHelper(1).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
+
+        // Deny permission to ensure the test is valid.
+        denyPermission(android.Manifest.permission.VIBRATE);
+
+        VibratorManagerService service = createSystemReadyService();
+        assertThat(service).isNotNull();
+
+        // Make sure the local service was published.
+        VibratorManagerInternal localService =
+                LocalServices.getService(VibratorManagerInternal.class);
+        assertNotNull("Local service should be published when flag is enabled", localService);
+
+        // Call the method on the local service.
+        localService.vibrateWithoutPermissionCheck(
+                Context.DEVICE_ID_DEFAULT,
+                VibrationEffect.createOneShot(100L, VibrationEffect.DEFAULT_AMPLITUDE),
+                HAPTIC_FEEDBACK_ATTRS,
+                "test",
+                mock(IBinder.class));
+
+        // Assert that the vibration started and finished, even without the VIBRATE permission.
+        assertTrue(
+                "Vibration should start via local service without permission",
+                waitUntil(s -> s.isVibrating(1), service, TEST_TIMEOUT_MILLIS));
+        assertTrue(
+                "Vibration should finish",
+                waitUntil(s -> !s.isVibrating(1), service, TEST_TIMEOUT_MILLIS));
+
+        // Verify side-effects like battery and app-ops stats.
+        List<VibrationEffectSegment> played = mHalHelper.getVibratorHelper(1).getEffectSegments();
+        assertThat(played).hasSize(1);
+        assertThat(played.get(0)).isInstanceOf(StepSegment.class);
+        verify(mBatteryStatsMock).noteVibratorOn(anyInt(), eq(100L));
+        verify(mAppOpsManagerMock)
+                .checkAudioOpNoThrow(
+                        eq(AppOpsManager.OP_VIBRATE),
+                        eq(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION),
+                        anyInt(),
+                        anyString());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_TRUSTED_CALLERS)
+    public void localService_cancelVibrateWithoutPermissionCheck_bypassesPermissionCheck()
+            throws Exception {
+        // Configure the fake HAL *before* the service is created.
+        mHalHelper.setVibratorIds(new int[] {1});
+        mHalHelper.getVibratorHelper(1).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
+
+        // Deny permission to ensure the test is valid.
+        denyPermission(android.Manifest.permission.VIBRATE);
+
+        VibratorManagerService service = createSystemReadyService();
+        assertThat(service).isNotNull();
+
+        // Make sure the local service was published.
+        VibratorManagerInternal localService =
+                LocalServices.getService(VibratorManagerInternal.class);
+        assertNotNull("Local service should be published when flag is enabled", localService);
+
+        IBinder token = mock(IBinder.class);
+        // Call the method on the local service.
+        localService.vibrateWithoutPermissionCheck(
+                Context.DEVICE_ID_DEFAULT,
+                VibrationEffect.createOneShot(20_000L, VibrationEffect.DEFAULT_AMPLITUDE),
+                HAPTIC_FEEDBACK_ATTRS,
+                "test",
+                token);
+
+        // Assert that the vibration started and finished, even without the VIBRATE permission.
+        assertTrue(
+                "Vibration should start via local service without permission",
+                waitUntil(s -> s.isVibrating(1), service, TEST_TIMEOUT_MILLIS));
+
+        // This should throw a SecurityException because it checks for permissions.
+        assertThrows(
+                SecurityException.class,
+                () -> service.cancelVibrate(VibrationAttributes.USAGE_FILTER_MATCH_ALL, token));
+
+        // This should be no-op because it's a different token.
+        localService.cancelVibrateWithoutPermissionCheck(
+                VibrationAttributes.USAGE_FILTER_MATCH_ALL, mock(IBinder.class));
+        assertTrue(
+                "Vibration is still on",
+                waitUntil(s -> s.isVibrating(1), service, TEST_TIMEOUT_MILLIS));
+
+        // This should succeed because it bypasses the permission check and it's the same token.
+        localService.cancelVibrateWithoutPermissionCheck(
+                VibrationAttributes.USAGE_FILTER_MATCH_ALL, token);
+        assertTrue(waitUntil(s -> !s.isVibrating(1), service, TEST_TIMEOUT_MILLIS));
     }
 
     private IHapticGeneratorSession startHapticGeneratorSession(VibratorManagerService service,
