@@ -66,6 +66,16 @@ sealed class QuickActionChipUiState {
         override val logName = "Hidden(id=$chipId, anim=$shouldAnimate)"
     }
 
+    data class LaunchChip(
+        override val chipId: QuickActionChipId,
+        val icon: Icon,
+        val onClick: (Context?) -> Unit = {},
+        val isSelected: Boolean = false,
+        val contentDescription: ContentDescription? = null,
+    ) : QuickActionChipUiState() {
+        override val logName = "Launch(id=$chipId, selected=$isSelected)"
+    }
+
     data class PopupChip(
         override val chipId: QuickActionChipId,
         /** Icons shown on the chip when no specific hover behavior. */

@@ -30,6 +30,7 @@ import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
 import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -81,11 +82,14 @@ class StatusBarPopupChipsViewModelTest : SysuiTestCase() {
 
             Snapshot.takeSnapshot {
                 assertThat(shownPopupChips).hasSize(1)
-                val mediaChip = shownPopupChips.first()
+                val mediaChip = shownPopupChips.first() as QuickActionChipUiState.PopupChip
                 assertThat(mediaChip.isPopupShown).isFalse()
 
                 mediaChip.showPopup.invoke(context)
-                assertThat(shownPopupChips.first().isPopupShown).isTrue()
+                assertThat(
+                        (shownPopupChips.first() as QuickActionChipUiState.PopupChip).isPopupShown
+                    )
+                    .isTrue()
             }
         }
 
