@@ -139,8 +139,7 @@ abstract class GenericAllowlist<E> {
     /** Converts the given element to a String. */
     protected abstract String toNormalizedName(E element);
 
-    @VisibleForTesting
-    final @AllowlistMode int getMode() {
+    public final @AllowlistMode int getMode() {
         return mMode;
     }
 

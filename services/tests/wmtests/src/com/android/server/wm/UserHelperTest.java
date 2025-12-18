@@ -21,9 +21,11 @@ import static android.app.ActivityManager.START_SUCCESS;
 import static android.os.UserHandle.USER_SYSTEM;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
+import static com.android.server.pm.UserActivitiesAllowlist.ALLOWLIST_MODE_ENABLED;
+import static com.android.server.pm.UserActivitiesAllowlist.ALLOWLIST_MODE_DISABLED;
+import static com.android.server.pm.UserActivitiesAllowlist.ALLOWLIST_MODE_LOG_ONLY;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
@@ -61,6 +63,8 @@ public final class UserHelperTest {
     private static final boolean STARTED = true;
     private static final boolean NOT_STARTED = false;
 
+    private static final int INVALID_ALLOWLIST_MODE = 666;
+
     @Rule
     public final Expect expect = Expect.create();
 
@@ -77,13 +81,15 @@ public final class UserHelperTest {
     private UserManagerInternal mMockUmi;
 
     @Mock
-    private ActivityRecord mActivityRecord;
+    private ActivityRecord mMockActivityRecord;
+
+    @Mock
+    private UserActivitiesAllowlist mMockHsuAllowlist;
 
     private UserHelper mUserHelper;
 
     @Before
     public void setFixtures() {
-        mUserHelper = createUserHelper(/* hsum= */ true);
         mRequest.intent = new Intent().setComponent(COMP_NAME);
         mRequest.activityInfo = new ActivityInfo();
         mRequest.activityInfo.applicationInfo = new ApplicationInfo();
@@ -92,9 +98,13 @@ public final class UserHelperTest {
         // different userId in the request to make sure it's ignored
         setUserIdOnRequest(USER_ID);
 
-        // Mock as not allowlisted by default so it's simpler to test corner-case scenarios (like
-        // null info)
-        mockHsuActivityAllowlisted(false);
+        when(mMockHsuAllowlist.toString()).thenReturn("Schindler's"); // used on dump() tests
+
+        // Sets default properties before setting the common fixture
+        mockIsHsum(true);
+        mockHsuActivityAllowlistMode(ALLOWLIST_MODE_ENABLED);
+        mockHsuActivityAllowlist(mMockHsuAllowlist);
+        mUserHelper = createUserHelper();
     }
 
     @Test
@@ -122,9 +132,10 @@ public final class UserHelperTest {
     @Test
     public void testCheckRequest_allowListIsNull_success() {
         mockNoHsuActivitiesAllowlist();
+        var userHelper = createUserHelper();
 
         expect.withMessage("checkRequest()")
-                .that(mUserHelper.checkRequest(mRequest))
+                .that(userHelper.checkRequest(mRequest))
                 .isEqualTo(START_SUCCESS);
 
         verifyUmiNotNotifiedActivityBlockedOnHsu();
@@ -141,7 +152,8 @@ public final class UserHelperTest {
 
     @Test
     public void testCheckRequest_notAllowlisted_successWhenDeviceIsNotHsum() {
-        var userHelper = createUserHelper(/* hsum= */ false);
+        mockIsHsum(false);
+        var userHelper = createUserHelper();
 
         expect.withMessage("checkRequest()")
                 .that(userHelper.checkRequest(mRequest))
@@ -162,8 +174,44 @@ public final class UserHelperTest {
     }
 
     @Test
+    public void testCheckRequest_notAllowlisted_successWhenExplicitlyDisabled() {
+        mockHsuActivityAllowlistMode(ALLOWLIST_MODE_DISABLED);
+        var userHelper = createUserHelper();
+
+        expect.withMessage("checkRequest()")
+                .that(userHelper.checkRequest(mRequest))
+                .isEqualTo(START_SUCCESS);
+
+        verifyUmiNotNotifiedActivityBlockedOnHsu();
+    }
+
+    @Test
+    public void testCheckRequest_notAllowlisted_successWhenInvalidMode() {
+        mockHsuActivityAllowlistMode(INVALID_ALLOWLIST_MODE);
+        var userHelper = createUserHelper();
+
+        expect.withMessage("checkRequest()")
+                .that(userHelper.checkRequest(mRequest))
+                .isEqualTo(START_SUCCESS);
+
+        verifyUmiNotNotifiedActivityBlockedOnHsu();
+    }
+
+    @Test
+    public void testCheckRequest_notAllowlisted_successWhenLogOnlyMode() {
+        mockHsuActivityAllowlistMode(ALLOWLIST_MODE_LOG_ONLY);
+        var userHelper = createUserHelper();
+
+        expect.withMessage("checkRequest()")
+                .that(userHelper.checkRequest(mRequest))
+                .isEqualTo(START_SUCCESS);
+
+        verifyUmiNotifiedActivityBlockedOnHsu();
+    }
+
+    @Test
     public void testCheckRequest_allowlisted_success() {
-        mockHsuActivityAllowlisted(true);
+        mockDefaultActivityAllowlisted();
 
         expect.withMessage("checkRequest()")
                 .that(mUserHelper.checkRequest(mRequest))
@@ -174,16 +222,17 @@ public final class UserHelperTest {
 
     @Test
     public void testLogStarted_notStarted() {
-        mUserHelper.logActivityStarted(mActivityRecord, NOT_STARTED);
+        mUserHelper.logActivityStarted(mMockActivityRecord, NOT_STARTED);
 
         verifyUmiNotNotifiedActivityLaunchedOnHsu();
     }
 
     @Test
     public void testLogStarted_started_dontLogWhenNotHsum() {
-        var userHelper = createUserHelper(/* hsum= */ false);
+        mockIsHsum(false);
+        var userHelper = createUserHelper();
 
-        userHelper.logActivityStarted(mActivityRecord, STARTED);
+        userHelper.logActivityStarted(mMockActivityRecord, STARTED);
 
         verifyUmiNotNotifiedActivityLaunchedOnHsu();
     }
@@ -233,12 +282,14 @@ public final class UserHelperTest {
                       ...  TAG=ActivityTaskManager
                       ...  mIsHeadlessSystemUserMode=true
                       ...  mActivityLaunchIntegrationStatus=1 (ENABLED)
+                      ...  mHsuActivitiesAllowlist=Schindler's
                       """);
     }
 
     @Test
     public void testDump_nonHsum() throws Exception {
-        var userHelper = createUserHelper(/* hsum= */ false);
+        mockIsHsum(false);
+        var userHelper = createUserHelper();
 
         String dump = dump(userHelper, "...");
 
@@ -248,10 +299,77 @@ public final class UserHelperTest {
                       ...  TAG=ActivityTaskManager
                       ...  mIsHeadlessSystemUserMode=false
                       ...  mActivityLaunchIntegrationStatus=-1 (DISABLED_NOT_HSUM)
+                      ...  mHsuActivitiesAllowlist=null
                       """);
     }
 
-    // TODO(b/455582152): test dump with other statuses (and current user id)
+    @Test
+    public void testDump_noAllowlist() throws Exception {
+        mockNoHsuActivitiesAllowlist();
+        var userHelper = createUserHelper();
+
+        String dump = dump(userHelper, "...");
+
+        expect.withMessage("dump()").that(dump)
+                .isEqualTo("""
+                      ...UserHelper:
+                      ...  TAG=ActivityTaskManager
+                      ...  mIsHeadlessSystemUserMode=true
+                      ...  mActivityLaunchIntegrationStatus=-2 (DISABLED_NO_ALLOWLIST)
+                      ...  mHsuActivitiesAllowlist=null
+                      """);
+    }
+
+    @Test
+    public void testDump_disabled() throws Exception {
+        mockHsuActivityAllowlistMode(ALLOWLIST_MODE_DISABLED);
+        var userHelper = createUserHelper();
+
+        String dump = dump(userHelper, "...");
+
+        expect.withMessage("dump()").that(dump)
+                .isEqualTo("""
+                      ...UserHelper:
+                      ...  TAG=ActivityTaskManager
+                      ...  mIsHeadlessSystemUserMode=true
+                      ...  mActivityLaunchIntegrationStatus=-3 (DISABLED_EXPLICITLY)
+                      ...  mHsuActivitiesAllowlist=Schindler's
+                      """);
+    }
+
+    @Test
+    public void testDump_logOnly() throws Exception {
+        mockHsuActivityAllowlistMode(ALLOWLIST_MODE_LOG_ONLY);
+        var userHelper = createUserHelper();
+
+        String dump = dump(userHelper, "...");
+
+        expect.withMessage("dump()").that(dump)
+                .isEqualTo("""
+                      ...UserHelper:
+                      ...  TAG=ActivityTaskManager
+                      ...  mIsHeadlessSystemUserMode=true
+                      ...  mActivityLaunchIntegrationStatus=-4 (DISABLED_LOG_ONLY)
+                      ...  mHsuActivitiesAllowlist=Schindler's
+                      """);
+    }
+
+    @Test
+    public void testDump_invalidMode() throws Exception {
+        mockHsuActivityAllowlistMode(INVALID_ALLOWLIST_MODE);
+        var userHelper = createUserHelper();
+
+        String dump = dump(userHelper, "...");
+
+        expect.withMessage("dump()").that(dump)
+                .isEqualTo("""
+                      ...UserHelper:
+                      ...  TAG=ActivityTaskManager
+                      ...  mIsHeadlessSystemUserMode=true
+                      ...  mActivityLaunchIntegrationStatus=-5 (DISABLED_INVALID_MODE)
+                      ...  mHsuActivitiesAllowlist=Schindler's
+                      """);
+    }
 
     private void setUserIdOnRequest(@UserIdInt int userId) {
         setUserId(mRequest.activityInfo.applicationInfo, userId);
@@ -261,19 +379,28 @@ public final class UserHelperTest {
         applicationInfo.uid = userId * UserHandle.PER_USER_RANGE + 666;
     }
 
-    private UserHelper createUserHelper(boolean hsum) {
-        when(mMockUmi.isHeadlessSystemUserMode()).thenReturn(hsum);
+    private UserHelper createUserHelper() {
         return new UserHelper(mMockUmi);
     }
 
-    private void mockNoHsuActivitiesAllowlist() {
-        when(mMockUmi.getActivitiesAllowlist(USER_SYSTEM)).thenReturn(null);
+    private void mockIsHsum(boolean hsum) {
+        when(mMockUmi.isHeadlessSystemUserMode()).thenReturn(hsum);
     }
 
-    private void mockHsuActivityAllowlisted(boolean value) {
-        var mockAllowlist = mock(UserActivitiesAllowlist.class);
-        when(mockAllowlist.isAllowed(COMP_NAME)).thenReturn(value);
-        when(mMockUmi.getActivitiesAllowlist(USER_SYSTEM)).thenReturn(mockAllowlist);
+    private void mockHsuActivityAllowlist(UserActivitiesAllowlist allowlist) {
+        when(mMockUmi.getActivitiesAllowlist(USER_SYSTEM)).thenReturn(allowlist);
+    }
+
+    private void mockNoHsuActivitiesAllowlist() {
+        mockHsuActivityAllowlist(null);
+    }
+
+    private void mockHsuActivityAllowlistMode(int mode) {
+        when(mMockHsuAllowlist.getMode()).thenReturn(mode);
+    }
+
+    private void mockDefaultActivityAllowlisted() {
+        when(mMockHsuAllowlist.isAllowed(COMP_NAME)).thenReturn(true);
     }
 
     private void setCurrentUserId(@UserIdInt int userId) {
