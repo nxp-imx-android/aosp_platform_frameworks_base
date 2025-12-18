@@ -411,7 +411,7 @@
     <string name="permdesc_answerPhoneCalls" msgid="894386681983116838">"Permet que l\'aplicació contesti a una trucada telefònica entrant."</string>
     <string name="permlab_receiveSms" msgid="505961632050451881">"recepció de missatges de text (SMS)"</string>
     <string name="permdesc_receiveSms" msgid="1797345626687832285">"Permet que l\'aplicació rebi i processi missatges SMS. Això vol dir que l\'aplicació pot controlar o suprimir missatges que s\'han enviat al teu dispositiu sense mostrar-te\'ls."</string>
-    <string name="permlab_receiveMms" msgid="4000650116674380275">"recepció de missatges de text (MMS)"</string>
+    <string name="permlab_receiveMms" msgid="4000650116674380275">"rebre missatges de text (MMS)"</string>
     <string name="permdesc_receiveMms" msgid="958102423732219710">"Permet que l\'aplicació rebi i processi missatges MMS. Això vol dir que l\'aplicació pot controlar o suprimir missatges que s\'han enviat al teu dispositiu sense mostrar-te\'ls."</string>
     <string name="permlab_bindCellBroadcastService" msgid="586746677002040651">"Reenviar els missatges de difusió mòbil"</string>
     <string name="permdesc_bindCellBroadcastService" msgid="6540910200973641606">"Permet que l\'aplicació es vinculi al mòdul de difusió mòbil per poder reenviar els missatges de difusió mòbil a mesura que es reben. Les alertes de difusió mòbil s\'entreguen en algunes ubicacions per alertar de situacions d\'emergència. És possible que les aplicacions malicioses interfereixin en el rendiment o en el funcionament del dispositiu quan es rebi una difusió mòbil d\'emergència."</string>
@@ -1831,6 +1831,8 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"gest"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"configuració ràpida"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"triple toc"</string>
+    <!-- no translation found for accessibility_shortcut_label_top_row_key (1488840908672437180) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> s\'ha desactivat"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Edita les dreceres"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Fet"</string>
@@ -2107,8 +2109,7 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> no està disponible en aquests moments. Aquesta opció es gestiona a <xliff:g id="APP_NAME_1">%2$s</xliff:g>."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"Més informació"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"Reactiva l\'aplicació"</string>
-    <!-- no translation found for locked_app_biometric_prompt_description (6853122652400451464) -->
-    <skip />
+    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> s\'ha bloquejat"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"Reactivar les apps de treball?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Reactiva"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Emergència"</string>
@@ -2548,10 +2549,8 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"Clon"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"Comunitari"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"Espai privat"</string>
-    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
-    <skip />
-    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
-    <skip />
+    <string name="app_locked_new_notification" msgid="4409730436247596215">"Notificació nova"</string>
+    <string name="app_locked_notification_message" msgid="4576179600328065280">"Missatge nou"</string>
     <string name="redacted_notification_message" msgid="1520587845842228816">"S\'ha amagat contingut sensible de les notificacions"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Contingut de l\'aplicació amagat de la compartició de pantalla per seguretat"</string>

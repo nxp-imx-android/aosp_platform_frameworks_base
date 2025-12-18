@@ -639,9 +639,9 @@
     <string name="permdesc_bluetooth_advertise" product="default" msgid="6085174451034210183">"यो एपले नजिकै रहेका ब्लुटुथ चल्ने डिभाइसहरूमा विज्ञापन गर्न पाउँछ"</string>
     <string name="permlab_uwb_ranging" msgid="8141915781475770665">"नजिकै रहेका अल्ट्रा-वाइडब्यान्ड चल्ने डिभाइसहरूबिचको तुलनात्मक स्थान पत्ता लगाउने"</string>
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"यो एपलाई नजिकै रहेका अल्ट्रा-वाइडब्यान्ड चल्ने डिभाइसहरूबिचको तुलनात्मक स्थान पत्ता लगाउन दिनुहोस्"</string>
-    <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"Wi-Fi चल्ने नजिकै रहेका डिभाइसहरूमा चलाउन दिन्छ"</string>
+    <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"नजिकैका Wi-Fi डिभाइसहरूसँग अन्तर्क्रिया गर्ने"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"यसले एपलाई Wi-Fi चल्ने नजिकै रहेका डिभाइसहरूमा विज्ञापन गर्न, कनेक्ट गर्न र सापेक्ष स्थिति निर्धारण गर्न दिन्छ"</string>
-    <string name="permlab_access_local_network" msgid="3420360767259066877">"लोकल नेटवर्कमा कनेक्ट गरिएका डिभाइसहरूको एक्सेस"</string>
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"लोकल नेटवर्कमा कनेक्ट गरिएका डिभाइसहरू एक्सेस गर्ने"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"तपाईंले यो अनुमति दिनुभयो भने यो एपले लोकल नेटवर्कमा कनेक्ट गरिएका डिभाइसहरू एक्सेस गर्न सक्छ"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"लुपब्याक इन्टरफेस प्रयोग गर्नुहोस्"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"एपलाई लुपब्याक इन्टरफेसमार्फत अन्य एपहरूसँग अन्तर्क्रिया गर्ने अनुमति दिन्छ"</string>
@@ -1241,8 +1241,8 @@
     <string name="cut" msgid="2561199725874745819">"कट् गर्नुहोस्"</string>
     <string name="copy" msgid="5472512047143665218">"कपी गर्नुहोस्"</string>
     <string name="failed_to_copy_to_clipboard" msgid="725919885138539875">"क्लिपबोर्डमा कपी गर्न सकिएन"</string>
-    <string name="paste" msgid="461843306215520225">"टाँस्नुहोस्"</string>
-    <string name="paste_as_plain_text" msgid="7664800665823182587">"सामान्य पाठको रूपमा टाँस्नुहोस्"</string>
+    <string name="paste" msgid="461843306215520225">"पेस्ट गर्नुहोस्"</string>
+    <string name="paste_as_plain_text" msgid="7664800665823182587">"सामान्य पाठको रूपमा पेस्ट गर्नुहोस्"</string>
     <string name="replace" msgid="7842675434546657444">"विस्थापन गर्नुहोस्…"</string>
     <string name="delete" msgid="1514113991712129054">"मेट्नुहोस्"</string>
     <string name="copyUrl" msgid="6229645005987260230">"URL को प्रतिलिप गर्नुहोस्"</string>
@@ -1830,6 +1830,8 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"जेस्चर"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"द्रुत सेटिङ"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"ट्रिपल ट्याप गर्नुहोस्"</string>
+    <!-- no translation found for accessibility_shortcut_label_top_row_key (1488840908672437180) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> निष्क्रिय पारिएको छ"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"सर्टकटहरू सम्पादन गर्नुहोस्"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"सम्पन्न भयो"</string>
@@ -2106,8 +2108,7 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> अहिले उपलब्ध छैन। यो <xliff:g id="APP_NAME_1">%2$s</xliff:g> द्वारा व्यवस्थित छ।"</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"थप जान्नुहोस्"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"एपको पज हटाउनुहोस्"</string>
-    <!-- no translation found for locked_app_biometric_prompt_description (6853122652400451464) -->
-    <skip />
+    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> लक गरिएको छ"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"वर्क एपहरू अनपज गर्ने हो?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"अनपज गर्नुहोस्"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"आपत्‌कालीन"</string>
@@ -2182,8 +2183,8 @@
     <string name="time_picker_radial_mode_description" msgid="1222342577115016953">"समय इनपुट गर्न घडी मोडमा स्विच गर्नुहोस्।"</string>
     <string name="autofill_picker_accessibility_title" msgid="4425806874792196599">"स्वतः भरणका विकल्पहरू"</string>
     <string name="autofill_save_accessibility_title" msgid="1523225776218450005">"स्वत: भरणका लागि सेभ गर्नुहोस्‌"</string>
-    <string name="autofill_error_cannot_autofill" msgid="6528827648643138596">"सामग्रीहरूलाई स्वत: भरण गर्न मिल्दैन"</string>
-    <string name="autofill_picker_no_suggestions" msgid="1076022650427481509">"कुनै स्वत: भरण सुझाव छैन"</string>
+    <string name="autofill_error_cannot_autofill" msgid="6528827648643138596">"सामग्रीहरूलाई अटोफिल गर्न मिल्दैन"</string>
+    <string name="autofill_picker_no_suggestions" msgid="1076022650427481509">"कुनै अटोफिल सुझाव छैन"</string>
     <string name="autofill_picker_some_suggestions" msgid="5560549696296202701">"{count,plural, =1{स्वतः भर्ने एउटा सुझाव}other{स्वतः भर्ने # वटा सुझाव}}"</string>
     <string name="autofill_save_title" msgid="7719802414283739775"><b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>" मा सुरक्षित गर्ने हो?"</string>
     <string name="autofill_save_title_expressive" msgid="2665408870424848558"><b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>" मा जानकारी सेभ गर्नुहोस्"</string>
@@ -2547,10 +2548,8 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"क्लोन"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"सामुदायिक"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"निजी स्पेस"</string>
-    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
-    <skip />
-    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
-    <skip />
+    <string name="app_locked_new_notification" msgid="4409730436247596215">"नयाँ नोटिफिकेसन"</string>
+    <string name="app_locked_notification_message" msgid="4576179600328065280">"नयाँ म्यासेज"</string>
     <string name="redacted_notification_message" msgid="1520587845842228816">"संवेदनशील सूचनासम्बन्धी सामग्री लुकाइएको छ"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"स्क्रिन सेयर गर्दा सुरक्षाका लागि एपमा भएको सामग्री लुकाइएको छ"</string>

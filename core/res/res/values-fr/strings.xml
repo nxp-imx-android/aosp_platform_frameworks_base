@@ -1670,7 +1670,7 @@
     <string name="keyboardview_keycode_alt" msgid="8997420058584292385">"Alt"</string>
     <string name="keyboardview_keycode_cancel" msgid="2134624484115716975">"Annuler"</string>
     <string name="keyboardview_keycode_delete" msgid="2661117313730098650">"Supprimer"</string>
-    <string name="keyboardview_keycode_done" msgid="2524518019001653851">"Terminé"</string>
+    <string name="keyboardview_keycode_done" msgid="2524518019001653851">"OK"</string>
     <string name="keyboardview_keycode_mode_change" msgid="2743735349997999020">"Changement de mode"</string>
     <string name="keyboardview_keycode_shift" msgid="3026509237043975573">"Maj"</string>
     <string name="keyboardview_keycode_enter" msgid="168054869339091055">"Entrée"</string>
@@ -1831,6 +1831,8 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"geste"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"réglages rapides"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"appuyer trois fois"</string>
+    <!-- no translation found for accessibility_shortcut_label_top_row_key (1488840908672437180) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"Le service <xliff:g id="SERVICE_NAME">%s</xliff:g> a été désactivé"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Modifier les raccourcis"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"OK"</string>
@@ -2107,8 +2109,7 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"L\'application <xliff:g id="APP_NAME_0">%1$s</xliff:g> n\'est pas disponible pour le moment. Cette suspension est gérée par l\'application <xliff:g id="APP_NAME_1">%2$s</xliff:g>."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"En savoir plus"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"Débloquer l\'application"</string>
-    <!-- no translation found for locked_app_biometric_prompt_description (6853122652400451464) -->
-    <skip />
+    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> est verrouillé"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"Réactiver les applis pro ?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Réactiver"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Urgence"</string>
@@ -2183,7 +2184,7 @@
     <string name="time_picker_radial_mode_description" msgid="1222342577115016953">"Passer en mode horloge pour la saisie de l\'heure."</string>
     <string name="autofill_picker_accessibility_title" msgid="4425806874792196599">"Options de saisie automatique"</string>
     <string name="autofill_save_accessibility_title" msgid="1523225776218450005">"Enregistrer pour la saisie automatique"</string>
-    <string name="autofill_error_cannot_autofill" msgid="6528827648643138596">"Le contenu ne peut pas être saisi automatiquement"</string>
+    <string name="autofill_error_cannot_autofill" msgid="6528827648643138596">"Le contenu ne peut pas être complété automatiquement"</string>
     <string name="autofill_picker_no_suggestions" msgid="1076022650427481509">"Aucune suggestion de saisie automatique"</string>
     <string name="autofill_picker_some_suggestions" msgid="5560549696296202701">"{count,plural, =1{1 suggestion de saisie automatique}one{# suggestion de saisie automatique}many{# suggestions de saisie automatique}other{# suggestions de saisie automatique}}"</string>
     <string name="autofill_save_title" msgid="7719802414283739775">"Enregistrer dans "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>" ?"</string>
@@ -2548,10 +2549,8 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"Clone"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"Commun"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"Espace privé"</string>
-    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
-    <skip />
-    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
-    <skip />
+    <string name="app_locked_new_notification" msgid="4409730436247596215">"Nouvelle notification"</string>
+    <string name="app_locked_notification_message" msgid="4576179600328065280">"Nouveau message"</string>
     <string name="redacted_notification_message" msgid="1520587845842228816">"Le contenu sensible de la notification a été masqué"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Le contenu de l\'appli est masqué lors du partage d\'écran par mesure de sécurité"</string>
@@ -2618,7 +2617,7 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Sécurité et confidentialité"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="3711633462195368964">"Déverrouillez l\'écran et relancez la connectivité USB"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="2426356396215833585">"Déverrouiller l\'écran pour lancer la connectivité USB"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"La Protection Avancée exige que votre écran soit déverrouillé pour lancer la connectivité USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"La Protection Avancée nécessite que votre écran soit déverrouillé pour lancer la connectivité USB"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"La Protection Avancée exige que votre écran soit déverrouillé pour lancer la connectivité USB"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"Pour une recharge plus rapide, la Protection Avancée exige que votre écran soit déverrouillé"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"Pour une recharge plus rapide ou pour lancer la connectivité USB, la Protection Avancée exige que votre écran soit déverrouillé"</string>

@@ -773,7 +773,7 @@
     <string name="face_acquired_too_low" msgid="4075391872960840081">"Tenez le téléphone plus bas"</string>
     <string name="face_acquired_too_right" msgid="6245286514593540859">"Déplacez le téléphone vers la gauche"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"Déplacez le téléphone vers la droite"</string>
-    <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"Regardez plus directement votre caméra"</string>
+    <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"Regardez votre caméra plus directement"</string>
     <string name="face_acquired_not_detected" msgid="1057966913397548150">"Visage non détecté. Tenez le téléphone au niveau des yeux."</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"Trop de mouvement. Tenez le téléphone immobile."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Veuillez inscrire votre visage à nouveau."</string>
@@ -1831,6 +1831,8 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"geste"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"paramètres rapides"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"toucher trois fois"</string>
+    <!-- no translation found for accessibility_shortcut_label_top_row_key (1488840908672437180) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> a été désactivé"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Modifier les raccourcis"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"OK"</string>
@@ -2547,10 +2549,8 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"Clone"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"Commun"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"Espace privé"</string>
-    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
-    <skip />
-    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
-    <skip />
+    <string name="app_locked_new_notification" msgid="4409730436247596215">"Nouvelle notification"</string>
+    <string name="app_locked_notification_message" msgid="4576179600328065280">"Nouveau message"</string>
     <string name="redacted_notification_message" msgid="1520587845842228816">"Le contenu confidentiel de la notification est masqué"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Le contenu de l\'appli est masqué du Partage d\'écran par mesure de sécurité"</string>

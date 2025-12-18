@@ -1830,6 +1830,8 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"ishora"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"tezkor sozlamalar"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"uch marta teginish"</string>
+    <!-- no translation found for accessibility_shortcut_label_top_row_key (1488840908672437180) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> faolsizlantirildi"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Tezkor tugmalarni tahrirlash"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"OK"</string>
@@ -2546,10 +2548,8 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"Nusxalash"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"Umumiy"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"Maxfiy makon"</string>
-    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
-    <skip />
-    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
-    <skip />
+    <string name="app_locked_new_notification" msgid="4409730436247596215">"Yangi bildirishnoma"</string>
+    <string name="app_locked_notification_message" msgid="4576179600328065280">"Yangi xabar"</string>
     <string name="redacted_notification_message" msgid="1520587845842228816">"Bildirishnomadagi maxfiy axborot berkitildi"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Ekran namoyishida xavfsizlik maqsadida ilova kontenti berkitildi"</string>

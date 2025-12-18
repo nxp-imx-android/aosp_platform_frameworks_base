@@ -1830,6 +1830,8 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"동작"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"빠른 설정"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"세 번 탭"</string>
+    <!-- no translation found for accessibility_shortcut_label_top_row_key (1488840908672437180) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g>이(가) 사용 중지됨"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"단축키 수정"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"완료"</string>
@@ -2106,8 +2108,7 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"<xliff:g id="APP_NAME_0">%1$s</xliff:g>은(는) 현재 사용할 수 없습니다. <xliff:g id="APP_NAME_1">%2$s</xliff:g>에서 관리하는 앱입니다."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"자세히 알아보기"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"앱 일시중지 해제"</string>
-    <!-- no translation found for locked_app_biometric_prompt_description (6853122652400451464) -->
-    <skip />
+    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> 잠김"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"직장 앱 일시중지를 해제하시겠습니까?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"일시중지 해제"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"긴급 전화"</string>
@@ -2547,10 +2548,8 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"클론"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"공동"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"비공개 스페이스"</string>
-    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
-    <skip />
-    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
-    <skip />
+    <string name="app_locked_new_notification" msgid="4409730436247596215">"새 알림"</string>
+    <string name="app_locked_notification_message" msgid="4576179600328065280">"새 메시지"</string>
     <string name="redacted_notification_message" msgid="1520587845842228816">"민감한 알림 콘텐츠 숨김"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"보안을 위해 화면 공유에서 앱 콘텐츠가 숨겨집니다."</string>
