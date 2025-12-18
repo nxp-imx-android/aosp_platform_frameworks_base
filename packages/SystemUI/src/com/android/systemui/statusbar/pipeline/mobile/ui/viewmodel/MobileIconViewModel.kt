@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel
 
+import com.android.settingslib.R as settingsLibR
 import com.android.systemui.Flags.statusBarStaticInoutIndicators
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
@@ -23,6 +24,7 @@ import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.AirplaneModeInteractor
+import com.android.systemui.statusbar.pipeline.mobile.NewSatelliteIcon
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconModel
@@ -159,9 +161,20 @@ private class CarrierBasedSatelliteViewModelImpl(
 
     override val contentDescription: Flow<MobileContentDescription?> = MutableStateFlow(null)
 
+    override val networkTypeIcon: Flow<Icon.Resource?> =
+        flowOf(
+            if (NewSatelliteIcon.isEnabled) {
+                Icon.Resource(
+                    settingsLibR.drawable.ic_sat_mobiledata,
+                    ContentDescription.Resource(R.string.accessibility_status_bar_satellite_symbol),
+                )
+            } else {
+                null
+            }
+        )
+
     /** These fields are not used for satellite icons currently */
     override val roaming: Flow<Boolean> = flowOf(false)
-    override val networkTypeIcon: Flow<Icon.Resource?> = flowOf(null)
     override val networkTypeBackground: StateFlow<Icon.Resource?> = MutableStateFlow(null)
     override val activityInVisible: Flow<Boolean> = flowOf(false)
     override val activityOutVisible: Flow<Boolean> = flowOf(false)
@@ -208,7 +221,7 @@ private class CellularIconViewModel(
     override val contentDescription: Flow<MobileContentDescription?> =
         combine(iconInteractor.signalLevelIcon, iconInteractor.networkName) { icon, nameModel ->
                 when (icon) {
-                    is SignalIconModel.Cellular ->
+                    is SignalIconModel.CellularTypeIconModel.Cellular ->
                         MobileContentDescription.Cellular(
                             nameModel.name,
                             icon.levelDescriptionRes(),
@@ -218,7 +231,7 @@ private class CellularIconViewModel(
             }
             .stateIn(scope, SharingStarted.WhileSubscribed(), null)
 
-    private fun SignalIconModel.Cellular.levelDescriptionRes() =
+    private fun SignalIconModel.CellularTypeIconModel.Cellular.levelDescriptionRes() =
         when (level) {
             0 -> R.string.accessibility_no_signal
             1 -> R.string.accessibility_one_bar

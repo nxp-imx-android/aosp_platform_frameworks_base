@@ -16,6 +16,8 @@
 
 package com.android.systemui.statusbar.pipeline.shared.ui.viewmodel
 
+import android.platform.test.annotations.EnableFlags
+import android.text.Html
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.settingslib.AccessibilityContentDescriptions.WIFI_OTHER_DEVICE_CONNECTION
@@ -35,6 +37,7 @@ import com.android.systemui.statusbar.pipeline.airplane.data.repository.airplane
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.fake
 import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.airplaneModeInteractor
 import com.android.systemui.statusbar.pipeline.ethernet.domain.EthernetInteractor
+import com.android.systemui.statusbar.pipeline.mobile.NewSatelliteIcon
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.FakeMobileConnectionRepository
@@ -45,6 +48,7 @@ import com.android.systemui.statusbar.pipeline.mobile.util.FakeMobileMappingsPro
 import com.android.systemui.statusbar.pipeline.shared.data.model.DefaultConnectionModel
 import com.android.systemui.statusbar.pipeline.shared.data.repository.connectivityRepository
 import com.android.systemui.statusbar.pipeline.shared.data.repository.fake
+import com.android.systemui.statusbar.pipeline.shared.ui.model.InternetTileModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.SignalIcon
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.InternetTileViewModel.Companion.NOT_CONNECTED_NETWORKS_UNAVAILABLE
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.FakeWifiRepository
@@ -396,6 +400,39 @@ class InternetTileViewModelTest : SysuiTestCase() {
                 .isEqualTo(latest?.secondaryLabel.loadText(context))
         }
 
+    @Test
+    @EnableFlags(NewSatelliteIcon.FLAG_NAME)
+    fun activeConnection_satellite_showsSatelliteText() =
+        testScope.runTest {
+            val output by collectLastValue(underTest.tileModel)
+            val mobileConnectionRepo =
+                FakeMobileConnectionRepository(SUB_2_ID, logcatTableLogBuffer(kosmos))
+            mobileConnectionsRepository.setMobileConnectionRepositoryMap(
+                mapOf(SUB_2_ID to mobileConnectionRepo)
+            )
+            mobileConnectionsRepository.setActiveMobileDataSubscriptionId(SUB_2_ID)
+            val networkName = "test network"
+            mobileConnectionRepo.networkName.value =
+                NetworkNameModel.SubscriptionDerived(networkName)
+            mobileConnectionRepo.dataConnectionState.value = DataConnectionState.Connected
+            mobileConnectionRepo.isNonTerrestrial.value = true
+
+            connectivityRepository.setMobileConnected(default = true, validated = true)
+
+            val expected =
+                Html.fromHtml(
+                    context.getString(
+                        R.string.mobile_carrier_text_format,
+                        networkName,
+                        context.getString(R.string.qs_tile_satellite_label),
+                    ),
+                    0,
+                )
+            assertThat(output).isInstanceOf(InternetTileModel.Active::class.java)
+            val activeModel = output as InternetTileModel.Active
+            assertThat(activeModel.secondaryTitle.toString()).isEqualTo(expected.toString())
+        }
+
     private fun setWifiNetworkWithHotspot(hotspot: WifiNetworkModel.HotspotDeviceType) {
         val networkModel =
             WifiNetworkModel.Active.of(level = 4, ssid = "test ssid", hotspotDeviceType = hotspot)
@@ -407,5 +444,6 @@ class InternetTileViewModelTest : SysuiTestCase() {
 
     companion object {
         const val SUB_1_ID = 1
+        const val SUB_2_ID = 2
     }
 }

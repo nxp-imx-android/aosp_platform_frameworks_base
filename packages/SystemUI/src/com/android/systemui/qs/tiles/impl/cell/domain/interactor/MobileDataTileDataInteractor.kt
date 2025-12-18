@@ -32,6 +32,7 @@ import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileIcon
 import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileModel
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.connectivity.ui.MobileContextProvider
+import com.android.systemui.statusbar.pipeline.mobile.NewSatelliteIcon
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconModel
 import com.android.systemui.utils.coroutines.flow.mapLatestConflated
@@ -64,19 +65,51 @@ constructor(
             if (it == null) {
                 flowOf(null)
             } else {
-                combine(it.isRoaming, it.networkTypeIconGroup) { isRoaming, networkTypeIconGroup ->
-                    val mobileContext =
-                        mobileContextProvider.getMobileContextForSub(it.subscriptionId, context)
-                    val cd = loadString(networkTypeIconGroup.contentDescription, mobileContext)
-                    if (isRoaming) {
-                        val roaming = mobileContext.getString(R.string.data_connection_roaming)
-                        if (cd != null) {
-                            mobileContext.getString(R.string.mobile_data_text_format, roaming, cd)
+                if (NewSatelliteIcon.isEnabled) {
+                    combine(it.isRoaming, it.networkTypeIconGroup, it.isNonTerrestrial) {
+                        isRoaming,
+                        networkTypeIconGroup,
+                        isNonTerrestrial ->
+                        val mobileContext =
+                            mobileContextProvider.getMobileContextForSub(it.subscriptionId, context)
+                        val cd = loadString(networkTypeIconGroup.contentDescription, mobileContext)
+                        if (isNonTerrestrial) {
+                            mobileContext.getString(R.string.qs_tile_satellite_label)
+                        } else if (isRoaming) {
+                            val roaming = mobileContext.getString(R.string.data_connection_roaming)
+                            if (cd != null) {
+                                mobileContext.getString(
+                                    R.string.mobile_data_text_format,
+                                    roaming,
+                                    cd,
+                                )
+                            } else {
+                                roaming
+                            }
                         } else {
-                            roaming
+                            cd
                         }
-                    } else {
-                        cd
+                    }
+                } else {
+                    combine(it.isRoaming, it.networkTypeIconGroup) { isRoaming, networkTypeIconGroup
+                        ->
+                        val mobileContext =
+                            mobileContextProvider.getMobileContextForSub(it.subscriptionId, context)
+                        val cd = loadString(networkTypeIconGroup.contentDescription, mobileContext)
+                        if (isRoaming) {
+                            val roaming = mobileContext.getString(R.string.data_connection_roaming)
+                            if (cd != null) {
+                                mobileContext.getString(
+                                    R.string.mobile_data_text_format,
+                                    roaming,
+                                    cd,
+                                )
+                            } else {
+                                roaming
+                            }
+                        } else {
+                            cd
+                        }
                     }
                 }
             }
@@ -88,35 +121,42 @@ constructor(
                 if (!isConnected) {
                     flowOf(null)
                 } else {
-                    combine(it.networkName, it.signalLevelIcon, mobileDataContentName) {
+                    if (NewSatelliteIcon.isEnabled) {
+                        combine(it.networkName, mobileDataContentName) {
                             networkNameModel,
-                            signalIcon,
                             dataContentDescription ->
-                            Triple(networkNameModel, signalIcon, dataContentDescription)
+                            mobileDataContentConcat(networkNameModel.name, dataContentDescription)
                         }
-                        .mapLatestConflated { (networkNameModel, signalIcon, dataContentDescription)
-                            ->
-                            when (signalIcon) {
-                                is SignalIconModel.Cellular -> {
-                                    mobileDataContentConcat(
-                                        networkNameModel.name,
-                                        dataContentDescription,
-                                    )
-                                }
-
-                                is SignalIconModel.Satellite -> {
-                                    val satelliteDescription =
-                                        signalIcon.icon.contentDescription?.loadContentDescription(
-                                            context
+                    } else {
+                        combine(it.networkName, it.signalLevelIcon, mobileDataContentName) {
+                                networkNameModel,
+                                signalIcon,
+                                dataContentDescription ->
+                                Triple(networkNameModel, signalIcon, dataContentDescription)
+                            }
+                            .mapLatestConflated {
+                                (networkNameModel, signalIcon, dataContentDescription) ->
+                                when (signalIcon) {
+                                    is SignalIconModel.CellularTypeIconModel -> {
+                                        mobileDataContentConcat(
+                                            networkNameModel.name,
+                                            dataContentDescription,
                                         )
-                                    if (satelliteDescription.isNullOrBlank()) {
-                                        null
-                                    } else {
-                                        satelliteDescription
+                                    }
+
+                                    is SignalIconModel.Satellite -> {
+                                        val satelliteDescription =
+                                            signalIcon.icon.contentDescription
+                                                ?.loadContentDescription(context)
+                                        if (satelliteDescription.isNullOrBlank()) {
+                                            null
+                                        } else {
+                                            satelliteDescription
+                                        }
                                     }
                                 }
                             }
-                        }
+                    }
                 }
             } ?: flowOf(null)
         }
@@ -173,7 +213,7 @@ constructor(
                         val icon =
                             if (isDataEnabled) {
                                 when (signalLevelIcon) {
-                                    is SignalIconModel.Cellular -> {
+                                    is SignalIconModel.CellularTypeIconModel -> {
                                         val signalState =
                                             SignalDrawable.getState(
                                                 signalLevelIcon.level,

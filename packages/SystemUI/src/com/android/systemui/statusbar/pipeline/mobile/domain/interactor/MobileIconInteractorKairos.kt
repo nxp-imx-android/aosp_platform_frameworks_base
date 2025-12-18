@@ -30,6 +30,7 @@ import com.android.systemui.kairos.util.nameTag
 import com.android.systemui.kairosBuilder
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
+import com.android.systemui.statusbar.pipeline.mobile.NewSatelliteIcon
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState.Connected
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType
@@ -297,14 +298,17 @@ class MobileIconInteractorKairosImpl(
     override val isAllowedDuringAirplaneMode: State<Boolean>
         get() = connectionRepository.isAllowedDuringAirplaneMode
 
-    /** Whether or not to show the error state of [SignalDrawable] */
-    private val showExclamationMark: State<Boolean> =
+    /** Whether or not to show the error state of [SignalDrawable] for cellular connections */
+    private val showExclamationMarkForCellular: State<Boolean> =
         combine(defaultSubscriptionHasDataEnabled, isDefaultConnectionFailed, isInService) {
             isDefaultDataEnabled,
             isDefaultConnectionFailed,
             isInService ->
             !isDefaultDataEnabled || isDefaultConnectionFailed || !isInService
         }
+
+    /** Whether or not to show the error state of [SignalDrawable] for satellite connections */
+    private val showExclamationMarkForSatellite: State<Boolean> = isInService.map { !it }
 
     private val cellularShownLevel: State<Int> =
         combine(level, isInService, connectionRepository.inflateSignalStrength) {
@@ -318,18 +322,31 @@ class MobileIconInteractorKairosImpl(
             }
         }
 
+    private val satelliteShownLevelV2: State<Int> =
+        combine(
+            connectionRepository.satelliteLevel,
+            isInService,
+            connectionRepository.inflateSignalStrength,
+        ) { level, inService, inflate ->
+            if (inService) {
+                if (inflate) level + 1 else level
+            } else {
+                0
+            }
+        }
+
     // Satellite level is unaffected by the inflateSignalStrength property
     // See b/346904529 for details
     private val satelliteShownLevel: State<Int> = connectionRepository.satelliteLevel
 
-    private val cellularIcon: State<SignalIconModel.Cellular> =
+    private val cellularIcon: State<SignalIconModel.CellularTypeIconModel.Cellular> =
         combine(
             cellularShownLevel,
             numberOfLevels,
-            showExclamationMark,
+            showExclamationMarkForCellular,
             carrierNetworkChangeActive,
         ) { cellularShownLevel, numberOfLevels, showExclamationMark, carrierNetworkChange ->
-            SignalIconModel.Cellular(
+            SignalIconModel.CellularTypeIconModel.Cellular(
                 cellularShownLevel,
                 numberOfLevels,
                 showExclamationMark,
@@ -347,11 +364,27 @@ class MobileIconInteractorKairosImpl(
             )
         }
 
+    private val satelliteIconV2: State<SignalIconModel.CellularTypeIconModel.SatelliteV2> =
+        combine(satelliteShownLevelV2, numberOfLevels, showExclamationMarkForSatellite) {
+            shownLevel,
+            numberOfLevels,
+            showExclamationMark ->
+            SignalIconModel.CellularTypeIconModel.SatelliteV2(
+                shownLevel,
+                numberOfLevels,
+                showExclamationMark,
+            )
+        }
+
     override val signalLevelIcon: State<SignalIconModel> =
         isNonTerrestrial
             .flatMap { ntn ->
                 if (ntn) {
-                    satelliteIcon
+                    if (NewSatelliteIcon.isEnabled) {
+                        satelliteIconV2
+                    } else {
+                        satelliteIcon
+                    }
                 } else {
                     cellularIcon
                 }

@@ -31,6 +31,7 @@ import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.statusbar.connectivity.ui.mobileContextProvider
 import com.android.systemui.statusbar.core.NewStatusBarIcons
+import com.android.systemui.statusbar.pipeline.mobile.NewSatelliteIcon
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.fakeMobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconModel
@@ -98,6 +99,26 @@ class StackedMobileIconViewModelTest : SysuiTestCase() {
                 SignalIconModel.Satellite(
                     level = 0,
                     icon = Icon.Resource(resId = 0, contentDescription = null),
+                )
+            fakeMobileIconsInteractor.filteredSubscriptions.value = listOf(SUB_1, SUB_2)
+            assertThat(underTest.dualSim).isNull()
+        }
+
+    @Test
+    @EnableFlags(NewSatelliteIcon.FLAG_NAME)
+    fun dualSim_filtersOutNonNewSatelliteIcons() =
+        kosmos.runTest {
+            fakeMobileIconsInteractor.filteredSubscriptions.value = listOf(SUB_1)
+            assertThat(underTest.dualSim).isNull()
+
+            fakeMobileIconsInteractor
+                .getInteractorForSubId(SUB_1.subscriptionId)!!
+                .signalLevelIcon
+                .value =
+                SignalIconModel.CellularTypeIconModel.SatelliteV2(
+                    level = 1,
+                    numberOfLevels = 5,
+                    showExclamationMark = false,
                 )
             fakeMobileIconsInteractor.filteredSubscriptions.value = listOf(SUB_1, SUB_2)
             assertThat(underTest.dualSim).isNull()
@@ -314,7 +335,9 @@ class StackedMobileIconViewModelTest : SysuiTestCase() {
     private fun setIconLevel(subId: Int, level: Int) {
         with(kosmos.fakeMobileIconsInteractor.getInteractorForSubId(subId)!!) {
             signalLevelIcon.value =
-                (signalLevelIcon.value as SignalIconModel.Cellular).copy(level = level)
+                (signalLevelIcon.value as SignalIconModel.CellularTypeIconModel.Cellular).copy(
+                    level = level
+                )
         }
     }
 

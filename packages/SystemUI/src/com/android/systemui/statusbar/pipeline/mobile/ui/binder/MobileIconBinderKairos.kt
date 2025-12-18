@@ -208,15 +208,18 @@ object MobileIconBinderKairos {
                 val shouldRequestLayout =
                     when {
                         oldIcon == null -> true
-                        oldIcon is SignalIconModel.Cellular &&
-                            newIcon is SignalIconModel.Cellular ->
+                        oldIcon::class != newIcon::class &&
+                            (oldIcon is SignalIconModel.Satellite ||
+                                newIcon is SignalIconModel.Satellite) -> true
+                        oldIcon is SignalIconModel.CellularTypeIconModel &&
+                            newIcon is SignalIconModel.CellularTypeIconModel -> {
                             oldIcon.numberOfLevels != newIcon.numberOfLevels
-
+                        }
                         else -> false
                     }
-                if (newIcon is SignalIconModel.Cellular) {
+                if (newIcon is SignalIconModel.CellularTypeIconModel) {
                     val packedSignalDrawableState = newIcon.toSignalDrawableState()
-                    viewModel.verboseLogger?.logBinderReceivedSignalCellularIcon(
+                    viewModel.verboseLogger?.logBinderReceivedSignalCellularTypeIcon(
                         parentView = view,
                         subId = viewModel.subscriptionId,
                         icon = newIcon,
