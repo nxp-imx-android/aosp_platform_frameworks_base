@@ -21,6 +21,7 @@ import android.content.ComponentName
 import android.content.Intent
 import android.content.testableContext
 import android.media.projection.MediaProjectionAppContent
+import android.media.projection.ReviewGrantedConsentResult
 import android.os.UserHandle
 import android.view.Display
 import androidx.core.graphics.createBitmap
@@ -112,6 +113,7 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
 
         // Setup the interactor for all tests.
         kosmos.shareScreenUiInteractor.initialize(
+            projection = mock(),
             reviewGrantedConsentRequired = true,
             hostUserHandle = mock(),
             uid = 100,
@@ -166,10 +168,12 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
             // Verify the sharing state is updated to [Approved].
             assertThat(sharingState)
                 .isInstanceOf(ShareScreenUiInteractor.SharingState.Approved::class.java)
-            assertThat(
-                    kosmos.fakeMediaProjectionServiceHelperWrapper.createOrReuseProjectionCallCount
-                )
-                .isEqualTo(1)
+
+            with(kosmos.fakeMediaProjectionServiceHelperWrapper) {
+                assertThat(setReviewedConsentIfNeededCallCount).isEqualTo(1)
+                assertThat(lastSetReviewedConsentResult)
+                    .isEqualTo(ReviewGrantedConsentResult.RECORD_CONTENT_TASK)
+            }
         }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -195,10 +199,12 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
             val sharingState by collectLastValue(kosmos.shareScreenUiInteractor.sharingState)
             assertThat(sharingState)
                 .isInstanceOf(ShareScreenUiInteractor.SharingState.Approved::class.java)
-            assertThat(
-                    kosmos.fakeMediaProjectionServiceHelperWrapper.createOrReuseProjectionCallCount
-                )
-                .isEqualTo(1)
+
+            with(kosmos.fakeMediaProjectionServiceHelperWrapper) {
+                assertThat(setReviewedConsentIfNeededCallCount).isEqualTo(1)
+                assertThat(lastSetReviewedConsentResult)
+                    .isEqualTo(ReviewGrantedConsentResult.RECORD_CONTENT_DISPLAY)
+            }
         }
 
     @Test
@@ -255,9 +261,11 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
             assertThat(isChipVisible).isTrue()
             assertThat(sharingState)
                 .isInstanceOf(ShareScreenUiInteractor.SharingState.Approved::class.java)
-            assertThat(
-                    kosmos.fakeMediaProjectionServiceHelperWrapper.createOrReuseProjectionCallCount
-                )
-                .isEqualTo(1)
+
+            with(kosmos.fakeMediaProjectionServiceHelperWrapper) {
+                assertThat(setReviewedConsentIfNeededCallCount).isEqualTo(1)
+                assertThat(lastSetReviewedConsentResult)
+                    .isEqualTo(ReviewGrantedConsentResult.RECORD_CONTENT_TASK)
+            }
         }
 }

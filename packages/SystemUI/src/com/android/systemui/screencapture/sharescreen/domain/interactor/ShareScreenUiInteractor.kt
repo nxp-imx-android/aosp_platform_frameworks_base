@@ -54,6 +54,7 @@ constructor(
     private val _sharingState = MutableStateFlow<SharingState>(SharingState.NotStarted)
     val sharingState = _sharingState.asStateFlow()
 
+    private lateinit var projection: IMediaProjection
     private var reviewGrantedConsentRequired: Boolean = false
     private lateinit var hostUserHandle: UserHandle
     private var uid: Int = -1
@@ -61,12 +62,14 @@ constructor(
     private var initialDisplayId: Int = -1
 
     fun initialize(
+        projection: IMediaProjection,
         reviewGrantedConsentRequired: Boolean,
         hostUserHandle: UserHandle,
         uid: Int,
         packageName: String,
         initialDisplayId: Int,
     ) {
+        this.projection = projection
         this.reviewGrantedConsentRequired = reviewGrantedConsentRequired
         this.hostUserHandle = hostUserHandle
         this.uid = uid
@@ -80,14 +83,6 @@ constructor(
      */
     fun onAppContentSharingApproved(contentId: Int, callback: IAppContentProjectionCallback) {
         try {
-            val projection =
-                mediaProjectionHelper.createOrReuseProjection(
-                    uid,
-                    packageName,
-                    reviewGrantedConsentRequired,
-                    initialDisplayId,
-                )
-
             val session =
                 object : IAppContentProjectionSession.Stub() {
                     // This is an anonymous implementation of IAppContentProjectionSession.Stub.
@@ -123,14 +118,6 @@ constructor(
     /** Called when the user approves sharing of a single application, identified by its task ID. */
     suspend fun onAppSharingApproved(taskId: Int) {
         try {
-            val projection =
-                mediaProjectionHelper.createOrReuseProjection(
-                    uid,
-                    packageName,
-                    reviewGrantedConsentRequired,
-                    initialDisplayId,
-                )
-
             val recentTasks = recentTaskInteractor.recentTasks.first()
             val task = recentTasks.firstOrNull { it.taskId == taskId }
 
@@ -189,13 +176,11 @@ constructor(
 
     /** Called when the user approves sharing of an entire display. */
     fun onDisplaySharingApproved(displayId: Int) {
-        val projection =
-            mediaProjectionHelper.createOrReuseProjection(
-                uid,
-                packageName,
-                reviewGrantedConsentRequired,
-                displayId,
-            )
+        mediaProjectionHelper.setReviewedConsentIfNeeded(
+            ReviewGrantedConsentResult.RECORD_CONTENT_DISPLAY,
+            reviewGrantedConsentRequired,
+            projection,
+        )
         _sharingState.value = SharingState.Approved(projection)
     }
 

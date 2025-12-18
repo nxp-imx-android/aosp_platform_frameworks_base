@@ -79,16 +79,20 @@ constructor(
         val packageName = intent.getStringExtra(EXTRA_PACKAGE_NAME)
         val reviewGrantedConsentRequired =
             intent.getBooleanExtra(EXTRA_USER_REVIEW_GRANTED_CONSENT, false)
+        val projectionBinder = intent.extras?.getBinder(EXTRA_MEDIA_PROJECTION)
         val hostUserHandle: UserHandle? = intent.getParcelableExtra(EXTRA_HOST_APP_USER_HANDLE)
 
-        if (uid == -1 || hostUserHandle == null || packageName == null) {
+        if (
+            uid == -1 || hostUserHandle == null || packageName == null || projectionBinder == null
+        ) {
             Log.d(
                 TAG,
-                "Invalid intent extras: uid=$uid, hostUserHandle=$hostUserHandle, packageName=$packageName",
+                "Invalid intent extras: uid=$uid, hostUserHandle=$hostUserHandle, packageName=$packageName, projectionBinder=$projectionBinder",
             )
             finish()
             return
         }
+        val projection = IMediaProjection.Stub.asInterface(projectionBinder)
 
         mediaProjectionMetricsLogger.notifyPermissionRequestDisplayed(uid)
 
@@ -109,6 +113,7 @@ constructor(
                                     ?.build() as ScreenCaptureShareScreenUiComponent)
                                 .apply {
                                     shareScreenUiInteractor.initialize(
+                                        projection,
                                         reviewGrantedConsentRequired,
                                         hostUserHandle,
                                         uid,

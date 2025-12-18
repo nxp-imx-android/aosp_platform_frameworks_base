@@ -421,22 +421,32 @@ public class MediaProjectionPermissionActivity extends Activity {
     }
 
     private void grantMediaProjectionPermissionForLargeScreen() {
-        final Intent intent = new Intent(this, ShareScreenActivity.class);
-        intent.putExtra(ShareScreenActivity.EXTRA_HOST_APP_USER_HANDLE, getHostUserHandle());
-        intent.putExtra(ShareScreenActivity.EXTRA_PACKAGE_NAME, mPackageName);
-        intent.putExtra(ShareScreenActivity.EXTRA_HOST_APP_UID, getLaunchedFromUid());
-        intent.putExtra(EXTRA_USER_REVIEW_GRANTED_CONSENT, mReviewGrantedConsentRequired);
-        intent.setFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT);
+        try {
+            final IMediaProjection projection =
+                    MediaProjectionServiceHelper.createOrReuseProjection(
+                            mUid, mPackageName, mReviewGrantedConsentRequired, getDisplayId());
 
-        mUserSelectingTask = true;
-        // Start activity as system user. ShareScreenActivity uses SYSTEM_FLAG_SHOW_FOR_ALL_USERS
-        // to ensure it's visible across all users.
-        startActivityAsUser(intent, UserHandle.of(USER_SYSTEM));
-        // close shade if it's open
-        mStatusBarManager.collapsePanels();
-        // Finish this activity immediately, as the result is forwarded to the original
-        // launching activity using FLAG_ACTIVITY_FORWARD_RESULT.
-        finish();
+            final Intent intent = new Intent(this, ShareScreenActivity.class);
+            intent.putExtra(MediaProjectionManager.EXTRA_MEDIA_PROJECTION, projection.asBinder());
+            intent.putExtra(ShareScreenActivity.EXTRA_HOST_APP_USER_HANDLE, getHostUserHandle());
+            intent.putExtra(ShareScreenActivity.EXTRA_PACKAGE_NAME, mPackageName);
+            intent.putExtra(ShareScreenActivity.EXTRA_HOST_APP_UID, getLaunchedFromUid());
+            intent.putExtra(EXTRA_USER_REVIEW_GRANTED_CONSENT, mReviewGrantedConsentRequired);
+            intent.setFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT);
+
+            mUserSelectingTask = true;
+            // Start activity as system user. ShareScreenActivity uses
+            // SYSTEM_FLAG_SHOW_FOR_ALL_USERS to ensure it's visible across all users.
+            startActivityAsUser(intent, UserHandle.of(USER_SYSTEM));
+            // close shade if it's open.
+            mStatusBarManager.collapsePanels();
+            // Finish this activity immediately, as the result is forwarded to the original
+            // launching activity using FLAG_ACTIVITY_FORWARD_RESULT.
+            finish();
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error creating projection for large screen", e);
+            finishAsCancelled();
+        }
     }
 
     private void setCommonIntentExtras(

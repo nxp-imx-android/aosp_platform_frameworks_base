@@ -25,6 +25,12 @@ class FakeMediaProjectionServiceHelperWrapper : MediaProjectionServiceHelperWrap
     var createOrReuseProjectionCallCount = 0
         private set
 
+    var setReviewedConsentIfNeededCallCount = 0
+        private set
+
+    var lastSetReviewedConsentResult: Int? = null
+        private set
+
     override fun createOrReuseProjection(
         uid: Int,
         packageName: String,
@@ -40,6 +46,7 @@ class FakeMediaProjectionServiceHelperWrapper : MediaProjectionServiceHelperWrap
         reviewGrantedConsentRequired: Boolean,
         projection: IMediaProjection,
     ) {
-        // No-op for now, can be implemented to record calls if needed.
+        setReviewedConsentIfNeededCallCount++
+        lastSetReviewedConsentResult = result
     }
 }
