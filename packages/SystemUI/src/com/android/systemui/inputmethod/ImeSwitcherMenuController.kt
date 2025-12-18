@@ -158,7 +158,7 @@ constructor(
         this.listener = listener
     }
 
-    override fun dump(pw: PrintWriter, args: Array<String>) {
+    override fun dump(pw: PrintWriter, args: Array<out String>) {
         pw.println()
         pw.println(TAG)
         dialogs.values.forEach { it.dump(pw, "  ") }
