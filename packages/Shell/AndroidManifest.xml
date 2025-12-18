@@ -1110,6 +1110,9 @@
     <!-- Permission required for CTS test - CtsSharesheetTapToShareServiceTest -->
     <uses-permission android:name="android.permission.BIND_TO_TAP_TO_SHARE_SERVICE" />
 
+    <!-- Permission required for CTS test - CtsMotionCuesTestCases -->
+    <uses-permission android:name="android.permission.DRAW_MOTION_CUES" />
+
     <application
         android:label="@string/app_label"
         android:theme="@android:style/Theme.DeviceDefault.DayNight"

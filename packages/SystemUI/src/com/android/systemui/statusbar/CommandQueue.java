@@ -602,10 +602,10 @@ public class CommandQueue extends IStatusBar.Stub implements
         default void moveFocusedTaskToDesktop(int displayId) {}
 
         /**
-         * @see IStatusBar#startMotionCuesSession(ComponentName, MotionCuesSettings)
+         * @see IStatusBar#startMotionCuesSession(ComponentName, int, MotionCuesSettings)
          */
         default void startMotionCuesSession(
-                ComponentName componentName, MotionCuesSettings motionCuesSettings) {}
+                ComponentName componentName, int userId, MotionCuesSettings motionCuesSettings) {}
 
         /**
          * @see IStatusBar#endMotionCuesSession()
@@ -1578,11 +1578,12 @@ public class CommandQueue extends IStatusBar.Stub implements
 
     @Override
     public void startMotionCuesSession(
-            ComponentName componentName, MotionCuesSettings motionCuesSettings)
+            ComponentName componentName, int userId, MotionCuesSettings motionCuesSettings)
             throws RemoteException {
         SomeArgs args = SomeArgs.obtain();
         args.arg1 = componentName;
-        args.arg2 = motionCuesSettings;
+        args.arg2 = userId;
+        args.arg3 = motionCuesSettings;
         mHandler.obtainMessage(MSG_START_MOTION_CUES, args).sendToTarget();
     }
 
@@ -2142,10 +2143,11 @@ public class CommandQueue extends IStatusBar.Stub implements
                 case MSG_START_MOTION_CUES:
                     args = (SomeArgs) msg.obj;
                     ComponentName motionCuesComponentName = (ComponentName) args.arg1;
-                    MotionCuesSettings motionCuesSettings = (MotionCuesSettings) args.arg2;
+                    int userId = (int) args.arg2;
+                    MotionCuesSettings motionCuesSettings = (MotionCuesSettings) args.arg3;
                     for (Callbacks callback : mCallbacks) {
                         callback.startMotionCuesSession(
-                                motionCuesComponentName, motionCuesSettings);
+                                motionCuesComponentName, userId, motionCuesSettings);
                     }
                     break;
                 case MSG_END_MOTION_CUES:
