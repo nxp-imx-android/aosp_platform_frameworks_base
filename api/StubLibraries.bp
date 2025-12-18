@@ -211,18 +211,6 @@ non_updatable_exportable_droidstubs {
                 {
                     targets: ["sdk"],
                     dir: "apistubs/android/test/api",
-                    dest: "android.txt",
-                    tag: ".exportable.api.txt",
-                },
-                {
-                    targets: ["sdk"],
-                    dir: "apistubs/android/test/api",
-                    dest: "removed.txt",
-                    tag: ".exportable.removed-api.txt",
-                },
-                {
-                    targets: ["sdk"],
-                    dir: "apistubs/android/test/api",
                     dest: "android-non-updatable.txt",
                     tag: ".exportable.api.txt",
                 },
@@ -235,18 +223,6 @@ non_updatable_exportable_droidstubs {
             ],
             conditions_default: {
                 dists: [
-                    {
-                        targets: ["sdk"],
-                        dir: "apistubs/android/test/api",
-                        dest: "android.txt",
-                        tag: ".api.txt",
-                    },
-                    {
-                        targets: ["sdk"],
-                        dir: "apistubs/android/test/api",
-                        dest: "removed.txt",
-                        tag: ".removed-api.txt",
-                    },
                     {
                         targets: ["sdk"],
                         dir: "apistubs/android/test/api",
