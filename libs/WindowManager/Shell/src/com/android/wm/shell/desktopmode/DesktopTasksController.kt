@@ -2800,10 +2800,8 @@ class DesktopTasksController(
                     ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
                 launchBounds = bounds
                 launchDisplayId = displayId
-                if (DesktopModeFlags.ENABLE_SHELL_INITIAL_BOUNDS_REGRESSION_BUG_FIX.isTrue) {
-                    // Sets launch bounds size as flexible so core can recalculate.
-                    flexibleLaunchSize = rememberedBounds == null
-                }
+                // Set launch bounds size as flexible so core can recalculate.
+                flexibleLaunchSize = rememberedBounds == null
             }
 
         wct.sendPendingIntent(pendingIntent, null, ops.toBundle())
@@ -6843,9 +6841,9 @@ class DesktopTasksController(
     fun isDisplayInDesktopMode(displayId: Int): Boolean =
         desktopState.isDesktopModeSupportedOnDisplay(displayId) &&
             // TODO: b/440645027 - Simplify this call.
-            userRepositories.current
-                .getDeskDisplayStateForRemote()
-                .any { it.displayId == displayId && it.activeDeskId != INVALID_DISPLAY }
+            userRepositories.current.getDeskDisplayStateForRemote().any {
+                it.displayId == displayId && it.activeDeskId != INVALID_DISPLAY
+            }
 
     private fun updateTaskBarAndWallpaperDimIfNeeded(
         displayId: Int,

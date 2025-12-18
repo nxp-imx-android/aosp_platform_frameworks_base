@@ -75,8 +75,6 @@ public enum DesktopModeFlags {
     ENABLE_RESIZING_METRICS(Flags::enableResizingMetrics, true),
     ENABLE_RESTORE_TO_PREVIOUS_SIZE_FROM_DESKTOP_IMMERSIVE(
             Flags::enableRestoreToPreviousSizeFromDesktopImmersive, true),
-    ENABLE_SHELL_INITIAL_BOUNDS_REGRESSION_BUG_FIX(
-            Flags::enableShellInitialBoundsRegressionBugFix, true),
     ENABLE_TASKBAR_OVERFLOW(Flags::enableTaskbarOverflow, false),
     ENABLE_TASK_STACK_OBSERVER_IN_SHELL(Flags::enableTaskStackObserverInShell, true),
     ENABLE_THEMED_APP_HEADERS(Flags::enableThemedAppHeaders, true),
