@@ -10806,6 +10806,23 @@ public class CarrierConfigManager {
     public static final String KEY_HIDE_ENABLE_2G = "hide_enable_2g_bool";
 
     /**
+     * Boolean indicating whether 2G protection (disabling 2G) is enabled by default for the
+     * carrier.
+     *
+     * <p>When {@code true}, the device should default to not using 2G for security purposes,
+     * except where required for emergency calls. This setting is only for specifying the default
+     * state for a given carrier, and should not impact the user’s ability to change the 2G toggle
+     * state in their device settings.
+     *
+     * <p>The default value is {@code false}: "2G network protection toggle" setting is disabled by
+     * default (aka 2G is allowed by default).
+     *
+     * @hide
+     */
+    public static final String KEY_CARRIER_DEFAULT_2G_PROTECTION_ENABLED_BOOL =
+            "carrier_default_2g_protection_enabled_bool";
+
+    /**
      * Indicates the allowed APN types that can be used for LTE initial attach. The order of APN
      * types in the configuration is the order of APN types that will be used for initial attach.
      * Empty list indicates that no APN types are allowed for initial attach.
@@ -12266,6 +12283,7 @@ public class CarrierConfigManager {
         sDefaults.putInt(KEY_DEFAULT_RTT_MODE_INT, 0);
         sDefaults.putBoolean(KEY_STORE_SIM_PIN_FOR_UNATTENDED_REBOOT_BOOL, true);
         sDefaults.putBoolean(KEY_HIDE_ENABLE_2G, false);
+        sDefaults.putBoolean(KEY_CARRIER_DEFAULT_2G_PROTECTION_ENABLED_BOOL, false);
         sDefaults.putStringArray(KEY_ALLOWED_INITIAL_ATTACH_APN_TYPES_STRING_ARRAY,
                 new String[]{"ia", "default"});
         sDefaults.putBoolean(KEY_CARRIER_PROVISIONS_WIFI_MERGED_NETWORKS_BOOL, false);
