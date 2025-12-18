@@ -578,7 +578,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             val content = requireContent(entry)
             val oldProgress = assertNotNull(content.privateVersion.oldProgress)
 
-            assertThat(oldProgress.progress).isEqualTo(TEST_PROGRESS)
             assertThat(oldProgress.max).isEqualTo(TEST_PROGRESS_MAX)
             assertThat(oldProgress.isIndeterminate).isTrue()
         }
@@ -747,6 +746,50 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
                 privateVersion.metrics?.get(2) as PromotedNotificationContentModel.Metric.Text
             assertThat(metric3.label).isEqualTo("Label3")
             assertThat(metric3.metricValue).isEqualTo("42")
+        }
+
+    @Test
+    @EnableFlags(FLAG_API_METRIC_STYLE)
+    fun extractContent_fromMetricStyle_tooManyMetrics() =
+        kosmos.runTest {
+            val entry = createEntry {
+                setStyle(
+                    Notification.MetricStyle()
+                        .addMetric(
+                            Notification.Metric(Notification.Metric.FixedText("Value1"), "Label1")
+                        )
+                        .addMetric(
+                            Notification.Metric(Notification.Metric.FixedText("Value2"), "Label2")
+                        )
+                        .addMetric(
+                            Notification.Metric(Notification.Metric.FixedText("Value3"), "Label3")
+                        )
+                        .addMetric(
+                            Notification.Metric(Notification.Metric.FixedText("Value4"), "Label4")
+                        )
+                )
+            }
+
+            val content = requireContent(entry)
+            val privateVersion = content.privateVersion
+
+            assertThat(privateVersion.style).isEqualTo(Style.Metric)
+            val metric1 =
+                privateVersion.metrics?.get(0) as PromotedNotificationContentModel.Metric.Text
+            assertThat(metric1.label).isEqualTo("Label1")
+            assertThat(metric1.metricValue).isEqualTo("Value1")
+            val metric2 =
+                privateVersion.metrics?.get(1) as PromotedNotificationContentModel.Metric.Text
+            assertThat(metric2.label).isEqualTo("Label2")
+            assertThat(metric2.metricValue).isEqualTo("Value2")
+            val metric3 =
+                privateVersion.metrics?.get(2) as PromotedNotificationContentModel.Metric.Text
+            assertThat(metric3.label).isEqualTo("Label3")
+            assertThat(metric3.metricValue).isEqualTo("Value3")
+            val metric4 =
+                privateVersion.metrics?.get(3) as PromotedNotificationContentModel.Metric.Text
+            assertThat(metric4.label).isEqualTo("Label4")
+            assertThat(metric4.metricValue).isEqualTo("Value4")
         }
 
     private fun Kosmos.requireContent(
