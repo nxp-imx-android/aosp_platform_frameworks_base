@@ -292,7 +292,7 @@ public class LogicalDisplayTest {
         mLogicalDisplay.updateLocked(mDeviceRepo);
         SurfaceControl.Transaction t = mock(SurfaceControl.Transaction.class);
         mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false, mExecutor);
-        verify(mDisplayDevice).configureDisplaySizeLocked(eq(t));
+        verify(mDisplayDevice).configureDisplaySizeLocked(eq(t), any());
     }
 
     @Test
