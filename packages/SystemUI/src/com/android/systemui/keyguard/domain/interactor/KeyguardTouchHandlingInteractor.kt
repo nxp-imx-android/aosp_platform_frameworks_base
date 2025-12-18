@@ -23,6 +23,7 @@ import android.content.IntentFilter
 import android.graphics.Rect
 import android.os.PowerManager
 import android.provider.Settings
+import android.util.Log
 import android.view.accessibility.AccessibilityManager
 import androidx.annotation.VisibleForTesting
 import com.android.app.tracing.coroutines.launchTraced as launch
@@ -266,6 +267,7 @@ constructor(
     /** Notifies that the lockscreen has been double clicked. */
     fun onDoubleClick() {
         if (isDoubleTapHandlingEnabled.value) {
+            Log.d(TAG, "going to sleep due to double tap")
             powerManager.goToSleep(systemClock.uptimeMillis())
         } else {
             pulsingGestureListener.onDoubleTapEvent()
@@ -354,6 +356,7 @@ constructor(
     }
 
     companion object {
+        private const val TAG = "KeyguardTouchHandlingInteractor"
         @VisibleForTesting const val DEFAULT_POPUP_AUTO_HIDE_TIMEOUT_MS = 5000L
     }
 }
