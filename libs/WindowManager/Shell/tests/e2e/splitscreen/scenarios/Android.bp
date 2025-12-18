@@ -58,3 +58,10 @@ android_test {
     ],
     data: ["trace_config/*"],
 }
+
+test_module_config {
+    name: "FunctionalTestsSplitScreen-FullscreenModeRequestFromSplitAndBackTest",
+    base: "FunctionalTestsSplitScreen",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.FullscreenModeRequestFromSplitAndBackTest"],
+}
