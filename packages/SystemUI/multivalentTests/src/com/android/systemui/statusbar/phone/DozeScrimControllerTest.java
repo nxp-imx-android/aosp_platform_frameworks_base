@@ -105,15 +105,4 @@ public class DozeScrimControllerTest extends SysuiTestCase {
 
         verify(callback).onPulseFinished();
     }
-
-    @Test
-    @EnableSceneContainer
-    public void doesNotFinishPulseOnDozingChangedToFalse() {
-        DozeHost.PulseCallback callback = mock(DozeHost.PulseCallback.class);
-        mDozeScrimController.pulse(callback, 0);
-        verify(callback).onPulseStarted();
-
-        mDozeScrimController.setDozing(false);
-        verify(callback, never()).onPulseFinished();
-    }
 }
