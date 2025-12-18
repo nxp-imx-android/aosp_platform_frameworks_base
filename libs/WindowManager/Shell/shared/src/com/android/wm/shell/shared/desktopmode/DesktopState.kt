@@ -64,18 +64,9 @@ interface DesktopState {
      * Whether the multiple desktops feature is enabled for this device (both backend and
      * frontend implementations).
      */
+    @Deprecated("Pending flag clean-up")
     @get:JvmName("enableMultipleDesktops")
     val enableMultipleDesktops: Boolean
-
-    /**
-     * Returns true if the multi-desks frontend should be enabled on the display.
-     */
-    fun isMultipleDesktopFrontendEnabledOnDisplay(display: Display): Boolean
-
-    /**
-     *  Returns true if the multi-desks frontend should be enabled on the display with [displayId].
-     */
-    fun isMultipleDesktopFrontendEnabledOnDisplay(displayId: Int): Boolean
 
     /**
      * Checks if the display with id [displayId] should have desktop mode enabled or not. Internal

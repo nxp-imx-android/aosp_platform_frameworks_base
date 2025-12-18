@@ -919,13 +919,6 @@ flag {
 }
 
 flag {
-    name: "enable_multiple_desktops_frontend"
-    namespace: "lse_desktop_experience"
-    description: "Enable multiple desktop sessions for desktop windowing (frontend)."
-    bug: "362720309"
-}
-
-flag {
     name: "enable_no_window_decoration_for_desks"
     namespace: "lse_desktop_experience"
     description: "Stops the creation of a window decoration for desk tasks."
