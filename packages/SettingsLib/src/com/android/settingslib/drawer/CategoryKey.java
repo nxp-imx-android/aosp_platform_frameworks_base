@@ -43,6 +43,8 @@ public final class CategoryKey {
     public static final String CATEGORY_SECURITY_ADVANCED_SETTINGS =
             "com.android.settings.category.ia.advanced_security";
     public static final String CATEGORY_ACCOUNT = "com.android.settings.category.ia.accounts";
+    public static final String CATEGORY_ACCOUNTS_AND_BACKUP =
+            "com.android.settings.category.ia.accounts_and_backup";
     public static final String CATEGORY_ACCOUNT_DETAIL =
             "com.android.settings.category.ia.account_detail";
     public static final String CATEGORY_SYSTEM = "com.android.settings.category.ia.system";
