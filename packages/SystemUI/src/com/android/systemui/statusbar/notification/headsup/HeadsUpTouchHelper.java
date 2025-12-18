@@ -218,6 +218,7 @@ public class HeadsUpTouchHelper implements Gefingerpoken {
                     eventStr = "ACTION_DOWN";
                     if (mTouchingHeadsUpView) {
                         debugLog("Touch => " + eventStr + " => TRUE");
+                        // the HUN would like to keep listening to the gesture flow
                         return true;
                     }
                     break;
@@ -253,7 +254,10 @@ public class HeadsUpTouchHelper implements Gefingerpoken {
 
                         clearNotificationEffects();
                         endMotion();
-                        debugLog("Touch => " + eventStr + " => TRUE");
+                        // threshold is met, the HUN system claims the gesture and sets the NSSL to
+                        // being dragged on HUN, the NSSL will dispatch the
+                        mCallback.startDraggingOnHun();
+                        debugLog("Touch => " + eventStr + " => TRUE => startDraggingOnHun");
                         return true;
                     }
                     break;
@@ -322,6 +326,17 @@ public class HeadsUpTouchHelper implements Gefingerpoken {
         ExpandableView getChildAtRawPosition(float touchX, float touchY);
         boolean isExpanded();
         Context getContext();
+
+        /**
+         * Sets the NotificationStackScrollLayout is being dragged by HUN.
+         * There's no need to stopDraggingOnHun because the touchEvent is supposed to be dispatched
+         * by the NSSL before it reaches here, and the NSSL will reset its own states once an UP or
+         * CANCEL event is detected in NSSL.dispatchTouchEvent(MotionEvent ev).
+         * <p>
+         * Only used when scene container is enabled, mark that the NSSL is being dragged so start
+         * dispatching the rest of the gesture to scene container.
+         */
+        void startDraggingOnHun();
     }
 
     /** The controller for a view that houses heads up notifications. */

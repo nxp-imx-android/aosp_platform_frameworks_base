@@ -2281,10 +2281,10 @@ public class NotificationStackScrollLayoutController implements Dumpable {
             }
             boolean hunWantsIt = false;
             if (shouldHeadsUpHandleTouch()) {
+                // hunWantsIt means that the hun would like to keep listening to the rest of gesture
+                // this is different to: the HUN claims the gesture and marks NSSL as being dragged
+                // right away.
                 hunWantsIt = mHeadsUpTouchHelper.onTouchEvent(ev);
-                if (hunWantsIt) {
-                    mView.startDraggingOnHun();
-                }
             }
 
             // Check if we need to clear any snooze leavebehinds

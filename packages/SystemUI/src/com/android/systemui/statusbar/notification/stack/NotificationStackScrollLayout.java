@@ -7231,6 +7231,12 @@ public class NotificationStackScrollLayout
         public Context getContext() {
             return mContext;
         }
+
+        @Override
+        public void startDraggingOnHun() {
+            if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
+            setIsBeingDragged(true);
+        }
     };
 
     public HeadsUpTouchHelper.Callback getHeadsUpCallback() {
