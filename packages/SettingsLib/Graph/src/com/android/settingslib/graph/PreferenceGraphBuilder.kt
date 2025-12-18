@@ -41,7 +41,7 @@ import com.android.settingslib.graph.proto.PreferenceProto
 import com.android.settingslib.graph.proto.PreferenceProto.ActionTarget
 import com.android.settingslib.graph.proto.PreferenceScreenProto
 import com.android.settingslib.graph.proto.TextProto
-import com.android.settingslib.catalyst.flags.Flags as CatalystFlags
+import com.android.settingslib.metadata.CatalystFlagProviderFactory
 import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_ARGS
 import com.android.settingslib.metadata.IntRangeValuePreference
 import com.android.settingslib.metadata.ValidatedKeyParameters
@@ -99,7 +99,7 @@ private constructor(
         for (screen in request.screens) {
             val screenKey = screen.screenKey
             val factory = factories[screenKey] ?: continue
-            val hasParameters = if (CatalystFlags.catalystUseKeyParameters()) {
+            val hasParameters = if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
                 screen.keyParameters != null
             } else {
                 screen.args != null
@@ -222,7 +222,7 @@ private constructor(
 
         val args = preferenceScreen.peekExtras()?.getBundle(EXTRA_BINDING_SCREEN_ARGS)
 
-        if (CatalystFlags.catalystUseKeyParameters()) {
+        if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
             val parametersSchema = PreferenceScreenRegistry.getScreenParametersSchema(key)
             val keyParameters = args?.let { parametersSchema?.prepare(it) }
 
@@ -251,11 +251,11 @@ private constructor(
             val screen = screens.getOrPut(screenKey) { PreferenceScreenProto.newBuilder() }
             screen.root = preferenceGroupProto { preference = preferenceProto { key = screenKey } }
             screen.parameterized = true
-            if (CatalystFlags.catalystUseKeyParameters()) {
+            if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
                 screen.parametersSchema = factory.parametersSchema.toJsonString()
             }
             if (includeParameters) {
-                if (CatalystFlags.catalystUseKeyParameters()) {
+                if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
                     factory.keyParameters(context).collect {
                         screen.addKeyParameters(it.toProto())
                     }
@@ -266,7 +266,7 @@ private constructor(
         }
         if (includeHierarchy) {
             var flagEnabled: Boolean? = null
-            if (CatalystFlags.catalystUseKeyParameters()) {
+            if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
                 factory.keyParameters(context).collect {
                     if (flagEnabled == false) return@collect
                     val screenMetadata = factory.createWithKeyParameters(context, it)
@@ -289,7 +289,7 @@ private constructor(
     private suspend fun addPreferenceScreen(metadata: PreferenceScreenMetadata): Boolean {
         if (!checkScreenFlag(metadata)) return false
 
-        return if (CatalystFlags.catalystUseKeyParameters()) {
+        return if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
             addPreferenceScreenWithKeyParameters(metadata.key, metadata.keyParameters) {
                 completeHierarchy = metadata.hasCompleteHierarchy()
                 root = if (includeHierarchy) {
@@ -497,7 +497,7 @@ private constructor(
                     fragment.createPreferenceScreen(preferenceScreenFactory, coroutineScope)
                 val screenKey = screen?.key
                 if (!screenKey.isNullOrEmpty()) {
-                    if (CatalystFlags.catalystUseKeyParameters()) {
+                    if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
                         addPreferenceScreenWithKeyParameters(screenKey, null) { root = screen.toProto() }
                     } else {
                         @Suppress("CheckReturnValue")
@@ -570,7 +570,7 @@ fun PreferenceMetadata.toProto(
         if (metadata is PreferenceScreenMetadata) {
             actionTarget = actionTargetProto {
                 key = metadata.key
-                if (CatalystFlags.catalystUseKeyParameters()) {
+                if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
                     metadata.keyParameters?.let { keyParameters = it.toProto() }
                 } else {
                     metadata.arguments?.let { args = it.toProto() }

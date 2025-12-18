@@ -25,7 +25,6 @@ import android.service.settings.preferences.SetValueRequest
 import android.service.settings.preferences.SetValueResult
 import android.service.settings.preferences.SettingsPreferenceMetadata
 import android.service.settings.preferences.SettingsPreferenceValue
-import com.android.settingslib.catalyst.flags.Flags as CatalystFlags
 import com.android.settingslib.graph.PreferenceGetterErrorCode
 import com.android.settingslib.graph.PreferenceGetterFlags
 import com.android.settingslib.graph.PreferenceGetterRequest
@@ -41,6 +40,7 @@ import com.android.settingslib.graph.proto.PreferenceProto
 import com.android.settingslib.graph.proto.PreferenceValueProto
 import com.android.settingslib.graph.toBundle
 import com.android.settingslib.graph.toIntent
+import com.android.settingslib.metadata.CatalystFlagProviderFactory
 import com.android.settingslib.metadata.PreferenceCoordinate
 import com.android.settingslib.metadata.ReadWritePermit
 import com.android.settingslib.metadata.SensitivityLevel
@@ -164,7 +164,7 @@ fun transformFrameworkSetValueRequest(request: SetValueRequest): PreferenceSette
         else -> return null
     }
     // TODO: support parameterized screen
-    return if (CatalystFlags.catalystUseKeyParameters()) {
+    return if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
         PreferenceSetterRequest(
             screenKey = request.screenKey,
             keyParameters = null,

@@ -23,7 +23,6 @@ import androidx.annotation.AnyThread
 import androidx.fragment.app.Fragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import com.android.settingslib.catalyst.flags.Flags as CatalystFlags
 
 /**
  * Metadata of preference screen.
@@ -130,7 +129,7 @@ interface PreferenceScreenMetadata : PreferenceGroup {
     fun getLaunchIntent(context: Context, metadata: PreferenceMetadata?): Intent? {
         val highlightKey = metadata?.key
         return when {
-            CatalystFlags.catalystUseKeyParameters() && keyParameters != null -> {
+            CatalystFlagProviderFactory.catalystUseKeyParameters() && keyParameters != null -> {
                 makeLaunchpadIntent(context, key, keyParameters!!, highlightKey)
             }
             arguments != null -> {
@@ -234,7 +233,7 @@ fun interface PreferenceScreenMetadataFactory {
  */
 interface PreferenceScreenMetadataParameterizedFactory : PreferenceScreenMetadataFactory {
     override fun create(context: Context) =
-        if (CatalystFlags.catalystUseKeyParameters()) {
+        if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
             createWithKeyParameters(context, parametersSchema.prepareEmpty())
         } else {
             create(context, Bundle.EMPTY)

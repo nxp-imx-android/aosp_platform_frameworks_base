@@ -27,7 +27,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceDataStore
 import androidx.preference.PreferenceScreen
 import com.android.settingslib.datastore.KeyValueStore
-import com.android.settingslib.catalyst.flags.Flags as CatalystFlags
+import com.android.settingslib.metadata.CatalystFlagProviderFactory
 import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_ARGS
 import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_KEY
 import com.android.settingslib.metadata.ValidatedKeyParameters
@@ -186,7 +186,7 @@ open class PreferenceFragment :
 
         val screenKey = getPreferenceScreenBindingKey(context)
 
-        val preferenceScreenMetadata = if (CatalystFlags.catalystUseKeyParameters()) {
+        val preferenceScreenMetadata = if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
             PreferenceScreenRegistry.createWithKeyParameters(
                 context,
                 screenKey,

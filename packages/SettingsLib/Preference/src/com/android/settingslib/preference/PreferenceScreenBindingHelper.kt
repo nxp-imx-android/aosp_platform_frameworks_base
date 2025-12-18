@@ -32,7 +32,7 @@ import com.android.settingslib.datastore.KeyValueStore
 import com.android.settingslib.datastore.KeyedDataObservable
 import com.android.settingslib.datastore.KeyedObservable
 import com.android.settingslib.datastore.KeyedObserver
-import com.android.settingslib.catalyst.flags.Flags as CatalystFlags
+import com.android.settingslib.metadata.CatalystFlagProviderFactory
 import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_ARGS
 import com.android.settingslib.metadata.PreferenceChangeReason
 import com.android.settingslib.metadata.PreferenceHierarchy
@@ -353,7 +353,7 @@ class PreferenceScreenBindingHelper(
             val context = preferenceScreen.context
             val args = preferenceScreen.peekExtras()?.getBundle(EXTRA_BINDING_SCREEN_ARGS)
 
-            val preferenceScreenMetadata = if (CatalystFlags.catalystUseKeyParameters()) {
+            val preferenceScreenMetadata = if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
                 val parametersSchema = PreferenceScreenRegistry.getScreenParametersSchema(preferenceScreen.key)
                 val keyParameters = args?.let { parametersSchema?.prepare(it) }
 

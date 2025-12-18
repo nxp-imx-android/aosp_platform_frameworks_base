@@ -27,7 +27,7 @@ import com.android.settingslib.ipc.ApiHandler
 import com.android.settingslib.ipc.ApiPermissionChecker
 import com.android.settingslib.ipc.IntMessageCodec
 import com.android.settingslib.ipc.MessageCodec
-import com.android.settingslib.catalyst.flags.Flags as CatalystFlags
+import com.android.settingslib.metadata.CatalystFlagProviderFactory
 import com.android.settingslib.metadata.IntRangeValuePreference
 import com.android.settingslib.metadata.PersistentPreference
 import com.android.settingslib.metadata.PreferenceAvailabilityProvider
@@ -247,7 +247,7 @@ class PreferenceSetterRequestCodec : MessageCodec<PreferenceSetterRequest> {
     override fun encode(data: PreferenceSetterRequest) =
         Bundle(3).apply {
             putString(SCREEN_KEY, data.screenKey)
-            if (CatalystFlags.catalystUseKeyParameters()) {
+            if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
                 putBundle(KEY_PARAMETERS, data.keyParameters?.toBundle())
             } else {
                 putBundle(ARGS, data.args)
@@ -261,7 +261,7 @@ class PreferenceSetterRequestCodec : MessageCodec<PreferenceSetterRequest> {
         val key = data.getString(KEY)!!
         val value = PreferenceValueProto.parseFrom(data.getByteArray(null)!!)
 
-        return if (CatalystFlags.catalystUseKeyParameters()) {
+        return if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
             PreferenceSetterRequest(
                 screenKey,
                 data.getBundle(KEY_PARAMETERS)?.let { KeyParameters(it.toMap()) },
