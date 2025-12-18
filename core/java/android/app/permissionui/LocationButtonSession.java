@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package android.widget.location;
+package android.app.permissionui;
 
 import android.annotation.ColorInt;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.content.res.Configuration;
+import android.permission.flags.Flags;
 import android.view.SurfaceControlViewHost;
-import android.widget.flags.Flags;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

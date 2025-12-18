@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package android.widget.location;
+package android.app.permissionui;
 
-import static android.widget.location.LocationButtonProviderFactory.LocationButtonProviderImpl;
-import static android.widget.location.LocationButtonProviderFactory.LocationButtonSessionRecord;
+import static android.app.permissionui.LocationButtonProviderFactory.LocationButtonProviderImpl;
+import static android.app.permissionui.LocationButtonProviderFactory.LocationButtonSessionRecord;
 
 import android.os.ParcelableException;
 

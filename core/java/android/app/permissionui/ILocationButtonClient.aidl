@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package android.widget.location;
+package android.app.permissionui;
 
-import android.widget.location.LocationButtonSessionResponse;
+import android.app.permissionui.LocationButtonSessionResponse;
 import android.os.ParcelableException;
 
  /**

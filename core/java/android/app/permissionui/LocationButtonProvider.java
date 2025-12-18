@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package android.widget.location;
+package android.app.permissionui;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.os.IBinder;
-import android.widget.flags.Flags;
+import android.permission.flags.Flags;
 
 import java.util.concurrent.Executor;
 

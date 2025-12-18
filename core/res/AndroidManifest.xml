@@ -9359,12 +9359,12 @@
     <!-- Allows an app use location button, which grants temporary location permission when a user
          clicks the button.
          <p>Protection level: normal
-         @FlaggedApi(android.widget.flags.Flags.FLAG_LOCATION_BUTTON_ENABLED)
+         @FlaggedApi(android.permission.flags.Flags.FLAG_LOCATION_BUTTON_ENABLED)
     -->
     <permission
         android:name="android.permission.USE_LOCATION_BUTTON"
         android:protectionLevel="normal"
-        android:featureFlag="android.widget.flags.location_button_enabled" />
+        android:featureFlag="android.permission.flags.location_button_enabled" />
 
     <!-- @SystemApi Allows an app to query apps in clone profile. The permission is
          bidirectional in nature, i.e. cloned apps would be able to query apps in root user.
