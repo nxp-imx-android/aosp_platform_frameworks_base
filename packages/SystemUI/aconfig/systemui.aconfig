@@ -1520,6 +1520,13 @@ flag {
 }
 
 flag {
+    name: "rich_aod_media"
+    namespace: "pixel_display"
+    description: "Enables Rich AOD media"
+    bug: "448453632"
+}
+
+flag {
    name: "run_fingerprint_detect_on_dismissible_keyguard"
    namespace: "systemui"
    description: "Run fingerprint detect instead of authenticate if the keyguard is dismissible."
