@@ -46,7 +46,6 @@ final class AppLockController {
     private final Context mContext;
     private final ActivityTaskManagerService mAtmService;
     private final WindowManagerService mWmService;
-    private final AppLockInternal mAppLockInternal;
 
     private RecentTasks mRecentTasks;
 
@@ -160,10 +159,6 @@ final class AppLockController {
         mContext = wmService.mContext;
         mAtmService = wmService.mAtmService;
         mAppLockOverlayController = new AppLockOverlayController(wmService);
-        mAppLockInternal = LocalServices.getService(AppLockInternal.class);
-        // TODO(b/469139607): Move listener registration into systemReady and Slog.wtf if
-        //  AppLockInternal is null.
-        mAppLockInternal.registerPackageLockedStateListener(mAppLockLockedPackageStateListener);
     }
 
     private RecentTasks getRecentTasks() {
@@ -179,9 +174,17 @@ final class AppLockController {
      */
     void systemReady() {
         mPackageMonitor.register(mContext, UserHandle.ALL, BackgroundThread.getHandler());
+
+        final AppLockInternal appLockInternal = LocalServices.getService(AppLockInternal.class);
+        if (appLockInternal == null) {
+            // This is a precautionary measure to avoid any potential system crashes or bootloops.
+            ProtoLog.wtf(WM_DEBUG_APP_LOCK, "AppLockInternal is null");
+            return;
+        }
+        appLockInternal.registerPackageLockedStateListener(mAppLockLockedPackageStateListener);
         synchronized (mWmService.mGlobalLock) {
             final SparseArray<Set<String>> appLockEnabledPackages =
-                    mAppLockInternal.getAppLockEnabledPackages();
+                    appLockInternal.getAppLockEnabledPackages();
             mAppLockLockedPackages.clear();
             for (int i = 0; i < appLockEnabledPackages.size(); i++) {
                 final int userId = appLockEnabledPackages.keyAt(i);

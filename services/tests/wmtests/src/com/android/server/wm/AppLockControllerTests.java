@@ -73,6 +73,7 @@ public class AppLockControllerTests extends WindowTestsBase {
     @Before
     public void setUp() throws Exception {
         mMockAppLockInternal = LocalServices.getService(AppLockInternal.class);
+        when(mMockAppLockInternal.getAppLockEnabledPackages()).thenReturn(new SparseArray<>());
         clearInvocations(mMockAppLockInternal);
 
         mAppLockController = new AppLockController(mWm);
@@ -84,13 +85,17 @@ public class AppLockControllerTests extends WindowTestsBase {
 
     @Test
     public void testSystemReady_registersPackageMonitor() {
-        when(mMockAppLockInternal.getAppLockEnabledPackages()).thenReturn(new SparseArray<>());
         spyOn(mAppLockController.mPackageMonitor);
 
         mAppLockController.systemReady();
 
         verify(mAppLockController.mPackageMonitor).register(eq(mWm.mContext), eq(UserHandle.ALL),
                 eq(BackgroundThread.getHandler()));
+    }
+
+    @Test
+    public void testSystemReady_registersPackageLockedStateListener() {
+        assertThat(captureAppLockListenerInSystemReady()).isNotNull();
     }
 
     @Test
@@ -121,7 +126,8 @@ public class AppLockControllerTests extends WindowTestsBase {
 
     @Test
     public void testIsPackageLockedByAppLock_packageIsLocked() {
-        final AppLockInternal.PackageLockedStateListener listener = captureAppLockListener();
+        final AppLockInternal.PackageLockedStateListener listener =
+                captureAppLockListenerInSystemReady();
 
         try {
             listener.onPackageLockedStateChanged(TEST_PACKAGE_2, TEST_USER_ID_1, true);
@@ -135,7 +141,8 @@ public class AppLockControllerTests extends WindowTestsBase {
 
     @Test
     public void testIsPackageLockedByAppLock_packageIsUnlocked() {
-        final AppLockInternal.PackageLockedStateListener listener = captureAppLockListener();
+        final AppLockInternal.PackageLockedStateListener listener =
+                captureAppLockListenerInSystemReady();
 
         try {
             listener.onPackageLockedStateChanged(TEST_PACKAGE_2, TEST_USER_ID_1, true);
@@ -150,7 +157,8 @@ public class AppLockControllerTests extends WindowTestsBase {
 
     @Test
     public void testIsPackageLockedByAppLock_differentPackageUpdateDoesNotAffectState() {
-        final AppLockInternal.PackageLockedStateListener listener = captureAppLockListener();
+        final AppLockInternal.PackageLockedStateListener listener =
+                captureAppLockListenerInSystemReady();
 
         try {
             listener.onPackageLockedStateChanged(TEST_PACKAGE_1, TEST_USER_ID_1, false);
@@ -164,7 +172,8 @@ public class AppLockControllerTests extends WindowTestsBase {
 
     @Test
     public void testIsPackageLockedByAppLock_differentUserUpdateDoesNotAffectState() {
-        final AppLockInternal.PackageLockedStateListener listener = captureAppLockListener();
+        final AppLockInternal.PackageLockedStateListener listener =
+                captureAppLockListenerInSystemReady();
 
         try {
             listener.onPackageLockedStateChanged(TEST_PACKAGE_2, TEST_USER_ID_1, true);
@@ -190,7 +199,8 @@ public class AppLockControllerTests extends WindowTestsBase {
 
     @Test
     public void testOnPackageLockedStateChanged_packageLocked_callsLockActivitiesTasks() {
-        final AppLockInternal.PackageLockedStateListener listener = captureAppLockListener();
+        final AppLockInternal.PackageLockedStateListener listener =
+                captureAppLockListenerInSystemReady();
         final AppLockOverlayController appLockOverlayController =
                 mAppLockController.mAppLockOverlayController;
         spyOn(appLockOverlayController);
@@ -203,7 +213,8 @@ public class AppLockControllerTests extends WindowTestsBase {
 
     @Test
     public void testOnPackageLockedStateChanged_packageUnlocked_doesNotCallLockActivitiesTasks() {
-        final AppLockInternal.PackageLockedStateListener listener = captureAppLockListener();
+        final AppLockInternal.PackageLockedStateListener listener =
+                captureAppLockListenerInSystemReady();
         final AppLockOverlayController appLockOverlayController =
                 mAppLockController.mAppLockOverlayController;
         listener.onPackageLockedStateChanged(DEFAULT_COMPONENT_PACKAGE_NAME, TEST_USER_ID_1, true);
@@ -239,7 +250,8 @@ public class AppLockControllerTests extends WindowTestsBase {
         spyOn(win3);
 
         // Simulate package being locked by App Lock and expect package's windows' state updated.
-        final AppLockInternal.PackageLockedStateListener listener = captureAppLockListener();
+        final AppLockInternal.PackageLockedStateListener listener =
+                captureAppLockListenerInSystemReady();
         listener.onPackageLockedStateChanged(TEST_PACKAGE_1, testUserId, true);
         verify(win1).setHiddenWhileLockedByAppLock(true);
         verify(win2).setHiddenWhileLockedByAppLock(true);
@@ -270,9 +282,10 @@ public class AppLockControllerTests extends WindowTestsBase {
         verify(mRecentTasks).onPackageAppLockEnabledChanged(TEST_PACKAGE_1, TEST_USER_ID_1, false);
     }
 
-    private AppLockInternal.PackageLockedStateListener captureAppLockListener() {
-        ArgumentCaptor<AppLockInternal.PackageLockedStateListener> listenerCaptor =
+    private AppLockInternal.PackageLockedStateListener captureAppLockListenerInSystemReady() {
+        final ArgumentCaptor<AppLockInternal.PackageLockedStateListener> listenerCaptor =
                 ArgumentCaptor.forClass(AppLockInternal.PackageLockedStateListener.class);
+        mAppLockController.systemReady();
         verify(mMockAppLockInternal).registerPackageLockedStateListener(
                 listenerCaptor.capture());
         return listenerCaptor.getValue();
