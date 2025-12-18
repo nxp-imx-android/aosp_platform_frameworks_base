@@ -50,6 +50,7 @@ import android.security.advancedprotection.IAdvancedProtectionFeatureCallback;
 import android.security.advancedprotection.IAdvancedProtectionService;
 import android.util.ArrayMap;
 import android.util.ArraySet;
+import android.util.Pair;
 import android.util.Slog;
 import android.util.StatsEvent;
 
@@ -82,6 +83,7 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
     private static final String TAG = "AdvancedProtectionService";
     private static final int MODE_CHANGED = 0;
     private static final int CALLBACK_ADDED = 1;
+    private static final int FEATURE_CALLBACK_ADDED = 2;
     private static final long MILLIS_PER_HOUR = 60 * 60 * 1000;
 
     // Features which were launched before the provisioning API was introduced and are thus
@@ -105,8 +107,8 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
     private final ArrayMap<IBinder, IAdvancedProtectionCallback> mCallbacks = new ArrayMap<>();
     // For tracking only - not called on state change
     private final ArrayList<AdvancedProtectionProvider> mProviders = new ArrayList<>();
-    private final ArrayMap<IBinder, IAdvancedProtectionFeatureCallback> mFeatureCallbacks =
-            new ArrayMap<>();
+    private final ArrayMap<IBinder, Pair<IAdvancedProtectionFeatureCallback, int[]>>
+            mFeatureCallbacks = new ArrayMap<>();
 
     // Used to disable logging in tests
     private boolean mEmitLogs = true;
@@ -343,6 +345,7 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
             for (int featureId : featureIdsSet) {
                 updatedFeatures.add(createAdvancedProtectionFeature(featureId));
             }
+            sendModeChanged(isAdvancedProtectionEnabledInternal());
             return updatedFeatures;
         } finally {
             Binder.restoreCallingIdentity(identity);
@@ -493,16 +496,8 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
         return hoursSinceEnabled;
     }
 
-    @Override
-    @EnforcePermission(Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE)
-    public List<AdvancedProtectionFeature> getAdvancedProtectionFeatures(
-            @Nullable @FeatureId int[] featureIds) {
-        getAdvancedProtectionFeatures_enforcePermission();
-
-        if (featureIds == null) {
-            featureIds = getAvailableFeatureIds();
-        }
-
+    private List<AdvancedProtectionFeature> getAdvancedProtectionFeaturesInternal(
+            @NonNull @FeatureId int[] featureIds) {
         List<AdvancedProtectionFeature> features = new ArrayList<>();
         for (int i = 0; i < featureIds.length; i++) {
             @FeatureId int featureId = featureIds[i];
@@ -516,14 +511,29 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
 
     @Override
     @EnforcePermission(Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE)
+    public List<AdvancedProtectionFeature> getAdvancedProtectionFeatures(
+            @Nullable @FeatureId int[] featureIds) {
+        getAdvancedProtectionFeatures_enforcePermission();
+
+        if (featureIds == null) {
+            featureIds = getAvailableFeatureIds();
+        }
+        return getAdvancedProtectionFeaturesInternal(featureIds);
+    }
+
+    @Override
+    @EnforcePermission(Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE)
     public void registerAdvancedProtectionFeatureCallback(
-            @NonNull IAdvancedProtectionFeatureCallback callback) throws RemoteException {
+            @NonNull @FeatureId int[] featureIds,
+            @NonNull IAdvancedProtectionFeatureCallback callback)
+            throws RemoteException {
         registerAdvancedProtectionFeatureCallback_enforcePermission();
 
         IBinder b = callback.asBinder();
         b.linkToDeath(new DeathRecipient(b, mFeatureCallbacks), 0);
         synchronized (mFeatureCallbacks) {
-            mFeatureCallbacks.put(b, callback);
+            mFeatureCallbacks.put(b, new Pair<>(callback, featureIds));
+            sendFeatureCallbackAdded(callback, featureIds);
         }
     }
 
@@ -540,7 +550,15 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
 
     private AdvancedProtectionFeature createAdvancedProtectionFeature(@FeatureId int featureId) {
         if (android.security.Flags.aapmApiV2()) {
-            return new AdvancedProtectionFeature(featureId, getProvisioningMode(featureId));
+            @ProvisioningMode int provisioningMode = getProvisioningMode(featureId);
+            boolean isFeatureIdAvailableInConfig = isFeatureIdAvailableInConfig(featureId);
+            boolean isFeatureEnabled =
+                    isAdvancedProtectionEnabledInternal()
+                            && isFeatureIdAvailableInConfig
+                            && provisioningMode
+                                    < AdvancedProtectionFeature
+                                            .PROVISIONING_MODE_DEPROVISIONED_BY_DEFAULT;
+            return new AdvancedProtectionFeature(featureId, isFeatureEnabled, provisioningMode);
         } else {
             return new AdvancedProtectionFeature(featureId);
         }
@@ -655,17 +673,41 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
     }
 
     void sendModeChanged(boolean enabled) {
-        Message.obtain(mHandler, MODE_CHANGED, /*enabled*/ enabled ? 1 : 0, /*unused */ -1)
-                .sendToTarget();
+        if (android.security.Flags.aapmApiV2()) {
+            List<AdvancedProtectionFeature> features = getAdvancedProtectionFeatures(null);
+            Message.obtain(
+                            mHandler,
+                            MODE_CHANGED,
+                            /*enabled*/ enabled ? 1 : 0,
+                            /*unused */ -1,
+                            /*features*/ features)
+                    .sendToTarget();
+        } else {
+            Message.obtain(mHandler, MODE_CHANGED, /*enabled*/ enabled ? 1 : 0, /*unused */ -1)
+                    .sendToTarget();
+        }
     }
 
     void sendCallbackAdded(boolean enabled, IAdvancedProtectionCallback callback) {
         Message.obtain(
                         mHandler,
-                        CALLBACK_ADDED, /*enabled*/
-                        enabled ? 1 : 0, /*unused*/
-                        -1,
+                        CALLBACK_ADDED,
+                        /*enabled*/ enabled ? 1 : 0,
+                        /*unused*/ -1,
                         /*callback*/ callback)
+                .sendToTarget();
+    }
+
+    void sendFeatureCallbackAdded(
+            IAdvancedProtectionFeatureCallback callback, @NonNull @FeatureId int[] featureIds) {
+        List<AdvancedProtectionFeature> features =
+                getAdvancedProtectionFeaturesInternal(featureIds);
+        Message.obtain(
+                        mHandler,
+                        FEATURE_CALLBACK_ADDED,
+                        /*arg1*/ 0,
+                        /*arg2*/ 0,
+                        new Pair<>(callback, features))
                 .sendToTarget();
     }
 
@@ -704,14 +746,97 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
         public void handleMessage(@NonNull Message msg) {
             switch (msg.what) {
                 // arg1 == enabled
+                // obj == features
                 case MODE_CHANGED:
-                    handleAllCallbacks(msg.arg1 == 1);
+                    if (android.security.Flags.aapmApiV2()) {
+                        handleModeChanged(msg.arg1 == 1, (List<AdvancedProtectionFeature>) msg.obj);
+                    } else {
+                        handleAllCallbacks(msg.arg1 == 1);
+                    }
                     break;
                 // arg1 == enabled
                 // obj == callback
                 case CALLBACK_ADDED:
                     handleSingleCallback(msg.arg1 == 1, (IAdvancedProtectionCallback) msg.obj);
                     break;
+                // obj == Pair<IAdvancedProtectionFeatureCallback, List<AdvancedProtectionFeature>>
+                case FEATURE_CALLBACK_ADDED:
+                    Pair<IAdvancedProtectionFeatureCallback, List<AdvancedProtectionFeature>> data =
+                            (Pair<
+                                            IAdvancedProtectionFeatureCallback,
+                                            List<AdvancedProtectionFeature>>)
+                                    msg.obj;
+                    handleSingleFeatureCallback(data.first, data.second);
+                    break;
+            }
+        }
+
+        private void handleModeChanged(boolean enabled, List<AdvancedProtectionFeature> features) {
+            ArrayMap<Integer, AdvancedProtectionFeature> featureMap = new ArrayMap<>();
+            for (AdvancedProtectionFeature feature : features) {
+                featureMap.put(feature.getId(), feature);
+            }
+
+            for (int i = 0; i < mHooks.size(); i++) {
+                AdvancedProtectionHook hook = mHooks.get(i);
+                try {
+                    if (hook.isAvailable()) {
+                        AdvancedProtectionFeature feature = featureMap.get(hook.getFeatureId());
+                        boolean isProvisioned = feature != null && feature.isProvisioned();
+                        hook.onAdvancedProtectionChanged(enabled && isProvisioned);
+                    }
+                } catch (Exception e) {
+                    Slog.e(
+                            TAG,
+                            "Failed to call hook for feature " + hook.getClass().getSimpleName(),
+                            e);
+                }
+            }
+
+            synchronized (mFeatureCallbacks) {
+                ArrayList<IBinder> deadBinders = new ArrayList<>();
+
+                for (int i = 0; i < mFeatureCallbacks.size(); i++) {
+                    Pair<IAdvancedProtectionFeatureCallback, int[]> pair =
+                            mFeatureCallbacks.valueAt(i);
+                    IAdvancedProtectionFeatureCallback callback = pair.first;
+                    int[] featureIds = pair.second;
+                    List<AdvancedProtectionFeature> featuresForCallback = new ArrayList<>();
+                    if (featureIds != null) {
+                        for (int featureId : featureIds) {
+                            if (featureMap.containsKey(featureId)) {
+                                AdvancedProtectionFeature feature = featureMap.get(featureId);
+                                featuresForCallback.add(feature);
+                            }
+                        }
+                    }
+                    try {
+                        callback.onFeatureEnabledChanged(featuresForCallback);
+                    } catch (RemoteException e) {
+                        deadBinders.add(mFeatureCallbacks.keyAt(i));
+                    }
+                }
+
+                for (IBinder binder : deadBinders) {
+                    mFeatureCallbacks.remove(binder);
+                }
+            }
+
+            synchronized (mCallbacks) {
+                ArrayList<IAdvancedProtectionCallback> deadObjects = new ArrayList<>();
+
+                for (int i = 0; i < mCallbacks.size(); i++) {
+                    IAdvancedProtectionCallback callback = mCallbacks.valueAt(i);
+                    try {
+                        callback.onAdvancedProtectionChanged(enabled);
+                    } catch (RemoteException e) {
+                        deadObjects.add(callback);
+                    }
+                }
+
+                for (int i = 0; i < deadObjects.size(); i++) {
+                    mCallbacks.remove(deadObjects.get(i).asBinder());
+                }
             }
         }
 
@@ -751,13 +876,26 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
             try {
                 callback.onAdvancedProtectionChanged(enabled);
             } catch (RemoteException e) {
-                mCallbacks.remove(callback.asBinder());
+                synchronized (mCallbacks) {
+                    mCallbacks.remove(callback.asBinder());
+                }
+            }
+        }
+
+        private void handleSingleFeatureCallback(
+                IAdvancedProtectionFeatureCallback callback,
+                List<AdvancedProtectionFeature> features) {
+            try {
+                callback.onFeatureEnabledChanged(features);
+            } catch (RemoteException e) {
+                synchronized (mFeatureCallbacks) {
+                    mFeatureCallbacks.remove(callback.asBinder());
+                }
             }
         }
     }
 
-    private final class DeathRecipient<T extends android.os.IInterface>
-            implements IBinder.DeathRecipient {
+    private  static final class DeathRecipient<T> implements IBinder.DeathRecipient {
         private final IBinder mBinder;
         private final ArrayMap<IBinder, T> mMap;
 

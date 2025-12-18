@@ -511,7 +511,7 @@ public final class AdvancedProtectionManager {
                 };
 
         try {
-            mService.registerAdvancedProtectionFeatureCallback(delegate);
+            mService.registerAdvancedProtectionFeatureCallback(featureIds, delegate);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

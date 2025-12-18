@@ -45,6 +45,7 @@ import android.security.advancedprotection.AdvancedProtectionFeature.Provisionin
 import android.security.advancedprotection.AdvancedProtectionManager;
 import android.security.advancedprotection.AdvancedProtectionManager.FeatureId;
 import android.security.advancedprotection.IAdvancedProtectionCallback;
+import android.security.advancedprotection.IAdvancedProtectionFeatureCallback;
 
 import androidx.annotation.NonNull;
 
@@ -149,6 +150,48 @@ public class AdvancedProtectionServiceTest {
         assertFalse(callbackCalledCaptor.get());
     }
 
+    @EnableFlags(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testEnableProtection_withFeature_notProvisioned() {
+        AtomicBoolean callbackCalledCaptor = new AtomicBoolean(false);
+        AdvancedProtectionHook hook = createHook(/* isAvailable */ true, callbackCalledCaptor);
+        AdvancedProtectionService service = createService(hook, null);
+        service.updateAdvancedProtectionFeaturesProvisioning(null, new int[] {HOOK_ID});
+
+        service.setAdvancedProtectionEnabled(true);
+        mLooper.dispatchAll();
+
+        assertFalse(callbackCalledCaptor.get());
+    }
+
+    @DisableFlags(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testEnableProtection_withFeature_v2Disabled_provisioningIgnored() {
+        AtomicBoolean callbackCalledCaptor = new AtomicBoolean(false);
+        AdvancedProtectionHook hook = createHook(/* isAvailable */ true, callbackCalledCaptor);
+        AdvancedProtectionService service = createService(hook, null);
+        service.updateAdvancedProtectionFeaturesProvisioning(null, new int[] {HOOK_ID});
+
+        service.setAdvancedProtectionEnabled(true);
+        mLooper.dispatchAll();
+
+        assertTrue(callbackCalledCaptor.get());
+    }
+
+    @EnableFlags(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testEnableProtection_withFeature_provisioned() {
+        AtomicBoolean callbackCalledCaptor = new AtomicBoolean(false);
+        AdvancedProtectionHook hook = createHook(/* isAvailable */ true, callbackCalledCaptor);
+        AdvancedProtectionService service = createService(hook, null);
+        service.updateAdvancedProtectionFeaturesProvisioning(new int[] {HOOK_ID}, null);
+
+        service.setAdvancedProtectionEnabled(true);
+        mLooper.dispatchAll();
+
+        assertTrue(callbackCalledCaptor.get());
+    }
+
     @Test
     public void testEnableProtection_withFeature_notCalledIfModeNotChanged() {
         AtomicBoolean callbackCalledCaptor = new AtomicBoolean(false);
@@ -202,6 +245,61 @@ public class AdvancedProtectionServiceTest {
         mLooper.dispatchNext();
 
         assertFalse(callbackCalledCaptor.get());
+    }
+
+    @EnableFlags(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testRegisterFeatureCallback() throws RemoteException {
+        AtomicBoolean callbackCaptor = new AtomicBoolean(false);
+        AdvancedProtectionProvider provider = createProvider();
+        IAdvancedProtectionFeatureCallback callback =
+                createFeatureCallback(callbackCaptor, PROVIDER_ID);
+        AdvancedProtectionService service = createService(null, provider);
+        service.setAdvancedProtectionEnabled(true);
+        mLooper.dispatchAll();
+
+        service.registerAdvancedProtectionFeatureCallback(new int[] {PROVIDER_ID}, callback);
+        mLooper.dispatchAll();
+
+        assertTrue(callbackCaptor.get());
+
+        service.setAdvancedProtectionEnabled(false);
+        mLooper.dispatchAll();
+
+        assertFalse(callbackCaptor.get());
+    }
+
+    @EnableFlags(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testUnregisterFeatureCallback() throws RemoteException {
+        AtomicBoolean callbackCalledCaptor = new AtomicBoolean(false);
+        AdvancedProtectionProvider provider = createProvider();
+        IAdvancedProtectionFeatureCallback callback =
+                createFeatureCallback(callbackCalledCaptor, PROVIDER_ID);
+        AdvancedProtectionService service = createService(null, provider);
+
+        service.setAdvancedProtectionEnabled(true);
+        service.registerAdvancedProtectionFeatureCallback(new int[] {PROVIDER_ID}, callback);
+        mLooper.dispatchAll();
+        callbackCalledCaptor.set(false);
+
+        service.unregisterAdvancedProtectionFeatureCallback(callback);
+        service.setAdvancedProtectionEnabled(false);
+        mLooper.dispatchAll();
+
+        assertFalse(callbackCalledCaptor.get());
+    }
+
+    @EnableFlags(Flags.FLAG_AAPM_API_V2)
+    @Test
+    public void testRegisterFeatureCallback_invalidFeatureId_throwsException() {
+        IAdvancedProtectionFeatureCallback callback =
+                createFeatureCallback(new AtomicBoolean(false), PROVIDER_ID);
+        AdvancedProtectionService service = createService(null, null);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.registerAdvancedProtectionFeatureCallback(new int[] {-1}, callback));
     }
 
     @DisableFlags(Flags.FLAG_AAPM_API_V2)
@@ -626,6 +724,19 @@ public class AdvancedProtectionServiceTest {
             @Override
             public void onAdvancedProtectionChanged(boolean enabled) {
                 callbackCaptor.set(enabled);
+            }
+        };
+    }
+
+    private IAdvancedProtectionFeatureCallback createFeatureCallback(
+            AtomicBoolean callbackCaptor, @FeatureId int featureId) {
+        return new IAdvancedProtectionFeatureCallback.Stub() {
+            @Override
+            public void onFeatureEnabledChanged(List<AdvancedProtectionFeature> features) {
+                features.stream()
+                        .filter(f -> f.getId() == featureId)
+                        .findFirst()
+                        .ifPresent(f -> callbackCaptor.set(f.isEnabled()));
             }
         };
     }

@@ -98,6 +98,7 @@ public final class AdvancedProtectionFeature implements Parcelable {
     public @interface ProvisioningMode {}
 
     private final int mId;
+    private final boolean mEnabled;
     private final @ProvisioningMode int mProvisioningMode;
 
     /**
@@ -106,12 +107,12 @@ public final class AdvancedProtectionFeature implements Parcelable {
      *
      * @param id Feature identifier. It is used by Settings screens to display information about
      *     this feature.
-     * @deprecated Use {@link #AdvancedProtectionFeature(int, int)} instead.
+     * @deprecated Use {@link #AdvancedProtectionFeature(int, boolean, int)} instead.
      */
     @FlaggedApi(android.security.Flags.FLAG_AAPM_API_V2)
     @Deprecated
     public AdvancedProtectionFeature(@AdvancedProtectionManager.FeatureId int id) {
-        this(id, PROVISIONING_MODE_PROVISIONED_BY_DEFAULT);
+        this(id, true, PROVISIONING_MODE_PROVISIONED_BY_DEFAULT);
     }
 
     /**
@@ -120,23 +121,34 @@ public final class AdvancedProtectionFeature implements Parcelable {
      *
      * @param id Feature identifier. It is used by Settings screens to display information about
      *     this feature.
+     * @param enabled Whether the feature is enabled.
      * @param provisioningMode Provisioning mode of the feature.
      */
     @FlaggedApi(android.security.Flags.FLAG_AAPM_API_V2)
     public AdvancedProtectionFeature(
-            @AdvancedProtectionManager.FeatureId int id, @ProvisioningMode int provisioningMode) {
+            @AdvancedProtectionManager.FeatureId int id,
+            boolean enabled,
+            @ProvisioningMode int provisioningMode) {
         mId = id;
+        mEnabled = enabled;
         mProvisioningMode = provisioningMode;
     }
 
     private AdvancedProtectionFeature(Parcel in) {
         mId = in.readInt();
+        mEnabled = in.readBoolean();
         mProvisioningMode = in.readInt();
     }
 
     /** Returns the unique ID representing this feature. */
     public int getId() {
         return mId;
+    }
+
+    /** Returns whether this feature is enabled. */
+    @FlaggedApi(android.security.Flags.FLAG_AAPM_API_V2)
+    public boolean isEnabled() {
+        return mEnabled;
     }
 
     /**
@@ -171,6 +183,7 @@ public final class AdvancedProtectionFeature implements Parcelable {
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeInt(mId);
+        dest.writeBoolean(mEnabled);
         dest.writeInt(mProvisioningMode);
     }
 
