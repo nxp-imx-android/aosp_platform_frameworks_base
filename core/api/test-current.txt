@@ -3633,6 +3633,15 @@ package android.service.settings.preferences {
 
 }
 
+package android.service.uprobestats {
+
+  @FlaggedApi("android.security.dynamic_instrumentation_api") public final class DynamicInstrumentationManager {
+    method @FlaggedApi("android.security.dynamic_instrumentation_api") @Nullable public android.content.ComponentName getDynamicInstrumentationEventConsumer();
+    method @FlaggedApi("android.security.dynamic_instrumentation_api") public void setDynamicInstrumentationEventConsumer(@Nullable android.content.ComponentName);
+  }
+
+}
+
 package android.service.voice {
 
   public class AlwaysOnHotwordDetector implements android.service.voice.HotwordDetector {
