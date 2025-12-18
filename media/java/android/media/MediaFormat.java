@@ -23,6 +23,7 @@ import static android.media.codec.Flags.FLAG_IN_PROCESS_SW_AUDIO_CODEC;
 import static android.media.codec.Flags.FLAG_NUM_INPUT_SLOTS;
 import static android.media.codec.Flags.FLAG_REGION_OF_INTEREST;
 import static android.media.codec.Flags.FLAG_VVC_SUPPORT;
+import static android.media.codec.Flags.FLAG_TEMPORAL_LAYER_ENCODING;
 import static android.media.tv.flags.Flags.FLAG_APPLY_PICTURE_PROFILES;
 
 import static com.android.media.codec.flags.Flags.FLAG_CODEC_IMPORTANCE;
@@ -92,6 +93,10 @@ import java.util.stream.Collectors;
  *         to a surface only</b>, optional</td></tr>
  * <tr><td>{@link #KEY_TEMPORAL_LAYERING}</td><td>String</td><td><b>encoder only</b>, optional,
  *         temporal-layering schema</td></tr>
+ * <tr><td>{@link #KEY_VIDEO_BITRATE_LAYERING}</td><td>String</td><td><b>encoder only</b>, optional,
+ *         layering bitrate ratios </td></tr>
+ * <tr><td>{@link #KEY_TEMPORAL_LAYER_ID}</td><td>String</td><td><b>encoder only</b>, optional,
+ *         temporal layer id</td></tr>
  * </table>
  * Specify both {@link #KEY_MAX_WIDTH} and {@link #KEY_MAX_HEIGHT} to enable
  * adaptive playback (seamless resolution change) for a video decoder that
@@ -787,11 +792,16 @@ public final class MediaFormat {
      * that applies only to video encoders.  Use {@link MediaCodec#getOutputFormat}
      * after {@link MediaCodec#configure configure} to query if the encoder supports
      * the desired schema. Supported values are {@code webrtc.vp8.N-layer},
-     * {@code android.generic.N}, {@code android.generic.N+M} and {@code none}, where
-     * {@code N} denotes the total number of non-bidirectional layers (which must be at least 1)
-     * and {@code M} denotes the total number of bidirectional layers (which must be non-negative).
+     * {@code android.generic.N}, {@code android.generic.N+M}, {@code webrtc.svc.l1tN} and
+     * {@code none}, where {@code N} denotes the total number of non-bidirectional layers (which
+     * must be at least 1) and {@code M} denotes the total number of bidirectional layers (which
+     * must be non-negative).
+     * The video encoder for {@code webrtc.svc.* } schema must produce the layer structure that is
+     * compliant with <a href="https://www.w3.org/TR/webrtc-svc">WebRTC-SVC</a>.
      * <p class=note>{@code android.generic.*} schemas have been added in {@link
      * android.os.Build.VERSION_CODES#N_MR1}.
+     * <p class=note>{@code webrtc.svc.l1t*} schemas have been added in {@link
+     * android.os.Build.VERSION_CODES#CINNAMON_BUN}.
      * <p>
      * The encoder may support fewer temporal layers, in which case the output format
      * will contain the configured schema. If the encoder does not support temporal
@@ -799,6 +809,43 @@ public final class MediaFormat {
      * The associated value is a string.
      */
     public static final String KEY_TEMPORAL_LAYERING = "ts-schema";
+
+    /**
+     * Set the bitrate distributions for temporal layering.
+     * <p>
+     * The associated value is a String in the format "ratio1;ratio2;...;ratioN", where N is the
+     * number of temporal layers - 1. Each ratio represents the bitrate allocation for the current
+     * layer and all lower layers combined, as a fraction of the total bitrate. There is no value
+     * for the highest temporal layer because it is always 1.0.
+     * <p>
+     * For example, if there are 3 temporal layers and the total bitrate is 1000kbps, a value
+     * of "0.3;0.6" would mean:
+     * <ul>
+     * <li>Layer 0 (base layer): 30% of total bitrate (300kbps)</li>
+     * <li>Layer 0 + Layer 1: 60% of total bitrate (600kbps), so Layer 1 gets 30% (300kbps)</li>
+     * <li>Layer 0 + Layer 1 + Layer 2: 100% of total bitrate (1000kbps), so Layer 2 gets 40%
+     * (400kbps)</li>
+     * </ul>
+     * <p>
+     * The ratios must be monotonically increasing.
+     *
+     * @see #setParameters(Bundle)
+     */
+    @FlaggedApi(FLAG_TEMPORAL_LAYER_ENCODING)
+    public static final String KEY_VIDEO_BITRATE_LAYERING = "video-bitrate-layering";
+
+    /**
+     * A key describing the index of the temporal layer of the output buffer.
+     * This is an optional parameter that applies only to video encoders.
+     * The key is present in every output buffer only if {@link #KEY_TEMPORAL_LAYERING} is
+     * "webrtc.svc.*" and {@link #KEY_TEMPORAL_LAYER_ID} is configured at
+     * {@link MediaCodec#configure} and the encoder is producing temporal layer encoding.
+     * The associated value is an integer and 0-based. The value 0 represents the base
+     * layer and 1 is the second layer, and thus the value must be less than the number of layers
+     * specified by {@link KEY_TEMPORAL_LAYERING} configured at {@link MediaCodec#configure}.
+     */
+    @FlaggedApi(FLAG_TEMPORAL_LAYER_ENCODING)
+    public static final String KEY_TEMPORAL_LAYER_ID = "temporal-layer-id";
 
     /**
      * A key describing the stride of the video bytebuffer layout.

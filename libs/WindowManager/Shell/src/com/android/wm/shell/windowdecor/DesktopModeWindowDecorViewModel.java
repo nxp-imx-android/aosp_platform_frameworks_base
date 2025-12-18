@@ -1051,6 +1051,11 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         return snapshotList;
     }
 
+    /** Returns true if the task has a window decoration. */
+    public boolean hasWindowDecoration(int taskId) {
+        return mWindowDecorByTaskId.get(taskId) != null;
+    }
+
     @Override
     public boolean snapToHalfScreen(@NonNull RunningTaskInfo taskInfo,
             @NonNull Rect currentDragBounds, @NonNull SnapPosition position) {
@@ -2284,11 +2289,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             transactionFactory,
                             desktopState);
 
-            if (DesktopModeFlags.ENABLE_WINDOWING_SCALED_RESIZING.isTrue()) {
-                return new FixedAspectRatioTaskPositionerDecorator(windowDecoration,
+            return new FixedAspectRatioTaskPositionerDecorator(windowDecoration,
                         taskPositioner);
-            }
-            return taskPositioner;
         }
     }
 }

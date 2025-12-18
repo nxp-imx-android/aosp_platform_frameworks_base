@@ -261,7 +261,8 @@ public class ActivityStartInterceptorTest {
     @Test
     public void testLockedByAppLock_interceptedByAppLock() {
         // GIVEN the package is locked by App Lock.
-        when(mWmService.isPackageLockedByAppLock(TEST_PACKAGE_NAME, TEST_USER_ID)).thenReturn(true);
+        when(mWmService.isPackageLockedByAppLockLocked(TEST_PACKAGE_NAME, TEST_USER_ID))
+                .thenReturn(true);
 
         // WHEN the interceptor is run.
         final boolean intercepted = mInterceptor.intercept(null, null, mAInfo, null, null, null, 0,
@@ -279,7 +280,8 @@ public class ActivityStartInterceptorTest {
         // GIVEN the package is locked, but the activity can be shown over the lockscreen and the
         // user is unlocked.
         Intent originalIntent = new Intent();
-        when(mWmService.isPackageLockedByAppLock(TEST_PACKAGE_NAME, TEST_USER_ID)).thenReturn(true);
+        when(mWmService.isPackageLockedByAppLockLocked(TEST_PACKAGE_NAME, TEST_USER_ID))
+                .thenReturn(true);
         mAInfo.flags |= ActivityInfo.FLAG_SHOW_WHEN_LOCKED;
         when(mUserManager.isUserUnlocked(eq(TEST_USER_ID))).thenReturn(true);
 
@@ -299,7 +301,8 @@ public class ActivityStartInterceptorTest {
         // GIVEN the package is locked, but the activity can be shown over the lockscreen and is
         // direct boot aware.
         Intent originalIntent = new Intent();
-        when(mWmService.isPackageLockedByAppLock(TEST_PACKAGE_NAME, TEST_USER_ID)).thenReturn(true);
+        when(mWmService.isPackageLockedByAppLockLocked(TEST_PACKAGE_NAME, TEST_USER_ID))
+                .thenReturn(true);
         mAInfo.flags |= ActivityInfo.FLAG_SHOW_WHEN_LOCKED;
         mAInfo.directBootAware = true;
         when(mUserManager.isUserUnlocked(eq(TEST_USER_ID))).thenReturn(false);
@@ -319,7 +322,8 @@ public class ActivityStartInterceptorTest {
     public void testLockedByAppLock_showWhenLocked_userLocked_intercepted() {
         // GIVEN the package is locked and the activity can be shown over the lockscreen, but the
         // user is locked and the activity is not direct boot aware.
-        when(mWmService.isPackageLockedByAppLock(TEST_PACKAGE_NAME, TEST_USER_ID)).thenReturn(true);
+        when(mWmService.isPackageLockedByAppLockLocked(TEST_PACKAGE_NAME, TEST_USER_ID))
+                .thenReturn(true);
         mAInfo.flags |= ActivityInfo.FLAG_SHOW_WHEN_LOCKED;
         mAInfo.directBootAware = false;
         when(mUserManager.isUserUnlocked(eq(TEST_USER_ID))).thenReturn(false);
@@ -339,8 +343,8 @@ public class ActivityStartInterceptorTest {
     public void testNotLockedByAppLock_notInterceptedByAppLock() {
         // GIVEN the package is not locked by App Lock.
         Intent originalIntent = new Intent();
-        when(mWmService.isPackageLockedByAppLock(TEST_PACKAGE_NAME, TEST_USER_ID)).thenReturn(
-                false);
+        when(mWmService.isPackageLockedByAppLockLocked(TEST_PACKAGE_NAME, TEST_USER_ID))
+                .thenReturn(false);
 
         // WHEN the interceptor is run.
         final boolean intercepted = mInterceptor.intercept(originalIntent, null, mAInfo, null,
@@ -356,7 +360,8 @@ public class ActivityStartInterceptorTest {
     @Test
     public void testLockedByAppLockAndQuietModeEnabled_interceptedByQuietMode() {
         // GIVEN the package is locked, but the user profile is in quiet mode.
-        when(mWmService.isPackageLockedByAppLock(TEST_PACKAGE_NAME, TEST_USER_ID)).thenReturn(true);
+        when(mWmService.isPackageLockedByAppLockLocked(TEST_PACKAGE_NAME, TEST_USER_ID))
+                .thenReturn(true);
         when(mUserManager.isQuietModeEnabled(eq(UserHandle.of(TEST_USER_ID)))).thenReturn(true);
 
         // WHEN the interceptor is run.
@@ -374,7 +379,8 @@ public class ActivityStartInterceptorTest {
     @Test
     public void testLockedByAppLockAndSuspended_interceptedByAppLock() {
         // GIVEN the package is both locked and suspended.
-        when(mWmService.isPackageLockedByAppLock(TEST_PACKAGE_NAME, TEST_USER_ID)).thenReturn(true);
+        when(mWmService.isPackageLockedByAppLockLocked(TEST_PACKAGE_NAME, TEST_USER_ID))
+                .thenReturn(true);
         suspendPackage("com.test.suspending.package");
 
         // WHEN the interceptor is run.
@@ -391,7 +397,8 @@ public class ActivityStartInterceptorTest {
     @Test
     public void testLockedByAppLock_flagsDisabled_doesNotIntercept() {
         // GIVEN the package is locked, but the feature flags are disabled.
-        when(mWmService.isPackageLockedByAppLock(TEST_PACKAGE_NAME, TEST_USER_ID)).thenReturn(true);
+        when(mWmService.isPackageLockedByAppLockLocked(TEST_PACKAGE_NAME, TEST_USER_ID))
+                .thenReturn(true);
         Intent originalIntent = new Intent();
 
         // WHEN the interceptor is run.

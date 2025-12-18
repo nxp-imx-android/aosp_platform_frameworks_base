@@ -17,7 +17,6 @@
 package com.android.systemui.shade.ui.composable
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -44,9 +43,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.TestContentScope
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
+import com.android.internal.jank.Cuj.CUJ_NOTIFICATION_SHADE_SCROLL_FLING
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.jank.interactionJankMonitor
@@ -63,6 +62,11 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.reset
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -209,26 +213,56 @@ class SingleShadeNestedScrollLayoutTest : SysuiTestCase() {
             assertThat(contentScrollState?.isScrolledToTop).isTrue()
         }
 
+    @Test
+    fun scrollState_scrimScrollingUpdatesJankMonitor() =
+        kosmos.runTest {
+            val contentScrollState by
+                collectLastValue(notificationPlaceholderRepository.shadeScrollState)
+
+            // Given the content is tall enough to scroll, and the scrim is at rest
+            setTestContent(contentHeight = { 1000.dp })
+            runCurrent()
+            assertThat(contentScrollState?.isScrolledToTop).isTrue()
+
+            // When the scrim is swiped up
+            reset(kosmos.interactionJankMonitor)
+            swipeScrimUp()
+            runCurrent()
+
+            // Then the jankMonitor is called with begin/end
+            verify(kosmos.interactionJankMonitor, times(1))
+                .begin(any(), eq(CUJ_NOTIFICATION_SHADE_SCROLL_FLING))
+            verify(kosmos.interactionJankMonitor, times(1))
+                .end(eq(CUJ_NOTIFICATION_SHADE_SCROLL_FLING))
+        }
+
     // endregion
 
     // region Setup Helpers
     private fun setTestContent(contentHeight: () -> Dp) {
         rule.setContent {
+            val contentScrollState = rememberScrollState()
+            val contentOverscrollEffect = rememberOffsetOverscrollEffect()
             TestContentScope {
-                TestLayout(
+                SingleShadeNestedScrollLayout(
                     modifier = Modifier.testTag(TAG_LAYOUT).size(LayoutSize),
+                    shadeSession = rememberShadeSession(),
+                    viewModel = kosmos.notificationsPlaceholderViewModel,
+                    contentScrollState = contentScrollState,
+                    contentOverScrollEffect = rememberOffsetOverscrollEffect(),
+                    jankMonitor = kosmos.interactionJankMonitor,
                     statusBarHeader = {
                         Box(Modifier.testTag(TAG_SB).fillMaxWidth().height(StatusBarHeight))
                     },
                     mediaAndQqsHeader = {
                         Box(Modifier.testTag(TAG_HEADER).fillMaxWidth().height(HeaderHeight))
                     },
-                    scrollableScrim = { onHeightChanged ->
+                    scrollableScrim = { onHeightChanged: (Int) -> Unit ->
                         // This box must be scrollable, for the parent's NestedScrollConnection
                         Box(
                             Modifier.testTag(TAG_SCRIM)
                                 .fillMaxSize()
-                                .verticalScroll(rememberScrollState())
+                                .verticalScroll(contentScrollState, contentOverscrollEffect)
                         ) {
                             // Emulate the content structure of the real shade.
                             Box(
@@ -238,32 +272,11 @@ class SingleShadeNestedScrollLayoutTest : SysuiTestCase() {
                             )
                         }
                     },
+                    cutoutInsetsProvider = { null },
                 )
             }
         }
         rule.waitForIdle()
-    }
-
-    @Composable
-    private fun ContentScope.TestLayout(
-        modifier: Modifier = Modifier,
-        cutoutInsets: WindowInsets? = null,
-        statusBarHeader: @Composable () -> Unit,
-        mediaAndQqsHeader: @Composable () -> Unit,
-        scrollableScrim: @Composable (onContentHeightChanged: (Int) -> Unit) -> Unit,
-    ) {
-        SingleShadeNestedScrollLayout(
-            modifier = modifier,
-            shadeSession = rememberShadeSession(),
-            viewModel = kosmos.notificationsPlaceholderViewModel,
-            contentScrollState = rememberScrollState(),
-            contentOverScrollEffect = rememberOffsetOverscrollEffect(),
-            jankMonitor = kosmos.interactionJankMonitor,
-            statusBarHeader = statusBarHeader,
-            mediaAndQqsHeader = mediaAndQqsHeader,
-            scrollableScrim = scrollableScrim,
-            cutoutInsetsProvider = { cutoutInsets },
-        )
     }
 
     @Composable

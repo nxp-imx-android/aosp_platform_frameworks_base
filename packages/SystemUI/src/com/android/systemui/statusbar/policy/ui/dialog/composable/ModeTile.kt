@@ -25,7 +25,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -40,6 +42,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.android.systemui.common.ui.compose.Icon
@@ -56,11 +59,41 @@ enum class ModeTileType {
     ONLY_TILE,
 }
 
+data class ModeTileDimension(
+    val titleFontWeight: FontWeight?,
+    val titleStyle: TextStyle?,
+    val subtitleFontWeight: FontWeight?,
+    val subtitleStyle: TextStyle?,
+) {
+    companion object {
+        val Default =
+            ModeTileDimension(
+                titleFontWeight = FontWeight.W500,
+                titleStyle = null,
+                subtitleFontWeight = FontWeight.W400,
+                subtitleStyle = null,
+            )
+
+        // Applied to the mode tiles under the details view when the desktop sizing feature enabled.
+        val DesktopSizingDimens: ModeTileDimension
+            @Composable
+            @OptIn(ExperimentalMaterial3ExpressiveApi::class)
+            get() =
+                ModeTileDimension(
+                    titleFontWeight = null,
+                    titleStyle = MaterialTheme.typography.titleSmallEmphasized,
+                    subtitleFontWeight = null,
+                    subtitleStyle = MaterialTheme.typography.labelMedium,
+                )
+    }
+}
+
 @Composable
 fun ModeTile(
     viewModel: ModeTileViewModel,
     modifier: Modifier = Modifier,
     type: ModeTileType = ModeTileType.DEFAULT,
+    dimension: ModeTileDimension = ModeTileDimension.Default,
 ) {
     val tileColor: Color by
         animateColorAsState(
@@ -98,12 +131,14 @@ fun ModeTile(
                 Column {
                     Text(
                         viewModel.text,
-                        fontWeight = FontWeight.W500,
+                        fontWeight = dimension.titleFontWeight,
+                        style = dimension.titleStyle ?: LocalTextStyle.current,
                         modifier = Modifier.tileMarquee().testTag("name"),
                     )
                     Text(
                         viewModel.subtext,
-                        fontWeight = FontWeight.W400,
+                        fontWeight = dimension.subtitleFontWeight,
+                        style = dimension.subtitleStyle ?: LocalTextStyle.current,
                         modifier =
                             Modifier.tileMarquee()
                                 .testTag(if (viewModel.enabled) "stateOn" else "stateOff")

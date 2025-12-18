@@ -2901,6 +2901,56 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
             )
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun clearAllRememberedBoundsRatio_flagEnabled_clearsAllBoundsAndPersists() = runTest {
+        // GIVEN that remembered bounds are stored for multiple packages
+        val packageName1 = "com.test.app1"
+        val bounds1 = RectF(0.1f, 0.2f, 0.8f, 0.9f)
+        repo.setRememberedBoundsRatio(packageName1, bounds1)
+        val packageName2 = "com.test.app2"
+        val bounds2 = RectF(0.2f, 0.3f, 0.7f, 0.8f)
+        repo.setRememberedBoundsRatio(packageName2, bounds2)
+        assertThat(repo.getRememberedBoundsRatio(packageName1)).isEqualTo(bounds1)
+        assertThat(repo.getRememberedBoundsRatio(packageName2)).isEqualTo(bounds2)
+
+        // WHEN clearAllRememberedBoundsRatio is called
+        repo.clearAllRememberedBoundsRatio()
+        bgScope.testScheduler.advanceUntilIdle()
+
+        // THEN all bounds are cleared
+        assertThat(repo.getRememberedBoundsRatio(packageName1)).isNull()
+        assertThat(repo.getRememberedBoundsRatio(packageName2)).isNull()
+        // AND the change is persisted
+        verify(persistentRepository)
+            .addOrUpdateRepository(
+                userId = eq(DEFAULT_USER_ID),
+                desks = any(),
+                activeDeskId = any(),
+                preservedDisplays = any(),
+                rememberedBoundsRatioByPackageName = eq(ArrayMap()),
+            )
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun clearAllRememberedBoundsRatio_flagDisabled_isNoOp() = runTest {
+        // GIVEN the remembered bounds flag is disabled
+        // (and we attempt to set a value, which should be a no-op)
+        val packageName = "com.test.app"
+        val bounds = RectF(0.1f, 0.2f, 0.8f, 0.9f)
+        repo.setRememberedBoundsRatio(packageName, bounds)
+        assertThat(repo.getRememberedBoundsRatio(packageName)).isNull()
+
+        // WHEN clearAllRememberedBoundsRatio is called
+        repo.clearAllRememberedBoundsRatio()
+        bgScope.testScheduler.advanceUntilIdle()
+
+        // THEN nothing happens and persistence is not triggered
+        verify(persistentRepository, never())
+            .addOrUpdateRepository(any(), any(), any(), any(), any())
+    }
+
     private class TestDeskChangeListener : DesktopRepository.DeskChangeListener {
         var lastAddition: LastAddition? = null
             private set

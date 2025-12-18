@@ -182,7 +182,11 @@ constructor(
     private fun listenForDreamingToOccludedOrGoneOrLockscreen() {
         if (SceneContainerFlag.isEnabled) return
         scope.launch {
-            combine(keyguardInteractor.isKeyguardOccluded, keyguardInteractor.isAbleToDream, ::Pair)
+            combine(
+                    keyguardInteractor.isKeyguardOccluded,
+                    keyguardInteractor.isDreamingNotDozing,
+                    ::Pair,
+                )
                 // Debounce signals since there is a race condition between the occluded and
                 // dreaming signals when starting or stopping dreaming. We therefore add a small
                 // delay to give enough time for occluded to flip to false when the dream

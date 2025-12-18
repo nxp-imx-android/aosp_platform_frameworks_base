@@ -132,15 +132,15 @@ constructor(
 
         val invalidFromStates = setOf(KeyguardState.AOD, KeyguardState.DOZING)
         scope.launch("$TAG#listenForLockscreenToDreaming") {
-            keyguardInteractor.isAbleToDream.filterRelevantKeyguardState().collect { isAbleToDream
-                ->
+            keyguardInteractor.isDreamingNotDozing.filterRelevantKeyguardState().collect {
+                isDreaming ->
                 val isOnLockscreen =
                     transitionInteractor.finishedKeyguardState.value == KeyguardState.LOCKSCREEN
                 val transitionInfo = internalTransitionInteractor.currentTransitionInfoInternal()
                 val isTransitionInterruptible =
                     transitionInfo.to == KeyguardState.LOCKSCREEN &&
                         !invalidFromStates.contains(transitionInfo.from)
-                if (isAbleToDream && (isOnLockscreen || isTransitionInterruptible)) {
+                if (isDreaming && (isOnLockscreen || isTransitionInterruptible)) {
                     startTransitionTo(KeyguardState.DREAMING)
                 }
             }

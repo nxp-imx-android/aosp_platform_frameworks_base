@@ -450,6 +450,7 @@ public final class HintManagerService extends SystemService {
         int mMaxThreadCount;
         int mPowerEfficientSessionCount;
         int mGraphicsPipelineSessionCount;
+        int mAudioPerformanceSessionCount;
 
         final int mTargetDurationNsCountPQSize = 100;
         PriorityQueue<TargetDurationRecord> mTargetDurationNsCountPQ;
@@ -508,6 +509,7 @@ public final class HintManagerService extends SystemService {
             mMaxThreadCount = 0;
             mPowerEfficientSessionCount = 0;
             mGraphicsPipelineSessionCount = 0;
+            mAudioPerformanceSessionCount = 0;
             mTargetDurationNsCountPQ = new PriorityQueue<>(1);
         }
 
@@ -528,6 +530,10 @@ public final class HintManagerService extends SystemService {
 
         void logGraphicsPipelineSession() {
             mGraphicsPipelineSessionCount += 1;
+        }
+
+        void logAudioPerformanceSession() {
+            mAudioPerformanceSessionCount += 1;
         }
 
         void updateThreadCount(int threadCount) {
@@ -562,6 +568,10 @@ public final class HintManagerService extends SystemService {
 
         int getGraphicsPipelineSessionCount() {
             return mGraphicsPipelineSessionCount;
+        }
+
+        int getAudioPerformanceSessionCount() {
+            return mAudioPerformanceSessionCount;
         }
 
         long[] targetDurationNsList() {
@@ -664,7 +674,8 @@ public final class HintManagerService extends SystemService {
                                 sessionSnapshot.getMaxThreadCount(),
                                 sessionSnapshot.getPowerEfficientSessionCount(),
                                 sessionSnapshot.targetDurationNsList(),
-                                sessionSnapshot.getGraphicsPipelineSessionCount()
+                                sessionSnapshot.getGraphicsPipelineSessionCount(),
+                                sessionSnapshot.getAudioPerformanceSessionCount()
                         ));
                     }
                 }
@@ -1351,6 +1362,7 @@ public final class HintManagerService extends SystemService {
 
             boolean isGraphicsPipeline = false;
             boolean isAutoTimed = false;
+            boolean isAudioPerformance = false;
             if (creationConfig.modesToEnable != null) {
                 for (int mode : creationConfig.modesToEnable) {
                     if (mode == SessionMode.GRAPHICS_PIPELINE) {
@@ -1359,12 +1371,20 @@ public final class HintManagerService extends SystemService {
                     if (mode == SessionMode.AUTO_CPU || mode == SessionMode.AUTO_GPU) {
                         isAutoTimed = true;
                     }
+                    if (mode == SessionMode.AUDIO_PERFORMANCE) {
+                        isAudioPerformance = true;
+                    }
                 }
             }
 
             if (isAutoTimed) {
                 Preconditions.checkArgument(isGraphicsPipeline,
                         "graphics pipeline mode not enabled for an automatically timed session");
+            }
+
+            if (isAudioPerformance) {
+                Preconditions.checkArgument(!isGraphicsPipeline,
+                        "graphics pipeline mode enabled for audio performance mode");
             }
 
             try {
@@ -1459,7 +1479,7 @@ public final class HintManagerService extends SystemService {
                     final long sessionIdForTracing = config.id != -1 ? config.id : halSessionPtr;
                     logPerformanceHintSessionAtom(
                             callingUid, sessionIdForTracing, durationNanos,
-                            tids, tag, false ,false);
+                            tids, tag, false, false, false);
 
                     synchronized (mSessionSnapshotMapLock) {
                         // Update session snapshot upon session creation
@@ -1471,6 +1491,7 @@ public final class HintManagerService extends SystemService {
 
                 boolean powerEfficiency = false;
                 boolean graphicsPipeline = false;
+                boolean audioPerformance = false;
                 if (hs != null) {
                     if (creationConfig.modesToEnable != null) {
                         for (int sessionMode : creationConfig.modesToEnable) {
@@ -1479,6 +1500,9 @@ public final class HintManagerService extends SystemService {
                             }
                             if (sessionMode == SessionMode.GRAPHICS_PIPELINE) {
                                 graphicsPipeline = true;
+                            }
+                            if (sessionMode == SessionMode.AUDIO_PERFORMANCE) {
+                                audioPerformance = true;
                             }
                             hs.setMode(sessionMode, true);
                         }
@@ -1494,7 +1518,7 @@ public final class HintManagerService extends SystemService {
                     final long sessionIdForTracing = config.id != -1 ? config.id : halSessionPtr;
                     logPerformanceHintSessionAtom(
                             callingUid, sessionIdForTracing, durationNanos, tids,
-                            tag, powerEfficiency, graphicsPipeline);
+                            tag, powerEfficiency, graphicsPipeline, audioPerformance);
 
                     synchronized (mSessionSnapshotMapLock) {
                         // Update session snapshot upon session creation
@@ -2041,10 +2065,10 @@ public final class HintManagerService extends SystemService {
 
         private void logPerformanceHintSessionAtom(int uid, long sessionId,
                 long targetDuration, int[] tids, @SessionTag int sessionTag,
-                boolean powerEfficiency, boolean graphicsPipeline) {
+                boolean powerEfficiency, boolean graphicsPipeline, boolean audioPerformance) {
             FrameworkStatsLog.write(FrameworkStatsLog.PERFORMANCE_HINT_SESSION_REPORTED, uid,
                     sessionId, targetDuration, tids.length, sessionTag,
-                    powerEfficiency, graphicsPipeline);
+                    powerEfficiency, graphicsPipeline, audioPerformance);
         }
 
         private @SessionTag int updateSessionTag(@SessionTag int incomingTag, int callingUid) {
@@ -2117,8 +2141,10 @@ public final class HintManagerService extends SystemService {
         protected int[] mNewThreadIds;
         protected boolean mPowerEfficient;
         protected boolean mGraphicsPipeline;
+        protected boolean mAudioPerformance;
         protected boolean mHasBeenPowerEfficient;
         protected boolean mHasBeenGraphicsPipeline;
+        protected boolean mHasBeenAudioPerformance;
         protected boolean mShouldForcePause;
         protected Integer mSessionId;
         protected boolean mTrackedBySF;
@@ -2136,8 +2162,10 @@ public final class HintManagerService extends SystemService {
             mUpdateAllowedByProcState = true;
             mPowerEfficient = false;
             mGraphicsPipeline = false;
+            mAudioPerformance = false;
             mHasBeenPowerEfficient = false;
             mHasBeenGraphicsPipeline = false;
+            mHasBeenAudioPerformance = false;
             mShouldForcePause = false;
             mSessionId = sessionId;
             mTrackedBySF = false;
@@ -2444,6 +2472,8 @@ public final class HintManagerService extends SystemService {
                     mPowerEfficient = enabled;
                 } else if (mode == SessionMode.GRAPHICS_PIPELINE) {
                     mGraphicsPipeline = enabled;
+                } else if (mode == SessionMode.AUDIO_PERFORMANCE) {
+                    mAudioPerformance = enabled;
                 }
                 mNativeWrapper.halSetMode(mHalSessionPtr, mode, enabled);
             }
@@ -2486,6 +2516,25 @@ public final class HintManagerService extends SystemService {
                             sessionSnapshot.logGraphicsPipelineSession();
                         }
                     }
+                } else if (mode == SessionMode.AUDIO_PERFORMANCE) {
+                    if (!mHasBeenAudioPerformance) {
+                        mHasBeenAudioPerformance = true;
+                        synchronized (mSessionSnapshotMapLock) {
+                            ArrayMap<Integer, AppHintSessionSnapshot> sessionSnapshots =
+                                    mSessionSnapshotMap.get(mUid);
+                            if (sessionSnapshots == null) {
+                                Slogf.w(TAG, "Session snapshot map is null for uid " + mUid);
+                                return;
+                            }
+                            AppHintSessionSnapshot sessionSnapshot = sessionSnapshots.get(mTag);
+                            if (sessionSnapshot == null) {
+                                Slogf.w(TAG, "Session snapshot is null for uid " + mUid
+                                        + " and tag " + mTag);
+                                return;
+                            }
+                            sessionSnapshot.logAudioPerformanceSession();
+                        }
+                    }
                 }
             }
         }
@@ -2514,6 +2563,12 @@ public final class HintManagerService extends SystemService {
         public boolean isGraphicsPipeline() {
             synchronized (this) {
                 return mGraphicsPipeline;
+            }
+        }
+
+        public boolean isAudioPerformance() {
+            synchronized (this) {
+                return mAudioPerformance;
             }
         }
 
@@ -2623,6 +2678,8 @@ public final class HintManagerService extends SystemService {
                 pw.println(prefix + "ForcePaused: " + mShouldForcePause);
                 pw.println(prefix + "PowerEfficient: " + (mPowerEfficient ? "true" : "false"));
                 pw.println(prefix + "GraphicsPipeline: " + (mGraphicsPipeline ? "true" : "false"));
+                pw.println(prefix + "AudioPerformance: "
+                        + (mAudioPerformance ? "true" : "false"));
             }
         }
 

@@ -259,10 +259,12 @@ public final class MultiLightEffect implements Parcelable {
     }
 
     /**
+     * Returns the color sequences defined in the light effect for each of the lights.
      * <p>
-     * Returns the sequence of colors defined in this light effect.
+     * The key for the returned map corresponds to the lightId (see {@link Light#getId()}) of the
+     * light that will play the color sequence represented by the value.
      *
-     * @return List of color sequences that will be played for this effect.
+     * @return the Map of lightIds to the color sequences that will be played for the effect.
      */
     @NonNull
     public Map<Integer, ColorSequence> getSequences() {
@@ -297,8 +299,8 @@ public final class MultiLightEffect implements Parcelable {
      * @return the estimated duration of one iteration of this light effect in milliseconds.
      * @hide
      */
-    public int getIterationDurationMillis() {
-        int duration = 0;
+    public long getIterationDurationMillis() {
+        long duration = 0;
         for (ColorSequence sequence : mColorSequences) {
             duration = Math.max(duration, sequence.getDurationMillis());
         }
@@ -313,7 +315,7 @@ public final class MultiLightEffect implements Parcelable {
      * @return the estimated duration of this light effect.
      * @hide
      */
-    public int getTotalDurationMillis() {
+    public long getTotalDurationMillis() {
         return getIterationDurationMillis() * mIterations;
     }
 

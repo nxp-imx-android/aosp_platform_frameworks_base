@@ -59,6 +59,7 @@ public class WakeLockLogTest {
         when(mPackageManager.getPackagesForUid(102)).thenReturn(new String[]{ "some.package2" });
         when(mPackageManager.getPackagesForUid(Process.SYSTEM_UID))
                 .thenReturn(new String[]{ "some.package3" });
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
     }
 
     @Test
@@ -500,7 +501,6 @@ public class WakeLockLogTest {
         @Override
         public SimpleDateFormat getDateFormat() {
             SimpleDateFormat format = new SimpleDateFormat(super.getDateFormat().toPattern());
-            format.setTimeZone(TimeZone.getTimeZone("UTC"));
             return format;
         }
     }

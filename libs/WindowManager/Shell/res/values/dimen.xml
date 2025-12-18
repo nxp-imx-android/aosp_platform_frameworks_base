@@ -557,9 +557,9 @@
     <dimen name="desktop_mode_handle_menu_width">218dp</dimen>
 
     <!-- The maximum height of the handle menu in desktop mode. Three pills at 52dp each,
-         additional actions pill 260dp, plus 2dp spacing between them plus 4dp top padding.
-         52*3 + 52*5 + (5-1)*2 + 4 = 428 -->
-    <dimen name="desktop_mode_handle_menu_height">428dp</dimen>
+         additional actions at 52dp each, plus 2dp spacing between them plus 4dp top padding.
+         52*3 + 52*6 + (6-1)*2 + 4 = 482 -->
+    <dimen name="desktop_mode_handle_menu_height">482dp</dimen>
 
     <!-- The elevation set on the handle menu pills. -->
     <dimen name="desktop_mode_handle_menu_pill_elevation">1dp</dimen>
@@ -581,6 +581,9 @@
 
     <!-- The maximum height of the handle menu's "Screenshot" button in desktop mode. -->
     <dimen name="desktop_mode_handle_menu_screenshot_height">52dp</dimen>
+
+    <!-- The maximum height of the handle menu's "Game Controls" button in desktop mode. -->
+    <dimen name="desktop_mode_handle_menu_game_controls_height">52dp</dimen>
 
     <!-- The height of the handle menu's "Open in browser" pill in desktop mode. -->
     <dimen name="desktop_mode_handle_menu_open_in_browser_pill_height">52dp</dimen>

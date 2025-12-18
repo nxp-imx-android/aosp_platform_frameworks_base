@@ -9072,7 +9072,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * @param accessibilityPaneTitle The pane's title. Setting to {@code null} indicates that this
      *                               View is not a pane.
      *
-     * {@see AccessibilityNodeInfo#setPaneTitle(CharSequence)}
+     * @see AccessibilityNodeInfo#setPaneTitle(CharSequence)
      *
      * @attr ref android.R.styleable#View_accessibilityPaneTitle
      */

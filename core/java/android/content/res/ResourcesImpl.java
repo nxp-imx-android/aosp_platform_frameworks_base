@@ -533,9 +533,6 @@ public class ResourcesImpl {
                                     selectedLocales[i] =
                                             adjustLanguageTag(intersection[i].toLanguageTag());
                                 }
-                                Slog.v(TAG, "Updating configuration, with default locale "
-                                        + defaultLocale + " and selected locales "
-                                        + Arrays.toString(selectedLocales));
                             }
                         }
 

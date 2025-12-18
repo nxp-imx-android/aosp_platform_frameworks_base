@@ -27,8 +27,11 @@ import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.PersonalContextManager;
+import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.insight.ContextInsight;
+import android.service.personalcontext.refiner.HintFilter;
+import android.service.personalcontext.refiner.IGetFilterCallback;
 import android.service.personalcontext.refiner.IRefineCallback;
 import android.service.personalcontext.refiner.IRefiner;
 import android.util.Log;
@@ -88,6 +91,18 @@ public abstract class ContextUnderstanderService extends Service {
     }
 
     /**
+     * The understander should return a {@link HintFilter} that will be used to filter the
+     * hints that this understander's {@link #onUnderstand} method will be called with.
+     *
+     * The result of this method will be cached and re-used between service bindings. If the filter
+     * returned by this method changes, the changes will be ignored.
+     *
+     * @return a filter that restricts the {@link ContextHint}s this understander will receive
+     */
+    @NonNull
+    public abstract HintFilter onInitializeFilter();
+
+    /**
      * Called when a new hint is available.
      *
      * <p>As each hint is provided to the Personal Context system it will be forwarded on to
@@ -100,7 +115,21 @@ public abstract class ContextUnderstanderService extends Service {
     public abstract void onUnderstand(@NonNull List<ContextHintWithSignature> hints);
 
     /**
-     * Feeds {@link ContextInsight}s into the Personal Context system.
+     * @deprecated use {@link #understood(ContextInsight)}
+     */
+    @Deprecated
+    public final void understood(@NonNull List<ContextInsight> insights) {
+        if (mPersonalContextManager == null) {
+            mPersonalContextManager = getSystemService(PersonalContextManager.class);
+        }
+        if (mPersonalContextManager == null) {
+            throw new IllegalStateException("Personal Context Manager service is not running");
+        }
+        mPersonalContextManager.publishInsight(insights);
+    }
+
+    /**
+     * Feeds a {@link ContextInsight} into the Personal Context system.
      *
      * <p>Most understanders will want to respond to calls to {@link #onUnderstand} inline when all
      * insights have been prepared, but this is not a requirement. Understanders may want to call
@@ -110,22 +139,11 @@ public abstract class ContextUnderstanderService extends Service {
      * (e.g. new information is available that is relevant, but not in response to new hints). All
      * of these models are allowed.
      *
-     * <p>Note that while this method accepts a list of insights, this does not guarantee that the
-     * insights will be processed together by the framework. If the caller wants insights to be
-     * processed together downstream, they should be grouped together inside an
-     * {@link android.service.personalcontext.insight.InsightCollection}.
-     *
      * @throws IllegalStateException when called before the system service has started. The call
      * can be re-attempted in a few seconds, once system services have started.
      */
-    public final void understood(@NonNull List<ContextInsight> insights) {
-        if (mPersonalContextManager == null) {
-            mPersonalContextManager = getSystemService(PersonalContextManager.class);
-        }
-        if (mPersonalContextManager == null) {
-            throw new IllegalStateException("Personal Context Manager service is not running");
-        }
-        mPersonalContextManager.publishInsight(insights);
+    public final void understood(@NonNull ContextInsight insight) {
+        understood(List.of(insight));
     }
 
     private static final class Binder extends IRefiner.Stub {
@@ -157,6 +175,11 @@ public abstract class ContextUnderstanderService extends Service {
             callback.onHintsRefined(Collections.emptyList());
 
             getServiceOrThrow().onUnderstand(inputHints);
+        }
+
+        @Override
+        public void getFilter(IGetFilterCallback callback) throws RemoteException {
+            callback.updateFilter(getServiceOrThrow().onInitializeFilter());
         }
     }
 }

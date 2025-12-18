@@ -3282,8 +3282,8 @@ package android.provider {
 
   public static interface Telephony.TextBasedSmsColumns {
     field @FlaggedApi("com.android.internal.telephony.flags.redact_otp_sms_api") public static final String CONTAINS_OTP = "contains_otp";
-    field @FlaggedApi("android.view.flags.sms_provider_redact_otp_app_compat_api") public static final int OTP_SUBTYPE_SMS_RETRIEVER_OTP = 256; // 0x100
-    field @FlaggedApi("android.view.flags.sms_provider_redact_otp_app_compat_api") public static final int OTP_SUBTYPE_WEB_OTP = 512; // 0x200
+    field @FlaggedApi("android.view.flags.redact_otp_app_compat_api") public static final int OTP_SUBTYPE_SMS_RETRIEVER_OTP = 256; // 0x100
+    field @FlaggedApi("android.view.flags.redact_otp_app_compat_api") public static final int OTP_SUBTYPE_WEB_OTP = 512; // 0x200
     field @FlaggedApi("com.android.internal.telephony.flags.redact_otp_sms_api") public static final int OTP_TYPE_CONTAINS_OTP = 1; // 0x1
     field @FlaggedApi("com.android.internal.telephony.flags.redact_otp_sms_api") public static final int OTP_TYPE_NONE = 0; // 0x0
     field @FlaggedApi("com.android.internal.telephony.flags.redact_otp_sms_api") public static final int OTP_TYPE_PENDING = 2; // 0x2
@@ -3546,7 +3546,7 @@ package android.service.personalcontext.hint {
     method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature.Builder addAttributionHint(@NonNull android.service.personalcontext.hint.ContextHintWithSignature);
     method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature.Builder addAttributionHints(@NonNull java.util.Collection<android.service.personalcontext.hint.ContextHintWithSignature>);
     method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature build() throws java.security.GeneralSecurityException;
-    method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature.Builder setOriginatingComponent(@Nullable android.content.ComponentName);
+    method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature.Builder setOriginatingPackage(@Nullable String);
     method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature.Builder setRenderToken(@Nullable android.service.personalcontext.RenderToken);
   }
 
@@ -3557,6 +3557,14 @@ package android.service.personalcontext.insight {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextInsight {
     method @NonNull public static android.service.personalcontext.insight.ContextInsight createInsightFromBundle(@Nullable android.os.Bundle);
     method @NonNull public android.os.Bundle toBundle();
+  }
+
+}
+
+package android.service.personalcontext.refiner {
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class HintFilter implements android.os.Parcelable {
+    method @NonNull public java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature> getInterestedHintClusters(@NonNull java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature>, @NonNull java.util.Set<java.util.UUID>);
   }
 
 }

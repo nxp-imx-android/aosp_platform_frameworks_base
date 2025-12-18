@@ -119,7 +119,7 @@
             android:padding="@dimen/notification_importance_button_padding"
             android:clickable="true"
             android:focusable="true"
-            android:background="@drawable/notification_guts_priority_button_bg"
+            android:background="@drawable/notification_2025_guts_priority_button_bg"
             android:orientation="vertical">
 
             <LinearLayout

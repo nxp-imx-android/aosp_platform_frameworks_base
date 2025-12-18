@@ -204,6 +204,8 @@ public class VoiceInteractionManagerService extends SystemService {
     ShortcutServiceInternal mShortcutServiceInternal;
     SoundTriggerInternal mSoundTriggerInternal;
 
+    private final Object mAssistSettingsLock = new Object();
+
     private final RemoteCallbackList<IVoiceInteractionSessionListener>
             mVoiceInteractionSessionListeners = new RemoteCallbackList<>();
     private IVisualQueryRecognitionStatusListener mVisualQueryRecognitionStatusListener;
@@ -301,6 +303,95 @@ public class VoiceInteractionManagerService extends SystemService {
         if (DEBUG_USER) Slog.d(TAG, "onSwitchUser(" + from + " > " + to + ")");
 
         mServiceStub.switchUser(to.getUserIdentifier());
+    }
+
+    private void performAssistStructureUpgradeIfNeeded() {
+        if (!android.permission.flags.Flags.assistSettingsPrivacyImprovementsEnabled()) {
+            return;
+        }
+        BackgroundThread.getHandler().post(() -> {
+            synchronized (mAssistSettingsLock) {
+                final VoiceInteractionManagerSettings settings =
+                        VoiceInteractionManagerSettings.getInstance();
+                final PackageManager packageManager = mContext.getPackageManager();
+                if (DEBUG) {
+                    Slog.i(TAG, "performAssistStructureUpgradeIfNeeded isDeviceUpgrading:"
+                            + packageManager.isDeviceUpgrading() + ", isAssistMigrationComplete:"
+                            + settings.isAssistMigrationComplete());
+                }
+                if (settings.isAssistMigrationComplete()) {
+                    return;
+                } else if (!packageManager.isDeviceUpgrading()) {
+                    settings.setAssistMigrationComplete();
+                    return;
+                }
+
+                List<UserInfo> users =
+                        mUserManagerInternal.getUsers(USER_FILTER_WITH_ALL_COMPLETE_USERS);
+                for (UserInfo user : users) {
+                    final int userId = user.id;
+
+                    if (DEBUG) {
+                        Slog.i(TAG, "Performing assist structure upgrade for user " + userId);
+                    }
+
+                    final RoleManager roleManager = mContext.getSystemService(RoleManager.class);
+                    final List<String> holders =
+                            roleManager.getRoleHolders(RoleManager.ROLE_ASSISTANT);
+                    if (holders.isEmpty()) {
+                        continue;
+                    }
+
+                    // New default mode is MODE_IGNORED. For migration of this setting we set:
+                    // MODE_ALLOWED only if both settings are explicitly enabled (1), MODE_IGNORED
+                    // if either setting is explicitly disabled (0), and MODE_DEFAULT otherwise
+                    final ContentResolver contentResolver = mContext.getContentResolver();
+                    final int isAssistStructureEnabled = Settings.Secure.getIntForUser(
+                            contentResolver, Settings.Secure.ASSIST_STRUCTURE_ENABLED, -1, userId);
+                    final int isAssistScreenshotEnabled = Settings.Secure.getIntForUser(
+                            contentResolver, Settings.Secure.ASSIST_SCREENSHOT_ENABLED, -1, userId);
+                    int assistStructureMode;
+                    if (isAssistStructureEnabled == 1 && isAssistScreenshotEnabled == 1) {
+                        assistStructureMode = AppOpsManager.MODE_ALLOWED;
+                    } else if (isAssistStructureEnabled == 0 || isAssistScreenshotEnabled == 0) {
+                        assistStructureMode = AppOpsManager.MODE_IGNORED;
+                    } else {
+                        assistStructureMode = AppOpsManager.MODE_DEFAULT;
+                    }
+
+                    if (DEBUG) {
+                        Slog.i(TAG, "Attempting to migrate ASSIST_STRUCTURE_ENABLED and "
+                                + "ASSIST_SCREENSHOT_ENABLED to appop. "
+                                + isAssistStructureEnabled + " & "
+                                + isAssistScreenshotEnabled + " -> " + assistStructureMode);
+                    }
+                    final String assistantPackage = holders.get(0);
+                    try {
+                        final int assistantUid = packageManager.getPackageUidAsUser(
+                                assistantPackage,
+                                userId);
+                        final AppOpsManager appOpsManager = mContext.getSystemService(
+                                AppOpsManager.class);
+                        appOpsManager.setUidMode(
+                                AppOpsManager.OPSTR_VOICE_INTERACTION_ASSIST_STRUCTURE,
+                                assistantUid, assistStructureMode);
+                        if (DEBUG) {
+                            Slog.i(TAG, "Set OPSTR_VOICE_INTERACTION_ASSIST_STRUCTURE to "
+                                    + assistStructureMode + " for assistant " + assistantPackage);
+                        }
+                    } catch (PackageManager.NameNotFoundException e) {
+                        Slog.e(TAG, "Assistant package not found: " + assistantPackage, e);
+                    }
+                }
+                settings.setAssistMigrationComplete();
+                if (DEBUG) {
+                    Slog.i(TAG, "Marked assist structure upgrade as complete for all users");
+                }
+
+                // Now that the migration is complete, re-run the observer logic.
+                mServiceStub.updateAssistStructureSecureSettingsForAllUsers();
+            }
+        });
     }
 
     class LocalService extends VoiceInteractionManagerInternal {
@@ -781,7 +872,8 @@ public class VoiceInteractionManagerService extends SystemService {
 
         public void systemServicesReady() {
             if (android.permission.flags.Flags.assistSettingsPrivacyImprovementsEnabled()) {
-                new AssistStructureAppOpObserver(mContext.getMainExecutor());
+                performAssistStructureUpgradeIfNeeded();
+                new AssistStructureAppOpObserver(BackgroundThread.getExecutor());
             }
         }
 
@@ -2605,20 +2697,38 @@ public class VoiceInteractionManagerService extends SystemService {
         }
 
         private void updateAssistStructureSecureSettingsForUser(int userId) {
-            final long identity = Binder.clearCallingIdentity();
-            try {
-                boolean enabled = isAssistStructureEnabledInternal(userId);
-
-                if (DEBUG) {
-                    Log.d(TAG, "updateAssistStructureSecureSettingsForUser userId:" + userId
-                            + ", enabled:" + enabled);
+            synchronized (mAssistSettingsLock) {
+                if (!VoiceInteractionManagerSettings.getInstance().isAssistMigrationComplete()) {
+                    if (DEBUG) {
+                        Slog.d(TAG, "updateAssistStructureSecureSettingsForUser "
+                                + "isAssistMigrationComplete false");
+                    }
+                    // Migration is not complete yet, so don't update the settings.
+                    return;
                 }
-                Settings.Secure.putIntForUser(mContext.getContentResolver(),
-                                Settings.Secure.ASSIST_STRUCTURE_ENABLED, enabled ? 1 : 0, userId);
-                Settings.Secure.putIntForUser(mContext.getContentResolver(),
-                                Settings.Secure.ASSIST_SCREENSHOT_ENABLED, enabled ? 1 : 0, userId);
-            } finally {
-                Binder.restoreCallingIdentity(identity);
+
+                final long identity = Binder.clearCallingIdentity();
+                try {
+                    boolean enabled = isAssistStructureEnabledInternal(userId);
+
+                    if (DEBUG) {
+                        Slog.d(TAG, "updateAssistStructureSecureSettingsForUser userId:" + userId
+                                + ", enabled:" + enabled);
+                    }
+                    Settings.Secure.putIntForUser(mContext.getContentResolver(),
+                            Settings.Secure.ASSIST_STRUCTURE_ENABLED, enabled ? 1 : 0, userId);
+                    Settings.Secure.putIntForUser(mContext.getContentResolver(),
+                            Settings.Secure.ASSIST_SCREENSHOT_ENABLED, enabled ? 1 : 0, userId);
+                } finally {
+                    Binder.restoreCallingIdentity(identity);
+                }
+            }
+        }
+
+        private void updateAssistStructureSecureSettingsForAllUsers() {
+            for (UserInfo user : mUserManagerInternal.getUsers(
+                    USER_FILTER_WITH_ALL_COMPLETE_USERS)) {
+                updateAssistStructureSecureSettingsForUser(user.id);
             }
         }
 
@@ -2806,7 +2916,8 @@ public class VoiceInteractionManagerService extends SystemService {
 
                 int userId = user.getIdentifier();
                 if (android.permission.flags.Flags.assistSettingsPrivacyImprovementsEnabled()) {
-                    updateAssistStructureSecureSettingsForUser(userId);
+                    BackgroundThread.getHandler().post(
+                            () -> updateAssistStructureSecureSettingsForUser(userId));
                 }
                 if (roleHolders.isEmpty()) {
                     Settings.Secure.putStringForUser(getContext().getContentResolver(),
@@ -2890,10 +3001,9 @@ public class VoiceInteractionManagerService extends SystemService {
                 mExecutor = executor;
 
                 // Do an initial sync of ASSIST_STRUCTURE app ops mode for all users
-                for (UserInfo user : mUserManagerInternal.getUsers(
-                        USER_FILTER_WITH_ALL_COMPLETE_USERS)) {
-                    updateAssistStructureSecureSettingsForUser(user.id);
-                }
+                mExecutor.execute(
+                        VoiceInteractionManagerServiceStub
+                                .this::updateAssistStructureSecureSettingsForAllUsers);
 
                 AppOpsManager appOpsManager = mContext.getSystemService(AppOpsManager.class);
                 appOpsManager.startWatchingMode(
@@ -2907,7 +3017,7 @@ public class VoiceInteractionManagerService extends SystemService {
             @Override
             public void onOpChanged(@NonNull String op, @NonNull String packageName, int userId) {
                 if (DEBUG) {
-                    Slog.i(TAG, "onOpChanged with op: " + op + ", packageName: " + packageName
+                    Slog.d(TAG, "onOpChanged with op: " + op + ", packageName: " + packageName
                             + ", userId: " + userId);
                 }
 

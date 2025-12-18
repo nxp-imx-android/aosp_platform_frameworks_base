@@ -161,6 +161,7 @@ class WindowStateAnimator {
         mWallpaperControllerLocked = win.getDisplayContent().mWallpaperController;
         if (WindowManager.useClientSurface()) {
             mLastHidden = true;
+            mTitle = win.getName();
         }
     }
 

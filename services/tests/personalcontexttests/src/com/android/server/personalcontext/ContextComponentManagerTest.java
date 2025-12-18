@@ -36,7 +36,6 @@ import androidx.test.filters.SmallTest;
 
 import com.android.server.personalcontext.component.Refiner;
 import com.android.server.personalcontext.component.Renderer;
-import com.android.server.personalcontext.component.Transformer;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,7 +53,6 @@ public class ContextComponentManagerTest {
         final ContextComponentManager manager = new ContextComponentManager(mock(Context.class));
 
         assertThat(manager.getRefiners()).isEmpty();
-        assertThat(manager.getTransformers()).isEmpty();
         assertThat(manager.getRenderers()).isEmpty();
     }
 
@@ -67,17 +65,6 @@ public class ContextComponentManagerTest {
         manager.register(refiner);
 
         assertThat(manager.getRefiners()).containsExactly(refiner);
-    }
-
-    @Test
-    public void testRegisterTransformer() {
-        final Transformer transformer = mock(Transformer.class);
-        when(transformer.getComponentId()).thenReturn(UUID.randomUUID());
-
-        final ContextComponentManager manager = new ContextComponentManager(mock(Context.class));
-        manager.register(transformer);
-
-        assertThat(manager.getTransformers()).containsExactly(transformer);
     }
 
     @Test
@@ -143,13 +130,11 @@ public class ContextComponentManagerTest {
         // The above code reports the same service for all requested service types. Because
         // understanders are modeled as refiners this looks like 2 refiners, but 1 of all others.
         assertThat(manager.getRefiners().size()).isEqualTo(2);
-        assertThat(manager.getTransformers().size()).isEqualTo(1);
         assertThat(manager.getRenderers().size()).isEqualTo(1);
 
         manager.unregisterComponentsForPackage(packageName);
 
         assertThat(manager.getRefiners()).isEmpty();
-        assertThat(manager.getTransformers()).isEmpty();
         assertThat(manager.getRenderers()).isEmpty();
     }
 }

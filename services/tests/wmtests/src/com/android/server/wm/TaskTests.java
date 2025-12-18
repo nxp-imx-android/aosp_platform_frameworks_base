@@ -2327,6 +2327,7 @@ public class TaskTests extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_DELEGATE_REQUEST_FULLSCREEN_HANDLING_TO_SHELL)
     public void testRestoreWindowingMode_reparentsToAttachedParent() {
         // Create a parent task that the child task will be restored to.
         final Task parentTask = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
@@ -2350,6 +2351,7 @@ public class TaskTests extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_DELEGATE_REQUEST_FULLSCREEN_HANDLING_TO_SHELL)
     public void testRestoreWindowingMode_doesNotReparentToDetachedParent() {
         // Create a parent task that will be removed.
         final Task parentTask = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
@@ -2562,25 +2564,15 @@ public class TaskTests extends WindowTestsBase {
     }
 
     @Test
-    @DisableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
-    public void testCreateTask_appLockFlagIsOff_doesNotRegisterToAppLockOverlayController() {
-        final AppLockOverlayController appLockOverlayController = mWm.mAppLockOverlayController;
-        spyOn(appLockOverlayController);
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    public void testCreateTask_registersToAppLockController() {
+        final AppLockController appLockController = mWm.mAppLockController;
+        spyOn(appLockController);
 
         final Task task = getTestTask();
 
-        verify(appLockOverlayController, never()).registerTask(task);
-    }
-
-    @Test
-    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
-    public void testCreateTask_registersToAppLockOverlayController() {
-        final AppLockOverlayController appLockOverlayController = mWm.mAppLockOverlayController;
-        spyOn(appLockOverlayController);
-
-        final Task task = getTestTask();
-
-        verify(appLockOverlayController).registerTask(task);
+        verify(appLockController).registerTask(task);
     }
 
     @Test

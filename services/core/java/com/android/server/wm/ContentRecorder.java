@@ -48,7 +48,6 @@ import android.window.DesktopExperienceFlags;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
-import com.android.server.display.feature.DisplayManagerFlags;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -406,8 +405,7 @@ final class ContentRecorder implements WindowContainerListener {
                 mDisplayContent.getDisplayId(), mDisplayContent.getDisplayInfo().state);
 
         // Create a mirrored hierarchy for the SurfaceControl of the DisplayArea to capture.
-        if (com.android.media.projection.flags.Flags.recordingOverlay()
-                && com.android.graphics.surfaceflinger.flags.Flags.stopLayer()) {
+        if (com.android.media.projection.flags.Flags.recordingOverlay()) {
             mRecordedSurface = SurfaceControl.mirrorSurface(sourceSurface, stopAt);
         } else {
             mRecordedSurface = SurfaceControl.mirrorSurface(sourceSurface);
@@ -457,9 +455,6 @@ final class ContentRecorder implements WindowContainerListener {
     @Nullable
     private SurfaceControl findOwnerTopOverlayWindow(WindowContainer<?> recordedWindowContainer) {
         if (!com.android.media.projection.flags.Flags.recordingOverlay()) {
-            return null;
-        }
-        if (!com.android.graphics.surfaceflinger.flags.Flags.stopLayer()) {
             return null;
         }
         if (mContentRecordingSession.getContentToRecord() != RECORD_CONTENT_BELOW_OVERLAY) {

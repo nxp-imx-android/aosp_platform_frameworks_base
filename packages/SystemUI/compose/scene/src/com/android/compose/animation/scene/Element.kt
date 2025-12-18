@@ -183,7 +183,7 @@ internal fun Modifier.element(
             Modifier.maybeElevateInContent(layoutImpl, content, key, currentTransitionStates)
         }
         .thenIf(layoutImpl.implicitTestTags) { Modifier.testTag(key.testTag) }
-        .thenIf(StlDebugConfig.isDebuggingElement()) { Modifier.debugElement(key) }
+        .thenIf(StlDebugConfig.isDebuggingElement()) { Modifier.debugElement(key, content) }
 }
 
 /**

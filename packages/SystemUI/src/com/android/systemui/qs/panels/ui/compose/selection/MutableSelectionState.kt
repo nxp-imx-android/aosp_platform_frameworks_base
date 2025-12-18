@@ -29,7 +29,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import com.android.systemui.common.ui.compose.gestures.detectEagerTapGestures
-import com.android.systemui.qs.flags.QsEditModeV2
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import kotlinx.coroutines.delay
 
@@ -132,11 +131,7 @@ class MutableSelectionState {
                 placeTileAt(tileSpec)
             }
             else -> {
-                if (QsEditModeV2.isEnabled) {
-                    select(tileSpec)
-                } else {
-                    toggleSelection(tileSpec)
-                }
+                select(tileSpec)
             }
         }
     }
@@ -148,16 +143,9 @@ class MutableSelectionState {
      * selected, but selections can be moved to their position.
      */
     fun onTap(index: Int) {
-        when {
-            placementEnabled -> {
-                selection?.let { placementEvent = PlacementEvent.PlaceToIndex(it, index) }
-                exitPlacementMode()
-            }
-            selected -> {
-                if (!QsEditModeV2.isEnabled) {
-                    unSelect()
-                }
-            }
+        if (placementEnabled) {
+            selection?.let { placementEvent = PlacementEvent.PlaceToIndex(it, index) }
+            exitPlacementMode()
         }
     }
 }

@@ -242,7 +242,7 @@ public class DomainVerificationEnforcer {
                 callingPid, callingUid, "Caller " + callingUid + " does not hold "
                         + android.Manifest.permission.QUERY_ALL_PACKAGES);
 
-        if (android.content.pm.Flags.enableQueryDomainVerification()) {
+        if (android.view.flags.Flags.redactWebOtpSmsApi()) {
             int updateDomainVerificationUserSelectionPermission =
                     mContext.checkPermission(
                             android.Manifest.permission.UPDATE_DOMAIN_VERIFICATION_USER_SELECTION,

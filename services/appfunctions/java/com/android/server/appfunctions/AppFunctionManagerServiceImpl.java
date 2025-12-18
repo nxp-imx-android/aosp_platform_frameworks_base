@@ -19,11 +19,10 @@ package com.android.server.appfunctions;
 import static android.app.appfunctions.AppFunctionException.ERROR_SYSTEM_ERROR;
 import static android.app.appfunctions.AppFunctionManager.ACCESS_REQUEST_STATE_UNREQUESTABLE;
 import static android.app.appfunctions.AppFunctionManager.ACTION_REQUEST_APP_FUNCTION_ACCESS;
-import static android.app.appfunctions.AppFunctionMetadata.FUNCTION_TYPE_DYNAMIC;
-import static android.app.appfunctions.AppFunctionMetadata.FUNCTION_TYPE_STATIC;
-import static android.app.appfunctions.AppFunctionMetadata.getAppFunctionType;
 import static android.app.appfunctions.AppFunctionRuntimeMetadata.APP_FUNCTION_RUNTIME_METADATA_DB;
 import static android.app.appfunctions.AppFunctionRuntimeMetadata.APP_FUNCTION_RUNTIME_NAMESPACE;
+import static android.app.appfunctions.AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_METADATA_DB;
+import static android.app.appfunctions.AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_NAMESPACE;
 
 import static com.android.server.appfunctions.AppFunctionExecutors.THREAD_POOL_EXECUTOR;
 import static com.android.server.appfunctions.CallerValidator.CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION;
@@ -207,7 +206,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @NonNull AppFunctionAgentAllowlistStorage agentAllowlistStorage,
             @NonNull MultiUserDynamicAppFunctionRegistry dynamicAppFunctionRegistry,
             @Nullable AppInteractionService appInteractionService,
-            @NonNull Executor backgroundExecutor) {
+            @NonNull Executor backgroundExecutor,
+            @NonNull AppFunctionMetadataReader appFunctionMetadataReader) {
         this(
                 context,
                 new RemoteServiceCallerImpl<>(
@@ -227,7 +227,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 agentAllowlistStorage,
                 dynamicAppFunctionRegistry,
                 backgroundExecutor,
-                new AppFunctionMetadataReader(),
+                appFunctionMetadataReader,
                 appInteractionService,
                 new VisibilityHelperImpl(context, packageManagerInternal));
     }
@@ -319,6 +319,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
             Objects.requireNonNull(user);
             mDynamicAppFunctionRegistry.onUserStopped(user);
+            mAppFunctionMetadataReader.onMetadataObserveFinishedForUser(user.getUserHandle());
         }
     }
 
@@ -491,11 +492,12 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 .thenAccept(
                         canExecuteResult -> {
                             if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()
-                                    && getAppFunctionType(
+                                    && mAppFunctionMetadataReader.isDynamicFunction(
+                                                    targetPackageName,
                                                     requestInternal
                                                             .getClientRequest()
-                                                            .getFunctionIdentifier())
-                                            == FUNCTION_TYPE_DYNAMIC) {
+                                                            .getFunctionIdentifier(),
+                                                    targetUser)) {
                                 mDynamicAppFunctionRegistry.executeAppFunction(
                                         requestInternal,
                                         safeExecuteAppFunctionCallback,
@@ -654,11 +656,15 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @NonNull Executor executor) {
         AndroidFuture<Boolean> future = new AndroidFuture<>();
 
+        // TODO(b/467317154): Take into account AppFunctionService availability for static
+        //  app functions
         if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()
-                && getAppFunctionType(functionIdentifier) == FUNCTION_TYPE_DYNAMIC) {
-            future.complete(
-                    mDynamicAppFunctionRegistry.isAppFunctionEnabled(
-                            targetPackage, functionIdentifier, targetUserHandle));
+                && mAppFunctionMetadataReader.isDynamicFunction(
+                                targetPackage, functionIdentifier, targetUserHandle)
+                && !mDynamicAppFunctionRegistry.isAppFunctionEnabled(
+                        targetPackage, functionIdentifier, targetUserHandle)) {
+            // Dynamic app function without registered implementation.
+            future.complete(false);
             return future;
         }
 
@@ -688,7 +694,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @NonNull UserHandle userHandle,
             @AppFunctionManager.EnabledState int enabledState,
             @NonNull IAppFunctionEnabledCallback callback) {
-        // TODO(b/438413084): handle dynamic appfunctions
         try {
             // Skip validation for shell to allow changing enabled state via shell.
             if (Binder.getCallingUid() != Process.SHELL_UID) {
@@ -753,6 +758,15 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     public void registerAppFunction(
             String packageName, String functionIdentifier, IAppFunctionExecutor session) {
         mCallerValidator.validateCallingPackage(packageName);
+        if (!mAppFunctionMetadataReader.isDynamicFunction(
+                        packageName, functionIdentifier, Binder.getCallingUserHandle())) {
+            throw new IllegalArgumentException(
+                    "Unable to register AppFunction " + functionIdentifier
+                            + ". Ensure this function is declared in the XML resource referenced"
+                            + " by the property within the <application> tag of your "
+                            + "AndroidManifest.xml."
+            );
+        }
         mDynamicAppFunctionRegistry.registerAppFunction(
                 packageName, functionIdentifier, session, Binder.getCallingUserHandle());
     }
@@ -761,6 +775,15 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     public void unregisterAppFunction(
             String packageName, String functionIdentifier, IAppFunctionExecutor session) {
         mCallerValidator.validateCallingPackage(packageName);
+        if (!mAppFunctionMetadataReader.isDynamicFunction(
+                        packageName, functionIdentifier, Binder.getCallingUserHandle())) {
+            throw new IllegalArgumentException(
+                    "Unable to unregister AppFunction " + functionIdentifier
+                            + ". Ensure this function is declared in the XML resource referenced"
+                            + " by the property within the <application> tag of your "
+                            + "AndroidManifest.xml."
+            );
+        }
         mDynamicAppFunctionRegistry.unregisterAppFunction(
                 packageName, functionIdentifier, session, Binder.getCallingUserHandle());
     }
@@ -1236,6 +1259,11 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                 (voidResult, ex) -> {
                                     if (ex != null) {
                                         Slog.e(TAG, "Failed to register observer: ", ex);
+                                    } else if (
+                                            android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()
+                                    ) {
+                                        mAppFunctionMetadataReader.onMetadataObserveStartedForUser(
+                                                user.getUserHandle());
                                     }
                                     futureGlobalSearchSession.close();
                                 });
@@ -1291,11 +1319,12 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @NonNull ExecuteAppFunctionAidlRequest requestInternal,
             @NonNull IExecuteAppFunctionCallback executeAppFunctionCallback,
             int callingUid) {
-        final int functionType =
+        final boolean isDynamicAppFunction =
                 android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()
-                        ? getAppFunctionType(
-                                requestInternal.getClientRequest().getFunctionIdentifier())
-                        : FUNCTION_TYPE_STATIC;
+                        && mAppFunctionMetadataReader.isDynamicFunction(
+                                requestInternal.getClientRequest().getTargetPackageName(),
+                                requestInternal.getClientRequest().getFunctionIdentifier(),
+                                requestInternal.getUserHandle());
 
         return new SafeOneTimeExecuteAppFunctionCallback(
                 executeAppFunctionCallback,
@@ -1315,7 +1344,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                 result,
                                 callingUid,
                                 executionStartTimeMillis,
-                                functionType);
+                                isDynamicAppFunction);
                         recordAppFunctionInteraction(requestInternal);
                     }
 
@@ -1327,7 +1356,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                 error.getErrorCode(),
                                 callingUid,
                                 executionStartTimeMillis,
-                                functionType);
+                                isDynamicAppFunction);
                         recordAppFunctionInteraction(requestInternal);
                     }
                 });
@@ -1348,12 +1377,15 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 aidlRequest.getUserHandle().getIdentifier());
     }
 
-    private static class AppFunctionMetadataObserver implements ObserverCallback {
+    private class AppFunctionMetadataObserver implements ObserverCallback {
         @Nullable private final MetadataSyncAdapter mPerUserMetadataSyncAdapter;
+
+        @NonNull UserHandle mUserHandle;
 
         AppFunctionMetadataObserver(@NonNull UserHandle userHandle, @NonNull Context userContext) {
             mPerUserMetadataSyncAdapter =
                     MetadataSyncPerUser.getPerUserMetadataSyncAdapter(userHandle, userContext);
+            mUserHandle = userHandle;
         }
 
         @Override
@@ -1361,15 +1393,13 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             if (mPerUserMetadataSyncAdapter == null) {
                 return;
             }
-            if (documentChangeInfo
-                            .getDatabaseName()
-                            .equals(AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_METADATA_DB)
-                    && documentChangeInfo
-                            .getNamespace()
-                            .equals(
-                                    AppFunctionStaticMetadataHelper
-                                            .APP_FUNCTION_STATIC_NAMESPACE)) {
+            if (documentChangeInfo.getDatabaseName().equals(APP_FUNCTION_STATIC_METADATA_DB)
+                    && documentChangeInfo.getNamespace().equals(APP_FUNCTION_STATIC_NAMESPACE)) {
                 var unused = mPerUserMetadataSyncAdapter.submitSyncRequest();
+                if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
+                    mAppFunctionMetadataReader.onStaticMetadataDocumentsChanged(
+                            mUserHandle, documentChangeInfo);
+                }
             }
         }
 
@@ -1378,9 +1408,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             if (mPerUserMetadataSyncAdapter == null) {
                 return;
             }
-            if (schemaChangeInfo
-                    .getDatabaseName()
-                    .equals(AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_METADATA_DB)) {
+            if (schemaChangeInfo.getDatabaseName().equals(APP_FUNCTION_STATIC_METADATA_DB)) {
                 boolean shouldInitiateSync = false;
                 for (String schemaName : schemaChangeInfo.getChangedSchemaNames()) {
                     if (schemaName.startsWith(AppFunctionStaticMetadataHelper.STATIC_SCHEMA_TYPE)) {
@@ -1390,6 +1418,10 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 }
                 if (shouldInitiateSync) {
                     var unused = mPerUserMetadataSyncAdapter.submitSyncRequest();
+
+                    if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
+                        mAppFunctionMetadataReader.onMetadataSchemaChangedForUser(mUserHandle);
+                    }
                 }
             }
         }

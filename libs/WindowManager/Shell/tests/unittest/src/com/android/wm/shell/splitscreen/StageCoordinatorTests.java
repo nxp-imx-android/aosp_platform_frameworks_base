@@ -192,6 +192,8 @@ public class StageCoordinatorTests extends ShellTestCase {
     private final Rect mRootBounds = new Rect(0, 0, 45, 60);
     private final int mTaskId = 18;
 
+    private SurfaceControl mRootLeash;
+    private SurfaceControl mDividerLeash;
     private ActivityManager.RunningTaskInfo mSplitRootTaskInfo;
     private StageCoordinator mStageCoordinator;
     private SplitScreenTransitions mSplitScreenTransitions;
@@ -217,7 +219,7 @@ public class StageCoordinatorTests extends ShellTestCase {
         MockitoAnnotations.initMocks(this);
         mTransitions = spy(createTestTransitions());
         WindowContainerToken token = mock(WindowContainerToken.class);
-        SurfaceControl dividerLeash = new SurfaceControl.Builder().setName("fakeDivider").build();
+        mDividerLeash = new SurfaceControl.Builder().setName("fakeDivider").build();
         when(mRootDisplayAreaOrganizer.getDisplayTokenForDisplay(anyInt()))
                 .thenReturn(mock(WindowContainerToken.class));
         mDesktopState = new FakeDesktopState();
@@ -253,13 +255,13 @@ public class StageCoordinatorTests extends ShellTestCase {
         when(mSplitLayout.getRootBounds()).thenReturn(mRootBounds);
         when(mSplitLayout.isLeftRightSplit()).thenReturn(false);
         when(mSplitLayout.applyTaskChanges(any(), any(), any())).thenReturn(true);
-        when(mSplitLayout.getDividerLeash()).thenReturn(dividerLeash);
+        when(mSplitLayout.getDividerLeash()).thenReturn(mDividerLeash);
 
         when(mBubbleController.hasBubbles()).thenReturn(false);
 
         mSplitRootTaskInfo = new TestRunningTaskInfoBuilder().build();
-        SurfaceControl rootLeash = new SurfaceControl.Builder().setName("splitRoot").build();
-        mStageCoordinator.onTaskAppeared(mSplitRootTaskInfo, rootLeash);
+        mRootLeash = new SurfaceControl.Builder().setName("splitRoot").build();
+        mStageCoordinator.onTaskAppeared(mSplitRootTaskInfo, mRootLeash);
 
         mSideStage.mRootTaskInfo = new TestRunningTaskInfoBuilder().build();
         mMainStage.mRootTaskInfo = new TestRunningTaskInfoBuilder().build();
@@ -409,10 +411,44 @@ public class StageCoordinatorTests extends ShellTestCase {
 
     @Test
     public void testFinishEnterSplitScreen_applySurfaceLayout() {
-        mStageCoordinator.finishEnterSplitScreen(new SurfaceControl.Transaction());
+        mStageCoordinator.finishEnterSplitScreen(mTransaction);
 
         verify(mSplitLayout, atLeastOnce())
-                .applySurfaceChanges(any(), any(), any(), any(), any(), eq(false));
+                .applySurfaceChanges(eq(mTransaction), any(), any(), any(), any(), eq(false));
+    }
+
+    @Test
+    public void finishEnterSplitScreen_withValidDividerLeash_reparentsLeash() {
+        // The default setup provides a valid divider leash.
+        mStageCoordinator.finishEnterSplitScreen(mTransaction);
+
+        // Verify that the divider leash is reparented to the root task leash.
+        verify(mTransaction).reparent(eq(mDividerLeash), eq(mRootLeash));
+    }
+
+    @Test
+    public void finishEnterSplitScreen_withNullDividerLeash_doesNotReparent() {
+        // Setup: Divider leash is null.
+        when(mSplitLayout.getDividerLeash()).thenReturn(null);
+
+        mStageCoordinator.finishEnterSplitScreen(mTransaction);
+
+        // Verify that reparent is not called for the divider leash, as it's null.
+        // The root leash is the parent for the divider, so this check is specific enough.
+        verify(mTransaction, never()).reparent(any(SurfaceControl.class), eq(mRootLeash));
+    }
+
+    @Test
+    public void finishEnterSplitScreen_withInvalidDividerLeash_doesNotReparent() {
+        // Setup: Divider leash is invalid.
+        SurfaceControl invalidLeash = mock(SurfaceControl.class);
+        when(invalidLeash.isValid()).thenReturn(false);
+        when(mSplitLayout.getDividerLeash()).thenReturn(invalidLeash);
+
+        mStageCoordinator.finishEnterSplitScreen(mTransaction);
+
+        // Verify that reparent is not called for the invalid leash.
+        verify(mTransaction, never()).reparent(eq(invalidLeash), any());
     }
 
     @Test

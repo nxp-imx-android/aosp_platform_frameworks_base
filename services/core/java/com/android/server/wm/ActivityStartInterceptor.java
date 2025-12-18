@@ -392,7 +392,7 @@ class ActivityStartInterceptor {
             return false;
         }
         // Do not intercept if the launching package is currently unlocked.
-        if (!mService.mWindowManager.isPackageLockedByAppLock(launchingPackage, mUserId)) {
+        if (!mService.mWindowManager.isPackageLockedByAppLockLocked(launchingPackage, mUserId)) {
             return false;
         }
         // Do not intercept if the activity can be shown over the lockscreen.

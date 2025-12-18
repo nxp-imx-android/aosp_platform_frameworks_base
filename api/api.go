@@ -219,7 +219,7 @@ type MergedTxtDefinition struct {
 	Scope string
 }
 
-func createMergedTxt(ctx android.LoadHookContext, txt MergedTxtDefinition, stubsTypeSuffix string, doDist bool) {
+func createMergedTxt(ctx android.LoadHookContext, txt MergedTxtDefinition, exportableStubsType bool, doDist bool) {
 	metalavaCmd := "$(location metalava)"
 	// Silence reflection warnings. See b/168689341
 	metalavaCmd += " -J--add-opens=java.base/java.util=ALL-UNNAMED "
@@ -229,6 +229,12 @@ func createMergedTxt(ctx android.LoadHookContext, txt MergedTxtDefinition, stubs
 	if txt.Scope != "public" {
 		filename = txt.Scope + "-" + filename
 	}
+
+	stubsTypeSuffix := "-"
+	if exportableStubsType {
+		stubsTypeSuffix = "-exportable-"
+	}
+
 	moduleName := ctx.ModuleName() + stubsTypeSuffix + filename
 
 	props := genruleProps{}
@@ -492,7 +498,7 @@ func createMergedTxts(
 	bootclasspath proptools.Configurable[[]string],
 	system_server_classpath proptools.Configurable[[]string],
 	baseTxtModulePrefix string,
-	stubsTypeSuffix string,
+	exportableStubsType bool,
 	doDist bool,
 	checkedIn bool,
 ) {
@@ -548,7 +554,7 @@ func createMergedTxts(
 		})
 	}
 	for _, txt := range textFiles {
-		createMergedTxt(ctx, txt, stubsTypeSuffix, doDist)
+		createMergedTxt(ctx, txt, exportableStubsType, doDist)
 	}
 }
 
@@ -561,9 +567,9 @@ func (a *CombinedApis) createInternalModules(ctx android.LoadHookContext) {
 
 	nonUpdatableModules := getNonUpdatableModules(ctx.Config())
 
-	createMergedTxts(ctx, bootclasspath, system_server_classpath, "non-updatable-", "-", false, false)
-	createMergedTxts(ctx, bootclasspath, system_server_classpath, "non-updatable-", "-", false, true)
-	createMergedTxts(ctx, bootclasspath, system_server_classpath, "non-updatable-exportable-", "-exportable-", true, false)
+	createMergedTxts(ctx, bootclasspath, system_server_classpath, "non-updatable-", false, false, false)
+	createMergedTxts(ctx, bootclasspath, system_server_classpath, "non-updatable-", false, false, true)
+	createMergedTxts(ctx, bootclasspath, system_server_classpath, "non-updatable-exportable-", true, true, false)
 
 	createMergedPublicStubs(ctx, bootclasspath)
 	createMergedSystemStubs(ctx, bootclasspath, nonUpdatableModules)

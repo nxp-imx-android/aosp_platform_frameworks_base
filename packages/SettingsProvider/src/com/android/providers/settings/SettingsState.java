@@ -1837,6 +1837,12 @@ public class SettingsState {
             return true;
         }
 
+        /** Creates a {@link Setting} with {@code newValue}. */
+        public Setting withValue(String newValue) {
+            return new Setting(this.name, newValue, this.defaultValue, this.packageName, this.tag,
+                    this.defaultFromSystem, this.id, this.isValuePreservedInRestore);
+        }
+
         public String toString() {
             return "Setting{name=" + name + " value=" + value
                     + (defaultValue != null ? " default=" + defaultValue : "")

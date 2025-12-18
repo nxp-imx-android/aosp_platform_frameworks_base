@@ -77,7 +77,7 @@ public interface TelephonyProperties
     /**
      * The contents of this property is the value of the kernel command line
      * product_type variable that corresponds to a product that supports LTE on CDMA.
-     * {@see BaseCommands#getLteOnCdmaMode()}
+     * @see BaseCommands#getLteOnCdmaMode()
      */
     static final String PROPERTY_LTE_ON_CDMA_PRODUCT_TYPE = "telephony.lteOnCdmaProductType";
 
@@ -86,7 +86,7 @@ public interface TelephonyProperties
      * {@link Phone#LTE_ON_CDMA_FALSE}. If absent the value will assumed to be false
      * and the {@see #PROPERTY_LTE_ON_CDMA_PRODUCT_TYPE} will be used to determine its
      * final value which could also be {@link Phone#LTE_ON_CDMA_FALSE}.
-     * {@see BaseCommands#getLteOnCdmaMode()}
+     * @see BaseCommands#getLteOnCdmaMode()
      */
     static final String PROPERTY_LTE_ON_CDMA_DEVICE = "telephony.lteOnCdmaDevice";
 

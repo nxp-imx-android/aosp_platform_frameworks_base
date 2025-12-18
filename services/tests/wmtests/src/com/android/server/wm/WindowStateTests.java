@@ -259,6 +259,89 @@ public class WindowStateTests extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
+    public void testOverlayWindowHiddenWhenLockedByAppLock() {
+        final WindowState overlayWindow = spy(
+                newWindowBuilder("overlayWindow", TYPE_APPLICATION_OVERLAY).build());
+        overlayWindow.setHiddenWhileLockedByAppLock(true);
+        verify(overlayWindow).hide(false /* doAnimation */, true /* requestAnim */);
+        overlayWindow.setHiddenWhileLockedByAppLock(false);
+        verify(overlayWindow).show(true /* doAnimation */, true /* requestAnim */);
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
+    public void testOverlayWindowNotHiddenWhenCreatedBySystemAndLockedByAppLock() {
+        final WindowState overlayWindow = spy(newWindowBuilder("overlayWindow",
+                TYPE_APPLICATION_OVERLAY).setOwnerCanAddInternalSystemWindow(true).build());
+        overlayWindow.setHiddenWhileLockedByAppLock(true);
+        verify(overlayWindow, never()).hide(false /* doAnimation */, true /* requestAnim */);
+        overlayWindow.setHiddenWhileLockedByAppLock(false);
+        verify(overlayWindow, never()).show(true /* doAnimation */, true /* requestAnim */);
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
+    public void testToastWindowHiddenWhenLockedByAppLock() {
+        final WindowState toastWindow = spy(newWindowBuilder("toastWindow", TYPE_TOAST).build());
+        toastWindow.setHiddenWhileLockedByAppLock(true);
+        verify(toastWindow).hide(false /* doAnimation */, true /* requestAnim */);
+        toastWindow.setHiddenWhileLockedByAppLock(false);
+        verify(toastWindow).show(true /* doAnimation */, true /* requestAnim */);
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
+    public void testToastWindowNotHiddenWhenCreatedBySystemAndLockedByAppLock() {
+        final WindowState toastWindow = spy(newWindowBuilder("toastWindow", TYPE_TOAST)
+                .setOwnerCanAddInternalSystemWindow(true).build());
+        toastWindow.setHiddenWhileLockedByAppLock(true);
+        verify(toastWindow, never()).hide(false /* doAnimation */, true /* requestAnim */);
+        toastWindow.setHiddenWhileLockedByAppLock(false);
+        verify(toastWindow, never()).show(true /* doAnimation */, true /* requestAnim */);
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
+    public void testAppWindowNotHiddenWhenLockedByAppLock() {
+        final WindowState appWindow = spy(newWindowBuilder("appWindow", TYPE_APPLICATION).build());
+        appWindow.setHiddenWhileLockedByAppLock(true);
+        verify(appWindow, never()).hide(false /* doAnimation */, true /* requestAnim */);
+        appWindow.setHiddenWhileLockedByAppLock(false);
+        verify(appWindow, never()).show(true /* doAnimation */, true /* requestAnim */);
+    }
+
+    @Test
+    @DisableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
+    public void testWindowNotHiddenWhenLockedByAppLock_flagDisabled() {
+        final WindowState overlayWindow = spy(
+                newWindowBuilder("appWindow", TYPE_APPLICATION_OVERLAY).build());
+        overlayWindow.setHiddenWhileLockedByAppLock(true);
+        verify(overlayWindow, never()).hide(false /* doAnimation */, true /* requestAnim */);
+        overlayWindow.setHiddenWhileLockedByAppLock(false);
+        verify(overlayWindow, never()).show(true /* doAnimation */, true /* requestAnim */);
+
+        final WindowState systemOverlayWindow = spy(newWindowBuilder("systemOverlayWindow",
+                TYPE_APPLICATION_OVERLAY).setOwnerCanAddInternalSystemWindow(true).build());
+        systemOverlayWindow.setHiddenWhileLockedByAppLock(true);
+        verify(systemOverlayWindow, never()).hide(false /* doAnimation */, true /* requestAnim */);
+        systemOverlayWindow.setHiddenWhileLockedByAppLock(false);
+        verify(systemOverlayWindow, never()).show(true /* doAnimation */, true /* requestAnim */);
+
+        final WindowState appWindow = spy(newWindowBuilder("appWindow", TYPE_APPLICATION).build());
+        appWindow.setHiddenWhileLockedByAppLock(true);
+        verify(appWindow, never()).hide(false /* doAnimation */, true /* requestAnim */);
+        appWindow.setHiddenWhileLockedByAppLock(false);
+        verify(appWindow, never()).show(true /* doAnimation */, true /* requestAnim */);
+
+        final WindowState toastWindow = spy(newWindowBuilder("toastWindow", TYPE_TOAST).build());
+        toastWindow.setHiddenWhileLockedByAppLock(true);
+        verify(toastWindow, never()).hide(false /* doAnimation */, true /* requestAnim */);
+        toastWindow.setHiddenWhileLockedByAppLock(false);
+        verify(toastWindow, never()).show(true /* doAnimation */, true /* requestAnim */);
+    }
+
+    @Test
     public void testGetTopParentWindow() {
         final WindowState root = newWindowBuilder("root", TYPE_APPLICATION).build();
         final WindowState child1 = newWindowBuilder("child1", FIRST_SUB_WINDOW).setParent(

@@ -94,6 +94,12 @@ final class UserData {
     boolean mInFullscreenMode;
 
     /**
+     * {@code true} when the IME Switcher Menu is visible.
+     */
+    @GuardedBy("ImfLock.class")
+    boolean mImeSwitcherMenuVisible;
+
+    /**
      * The {@link IRemoteInputConnection} last provided by the current client.
      */
     @GuardedBy("ImfLock.class")

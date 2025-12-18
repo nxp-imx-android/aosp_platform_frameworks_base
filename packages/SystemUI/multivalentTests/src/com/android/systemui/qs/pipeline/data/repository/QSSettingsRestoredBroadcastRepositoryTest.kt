@@ -1,16 +1,12 @@
 package com.android.systemui.qs.pipeline.data.repository
 
 import android.content.Intent
-import android.platform.test.annotations.RequiresFlagsDisabled
-import android.platform.test.annotations.RequiresFlagsEnabled
 import android.provider.Settings
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.FakeBroadcastDispatcher
 import com.android.systemui.coroutines.collectLastValue
-import com.android.systemui.qs.flags.QsSplitInternetTile
-import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.pipeline.shared.logging.QSPipelineLogger
 import com.android.systemui.statusbar.policy.FakeDeviceProvisionedController
 import com.google.common.truth.Truth.assertThat
@@ -235,58 +231,6 @@ class QSSettingsRestoredBroadcastRepositoryTest : SysuiTestCase() {
                 assertThat(restoredAutoAddedTiles).isEmpty()
                 assertThat(userId).isEqualTo(user)
             }
-        }
-
-    @Test
-    @RequiresFlagsEnabled(QsSplitInternetTile.FLAG_NAME)
-    fun flagEnabled_internetTileRestored_replacedByWifi() =
-        testScope.runTest {
-            runCurrent()
-            val restoreData by collectLastValue(underTest.restoreData)
-            val user = 0
-
-            val tilesIntent =
-                createRestoreIntent(RestoreType.TILES, CURRENT_TILES, "$RESTORED_TILES,internet")
-
-            val autoAddIntent =
-                createRestoreIntent(
-                    RestoreType.AUTOADD,
-                    CURRENT_AUTO_ADDED_TILES,
-                    RESTORED_AUTO_ADDED_TILES,
-                )
-
-            sendIntentForUser(tilesIntent, user)
-            runCurrent()
-            sendIntentForUser(autoAddIntent, user)
-
-            assertThat(restoreData!!.restoredTiles)
-                .isEqualTo(RESTORED_TILES.toTilesList() + TileSpec.create("wifi"))
-        }
-
-    @Test
-    @RequiresFlagsDisabled(QsSplitInternetTile.FLAG_NAME)
-    fun flagEnabled_wifiTileRestored_replacedByInternet() =
-        testScope.runTest {
-            runCurrent()
-            val restoreData by collectLastValue(underTest.restoreData)
-            val user = 0
-
-            val tilesIntent =
-                createRestoreIntent(RestoreType.TILES, CURRENT_TILES, "$RESTORED_TILES,wifi")
-
-            val autoAddIntent =
-                createRestoreIntent(
-                    RestoreType.AUTOADD,
-                    CURRENT_AUTO_ADDED_TILES,
-                    RESTORED_AUTO_ADDED_TILES,
-                )
-
-            sendIntentForUser(tilesIntent, user)
-            runCurrent()
-            sendIntentForUser(autoAddIntent, user)
-
-            assertThat(restoreData!!.restoredTiles)
-                .isEqualTo(RESTORED_TILES.toTilesList() + TileSpec.create("internet"))
         }
 
     private fun sendIntentForUser(intent: Intent, userId: Int) {

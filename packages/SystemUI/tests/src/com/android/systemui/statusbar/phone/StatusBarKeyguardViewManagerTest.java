@@ -974,6 +974,7 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableSceneContainer
     public void hideAlternateBouncer_clearsDismissActionByDefault() {
         clearInvocations(mKeyguardDismissActionInteractor);
 
@@ -983,6 +984,7 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableSceneContainer
     public void hideAlternateBouncer_clearsDismissActionExplicitly() {
         clearInvocations(mKeyguardDismissActionInteractor);
 
@@ -993,6 +995,7 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableSceneContainer
     public void hideAlternateBouncer_doNotClearDismissActionExplicitly() {
         clearInvocations(mKeyguardDismissActionInteractor);
 

@@ -78,13 +78,9 @@ public enum DesktopModeFlags {
     ENABLE_SHELL_INITIAL_BOUNDS_REGRESSION_BUG_FIX(
             Flags::enableShellInitialBoundsRegressionBugFix, true),
     ENABLE_TASKBAR_OVERFLOW(Flags::enableTaskbarOverflow, false),
-    ENABLE_TASKBAR_RECENTS_LAYOUT_TRANSITION(Flags::enableTaskbarRecentsLayoutTransition, false),
     ENABLE_TASK_STACK_OBSERVER_IN_SHELL(Flags::enableTaskStackObserverInShell, true),
     ENABLE_THEMED_APP_HEADERS(Flags::enableThemedAppHeaders, true),
     ENABLE_WINDOWING_EDGE_DRAG_RESIZE(Flags::enableWindowingEdgeDragResize, true),
-    ENABLE_WINDOWING_SCALED_RESIZING(Flags::enableWindowingScaledResizing, true),
-    IGNORE_ASPECT_RATIO_RESTRICTIONS_FOR_RESIZEABLE_FREEFORM_ACTIVITIES(
-            Flags::ignoreAspectRatioRestrictionsForResizeableFreeformActivities, true),
     INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC(
             Flags::includeTopTransparentFullscreenTaskInDesktopHeuristic, true),
     SKIP_DECOR_VIEW_RELAYOUT_WHEN_CLOSING_BUGFIX(

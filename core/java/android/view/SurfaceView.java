@@ -18,6 +18,7 @@ package android.view;
 
 import static android.view.flags.Flags.FLAG_DEPRECATE_SURFACE_VIEW_Z_ORDER_APIS;
 import static android.view.flags.Flags.FLAG_SURFACE_VIEW_GET_SURFACE_PACKAGE;
+import static android.view.flags.Flags.FLAG_SURFACE_VIEW_SET_BLUR_REGIONS;
 import static android.view.flags.Flags.FLAG_SURFACE_VIEW_SET_COMPOSITION_ORDER;
 import static android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
 import static android.view.WindowManagerPolicyConstants.APPLICATION_MEDIA_OVERLAY_SUBLAYER;
@@ -70,6 +71,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.ReentrantLock;
@@ -250,6 +253,8 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
     boolean mLastWindowVisibility = false;
     boolean mViewVisibility = false;
     boolean mWindowStopped = false;
+    boolean mRequestedBlurRegionsChanged = false;
+    ArrayList<BlurRegion> mBlurRegions = new ArrayList<>();
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023,
                          publicAlternatives = "Use {@link View#getWidth} instead")
@@ -626,6 +631,53 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
     public void setUseAlpha() {
         // TODO(b/241474646): Remove me
         return;
+    }
+
+    /**
+     * Specifies a list of regions to be blurred on the SurfaceView's content.
+     *
+     * <p>Calling this method replaces any blur regions that were previously set.
+     * To clear existing blur regions, pass {@code null} or an empty collection.
+     *
+     * <p>The coordinates of {@link BlurRegion} are relative to the SurfaceView's bounds.
+     * The blur regions should be updated or replaced whenever the SurfaceView's dimensions change.
+     *
+     * @param blurRegions collection of {@link BlurRegion} objects to blur, or {@code null} to clear
+     * @throws IllegalArgumentException if {@code blurRegions} contains any {@code null} element
+     * @see BlurRegion
+     * @see #getBlurRegions()
+     */
+    @FlaggedApi(FLAG_SURFACE_VIEW_SET_BLUR_REGIONS)
+    public void setBlurRegions(@Nullable Collection<BlurRegion> blurRegions) {
+        mBlurRegions = new ArrayList<>();
+        if (blurRegions != null) {
+            for (BlurRegion blurRegion : blurRegions) {
+                if (blurRegion == null) {
+                    throw new IllegalArgumentException("BlurRegion is null");
+                }
+                mBlurRegions.add(blurRegion.copy());
+            }
+        }
+        mRequestedBlurRegionsChanged = true;
+        updateSurface();
+        invalidate();
+    }
+
+    /**
+     * Returns the list of blur regions currently set on the SurfaceView.
+     *
+     * <p>Note that this returns the internal list directly,
+     * the caller should not modify this list directly. Modifying the
+     * returned list may lead to undefined behavior.
+     *
+     * @return list of {@link BlurRegion} objects, or empty list if none set
+     * @see BlurRegion
+     * @see #setBlurRegions(Collection)
+     */
+    @FlaggedApi(FLAG_SURFACE_VIEW_SET_BLUR_REGIONS)
+    @NonNull
+    public List<BlurRegion> getBlurRegions() {
+        return mBlurRegions;
     }
 
     /**
@@ -1132,6 +1184,25 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
         return t;
     }
 
+    private void updateBlurRegions(Transaction t, ArrayList<BlurRegion> blurRegions, int offsetX,
+            int offsetY) {
+        if (mSurfaceControl == null || mBlastSurfaceControl == null) {
+            return;
+        }
+        final int regionCount = blurRegions.size();
+        if (regionCount == 0) {
+            t.setBlurRegions(mSurfaceControl, new float[0][]);
+            return;
+        }
+        float[][] requestedBlurRegions = new float[regionCount][];
+        int index = 0;
+        for (BlurRegion region : blurRegions) {
+            requestedBlurRegions[index++] = region.toFloatArray(offsetX, offsetY);
+        }
+        t.setRelativeLayer(mBlastSurfaceControl, mSurfaceControl, -1);
+        t.setBlurRegions(mSurfaceControl, requestedBlurRegions);
+    }
+
     private void releaseSurfaces(boolean releaseSurfacePackage) {
         mAlpha = 1f;
         mSurface.destroy();
@@ -1175,18 +1246,20 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
     // synchronously otherwise we may see flickers.
     // When the listener is updated, we will get at least a single position update call so we can
     // guarantee any changes we post will be applied.
-    private void replacePositionUpdateListener(int surfaceWidth, int surfaceHeight) {
+    private void replacePositionUpdateListener(int surfaceWidth, int surfaceHeight,
+            ArrayList<BlurRegion> blurRegions) {
         if (mPositionListener != null) {
             mRenderNode.removePositionUpdateListener(mPositionListener);
         }
-        mPositionListener = new SurfaceViewPositionUpdateListener(surfaceWidth, surfaceHeight);
+        mPositionListener = new SurfaceViewPositionUpdateListener(surfaceWidth, surfaceHeight,
+                blurRegions);
         mRenderNode.addPositionUpdateListener(mPositionListener);
     }
 
     private boolean performSurfaceTransaction(ViewRootImpl viewRoot, Translator translator,
             boolean creating, boolean sizeChanged, boolean hintChanged, boolean relativeZChanged,
-            boolean hdrHeadroomChanged, PictureProfileHandle pictureProfileHandle,
-            Transaction surfaceUpdateTransaction) {
+            boolean hdrHeadroomChanged, boolean blurRegionsChanged, boolean positionChanged,
+            PictureProfileHandle pictureProfileHandle, Transaction surfaceUpdateTransaction) {
         boolean realSizeChanged = false;
 
         mSurfaceLock.lock();
@@ -1221,6 +1294,14 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
 
             updateBackgroundVisibility(surfaceUpdateTransaction);
             updateBackgroundColor(surfaceUpdateTransaction);
+            if (blurRegionsChanged || creating || positionChanged) {
+                if (!isHardwareAccelerated()) {
+                    updateBlurRegions(surfaceUpdateTransaction, mBlurRegions, mScreenRect.left,
+                            mScreenRect.top);
+                } else if (isHardwareAccelerated() && blurRegionsChanged) {
+                    replacePositionUpdateListener(mSurfaceWidth, mSurfaceHeight, mBlurRegions);
+                }
+            }
             if (hdrHeadroomChanged || creating) {
                 surfaceUpdateTransaction.setDesiredHdrHeadroom(
                         mBlastSurfaceControl, mHdrHeadroom);
@@ -1268,7 +1349,7 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
                 if (isHardwareAccelerated()) {
                     // This will consume the passed in transaction and the transaction will be
                     // applied on a render worker thread.
-                    replacePositionUpdateListener(mSurfaceWidth, mSurfaceHeight);
+                    replacePositionUpdateListener(mSurfaceWidth, mSurfaceHeight, mBlurRegions);
                 } else {
                     onSetSurfacePositionAndScale(surfaceUpdateTransaction, mSurfaceControl,
                             mScreenRect.left /*positionLeft*/,
@@ -1375,11 +1456,13 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
                 mSurfaceLifecycleStrategy != mRequestedSurfaceLifecycleStrategy;
         final boolean hdrHeadroomChanged = mHdrHeadroom != mRequestedHdrHeadroom;
         final boolean pictureProfileChanged = mRequestedPictureProfileHandle != null;
+        final boolean blurRegionsChanged = mRequestedBlurRegionsChanged;
 
         if (creating || formatChanged || sizeChanged || visibleChanged
                 || alphaChanged || windowVisibleChanged || positionChanged
                 || layoutSizeChanged || hintChanged || relativeZChanged || !mAttachedToWindow
-                || surfaceLifecycleStrategyChanged || hdrHeadroomChanged || pictureProfileChanged) {
+                || surfaceLifecycleStrategyChanged || hdrHeadroomChanged || pictureProfileChanged
+                || blurRegionsChanged) {
 
             if (DEBUG) Log.i(TAG, System.identityHashCode(this) + " "
                     + "Changes: creating=" + creating
@@ -1390,7 +1473,8 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
                     + " top=" + (mWindowSpaceTop != mLocation[1])
                     + " z=" + relativeZChanged
                     + " attached=" + mAttachedToWindow
-                    + " lifecycleStrategy=" + surfaceLifecycleStrategyChanged);
+                    + " lifecycleStrategy=" + surfaceLifecycleStrategyChanged
+                    + " blurRegionsChanged=" + blurRegionsChanged);
 
             if (creating || formatChanged || sizeChanged  || visibleChanged
                     || layoutSizeChanged ||  relativeZChanged || !mAttachedToWindow
@@ -1413,6 +1497,7 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
                 mLastWindowVisibility = mWindowVisibility;
                 mTransformHint = viewRoot.getBufferTransformHint();
                 mSubLayer = mRequestedSubLayer;
+                mRequestedBlurRegionsChanged = false;
 
                 final int previousSurfaceLifecycleStrategy = mSurfaceLifecycleStrategy;
                 mSurfaceLifecycleStrategy = mRequestedSurfaceLifecycleStrategy;
@@ -1447,7 +1532,8 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
                 }
 
                 final boolean redrawNeeded = sizeChanged || creating || hintChanged
-                        || (mVisible && !mDrawFinished) || alphaChanged || relativeZChanged;
+                        || (mVisible && !mDrawFinished) || alphaChanged || relativeZChanged
+                        || blurRegionsChanged;
                 boolean shouldSyncBuffer = redrawNeeded && viewRoot.wasRelayoutRequested()
                         && viewRoot.isInWMSRequestedSync();
                 SyncBufferTransactionCallback syncBufferTransactionCallback = null;
@@ -1460,7 +1546,8 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
 
                 final boolean realSizeChanged = performSurfaceTransaction(viewRoot, translator,
                         creating, sizeChanged, hintChanged, relativeZChanged, hdrHeadroomChanged,
-                        pictureProfileHandle, surfaceUpdateTransaction);
+                        blurRegionsChanged, positionChanged, pictureProfileHandle,
+                        surfaceUpdateTransaction);
 
                 try {
                     SurfaceHolder.Callback[] callbacks = null;
@@ -1842,10 +1929,13 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
         private final int mRtSurfaceHeight;
         private final SurfaceControl.Transaction mPositionChangedTransaction =
                 new SurfaceControl.Transaction();
+        private final ArrayList<BlurRegion> mRtBlurRegions;
 
-        SurfaceViewPositionUpdateListener(int surfaceWidth, int surfaceHeight) {
+        SurfaceViewPositionUpdateListener(int surfaceWidth, int surfaceHeight,
+                ArrayList<BlurRegion> blurRegions) {
             mRtSurfaceWidth = surfaceWidth;
             mRtSurfaceHeight = surfaceHeight;
+            mRtBlurRegions = blurRegions;
         }
 
         @Override
@@ -1869,7 +1959,8 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
                                     / (float) mRtSurfaceWidth /*postScaleX*/,
                             mRTLastReportedPosition.height()
                                     / (float) mRtSurfaceHeight /*postScaleY*/);
-
+                    updateBlurRegions(mPositionChangedTransaction, mRtBlurRegions,
+                            mRTLastReportedPosition.left, mRTLastReportedPosition.top);
                     mPositionChangedTransaction.show(mSurfaceControl);
                 }
                 applyOrMergeTransaction(mPositionChangedTransaction, frameNumber);
@@ -1905,7 +1996,8 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
                             mRTLastReportedPosition.left /*positionLeft*/,
                             mRTLastReportedPosition.top /*positionTop*/,
                             postScaleX, postScaleY);
-
+                    updateBlurRegions(mPositionChangedTransaction, mRtBlurRegions,
+                            mRTLastReportedPosition.left, mRTLastReportedPosition.top);
                     // The computed crop is in view-relative dimensions, however we need it to be
                     // in buffer-relative dimensions. So scale the crop by the ratio between
                     // the view's unscaled width/height (nodeWidth/Height), and the surface's

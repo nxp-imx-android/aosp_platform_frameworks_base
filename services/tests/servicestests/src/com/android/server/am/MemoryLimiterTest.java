@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 import android.app.ActivityManager;
 import android.app.ActivityManager.ProcessState;
@@ -28,6 +29,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.ParcelFileDescriptor;
+import android.os.Process;
+import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
@@ -242,9 +245,30 @@ public class MemoryLimiterTest {
         mContext.sendBroadcast(intent);
     }
 
+    // Return true if the test can read its own memory.current file.  If it cannot, the rest of
+    // the tests cannot be run.
+    // TODO(b/469749822) Eliminate this function once the test environment has been corrected.
+    private boolean isValidEnvironment() {
+        int uid = Process.myUid();
+        int pid = Process.myPid();
+        String path = String.format("/sys/fs/cgroup/apps/uid_%d/pid_%d/memory.current", uid, pid);
+        Path filePath = Paths.get(path);
+        try {
+            // The actual value does not matter.  Only the fact that the value can be read and is
+            // an integer.
+            Integer.parseInt(Files.readString(filePath, StandardCharsets.UTF_8).trim());
+            return true;
+        } catch (Exception e) {
+            Log.w(TAG, "invalid environment: " + e);
+            return false;
+        }
+    }
+
+    @DisabledOnRavenwood
     @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
     @Test
     public void testLimiter() throws Exception {
+        assumeTrue(isValidEnvironment());
         EventCounter counter = new EventCounter(1);
         try (MemoryLimiter controller = new MemoryLimiter(counter)) {
             MemoryLimiter.Limiter limiter = controller.newLimiter();
@@ -271,9 +295,11 @@ public class MemoryLimiterTest {
         }
     }
 
+    @DisabledOnRavenwood
     @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
     @Test
     public void testLimiterAfter() throws Exception {
+        assumeTrue(isValidEnvironment());
         EventCounter counter = new EventCounter(1);
         try (MemoryLimiter controller = new MemoryLimiter(counter)) {
             MemoryLimiter.Limiter limiter = controller.newLimiter();

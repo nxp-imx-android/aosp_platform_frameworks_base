@@ -16,6 +16,8 @@
 
 package com.android.server.personalcontext;
 
+import android.annotation.NonNull;
+import android.content.ComponentName;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
@@ -28,7 +30,6 @@ import com.android.server.personalcontext.util.FragileReference;
 
 import java.security.GeneralSecurityException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -55,7 +56,7 @@ public final class RefinerWorkflow {
     /** Starts a new pass of the refiner workflow with a seeded set of hints. */
     public static RefinerWorkflow start(
             ComponentProvider provider,
-            Set<ContextHint> initialHints,
+            Set<ContextHintWithSignature> initialHints,
             RenderToken renderToken,
             SecretKeySpec secretKey,
             EventListener eventListener,
@@ -65,8 +66,7 @@ public final class RefinerWorkflow {
                 provider, renderToken, secretKey, eventListener, executor);
 
         // Seed it with the first round of hints.
-        workflow.addHints(
-                initialHints, Collections.emptySet(), /* source= */ null, /* callback= */ null);
+        workflow.seedHints(initialHints);
 
         return workflow;
     }
@@ -117,11 +117,25 @@ public final class RefinerWorkflow {
         mEventListener.onRefinerWorkflowFinished(mFlowId);
     }
 
+    private void seedHints(Set<ContextHintWithSignature> initialHints) {
+        mExecutor.execute(() -> {
+            try {
+                // Report this to the listener.
+                mEventListener.onRefinerWorkflowStarted(mFlowId, initialHints);
+
+                runPassOnAllRefiners(initialHints);
+            } catch (Exception e) {
+                Slog.e(TAG, "Error running workflow " + mFlowId, e);
+                expire();
+            }
+        });
+    }
+
     private void addHints(
             Set<ContextHint> newHints,
             Set<ContextHintWithSignature> attributionHints,
-            Refiner source,
-            RefinerCallback callback) {
+            @NonNull Refiner source,
+            @NonNull RefinerCallback callback) {
         mExecutor.execute(() -> {
             try {
                 // Log interesting stuff.
@@ -130,18 +144,13 @@ public final class RefinerWorkflow {
                             "Adding %s new hints to workflow %s from %s",
                             newHints == null ? 0 : newHints.size(),
                             mFlowId,
-                            source != null ? source.getComponentId() : null));
+                            source.getComponentId()));
 
                     if (newHints != null) {
                         for (ContextHint hint : newHints) {
                             Slog.d(TAG, "  Hint: " + hint);
                         }
                     }
-                }
-
-                // Keep track of the fact that we don't need a response from this callback any more.
-                if (callback != null) {
-                    mPendingRefinerCallbacks.remove(callback);
                 }
 
                 if (Log.isLoggable(TAG, Log.DEBUG)) {
@@ -149,7 +158,7 @@ public final class RefinerWorkflow {
                             "Adding %s new hints to workflow %s from %s",
                             newHints == null ? 0 : newHints.size(),
                             mFlowId,
-                            source != null ? source.getComponentId() : null));
+                            source.getComponentId()));
 
                     if (newHints != null) {
                         for (ContextHint hint : newHints) {
@@ -159,53 +168,27 @@ public final class RefinerWorkflow {
                 }
 
                 // Keep track of the fact that we don't need a response from this callback any more.
-                if (callback != null) {
-                    mPendingRefinerCallbacks.remove(callback);
-                    if (Log.isLoggable(TAG, Log.DEBUG)) {
-                        Slog.d(TAG, TextUtils.formatSimple(
-                                "Waiting on responses from %s refiner calls",
-                                mPendingRefinerCallbacks.size()));
-                    }
-                }
-
-                // If we don't have any new hints, then there's no point in doing a bunch of work.
-                if (newHints != null && !newHints.isEmpty()) {
-                    // Sign the hints.
-                    final Set<ContextHintWithSignature> signedHints =
-                            signHints(newHints, attributionHints, source);
-
-                    // Report this to the listener.
-                    if (source == null) {
-                        mEventListener.onRefinerWorkflowStarted(mFlowId, signedHints);
-                    } else {
-                        mEventListener.onHintsReceivedFromRefiner(mFlowId, signedHints, source);
-                    }
-
-                    // Mark this source as having seen these hints. No point in sending them back.
-                    markHintsAsSeen(source, newHints);
-
-                    // Stage new hints in the collection of pending hints.
-                    mAllHints.addAll(signedHints);
-
-                    // Run a full pass for each refiner available.
-                    for (Refiner refiner : mProvider.getRefiners()) {
-                        runPassOnSingleRefiner(refiner);
-                    }
-                }
-
-                // Check to see if we have any work left to do; if not we can shut down the flow.
-                if (mPendingRefinerCallbacks.isEmpty()) {
-                    if (Log.isLoggable(TAG, Log.DEBUG)) {
-                        Slog.d(TAG, "No remaining work to be done, workflow shutting down");
-                    }
-                    expire();
-                } else if (Log.isLoggable(TAG, Log.DEBUG)) {
+                mPendingRefinerCallbacks.remove(callback);
+                if (Log.isLoggable(TAG, Log.DEBUG)) {
                     Slog.d(TAG, TextUtils.formatSimple(
                             "Waiting on responses from %s refiner calls",
                             mPendingRefinerCallbacks.size()));
-
-                    Slog.d(TAG, "Completed refiner pass for workflow " + mFlowId);
                 }
+
+                // Sign the hints.
+                final Set<ContextHintWithSignature> signedHints =
+                        signHints(newHints, attributionHints, source);
+
+                // If we don't have any new hints, then there's no point in doing a bunch of work.
+                if (!signedHints.isEmpty()) {
+                    // Report this to the listener.
+                    mEventListener.onHintsReceivedFromRefiner(mFlowId, signedHints, source);
+
+                    // Mark this source as having seen these hints. No point in sending them back.
+                    markHintsAsSeen(source, newHints);
+                }
+
+                runPassOnAllRefiners(signedHints);
             } catch (Exception e) {
                 Slog.e(TAG, "Error running workflow " + mFlowId, e);
                 expire();
@@ -232,14 +215,45 @@ public final class RefinerWorkflow {
             Collection<ContextHintWithSignature> attributionHints,
             Refiner source) throws GeneralSecurityException {
         final Set<ContextHintWithSignature> result = new HashSet<>();
-        for (ContextHint hint : newHints) {
-            result.add(new ContextHintWithSignature.Builder(hint, mSecretKey)
-                    .setOriginatingComponent(source != null ? source.getComponentName() : null)
-                    .setRenderToken(mRenderToken)
-                    .addAttributionHints(attributionHints)
-                    .build());
+        if (newHints != null) {
+            for (ContextHint hint : newHints) {
+                final ComponentName componentName = source.getComponentName();
+                final String packageName =
+                        componentName == null ? null : componentName.getPackageName();
+                result.add(new ContextHintWithSignature.Builder(hint, mSecretKey)
+                        .setOriginatingPackage(packageName)
+                        .setRenderToken(mRenderToken)
+                        .addAttributionHints(attributionHints)
+                        .build());
+            }
         }
         return result;
+    }
+
+    private void runPassOnAllRefiners(Set<ContextHintWithSignature> signedHints) {
+        if (!signedHints.isEmpty()) {
+            // Stage new hints in the collection of pending hints.
+            mAllHints.addAll(signedHints);
+
+            // Run a full pass for each refiner available.
+            for (Refiner refiner : mProvider.getRefiners()) {
+                runPassOnSingleRefiner(refiner);
+            }
+        }
+
+        // Check to see if we have any work left to do; if not we can shut down the flow.
+        if (mPendingRefinerCallbacks.isEmpty()) {
+            if (Log.isLoggable(TAG, Log.DEBUG)) {
+                Slog.d(TAG, "No remaining work to be done, workflow shutting down");
+            }
+            expire();
+        } else if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Slog.d(TAG, TextUtils.formatSimple(
+                    "Waiting on responses from %s refiner calls",
+                    mPendingRefinerCallbacks.size()));
+
+            Slog.d(TAG, "Completed refiner pass for workflow " + mFlowId);
+        }
     }
 
     private void runPassOnSingleRefiner(Refiner refiner) {
@@ -384,7 +398,7 @@ public final class RefinerWorkflow {
                 mWorkflow = null;
 
                 // If workflow is null then the workflow has timed out.
-                if (workflow == null) {
+                if (workflow == null && hintCount > 0) {
                     Slog.w(TAG, TextUtils.formatSimple(
                             "Workflow %s has expired, ignoring %s hints", mWorkflowId, hintCount));
                     return;

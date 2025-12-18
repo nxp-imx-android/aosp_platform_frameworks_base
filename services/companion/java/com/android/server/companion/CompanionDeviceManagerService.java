@@ -18,6 +18,7 @@
 package com.android.server.companion;
 
 import static android.Manifest.permission.ACCESS_COMPANION_INFO;
+import static android.Manifest.permission.ACCESS_COMPANION_MESSAGE_PCC;
 import static android.Manifest.permission.ASSOCIATE_COMPANION_DEVICES;
 import static android.Manifest.permission.BLUETOOTH_CONNECT;
 import static android.Manifest.permission.DELIVER_COMPANION_MESSAGES;
@@ -34,6 +35,7 @@ import static com.android.internal.util.CollectionUtils.any;
 import static com.android.internal.util.Preconditions.checkState;
 import static com.android.server.companion.association.DisassociationProcessor.REASON_API;
 import static com.android.server.companion.association.DisassociationProcessor.REASON_PKG_DATA_CLEARED;
+import static com.android.server.companion.association.DisassociationProcessor.REASON_REVOKED;
 import static com.android.server.companion.utils.PackageUtils.enforceUsesCompanionDeviceFeature;
 import static com.android.server.companion.utils.PackageUtils.isRestrictedSettingsAllowed;
 import static com.android.server.companion.utils.PermissionsUtils.enforceCallerCanInteractWithSystemDataSyncFlags;
@@ -232,6 +234,11 @@ public class CompanionDeviceManagerService extends SystemService {
         // Init association stores
         mAssociationStore.refreshCache();
 
+        // Remove any revoked associations after reboot.
+        for (AssociationInfo ai : mAssociationStore.getRevokedAssociations()) {
+            mDisassociationProcessor.disassociate(ai.getId(), REASON_REVOKED);
+        }
+
         // Init UUID store
         mObservableUuidStore.getObservableUuidsForUser(getContext().getUserId());
 
@@ -390,6 +397,17 @@ public class CompanionDeviceManagerService extends SystemService {
                 return mAssociationStore.getActiveAssociations();
             }
             return mAssociationStore.getActiveAssociationsByUser(userId);
+        }
+
+        @Override
+        @EnforcePermission(ACCESS_COMPANION_MESSAGE_PCC)
+        public List<AssociationInfo> getTrustedAssociationsForUser(int userId)
+                throws RemoteException {
+            getTrustedAssociationsForUser_enforcePermission();
+
+            enforceCallerIsSystemOrCanInteractWithUserId(getContext(), userId);
+
+            return mAssociationStore.getTrustedAssociations(userId);
         }
 
         @Override

@@ -82,7 +82,6 @@ import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
 import android.app.ActivityThread;
-import android.app.AppLockInternal;
 import android.app.IApplicationThread;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -104,7 +103,6 @@ import android.provider.Settings;
 import android.util.ArraySet;
 import android.util.AtomicFile;
 import android.util.MergedConfiguration;
-import android.util.SparseArray;
 import android.view.ContentRecordingSession;
 import android.view.Display;
 import android.view.DisplayInfo;
@@ -157,7 +155,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -171,8 +168,6 @@ public class WindowManagerServiceTests extends WindowTestsBase {
 
     private final IApplicationThread mAppThread = ActivityThread.currentActivityThread()
             .getApplicationThread();
-
-    private AppLockInternal mMockAppLockInternal;
 
     @Rule
     public AdoptShellPermissionsRule mAdoptShellPermissionsRule = new AdoptShellPermissionsRule(
@@ -188,7 +183,6 @@ public class WindowManagerServiceTests extends WindowTestsBase {
     @Before
     public void setUp() {
         Settings.System.clearProviderForTest();
-        mMockAppLockInternal = LocalServices.getService(AppLockInternal.class);
     }
 
     @After
@@ -209,152 +203,6 @@ public class WindowManagerServiceTests extends WindowTestsBase {
                 /* fromOrientations */ null, /* toOrientations */ null);
         assertThat(mWm.mapOrientationRequest(1)).isEqualTo(1);
         assertThat(mWm.mapOrientationRequest(3)).isEqualTo(3);
-    }
-
-    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
-            android.security.Flags.FLAG_APP_LOCK_CORE})
-    @Test
-    public void testSystemReady_initializesLockedPackages() {
-        setUpTestSystemReadyForAppLock();
-
-        mWm.systemReady();
-
-        verify(mMockAppLockInternal).getAppLockEnabledPackages();
-        assertTrue(mWm.isPackageLockedByAppLock(TEST_PACKAGE_1, TEST_USER_ID_1));
-        assertTrue(mWm.isPackageLockedByAppLock(TEST_PACKAGE_2, TEST_USER_ID_2));
-        // Packages that were not in the App Lock enabled list are not locked.
-        assertFalse(mWm.isPackageLockedByAppLock(TEST_PACKAGE_2, TEST_USER_ID_1));
-        assertFalse(mWm.isPackageLockedByAppLock(TEST_PACKAGE_1, TEST_USER_ID_2));
-    }
-
-    @DisableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
-            android.security.Flags.FLAG_APP_LOCK_CORE})
-    @Test
-    public void testSystemReady_doesNotInitializeLockedPackages() {
-        setUpTestSystemReadyForAppLock();
-
-        mWm.systemReady();
-
-        verify(mMockAppLockInternal, never()).getAppLockEnabledPackages();
-        assertFalse(mWm.isPackageLockedByAppLock(TEST_PACKAGE_1, TEST_USER_ID_1));
-        assertFalse(mWm.isPackageLockedByAppLock(TEST_PACKAGE_2, TEST_USER_ID_2));
-        assertFalse(mWm.isPackageLockedByAppLock(TEST_PACKAGE_2, TEST_USER_ID_1));
-        assertFalse(mWm.isPackageLockedByAppLock(TEST_PACKAGE_1, TEST_USER_ID_2));
-    }
-
-    private void setUpTestSystemReadyForAppLock() {
-        // Mock other methods in systemReady().
-        spyOn(mWm);
-        spyOn(mWm.mAnimatorScale);
-        spyOn(mWm.mPolicy);
-        spyOn(mWm.mRoot);
-        spyOn(mWm.mSnapshotController);
-        doNothing().when(mWm.mAnimatorScale).onSystemReady();
-        doNothing().when(mWm.mPolicy).systemReady();
-        doNothing().when(mWm.mRoot).forAllDisplayPolicies(DisplayPolicy::systemReady);
-        doNothing().when(mWm.mSnapshotController).systemReady();
-
-        // Mock AppLockInternal#getAppLockEnabledPackages.
-        final SparseArray<Set<String>> appLockEnabledPackages = new SparseArray<>();
-        final Set<String> user1Packages = new ArraySet<>();
-        user1Packages.add(TEST_PACKAGE_1);
-        appLockEnabledPackages.put(TEST_USER_ID_1, user1Packages);
-        final Set<String> user2Packages = new ArraySet<>();
-        user2Packages.add(TEST_PACKAGE_2);
-        appLockEnabledPackages.put(TEST_USER_ID_2, user2Packages);
-
-        when(mMockAppLockInternal.getAppLockEnabledPackages())
-                .thenReturn(appLockEnabledPackages);
-    }
-
-    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
-            android.security.Flags.FLAG_APP_LOCK_CORE})
-    @Test
-    public void testOnPackageLockedStateChanged_packageLocked_callsLockActivitiesTasks() {
-        final AppLockInternal.PackageLockedStateListener listener = captureAppLockListener();
-        final AppLockOverlayController appLockOverlayController = mWm.mAppLockOverlayController;
-        spyOn(appLockOverlayController);
-
-        listener.onPackageLockedStateChanged(DEFAULT_COMPONENT_PACKAGE_NAME, TEST_USER_ID_1, true);
-
-        verify(appLockOverlayController).lockActivitiesTasksForAppLockLocked(
-                DEFAULT_COMPONENT_PACKAGE_NAME, TEST_USER_ID_1);
-    }
-
-    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
-            android.security.Flags.FLAG_APP_LOCK_CORE})
-    @Test
-    public void testOnPackageLockedStateChanged_packageUnlocked_doesNotCallLockActivitiesTasks() {
-        final AppLockInternal.PackageLockedStateListener listener = captureAppLockListener();
-        final AppLockOverlayController appLockOverlayController = mWm.mAppLockOverlayController;
-        listener.onPackageLockedStateChanged(DEFAULT_COMPONENT_PACKAGE_NAME, TEST_USER_ID_1, true);
-        spyOn(appLockOverlayController);
-
-        listener.onPackageLockedStateChanged(DEFAULT_COMPONENT_PACKAGE_NAME, TEST_USER_ID_1, false);
-
-        verify(appLockOverlayController, never()).lockActivitiesTasksForAppLockLocked(anyString(),
-                anyInt());
-    }
-
-    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
-            android.security.Flags.FLAG_APP_LOCK_CORE})
-    @Test
-    public void testIsPackageLockedByAppLock_packageIsLocked() {
-        final AppLockInternal.PackageLockedStateListener listener = captureAppLockListener();
-
-        try {
-            listener.onPackageLockedStateChanged(TEST_PACKAGE_2, TEST_USER_ID_1, true);
-
-            assertTrue(mWm.isPackageLockedByAppLock(TEST_PACKAGE_2, TEST_USER_ID_1));
-        } finally {
-            listener.onPackageLockedStateChanged(TEST_PACKAGE_2, TEST_USER_ID_1, false);
-        }
-    }
-
-    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
-            android.security.Flags.FLAG_APP_LOCK_CORE})
-    @Test
-    public void testIsPackageLockedByAppLock_packageIsUnlocked() {
-        final AppLockInternal.PackageLockedStateListener listener = captureAppLockListener();
-
-        try {
-            listener.onPackageLockedStateChanged(TEST_PACKAGE_2, TEST_USER_ID_1, true);
-            listener.onPackageLockedStateChanged(TEST_PACKAGE_2, TEST_USER_ID_1, false);
-
-            assertFalse(mWm.isPackageLockedByAppLock(TEST_PACKAGE_2, TEST_USER_ID_1));
-        } finally {
-            listener.onPackageLockedStateChanged(TEST_PACKAGE_2, TEST_USER_ID_1, false);
-        }
-    }
-
-    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
-            android.security.Flags.FLAG_APP_LOCK_CORE})
-    @Test
-    public void testIsPackageLockedByAppLock_differentPackageUpdateDoesNotAffectState() {
-        final AppLockInternal.PackageLockedStateListener listener = captureAppLockListener();
-
-        try {
-            listener.onPackageLockedStateChanged(TEST_PACKAGE_1, TEST_USER_ID_1, false);
-
-            assertFalse(mWm.isPackageLockedByAppLock(TEST_PACKAGE_2, TEST_USER_ID_1));
-        } finally {
-            listener.onPackageLockedStateChanged(TEST_PACKAGE_1, TEST_USER_ID_1, true);
-        }
-    }
-
-    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
-            android.security.Flags.FLAG_APP_LOCK_CORE})
-    @Test
-    public void testIsPackageLockedByAppLock_differentUserUpdateDoesNotAffectState() {
-        final AppLockInternal.PackageLockedStateListener listener = captureAppLockListener();
-
-        try {
-            listener.onPackageLockedStateChanged(TEST_PACKAGE_2, TEST_USER_ID_1, true);
-
-            assertFalse(mWm.isPackageLockedByAppLock(TEST_PACKAGE_1, TEST_USER_ID_2));
-        } finally {
-            listener.onPackageLockedStateChanged(TEST_PACKAGE_2, TEST_USER_ID_1, false);
-        }
     }
 
     @Test
@@ -2037,7 +1885,6 @@ public class WindowManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS)
     public void setForcedDisplayDensityRatio_forExternalDisplay_setsRatio() {
         final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
         displayInfo.displayId = DEFAULT_DISPLAY + 1;
@@ -2055,7 +1902,6 @@ public class WindowManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS)
     public void setForcedDisplayDensityRatio_forInternalDisplay_setsRatio() {
         final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
         displayInfo.displayId = DEFAULT_DISPLAY + 1;
@@ -2073,7 +1919,6 @@ public class WindowManagerServiceTests extends WindowTestsBase {
 
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS)
     public void setForcedDisplayDensity_forExternalDisplay_resetsRatio() {
         final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
         displayInfo.displayId = DEFAULT_DISPLAY + 1;
@@ -2092,7 +1937,6 @@ public class WindowManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS)
     public void clearForcedDisplayDensityRatio_clearsRatioAndDensity() {
         final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
         displayInfo.displayId = DEFAULT_DISPLAY + 1;
@@ -2256,12 +2100,99 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         doNothing().when(mWm.mRoot).forAllDisplayPolicies(DisplayPolicy::systemReady);
         spyOn(mWm.mSnapshotController);
         doNothing().when(mWm.mSnapshotController).systemReady();
-        doReturn(new SparseArray<Set<String>>()).when(mMockAppLockInternal)
-                .getAppLockEnabledPackages();
 
         mWm.systemReady();
 
         verify(appLockController).systemReady();
+    }
+
+    @Test
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    public void testIsPackageLockedByAppLock() {
+        final AppLockController appLockController = mWm.mAppLockController;
+        spyOn(appLockController);
+        doReturn(true).when(appLockController).isPackageLockedByAppLockLocked(TEST_PACKAGE_1,
+                TEST_USER_ID_1);
+        doReturn(true).when(appLockController).isPackageLockedByAppLockLocked(TEST_PACKAGE_2,
+                TEST_USER_ID_2);
+        doReturn(false).when(appLockController).isPackageLockedByAppLockLocked(TEST_PACKAGE_3,
+                TEST_USER_ID_1);
+
+        assertThat(mWm.isPackageLockedByAppLockLocked(TEST_PACKAGE_1, TEST_USER_ID_1)).isTrue();
+        assertThat(mWm.isPackageLockedByAppLockLocked(TEST_PACKAGE_2, TEST_USER_ID_2)).isTrue();
+        assertThat(mWm.isPackageLockedByAppLockLocked(TEST_PACKAGE_3, TEST_USER_ID_1)).isFalse();
+    }
+
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void testAddOverlayWindowBySystem_packageIsLockedByAppLock_showOnWindowReturnsTrue() {
+        internalTestAddOverlayWindowForAppLock(true /* isPackageLockedByAppLock */,
+                true /* isWindowCreatedBySystem */);
+    }
+
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void testAddOverlayWindowBySystem_packageIsNotLockedByAppLock_showOnWindowReturnsTrue() {
+        internalTestAddOverlayWindowForAppLock(false /* isPackageLockedByAppLock */,
+                true /* isWindowCreatedBySystem */);
+    }
+
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void testAddOverlayWindowByApp_packageIsLockedByAppLock_showOnWindowReturnsFalse() {
+        internalTestAddOverlayWindowForAppLock(true /* isPackageLockedByAppLock */,
+                false /* isWindowCreatedBySystem */);
+    }
+
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void testAddOverlayWindowByApp_packageIsNotLockedByAppLock_showOnWindowReturnsTrue() {
+        internalTestAddOverlayWindowForAppLock(false /* isPackageLockedByAppLock */,
+                false /* isWindowCreatedBySystem */);
+    }
+
+    private void internalTestAddOverlayWindowForAppLock(boolean isPackageLockedByAppLock,
+            boolean isWindowCreatedBySystem) {
+        spyOn(mWm.mContext);
+        doReturn(isWindowCreatedBySystem ? PackageManager.PERMISSION_GRANTED
+                : PackageManager.PERMISSION_DENIED).when(mWm.mContext).checkCallingOrSelfPermission(
+                eq(android.Manifest.permission.INTERNAL_SYSTEM_WINDOW));
+
+        final Session session = createTestSession(mAtm, 1234 /* pid */, 10123 /* uid */);
+        final IWindow client = new TestIWindow();
+        final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                TYPE_APPLICATION_OVERLAY);
+        params.setTitle("overlayWindowLockedByAppLock: " + isPackageLockedByAppLock);
+        params.packageName = DEFAULT_COMPONENT_PACKAGE_NAME;
+        // Simulate package's locked by App Lock state.
+        final AppLockController appLockController = mWm.mAppLockController;
+        spyOn(appLockController);
+        doReturn(isPackageLockedByAppLock).when(appLockController).isPackageLockedByAppLockLocked(
+                DEFAULT_COMPONENT_PACKAGE_NAME, TEST_USER_ID_1);
+
+        final int addWindowRes = mWm.addWindow(session, client, params, View.VISIBLE,
+                DEFAULT_DISPLAY, TEST_USER_ID_1, WindowInsets.Type.defaultVisible(),
+                null /* outInputChannel */, new WindowRelayoutResult());
+
+        assertThat(addWindowRes).isAtLeast(WindowManagerGlobal.ADD_OKAY);
+        final WindowState win = mWm.mWindowMap.get(client.asBinder());
+        assertThat(win).isNotNull();
+        final boolean hideRes = win.hide(true /* doAnimation */, true /* requestAnim */);
+        final boolean showRes = win.show(true /* doAnimation */, true /* requestAnim */);
+        if (isWindowCreatedBySystem || !isPackageLockedByAppLock) {
+            assertThat(hideRes).isTrue();
+            assertThat(showRes).isTrue();
+        } else {
+            // Hiding and showing the window should not work if the package is locked by App Lock
+            // because the window is already hidden and can't be shown.
+            assertThat(hideRes).isFalse();
+            assertThat(showRes).isFalse();
+        }
     }
 
     @Test
@@ -2389,15 +2320,6 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         } finally {
             parcel.recycle();
         }
-    }
-
-
-    private AppLockInternal.PackageLockedStateListener captureAppLockListener() {
-        ArgumentCaptor<AppLockInternal.PackageLockedStateListener> listenerCaptor =
-                ArgumentCaptor.forClass(AppLockInternal.PackageLockedStateListener.class);
-        verify(mMockAppLockInternal).registerPackageLockedStateListener(
-                listenerCaptor.capture());
-        return listenerCaptor.getValue();
     }
 
     private static class TestResultReceiver implements IResultReceiver {

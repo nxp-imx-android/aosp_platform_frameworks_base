@@ -93,7 +93,6 @@ import static android.app.admin.DevicePolicyManager.AFFILIATED_FULL_USER_PROFILE
 import static android.app.admin.DevicePolicyManager.APP_FUNCTIONS_NOT_CONTROLLED_BY_POLICY;
 import static android.app.admin.DevicePolicyManager.CONTENT_PROTECTION_DISABLED;
 import static android.app.admin.DevicePolicyManager.ContentProtectionPolicy;
-import static android.app.admin.DevicePolicyManager.DEVICE_OWNER;
 import static android.app.admin.DevicePolicyManager.DELEGATION_APP_RESTRICTIONS;
 import static android.app.admin.DevicePolicyManager.DELEGATION_BLOCK_UNINSTALL;
 import static android.app.admin.DevicePolicyManager.DELEGATION_CERT_INSTALL;
@@ -105,6 +104,7 @@ import static android.app.admin.DevicePolicyManager.DELEGATION_NETWORK_LOGGING;
 import static android.app.admin.DevicePolicyManager.DELEGATION_PACKAGE_ACCESS;
 import static android.app.admin.DevicePolicyManager.DELEGATION_PERMISSION_GRANT;
 import static android.app.admin.DevicePolicyManager.DELEGATION_SECURITY_LOGGING;
+import static android.app.admin.DevicePolicyManager.DEVICE_OWNER;
 import static android.app.admin.DevicePolicyManager.DEVICE_OWNER_TYPE_DEFAULT;
 import static android.app.admin.DevicePolicyManager.DEVICE_OWNER_TYPE_FINANCED;
 import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER;
@@ -133,6 +133,8 @@ import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_NOTIFICATI
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_OVERVIEW;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_QUICK_SETTINGS;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_SYSTEM_INFO;
+import static android.app.admin.DevicePolicyManager.MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
+import static android.app.admin.DevicePolicyManager.MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE;
 import static android.app.admin.DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
 import static android.app.admin.DevicePolicyManager.NON_ORG_OWNED_PROFILE_KEYGUARD_FEATURES_AFFECT_OWNER;
 import static android.app.admin.DevicePolicyManager.NOT_A_DPC;
@@ -165,9 +167,6 @@ import static android.app.admin.DevicePolicyManager.PRIVATE_DNS_MODE_UNKNOWN;
 import static android.app.admin.DevicePolicyManager.PRIVATE_DNS_SET_ERROR_FAILURE_SETTING;
 import static android.app.admin.DevicePolicyManager.PRIVATE_DNS_SET_NO_ERROR;
 import static android.app.admin.DevicePolicyManager.PROFILE_KEYGUARD_FEATURES_AFFECT_OWNER;
-import static android.app.admin.DevicePolicyManager.MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE;
-import static android.app.admin.DevicePolicyManager.MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
-import static android.app.admin.DevicePolicyManager.UNAFFILIATED_FULL_USER_PROFILE_OWNER;
 import static android.app.admin.DevicePolicyManager.PROFILE_OWNER_ON_USER_0;
 import static android.app.admin.DevicePolicyManager.STATE_USER_SETUP_FINALIZED;
 import static android.app.admin.DevicePolicyManager.STATE_USER_UNMANAGED;
@@ -192,6 +191,7 @@ import static android.app.admin.DevicePolicyManager.STATUS_USER_HAS_PROFILE;
 import static android.app.admin.DevicePolicyManager.STATUS_USER_HAS_PROFILE_OWNER;
 import static android.app.admin.DevicePolicyManager.STATUS_USER_NOT_RUNNING;
 import static android.app.admin.DevicePolicyManager.STATUS_USER_SETUP_COMPLETED;
+import static android.app.admin.DevicePolicyManager.UNAFFILIATED_FULL_USER_PROFILE_OWNER;
 import static android.app.admin.DevicePolicyManager.WIPE_EUICC;
 import static android.app.admin.DevicePolicyManager.WIPE_EXTERNAL_STORAGE;
 import static android.app.admin.DevicePolicyManager.WIPE_RESET_PROTECTION_DATA;
@@ -249,7 +249,6 @@ import static android.provider.Telephony.Carriers.ENFORCE_KEY;
 import static android.provider.Telephony.Carriers.ENFORCE_MANAGED_URI;
 import static android.provider.Telephony.Carriers.INVALID_APN_ID;
 import static android.security.keystore.AttestationUtils.USE_INDIVIDUAL_ATTESTATION;
-
 import static com.android.internal.logging.nano.MetricsProto.MetricsEvent.PROVISIONING_ENTRY_POINT_ADB;
 import static com.android.internal.util.ConcurrentUtils.DIRECT_EXECUTOR;
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_NONE;
@@ -301,12 +300,9 @@ import android.app.AppGlobals;
 import android.app.AppOpsManager;
 import android.app.AppOpsManager.Mode;
 import android.app.BroadcastOptions;
-import android.app.IActivityManager;
-import android.app.IActivityTaskManager;
 import android.app.IApplicationThread;
 import android.app.IServiceConnection;
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.StatsManager;
 import android.app.StatusBarManager;
@@ -373,11 +369,9 @@ import android.app.admin.UserRestrictionPolicyKey;
 import android.app.admin.WifiSsidPolicy;
 import android.app.admin.flags.Flags;
 import android.app.backup.IBackupManager;
-import android.app.compat.CompatChanges;
 import android.app.role.OnRoleHoldersChangedListener;
 import android.app.role.RoleManager;
 import android.app.supervision.SupervisionManagerInternal;
-import android.app.trust.TrustManager;
 import android.app.usage.UsageStatsManagerInternal;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledAfter;
@@ -414,7 +408,6 @@ import android.content.pm.StringParceledListSlice;
 import android.content.pm.UserInfo;
 import android.content.pm.UserPackage;
 import android.content.pm.parsing.FrameworkParsingPackageUtils;
-import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -423,15 +416,11 @@ import android.health.connect.HealthConnectManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.media.AudioManager;
-import android.net.ConnectivityManager;
 import android.net.ConnectivitySettingsManager;
-import android.net.IIpConnectivityMetrics;
 import android.net.ProfileNetworkPreference;
 import android.net.ProxyInfo;
 import android.net.Uri;
 import android.net.VpnManager;
-import android.net.metrics.IpConnectivityLog;
-import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Build;
@@ -456,10 +445,8 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.UserManager.EnforcingUser;
 import android.os.UserManager.UserRestrictionSource;
-import android.os.storage.StorageManager;
 import android.permission.AdminPermissionControlParams;
 import android.permission.IPermissionManager;
-import android.permission.PermissionControllerManager;
 import android.provider.CalendarContract;
 import android.provider.ContactsContract.QuickContact;
 import android.provider.ContactsInternal;
@@ -498,10 +485,8 @@ import android.util.Slog;
 import android.util.SparseArray;
 import android.util.StatsEvent;
 import android.util.Xml;
-import android.view.IWindowManager;
 import android.view.accessibility.IAccessibilityManager;
 import android.view.inputmethod.InputMethodInfo;
-
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -516,8 +501,6 @@ import com.android.internal.statusbar.IStatusBarService;
 import com.android.internal.telephony.SmsApplication;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.DumpUtils;
-import com.android.internal.util.FunctionalUtils.ThrowingRunnable;
-import com.android.internal.util.FunctionalUtils.ThrowingSupplier;
 import com.android.internal.util.JournaledFile;
 import com.android.internal.util.Preconditions;
 import com.android.internal.widget.LockPatternUtils;
@@ -527,10 +510,7 @@ import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 import com.android.net.module.util.ProxyUtils;
 import com.android.server.AccessibilityManagerInternal;
-import com.android.server.AlarmManagerInternal;
-import com.android.server.LocalManagerRegistry;
 import com.android.server.LocalServices;
-import com.android.server.SystemServerInitThreadPool;
 import com.android.server.SystemService;
 import com.android.server.SystemServiceManager;
 import com.android.server.accounts.AccountManagerService;
@@ -538,11 +518,9 @@ import com.android.server.devicepolicy.ActiveAdmin.TrustAgentInfo;
 import com.android.server.devicepolicy.handlers.PolicyHandler;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.locksettings.LockSettingsInternal;
-import com.android.server.net.NetworkPolicyManagerInternal;
 import com.android.server.pdb.PersistentDataBlockManagerInternal;
 import com.android.server.pm.DefaultCrossProfileIntentFilter;
 import com.android.server.pm.DefaultCrossProfileIntentFiltersUtils;
-import com.android.server.pm.PackageManagerLocal;
 import com.android.server.pm.RestrictionsSet;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.pm.UserManagerInternal.UserRestrictionsListener;
@@ -552,10 +530,6 @@ import com.android.server.storage.DeviceStorageMonitorInternal;
 import com.android.server.uri.NeededUriGrants;
 import com.android.server.uri.UriGrantsManagerInternal;
 import com.android.server.utils.Slogf;
-import com.android.server.wm.ActivityTaskManagerInternal;
-
-import org.xmlpull.v1.XmlPullParserException;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileDescriptor;
@@ -596,6 +570,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.xmlpull.v1.XmlPullParserException;
 
 /**
  * Implementation of the device policy APIs.
@@ -1173,9 +1148,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         }
     }
 
-    @GuardedBy("getLockObject()")
-    final SparseArray<DevicePolicyData> mUserData;
-
     final Handler mHandler;
     final Handler mBackgroundHandler;
 
@@ -1249,7 +1221,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 synchronized (getLockObject()) {
                     maybeSendAdminEnabledBroadcastLocked(userHandle);
                     // Reset the policy data
-                    mUserData.remove(userHandle);
+                    mDeviceAdmins.removeUserData(userHandle);
                 }
                 handlePackagesChanged(null /* check all admins */, userHandle);
                 updatePersonalAppsSuspensionOnUserStart(userHandle);
@@ -1750,433 +1722,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     }
 
     /**
-     * Unit test will subclass it to inject mocks.
-     */
-    @VisibleForTesting
-    static class Injector {
-
-        public final Context mContext;
-
-        @Nullable private DevicePolicySafetyChecker mSafetyChecker;
-
-        Injector(Context context) {
-            mContext = context;
-        }
-
-        public boolean hasFeature() {
-            return getPackageManager().hasSystemFeature(PackageManager.FEATURE_DEVICE_ADMIN);
-        }
-
-        Context createContextAsUser(UserHandle user) throws NameNotFoundException {
-            final String packageName = mContext.getPackageName();
-            return mContext.createPackageContextAsUser(packageName, 0, user);
-        }
-
-        Resources getResources() {
-            return mContext.getResources();
-        }
-
-        UserManager getUserManager() {
-            return UserManager.get(mContext);
-        }
-
-        UserManagerInternal getUserManagerInternal() {
-            return LocalServices.getService(UserManagerInternal.class);
-        }
-
-        PackageManagerInternal getPackageManagerInternal() {
-            return LocalServices.getService(PackageManagerInternal.class);
-        }
-
-        IAccessibilityManager getIAccessibilityManager() {
-            final IBinder iBinder = ServiceManager.getService(Context.ACCESSIBILITY_SERVICE);
-            return iBinder == null ? null : IAccessibilityManager.Stub.asInterface(iBinder);
-        }
-
-        PackageManagerLocal getPackageManagerLocal() {
-            return LocalManagerRegistry.getManager(PackageManagerLocal.class);
-        }
-
-        ActivityTaskManagerInternal getActivityTaskManagerInternal() {
-            return LocalServices.getService(ActivityTaskManagerInternal.class);
-        }
-
-        @NonNull PermissionControllerManager getPermissionControllerManager(
-                @NonNull UserHandle user) {
-            if (user.equals(mContext.getUser())) {
-                return mContext.getSystemService(PermissionControllerManager.class);
-            } else {
-                try {
-                    return mContext.createPackageContextAsUser(mContext.getPackageName(), 0,
-                            user).getSystemService(PermissionControllerManager.class);
-                } catch (NameNotFoundException notPossible) {
-                    // not possible
-                    throw new IllegalStateException(notPossible);
-                }
-            }
-        }
-
-        UsageStatsManagerInternal getUsageStatsManagerInternal() {
-            return LocalServices.getService(UsageStatsManagerInternal.class);
-        }
-
-        NetworkPolicyManagerInternal getNetworkPolicyManagerInternal() {
-            return LocalServices.getService(NetworkPolicyManagerInternal.class);
-        }
-
-        NotificationManager getNotificationManager() {
-            return mContext.getSystemService(NotificationManager.class);
-        }
-
-        IIpConnectivityMetrics getIIpConnectivityMetrics() {
-            return (IIpConnectivityMetrics) IIpConnectivityMetrics.Stub.asInterface(
-                ServiceManager.getService(IpConnectivityLog.SERVICE_NAME));
-        }
-
-        PackageManager getPackageManager() {
-            return mContext.getPackageManager();
-        }
-
-        PackageManager getPackageManager(int userId) {
-            try {
-                return createContextAsUser(UserHandle.of(userId)).getPackageManager();
-            } catch (NameNotFoundException e) {
-                throw new IllegalStateException(e);
-            }
-        }
-
-        PowerManagerInternal getPowerManagerInternal() {
-            return LocalServices.getService(PowerManagerInternal.class);
-        }
-
-        TelephonyManager getTelephonyManager() {
-            return mContext.getSystemService(TelephonyManager.class);
-        }
-
-        RoleManager getRoleManager() {
-            return mContext.getSystemService(RoleManager.class);
-        }
-
-        TrustManager getTrustManager() {
-            return (TrustManager) mContext.getSystemService(Context.TRUST_SERVICE);
-        }
-
-        AlarmManager getAlarmManager() {
-            return mContext.getSystemService(AlarmManager.class);
-        }
-
-        AlarmManagerInternal getAlarmManagerInternal() {
-            return LocalServices.getService(AlarmManagerInternal.class);
-        }
-
-        ConnectivityManager getConnectivityManager() {
-            return mContext.getSystemService(ConnectivityManager.class);
-        }
-
-        @Nullable
-        VpnManager getVpnManager() {
-            return mContext.getSystemService(VpnManager.class);
-        }
-
-        LocationManager getLocationManager() {
-            return mContext.getSystemService(LocationManager.class);
-        }
-
-        IWindowManager getIWindowManager() {
-            return IWindowManager.Stub
-                    .asInterface(ServiceManager.getService(Context.WINDOW_SERVICE));
-        }
-
-        IActivityManager getIActivityManager() {
-            return ActivityManager.getService();
-        }
-
-        IActivityTaskManager getIActivityTaskManager() {
-            return ActivityTaskManager.getService();
-        }
-
-        ActivityManagerInternal getActivityManagerInternal() {
-            return LocalServices.getService(ActivityManagerInternal.class);
-        }
-
-        IPackageManager getIPackageManager() {
-            return AppGlobals.getPackageManager();
-        }
-
-        IPermissionManager getIPermissionManager() {
-            return AppGlobals.getPermissionManager();
-        }
-
-        IBackupManager getIBackupManager() {
-            return IBackupManager.Stub.asInterface(
-                    ServiceManager.getService(Context.BACKUP_SERVICE));
-        }
-
-        AccessibilityManagerInternal getAccessibilityManagerInternal() {
-            return LocalServices.getService(AccessibilityManagerInternal.class);
-        }
-
-        PersistentDataBlockManagerInternal getPersistentDataBlockManagerInternal() {
-            return LocalServices.getService(PersistentDataBlockManagerInternal.class);
-        }
-
-        AppOpsManager getAppOpsManager() {
-            return mContext.getSystemService(AppOpsManager.class);
-        }
-
-        LockSettingsInternal getLockSettingsInternal() {
-            return LocalServices.getService(LockSettingsInternal.class);
-        }
-
-        CrossProfileApps getCrossProfileApps(@UserIdInt int userId) {
-            return mContext.createContextAsUser(UserHandle.of(userId), /* flags= */ 0)
-                    .getSystemService(CrossProfileApps.class);
-        }
-
-        boolean hasUserSetupCompleted(DevicePolicyData userData) {
-            return userData.mUserSetupComplete;
-        }
-
-        boolean isBuildDebuggable() {
-            return Build.IS_DEBUGGABLE;
-        }
-
-        LockPatternUtils newLockPatternUtils() {
-            return new LockPatternUtils(mContext);
-        }
-
-        EnterpriseSpecificIdCalculator newEnterpriseSpecificIdCalculator() {
-            return new EnterpriseSpecificIdCalculator(mContext);
-        }
-
-        boolean storageManagerIsFileBasedEncryptionEnabled() {
-            return StorageManager.isFileEncrypted();
-        }
-
-        Looper getMyLooper() {
-            return Looper.myLooper();
-        }
-
-        WifiManager getWifiManager() {
-            return mContext.getSystemService(WifiManager.class);
-        }
-
-        UsbManager getUsbManager() {
-            return mContext.getSystemService(UsbManager.class);
-        }
-
-        @SuppressWarnings("ResultOfClearIdentityCallNotStoredInVariable")
-        long binderClearCallingIdentity() {
-            return Binder.clearCallingIdentity();
-        }
-
-        void binderRestoreCallingIdentity(long token) {
-            Binder.restoreCallingIdentity(token);
-        }
-
-        int binderGetCallingUid() {
-            return Binder.getCallingUid();
-        }
-
-        int binderGetCallingPid() {
-            return Binder.getCallingPid();
-        }
-
-        UserHandle binderGetCallingUserHandle() {
-            return Binder.getCallingUserHandle();
-        }
-
-        boolean binderIsCallingUidMyUid() {
-            return getCallingUid() == Process.myUid();
-        }
-
-        void binderWithCleanCallingIdentity(@NonNull ThrowingRunnable action) {
-             Binder.withCleanCallingIdentity(action);
-        }
-
-        final <T> T binderWithCleanCallingIdentity(@NonNull ThrowingSupplier<T> action) {
-            return Binder.withCleanCallingIdentity(action);
-        }
-
-        final int userHandleGetCallingUserId() {
-            return UserHandle.getUserId(binderGetCallingUid());
-        }
-
-        void powerManagerGoToSleep(long time, int reason, int flags) {
-            mContext.getSystemService(PowerManager.class).goToSleep(time, reason, flags);
-        }
-
-        void powerManagerReboot(String reason) {
-            mContext.getSystemService(PowerManager.class).reboot(reason);
-        }
-
-        boolean recoverySystemRebootWipeUserData(boolean shutdown, String reason, boolean force,
-                boolean wipeEuicc, boolean wipeExtRequested, boolean wipeResetProtectionData)
-                        throws IOException {
-            return FactoryResetter.newBuilder(mContext).setSafetyChecker(mSafetyChecker)
-                    .setReason(reason).setShutdown(shutdown).setForce(force).setWipeEuicc(wipeEuicc)
-                    .setWipeAdoptableStorage(wipeExtRequested)
-                    .setWipeFactoryResetProtection(wipeResetProtectionData)
-                    .build().factoryReset();
-        }
-
-        boolean systemPropertiesGetBoolean(String key, boolean def) {
-            return SystemProperties.getBoolean(key, def);
-        }
-
-        long systemPropertiesGetLong(String key, long def) {
-            return SystemProperties.getLong(key, def);
-        }
-
-        String systemPropertiesGet(String key, String def) {
-            return SystemProperties.get(key, def);
-        }
-
-        String systemPropertiesGet(String key) {
-            return SystemProperties.get(key);
-        }
-
-        void systemPropertiesSet(String key, String value) {
-            SystemProperties.set(key, value);
-        }
-
-        boolean userManagerIsHeadlessSystemUserMode() {
-            return UserManager.isHeadlessSystemUserMode();
-        }
-
-        List<String> roleManagerGetRoleHoldersAsUser(String role, UserHandle userHandle) {
-            return getRoleManager().getRoleHoldersAsUser(role, userHandle);
-        }
-
-        @SuppressWarnings("AndroidFrameworkPendingIntentMutability")
-        PendingIntent pendingIntentGetActivityAsUser(Context context, int requestCode,
-                @NonNull Intent intent, int flags, Bundle options, UserHandle user) {
-            return PendingIntent.getActivityAsUser(
-                    context, requestCode, intent, flags, options, user);
-        }
-
-        @SuppressWarnings("AndroidFrameworkPendingIntentMutability")
-        PendingIntent pendingIntentGetBroadcast(
-                Context context, int requestCode, Intent intent, int flags) {
-            return PendingIntent.getBroadcast(context, requestCode, intent, flags);
-        }
-
-        void registerContentObserver(Uri uri, boolean notifyForDescendents,
-                ContentObserver observer, int userHandle) {
-            mContext.getContentResolver().registerContentObserver(uri, notifyForDescendents,
-                    observer, userHandle);
-        }
-
-        int settingsSecureGetIntForUser(String name, int def, int userHandle) {
-            return Settings.Secure.getIntForUser(mContext.getContentResolver(),
-                    name, def, userHandle);
-        }
-
-        String settingsSecureGetStringForUser(String name, int userHandle) {
-            return Settings.Secure.getStringForUser(mContext.getContentResolver(), name,
-                    userHandle);
-        }
-
-        void settingsSecurePutIntForUser(String name, int value, int userHandle) {
-            Settings.Secure.putIntForUser(mContext.getContentResolver(),
-                    name, value, userHandle);
-        }
-
-        void settingsSecurePutStringForUser(String name, String value, int userHandle) {
-            Settings.Secure.putStringForUser(mContext.getContentResolver(),
-                    name, value, userHandle);
-        }
-
-        void settingsGlobalPutStringForUser(String name, String value, int userHandle) {
-            Global.putStringForUser(mContext.getContentResolver(),
-                    name, value, userHandle);
-        }
-
-        int settingsGlobalGetInt(String name, int def) {
-            return Global.getInt(mContext.getContentResolver(), name, def);
-        }
-
-        @Nullable
-        String settingsGlobalGetString(String name) {
-            return Global.getString(mContext.getContentResolver(), name);
-        }
-
-        void settingsGlobalPutInt(String name, int value) {
-            Global.putInt(mContext.getContentResolver(), name, value);
-        }
-
-        void settingsGlobalPutString(String name, String value) {
-            Global.putString(mContext.getContentResolver(), name, value);
-        }
-
-        void settingsSystemPutStringForUser(String name, String value, int userId) {
-          Settings.System.putStringForUser(
-              mContext.getContentResolver(), name, value, userId);
-        }
-
-        void securityLogSetLoggingEnabledProperty(boolean enabled) {
-            SecurityLog.setLoggingEnabledProperty(enabled);
-        }
-
-        boolean securityLogGetLoggingEnabledProperty() {
-            return SecurityLog.getLoggingEnabledProperty();
-        }
-
-        boolean securityLogIsLoggingEnabled() {
-            return SecurityLog.isLoggingEnabled();
-        }
-
-        KeyChainConnection keyChainBind() throws InterruptedException {
-            return KeyChain.bind(mContext);
-        }
-
-        KeyChainConnection keyChainBindAsUser(UserHandle user) throws InterruptedException {
-            return KeyChain.bindAsUser(mContext, user);
-        }
-
-        void postOnSystemServerInitThreadPool(Runnable runnable) {
-            SystemServerInitThreadPool.submit(runnable, LOG_TAG);
-        }
-
-        public TransferOwnershipMetadataManager newTransferOwnershipMetadataManager() {
-            return new TransferOwnershipMetadataManager();
-        }
-
-        public void runCryptoSelfTest() {
-            CryptoTestHelper.runAndLogSelfTest();
-        }
-
-        public long systemCurrentTimeMillis() {
-            return System.currentTimeMillis();
-        }
-
-        public boolean isChangeEnabled(long changeId, String packageName, int userId) {
-            return CompatChanges.isChangeEnabled(changeId, packageName, UserHandle.of(userId));
-        }
-
-        void setDevicePolicySafetyChecker(DevicePolicySafetyChecker safetyChecker) {
-            mSafetyChecker = safetyChecker;
-        }
-
-        DeviceManagementResourcesProvider getDeviceManagementResourcesProvider() {
-            return new DeviceManagementResourcesProvider();
-        }
-
-        boolean isAdminInstalledCaCertAutoApproved() {
-            return false;
-        }
-
-        @Nullable
-        SupervisionManagerInternal getSupervisionManager() {
-            return LocalServices.getService(SupervisionManagerInternal.class);
-        }
-
-        boolean hasPermission(String permission, int pid, int uid) {
-            return mContext.checkPermission(permission, pid, uid) == PERMISSION_GRANTED;
-        }
-    }
-
-    /**
      * Instantiates the service.
      */
     public DevicePolicyManagerService(Context context) {
@@ -2249,13 +1794,12 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         // "Lite" interface is available even when the device doesn't have the feature
         LocalServices.addService(DevicePolicyManagerLiteInternal.class, mLocalService);
 
-        // Policy version upgrade must not depend on either mOwners or mUserData, so they are
+        // Policy version upgrade must not depend on either mOwners or mDeviceAdmins, so they are
         // initialized only after performing the upgrade.
         if (!isDeviceAdminFeatureDisabled()) {
             performPolicyVersionUpgrade();
         }
 
-        mUserData = new SparseArray<>();
         mOwners = makeOwners(injector, pathProvider);
         mDeviceAdmins = new DeviceAdmins(mLock, mInjector, mOwners, this);
 
@@ -2385,25 +1929,33 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     }
 
     /**
-     * Creates and loads the policy data from xml.
+     * Loads the policy data from xml.
+     *
      * @param userHandle the user for whom to load the policy data
      * @return
      */
     @NonNull
     @Override
-    public DevicePolicyData getUserData(int userHandle) {
+    public void initializePolicyDataFromXml(int userHandle, DevicePolicyData policy) {
         synchronized (getLockObject()) {
-            DevicePolicyData policy = mUserData.get(userHandle);
-            if (policy == null) {
-                policy = new DevicePolicyData(userHandle);
-                mUserData.append(userHandle, policy);
-                loadSettingsLocked(policy, userHandle);
-                if (userHandle == UserHandle.USER_SYSTEM) {
-                    mStateCache.setDeviceProvisioned(policy.mUserSetupComplete);
-                }
+            loadSettingsLocked(policy, userHandle);
+            if (userHandle == UserHandle.USER_SYSTEM) {
+                mStateCache.setDeviceProvisioned(policy.mUserSetupComplete);
             }
-            return policy;
         }
+    }
+
+    /**
+     * Returns the policy data for the given user.
+     *
+     * If the policy data is not loaded yet, this will load the policy data from
+     * XML.
+     * @param userHandle the user for whom to load the policy data
+     * @return
+     */
+    @NonNull
+    DevicePolicyData getUserData(int userHandle) {
+        return mDeviceAdmins.getUserData(userHandle);
     }
 
     /**
@@ -2447,10 +1999,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             mOwners.removeProfileOwner(userHandle);
             mOwners.writeProfileOwner(userHandle);
 
-            DevicePolicyData policy = mUserData.get(userHandle);
-            if (policy != null) {
-                mUserData.remove(userHandle);
-            }
+            mDeviceAdmins.removeUserData(userHandle);
 
             File policyFile =
                     new File(mPathProvider.getUserSystemDirectory(userHandle), DEVICE_POLICIES_XML);
@@ -3932,24 +3481,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     private void cleanUpOldUsers() {
         // This is needed in case the broadcast {@link Intent.ACTION_USER_REMOVED} was not handled
         // before reboot
-        Set<Integer> usersWithProfileOwners;
-        Set<Integer> usersWithData;
-        synchronized (getLockObject()) {
-            usersWithProfileOwners = mOwners.getProfileOwnerKeys();
-            usersWithData = new ArraySet<>();
-            for (int i = 0; i < mUserData.size(); i++) {
-                usersWithData.add(mUserData.keyAt(i));
-            }
-        }
-        List<UserInfo> allUsers = mUserManager.getUsers();
-
-        Set<Integer> deletedUsers = new ArraySet<>();
-        deletedUsers.addAll(usersWithProfileOwners);
-        deletedUsers.addAll(usersWithData);
-        for (UserInfo userInfo : allUsers) {
-            deletedUsers.remove(userInfo.id);
-        }
-        for (Integer userId : deletedUsers) {
+        for (Integer userId : mDeviceAdmins.getDeletedUsers()) {
             removeManagedEmbeddedSubscriptionsForUser(userId);
             removeUserData(userId);
             mDevicePolicyEngine.handleUserRemoved(userId);
@@ -11392,16 +10924,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         PersonalAppsSuspensionHelper.forUser(mContext, UserHandle.USER_SYSTEM).dump(pw);
     }
 
-    private void dumpPerUserPolicyData(IndentingPrintWriter pw) {
-        int userCount = mUserData.size();
-        for (int i = 0; i < userCount; i++) {
-            int userId = mUserData.keyAt(i);
-            DevicePolicyData policy = getUserData(userId);
-            policy.dump(pw);
-            pw.println();
-        }
-    }
-
     @Override
     protected void dump(FileDescriptor fd, PrintWriter printWriter, String[] args) {
         if (!DumpUtils.checkDumpPermission(mContext, LOG_TAG, printWriter)) return;
@@ -11416,7 +10938,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 pw.println();
                 mDeviceAdminServiceController.dump(pw);
                 pw.println();
-                dumpPerUserPolicyData(pw);
+                mDeviceAdmins.dumpPerUserPolicyData(pw);
                 pw.println();
                 mConstants.dump(pw);
                 pw.println();
@@ -17639,13 +17161,11 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 return STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED;
             }
             // There must be no users that have completed setup.
-            for (int i = 0; i < mUserData.size(); i++) {
-                int userId = mUserData.keyAt(i);
-                if (mInjector.hasUserSetupCompleted(getUserData(userId))) {
-                    Slogf.d(LOG_TAG, "checkMultiUserDeviceProvisioningPreCondition: User %d has "
-                            + "completed setup", userId);
-                    return STATUS_USER_SETUP_COMPLETED;
-                }
+            int userId = mDeviceAdmins.getUserWithSetupCompleted();
+            if (userId != UserHandle.USER_NULL) {
+                Slogf.d(LOG_TAG, "checkMultiUserDeviceProvisioningPreCondition: User %d has "
+                        + "completed setup", userId);
+                return STATUS_USER_SETUP_COMPLETED;
             }
         }
         return STATUS_OK;

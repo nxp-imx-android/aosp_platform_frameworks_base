@@ -17,7 +17,6 @@
 package com.android.systemui.util.kotlin
 
 import android.os.Handler
-import com.android.systemui.Flags
 import com.android.systemui.coroutines.newTracingContext
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -74,17 +73,12 @@ class SysUICoroutinesModule {
             // would share those threads with other dependencies using Dispatchers.IO.
             // Using a dedicated thread pool we have guarantees only SystemUI is able to schedule
             // code on those.
-            if (Flags.sysuiIntrinsicLockDispatcher()) {
-                newIntrinsicLockFixedThreadPoolContext(
-                    nThreads = Runtime.getRuntime().availableProcessors(),
-                    name ="SystemUIBg",
-                )
-            } else {
-                newFixedThreadPoolContext(
-                    nThreads = Runtime.getRuntime().availableProcessors(),
-                    name = "SystemUIBg",
-                )
-            }
+            // We now use a custom thread pool dispatcher, where producers are not susceptible to
+            // lock contentions and priority inversion
+            newIntrinsicLockFixedThreadPoolContext(
+                nThreads = Runtime.getRuntime().availableProcessors(),
+                name ="SystemUIBg",
+            )
         } else {
             Dispatchers.IO
         }

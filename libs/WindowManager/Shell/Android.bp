@@ -160,6 +160,7 @@ android_library {
         "androidx.appcompat_appcompat",
         "androidx.arch.core_core-runtime",
         "androidx.compose.material3_material3",
+        "com.google.android.material_material",
         "androidx.core_core-ktx",
         "androidx.datastore_datastore",
         "androidx.dynamicanimation_dynamicanimation",

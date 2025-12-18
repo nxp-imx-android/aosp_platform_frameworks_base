@@ -61,6 +61,7 @@ import androidx.annotation.UiThread
 import com.android.app.animation.Interpolators
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.policy.ScreenDecorationsUtils
+import com.android.systemui.Flags.animationLibraryAtomicListeners
 import com.android.systemui.Flags.animationLibraryShellMigration
 import com.android.systemui.animation.ActivityTransitionAnimator.Companion.LONG_TRANSITION_TIMEOUT
 import com.android.systemui.animation.ActivityTransitionAnimator.Companion.TRANSITION_TIMEOUT
@@ -72,6 +73,8 @@ import com.android.wm.shell.shared.ShellTransitions
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.compat.AnimatedSurface
 import java.util.concurrent.Executor
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -230,25 +233,56 @@ constructor(
     /** The set of [Listener] that should be notified of any animation started by this animator. */
     private val listeners = LinkedHashSet<Listener>()
 
+    /** Lock used to ensure the atomicity of the [listeners] set. */
+    private val listenersLock = ReentrantLock()
+
     /** Top-level listener that can be used to notify all registered [listeners]. */
     private val lifecycleListener =
         object : Listener {
             override fun onTransitionAnimationStart() {
-                LinkedHashSet(listeners).forEach { it.onTransitionAnimationStart() }
+                if (animationLibraryAtomicListeners()) {
+                    listenersLock.withLock {
+                        LinkedHashSet(listeners).forEach { it.onTransitionAnimationStart() }
+                    }
+                } else {
+                    LinkedHashSet(listeners).forEach { it.onTransitionAnimationStart() }
+                }
             }
 
             override fun onTransitionAnimationEnd(transaction: SurfaceControl.Transaction) {
-                LinkedHashSet(listeners).forEach { it.onTransitionAnimationEnd(transaction) }
+                if (animationLibraryAtomicListeners()) {
+                    listenersLock.withLock {
+                        LinkedHashSet(listeners).forEach {
+                            it.onTransitionAnimationEnd(transaction)
+                        }
+                    }
+                } else {
+                    LinkedHashSet(listeners).forEach { it.onTransitionAnimationEnd(transaction) }
+                }
             }
 
             override fun onTransitionAnimationProgress(linearProgress: Float) {
-                LinkedHashSet(listeners).forEach {
-                    it.onTransitionAnimationProgress(linearProgress)
+                if (animationLibraryAtomicListeners()) {
+                    listenersLock.withLock {
+                        LinkedHashSet(listeners).forEach {
+                            it.onTransitionAnimationProgress(linearProgress)
+                        }
+                    }
+                } else {
+                    LinkedHashSet(listeners).forEach {
+                        it.onTransitionAnimationProgress(linearProgress)
+                    }
                 }
             }
 
             override fun onTransitionAnimationCancelled() {
-                LinkedHashSet(listeners).forEach { it.onTransitionAnimationCancelled() }
+                if (animationLibraryAtomicListeners()) {
+                    listenersLock.withLock {
+                        LinkedHashSet(listeners).forEach { it.onTransitionAnimationCancelled() }
+                    }
+                } else {
+                    LinkedHashSet(listeners).forEach { it.onTransitionAnimationCancelled() }
+                }
             }
         }
 
@@ -843,12 +877,20 @@ constructor(
 
     /** Add a [Listener] that can listen to transition animations. */
     fun addListener(listener: Listener) {
-        listeners.add(listener)
+        if (animationLibraryAtomicListeners()) {
+            listenersLock.withLock { listeners.add(listener) }
+        } else {
+            listeners.add(listener)
+        }
     }
 
     /** Remove a [Listener]. */
     fun removeListener(listener: Listener) {
-        listeners.remove(listener)
+        if (animationLibraryAtomicListeners()) {
+            listenersLock.withLock { listeners.remove(listener) }
+        } else {
+            listeners.remove(listener)
+        }
     }
 
     /**

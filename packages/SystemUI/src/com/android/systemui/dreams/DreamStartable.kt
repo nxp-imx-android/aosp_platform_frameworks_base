@@ -80,8 +80,8 @@ constructor(
     @RequiresPermission(WRITE_DREAM_STATE)
     private fun handleDreamState() {
         applicationScope.launch {
-            keyguardInteractor.isAbleToDream.collect { isAbleToDream ->
-                if (isAbleToDream) {
+            keyguardInteractor.isDreamingNotDozing.collect { isDreaming ->
+                if (isDreaming) {
                     if (
                         sceneInteractor.currentScene.value == Scenes.Lockscreen &&
                             Overlays.Bouncer in sceneInteractor.currentOverlays.value
@@ -134,7 +134,7 @@ constructor(
                 .pairwise()
                 .map { (prev, current) -> prev == Scenes.Dream && current == Scenes.Gone }
                 .distinctUntilChanged()
-                .sample(keyguardInteractor.isAbleToDream, ::Pair)
+                .sample(keyguardInteractor.isDreamingNotDozing, ::Pair)
                 .collect { (dreamToGone, isDreaming) ->
                     if (dreamToGone && isDreaming) {
                         logger.i("Stopping dream due to going from Dream to Gone")
@@ -160,7 +160,7 @@ constructor(
                     if (authMethod.isSecure) {
                         emptyFlow()
                     } else {
-                        keyguardInteractor.isAbleToDream
+                        keyguardInteractor.isDreamingNotDozing
                     }
                 }
                 .distinctUntilChanged()

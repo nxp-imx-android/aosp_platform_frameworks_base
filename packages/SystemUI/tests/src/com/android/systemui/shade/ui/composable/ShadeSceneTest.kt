@@ -27,11 +27,14 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.TestContentScope
 import com.android.compose.theme.PlatformTheme
+import com.android.systemui.Flags
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.compose.modifiers.resIdToTestTag
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.jank.interactionJankMonitor
+import com.android.systemui.kosmos.runCurrent
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
 import com.android.systemui.qs.pipeline.domain.interactor.currentTilesInteractor
@@ -41,6 +44,7 @@ import com.android.systemui.scene.session.ui.composable.SaveableSession
 import com.android.systemui.scene.session.ui.composable.Session
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.enableSingleShade
+import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.shade.ui.viewmodel.shadeSceneContentViewModelFactory
 import com.android.systemui.shade.ui.viewmodel.shadeUserAcionsViewModelFactory
 import com.android.systemui.statusbar.notification.stack.ui.view.notificationScrollView
@@ -123,5 +127,58 @@ class ShadeSceneTest : SysuiTestCase() {
 
                 coroutineContext.cancelChildren()
             }
+        }
+
+    @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
+    @Test
+    fun splitShadeHierarchy() =
+        kosmos.runTest {
+            val shadeSession =
+                object : SaveableSession, Session by Session(SessionStorage()) {
+                    @Composable
+                    override fun <T : Any> rememberSaveableSession(
+                        vararg inputs: Any?,
+                        saver: Saver<T, out Any>,
+                        key: String?,
+                        init: () -> T,
+                    ): T = rememberSession(key, inputs = inputs, init = init)
+                }
+
+            usingMediaInComposeFragment = true
+
+            enableSplitShade()
+            runCurrent()
+
+            val scene =
+                ShadeScene(
+                    shadeSession = shadeSession,
+                    notificationStackScrollView = { notificationScrollView },
+                    actionsViewModelFactory = shadeUserAcionsViewModelFactory,
+                    contentViewModelFactory = shadeSceneContentViewModelFactory,
+                    notificationsPlaceholderViewModelFactory =
+                        notificationsPlaceholderViewModelFactory,
+                    jankMonitor = interactionJankMonitor,
+                )
+
+            // Set the shade content.
+            composeTestRule.setContent {
+                PlatformTheme {
+                    WithStatusIconContext(tintedIconManagerFactory) {
+                        with(scene) {
+                            TestContentScope(currentScene = Scenes.Shade) { Content(Modifier) }
+                        }
+                    }
+                }
+            }
+
+            currentTilesInteractor.setTiles(listOf(TileSpec.create("small")))
+            runCurrent()
+            composeTestRule.waitForIdle()
+
+            // Verify that the qs small tile exists.
+            composeTestRule.onNodeWithTag(resIdToTestTag("qs_tile_small")).assertExists()
+
+            // Verify that the split shade qs exists.
+            composeTestRule.onNodeWithTag("element:SplitShadeQuickSettings").assertExists()
         }
 }

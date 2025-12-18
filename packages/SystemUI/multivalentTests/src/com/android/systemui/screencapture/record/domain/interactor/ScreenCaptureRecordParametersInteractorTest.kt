@@ -21,6 +21,7 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.screencapture.record.data.repository.screenCaptureRecordParametersRepository
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
@@ -30,7 +31,7 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
-class ScreenCaptureRecordParametersModelInteractorTest : SysuiTestCase() {
+class ScreenCaptureRecordParametersInteractorTest : SysuiTestCase() {
 
     private val kosmos = testKosmosNew()
 
@@ -71,5 +72,45 @@ class ScreenCaptureRecordParametersModelInteractorTest : SysuiTestCase() {
             underTest.setShouldShowFrontCamera(newShouldShowFrontCamera)
 
             assertThat(shouldShowFrontCamera).isEqualTo(newShouldShowFrontCamera)
+        }
+
+    @Test
+    fun setShouldShowFrontCamera_nowNone_enablesMic() =
+        kosmos.runTest {
+            val parameters by collectLastValue(screenCaptureRecordParametersRepository.parameters)
+            underTest.setAudioSource(ScreenRecordingAudioSource.NONE)
+
+            underTest.setShouldShowFrontCamera(true)
+
+            assertThat(parameters!!.shouldShowFrontCamera).isTrue()
+            assertThat(parameters!!.audioSource).isEqualTo(ScreenRecordingAudioSource.MIC)
+        }
+
+    @Test
+    fun setShouldShowFrontCamera_nowInternal_enablesMic() =
+        kosmos.runTest {
+            val parameters by collectLastValue(screenCaptureRecordParametersRepository.parameters)
+            underTest.setAudioSource(ScreenRecordingAudioSource.INTERNAL)
+
+            underTest.setShouldShowFrontCamera(true)
+
+            assertThat(parameters!!.shouldShowFrontCamera).isTrue()
+            assertThat(parameters!!.audioSource)
+                .isEqualTo(ScreenRecordingAudioSource.MIC_AND_INTERNAL)
+        }
+
+    @Test
+    fun setShouldNotShowFrontCamera_doesntChangeMic() =
+        kosmos.runTest {
+            ScreenRecordingAudioSource.entries.forEach { source ->
+                val parameters by
+                    collectLastValue(screenCaptureRecordParametersRepository.parameters)
+                underTest.setAudioSource(source)
+
+                underTest.setShouldShowFrontCamera(false)
+
+                assertThat(parameters!!.shouldShowFrontCamera).isFalse()
+                assertThat(parameters!!.audioSource).isEqualTo(source)
+            }
         }
 }

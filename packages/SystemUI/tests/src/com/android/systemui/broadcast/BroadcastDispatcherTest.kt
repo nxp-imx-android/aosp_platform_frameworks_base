@@ -24,7 +24,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.PatternMatcher
 import android.os.UserHandle
-import android.testing.AndroidTestingRunner
+import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableLooper
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -38,7 +38,6 @@ import com.android.systemui.util.time.FakeSystemClock
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.Executor
 import junit.framework.Assert.assertSame
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -57,13 +56,26 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
-@RunWith(AndroidTestingRunner::class)
+@RunWith(ParameterizedAndroidJunit4::class)
 @TestableLooper.RunWithLooper
 @SmallTest
-class BroadcastDispatcherTest : SysuiTestCase() {
+class BroadcastDispatcherTest(flags: FlagsParameterization) : SysuiTestCase() {
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
 
     companion object {
+        @JvmStatic
+        @Parameters(name = "{0}")
+        fun getParams(): List<FlagsParameterization> {
+            return FlagsParameterization.allCombinationsOf(
+                BroadcastDispatcherCustomExecutor.FLAG_NAME
+            )
+        }
+
         val user0 = UserHandle.of(0)
         val user1 = UserHandle.of(1)
         const val DEFAULT_FLAG = Context.RECEIVER_EXPORTED

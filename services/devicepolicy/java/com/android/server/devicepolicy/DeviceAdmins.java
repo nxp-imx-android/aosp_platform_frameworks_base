@@ -31,6 +31,8 @@ import android.os.Build;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.util.ArraySet;
+import android.util.IndentingPrintWriter;
+import android.util.SparseArray;
 import androidx.annotation.VisibleForTesting;
 import com.android.internal.util.Preconditions;
 import com.android.server.utils.Slogf;
@@ -53,21 +55,22 @@ class DeviceAdmins {
     }
 
     interface Delegate {
-        @NonNull
-        DevicePolicyData getUserData(int userHandle);
+        void initializePolicyDataFromXml(int userHandle, @NonNull DevicePolicyData policy);
 
         int getTargetSdk(String packageName, int userId);
     }
 
-    final DevicePolicyManagerService.Injector mInjector;
+    final Injector mInjector;
     final Owners mOwners;
+
+    @VisibleForTesting final SparseArray<DevicePolicyData> mUserData = new SparseArray<>();
     final UserManager mUserManager;
     final Delegate mDelegate;
     final Lock mLock;
 
     DeviceAdmins(
             Lock lock,
-            DevicePolicyManagerService.Injector injector,
+            Injector injector,
             Owners owners,
             Delegate delegate) {
         mLock = lock;
@@ -595,6 +598,16 @@ class DeviceAdmins {
         }
     }
 
+    /**
+     * Returns the user id of the Device Owner, or {@code UserHandle.USER_NULL} if there is no
+     * Device Owner.
+     */
+    public int getDeviceOwnerUserId() {
+        synchronized (mLock.getLockObject()) {
+            return mOwners.getDeviceOwnerUserId();
+        }
+    }
+
     private boolean isProfileOwnerOfOrganizationOwnedDevice(@UserIdInt int userId) {
         return mOwners.isProfileOwnerOfOrganizationOwnedDevice(userId);
     }
@@ -612,8 +625,90 @@ class DeviceAdmins {
         return mInjector.binderWithCleanCallingIdentity(() -> mUserManager.getUserInfo(userId));
     }
 
-    private @NonNull DevicePolicyData getUserData(@UserIdInt int userHandle) {
-        return mDelegate.getUserData(userHandle);
+    /**
+     * Returns the policy data for the given user.
+     *
+     * <p>If the policy data is not loaded yet, this will load the policy data from XML.
+     *
+     * @param userHandle the user for whom to load the policy data
+     * @return
+     */
+    @NonNull
+    public DevicePolicyData getUserData(int userHandle) {
+        synchronized (mLock.getLockObject()) {
+            DevicePolicyData policy = mUserData.get(userHandle);
+            if (policy == null) {
+                policy = new DevicePolicyData(userHandle);
+                // `policy` must be inserted into `mUserData` before we call
+                // `initializePolicyDataFromXml`, since the initialize code has
+                //  side-effects which in return call `getUserData` again :(
+                mUserData.append(userHandle, policy);
+                mDelegate.initializePolicyDataFromXml(userHandle, policy);
+            }
+            return policy;
+        }
+    }
+
+    /** Removes the in-memory policy data for the given user. */
+    public void removeUserData(int userHandle) {
+        synchronized (mLock.getLockObject()) {
+            mUserData.remove(userHandle);
+        }
+    }
+
+    /**
+     * Returns the (first) user that has completed the setup, or {@code UserHandle.USER_NULL} if no
+     * such user exists.
+     */
+    public int getUserWithSetupCompleted() {
+        synchronized (mLock.getLockObject()) {
+            for (int i = 0; i < mUserData.size(); i++) {
+                int userId = mUserData.keyAt(i);
+                if (mInjector.hasUserSetupCompleted(getUserData(userId))) {
+                    return userId;
+                }
+            }
+            return UserHandle.USER_NULL;
+        }
+    }
+
+    /**
+     * Get all users for which policy data is stored and which no longer exist.
+     *
+     * <p>This is needed in case the broadcast {@link Intent.ACTION_USER_REMOVED} was not handled
+     * before reboot.
+     */
+    public Set<Integer> getDeletedUsers() {
+        Set<Integer> usersWithProfileOwners;
+        Set<Integer> usersWithData;
+        synchronized (mLock.getLockObject()) {
+            usersWithProfileOwners = mOwners.getProfileOwnerKeys();
+            usersWithData = new ArraySet<>();
+            for (int i = 0; i < mUserData.size(); i++) {
+                usersWithData.add(mUserData.keyAt(i));
+            }
+        }
+        List<UserInfo> allUsers = mUserManager.getUsers();
+
+        Set<Integer> deletedUsers = new ArraySet<>();
+        deletedUsers.addAll(usersWithProfileOwners);
+        deletedUsers.addAll(usersWithData);
+        for (UserInfo userInfo : allUsers) {
+            deletedUsers.remove(userInfo.id);
+        }
+        return deletedUsers;
+    }
+
+    public void dumpPerUserPolicyData(IndentingPrintWriter pw) {
+        synchronized (mLock.getLockObject()) {
+            int userCount = mUserData.size();
+            for (int i = 0; i < userCount; i++) {
+                int userId = mUserData.keyAt(i);
+                DevicePolicyData policy = getUserData(userId);
+                policy.dump(pw);
+                pw.println();
+            }
+        }
     }
 
     private int getTargetSdk(String packageName, @UserIdInt int userId) {

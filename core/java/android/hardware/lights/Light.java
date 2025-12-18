@@ -16,6 +16,7 @@
 
 package android.hardware.lights;
 
+import android.annotation.DurationMillisLong;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -143,7 +144,7 @@ public final class Light implements Parcelable {
     private final int mCapabilities;
     @Nullable
     private final int[] mPreferredBrightnessLevels;
-    private final int mMinUpdatePeriodMillis;
+    private final long mMinUpdatePeriodMillis;
 
     /**
      * Creates a new light with the given data.
@@ -163,7 +164,7 @@ public final class Light implements Parcelable {
         mCapabilities = in.readInt();
         mPreferredBrightnessLevels = in.createIntArray();
         if (Flags.enableLightAnimations()) {
-            mMinUpdatePeriodMillis = in.readInt();
+            mMinUpdatePeriodMillis = in.readLong();
         } else {
             mMinUpdatePeriodMillis = 0;
         }
@@ -175,7 +176,7 @@ public final class Light implements Parcelable {
      * @hide
      */
     public Light(int id, String name, int ordinal, int type, int capabilities,
-            @Nullable int[] preferredBrightnessLevels, int minUpdatePeriodMillis) {
+            @Nullable int[] preferredBrightnessLevels, long minUpdatePeriodMillis) {
         mId = id;
         mName = name;
         mOrdinal = ordinal;
@@ -199,7 +200,7 @@ public final class Light implements Parcelable {
         dest.writeInt(mCapabilities);
         dest.writeIntArray(mPreferredBrightnessLevels);
         if (Flags.enableLightAnimations()) {
-            dest.writeInt(mMinUpdatePeriodMillis);
+            dest.writeLong(mMinUpdatePeriodMillis);
         }
     }
 
@@ -349,7 +350,8 @@ public final class Light implements Parcelable {
      * @return the minimum period, in milliseconds, or 0 if the light does not support effects.
      */
     @FlaggedApi(Flags.FLAG_ENABLE_LIGHT_ANIMATIONS)
-    public int getMinUpdatePeriodMillis() {
+    @DurationMillisLong
+    public long getMinUpdatePeriodMillis() {
         return mMinUpdatePeriodMillis;
     }
 
@@ -365,7 +367,7 @@ public final class Light implements Parcelable {
         private @LightType int mType;
         private @LightCapability int mCapabilities;
         @Nullable private int[] mPreferredBrightnessLevels;
-        private int mMinUpdatePeriodMillis;
+        private long mMinUpdatePeriodMillis;
 
         /**
          * Creates a new {@link Light.Builder}.
@@ -420,7 +422,7 @@ public final class Light implements Parcelable {
          * @return the updated instance of the {@link Builder}.
          * @hide
          */
-        public Builder setMinUpdatePeriodMillis(int minUpdatePeriodMillis) {
+        public Builder setMinUpdatePeriodMillis(long minUpdatePeriodMillis) {
             mMinUpdatePeriodMillis = minUpdatePeriodMillis;
             return this;
         }

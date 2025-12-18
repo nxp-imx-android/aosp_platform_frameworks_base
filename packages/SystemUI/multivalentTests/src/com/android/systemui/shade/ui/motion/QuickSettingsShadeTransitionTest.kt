@@ -229,6 +229,8 @@ class QuickSettingsShadeTransitionTest : SysuiTestCase() {
                             mapOf(Overlays.QuickSettingsShade to quickSettingsShadeOverlay),
                         dataSourceDelegator = kosmos.sceneDataSourceDelegator,
                         sceneJankMonitorFactory = kosmos.sceneJankMonitorFactory,
+                        onTransitionStart = { _, _ -> },
+                        onSnap = {},
                     )
                 }
             }

@@ -78,6 +78,7 @@ import com.android.testing.wm.util.MockToken;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestSyncExecutor;
+import com.android.wm.shell.bubbles.BubbleTransitions.BarToFloatingConversion;
 import com.android.wm.shell.bubbles.BubbleTransitions.DraggedBubbleIconToFullscreen;
 import com.android.wm.shell.bubbles.appinfo.PackageManagerBubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
@@ -601,6 +602,9 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final SurfaceControl.Transaction transaction = mock(SurfaceControl.Transaction.class);
         final BubbleTransitions.TransactionProvider transactionProvider = () -> transaction;
 
+        final SurfaceControl taskLeash = new SurfaceControl.Builder().setName("taskLeash").build();
+        when(mTaskViewTaskController.getTaskLeash()).thenReturn(taskLeash);
+
         final BubbleTransitions.FloatingToBarConversion bt =
                 mBubbleTransitions.new FloatingToBarConversion(mBubble, transactionProvider,
                         mBubblePositioner);
@@ -620,7 +624,6 @@ public class BubbleTransitionsTest extends ShellTestCase {
                 .startTransition(eq(TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR), any(), eq(bt));
         assertThat(mTaskViewTransitions.hasPending()).isTrue();
 
-        final SurfaceControl taskLeash = new SurfaceControl.Builder().setName("taskLeash").build();
         final TransitionInfo info = new TransitionInfo(TRANSIT_CHANGE, 0);
         final TransitionInfo.Change chg = new TransitionInfo.Change(taskInfo.token, taskLeash);
         chg.setMode(TRANSIT_CHANGE);
@@ -676,6 +679,9 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final SurfaceControl.Transaction transaction = mock(SurfaceControl.Transaction.class);
         final BubbleTransitions.TransactionProvider transactionProvider = () -> transaction;
 
+        final SurfaceControl taskLeash = new SurfaceControl.Builder().setName("taskLeash").build();
+        when(mTaskViewTaskController.getTaskLeash()).thenReturn(taskLeash);
+
         final BubbleTransitions.FloatingToBarConversion bt =
                 mBubbleTransitions.new FloatingToBarConversion(mBubble, transactionProvider,
                         mBubblePositioner);
@@ -695,7 +701,6 @@ public class BubbleTransitionsTest extends ShellTestCase {
                 .startTransition(eq(TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR), any(), eq(bt));
         assertThat(mTaskViewTransitions.hasPending()).isTrue();
 
-        final SurfaceControl taskLeash = new SurfaceControl.Builder().setName("taskLeash").build();
         final SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
         bt.mergeWithUnfold(taskLeash, finishT);
 
@@ -1574,5 +1579,91 @@ public class BubbleTransitionsTest extends ShellTestCase {
         // Verify that the to-back leash is in TaskView
         verify(startT).reparent(expandedTaskLeash, expandedTaskViewLeash);
         verify(startT).apply();
+    }
+
+    @Test
+    public void barToFloatingConversion_enqueuesExternalTransitionImmediately() {
+        setupBubble();
+
+        mBubbleTransitions.new BarToFloatingConversion(mBubble, mBubblePositioner);
+
+        assertThat(mTaskViewTransitions.hasPending()).isTrue();
+    }
+
+    @Test
+    public void barToFloatingConversion_shouldWaitForGatesBeforeStarting() {
+        setupBubble();
+
+        doAnswer(invocation -> {
+            Rect r = invocation.getArgument(0);
+            r.set(0, 0, 50, 100);
+            return null;
+        }).when(mBubblePositioner).getTaskViewRestBounds(any());
+
+        BarToFloatingConversion bt = mBubbleTransitions.new BarToFloatingConversion(
+                mBubble, mBubblePositioner);
+
+        verify(mTransitions, never()).startTransition(anyInt(), any(), eq(bt));
+
+        final IBinder transition = mock(IBinder.class);
+        when(mTransitions.startTransition(eq(TRANSIT_CHANGE), any(), eq(bt)))
+                .thenReturn(transition);
+
+        bt.continueExpand();
+        bt.surfaceCreated();
+
+        verify(mTransitions).startTransition(eq(TRANSIT_CHANGE), any(), eq(bt));
+    }
+
+    @Test
+    public void barToFloatingConversion() {
+        setupBubble();
+        final BubbleExpandedView bev = mock(BubbleExpandedView.class);
+        when(bev.getCornerRadius()).thenReturn(12f);
+        when(mBubble.getExpandedView()).thenReturn(bev);
+        final SurfaceControl taskViewSurface = mock(SurfaceControl.class);
+        when(mTaskView.getSurfaceControl()).thenReturn(taskViewSurface);
+        doAnswer(invocation -> {
+            Rect r = invocation.getArgument(0);
+            r.set(0, 0, 50, 100);
+            return null;
+        }).when(mBubblePositioner).getTaskViewRestBounds(any());
+
+        BarToFloatingConversion bt = mBubbleTransitions.new BarToFloatingConversion(
+                mBubble, mBubblePositioner);
+
+        verify(mBubble).setCurrentTransition(bt);
+
+        final IBinder transition = mock(IBinder.class);
+        when(mTransitions.startTransition(eq(TRANSIT_CHANGE), any(), eq(bt)))
+                .thenReturn(transition);
+
+        bt.continueExpand();
+        bt.surfaceCreated();
+
+        final SurfaceControl taskLeash = new SurfaceControl.Builder().setName("taskLeash").build();
+        when(mTaskViewTaskController.getTaskLeash()).thenReturn(taskLeash);
+
+        final TransitionInfo info = new TransitionInfo(TRANSIT_CHANGE, 0);
+        final SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
+        final SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> bt.startAnimation(bt.mTransition, info, startT, finishT, wct -> {}));
+
+        verify(startT).reparent(taskLeash, taskViewSurface);
+        verify(startT).setWindowCrop(taskLeash, 50, 100);
+        verify(startT).setAlpha(taskLeash, 1f);
+        verify(startT).apply();
+        verify(finishT).reparent(taskLeash, taskViewSurface);
+        verify(finishT).setPosition(taskLeash, 0, 0);
+        verify(finishT).setWindowCrop(taskLeash, 50, 100);
+
+        TaskViewRepository.TaskViewState state = mRepository.byTaskView(mTaskViewTaskController);
+        assertThat(state).isNotNull();
+        assertThat(state.mVisible).isTrue();
+        assertThat(state.mBounds).isEqualTo(new Rect(0, 0, 50, 100));
+
+        verify(mBubble).setCurrentTransition(null);
+        assertThat(mTaskViewTransitions.hasPending()).isFalse();
     }
 }

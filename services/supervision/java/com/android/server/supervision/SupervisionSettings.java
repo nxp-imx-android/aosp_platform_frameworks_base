@@ -31,10 +31,7 @@ import android.util.Slog;
 import android.util.SparseArray;
 import android.util.Xml;
 
-import com.android.server.supervision.SupervisionLog;
-
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.util.IndentingPrintWriter;
 import com.android.internal.util.XmlUtils;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
@@ -55,16 +52,11 @@ import java.util.function.BiConsumer;
  * data and recovery info.
  */
 public class SupervisionSettings {
-    public static final int VERSION = 1;
 
     private static SupervisionSettings sInstance;
     private static final Object sLock = new Object();
 
     private final SparseArray<SupervisionUserData> mUserData = new SparseArray<>();
-
-    private int mVersion = 0;
-    private int mPreviousVersion = 0;
-    private boolean mUpgraded = false;
     private SupervisionRecoveryInfo mRecoveryInfo = null;
 
     private static final String PREF_RECOVERY = "supervision_recovery_info";
@@ -72,10 +64,6 @@ public class SupervisionSettings {
     private static final String KEY_ACCOUNT_NAME = "account_name";
     private static final String KEY_ACCOUNT_DATA = "account_data";
     private static final String KEY_STATE = "state";
-
-    private static final String KEY_VERSION = "version";
-    private static final String KEY_PREVIOUS_VERSION = "previous_version";
-    private static final String KEY_UPGRADED = "upgraded";
 
     private static final String PREF_DATA = "supervision_data";
     private static final String PREF_USER_DATA = "supervision_user_data";
@@ -107,7 +95,6 @@ public class SupervisionSettings {
 
     private SupervisionSettings() {
         loadUserData();
-        maybePerformDataMigration();
 
         if (Flags.supervisionRecoveryImprovements()) {
             loadRecoveryInfo();
@@ -184,11 +171,6 @@ public class SupervisionSettings {
         try (FileInputStream stream = userDataFile.openRead()) {
             final TypedXmlPullParser parser = Xml.resolvePullParser(stream);
             XmlUtils.beginDocument(parser, PREF_DATA);
-            if (Flags.enableSupervisionManagerPolicyApis()) {
-                mVersion = parser.getAttributeInt(null, KEY_VERSION, 0);
-                mPreviousVersion = parser.getAttributeInt(null, KEY_PREVIOUS_VERSION, 0);
-                mUpgraded = parser.getAttributeBoolean(null, KEY_UPGRADED, false);
-            }
             final int outerDepth = parser.getDepth();
             while (XmlUtils.nextElementWithin(parser, outerDepth)) {
                 if (PREF_USER_DATA.equals(parser.getName())) {
@@ -210,11 +192,6 @@ public class SupervisionSettings {
             xml.startDocument(null, true);
             xml.setFeature("http://xmlpull.org/v1/doc/features.html#indent-output", true);
             xml.startTag(null, PREF_DATA);
-            if (Flags.enableSupervisionManagerPolicyApis()) {
-                xml.attributeInt(null, KEY_VERSION, mVersion);
-                xml.attributeInt(null, KEY_PREVIOUS_VERSION, mPreviousVersion);
-                xml.attributeBoolean(null, KEY_UPGRADED, mUpgraded);
-            }
             for (int i = 0; i < mUserData.size(); i++) {
                 SupervisionUserData data = mUserData.valueAt(i);
                 xml.startTag(null, PREF_USER_DATA);
@@ -388,12 +365,6 @@ public class SupervisionSettings {
         }
     }
 
-    private void maybePerformDataMigration() {
-        if (mVersion < VERSION) {
-            mPreviousVersion = mVersion;
-        }
-    }
-
     private void addPoliciesToXml(TypedXmlSerializer xml, List<Policy> policies)
             throws XmlPullParserException, IOException {
 
@@ -457,24 +428,5 @@ public class SupervisionSettings {
                 return null;
             }
         }
-    }
-
-    public int getVersion() {
-        return mVersion;
-    }
-
-    public void setVersion(int version) {
-        mPreviousVersion = mVersion;
-        mVersion = version;
-        mUpgraded = true;
-    }
-
-    void dump(IndentingPrintWriter pw) {
-        pw.println("SupervisionSettings state:");
-        pw.increaseIndent();
-        pw.println("version: " + mVersion);
-        pw.println("previousVersion: " + mPreviousVersion);
-        pw.println("upgraded: " + mUpgraded);
-        pw.decreaseIndent();
     }
 }

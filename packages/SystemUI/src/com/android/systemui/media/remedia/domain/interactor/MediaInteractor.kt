@@ -91,10 +91,10 @@ interface MediaInteractor {
     val isOnLockscreen: Flow<Boolean>
 
     /** Seek to [to], in milliseconds on the media session with the given [sessionKey]. */
-    fun seek(sessionKey: Any, to: Long)
+    fun seek(sessionKey: InstanceId, to: Long)
 
     /** Hide the representation of the media session with the given [sessionKey]. */
-    fun hide(sessionKey: Any, delayMs: Long, userInitiated: Boolean)
+    fun hide(sessionKey: InstanceId, delayMs: Long, userInitiated: Boolean)
 
     /** Open media settings. */
     fun openMediaSettings()
@@ -169,12 +169,12 @@ constructor(
             .launchIn(applicationScope)
     }
 
-    override fun seek(sessionKey: Any, to: Long) {
-        repository.seek(sessionKey as InstanceId, to)
+    override fun seek(sessionKey: InstanceId, to: Long) {
+        repository.seek(sessionKey, to)
     }
 
-    override fun hide(sessionKey: Any, delayMs: Long, userInitiated: Boolean) {
-        mediaDataProcessor.dismissMediaData(sessionKey as InstanceId, delayMs, userInitiated)
+    override fun hide(sessionKey: InstanceId, delayMs: Long, userInitiated: Boolean) {
+        mediaDataProcessor.dismissMediaData(sessionKey, delayMs, userInitiated)
     }
 
     override fun openMediaSettings() {

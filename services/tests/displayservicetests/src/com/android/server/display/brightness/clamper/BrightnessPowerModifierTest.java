@@ -165,6 +165,44 @@ public class BrightnessPowerModifierTest {
                 BRIGHTNESS_MAX, DEFAULT_BRIGHTNESS, CUSTOM_ANIMATION_RATE_NOT_SET, false);
     }
 
+     @Test
+    public void testPowerThrottlingUnderQuota() throws RemoteException {
+        // Start with Temperature.THROTTLING_LIGHT
+        mTestInjector.mCapturedPmicMonitor.setThermalStatus(Temperature.THROTTLING_LIGHT);
+        mTestHandler.flush();
+
+        // update a new device config for power-throttling.
+        float powerQuota = 100f;
+        float avgPowerConsumed = 200f;
+        onDisplayChanged(
+                List.of(new ThrottlingLevel(PowerManager.THERMAL_STATUS_LIGHT, powerQuota)));
+        mTestInjector.mCapturedPmicMonitor.setAvgPowerConsumed(avgPowerConsumed);
+
+
+        float expectedBrightnessCap = (powerQuota / avgPowerConsumed) * DEFAULT_BRIGHTNESS;
+        mTestHandler.flush();
+
+        assertModifierState(DEFAULT_BRIGHTNESS, expectedBrightnessCap, expectedBrightnessCap,
+                CUSTOM_ANIMATION_RATE, true);
+
+        // power under quota
+        avgPowerConsumed = 50f;
+        mTestInjector.mCapturedPmicMonitor.setAvgPowerConsumed(avgPowerConsumed);
+        expectedBrightnessCap = (powerQuota / avgPowerConsumed) * expectedBrightnessCap;
+        mTestHandler.flush();
+
+        assertModifierState(DEFAULT_BRIGHTNESS, expectedBrightnessCap, expectedBrightnessCap,
+                CUSTOM_ANIMATION_RATE_NOT_SET, true);
+
+        // power under quota
+        avgPowerConsumed = 10f;
+        mTestInjector.mCapturedPmicMonitor.setAvgPowerConsumed(avgPowerConsumed);
+        mTestHandler.flush();
+
+        assertModifierState(DEFAULT_BRIGHTNESS, BRIGHTNESS_MAX, DEFAULT_BRIGHTNESS,
+                CUSTOM_ANIMATION_RATE_NOT_SET, false);
+    }
+
     @Test
     public void testThermalThrottlingRemoveBrightnessCap() throws RemoteException {
         // Start with Temperature.THROTTLING_LIGHT

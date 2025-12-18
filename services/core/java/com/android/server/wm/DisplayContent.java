@@ -2011,9 +2011,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 mAtmService.getTaskChangeNotificationController()
                         .notifyTaskRequestedOrientationChanged(task.mTaskId, orientation);
             }
-            // The orientation source may not be the top if it uses SCREEN_ORIENTATION_BEHIND,
-            // or it is a translucent SCREEN_ORIENTATION_UNSPECIFIED activity.
-            final ActivityRecord topCandidate = !r.isOnTop() ? topRunningActivity() : r;
+            // The orientation source may not be the top if it uses SCREEN_ORIENTATION_BEHIND.
+            final ActivityRecord topCandidate = !r.isVisibleRequested() ? topRunningActivity() : r;
             if (topCandidate != null && handleTopActivityLaunchingInDifferentOrientation(
                     topCandidate, r, true /* checkOpening */)) {
                 // Display orientation should be deferred until the top fixed rotation is finished.
@@ -2078,8 +2077,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 orientation = nextCandidate.getRequestedOrientation();
             }
         }
-        if (orientation == topOrientation || orientation == SCREEN_ORIENTATION_UNSPECIFIED) {
-            if (mFixedRotationLaunchingApp != null) {
+        if (orientation == topOrientation) {
+            if (mFixedRotationLaunchingApp != null
+                    && orientation == mFixedRotationLaunchingApp.getRequestedOrientation()) {
                 // Reuse the transform if the non-top-visible activity has the same orientation as
                 // the rotated launching top.
                 ar.linkFixedRotationTransform(mFixedRotationLaunchingApp);
@@ -3369,8 +3369,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
 
         // Update the base density if there is a forced density ratio.
-        if (DesktopExperienceFlags.ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS.isTrue()
-                && mForcedDisplayDensityRatio != 0.0f) {
+        if (mForcedDisplayDensityRatio != 0.0f) {
             mBaseDisplayDensity = getBaseDensityFromRatio();
         }
 
@@ -3435,14 +3434,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     void setForcedDensityRatio(float ratio, int userId) {
         // Save the new density ratio to settings and update forced density with the ratio.
-        if (DesktopExperienceFlags.ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS.isTrue()) {
-            mForcedDisplayDensityRatio = ratio;
-            mWmService.mDisplayWindowSettings.setForcedDensityRatio(getDisplayInfo(),
-                    mForcedDisplayDensityRatio);
+        mForcedDisplayDensityRatio = ratio;
+        mWmService.mDisplayWindowSettings.setForcedDensityRatio(getDisplayInfo(),
+                mForcedDisplayDensityRatio);
 
-            // Set forced density from ratio.
-            setForcedDensity(getBaseDensityFromRatio(), userId);
-        }
+        // Set forced density from ratio.
+        setForcedDensity(getBaseDensityFromRatio(), userId);
     }
 
     void clearForcedDensityRatio() {

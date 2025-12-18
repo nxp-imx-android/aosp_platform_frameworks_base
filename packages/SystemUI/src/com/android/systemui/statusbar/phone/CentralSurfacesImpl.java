@@ -115,6 +115,7 @@ import com.android.systemui.assist.AssistManager;
 import com.android.systemui.back.domain.interactor.BackActionInteractor;
 import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor;
 import com.android.systemui.broadcast.BroadcastDispatcher;
+import com.android.systemui.broadcast.BroadcastDispatcherCustomExecutor;
 import com.android.systemui.camera.CameraIntents;
 import com.android.systemui.charging.WiredChargingRippleController;
 import com.android.systemui.charging.WirelessChargingAnimation;
@@ -1398,7 +1399,14 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
         filter.addAction(Intent.ACTION_SCREEN_OFF);
-        mBroadcastDispatcher.registerReceiver(mBroadcastReceiver, filter, null, UserHandle.ALL);
+        Executor executor;
+        if (BroadcastDispatcherCustomExecutor.isEnabled()) {
+            executor = mMainExecutor;
+        } else {
+            executor = null;
+        }
+        mBroadcastDispatcher.registerReceiver(
+                mBroadcastReceiver, filter, executor, UserHandle.ALL);
     }
 
     protected QS createDefaultQSFragment() {

@@ -130,8 +130,12 @@ constructor(
      * @param filter A filter to determine what broadcasts should be dispatched to this receiver. It
      *   will only take into account actions and categories for filtering. It must have at least one
      *   action.
-     * @param executor An executor to dispatch [BroadcastReceiver.onReceive]. Pass null to use an
-     *   executor in the main thread (default).
+     * @param executor An executor to dispatch [BroadcastReceiver.onReceive], or null to get a
+     *   default executor. The default executor will depend on a flag: If
+     *   [BroadcastDispatcherCustomExecutor] flag is enabled, then the default executor will be NOT
+     *   in the main thread. If that flag is disabled, the default executor WILL be in the main
+     *   thread. For new code, pass in the main executor if [BroadcastReceiver.onReceive] must be in
+     *   the main thread.
      * @param user A user handle to determine which broadcast should be dispatched to this receiver.
      *   Pass `null` to use the user of the context (system user in SystemUI).
      * @param flags Flags to use when registering the receiver. [Context.RECEIVER_EXPORTED] by
@@ -149,17 +153,16 @@ constructor(
         permission: String? = null,
     ) {
         checkFilter(filter)
+        val receiverExecutor =
+            executor
+                ?: if (BroadcastDispatcherCustomExecutor.isEnabled) {
+                    broadcastExecutor
+                } else {
+                    mainExecutor
+                }
         val data =
-            ReceiverData(
-                receiver,
-                filter,
-                executor ?: mainExecutor,
-                user ?: context.user,
-                permission
-            )
-        this.handler
-                .obtainMessage(MSG_ADD_RECEIVER, flags, 0, data)
-                .sendToTarget()
+            ReceiverData(receiver, filter, receiverExecutor, user ?: context.user, permission)
+        this.handler.obtainMessage(MSG_ADD_RECEIVER, flags, 0, data).sendToTarget()
     }
 
     /**

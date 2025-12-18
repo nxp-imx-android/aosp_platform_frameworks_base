@@ -666,17 +666,17 @@ public class UserManagerServiceShellCommand extends ShellCommand {
         pw.println("    Manages the activities allowlist for the given user type (requires adb root"
                 + ").");
         pw.println("    Valid ACTIONS are:");
-        pw.println("      help - show this help");
+        pw.println("      help - shows this help");
         pw.println("      add <ACTIVITY> - adds the specific activity to the existing allowlist");
         pw.println("      remove <ACTIVITY> - removes the specific activity from the existing "
                 + "allowlist");
         pw.println("      check <ACTIVITY> - checks if the given activity is allowlisted");
         pw.println("      set <ACTIVITY> [ACTIVITY N] - sets the allowlist to contains these "
                 + "specific activities (removing the previous ones)");
-        pw.println("      reset - reset the allowlist to the device's default");
-        pw.println("      disable - disable allowlisting (so any activity can be launched)");
-        pw.println("      set-mode <VALUE> - set's the mode. Valid values are: 0 (disabled), "
-                + "1 (enabled), 2 (dry-run)");
+        pw.println("      reset - resets the allowlist to the device's default");
+        pw.println("      disable - disables allowlisting (so any activity can be launched)");
+        pw.println("      set-mode <VALUE> - sets the mode. Valid values are: 0 (disabled), "
+                + "1 (enabled), 2 (log-only)");
 
         pw.println("    where ACTIVITY is the flattened representation of the activity's "
                 + "ComponentName (i.e., package/activity)");

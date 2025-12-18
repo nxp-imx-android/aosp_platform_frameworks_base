@@ -185,6 +185,8 @@ class QuickSettingsElementTransitionTest : SysuiTestCase() {
                         overlayByKey = mapOf(),
                         dataSourceDelegator = kosmos.sceneDataSourceDelegator,
                         sceneJankMonitorFactory = kosmos.sceneJankMonitorFactory,
+                        onTransitionStart = { _, _ -> },
+                        onSnap = {},
                     )
                 }
             }

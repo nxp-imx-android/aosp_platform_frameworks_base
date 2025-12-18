@@ -270,7 +270,7 @@ public class Process {
 
     /**
      * Defines a virtual UID that is used to aggregate data related to SDK sandbox UIDs.
-     * {@see SdkSandboxManager}
+     * @see SdkSandboxManager
      * @hide
      */
     @TestApi

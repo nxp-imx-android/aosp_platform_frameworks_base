@@ -314,6 +314,8 @@
     <string name="manage_windows_text">Manage Windows</string>
     <!-- Accessibility text for the handle menu change aspect ratio button [CHAR LIMIT=NONE] -->
     <string name="change_aspect_ratio_text">Change aspect ratio</string>
+    <!-- Accessibility text for the handle menu game controls button [CHAR LIMIT=NONE] -->
+    <string name="handle_menu_game_controls_text">Game Controls</string>
     <!-- Accessibility text for the handle menu restart button [CHAR LIMIT=NONE] -->
     <string name="handle_menu_restart_text">Optimize View</string>
     <!-- Accessibility text for the handle menu error icon [CHAR LIMIT=NONE] -->
@@ -404,4 +406,7 @@
     <string name="open_by_default_splash_dialog_app_text">Stay in app</string>
     <!-- Text for open by default splash dialog option. -->
     <string name="open_by_default_splash_dialog_ask_me_later_text">Ask me later</string>
+
+    <!-- Text to show during package update. -->
+    <string name="package_update_text">Updating...</string>
 </resources>

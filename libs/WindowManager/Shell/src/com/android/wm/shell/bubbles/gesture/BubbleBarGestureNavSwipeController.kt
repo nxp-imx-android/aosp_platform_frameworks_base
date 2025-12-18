@@ -54,6 +54,7 @@ class BubbleBarGestureNavSwipeController(
                             "while we're collapsed",
                         this,
                     )
+                    stopMonitoring()
                     return
                 }
                 // Only allow up, normalize for up direction

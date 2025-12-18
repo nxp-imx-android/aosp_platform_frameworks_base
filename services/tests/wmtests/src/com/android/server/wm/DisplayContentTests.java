@@ -95,7 +95,6 @@ import static com.android.server.wm.WindowTracingLogLevel.ALL;
 import static com.android.window.flags.Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING;
 import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE;
-import static com.android.window.flags.Flags.FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS;
 import static com.android.window.flags.Flags.FLAG_ENABLE_TASK_MOVE_ALLOWED_LISTENER_API;
 import static com.android.window.flags.Flags.FLAG_ENABLE_WINDOW_REPOSITIONING_API;
 import static com.android.window.flags.Flags.FLAG_FIX_TF_ADJACENT_FOCUS;
@@ -1225,33 +1224,6 @@ public class DisplayContentTests extends WindowTestsBase {
                 .setOnTop(false).setScreenOrientation(SCREEN_ORIENTATION_BEHIND).build();
         mDisplayContent.applyFixedRotationForNonTopVisibleActivityIfNeeded(behindTop);
         assertFalse(behindTop.hasFixedRotationTransform());
-    }
-
-    @Test
-    public void testUnspecifiedOrientationTranslucentTop() {
-        mDisplayContent.setIgnoreOrientationRequest(false);
-        final ActivityRecord bottom = new ActivityBuilder(mAtm).setVisible(false)
-                .setCreateTask(true)
-                .setScreenOrientation(getRotatedOrientation(mDisplayContent)).build();
-        final ActivityRecord translucentTop = new ActivityBuilder(mAtm).setVisible(false)
-                .setTask(bottom.getTask())
-                .setActivityTheme(android.R.style.Theme_Translucent)
-                .setScreenOrientation(SCREEN_ORIENTATION_UNSPECIFIED).build();
-        requestTransition(translucentTop, WindowManager.TRANSIT_OPEN);
-        doCallRealMethod().when(mRootWindowContainer).ensureActivitiesVisible(
-                any() /* starting */, anyBoolean() /* notifyClients */);
-        // Make 'translucentTop' and 'bottom' visible with updating orientation.
-        mRootWindowContainer.ensureVisibilityAndConfig(translucentTop, mDisplayContent,
-                false /* deferResume */);
-
-        assertEquals("The orientation source is the bottom because a translucent activity"
-                        + " with unspecified orientation won't affect parent orientation",
-                bottom, mDisplayContent.getLastOrientationSource());
-        assertTrue("The translucent activity doesn't provide orientation, so it uses the"
-                        + " orientation from the bottom which provides a rotated orientation",
-                translucentTop.hasFixedRotationTransform());
-        assertTrue("The non-top visible activity shares the same transform",
-                bottom.hasFixedRotationTransform(translucentTop));
     }
 
     @Test
@@ -3399,7 +3371,6 @@ public class DisplayContentTests extends WindowTestsBase {
         verify(displayPolicy, never()).notifyDisplayRemoveSystemDecorations();
     }
 
-    @EnableFlags(FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS)
     @Test
     public void testForcedDensityRatioSet_persistDensityScaleFlagEnabled() {
         final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
@@ -3426,7 +3397,6 @@ public class DisplayContentTests extends WindowTestsBase {
         assertEquals(forcedDensity, dc.mBaseDisplayDensity);
     }
 
-    @EnableFlags(FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS)
     @Test
     public void testForcedDensityUpdateWithRatio_persistDensityScaleFlagEnabled() {
         final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);

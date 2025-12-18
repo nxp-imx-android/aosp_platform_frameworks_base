@@ -88,7 +88,6 @@ import com.android.systemui.brightness.domain.model.GammaBrightness
 import com.android.systemui.brightness.ui.compose.AnimationSpecs.IconAppearSpec
 import com.android.systemui.brightness.ui.compose.AnimationSpecs.IconDisappearSpec
 import com.android.systemui.brightness.ui.compose.InternalDimensions.IconPadding
-import com.android.systemui.brightness.ui.compose.InternalDimensions.IconSize
 import com.android.systemui.brightness.ui.compose.InternalDimensions.SliderBackgroundRoundedCorner
 import com.android.systemui.brightness.ui.compose.InternalDimensions.SliderTrackRoundedCorner
 import com.android.systemui.brightness.ui.compose.InternalDimensions.ThumbTrackGapSize
@@ -174,16 +173,17 @@ fun BrightnessSlider(
             }
         }
     val activeIconColor = colors.activeTickColor
+    val iconSize = dimensions.iconSize
     val inactiveIconColor = colors.inactiveTickColor
     // Offset from the right
     val trackIcon: DrawScope.(Offset, Color, Float) -> Unit = remember {
         { offset, color, alpha ->
             val rtl = layoutDirection == LayoutDirection.Rtl
             scale(if (rtl) -1f else 1f, 1f) {
-                translate(offset.x - IconPadding.toPx() - IconSize.toSize().width, offset.y) {
+                translate(offset.x - IconPadding.toPx() - iconSize.toSize().width, offset.y) {
                     with(painter) {
                         draw(
-                            IconSize.toSize(),
+                            iconSize.toSize(),
                             colorFilter = ColorFilter.tint(color),
                             alpha = alpha,
                         )
@@ -285,7 +285,7 @@ fun BrightnessSlider(
                         .drawWithContent {
                             drawContent()
 
-                            val yOffset = size.height / 2 - IconSize.toSize().height / 2
+                            val yOffset = size.height / 2 - iconSize.toSize().height / 2
                             val activeTrackStart = 0f
                             val activeTrackEnd =
                                 size.width * sliderState.coercedValueAsFraction -
@@ -297,7 +297,7 @@ fun BrightnessSlider(
                             val inactiveTrackWidth = inactiveTrackEnd - inactiveTrackStart
 
                             if (
-                                IconSize.toSize().width <
+                                iconSize.toSize().width <
                                     inactiveTrackWidth - IconPadding.toPx() * 2
                             ) {
                                 showIconActive = false
@@ -307,7 +307,7 @@ fun BrightnessSlider(
                                     iconInactiveAlphaAnimatable.value,
                                 )
                             } else if (
-                                IconSize.toSize().width < activeTrackWidth - IconPadding.toPx() * 2
+                                iconSize.toSize().width < activeTrackWidth - IconPadding.toPx() * 2
                             ) {
                                 showIconActive = true
                                 trackIcon(
@@ -456,6 +456,7 @@ data class ContainerColors(val idleColor: Color, val mirrorColor: Color) {
 }
 
 data class BrightnessSliderDimensions(
+    val iconSize: DpSize,
     val thumbHeight: Dp,
     val thumbWidth: Dp,
     val trackHeight: Dp,
@@ -464,6 +465,7 @@ data class BrightnessSliderDimensions(
     companion object {
         val Default =
             BrightnessSliderDimensions(
+                iconSize = DpSize(28.dp, 28.dp),
                 thumbHeight = 52.dp,
                 thumbWidth = 4.dp,
                 trackHeight = 40.dp,
@@ -476,7 +478,6 @@ private object InternalDimensions {
     val SliderBackgroundFrameWidth = 10.dp
     val SliderBackgroundRoundedCorner = 24.dp
     val SliderTrackRoundedCorner = 12.dp
-    val IconSize = DpSize(28.dp, 28.dp)
     val IconPadding = 6.dp
     val ThumbTrackGapSize = 6.dp
 }

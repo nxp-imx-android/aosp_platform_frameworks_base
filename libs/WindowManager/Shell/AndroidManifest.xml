@@ -41,6 +41,7 @@
         <activity
             android:name=".packageupdate.PackageUpdateActivity"
             android:excludeFromRecents="true"
+            android:theme="@style/PackageUpdateActivityTheme"
             android:launchMode="singleTop" />
     </application>
 </manifest>

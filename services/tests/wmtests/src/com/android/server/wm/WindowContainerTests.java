@@ -16,6 +16,10 @@
 
 package com.android.server.wm;
 
+import static android.app.FullscreenRequestHandler.REQUEST_ALLOW_MODE_ENTER;
+import static android.app.FullscreenRequestHandler.REQUEST_ALLOW_MODE_EXIT;
+import static android.app.FullscreenRequestHandler.REQUEST_ALLOW_MODE_INHERIT;
+import static android.app.FullscreenRequestHandler.REQUEST_ALLOW_MODE_NONE;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_BEHIND;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
@@ -1809,6 +1813,57 @@ public class WindowContainerTests extends WindowTestsBase {
         rootTask.getDisplayArea().removeRootTask(rootTask);
 
         verify(mDisplayContent).onDescendantsTaskMoveAllowedChanged();
+    }
+
+    @Test
+    public void testGetFullscreenRequestAllowMode_modeNone_returnsModeNone() {
+        final Task rootTask = createTask(mDisplayContent);
+        rootTask.setFullscreenRequestAllowMode(REQUEST_ALLOW_MODE_NONE);
+
+        assertEquals(REQUEST_ALLOW_MODE_NONE, rootTask.getFullscreenRequestAllowMode());
+    }
+
+    @Test
+    public void testGetFullscreenRequestAllowMode_modeEnter_returnsModeEnter() {
+        final Task rootTask = createTask(mDisplayContent);
+        rootTask.setFullscreenRequestAllowMode(REQUEST_ALLOW_MODE_ENTER);
+
+        assertEquals(REQUEST_ALLOW_MODE_ENTER, rootTask.getFullscreenRequestAllowMode());
+    }
+
+    @Test
+    public void testGetFullscreenRequestAllowMode_modeExit_returnsModeExit() {
+        final Task rootTask = createTask(mDisplayContent);
+        rootTask.setFullscreenRequestAllowMode(REQUEST_ALLOW_MODE_EXIT);
+
+        assertEquals(REQUEST_ALLOW_MODE_EXIT, rootTask.getFullscreenRequestAllowMode());
+    }
+
+    @Test
+    public void testGetFullscreenRequestAllowMode_modeInherit_detached_returnsModeNone() {
+        final Task rootTask = createTask(mDisplayContent);
+        rootTask.setFullscreenRequestAllowMode(REQUEST_ALLOW_MODE_INHERIT);
+        rootTask.setParent(null);
+
+        assertEquals(REQUEST_ALLOW_MODE_NONE, rootTask.getFullscreenRequestAllowMode());
+    }
+
+    @Test
+    public void testGetFullscreenRequestAllowMode_modeInherit_ancestorsInherit_returnsModeNone() {
+        final Task rootTask = createTask(mDisplayContent);
+        rootTask.setFullscreenRequestAllowMode(REQUEST_ALLOW_MODE_INHERIT);
+        rootTask.getParent().setFullscreenRequestAllowMode(REQUEST_ALLOW_MODE_INHERIT);
+
+        assertEquals(REQUEST_ALLOW_MODE_NONE, rootTask.getFullscreenRequestAllowMode());
+    }
+
+    @Test
+    public void testGetFullscreenRequestAllowMode_modeInherit_parentIsSet_returnsParentMode() {
+        final Task rootTask = createTask(mDisplayContent);
+        rootTask.setFullscreenRequestAllowMode(REQUEST_ALLOW_MODE_INHERIT);
+        rootTask.getParent().setFullscreenRequestAllowMode(REQUEST_ALLOW_MODE_ENTER);
+
+        assertEquals(REQUEST_ALLOW_MODE_ENTER, rootTask.getFullscreenRequestAllowMode());
     }
 
     private WindowContainer<?> createWindowContainerSpy(SurfaceControl mockSurfaceControl,

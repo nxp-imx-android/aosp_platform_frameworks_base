@@ -32,10 +32,8 @@ import androidx.annotation.Nullable;
 import com.android.server.personalcontext.component.Component;
 import com.android.server.personalcontext.component.Refiner;
 import com.android.server.personalcontext.component.Renderer;
-import com.android.server.personalcontext.component.Transformer;
 import com.android.server.personalcontext.component.client.ServiceClientRefiner;
 import com.android.server.personalcontext.component.client.ServiceClientRenderer;
-import com.android.server.personalcontext.component.client.ServiceClientTransformer;
 import com.android.server.personalcontext.component.client.ServiceClientUnderstander;
 
 import java.io.PrintWriter;
@@ -61,18 +59,13 @@ class ContextComponentManager
     public static final String ACTION_UNDERSTANDER_SERVICE =
             "android.service.personalcontext.UnderstanderService";
 
-    public static final String ACTION_TRANSFORMER_SERVICE =
-            "android.service.personalcontext.TransformerService";
-
     private static final String TAG = "ContextComponentManager";
 
     private final Context mContext;
 
     private final Map<String, Set<Refiner>> mRefinersByPackage = new HashMap<>();
-    private final Map<String, Set<Transformer>> mTransformersByPackage = new HashMap<>();
     private final Map<String, Set<Renderer>> mRenderersByPackage = new HashMap<>();
     private final Map<UUID, Refiner> mRefiners = new HashMap<>();
-    private final Map<UUID, Transformer> mTransformers = new HashMap<>();
     private final Map<UUID, Renderer> mRenderers = new HashMap<>();
 
     ContextComponentManager(Context context) {
@@ -84,15 +77,6 @@ class ContextComponentManager
         registerComponent(
                 refiner,
                 mRefiners,
-                /* packageName= */ null,
-                /* componentsByPackage= */ null);
-    }
-
-    /** Registers an in-process transformer. */
-    public void register(Transformer transformer) {
-        registerComponent(
-                transformer,
-                mTransformers,
                 /* packageName= */ null,
                 /* componentsByPackage= */ null);
     }
@@ -129,14 +113,6 @@ class ContextComponentManager
                     mRefinersByPackage);
         }
 
-        for (ServiceInfo serviceInfo : getServiceInfo(ACTION_TRANSFORMER_SERVICE, packageName)) {
-            registerComponent(
-                    new ServiceClientTransformer(mContext, UUID.randomUUID(), serviceInfo),
-                    mTransformers,
-                    serviceInfo.packageName,
-                    mTransformersByPackage);
-        }
-
         for (ServiceInfo serviceInfo :
                 getServiceInfo(InsightRendererService.SERVICE_INTERFACE, packageName)) {
             registerComponent(
@@ -150,7 +126,6 @@ class ContextComponentManager
     /** Unregisters all components provided by a given package installed on the device. */
     public void unregisterComponentsForPackage(String packageName) {
         unregisterComponentsForPackage(packageName, mRefiners, mRefinersByPackage);
-        unregisterComponentsForPackage(packageName, mTransformers, mTransformersByPackage);
         unregisterComponentsForPackage(packageName, mRenderers, mRenderersByPackage);
     }
 
@@ -158,11 +133,6 @@ class ContextComponentManager
     @Override
     public Collection<Refiner> getRefiners() {
         return mRefiners.values();
-    }
-
-    /** Gets currently registered transformers. */
-    public Collection<Transformer> getTransformers() {
-        return mTransformers.values();
     }
 
     /** Gets currently registered renderers. */
@@ -225,7 +195,6 @@ class ContextComponentManager
 
     public void dump(@NonNull PrintWriter fout) {
         dumpComponentList(fout, "Refiners", mRefiners.values());
-        dumpComponentList(fout, "Transformers", mTransformers.values());
         dumpComponentList(fout, "Renderers", mRenderers.values());
     }
 

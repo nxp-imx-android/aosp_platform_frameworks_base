@@ -216,6 +216,7 @@ constructor(
             }
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DISPLAY_COLOR_INVERSION,
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
+            KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK,
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS -> {
                 val featureName = getFeatureName(keyGestureType, targetName) ?: return null
                 val title = getDialogTitle(keyGestureType, featureName) ?: return null
@@ -240,8 +241,7 @@ constructor(
                 )
             }
             else -> {
-                val featureNameToIntro =
-                    getFeatureNameToIntro(keyGestureType, targetName) ?: return null
+                val featureNameToIntro = getFeatureNameToIntro(targetName) ?: return null
                 val title =
                     resources.getString(
                         R.string.accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title,
@@ -386,14 +386,13 @@ constructor(
     private suspend fun getFeatureName(keyGestureType: Int, targetName: String): CharSequence? {
         return when (keyGestureType) {
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DISPLAY_COLOR_INVERSION ->
-                resources.getString(
-                    R.string.quick_settings_inversion_label
-                )
+                resources.getString(R.string.quick_settings_inversion_label)
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION ->
                 resources.getString(
                     com.android.settingslib.R.string.accessibility_screen_magnification_title
                 )
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER,
+            KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK,
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS -> {
                 val componentName = ComponentName.unflattenFromString(targetName)
                 withContext(backgroundDispatcher) {
@@ -418,6 +417,7 @@ constructor(
             }
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DISPLAY_COLOR_INVERSION,
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER,
+            KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK,
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS -> {
                 resources.getString(
                     R.string.accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title,
@@ -443,6 +443,8 @@ constructor(
                     R.string.accessibility_key_gesture_magnification_dialog_content
                 KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER ->
                     R.string.accessibility_key_gesture_screen_reader_dialog_content
+                KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK ->
+                    R.string.accessibility_key_gesture_select_to_speak_dialog_content
                 KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS ->
                     R.string.accessibility_key_gesture_voice_access_dialog_content
                 else -> null
@@ -461,29 +463,21 @@ constructor(
     }
 
     private suspend fun getFeatureNameToIntro(
-        keyGestureType: Int,
-        targetName: String,
+        targetName: String
     ): Pair<CharSequence, CharSequence>? {
-        return when (keyGestureType) {
-            KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK -> {
-                val accessibilityServiceInfo =
-                    withContext(backgroundDispatcher) {
-                        accessibilityManager.getInstalledServiceInfoWithComponentName(
-                            ComponentName.unflattenFromString(targetName)
-                        )
-                    } ?: return null
+        val accessibilityServiceInfo =
+            withContext(backgroundDispatcher) {
+                accessibilityManager.getInstalledServiceInfoWithComponentName(
+                    ComponentName.unflattenFromString(targetName)
+                )
+            } ?: return null
 
-                val featureName =
-                    formatFeatureName(
-                        accessibilityServiceInfo.resolveInfo.loadLabel(packageManager)
-                    )
+        val featureName =
+            formatFeatureName(accessibilityServiceInfo.resolveInfo.loadLabel(packageManager))
 
-                val intro = accessibilityServiceInfo.loadIntro(packageManager) ?: ""
+        val intro = accessibilityServiceInfo.loadIntro(packageManager) ?: ""
 
-                Pair(featureName, intro)
-            }
-            else -> null
-        }
+        return Pair(featureName, intro)
     }
 
     // Get the service name and bidi wrap it to protect from bidi side effects.

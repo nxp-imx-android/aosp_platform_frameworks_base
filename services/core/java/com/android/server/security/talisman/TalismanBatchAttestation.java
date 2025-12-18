@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-package android.media.tv.extension.rating;
+package com.android.server.security.talisman;
 
-import android.os.Bundle;
+import java.security.cert.Certificate;
+import java.util.Arrays;
+import java.util.List;
 
-/**
- * @hide
- */
-interface IDownloadableRatingTableMonitor {
-    // Get RRT rating info on downloadable rating data
-    Bundle[] getTable();
+/** Attestation for a batch of Talisman keys. */
+record TalismanBatchAttestation(
+        byte[] batchHash, byte[] signature, List<Certificate> certificates) {
+
+    public TalismanBatchAttestation {
+        batchHash = Arrays.copyOf(batchHash, batchHash.length);
+        signature = Arrays.copyOf(signature, signature.length);
+        certificates = List.copyOf(certificates);
+    }
 }

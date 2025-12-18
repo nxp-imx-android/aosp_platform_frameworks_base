@@ -125,6 +125,8 @@ public final class PccSandboxManagerInternal {
                 android.provider.DocumentsContract.EXTERNAL_STORAGE_PROVIDER_AUTHORITY);
         String settingsPackage = resolveProviderPackageName(
                 android.provider.Settings.AUTHORITY);
+        String blockedNumberPackage = resolveProviderPackageName(
+                android.provider.BlockedNumberContract.AUTHORITY);
 
         synchronized (mLock) {
             if (settingsIntelligencePackage != null && !settingsIntelligencePackage.isEmpty()) {
@@ -154,6 +156,9 @@ public final class PccSandboxManagerInternal {
             }
             if (settingsPackage != null) {
                 mPccTrustedPackages.add(settingsPackage);
+            }
+            if (blockedNumberPackage != null) {
+                mPccTrustedPackages.add(blockedNumberPackage);
             }
             Slog.d(TAG, "Trusted PCC Packages: " + mPccTrustedPackages);
         }

@@ -3770,6 +3770,10 @@ class StorageManagerService extends IStorageManager.Stub
             throw new IllegalStateException("Failed to prepare " + appPath);
         }
 
+        if (Process.isPrivateComputeCoreUid(callingUid)) {
+            throw new IllegalStateException("Failed to prepare " + appPath + " from a PCC process");
+        }
+
         // Validate that reported package name belongs to caller
         final AppOpsManager appOps = (AppOpsManager) mContext.getSystemService(
                 Context.APP_OPS_SERVICE);

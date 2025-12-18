@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-package android.media.tv.extension.servicedb;
+package android.media.tv.extension.time;
 
-import android.os.Bundle;
 
 /**
  * @hide
  */
-interface IServiceList {
-    // Get a list of the Service list IDs quivalent to COLUMN_CHANNEL_LIST_ID
-    // in the Channels table of TvProvider.
-    String[] getServiceListIds();
-    // Get the information associated with the Service list.
-    Bundle getServiceListInfo(String serviceListId, in String[] keys);
+oneway interface IBroadcastTimeListener {
+    /**
+     * Called when the broadcast time changes.
+     */
+    void onBroadcastTimeChanged();
 }

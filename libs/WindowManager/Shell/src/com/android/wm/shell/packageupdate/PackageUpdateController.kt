@@ -20,17 +20,23 @@ import android.app.ActivityManager
 import android.app.ActivityOptions
 import android.app.PendingIntent
 import android.content.Intent
+import android.graphics.Bitmap
 import android.os.UserHandle
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_OPEN
 import android.window.WindowContainerTransaction
-import androidx.core.net.toUri
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.UserProfileContexts
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_PACKAGE_UPDATE
+import com.android.wm.shell.shared.annotations.ShellMainThreadImmediate
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
+import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel
+import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
+import java.util.Optional
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 /**
  * Controller for handling package updates. When Shell is notified of a package update for a given
@@ -43,6 +49,9 @@ class PackageUpdateController(
     private val shellTaskOrganizer: ShellTaskOrganizer,
     shellInit: ShellInit,
     private val userProfileContexts: UserProfileContexts,
+    private val taskResourceLoader: WindowDecorTaskResourceLoader,
+    private val desktopModeWindowDecorViewModel: Optional<DesktopModeWindowDecorViewModel>,
+    @ShellMainThreadImmediate private val mainImmediateScope: CoroutineScope,
 ) : ShellTaskOrganizer.PackageUpdateListener {
     init {
         shellInit.addInitCallback(::onInit, this)
@@ -60,24 +69,37 @@ class PackageUpdateController(
             updatingTasks.joinToString { "${it.taskId}" }
         )
 
-        val wct = WindowContainerTransaction()
-        updatingTasks.forEach { task ->
-            if (task.isVisible || task.isVisibleRequested) {
+
+        mainImmediateScope.launch {
+            val wct = WindowContainerTransaction()
+            updatingTasks.forEach { task ->
+                if (task.isVisible || task.isVisibleRequested) {
+                    ProtoLog.d(
+                        WM_SHELL_PACKAGE_UPDATE,
+                        "PackageUpdateController: task %d is visible, launching placeholder. ",
+                        task.taskId
+                    )
+                    val icon = getIcon(task)
+                    launchPlaceholderInTask(wct, task, icon)
+                }
                 ProtoLog.d(
                     WM_SHELL_PACKAGE_UPDATE,
-                    "PackageUpdateController: task %d is visible, launching placeholder. ",
+                    "PackageUpdateController: Setting continue package update for task %d.",
                     task.taskId
                 )
-                launchPlaceholderInTask(wct, task)
+                wct.continuePackageUpdate(task.token)
             }
+
             ProtoLog.d(
                 WM_SHELL_PACKAGE_UPDATE,
-                "PackageUpdateController: Setting continue package update for task %d.",
-                task.taskId
+                "PackageUpdateController: Starting transition",
             )
-            wct.continuePackageUpdate(task.token)
+            transitions.startTransition(TRANSIT_OPEN, wct, null)
+            ProtoLog.d(
+                WM_SHELL_PACKAGE_UPDATE,
+                "PackageUpdateController: Started transition",
+            )
         }
-        transitions.startTransition(TRANSIT_OPEN, wct, null)
     }
 
     override fun onPackageUpdateFinished(updatedTasks: List<ActivityManager.RunningTaskInfo>) {
@@ -110,20 +132,13 @@ class PackageUpdateController(
 
     private fun launchPlaceholderInTask(
         wct: WindowContainerTransaction,
-        task: ActivityManager.RunningTaskInfo
+        task: ActivityManager.RunningTaskInfo,
+        icon: Bitmap?
     ) {
         val userId = task.userId
         val userHandle = UserHandle.of(userId)
-        val userContext = userProfileContexts[userId]
-        val intent = Intent(userContext, PackageUpdateActivity::class.java)
-
-        task.baseIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-
-        // Add a unique data URI to distinguish PendingIntents for different tasks.
-        intent.setData("packageupdate://task/${task.taskId}".toUri())
-        intent.putExtra("ReplacingPackage", task.baseActivity?.packageName ?: "")
-        intent.putExtra("baseIntent", task.baseIntent)
-        intent.putExtra(Intent.EXTRA_USER_HANDLE, userId)
+        val userContext = userProfileContexts.getOrCreate(userId)
+        val intent = PackageUpdateActivity.createIntent(userContext, userId, task.taskId, icon)
 
         val options =
             ActivityOptions.makeBasic().apply {
@@ -171,5 +186,20 @@ class PackageUpdateController(
                 userHandle,
             )
         wct.sendPendingIntent(pendingIntent, Intent(), options.toBundle())
+    }
+
+    suspend fun getIcon(task: ActivityManager.RunningTaskInfo): Bitmap? {
+        // Handle when there is window decor
+        if (desktopModeWindowDecorViewModel.isPresent) {
+            val viewModel = desktopModeWindowDecorViewModel.get()
+            return if (viewModel.hasWindowDecoration(task.taskId)) {
+                taskResourceLoader.getVeilIcon(task)
+            } else {
+                null
+            }
+        }
+        // Don't show any icon if there is no window decor
+        // TODO(b/468276203) - Add icon when there is no window decor
+        return null
     }
 }

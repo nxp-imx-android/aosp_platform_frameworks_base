@@ -116,7 +116,7 @@ constructor(
                 AnimatedVisibility(viewModel.isNotificationStackActive) {
                     LockscreenElement(
                         Notifications.Stack,
-                        modifier = context.burnInModifier(isClock = false),
+                        modifier = context.burnInModifiers.nonClock,
                     )
                 }
             }

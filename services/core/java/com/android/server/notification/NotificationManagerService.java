@@ -5938,9 +5938,9 @@ public class NotificationManagerService extends SystemService {
         /**
          * Allow an INotificationListener to simulate a "clear all" operation.
          *
-         * {@see com.android.server.StatusBarManagerService.NotificationCallbacks#onClearAllNotifications}
-         *
          * @param token The binder for the listener, to check that the caller is allowed
+         *
+         * @see com.android.server.StatusBarManagerService.NotificationCallbacks#onClearAllNotifications
          */
         @Override
         public void cancelNotificationsFromListener(INotificationListener token, String[] keys) {
@@ -6107,9 +6107,9 @@ public class NotificationManagerService extends SystemService {
         /**
          * Allow an INotificationListener to simulate clearing (dismissing) a single notification.
          *
-         * {@see com.android.server.StatusBarManagerService.NotificationCallbacks#onNotificationClear}
-         *
          * @param info The binder for the listener, to check that the caller is allowed
+         *
+         * @see com.android.server.StatusBarManagerService.NotificationCallbacks#onNotificationClear
          */
         @GuardedBy("mNotificationLock")
         private void cancelNotificationFromListenerLocked(ManagedServiceInfo info,
@@ -6248,9 +6248,9 @@ public class NotificationManagerService extends SystemService {
         /**
          * Allow an INotificationListener to simulate clearing (dismissing) a single notification.
          *
-         * {@see com.android.server.StatusBarManagerService.NotificationCallbacks#onNotificationClear}
-         *
          * @param token The binder for the listener, to check that the caller is allowed
+         *
+         * @see com.android.server.StatusBarManagerService.NotificationCallbacks#onNotificationClear
          */
         @Override
         public void cancelNotificationFromListener(INotificationListener token, String pkg,
@@ -7464,7 +7464,9 @@ public class NotificationManagerService extends SystemService {
                     mAssistants.checkServiceTokenLocked(token);
                     for (Adjustment adjustment : adjustments) {
                         NotificationRecord r = mNotificationsByKey.get(adjustment.getKey());
-                        if (r != null && mAssistants.isSameUser(token, r.getUserId())) {
+                        if (r != null
+                                && adjustment.getUser() == r.getUserId()
+                                && mAssistants.isSameUser(token, r.getUserId())) {
                             applyAdjustmentLocked(r, adjustment, true);
                             // If the assistant has blocked the notification, cancel it
                             // This will trigger a sort, so we don't have to explicitly ask for
@@ -7567,6 +7569,9 @@ public class NotificationManagerService extends SystemService {
             if (channel == null || !channel.isConversation()) {
                 return;
             }
+
+            cancelAllNotificationsInt(MY_UID, MY_PID, pkg, channelId, 0, 0,
+                    user.getIdentifier(), REASON_CHANNEL_REMOVED);
 
             deleteNotificationChannelDirectly(pkg, uid, user.getIdentifier(),
                     channelId,MY_UID,true);

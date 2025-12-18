@@ -75,5 +75,10 @@
             android:label="Lut Test Examples"
             android:exported="true"/>
 
+        <activity android:name=".materials.SurfaceViewBlurActivity"
+            android:theme="@style/Theme.SurfaceViewBlutTestTheme"
+            android:label="Blur Test Examples"
+            android:exported="true"/>
+
     </application>
 </manifest>

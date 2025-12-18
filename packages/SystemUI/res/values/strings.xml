@@ -3062,30 +3062,26 @@
     <!-- Description for view/perform actions section in screen reader dialog [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message">It can track your interactions with an app or a hardware sensor, and interact with apps on your behalf.</string>
 
+    <!-- Text for showing inside the Select to Speak dialog. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_select_to_speak_dialog_content"><xliff:g name="meta_key" example="Action">^1</xliff:g> <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^2</xliff:g> + <xliff:g name="key_code" example="S">^3</xliff:g> is the keyboard shortcut to use <xliff:g name="feature_name" example="Voice Access">^4</xliff:g>. This allows you to customize font and spacing and hear text read aloud right on your device.</string>
+
     <!-- Text for showing inside the Voice Access dialog. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_voice_access_dialog_content">Pressing <xliff:g name="meta_key" example="Action">^1</xliff:g> <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^2</xliff:g> + <xliff:g name="key_code" example="V">^3</xliff:g> turns on <xliff:g name="feature_name" example="Voice Access">^4</xliff:g>, an accessibility feature. This lets you control your device hands-free.</string>
 
-    <!-- TODO: b/450609147 - Update to final string and remove "translatable" -->
     <!-- Text for the title of top row key tutorial dialog. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" translatable="false">Accessibility key</string>
-    <!-- TODO: b/450609147 - Update to final string and remove "translatable" -->
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title">Accessibility key</string>
     <!-- Text for the content of top row key tutorial dialog. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" translatable="false">You can press the accessibility action key to activate accessibility features. Add features you would like to activate using this key</string>
-    <!-- TODO: b/450609147 - Update to final string and remove "translatable" -->
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content">You can press the accessibility key to start using accessibility features.</string>
     <!-- Text for the confirmation button of top row key tutorial dialog. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" translatable="false">Add features</string>
-    <!-- TODO: b/450609147 - Update to final string and remove "translatable" -->
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text">Add features</string>
     <!-- Title text for the dialog where the user chooses a set of accessibility features to be activated by this accessibility shortcut type. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_shortcutchooser_editor_dialog_title" translatable="false">Set up <xliff:g name="shortcut_type" example="top row key">%1$s</xliff:g></string>
-    <!-- TODO: b/450609147 - Update to final string and remove "translatable" -->
+    <string name="accessibility_shortcutchooser_editor_dialog_title">Set up <xliff:g name="shortcut_type" example="accessibility key">%1$s</xliff:g></string>
     <!-- Text for the Done button on the Edit dialog and the Toggle dialog. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_shortcutchooser_done_button" translatable="false">Done</string>
-    <!-- TODO: b/450609147 - Update to final string and remove "translatable" -->
+    <string name="accessibility_shortcutchooser_done_button">Done</string>
     <!-- Title text for the dialog where the user can enable or disable any feature just chosen from shortcut editor dialog. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_shortcutchooser_picker_dialog_title" translatable="false">Select a feature to start using it</string>
-    <!-- TODO: b/450609147 - Update to final string and remove "translatable" -->
+    <string name="accessibility_shortcutchooser_picker_dialog_title">Select a feature</string>
     <!-- Text for the Edit button on the Toggle dialog. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_shortcutchooser_edit_button" translatable="false">Edit</string>
+    <string name="accessibility_shortcutchooser_edit_button">Edit</string>
 
     <!-- Title text for the accessibility quick access dialog that allows users to quickly toggle on accessibility features. [CHAR LIMIT=NONE] -->
     <string name="accessibility_quick_access_dialog_title">Accessibility</string>

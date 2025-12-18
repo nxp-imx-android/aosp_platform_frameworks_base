@@ -21693,8 +21693,8 @@ package android.hardware.lights {
   @FlaggedApi("com.android.server.lights.feature.flags.enable_light_animations") public final class ColorSequence implements android.os.Parcelable {
     method public int describeContents();
     method @ColorInt @NonNull public int[] getColors();
-    method @NonNull public int[] getDelaysMillis();
-    method public int getDurationMillis();
+    method @NonNull public long[] getDelaysMillis();
+    method public long getDurationMillis();
     method public int getInterpolationMode();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.hardware.lights.ColorSequence> CREATOR;
@@ -21704,8 +21704,8 @@ package android.hardware.lights {
 
   public static final class ColorSequence.Builder {
     ctor public ColorSequence.Builder();
-    method @NonNull public android.hardware.lights.ColorSequence.Builder addControlPoint(int, @ColorInt int);
-    method @NonNull public android.hardware.lights.ColorSequence.Builder addControlPoints(@NonNull int[], @ColorInt @NonNull int[]);
+    method @NonNull public android.hardware.lights.ColorSequence.Builder addControlPoint(long, @ColorInt int);
+    method @NonNull public android.hardware.lights.ColorSequence.Builder addControlPoints(@NonNull long[], @ColorInt @NonNull int[]);
     method @NonNull public android.hardware.lights.ColorSequence.Builder addControlPoints(@NonNull android.hardware.lights.ColorSequence);
     method @NonNull public android.hardware.lights.ColorSequence build();
     method @NonNull public android.hardware.lights.ColorSequence.Builder setInterpolationMode(int);
@@ -21714,7 +21714,7 @@ package android.hardware.lights {
   public final class Light implements android.os.Parcelable {
     method public int describeContents();
     method public int getId();
-    method @FlaggedApi("com.android.server.lights.feature.flags.enable_light_animations") public int getMinUpdatePeriodMillis();
+    method @FlaggedApi("com.android.server.lights.feature.flags.enable_light_animations") public long getMinUpdatePeriodMillis();
     method @NonNull public String getName();
     method public int getOrdinal();
     method public int getType();
@@ -24546,6 +24546,7 @@ package android.media {
   public static final class MediaCodecInfo.EncoderCapabilities {
     method public android.util.Range<java.lang.Integer> getComplexityRange();
     method public android.util.Range<java.lang.Integer> getQualityRange();
+    method @FlaggedApi("android.media.codec.temporal_layer_encoding") @NonNull public String[] getSupportedLayeringSchemas();
     method public boolean isBitrateModeSupported(int);
     field public static final int BITRATE_MODE_CBR = 2; // 0x2
     field public static final int BITRATE_MODE_CBR_FD = 3; // 0x3
@@ -25139,9 +25140,11 @@ package android.media {
     field public static final String KEY_SLOW_MOTION_MARKERS = "slow-motion-markers";
     field public static final String KEY_STRIDE = "stride";
     field public static final String KEY_TEMPORAL_LAYERING = "ts-schema";
+    field @FlaggedApi("android.media.codec.temporal_layer_encoding") public static final String KEY_TEMPORAL_LAYER_ID = "temporal-layer-id";
     field public static final String KEY_TILE_HEIGHT = "tile-height";
     field public static final String KEY_TILE_WIDTH = "tile-width";
     field public static final String KEY_TRACK_ID = "track-id";
+    field @FlaggedApi("android.media.codec.temporal_layer_encoding") public static final String KEY_VIDEO_BITRATE_LAYERING = "video-bitrate-layering";
     field public static final String KEY_VIDEO_ENCODING_STATISTICS_LEVEL = "video-encoding-statistics-level";
     field public static final String KEY_VIDEO_QP_AVERAGE = "video-qp-average";
     field public static final String KEY_VIDEO_QP_B_MAX = "video-qp-b-max";
@@ -39137,6 +39140,7 @@ package android.provider {
     method @FlaggedApi("android.provider.enable_documents_trash_api") @Nullable public static android.net.Uri restoreDocumentFromTrash(@NonNull android.content.ContentResolver, @NonNull android.net.Uri, @Nullable android.net.Uri) throws java.io.FileNotFoundException;
     method @FlaggedApi("android.provider.enable_documents_trash_api") @Nullable public static android.net.Uri trashDocument(@NonNull android.content.ContentResolver, @NonNull android.net.Uri) throws java.io.FileNotFoundException;
     field public static final String ACTION_DOCUMENT_SETTINGS = "android.provider.action.DOCUMENT_SETTINGS";
+    field @FlaggedApi("android.provider.category_approved_document_handler") public static final String CATEGORY_APPROVED_DOCUMENT_HANDLER = "android.provider.category.APPROVED_DOCUMENT_HANDLER";
     field public static final String EXTRA_ERROR = "error";
     field public static final String EXTRA_EXCLUDE_SELF = "android.provider.extra.EXCLUDE_SELF";
     field public static final String EXTRA_INFO = "info";
@@ -52487,6 +52491,20 @@ package android.view {
     method public void onBufferTransformHintChanged(int);
   }
 
+  @FlaggedApi("android.view.flags.surface_view_set_blur_regions") public abstract class BlurRegion {
+    method @NonNull public abstract android.view.BlurRegion copy();
+    method public float getAlpha();
+    method public float getBlurRadius();
+    method public void setAlpha(@FloatRange(from=0.0, to=1.0) float);
+    method public void setBlurRadius(float);
+  }
+
+  public abstract static class BlurRegion.Builder<T extends android.view.BlurRegion.Builder<T>> {
+    method @NonNull public abstract android.view.BlurRegion build();
+    method @NonNull public T setAlpha(@FloatRange(from=0.0, to=1.0) float);
+    method @NonNull public T setBlurRadius(float);
+  }
+
   public final class Choreographer {
     method public static android.view.Choreographer getInstance();
     method public void postFrameCallback(android.view.Choreographer.FrameCallback);
@@ -52643,6 +52661,7 @@ package android.view {
     field public static final int HDR_TYPE_HDR10 = 2; // 0x2
     field public static final int HDR_TYPE_HDR10_PLUS = 4; // 0x4
     field public static final int HDR_TYPE_HLG = 3; // 0x3
+    field @FlaggedApi("android.hardware.flags.display_hdr_26q2") public static final int HDR_TYPE_HLG_PLUS = 6; // 0x6
     field public static final int HDR_TYPE_INVALID = -1; // 0xffffffff
     field public static final float INVALID_LUMINANCE = -1.0f;
   }
@@ -53999,6 +54018,27 @@ package android.view {
     field public static final int TYPE_ZOOM_OUT = 1019; // 0x3fb
   }
 
+  @FlaggedApi("android.view.flags.surface_view_set_blur_regions") public final class RRectBlurRegion extends android.view.BlurRegion {
+    ctor public RRectBlurRegion(@NonNull android.view.RRectBlurRegion);
+    method @NonNull public android.view.RRectBlurRegion copy();
+    method public float getBottom();
+    method @NonNull public float[] getCornerRadius();
+    method public float getLeft();
+    method public float getRight();
+    method public float getTop();
+    method public void setBottom(float);
+    method public void setCornerRadius(@NonNull float[]);
+    method public void setLeft(float);
+    method public void setRight(float);
+    method public void setTop(float);
+  }
+
+  public static final class RRectBlurRegion.Builder extends android.view.BlurRegion.Builder<android.view.RRectBlurRegion.Builder> {
+    ctor public RRectBlurRegion.Builder(@NonNull android.view.RRectBlurRegion);
+    ctor public RRectBlurRegion.Builder(float, float, float, float, @Nullable float[]);
+    method @NonNull public android.view.RRectBlurRegion build();
+  }
+
   public final class RoundedCorner implements android.os.Parcelable {
     ctor public RoundedCorner(int, int, int, int);
     method public int describeContents();
@@ -54345,11 +54385,13 @@ package android.view {
     ctor public SurfaceView(android.content.Context, android.util.AttributeSet, int, int);
     method public void applyTransactionToFrame(@NonNull android.view.SurfaceControl.Transaction);
     method @FlaggedApi("android.view.flags.surface_view_get_surface_package") public void clearChildSurfacePackage();
+    method @FlaggedApi("android.view.flags.surface_view_set_blur_regions") @NonNull public java.util.List<android.view.BlurRegion> getBlurRegions();
     method @FlaggedApi("android.view.flags.surface_view_get_surface_package") @Nullable public android.view.SurfaceControlViewHost.SurfacePackage getChildSurfacePackage();
     method @FlaggedApi("android.view.flags.surface_view_set_composition_order") public int getCompositionOrder();
     method public android.view.SurfaceHolder getHolder();
     method @Deprecated @Nullable public android.os.IBinder getHostToken();
     method public android.view.SurfaceControl getSurfaceControl();
+    method @FlaggedApi("android.view.flags.surface_view_set_blur_regions") public void setBlurRegions(@Nullable java.util.Collection<android.view.BlurRegion>);
     method public void setChildSurfacePackage(@NonNull android.view.SurfaceControlViewHost.SurfacePackage);
     method @FlaggedApi("android.view.flags.surface_view_set_composition_order") public void setCompositionOrder(int);
     method public void setDesiredHdrHeadroom(@FloatRange(from=0.0f, to=10000.0) float);
@@ -59211,7 +59253,7 @@ package android.view.textclassifier {
     method @NonNull @WorkerThread public default android.view.textclassifier.TextSelection suggestSelection(@NonNull android.view.textclassifier.TextSelection.Request);
     method @NonNull @WorkerThread public default android.view.textclassifier.TextSelection suggestSelection(@NonNull CharSequence, @IntRange(from=0) int, @IntRange(from=0) int, @Nullable android.os.LocaleList);
     field public static final String EXTRA_FROM_TEXT_CLASSIFIER = "android.view.textclassifier.extra.FROM_TEXT_CLASSIFIER";
-    field @FlaggedApi("android.view.flags.redact_otp_app_compat_api") public static final String EXTRA_OTP_TRUSTED_PACKAGES = "android.view.textclassifier.extra.OTP_TRUSTED_PACKAGES";
+    field @FlaggedApi("android.view.flags.redact_web_otp_sms_api") public static final String EXTRA_OTP_TRUSTED_PACKAGES = "android.view.textclassifier.extra.OTP_TRUSTED_PACKAGES";
     field @FlaggedApi("android.permission.flags.text_classifier_choice_api_enabled") public static final String EXTRA_TEXT_ORIGIN_PACKAGE = "android.view.textclassifier.extra.TEXT_ORIGIN_PACKAGE";
     field public static final String HINT_TEXT_IS_EDITABLE = "android.text_is_editable";
     field public static final String HINT_TEXT_IS_NOT_EDITABLE = "android.text_is_not_editable";

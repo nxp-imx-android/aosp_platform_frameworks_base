@@ -49,7 +49,7 @@ import com.android.compose.animation.scene.transitions
 object ParentSTL {
     object Scenes {
         val SceneA = SceneKey("SceneA")
-        val SceneB = SceneKey("SceneB")
+        val SceneB = SceneKey("SceneBWithVeryLongDebugName")
     }
 }
 
@@ -64,7 +64,7 @@ object Elements {
     val Shared = ElementKey("Shared")
     val NotShared = ElementKey("NotShared")
     val NotShared2 = ElementKey("NotShared2")
-    val Container = ElementKey("Container")
+    val Container = ElementKey("ContainerWithVeryLongDebugName")
     val Child = ElementKey("Child")
 }
 
@@ -157,15 +157,16 @@ private fun ContentScope.ChildSTL(
     val scope = rememberCoroutineScope()
     NestedSceneTransitionLayout(
         state,
-        modifier.clickable(null, null) {
-            val targetScene =
-                when (state.currentScene) {
-                    ChildSTL.Scenes.NestedTop -> ChildSTL.Scenes.NestedBottom
-                    else -> ChildSTL.Scenes.NestedTop
-                }
-            state.setTargetScene(targetScene, scope)
-        },
         debugName = "NestedSTL",
+        modifier =
+            modifier.clickable(null, null) {
+                val targetScene =
+                    when (state.currentScene) {
+                        ChildSTL.Scenes.NestedTop -> ChildSTL.Scenes.NestedBottom
+                        else -> ChildSTL.Scenes.NestedTop
+                    }
+                state.setTargetScene(targetScene, scope)
+            },
     ) {
         scene(ChildSTL.Scenes.NestedTop, mapOf(Swipe.Down to ChildSTL.Scenes.NestedBottom)) {
             Box(Modifier.fillMaxSize()) {

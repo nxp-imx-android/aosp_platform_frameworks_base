@@ -19,8 +19,11 @@ package com.android.systemui.bouncer.ui.composable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.overscroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -40,6 +43,7 @@ import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.layout.ContainerConfig
 import com.android.compose.layout.containerize
+import com.android.compose.modifiers.thenIf
 import com.android.systemui.bouncer.ui.viewmodel.BouncerOverlayContentViewModel
 import com.android.systemui.bouncer.ui.viewmodel.BouncerUserActionsViewModel
 import com.android.systemui.compose.modifiers.sysuiResTag
@@ -106,11 +110,13 @@ private fun ContentScope.BouncerOverlay(
 
     DisposableEffect(Unit) { onDispose { viewModel.onUiDestroyed() } }
     val isContainerized = shouldBeContainerized()
+    val navigationBarsWindowInsets = WindowInsets.navigationBars
     Box(
         modifier
             .fillMaxSize()
             // Block pointer events from reaching overlay framework and dismissing Bouncer
             .pointerInput(Unit) { detectTapGestures() }
+            .thenIf(isContainerized) { Modifier.windowInsetsPadding(navigationBarsWindowInsets) }
             // Allows the content within each of the layouts to react to the appearance and
             // disappearance of the IME, which is also known as the software keyboard.
             //
@@ -148,7 +154,10 @@ private fun ContentScope.BouncerOverlay(
                     .testTag(Bouncer.Elements.Content.testTag)
                     .overscroll(verticalOverscrollEffect)
                     .sysuiResTag(Bouncer.TestTags.ROOT)
-                    .fillMaxSize(),
+                    .fillMaxSize()
+                    .thenIf(!isContainerized) {
+                        Modifier.windowInsetsPadding(navigationBarsWindowInsets)
+                    },
             )
         }
     }

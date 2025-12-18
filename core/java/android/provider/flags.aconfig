@@ -113,3 +113,23 @@ flag {
     description: "Allows VpnManager-based apps to launch a Settings screen to select apps excluded from the VPN"
     bug: "459584692"
 }
+
+
+flag {
+    name: "category_approved_document_handler"
+    is_exported: true
+    namespace: "documentsui"
+    description: "This flag enables the new intent category CATEGORY_APPROVED_DOCUMENT_HANDLER."
+    bug: "440464827"
+}
+
+#OWNER=pdxt
+flag {
+    name: "enable_redacted_value_for_readable"
+    namespace: "app_compat"
+    description: "Allows returning a redacted value from Readable annotation"
+    bug: "440232200"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

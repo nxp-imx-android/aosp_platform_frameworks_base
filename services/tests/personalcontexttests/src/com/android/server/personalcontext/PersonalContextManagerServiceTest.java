@@ -97,7 +97,7 @@ public class PersonalContextManagerServiceTest {
         assertThat(user1Manager).isNotNull();
 
         // Verify that it tried to register components.
-        verify(mPackageManager, atLeast(4)).queryIntentServices(any(), anyInt());
+        verify(mPackageManager, atLeast(3)).queryIntentServices(any(), anyInt());
     }
 
     @Test

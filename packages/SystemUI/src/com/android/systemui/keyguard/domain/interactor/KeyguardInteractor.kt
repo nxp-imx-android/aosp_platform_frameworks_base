@@ -204,16 +204,19 @@ constructor(
     val showDismissibleKeyguard: Flow<Long> = repository.showDismissibleKeyguard.asStateFlow()
 
     /**
-     * Dozing and dreaming have overlapping events. If the doze state remains in FINISH, it means
-     * that doze mode is not running and DREAMING is ok to commence.
+     * Whether device is in screensaver dream mode.
+     *
+     * Dozing and dreaming have overlapping events, because doze is a type of dream. This flow
+     * reflects the screen on / interactive type of dream, also known as screensavers, and not doze
+     * or AOD (always-on-display).
      *
      * Allow a brief moment to prevent rapidly oscillating between true/false signals. The amount of
-     * time is [IS_ABLE_TO_DREAM_DELAY_MS] - consumers should consider waiting for that long before
-     * examining the value of this flow, to let other consumers have enough time to also see that
-     * same new value.
+     * time is [IS_DREAMING_NOT_DOZING_DELAY_MS] - consumers should consider waiting for that long
+     * before examining the value of this flow, to let other consumers have enough time to also see
+     * that same new value.
      */
     @OptIn(FlowPreview::class)
-    val isAbleToDream: StateFlow<Boolean> =
+    val isDreamingNotDozing: StateFlow<Boolean> =
         dozeTransitionModel
             .flatMapLatest { dozeTransitionModel ->
                 if (isDozeOff(dozeTransitionModel.to)) {
@@ -223,7 +226,7 @@ constructor(
                     // do not immediately process any dreaming information when exiting AOD. It
                     // should actually be quite strange to leave AOD and then go straight to
                     // DREAMING so this should be fine.
-                    delay(IS_ABLE_TO_DREAM_DELAY_MS)
+                    delay(IS_DREAMING_NOT_DOZING_DELAY_MS)
                     isDreaming.debounce(50L)
                 } else {
                     flowOf(false)
@@ -609,10 +612,10 @@ constructor(
     companion object {
         private const val TAG = "KeyguardInteractor"
         /**
-         * Amount of time that [KeyguardInteractor.isAbleToDream] is delayed; consumers of that flow
-         * should consider waiting this amount of time before check the value of this flow, to let
-         * other consumers have enough time to see the new value.
+         * Amount of time that [KeyguardInteractor.isDreamingNotDozing] is delayed; consumers of
+         * that flow should consider waiting this amount of time before check the value of this
+         * flow, to let other consumers have enough time to see the new value.
          */
-        const val IS_ABLE_TO_DREAM_DELAY_MS = 500L
+        const val IS_DREAMING_NOT_DOZING_DELAY_MS = 500L
     }
 }

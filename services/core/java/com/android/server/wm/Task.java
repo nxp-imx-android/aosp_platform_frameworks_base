@@ -433,6 +433,7 @@ class Task extends TaskFragment {
     // Id of the previous display the root task was on.
     int mPrevDisplayId = INVALID_DISPLAY;
 
+    // TODO: b/296268915 - clean these up with flag delegate_request_fullscreen_handling_to_shell
     int mMultiWindowRestoreWindowingMode = INVALID_WINDOWING_MODE;
     WindowContainerToken mMultiWindowRestoreParent;
 
@@ -738,8 +739,8 @@ class Task extends TaskFragment {
         mDisableAppCompatRoundedCorners = disableAppCompatRoundedCorners;
         EventLogTags.writeWmTaskCreated(mTaskId);
 
-        if (android.security.Flags.appLockCore()) {
-            mWmService.mAppLockOverlayController.registerTask(this);
+        if (mWmService.mAppLockController != null) {
+            mWmService.mAppLockController.registerTask(this);
         }
     }
 
@@ -4741,6 +4742,7 @@ class Task extends TaskFragment {
      * the previous parent if parent has changed.
      */
     void restoreWindowingMode() {
+        if (Flags.delegateRequestFullscreenHandlingToShell()) return;
         if (mMultiWindowRestoreWindowingMode == INVALID_WINDOWING_MODE) {
             return;
         }
@@ -4768,7 +4770,9 @@ class Task extends TaskFragment {
         // Calling Task#setWindowingMode() for leaf task since this is a specialization of
         // {@link #setWindowingMode(int)} for root task.
         if (!isRootTask()) {
-            mMultiWindowRestoreWindowingMode = INVALID_WINDOWING_MODE;
+            if (!Flags.delegateRequestFullscreenHandlingToShell()) {
+                mMultiWindowRestoreWindowingMode = INVALID_WINDOWING_MODE;
+            }
             super.setWindowingMode(windowingMode);
             return;
         }
@@ -4824,8 +4828,10 @@ class Task extends TaskFragment {
             return;
         }
 
-        // Reset multi-window restore windowing mode.
-        mMultiWindowRestoreWindowingMode = INVALID_WINDOWING_MODE;
+        if (!Flags.delegateRequestFullscreenHandlingToShell()) {
+            // Reset multi-window restore windowing mode.
+            mMultiWindowRestoreWindowingMode = INVALID_WINDOWING_MODE;
+        }
 
         final ActivityRecord topActivity = getTopNonFinishingActivity();
 

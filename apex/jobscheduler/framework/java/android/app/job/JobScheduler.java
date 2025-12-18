@@ -68,11 +68,6 @@ import java.util.Map;
  * less strict. Requested requirements will not be affected by this change.
  * </p>
  *
- * {@see android.app.job.JobInfo.Builder#setRequiresBatteryNotLow(boolean)}
- * {@see android.app.job.JobInfo.Builder#setRequiresDeviceIdle(boolean)}
- * {@see android.app.job.JobInfo.Builder#setRequiresCharging(boolean)}
- * {@see android.app.job.JobInfo.Builder#setRequiredNetworkType(int)}
- *
  * <p>
  * While a job is running, the system holds a wakelock on behalf of your app.  For this reason,
  * you do not need to take any action to guarantee that the device stays awake for the
@@ -101,6 +96,11 @@ import java.util.Map;
  * Calling {@link #schedule(JobInfo)} and other such methods with very high frequency can have a
  * high cost and so, to make sure the system doesn't get overwhelmed, JobScheduler will begin
  * to throttle apps, regardless of target SDK version.
+ *
+ * @see android.app.job.JobInfo.Builder#setRequiresBatteryNotLow(boolean)
+ * @see android.app.job.JobInfo.Builder#setRequiresDeviceIdle(boolean)
+ * @see android.app.job.JobInfo.Builder#setRequiresCharging(boolean)
+ * @see android.app.job.JobInfo.Builder#setRequiredNetworkType(int)
  */
 @SystemService(Context.JOB_SCHEDULER_SERVICE)
 public abstract class JobScheduler {

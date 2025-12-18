@@ -38,9 +38,13 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.scene.data.model.contains
 import com.android.systemui.scene.data.repository.HideOverlay
 import com.android.systemui.scene.data.repository.Idle
+import com.android.systemui.scene.data.repository.Transition
 import com.android.systemui.scene.data.repository.setSceneTransition
+import com.android.systemui.scene.data.repository.unlockDevice
+import com.android.systemui.scene.domain.interactor.sceneBackInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
@@ -204,6 +208,36 @@ class KeyguardDismissActionInteractorTest : SysuiTestCase() {
             )
             setSceneTransition(Idle(Scenes.Gone))
             sceneInteractor.changeScene(Scenes.Gone, "")
+
+            assertThat(wasDismissActionInvoked).isTrue()
+            assertThat(keyguardRepository.dismissAction.value).isEqualTo(DismissAction.None)
+        }
+
+    @Test
+    fun dismissActionExecuted_WhenKeyguardDismissedBelowShade() =
+        kosmos.runTest {
+            var wasDismissActionInvoked = false
+            startInteractor()
+
+            // The device is already unlocked (but on the lockscreen), and the shade is open on top
+            unlockDevice()
+            setSceneTransition(Transition(Scenes.Lockscreen, Scenes.Shade, progress = flowOf(1f)))
+            sceneBackInteractor.onSceneChange(Scenes.Lockscreen, Scenes.Shade)
+
+            // A keyguard action will run after the keyguard is gone
+            val onDismissAction = { wasDismissActionInvoked = true }
+            keyguardRepository.setDismissAction(
+                DismissAction.RunAfterKeyguardGone(
+                    dismissAction = onDismissAction,
+                    onCancelAction = {},
+                    message = "message",
+                    willAnimateOnLockscreen = true,
+                )
+            )
+            assertThat(wasDismissActionInvoked).isFalse()
+
+            // The lockscreen is removed from the back stack
+            sceneBackInteractor.replaceLockscreenSceneOnBackStack("test")
 
             assertThat(wasDismissActionInvoked).isTrue()
             assertThat(keyguardRepository.dismissAction.value).isEqualTo(DismissAction.None)

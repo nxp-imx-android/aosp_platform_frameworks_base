@@ -360,14 +360,6 @@ flag {
 }
 
 flag {
-    name: "enable_query_domain_verification"
-    is_exported: true
-    namespace: "package_manager_service"
-    description: "Enable apps to query domain verification status."
-    bug: "437043173"
-}
-
-flag {
     name: "fix_enable_system_package_with_shared_uid"
     namespace: "package_manager_service"
     description: "Fix enable system package with shared uid after update uninstallation"

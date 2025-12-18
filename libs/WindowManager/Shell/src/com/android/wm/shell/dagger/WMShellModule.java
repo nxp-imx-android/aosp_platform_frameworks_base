@@ -37,6 +37,7 @@ import android.view.IWindowManager;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.DesktopExperienceFlags;
+import android.window.DesktopModeFlags;
 import android.window.TaskSnapshotManager;
 
 import androidx.annotation.OptIn;
@@ -163,7 +164,6 @@ import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializerImpl;
 import com.android.wm.shell.desktopmode.data.persistence.DesktopPersistentRepository;
 import com.android.wm.shell.desktopmode.desktopfirst.DesktopDisplayModeController;
 import com.android.wm.shell.desktopmode.desktopfirst.DesktopFirstListenerManager;
-import com.android.wm.shell.desktopmode.desktoptaskshandlers.DesktopTasksTransitionHandler;
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider;
 import com.android.wm.shell.desktopmode.education.AppHandleEducationController;
 import com.android.wm.shell.desktopmode.education.AppHandleEducationFilter;
@@ -200,6 +200,7 @@ import com.android.wm.shell.shared.annotations.ShellAnimationThread;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellDesktopThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
+import com.android.wm.shell.shared.annotations.ShellMainThreadImmediate;
 import com.android.wm.shell.shared.desktopmode.DesktopConfig;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.shared.pip.PipFlags;
@@ -2144,12 +2145,16 @@ public abstract class WMShellModule {
             Transitions transitions,
             ShellTaskOrganizer shellTaskOrganizer,
             ShellInit shellInit,
-            UserProfileContexts userProfileContexts
+            UserProfileContexts userProfileContexts,
+            WindowDecorTaskResourceLoader taskResourceLoader,
+            Optional<DesktopModeWindowDecorViewModel> desktopModeWindowDecorViewModel,
+            @ShellMainThreadImmediate CoroutineScope mainImmediateScope
     ) {
         if (com.android.window.flags.Flags.enableAppRestartAfterUpdate()) {
             return Optional.of(
                     new PackageUpdateController(transitions, shellTaskOrganizer,
-                            shellInit, userProfileContexts));
+                            shellInit, userProfileContexts, taskResourceLoader,
+                            desktopModeWindowDecorViewModel, mainImmediateScope));
         }
         return Optional.empty();
     }
@@ -2247,8 +2252,7 @@ public abstract class WMShellModule {
             Optional<DesktopImeHandler> desktopImeHandler,
             ShellCrashHandler shellCrashHandler,
             AppToWebEducationController appToWebEducationController,
-            QuitFocusedAppKeyGestureHandler quitFocusedAppKeyGestureHandler,
-            DesktopTasksTransitionHandler desktopTasksTransitionHandler) {
+            QuitFocusedAppKeyGestureHandler quitFocusedAppKeyGestureHandler) {
         return new Object();
     }
 
@@ -2297,17 +2301,6 @@ public abstract class WMShellModule {
     @Provides
     static HomeIntentProvider provideHomeIntentProvider(Context context) {
         return new HomeIntentProvider(context);
-    }
-
-    @WMSingleton
-    @Provides
-    static DesktopTasksTransitionHandler provideDesktopTasksTransitionHandler(
-            Transitions transitions,
-            ShellInit shellInit,
-            ShellDesktopState desktopState,
-            Optional<DesktopTasksController> desktopTasksController) {
-        return new DesktopTasksTransitionHandler(transitions, shellInit, desktopState,
-                desktopTasksController);
     }
 
 }

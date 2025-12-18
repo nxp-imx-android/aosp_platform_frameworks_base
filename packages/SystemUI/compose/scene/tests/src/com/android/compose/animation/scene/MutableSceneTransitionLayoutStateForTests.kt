@@ -31,6 +31,7 @@ internal fun MutableSceneTransitionLayoutStateForTests(
     canReplaceOverlay: (from: OverlayKey, to: OverlayKey) -> Boolean = { _, _ -> true },
     onTransitionStart: (TransitionState.Transition) -> Unit = {},
     onTransitionEnd: (TransitionState.Transition) -> Unit = {},
+    onSnap: (TransitionState.Idle) -> Unit = {},
 ): MutableSceneTransitionLayoutStateImpl {
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     val uiDelegate =
@@ -49,6 +50,7 @@ internal fun MutableSceneTransitionLayoutStateForTests(
         canReplaceOverlay,
         onTransitionStart,
         onTransitionEnd,
+        onSnap,
         deferTransitionProgress = false,
         uiDelegate = { uiDelegate },
     )

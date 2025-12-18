@@ -16,7 +16,6 @@
 
 package com.android.systemui.qs.panels.ui.compose
 
-import android.platform.test.flag.junit.FlagsParameterization
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
@@ -37,12 +36,12 @@ import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.swipeLeft
 import androidx.compose.ui.test.swipeRight
 import androidx.compose.ui.text.AnnotatedString
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
-import com.android.systemui.qs.flags.QsEditModeV2
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.DefaultEditTileGrid
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditAction
 import com.android.systemui.qs.panels.ui.model.GridCell
@@ -57,17 +56,11 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4
-import platform.test.runner.parameterized.Parameters
 
 @OptIn(ExperimentalTestApi::class)
 @SmallTest
-@RunWith(ParameterizedAndroidJunit4::class)
-class ResizingTest(flags: FlagsParameterization) : SysuiTestCase() {
-
-    init {
-        mSetFlagsRule.setFlagsParameterization(flags)
-    }
+@RunWith(AndroidJUnit4::class)
+class ResizingTest : SysuiTestCase() {
 
     @get:Rule val composeRule = createComposeRule()
 
@@ -305,10 +298,6 @@ class ResizingTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     companion object {
-
-        @Parameters(name = "{0}")
-        @JvmStatic
-        fun data() = FlagsParameterization.progressionOf(QsEditModeV2.FLAG_NAME)
 
         private fun createEditTile(tileSpec: String): EditTileViewModel {
             return EditTileViewModel(

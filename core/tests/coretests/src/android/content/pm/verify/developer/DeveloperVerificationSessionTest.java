@@ -89,14 +89,14 @@ public class DeveloperVerificationSessionTest {
         mTestDeclaredLibraries.add(TEST_SHARED_LIBRARY_INFO1);
         mTestDeclaredLibraries.add(TEST_SHARED_LIBRARY_INFO2);
         mTestExtensionParams.putString(TEST_KEY, TEST_VALUE);
-        mTestSession = new DeveloperVerificationSession(TEST_ID, TEST_INSTALL_SESSION_ID,
-                TEST_PACKAGE_NAME, TEST_PACKAGE_URI, TEST_SIGNING_INFO, mTestDeclaredLibraries,
-                mTestExtensionParams, TEST_POLICY, mTestSessionInterface, mTestVerificationFlags);
         if (android.content.pm.Flags.verificationServiceAdb()) {
             mTestVerificationFlags =
                     DeveloperVerificationSession.FLAG_VERIFICATION_IS_ADB
                             | DeveloperVerificationSession.FLAG_VERIFICATION_FORCED_ON_ADB;
         }
+        mTestSession = new DeveloperVerificationSession(TEST_ID, TEST_INSTALL_SESSION_ID,
+                TEST_PACKAGE_NAME, TEST_PACKAGE_URI, TEST_SIGNING_INFO, mTestDeclaredLibraries,
+                mTestExtensionParams, TEST_POLICY, mTestSessionInterface, mTestVerificationFlags);
     }
 
     @Test

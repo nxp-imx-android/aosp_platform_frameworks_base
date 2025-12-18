@@ -59,9 +59,11 @@ import android.annotation.AnyThread;
 import android.annotation.BinderThread;
 import android.annotation.DrawableRes;
 import android.annotation.DurationMillisLong;
+import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.PermissionManuallyEnforced;
+import android.annotation.RequiresNoPermission;
 import android.annotation.SpecialUsers.CanBeALL;
 import android.annotation.SpecialUsers.CanBeCURRENT;
 
@@ -147,6 +149,8 @@ import com.android.internal.inputmethod.DirectBootAwareness;
 import com.android.internal.inputmethod.IAccessibilityInputMethodSession;
 import com.android.internal.inputmethod.IBooleanListener;
 import com.android.internal.inputmethod.IConnectionlessHandwritingCallback;
+import com.android.internal.inputmethod.IImeSwitcherMenu;
+import com.android.internal.inputmethod.IImeSwitcherMenuListener;
 import com.android.internal.inputmethod.IImeTracker;
 import com.android.internal.inputmethod.IInputContentUriToken;
 import com.android.internal.inputmethod.IInputMethod;
@@ -392,8 +396,132 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     final InputMethodDeviceConfigs mInputMethodDeviceConfigs;
 
     final UserManagerInternal mUserManagerInternal;
-    @MultiUserUnawareField
-    private final InputMethodMenuController mMenuController;
+
+    @SharedByAllUsersField
+    @NonNull
+    private final ImeSwitcherMenu mImeSwitcherMenu;
+
+    /**
+     * The interface to send calls to the IME Switcher Menu controller. This is set only after the
+     * IME Switcher Menu is fully initialized in SystemUI.
+     */
+    @Nullable
+    @GuardedBy("ImfLock.class")
+    private IImeSwitcherMenu mIImeSwitcherMenu;
+
+    /** The interface to receive callbacks from the IME Switcher Menu controller. */
+    @NonNull
+    @SharedByAllUsersField
+    private final IImeSwitcherMenuListener mImeSwitcherMenuListener =
+            new IImeSwitcherMenuListener.Stub() {
+
+                @RequiresNoPermission
+                @Override
+                public void onVisibilityChanged(boolean visible, int displayId,
+                        @UserIdInt int userId) {
+                    if (!Flags.imeSwitcherMenuSystemui()) {
+                        return;
+                    }
+                    final long ident = Binder.clearCallingIdentity();
+                    try {
+                        synchronized (ImfLock.class) {
+                            final var userData = getUserData(userId);
+                            userData.mImeSwitcherMenuVisible = visible;
+                            updateSystemUiLocked(userId);
+                            sendOnNavButtonFlagsChangedLocked(userData);
+                        }
+                    } finally {
+                        Binder.restoreCallingIdentity(ident);
+                    }
+                }
+
+                @RequiresNoPermission
+                @Override
+                public void onImeAndSubtypeSelected(@NonNull String imeId,
+                        @IntRange(from = NOT_A_SUBTYPE_INDEX) int subtypeIndex,
+                        @UserIdInt int userId) {
+                    if (!Flags.imeSwitcherMenuSystemui()) {
+                        return;
+                    }
+                    final long ident = Binder.clearCallingIdentity();
+                    try {
+                        synchronized (ImfLock.class) {
+                            switchToInputMethodLocked(imeId, subtypeIndex, userId);
+                        }
+                    } finally {
+                        Binder.restoreCallingIdentity(ident);
+                    }
+                }
+            };
+
+    /** The recipient of death for the {@link #mImeSwitcherMenu}. */
+    @NonNull
+    @SharedByAllUsersField
+    private final IBinder.DeathRecipient mImeSwitcherMenuDeathRecipient;
+
+    interface ImeSwitcherMenu {
+
+        void show(@NonNull List<ImeSubtypeListItem> items, @Nullable String selectedImeId,
+                int selectedSubtypeIndex, boolean isScreenLocked, int displayId,
+                @UserIdInt int userId);
+
+        void hide(int displayId, @UserIdInt int userId);
+
+        boolean isShowing(@Nullable UserData userData);
+
+        void dump(@NonNull Printer pw, @NonNull String prefix);
+    }
+
+    private final class ImeSwitcherMenuWrapper implements ImeSwitcherMenu {
+
+        @Override
+        public void show(@NonNull List<ImeSubtypeListItem> items, @Nullable String selectedImeId,
+                @IntRange(from = NOT_A_SUBTYPE_INDEX) int selectedSubtypeIndex,
+                boolean isScreenLocked, int displayId, @UserIdInt int userId) {
+            if (mIImeSwitcherMenu != null) {
+                final var menuItems = new ArrayList<IImeSwitcherMenu.Item>();
+                for (int i = 0; i < items.size(); i++) {
+                    final var item = items.get(i);
+                    final var menuItem = new IImeSwitcherMenu.Item();
+                    menuItem.imeName = item.mImeName;
+                    menuItem.subtypeName = item.mSubtypeName;
+                    menuItem.layoutName = item.mLayoutName;
+                    menuItem.imi = item.mImi;
+                    menuItem.subtypeIndex = item.mSubtypeIndex;
+                    menuItems.add(menuItem);
+                }
+
+                try {
+                    mIImeSwitcherMenu.show(menuItems, selectedImeId, selectedSubtypeIndex,
+                            isScreenLocked, displayId, userId);
+                } catch (RemoteException e) {
+                    Slog.w(TAG, "Failed show IME Switcher Menu for user: " + userId
+                            + " on display: " + displayId, e);
+                }
+            }
+        }
+
+        @Override
+        public void hide(int displayId, @UserIdInt int userId) {
+            if (mIImeSwitcherMenu != null) {
+                try {
+                    mIImeSwitcherMenu.hide(displayId, userId);
+                } catch (RemoteException e) {
+                    Slog.w(TAG, "Failed to hide IME Switcher Menu for user: " + userId
+                            + " on display: " + displayId, e);
+                }
+            }
+        }
+
+        @Override
+        public boolean isShowing(@Nullable UserData userData) {
+            return userData != null && userData.mImeSwitcherMenuVisible;
+        }
+
+        public void dump(@NonNull Printer pw, @NonNull String prefix) {
+            // This is dumped in the ImeSwitcherMenuController.
+        }
+    }
 
     /**
      * Cache the result of {@code LocalServices.getService(AudioManagerInternal.class)}.
@@ -678,7 +806,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     }
                     final int userId = mCurrentImeUserId;
                     final var bindingController = getInputMethodBindingController(userId);
-                    mMenuController.hide(bindingController.getCurDisplayId(), userId);
+                    mImeSwitcherMenu.hide(bindingController.getCurDisplayId(), userId);
                 }
             } else {
                 Slog.w(TAG, "Unexpected intent " + intent);
@@ -1266,7 +1394,14 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     bindingControllerForTesting != null ? bindingControllerForTesting
                             : bindingControllerFactory, visibilityStateComputerFactory);
 
-            mMenuController = new InputMethodMenuController();
+            mImeSwitcherMenu = Flags.imeSwitcherMenuSystemui()
+                    ? new ImeSwitcherMenuWrapper() : new InputMethodMenuController();
+            mImeSwitcherMenuDeathRecipient = () -> {
+                synchronized (ImfLock.class) {
+                    mUserDataRepository.forAllUserData((u -> u.mImeSwitcherMenuVisible = false));
+                    mIImeSwitcherMenu = null;
+                }
+            };
 
             mClientController = new ClientController(mPackageManagerInternal);
             mClientController.addClientControllerCallback(this::onClientRemoved);
@@ -1848,8 +1983,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             ImeTracker.forLogging().onFailed(userData.mCurStatsToken,
                     ImeTracker.PHASE_SERVER_WAIT_IME);
             userData.mCurStatsToken = null;
-            // TODO: Make mMenuController multi-user aware
-            mMenuController.hide(bindingController.getCurDisplayId(), userId);
+            mImeSwitcherMenu.hide(bindingController.getCurDisplayId(), userId);
         }
     }
 
@@ -2676,13 +2810,13 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
      */
     @GuardedBy("ImfLock.class")
     private boolean shouldShowImeSwitcherButtonLocked(@UserIdInt int userId) {
-        // When the IME switcher dialog is shown, the IME switcher button should be hidden.
-        // TODO(b/305849394): Make mMenuController multi-user aware.
-        if (mMenuController.isShowing()) {
+        // When the IME Switcher Menu is shown, the IME Switcher button should be hidden.
+        final var userData = getUserData(userId);
+        if (mImeSwitcherMenu.isShowing(userData)) {
             return false;
         }
-        // When we are switching IMEs, the IME switcher button should be hidden.
-        final var bindingController = getInputMethodBindingController(userId);
+        // When we are switching IMEs, the IME Switcher button should be hidden.
+        final var bindingController = userData.mBindingController;
         if (!Objects.equals(bindingController.getCurImeId(),
                 bindingController.getSelectedImeId())) {
             return false;
@@ -2847,10 +2981,10 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             if (windowPerceptible != null && !windowPerceptible) {
                 vis &= ~InputMethodService.IME_VISIBLE;
             }
-            // TODO(b/305849394): Make mMenuController multi-user aware.
-            if (mMenuController.isShowing() || !Objects.equals(bindingController.getCurImeId(),
-                    bindingController.getSelectedImeId())) {
-                // When the IME switcher dialog is shown, or we are switching IMEs,
+            if (mImeSwitcherMenu.isShowing(userData)
+                    || !Objects.equals(bindingController.getCurImeId(),
+                        bindingController.getSelectedImeId())) {
+                // When the IME Switcher Menu is shown, or we are switching IMEs,
                 // the back button should be in the default state (as if the IME is not shown).
                 backDisposition = InputMethodService.BACK_DISPOSITION_ADJUST_NOTHING;
             }
@@ -4155,11 +4289,15 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     }
 
     /**
-     * A test API for CTS to make sure that the input method menu is showing.
+     * A test API for CTS to make sure that the input method menu is showing for the given user.
+     *
+     * @param userId the ID of the user to check the menu visibility for.
      */
     @IInputMethodManagerImpl.PermissionVerified(Manifest.permission.TEST_INPUT_METHOD)
-    public boolean isInputMethodPickerShownForTest() {
-        return mMenuController.isShowing();
+    public boolean isInputMethodPickerShownForTest(@UserIdInt int userId) {
+        synchronized (ImfLock.class) {
+            return mImeSwitcherMenu.isShowing(getUserData(userId));
+        }
     }
 
     @IInputMethodManagerImpl.PermissionVerified(allOf = {
@@ -4204,6 +4342,32 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         synchronized (ImfLock.class) {
             final int userId = resolveImeUserIdLocked(callingUserId);
             return shouldShowImeSwitcherButtonLocked(userId);
+        }
+    }
+
+    @IInputMethodManagerImpl.PermissionVerified(allOf = {
+            Manifest.permission.WRITE_SECURE_SETTINGS,
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL,
+            Manifest.permission.STATUS_BAR_SERVICE,
+    })
+    @Override
+    public void registerImeSwitcherMenu(@NonNull IImeSwitcherMenu imeSwitcherMenu) {
+        if (!Flags.imeSwitcherMenuSystemui()) {
+            return;
+        }
+        Objects.requireNonNull(imeSwitcherMenu, "imeSwitcherMenu must not be null");
+        synchronized (ImfLock.class) {
+            if (mIImeSwitcherMenu != null) {
+                throw new IllegalArgumentException("IME Switcher Menu already registered");
+            }
+            mIImeSwitcherMenu = imeSwitcherMenu;
+            try {
+                imeSwitcherMenu.registerListener(mImeSwitcherMenuListener);
+                imeSwitcherMenu.asBinder().linkToDeath(mImeSwitcherMenuDeathRecipient,
+                        0 /* flags */);
+            } catch (RemoteException e) {
+                Slog.w(TAG, "Failed to register IME Switcher Menu listener", e);
+            }
         }
     }
 
@@ -5008,7 +5172,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             }
         }
 
-        mMenuController.show(items, selectedImeId, selectedSubtypeIndex, isScreenLocked,
+        mImeSwitcherMenu.show(items, selectedImeId, selectedSubtypeIndex, isScreenLocked,
                 displayId, userId);
     }
 
@@ -5891,7 +6055,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 if (visibilityStateComputer.getLastImeTargetWindow()
                         != userData.mImeBindingState.mFocusedWindow) {
                     final var bindingController = getInputMethodBindingController(userId);
-                    mMenuController.hide(bindingController.getCurDisplayId(), userId);
+                    mImeSwitcherMenu.hide(bindingController.getCurDisplayId(), userId);
                 }
             }
         }
@@ -6184,9 +6348,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             p.println("  mStylusIds=" + (mStylusIds != null
                     ? Arrays.toString(mStylusIds.toArray()) : ""));
         }
-        // TODO(b/305849394): Make mMenuController multi-user aware.
         p.println("  mMenuController:");
-        mMenuController.dump(p, "    ");
+        mImeSwitcherMenu.dump(p, "    ");
         dumpClientController(p);
         dumpUserRepository(p);
 
@@ -6348,6 +6511,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             p.println("      enabledSession=" + u.mEnabledSession);
             p.println("      inFullscreenMode=" + u.mInFullscreenMode);
             p.println("      imeDrawsNavBar=" + u.mImeDrawsNavBar.get());
+            p.println("      imeSwitcherMenuVisible=" + u.mImeSwitcherMenuVisible);
             p.println("      switchingController:");
             u.mSwitchingController.dump(p, "        ");
             p.println("      mLastEnabledInputMethodsStr=" + u.mLastEnabledInputMethodsStr);

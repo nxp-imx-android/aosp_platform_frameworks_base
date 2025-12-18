@@ -61,7 +61,7 @@ public class ContextHintWithSignatureTest {
         final Parcel parcel = Parcel.obtain();
         parcel.writeParcelable(new ContextHintWithSignature.Builder(hint, key)
                 .setRenderToken(renderToken)
-                .setOriginatingComponent(origin)
+                .setOriginatingPackage(origin.getPackageName())
                 .addAttributionHint(signedAttributedHint1)
                 .addAttributionHint(signedAttributedHint2)
                 .build(), 0);
@@ -151,7 +151,7 @@ public class ContextHintWithSignatureTest {
 
         final Parcel parcel = Parcel.obtain();
         parcel.writeParcelable(new ContextHintWithSignature.Builder(hint, key)
-                .setOriginatingComponent(origin)
+                .setOriginatingPackage(origin.getPackageName())
                 .addAttributionHints(List.of(signedAttributedHint1, signedAttributedHint2))
                 .build(), 0);
 
@@ -184,7 +184,7 @@ public class ContextHintWithSignatureTest {
 
         final Parcel parcel = Parcel.obtain();
         parcel.writeParcelable(new ContextHintWithSignature.Builder(hint, key)
-                .setOriginatingComponent(origin)
+                .setOriginatingPackage(origin.getPackageName())
                 .setRenderToken(renderToken)
                 .build(), 0);
 

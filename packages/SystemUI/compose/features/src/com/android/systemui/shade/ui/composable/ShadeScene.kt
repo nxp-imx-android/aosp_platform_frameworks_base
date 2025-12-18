@@ -38,6 +38,8 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.overscroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -70,6 +72,7 @@ import com.android.compose.animation.scene.transitions
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
 import com.android.compose.gesture.gesturesDisabled
 import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
+import com.android.compose.modifiers.animateContentSizeNoClip
 import com.android.compose.modifiers.padding
 import com.android.compose.modifiers.thenIf
 import com.android.internal.jank.InteractionJankMonitor
@@ -370,6 +373,8 @@ private fun ContentScope.SingleShade(
                     stackScrollView = notificationStackScrollView,
                     viewModel = notificationsPlaceholderViewModel,
                     shouldPunchHoleBehindScrim = true,
+                    shouldContentFillMaxSize = true,
+                    shouldScrimBackgroundFillMaxHeight = true,
                     isTransparencyEnabled = viewModel.isTransparencyEnabled,
                     stackTopPadding = notificationStackPadding,
                     stackBottomPadding = navBarHeight,
@@ -399,6 +404,7 @@ private fun ContentScope.SingleShade(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun MediaAndQqsLayout(
     tiles: @Composable () -> Unit,
@@ -406,9 +412,11 @@ private fun MediaAndQqsLayout(
     mediaInRow: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    val modifierAnimated =
+        modifier.animateContentSizeNoClip(MaterialTheme.motionScheme.defaultSpatialSpec())
     if (mediaInRow) {
         Row(
-            modifier = modifier,
+            modifier = modifierAnimated,
             horizontalArrangement = spacedBy(dimensionResource(R.dimen.qs_tile_margin_vertical)),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -416,7 +424,7 @@ private fun MediaAndQqsLayout(
             Box(modifier = Modifier.weight(1f)) { media() }
         }
     } else {
-        Column(modifier = modifier, verticalArrangement = spacedBy(16.dp)) {
+        Column(modifier = modifierAnimated, verticalArrangement = spacedBy(16.dp)) {
             tiles()
             media()
         }
@@ -589,6 +597,7 @@ private fun ContentScope.SplitShade(
                     jankMonitor = jankMonitor,
                     stackTopPadding = notificationStackPadding,
                     stackBottomPadding = notificationStackPadding,
+                    shouldFillMaxHeight = true,
                     shouldPunchHoleBehindScrim = false,
                     isTransparencyEnabled = viewModel.isTransparencyEnabled,
                     onEmptySpaceClick =

@@ -32,6 +32,18 @@
         <item name="android:windowIsTranslucent">true</item>
     </style>
 
+    <style name="PackageUpdateActivityTheme" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowBackground">?android:attr/colorBackground</item>
+
+        <item name="android:statusBarColor">?android:attr/colorBackground</item>
+        <item name="android:navigationBarColor">?android:attr/colorBackground</item>
+
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+
     <style name="Animation.ForcedResizable" parent="@android:style/Animation">
         <item name="android:activityOpenEnterAnimation">@anim/forced_resizable_enter</item>
 

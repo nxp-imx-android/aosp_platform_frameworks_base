@@ -407,7 +407,7 @@ private fun ToolbarPrimaryButton(
         } else {
             PrimaryButton(
                 onClick = onClick,
-                text = stringResource(R.string.screen_capture_toolbar_record_button),
+                text = stringResource(R.string.screenrecord_continue),
                 icon =
                     loadIcon(
                             viewModel = viewModel,

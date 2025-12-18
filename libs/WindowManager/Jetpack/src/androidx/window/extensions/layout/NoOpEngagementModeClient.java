@@ -14,26 +14,31 @@
  * limitations under the License.
  */
 
-package com.android.server.personalcontext.component;
-
-import android.service.personalcontext.insight.ContextInsight;
+package androidx.window.extensions.layout;
 
 import androidx.annotation.NonNull;
 
-import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 /**
- * Interface to abstract away in-process / service-based transformers.
- *
- * @hide
+ * A no-op implementation of {@link EngagementModeClient} that always returns the default
+ * engagement mode.
  */
-public interface Transformer extends Component {
-    /** Gets the insights this transformer is interested in. */
-    Set<ContextInsight> getInterestingInsights();
+class NoOpEngagementModeClient implements EngagementModeClient {
 
-    /** Transforms an insight. */
-    void transform(
-            @NonNull ContextInsight insight,
-            @NonNull Consumer<Set<ContextInsight>> callback);
+    @Override
+    public int getEngagementModeFlags() {
+        return DEFAULT_ENGAGEMENT_MODE;
+    }
+
+    @Override
+    public void addUpdateCallback(@NonNull Executor executor, @NonNull Consumer<Integer> callback) {
+        // Do nothing
+    }
+
+    @Override
+    public void removeUpdateCallback(@NonNull Consumer<Integer> callback) {
+        // Do nothing
+    }
 }

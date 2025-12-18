@@ -38,12 +38,12 @@
         android:visibility="invisible"
         android:indeterminate="true" />
 
+    <!-- This layout's parent tile details view applies a minimum height. -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scroll_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="21dp"
-        android:minHeight="@dimen/bluetooth_dialog_scroll_view_min_height"
         android:fillViewport="true"
         app:layout_constrainedHeight="true"
         app:layout_constraintStart_toStartOf="parent"
@@ -150,7 +150,7 @@
                 android:paddingStart="36dp"
                 android:paddingEnd="40dp"
                 android:textSize="14sp"
-                android:textAppearance="@style/TextAppearance.BluetoothTileDialog"
+                android:textAppearance="@style/TextAppearance.TileDetailsEntryTitle"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/bluetooth_auto_on_toggle_info_icon" />
@@ -182,7 +182,7 @@
                 android:drawableTint="?android:attr/textColorPrimary"
                 android:text="@string/see_all_bluetooth_devices"
                 android:textSize="14sp"
-                android:textAppearance="@style/TextAppearance.BluetoothTileDialog"
+                android:textAppearance="@style/TextAppearance.TileDetailsEntryTitle"
                 android:textDirection="locale"
                 android:textAlignment="viewStart"
                 android:maxLines="1"
@@ -241,7 +241,7 @@
             <Button
                 android:id="@+id/audio_sharing_button"
                 style="@style/BluetoothTileDialog.AudioSharingButton"
-                android:textAppearance="@style/TextAppearance.BluetoothTileDialog"
+                android:textAppearance="@style/TextAppearance.TileDetailsEntryTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="9dp"

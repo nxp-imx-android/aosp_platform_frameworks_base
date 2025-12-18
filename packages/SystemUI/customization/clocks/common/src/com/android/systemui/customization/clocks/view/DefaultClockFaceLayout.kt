@@ -81,7 +81,7 @@ open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
                 Modifier.wrapContentWidth()
                     .fillMaxHeight()
                     .then(contentScope.smallClockModifier())
-                    .then(context.burnInModifier(isClock = true))
+                    .then(context.burnInModifiers.clock)
                     .then(context.nonAuthUIModifier),
             )
         }
@@ -98,7 +98,7 @@ open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
                 view,
                 Modifier.wrapContentSize()
                     .then(contentScope.largeClockModifier())
-                    .then(context.burnInModifier(isClock = true))
+                    .then(context.burnInModifiers.clock)
                     .then(context.nonAuthUIModifier),
             )
         }

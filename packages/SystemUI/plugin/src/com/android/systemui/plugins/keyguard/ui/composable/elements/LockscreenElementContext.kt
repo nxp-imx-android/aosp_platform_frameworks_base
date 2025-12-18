@@ -14,15 +14,14 @@
 
 package com.android.systemui.plugins.keyguard.ui.composable.elements
 
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.android.compose.animation.scene.Key
 import com.android.systemui.plugins.keyguard.VRectF
 
 /** Combined context for lockscreen elements. Contains relevant rendering parameters. */
 data class LockscreenElementContext(
-    /** Modifier to apply to elements that should handle burn-in when dozing */
-    private val burnInModifierBuilder: @Composable (Boolean) -> Modifier = { Modifier },
+    /** Modifiers for elements that require burn-in mitigation */
+    val burnInModifiers: BurnInModifiers = BurnInModifiers(),
 
     /** Callback executed when an element is positioned by compose. */
     val onElementPositioned: (Key, VRectF) -> Unit = { _, _ -> },
@@ -30,5 +29,11 @@ data class LockscreenElementContext(
     /** Modifier to apply to elements that should be hidden when only showing authUI when dozing */
     val nonAuthUIModifier: Modifier = Modifier,
 ) {
-    @Composable fun burnInModifier(isClock: Boolean) = burnInModifierBuilder(isClock)
+    data class BurnInModifiers(
+        /** BurnIn modifier for clock elements */
+        val clock: Modifier = Modifier,
+
+        /** BurnIn modifier for non-clock elements */
+        val nonClock: Modifier = Modifier,
+    )
 }

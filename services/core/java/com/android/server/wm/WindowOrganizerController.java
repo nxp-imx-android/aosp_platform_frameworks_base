@@ -938,6 +938,11 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
             container.setIsTaskMoveAllowed(change.getIsTaskMoveAllowed());
         }
 
+        if ((change.getChangeMask()
+                & WindowContainerTransaction.Change.CHANGE_FULLSCREEN_REQUEST_ALLOW_MODE) != 0) {
+            container.setFullscreenRequestAllowMode(change.getFullscreenRequestAllowMode());
+        }
+
         if (windowingMode > -1) {
             if (mService.isInLockTaskMode()
                     && WindowConfiguration.inMultiWindowMode(windowingMode)

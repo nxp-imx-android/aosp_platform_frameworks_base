@@ -71,4 +71,5 @@ public class AppFunctionStaticMetadataHelper {
                 APP_FUNCTION_STATIC_NAMESPACE,
                 getDocumentIdForAppFunction(packageName, functionId));
     }
+
 }

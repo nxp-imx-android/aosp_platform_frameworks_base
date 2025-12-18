@@ -16,9 +16,6 @@
 
 package com.android.systemui.qs.panels.ui.compose
 
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
-import android.platform.test.flag.junit.FlagsParameterization
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,8 +29,6 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onAllNodesWithContentDescription
-import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -45,13 +40,13 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.text.AnnotatedString
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.compose.modifiers.resIdToTestTag
-import com.android.systemui.qs.flags.QsEditModeV2
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.DefaultEditTileGrid
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditAction
 import com.android.systemui.qs.panels.ui.viewmodel.AvailableEditActions
@@ -65,17 +60,11 @@ import org.junit.Assert.assertThrows
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4
-import platform.test.runner.parameterized.Parameters
 
 @OptIn(ExperimentalTestApi::class)
 @SmallTest
-@RunWith(ParameterizedAndroidJunit4::class)
-class EditModeTest(flags: FlagsParameterization) : SysuiTestCase() {
-
-    init {
-        mSetFlagsRule.setFlagsParameterization(flags)
-    }
+@RunWith(AndroidJUnit4::class)
+class EditModeTest : SysuiTestCase() {
 
     @get:Rule val composeRule = createComposeRule()
 
@@ -149,29 +138,8 @@ class EditModeTest(flags: FlagsParameterization) : SysuiTestCase() {
         composeRule.assertAvailableTilesGridContainsExactly(TestEditTiles.map { it.tileSpec.spec })
     }
 
-    @DisableFlags(QsEditModeV2.FLAG_NAME)
     @Test
     fun clickCurrentTile_shouldRemove() {
-        composeRule.setContent { EditTileGridUnderTest() }
-        composeRule.waitForIdle()
-
-        // Tap to remove
-        composeRule
-            .onAllNodesWithContentDescription(
-                context.getString(R.string.accessibility_qs_edit_remove_tile_action)
-            )
-            .onFirst()
-            .performClick()
-
-        composeRule.assertCurrentTilesGridContainsExactly(
-            listOf("tileB", "tileC", "tileD_large", "tileE")
-        )
-        composeRule.assertAvailableTilesGridContainsExactly(TestEditTiles.map { it.tileSpec.spec })
-    }
-
-    @EnableFlags(QsEditModeV2.FLAG_NAME)
-    @Test
-    fun clickCurrentTile_shouldRemove_v2() {
         composeRule.setContent { EditTileGridUnderTest() }
         composeRule.waitForIdle()
 
@@ -326,7 +294,6 @@ class EditModeTest(flags: FlagsParameterization) : SysuiTestCase() {
         composeRule.onNodeWithText("tileF").assertDoesNotExist()
     }
 
-    @EnableFlags(QsEditModeV2.FLAG_NAME)
     @Test
     fun topBar_reactsToScroll() {
         composeRule.setContent { EditTileGridUnderTest() }
@@ -353,10 +320,6 @@ class EditModeTest(flags: FlagsParameterization) : SysuiTestCase() {
     ) = assertGridContainsExactly(AVAILABLE_TILES_GRID_TEST_TAG, specs)
 
     companion object {
-
-        @Parameters(name = "{0}")
-        @JvmStatic
-        fun data() = FlagsParameterization.progressionOf(QsEditModeV2.FLAG_NAME)
 
         private val CURRENT_TILES_GRID_TEST_TAG = resIdToTestTag("CurrentTilesGrid")
         private val AVAILABLE_TILES_GRID_TEST_TAG = resIdToTestTag("AvailableTilesGrid")

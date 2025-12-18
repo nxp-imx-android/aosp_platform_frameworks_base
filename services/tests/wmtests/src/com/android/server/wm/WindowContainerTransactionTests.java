@@ -16,6 +16,10 @@
 
 package com.android.server.wm;
 
+import static android.app.FullscreenRequestHandler.REQUEST_ALLOW_MODE_ENTER;
+import static android.app.FullscreenRequestHandler.REQUEST_ALLOW_MODE_EXIT;
+import static android.app.FullscreenRequestHandler.REQUEST_ALLOW_MODE_INHERIT;
+import static android.app.FullscreenRequestHandler.REQUEST_ALLOW_MODE_NONE;
 import static android.app.TaskInfo.SELF_MOVABLE_ALLOWED;
 import static android.app.TaskInfo.SELF_MOVABLE_DEFAULT;
 import static android.app.TaskInfo.SELF_MOVABLE_DENIED;
@@ -738,6 +742,77 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
         assertTrue("Root task should be updated to handle package updates",
                 rootTask.mHandlePackageUpdate);
         assertFalse("Leaf task should not handle package updates", leafTask.mHandlePackageUpdate);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_DELEGATE_REQUEST_FULLSCREEN_HANDLING_TO_SHELL)
+    public void setFullscreenRequestAllowMode_modeIsInherit_ancestorsInherit_resolvesDisallowed() {
+        final Task task = createTask(mDisplayContent);
+
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        final WindowContainerToken token = task.getTaskInfo().token;
+        wct.setFullscreenRequestAllowMode(token, REQUEST_ALLOW_MODE_INHERIT);
+        applyTransaction(wct);
+
+        assertEquals(REQUEST_ALLOW_MODE_NONE, task.getFullscreenRequestAllowMode());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_DELEGATE_REQUEST_FULLSCREEN_HANDLING_TO_SHELL)
+    public void setFullscreenRequestAllowMode_modeIsInherit_ancestorsAllowEntry_resolvesAllowed() {
+        final Task rootTask = createTask(mDisplayContent, WINDOWING_MODE_MULTI_WINDOW,
+                ACTIVITY_TYPE_STANDARD);
+        rootTask.setFullscreenRequestAllowMode(REQUEST_ALLOW_MODE_ENTER);
+        final Task leafTask = new TaskBuilder(mSupervisor)
+                .setParentTask(rootTask)
+                .build();
+        leafTask.setParent(rootTask);
+
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        final WindowContainerToken token = leafTask.getTaskInfo().token;
+        wct.setFullscreenRequestAllowMode(token, REQUEST_ALLOW_MODE_INHERIT);
+        applyTransaction(wct);
+
+        assertEquals(REQUEST_ALLOW_MODE_ENTER, leafTask.getFullscreenRequestAllowMode());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_DELEGATE_REQUEST_FULLSCREEN_HANDLING_TO_SHELL)
+    public void setFullscreenRequestAllowMode_modeIsAllowEnter_resolvesAllowEnter() {
+        final Task task = createTask(mDisplayContent);
+
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        final WindowContainerToken token = task.getTaskInfo().token;
+        wct.setFullscreenRequestAllowMode(token, REQUEST_ALLOW_MODE_ENTER);
+        applyTransaction(wct);
+
+        assertEquals(REQUEST_ALLOW_MODE_ENTER, task.getFullscreenRequestAllowMode());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_DELEGATE_REQUEST_FULLSCREEN_HANDLING_TO_SHELL)
+    public void setFullscreenRequestAllowMode_modeIsAllowExit_resolvesAllowExit() {
+        final Task task = createTask(mDisplayContent);
+
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        final WindowContainerToken token = task.getTaskInfo().token;
+        wct.setFullscreenRequestAllowMode(token, REQUEST_ALLOW_MODE_EXIT);
+        applyTransaction(wct);
+
+        assertEquals(REQUEST_ALLOW_MODE_EXIT, task.getFullscreenRequestAllowMode());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_DELEGATE_REQUEST_FULLSCREEN_HANDLING_TO_SHELL)
+    public void setFullscreenRequestAllowMode_modeIsAllowNone_resolvesAllowNone() {
+        final Task task = createTask(mDisplayContent);
+
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        final WindowContainerToken token = task.getTaskInfo().token;
+        wct.setFullscreenRequestAllowMode(token, REQUEST_ALLOW_MODE_NONE);
+        applyTransaction(wct);
+
+        assertEquals(REQUEST_ALLOW_MODE_NONE, task.getFullscreenRequestAllowMode());
     }
 
     private Task createTask(int taskId) {

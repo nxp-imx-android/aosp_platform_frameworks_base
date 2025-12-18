@@ -18,6 +18,8 @@ package android.media.tv.extension.time;
 
 import android.os.Bundle;
 
+import android.media.tv.extension.time.IBroadcastTimeListener;
+
 /**
  * @hide
  */
@@ -57,4 +59,16 @@ interface IBroadcastTime {
      * @return The local time in milliseconds since the Unix epoch.
      */
     long getLocalTimePerStream(String SessionToken);
+    /**
+     * Registers a listener to receive notification when the broadcast time changes.
+     *
+     * @param listener The listener to register.
+     */
+    void addListener(in IBroadcastTimeListener listener);
+    /**
+     * Removes a previously registered listener.
+     *
+     * @param listener The listener to remove.
+     */
+    void removeListener(in IBroadcastTimeListener listener);
 }
