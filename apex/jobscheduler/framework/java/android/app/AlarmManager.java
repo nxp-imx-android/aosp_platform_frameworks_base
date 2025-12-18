@@ -23,6 +23,7 @@ import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SdkConstant;
 import android.annotation.SdkConstant.SdkConstantType;
+import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.TestApi;
@@ -1517,6 +1518,22 @@ public class AlarmManager {
     public boolean hasScheduleExactAlarm(@NonNull String packageName, int userId) {
         try {
             return mService.hasScheduleExactAlarm(packageName, userId);
+        } catch (RemoteException re) {
+            throw re.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Returns the minimum delay between two slots that an app can get for their prioritized alarms,
+     * while the device is in doze.
+     *
+     * @hide
+     */
+    @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
+    @TestApi
+    public long getPrioritizedAlarmDelay() {
+        try {
+            return mService.getPrioritizedAlarmDelay();
         } catch (RemoteException re) {
             throw re.rethrowFromSystemServer();
         }
