@@ -22,6 +22,7 @@ import static android.view.WindowInsets.Type.statusBars;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 import static android.view.WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
+import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_CAPTION_BAR;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 
 import android.annotation.NonNull;
@@ -381,7 +382,7 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
                 new WindowManager.LayoutParams(
                         outResult.mCaptionWidth,
                         outResult.mCaptionHeight,
-                        TYPE_APPLICATION,
+                        TYPE_APPLICATION_CAPTION_BAR,
                         FLAG_NOT_FOCUSABLE,
                         PixelFormat.TRANSPARENT);
         lp.setTitle("Caption of Task=" + mTaskInfo.taskId);

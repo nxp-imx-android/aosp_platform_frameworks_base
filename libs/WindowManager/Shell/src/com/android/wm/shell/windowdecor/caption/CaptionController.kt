@@ -261,7 +261,7 @@ abstract class CaptionController<T>(
                 WindowManager.LayoutParams(
                         captionWidth,
                         captionHeight,
-                        WindowManager.LayoutParams.TYPE_APPLICATION,
+                        WindowManager.LayoutParams.TYPE_APPLICATION_CAPTION_BAR,
                         flags,
                         PixelFormat.TRANSPARENT,
                     )
