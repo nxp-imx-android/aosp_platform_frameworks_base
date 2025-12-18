@@ -2514,6 +2514,7 @@ public class KeyguardViewMediator implements CoreStartable,
                 // If the hub is not available, go to sleep instead of locking. This can happen
                 // because the power button behavior does not check all possible reasons the hub
                 // might be disabled.
+                Log.d(TAG, "going to sleep due to power button press");
                 mPM.goToSleep(android.os.SystemClock.uptimeMillis(),
                         PowerManager.GO_TO_SLEEP_REASON_POWER_BUTTON, 0);
                 return;
