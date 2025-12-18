@@ -38,6 +38,7 @@ class SystemUIIssueRegistry : IssueRegistry() {
                 DumpableNotRegisteredDetector.ISSUE,
                 ExposeFlowFromUiLayerDetector.ISSUE,
                 FlowDetector.SHARED_FLOW_CREATION,
+                IncludeRunWithAnnotationDetector.ISSUE,
                 MainThreadCoroutineScopeDetector.ISSUE,
                 MissingApacheLicenseDetector.ISSUE,
                 NonInjectedMainThreadDetector.ISSUE,
