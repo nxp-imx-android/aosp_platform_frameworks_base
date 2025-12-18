@@ -120,13 +120,14 @@ public class SupervisionManager {
             "android.app.supervision.action.ENABLE_SUPERVISION";
 
     /**
-     * Activity Action: Ask the user to confirm disabling supervision.
+     * Activity Action: Request to disable supervision.
      *
-     * <p>The intent must be invoked via {@link Activity#startActivityForResult} to receive the
-     * result of whether or not the user approved the action. If approved, the result will be {@link
-     * Activity#RESULT_OK}.
+     * <p>The intent can only be started by apps that hold the {@link
+     * android.app.role.RoleManager#ROLE_SUPERVISION} role. If there are no other apps that hold the
+     * role, supervision will be disabled and the role will be removed from the calling app.
      *
-     * <p>If supervision is not enabled, the operation will return a failure result.
+     * <p>If there are other apps that hold the role, then the role will still be removed from the
+     * calling app, but supervision will remain enabled.
      *
      * @hide
      */
