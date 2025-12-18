@@ -68,6 +68,7 @@ import com.android.wm.shell.bubbles.util.DefaultBubblePolicyHelper;
 import com.android.wm.shell.common.AlphaOptimizedButton;
 import com.android.wm.shell.shared.TriangleShape;
 import com.android.wm.shell.shared.TypefaceUtils;
+import com.android.wm.shell.shared.bubbles.ContextUtils;
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 import com.android.wm.shell.taskview.TaskView;
 
@@ -352,8 +353,13 @@ public class BubbleExpandedView extends LinearLayout {
                         @Override
                         public void onTaskInfoChanged(RunningTaskInfo taskInfo) {
                             if (mBubble != null && taskInfo != null) {
-                                mBubble.setIsTaskValidToBubble(
-                                        mBubblePolicyHelper.isValidToBubble(taskInfo));
+                                final boolean isTaskResizable = taskInfo.isResizeable;
+                                final boolean isNonResizableTaskAndValidOnSmallScreen =
+                                        !isTaskResizable && ContextUtils
+                                                .getSupportsNonResizableMultiWindowOnSmallScreen(
+                                                        mContext);
+                                mBubble.setIsTaskValidToBubbleOnSmallScreen(
+                                        isTaskResizable || isNonResizableTaskAndValidOnSmallScreen);
                             }
                         }
                     });

@@ -49,6 +49,12 @@ object DefaultBubblePolicyHelper : BubblePolicyHelper {
             task.taskId,
             bubble.key,
         )
+
+        // Show an error toast if the task became invalid to bubble and that is why we're moving it
+        // out of bubble.
+        if (!isValidToBubble(task)) {
+            showBubbleNotSupportedErrorToast(bubble.taskView.getContext())
+        }
         val taskViewTaskController: TaskViewTaskController = bubble.taskView.controller
         val taskOrganizer: ShellTaskOrganizer = taskViewTaskController.taskOrganizer
 

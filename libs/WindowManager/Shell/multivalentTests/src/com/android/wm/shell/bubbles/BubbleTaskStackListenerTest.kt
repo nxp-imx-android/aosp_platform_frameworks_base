@@ -78,6 +78,7 @@ class BubbleTaskStackListenerTest {
         ActivityManager.RunningTaskInfo().apply {
             taskId = bubbleTaskId
             token = bubbleTaskToken
+            supportsMultiWindow = true
         }
 
     @Before

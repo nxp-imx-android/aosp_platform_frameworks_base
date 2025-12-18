@@ -36,7 +36,6 @@ import com.android.wm.shell.bubbles.Bubble
 import com.android.wm.shell.bubbles.BubbleExpandedViewManager
 import com.android.wm.shell.bubbles.BubblePositioner
 import com.android.wm.shell.bubbles.BubbleTaskView
-import com.android.wm.shell.bubbles.FakeBubbleExpandedViewManager
 import com.android.wm.shell.bubbles.FakeBubbleFactory
 import com.android.wm.shell.bubbles.FakeBubbleTaskViewFactory
 import com.android.wm.shell.bubbles.UiEventSubject.Companion.assertThat
@@ -101,7 +100,12 @@ class BubbleBarExpandedViewTest {
             )
         positioner.update(deviceConfig)
 
-        expandedViewManager = FakeBubbleExpandedViewManager(bubbleBar = true, expanded = true)
+        expandedViewManager =
+            mock<BubbleExpandedViewManager> {
+                on { isShowingAsBubbleBar() } doReturn true
+                on { isStackExpanded() } doReturn true
+            }
+
         bubbleTaskViewFactory = FakeBubbleTaskViewFactory(context, mainExecutor)
 
         bubble = FakeBubbleFactory.createChatBubble(context)
@@ -331,27 +335,25 @@ class BubbleBarExpandedViewTest {
     }
 
     @Test
-    fun onTaskInfoChanged_invalidTask_showsToastAndMovesOutOfBubble() {
+    fun onTaskInfoChanged_invalidTask_collapseStack() {
         val taskInfo = RunningTaskInfo()
         taskInfo.supportsMultiWindow = false
         bubblePolicyHelper.stub { on { isValidToBubble(taskInfo) } doReturn false }
 
         bubbleExpandedView.onTaskInfoChanged(taskInfo)
 
-        verify(bubblePolicyHelper).showBubbleNotSupportedErrorToast(context)
-        verify(bubblePolicyHelper).moveExistingTaskOutOfBubble(bubble, taskInfo)
+        verify(expandedViewManager).collapseStack()
     }
 
     @Test
-    fun onTaskInfoChanged_validTask_doesNotShowToastOrMovesOutOfBubble() {
+    fun onTaskInfoChanged_validTask_doesNotCollapseStack() {
         val taskInfo = RunningTaskInfo()
         taskInfo.supportsMultiWindow = true
         bubblePolicyHelper.stub { on { isValidToBubble(taskInfo) } doReturn true }
 
         bubbleExpandedView.onTaskInfoChanged(taskInfo)
 
-        verify(bubblePolicyHelper, never()).showBubbleNotSupportedErrorToast(context)
-        verify(bubblePolicyHelper, never()).moveExistingTaskOutOfBubble(bubble, taskInfo)
+        verify(expandedViewManager, never()).collapseStack()
     }
 
     private fun BubbleBarExpandedView.menuView(): BubbleBarMenuView {
