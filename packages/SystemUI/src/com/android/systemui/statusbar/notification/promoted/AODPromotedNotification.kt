@@ -333,14 +333,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     private val defaultLargeIconSizePx: Int =
         root.context.resources.getDimensionPixelSize(R.dimen.notification_right_icon_size)
 
-    // TODO: This try-catch is unnecessary, consider removing it.
-    private val defaultTypeface: Typeface? =
-        try {
-            Typeface.create(FontStyles.GSF_BODY_MEDIUM, Typeface.NORMAL)
-        } catch (_: Throwable) {
-            Log.wtf(TAG, "Font is not found for Promoted Notifications")
-            null
-        }
+    private val defaultTypeface = Typeface.create(FontStyles.GSF_BODY_MEDIUM, Typeface.NORMAL)
 
     private val marginPx: Int =
         root.context.resources.getDimensionPixelSize(R.dimen.notification_2025_margin)
