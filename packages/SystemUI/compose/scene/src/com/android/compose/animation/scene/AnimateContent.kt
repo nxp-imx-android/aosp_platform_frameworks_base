@@ -63,20 +63,20 @@ internal class OneOffAnimation {
     /**
      * The animatable used to animate this transition.
      *
-     * Note: This is lateinit because we need to first create this object so that
+     * Note: This is nullable because we need to first create this object so that
      * [SceneTransitionLayoutState] can compute the transformations and animation spec associated to
      * the transition, which is needed to initialize this Animatable.
      */
-    lateinit var animatable: Animatable<Float, AnimationVector1D>
+    var animatable: Animatable<Float, AnimationVector1D>? = null
 
     /** The runnable to run for this animation. */
     lateinit var onRun: suspend () -> Unit
 
     val progress: Float
-        get() = animatable.value
+        get() = animatable?.value ?: 0f
 
     val progressVelocity: Float
-        get() = animatable.velocity
+        get() = animatable?.velocity ?: 0f
 
     suspend fun run() {
         onRun()
