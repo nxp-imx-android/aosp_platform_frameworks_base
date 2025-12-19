@@ -1902,7 +1902,7 @@ public class Notification implements Parcelable
      * @hide
      */
     @SystemApi
-    @RequiresPermission("android.Manifest.permission.HIDE_STATUS_BAR_NOTIFICATION")
+    @RequiresPermission(android.Manifest.permission.HIDE_STATUS_BAR_NOTIFICATION)
     public static final String EXTRA_HIDE_STATUS_BAR_NOTIFICATION =
             "android.hideStatusBarNotification";
 
