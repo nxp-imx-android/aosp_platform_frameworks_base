@@ -618,6 +618,7 @@ public class SettingsBackupTest {
                     Settings.Global.Wearable.COOLDOWN_MODE_ON,
                     Settings.Global.Wearable.BEDTIME_MODE,
                     Settings.Global.Wearable.BEDTIME_HARD_MODE,
+                    Settings.Global.Wearable.WEAR_CHARGING_EXPERIENCE_ENABLED,
                     Settings.Global.Wearable.VIBRATE_FOR_ACTIVE_UNLOCK,
                     Settings.Global.Wearable.LOCK_SCREEN_STATE,
                     Settings.Global.Wearable.DISABLE_AOD_WHILE_PLUGGED,
