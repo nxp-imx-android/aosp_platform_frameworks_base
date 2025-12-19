@@ -872,6 +872,15 @@ final class KeyGestureController {
                 Slog.wtf(TAG, "KEYCODE_VOICE_ASSIST should be handled in"
                         + " interceptKeyBeforeQueueing");
                 return true;
+            case KeyEvent.KEYCODE_CONTEXTUAL_SEARCH:
+                if (down && !hasModifiers) {
+                    handleKeyGesture(deviceId, new int[]{keyCode}, /* modifierState = */0,
+                            KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH,
+                            KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
+                            focusedToken, /* flags = */0, /* appLaunchData = */null);
+                    return true;
+                }
+                break;
             case KeyEvent.KEYCODE_STYLUS_BUTTON_PRIMARY:
             case KeyEvent.KEYCODE_STYLUS_BUTTON_SECONDARY:
             case KeyEvent.KEYCODE_STYLUS_BUTTON_TERTIARY:

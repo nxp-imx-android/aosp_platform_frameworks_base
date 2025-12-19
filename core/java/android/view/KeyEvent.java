@@ -1369,6 +1369,18 @@ public class KeyEvent extends InputEvent implements Parcelable {
      */
     @FlaggedApi(Flags.FLAG_ENABLE_NEW_26Q2_KEYCODES)
     public static final int KEYCODE_ACCESSIBILITY = 338;
+    /** Key code constant: Contextual Search key.
+     * <p>
+     * Introduced by HUTRR119, invokes an AI agent to perform an action on the
+     * content currently selected by the user (e.g., highlighted text, active
+     * image, or selected file) or invoke a selection experience. Often referred
+     * to as "Select to Search" or "Summarize Selection."
+     *
+     * This key is fully handled by the framework and will not be sent to the
+     * foreground app.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_NEW_26Q2_KEYCODES)
+    public static final int KEYCODE_CONTEXTUAL_SEARCH = 339;
 
     /**
      * Integer value of the last KEYCODE. Increases as new keycodes are added to KeyEvent.
@@ -1376,7 +1388,7 @@ public class KeyEvent extends InputEvent implements Parcelable {
      */
     @TestApi
     @SuppressWarnings("FlaggedApi")
-    public static final int LAST_KEYCODE = KEYCODE_ACCESSIBILITY;
+    public static final int LAST_KEYCODE = KEYCODE_CONTEXTUAL_SEARCH;
 
     /** @hide */
     @IntDef(prefix = {"KEYCODE_"}, value = {
@@ -1719,6 +1731,7 @@ public class KeyEvent extends InputEvent implements Parcelable {
             KEYCODE_F23,
             KEYCODE_F24,
             KEYCODE_ACCESSIBILITY,
+            KEYCODE_CONTEXTUAL_SEARCH,
     })
     @Retention(RetentionPolicy.SOURCE)
     @interface KeyCode {}
@@ -2920,6 +2933,7 @@ public class KeyEvent extends InputEvent implements Parcelable {
             case KeyEvent.KEYCODE_SYSTEM_NAVIGATION_RIGHT:
             case KeyEvent.KEYCODE_STEM_PRIMARY:
             case KeyEvent.KEYCODE_ACCESSIBILITY:
+            case KeyEvent.KEYCODE_CONTEXTUAL_SEARCH:
                 return true;
         }
 
