@@ -18,10 +18,17 @@ package com.android.server.personalcontext.embedded;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import android.content.res.Configuration;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.embedded.IEmbeddedInsightSurfaceCallback;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
+import android.service.personalcontext.insight.BundleInsight;
 import android.window.InputTransferToken;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -30,35 +37,60 @@ import androidx.test.filters.SmallTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class EmbeddedInsightRendererTest {
+    @Mock
+    private ClientRegistry mClientRegistry;
+    @Mock
+    private VisualizerRegistry mVisualizerRegistry;
     private EmbeddedInsightRenderer mEmbeddedInsightRenderer;
 
     @Before
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        mEmbeddedInsightRenderer = new EmbeddedInsightRenderer();
+        mEmbeddedInsightRenderer =
+                new EmbeddedInsightRenderer(mClientRegistry, mVisualizerRegistry, Runnable::run);
     }
 
     @Test
     public void testRegisterInsightSurfaceClient() {
         final InsightSurfaceClientInfo client = createClient();
-        final RenderToken renderToken =
-                mEmbeddedInsightRenderer.registerInsightSurfaceClient(client);
+        AtomicReference<RenderToken> renderToken = new AtomicReference<>();
+        mEmbeddedInsightRenderer.registerInsightSurfaceClient(client, renderToken::set);
         assertThat(renderToken).isNotNull();
-        assertThat(mEmbeddedInsightRenderer.getClients().size()).isEqualTo(1);
+        verify(mClientRegistry).addClient(client, renderToken.get());
+        assertThat(renderToken.get()).isNotNull();
     }
 
     @Test
     public void testUnregisterInsightSurfaceClient() {
         final InsightSurfaceClientInfo client = createClient();
-        mEmbeddedInsightRenderer.registerInsightSurfaceClient(client);
-        assertThat(mEmbeddedInsightRenderer.getClients().size()).isEqualTo(1);
+        when(mClientRegistry.removeClient(client.getId())).thenReturn(client);
+
+        AtomicReference<RenderToken> renderToken = new AtomicReference<>();
+        mEmbeddedInsightRenderer.registerInsightSurfaceClient(client, renderToken::set);
         mEmbeddedInsightRenderer.unregisterInsightSurfaceClient(client.getId());
-        assertThat(mEmbeddedInsightRenderer.getClients().size()).isEqualTo(0);
+        verify(mClientRegistry).removeClient(client.getId());
+    }
+
+    @Test
+    public void testRender() {
+        final InsightSurfaceClientInfo client = createClient();
+        when(mClientRegistry.isEmpty()).thenReturn(false);
+        when(mClientRegistry.getClientForRenderToken(any())).thenReturn(client);
+        when(mVisualizerRegistry.isEmpty()).thenReturn(false);
+
+        final BundleInsight insight = new BundleInsight.Builder().build();
+        mEmbeddedInsightRenderer.render(insight);
+
+        verify(mVisualizerRegistry).createVisualizationForClient(
+                argThat(insights -> insights.contains(insight)), eq(client));
     }
 
     private InsightSurfaceClientInfo createClient() {
