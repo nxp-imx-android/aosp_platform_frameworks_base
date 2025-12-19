@@ -85,7 +85,7 @@ public class AppDataRollbackHelper {
      *         userId} to the list of pending backups or restores.
      */
     public boolean restoreAppData(int rollbackId, PackageRollbackInfo packageRollbackInfo,
-            int userId, int appId, String seInfo) {
+            int userId, int appId, int pccId, String seInfo) {
         int storageFlags = Installer.FLAG_STORAGE_DE;
 
         final List<Integer> pendingBackups = packageRollbackInfo.getPendingBackups();
@@ -104,7 +104,7 @@ public class AppDataRollbackHelper {
             if (isUserCredentialLocked(userId)) {
                 // We've encountered a user that hasn't unlocked on a FBE device, so we can't
                 // copy across app user data until the user unlocks their device.
-                pendingRestores.add(new RestoreInfo(userId, appId, seInfo));
+                pendingRestores.add(new RestoreInfo(userId, appId, pccId, seInfo));
                 changedRollback = true;
             } else {
                 // This user has unlocked, we can proceed to restore both CE and DE data.
@@ -112,7 +112,8 @@ public class AppDataRollbackHelper {
             }
         }
 
-        doRestoreOrWipe(packageRollbackInfo, userId, rollbackId, appId, seInfo, storageFlags);
+        doRestoreOrWipe(
+                packageRollbackInfo, userId, rollbackId, appId, pccId, seInfo, storageFlags);
 
         return changedRollback;
     }
@@ -140,7 +141,7 @@ public class AppDataRollbackHelper {
     }
 
     private boolean doRestoreOrWipe(PackageRollbackInfo packageRollbackInfo, int userId,
-            int rollbackId, int appId, String seInfo, int flags) {
+            int rollbackId, int appId, int pccId, String seInfo, int flags) {
         if (packageRollbackInfo.isApex()) {
             switch (packageRollbackInfo.getRollbackDataPolicy()) {
                 case PackageManager.ROLLBACK_DATA_POLICY_WIPE:
@@ -167,7 +168,7 @@ public class AppDataRollbackHelper {
                     case PackageManager.ROLLBACK_DATA_POLICY_RESTORE:
 
                         mInstaller.restoreAppDataSnapshot(packageRollbackInfo.getPackageName(),
-                                appId, seInfo, userId, rollbackId, flags);
+                                appId, pccId, seInfo, userId, rollbackId, flags);
                         break;
                     default:
                         break;
@@ -258,7 +259,7 @@ public class AppDataRollbackHelper {
             }
 
             if (hasPendingRestore && doRestoreOrWipe(info, userId, rollback.info.getRollbackId(),
-                    ri.appId, ri.seInfo, Installer.FLAG_STORAGE_CE)) {
+                    ri.appId, ri.pccId, ri.seInfo, Installer.FLAG_STORAGE_CE)) {
                 info.removeRestoreInfo(ri);
             }
         }

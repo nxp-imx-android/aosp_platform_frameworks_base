@@ -994,15 +994,15 @@ class RollbackManagerServiceImpl extends IRollbackManager.Stub implements Rollba
     @ExtThread
     @Override
     public void snapshotAndRestoreUserData(String packageName, List<UserHandle> users, int appId,
-            long ceDataInode, String seInfo, int token) {
+            int pccId, long ceDataInode, String seInfo, int token) {
         assertNotInWorkerThread();
-        snapshotAndRestoreUserData(packageName, UserHandle.fromUserHandles(users), appId,
+        snapshotAndRestoreUserData(packageName, UserHandle.fromUserHandles(users), appId, pccId,
                 ceDataInode, seInfo, token);
     }
 
     @ExtThread
     @Override
-    public void snapshotAndRestoreUserData(String packageName, int[] userIds, int appId,
+    public void snapshotAndRestoreUserData(String packageName, int[] userIds, int appId, int pccId,
             long ceDataInode, String seInfo, int token) {
         assertNotInWorkerThread();
         if (Binder.getCallingUid() != Process.SYSTEM_UID) {
@@ -1013,7 +1013,7 @@ class RollbackManagerServiceImpl extends IRollbackManager.Stub implements Rollba
         getHandler().post(() -> {
             assertInWorkerThread();
             snapshotUserDataInternal(packageName, userIds);
-            restoreUserDataInternal(packageName, userIds, appId, seInfo);
+            restoreUserDataInternal(packageName, userIds, appId, pccId, seInfo);
             // When this method is called as part of the install flow, a positive token number is
             // passed to it. Need to notify the PackageManager when we are done.
             if (token > 0) {
@@ -1039,7 +1039,7 @@ class RollbackManagerServiceImpl extends IRollbackManager.Stub implements Rollba
 
     @WorkerThread
     private void restoreUserDataInternal(
-            String packageName, int[] userIds, int appId, String seInfo) {
+            String packageName, int[] userIds, int appId, int pccId, String seInfo) {
         assertInWorkerThread();
         if (LOCAL_LOGV) {
             Slog.v(TAG, "restoreUserData pkg=" + packageName
@@ -1048,7 +1048,7 @@ class RollbackManagerServiceImpl extends IRollbackManager.Stub implements Rollba
         for (int i = 0; i < mRollbacks.size(); ++i) {
             Rollback rollback = mRollbacks.get(i);
             if (rollback.restoreUserDataForPackageIfInProgress(
-                    packageName, userIds, appId, seInfo, mAppDataRollbackHelper)) {
+                    packageName, userIds, appId, pccId, seInfo, mAppDataRollbackHelper)) {
                 return;
             }
         }
