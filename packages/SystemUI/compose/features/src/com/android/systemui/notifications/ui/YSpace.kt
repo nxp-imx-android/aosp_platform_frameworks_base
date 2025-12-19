@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.notification.stack.ui
+package com.android.systemui.notifications.ui
 
 /**
  * A pair of top and bottom Y-coordinates.

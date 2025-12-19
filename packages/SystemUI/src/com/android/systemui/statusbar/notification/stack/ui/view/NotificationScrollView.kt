@@ -17,10 +17,10 @@
 package com.android.systemui.statusbar.notification.stack.ui.view
 
 import android.view.View
+import com.android.systemui.notifications.ui.YSpace
 import com.android.systemui.statusbar.notification.stack.shared.model.AccessibilityScrollEvent
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrollState
-import com.android.systemui.statusbar.notification.stack.ui.YSpace
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationScrollViewModel.HeightSuppressionState
 import com.android.systemui.util.state.ObservableState
 import java.util.function.Consumer

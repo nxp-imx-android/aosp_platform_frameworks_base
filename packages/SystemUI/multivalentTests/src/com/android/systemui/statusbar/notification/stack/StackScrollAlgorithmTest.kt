@@ -16,9 +16,9 @@ import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.FeatureFlags
 import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.flags.andSceneContainer
+import com.android.systemui.notifications.ui.YSpace
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
-import com.android.systemui.statusbar.notification.shared.NotificationHeadsUpCycling
 import com.android.systemui.shade.transition.LargeScreenShadeInterpolator
 import com.android.systemui.statusbar.NotificationShelf
 import com.android.systemui.statusbar.StatusBarState
@@ -34,7 +34,7 @@ import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimator
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
-import com.android.systemui.statusbar.notification.stack.ui.YSpace
+import com.android.systemui.statusbar.notification.shared.NotificationHeadsUpCycling
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager
 import com.android.systemui.statusbar.ui.fakeSystemBarUtilsProxy
 import com.android.systemui.surfaceeffects.core.utils.MathUtils
@@ -1621,7 +1621,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         // Use half of the HUN's height as overlap
         childHunView.viewState.setYTranslation(
             (childHunView.viewState.height + 1 shr 1).toFloat(),
-            "test"
+            "test",
         )
         val algorithmState = StackScrollAlgorithm.StackScrollAlgorithmState()
         algorithmState.visibleChildren.add(childHunView)
@@ -1656,7 +1656,9 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
             createHunViewMock(isShadeOpen = true, fullyVisible = true, headerVisibleAmount = 1f)
         // HUN doesn't overlap with QQS Panel
         childHunView.viewState.setYTranslation(
-            ambientState.topPadding + ambientState.stackTranslation, "test")
+            ambientState.topPadding + ambientState.stackTranslation,
+            "test",
+        )
         val algorithmState = StackScrollAlgorithm.StackScrollAlgorithmState()
         algorithmState.visibleChildren.add(childHunView)
 
@@ -1915,7 +1917,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
                 height = 100
                 setYTranslation(
                     ambientState.maxHeadsUpTranslation - height,
-                    "test"
+                    "test",
                 ) // move it to the max
             }
 
@@ -1930,7 +1932,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
                 height = 100
                 setYTranslation(
                     ambientState.maxHeadsUpTranslation - height - 1,
-                    "test"
+                    "test",
                 ) // move it below the max
             }
 

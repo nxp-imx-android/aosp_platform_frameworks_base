@@ -95,6 +95,7 @@ import com.android.systemui.Dumpable;
 import com.android.systemui.ExpandHelper;
 import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.flags.Flags;
+import com.android.systemui.notifications.ui.YSpace;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.shade.QSHeaderBoundsProvider;
@@ -131,7 +132,6 @@ import com.android.systemui.statusbar.notification.stack.shared.model.Accessibil
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimBounds;
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape;
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrollState;
-import com.android.systemui.statusbar.notification.stack.ui.YSpace;
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView;
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationScrollViewModel.HeightSuppressionState;
 import com.android.systemui.statusbar.phone.HeadsUpAppearanceController;

@@ -24,7 +24,6 @@ import com.android.systemui.dump.DumpManager
 import com.android.systemui.notifications.ui.composable.HeadsUpPlaceholderContentPicker
 import com.android.systemui.notifications.ui.composable.NotificationContentPicker
 import com.android.systemui.notifications.ui.composable.StackPlaceholderContentPicker
-import com.android.systemui.statusbar.notification.stack.ui.YSpace
 import com.android.systemui.util.state.SynchronouslyObservableStateMap
 import java.io.PrintWriter
 import javax.inject.Inject
