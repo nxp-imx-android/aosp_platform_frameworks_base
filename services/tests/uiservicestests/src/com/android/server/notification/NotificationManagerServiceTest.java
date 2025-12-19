@@ -21438,7 +21438,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_MANAGED_SERVICES_DOUBLE_BINDING)
     public void onBroadcast_packageReplaced_notifiesListenersOnce() {
         simulatePackageReplacedBroadcasts("pkg", 123);
         waitForIdle();
