@@ -1156,6 +1156,13 @@ flag {
 }
 
 flag {
+    name: "enable_user_preferred_hdr_mode"
+    namespace: "lse_desktop_experience"
+    description: "Enables user control of preferred HDR mode"
+    bug: "378448831"
+}
+
+flag {
     name: "enable_window_context_resources_update_on_config_change"
     namespace: "lse_desktop_experience"
     description: "Updates window context resources before the view receives the config change callback."

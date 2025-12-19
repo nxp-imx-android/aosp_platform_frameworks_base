@@ -634,6 +634,43 @@ public final class DisplayManager {
     }
 
     /**
+     * Value for {@link HdrPreference}.
+     * Limits Display mode to SDR only.
+     * @hide
+     */
+    public static final int HDR_PREFERENCE_SDR_ONLY = 0;
+
+    /**
+     * Value for {@link HdrPreference}.
+     * Prefer HDR mode, fallback to SDR in case HDR is not supported.
+     * @hide
+     */
+    public static final int HDR_PREFERENCE_HDR_ALLOWED = 1;
+
+    /**
+     * Default value for {@link HdrPreference}
+     *
+     * @hide
+     */
+    public static final int DEFAULT_HDR_PREFERENCE = HDR_PREFERENCE_HDR_ALLOWED;
+
+    /**
+     * Constant representing user preference for HDR mode. Each display can have its own
+     * configuration, so this setting is persisted per-display using uniqueId as the key. Use {@link
+     * #DEFAULT_HDR_PREFERENCE} to determine default value
+     *
+     * @hide
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(
+            prefix = {"HDR_PREFERENCE_"},
+            value = {
+                HDR_PREFERENCE_SDR_ONLY,
+                HDR_PREFERENCE_HDR_ALLOWED,
+            })
+    public @interface HdrPreference {}
+
+    /**
      * @hide
      */
     @LongDef(flag = true, prefix = {"EVENT_TYPE_"}, value = {
@@ -1755,6 +1792,31 @@ public final class DisplayManager {
      */
     public int getExternalDisplayConnectionPreference(String uniqueId) {
         return mGlobal.getExternalDisplayConnectionPreference(uniqueId);
+    }
+
+    /**
+     * Sets the user HDR preferred mode for a given display.
+     *
+     * @param displayId The id of the display
+     * @param hdrPreference The integer HDR preferred mode value to save.
+     * @hide
+     */
+    @RequiresPermission(MANAGE_DISPLAYS)
+    public void setUserPreferredHdrMode(int displayId, @HdrPreference int hdrPreference) {
+        mGlobal.setUserPreferredHdrMode(displayId, hdrPreference);
+    }
+
+    /**
+     * Gets the user HDR preferred mode for a given display.
+     *
+     * @param displayId The id of the display
+     * @return The saved integer HDR preferred mode value.
+     * @hide
+     */
+    @RequiresPermission(MANAGE_DISPLAYS)
+    @HdrPreference
+    public int getUserPreferredHdrMode(int displayId) {
+        return mGlobal.getUserPreferredHdrMode(displayId);
     }
 
     /**

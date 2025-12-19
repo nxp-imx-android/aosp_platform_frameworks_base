@@ -31,6 +31,7 @@ import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHE
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE;
 import static android.hardware.display.DisplayManager.BRIGHTNESS_UNIT_NITS;
 import static android.hardware.display.DisplayManager.BRIGHTNESS_UNIT_PERCENTAGE;
+import static android.hardware.display.DisplayManager.DEFAULT_HDR_PREFERENCE;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_CAN_SHOW_WITH_INSECURE_KEYGUARD;
@@ -4451,6 +4452,35 @@ public final class DisplayManagerService extends SystemService {
         }
     }
 
+    private void setUserPreferredHdrModeInternal(int displayId, int preference) {
+        synchronized (mSyncRoot) {
+            DisplayDevice displayDevice = getDeviceForDisplayLocked(displayId);
+            if (displayDevice == null) {
+                Slog.w(
+                        TAG,
+                        "Attempted to set user HDR preference for a display that does not exist: "
+                                + displayId);
+                return;
+            }
+            if (mPersistentDataStore.setUserPreferredHdrMode(displayDevice, preference)) {
+                mPersistentDataStore.saveIfNeeded();
+                // TODO(b/460304742): Implement HDR mode voting in DisplayModeDirector. displayId
+                //   param will be used in the voting summary
+            }
+        }
+    }
+
+    private int getUserPreferredHdrModeInternal(int displayId) {
+        synchronized (mSyncRoot) {
+            DisplayDevice displayDevice = getDeviceForDisplayLocked(displayId);
+            if (displayDevice == null) {
+                return DEFAULT_HDR_PREFERENCE;
+            }
+
+            return mPersistentDataStore.getUserPreferredHdrMode(displayDevice);
+        }
+    }
+
     private final class DisplayManagerHandler extends Handler {
         private DisplayManagerHandler(Looper looper) {
             super(looper, null, true /*async*/);
@@ -5996,6 +6026,31 @@ public final class DisplayManagerService extends SystemService {
             final long token = Binder.clearCallingIdentity();
             try {
                 return getConnectionPreferenceInternal(uniqueId);
+            } finally {
+                Binder.restoreCallingIdentity(token);
+            }
+        }
+
+        @EnforcePermission(MANAGE_DISPLAYS)
+        @Override // Binder call
+        public void setUserPreferredHdrMode(int displayId, int preference) {
+            setUserPreferredHdrMode_enforcePermission();
+            // Use clearCallingIdentity to perform the work with system privileges
+            final long token = Binder.clearCallingIdentity();
+            try {
+                setUserPreferredHdrModeInternal(displayId, preference);
+            } finally {
+                Binder.restoreCallingIdentity(token);
+            }
+        }
+
+        @EnforcePermission(MANAGE_DISPLAYS)
+        @Override // Binder call
+        public int getUserPreferredHdrMode(int displayId) {
+            getUserPreferredHdrMode_enforcePermission();
+            final long token = Binder.clearCallingIdentity();
+            try {
+                return getUserPreferredHdrModeInternal(displayId);
             } finally {
                 Binder.restoreCallingIdentity(token);
             }
