@@ -43,7 +43,7 @@ import android.util.ArraySet;
 import android.util.SparseArray;
 import android.view.RemoteAnimationTarget;
 import android.view.SurfaceControl;
-import android.window.TaskOrganizer;
+import android.window.TaskCreationParams;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
@@ -140,12 +140,12 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
         mIconProvider = iconProvider;
         mWindowDecorViewModel = windowDecorViewModel;
         mBubbleHelper = bubbleController.map(BubbleController::getBubbleHelper);
-        taskOrganizer.createRootTask(
-                new TaskOrganizer.CreateRootTaskRequest()
-                        .setName(stageTypeToString(id).toLowerCase())
-                        .setDisplayId(displayId)
-                        .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW),
-                this);
+        final TaskCreationParams params = new TaskCreationParams.Builder()
+                .setName(stageTypeToString(id).toLowerCase())
+                .setDisplayId(displayId)
+                .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
+                .build();
+        taskOrganizer.createTask(params, this);
         mId = id;
     }
 
