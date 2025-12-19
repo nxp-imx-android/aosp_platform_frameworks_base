@@ -41,12 +41,13 @@ import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.animation.ComposableControllerFactory
 import com.android.systemui.animation.Expandable
 import com.android.systemui.animation.TransitionAnimator
+import com.android.systemui.animation.TransitionSource
 
 /** A controller that can control animated launches from an [Expandable]. */
 @Stable
 interface ExpandableController {
-    /** The [Expandable] controlled by this controller. */
-    val expandable: Expandable
+    /** The [TransitionSource] controlled by this controller. */
+    val transitionSource: TransitionSource
 
     /** Whether this controller is currently animating a launch. */
     val isAnimating: Boolean
@@ -251,8 +252,8 @@ internal class ExpandableControllerImpl(
             mMutableTransitionState,
         )
 
-    override val expandable: Expandable
-        get() = transitionDelegate.expandable
+    override val transitionSource: TransitionSource
+        get() = transitionDelegate.source
 
     override fun onDispose() {
         transitionDelegate.disposeController()
