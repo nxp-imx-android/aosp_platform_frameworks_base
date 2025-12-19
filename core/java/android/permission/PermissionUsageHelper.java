@@ -532,13 +532,10 @@ public class PermissionUsageHelper implements AppOpsManager.OnOpActiveChangedLis
                         > ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND_SERVICE;
             }
         }
-        if (android.location.flags.Flags.locationIndicatorGetUidImportanceFallback()) {
-            // In case a uid is not found because runningAppProcesses might return stale results
-            Slog.w(LOG_TAG, "UID " + uid + " not found in getRunningAppProcesses()");
-            return mActivityManager.getUidImportance(uid)
-                    > ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND_SERVICE;
-        }
-        return false;
+        // In case a uid is not found because runningAppProcesses might return stale results
+        Slog.w(LOG_TAG, "UID " + uid + " not found in getRunningAppProcesses()");
+        return mActivityManager.getUidImportance(uid)
+                > ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND_SERVICE;
     }
 
     /**
