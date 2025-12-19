@@ -16,6 +16,7 @@
 
 package com.android.server.appinteraction;
 
+import android.annotation.CurrentTimeMillisLong;
 import android.app.AppInteractionAttribution;
 import android.app.appfunctions.flags.Flags;
 import android.content.Context;
@@ -80,8 +81,7 @@ public class AppInteractionServiceImpl implements AppInteractionService {
             @NonNull String sourcePackage,
             @NonNull String targetPackage,
             @Nullable AppInteractionAttribution appInteractionAttribution,
-            long accessTime,
-            long duration,
+            @CurrentTimeMillisLong long accessTime,
             int userId) {
         if (!Flags.enableAppInteractionApi()) return;
 
@@ -105,8 +105,7 @@ public class AppInteractionServiceImpl implements AppInteractionService {
                                         sourcePackage,
                                         targetPackage,
                                         appInteractionAttribution,
-                                        accessTime,
-                                        duration);
+                                        accessTime);
                     } catch (IllegalStateException e) {
                         Slog.e(TAG, "Unable to insert App Interaction history", e);
                     }

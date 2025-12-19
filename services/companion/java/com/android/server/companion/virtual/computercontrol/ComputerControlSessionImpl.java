@@ -1021,7 +1021,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                                     componentName.getPackageName(),
                                     null, // TODO(b/454891648): get attribution from agent
                                     now,
-                                    0L, // TODO(b/454891648): remove unused duration
                                     userId);
                         });
             }
