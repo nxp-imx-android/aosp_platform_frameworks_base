@@ -16,6 +16,9 @@
 
 package com.android.wm.shell.pip2.phone;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.kotlin.VerificationKt.times;
@@ -50,6 +53,7 @@ import com.android.wm.shell.sysui.ShellInit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -105,5 +109,31 @@ public class PipControllerTest extends ShellTestCase {
     @Test
     public void instantiatePipController_addGlobalInsetsChangedListener() {
         verify(mMockDisplayInsetsController, times(1)).addGlobalInsetsChangedListener(any());
+    }
+
+    @Test
+    public void testInsetsListenerPerDisplay_addedOnInsetsChange_thenRemovedOnDisplayRemove() {
+        // Capture the global insets listener
+        ArgumentCaptor<DisplayInsetsController.OnInsetsChangedListener> captor =
+                ArgumentCaptor.forClass(
+                        DisplayInsetsController.OnInsetsChangedListener.class);
+        verify(mMockDisplayInsetsController).addGlobalInsetsChangedListener(captor.capture());
+        DisplayInsetsController.OnInsetsChangedListener globalListener = captor.getValue();
+
+        // Simulate insets change on a new display
+        int newDisplayId = DISPLAY_ID_MAIN + 1;
+        android.view.InsetsState insetsState = new android.view.InsetsState();
+        globalListener.insetsChanged(newDisplayId, insetsState);
+
+        // Verify listener creation
+        assertNotNull(mPipController.mListenersPerDisplay.get(newDisplayId));
+        // Verify that both Ime and nav bar listeners were added in a list
+        assertEquals(2, mPipController.mListenersPerDisplay.get(newDisplayId).size());
+
+        // Simulate display removal
+        mPipController.onDisplayRemoved(newDisplayId);
+
+        // Verify listener removal
+        assertNull(mPipController.mListenersPerDisplay.get(newDisplayId));
     }
 }

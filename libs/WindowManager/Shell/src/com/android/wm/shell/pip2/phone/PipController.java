@@ -468,6 +468,9 @@ public class PipController implements ConfigurationChangeListener,
             mPipDisplayLayoutState.setDisplayLayout(
                     mDisplayController.getDisplayLayout(DEFAULT_DISPLAY));
         }
+
+        // Avoid keeping track of insets listeners for the removed displays to prevent memory leaks.
+        mListenersPerDisplay.remove(displayId);
     }
 
     /**
