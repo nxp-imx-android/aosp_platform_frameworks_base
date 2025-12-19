@@ -7347,9 +7347,6 @@ android.service.notification.IDispatchCompletionListener$Stub
 android.service.notification.IDispatchCompletionListener
 android.service.notification.INotificationListener$Stub
 android.service.notification.INotificationListener
-android.service.notification.IStatusBarNotificationHolder$Stub$Proxy
-android.service.notification.IStatusBarNotificationHolder$Stub
-android.service.notification.IStatusBarNotificationHolder
 android.service.notification.NotificationAssistantService$MyHandler
 android.service.notification.NotificationAssistantService$NotificationAssistantServiceWrapper
 android.service.notification.NotificationAssistantService

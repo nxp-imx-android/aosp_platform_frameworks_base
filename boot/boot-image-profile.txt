@@ -14432,7 +14432,6 @@ HSPLandroid/service/notification/IConditionProvider$Stub;->asBinder()Landroid/os
 HSPLandroid/service/notification/INotificationListener$Stub;-><init>()V
 HSPLandroid/service/notification/INotificationListener$Stub;->asBinder()Landroid/os/IBinder;
 HSPLandroid/service/notification/INotificationListener$Stub;->onTransact(ILandroid/os/Parcel;Landroid/os/Parcel;I)Z
-HSPLandroid/service/notification/IStatusBarNotificationHolder$Stub$Proxy;->get()Landroid/service/notification/StatusBarNotification;
 HSPLandroid/service/notification/NotificationListenerService$MyHandler;-><init>(Landroid/service/notification/NotificationListenerService;Landroid/os/Looper;)V
 HSPLandroid/service/notification/NotificationListenerService$MyHandler;->handleMessage(Landroid/os/Message;)V
 HSPLandroid/service/notification/NotificationListenerService$NotificationListenerWrapper;-><init>(Landroid/service/notification/NotificationListenerService;)V
@@ -31210,9 +31209,6 @@ Landroid/service/notification/IDispatchCompletionListener$Stub;
 Landroid/service/notification/IDispatchCompletionListener;
 Landroid/service/notification/INotificationListener$Stub;
 Landroid/service/notification/INotificationListener;
-Landroid/service/notification/IStatusBarNotificationHolder$Stub$Proxy;
-Landroid/service/notification/IStatusBarNotificationHolder$Stub;
-Landroid/service/notification/IStatusBarNotificationHolder;
 Landroid/service/notification/NotificationAssistantService$MyHandler;
 Landroid/service/notification/NotificationAssistantService$NotificationAssistantServiceWrapper;
 Landroid/service/notification/NotificationAssistantService;
