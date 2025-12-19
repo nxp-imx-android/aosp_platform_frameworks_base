@@ -971,7 +971,8 @@ public class LightsServiceTest {
             assertThat(stateCaptor.getValue().color).isEqualTo(RED);
 
             // Set the color for system-only lights. Light retrieval is by type.
-            for (LogicalLight light : service.mLightsByType) {
+            for (int i = 0; i < service.mLightsByType.size(); i++) {
+                LogicalLight light = service.mLightsByType.valueAt(i);
                 light.setColor(RED);
             }
 
@@ -1083,7 +1084,7 @@ public class LightsServiceTest {
         ArgumentCaptor<HwLightState> stateCaptor =
                 ArgumentCaptor.forClass(HwLightState.class);
 
-        LogicalLight light = service.mLightsByType[LightType.NOTIFICATIONS];
+        LogicalLight light = service.mLightsByType.get(LightType.NOTIFICATIONS);
         light.setColor(BLUE);
 
         // Set an initial color

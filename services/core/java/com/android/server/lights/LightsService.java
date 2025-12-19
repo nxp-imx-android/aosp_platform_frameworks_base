@@ -71,7 +71,7 @@ public class LightsService extends SystemService {
     static final int DEFAULT_SYSTEM_SESSION_PRIORITY = 1_000;
 
     @VisibleForTesting
-    final LightImpl[] mLightsByType = new LightImpl[LightsManager.LIGHT_ID_COUNT];
+    final SparseArray<LightImpl> mLightsByType = new SparseArray<>();
     private final SparseArray<LightImpl> mLightsById = new SparseArray<>();
 
     // A special session used to mute all user-controllable lights.
@@ -910,9 +910,8 @@ public class LightsService extends SystemService {
 
         for (int i = mLightsById.size() - 1; i >= 0; i--) {
             LightImpl light = mLightsById.valueAt(i);
-            final int type = light.mHwLight.type;
-            if (0 <= type && type < mLightsByType.length) {
-                mLightsByType[type] = light;
+            if (light.isSystemLight()) {
+                mLightsByType.append(light.mHwLight.type, light);
             }
         }
     }
@@ -931,7 +930,7 @@ public class LightsService extends SystemService {
     }
 
     private void populateAvailableLightsFromHidl(Context context) {
-        for (int i = 0; i < mLightsByType.length; i++) {
+        for (int i = 0; i <  LightsManager.LIGHT_ID_COUNT; i++) {
             HwLight hwLight = new HwLight();
             hwLight.id = (byte) i;
             hwLight.ordinal = 1;
@@ -961,11 +960,7 @@ public class LightsService extends SystemService {
     private final LightsManager mService = new LightsManager() {
         @Override
         public LogicalLight getLight(int lightType) {
-            if (mLightsByType != null && 0 <= lightType && lightType < mLightsByType.length) {
-                return mLightsByType[lightType];
-            } else {
-                return null;
-            }
+            return mLightsByType.get(lightType);
         }
 
         @Override
