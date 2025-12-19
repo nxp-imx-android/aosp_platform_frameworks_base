@@ -42,7 +42,6 @@ import android.content.Context
 import android.graphics.drawable.Icon
 import android.os.UserHandle
 import android.service.notification.StatusBarNotification
-import android.text.TextUtils
 import android.view.LayoutInflater
 import androidx.compose.ui.util.trace
 import com.android.internal.R
@@ -51,7 +50,6 @@ import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTIO
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.RedactionType
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
-import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Metric
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.NotifIcon
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.OldProgress
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Style
@@ -65,6 +63,7 @@ import com.android.systemui.statusbar.notification.row.shared.ImageModelProvider
 import com.android.systemui.statusbar.notification.row.shared.ImageModelProvider.ImageSizeClass.SmallSquare
 import com.android.systemui.statusbar.notification.row.shared.SkeletonImageTransform
 import com.android.systemui.statusbar.notification.shared.NotificationChipFromCompactContent
+import com.android.systemui.statusbar.notification.shared.extractMetrics
 import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
 
@@ -445,65 +444,11 @@ constructor(
                     Style.Progress
                 }
                 is MetricStyle -> {
-                    style.extractMetricStyleContent(systemUiContext, contentBuilder)
+                    contentBuilder.metrics = style.extractMetrics(systemUiContext).toList()
                     if (style.metrics.size == 1) Style.MetricSingle else Style.Metric
                 }
                 else -> {
                     Style.Ineligible
-                }
-            }
-    }
-
-    private fun MetricStyle.extractMetricStyleContent(
-        systemUiContext: Context,
-        contentBuilder: PromotedNotificationContentModel.Builder,
-    ) {
-        contentBuilder.metrics =
-            metrics.map { metric ->
-                val metricValue = metric.value
-                val valueString = metricValue.toValueString(systemUiContext)
-                val label =
-                    if (!TextUtils.isEmpty(valueString.subtext())) {
-                        systemUiContext.getString(
-                            R.string.notification_metric_label_unit,
-                            metric.label,
-                            valueString.subtext(),
-                        )
-                    } else {
-                        metric.label
-                    }
-                when (metricValue) {
-                    is Notification.Metric.TimeDifference -> {
-                        val useAdaptiveFormat =
-                            metricValue.format == Notification.Metric.TimeDifference.FORMAT_ADAPTIVE
-                        val isTimer = metricValue.isTimer
-                        when {
-                            metricValue.zeroTime != null ->
-                                Metric.TimeDifference.Instant(
-                                    zeroTime = checkNotNull(metricValue.zeroTime),
-                                    isTimer = isTimer,
-                                    useAdaptiveFormat = useAdaptiveFormat,
-                                    label = label,
-                                )
-                            metricValue.zeroElapsedRealtime != null ->
-                                Metric.TimeDifference.ElapsedRealtime(
-                                    zeroElapsedRealtime =
-                                        checkNotNull(metricValue.zeroElapsedRealtime),
-                                    isTimer = isTimer,
-                                    useAdaptiveFormat = useAdaptiveFormat,
-                                    label = label,
-                                )
-                            metricValue.pausedDuration != null ->
-                                Metric.TimeDifference.Paused(
-                                    pausedDuration = checkNotNull(metricValue.pausedDuration),
-                                    isTimer = isTimer,
-                                    useAdaptiveFormat = useAdaptiveFormat,
-                                    label = label,
-                                )
-                            else -> Metric.Text(valueString.text(), label)
-                        }
-                    }
-                    else -> Metric.Text(valueString.text(), label)
                 }
             }
     }

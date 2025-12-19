@@ -41,11 +41,11 @@ import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTIO
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_PUBLIC
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
-import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Style
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.When
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 import com.android.systemui.statusbar.notification.row.RowImageInflater
+import com.android.systemui.statusbar.notification.shared.Metric
 import com.android.systemui.testKosmos
 import com.android.systemui.util.time.fakeSystemClock
 import com.android.systemui.util.time.systemClock
@@ -603,8 +603,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
 
             assertThat(privateVersion.style).isEqualTo(Style.MetricSingle)
             assertThat(privateVersion.metrics).hasSize(1)
-            val metric =
-                privateVersion.metrics?.get(0) as PromotedNotificationContentModel.Metric.Text
+            val metric = privateVersion.metrics?.get(0) as Metric.Text
             assertThat(metric.label).isEqualTo("Label1 (unit)")
             assertThat(metric.metricValue).isEqualTo("Value1")
         }
@@ -630,8 +629,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
 
             assertThat(privateVersion.style).isEqualTo(Style.MetricSingle)
             assertThat(privateVersion.metrics).hasSize(1)
-            val metric =
-                privateVersion.metrics?.get(0) as PromotedNotificationContentModel.Metric.Text
+            val metric = privateVersion.metrics?.get(0) as Metric.Text
             assertThat(metric.label).isEqualTo("LabelInt (unit)")
             assertThat(metric.metricValue).isEqualTo("123")
         }
@@ -661,9 +659,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
 
             assertThat(privateVersion.style).isEqualTo(Style.MetricSingle)
             assertThat(privateVersion.metrics).hasSize(1)
-            val metric =
-                privateVersion.metrics?.get(0)
-                    as PromotedNotificationContentModel.Metric.TimeDifference.Instant
+            val metric = privateVersion.metrics?.get(0) as Metric.TimeDifference.Instant
             assertThat(metric.label).isEqualTo("Time Label")
             assertThat(metric.zeroTime).isEqualTo(zeroTime)
             assertThat(metric.isTimer).isFalse()
@@ -692,9 +688,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
 
             val content = requireContent(entry)
             val privateVersion = content.privateVersion
-            val metric =
-                privateVersion.metrics?.get(0)
-                    as PromotedNotificationContentModel.Metric.TimeDifference.Paused
+            val metric = privateVersion.metrics?.get(0) as Metric.TimeDifference.Paused
             assertThat(metric.label).isEqualTo("Paused Timer")
             assertThat(metric.pausedDuration).isEqualTo(pausedDuration)
             assertThat(metric.isTimer).isTrue()
@@ -729,21 +723,17 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             assertThat(privateVersion.style).isEqualTo(Style.Metric)
             assertThat(privateVersion.metrics).hasSize(3)
 
-            val metric1 =
-                privateVersion.metrics?.get(0) as PromotedNotificationContentModel.Metric.Text
+            val metric1 = privateVersion.metrics?.get(0) as Metric.Text
             assertThat(metric1.label).isEqualTo("Label1")
             assertThat(metric1.metricValue).isEqualTo("Value1")
 
-            val metric2 =
-                privateVersion.metrics?.get(1)
-                    as PromotedNotificationContentModel.Metric.TimeDifference.ElapsedRealtime
+            val metric2 = privateVersion.metrics?.get(1) as Metric.TimeDifference.ElapsedRealtime
             assertThat(metric2.label).isEqualTo("Timer")
             assertThat(metric2.zeroElapsedRealtime).isEqualTo(12345L)
             assertThat(metric2.isTimer).isTrue()
             assertThat(metric2.useAdaptiveFormat).isFalse()
 
-            val metric3 =
-                privateVersion.metrics?.get(2) as PromotedNotificationContentModel.Metric.Text
+            val metric3 = privateVersion.metrics?.get(2) as Metric.Text
             assertThat(metric3.label).isEqualTo("Label3")
             assertThat(metric3.metricValue).isEqualTo("42")
         }
@@ -774,20 +764,16 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             val privateVersion = content.privateVersion
 
             assertThat(privateVersion.style).isEqualTo(Style.Metric)
-            val metric1 =
-                privateVersion.metrics?.get(0) as PromotedNotificationContentModel.Metric.Text
+            val metric1 = privateVersion.metrics?.get(0) as Metric.Text
             assertThat(metric1.label).isEqualTo("Label1")
             assertThat(metric1.metricValue).isEqualTo("Value1")
-            val metric2 =
-                privateVersion.metrics?.get(1) as PromotedNotificationContentModel.Metric.Text
+            val metric2 = privateVersion.metrics?.get(1) as Metric.Text
             assertThat(metric2.label).isEqualTo("Label2")
             assertThat(metric2.metricValue).isEqualTo("Value2")
-            val metric3 =
-                privateVersion.metrics?.get(2) as PromotedNotificationContentModel.Metric.Text
+            val metric3 = privateVersion.metrics?.get(2) as Metric.Text
             assertThat(metric3.label).isEqualTo("Label3")
             assertThat(metric3.metricValue).isEqualTo("Value3")
-            val metric4 =
-                privateVersion.metrics?.get(3) as PromotedNotificationContentModel.Metric.Text
+            val metric4 = privateVersion.metrics?.get(3) as Metric.Text
             assertThat(metric4.label).isEqualTo("Label4")
             assertThat(metric4.metricValue).isEqualTo("Value4")
         }
