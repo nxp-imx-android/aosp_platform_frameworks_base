@@ -41,7 +41,6 @@ import android.app.WindowConfiguration;
 import android.content.LocusId;
 import android.content.pm.ActivityInfo;
 import android.graphics.Rect;
-import android.os.Binder;
 import android.os.Debug;
 import android.os.IBinder;
 import android.util.ArrayMap;
@@ -54,7 +53,6 @@ import android.window.StartingWindowRemovalInfo;
 import android.window.TaskAppearedInfo;
 import android.window.TaskCreationParams;
 import android.window.TaskOrganizer;
-import android.window.TaskPropertiesRequest;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
 import android.window.WindowContainerToken;
@@ -439,48 +437,6 @@ public class ShellTaskOrganizer extends TaskOrganizer {
                     t, Debug.getCallers(4));
         }
         return super.applySyncTransaction(t, callback);
-    }
-
-    /**
-     * @deprecated use {@link #createTask(TaskCreationParams, TaskListener)} instead.
-     */
-    public void createRootTask(int displayId, int windowingMode, TaskListener listener,
-            boolean removeWithTaskOrganizer) {
-        // TODO(b/468029217): Remove after cleanup
-        createTask(
-                new TaskCreationParams.Builder()
-                        .setDisplayId(displayId)
-                        .setWindowingMode(windowingMode)
-                        .setRemoveWithTaskOrganizer(removeWithTaskOrganizer)
-                        .build(),
-                listener);
-    }
-
-    /**
-     * @deprecated use {@link #createTask(TaskCreationParams, TaskListener)} instead.
-     */
-    @Deprecated
-    @Nullable
-    public WindowContainerToken createRootTask(@NonNull CreateRootTaskRequest request,
-            TaskListener listener) {
-        // TODO(b/468029217): Remove after cleanup
-        final TaskPropertiesRequest taskProperties = new TaskPropertiesRequest()
-                .setReparentOnDisplayRemoval(request.reparentOnDisplayRemoval)
-                .setForceOpaque(request.isForceOpaque)
-                .setIgnoreInsets(request.shouldIgnoreInsets)
-                .setDisableAppCompatRoundedCorners(request.disableAppCompatRoundedCorners);
-        return createTask(
-                new TaskCreationParams.Builder()
-                        .setName(request.name)
-                        .setDisplayId(request.displayId)
-                        .setWindowingMode(request.windowingMode)
-                        .setLaunchCookie(request.launchCookie != null
-                                ? request.launchCookie
-                                : new Binder())
-                        .setRemoveWithTaskOrganizer(request.removeWithTaskOrganizer)
-                        .setTaskPropertiesRequest(taskProperties)
-                        .build(),
-                listener);
     }
 
     /**
