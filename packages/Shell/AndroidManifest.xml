@@ -745,6 +745,9 @@
     <!-- Permission required for CTS test - OnDeviceIntelligenceManagerTest -->
     <uses-permission android:name="android.permission.USE_ON_DEVICE_INTELLIGENCE" />
 
+    <!-- Permission required for CTS test - ContentSafetyanagerTest -->
+    <uses-permission android:name="android.permission.CHECK_CONTENT_SAFETY" />
+
     <!-- Permission required for CTS test - CallAudioInterceptionTest -->
     <uses-permission android:name="android.permission.CALL_AUDIO_INTERCEPTION" />
 
