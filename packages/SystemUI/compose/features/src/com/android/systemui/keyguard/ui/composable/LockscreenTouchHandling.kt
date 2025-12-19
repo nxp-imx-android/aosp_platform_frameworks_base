@@ -19,10 +19,11 @@
 package com.android.systemui.keyguard.ui.composable
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.Draggable2DState
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.gestures.draggable2D
 import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -32,8 +33,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import com.android.compose.modifiers.thenIf
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardTouchHandlingViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.plugins.keyguard.VRectF
@@ -48,20 +49,17 @@ fun LockscreenTouchHandling(
     val viewModel = rememberViewModel("LockscreenLongPress") { viewModelFactory.create() }
     val (settingsMenuBounds, setSettingsMenuBounds) = remember { mutableStateOf(VRectF.ZERO) }
     val interactionSource = remember { MutableInteractionSource() }
-
+    val consumeDrags = remember { viewModel.consumeDrags }
     Box(
         modifier =
             modifier
+                .thenIf(consumeDrags) {
+                    // Consume drags so that touches exceeding touch slop don't trigger tap
+                    // gestures.
+                    Modifier.draggable2D(state = Draggable2DState {})
+                }
                 .pointerInput(Unit) {
-                    awaitEachGesture {
-                        awaitFirstDown(pass = PointerEventPass.Initial)
-                        val press = waitForUpOrCancellation(pass = PointerEventPass.Initial)
-                        if (press != null) {
-                            // Detect any tap on any composable on the initial pass but do not
-                            // consume to let child composables handle
-                            viewModel.onSceneClick(press.position.x, press.position.y)
-                        }
-                    }
+                    // Handles taps on the lockscreen that haven't already been handled
                     detectTapGestures(
                         onTap = { viewModel.onClick(it.x, it.y) },
                         onDoubleTap = { viewModel.onDoubleClick() },
