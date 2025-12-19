@@ -159,6 +159,8 @@ constructor(
     private var entryBackgroundInactiveStart: Drawable? = null
     private var entryBackgroundInactiveEnd: Drawable? = null
     private var entryBackgroundInactiveMiddle: Drawable? = null
+    private var bluetoothToggleLayout: View? = null
+    private var autoOnToggleRow: View? = null
 
     @AssistedFactory
     interface Factory {
@@ -204,6 +206,8 @@ constructor(
             // If rendering with tile details view, done button shouldn't exist.
             doneButton = contentView.requireViewById(R.id.done_button)
         } else {
+            bluetoothToggleLayout = contentView.requireViewById(R.id.bluetooth_toggle_layout)
+            autoOnToggleRow = contentView.requireViewById(R.id.bluetooth_auto_on_toggle_row)
             entryBackgroundActive =
                 contentView.context.getDrawable(R.drawable.settingslib_entry_bg_on)
             entryBackgroundActiveStart =
@@ -398,6 +402,7 @@ constructor(
             setEnabled(true)
             alpha = ENABLED_ALPHA
         }
+        bluetoothToggleLayout?.isEnabled = true
         subtitleTextView?.text = contentView.context.getString(uiProperties.subTitleResId)
         autoOnToggleLayout.visibility = uiProperties.autoOnToggleVisibility
     }
@@ -435,15 +440,21 @@ constructor(
                 isEnabled = false
                 alpha = DISABLED_ALPHA
             }
+            // The switch is disabled while waiting for the state update to avoid rapid clicks.
+            // The layout (row) should also be disabled to match the behavior and prevent
+            // interactions.
+            bluetoothToggleLayout?.isEnabled = false
             logger.logBluetoothState(BluetoothStateStage.USER_TOGGLED, isChecked.toString())
             uiEventLogger.log(BluetoothTileDialogUiEvent.BLUETOOTH_TOGGLE_CLICKED)
         }
+        bluetoothToggleLayout?.setOnClickListener { bluetoothToggle.toggle() }
 
         autoOnToggleLayout.visibility = initialUiProperties.autoOnToggleVisibility
         autoOnToggle.setOnCheckedChangeListener { _, isChecked ->
             mutableBluetoothAutoOnToggle.value = isChecked
             uiEventLogger.log(BluetoothTileDialogUiEvent.BLUETOOTH_AUTO_ON_TOGGLE_CLICKED)
         }
+        autoOnToggleRow?.setOnClickListener { autoOnToggle.toggle() }
     }
 
     private fun setupRecyclerView() {
