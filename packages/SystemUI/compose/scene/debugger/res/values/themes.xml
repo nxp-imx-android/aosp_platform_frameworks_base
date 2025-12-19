@@ -20,5 +20,7 @@
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowLayoutInDisplayCutoutMode">always</item>
+        <item name="android:windowSplashScreenBackground">#19589B</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">#19589B</item>
     </style>
 </resources>

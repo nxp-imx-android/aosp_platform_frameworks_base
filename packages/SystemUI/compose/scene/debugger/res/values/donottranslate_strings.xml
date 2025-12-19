@@ -16,5 +16,5 @@
 -->
 <resources>
     <!-- Application name [CHAR LIMIT=NONE] -->
-    <string name="app_name">SceneTransitionLayoutDebugger</string>
+    <string name="app_name">StlDebugger</string>
 </resources>
