@@ -21,7 +21,13 @@ import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_AUDIO_CO
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_CAMERA;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_LOCATION;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_MICROPHONE;
+import static android.app.ActivityManager.PROCESS_CAPABILITY_INSTRUMENTATION_DEFAULTS;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
+import static android.app.ActivityManager.PROCESS_STATE_BOUND_TOP;
+import static android.app.ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE;
+import static android.app.ActivityManager.PROCESS_STATE_PERSISTENT;
+import static android.app.ActivityManager.PROCESS_STATE_PERSISTENT_UI;
+import static android.app.ActivityManager.PROCESS_STATE_TOP;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
@@ -31,6 +37,8 @@ import static com.android.server.am.psc.Constants.FOREGROUND_APP_ADJ;
 
 import android.annotation.NonNull;
 import android.app.ActivityManager.ProcessCapability;
+import android.app.ActivityManager.ProcessState;
+import android.net.NetworkPolicyManager;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 import java.util.ArrayList;
@@ -54,25 +62,15 @@ class CapabilityController {
         // TODO(b/466961280): Add more policies.
         // TODO(b/473696073): Optimize: If all the capabilities that a policy is able to give are
         //  already given by its preceding policies, the policy evaluation can be skipped.
-        return evaluateMaxAdjPolicy(edge) | evaluateInstrumentationPolicy(edge)
-                | evaluateForegroundServicePolicy(edge);
+        return evaluateMaxAdjPolicy(edge)
+                | evaluateForegroundServicePolicy(edge)
+                | evaluateProcStatePolicy(edge);
     }
 
     /** Evaluates a filter based on the process's max oom score (maxAdj). */
     private static @ProcessCapability int evaluateMaxAdjPolicy(@NonNull ProcessEdge edge) {
         if (edge.getTarget().getMaxAdj() <= FOREGROUND_APP_ADJ) {
             return PROCESS_CAPABILITY_ALL;
-        } else {
-            return PROCESS_CAPABILITY_NONE;
-        }
-    }
-
-    /** Grants BFSL if the process has an active instrumentation. */
-    private static @ProcessCapability int evaluateInstrumentationPolicy(@NonNull ProcessEdge edge) {
-        // TODO(b/471530626): The policy ignores whether the process is running remote animation
-        //  or not, which is different from current OomAdjuster impl. Revisit this policy if needed.
-        if (edge.getTarget().hasActiveInstrumentation()) {
-            return PROCESS_CAPABILITY_BFSL;
         } else {
             return PROCESS_CAPABILITY_NONE;
         }
@@ -141,6 +139,50 @@ class CapabilityController {
         return result;
     }
     // LINT.ThenChange(OomAdjusterImpl.java:getForegroundServiceCapability)
+
+    /** Evaluates process capabilities based on its process state. */
+    // LINT.IfChange(evaluateProcStatePolicy)
+    private static @ProcessCapability int evaluateProcStatePolicy(@NonNull ProcessEdge edge) {
+        final GraphNode node = edge.getTarget();
+        final @ProcessState int procState = node.getProcState();
+        final @ProcessCapability int networkCapabilities =
+                NetworkPolicyManager.getDefaultProcessNetworkCapabilities(procState);
+        final boolean hasActiveInstrumentation = node.hasActiveInstrumentation();
+        @ProcessCapability int baseCapabilities;
+        switch (procState) {
+            case PROCESS_STATE_PERSISTENT:
+            case PROCESS_STATE_PERSISTENT_UI:
+            case PROCESS_STATE_TOP:
+                baseCapabilities = PROCESS_CAPABILITY_ALL; // BFSL allowed
+                break;
+            case PROCESS_STATE_BOUND_TOP:
+                if (hasActiveInstrumentation) {
+                    baseCapabilities = PROCESS_CAPABILITY_INSTRUMENTATION_DEFAULTS;
+                } else {
+                    baseCapabilities = PROCESS_CAPABILITY_BFSL;
+                }
+                break;
+            case PROCESS_STATE_FOREGROUND_SERVICE:
+                if (hasActiveInstrumentation) {
+                    baseCapabilities = PROCESS_CAPABILITY_INSTRUMENTATION_DEFAULTS;
+                } else {
+                    // Capabilities from foreground service are handled in
+                    // evaluateForegroundServicePolicy.
+                    baseCapabilities = PROCESS_CAPABILITY_NONE;
+                }
+                break;
+            default:
+                baseCapabilities = PROCESS_CAPABILITY_NONE;
+                break;
+        }
+        if (hasActiveInstrumentation) {
+            // TODO(b/471530626): Whether the process is running remote animation or not is ignored,
+            //  which is different from current OomAdjuster impl. Revisit this if needed.
+            baseCapabilities |= PROCESS_CAPABILITY_BFSL;
+        }
+        return baseCapabilities | networkCapabilities;
+    }
+    // LINT.ThenChange(OomAdjuster.java:getDefaultCapability)
 
     /** Performs a partial update from a list of edges. */
     void update(@NonNull ArrayList<GraphEdge> edges) {

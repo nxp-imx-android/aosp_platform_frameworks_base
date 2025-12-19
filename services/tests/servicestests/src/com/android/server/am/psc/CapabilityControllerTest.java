@@ -22,7 +22,18 @@ import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_AUDIO_CO
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_CAMERA;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_LOCATION;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_MICROPHONE;
+import static android.app.ActivityManager.PROCESS_CAPABILITY_INSTRUMENTATION_DEFAULTS;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
+import static android.app.ActivityManager.PROCESS_CAPABILITY_POWER_RESTRICTED_NETWORK;
+import static android.app.ActivityManager.PROCESS_CAPABILITY_USER_RESTRICTED_NETWORK;
+import static android.app.ActivityManager.PROCESS_STATE_BOUND_FOREGROUND_SERVICE;
+import static android.app.ActivityManager.PROCESS_STATE_BOUND_TOP;
+import static android.app.ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE;
+import static android.app.ActivityManager.PROCESS_STATE_IMPORTANT_FOREGROUND;
+import static android.app.ActivityManager.PROCESS_STATE_PERSISTENT;
+import static android.app.ActivityManager.PROCESS_STATE_PERSISTENT_UI;
+import static android.app.ActivityManager.PROCESS_STATE_TOP;
+import static android.app.ActivityManager.PROCESS_STATE_UNKNOWN;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
@@ -33,6 +44,8 @@ import static com.android.server.am.psc.Constants.UNKNOWN_ADJ;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
+import android.app.ActivityManager.ProcessCapability;
+import android.app.ActivityManager.ProcessState;
 import android.content.pm.ServiceInfo.ForegroundServiceType;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsEnabled;
@@ -85,14 +98,6 @@ public class CapabilityControllerTest {
         ProcessEdge edge = new ProcessEdge(node);
 
         assertEquals(PROCESS_CAPABILITY_ALL, edge.evaluateCapabilityFilter());
-    }
-
-    @Test
-    public void testEvaluateInstrumentationPolicy_HasActiveInstrumentation_GrantsBfSl() {
-        TestNode node = new TestNode.Builder().withHasActiveInstrumentation(true).build();
-        ProcessEdge edge = new ProcessEdge(node);
-
-        FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(PROCESS_CAPABILITY_BFSL);
     }
 
     @Test
@@ -213,6 +218,92 @@ public class CapabilityControllerTest {
                         | PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL);
     }
 
+    @Test
+    public void testEvaluateProcStatePolicy_HasActiveInstrumentation_GrantsBfSl() {
+        final TestNode node = new TestNode.Builder().withHasActiveInstrumentation(true).build();
+        final ProcessEdge edge = new ProcessEdge(node);
+
+        FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(PROCESS_CAPABILITY_BFSL);
+    }
+
+    @Test
+    public void testEvaluateProcStatePolicy_TopOrBetter_GrantsAll() {
+        // States that are better than or equal to TOP.
+        final @ProcessState int[] states = {
+                PROCESS_STATE_PERSISTENT,
+                PROCESS_STATE_PERSISTENT_UI,
+                PROCESS_STATE_TOP,
+        };
+        for (final @ProcessState int state : states) {
+            final TestNode node = new TestNode.Builder().withProcState(state).build();
+            final ProcessEdge edge = new ProcessEdge(node);
+
+            assertEquals(PROCESS_CAPABILITY_ALL, edge.evaluateCapabilityFilter());
+        }
+    }
+
+    @Test
+    public void testEvaluateProcStatePolicy_BtopNoInstrumentation_GrantsBfsl() {
+        final TestNode node = new TestNode.Builder().withProcState(PROCESS_STATE_BOUND_TOP).build();
+        final ProcessEdge edge = new ProcessEdge(node);
+
+        FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(PROCESS_CAPABILITY_BFSL);
+    }
+
+    @Test
+    public void testEvaluateProcStatePolicy_BtopWithInstrumentation_GrantsInstrDefaults() {
+        final TestNode node = new TestNode.Builder()
+                .withProcState(PROCESS_STATE_BOUND_TOP)
+                .withHasActiveInstrumentation(true)
+                .build();
+        final ProcessEdge edge = new ProcessEdge(node);
+
+        FlagAssert.assertThat(edge.evaluateCapabilityFilter())
+                .hasSet(PROCESS_CAPABILITY_INSTRUMENTATION_DEFAULTS);
+    }
+
+    @Test
+    public void testEvaluateProcStatePolicy_FgsWithInstrumentation_GrantsInstrDefaults() {
+        final TestNode node = new TestNode.Builder()
+                .withProcState(PROCESS_STATE_FOREGROUND_SERVICE)
+                .withHasActiveInstrumentation(true)
+                .build();
+        final ProcessEdge edge = new ProcessEdge(node);
+
+        FlagAssert.assertThat(edge.evaluateCapabilityFilter())
+                .hasSet(PROCESS_CAPABILITY_INSTRUMENTATION_DEFAULTS);
+    }
+
+    @Test
+    public void testEvaluateProcStatePolicy_BfgsOrBetter_GrantsNetworkCapabilities() {
+        final @ProcessCapability int networkCapabilities =
+                PROCESS_CAPABILITY_POWER_RESTRICTED_NETWORK
+                        | PROCESS_CAPABILITY_USER_RESTRICTED_NETWORK;
+
+        // States that are better than or equal to BFGS.
+        final @ProcessState int[] states = {
+                PROCESS_STATE_PERSISTENT,
+                PROCESS_STATE_PERSISTENT_UI,
+                PROCESS_STATE_TOP,
+                PROCESS_STATE_BOUND_TOP,
+                PROCESS_STATE_BOUND_FOREGROUND_SERVICE,
+        };
+        for (final @ProcessState int state : states) {
+            final TestNode node = new TestNode.Builder().withProcState(state).build();
+            final ProcessEdge edge = new ProcessEdge(node);
+
+            FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(networkCapabilities);
+        }
+
+        // Network capabilities should not be granted for other states.
+        final TestNode node = new TestNode.Builder()
+                .withProcState(PROCESS_STATE_IMPORTANT_FOREGROUND)
+                .build();
+        final ProcessEdge edge = new ProcessEdge(node);
+
+        FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasNotSet(networkCapabilities);
+    }
+
     private static class TestServiceRecord {
         final boolean mIsForegroundService;
         final boolean mIsFgsAllowedWiuForCapabilities;
@@ -260,12 +351,13 @@ public class CapabilityControllerTest {
         private final boolean mHasNonShortForegroundServices;
         private final boolean mCachedCompatChangeCameraMicrophoneCapability;
         private final int mMaxAdj;
+        private final @ProcessState int mProcState;
         private final ArrayList<TestServiceRecord> mServices;
 
         private TestNode(boolean isProcessRunning, boolean hasActiveInstrumentation,
                 boolean hasForegroundServices, boolean hasNonShortForegroundServices,
                 boolean cachedCompatChangeCameraMicrophoneCapability,
-                int maxAdj, ArrayList<TestServiceRecord> services) {
+                int maxAdj, @ProcessState int procState, ArrayList<TestServiceRecord> services) {
             super(mock(ProcessRecordInternal.class));
             mIsProcessRunning = isProcessRunning;
             mHasActiveInstrumentation = hasActiveInstrumentation;
@@ -274,6 +366,7 @@ public class CapabilityControllerTest {
             mCachedCompatChangeCameraMicrophoneCapability =
                     cachedCompatChangeCameraMicrophoneCapability;
             mMaxAdj = maxAdj;
+            mProcState = procState;
             mServices = services;
         }
 
@@ -308,6 +401,12 @@ public class CapabilityControllerTest {
         }
 
         @Override
+        @ProcessState
+        int getProcState() {
+            return mProcState;
+        }
+
+        @Override
         int getNumberOfRunningServices() {
             return mServices.size();
         }
@@ -335,6 +434,7 @@ public class CapabilityControllerTest {
             private boolean mHasNonShortForegroundServices = false;
             private boolean mCachedCompatChangeCameraMicrophoneCapability = false;
             private int mMaxAdj = UNKNOWN_ADJ;
+            private @ProcessState int mProcState = PROCESS_STATE_UNKNOWN;
             private final ArrayList<TestServiceRecord> mServices = new ArrayList<>();
 
             Builder withProcessRunning(boolean isProcessRunning) {
@@ -367,6 +467,11 @@ public class CapabilityControllerTest {
                 return this;
             }
 
+            Builder withProcState(@ProcessState int procState) {
+                mProcState = procState;
+                return this;
+            }
+
             Builder addService(TestServiceRecord service) {
                 mServices.add(service);
                 return this;
@@ -375,7 +480,8 @@ public class CapabilityControllerTest {
             TestNode build() {
                 return new TestNode(mIsProcessRunning, mHasActiveInstrumentation,
                         mHasForegroundServices, mHasNonShortForegroundServices,
-                        mCachedCompatChangeCameraMicrophoneCapability, mMaxAdj, mServices);
+                        mCachedCompatChangeCameraMicrophoneCapability, mMaxAdj, mProcState,
+                        mServices);
             }
         }
     }

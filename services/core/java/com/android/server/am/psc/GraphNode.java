@@ -18,6 +18,7 @@ package com.android.server.am.psc;
 import static com.android.server.am.psc.PlatformCompatCache.CACHED_COMPAT_CHANGE_CAMERA_MICROPHONE_CAPABILITY;
 
 import android.annotation.NonNull;
+import android.app.ActivityManager.ProcessState;
 import android.content.pm.ServiceInfo.ForegroundServiceType;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
@@ -101,6 +102,11 @@ class GraphNode {
     boolean getCachedCompatChangeCameraMicrophoneCapability() {
         return mProc.getCachedCompatChange(
                 CACHED_COMPAT_CHANGE_CAMERA_MICROPHONE_CAPABILITY);
+    }
+
+    @ProcessState
+    int getProcState() {
+        return mProc.getCurProcState();
     }
 
     private ServiceRecordInternal getRunningServiceAt(int index) {

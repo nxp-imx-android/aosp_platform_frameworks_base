@@ -2003,6 +2003,7 @@ public abstract class OomAdjuster {
             ProcessRecordInternal app, ProcessRecordInternal client, boolean dryRun);
 
     /** Determines the default process capabilities based on its current process state. */
+    // LINT.IfChange(getDefaultCapability)
     @VisibleForTesting
     public int getDefaultCapability(ProcessRecordInternal app, int procState) {
         final int networkCapabilities =
@@ -2038,6 +2039,7 @@ public abstract class OomAdjuster {
         }
         return baseCapabilities | networkCapabilities;
     }
+    // LINT.ThenChange(CapabilityController.java:evaluateProcStatePolicy)
 
     @CpuTimeReasons
     private static int getCpuTimeReasons(ProcessRecordInternal app,
