@@ -47,14 +47,6 @@ flag {
 }
 
 flag {
-    name: "adpf_obtainview_boost"
-    namespace: "game"
-    description: "Guards use of a boost in response to HWUI obtainView"
-    is_fixed_read_only: true
-    bug: "328238660"
-}
-
-flag {
     name: "adpf_platform_power_efficiency"
     namespace: "game"
     description: "Guards use of the ADPF power efficiency API within the platform"
