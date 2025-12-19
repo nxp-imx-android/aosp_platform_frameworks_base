@@ -40,7 +40,11 @@ android_test {
         "perfetto.textproto",
     ],
     platform_apis: true,
-    test_suites: ["general-tests"],
+    test_suites: [
+        "device-tests",
+        "performance-tests",
+    ],
+    test_config: "AppMemoryTest.xml",
     certificate: "platform",
 }
 
