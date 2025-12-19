@@ -9022,7 +9022,7 @@ public class AudioManager {
      * @hide
      * Indicates whether the platform supports capturing content from the hotword recognition
      * pipeline. To capture content of this type, create an AudioRecord with
-     * {@link AudioRecord.Builder.setRequestHotwordStream(boolean, boolean)}.
+     * {@link AudioRecord.Builder#setRequestHotwordStream(boolean, boolean)}.
      * @param lookbackAudio Query if the hotword stream additionally supports providing buffered
      * audio prior to stream open.
      * @return True if the platform supports capturing hotword content, and if lookbackAudio

@@ -955,11 +955,11 @@ public abstract class DocumentsProvider extends ContentProvider {
      * WARNING: Sub-classes should not override this method. This method is non-final
      * solely for the purposes of backwards compatibility.
      *
-     * @see #queryChildDocuments(String, String[], Bundle),
-     *      {@link #queryDocument(String, String[])},
-     *      {@link #queryRecentDocuments(String, String[])},
-     *      {@link #queryRoots(String[])}, and
-     *      {@link #querySearchDocuments(String, String[], Bundle)}.
+     * @see #queryChildDocuments(String, String[], Bundle)
+     * @see #queryDocument(String, String[])
+     * @see #queryRecentDocuments(String, String[])
+     * @see #queryRoots(String[])
+     * @see #querySearchDocuments(String, String[], Bundle)
      */
     @Override
     public Cursor query(Uri uri, String[] projection, String selection,

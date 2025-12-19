@@ -12231,7 +12231,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      *
      * @param contentDescription The content description.
      * @see #getContentDescription()
-     * @see #setStateDescription(CharSequence)} for state changes.
+     * @see #setStateDescription(CharSequence) for state changes.
      * @attr ref android.R.styleable#View_contentDescription
      */
     @RemotableViewMethod
@@ -26089,7 +26089,10 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * @param right Right position, relative to parent
      * @param bottom Bottom position, relative to parent
      *
-     * @see #setLeft(int), #setRight(int), #setTop(int), #setBottom(int)
+     * @see #setLeft(int)
+     * @see #setRight(int)
+     * @see #setTop(int)
+     * @see #setBottom(int)
      */
     public final void setLeftTopRightBottom(int left, int top, int right, int bottom) {
         setFrame(left, top, right, bottom);

@@ -7598,7 +7598,7 @@ public abstract class PackageManager {
             int flags, @UserIdInt int userId);
 
     /**
-     * See {@link #getInstalledApplicationsAsUser(int, int}.
+     * See {@link #getInstalledApplicationsAsUser(int, int)}
      * @hide
      */
     @NonNull

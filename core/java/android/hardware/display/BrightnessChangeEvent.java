@@ -28,7 +28,7 @@ import java.util.Objects;
 /**
  * Data about a brightness settings change.
  *
- * @see DisplayManager.getBrightnessEvents()
+ * @see DisplayManager#getBrightnessEvents()
  * @hide
  */
 @SystemApi

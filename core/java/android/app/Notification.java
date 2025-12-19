@@ -6312,7 +6312,7 @@ public class Notification implements Parcelable
 
         /**
          * Alter the complete list of actions attached to this notification.
-         * @see #addAction(Action).
+         * @see #addAction(Action)
          */
         @NonNull
         public Builder setActions(Action... actions) {

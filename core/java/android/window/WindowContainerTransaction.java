@@ -1378,7 +1378,7 @@ public final class WindowContainerTransaction implements Parcelable {
      * @param callerToken  the activity token that initialized the activity launch.
      * @param activityIntent    intent to start the activity.
      * @param activityOptions    ActivityOptions to start the activity with.
-     * @see android.content.Context#startActivity(Intent, Bundle).
+     * @see android.content.Context#startActivity(Intent, Bundle)
      */
     @NonNull
     public WindowContainerTransaction startActivityInTaskFragment(

@@ -682,7 +682,7 @@ public final class AttributionSource implements Parcelable {
         /**
          * The PID of the process that is accessing the permission protected data.
          *
-         * If not called, pid will default to {@link Process@INVALID_PID} (-1). This indicates that
+         * If not called, pid will default to {@link Process#INVALID_PID} (-1). This indicates that
          * the PID data is missing. Supplying a PID is not required, but recommended when
          * accessible.
          */
