@@ -23,6 +23,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.view.InsetsSource.ID_IME;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static android.view.WindowInsets.Type.captionBar;
+import static android.view.WindowInsets.Type.displayCutout;
 import static android.view.WindowInsets.Type.ime;
 import static android.view.WindowInsets.Type.navigationBars;
 import static android.view.WindowInsets.Type.statusBars;
@@ -55,6 +56,7 @@ import android.os.RemoteException;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.view.DisplayCutout;
 import android.view.IDisplayWindowInsetsController;
 import android.view.InsetsFrameProvider;
 import android.view.InsetsSource;
@@ -1001,6 +1003,30 @@ public class InsetsPolicyTest extends WindowTestsBase {
         assertNull("Pinned window should not get IME insets", resultState.peekSource(ID_IME));
     }
 
+    @SetupWindows(addWindows = W_ACTIVITY)
+    @Test
+    public void testEnforceInsetsPolicyForTarget_pinnedWindow() {
+        final int displayCutoutId = InsetsSource.createId(this, 0, displayCutout());
+        final InsetsState originalState = new InsetsState();
+        originalState.getOrCreateSource(displayCutoutId, displayCutout());
+        originalState.setDisplayCutout(
+                new DisplayCutout(
+                        Insets.of(0, 10, 0, 0),
+                        null,
+                        new Rect(0, 0, 10, 10),
+                        null,
+                        null));
+        mAppWindow.setWindowingMode(WINDOWING_MODE_PINNED);
+        final InsetsPolicy policy = mDisplayContent.getInsetsPolicy();
+        final InsetsState newState = policy.enforceInsetsPolicyForTarget(mAppWindow, originalState);
+        assertNull(
+                "Pinned window must not get display cutout insets.",
+                newState.peekSource(displayCutoutId));
+        assertEquals(
+                "Pinned window must not get display cutout.",
+                DisplayCutout.NO_CUTOUT,
+                newState.getDisplayCutout());
+    }
 
     private WindowState addNavigationBar() {
         final Binder owner = new Binder();

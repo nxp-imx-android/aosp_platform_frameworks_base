@@ -37,6 +37,7 @@ import android.content.res.Resources;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.SparseArray;
+import android.view.DisplayCutout;
 import android.view.InsetsController;
 import android.view.InsetsFrameProvider;
 import android.view.InsetsSource;
@@ -452,6 +453,9 @@ class InsetsPolicy {
             }
             final InsetsState newState = new InsetsState();
             newState.set(state, types);
+            if ((types & WindowInsets.Type.displayCutout()) == 0) {
+                newState.setDisplayCutout(DisplayCutout.NO_CUTOUT);
+            }
             state = newState;
         }
 
