@@ -82,13 +82,6 @@ flag {
 }
 
 flag {
-    name: "a11y_sequential_focus_starting_point"
-    namespace: "accessibility"
-    description: "Enables sequential focus's starting point to be set to accessibility focus when system focus is null."
-    bug: "393668020"
-}
-
-flag {
     name: "a11y_sort_direction_api"
     namespace: "accessibility"
     description: "Enables new APIs to convey the sort direction applied to the data associated with this node."

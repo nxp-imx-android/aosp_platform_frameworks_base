@@ -35,7 +35,6 @@ import static android.view.Surface.FRAME_RATE_COMPATIBILITY_AT_LEAST;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 import static android.view.accessibility.AccessibilityEvent.CONTENT_CHANGE_TYPE_UNDEFINED;
 import static android.view.accessibility.Flags.a11yExtraRenderingInfoColorAdditions;
-import static android.view.accessibility.Flags.a11ySequentialFocusStartingPoint;
 import static android.view.accessibility.Flags.FLAG_DEPRECATE_ACCESSIBILITY_ANNOUNCEMENT_APIS;
 import static android.view.accessibility.Flags.FLAG_REQUEST_RECTANGLE_WITH_SOURCE;
 import static android.view.accessibility.Flags.FLAG_SUPPLEMENTAL_DESCRIPTION;
@@ -8764,8 +8763,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         }
 
         ViewRootImpl viewRoot = getViewRootImpl();
-        final boolean accessibilityFocusPresent = a11ySequentialFocusStartingPoint()
-                && viewRoot != null
+        final boolean accessibilityFocusPresent = viewRoot != null
                 && viewRoot.getAccessibilityFocusedHost() != null;
         final boolean refocus = sAlwaysAssignFocus
                                 || (!isInTouchMode() && !accessibilityFocusPresent);
