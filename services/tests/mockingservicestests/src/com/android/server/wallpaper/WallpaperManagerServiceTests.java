@@ -264,7 +264,7 @@ public class WallpaperManagerServiceTests {
             return getWallpaperTestDir(userId);
         }).when(() -> WallpaperUtils.getWallpaperDir(anyInt()));
         ExtendedMockito.doAnswer(invocation -> true).when(
-                () -> DesktopModeHelper.isDeviceEligibleForDesktopMode(any()));
+                () -> DesktopModeHelper.canEnterDesktopMode(any()));
         ExtendedMockito.doAnswer(invocation -> invocation.getArgument(1)).when(
                 () -> SystemProperties.getBoolean(eq(SYS_PROP_LIVE_WALLPAPER_SUPPORT),
                         anyBoolean()));

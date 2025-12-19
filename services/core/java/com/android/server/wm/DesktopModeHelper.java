@@ -107,7 +107,7 @@ public final class DesktopModeHelper {
     /** Returns {@code true} if desktop experience wallpaper is supported on this device. */
     public static boolean isDeviceEligibleForDesktopExperienceWallpaper(@NonNull Context context) {
         return DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WALLPAPER.isTrue()
-                && isDeviceEligibleForDesktopMode(context);
+                && canEnterDesktopMode(context);
     }
 
     /** Returns {@code true} if the desktop experience developer option should be shown. */
