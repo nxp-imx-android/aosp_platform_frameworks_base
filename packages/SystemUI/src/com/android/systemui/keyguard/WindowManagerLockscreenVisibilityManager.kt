@@ -96,7 +96,7 @@ constructor(
      *
      * The going away animation will run until:
      * - We manually call [endKeyguardGoingAwayAnimation] after we're done animating.
-     * - We call [setLockscreenShown] = true, which cancels the going away animation.
+     * - We call [setLockscreenShowing] = true, which cancels the going away animation.
      * - WM calls [onKeyguardGoingAwayRemoteAnimationCancelled] for another reason (such as the 10
      *   second timeout).
      */
@@ -171,11 +171,11 @@ constructor(
             // might be disabled/suppressed).
             Log.d(
                 TAG,
-                "setLockscreenShown(true) because we're setting the surface invisible " +
+                "setLockscreenShowing(true) because we're setting the surface invisible " +
                     "and lockscreen is already showing.",
             )
-            setLockscreenShown(
-                lockscreenShown = true,
+            setLockscreenShowing(
+                lockscreenShowing = true,
                 reason = "requested surface invisible w/ lockscreen showing",
                 reshowIfAlreadyShowing = true,
             )
@@ -187,13 +187,13 @@ constructor(
     }
 
     /** Sets the visibility of the lockscreen. */
-    fun setLockscreenShown(
-        lockscreenShown: Boolean,
+    fun setLockscreenShowing(
+        lockscreenShowing: Boolean,
         reason: String = "",
         reshowIfAlreadyShowing: Boolean = false,
     ) {
         setWmLockscreenState(
-            lockscreenShowing = lockscreenShown,
+            lockscreenShowing = lockscreenShowing,
             reason = reason,
             reshowIfAlreadyShowing = reshowIfAlreadyShowing,
         )
