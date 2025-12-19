@@ -641,7 +641,6 @@ private constructor(
             defaultWindowDecor != null -> {
                 requireDefaultWindowDecor()
                     .setListeners(
-                        onClickListener,
                         onTouchListener,
                         checkNotNull(onLongClickListener) {
                             "Expected non-null long click listener"
@@ -655,7 +654,6 @@ private constructor(
             desktopWindowDecor != null -> {
                 requireDesktopWindowDecor()
                     .setCaptionListeners(
-                        onClickListener,
                         onTouchListener,
                         checkNotNull(onLongClickListener) {
                             "Expected non-null long click listener"
