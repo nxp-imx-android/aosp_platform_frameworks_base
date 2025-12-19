@@ -51,6 +51,7 @@ import com.android.systemui.Dumpable;
 import com.android.systemui.biometrics.AuthController;
 import com.android.systemui.colorextraction.SysuiColorExtractor;
 import com.android.systemui.communal.domain.interactor.CommunalInteractor;
+import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
@@ -123,7 +124,7 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
     private final AuthController mAuthController;
     private final Lazy<SelectedUserInteractor> mUserInteractor;
     private final Lazy<ShadeInteractor> mShadeInteractorLazy;
-    private final Lazy<CommunalInteractor> mCommunalInteractor;
+    private final Lazy<CommunalSceneInteractor> mCommunalSceneInteractor;
     private ViewGroup mWindowRootView;
     private LayoutParams mLp;
     private boolean mHasTopUi;
@@ -173,7 +174,7 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
             Lazy<SelectedUserInteractor> userInteractor,
             UserTracker userTracker,
             NotificationShadeWindowModel notificationShadeWindowModel,
-            Lazy<CommunalInteractor> communalInteractor,
+            Lazy<CommunalSceneInteractor> communalSceneInteractor,
             @ShadeDisplayAware LayoutParams shadeWindowLayoutParams,
             TopUiController topUiController,
             KeyguardSurfaceBehindInteractor keyguardSurfaceBehindInteractor,
@@ -197,7 +198,7 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
         dumpManager.registerCriticalDumpable("{slow}NotificationShadeWindowControllerImpl", this);
         mAuthController = authController;
         mUserInteractor = userInteractor;
-        mCommunalInteractor = communalInteractor;
+        mCommunalSceneInteractor = communalSceneInteractor;
         mLastKeyguardRotationAllowed = mKeyguardStateController.isKeyguardScreenRotationAllowed();
         mLockScreenDisplayTimeout = context.getResources()
                 .getInteger(R.integer.config_lockScreenDisplayTimeout);
@@ -364,8 +365,13 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
         );
         collectFlow(
                 mWindowRootView,
-                mCommunalInteractor.get().isCommunalVisible(),
+                mCommunalSceneInteractor.get().isCommunalVisible(),
                 this::onCommunalVisibleChanged
+        );
+        collectFlow(
+                mWindowRootView,
+                mCommunalSceneInteractor.get().isLaunchingWidget(),
+                this::onCommunalLaunchingWidgetChanged
         );
         collectFlow(
                 mWindowRootView,
@@ -561,9 +567,11 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
                 || state.panelVisible || state.keyguardFadingAway || state.bouncerShowing
                 || state.headsUpNotificationShowing)
                 || state.launchingActivityFromNotification
-                || state.isAnimatingGoneToAod;
+                || state.isAnimatingGoneToAod
+                || state.launchingActivityFromWidget;
 
-        if (state.launchingActivityFromNotification && state.forceHideAfterActivityLaunch) {
+        if ((state.launchingActivityFromNotification || state.launchingActivityFromWidget)
+                && state.forceHideAfterActivityLaunch) {
             // If we're at the end of a launch animation, we must force the window to be hidden to
             // avoid flickers caused by async state updates.
             isExpanded = false;
@@ -695,7 +703,8 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
                 state.communalVisible,
                 state.isOnOrGoingToDream,
                 state.isAnimatingSurfaceBehind,
-                state.isAnimatingGoneToAod
+                state.isAnimatingGoneToAod,
+                state.launchingActivityFromWidget
         );
     }
 
@@ -845,6 +854,11 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
     @VisibleForTesting
     void onCommunalVisibleChanged(Boolean visible) {
         mCurrentState.communalVisible = visible;
+        apply(mCurrentState);
+    }
+
+    private void onCommunalLaunchingWidgetChanged(Boolean launchingWidget) {
+        mCurrentState.launchingActivityFromWidget = launchingWidget;
         apply(mCurrentState);
     }
 

@@ -41,7 +41,6 @@ import com.android.systemui.animation.DelegateTransitionAnimatorController
 import com.android.systemui.assist.AssistManager
 import com.android.systemui.camera.CameraIntents
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
-import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
@@ -56,7 +55,6 @@ import com.android.systemui.plugins.ActivityStartOptions
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
-import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ShadeController
 import com.android.systemui.shade.domain.interactor.ShadeAnimationInteractor
 import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor
@@ -793,23 +791,6 @@ constructor(
                     delegate.onIntentStarted(willAnimate)
                     if (willAnimate) {
                         centralSurfaces?.setIsLaunchingActivityOverLockscreen(true, dismissShade)
-                    }
-                }
-
-                override fun onTransitionAnimationStart(isExpandingFullyAbove: Boolean) {
-                    super.onTransitionAnimationStart(isExpandingFullyAbove)
-                    if (Flags.communalHub()) {
-                        val newScene =
-                            if (SceneContainerFlag.isEnabled) {
-                                Scenes.Occluded
-                            } else {
-                                CommunalScenes.Blank
-                            }
-                        communalSceneInteractor.snapToScene(
-                            newScene = newScene,
-                            loggingReason = "ActivityStarterInternalImpl",
-                            delayMillis = ActivityTransitionAnimator.TIMINGS.totalDuration,
-                        )
                     }
                 }
 

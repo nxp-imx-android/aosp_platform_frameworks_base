@@ -49,6 +49,7 @@ constructor(
     private val keyguardUpdateMonitor: KeyguardUpdateMonitor,
     communalSceneInteractor: CommunalSceneInteractor,
     private val widgetTrampolineInteractor: WidgetTrampolineInteractor,
+    controllerFactory: CommunalTransitionAnimatorController.Factory,
     @CommunalLog val logBuffer: LogBuffer,
 ) : RemoteViews.InteractionHandler {
 
@@ -59,6 +60,7 @@ constructor(
     private val delegate =
         InteractionHandlerDelegate(
             communalSceneInteractor,
+            controllerFactory,
             findViewToAnimate = { view -> view is CommunalAppWidgetHostView },
             intentStarter =
                 object : InteractionHandlerDelegate.IntentStarter {
@@ -68,14 +70,14 @@ constructor(
                         intent: PendingIntent,
                         fillInIntent: Intent,
                         activityOptions: ActivityOptions,
-                        controller: ActivityTransitionAnimator.Controller?
+                        controller: ActivityTransitionAnimator.Controller?,
                     ): Boolean {
                         cancelTrampolineMonitoring()
                         return startActivityIntent(
                             intent,
                             fillInIntent,
                             activityOptions,
-                            controller
+                            controller,
                         )
                     }
 
@@ -83,7 +85,7 @@ constructor(
                         view: View,
                         pendingIntent: PendingIntent,
                         fillInIntent: Intent,
-                        activityOptions: ActivityOptions
+                        activityOptions: ActivityOptions,
                     ): Boolean {
                         cancelTrampolineMonitoring()
                         job =
@@ -94,7 +96,7 @@ constructor(
                             view,
                             pendingIntent,
                             fillInIntent,
-                            activityOptions
+                            activityOptions,
                         )
                     }
 
@@ -109,14 +111,14 @@ constructor(
     override fun onInteraction(
         view: View,
         pendingIntent: PendingIntent,
-        response: RemoteViews.RemoteResponse
+        response: RemoteViews.RemoteResponse,
     ): Boolean = delegate.onInteraction(view, pendingIntent, response)
 
     private fun startActivityIntent(
         pendingIntent: PendingIntent,
         fillInIntent: Intent,
         extraOptions: ActivityOptions,
-        controller: ActivityTransitionAnimator.Controller?
+        controller: ActivityTransitionAnimator.Controller?,
     ): Boolean {
         activityStarter.startPendingIntentMaybeDismissingKeyguard(
             pendingIntent,
