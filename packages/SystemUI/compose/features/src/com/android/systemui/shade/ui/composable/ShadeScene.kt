@@ -541,7 +541,7 @@ private fun ContentScope.SplitShade(
                                         )
                                     }
 
-                                LaunchedEffect(Unit) {
+                                LaunchedEffectWithLifecycle(Unit) {
                                     snapshotFlow { tileSquishiness }
                                         .collect { viewModel.setTileSquishiness(it) }
                                 }
