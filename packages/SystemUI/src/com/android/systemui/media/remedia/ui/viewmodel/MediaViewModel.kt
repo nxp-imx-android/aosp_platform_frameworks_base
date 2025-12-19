@@ -96,7 +96,8 @@ constructor(
     val cards: List<MediaCardViewModel> by derivedStateOf {
         interactor.sessions
             .mapIndexed { sessionIndex, session ->
-                val isCurrentSessionAndScrubbing = isScrubbing && sessionIndex == selectedCardIndex
+                val isCurrentSession = sessionIndex == selectedCardIndex
+                val isCurrentSessionAndScrubbing = isScrubbing && isCurrentSession
                 object : MediaCardViewModel {
                     override val key = session.key
                     override val icon = session.appIcon
@@ -183,7 +184,7 @@ constructor(
                     override val guts: MediaCardGutsViewModel
                         get() {
                             return MediaCardGutsViewModel(
-                                isVisible = isGutsVisible,
+                                isVisible = isGutsVisible && isCurrentSession,
                                 text =
                                     if (session.canBeHidden) {
                                         context.getString(
@@ -331,12 +332,16 @@ constructor(
 
                     override val onClick = { expandable: Expandable ->
                         falsingSystem.runIfNotFalseTap(FalsingManager.LOW_PENALTY) {
-                            mediaUiEventLogger.logTapContentView(
-                                session.uid,
-                                session.packageName,
-                                session.key,
-                            )
-                            session.onClick(expandable)
+                            if (isCurrentSession) {
+                                mediaUiEventLogger.logTapContentView(
+                                    session.uid,
+                                    session.packageName,
+                                    session.key,
+                                )
+                                session.onClick(expandable)
+                            } else {
+                                onCardSelected(sessionIndex)
+                            }
                         }
                     }
                     override val contentDescription =
