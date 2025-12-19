@@ -1049,6 +1049,19 @@ public class HeadsUpManagerImpl
         }
     }
 
+    /**
+     * Pauses or resumes the auto-dismiss timer for a heads-up notification.
+     * @param entryKey the key of the notification entry
+     * @param paused true to pause the timer, false to resume
+     */
+    @Override
+    public void setHeadsUpDismissTimerPaused(@NonNull String entryKey, boolean paused) {
+        HeadsUpEntry headsUpEntry = getHeadsUpEntry(entryKey);
+        if (headsUpEntry != null) {
+            headsUpEntry.setPaused(paused);
+        }
+    }
+
     @Override
     public void extendHeadsUp() {
         HeadsUpEntry topEntry = getTopHeadsUpEntryPhone();
@@ -1283,6 +1296,9 @@ public class HeadsUpManagerImpl
         @VisibleForTesting
         boolean mWasUnpinned;
 
+        private boolean mPaused;
+        private long mPauseTime;
+
         @Nullable public NotificationEntry mEntry;
         public long mPostTime;
         public long mEarliestRemovalTime;
@@ -1433,6 +1449,10 @@ public class HeadsUpManagerImpl
             };
             mAvalancheController.update(this, runnable, "updateEntry reason:"
                     + reason + " updatePostTime:" + updatePostTime);
+
+            if (mPaused) {
+                return;
+            }
 
             if (!ignoreSticky && isSticky()) {
                 cancelAutoRemovalCallbacks("updateEntry (sticky)");
@@ -1657,6 +1677,29 @@ public class HeadsUpManagerImpl
                 cancelAutoRemovalCallbacks("setExpanded(true)");
             } else {
                 updateEntry(false /* updatePostTime */, "setExpanded(false)");
+            }
+        }
+
+        /**
+         * Pauses or resumes the auto-dismiss timer for this heads-up entry.
+         *
+         * <p>When paused, the notification will not be automatically dismissed. When resumed, the
+         * auto-dismiss timer continues from where it left off.
+         *
+         * @param paused {@code true} to pause the auto-dismiss timer, {@code false} to resume.
+         */
+        public void setPaused(boolean paused) {
+            if (mPaused == paused) {
+                return;
+            }
+            mPaused = paused;
+            if (paused) {
+                cancelAutoRemovalCallbacks("paused");
+                mPauseTime = mSystemClock.elapsedRealtime();
+            } else {
+                final long pausedDuration = mSystemClock.elapsedRealtime() - mPauseTime;
+                mPostTime += pausedDuration;
+                updateEntry(/* updatePostTime= */ false, "resumed");
             }
         }
 

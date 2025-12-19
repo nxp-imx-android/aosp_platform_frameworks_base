@@ -171,6 +171,9 @@ interface HeadsUpManager : Dumpable {
      */
     fun setGutsShown(entry: NotificationEntry, gutsShown: Boolean)
 
+    /** Sets whether the auto-dismiss timer for a heads-up notification is paused. */
+    fun setHeadsUpDismissTimerPaused(entryKey: String, paused: Boolean)
+
     /**
      * Set that we are exiting the headsUp pinned mode, but some notifications might still be
      * animating out. This is used to keep the touchable regions in a reasonable state.
@@ -322,6 +325,8 @@ class HeadsUpManagerEmptyImpl @Inject constructor() : HeadsUpManager {
     override fun setExpanded(entry: NotificationEntry, expanded: Boolean) {}
 
     override fun setGutsShown(entry: NotificationEntry, gutsShown: Boolean) {}
+
+    override fun setHeadsUpDismissTimerPaused(entryKey: String, paused: Boolean) {}
 
     override fun setHeadsUpAnimatingAway(headsUpAnimatingAway: Boolean) {}
 
