@@ -27,6 +27,7 @@ data class ScreenshotData(
     var bitmap: Bitmap?,
     val displayId: Int,
     val customSaveUri: Uri? = null,
+    val suppressLongScreenshot: Boolean = false,
 ) {
     val packageNameString
         get() = topComponent?.packageName ?: ""

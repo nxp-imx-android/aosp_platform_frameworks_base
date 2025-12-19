@@ -21,12 +21,12 @@ import android.graphics.Insets
 import android.graphics.Rect
 import android.os.UserHandle
 import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.WindowManager.ScreenshotSource.SCREENSHOT_KEY_CHORD
 import android.view.WindowManager.TAKE_SCREENSHOT_FULLSCREEN
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.android.internal.util.ScreenshotRequest
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.Kosmos
@@ -38,6 +38,7 @@ import com.android.systemui.screenshot.data.model.DisplayContentScenarios.TaskSp
 import com.android.systemui.screenshot.data.model.DisplayContentScenarios.emptyDisplayContent
 import com.android.systemui.screenshot.data.model.DisplayContentScenarios.launcherOnly
 import com.android.systemui.screenshot.data.model.DisplayContentScenarios.singleFullScreen
+import com.android.systemui.screenshot.data.model.SystemUiState
 import com.android.systemui.screenshot.data.repository.DisplayContentRepository
 import com.android.systemui.screenshot.data.repository.profileTypeRepository
 import com.android.systemui.screenshot.policy.CaptureType.FullScreen
@@ -271,6 +272,75 @@ class PolicyRequestProcessorTest : SysuiTestCase() {
         val result = runCatching { runBlocking { requestProcessor.process(request) } }
 
         assertThat(result.isFailure).isTrue()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SCREENSHOT_DISABLE_LONG_SCREENSHOT_FOR_SYSTEM_SHADE)
+    fun testProcess_shadeExpanded_flagOn_suppressesLongScreenshot() = runTest {
+        val displayContentRepository = DisplayContentRepository {
+            emptyDisplayContent.copy(systemUiState = SystemUiState(shadeExpanded = true))
+        }
+        val requestProcessor =
+            PolicyRequestProcessor(
+                Dispatchers.Unconfined,
+                createImageCapture(),
+                policy = ScreenshotPolicy(kosmos.profileTypeRepository),
+                policies = emptyList(),
+                defaultOwner = defaultOwner,
+                defaultComponent = defaultComponent,
+                displayTasks = displayContentRepository,
+            )
+        val initialRequest = screenshotRequest.copy(suppressLongScreenshot = false)
+
+        val result = requestProcessor.process(initialRequest)
+
+        assertThat(result.suppressLongScreenshot).isTrue()
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_SCREENSHOT_DISABLE_LONG_SCREENSHOT_FOR_SYSTEM_SHADE)
+    fun testProcess_shadeExpanded_flagOff_doesNotSuppressLongScreenshot() = runTest {
+        val displayContentRepository = DisplayContentRepository {
+            emptyDisplayContent.copy(systemUiState = SystemUiState(shadeExpanded = true))
+        }
+        val requestProcessor =
+            PolicyRequestProcessor(
+                Dispatchers.Unconfined,
+                createImageCapture(),
+                policy = ScreenshotPolicy(kosmos.profileTypeRepository),
+                policies = emptyList(),
+                defaultOwner = defaultOwner,
+                defaultComponent = defaultComponent,
+                displayTasks = displayContentRepository,
+            )
+        val initialRequest = screenshotRequest.copy(suppressLongScreenshot = false)
+
+        val result = requestProcessor.process(initialRequest)
+
+        assertThat(result.suppressLongScreenshot).isFalse()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SCREENSHOT_DISABLE_LONG_SCREENSHOT_FOR_SYSTEM_SHADE)
+    fun testProcess_shadeCollapsed_flagOn_doesNotSuppressLongScreenshot() = runTest {
+        val displayContentRepository = DisplayContentRepository {
+            emptyDisplayContent.copy(systemUiState = SystemUiState(shadeExpanded = false))
+        }
+        val requestProcessor =
+            PolicyRequestProcessor(
+                Dispatchers.Unconfined,
+                createImageCapture(),
+                policy = ScreenshotPolicy(kosmos.profileTypeRepository),
+                policies = emptyList(),
+                defaultOwner = defaultOwner,
+                defaultComponent = defaultComponent,
+                displayTasks = displayContentRepository,
+            )
+        val initialRequest = screenshotRequest.copy(suppressLongScreenshot = false)
+
+        val result = requestProcessor.process(initialRequest)
+
+        assertThat(result.suppressLongScreenshot).isFalse()
     }
 
     private fun createImageCapture(
