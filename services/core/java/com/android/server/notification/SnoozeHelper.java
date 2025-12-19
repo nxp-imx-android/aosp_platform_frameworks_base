@@ -15,9 +15,14 @@
  */
 package com.android.server.notification;
 
+import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_SNOOZED;
+import static android.app.backup.NotificationLoggingConstants.ERROR_XML_PARSING;
+
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.app.backup.BackupRestoreEventLogger;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -481,11 +486,13 @@ public final class SnoozeHelper {
         }
     }
 
-    protected void writeXml(TypedXmlSerializer out) throws IOException {
+    protected void writeXml(TypedXmlSerializer out, @Nullable BackupRestoreEventLogger logger)
+            throws IOException {
+        int count = 0;
         synchronized (mLock) {
             final long currentTime = System.currentTimeMillis();
             out.startTag(null, XML_TAG_NAME);
-            writeXml(out, mPersistedSnoozedNotifications, XML_SNOOZED_NOTIFICATION,
+            count += writeXml(out, mPersistedSnoozedNotifications, XML_SNOOZED_NOTIFICATION,
                     value -> {
                         if (value < currentTime) {
                             return;
@@ -493,7 +500,7 @@ public final class SnoozeHelper {
                         out.attributeLong(null, XML_SNOOZED_NOTIFICATION_TIME,
                                 value);
                     });
-            writeXml(out, mPersistedSnoozedNotificationsWithContext,
+            count += writeXml(out, mPersistedSnoozedNotificationsWithContext,
                     XML_SNOOZED_NOTIFICATION_CONTEXT,
                     value -> {
                         out.attribute(null, XML_SNOOZED_NOTIFICATION_CONTEXT_ID,
@@ -501,14 +508,18 @@ public final class SnoozeHelper {
                     });
             out.endTag(null, XML_TAG_NAME);
         }
+        if (logger != null) {
+            logger.logItemsBackedUp(DATA_TYPE_SNOOZED, count);
+        }
     }
 
     private interface Inserter<T> {
         void insert(T t) throws IOException;
     }
 
-    private <T> void writeXml(TypedXmlSerializer out, ArrayMap<String, T> targets, String tag,
+    private <T> int writeXml(TypedXmlSerializer out, ArrayMap<String, T> targets, String tag,
             Inserter<T> attributeInserter) throws IOException {
+        int successCount = 0;
         for (int j = 0; j < targets.size(); j++) {
             String key = targets.keyAt(j);
             // T is a String (snoozed until context) or Long (snoozed until time)
@@ -523,11 +534,16 @@ public final class SnoozeHelper {
             out.attribute(null, XML_SNOOZED_NOTIFICATION_KEY, key);
 
             out.endTag(null, tag);
+            successCount++;
         }
+        return successCount;
     }
 
-    protected void readXml(TypedXmlPullParser parser, long currentTime)
+    protected void readXml(TypedXmlPullParser parser, long currentTime,
+            @Nullable BackupRestoreEventLogger logger)
             throws XmlPullParserException, IOException {
+        int count = 0;
+        int errorCount = 0;
         int type;
         while ((type = parser.next()) != XmlPullParser.END_DOCUMENT) {
             String tag = parser.getName();
@@ -548,6 +564,7 @@ public final class SnoozeHelper {
                         if (time > currentTime) { //only read new stuff
                             synchronized (mLock) {
                                 mPersistedSnoozedNotifications.put(key, time);
+                                count++;
                             }
                         }
                     }
@@ -556,12 +573,18 @@ public final class SnoozeHelper {
                                 null, XML_SNOOZED_NOTIFICATION_CONTEXT_ID);
                         synchronized (mLock) {
                             mPersistedSnoozedNotificationsWithContext.put(key, creationId);
+                            count++;
                         }
                     }
                 } catch (Exception e) {
                     Slog.e(TAG,  "Exception in reading snooze data from policy xml", e);
+                    errorCount++;
                 }
             }
+        }
+        if (logger != null) {
+            logger.logItemsRestored(DATA_TYPE_SNOOZED, count);
+            logger.logItemsRestoreFailed(DATA_TYPE_SNOOZED, errorCount, ERROR_XML_PARSING);
         }
     }
 

@@ -7874,7 +7874,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 new BufferedInputStream(new ByteArrayInputStream(upgradeXml.getBytes())),
                 false,
                 UserHandle.USER_ALL, null);
-        verify(mSnoozeHelper, times(1)).readXml(any(TypedXmlPullParser.class), anyLong());
+        verify(mSnoozeHelper, times(1)).readXml(any(TypedXmlPullParser.class), anyLong(), any());
     }
 
     @Test

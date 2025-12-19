@@ -1264,7 +1264,7 @@ public class NotificationManagerService extends SystemService {
                         parser, mAllowedManagedServicePackages, forRestore, userId, logger);
                 migratedManagedServices = true;
             } else if (mSnoozeHelper.XML_TAG_NAME.equals(parser.getName())) {
-                mSnoozeHelper.readXml(parser, System.currentTimeMillis());
+                mSnoozeHelper.readXml(parser, System.currentTimeMillis(), logger);
             }
             if (LOCKSCREEN_ALLOW_SECURE_NOTIFICATIONS_TAG.equals(parser.getName())) {
                 if (forRestore && userId != USER_SYSTEM) {
@@ -1387,7 +1387,7 @@ public class NotificationManagerService extends SystemService {
         mPreferencesHelper.writeXml(out, forBackup, userId, logger);
         mListeners.writeXml(out, forBackup, userId, logger);
         mAssistants.writeXml(out, forBackup, userId, logger);
-        mSnoozeHelper.writeXml(out);
+        mSnoozeHelper.writeXml(out, logger);
         mConditionProviders.writeXml(out, forBackup, userId, logger);
         if (!forBackup || userId == USER_SYSTEM) {
             writeSecureNotificationsPolicy(out);
