@@ -733,6 +733,10 @@ public class BoringLayout extends Layout implements TextUtils.EllipsizeCallback 
                 c.translate(leftShift, 0);
             }
 
+            if (c.isHighContrastTextEnabled()) {
+                drawBackground(c);
+            }
+
             float drawX = isFixEnabled ? leftShift : 0;
             c.drawText(mDirect, drawX, mBottom - mDesc, mPaint);
 
