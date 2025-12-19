@@ -308,26 +308,26 @@ public class LightsService extends SystemService {
          * that turns them off. Non-critical system lights are muted directly. Critical lights
          * such as the screen backlight are unaffected.
          *
-         * @param enabled false to mute lights, true to unmute.
+         * @param muted true to mute lights or false to unmute them.
          */
-        public void setEnabledState(boolean enabled) {
+        public void setMutedState(boolean muted) {
             synchronized (LightsService.this) {
-                boolean currentlyEnabled = mSystemOverrideSession == null;
-                if (enabled == currentlyEnabled) {
-                    Slog.i(TAG, "Lights already " + (enabled ? "unmuted." : "muted."));
+                boolean currentlyMuted = mSystemOverrideSession != null;
+                if (muted == currentlyMuted) {
                     // We are already in the right state. Just return.
+                    Slog.i(TAG, "Lights already " + (muted ? "unmuted." : "muted."));
                     return;
                 }
 
                 LightState state = null;
-                if (enabled) {
-                    Slog.i(TAG, "Unmuting lights.");
-                } else {
+                if (muted) {
                     Slog.i(TAG, "Muting lights.");
                     state = new LightState.Builder().setColor(0).build();
                     mSystemOverrideSession =
                             new Session(
                                     null, DEFAULT_SYSTEM_SESSION_PRIORITY, mSessionListener, mH);
+                } else {
+                    Slog.i(TAG, "Unmuting lights.");
                 }
 
                 for (int i = 0; i < mLightsById.size(); i++) {
@@ -337,15 +337,15 @@ public class LightsService extends SystemService {
                         mSystemOverrideSession.setRequest(light.mHwLight.id, state);
                     } else if (!light.isCriticalLight()) {
                         // Non critical system lights are muted/unmuted directly.
-                        light.setMuteState(!enabled);
+                        light.setMuteState(muted);
                     }
                 }
 
-                if (enabled) {
+                if (muted) {
+                    mSessions.add(mSystemOverrideSession);
+                } else {
                     mSessions.remove(mSystemOverrideSession);
                     mSystemOverrideSession = null;
-                } else {
-                    mSessions.add(mSystemOverrideSession);
                 }
                 Collections.sort(mSessions);
                 computeAndApplyLightConfigurationsLocked();
@@ -969,14 +969,14 @@ public class LightsService extends SystemService {
         }
 
         @Override
-        public void setEnabledState(boolean enabled) {
-            LightsService.this.setEnabledState(enabled);
+        public void setMutedState(boolean muted) {
+            LightsService.this.setMutedState(muted);
         }
     };
 
     @VisibleForTesting
-    void setEnabledState(boolean enabled) {
-        mManagerService.setEnabledState(enabled);
+    void setMutedState(boolean muted) {
+        mManagerService.setMutedState(muted);
     }
 
     private static class VintfHalCache implements Supplier<ILights>, IBinder.DeathRecipient {
