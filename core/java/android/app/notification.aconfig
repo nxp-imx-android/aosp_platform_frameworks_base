@@ -211,6 +211,16 @@ flag {
 }
 
 flag {
+  name: "nm_remove_must_have_flags"
+  namespace: "notifications"
+  description: "This controls the removal of the internal method parameter 'mustHaveFlags' which was used inconsistently"
+  bug: "440125528"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "hide_status_bar_notification"
   namespace: "systemui"
   description: "Allows an application running a foreground service to hide the notification icon from the status bar"
