@@ -2806,6 +2806,22 @@ public abstract class PackageManager {
     @Retention(RetentionPolicy.SOURCE)
     public @interface DeleteFlags {}
 
+    /** @hide Indicate that no user option has been set. System default should be used. */
+    public static final int VIRTUAL_GAMEPAD_USER_OPTION_UNSET = 0;
+    /** @hide Indicate that user has chose to opt out from the virtual gamepad feature. */
+    public static final int VIRTUAL_GAMEPAD_USER_OPTION_OPT_OUT = 1;
+    /**
+     * User option for the virtual gamepad.
+     *
+     * @hide
+     */
+    @IntDef(prefix = { "VIRTUAL_GAMEPAD_USER_OPTION_" }, value = {
+            VIRTUAL_GAMEPAD_USER_OPTION_UNSET,
+            VIRTUAL_GAMEPAD_USER_OPTION_OPT_OUT,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface VirtualGamepadUserOption {}
+
     /**
      * Flag parameter for {@link #deletePackage} to indicate that you don't want to delete the
      * package's data directory.

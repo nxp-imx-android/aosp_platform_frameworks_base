@@ -16,10 +16,13 @@
 
 package com.android.server.pm;
 
+import static android.Manifest.permission.INJECT_EVENTS;
+
 import static com.android.compatibility.common.util.ShellUtils.runShellCommand;
 
 import static com.google.common.truth.Truth.assertWithMessage;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
@@ -28,6 +31,7 @@ import static java.lang.reflect.Modifier.isPublic;
 import static java.lang.reflect.Modifier.isStatic;
 
 import android.app.AppGlobals;
+import android.app.UiAutomation;
 import android.content.pm.IPackageManager;
 import android.content.pm.PackageManager;
 import android.os.Process;
@@ -615,6 +619,57 @@ public class PackageManagerServiceTest {
                     PackageManager.USER_MIN_ASPECT_RATIO_UNSET);
         });
         runShellCommand("pm uninstall " + TEST_PKG_NAME);
+    }
+
+    @Test
+    public void testGetVirtualGamepadUserOption_withoutPermission_samePackage_succeeds()
+            throws Exception {
+        assertEquals(PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET,
+                mIPackageManager.getVirtualGamepadUserOption(PACKAGE_NAME, UserHandle.myUserId()));
+    }
+
+    @Test
+    public void testGetVirtualGamepadUserOption_withoutPermission_differentPackage_fails() {
+        final File testApk = new File(TEST_DATA_PATH, TEST_APP_APK);
+        runShellCommand("pm install " + testApk);
+        assertThrows(SecurityException.class, () -> {
+            mIPackageManager.getVirtualGamepadUserOption(TEST_PKG_NAME, UserHandle.myUserId());
+        });
+        runShellCommand("pm uninstall " + TEST_PKG_NAME);
+    }
+
+    @Test
+    public void testGetVirtualGamepadUserOption_withPermission_succeeds() throws Exception {
+        final UiAutomation automation = androidx.test.platform.app.InstrumentationRegistry
+                .getInstrumentation().getUiAutomation();
+
+        final File testApk = new File(TEST_DATA_PATH, TEST_APP_APK);
+        runShellCommand("pm install " + testApk);
+
+        automation.adoptShellPermissionIdentity(INJECT_EVENTS);
+        mIPackageManager.getVirtualGamepadUserOption(TEST_PKG_NAME, UserHandle.myUserId());
+        automation.dropShellPermissionIdentity();
+
+        runShellCommand("pm uninstall " + TEST_PKG_NAME);
+    }
+
+    @Test
+    public void testSetVirtualGamepadUserOption_withPermission_succeeds() throws Exception {
+        final UiAutomation automation = androidx.test.platform.app.InstrumentationRegistry
+                .getInstrumentation().getUiAutomation();
+
+        automation.adoptShellPermissionIdentity(INJECT_EVENTS);
+        mIPackageManager.setVirtualGamepadUserOption(PACKAGE_NAME, UserHandle.myUserId(),
+                PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET);
+        automation.dropShellPermissionIdentity();
+    }
+
+    @Test
+    public void testSetVirtualGamepadUserOption_withoutPermission_fails() {
+        assertThrows(SecurityException.class, () -> {
+            mIPackageManager.setVirtualGamepadUserOption(PACKAGE_NAME, UserHandle.myUserId(),
+                    PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET);
+        });
     }
 
     @Test
