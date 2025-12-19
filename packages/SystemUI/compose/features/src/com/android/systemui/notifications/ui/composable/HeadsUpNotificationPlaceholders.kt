@@ -54,8 +54,8 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.compose.modifiers.onUnplaced
 import com.android.compose.modifiers.thenIf
 import com.android.compose.modifiers.width
+import com.android.systemui.notifications.ui.YSpace
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.notification.stack.ui.YSpace
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationsPlaceholderViewModel
 import kotlin.math.roundToInt
