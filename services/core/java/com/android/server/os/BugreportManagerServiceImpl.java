@@ -134,7 +134,6 @@ class BugreportManagerServiceImpl extends IDumpstate.Stub {
         private final Object mLock = new Object();
         private boolean mReadBugreportMapping = false;
         private final AtomicFile mMappingFile;
-        private final Injector mInjector;
 
         @GuardedBy("mLock")
         private ArrayMap<Pair<Integer, String>, ArraySet<String>> mBugreportFiles =
@@ -148,9 +147,8 @@ class BugreportManagerServiceImpl extends IDumpstate.Stub {
         @GuardedBy("mLock")
         final Set<String> mBugreportFilesToPersist = new HashSet<>();
 
-        BugreportFileManager(AtomicFile mappingFile, Injector injector) {
+        BugreportFileManager(AtomicFile mappingFile) {
             mMappingFile = mappingFile;
-            mInjector = injector;
         }
 
         /**
@@ -183,7 +181,7 @@ class BugreportManagerServiceImpl extends IDumpstate.Stub {
                             return -1;
                         }
                     });
-                    if (uidForUser != callingInfo.first && mInjector.checkCallingOrSelfPermission(
+                    if (uidForUser != callingInfo.first && context.checkCallingOrSelfPermission(
                             Manifest.permission.INTERACT_ACROSS_USERS)
                             != PackageManager.PERMISSION_GRANTED) {
                         throw new SecurityException(
@@ -504,9 +502,9 @@ class BugreportManagerServiceImpl extends IDumpstate.Stub {
     BugreportManagerServiceImpl(Injector injector) {
         mInjector = injector;
         mContext = injector.getContext();
-        mAppOps = injector.getAppOpsManager();
+        mAppOps = mContext.getSystemService(AppOpsManager.class);
         mTelephonyManager = mContext.getSystemService(TelephonyManager.class);
-        mBugreportFileManager = new BugreportFileManager(injector.getMappingFile(), mInjector);
+        mBugreportFileManager = new BugreportFileManager(injector.getMappingFile());
         mBugreportAllowlistedPackages = injector.getAllowlistedPackages();
     }
 
@@ -624,7 +622,7 @@ class BugreportManagerServiceImpl extends IDumpstate.Stub {
         Slogf.i(TAG, "Retrieving bugreport for %s / %d", callingPackage, callingUid);
         try {
             mBugreportFileManager.ensureCallerPreviouslyGeneratedFile(
-                    mContext, mInjector.getPackageManager(), new Pair<>(callingUid, callingPackage),
+                    mContext, mContext.getPackageManager(), new Pair<>(callingUid, callingPackage),
                     userId, bugreportFile, /* forceUpdateMapping= */ false);
         } catch (IllegalArgumentException e) {
             Slog.e(TAG, e.getMessage());
@@ -710,7 +708,7 @@ class BugreportManagerServiceImpl extends IDumpstate.Stub {
 
     private void enforcePermission(
             String callingPackage, int callingUid, boolean checkCarrierPrivileges) {
-        mInjector.getAppOpsManager().checkPackage(callingUid, callingPackage);
+        mAppOps.checkPackage(callingUid, callingPackage);
 
         // To gain access through the DUMP permission, the OEM has to allow this package explicitly
         // via sysconfig and privileged permissions.
@@ -725,7 +723,7 @@ class BugreportManagerServiceImpl extends IDumpstate.Stub {
             }
         }
 
-        if (allowlisted && mInjector.checkCallingOrSelfPermission(
+        if (allowlisted && mContext.checkCallingOrSelfPermission(
                 android.Manifest.permission.DUMP) == PackageManager.PERMISSION_GRANTED) {
             return;
         }
@@ -753,19 +751,6 @@ class BugreportManagerServiceImpl extends IDumpstate.Stub {
         throw new SecurityException(message);
     }
 
-    private boolean isNonAdminBugreportAllowed(String callingPackage) {
-        Set<String> allowedPackages =
-                mInjector.getSystemConfig().getNonAdminBugreportAllowlistedPackages();
-        boolean allowedBySysConfig = allowedPackages.contains(callingPackage);
-
-        if (allowedBySysConfig) {
-            Slog.i(TAG, "Non-admin bugreport allowed for package " + callingPackage);
-            return true;
-        }
-
-        return false;
-    }
-
     /**
      * Validates that the calling user is an admin user or, when bugreport is requested remotely
      * that the user is an affiliated user.
@@ -774,11 +759,8 @@ class BugreportManagerServiceImpl extends IDumpstate.Stub {
      *                                  user is not an admin user.
      */
     private void ensureUserCanTakeBugReport(int bugreportMode) {
-        final int callingUid = Binder.getCallingUid();
         // Get the calling userId before clearing the caller identity.
-        int effectiveCallingUserId = UserHandle.getUserId(callingUid);
-        String callingPackage = mInjector.getPackageManager().getNameForUid(callingUid);
-
+        int effectiveCallingUserId = UserHandle.getUserId(Binder.getCallingUid());
         boolean isAdminUser = false;
         final long identity = Binder.clearCallingIdentity();
         try {
@@ -801,9 +783,6 @@ class BugreportManagerServiceImpl extends IDumpstate.Stub {
         if (!isAdminUser) {
             if (bugreportMode == BugreportParams.BUGREPORT_MODE_REMOTE
                     && isUserAffiliated(effectiveCallingUserId)) {
-                return;
-            }
-            if (isNonAdminBugreportAllowed(callingPackage)) {
                 return;
             }
             logAndThrow(TextUtils.formatSimple("Calling user %s is not an admin user."
