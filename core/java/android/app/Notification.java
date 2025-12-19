@@ -320,8 +320,8 @@ public class Notification implements Parcelable
     public static final String EXTRA_REMOTE_INPUT_DRAFT = "android.remoteInputDraft";
 
     /**
-     * A boolean requesting that the notification card show the small icon instead of the
-     * launcher app icon.
+     * A boolean for {@link #extras} requesting that the notification card show the small icon
+     * instead of the launcher app icon.
      */
     @FlaggedApi(Flags.FLAG_PREFER_SMALL_ICON)
     public static final String EXTRA_PREFER_SMALL_ICON = "android.app.preferSmallIcon";
