@@ -438,6 +438,16 @@
     <!-- WFC, summary for Wi-Fi Only -->
     <string name="wfc_mode_wifi_only_summary">Wi-Fi only</string>
 
+    <!-- Displayed on a chronometer in low power mode to show approximately one minute for duration less than one minute [CHAR LIMIT=5] -->
+    <string name="adaptive_low_frequency_less_than_one_minute">~ %s</string>
+    <!-- Displayed on a chronometer in low power mode to show approximately negative one minute for duration less than one minute [CHAR LIMIT=5] -->
+    <string name="adaptive_low_frequency_neg_less_than_one_minute">~ −%s</string>
+
+    <!-- Format string for elapsed time in hours, minutes, and low frequency placeholder. [CHAR LIMIT=NONE] -->
+    <string name="elapsed_time_low_frequency_short_format_h_mm">%1$d:%2$02d:--</string>
+    <!-- Format string for elapsed time in minutes and low frequency placeholder. [CHAR LIMIT=NONE] -->
+    <string name="elapsed_time_low_frequency_short_format_mm">%1$02d:--</string>
+
     <!-- Template for showing mobile network operator name while Cross SIM calling is active -->
     <string-array name="crossSimSpnFormats" translatable="false">
         <item>@string/crossSimFormat_spn</item>

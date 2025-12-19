@@ -761,6 +761,10 @@
   <java-symbol type="string" name="display_manager_overlay_display_title" />
   <java-symbol type="string" name="elapsed_time_short_format_h_mm_ss" />
   <java-symbol type="string" name="elapsed_time_short_format_mm_ss" />
+  <java-symbol type="string" name="adaptive_low_frequency_less_than_one_minute" />
+  <java-symbol type="string" name="adaptive_low_frequency_neg_less_than_one_minute" />
+  <java-symbol type="string" name="elapsed_time_low_frequency_short_format_h_mm" />
+  <java-symbol type="string" name="elapsed_time_low_frequency_short_format_mm" />
   <java-symbol type="string" name="emailTypeCustom" />
   <java-symbol type="string" name="emailTypeHome" />
   <java-symbol type="string" name="emailTypeMobile" />
