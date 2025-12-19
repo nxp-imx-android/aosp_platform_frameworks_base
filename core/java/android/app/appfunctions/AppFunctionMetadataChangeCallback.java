@@ -53,7 +53,17 @@ public interface AppFunctionMetadataChangeCallback {
      *   <li>The package's {@link AppFunctionPackageMetadata} has been updated.
      * </ul>
      *
-     * @param packageName The name of the updated package.
+     * @param changedPackageNames The names of the updated packages.
      */
-    void onPackageChanged(@NonNull String packageName);
+    void onPackagesChanged(@NonNull List<String> changedPackageNames);
+
+    /**
+     * Called when an unrecoverable error occurs during the registration of this callback.
+     *
+     * <p>Once this method is invoked, the callback is considered unregistered and will receive no
+     * further updates.
+     *
+     * @param exception The exception describing the failure.
+     */
+    void onRegistrationError(@NonNull Exception exception);
 }

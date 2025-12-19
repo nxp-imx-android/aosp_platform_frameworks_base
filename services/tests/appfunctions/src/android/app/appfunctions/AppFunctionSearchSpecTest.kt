@@ -33,33 +33,42 @@ class AppFunctionSearchSpecTest {
 
     @Test
     fun testEqualsAndHashcode() {
-        val testSearchSpec1 = AppFunctionSearchSpec.Builder()
-            .setPackageNames(listOf("testPackage1", "testPackage2"))
-            .setFunctionNames(
-                listOf(AppFunctionName("testPackage1", "id1"), AppFunctionName("testPackage2", "id2"))
-            )
-            .setSchemaCategory("testCategory")
-            .setSchemaName("testName")
-            .setMinSchemaVersion(1L)
-            .build()
+        val testSearchSpec1 =
+            AppFunctionSearchSpec.Builder()
+                .setPackageNames(listOf("testPackage1", "testPackage2"))
+                .setFunctionNames(
+                    listOf(
+                        AppFunctionName("testPackage1", "id1"),
+                        AppFunctionName("testPackage2", "id2"),
+                    )
+                )
+                .setSchemaCategory("testCategory")
+                .setSchemaName("testName")
+                .setMinSchemaVersion(1L)
+                .build()
 
-        val testSearchSpec2 = AppFunctionSearchSpec.Builder()
-            .setPackageNames(listOf("testPackage1", "testPackage2"))
-            .setFunctionNames(
-                listOf(AppFunctionName("testPackage1", "id1"), AppFunctionName("testPackage2", "id2"))
-            )
-            .setSchemaCategory("testCategory")
-            .setSchemaName("testName")
-            .setMinSchemaVersion(1L)
-            .build()
+        val testSearchSpec2 =
+            AppFunctionSearchSpec.Builder()
+                .setPackageNames(listOf("testPackage1", "testPackage2"))
+                .setFunctionNames(
+                    listOf(
+                        AppFunctionName("testPackage1", "id1"),
+                        AppFunctionName("testPackage2", "id2"),
+                    )
+                )
+                .setSchemaCategory("testCategory")
+                .setSchemaName("testName")
+                .setMinSchemaVersion(1L)
+                .build()
 
-        val testSearchSpec3 = AppFunctionSearchSpec.Builder()
-            .setPackageNames(listOf("testPackage1"))
-            .setFunctionNames(listOf(AppFunctionName("testPackage1", "id3")))
-            .setSchemaCategory("testCategory")
-            .setSchemaName("testName")
-            .setMinSchemaVersion(1L)
-            .build()
+        val testSearchSpec3 =
+            AppFunctionSearchSpec.Builder()
+                .setPackageNames(listOf("testPackage1"))
+                .setFunctionNames(listOf(AppFunctionName("testPackage1", "id3")))
+                .setSchemaCategory("testCategory")
+                .setSchemaName("testName")
+                .setMinSchemaVersion(1L)
+                .build()
 
         assertThat(testSearchSpec1).isEqualTo(testSearchSpec2)
         assertThat(testSearchSpec1.hashCode()).isEqualTo(testSearchSpec2.hashCode())
@@ -85,10 +94,10 @@ class AppFunctionSearchSpecTest {
     fun testGetStaticMetadataAppSearchQuery() {
         assertThat(SEARCH_SPEC_WITH_ALL_PROPERTIES.getStaticMetadataAppSearchQuery())
             .isEqualTo(
-                "packageName:(\"testPackage1\" OR \"testPackage2\") "
-                        + "schemaCategory:\"testCategory\" "
-                        + "schemaName:\"testName\" "
-                        + "schemaVersion>=1"
+                "packageName:(\"testPackage1\" OR \"testPackage2\") " +
+                    "schemaCategory:\"testCategory\" " +
+                    "schemaName:\"testName\" " +
+                    "schemaVersion>=1"
             )
     }
 
@@ -96,32 +105,31 @@ class AppFunctionSearchSpecTest {
     fun testGetStaticMetadataAppSearchQuery_nullPackageNames_skipsPackageNamesFilter() {
         assertThat(SEARCH_SPEC_WITHOUT_PACKAGE_NAMES.getStaticMetadataAppSearchQuery())
             .isEqualTo(
-                "schemaCategory:\"testCategory\" "
-                        + "schemaName:\"testName\" "
-                        + "schemaVersion>=1"
+                "schemaCategory:\"testCategory\" " + "schemaName:\"testName\" " + "schemaVersion>=1"
             )
     }
 
     @Test
     fun testGetStaticMetadataAppSearchQuery_schemaVersionZero_noVersionFilter() {
-        val testSearchSpec = AppFunctionSearchSpec.Builder()
-            .setPackageNames(listOf("testPackage1", "testPackage2"))
-            .setFunctionNames(
-                listOf(
-                    AppFunctionName("testPackage1", "id1"),
-                    AppFunctionName("testPackage2", "id2")
+        val testSearchSpec =
+            AppFunctionSearchSpec.Builder()
+                .setPackageNames(listOf("testPackage1", "testPackage2"))
+                .setFunctionNames(
+                    listOf(
+                        AppFunctionName("testPackage1", "id1"),
+                        AppFunctionName("testPackage2", "id2"),
+                    )
                 )
-            )
-            .setSchemaCategory("testCategory")
-            .setSchemaName("testName")
-            .setMinSchemaVersion(0L)
-            .build()
+                .setSchemaCategory("testCategory")
+                .setSchemaName("testName")
+                .setMinSchemaVersion(0L)
+                .build()
 
         assertThat(testSearchSpec.getStaticMetadataAppSearchQuery())
             .isEqualTo(
-                "packageName:(\"testPackage1\" OR \"testPackage2\") "
-                        + "schemaCategory:\"testCategory\" "
-                        + "schemaName:\"testName\""
+                "packageName:(\"testPackage1\" OR \"testPackage2\") " +
+                    "schemaCategory:\"testCategory\" " +
+                    "schemaName:\"testName\""
             )
     }
 
@@ -137,37 +145,187 @@ class AppFunctionSearchSpecTest {
             .isEqualTo(emptyList<String>())
     }
 
+    @Test
+    fun testGetObservedPackageNames_packageAndFunctionFiltersSet_returnsIntersectingPackageNames() {
+        val testSearchSpec =
+            AppFunctionSearchSpec.Builder()
+                .setPackageNames(listOf("testPackage1"))
+                .setFunctionNames(
+                    listOf(
+                        AppFunctionName("testPackage1", "id1"),
+                        AppFunctionName("testPackage2", "id2"),
+                    )
+                )
+                .setSchemaCategory("testCategory")
+                .setSchemaName("testName")
+                .setMinSchemaVersion(1L)
+                .build()
+
+        assertThat(testSearchSpec.observedPackageNames).containsExactly("testPackage1")
+    }
+
+    @Test
+    fun testGetObservedPackageNames_packageAndFunctionFiltersSet_noIntersection_returnsEmptySet() {
+        val testSearchSpec =
+            AppFunctionSearchSpec.Builder()
+                .setPackageNames(listOf("testPackage1"))
+                .setFunctionNames(
+                    listOf(
+                        AppFunctionName("testPackage2", "id1"),
+                        AppFunctionName("testPackage3", "id2"),
+                    )
+                )
+                .setSchemaCategory("testCategory")
+                .setSchemaName("testName")
+                .setMinSchemaVersion(1L)
+                .build()
+
+        assertThat(testSearchSpec.observedPackageNames).isEmpty()
+    }
+
+    @Test
+    fun testGetObservedPackageNames_onlyFunctionFilterSet_returnsAllFunctionNamePackages() {
+        val testSearchSpec =
+            AppFunctionSearchSpec.Builder()
+                .setPackageNames(null)
+                .setFunctionNames(
+                    listOf(
+                        AppFunctionName("testPackage1", "id1"),
+                        AppFunctionName("testPackage2", "id2"),
+                    )
+                )
+                .setSchemaCategory("testCategory")
+                .setSchemaName("testName")
+                .setMinSchemaVersion(1L)
+                .build()
+
+        assertThat(testSearchSpec.observedPackageNames)
+            .containsExactly("testPackage1", "testPackage2")
+    }
+
+    @Test
+    fun testGetObservedPackageNames_onlyPackageFilterSet_returnsAllPackageNames() {
+        val testSearchSpec =
+            AppFunctionSearchSpec.Builder()
+                .setPackageNames(listOf("testPackage1", "testPackage2"))
+                .setSchemaCategory("testCategory")
+                .setSchemaName("testName")
+                .setMinSchemaVersion(1L)
+                .build()
+
+        assertThat(testSearchSpec.observedPackageNames)
+            .containsExactly("testPackage1", "testPackage2")
+    }
+
+    @Test
+    fun testGetObservedAppFunctions_packageAndFunctionFiltersSet_returnsAppFunctionsOfIntersectingPackages() {
+        val testSearchSpec =
+            AppFunctionSearchSpec.Builder()
+                .setPackageNames(listOf("testPackage1"))
+                .setFunctionNames(
+                    listOf(
+                        AppFunctionName("testPackage1", "id1"),
+                        AppFunctionName("testPackage2", "id2"),
+                    )
+                )
+                .setSchemaCategory("testCategory")
+                .setSchemaName("testName")
+                .setMinSchemaVersion(1L)
+                .build()
+
+        assertThat(testSearchSpec.observedAppFunctions)
+            .containsExactly(AppFunctionName("testPackage1", "id1"))
+    }
+
+    @Test
+    fun testGetObservedAppFunctions_packageAndFunctionFiltersSet_noIntersection_returnsEmptySet() {
+        val testSearchSpec =
+            AppFunctionSearchSpec.Builder()
+                .setPackageNames(listOf("testPackage1"))
+                .setFunctionNames(
+                    listOf(
+                        AppFunctionName("testPackage2", "id1"),
+                        AppFunctionName("testPackage3", "id2"),
+                    )
+                )
+                .setSchemaCategory("testCategory")
+                .setSchemaName("testName")
+                .setMinSchemaVersion(1L)
+                .build()
+
+        assertThat(testSearchSpec.observedAppFunctions).isEmpty()
+    }
+
+    @Test
+    fun testGetObservedAppFunctions_onlyFunctionFilterSet_returnsAllAppFunctions() {
+        val testSearchSpec =
+            AppFunctionSearchSpec.Builder()
+                .setPackageNames(null)
+                .setFunctionNames(
+                    listOf(
+                        AppFunctionName("testPackage1", "id1"),
+                        AppFunctionName("testPackage2", "id2"),
+                    )
+                )
+                .setSchemaCategory("testCategory")
+                .setSchemaName("testName")
+                .setMinSchemaVersion(1L)
+                .build()
+
+        assertThat(testSearchSpec.observedAppFunctions)
+            .containsExactly(
+                AppFunctionName("testPackage1", "id1"),
+                AppFunctionName("testPackage2", "id2"),
+            )
+    }
+
+    @Test
+    fun testGetObservedAppFunctions_onlyPackageFilterSet_returnsNull() {
+        val testSearchSpec =
+            AppFunctionSearchSpec.Builder()
+                .setPackageNames(listOf("testPackage1", "testPackage2"))
+                .setSchemaCategory("testCategory")
+                .setSchemaName("testName")
+                .setMinSchemaVersion(1L)
+                .build()
+
+        assertThat(testSearchSpec.observedAppFunctions).isNull()
+    }
+
     companion object {
-        val SEARCH_SPEC_WITH_ALL_PROPERTIES = AppFunctionSearchSpec.Builder()
-            .setPackageNames(listOf("testPackage1", "testPackage2"))
-            .setFunctionNames(
-                listOf(
-                    AppFunctionName("testPackage1", "id1"),
-                    AppFunctionName("testPackage2", "id2")
+        val SEARCH_SPEC_WITH_ALL_PROPERTIES =
+            AppFunctionSearchSpec.Builder()
+                .setPackageNames(listOf("testPackage1", "testPackage2"))
+                .setFunctionNames(
+                    listOf(
+                        AppFunctionName("testPackage1", "id1"),
+                        AppFunctionName("testPackage2", "id2"),
+                    )
                 )
-            )
-            .setSchemaCategory("testCategory")
-            .setSchemaName("testName")
-            .setMinSchemaVersion(1L)
-            .build()
+                .setSchemaCategory("testCategory")
+                .setSchemaName("testName")
+                .setMinSchemaVersion(1L)
+                .build()
 
-        val SEARCH_SPEC_WITHOUT_PACKAGE_NAMES = AppFunctionSearchSpec.Builder()
-            .setFunctionNames(
-                listOf(
-                    AppFunctionName("testPackage1", "id1"),
-                    AppFunctionName("testPackage2", "id2")
+        val SEARCH_SPEC_WITHOUT_PACKAGE_NAMES =
+            AppFunctionSearchSpec.Builder()
+                .setFunctionNames(
+                    listOf(
+                        AppFunctionName("testPackage1", "id1"),
+                        AppFunctionName("testPackage2", "id2"),
+                    )
                 )
-            )
-            .setSchemaCategory("testCategory")
-            .setSchemaName("testName")
-            .setMinSchemaVersion(1L)
-            .build()
+                .setSchemaCategory("testCategory")
+                .setSchemaName("testName")
+                .setMinSchemaVersion(1L)
+                .build()
 
-        val SEARCH_SPEC_WITHOUT_FUNCTION_NAMES = AppFunctionSearchSpec.Builder()
-            .setPackageNames(listOf("testPackage1", "testPackage2"))
-            .setSchemaCategory("testCategory")
-            .setSchemaName("testName")
-            .setMinSchemaVersion(1L)
-            .build()
+        val SEARCH_SPEC_WITHOUT_FUNCTION_NAMES =
+            AppFunctionSearchSpec.Builder()
+                .setPackageNames(listOf("testPackage1", "testPackage2"))
+                .setSchemaCategory("testCategory")
+                .setSchemaName("testName")
+                .setMinSchemaVersion(1L)
+                .build()
     }
 }
