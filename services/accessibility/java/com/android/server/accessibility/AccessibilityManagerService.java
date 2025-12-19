@@ -43,12 +43,13 @@ import static android.security.advancedprotection.AdvancedProtectionManager.ADVA
 import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL;
 import static android.view.accessibility.AccessibilityManager.FlashNotificationReason;
+import static android.view.accessibility.Flags.enableA11yTopRowShortcut;
 
+import static com.android.hardware.input.Flags.enableColorInversionKeyGestures;
 import static com.android.hardware.input.Flags.enableSelectToSpeakKeyGestures;
 import static com.android.hardware.input.Flags.enableTalkbackAndMagnifierKeyGestures;
 import static com.android.hardware.input.Flags.enableTalkbackKeyGestures;
 import static com.android.hardware.input.Flags.enableVoiceAccessKeyGestures;
-import static com.android.hardware.input.Flags.enableColorInversionKeyGestures;
 import static com.android.internal.accessibility.AccessibilityShortcutController.ACCESSIBILITY_HEARING_AIDS_COMPONENT_NAME;
 import static com.android.internal.accessibility.AccessibilityShortcutController.COLOR_INVERSION_COMPONENT_NAME;
 import static com.android.internal.accessibility.AccessibilityShortcutController.MAGNIFICATION_COMPONENT_NAME;
@@ -190,6 +191,7 @@ import com.android.internal.accessibility.AccessibilityShortcutController.ExtraD
 import com.android.internal.accessibility.AccessibilityShortcutController.FrameworkFeatureInfo;
 import com.android.internal.accessibility.AccessibilityShortcutController.LaunchableFrameworkFeatureInfo;
 import com.android.internal.accessibility.common.KeyGestureEventConstants;
+import com.android.internal.accessibility.common.ShortcutChooserDialogConstants;
 import com.android.internal.accessibility.common.ShortcutConstants;
 import com.android.internal.accessibility.common.ShortcutConstants.FloatingMenuSize;
 import com.android.internal.accessibility.dialog.AccessibilityButtonChooserActivity;
@@ -299,6 +301,10 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     @VisibleForTesting
     static final String ACTION_DISMISS_KEY_GESTURE_CONFIRM_DIALOG =
             "com.android.systemui.action.DISMISS_KEY_GESTURE_CONFIRM_DIALOG";
+
+    @VisibleForTesting
+    static final String ACTION_LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG =
+            "com.android.systemui.action.LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG";
 
     private static final char COMPONENT_NAME_SEPARATOR = ':';
 
@@ -699,6 +705,10 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         if (enableVoiceAccessKeyGestures()) {
             supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS);
         }
+        if (enableA11yTopRowShortcut()) {
+            supportedGestures.add(
+                    KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TOP_ROW_ACCESSIBILITY_KEY);
+        }
         if (!supportedGestures.isEmpty()) {
             mInputManager.registerKeyGestureEventHandler(supportedGestures,
                     mKeyGestureEventHandler);
@@ -800,6 +810,17 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             return;
         }
 
+        final int displayId =
+                event.getDisplayId() != INVALID_DISPLAY
+                        ? event.getDisplayId()
+                        : getLastNonProxyTopFocusedDisplayId();
+
+        // Integrated Top Row Key Logic
+        if (gestureType == KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TOP_ROW_ACCESSIBILITY_KEY) {
+            performAccessibilityShortcutInternal(displayId, TOP_ROW_KEY, /* targetName= */ null);
+            return;
+        }
+
         String targetName;
         switch (gestureType) {
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DISPLAY_COLOR_INVERSION:
@@ -855,10 +876,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             userId = mCurrentUserId;
         }
 
-        final int displayId =
-                event.getDisplayId() != INVALID_DISPLAY
-                        ? event.getDisplayId()
-                        : getLastNonProxyTopFocusedDisplayId();
         List<String> shortcutTargets = getAccessibilityShortcutTargets(
                 KEY_GESTURE, userId);
         if (!shortcutTargets.contains(targetName)) {
@@ -2683,18 +2700,51 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         }
     }
 
-    private void showAccessibilityTargetsSelection(int displayId, int shortcutType,
-            int userId) {
+    /**
+     * Routes the user to the correct UI to pick an accessibility service. This is called when a
+     * shortcut is triggered but no service is assigned.
+     */
+    private void showAccessibilityTargetsSelection(int displayId, int shortcutType, int userId) {
+        if (shortcutType == TOP_ROW_KEY) {
+            // Top row keys usually interact with SystemUI directly via Broadcast
+            launchShortcutChooserSystemUiDialog(displayId, shortcutType);
+        } else {
+            // TODO: b/447158132 - Replace `AccessibilityShortcutChooserActivity` to SystemUi dialog
+            // above.
+            // Software, Gestures, and Volume keys use Framework Activity Choosers
+            launchShortcutChooserActivity(displayId, shortcutType, userId);
+        }
+    }
+
+    private void launchShortcutChooserSystemUiDialog(int displayId, int shortcutType) {
+        final Intent intent = new Intent(ACTION_LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG);
+        intent.setFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+        // Routing specifically to SystemUI
+        intent.setPackage(mContext.getString(com.android.internal.R.string.config_systemUi));
+        intent.putExtra(ShortcutChooserDialogConstants.SHORTCUT_TYPE, shortcutType);
+        intent.putExtra(ShortcutChooserDialogConstants.DISPLAY_ID, displayId);
+
+        mContext.sendBroadcastAsUser(intent, UserHandle.SYSTEM);
+    }
+
+    private void launchShortcutChooserActivity(int displayId, int shortcutType, int userId) {
         final Intent intent = new Intent(AccessibilityManager.ACTION_CHOOSE_ACCESSIBILITY_BUTTON);
-        final String chooserClassName = (shortcutType == SOFTWARE || shortcutType == GESTURE)
-                ? AccessibilityButtonChooserActivity.class.getName()
-                : AccessibilityShortcutChooserActivity.class.getName();
+
+        // Determine the specific class based on the input method
+        final String chooserClassName =
+                (shortcutType == SOFTWARE || shortcutType == GESTURE)
+                        ? AccessibilityButtonChooserActivity.class.getName()
+                        : AccessibilityShortcutChooserActivity.class.getName();
+
         intent.setClassName(CHOOSER_PACKAGE_NAME, chooserClassName);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.putExtra(EXTRA_TYPE_TO_CHOOSE, shortcutType);
+
         final Bundle bundle = ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle();
-        mMainHandler.post(() ->
-                mContext.startActivityAsUser(intent, bundle, UserHandle.of(userId)));
+
+        // Ensure we start the activity on the main thread to avoid window manager issues
+        mMainHandler.post(
+                () -> mContext.startActivityAsUser(intent, bundle, UserHandle.of(userId)));
     }
 
     private void launchShortcutTargetActivity(int displayId, ComponentName name) {
@@ -3582,7 +3632,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         updateAccessibilityShortcutTargetsLocked(userState, GESTURE);
         updateAccessibilityShortcutTargetsLocked(userState, QUICK_SETTINGS);
         updateAccessibilityShortcutTargetsLocked(userState, KEY_GESTURE);
-        if (android.view.accessibility.Flags.enableA11yTopRowShortcut()) {
+        if (enableA11yTopRowShortcut()) {
             updateAccessibilityShortcutTargetsLocked(userState, TOP_ROW_KEY);
         }
         if (android.view.accessibility.Flags.quickAccessShortcutType()) {
@@ -3861,8 +3911,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
      */
     private boolean readAccessibilityShortcutTargetsLocked(AccessibilityUserState userState,
             @UserShortcutType int shortcutType) {
-        if (!android.view.accessibility.Flags.enableA11yTopRowShortcut()
-                && shortcutType == TOP_ROW_KEY) {
+        if (!enableA11yTopRowShortcut() && shortcutType == TOP_ROW_KEY) {
             return false;
         }
         if (!android.view.accessibility.Flags.quickAccessShortcutType()
@@ -4425,6 +4474,12 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
 
         final List<String> shortcutTargets = getAccessibilityShortcutTargetsInternal(
                 shortcutType, userId);
+        // Show a tutorial dialog for the top row key type.
+        if (shortcutType == TOP_ROW_KEY && shortcutTargets.isEmpty()) {
+            showAccessibilityTargetsSelection(
+                    displayId, shortcutType, getCurrentUserState().mUserId);
+            return;
+        }
         if (shortcutTargets.isEmpty()) {
             Slog.d(LOG_TAG, "No target to perform shortcut, shortcutType=" + shortcutType);
             return;
