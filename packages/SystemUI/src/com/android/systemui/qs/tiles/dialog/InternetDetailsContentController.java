@@ -562,8 +562,7 @@ public class InternetDetailsContentController implements AccessPointController.A
     }
 
     Drawable getSignalStrengthDrawable(int subId) {
-        Drawable drawable = mContext.getDrawable(
-                R.drawable.ic_signal_strength_zero_bar_no_internet);
+        Drawable drawable = getSignalStrengthDrawableNoInternet(subId);
         try {
             if (mTelephonyManager == null) {
                 if (DEBUG) {
@@ -590,6 +589,19 @@ public class InternetDetailsContentController implements AccessPointController.A
             e.printStackTrace();
         }
         return drawable;
+    }
+
+    Drawable getSignalStrengthDrawableNoInternet(int subId) {
+        if (!NewStatusBarIcons.isEnabled()) {
+            return mContext.getDrawable(R.drawable.ic_signal_strength_zero_bar_no_internet);
+        }
+        int numLevels = SignalStrength.NUM_SIGNAL_STRENGTH_BINS;
+        // TODO (b/470417792): Use CarrierConfigRepository instead of CarrierConfigTracker
+        if (mCarrierConfigTracker.getInflateSignalStrengthBool(subId)) {
+            numLevels++;
+        }
+        return getSignalStrengthIcon(subId, mContext, 0 /* level */, numLevels,
+                NO_CELL_DATA_TYPE_ICON, true /* cutOut */);
     }
 
     /**
