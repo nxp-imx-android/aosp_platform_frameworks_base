@@ -1384,14 +1384,48 @@ public class UsbService extends IUsbManager.Stub {
 
     @android.annotation.EnforcePermission(android.Manifest.permission.MANAGE_USB)
     @Override
-    public void enablePciTunnels(boolean enable) {
-        enablePciTunnels_enforcePermission();
+    public void setPciTunnelingEnabled(boolean enable) {
+        setPciTunnelingEnabled_enforcePermission();
 
         final long ident = Binder.clearCallingIdentity();
         try {
             if (mUsb4Manager != null) {
-                mUsb4Manager.onEnablePciTunnels(enable);
+                mUsb4Manager.setPciTunnelingEnabled(enable);
             }
+        } finally {
+            Binder.restoreCallingIdentity(ident);
+        }
+    }
+
+    @android.annotation.EnforcePermission(android.Manifest.permission.MANAGE_USB)
+    @Override
+    public boolean isPciTunnelingEnabled() {
+        isPciTunnelingEnabled_enforcePermission();
+
+        final long ident = Binder.clearCallingIdentity();
+        try {
+            if (mUsb4Manager != null) {
+                return mUsb4Manager.isPciTunnelingEnabled();
+            }
+
+            return false;
+        } finally {
+            Binder.restoreCallingIdentity(ident);
+        }
+    }
+
+    @android.annotation.EnforcePermission(android.Manifest.permission.MANAGE_USB)
+    @Override
+    public int isPciTunnelingControlAllowed() {
+        isPciTunnelingControlAllowed_enforcePermission();
+
+        final long ident = Binder.clearCallingIdentity();
+        try {
+            if (mUsb4Manager != null) {
+                return mUsb4Manager.isPciTunnelingControlAllowed();
+            }
+
+            return UsbManager.PCI_TUNNEL_CTRL_UNSUPPORTED;
         } finally {
             Binder.restoreCallingIdentity(ident);
         }
@@ -1886,6 +1920,15 @@ public class UsbService extends IUsbManager.Stub {
                 }
             }
             return result;
+        }
+
+        @Override
+        public boolean allowPciTunnelControl(boolean allow, int disableReason) {
+            if (mUsb4Manager != null) {
+                return mUsb4Manager.setPciTunnelingControlAllowed(allow, disableReason);
+            }
+
+            return false;
         }
     }
 

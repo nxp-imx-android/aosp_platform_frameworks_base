@@ -29,7 +29,6 @@ pub type Result<T> = std::result::Result<T, Box<dyn Error>>;
 #[derive(Clone)]
 pub struct SysfsUtils {
     tbt_devices_path: PathBuf,
-    pci_devices_path: PathBuf,
     typec_path: PathBuf,
     root: PathBuf,
 }
@@ -44,7 +43,6 @@ impl SysfsUtils {
     pub fn with_root_path(root: PathBuf) -> Self {
         SysfsUtils {
             tbt_devices_path: root.join("sys/bus/thunderbolt/devices"),
-            pci_devices_path: root.join("sys/bus/pci/devices"),
             typec_path: root.join("sys/class/typec"),
             root,
         }
@@ -202,36 +200,6 @@ impl SysfsUtils {
         debug!("Deauthorizing all external PCI devices");
 
         let mut overall_success = true;
-
-        // Iterate through all PCI devices.
-        for entry in fs::read_dir(&self.pci_devices_path)? {
-            let entry = entry?;
-            let devpath = entry.path();
-            if !devpath.is_dir() {
-                continue;
-            }
-
-            // It's possible a device was already removed as a child of another.
-            if !devpath.exists() {
-                continue;
-            }
-
-            let removable_path = devpath.join("removable");
-            // Read the content of the "removable" file. Use default if read fails.
-            let removable_content = fs::read_to_string(&removable_path).unwrap_or_default();
-
-            // Proceed only if the device is marked as "removable"
-            if removable_content.trim() != "1" {
-                continue;
-            }
-
-            // Write "1" to the "remove" file to remove the device.
-            let remove_path = devpath.join("remove");
-            if let Err(e) = fs::write(&remove_path, "1") {
-                error!("Couldn't remove untrusted device {:?}: {}", devpath, e);
-                overall_success = false;
-            }
-        }
 
         // Deauthorize all thunderbolt devices.
         for entry in fs::read_dir(&self.tbt_devices_path)? {

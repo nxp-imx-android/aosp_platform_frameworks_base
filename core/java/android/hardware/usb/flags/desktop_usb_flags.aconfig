@@ -3,14 +3,14 @@ container: "system"
 
 flag {
     name: "enable_persistent_device_permissions"
-    namespace: "desktop_connectivity"
+    namespace: "usb_desktop"
     description: "Feature flag to persist permissions after device disconnect"
     bug: "389062495"
 }
 
 flag {
     name: "enable_authorization_management"
-    namespace: "desktop_connectivity"
+    namespace: "usb_desktop"
     description: "Feature flag to manage previously authorized/denied devices"
     bug: "432527670"
 }
@@ -20,4 +20,12 @@ flag {
     namespace: "usb_desktop"
     description: "Feature flag to enable reporting static port information and additional partner and cable status"
     bug: "460847494"
+}
+
+flag {
+    name: "enable_pci_tunnel_control"
+    namespace: "usb_desktop"
+    is_exported: true
+    description: "This flag allows control of PCI tunneling if supported"
+    bug: "447428699"
 }

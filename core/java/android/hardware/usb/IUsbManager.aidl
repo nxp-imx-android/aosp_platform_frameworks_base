@@ -238,7 +238,15 @@ interface IUsbManager
 
     /* Enable/disable PCI tunnels for USB4 and Thunderbolt connections. */
     @EnforcePermission("MANAGE_USB")
-    void enablePciTunnels(boolean enable);
+    void setPciTunnelingEnabled(boolean enable);
+
+    /* Check whether PCI tunneling is currently enabled. */
+    @EnforcePermission("MANAGE_USB")
+    boolean isPciTunnelingEnabled();
+
+    /* Check whether PCI tunneling control is supported and allowed. */
+    @EnforcePermission("MANAGE_USB")
+    int isPciTunnelingControlAllowed();
 
     /* Registers Bc12Type event listener */
     @JavaPassthrough(annotation=
