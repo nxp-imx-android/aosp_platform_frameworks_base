@@ -770,8 +770,7 @@ public class ShellTaskOrganizer extends TaskOrganizer {
         if (!isOverviewOverlayEnabled(displayId)) {
             return null;
         }
-        if (!mOverviewOverlayLeashes.contains(displayId)
-                && Flags.enableOverviewOnConnectedDisplays()) {
+        if (!mOverviewOverlayLeashes.contains(displayId)) {
             SurfaceControl.Builder builder = new SurfaceControl.Builder()
                     .setName("overview_overlay_container")
                     .setContainerLayer()
@@ -1333,7 +1332,7 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     private boolean isOverviewOverlayEnabled(int displayId) {
         return (Flags.enableLauncherOverviewInWindow()
                 || Flags.enableFallbackOverviewInWindow()
-                || (Flags.enableOverviewOnConnectedDisplays() && displayId != DEFAULT_DISPLAY));
+                || displayId != DEFAULT_DISPLAY);
     }
 
     @Override
