@@ -4593,6 +4593,37 @@ public class MockingOomAdjusterTests {
         assertThatProcess(app).notHasImplicitCpuTimeCapability();
     }
 
+    @SuppressWarnings("GuardedBy")
+    @Test
+    public void testUpdateOomAdj_DoOne_ZramWrittenBack() {
+        final int TEST_OOM_ADJ_FOR_ZRAM_WRITEBACK = 249;
+        mService.mOomAdjuster.configureAdjForZramWriteback(TEST_OOM_ADJ_FOR_ZRAM_WRITEBACK);
+        ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
+                MOCKAPP_PACKAGENAME, false);
+        app.setCurAdj(CACHED_APP_MIN_ADJ);
+        app.setCurRawAdj(CACHED_APP_MIN_ADJ);
+        app.setSetAdj(CACHED_APP_MIN_ADJ);
+
+        mProcessStateController.setIsZramWrittenBack(app, true);
+
+        assertEquals(TEST_OOM_ADJ_FOR_ZRAM_WRITEBACK, mInjector.mLastSetOomAdj.get(app.getPid()));
+        assertEquals(TEST_OOM_ADJ_FOR_ZRAM_WRITEBACK, app.getSetAdj());
+
+        assertTrue(mInjector.mLastSetForLmkdOnly.get(app.getPid()));
+        verify(mCallback)
+                .onOomAdjustChanged(eq(CACHED_APP_MIN_ADJ), eq(TEST_OOM_ADJ_FOR_ZRAM_WRITEBACK),
+                        eq(app));
+
+        mProcessStateController.setIsZramWrittenBack(app, false);
+
+        assertEquals(CACHED_APP_MIN_ADJ, mInjector.mLastSetOomAdj.get(app.getPid()));
+        assertEquals(CACHED_APP_MIN_ADJ, app.getSetAdj());
+        assertFalse(mInjector.mLastSetForLmkdOnly.get(app.getPid()));
+        verify(mCallback)
+                .onOomAdjustChanged(eq(TEST_OOM_ADJ_FOR_ZRAM_WRITEBACK), eq(CACHED_APP_MIN_ADJ),
+                        eq(app));
+    }
+
     private ProcessRecord makeDefaultProcessRecord(int pid, int uid, String processName,
             String packageName, boolean hasShownUi) {
         final ProcessRecord proc = new ProcessRecordBuilder(pid, uid, processName,
@@ -5090,6 +5121,7 @@ public class MockingOomAdjusterTests {
         // Jump ahead in time by this offset amount.
         long mTimeOffsetMillis = 0;
         private SparseIntArray mLastSetOomAdj = new SparseIntArray();
+        private SparseBooleanArray mLastSetForLmkdOnly = new SparseBooleanArray();
 
         // A sequence number that increases every time setOomAdj is called
         int mLastAppliedAt = 0;
@@ -5101,6 +5133,7 @@ public class MockingOomAdjusterTests {
             mLastSetOomAdj.clear();
             mLastAppliedAt = 0;
             mSetOomAdjAppliedAt.clear();
+            mLastSetForLmkdOnly.clear();
         }
 
         void jumpUptimeAheadTo(long uptimeMillis) {
@@ -5130,10 +5163,11 @@ public class MockingOomAdjusterTests {
         }
 
         @Override
-        public void setOomAdj(int pid, int uid, int adj) {
+        public void setOomAdj(int pid, int uid, int adj, boolean forLmkdOnly) {
             if (pid <= 0) return;
             mLastSetOomAdj.put(pid, adj);
             mSetOomAdjAppliedAt.put(pid, mLastAppliedAt++);
+            mLastSetForLmkdOnly.put(pid, forLmkdOnly);
         }
 
         @Override
