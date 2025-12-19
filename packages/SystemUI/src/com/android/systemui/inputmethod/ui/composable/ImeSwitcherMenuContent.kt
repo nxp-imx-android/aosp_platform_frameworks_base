@@ -95,7 +95,9 @@ fun ImeSwitcherMenuContent(
             modifier = Modifier.fillMaxWidth().semantics { paneTitle = paneTitleDescription },
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            ImeSwitcherMenuList(viewModel.menuItems.toList(), viewModel, dismissAction)
+            Column(modifier = Modifier.weight(weight = 1f, fill = false)) {
+                ImeSwitcherMenuList(viewModel.menuItems.toList(), viewModel, dismissAction)
+            }
             viewModel.settingsButtonAction.value?.let {
                 Box(
                     contentAlignment = Alignment.CenterEnd,
