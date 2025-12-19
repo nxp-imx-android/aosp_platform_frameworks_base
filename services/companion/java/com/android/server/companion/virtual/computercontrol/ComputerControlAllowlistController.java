@@ -257,6 +257,18 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
             return false;
         }
 
+        final int sessionOwnerUid = getPackageUid(sessionOwnerPackage, packageManager);
+        if (isTestAgent(sessionOwnerUid, sessionOwnerPackage, packageManager)) {
+            final ApplicationInfo appInfo = getApplicationInfo(targetPackage, packageManager);
+            if (appInfo == null || !isPackageTestOnly(appInfo)) {
+                Slog.e(TAG, "isPackageAutomatable: Test automation requires testOnly target "
+                        + "package");
+                return false;
+            } else {
+                return true;
+            }
+        }
+
         final SigningDetails targetPackageSigningDetails =
                 getSigningDetails(targetPackage, packageManager);
         if (targetPackageSigningDetails == null) {
