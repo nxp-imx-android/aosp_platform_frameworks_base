@@ -2250,8 +2250,10 @@ class PackageManagerShellCommand extends ShellCommand {
         if (userId == UserHandle.USER_ALL) {
             flags |= PackageManager.DELETE_ALL_USERS;
         }
+        // Note: if userId is USER_ALL, we rely on the DELETE_ALL_USERS flag to affect all users but
+        // must pass in some Admin user so that it can have the authority to downgrade sys apps.
         final int translatedUserId =
-                translateUserId(userId, UserHandle.USER_SYSTEM, "runUninstall");
+                translateUserId(userId, getAdminUserId(), "runUninstall");
         final LocalIntentReceiver receiver = new LocalIntentReceiver();
         final PackageManagerInternal internal =
                 LocalServices.getService(PackageManagerInternal.class);
@@ -2292,6 +2294,24 @@ class PackageManagerShellCommand extends ShellCommand {
                     + result.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE) + "]");
             return 1;
         }
+    }
+
+    /** Returns an Admin user id, or USER_SYSTEM if no Admin can be found. */
+    private @UserIdInt int getAdminUserId() {
+        if (!android.multiuser.Flags.hsuNotAdmin()) {
+            // Pre-flag behaviour used hardcoded USER_SYSTEM value.
+            return UserHandle.USER_SYSTEM;
+        }
+        final UserManagerInternal umi = LocalServices.getService(UserManagerInternal.class);
+        final List<UserInfo> allUsers = umi.getUsers(true);
+        for (UserInfo user : allUsers) {
+            if (user.isAdmin()) {
+                return user.id;
+            }
+            // We failed to find an Admin. Return the historical assumption of SYSTEM, but note
+            // that the SYSTEM user may not actually be an Admin (as in the case of HSUM).
+        }
+        return UserHandle.USER_SYSTEM;
     }
 
     private int runRemoveSplits(String packageName, Collection<String> splitNames)
