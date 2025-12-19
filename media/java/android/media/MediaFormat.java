@@ -829,7 +829,7 @@ public final class MediaFormat {
      * <p>
      * The ratios must be monotonically increasing.
      *
-     * @see #setParameters(Bundle)
+     * See {@link MediaCodec#setParameters}
      */
     @FlaggedApi(FLAG_TEMPORAL_LAYER_ENCODING)
     public static final String KEY_VIDEO_BITRATE_LAYERING = "video-bitrate-layering";
