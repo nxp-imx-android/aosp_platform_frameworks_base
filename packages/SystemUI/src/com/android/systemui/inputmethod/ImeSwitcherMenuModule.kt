@@ -16,9 +16,7 @@
 
 package com.android.systemui.inputmethod
 
-import com.android.systemui.inputmethod.data.repository.ImeSwitcherMenuRepositoryModule
 import com.android.systemui.inputmethod.ui.ImeSwitcherMenuUi
-import com.android.systemui.inputmethod.ui.binder.ImeSwitcherMenuBinderModule
 import com.android.systemui.inputmethod.ui.view.ImeSwitcherMenuDialogDelegate
 import dagger.Binds
 import dagger.Module
@@ -26,8 +24,11 @@ import dagger.Module
 /**
  * Module for providing objects for the IME Switcher Menu, specific to the main SystemUI
  * implementation.
+ *
+ * Note: This module only provides the UI binding, the core Repository and Binder modules are
+ * included from [InputMethodModule] to ensure this UI is available in all SystemUI implementations.
  */
-@Module(includes = [ImeSwitcherMenuBinderModule::class, ImeSwitcherMenuRepositoryModule::class])
+@Module
 interface ImeSwitcherMenuModule {
 
     @Binds fun bindUiFactory(impl: ImeSwitcherMenuDialogDelegate.Factory): ImeSwitcherMenuUi.Factory
