@@ -16,6 +16,8 @@
 
 package com.android.systemui.statusbar.pipeline.mobile.domain.interactor
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.telephony.CellSignalStrength
 import android.telephony.TelephonyManager.NETWORK_TYPE_UNKNOWN
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -36,6 +38,7 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.log.table.logcatTableLogBuffer
+import com.android.systemui.statusbar.pipeline.mobile.NewSatelliteIcon
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType.CarrierMergedNetworkType
@@ -182,7 +185,7 @@ class MobileIconInteractorKairosTest : SysuiTestCase() {
     fun numberOfLevels_comesFromRepo_whenApplicable() = runTest {
         val latest by
             underTest.signalLevelIcon
-                .map { (it as? SignalIconModel.Cellular)?.numberOfLevels }
+                .map { (it as? SignalIconModel.CellularTypeIconModel)?.numberOfLevels }
                 .collectLastValue()
 
         connectionRepo.numberOfLevels.setValue(5)
@@ -508,7 +511,9 @@ class MobileIconInteractorKairosTest : SysuiTestCase() {
         connectionRepo.isNonTerrestrial.setValue(false)
 
         val latest by
-            underTest.signalLevelIcon.map { it as? SignalIconModel.Cellular }.collectLastValue()
+            underTest.signalLevelIcon
+                .map { it as? SignalIconModel.CellularTypeIconModel.Cellular }
+                .collectLastValue()
 
         assertThat(latest?.level).isEqualTo(1)
         assertThat(latest?.showExclamationMark).isEqualTo(false)
@@ -533,7 +538,9 @@ class MobileIconInteractorKairosTest : SysuiTestCase() {
         connectionRepo.isNonTerrestrial.setValue(false)
 
         val latest by
-            underTest.signalLevelIcon.map { it as? SignalIconModel.Cellular }.collectLastValue()
+            underTest.signalLevelIcon
+                .map { it as? SignalIconModel.CellularTypeIconModel.Cellular }
+                .collectLastValue()
 
         connectionRepo.numberOfLevels.setValue(5)
         assertThat(latest!!.numberOfLevels).isEqualTo(5)
@@ -550,7 +557,8 @@ class MobileIconInteractorKairosTest : SysuiTestCase() {
 
         val latest by underTest.signalLevelIcon.collectLastValue()
 
-        assertThat((latest!! as SignalIconModel.Cellular).showExclamationMark).isTrue()
+        assertThat((latest!! as SignalIconModel.CellularTypeIconModel.Cellular).showExclamationMark)
+            .isTrue()
     }
 
     @Test
@@ -560,7 +568,8 @@ class MobileIconInteractorKairosTest : SysuiTestCase() {
 
         val latest by underTest.signalLevelIcon.collectLastValue()
 
-        assertThat((latest!! as SignalIconModel.Cellular).showExclamationMark).isTrue()
+        assertThat((latest!! as SignalIconModel.CellularTypeIconModel.Cellular).showExclamationMark)
+            .isTrue()
     }
 
     @Test
@@ -572,13 +581,16 @@ class MobileIconInteractorKairosTest : SysuiTestCase() {
 
         val latest by underTest.signalLevelIcon.collectLastValue()
 
-        assertThat((latest!! as SignalIconModel.Cellular).showExclamationMark).isFalse()
+        assertThat((latest!! as SignalIconModel.CellularTypeIconModel.Cellular).showExclamationMark)
+            .isFalse()
     }
 
     @Test
     fun cellBasedIcon_usesEmptyState_whenNotInService() = runTest {
         val latest by
-            underTest.signalLevelIcon.map { it as SignalIconModel.Cellular }.collectLastValue()
+            underTest.signalLevelIcon
+                .map { it as SignalIconModel.CellularTypeIconModel.Cellular }
+                .collectLastValue()
 
         connectionRepo.isNonTerrestrial.setValue(false)
         connectionRepo.isInService.setValue(false)
@@ -600,7 +612,9 @@ class MobileIconInteractorKairosTest : SysuiTestCase() {
     @Test
     fun cellBasedIcon_usesCarrierNetworkState_whenInCarrierNetworkChangeMode() = runTest {
         val latest by
-            underTest.signalLevelIcon.map { it as SignalIconModel.Cellular }.collectLastValue()
+            underTest.signalLevelIcon
+                .map { it as SignalIconModel.CellularTypeIconModel.Cellular }
+                .collectLastValue()
 
         connectionRepo.isNonTerrestrial.setValue(false)
         connectionRepo.isInService.setValue(true)
@@ -619,11 +633,12 @@ class MobileIconInteractorKairosTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(NewSatelliteIcon.FLAG_NAME)
     fun satBasedIcon_isUsedWhenNonTerrestrial() = runTest {
         val latest by underTest.signalLevelIcon.collectLastValue()
 
         // Start off using cellular
-        assertThat(latest).isInstanceOf(SignalIconModel.Cellular::class.java)
+        assertThat(latest).isInstanceOf(SignalIconModel.CellularTypeIconModel.Cellular::class.java)
 
         connectionRepo.isNonTerrestrial.setValue(true)
 
@@ -631,6 +646,21 @@ class MobileIconInteractorKairosTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(NewSatelliteIcon.FLAG_NAME)
+    fun satBasedIcon_isUsedWhenNonTerrestrial_newSatelliteIconEnabled() = runTest {
+        val latest by underTest.signalLevelIcon.collectLastValue()
+
+        // Start off using cellular
+        assertThat(latest).isInstanceOf(SignalIconModel.CellularTypeIconModel.Cellular::class.java)
+
+        connectionRepo.isNonTerrestrial.setValue(true)
+
+        assertThat(latest)
+            .isInstanceOf(SignalIconModel.CellularTypeIconModel.SatelliteV2::class.java)
+    }
+
+    @Test
+    @DisableFlags(NewSatelliteIcon.FLAG_NAME)
     // See b/346904529 for more context
     fun satBasedIcon_doesNotInflateSignalStrength_flagOn() = runTest {
         val latest by underTest.signalLevelIcon.collectLastValue()
@@ -648,6 +678,25 @@ class MobileIconInteractorKairosTest : SysuiTestCase() {
 
         // Icon level is unaffected
         assertThat(latest!!.level).isEqualTo(4)
+    }
+
+    @Test
+    @EnableFlags(NewSatelliteIcon.FLAG_NAME)
+    // See b/346904529 for more context
+    fun satBasedIcon_doesNotInflateSignalStrength_newSatelliteIconEnabled() = runTest {
+        val latest by underTest.signalLevelIcon.collectLastValue()
+
+        // GIVEN a satellite connection
+        connectionRepo.isNonTerrestrial.setValue(true)
+        connectionRepo.inflateSignalStrength.setValue(false)
+
+        connectionRepo.satelliteLevel.setValue(4)
+        assertThat(latest!!.level).isEqualTo(4)
+
+        connectionRepo.inflateSignalStrength.setValue(true)
+        connectionRepo.primaryLevel.setValue(4)
+
+        assertThat(latest!!.level).isEqualTo(5)
     }
 
     @Test

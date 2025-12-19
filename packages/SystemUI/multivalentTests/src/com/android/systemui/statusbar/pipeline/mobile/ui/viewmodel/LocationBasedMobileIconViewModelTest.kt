@@ -178,7 +178,7 @@ class LocationBasedMobileIconViewModelTest : SysuiTestCase() {
 
         /** Convenience constructor for these tests */
         fun defaultSignal(level: Int = 1): SignalIconModel {
-            return SignalIconModel.Cellular(
+            return SignalIconModel.CellularTypeIconModel.Cellular(
                 level,
                 NUM_LEVELS,
                 showExclamationMark = false,

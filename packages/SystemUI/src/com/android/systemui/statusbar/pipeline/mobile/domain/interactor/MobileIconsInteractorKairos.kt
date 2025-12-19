@@ -300,7 +300,7 @@ constructor(
                         // - They are cellular
                         // - There's exactly two
                         // - They have the same number of levels
-                        signalLevelIcons.filterIsInstance<SignalIconModel.Cellular>().let {
+                        signalLevelIcons.filterIsInstance<SignalIconModel.CellularTypeIconModel.Cellular>().let {
                             it.size == 2 && it[0].numberOfLevels == it[1].numberOfLevels
                         }
                     }
