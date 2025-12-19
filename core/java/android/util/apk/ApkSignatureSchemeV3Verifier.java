@@ -203,6 +203,7 @@ public class ApkSignatureSchemeV3Verifier {
         int signerCount = 0;
         Map<Integer, byte[]> contentDigests = new ArrayMap<>();
         Pair<X509Certificate[], ApkSigningBlockUtils.VerifiedProofOfRotation> result = null;
+        boolean isResultDevTarget = false;
         CertificateFactory certFactory;
         try {
             certFactory = CertificateFactory.getInstance("X.509");
@@ -218,8 +219,40 @@ public class ApkSignatureSchemeV3Verifier {
         while (signers.hasRemaining()) {
             try {
                 ByteBuffer signer = getLengthPrefixedSlice(signers);
-                result = verifySigner(signer, contentDigests, certFactory);
+                boolean[] isDevTarget = new boolean[1];
+                Pair<X509Certificate[], ApkSigningBlockUtils.VerifiedProofOfRotation>
+                        candidateResult = verifySigner(signer, contentDigests, certFactory,
+                        isDevTarget);
                 signerCount++;
+                if (android.security.Flags.apkPqcHybridSigning()) {
+                    // While the V3.0 / V3.1 signature schemes only support a single signer, if a
+                    // new signature algorithm is targeting the current development release, then
+                    // it's possible to have a signer signed with this new algorithm and the
+                    // previous signer both targeting the same SDK version. In this case, a signer
+                    // targeting the development release is technically targeting the new release
+                    // and should be used.
+                    if (signerCount > 1) {
+                        // If both signers have the same value for dev targeting, or there are more
+                        // than two signers, then this is a multiple signer case which is not
+                        // supported.
+                        if (isDevTarget[0] == isResultDevTarget || signerCount > 2) {
+                            throw new SecurityException(
+                                    "APK Signature Scheme V3 only supports one signer: multiple "
+                                            + "signers found.");
+                        }
+                        // The dev target should be preferred since a match means the device is
+                        // running the development SDK version that the signer is targeting.
+                        if (isDevTarget[0]) {
+                            result = candidateResult;
+                            isResultDevTarget = isDevTarget[0];
+                        }
+                    } else {
+                        result = candidateResult;
+                        isResultDevTarget = isDevTarget[0];
+                    }
+                } else {
+                    result = candidateResult;
+                }
             } catch (PlatformNotSupportedException e) {
                 // this signer is for a different platform, ignore it.
                 continue;
@@ -240,9 +273,11 @@ public class ApkSignatureSchemeV3Verifier {
                     "None of the signers support the current platform version");
         }
 
-        if (signerCount != 1) {
-            throw new SecurityException("APK Signature Scheme V3 only supports one signer: "
-                    + "multiple signers found.");
+        if (!android.security.Flags.apkPqcHybridSigning()) {
+            if (signerCount != 1) {
+                throw new SecurityException("APK Signature Scheme V3 only supports one signer: "
+                        + "multiple signers found.");
+            }
         }
 
         if (contentDigests.isEmpty()) {
@@ -268,7 +303,8 @@ public class ApkSignatureSchemeV3Verifier {
             verifySigner(
                 ByteBuffer signerBlock,
                 Map<Integer, byte[]> contentDigests,
-                CertificateFactory certFactory)
+                CertificateFactory certFactory,
+                boolean[] isDevTarget)
             throws SecurityException, IOException, PlatformNotSupportedException {
         ByteBuffer signedData = getLengthPrefixedSlice(signerBlock);
         int minSdkVersion = signerBlock.getInt();
@@ -434,7 +470,7 @@ public class ApkSignatureSchemeV3Verifier {
         }
 
         ByteBuffer additionalAttrs = getLengthPrefixedSlice(signedData);
-        return verifyAdditionalAttributes(additionalAttrs, certs, certFactory);
+        return verifyAdditionalAttributes(additionalAttrs, certs, certFactory, isDevTarget);
     }
 
     private static final int PROOF_OF_ROTATION_ATTR_ID = 0x3ba06f8c;
@@ -443,7 +479,8 @@ public class ApkSignatureSchemeV3Verifier {
 
     private Pair<X509Certificate[], ApkSigningBlockUtils.VerifiedProofOfRotation>
             verifyAdditionalAttributes(ByteBuffer attrs, List<X509Certificate> certs,
-                CertificateFactory certFactory) throws IOException, PlatformNotSupportedException {
+            CertificateFactory certFactory, boolean[] isDevTarget)
+            throws IOException, PlatformNotSupportedException {
         X509Certificate[] certChain = certs.toArray(new X509Certificate[certs.size()]);
         ApkSigningBlockUtils.VerifiedProofOfRotation por = null;
 
@@ -517,6 +554,7 @@ public class ApkSignatureSchemeV3Verifier {
                                             + mSignerMinSdkVersion
                                             + ", but the signer is targeting a dev release");
                         }
+                        isDevTarget[0] = true;
                     }
                     break;
                 default:
