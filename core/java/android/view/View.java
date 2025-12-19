@@ -9105,7 +9105,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      *
      * @return The current pane title.
      *
-     * {@see #setAccessibilityPaneTitle}.
+     * @see #setAccessibilityPaneTitle
      *
      * @attr ref android.R.styleable#View_accessibilityPaneTitle
      */

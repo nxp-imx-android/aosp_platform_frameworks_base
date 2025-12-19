@@ -2699,8 +2699,8 @@ public final class Settings {
      * <p>
      * Type: Integer with a value from the one of the SUPERVISOR_VERIFICATION_* constants below.
      * <ul>
-     * <li>{@see #SUPERVISOR_VERIFICATION_SETTING_UNKNOWN}
-     * <li>{@see #SUPERVISOR_VERIFICATION_SETTING_BIOMETRICS}
+     * <li>{@link #SUPERVISOR_VERIFICATION_SETTING_UNKNOWN}
+     * <li>{@link #SUPERVISOR_VERIFICATION_SETTING_BIOMETRICS}
      * </ul>
      * </p>
      */
