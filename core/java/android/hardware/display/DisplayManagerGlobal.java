@@ -2336,6 +2336,16 @@ public final class DisplayManagerGlobal {
         // a display id is always ADDED after it is CONNECTED.
         private static final int FLAG_ADDED = 1 << 2;
 
+        // Mask for locally added display ids, injected by the current process via injectLocked().
+        // This mask is used to optimize the processing of duplicate display events, and also to
+        // avoid races when display id gets added and/or removed by this process much quicker than
+        // onDisplayAdded/Removed are received from the system server.
+        private static final int LOCALLY_ADDED_MASK =
+                FLAG_LOCALLY_CONTROLLED | FLAG_CONNECTED | FLAG_ADDED;
+
+        // Mask for locally removed display ids, set by the current process via evictLocked().
+        private static final int LOCALLY_REMOVED_MASK = FLAG_LOCALLY_CONTROLLED;
+
         private static final boolean mIsValidationEnabled = Flags.displayIdsCacheValidation();
 
         private boolean mIsConnectedCachingEnabled;
@@ -2356,7 +2366,13 @@ public final class DisplayManagerGlobal {
         @VisibleForTesting
         public void injectLocked(int displayId) {
             if (mIsAddedCachingEnabled || mIsConnectedCachingEnabled) {
-                mIdsCache.put(displayId, FLAG_LOCALLY_CONTROLLED | FLAG_CONNECTED | FLAG_ADDED);
+                if (DEBUG) {
+                    Log.d(TAG, "injectLocked"
+                            + " package=" + ActivityThread.currentPackageName()
+                            + " displayId=" + displayId);
+                }
+                // the cache is enabled, so add the display id to the cache.
+                mIdsCache.put(displayId, LOCALLY_ADDED_MASK);
                 invalidateArrayCaches();
             }
         }
@@ -2369,11 +2385,20 @@ public final class DisplayManagerGlobal {
         @VisibleForTesting
         public void evictLocked(int displayId) {
             if (mIsAddedCachingEnabled || mIsConnectedCachingEnabled) {
+                if (DEBUG) {
+                    Log.d(TAG, "evictLocked"
+                            + " package=" + ActivityThread.currentPackageName()
+                            + " displayId=" + displayId);
+                }
                 int index = mIdsCache.indexOfKey(displayId);
                 if (index < 0) {
                     return;
                 }
-                mIdsCache.setValueAt(index, FLAG_LOCALLY_CONTROLLED);
+                // Cache is enabled, and id is present in the cache.
+                // Mark it as locally controlled only, so that it won't be returned by getDisplays
+                // but other methods of this class will still see it as already "removed"
+                // and "disconnected".
+                mIdsCache.setValueAt(index, LOCALLY_REMOVED_MASK);
                 invalidateArrayCaches();
             }
         }
@@ -2394,16 +2419,32 @@ public final class DisplayManagerGlobal {
                         + " added=" + Arrays.toString(added));
             }
             if (mIsAddedCachingEnabled && added.length > 0) {
+                // Remove all ids which are not locally controlled and have only ADDED and
+                // CONNECTED flags. Then insert the ground-truth added ids received with snapshot.
+                // We only clear entries that exactly match FLAG_CONNECTED | FLAG_ADDED to avoid
+                // removing displays that are marked with FLAG_LOCALLY_CONTROLLED, as those
+                // are managed by the current process and should persist in the cache
+                // until explicitly removed.
                 clearIdsByFlags(FLAG_CONNECTED | FLAG_ADDED);
                 for (int i = 0; i < added.length; i++) {
+                    // this will potentially override the locally controlled flag, but that is ok,
+                    // because we received this id in the snapshot which means that it is
+                    // potentially not locally controlled anymore.
                     mIdsCache.put(added[i], FLAG_CONNECTED | FLAG_ADDED);
                 }
                 mIsAddedCacheValid = true;
             }
             if (mIsConnectedCachingEnabled && connected.length > 0) {
+                // Remove all ids which are not locally controlled and have only CONNECTED flags.
+                // Then insert the ground-truth connected ids received with snapshot.
                 clearIdsByFlags(FLAG_CONNECTED);
                 for (int i = 0; i < connected.length; i++) {
+                    // If the display is not already present in the cache as ADDED, then add it with
+                    // CONNECTED flag only.
                     if ((mIdsCache.get(connected[i], 0) & FLAG_ADDED) == 0) {
+                        // this will potentially override the locally controlled flag, but that is
+                        // ok, because we received this id in the snapshot which means that it is
+                        // potentially not locally controlled anymore.
                         mIdsCache.put(connected[i], FLAG_CONNECTED);
                     }
                 }
@@ -2423,12 +2464,12 @@ public final class DisplayManagerGlobal {
                 Log.d(TAG, "setConnectedCachingEnabledLocked disabling cache"
                         + " package=" + ActivityThread.currentPackageName());
             }
-            if (!isCachingEnabled) {
-                if (!mIsAddedCacheValid) {
-                    mIdsCache.clear();
-                } else {
-                    clearIdsByFlags(FLAG_CONNECTED);
-                }
+            if (mIsConnectedCacheValid && !isCachingEnabled) {
+                // We only clear/update the cache if it was previously valid and is now being
+                // disabled. This prevents race conditions where the cache could be cleared
+                // unintentionally if this method is called multiple times with
+                // isCachingEnabled=false.
+                clearIdsByFlags(FLAG_CONNECTED);
                 mIsConnectedCacheValid = false;
             }
         }
@@ -2444,9 +2485,20 @@ public final class DisplayManagerGlobal {
                 Log.d(TAG, "setAddedCachingEnabledLocked disabling cache"
                         + " package=" + ActivityThread.currentPackageName());
             }
-            if (!isCachingEnabled) {
+            if (mIsAddedCacheValid && !isCachingEnabled) {
+                // We only clear/update the cache if it was previously valid and is now being
+                // disabled. This prevents race conditions where the cache could be cleared
+                // unintentionally if this method is called multiple times with
+                // isCachingEnabled=false.
+
+                // Drop ADDED flag from non-locally-controlled displays in the cache, because it is
+                // stale if caching is disabled.
+                clearFlagsForNotControlledLocally(FLAG_ADDED);
                 if (!mIsConnectedCacheValid) {
-                    mIdsCache.clear();
+                    // If connected cache is not valid, it means that we can clear all display ids
+                    // which have only CONNECTED flag.
+                    // This will keep only locally controlled displays in the cache.
+                    clearIdsByFlags(FLAG_CONNECTED);
                 }
                 mIsAddedCacheValid = false;
             }
@@ -2486,32 +2538,51 @@ public final class DisplayManagerGlobal {
                 int index = getIndexAndValidateNotAdded(displayId);
                 if (index < 0) {
                     mIdsCache.put(displayId, FLAG_CONNECTED | FLAG_ADDED);
-                } else if (mIdsCache.valueAt(index) != FLAG_LOCALLY_CONTROLLED) {
-                    // If value is found - it must be not just locally controlled.
-                    mIdsCache.setValueAt(index, FLAG_CONNECTED | FLAG_ADDED);
+                    invalidateArrayCaches();
                 } else {
-                    // otherwise if it has just FLAG_LOCALLY_CONTROLLED - it is already removed,
-                    // so don't add it.
-                    outEventMask &= ~(EVENT_DISPLAY_CONNECTED | EVENT_DISPLAY_ADDED);
+                    int value = mIdsCache.valueAt(index);
+                    if (value == LOCALLY_ADDED_MASK) {
+                        // The display was locally injected, so it's already marked as ADDED and
+                        // CONNECTED. We just need to clear the local control flag and forward the
+                        // event, since this is the first time the system is acknowledging it.
+                        endLocalControl(index);
+                    } else if (value == LOCALLY_REMOVED_MASK || (value & FLAG_ADDED) != 0) {
+                        // If it is either already removed display, or it is a duplicated event.
+                        // We should not send these events to the client.
+                        outEventMask &= ~(EVENT_DISPLAY_CONNECTED | EVENT_DISPLAY_ADDED);
+                        endLocalControl(index);
+                    } else {
+                        mIdsCache.setValueAt(index, FLAG_CONNECTED | FLAG_ADDED);
+                        invalidateArrayCaches();
+                    }
                 }
-                invalidateArrayCaches();
             } else if (mIsConnectedCacheValid && (eventMask & EVENT_DISPLAY_CONNECTED) != 0) {
                 int index = getIndexAndValidateNotConnected(displayId);
                 if (index < 0) {
+                    // If the display is not present in the cache, then add it with CONNECTED flag
+                    // only.
                     mIdsCache.put(displayId, FLAG_CONNECTED);
-                } else if (mIdsCache.valueAt(index) != FLAG_LOCALLY_CONTROLLED) {
-                    // If value is found - it must be not just locally controlled.
-                    mIdsCache.setValueAt(index, FLAG_CONNECTED);
+                    invalidateArrayCaches();
                 } else {
-                    // otherwise if it has just FLAG_LOCALLY_CONTROLLED - it is already removed,
-                    // so don't store it.
-                    outEventMask &= ~(EVENT_DISPLAY_CONNECTED | EVENT_DISPLAY_ADDED);
+                    int value = mIdsCache.valueAt(index);
+                    if (value == LOCALLY_ADDED_MASK) {
+                        // The display is locally injected.
+                        // The event must be sent to the listener, because it was not sent before.
+                        endLocalControl(index);
+                    } else if (value == LOCALLY_REMOVED_MASK || (value & FLAG_CONNECTED) != 0) {
+                        // If value is found, but it is not "locally injected" display, then it is
+                        // either already removed display, or it is a duplicated event. In either
+                        // case we should not send these events to the client.
+                        outEventMask &= ~EVENT_DISPLAY_CONNECTED;
+                        endLocalControl(index);
+                    } else {
+                        mIdsCache.setValueAt(index, FLAG_CONNECTED);
+                        invalidateArrayCaches();
+                    }
                 }
-                invalidateArrayCaches();
             }
 
-            if ((mIsConnectedCacheValid && (eventMask & EVENT_DISPLAY_DISCONNECTED) != 0)
-                    || (mIsAddedCacheValid && (eventMask & EVENT_DISPLAY_REMOVED) != 0)) {
+            if ((mIsConnectedCacheValid && (eventMask & EVENT_DISPLAY_DISCONNECTED) != 0)) {
                 int index = mIdsCache.indexOfKey(displayId);
                 if (index < 0) {
                     // Unknown display id, don't send these events to the listener.
@@ -2520,9 +2591,27 @@ public final class DisplayManagerGlobal {
                     mIdsCache.removeAt(index);
                     invalidateArrayCaches();
                 }
+            } else if ((mIsAddedCacheValid && (eventMask & EVENT_DISPLAY_REMOVED) != 0)) {
+                int index = mIdsCache.indexOfKey(displayId);
+                if (index < 0) {
+                    // Unknown display id, don't send these events to the listener.
+                    outEventMask &= ~EVENT_DISPLAY_REMOVED;
+                } else if (mIsConnectedCacheValid) {
+                    // A display can be REMOVED (e.g. disabled) but still CONNECTED.
+                    // If connected displays are being cached, we only drop the ADDED flag
+                    // here, so it remains in the connected list.
+                    mIdsCache.setValueAt(index, mIdsCache.valueAt(index) & (~FLAG_ADDED));
+                    endLocalControl(index);
+                    invalidateArrayCaches();
+                } else {
+                    // if connected cache is not valid, it means that the display can be safely
+                    // removed from the cache, because it has never received "connected" and will
+                    // never receive "disconnected" event.
+                    mIdsCache.removeAt(index);
+                    invalidateArrayCaches();
+                }
             }
 
-            endLocalControl(displayId);
             return outEventMask;
         }
 
@@ -2600,8 +2689,7 @@ public final class DisplayManagerGlobal {
             return index;
         }
 
-        private void endLocalControl(int displayId) {
-            int index = mIdsCache.indexOfKey(displayId);
+        private void endLocalControl(int index) {
             if (index < 0) {
                 return;
             }
@@ -2613,6 +2701,22 @@ public final class DisplayManagerGlobal {
             }
         }
 
+        /**
+         * Removes the given flags from all cache entries that are not marked as locally controlled.
+         * This is used when a cache type is disabled to clear stale state without affecting
+         * displays managed by the current process.
+         * @param flags The flags to remove.
+         */
+        private void clearFlagsForNotControlledLocally(int flags) {
+            for (int i = mIdsCache.size() - 1; i >= 0; i--) {
+                int value = mIdsCache.valueAt(i);
+                if ((value & FLAG_LOCALLY_CONTROLLED) == 0) {
+                    mIdsCache.setValueAt(i, value & (~flags));
+                }
+            }
+            invalidateArrayCaches();
+        }
+
         private void clearIdsByFlags(int flags) {
             for (int i = mIdsCache.size() - 1; i >= 0; i--) {
                 // Only consider entries that contain precisely the flags being cleared
@@ -2620,6 +2724,7 @@ public final class DisplayManagerGlobal {
                     mIdsCache.removeAt(i);
                 }
             }
+            invalidateArrayCaches();
         }
 
         private int[] filterIdsMatchingFlag(int flag) {
