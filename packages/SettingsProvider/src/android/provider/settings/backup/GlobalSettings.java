@@ -121,6 +121,7 @@ public class GlobalSettings {
         Settings.Global.Wearable.WRIST_DETECTION_AUTO_LOCKING_ENABLED,
         Settings.Global.Wearable.WRIST_ORIENTATION_MODE,
         Settings.Global.Wearable.AUTO_BEDTIME_MODE,
+        Settings.Global.Wearable.BEDTIME_MODE_WATCHFACE,
         Settings.Global.Wearable.GESTURE_PRIMARY_ACTION_USER_PREFERENCE,
         Settings.Global.Wearable.GESTURE_DISMISS_ACTION_USER_PREFERENCE,
         Settings.Global.Wearable.GESTURE_HINT_PERIOD_DAYS,

@@ -21642,6 +21642,13 @@ public final class Settings {
             public static final String AUTO_BEDTIME_MODE = "auto_bedtime_mode";
 
             /**
+             * Whether the Bedtime Mode watchface should be shown when Bedtime Mode is activated.
+             *
+             * @hide
+             */
+            public static final String BEDTIME_MODE_WATCHFACE = "bedtime_mode_watchface";
+
+            /**
              * Indicates that all elements of the system status tray on wear should be rendered
              * by default wear system.
              *
