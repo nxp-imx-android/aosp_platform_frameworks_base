@@ -38,7 +38,6 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -94,6 +93,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
@@ -269,8 +269,8 @@ private fun CardCarouselContent(
     }
     LaunchedEffect(carouselState.currentItem, viewModel.cards.size) {
         if (carouselState.currentItem < viewModel.cards.size) {
-            // This effect is trigged from both a swipe between items in the carousel, and the user
-            // tapping on a thumbnail, which could animate more than one index away.
+            // This effect is triggered from both a swipe between items in the carousel, and the
+            // user tapping on a thumbnail, which could animate more than one index away.
             // In the second case, we need to ignore the intermediate events caused by
             // `animateScrollToItem`, so that scrolling can fully complete.
             if (userTappedIndex == null || carouselState.currentItem == userTappedIndex) {
@@ -297,7 +297,7 @@ private fun CardCarouselContent(
             }
     ) {
         @Composable
-        fun PagerContent(overscrollEffect: OverscrollEffect? = null) {
+        fun PagerContent() {
             Box(modifier = Modifier.sysuiResTag(MediaRes.MEDIA_CAROUSEL_SCROLLER)) {
                 HorizontalCenteredHeroCarousel(
                     state = carouselState,
@@ -348,7 +348,7 @@ private fun CardCarouselContent(
         } else {
             val overscrollEffect = rememberOffsetOverscrollEffect()
             SwipeToReveal(
-                foregroundContent = { PagerContent(overscrollEffect) },
+                foregroundContent = { PagerContent() },
                 foregroundContentEffect = overscrollEffect,
                 revealedContent = { revealAmount ->
                     RevealedContent(
@@ -1595,18 +1595,20 @@ private fun RevealedContent(
     // taking into account the amount of reveal.
     Layout(
         content = {
+            val revealAlpha =
+                revealAmount().let { if (it.isNaN()) 0f else abs(it).fastCoerceIn(0f, 1f) }
             Icon(
                 icon = viewModel.icon,
                 modifier =
                     Modifier.background(
-                            color = MaterialTheme.colorScheme.surface,
+                            color = MaterialTheme.colorScheme.surface.copy(alpha = revealAlpha),
                             shape = CircleShape,
                         )
                         .layoutId(Media.LayoutId.CardRevealedContent)
                         .size(48.dp)
                         .padding(12.dp)
                         .graphicsLayer {
-                            alpha = abs(revealAmount()).fastCoerceIn(0f, 1f)
+                            alpha = revealAlpha
                             rotationZ = revealAmount() * 90
                         }
                         .clickable { viewModel.onClick() },
