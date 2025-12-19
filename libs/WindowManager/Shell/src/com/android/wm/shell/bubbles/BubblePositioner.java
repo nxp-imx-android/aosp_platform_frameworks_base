@@ -882,7 +882,6 @@ public class BubblePositioner implements BubbleDropTargetBoundsProvider {
                 screen.bottom);
     }
 
-
     /**
      * Populates {@param out} with the rest bounds of an expanded bubble on screen.
      * <p>

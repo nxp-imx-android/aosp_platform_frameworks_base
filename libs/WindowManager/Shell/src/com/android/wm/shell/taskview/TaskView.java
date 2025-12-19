@@ -274,6 +274,11 @@ public class TaskView extends SurfaceView implements SurfaceHolder.Callback,
         mTaskViewController.setTaskBounds(mTaskViewTaskController, mTmpRect);
     }
 
+    /** Update the bounds for this task view with {@code bounds}. */
+    public void onLocationChanged(Rect bounds) {
+        mTaskViewController.setTaskBounds(mTaskViewTaskController, bounds);
+    }
+
     /**
      * Call to remove the task from window manager. This task will not appear in recents.
      */
