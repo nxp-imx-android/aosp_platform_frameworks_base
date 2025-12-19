@@ -3280,7 +3280,9 @@ public class ActivityRecordTests extends WindowTestsBase {
         player.finish();
         assertFalse(activity.isVisible());
         assertFalse("Reset draw state after committing invisible", mAppWindow.isDrawn());
-        assertTrue("Set pending redraw hint", mAppWindow.setReportResizeHints());
+        if (!WindowManager.useClientSurface()) {
+            assertTrue("Set pending redraw hint", mAppWindow.setReportResizeHints());
+        }
     }
 
     @Test
