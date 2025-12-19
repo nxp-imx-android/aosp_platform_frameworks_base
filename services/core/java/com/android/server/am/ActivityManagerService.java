@@ -2716,8 +2716,18 @@ public class ActivityManagerService extends IActivityManager.Stub
         mInstaller = installer;
     }
 
+    /**
+     * Return a new limiter from the controller.
+     */
     MemoryLimiter.Limiter newMemoryLimiter() {
         return mMemoryLimiter.newLimiter();
+    }
+
+    /**
+     * Return the controller.  This is used by the shell to support test and debug.
+     */
+    MemoryLimiter getMemoryLimiter() {
+        return mMemoryLimiter;
     }
 
     private void start() {

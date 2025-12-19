@@ -69,6 +69,13 @@ flag {
 }
 
 flag {
+    name: "memory_limiter_default_app_limits"
+    namespace: "system_performance"
+    description: "Turn on default app limits"
+    bug: "467691174"
+}
+
+flag {
     name: "oomadjuster_cached_app_tiers"
     namespace: "system_performance"
     is_fixed_read_only: true
