@@ -1455,14 +1455,14 @@ public class NotificationManagerService extends SystemService {
                     cancelNotification(callingUid, callingPid, sbn.getPackageName(), sbn.getTag(),
                             sbn.getId(), FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY,
                             FLAG_FOREGROUND_SERVICE | FLAG_USER_INITIATED_JOB
-                                    | FLAG_BUBBLE,
+                                    | FLAG_BUBBLE, null,
                             false, r.getUserId(), REASON_CLICK, nv.rank, nv.count, null);
 
                 } else {
                     // Otherwise, only FLAG_AUTO_CANCEL notifications should be canceled on click.
                     cancelNotification(callingUid, callingPid, sbn.getPackageName(), sbn.getTag(),
                             sbn.getId(), FLAG_AUTO_CANCEL,
-                            FLAG_FOREGROUND_SERVICE | FLAG_USER_INITIATED_JOB | FLAG_BUBBLE,
+                            FLAG_FOREGROUND_SERVICE | FLAG_USER_INITIATED_JOB | FLAG_BUBBLE, null,
                             false, r.getUserId(), REASON_CLICK, nv.rank, nv.count, null);
                 }
                 nv.recycle();
@@ -1529,6 +1529,7 @@ public class NotificationManagerService extends SystemService {
                                 r.getSbn().getId(),
                                 FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY /*=mustHaveFlags*/,
                                 FLAG_NO_DISMISS /*=mustNotHaveFlags*/,
+                                null /*=flagChecker*/,
                                 false /*=sendDelete*/,
                                 r.getUserId(),
                                 REASON_CLICK,
@@ -1562,6 +1563,7 @@ public class NotificationManagerService extends SystemService {
             cancelNotification(callingUid, callingPid, pkg, tag, id,
                     /* mustHaveFlags= */ 0,
                     /* mustNotHaveFlags= */ mustNotHaveFlags,
+                    /* flagChecker= */ null,
                     /* sendDelete= */ true,
                     userId, fromBundle ? REASON_BUNDLE_DISMISSED : REASON_CANCEL, nv.rank, nv.count,
                     /* listener= */ null);
@@ -1608,7 +1610,7 @@ public class NotificationManagerService extends SystemService {
                 fgService = r != null && (r.getNotification().flags & FLAG_FOREGROUND_SERVICE) != 0;
                 uiJob = r != null && (r.getNotification().flags & FLAG_USER_INITIATED_JOB) != 0;
             }
-            cancelNotification(callingUid, callingPid, pkg, tag, id, 0, 0, false, userId,
+            cancelNotification(callingUid, callingPid, pkg, tag, id, 0, 0, null, false, userId,
                     REASON_ERROR, null);
             if (fgService || uiJob) {
                 // Still crash for foreground services or user-initiated jobs, preventing the
@@ -2225,7 +2227,7 @@ public class NotificationManagerService extends SystemService {
             if (foundNotification) {
                 cancelNotification(uid, pid, packageName, tag, id, 0,
                         FLAG_FOREGROUND_SERVICE | FLAG_USER_INITIATED_JOB
-                                | FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY,
+                                | FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY, null,
                         true, userId, REASON_TIMEOUT, null);
             }
         }
@@ -6102,10 +6104,13 @@ public class NotificationManagerService extends SystemService {
         private void cancelNotificationFromListenerLocked(ManagedServiceInfo info,
                 int callingUid, int callingPid, String pkg, String tag, int id, int userId,
                 int reason) {
-            int mustNotHaveFlags = FLAG_ONGOING_EVENT | FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY;
-
+            int mustNotHaveFlags = FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY;
+            final FlagChecker flagChecker = (flags) -> {
+                // ongoing can only be cancelled by listeners if also promoted.
+                return (flags & FLAG_ONGOING_EVENT) == 0 || (flags & FLAG_PROMOTED_ONGOING) != 0;
+            };
             cancelNotification(callingUid, callingPid, pkg, tag, id, 0 /* mustHaveFlags */,
-                    mustNotHaveFlags,
+                    mustNotHaveFlags, flagChecker,
                     true,
                     userId, reason, info);
         }
@@ -8009,7 +8014,7 @@ public class NotificationManagerService extends SystemService {
         }
         if (autogroupSummary != null) {
             final StatusBarNotification sbn = autogroupSummary.getSbn();
-            cancelNotification(MY_UID, MY_PID, pkg, sbn.getTag(), sbn.getId(), 0, 0, false,
+            cancelNotification(MY_UID, MY_PID, pkg, sbn.getTag(), sbn.getId(), 0, 0, null, false,
                     userId, REASON_UNAUTOBUNDLED, null);
         }
     }
@@ -8024,7 +8029,7 @@ public class NotificationManagerService extends SystemService {
             r.isCanceled = true;
             cancelNotification(Binder.getCallingUid(),
                     Binder.getCallingPid(), r.getSbn().getPackageName(),
-                    r.getSbn().getTag(), r.getSbn().getId(), 0, 0,
+                    r.getSbn().getTag(), r.getSbn().getId(), 0, 0, null,
                     false, r.getUserId(),
                     REASON_GROUP_OPTIMIZATION, null);
         }
@@ -8067,7 +8072,7 @@ public class NotificationManagerService extends SystemService {
                         cancelNotification(Binder.getCallingUid(), Binder.getCallingPid(),
                                 groupSummary.getSbn().getPackageName(),
                                 groupSummary.getSbn().getTag(),
-                                groupSummary.getSbn().getId(), 0, 0, false,
+                                groupSummary.getSbn().getId(), 0, 0, null, false,
                                 groupSummary.getUserId(), REASON_GROUP_OPTIMIZATION, null);
                     }
                 }
@@ -8875,7 +8880,7 @@ public class NotificationManagerService extends SystemService {
         }
 
         cancelNotification(uid, callingPid, pkg, tag, id, 0,
-                mustNotHaveFlags, false, userId, REASON_APP_CANCEL, null);
+                mustNotHaveFlags, null, false, userId, REASON_APP_CANCEL, null);
     }
 
     boolean isNotificationShownInternal(String pkg, String tag, int notificationId, int userId) {
@@ -10074,6 +10079,7 @@ public class NotificationManagerService extends SystemService {
         private final int mId;
         private final int mMustHaveFlags;
         private final int mMustNotHaveFlags;
+        private final FlagChecker mFlagChecker;
         private final boolean mSendDelete;
         private final int mUserId;
         private final int mReason;
@@ -10084,7 +10090,8 @@ public class NotificationManagerService extends SystemService {
 
         CancelNotificationRunnable(final int callingUid, final int callingPid,
                 final String pkg, final String tag, final int id,
-                final int mustHaveFlags, final int mustNotHaveFlags, final boolean sendDelete,
+                final int mustHaveFlags, final int mustNotHaveFlags, final FlagChecker flagChecker,
+                final boolean sendDelete,
                 final int userId, final int reason, int rank, int count,
                 final ManagedServiceInfo listener,
                 @ElapsedRealtimeLong long cancellationElapsedTimeMs) {
@@ -10095,6 +10102,7 @@ public class NotificationManagerService extends SystemService {
             this.mId = id;
             this.mMustHaveFlags = mustHaveFlags;
             this.mMustNotHaveFlags = mustNotHaveFlags;
+            this.mFlagChecker = flagChecker;
             this.mSendDelete = sendDelete;
             this.mUserId = userId;
             this.mReason = reason;
@@ -10140,7 +10148,9 @@ public class NotificationManagerService extends SystemService {
                     if ((r.getNotification().flags & mMustHaveFlags) != mMustHaveFlags) {
                         return;
                     }
-                    if ((r.getNotification().flags & mMustNotHaveFlags) != 0) {
+                    if ((r.getNotification().flags & mMustNotHaveFlags) != 0
+                            || (mFlagChecker != null
+                                    && !mFlagChecker.apply(r.getNotification().flags))) {
                         // If cancellation will be prevented due to lifetime extension,
                         // we need to send an update to system UI first.
                         maybeNotifySystemUiListenerLifetimeExtendedLocked(
@@ -10165,6 +10175,9 @@ public class NotificationManagerService extends SystemService {
                                 }
                             }
                             if ((flags & mMustNotHaveFlags) != 0) {
+                                return false;
+                            }
+                            if (mFlagChecker != null && !mFlagChecker.apply(flags)) {
                                 return false;
                             }
                             return true;
@@ -11746,9 +11759,11 @@ public class NotificationManagerService extends SystemService {
      */
     void cancelNotification(final int callingUid, final int callingPid,
             final String pkg, final String tag, int id,
-            final int mustHaveFlags, final int mustNotHaveFlags, final boolean sendDelete,
+            final int mustHaveFlags, final int mustNotHaveFlags, final FlagChecker flagChecker,
+            final boolean sendDelete,
             final int userId, final int reason, final ManagedServiceInfo listener) {
-        cancelNotification(callingUid, callingPid, pkg, tag, id, mustHaveFlags, mustNotHaveFlags,
+        cancelNotification(callingUid, callingPid, pkg, tag, id,
+                mustHaveFlags, mustNotHaveFlags, flagChecker,
                 sendDelete, userId, reason, -1 /* rank */, -1 /* count */, listener);
     }
 
@@ -11758,15 +11773,16 @@ public class NotificationManagerService extends SystemService {
      */
     void cancelNotification(final int callingUid, final int callingPid,
             final String pkg, final String tag, final int id,
-            final int mustHaveFlags, final int mustNotHaveFlags, final boolean sendDelete,
-            final int userId, final int reason, int rank, int count,
+            final int mustHaveFlags, final int mustNotHaveFlags, final FlagChecker flagChecker,
+            final boolean sendDelete, final int userId, final int reason, int rank, int count,
             final ManagedServiceInfo listener) {
         // In enqueueNotificationInternal notifications are added by scheduling the
         // work on the worker handler. Hence, we also schedule the cancel on this
         // handler to avoid a scenario where an add notification call followed by a
         // remove notification call ends up in not removing the notification.
         mHandler.scheduleCancelNotification(new CancelNotificationRunnable(callingUid, callingPid,
-                pkg, tag, id, mustHaveFlags, mustNotHaveFlags, sendDelete, userId, reason, rank,
+                pkg, tag, id, mustHaveFlags, mustNotHaveFlags, flagChecker,
+                sendDelete, userId, reason, rank,
                 count, listener, SystemClock.elapsedRealtime()), 0);
     }
 
