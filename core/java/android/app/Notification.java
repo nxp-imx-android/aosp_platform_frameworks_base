@@ -223,6 +223,15 @@ public class Notification implements Parcelable
             = "android.intent.category.NOTIFICATION_PREFERENCES";
 
     /**
+     * An activity that provides a user interface for adjusting notification preferences for its
+     * bridged notification which originated on another device.
+     */
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
+    @FlaggedApi(FLAG_BRIDGED_NOTIFICATIONS)
+    public static final String ACTION_BRIDGED_NOTIFICATION_PREFERENCES =
+            "android.app.action.BRIDGED_NOTIFICATION_PREFERENCES";
+
+    /**
      * Optional extra for {@link #INTENT_CATEGORY_NOTIFICATION_PREFERENCES}. If provided, will
      * contain a {@link NotificationChannel#getId() channel id} that can be used to narrow down
      * what settings should be shown in the target app.
