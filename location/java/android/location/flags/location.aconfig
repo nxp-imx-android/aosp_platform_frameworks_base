@@ -132,15 +132,7 @@ flag {
     is_fixed_read_only: true
 }
 
-flag {
-    name: "jni_delete_local_reference_gnss_antenna_info_builder"
-    namespace: "location"
-    description: "Flag for deleting local reference for gnssAntennaInfoBuilder"
-    bug: "451136946"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
+
 
 flag {
     name: "service_watcher_unstable_fallback"
