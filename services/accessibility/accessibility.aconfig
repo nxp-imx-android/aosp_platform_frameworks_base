@@ -190,16 +190,6 @@ flag {
 }
 
 flag {
-    name: "shell_command_enforce_permission"
-    namespace: "accessibility"
-    description: "Adds a permission check to 'cmd accessibility' shell command"
-    bug: "227200331"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "type_speech_state_change_allowed"
     namespace: "accessibility"
     description: "Allow global dispatch for TYPE_SPEECH_STATE_CHANGE"

@@ -56,10 +56,8 @@ final class AccessibilityShellCommand extends ShellCommand {
 
     @Override
     public int onCommand(String cmd) {
-        if (Flags.shellCommandEnforcePermission()) {
-            mContext.enforceCallingPermission(Manifest.permission.MANAGE_ACCESSIBILITY,
-                    "cmd accessibility requires MANAGE_ACCESSIBILITY permission");
-        }
+        mContext.enforceCallingPermission(Manifest.permission.MANAGE_ACCESSIBILITY,
+                "cmd accessibility requires MANAGE_ACCESSIBILITY permission");
         if (cmd == null) {
             return handleDefaultCommands(cmd);
         }
@@ -79,11 +77,7 @@ final class AccessibilityShellCommand extends ShellCommand {
             case "check-hidraw":
                 return checkHidraw();
         }
-        if (Flags.shellCommandEnforcePermission()) {
-            return handleDefaultCommands(cmd);
-        } else {
-            return -1;
-        }
+        return handleDefaultCommands(cmd);
     }
 
     private int runGetBindInstantServiceAllowed() {
@@ -207,11 +201,8 @@ final class AccessibilityShellCommand extends ShellCommand {
         pw.println("Accessibility service (accessibility) commands:");
         pw.println("  help");
         pw.println("    Print this help text.");
-        if (Flags.shellCommandEnforcePermission()) {
-            pw.println("  dump");
-            pw.println(
-                    "    Dump accessibility system state. Identical to 'dumpsys accessibility'.");
-        }
+        pw.println("  dump");
+        pw.println("    Dump accessibility system state. Identical to 'dumpsys accessibility'.");
         pw.println("  set-bind-instant-service-allowed [--user <USER_ID>] true|false ");
         pw.println("    Set whether binding to services provided by instant apps is allowed.");
         pw.println("  get-bind-instant-service-allowed [--user <USER_ID>]");
