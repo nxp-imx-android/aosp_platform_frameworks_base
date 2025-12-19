@@ -12212,8 +12212,7 @@ public class AudioService extends IAudioService.Stub
             //TODO move inside HardeningEnforcer after refactor that moves permission checks
             //     in the blockFocusMethod
             if (permissionOverridesCheck) {
-                mHardeningEnforcer.metricsLogFocusReq(/*blocked*/ false, focusReqType, uid,
-                        /*unblockedBySdk*/ false);
+                mHardeningEnforcer.metricsLogFocusReq(/*blocked*/ false, focusReqType, uid);
             }
             if (!permissionOverridesCheck && mHardeningEnforcer.blockFocusMethod(uid,
                     HardeningEnforcer.METHOD_AUDIO_MANAGER_REQUEST_AUDIO_FOCUS,
