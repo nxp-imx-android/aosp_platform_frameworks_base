@@ -1895,10 +1895,6 @@ class SettingsProtoDumpUtil {
                 SecureSettingsProto.Accessibility
                         .ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE);
         dumpSetting(s, p,
-                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP_ENABLED,
-                SecureSettingsProto.Accessibility
-                        .ACCESSIBILITY_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP_ENABLED);
-        dumpSetting(s, p,
                 Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME,
                 SecureSettingsProto.Accessibility
                         .ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME);

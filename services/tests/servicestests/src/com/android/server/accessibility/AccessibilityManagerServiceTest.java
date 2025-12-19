@@ -800,43 +800,6 @@ public class AccessibilityManagerServiceTest {
 
     @SmallTest
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MULTIPLE_FINGER_MULTIPLE_TAP_GESTURE)
-    public void testOnClientChange_magnificationTwoFingerTripleTapEnabled_requestConnection() {
-        when(mProxyManager.canRetrieveInteractiveWindowsLocked()).thenReturn(false);
-
-        final AccessibilityUserState userState = mA11yms.mUserStates.get(
-                mA11yms.getCurrentUserIdLocked());
-        userState.setMagnificationCapabilitiesLocked(
-                ACCESSIBILITY_MAGNIFICATION_MODE_ALL);
-        userState.setMagnificationTwoFingerTripleTapEnabledLocked(true);
-
-        // Invokes client change to trigger onUserStateChanged.
-        mA11yms.onClientChangeLocked(/* serviceInfoChanged= */false);
-
-        verify(mMockMagnificationConnectionManager).requestConnection(true);
-    }
-
-    @SmallTest
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MULTIPLE_FINGER_MULTIPLE_TAP_GESTURE)
-    public void testOnClientChange_magnificationTwoFingerTripleTapDisabled_requestDisconnection() {
-        when(mProxyManager.canRetrieveInteractiveWindowsLocked()).thenReturn(false);
-
-        final AccessibilityUserState userState = mA11yms.mUserStates.get(
-                mA11yms.getCurrentUserIdLocked());
-        userState.setMagnificationCapabilitiesLocked(
-                ACCESSIBILITY_MAGNIFICATION_MODE_ALL);
-        //userState.setMagnificationSingleFingerTripleTapEnabledLocked(false);
-        userState.setMagnificationTwoFingerTripleTapEnabledLocked(false);
-
-        // Invokes client change to trigger onUserStateChanged.
-        mA11yms.onClientChangeLocked(/* serviceInfoChanged= */false);
-
-        verify(mMockMagnificationConnectionManager).requestConnection(false);
-    }
-
-    @SmallTest
-    @Test
     public void testOnClientChange_boundServiceCanControlMagnification_requestConnection() {
         when(mProxyManager.canRetrieveInteractiveWindowsLocked()).thenReturn(false);
 
@@ -871,37 +834,6 @@ public class AccessibilityManagerServiceTest {
                 mA11yms.getCurrentUserIdLocked());
         userState.setMagnificationCapabilitiesLocked(ACCESSIBILITY_MAGNIFICATION_MODE_ALL);
         userState.setMagnificationSingleFingerTripleTapEnabledLocked(true);
-
-        // Invokes client change to trigger onUserStateChanged.
-        mA11yms.onClientChangeLocked(/* serviceInfoChanged= */false);
-
-        verify(mMockMagnificationConnectionManager, never()).removeMagnificationButton(anyInt());
-    }
-
-    @SmallTest
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MULTIPLE_FINGER_MULTIPLE_TAP_GESTURE)
-    public void onClientChange_magnificationTwoFingerTripleTapDisabled_removeMagnificationButton() {
-        final AccessibilityUserState userState = mA11yms.mUserStates.get(
-                mA11yms.getCurrentUserIdLocked());
-        userState.setMagnificationCapabilitiesLocked(ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW);
-        userState.setMagnificationTwoFingerTripleTapEnabledLocked(false);
-
-        // Invokes client change to trigger onUserStateChanged.
-        mA11yms.onClientChangeLocked(/* serviceInfoChanged= */false);
-
-        verify(mMockMagnificationConnectionManager, atLeastOnce())
-                .removeMagnificationButton(anyInt());
-    }
-
-    @SmallTest
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MULTIPLE_FINGER_MULTIPLE_TAP_GESTURE)
-    public void onClientChange_magnificationTwoFingerTripleTapEnabled_keepMagnificationButton() {
-        final AccessibilityUserState userState = mA11yms.mUserStates.get(
-                mA11yms.getCurrentUserIdLocked());
-        userState.setMagnificationCapabilitiesLocked(ACCESSIBILITY_MAGNIFICATION_MODE_ALL);
-        userState.setMagnificationTwoFingerTripleTapEnabledLocked(true);
 
         // Invokes client change to trigger onUserStateChanged.
         mA11yms.onClientChangeLocked(/* serviceInfoChanged= */false);
@@ -1057,8 +989,7 @@ public class AccessibilityManagerServiceTest {
                 info_c.getComponentName().flattenToString());
 
         for (int shortcutType : USER_SHORTCUT_TYPES) {
-            if (shortcutType == UserShortcutType.TRIPLETAP
-                    || shortcutType == UserShortcutType.TWOFINGER_DOUBLETAP) {
+            if (shortcutType == UserShortcutType.TRIPLETAP) {
                 continue;
             }
             userState.updateShortcutTargetsLocked(shortcutTargets, shortcutType);
@@ -1078,8 +1009,7 @@ public class AccessibilityManagerServiceTest {
         //Assert shortcut settings
         Set<String> shortcutContainsAnyTargets = new ArraySet<>();
         for (int shortcutType : USER_SHORTCUT_TYPES) {
-            if (shortcutType == UserShortcutType.TRIPLETAP
-                    || shortcutType == UserShortcutType.TWOFINGER_DOUBLETAP) {
+            if (shortcutType == UserShortcutType.TRIPLETAP) {
                 continue;
             }
             shortcutContainsAnyTargets.addAll(
@@ -1500,44 +1430,6 @@ public class AccessibilityManagerServiceTest {
                 Settings.Secure.getInt(
                         mTestableContext.getContentResolver(),
                         Settings.Secure.ACCESSIBILITY_DISPLAY_MAGNIFICATION_ENABLED,
-                        AccessibilityUtils.State.OFF)
-        ).isEqualTo(AccessibilityUtils.State.OFF);
-    }
-
-    @Test
-    public void enableShortcutsForTargets_enableMultiFingerMultiTapsShortcut_settingUpdated() {
-        mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
-
-        mA11yms.enableShortcutsForTargets(
-                /* enable= */ true,
-                UserShortcutType.TWOFINGER_DOUBLETAP,
-                List.of(TARGET_MAGNIFICATION),
-                mA11yms.getCurrentUserIdLocked());
-        mTestableLooper.processAllMessages();
-
-        assertThat(
-                Settings.Secure.getInt(
-                        mTestableContext.getContentResolver(),
-                        Settings.Secure.ACCESSIBILITY_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP_ENABLED,
-                        AccessibilityUtils.State.OFF)
-        ).isEqualTo(AccessibilityUtils.State.ON);
-    }
-
-    @Test
-    public void enableShortcutsForTargets_disableMultiFingerMultiTapsShortcut_settingUpdated() {
-        enableShortcutsForTargets_enableMultiFingerMultiTapsShortcut_settingUpdated();
-
-        mA11yms.enableShortcutsForTargets(
-                /* enable= */ false,
-                UserShortcutType.TWOFINGER_DOUBLETAP,
-                List.of(TARGET_MAGNIFICATION),
-                mA11yms.getCurrentUserIdLocked());
-        mTestableLooper.processAllMessages();
-
-        assertThat(
-                Settings.Secure.getInt(
-                        mTestableContext.getContentResolver(),
-                        Settings.Secure.ACCESSIBILITY_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP_ENABLED,
                         AccessibilityUtils.State.OFF)
         ).isEqualTo(AccessibilityUtils.State.OFF);
     }
