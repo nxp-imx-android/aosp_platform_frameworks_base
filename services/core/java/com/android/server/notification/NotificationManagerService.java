@@ -1243,7 +1243,7 @@ public class NotificationManagerService extends SystemService {
                 }
 
             } else if (PreferencesHelper.TAG_RANKING.equals(parser.getName())){
-                mPreferencesHelper.readXml(parser, forRestore, userId);
+                mPreferencesHelper.readXml(parser, forRestore, userId, logger);
             }
             if (mListeners.getConfig().xmlTag.equals(parser.getName())) {
                 if (ineligibleForManagedServices) {
@@ -1389,7 +1389,7 @@ public class NotificationManagerService extends SystemService {
         out.startTag(null, TAG_NOTIFICATION_POLICY);
         out.attributeInt(null, ATTR_VERSION, DB_VERSION);
         mZenModeHelper.writeXml(out, forBackup, null, userId, logger);
-        mPreferencesHelper.writeXml(out, forBackup, userId);
+        mPreferencesHelper.writeXml(out, forBackup, userId, logger);
         mListeners.writeXml(out, forBackup, userId);
         mAssistants.writeXml(out, forBackup, userId);
         mSnoozeHelper.writeXml(out);
