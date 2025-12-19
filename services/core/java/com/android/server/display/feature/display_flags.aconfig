@@ -461,3 +461,11 @@ flag {
          purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "virtual_secondary_displays"
+    namespace: "lse_desktop_experience"
+    description: "Enable Connected Display features on virtual displays with proper configuration"
+    bug: "459987054"
+    is_exported: true
+}
