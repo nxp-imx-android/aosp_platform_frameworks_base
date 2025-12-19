@@ -462,6 +462,17 @@
             <meta-data android:name="android.app.shortcuts"
                 android:resource="@xml/ssa_shortcuts" />
         </activity>
+        <activity android:name=".RequestFullscreenModeActivity"
+            android:resizeableActivity="true"
+            android:taskAffinity="com.android.server.wm.flicker.testapp.RequestFullscreenModeActivity"
+            android:label="RequestFullscreenModeActivity"
+            android:exported="true"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
         <service
             android:name=".AssistantInteractionSessionService"
             android:exported="true"
