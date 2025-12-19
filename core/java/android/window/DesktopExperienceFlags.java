@@ -79,9 +79,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL),
     ENABLE_AUTO_ROTATE_ON_SLATE_STATE(Flags::enableAutoRotateOnSlateState, false,
             Flags.FLAG_ENABLE_AUTO_ROTATE_ON_SLATE_STATE),
-    ENABLE_BACKUP_AND_RESTORE_DISPLAY_WINDOW_SETTINGS(
-            Flags::enableBackupAndRestoreDisplayWindowSettings, false,
-            Flags.FLAG_ENABLE_BACKUP_AND_RESTORE_DISPLAY_WINDOW_SETTINGS),
     ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT(Flags::enableBoundsRestoringOnDragExit, false,
             Flags.FLAG_ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT),
     ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY(Flags::enableBugFixesForSecondaryDisplay, true,
