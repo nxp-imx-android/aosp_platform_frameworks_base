@@ -18,3 +18,11 @@ flag {
   description: "Enable Autonomous repairing changes for Android Bluetooth from 26Q2"
   bug: "459761960"
 }
+
+flag {
+  name: "bluetooth_pairing_hardening"
+  is_exported: true
+  namespace: "bluetooth"
+  description: "Stricter checks for Bluetooth pairing APIs from 26Q2"
+  bug: "401333807"
+}
