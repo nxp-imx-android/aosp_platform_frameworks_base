@@ -1111,18 +1111,19 @@ package android.location {
   public static final class IonexAssistance.TecMapSnapshot implements android.os.Parcelable {
     method public int describeContents();
     method @IntRange(from=0) public long getEpochTimeSeconds();
-    method @NonNull public float[] getRmsMap();
-    method @NonNull public float[] getTecMap();
+    method @NonNull public char[] getRmsMap();
+    method @NonNull public char[] getTecMap();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.location.IonexAssistance.TecMapSnapshot> CREATOR;
+    field public static final char UNAVAILABLE_TEC = 9999; // 0x270f '\u270f'
   }
 
   public static final class IonexAssistance.TecMapSnapshot.Builder {
     ctor public IonexAssistance.TecMapSnapshot.Builder();
     method @NonNull public android.location.IonexAssistance.TecMapSnapshot build();
     method @IntRange(from=0) @NonNull public android.location.IonexAssistance.TecMapSnapshot.Builder setEpochTimeSeconds(@IntRange(from=0) long);
-    method @NonNull public android.location.IonexAssistance.TecMapSnapshot.Builder setRmsMap(@NonNull float[]);
-    method @NonNull public android.location.IonexAssistance.TecMapSnapshot.Builder setTecMap(@NonNull float[]);
+    method @NonNull public android.location.IonexAssistance.TecMapSnapshot.Builder setRmsMap(@NonNull char[]);
+    method @NonNull public android.location.IonexAssistance.TecMapSnapshot.Builder setTecMap(@NonNull char[]);
   }
 
   @FlaggedApi("android.location.flags.gnss_assistance_interface") public final class IonosphericCorrection implements android.os.Parcelable {

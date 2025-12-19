@@ -1061,9 +1061,9 @@ void GnssAssistance_class_init_once(JNIEnv* env, jclass clazz) {
         method_ionexAssistanceTecMapSnapshotGetEpochTimeSeconds =
                 env->GetMethodID(ionexAssistanceTecMapSnapshotClass, "getEpochTimeSeconds", "()J");
         method_ionexAssistanceTecMapSnapshotGetTecMap =
-                env->GetMethodID(ionexAssistanceTecMapSnapshotClass, "getTecMap", "()[F");
+                env->GetMethodID(ionexAssistanceTecMapSnapshotClass, "getTecMap", "()[C");
         method_ionexAssistanceTecMapSnapshotGetRmsMap =
-                env->GetMethodID(ionexAssistanceTecMapSnapshotClass, "getRmsMap", "()[F");
+                env->GetMethodID(ionexAssistanceTecMapSnapshotClass, "getRmsMap", "()[C");
     }
 }
 
@@ -1173,23 +1173,32 @@ void GnssAssistanceUtil::setIonexAssistance(JNIEnv* env, jobject ionexAssistance
                                 method_ionexAssistanceTecMapSnapshotGetEpochTimeSeconds);
     ionexAssistance.tecMapSnapshot.epochTimeSeconds = epochTimeSeconds;
 
-    jfloatArray tecMapArray =
-            (jfloatArray)env->CallObjectMethod(tecMapSnapshotObj,
-                                               method_ionexAssistanceTecMapSnapshotGetTecMap);
+    jcharArray tecMapArray =
+            (jcharArray)env->CallObjectMethod(tecMapSnapshotObj,
+                                              method_ionexAssistanceTecMapSnapshotGetTecMap);
     if (tecMapArray != nullptr) {
         jsize len = env->GetArrayLength(tecMapArray);
         ionexAssistance.tecMapSnapshot.tecMap.resize(len);
-        env->GetFloatArrayRegion(tecMapArray, 0, len, ionexAssistance.tecMapSnapshot.tecMap.data());
+        // jchar is uint16_t, and tecMap is a vector of char16_t. reinterpret_cast is safe
+        // as both are 16-bit unsigned integer types.
+        env->GetCharArrayRegion(tecMapArray, 0, len,
+                                reinterpret_cast<jchar*>(
+                                        ionexAssistance.tecMapSnapshot.tecMap.data()));
         env->DeleteLocalRef(tecMapArray);
     }
 
-    jfloatArray rmsMapArray =
-            (jfloatArray)env->CallObjectMethod(tecMapSnapshotObj,
-                                               method_ionexAssistanceTecMapSnapshotGetRmsMap);
+    jcharArray rmsMapArray =
+            (jcharArray)env->CallObjectMethod(tecMapSnapshotObj,
+                                              method_ionexAssistanceTecMapSnapshotGetRmsMap);
+    // Per IonexAssistance.Builder, rmsMapArray is never null, but can be of length 0.
     if (rmsMapArray != nullptr) {
         jsize len = env->GetArrayLength(rmsMapArray);
         ionexAssistance.tecMapSnapshot.rmsMap.resize(len);
-        env->GetFloatArrayRegion(rmsMapArray, 0, len, ionexAssistance.tecMapSnapshot.rmsMap.data());
+        // jchar is uint16_t, and rmsMap is a vector of char16_t. reinterpret_cast is safe
+        // as both are 16-bit unsigned integer types.
+        env->GetCharArrayRegion(rmsMapArray, 0, len,
+                                reinterpret_cast<jchar*>(
+                                        ionexAssistance.tecMapSnapshot.rmsMap.data()));
         env->DeleteLocalRef(rmsMapArray);
     }
 
