@@ -234,6 +234,25 @@ class ClockViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun clockText_updatesWhenConfigurationChanged_12To24() =
+        kosmos.runTest {
+            fakeSystemClock.setCurrentTimeMillis(CURRENT_TIME_MILLIS)
+            whenever(dateFormatUtil.is24HourFormat).thenReturn(false)
+            underTest.activateIn(testScope)
+
+            assertThat(underTest.clockText).isEqualTo("11:12\u202FPM")
+
+            whenever(dateFormatUtil.is24HourFormat).thenReturn(true)
+            broadcastDispatcher.sendIntentToMatchingReceiversOnly(
+                context,
+                Intent(Intent.ACTION_CONFIGURATION_CHANGED),
+            )
+            runCurrent()
+
+            assertThat(underTest.clockText).isEqualTo("23:12")
+        }
+
+    @Test
     @EnableFlags(ClockModernization.FLAG_NAME)
     fun showSeconds_is24HourFormatTrue_clockTextUpdates() =
         kosmos.runTest {
