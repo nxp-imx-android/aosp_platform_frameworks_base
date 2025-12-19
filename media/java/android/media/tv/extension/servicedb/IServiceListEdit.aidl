@@ -20,7 +20,7 @@ import android.media.tv.extension.servicedb.IServiceListEditListener;
 import android.os.Bundle;
 
 /**
- * Interface for editing and retrieving service list information.
+ * Interface for editing and retrieving service and service list information.
  * <p>
  * This interface allows clients to open an edit session, retrieve detailed information
  * about Services, Transport Streams, Networks, and Satellites, and commit changes
@@ -118,22 +118,6 @@ interface IServiceListEdit {
     int removeServiceInfoByList(in String[] serviceInfoIdList);
 
     /*************************************** Service List *****************************************/
-    /**
-     * Retrieves a list of available Service List IDs from tv.db.
-     * <p>These correspond to {@code COLUMN_CHANNEL_LIST_ID} in the TvProvider.</p>
-     *
-     * @return An array of Service List IDs.
-     */
-    String[] getServiceListIds();
-    /**
-     * Retrieves detailed information for a specific Service List from tv.db.
-     *
-     * @param serviceListId The ID grouping services by broadcast standard (e.g., DVB-T, DVB-C).
-     * @param keys The metadata keys to retrieve.
-     * @return A bundle containing the Service List information, bundle keys defined but not
-     *         limited to @ServicedbConstants.ServiceListInfoKeys.
-     */
-    Bundle getServiceListInfo(String serviceListId, in String[] keys);
     /**
      * Creates a new Service List Info record.
      * <p>You must call #commit() to finalize this creation.</p>
