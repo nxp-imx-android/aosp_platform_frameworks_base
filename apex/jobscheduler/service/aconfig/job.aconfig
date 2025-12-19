@@ -23,16 +23,6 @@ flag {
 }
 
 flag {
-   name: "thermal_restrictions_to_fgs_jobs"
-   namespace: "backstage_power"
-   description: "Apply thermal restrictions to FGS jobs."
-   bug: "315157163"
-   metadata {
-       purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
    name: "adjust_quota_default_constants"
    namespace: "backstage_power"
    description: "Adjust quota default parameters"

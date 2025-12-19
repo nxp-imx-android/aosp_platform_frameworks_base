@@ -24,7 +24,6 @@ import android.os.PowerManager.OnThermalStatusChangedListener;
 import android.util.IndentingPrintWriter;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.server.job.Flags;
 import com.android.server.job.JobSchedulerService;
 import com.android.server.job.controllers.JobStatus;
 
@@ -87,16 +86,9 @@ public class ThermalStatusRestriction extends JobRestriction {
 
     @Override
     public boolean isJobRestricted(JobStatus job, int bias) {
-        if (Flags.thermalRestrictionsToFgsJobs()) {
-            if (bias >= JobInfo.BIAS_TOP_APP) {
-                // Jobs with BIAS_TOP_APP should not be restricted
-                return false;
-            }
-        } else {
-            if (bias >= JobInfo.BIAS_FOREGROUND_SERVICE) {
-                // Jobs with BIAS_FOREGROUND_SERVICE or higher should not be restricted
-                return false;
-            }
+        if (bias >= JobInfo.BIAS_TOP_APP) {
+            // Jobs with BIAS_TOP_APP should not be restricted
+            return false;
         }
         if (mThermalStatus >= UPPER_THRESHOLD) {
             return true;
@@ -126,12 +118,10 @@ public class ThermalStatusRestriction extends JobRestriction {
             return true;
         }
         if (mThermalStatus >= LOW_PRIORITY_THRESHOLD) {
-            if (Flags.thermalRestrictionsToFgsJobs()) {
-                if (bias >= JobInfo.BIAS_FOREGROUND_SERVICE) {
-                    // No restrictions on foreground jobs
-                    // on LOW_PRIORITY_THRESHOLD and below
-                    return false;
-                }
+            if (bias >= JobInfo.BIAS_FOREGROUND_SERVICE) {
+                // No restrictions on foreground jobs
+                // on LOW_PRIORITY_THRESHOLD and below
+                return false;
             }
             // For light throttling, throttle all min priority jobs and all low priority jobs that
             // aren't already running or have been running for long enough.

@@ -29,7 +29,6 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSess
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.server.job.Flags.FLAG_BATCH_ACTIVE_BUCKET_JOBS;
 import static com.android.server.job.Flags.FLAG_BATCH_CONNECTIVITY_JOBS_PER_NETWORK;
-import static com.android.server.job.Flags.FLAG_THERMAL_RESTRICTIONS_TO_FGS_JOBS;
 import static com.android.server.job.Flags.FLAG_USE_PERFETTO_SDK_FOR_TRACING;
 import static com.android.server.job.JobSchedulerService.ACTIVE_INDEX;
 import static com.android.server.job.JobSchedulerService.RARE_INDEX;
@@ -2724,28 +2723,6 @@ public class JobSchedulerServiceTest {
         when(mock2JobRestriction.isJobRestricted(fgsJob, bias)).thenReturn(true);
         synchronized (mService.mLock) {
             assertNotEquals(mService.checkIfRestricted(fgsJob), mock1JobRestriction);
-        }
-    }
-
-    /**
-     * Jobs with foreground service and top app biases must not be restricted when the flag is
-     * disabled.
-     */
-    @Test
-    @RequiresFlagsDisabled(FLAG_THERMAL_RESTRICTIONS_TO_FGS_JOBS)
-    public void testCheckIfRestricted_highJobBias_flagThermalRestrictionsToFgsJobsDisabled() {
-        JobStatus fgsJob =
-                createJobStatus(
-                        "testCheckIfRestrictedJobBiasFgs",
-                        createJobInfo(1).setBias(JobInfo.BIAS_FOREGROUND_SERVICE));
-        JobStatus topAppJob =
-                createJobStatus(
-                        "testCheckIfRestrictedJobBiasTopApp",
-                        createJobInfo(2).setBias(JobInfo.BIAS_TOP_APP));
-
-        synchronized (mService.mLock) {
-            assertNull(mService.checkIfRestricted(fgsJob));
-            assertNull(mService.checkIfRestricted(topAppJob));
         }
     }
 
