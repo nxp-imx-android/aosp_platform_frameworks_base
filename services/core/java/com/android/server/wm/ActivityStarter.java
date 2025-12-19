@@ -823,7 +823,7 @@ class ActivityStarter {
             }
 
             final LaunchingState launchingState;
-            final ActivityRecord originator;
+            final int originalCallerUid;
             synchronized (mService.mGlobalLock) {
                 final ActivityRecord caller = ActivityRecord.forTokenLocked(mRequest.resultTo);
                 final int callingUid = mRequest.realCallingUid == Request.DEFAULT_REAL_CALLING_UID
@@ -831,12 +831,13 @@ class ActivityStarter {
                 launchingState = mSupervisor.getActivityMetricsLogger().notifyActivityLaunching(
                         mRequest.intent, caller, callingUid);
                 callerActivityName = caller != null ? caller.info.name : null;
-                originator = trackLaunchOriginator() && caller != null
-                        ? launchingState.tracksOriginator(caller) : null;
+                originalCallerUid = trackLaunchOriginator() ? launchingState.tracksOriginator(
+                        callingUid) : Request.DEFAULT_REAL_CALLING_UID;
             }
 
-            if (trackLaunchOriginator() && originator != null) {
-                mRequest.mLaunchOriginatedFromHome = originator.isActivityTypeHome();
+            if (trackLaunchOriginator() && mService.mHomeProcess != null) {
+                mRequest.mLaunchOriginatedFromHome =
+                        (originalCallerUid == mService.mHomeProcess.mUid);
             }
 
             if (mRequest.intent != null) {

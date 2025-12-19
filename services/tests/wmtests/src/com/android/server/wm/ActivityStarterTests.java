@@ -1888,11 +1888,14 @@ public final class ActivityStarterTests extends ActivityStarterTestBase {
 
     @Test
     @EnableFlags(FLAG_TRACK_LAUNCH_ORIGINATOR)
-    public void launchActivity_resultToHome_setsLaunchOriginatedFromHome() {
+    public void launchActivity_homeCallingUid_setsLaunchOriginatedFromHome() {
+        final int homeUid = 51121;
         final Task homeTask = mRootWindowContainer.getDefaultTaskDisplayArea().getRootHomeTask();
         final ActivityRecord homeActivity = new ActivityBuilder(mAtm).setTask(homeTask).build();
+        mAtm.mHomeProcess = mSystemServicesTestRule.addProcess(homeActivity.packageName,
+                homeActivity.processName, 114514 /* pid */, homeUid);
         final ActivityStarter starter = prepareStarter(FLAG_ACTIVITY_NEW_TASK)
-                .setResultTo(homeActivity.token);
+                .setRealCallingUid(homeUid);
 
         // Launch from home.
         starter.execute();
