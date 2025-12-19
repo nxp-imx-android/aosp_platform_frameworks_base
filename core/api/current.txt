@@ -5040,6 +5040,7 @@ package android.app {
     method public int getPendingIntentCreatorBackgroundActivityStartMode();
     method public int getSplashScreenStyle();
     method @FlaggedApi("com.android.window.flags.touch_pass_through_opt_in") public boolean isAllowPassThroughOnTouchOutside();
+    method @FlaggedApi("com.android.window.flags.enable_require_movable_task_api") public boolean isMovableTaskRequired();
     method @Deprecated public boolean isPendingIntentBackgroundActivityLaunchAllowed();
     method public boolean isShareIdentityEnabled();
     method public static android.app.ActivityOptions makeBasic();
@@ -5058,6 +5059,7 @@ package android.app {
     method public android.app.ActivityOptions setLaunchBounds(@Nullable android.graphics.Rect);
     method public android.app.ActivityOptions setLaunchDisplayId(int);
     method public android.app.ActivityOptions setLockTaskEnabled(boolean);
+    method @FlaggedApi("com.android.window.flags.enable_require_movable_task_api") @NonNull @RequiresPermission(android.Manifest.permission.REPOSITION_SELF_WINDOWS) public android.app.ActivityOptions setMovableTaskRequired(boolean);
     method @Deprecated public void setPendingIntentBackgroundActivityLaunchAllowed(boolean);
     method @NonNull public android.app.ActivityOptions setPendingIntentBackgroundActivityStartMode(int);
     method @NonNull public android.app.ActivityOptions setPendingIntentCreatorBackgroundActivityStartMode(int);
@@ -6300,6 +6302,9 @@ package android.app {
     ctor public HandoffActivityParams.Builder();
     method @NonNull public android.app.HandoffActivityParams build();
     method @NonNull public android.app.HandoffActivityParams.Builder setAllowHandoffWithoutPackageInstalled(boolean);
+  }
+
+  @FlaggedApi("com.android.window.flags.enable_require_movable_task_api") public class InfeasibleActivityOptionsException extends android.util.AndroidRuntimeException {
   }
 
   public class Instrumentation {

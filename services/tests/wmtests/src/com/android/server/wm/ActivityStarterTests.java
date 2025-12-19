@@ -20,6 +20,7 @@ import static android.app.Activity.RESULT_CANCELED;
 import static android.app.ActivityManager.PROCESS_STATE_BOUND_TOP;
 import static android.app.ActivityManager.START_ABORTED;
 import static android.app.ActivityManager.START_CANCELED;
+import static android.app.ActivityManager.START_CANNOT_GUARANTEE_TASK_MOVABILITY;
 import static android.app.ActivityManager.START_CLASS_NOT_FOUND;
 import static android.app.ActivityManager.START_DELIVERED_TO_TOP;
 import static android.app.ActivityManager.START_FORWARD_AND_REQUEST_CONFLICT;
@@ -1176,6 +1177,63 @@ public final class ActivityStarterTests extends ActivityStarterTestBase {
         verify(recentTasks, times(1)).setFreezeTaskListReordering();
         verify(recentTasks, times(1)).resetFreezeTaskListReorderingOnTimeout();
     }
+
+    @Test
+    public void testMovableTaskRequired_abortsIfTaskNotAllowedToMove() {
+        final ActivityStarter starter = prepareStarter(FLAG_ACTIVITY_NEW_TASK);
+        final ActivityOptions options = ActivityOptions.makeBasic().setMovableTaskRequired(true);
+
+        final TaskDisplayArea tda = mRootWindowContainer.getDefaultTaskDisplayArea();
+        spyOn(tda);
+        doReturn(false).when(tda).getIsTaskMoveAllowed();
+
+        final int result = starter
+                .setActivityOptions(
+                        options.toBundle(),
+                        Binder.getCallingPid(),
+                        Binder.getCallingUid())
+                .execute();
+
+        assertEquals(START_CANNOT_GUARANTEE_TASK_MOVABILITY, result);
+    }
+
+    @Test
+    public void testMovableTaskRequired_succeedsIfTaskAllowedToMove() {
+        final ActivityStarter starter = prepareStarter(FLAG_ACTIVITY_NEW_TASK);
+        final ActivityOptions options = ActivityOptions.makeBasic().setMovableTaskRequired(true);
+
+        final TaskDisplayArea tda = mRootWindowContainer.getDefaultTaskDisplayArea();
+        spyOn(tda);
+        doReturn(true).when(tda).getIsTaskMoveAllowed();
+
+        final int result = starter
+                .setActivityOptions(
+                        options.toBundle(),
+                        Binder.getCallingPid(),
+                        Binder.getCallingUid())
+                .execute();
+
+        assertEquals(START_SUCCESS, result);
+    }
+
+    @Test
+    public void testMovableTaskRequired_abortsIfRecyclingTask() {
+        final ActivityStarter starter = prepareStarter(0);
+        final ActivityOptions options = ActivityOptions.makeBasic().setMovableTaskRequired(true);
+
+        final ActivityRecord existing = new ActivityBuilder(mAtm).setCreateTask(true).build();
+
+        final int result = starter
+                .setIntent(existing.intent)
+                .setActivityOptions(
+                        options.toBundle(),
+                        Binder.getCallingPid(),
+                        Binder.getCallingUid())
+                .execute();
+
+        assertEquals(START_CANNOT_GUARANTEE_TASK_MOVABILITY, result);
+    }
+
 
     @Test
     public void testNoActivityInfo() {

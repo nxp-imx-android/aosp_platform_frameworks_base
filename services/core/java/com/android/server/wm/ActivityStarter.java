@@ -19,6 +19,7 @@ package com.android.server.wm;
 import static android.app.Activity.RESULT_CANCELED;
 import static android.app.ActivityManager.START_ABORTED;
 import static android.app.ActivityManager.START_CANCELED;
+import static android.app.ActivityManager.START_CANNOT_GUARANTEE_TASK_MOVABILITY;
 import static android.app.ActivityManager.START_CLASS_NOT_FOUND;
 import static android.app.ActivityManager.START_DELIVERED_TO_TOP;
 import static android.app.ActivityManager.START_FLAG_ONLY_IF_NEEDED;
@@ -2049,6 +2050,17 @@ class ActivityStarter {
                 mCanMoveToFrontCode = MOVE_TO_FRONT_AVOID_PI_ONLY_CREATOR_ALLOWS;
             }
             mPriorAboveTask = TaskDisplayArea.getRootTaskAbove(targetTask.getRootTask());
+        }
+
+        if (mOptions != null && mOptions.isMovableTaskRequired()) {
+            if (!newTask) {
+                return START_CANNOT_GUARANTEE_TASK_MOVABILITY;
+            }
+
+            if (mPreferredTaskDisplayArea == null
+                    || !mPreferredTaskDisplayArea.getIsTaskMoveAllowed()) {
+                return START_CANNOT_GUARANTEE_TASK_MOVABILITY;
+            }
         }
 
         final ActivityRecord targetTaskTop = newTask
