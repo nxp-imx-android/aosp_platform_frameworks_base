@@ -939,7 +939,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
         List<Task> infos = getTasksCreatedByOrganizer(dc);
         assertEquals(2, infos.size());
 
-        assertTrue(mWm.mAtmService.mTaskOrganizerController.deleteRootTask(info1.token));
+        assertTrue(mWm.mAtmService.mTaskOrganizerController.deleteTask(info1.token));
         infos = getTasksCreatedByOrganizer(dc);
         assertEquals(1, infos.size());
         assertEquals(WINDOWING_MODE_MULTI_WINDOW, infos.get(0).getWindowingMode());
