@@ -1255,7 +1255,9 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             synchronized (mService.getGlobalLock()) {
                 persisterQueue = mService.mTaskSupervisor.mPersisterQueue;
             }
-            persisterQueue.flush();
+            // Flush the queue as a best effort and avoid blocking. The writing thread may not have
+            // started, and this is the safest choice. See b/470097874.
+            persisterQueue.flushNoWait();
         }
 
         @Override

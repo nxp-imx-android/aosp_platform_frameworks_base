@@ -198,7 +198,7 @@ class PersisterQueue {
         }
     }
 
-    private synchronized void flushNoWait() {
+    synchronized void flushNoWait() {
         mNextWriteTime = FLUSH_QUEUE;
         notifyAll();
     }
