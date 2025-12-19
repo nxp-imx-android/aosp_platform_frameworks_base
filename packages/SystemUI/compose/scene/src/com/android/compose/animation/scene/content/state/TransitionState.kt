@@ -33,6 +33,7 @@ import com.android.compose.animation.scene.SceneTransitionLayoutImpl
 import com.android.compose.animation.scene.TransformationSpec
 import com.android.compose.animation.scene.TransformationSpecImpl
 import com.android.compose.animation.scene.TransitionKey
+import com.android.compose.animation.scene.TransitionSpecImpl
 import com.android.internal.jank.Cuj.CujType
 import com.android.mechanics.GestureContext
 import kotlinx.coroutines.CoroutineScope
@@ -325,12 +326,35 @@ sealed interface TransitionState {
          * the spec.
          *
          * Important: These will be set exactly once, when this transition is
-         * [started][MutableSceneTransitionLayoutStateImpl.startTransition].
+         * [prepared][com.android.compose.animation.scene.MutableSceneTransitionLayoutStateImpl.prepareTransitionBeforeStarting].
          */
+        private var isPrepared: Boolean = false
         internal var transformationSpec: TransformationSpecImpl = TransformationSpec.Empty
+            get() {
+                checkIsPrepared("transformationSpec")
+                return field
+            }
+
         internal var previewTransformationSpec: TransformationSpecImpl? = null
+            private set
+            get() {
+                checkIsPrepared("previewTransformationSpec")
+                return field
+            }
+
         internal var _cuj: Int? = null
+            private set
+            get() {
+                checkIsPrepared("_cuj")
+                return field
+            }
+
         internal var _cujTag: String? = null
+            private set
+            get() {
+                checkIsPrepared("_cujTag")
+                return field
+            }
 
         /**
          * An animatable that animates from 1f to 0f. This will be used to nicely animate the sudden
@@ -447,6 +471,33 @@ sealed interface TransitionState {
                 } finally {
                     isProgressStable = true
                 }
+            }
+        }
+
+        /**
+         * Set the attributes of this transition coming from the transition spec that was picked
+         * from the transition definitions.
+         */
+        internal fun prepare(spec: TransitionSpecImpl) {
+            this.transformationSpec = spec.transformationSpec(this)
+            this.previewTransformationSpec = spec.previewTransformationSpec(this)
+            this._cuj = spec.cuj
+            this._cujTag = spec.cujTag
+
+            isPrepared = true
+            onTransitionPrepared()
+        }
+
+        /**
+         * Called right after this transition is prepared, i.e. after [transformationSpec] is set,
+         * and before it is [run].
+         */
+        internal open fun onTransitionPrepared() {}
+
+        private fun checkIsPrepared(field: String) {
+            check(isPrepared) {
+                "TransitionState.Transition.$field can be accessed only after the transition is " +
+                    "prepared"
             }
         }
 

@@ -144,9 +144,10 @@ class SwipeAnimationTest(flags: FlagsParameterization) {
     @Test
     // Regression test for b/462102178.
     fun animateOffsetCalledOnce() = runMonotonicClockTest {
+        val state = MutableSceneTransitionLayoutStateForTests(SceneA)
         val swipeAnimation =
             SwipeAnimation(
-                    layoutState = MutableSceneTransitionLayoutStateForTests(SceneA),
+                    layoutState = state,
                     fromContent = SceneA,
                     toContent = SceneB,
                     isUpOrLeft = false,
@@ -182,7 +183,7 @@ class SwipeAnimationTest(flags: FlagsParameterization) {
                 }
 
         launch(start = CoroutineStart.UNDISPATCHED) {
-            swipeAnimation.contentTransition.runInternal()
+            state.startTransitionImmediately(this, swipeAnimation.contentTransition)
         }
 
         swipeAnimation.freezeAndAnimateToCurrentState()

@@ -201,4 +201,8 @@ private class OneOffSceneTransition(
     override fun freezeAndAnimateToCurrentState() {
         oneOffAnimation.freezeAndAnimateToCurrentState()
     }
+
+    override fun onTransitionPrepared() {
+        oneOffAnimation.onTransitionPrepared()
+    }
 }

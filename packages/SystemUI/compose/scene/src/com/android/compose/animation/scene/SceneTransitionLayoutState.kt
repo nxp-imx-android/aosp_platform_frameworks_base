@@ -637,8 +637,8 @@ internal class MutableSceneTransitionLayoutStateImpl(
         prepareTransitionBeforeStarting(transition)
 
         try {
-            // Start the transition.
-            startTransitionInternal(transition, chain)
+            // Add the transition to the list of [transitionStates].
+            addTransitionToTransitionStates(transition, chain)
 
             // Run the transition until it is finished.
             onTransitionStart(transition)
@@ -659,15 +659,14 @@ internal class MutableSceneTransitionLayoutStateImpl(
         val fromContent = transition.fromContent
         val toContent = transition.toContent
 
-        // Update the transition specs.
-        val spec = transitions.transitionSpec(fromContent, toContent, key = transition.key)
-        transition._cuj = spec.cuj
-        transition._cujTag = spec.cujTag
-        transition.transformationSpec = spec.transformationSpec(transition)
-        transition.previewTransformationSpec = spec.previewTransformationSpec(transition)
+        // Prepare the transition.
+        transition.prepare(transitions.transitionSpec(fromContent, toContent, key = transition.key))
     }
 
-    private fun startTransitionInternal(transition: TransitionState.Transition, chain: Boolean) {
+    private fun addTransitionToTransitionStates(
+        transition: TransitionState.Transition,
+        chain: Boolean,
+    ) {
         when (val currentState = transitionStates.last()) {
             is TransitionState.Idle -> {
                 // Replace [Idle] by [transition].
