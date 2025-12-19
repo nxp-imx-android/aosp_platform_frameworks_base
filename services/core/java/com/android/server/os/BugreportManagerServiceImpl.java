@@ -466,7 +466,7 @@ class BugreportManagerServiceImpl extends IDumpstate.Stub {
             // TODO(b/457559134): On most devices, the SYSTEM is already an Admin. But for HSUM
             //  devices, the HSU is no longer an Admin. Currently, that breaks stuff on HSUM,
             //  so - for now - treat the SYSTEM user as if it were an Admin regardless in these
-            //  otherwise-broken areas. See b/457559134 and b/461646697.
+            //  otherwise-broken areas. See b/457559134.
             return android.multiuser.Flags.hsuNotAdmin()
                     && !android.multiuser.Flags.hsuNotAdminNoExemptions()
                     && userId == UserHandle.USER_SYSTEM;
@@ -795,12 +795,16 @@ class BugreportManagerServiceImpl extends IDumpstate.Stub {
         } finally {
             Binder.restoreCallingIdentity(identity);
         }
-        if (!isAdminUser && mInjector.treatAsAdminAnyway(effectiveCallingUserId)) {
+        if (!android.multiuser.Flags.hsuNotAdminForBugreports() && !isAdminUser
+                && mInjector.treatAsAdminAnyway(effectiveCallingUserId)) {
+            // If the hsuNotAdminForBugreports flag is false, simply treat user 0 as an Admin;
+            // but if the flag is true, only do so for REMOTE bugreports, below.
             isAdminUser = true;
         }
         if (!isAdminUser) {
             if (bugreportMode == BugreportParams.BUGREPORT_MODE_REMOTE
-                    && isUserAffiliated(effectiveCallingUserId)) {
+                    && (mInjector.treatAsAdminAnyway(effectiveCallingUserId)
+                            || isUserAffiliated(effectiveCallingUserId))) {
                 return;
             }
             if (isNonAdminBugreportAllowed(callingPackage)) {
