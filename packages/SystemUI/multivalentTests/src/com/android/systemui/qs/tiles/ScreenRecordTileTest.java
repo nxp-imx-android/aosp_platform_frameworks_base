@@ -66,8 +66,9 @@ import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType;
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState;
 import com.android.systemui.screencapture.data.repository.ScreenCaptureDeviceStateRepositoryKosmosKt;
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractorKosmosKt;
-import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor;
+import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractorKosmosKt;
 import com.android.systemui.screenrecord.ScreenRecordUxController;
+import com.android.systemui.screenrecord.domain.interactor.ScreenRecordServiceInteractorKosmosKt;
 import com.android.systemui.settings.UserContextProvider;
 import com.android.systemui.statusbar.phone.KeyguardDismissUtil;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
@@ -169,10 +170,9 @@ public class ScreenRecordTileTest extends SysuiTestCase {
                 mMediaProjectionMetricsLogger,
                 ScreenCaptureUiInteractorKosmosKt.getScreenCaptureUiInteractor(mKosmos),
                 mUserContextProvider,
-                new ScreenCaptureRecordFeaturesInteractor(
-                        ScreenCaptureDeviceStateRepositoryKosmosKt
-                                .getScreenCaptureDeviceStateRepository(mKosmos)
-                )
+                ScreenRecordServiceInteractorKosmosKt.getScreenRecordingServiceInteractor(mKosmos),
+                ScreenCaptureRecordFeaturesInteractorKosmosKt
+                        .getScreenCaptureRecordFeaturesInteractor(mKosmos)
         );
 
         mTile.initialize();

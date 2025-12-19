@@ -21,12 +21,14 @@ import android.media.projection.StopReason
 import android.os.UserHandle
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
+import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.testDispatcher
@@ -41,10 +43,16 @@ import com.android.systemui.screencapture.data.repository.fakeScreenCaptureDevic
 import com.android.systemui.screencapture.domain.interactor.screenCaptureUiInteractor
 import com.android.systemui.screencapture.record.domain.interactor.screenCaptureRecordFeaturesInteractor
 import com.android.systemui.screenrecord.ScreenRecordUxController
+import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.ScreenRecordRepositoryImpl
+import com.android.systemui.screenrecord.data.repository.screenRecordingServiceRepository
+import com.android.systemui.screenrecord.domain.interactor.screenRecordingServiceInteractor
+import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
+import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus
 import com.android.systemui.statusbar.phone.KeyguardDismissUtil
 import com.android.systemui.testKosmos
+import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -90,6 +98,7 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
             panelInteractor,
             kosmos.screenCaptureUiInteractor,
             mock<MediaProjectionMetricsLogger>(),
+            kosmos.screenRecordingServiceInteractor,
             kosmos.screenCaptureRecordFeaturesInteractor,
         )
     }
@@ -145,12 +154,31 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE, Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
-    fun handleClick_whenRecording_stopRecording() = runTest {
+    fun handleClick_whenRecording_stopRecordingLegacy() = runTest {
         val recordingModel = ScreenRecordModel.Recording
 
         underTest.handleInput(QSTileInputTestKtx.click(recordingModel))
 
         verify(screenRecordUxController).stopRecording(eq(StopReason.STOP_QS_TILE))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE, Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
+    fun handleClick_whenRecording_stopRecording() = runTest {
+        kosmos.screenRecordingServiceRepository.startRecording(
+            ScreenRecordingParameters(
+                captureTarget = null,
+                audioSource = ScreenRecordingAudioSource.NONE,
+                displayId = Display.DEFAULT_DISPLAY,
+                shouldShowTaps = false,
+            )
+        )
+        val recordingStatus by collectLastValue(kosmos.screenRecordingServiceRepository.status)
+
+        underTest.handleInput(QSTileInputTestKtx.click(ScreenRecordModel.Recording))
+
+        assertThat(recordingStatus)
+            .isEqualTo(ScreenRecordingStatus.Stopped(StopReason.STOP_QS_TILE))
     }
 
     @Test
