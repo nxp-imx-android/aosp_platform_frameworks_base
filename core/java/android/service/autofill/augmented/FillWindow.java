@@ -30,6 +30,7 @@ import android.os.Looper;
 import android.os.RemoteException;
 import android.service.autofill.augmented.AugmentedAutofillService.AutofillProxy;
 import android.service.autofill.augmented.PresentationParams.Area;
+import android.service.autofill.Flags;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -142,7 +143,8 @@ public final class FillWindow implements AutoCloseable {
             mFillView.setOnTouchListener(
                     (view, motionEvent) -> {
                         if (motionEvent.getAction() == MotionEvent.ACTION_OUTSIDE) {
-                            if (sVerbose) Log.v(TAG, "Outside touch detected, hiding the window");
+                            if (sVerbose) Log.v(TAG, "Outside touch detected, hiding the "
+                                    + "window");
                             hide();
                         }
                         return false;
@@ -185,12 +187,20 @@ public final class FillWindow implements AutoCloseable {
     /**
      * Hides the window.
      *
-     * <p>The window is not destroyed and can be shown again
+     * <p> If window has been destroyed, this method does nothing. If the window is not destroyed,
+     * then it can be shown again
      */
     private void hide() {
         if (sDebug) Log.d(TAG, "hide()");
         synchronized (mLock) {
-            checkNotDestroyedLocked();
+            if (Flags.returnWhenWindowDestroyed() && mDestroyed) {
+                if (sDebug) {
+                    Log.d(TAG, "hide(): returning when window has been destroyed");
+                }
+                return;
+            } else {
+                checkNotDestroyedLocked();
+            }
             if (mWm == null || mFillView == null) {
                 throw new IllegalStateException("update() not called yet, or already destroyed()");
             }
