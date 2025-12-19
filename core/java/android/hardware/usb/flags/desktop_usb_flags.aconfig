@@ -14,3 +14,10 @@ flag {
     description: "Feature flag to manage previously authorized/denied devices"
     bug: "432527670"
 }
+
+flag {
+    name: "enable_usb_capabilities_reporting"
+    namespace: "usb_desktop"
+    description: "Feature flag to enable reporting static port information and additional partner and cable status"
+    bug: "460847494"
+}

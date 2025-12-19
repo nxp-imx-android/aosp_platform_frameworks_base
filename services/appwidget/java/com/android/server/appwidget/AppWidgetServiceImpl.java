@@ -6519,7 +6519,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         }
 
         /**
-         * Adds all pending updates in {@param outUpdates} keys by the update time.
+         * Adds all pending updates in {@code outUpdates} keys by the update time.
          */
         @GuardedBy("mLock")
         public void getPendingUpdatesForIdLocked(Context context, int appWidgetId,

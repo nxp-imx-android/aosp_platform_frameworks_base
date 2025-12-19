@@ -209,11 +209,9 @@ public class RecentTasksController implements TaskStackListenerCallback,
         mUserId = ActivityManager.getCurrentUser();
         mDesktopUserRepositories.ifPresent(
                 desktopUserRepositories -> {
-                    desktopUserRepositories.getCurrent().addActiveTaskListener(this);
-                    if (mDesktopState.enableMultipleDesktops()) {
-                        desktopUserRepositories.getCurrent().addDeskChangeListener(this,
-                                mMainExecutor);
-                    }
+                    DesktopRepository currentUserRepository = desktopUserRepositories.getCurrent();
+                    currentUserRepository.addActiveTaskListener(this);
+                    currentUserRepository.addDeskChangeListener(this, mMainExecutor);
                 });
         mTaskStackListener.addListener(this);
         mTaskStackTransitionObserver.addTaskStackTransitionObserverListener(this,
@@ -589,23 +587,14 @@ public class RecentTasksController implements TaskStackListenerCallback,
      *
      * This is needed since with the multiple-desktops flags, we want to include desk even if
      * they're empty (i.e. have no tasks).
-     *
-     * @param multipleDesktopsEnabled whether the multiple desktops feature is enabled.
      */
-    private void initializeDesksMap(boolean multipleDesktopsEnabled) {
+    private void initializeDesksMap() {
         mTmpDesks.clear();
 
         if (mDesktopState.canEnterDesktopMode()
                 && mDesktopUserRepositories.isPresent()) {
-            if (multipleDesktopsEnabled) {
-                for (var deskId : mDesktopUserRepositories.get().getCurrent().getAllDeskIds()) {
-                    getOrCreateDesk(deskId);
-                }
-            } else {
-                // When the multiple desks feature is disabled, we lump all freeform windows in a
-                // single `GroupedTaskInfo` regardless of their display. The `deskId` in this case
-                // doesn't matter and can be any arbitrary value.
-                getOrCreateDesk(/* deskId = */ INVALID_DESK_ID);
+            for (var deskId : mDesktopUserRepositories.get().getCurrent().getAllDeskIds()) {
+                getOrCreateDesk(deskId);
             }
         }
     }
@@ -648,14 +637,9 @@ public class RecentTasksController implements TaskStackListenerCallback,
     @VisibleForTesting
     <T extends TaskInfo> ArrayList<GroupedTaskInfo> generateList(@NonNull List<T> tasks,
             String reason) {
-        final boolean multipleDesktopsEnabled = mDesktopState.enableMultipleDesktops();
-        // When the multiple desktops feature is enabled, we include all desks even if they're
-        // empty.
-        final boolean shouldIncludeEmptyDesktops = multipleDesktopsEnabled;
+        initializeDesksMap();
 
-        initializeDesksMap(multipleDesktopsEnabled);
-
-        if (tasks.isEmpty() && (!shouldIncludeEmptyDesktops || mTmpDesks.isEmpty())) {
+        if (tasks.isEmpty() && mTmpDesks.isEmpty()) {
             return new ArrayList<>();
         }
 
@@ -695,12 +679,8 @@ public class RecentTasksController implements TaskStackListenerCallback,
                     && mDesktopUserRepositories.isPresent()) {
                 final Integer deskId;
                 if (mDesktopUserRepositories.get().getCurrent().isActiveTask(taskId)) {
-                    if (multipleDesktopsEnabled) {
-                        deskId = mDesktopUserRepositories.get().getCurrent().getDeskIdForTask(
-                                taskId);
-                    } else {
-                        deskId = INVALID_DESK_ID;
-                    }
+                    deskId = mDesktopUserRepositories.get().getCurrent().getDeskIdForTask(
+                            taskId);
                 } else {
                     if (mDesktopModeCompatPolicy.isTransparentOverlay(taskInfo)) {
                         deskId = mDesktopUserRepositories.get().getCurrent().getActiveDeskId(
@@ -799,7 +779,7 @@ public class RecentTasksController implements TaskStackListenerCallback,
             //          above), add them to the end of the final list (the actual order doesn't
             //          matter for Overview)
             for (var desk : mTmpDesks.values()) {
-                if (!desk.mHasVisibleTasks && (desk.hasTasks() || shouldIncludeEmptyDesktops)) {
+                if (!desk.mHasVisibleTasks) {
                     groupedTasks.add(desk.createDeskTaskInfo());
                 }
             }
@@ -807,9 +787,7 @@ public class RecentTasksController implements TaskStackListenerCallback,
         } else {
             // Add the desktop tasks at the end of the list
             for (var desk : mTmpDesks.values()) {
-                if (desk.hasTasks() || shouldIncludeEmptyDesktops) {
-                    groupedTasks.add(desk.createDeskTaskInfo());
-                }
+                groupedTasks.add(desk.createDeskTaskInfo());
             }
         }
 
@@ -817,8 +795,8 @@ public class RecentTasksController implements TaskStackListenerCallback,
     }
 
     /**
-     * Only to be called from `generateList()`. If the given {@param taskInfo} has a paired task,
-     * then a split grouped task with the pair is added to {@param tasksOut}.
+     * Only to be called from `generateList()`. If the given {@code taskInfo} has a paired task,
+     * then a split grouped task with the pair is added to {@code tasksOut}.
      *
      * @return whether a split task was extracted and added to the given list
      */
@@ -852,7 +830,7 @@ public class RecentTasksController implements TaskStackListenerCallback,
     }
 
     /**
-     * Returns the top running leaf task ignoring {@param ignoreTaskToken} if it is specified.
+     * Returns the top running leaf task ignoring {@code ignoreTaskToken} if it is specified.
      * NOTE: This path currently makes assumptions that ignoreTaskToken is for the top task.
      */
     @Nullable
@@ -873,7 +851,7 @@ public class RecentTasksController implements TaskStackListenerCallback,
 
     /**
      * Find the background task that match the given component.  Ignores tasks match
-     * {@param ignoreTaskToken} if it is non-null.
+     * {@code ignoreTaskToken} if it is non-null.
      */
     @Nullable
     public RecentTaskInfo findTaskInBackground(ComponentName componentName,

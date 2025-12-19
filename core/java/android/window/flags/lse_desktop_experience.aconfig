@@ -919,13 +919,6 @@ flag {
 }
 
 flag {
-    name: "enable_multiple_desktops_frontend"
-    namespace: "lse_desktop_experience"
-    description: "Enable multiple desktop sessions for desktop windowing (frontend)."
-    bug: "362720309"
-}
-
-flag {
     name: "enable_no_window_decoration_for_desks"
     namespace: "lse_desktop_experience"
     description: "Stops the creation of a window decoration for desk tasks."
@@ -1077,18 +1070,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Let see-through TaskFragments keep their siblings (in lower Z order) resumed"
     bug: "407602007"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "enable_shell_initial_bounds_regression_bug_fix"
-    namespace: "lse_desktop_experience"
-    description: "Enables fix for Shell initial bounds regression, forcing core to calculate /n"
-                 "initial bounds in desktop launch params while respecting cascading position /n"
-                 "passed by Shell."
-    bug: "396075922"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -1380,6 +1361,13 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "refactor_caption_sandboxing_to_core"
+    namespace: "lse_desktop_experience"
+    description: "Refactor sandboxing of caption insets from app bounds from shell to core"
+    bug: "442542077"
 }
 
 flag {

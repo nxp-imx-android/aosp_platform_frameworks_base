@@ -300,7 +300,7 @@ public class PipBoundsAlgorithm implements PipDisplayLayoutState.DisplayIdListen
     }
 
     /**
-     * @return the default bounds to show the PIP, if a {@param snapFraction} and {@param size} are
+     * @return the default bounds to show the PIP, if a {@code snapFraction} and {@code size} are
      * provided, then it will apply the default bounds to the provided snap fraction and size.
      */
     private Rect getDefaultBounds(float snapFraction, Size size) {
@@ -346,7 +346,7 @@ public class PipBoundsAlgorithm implements PipDisplayLayoutState.DisplayIdListen
 
     /**
      * Populates the bounds on the screen that the PIP can be visible on a given
-     * {@param displayLayout}.
+     * {@code displayLayout}.
      */
     public void getInsetBounds(Rect outRect, DisplayLayout displayLayout) {
         outRect.set(mPipDisplayLayoutState.getInsetBounds(displayLayout));
@@ -485,7 +485,7 @@ public class PipBoundsAlgorithm implements PipDisplayLayoutState.DisplayIdListen
     }
 
     /**
-     * Snaps PiP bounds to its movement bounds on a given {@param displayLayout}.
+     * Snaps PiP bounds to its movement bounds on a given {@code displayLayout}.
      */
     public void snapToMovementBoundsEdge(Rect bounds, DisplayLayout displayLayout) {
         // Get the movement bounds of the display

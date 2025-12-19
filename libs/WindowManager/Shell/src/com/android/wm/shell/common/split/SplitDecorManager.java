@@ -444,10 +444,10 @@ public class SplitDecorManager extends WindowlessWindowManager {
     }
 
     /**
-     * Updates the value for the provided {@param callback} and optionally executes the callback
+     * Updates the value for the provided {@code callback} and optionally executes the callback
      * list if no animations are in progress.
      *
-     * @param callbackStatus the parameter that will be passed into the {@param callback}
+     * @param callbackStatus the parameter that will be passed into the {@code callback}
      * @param callback       no-op if null, must be added to {@link #mAnimFinishCallbacks} prior to
      *                       updating via this method
      */

@@ -32,7 +32,6 @@ import android.hardware.input.IKeyGestureHandler;
 import android.hardware.input.IStickyModifierStateListener;
 import android.hardware.input.ITabletModeChangedListener;
 import android.hardware.input.IVirtualGamepad;
-import android.hardware.input.IVirtualInputDevice;
 import android.hardware.input.IVirtualKeyboard;
 import android.hardware.input.KeyboardLayoutSelectionResult;
 import android.hardware.input.TouchCalibration;

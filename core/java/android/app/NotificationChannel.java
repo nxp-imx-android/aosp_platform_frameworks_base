@@ -1256,7 +1256,7 @@ public final class NotificationChannel implements Parcelable {
     }
 
     /**
-     * If {@param forRestore} is true, {@param Context} MUST be non-null.
+     * If {@code forRestore} is true, {@code Context} MUST be non-null.
      */
     private void populateFromXml(TypedXmlPullParser parser, boolean forRestore,
             boolean pkgInstalled, @Nullable Context context) {
@@ -1444,7 +1444,7 @@ public final class NotificationChannel implements Parcelable {
     }
 
     /**
-     * If {@param forBackup} is true, {@param Context} MUST be non-null.
+     * If {@code forBackup} is true, {@code Context} MUST be non-null.
      */
     private void writeXml(TypedXmlSerializer out, boolean forBackup, @Nullable Context context)
             throws IOException {

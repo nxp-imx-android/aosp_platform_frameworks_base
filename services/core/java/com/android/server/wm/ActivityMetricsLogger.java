@@ -906,7 +906,7 @@ class ActivityMetricsLogger {
     }
 
     /**
-     * Updates all transition infos including the given {@param info} if they are a part of a
+     * Updates all transition infos including the given {@code info} if they are a part of a
      * split pair launch.
      */
     private void updateSplitPairLaunches(@NonNull TransitionInfo info) {

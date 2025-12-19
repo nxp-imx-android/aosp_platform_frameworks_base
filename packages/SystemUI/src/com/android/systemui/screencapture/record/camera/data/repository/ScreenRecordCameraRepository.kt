@@ -41,8 +41,8 @@ interface ScreenRecordCameraRepository {
 
     suspend fun isBackgroundColorSupported(): Boolean
 
-    suspend fun configureViewport(
-        displayType: Int,
+    suspend fun prepareStream(
+        displayId: Int,
         displayOrientation: Int,
     ): Size?
 

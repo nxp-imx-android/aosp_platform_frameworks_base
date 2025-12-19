@@ -1122,7 +1122,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             if (mPermissionsManuallyAccepted) {
                 return USER_ACTION_NOT_NEEDED;
             }
-            // For pre-pappvoal case, the mPackageName would be null.
+            // For pre-approval case, the mPackageName would be null.
             if (mPackageName != null) {
                 packageName = mPackageName;
             } else if (mPreapprovalRequested.get() && mPreapprovalDetails != null) {

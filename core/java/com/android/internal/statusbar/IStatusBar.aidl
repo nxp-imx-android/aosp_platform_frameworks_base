@@ -426,9 +426,10 @@ oneway interface IStatusBar
     /** Directs the system to bind to the given component and start a motion cues session.
     *
     * @param componentName the component to bind to.
+    * @param userId the user to bind to.
     * @param motionCuesSettings the initial settings for motion cues.
     */
-    void startMotionCuesSession(in ComponentName componentName, in MotionCuesSettings motionCuesSettings);
+    void startMotionCuesSession(in ComponentName componentName, int userId, in MotionCuesSettings motionCuesSettings);
 
     /** Terminates the started motion cues session */
     void endMotionCuesSession();

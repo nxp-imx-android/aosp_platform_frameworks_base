@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.settingslib.metadata.preferencesapi.types
+package com.android.systemui.motioncues
 
-class ResultValue(
-    val description: String,
-    val value: String,
+import androidx.annotation.Keep
+
+/** Represents a single bubble object */
+data class MotionCue(
+    var x: Float,
+    var y: Float,
+    var radius: Float
 )

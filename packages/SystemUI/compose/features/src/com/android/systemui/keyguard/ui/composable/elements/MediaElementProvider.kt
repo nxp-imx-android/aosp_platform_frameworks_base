@@ -82,6 +82,7 @@ constructor(
                     behavior = viewModel.mediaUiBehavior,
                     onDismissed = viewModel::onSwipeToDismiss,
                     modifier = Modifier.fillMaxWidth().padding(horizontal = horizontalPadding),
+                    location = Media.Location.LOCKSCREEN,
                 )
             }
         }

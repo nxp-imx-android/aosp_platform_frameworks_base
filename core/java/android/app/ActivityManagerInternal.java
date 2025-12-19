@@ -285,8 +285,8 @@ public abstract class ActivityManagerInternal {
 
     /**
      * Called after the network policy rules are updated by
-     * {@link com.android.server.net.NetworkPolicyManagerService} for a specific {@param uid} and
-     * {@param procStateSeq}.
+     * {@link com.android.server.net.NetworkPolicyManagerService} for a specific {@code uid} and
+     * {@code procStateSeq}.
      */
     public abstract void notifyNetworkPolicyRulesUpdated(int uid, long procStateSeq);
 

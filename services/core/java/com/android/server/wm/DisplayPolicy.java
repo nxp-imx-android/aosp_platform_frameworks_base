@@ -3411,8 +3411,8 @@ public class DisplayPolicy {
     }
 
     /**
-     * Returns whether the given {@param bounds} intersects with any insets of the
-     * provided {@param insetsType}.
+     * Returns whether the given {@code bounds} intersects with any insets of the
+     * provided {@code insetsType}.
      */
     private static boolean intersectsAnyInsets(Rect bounds, InsetsState insetsState,
             @InsetsType int insetsType) {

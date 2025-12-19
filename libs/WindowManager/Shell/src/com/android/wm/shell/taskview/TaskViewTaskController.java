@@ -584,7 +584,7 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
     }
 
     /**
-     * Prepare this taskview to open {@param taskInfo}.
+     * Prepare this taskview to open {@code taskInfo}.
      * @return The bounds of the task or {@code null} on failure (surface is destroyed)
      */
     Rect prepareOpen(ActivityManager.RunningTaskInfo taskInfo, SurfaceControl leash) {

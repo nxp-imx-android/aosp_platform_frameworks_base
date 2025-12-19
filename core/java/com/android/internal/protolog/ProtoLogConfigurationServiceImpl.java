@@ -218,7 +218,7 @@ public class ProtoLogConfigurationServiceImpl extends IProtoLogConfigurationServ
     }
 
     /**
-     * Unregister the {@param client}.
+     * Unregister the {@code client}.
      */
     @Override
     public void unregisterClient(@Nullable IProtoLogClient client) {

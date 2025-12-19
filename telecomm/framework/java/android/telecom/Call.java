@@ -1746,7 +1746,7 @@ public final class Call {
         }
 
         /**
-         * Writes the string {@param input} into the outgoing text stream for this RTT call. Since
+         * Writes the string {@code input} into the outgoing text stream for this RTT call. Since
          * RTT transmits text in real-time, this method should be called once for each user action.
          * For example, when the user enters text as discrete characters using the keyboard, this
          * method should be called once for each character. However, if the user enters text by

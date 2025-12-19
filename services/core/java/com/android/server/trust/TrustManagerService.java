@@ -2409,7 +2409,7 @@ public class TrustManagerService extends SystemService {
         }
 
         /**
-         * Temporarily suppress strong auth requirements for {@param userId} until strong auth
+         * Temporarily suppress strong auth requirements for {@code userId} until strong auth
          * changes again. Must only be called when we know about a successful unlock already
          * before the underlying StrongAuthTracker.
          *

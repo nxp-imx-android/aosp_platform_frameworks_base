@@ -208,8 +208,8 @@ public class MixedTransitionHelper {
      * @param pipChange TransitionInfo.Change indicating the task that is being pipped
      * @param splitMainStageRootId MainStage's rootTaskInfo's id
      * @param splitSideStageRootId SideStage's rootTaskInfo's id
-     * @param lastPipSplitStage The last stage that {@param pipChange} was in
-     * @return The change from {@param info} that is replacing the {@param pipChange}, {@code null}
+     * @param lastPipSplitStage The last stage that {@code pipChange} was in
+     * @return The change from {@code info} that is replacing the {@code pipChange}, {@code null}
      *         otherwise
      */
     @Nullable

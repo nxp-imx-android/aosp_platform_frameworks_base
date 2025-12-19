@@ -1209,7 +1209,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
     }
 
     /**
-     * Sets or unsets whether a back should be intercepted for a given {@param taskId}.
+     * Sets or unsets whether a back should be intercepted for a given {@code taskId}.
      */
     void setInterceptBackPressedOnTaskRoot(int taskId, boolean interceptBackPressed) {
         ProtoLog.v(WM_DEBUG_WINDOW_ORGANIZER, "Set intercept back pressed: taskId=%d intercept=%b",

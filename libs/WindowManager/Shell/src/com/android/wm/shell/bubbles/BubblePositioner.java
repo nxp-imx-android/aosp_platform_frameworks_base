@@ -884,7 +884,7 @@ public class BubblePositioner implements BubbleDropTargetBoundsProvider {
 
 
     /**
-     * Populates {@param out} with the rest bounds of an expanded bubble on screen.
+     * Populates {@code out} with the rest bounds of an expanded bubble on screen.
      * <p>
      * TODO: b/417226976
      *  Never used for the overflow or for floating mode on large screen -- bubble bar & phone

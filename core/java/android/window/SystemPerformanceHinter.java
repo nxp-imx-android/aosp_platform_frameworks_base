@@ -356,7 +356,7 @@ public class SystemPerformanceHinter {
     }
 
     /**
-     * @return the combined hint flags for all active sessions, filtered by {@param filterFlags}.
+     * @return the combined hint flags for all active sessions, filtered by {@code filterFlags}.
      */
     private @HintFlags int calculateActiveHintFlags(@HintFlags int filterFlags) {
         int flags = 0;
@@ -368,7 +368,7 @@ public class SystemPerformanceHinter {
 
     /**
      * @return the combined hint flags for all active sessions for a given display, filtered by
-     *         {@param filterFlags}.
+     *         {@code filterFlags}.
      */
     private @HintFlags int calculateActiveHintFlagsForDisplay(@HintFlags int filterFlags,
             int displayId) {

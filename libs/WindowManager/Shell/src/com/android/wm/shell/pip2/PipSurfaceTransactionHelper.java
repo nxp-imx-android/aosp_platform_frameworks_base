@@ -258,7 +258,7 @@ public class PipSurfaceTransactionHelper implements PipDisplayLayoutState.Displa
     }
 
     /**
-     * Sets default transformations for mirrors a given mirror root of a PiP {@param leash}.
+     * Sets default transformations for mirrors a given mirror root of a PiP {@code leash}.
      */
     public PipSurfaceTransactionHelper setMirrorTransformations(SurfaceControl.Transaction tx,
             SurfaceControl leash) {

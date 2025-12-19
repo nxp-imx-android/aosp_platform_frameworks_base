@@ -1140,13 +1140,13 @@ public class RingtoneManager {
      * @param type The type of the ringtone to be added. Must be one of {@link #TYPE_RINGTONE},
      *            {@link #TYPE_NOTIFICATION}, or {@link #TYPE_ALARM}.
      *
-     * @return The Uri of the installed ringtone, which may be the Uri of {@param fileUri} if it is
+     * @return The Uri of the installed ringtone, which may be the Uri of {@code fileUri} if it is
      *         already in ringtone storage.
      *
      * @throws FileNotFoundexception if an appropriate unique filename to save the new ringtone file
      *         as cannot be found, for example if the unique name is too long.
-     * @throws IllegalArgumentException if {@param fileUri} does not point to an existing audio
-     *         file, or if the {@param type} is not one of the accepted ringtone types.
+     * @throws IllegalArgumentException if {@code fileUri} does not point to an existing audio
+     *         file, or if the {@code type} is not one of the accepted ringtone types.
      * @throws IOException if the audio file failed to copy to ringtone storage; for example, if
      *         external storage was not available, or if the file was copied but the media scanner
      *         did not recognize it as a ringtone.

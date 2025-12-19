@@ -122,7 +122,6 @@ import com.android.systemui.keyboard.shortcut.ui.composable.ProvideShortcutHelpe
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.lifecycle.setSnapshotBinding
 import com.android.systemui.log.table.TableLogBuffer
-import com.android.systemui.media.controls.ui.controller.MediaViewLogger
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.media.remedia.ui.compose.Media
@@ -181,7 +180,6 @@ constructor(
     @QSFragmentComposeClippingTableLog private val qsClippingTableLogBuffer: TableLogBuffer,
     private val dumpManager: DumpManager,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
-    private val mediaLogger: MediaViewLogger,
     @ShadeDisplayAware private val configurationController: ConfigurationController,
 ) : LifecycleFragment(), QS, Dumpable {
 
@@ -750,7 +748,6 @@ constructor(
                                 // (b/383085298)
                                 modifier = Modifier.requiredHeightIn(max = Dp.Infinity),
                                 mediaHost = viewModel.qqsMediaHost,
-                                mediaLogger = mediaLogger,
                                 mediaPresentationStyle =
                                     if (viewModel.qqsMediaInRow) {
                                         MediaPresentationStyle.Compressed
@@ -761,6 +758,7 @@ constructor(
                                 mediaViewModelFactory = viewModel.mediaViewModelFactory,
                                 behavior = viewModel.qqsMediaUiBehavior,
                                 visible = isListening,
+                                location = Media.Location.SHADE,
                             )
                         }
                     }
@@ -904,12 +902,12 @@ constructor(
                                 if (viewModel.qsMediaVisible) {
                                     MediaObject(
                                         mediaHost = viewModel.qsMediaHost,
-                                        mediaLogger = mediaLogger,
                                         mediaViewModelFactory = viewModel.mediaViewModelFactory,
                                         mediaPresentationStyle = MediaPresentationStyle.Default,
                                         onSwipeToDismiss = viewModel::onMediaSwipeToDismiss,
                                         behavior = viewModel.qsMediaUiBehavior,
                                         visible = isListening,
+                                        location = Media.Location.QS,
                                     )
                                 }
                             }
@@ -1375,12 +1373,12 @@ private interface CanScrollQs {
 private fun ContentScope.MediaObject(
     mediaHost: MediaHost,
     modifier: Modifier = Modifier,
-    mediaLogger: MediaViewLogger,
     mediaViewModelFactory: MediaViewModel.Factory,
     mediaPresentationStyle: MediaPresentationStyle,
     onSwipeToDismiss: () -> Unit,
     behavior: MediaUiBehavior,
     visible: () -> Boolean,
+    location: Media.Location,
 ) {
     if (MediaControlsInComposeFlag.isEnabled) {
         Element(key = Media.Elements.mediaCarousel, modifier = modifier) {
@@ -1391,6 +1389,7 @@ private fun ContentScope.MediaObject(
                 onDismissed = onSwipeToDismiss,
                 modifier = Modifier,
                 visible = visible,
+                location = location,
             )
         }
     } else {

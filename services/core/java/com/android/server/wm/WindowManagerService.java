@@ -1186,12 +1186,31 @@ public class WindowManagerService extends IWindowManager.Stub
     private final SurfaceControl.Transaction mTransaction;
 
     static void boostPriorityForLockedSection() {
-        PerfettoTrace.begin(BIG_LOCKS_V3, "wms_lock_acquire").emit();
         sThreadPriorityBooster.boost();
     }
 
     static void resetPriorityAfterLockedSection() {
         sThreadPriorityBooster.reset();
+    }
+
+    /**
+     * Emits a trace event indicating the start of an attempt to acquire the main WMS lock.
+     */
+    public static void traceBeforeWmsLock() {
+        PerfettoTrace.instant(BIG_LOCKS_V3, "wms_lock_acquire").emit();
+    }
+
+    /**
+     * Emits a trace event indicating that the main WMS lock has been acquired and is now held.
+     */
+    public static void traceAfterWmsLock() {
+        PerfettoTrace.begin(BIG_LOCKS_V3, "wms_lock_held").emit();
+    }
+
+    /**
+     * Emits a trace event indicating the end of the critical section protected by the WMS lock.
+     */
+    public static void traceAfterWmsUnlock() {
         PerfettoTrace.end(BIG_LOCKS_V3).emit();
     }
 
@@ -1341,6 +1360,10 @@ public class WindowManagerService extends IWindowManager.Stub
                 com.android.internal.R.bool.config_perDisplayFocusEnabled);
         mAssistantOnTopOfDream = context.getResources().getBoolean(
                 com.android.internal.R.bool.config_assistantOnTopOfDream);
+
+        // TODO(b/427186215): Remove mSkipActivityRelaunchWhenDocking and
+        // config_skipActivityRelaunchWhenDocking when the aconfig flag
+        // enable_less_activity_recreation_on_config_change is eligible for cleanup.
         mSkipActivityRelaunchWhenDocking = context.getResources()
                 .getBoolean(R.bool.config_skipActivityRelaunchWhenDocking);
 

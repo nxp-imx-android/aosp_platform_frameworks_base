@@ -21,7 +21,6 @@ import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
 import android.tools.Rotation
-import androidx.test.filters.FlakyTest
 import androidx.test.filters.RequiresDevice
 import com.android.server.wm.flicker.helpers.ImeShownOnAppStartHelper
 import com.android.wm.shell.Flags
@@ -34,7 +33,6 @@ import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import com.android.wm.shell.flicker.bubbles.utils.RunOncePerParameterRule
 import org.junit.FixMethodOrder
 import org.junit.Rule
-import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import org.junit.runners.Parameterized
@@ -114,9 +112,4 @@ class EnterBubbleWithImeViaBubbleMenuTest(navBar: NavBar) :
     override val expectedImeInset
         get() = imeInset
 
-    @FlakyTest(bugId = 421000153)
-    @Test
-    override fun imeChangesNavBarColor() {
-        super.imeChangesNavBarColor()
-    }
 }

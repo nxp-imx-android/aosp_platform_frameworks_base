@@ -70,8 +70,8 @@ class FakeScreenRecordCameraRepository : ScreenRecordCameraRepository {
 
     override suspend fun isBackgroundColorSupported(): Boolean = isBackgroundColorSupported
 
-    override suspend fun configureViewport(
-        displayType: Int,
+    override suspend fun prepareStream(
+        displayId: Int,
         displayOrientation: Int,
     ): Size? = optimalCameraStreamSize
 

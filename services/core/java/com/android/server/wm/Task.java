@@ -1701,7 +1701,7 @@ class Task extends TaskFragment {
 
     /**
      * @return whether or not there are ONLY task overlay activities in the task.
-     *         If {@param includeFinishing} is set, then don't ignore finishing activities in the
+     *         If {@code includeFinishing} is set, then don't ignore finishing activities in the
      *         check. If there are no task overlay activities, this call returns false.
      */
     boolean onlyHasTaskOverlayActivities(boolean includeFinishing) {
@@ -4620,7 +4620,7 @@ class Task extends TaskFragment {
     }
 
     /**
-     * Sets/unsets the forced-hidden state flag for this task depending on {@param set}.
+     * Sets/unsets the forced-hidden state flag for this task depending on {@code set}.
      * @return Whether the force hidden state changed
      */
     @Override
@@ -5581,8 +5581,8 @@ class Task extends TaskFragment {
 
     /**
      * When switching to another Task, marks the currently PiP candidate activity as supporting to
-     * enter PiP while it is pausing (if supported). Only one of {@param toFrontTask} or
-     * {@param toFrontActivity} should be set.
+     * enter PiP while it is pausing (if supported). Only one of {@code toFrontTask} or
+     * {@code toFrontActivity} should be set.
      */
     static void enableEnterPipOnTaskSwitch(@Nullable ActivityRecord pipCandidate,
             @Nullable Task toFrontTask, @Nullable ActivityRecord toFrontActivity,

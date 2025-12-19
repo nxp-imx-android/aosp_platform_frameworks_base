@@ -1611,8 +1611,8 @@ public class PhoneNumberUtils {
     }
 
     /**
-     * Determines if a {@param phoneNumber} is international if dialed from
-     * {@param defaultCountryIso}.
+     * Determines if a {@code phoneNumber} is international if dialed from
+     * {@code defaultCountryIso}.
      *
      * @param phoneNumber The phone number.
      * @param defaultCountryIso The current country ISO.
@@ -2256,7 +2256,7 @@ public class PhoneNumberUtils {
      * Create a {@code TtsSpan} for the supplied {@code String}.
      *
      * @param phoneNumberString A {@code String} the entirety of which represents a phone number.
-     * @return A {@code TtsSpan} for {@param phoneNumberString}.
+     * @return A {@code TtsSpan} for {@code phoneNumberString}.
      */
     public static TtsSpan createTtsSpan(String phoneNumberString) {
         if (phoneNumberString == null) {

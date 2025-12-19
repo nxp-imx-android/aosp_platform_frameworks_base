@@ -23,8 +23,19 @@ import java.lang.annotation.Retention;
 
 import javax.inject.Qualifier;
 
+/**
+ * @deprecated this qualifier is always associated with the default display. For correct display ids
+ *     use:
+ *     <li>Within shade: {@link
+ *         com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor} to retrieve the
+ *         current display id that the shade is on.
+ *     <li>Within {@link com.android.systemui.display.dagger.SystemUIDisplaySubcomponent}: an
+ *         integer with the {@link
+ *         com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware} qualifier
+ *         can be injected directly.
+ */
+@Deprecated
 @Qualifier
 @Documented
 @Retention(RUNTIME)
-public @interface DisplayId {
-}
+public @interface DisplayId {}

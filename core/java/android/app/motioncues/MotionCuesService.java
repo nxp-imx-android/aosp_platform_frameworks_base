@@ -21,6 +21,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.annotation.SystemApi;
 import android.app.Flags;
 import android.app.Service;
 import android.content.Intent;
@@ -54,6 +55,7 @@ import android.util.Log;
  *
  * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
 public abstract class MotionCuesService extends Service {
     private static final String TAG = "MotionCuesService";
@@ -64,6 +66,8 @@ public abstract class MotionCuesService extends Service {
      *
      * @hide
      */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
     public static final String EXTRA_API_CALLBACK = "android.app.motioncues.extra.API_CALLBACK";
 
     private IMotionCuesCallback mCallback;
@@ -84,6 +88,8 @@ public abstract class MotionCuesService extends Service {
 
     /**
      * Called by the system when SystemUI binds to this service.
+     *
+     * @hide
      */
     @Override
     @RequiresPermission(Manifest.permission.BIND_MOTION_CUES_SERVICE)
@@ -121,7 +127,11 @@ public abstract class MotionCuesService extends Service {
         return mBinder;
     }
 
-    /** Called when the SystemUI client unbinds from this service. */
+    /**
+     * Called when the SystemUI client unbinds from this service.
+     *
+     * @hide
+    */
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
     @Override
     public final boolean onUnbind(@Nullable Intent intent) {
@@ -137,14 +147,20 @@ public abstract class MotionCuesService extends Service {
     /**
      * Called when SystemUI has successfully bound and provided a callback. The service
      * implementation should start any necessary operations here.
+     *
+     * @hide
      */
+    @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
     public abstract void onClientConnected();
 
     /**
      * Called when the SystemUI client has disconnected (unbound). The service implementation should
      * stop any ongoing operations here.
+     *
+     * @hide
      */
+    @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
     public abstract void onClientDisconnected();
 
@@ -155,7 +171,12 @@ public abstract class MotionCuesService extends Service {
         onClientDisconnected();
     }
 
-    /** Sends bubble position updates to SystemUI. */
+    /**
+     * Sends bubble position updates to SystemUI.
+     *
+     * @hide
+     */
+    @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
     public final void updateBubblePixelPos(float dx, float dy) {
         if (mCallback != null) {
@@ -167,7 +188,12 @@ public abstract class MotionCuesService extends Service {
         }
     }
 
-    /** Sends updates for bubble visual properties (e.g., color, shape) to SystemUI. */
+    /**
+     * Sends updates for bubble visual properties (e.g., color, shape) to SystemUI.
+     *
+     * @hide
+     */
+    @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
     public final void updateMotionCuesData(@NonNull MotionCuesData motionCuesData) {
         if (mCallback != null) {

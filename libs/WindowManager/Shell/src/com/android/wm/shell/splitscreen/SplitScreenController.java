@@ -1065,7 +1065,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
      *       (returns null) </li>
      *
      * @return an {@link Intent} with the appropriate {@link Intent#FLAG_ACTIVITY_MULTIPLE_TASK}
-     *         added on or not depending on {@param launchMultipleTasks}.
+     *         added on or not depending on {@code launchMultipleTasks}.
      */
     @Nullable
     private Intent resolveWidgetFillinIntent(@Nullable Intent widgetIntent,
@@ -1123,7 +1123,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
     }
 
     /**
-     * Return the {@param exitReason} as a string.
+     * Return the {@code exitReason} as a string.
      */
     public static String exitReasonToString(int exitReason) {
         switch (exitReason) {

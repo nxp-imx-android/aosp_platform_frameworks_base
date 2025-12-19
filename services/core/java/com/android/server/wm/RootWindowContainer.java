@@ -2426,7 +2426,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
     /**
      * Notifies when an activity enters or leaves PIP mode.
      *
-     * @param task the task of {@param r}
+     * @param task the task of {@code r}
      * @param r indicates the activity currently in PIP, can be null to indicate no activity is
      *          currently in PIP mode.
      */
@@ -3272,7 +3272,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
      * through all displays and root tasks in last-focused order.
      *
      * @param currentFocus  The root task that previously had focus.
-     * @param ignoreCurrent If we should ignore {@param currentFocus} when searching for next
+     * @param ignoreCurrent If we should ignore {@code currentFocus} when searching for next
      *                      candidate.
      * @return Next focusable {@link Task}, {@code null} if not found.
      */
@@ -3604,7 +3604,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
     }
 
     /**
-     * Find all tasks containing {@param userId} and intercept them with an activity
+     * Find all tasks containing {@code userId} and intercept them with an activity
      * to block out the contents and possibly start a credential-confirming intent.
      *
      * @param userId user handle for the locked managed profile.
@@ -3800,8 +3800,8 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
     }
 
     /**
-     * Dumps the activities matching the given {@param name} in the either the focused root task
-     * or all visible root tasks if {@param dumpVisibleRootTasksOnly} is true.
+     * Dumps the activities matching the given {@code name} in the either the focused root task
+     * or all visible root tasks if {@code dumpVisibleRootTasksOnly} is true.
      */
     ArrayList<ActivityRecord> getDumpActivities(String name, boolean dumpVisibleRootTasksOnly,
             boolean dumpFocusedRootTaskOnly, @UserIdInt int userId) {

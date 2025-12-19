@@ -2974,7 +2974,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
     }
 
     /**
-     * Returns the {@link StageType} where {@param token} is being used
+     * Returns the {@link StageType} where {@code token} is being used
      * {@link SplitScreen#STAGE_TYPE_UNDEFINED} otherwise
      */
     @StageType

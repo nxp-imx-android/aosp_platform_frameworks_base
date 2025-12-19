@@ -20,6 +20,7 @@ import android.annotation.ColorInt;
 import android.annotation.DrawableRes;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.SystemApi;
 import android.app.Flags;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -31,6 +32,7 @@ import android.os.Parcelable;
  *
  * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
 public final class MotionCuesData implements Parcelable {
 
@@ -43,7 +45,9 @@ public final class MotionCuesData implements Parcelable {
      * @param color The color for the cues.
      * @param shapeRes The drawable resource ID for the shape. Must be a valid resource ID.
      *                 If 0 is provided, a default shape will be used.
+     * @hide
      */
+    @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
     public MotionCuesData(@ColorInt int color, @DrawableRes int shapeRes) {
         mColor = color;
@@ -54,7 +58,9 @@ public final class MotionCuesData implements Parcelable {
      * Constructs a MotionCuesData instance as a copy of another.
      *
      * @param original The {@link MotionCuesData} instance to copy values from.
+     * @hide
      */
+    @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
     public MotionCuesData(@NonNull MotionCuesData original) {
         mColor = original.mColor;
@@ -75,7 +81,9 @@ public final class MotionCuesData implements Parcelable {
      * Gets the color of the bubbles.
      *
      * @return An integer representing the color.
+     * @hide
      */
+    @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
     @ColorInt
     public int getColor() {
@@ -86,7 +94,9 @@ public final class MotionCuesData implements Parcelable {
      * Gets the shape of the bubbles.
      *
      * @return A vector drawable resource representing the shape.
+     * @hide
      */
+    @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
     @DrawableRes
     public int getShapeRes() {
@@ -112,6 +122,7 @@ public final class MotionCuesData implements Parcelable {
      * Standard Parcelable CREATOR field.
      * @hide
      */
+    @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
     public static final @NonNull Parcelable.Creator<MotionCuesData> CREATOR =
             new Parcelable.Creator<MotionCuesData>() {

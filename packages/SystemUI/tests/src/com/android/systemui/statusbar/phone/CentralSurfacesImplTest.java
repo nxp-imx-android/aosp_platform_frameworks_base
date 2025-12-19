@@ -490,7 +490,8 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
                     () -> mNotificationShadeWindowViewController,
                     () -> mNotificationPanelViewController,
                     () -> mAssistManager,
-                    () -> mNotificationGutsManager
+                    () -> mNotificationGutsManager,
+                    mKosmos::getShadeDisplaysInteractor
             ));
         }
         mShadeController.setNotificationPresenter(mNotificationPresenter);

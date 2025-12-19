@@ -1594,9 +1594,9 @@ public final class DisplayManagerService extends SystemService {
         if (mDisplayInfoCache.size() <= 1) {
             return ARRAY_DEFAULT_DISPLAY_ONLY;
         }
-        return mDisplayInfoCache.filteredKeys((Integer key, CachedDisplayInfo value) ->
-                (includeDisabled || value.isEnabled())
-                        && doesCallingUidHaveAccessToDisplay(callingUid, value.info()));
+        return mDisplayInfoCache.filteredKeys(
+                (Integer key, CachedDisplayInfo value) -> (includeDisabled || value.isEnabled())
+                        && mInjector.doesCallingUidHaveAccessToDisplay(callingUid, value.info()));
     }
 
     private DisplayInfo getDisplayInfoInternal(int displayId, int callingUid) {
@@ -1608,7 +1608,7 @@ public final class DisplayManagerService extends SystemService {
                     return null;
                 }
                 Slog.w(TAG, "Default display not found in cache");
-            } else if (!doesCallingUidHaveAccessToDisplay(callingUid, info.info())) {
+            } else if (!mInjector.doesCallingUidHaveAccessToDisplay(callingUid, info.info())) {
                 Slog.w(TAG, "Calling uid " + callingUid + " does not have access to display "
                         + displayId);
                 return null;
@@ -1628,7 +1628,7 @@ public final class DisplayManagerService extends SystemService {
                 final DisplayInfo info =
                         getDisplayInfoForFrameRateOverride(display.getFrameRateOverrides(),
                                 display.getDisplayInfoLocked(), callingUid);
-                if (doesCallingUidHaveAccessToDisplay(callingUid, info)) {
+                if (mInjector.doesCallingUidHaveAccessToDisplay(callingUid, info)) {
                     if (DEBUG) {
                         Slog.d(TAG, "getDisplayInfoInternal: for display"
                                 + " for uid " + callingUid + " displayId " + displayId);
@@ -3479,10 +3479,6 @@ public final class DisplayManagerService extends SystemService {
         return displayUIDs != null && displayUIDs.indexOf(uid) != -1;
     }
 
-    private boolean doesCallingUidHaveAccessToDisplay(int uid, DisplayInfo info) {
-        return info.hasAccess(uid) || isUidPresentOnDisplayInternal(uid, info.displayId);
-    }
-
     @Nullable
     private IBinder getDisplayToken(int displayId) {
         synchronized (mSyncRoot) {
@@ -4277,6 +4273,10 @@ public final class DisplayManagerService extends SystemService {
         PersistentDataStore getPersistentDataStore() {
             return new PersistentDataStore();
         }
+
+        boolean doesCallingUidHaveAccessToDisplay(int uid, DisplayInfo info) {
+            return info.hasAccess(uid);
+        }
     }
 
     @VisibleForTesting
@@ -4880,6 +4880,20 @@ public final class DisplayManagerService extends SystemService {
                                     + mInternalEventFlagsMask + ",uid" + mUid);
                 }
                 // The client is not interested in these events, so do nothing.
+                return 0;
+            }
+
+            // Access check, except for removed and disconnected events where the process is not
+            // present on the display any more.
+            if ((Flags.displayListenerSnapshot() || Flags.displayIdsCache())
+                    && (eventMask & DisplayManagerGlobal.EVENT_DISPLAY_REMOVED) == 0
+                    && (eventMask & DisplayManagerGlobal.EVENT_DISPLAY_DISCONNECTED) == 0
+                    && getDisplayInfoInternal(displayId, mUid) == null) {
+                if (DEBUG || extraLogging(mPackageName)) {
+                    Slog.i(TAG, "Not sending displayEvent: " + eventsToString(oldEventMask)
+                            + " due to no access to display with ID=" + displayId + " uid=" + mUid
+                            + " pid=" + mPid + " packageName=" + mPackageName);
+                }
                 return 0;
             }
 

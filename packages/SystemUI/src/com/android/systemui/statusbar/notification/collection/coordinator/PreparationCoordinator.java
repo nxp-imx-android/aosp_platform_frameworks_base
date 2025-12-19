@@ -304,7 +304,7 @@ public class PreparationCoordinator implements Coordinator {
     }
 
     /**
-     * Get all app packages present in {@param entries}.
+     * Get all app packages present in {@code entries}.
      */
     private static @NonNull Set<String> getPackages(Collection<PipelineEntry> entries) {
         Set<String> packages = new HashSet<>();

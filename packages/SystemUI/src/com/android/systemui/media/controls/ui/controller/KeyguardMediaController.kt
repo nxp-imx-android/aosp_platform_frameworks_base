@@ -171,6 +171,7 @@ constructor(
                     ),
                 onDismissed = { mediaCarouselInteractor.onSwipeToDismiss() },
                 visible = { isMediaVisibleOnLockscreen },
+                location = Media.Location.LOCKSCREEN,
             )
         }
     }

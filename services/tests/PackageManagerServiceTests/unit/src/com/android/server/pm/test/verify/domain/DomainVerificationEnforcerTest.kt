@@ -682,6 +682,10 @@ class DomainVerificationEnforcerTest {
                 allowInteractAcrossUsers,
                 android.Manifest.permission.INTERACT_ACROSS_USERS
             )
+            initPermission(
+                AtomicBoolean(false),
+                android.Manifest.permission.QUERY_DOMAIN_VERIFICATION
+            )
         }
         val target = params.construct(context)
 

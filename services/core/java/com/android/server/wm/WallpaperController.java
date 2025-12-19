@@ -778,7 +778,7 @@ class WallpaperController {
     }
 
     /**
-     * Change the visibility of the top wallpaper to {@param visibility} and hide all the others.
+     * Change the visibility of the top wallpaper to {@code visibility} and hide all the others.
      */
     private void updateWallpaperTokens(boolean visibility, boolean keyguardLocked) {
         ProtoLog.v(WM_DEBUG_WALLPAPER, "updateWallpaperTokens requestedVisibility=%b on"

@@ -543,7 +543,7 @@ public class TaskInfo {
 
     /**
      * Returns {@code true} if the parameters that are important for task organizers are equal
-     * between this {@link TaskInfo} and {@param that}.
+     * between this {@link TaskInfo} and {@code that}.
      * @hide
      */
     public boolean equalsForTaskOrganizer(@Nullable TaskInfo that) {

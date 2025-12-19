@@ -787,7 +787,7 @@ public abstract class WindowManagerInternal {
     /**
      * Called after virtual display Id is updated by
      * {@link com.android.server.vr.Vr2dDisplay} with a specific
-     * {@param vr2dDisplayId}.
+     * {@code vr2dDisplayId}.
      */
     public abstract void setVr2dDisplayId(int vr2dDisplayId);
 
@@ -814,7 +814,7 @@ public abstract class WindowManagerInternal {
      * arranged underneath non-{@code showWhenLocked} wallpaper tokens.
      *
      * @param windowToken wallpaper token previously added via {@link #addWindowToken}
-     * @param showWhenLocked whether {@param token} can continue to be shown on the lock screen.
+     * @param showWhenLocked whether {@code token} can continue to be shown on the lock screen.
      */
     public abstract void setWallpaperShowWhenLocked(IBinder windowToken, boolean showWhenLocked);
 

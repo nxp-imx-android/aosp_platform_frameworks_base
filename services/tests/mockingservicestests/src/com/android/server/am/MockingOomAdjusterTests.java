@@ -154,6 +154,7 @@ import com.android.server.wm.WindowProcessController;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -228,6 +229,11 @@ public class MockingOomAdjusterTests {
 
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+
+    @BeforeClass
+    public static void setUpClass() {
+        System.loadLibrary("mockingservicestestjni");
+    }
 
     @SuppressWarnings("GuardedBy")
     @Before

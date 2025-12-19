@@ -25,6 +25,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
+import android.util.Log
+import android.view.WindowManager
+import com.android.systemui.CoreStartable
+import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.statusbar.CommandQueue
 import javax.inject.Inject
 
@@ -32,26 +36,61 @@ import javax.inject.Inject
  * Manages the connection to the MotionCuesService and implements the CommandQueue callbacks to
  * start and end the motion cues session.
  */
-class MotionCuesManager @Inject constructor(private val context: Context) : CommandQueue.Callbacks {
-    private var motionCuesSettings: MotionCuesSettings? = null
+@SysUISingleton
+class MotionCuesManager @Inject constructor(
+    private val context: Context,
+    private val commandQueue: CommandQueue,
+    val motionCuesUi: MotionCuesUi
+) : CoreStartable, CommandQueue.Callbacks {
+    companion object {
+        private const val TAG = "MotionCuesManager"
+    }
     private val motionCuesCallback = MotionCuesCallbackImpl()
 
     private val motionCuesConnection =
         object : ServiceConnection {
             override fun onServiceConnected(name: ComponentName, service: IBinder) {
-                // Handle service connected
+                Log.i(TAG, "Connected to bound service: $name")
             }
 
             override fun onServiceDisconnected(name: ComponentName) {
-                // Handle service disconnected
+                Log.w(TAG, "Service disconnected unexpectedly: $name")
+                resetSession()
+            }
+
+            override fun onBindingDied(name: ComponentName?) {
+                Log.e(TAG, "Binding died for service: $name")
+                endMotionCuesSession()
+            }
+
+            override fun onNullBinding(name: ComponentName?) {
+                Log.e(TAG, "Service returned null from onBind: $name")
+                endMotionCuesSession()
             }
         }
 
+    /**
+     * Starts a new motion cues session.
+     *
+     * This method initiates a connection to the specified {@link MotionCuesService}. The UI will only
+     * be displayed after the service connection is successfully established.
+     *
+     * If a session is already active when this method is called, the request will be ignored and a
+     * warning will be logged.
+     *
+     * @param componentName The {@link ComponentName} of the service to bind to.
+     * @param userId The user to bind to.
+     * @param motionCuesSettings The initial settings for the motion cues UI.
+     */
     override fun startMotionCuesSession(
         componentName: ComponentName,
+        userId: Int,
         motionCuesSettings: MotionCuesSettings,
     ) {
-        this.motionCuesSettings = motionCuesSettings
+        if (motionCuesUi.isStarted) {
+            Log.w(TAG, "startMotionCuesSession called while a session is already active. Ignoring.")
+            return
+        }
 
         val motionCuesIntent =
             Intent().apply {
@@ -59,21 +98,53 @@ class MotionCuesManager @Inject constructor(private val context: Context) : Comm
                 putExtra(EXTRA_API_CALLBACK, motionCuesCallback.asBinder())
             }
 
-        context.bindService(motionCuesIntent, motionCuesConnection, Context.BIND_AUTO_CREATE)
+
+        Log.i(TAG, "Starting Motion Cues Session.")
+        val success =
+            context.bindService(motionCuesIntent, motionCuesConnection, Context.BIND_AUTO_CREATE)
+
+        if (success) {
+            // Start the UI immediately after a successful bind.
+            // Otherwise if we start it in the onServiceConnected callback,
+            // the service may send updates before the UI is ready to receive them.
+            motionCuesUi.start(motionCuesSettings, userId, componentName.packageName)
+        } else {
+            Log.e(TAG, "Failed to bind to MotionCuesService: $componentName")
+            endMotionCuesSession()
+        }
     }
 
+    /**
+     * Ends the currently active motion cues session.
+     *
+     * This method unbinds from the service and removes the motion cues UI from the screen. If no
+     * session is currently active, this method does nothing.
+     */
     override fun endMotionCuesSession() {
-        // End drawing
-        context.unbindService(motionCuesConnection)
+        try {
+            Log.i(TAG, "Ending Motion Cues Session.")
+            context.unbindService(motionCuesConnection)
+        } catch (e: IllegalArgumentException) {
+            Log.e(TAG, "Failed to unbind service; it may have already been unbound.", e)
+        }
+        resetSession()
+    }
+
+    private fun resetSession() {
+        motionCuesUi.stop()
+    }
+
+    override fun start() {
+        commandQueue.addCallback(this)
     }
 
     private inner class MotionCuesCallbackImpl : IMotionCuesCallback.Stub() {
         override fun updateBubblePixelPos(dx: Float, dy: Float) {
-            // TODO: Implement the logic to draw/update bubbles in SystemUI's overlay
+            motionCuesUi.updateBubblePos(dx, dy)
         }
 
         override fun updateMotionCuesData(motionCuesData: MotionCuesData) {
-            // TODO: Update bubble visuals based on MotionCuesData
+            motionCuesUi.updateMotionCuesData(motionCuesData)
         }
     }
 }

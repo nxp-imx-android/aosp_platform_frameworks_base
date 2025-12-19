@@ -89,6 +89,7 @@ class CurrentTilesInteractorImplTest : SysuiTestCase() {
             qsTileFactory = FakeQSFactory { tileCreator(it) }
             fakeUserTracker.set(listOf(USER_INFO_0), 0)
             fakeUserRepository.setUserInfos(listOf(USER_INFO_0, USER_INFO_1))
+            fakeUserRepository.setIsCurrentUserHeadlessSystemUser(false)
             tileLifecycleManagerFactory = TLMFactory()
             newQSTileFactory = mock()
             qsLogger = mock()
@@ -107,6 +108,7 @@ class CurrentTilesInteractorImplTest : SysuiTestCase() {
                 assertThat(underTest.currentTilesSpecs).isEmpty()
                 assertThat(underTest.userId.value).isEqualTo(0)
                 assertThat(underTest.userContext.value.userId).isEqualTo(0)
+                assertThat(underTest.isCurrentUserHeadlessSystemUser.value).isFalse()
             }
         }
 

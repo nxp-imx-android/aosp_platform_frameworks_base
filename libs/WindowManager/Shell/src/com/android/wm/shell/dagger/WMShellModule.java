@@ -2141,7 +2141,8 @@ public abstract class WMShellModule {
 
     @WMSingleton
     @Provides
-    static Optional<PackageUpdateController> providePackageUpdateController(
+    @DynamicOverride
+    static PackageUpdateController providePackageUpdateController(
             Transitions transitions,
             ShellTaskOrganizer shellTaskOrganizer,
             ShellInit shellInit,
@@ -2150,13 +2151,9 @@ public abstract class WMShellModule {
             Optional<DesktopModeWindowDecorViewModel> desktopModeWindowDecorViewModel,
             @ShellMainThreadImmediate CoroutineScope mainImmediateScope
     ) {
-        if (com.android.window.flags.Flags.enableAppRestartAfterUpdate()) {
-            return Optional.of(
-                    new PackageUpdateController(transitions, shellTaskOrganizer,
-                            shellInit, userProfileContexts, taskResourceLoader,
-                            desktopModeWindowDecorViewModel, mainImmediateScope));
-        }
-        return Optional.empty();
+        return new PackageUpdateController(transitions, shellTaskOrganizer,
+                shellInit, userProfileContexts, taskResourceLoader,
+                desktopModeWindowDecorViewModel, mainImmediateScope);
     }
 
     //

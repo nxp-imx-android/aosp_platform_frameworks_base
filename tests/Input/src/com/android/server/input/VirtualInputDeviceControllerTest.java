@@ -31,12 +31,15 @@ import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import android.graphics.PointF;
 import android.hardware.display.DisplayManagerInternal;
 import android.hardware.input.IInputDevicesChangedListener;
+import android.hardware.input.IVirtualDpad;
+import android.hardware.input.IVirtualKeyboard;
+import android.hardware.input.IVirtualMouse;
+import android.hardware.input.IVirtualTouchscreen;
 import android.hardware.input.InputManagerGlobal;
 import android.hardware.input.VirtualKeyEvent;
 import android.hardware.input.VirtualMouseButtonEvent;
@@ -297,101 +300,30 @@ public class VirtualInputDeviceControllerTest {
     }
 
     @Test
-    public void getCursorPosition_returnsPositionFromService() {
-        mInputController.createMouse(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
+    public void getCursorPosition_returnsPositionFromService() throws Exception {
+        IVirtualMouse mouse =
+                mInputController.createMouse(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
         final PointF physicalPoint = new PointF(10.0f, 20.0f);
-        when(mInputManagerService.getCursorPositionInPhysicalDisplay(DISPLAY_ID_1))
-                .thenReturn(physicalPoint);
+        when(mouse.getCursorPositionInPhysicalDisplay()).thenReturn(physicalPoint);
         final PointF logicalPoint = new PointF(30.0f, 40.0f);
-        when(mInputManagerService.getCursorPositionInLogicalDisplay(DISPLAY_ID_1))
-                .thenReturn(logicalPoint);
+        when(mouse.getCursorPositionInLogicalDisplay()).thenReturn(logicalPoint);
 
-        assertThat(mInputController.getCursorPositionInPhysicalDisplay(TOKEN_1))
-                .isEqualTo(physicalPoint);
+        assertThat(mouse.getCursorPositionInPhysicalDisplay()).isEqualTo(physicalPoint);
         verify(mInputManagerService).getCursorPositionInPhysicalDisplay(DISPLAY_ID_1);
 
-        assertThat(mInputController.getCursorPositionInLogicalDisplay(TOKEN_1))
-                .isEqualTo(logicalPoint);
+        assertThat(mouse.getCursorPositionInLogicalDisplay()).isEqualTo(logicalPoint);
         verify(mInputManagerService).getCursorPositionInLogicalDisplay(DISPLAY_ID_1);
     }
 
     @Test
-    public void sendKeyEvent_noDevice() {
-        assertThat(mInputController.sendKeyEvent(TOKEN_1,
-                new VirtualKeyEvent.Builder()
-                        .setKeyCode(KeyEvent.KEYCODE_A)
-                        .setAction(VirtualKeyEvent.ACTION_DOWN)
-                        .build()))
-                .isFalse();
-        verifyNoInteractions(mNativeWrapperMock);
-    }
-
-    @Test
-    public void sendDpadKeyEvent_noDevice() {
-        assertThat(mInputController.sendDpadKeyEvent(TOKEN_1,
-                new VirtualKeyEvent.Builder()
-                        .setKeyCode(KeyEvent.KEYCODE_BACK)
-                        .setAction(VirtualKeyEvent.ACTION_DOWN)
-                        .build()))
-                .isFalse();
-        verifyNoInteractions(mNativeWrapperMock);
-    }
-
-    @Test
-    public void sendMouseButtonEvent_noDevice() {
-        assertThat(mInputController.sendMouseButtonEvent(TOKEN_1,
-                new VirtualMouseButtonEvent.Builder()
-                        .setButtonCode(VirtualMouseButtonEvent.BUTTON_BACK)
-                        .setAction(VirtualMouseButtonEvent.ACTION_BUTTON_PRESS)
-                        .build()))
-                .isFalse();
-        verifyNoInteractions(mNativeWrapperMock);
-    }
-
-    @Test
-    public void sendMouseRelativeEvent_noDevice() {
-        assertThat(mInputController.sendMouseRelativeEvent(TOKEN_1,
-                new VirtualMouseRelativeEvent.Builder()
-                        .setRelativeX(0.0f)
-                        .setRelativeY(0.0f)
-                        .build()))
-                .isFalse();
-        verifyNoInteractions(mNativeWrapperMock);
-    }
-
-    @Test
-    public void sendMouseScrollEvent_noDevice() {
-        assertThat(mInputController.sendMouseScrollEvent(TOKEN_1,
-                new VirtualMouseScrollEvent.Builder()
-                        .setXAxisMovement(-1f)
-                        .setYAxisMovement(1f)
-                        .build()))
-                .isFalse();
-        verifyNoInteractions(mNativeWrapperMock);
-    }
-
-    @Test
-    public void sendTouchEvent_noDevice() {
-        assertThat(mInputController.sendTouchEvent(TOKEN_1,
-                new VirtualTouchEvent.Builder()
-                        .setX(0.0f)
-                        .setY(0.0f)
-                        .setAction(VirtualTouchEvent.ACTION_UP)
-                        .setPointerId(1)
-                        .setToolType(VirtualTouchEvent.TOOL_TYPE_FINGER)
-                        .build()))
-                .isFalse();
-        verifyNoInteractions(mNativeWrapperMock);
-    }
-
-    @Test
-    public void sendDpadKeyEvent_writesEvent() {
-        mInputController.createDpad(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
+    public void sendDpadKeyEvent_writesEvent() throws Exception {
+        IVirtualDpad dpad =
+                mInputController.createDpad(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
         when(mNativeWrapperMock.writeDpadKeyEvent(
                 PTR, KeyEvent.KEYCODE_BACK, VirtualKeyEvent.ACTION_UP, EVENT_TIMESTAMP))
                 .thenReturn(true);
 
-        assertThat(mInputController.sendDpadKeyEvent(TOKEN_1,
+        assertThat(dpad.sendDpadKeyEvent(
                 new VirtualKeyEvent.Builder()
                         .setKeyCode(KeyEvent.KEYCODE_BACK)
                         .setAction(VirtualKeyEvent.ACTION_UP)
@@ -403,14 +335,15 @@ public class VirtualInputDeviceControllerTest {
     }
 
     @Test
-    public void sendKeyEvent_writesEvent() {
-        mInputController.createKeyboard(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1,
-                LANGUAGE_TAG, LAYOUT_TYPE);
+    public void sendKeyEvent_writesEvent() throws Exception {
+        IVirtualKeyboard keyboard =
+                mInputController.createKeyboard(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1,
+                        LANGUAGE_TAG, LAYOUT_TYPE);
         when(mNativeWrapperMock.writeKeyEvent(
                 PTR, KeyEvent.KEYCODE_A, VirtualKeyEvent.ACTION_UP, EVENT_TIMESTAMP))
                 .thenReturn(true);
 
-        assertThat(mInputController.sendKeyEvent(TOKEN_1,
+        assertThat(keyboard.sendKeyEvent(
                 new VirtualKeyEvent.Builder()
                         .setKeyCode(KeyEvent.KEYCODE_A)
                         .setAction(VirtualKeyEvent.ACTION_UP)
@@ -422,14 +355,15 @@ public class VirtualInputDeviceControllerTest {
     }
 
     @Test
-    public void sendMouseButtonEvent_writesEvent() {
-        mInputController.createMouse(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
+    public void sendMouseButtonEvent_writesEvent() throws Exception {
+        IVirtualMouse mouse =
+                mInputController.createMouse(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
         when(mNativeWrapperMock.writeButtonEvent(
                 PTR, VirtualMouseButtonEvent.BUTTON_BACK,
                 VirtualMouseButtonEvent.ACTION_BUTTON_PRESS, EVENT_TIMESTAMP))
                 .thenReturn(true);
 
-        assertThat(mInputController.sendMouseButtonEvent(TOKEN_1,
+        assertThat(mouse.sendMouseButtonEvent(
                 new VirtualMouseButtonEvent.Builder()
                         .setButtonCode(VirtualMouseButtonEvent.BUTTON_BACK)
                         .setAction(VirtualMouseButtonEvent.ACTION_BUTTON_PRESS)
@@ -441,13 +375,14 @@ public class VirtualInputDeviceControllerTest {
     }
 
     @Test
-    public void sendMouseRelativeEvent_writesEvent() {
-        mInputController.createMouse(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
+    public void sendMouseRelativeEvent_writesEvent() throws Exception {
+        IVirtualMouse mouse =
+                mInputController.createMouse(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
         final float x = -0.2f;
         final float y = 0.7f;
         when(mNativeWrapperMock.writeRelativeEvent(PTR, x, y, EVENT_TIMESTAMP)).thenReturn(true);
 
-        assertThat(mInputController.sendMouseRelativeEvent(TOKEN_1,
+        assertThat(mouse.sendMouseRelativeEvent(
                 new VirtualMouseRelativeEvent.Builder()
                         .setRelativeX(x)
                         .setRelativeY(y)
@@ -458,13 +393,14 @@ public class VirtualInputDeviceControllerTest {
     }
 
     @Test
-    public void sendMouseScrollEvent_writesEvent() {
-        mInputController.createMouse(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
+    public void sendMouseScrollEvent_writesEvent() throws Exception {
+        IVirtualMouse mouse =
+                mInputController.createMouse(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
         final float x = 0.5f;
         final float y = 1f;
         when(mNativeWrapperMock.writeScrollEvent(PTR, x, y, EVENT_TIMESTAMP)).thenReturn(true);
 
-        assertThat(mInputController.sendMouseScrollEvent(TOKEN_1,
+        assertThat(mouse.sendMouseScrollEvent(
                 new VirtualMouseScrollEvent.Builder()
                         .setXAxisMovement(x)
                         .setYAxisMovement(y)
@@ -475,9 +411,10 @@ public class VirtualInputDeviceControllerTest {
     }
 
     @Test
-    public void sendTouchEvent_writesEvent() {
-        mInputController.createTouchscreen(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1,
-                /* height= */ 50, /* width= */ 50);
+    public void sendTouchEvent_writesEvent() throws Exception {
+        IVirtualTouchscreen touchscreen =
+                mInputController.createTouchscreen(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1,
+                        DISPLAY_ID_1, /* height= */ 50, /* width= */ 50);
         final int pointerId = 5;
         final float x = 100.5f;
         final float y = 200.5f;
@@ -487,7 +424,7 @@ public class VirtualInputDeviceControllerTest {
                 VirtualTouchEvent.ACTION_UP, x, y, pressure, majorAxisSize, EVENT_TIMESTAMP))
                 .thenReturn(true);
 
-        assertThat(mInputController.sendTouchEvent(TOKEN_1,
+        assertThat(touchscreen.sendTouchEvent(
                 new VirtualTouchEvent.Builder()
                         .setX(x)
                         .setY(y)
@@ -505,9 +442,10 @@ public class VirtualInputDeviceControllerTest {
     }
 
     @Test
-    public void sendTouchEvent_withoutPressureOrMajorAxisSize_writesEvent() {
-        mInputController.createTouchscreen(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1,
-                /* height= */ 50, /* width= */ 50);
+    public void sendTouchEvent_withoutPressureOrMajorAxisSize_writesEvent() throws Exception {
+        IVirtualTouchscreen touchscreen =
+                mInputController.createTouchscreen(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1,
+                        DISPLAY_ID_1, /* height= */ 50, /* width= */ 50);
         final int pointerId = 5;
         final float x = 100.5f;
         final float y = 200.5f;
@@ -515,7 +453,7 @@ public class VirtualInputDeviceControllerTest {
                 VirtualTouchEvent.ACTION_UP, x, y, Float.NaN, Float.NaN, EVENT_TIMESTAMP))
                 .thenReturn(true);
 
-        assertThat(mInputController.sendTouchEvent(TOKEN_1,
+        assertThat(touchscreen.sendTouchEvent(
                 new VirtualTouchEvent.Builder()
                         .setX(x)
                         .setY(y)

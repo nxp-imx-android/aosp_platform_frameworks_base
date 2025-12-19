@@ -478,7 +478,7 @@ public abstract class StageCoordinatorAbstract implements SplitLayout.SplitLayou
     public abstract boolean isPendingEnter(IBinder transition);
 
     /**
-     * Returns the {@link SplitScreen.StageType} where {@param token} is being used
+     * Returns the {@link SplitScreen.StageType} where {@code token} is being used
      * {@link SplitScreen#STAGE_TYPE_UNDEFINED} otherwise
      */
     @SplitScreen.StageType

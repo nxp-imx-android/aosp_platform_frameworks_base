@@ -133,7 +133,7 @@ public class SystemWindows {
     }
 
     /**
-     * Sets the accessibility window for the given {@param shellRootLayer}.
+     * Sets the accessibility window for the given {@code shellRootLayer}.
      */
     public void setShellRootAccessibilityWindow(int displayId,
             @WindowManager.ShellRootLayer int shellRootLayer, View view) {

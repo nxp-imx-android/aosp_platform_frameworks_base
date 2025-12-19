@@ -21,7 +21,6 @@ import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
 import android.tools.Rotation
-import androidx.test.filters.FlakyTest
 import androidx.test.filters.RequiresDevice
 import com.android.server.wm.flicker.helpers.ImeShownOnAppStartHelper
 import com.android.wm.shell.Flags
@@ -66,7 +65,6 @@ import org.junit.runners.Parameterized.Parameters
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-@FlakyTest(bugId = 421000153)
 @RunWith(Parameterized::class)
 class ExpandBubbleWithImeViaBubbleBarTest(navBar: NavBar) :
     BubbleFlickerTestBase(),

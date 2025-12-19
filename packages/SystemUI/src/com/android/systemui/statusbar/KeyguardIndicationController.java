@@ -1001,28 +1001,28 @@ public class KeyguardIndicationController {
     }
 
     /**
-     * Hides transient indication in {@param delayMs}.
+     * Hides transient indication in {@code delayMs}.
      */
     public void hideTransientIndicationDelayed(long delayMs) {
         mHideTransientMessageHandler.schedule(delayMs, AlarmTimeout.MODE_RESCHEDULE_IF_SCHEDULED);
     }
 
     /**
-     * Hides biometric indication in {@param delayMs}.
+     * Hides biometric indication in {@code delayMs}.
      */
     public void hideBiometricMessageDelayed(long delayMs) {
         mHideBiometricMessageHandler.schedule(delayMs, AlarmTimeout.MODE_RESCHEDULE_IF_SCHEDULED);
     }
 
     /**
-     * Shows {@param transientIndication} until it is hidden by {@link #hideTransientIndication}.
+     * Shows {@code transientIndication} until it is hidden by {@link #hideTransientIndication}.
      */
     public void showTransientIndication(int transientIndication) {
         showTransientIndication(mContext.getResources().getString(transientIndication));
     }
 
     /**
-     * Shows {@param transientIndication} until it is hidden by {@link #hideTransientIndication}.
+     * Shows {@code transientIndication} until it is hidden by {@link #hideTransientIndication}.
      */
     private void showTransientIndication(CharSequence transientIndication) {
         mTransientIndication = transientIndication;
@@ -1063,7 +1063,7 @@ public class KeyguardIndicationController {
     }
 
     /**
-     * Shows {@param biometricMessage} and {@param biometricMessageFollowUp}
+     * Shows {@code biometricMessage} and {@code biometricMessageFollowUp}
      * until they are hidden by {@link #hideBiometricMessage}. Messages are rotated through
      * by {@link KeyguardIndicationRotateTextViewController}, see class for rotating message
      * logic.

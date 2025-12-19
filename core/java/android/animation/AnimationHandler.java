@@ -354,7 +354,7 @@ public class AnimationHandler {
     }
 
     /**
-     * Returns the vsyncId of last animation frame if the given {@param currentVsyncId} matches
+     * Returns the vsyncId of last animation frame if the given {@code currentVsyncId} matches
      * the vsyncId from the end callback of animation. Otherwise it returns the given vsyncId.
      * It only takes effect if {@link #postEndAnimationCallback(Runnable)} is called.
      */
