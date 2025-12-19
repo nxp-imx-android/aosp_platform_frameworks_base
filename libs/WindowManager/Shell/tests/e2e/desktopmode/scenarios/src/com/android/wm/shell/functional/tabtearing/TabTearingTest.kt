@@ -17,7 +17,6 @@
 package com.android.wm.shell.functional.tabtearing
 
 import android.platform.test.annotations.Postsubmit
-import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
 import com.android.wm.shell.scenarios.TabTearing
 import org.junit.runner.RunWith
@@ -25,7 +24,6 @@ import org.junit.runners.BlockJUnit4ClassRunner
 
 /* Functional test for [TabTearing]. */
 @RunWith(BlockJUnit4ClassRunner::class)
-@RequiresDesktopDevice
 @Postsubmit
 @ScreenRecordRule.ScreenRecord
 class TabTearingTest : TabTearing()

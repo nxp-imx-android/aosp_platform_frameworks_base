@@ -9,7 +9,6 @@
     {
       "name": "FunctionalTestsDesktopMode-CatchAll",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
@@ -466,28 +465,24 @@
     {
       "name": "FunctionalTestsDesktopMode-multidesks-CreateDesksUntilLimitTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-multiinstance-LaunchNewInstanceFromAppWindowMenuTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-multiinstance-ManageOpenInstancesTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-overview-ClearOpenAppsFromOverviewTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
@@ -500,35 +495,30 @@
     {
       "name": "FunctionalTestsDesktopMode-overview-EnterDesktopViaMenuOfLiveOverviewTaskTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-overview-EnterDesktopViaMenuOfStaticOverviewTaskTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-overview-EnterDesktopViaStaticDesktopOverviewTaskTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-overview-SwitchBetweenDesktopAndSplitScreenTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-pip-PipInDesktopWindowingTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
@@ -577,49 +567,42 @@
     {
       "name": "FunctionalTestsDesktopMode-tabtearing-TabTearingDesktopWindowingLimitTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-tabtearing-TabTearingInteractionDependantTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-tabtearing-TabTearingTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-taskbar-ChromeNewTabAtWindowLimitTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-taskbar-LaunchNewInstanceFromTaskbarMenuTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-taskbar-TaskbarInDesktopModeTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-tiling-TilingTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
