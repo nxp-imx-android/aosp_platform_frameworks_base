@@ -17,6 +17,7 @@
 package com.android.server.display.config;
 
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR;
+import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_CHARGING;
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_DEFAULT;
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_DOZE;
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_IDLE;
@@ -249,6 +250,9 @@ public class DisplayBrightnessMappingConfig {
             }
             case AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR -> {
                 return AutoBrightnessModeName.bedtime_wear.getRawName();
+            }
+            case AUTO_BRIGHTNESS_MODE_CHARGING -> {
+                return AutoBrightnessModeName.charging.getRawName();
             }
             default -> throw new IllegalArgumentException("Unknown auto-brightness mode: " + mode);
         }
