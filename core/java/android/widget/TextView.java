@@ -3782,7 +3782,7 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @see #setFirstBaselineToTopHeight(int)
      * @see #setLastBaselineToBottomHeight(int)
@@ -3802,7 +3802,7 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @see #setFirstBaselineToTopHeight(int)
      * @see #setLastBaselineToBottomHeight(int)

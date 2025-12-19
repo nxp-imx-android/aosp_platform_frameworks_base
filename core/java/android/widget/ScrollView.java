@@ -2052,7 +2052,7 @@ public class ScrollView extends FrameLayout {
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public void onStopNestedScroll(View target) {
@@ -2070,7 +2070,7 @@ public class ScrollView extends FrameLayout {
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public boolean onNestedFling(View target, float velocityX, float velocityY, boolean consumed) {

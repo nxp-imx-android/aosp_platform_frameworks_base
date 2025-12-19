@@ -418,7 +418,7 @@ public final class BluetoothLeDeviceFilter implements DeviceFilter<ScanResult> {
             return this;
         }
 
-        /** @inheritDoc */
+        /** {@inheritDoc} */
         @Override
         @NonNull
         public BluetoothLeDeviceFilter build() {

@@ -165,7 +165,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public void requestLayout() {
@@ -177,7 +177,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public void invalidate() {
