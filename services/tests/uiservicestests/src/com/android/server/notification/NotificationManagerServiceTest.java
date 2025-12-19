@@ -7854,9 +7854,9 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 new BufferedInputStream(new ByteArrayInputStream(upgradeXml.getBytes())),
                 false,
                 UserHandle.USER_ALL, null);
-        verify(mListeners, times(1)).readXml(any(), any(), anyBoolean(), anyInt());
-        verify(mConditionProviders, times(1)).readXml(any(), any(), anyBoolean(), anyInt());
-        verify(mAssistants, times(1)).readXml(any(), any(), anyBoolean(), anyInt());
+        verify(mListeners, times(1)).readXml(any(), any(), anyBoolean(), anyInt(), any());
+        verify(mConditionProviders, times(1)).readXml(any(), any(), anyBoolean(), anyInt(), any());
+        verify(mAssistants, times(1)).readXml(any(), any(), anyBoolean(), anyInt(), any());
 
         // numbers are inflated for setup
         verify(mListeners, times(1)).migrateToXml();
@@ -7886,9 +7886,9 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 new BufferedInputStream(new ByteArrayInputStream(preupgradeXml.getBytes())),
                 false,
                 UserHandle.USER_ALL, null);
-        verify(mListeners, never()).readXml(any(), any(), anyBoolean(), anyInt());
-        verify(mConditionProviders, never()).readXml(any(), any(), anyBoolean(), anyInt());
-        verify(mAssistants, never()).readXml(any(), any(), anyBoolean(), anyInt());
+        verify(mListeners, never()).readXml(any(), any(), anyBoolean(), anyInt(), any());
+        verify(mConditionProviders, never()).readXml(any(), any(), anyBoolean(), anyInt(), any());
+        verify(mAssistants, never()).readXml(any(), any(), anyBoolean(), anyInt(), any());
 
         // numbers are inflated for setup
         verify(mListeners, times(2)).migrateToXml();
@@ -7920,9 +7920,10 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 new BufferedInputStream(new ByteArrayInputStream(policyXml.getBytes())),
                 true,
                 10, mBrLogger);
-        verify(mListeners, never()).readXml(any(), any(), eq(true), eq(10));
-        verify(mConditionProviders, never()).readXml(any(), any(), eq(true), eq(10));
-        verify(mAssistants, never()).readXml(any(), any(), eq(true), eq(10));
+
+        verify(mListeners, never()).readXml(any(), any(), eq(true), eq(10), any());
+        verify(mConditionProviders, never()).readXml(any(), any(), eq(true), eq(10), any());
+        verify(mAssistants, never()).readXml(any(), any(), eq(true), eq(10), any());
     }
 
     @Test
@@ -7947,9 +7948,10 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 new BufferedInputStream(new ByteArrayInputStream(policyXml.getBytes())),
                 true,
                 10, mBrLogger);
-        verify(mListeners, never()).readXml(any(), any(), eq(true), eq(10));
-        verify(mConditionProviders, never()).readXml(any(), any(), eq(true), eq(10));
-        verify(mAssistants, never()).readXml(any(), any(), eq(true), eq(10));
+
+        verify(mListeners, never()).readXml(any(), any(), eq(true), eq(10), any());
+        verify(mConditionProviders, never()).readXml(any(), any(), eq(true), eq(10), any());
+        verify(mAssistants, never()).readXml(any(), any(), eq(true), eq(10), any());
     }
 
     @Test
@@ -7974,9 +7976,11 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 new BufferedInputStream(new ByteArrayInputStream(policyXml.getBytes())),
                 true,
                 10, mBrLogger);
-        verify(mListeners, never()).readXml(any(), any(), eq(true), eq(10));
-        verify(mConditionProviders, never()).readXml(any(), any(), eq(true), eq(10));
-        verify(mAssistants, never()).readXml(any(), any(), eq(true), eq(10));
+
+        verify(mListeners, never()).readXml(any(), any(), eq(true), eq(10), any());
+        verify(mConditionProviders, never()).readXml(any(), any(), eq(true), eq(10), any());
+        verify(mAssistants, never()).readXml(any(), any(), eq(true), eq(10), any());
+
     }
 
     @Test
@@ -8001,9 +8005,10 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 new BufferedInputStream(new ByteArrayInputStream(policyXml.getBytes())),
                 true,
                 10, mBrLogger);
-        verify(mListeners, times(1)).readXml(any(), any(), eq(true), eq(10));
-        verify(mConditionProviders, times(1)).readXml(any(), any(), eq(true), eq(10));
-        verify(mAssistants, times(1)).readXml(any(), any(), eq(true), eq(10));
+
+        verify(mListeners, times(1)).readXml(any(), any(), eq(true), eq(10), any());
+        verify(mConditionProviders, times(1)).readXml(any(), any(), eq(true), eq(10), any());
+        verify(mAssistants, times(1)).readXml(any(), any(), eq(true), eq(10), any());
     }
 
     @Test

@@ -88,6 +88,7 @@ import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_STATUS_BA
 import static android.app.NotificationManager.zenModeFromInterruptionFilter;
 import static android.app.StatusBarManager.ACTION_KEYGUARD_PRIVATE_NOTIFICATIONS_CHANGED;
 import static android.app.StatusBarManager.EXTRA_KM_PRIVATE_NOTIFS_ALLOWED;
+import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_NLS_RESTRICTED;
 import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_ZEN_CONFIG;
 import static android.app.backup.NotificationLoggingConstants.ERROR_XML_PARSING;
 import static android.content.Context.BIND_ALLOW_FREEZE;
@@ -1245,20 +1246,22 @@ public class NotificationManagerService extends SystemService {
                 if (ineligibleForManagedServices) {
                     continue;
                 }
-                mListeners.readXml(parser, mAllowedManagedServicePackages, forRestore, userId);
+                mListeners.readXml(
+                        parser, mAllowedManagedServicePackages, forRestore, userId, logger);
                 migratedManagedServices = true;
             } else if (mAssistants.getConfig().xmlTag.equals(parser.getName())) {
                 if (ineligibleForManagedServices) {
                     continue;
                 }
-                mAssistants.readXml(parser, mAllowedManagedServicePackages, forRestore, userId);
+                mAssistants.readXml(
+                        parser, mAllowedManagedServicePackages, forRestore, userId, logger);
                 migratedManagedServices = true;
             } else if (mConditionProviders.getConfig().xmlTag.equals(parser.getName())) {
                 if (ineligibleForManagedServices) {
                     continue;
                 }
                 mConditionProviders.readXml(
-                        parser, mAllowedManagedServicePackages, forRestore, userId);
+                        parser, mAllowedManagedServicePackages, forRestore, userId, logger);
                 migratedManagedServices = true;
             } else if (mSnoozeHelper.XML_TAG_NAME.equals(parser.getName())) {
                 mSnoozeHelper.readXml(parser, System.currentTimeMillis());
@@ -1382,10 +1385,10 @@ public class NotificationManagerService extends SystemService {
         out.attributeInt(null, ATTR_VERSION, DB_VERSION);
         mZenModeHelper.writeXml(out, forBackup, null, userId, logger);
         mPreferencesHelper.writeXml(out, forBackup, userId, logger);
-        mListeners.writeXml(out, forBackup, userId);
-        mAssistants.writeXml(out, forBackup, userId);
+        mListeners.writeXml(out, forBackup, userId, logger);
+        mAssistants.writeXml(out, forBackup, userId, logger);
         mSnoozeHelper.writeXml(out);
-        mConditionProviders.writeXml(out, forBackup, userId);
+        mConditionProviders.writeXml(out, forBackup, userId, logger);
         if (!forBackup || userId == USER_SYSTEM) {
             writeSecureNotificationsPolicy(out);
         }
@@ -12883,7 +12886,7 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        protected void addApprovedList(String approved, int userId, boolean isPrimary,
+        protected int addApprovedList(String approved, int userId, boolean isPrimary,
                 String userSet) {
             if (!TextUtils.isEmpty(approved)) {
                 String[] approvedArray = approved.split(ENABLED_SERVICES_SEPARATOR);
@@ -12892,7 +12895,7 @@ public class NotificationManagerService extends SystemService {
                     approved = approvedArray[0];
                 }
             }
-            super.addApprovedList(approved, userId, isPrimary, userSet);
+            return super.addApprovedList(approved, userId, isPrimary, userSet);
         }
 
         public NotificationAssistants(Context context, Object lock, UserProfiles up,
@@ -13696,7 +13699,8 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        protected void writeExtraXmlTags(TypedXmlSerializer out) throws IOException {
+        protected void writeExtraXmlTags(TypedXmlSerializer out,
+                @Nullable BackupRestoreEventLogger logger) throws IOException {
             synchronized (mLock) {
                 for (int user : mDeniedAdjustments.keySet()) {
                     out.startTag(null, TAG_DENIED);
@@ -13749,7 +13753,8 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        protected void readExtraTag(String tag, TypedXmlPullParser parser) throws IOException {
+        protected void readExtraTag(String tag, TypedXmlPullParser parser,
+                @Nullable BackupRestoreEventLogger logger) throws IOException {
             if (TAG_DENIED.equals(tag)) {
                 // default to current context user if this XML pre-dates user-specific settings.
                 final int user = XmlUtils.readIntAttribute(parser, ATT_USER_ID,
@@ -14306,45 +14311,62 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        protected void readExtraTag(String tag, TypedXmlPullParser parser)
+        protected void readExtraTag(String tag, TypedXmlPullParser parser,
+                @Nullable BackupRestoreEventLogger logger)
                 throws IOException, XmlPullParserException {
             if (TAG_REQUESTED_LISTENERS.equals(tag)) {
+                int count = 0;
+                int errorCount = 0;
+
                 final int listenersOuterDepth = parser.getDepth();
                 while (XmlUtils.nextElementWithin(parser, listenersOuterDepth)) {
-                    if (!TAG_REQUESTED_LISTENER.equals(parser.getName())) {
-                        continue;
-                    }
-                    final int userId = XmlUtils.readIntAttribute(parser, ATT_USER_ID);
-                    final ComponentName cn = ComponentName.unflattenFromString(
-                            XmlUtils.readStringAttribute(parser, ATT_COMPONENT));
-                    int approved = FLAG_FILTER_TYPE_CONVERSATIONS | FLAG_FILTER_TYPE_ALERTING
-                            | FLAG_FILTER_TYPE_SILENT | FLAG_FILTER_TYPE_ONGOING;
+                    try {
+                        if (!TAG_REQUESTED_LISTENER.equals(parser.getName())) {
+                            continue;
+                        }
+                        final int userId = XmlUtils.readIntAttribute(parser, ATT_USER_ID);
+                        final ComponentName cn = ComponentName.unflattenFromString(
+                                XmlUtils.readStringAttribute(parser, ATT_COMPONENT));
+                        int approved = FLAG_FILTER_TYPE_CONVERSATIONS | FLAG_FILTER_TYPE_ALERTING
+                                | FLAG_FILTER_TYPE_SILENT | FLAG_FILTER_TYPE_ONGOING;
 
-                    ArraySet<VersionedPackage> disallowedPkgs = new ArraySet<>();
-                    final int listenerOuterDepth = parser.getDepth();
-                    while (XmlUtils.nextElementWithin(parser, listenerOuterDepth)) {
-                        if (TAG_APPROVED.equals(parser.getName())) {
-                            approved = XmlUtils.readIntAttribute(parser, ATT_TYPES);
-                        } else if (TAG_DISALLOWED.equals(parser.getName())) {
-                            String pkg = XmlUtils.readStringAttribute(parser, ATT_PKG);
-                            int uid = XmlUtils.readIntAttribute(parser, ATT_UID);
-                            if (!TextUtils.isEmpty(pkg)) {
-                                VersionedPackage ai = new VersionedPackage(pkg, uid);
-                                disallowedPkgs.add(ai);
+                        ArraySet<VersionedPackage> disallowedPkgs = new ArraySet<>();
+                        final int listenerOuterDepth = parser.getDepth();
+                        while (XmlUtils.nextElementWithin(parser, listenerOuterDepth)) {
+                            if (TAG_APPROVED.equals(parser.getName())) {
+                                approved = XmlUtils.readIntAttribute(parser, ATT_TYPES);
+                            } else if (TAG_DISALLOWED.equals(parser.getName())) {
+                                String pkg = XmlUtils.readStringAttribute(parser, ATT_PKG);
+                                int uid = XmlUtils.readIntAttribute(parser, ATT_UID);
+                                if (!TextUtils.isEmpty(pkg)) {
+                                    VersionedPackage ai = new VersionedPackage(pkg, uid);
+                                    disallowedPkgs.add(ai);
+                                }
                             }
                         }
+                        NotificationListenerFilter nlf =
+                                new NotificationListenerFilter(approved, disallowedPkgs);
+                        synchronized (mRequestedNotificationListeners) {
+                            mRequestedNotificationListeners.put(Pair.create(cn, userId), nlf);
+                        }
+                        count++;
+                    } catch (Exception e) {
+                        Slog.e(TAG, "Failed to restore NLS restriction", e);
+                        errorCount++;
                     }
-                    NotificationListenerFilter nlf =
-                            new NotificationListenerFilter(approved, disallowedPkgs);
-                    synchronized (mRequestedNotificationListeners) {
-                        mRequestedNotificationListeners.put(Pair.create(cn, userId), nlf);
-                    }
+                }
+                if (logger != null) {
+                    logger.logItemsRestored(DATA_TYPE_NLS_RESTRICTED, count);
+                    logger.logItemsRestoreFailed(
+                            DATA_TYPE_NLS_RESTRICTED, errorCount, ERROR_XML_PARSING);
                 }
             }
         }
 
         @Override
-        protected void writeExtraXmlTags(TypedXmlSerializer out) throws IOException {
+        protected void writeExtraXmlTags(TypedXmlSerializer out,
+                @Nullable BackupRestoreEventLogger logger) throws IOException {
+            int count = 0;
             out.startTag(null, TAG_REQUESTED_LISTENERS);
             synchronized (mRequestedNotificationListeners) {
                 for (Pair<ComponentName, Integer> listener :
@@ -14369,10 +14391,14 @@ public class NotificationManagerService extends SystemService {
                     }
 
                     out.endTag(null, TAG_REQUESTED_LISTENER);
+                    count++;
                 }
             }
 
             out.endTag(null, TAG_REQUESTED_LISTENERS);
+            if (logger != null) {
+                logger.logItemsBackedUp(DATA_TYPE_NLS_RESTRICTED, count);
+            }
         }
 
         @Nullable protected NotificationListenerFilter getNotificationListenerFilter(

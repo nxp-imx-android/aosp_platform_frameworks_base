@@ -15,6 +15,8 @@
  */
 package com.android.server.notification;
 
+import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_MANAGED_SERVICE_PRIMARY_APPROVED;
+import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_MANAGED_SERVICE_SECONDARY_APPROVED;
 import static android.content.Context.DEVICE_POLICY_SERVICE;
 import static android.os.UserHandle.USER_ALL;
 import static android.os.UserHandle.USER_CURRENT;
@@ -38,10 +40,10 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -54,6 +56,7 @@ import static org.mockito.Mockito.when;
 import android.app.ActivityManager;
 import android.app.IBinderSession;
 import android.app.admin.DevicePolicyManager;
+import android.app.backup.BackupRestoreEventLogger;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -97,12 +100,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
-import platform.test.runner.parameterized.Parameters;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -116,6 +117,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
 
 @RunWith(ParameterizedAndroidJunit4.class)
 public class ManagedServicesTest extends UiServiceTestCase {
@@ -134,6 +138,8 @@ public class ManagedServicesTest extends UiServiceTestCase {
     private ManagedServices.UserProfiles mUserProfiles;
     @Mock private DevicePolicyManager mDpm;
     Object mLock = new Object();
+    @Mock
+    BackupRestoreEventLogger mLogger;
 
     UserInfo mZero = new UserInfo(0, "zero", 0);
     UserInfo mTen = new UserInfo(10, "ten", 0);
@@ -166,7 +172,8 @@ public class ManagedServicesTest extends UiServiceTestCase {
 
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
-        return FlagsParameterization.allCombinationsOf();
+        return FlagsParameterization.allCombinationsOf(
+                android.app.Flags.FLAG_BACKUP_RESTORE_LOGGING);
     }
 
     public ManagedServicesTest(FlagsParameterization flags) {
@@ -433,7 +440,7 @@ public class ManagedServicesTest extends UiServiceTestCase {
             TypedXmlPullParser parser =
                     getParserWithEntries(service, getXmlEntry(resolvedValue, 0, true));
 
-            service.readXml(parser, null, true, 10);
+            service.readXml(parser, null, true, 10, mLogger);
 
             assertFalse(service.isPackageOrComponentAllowed(resolvedValue, 0));
             assertTrue(service.isPackageOrComponentAllowed(resolvedValue, 10));
@@ -455,7 +462,7 @@ public class ManagedServicesTest extends UiServiceTestCase {
             String xmlEntry = getXmlEntry(resolvedValue, 0, true, false);
             TypedXmlPullParser parser = getParserWithEntries(service, xmlEntry);
 
-            service.readXml(parser, null, true, 0);
+            service.readXml(parser, null, true, 0, mLogger);
 
             assertFalse("Failed while parsing xml:\n" + xmlEntry,
                     service.isPackageOrComponentUserSet(resolvedValue, 0));
@@ -463,7 +470,7 @@ public class ManagedServicesTest extends UiServiceTestCase {
             xmlEntry = getXmlEntry(resolvedValue, 0, true, true);
             parser = getParserWithEntries(service, xmlEntry);
 
-            service.readXml(parser, null, true, 0);
+            service.readXml(parser, null, true, 0, mLogger);
 
             assertTrue("Failed while parsing xml:\n" + xmlEntry,
                     service.isPackageOrComponentUserSet(resolvedValue, 0));
@@ -488,7 +495,7 @@ public class ManagedServicesTest extends UiServiceTestCase {
         //data setup
         service1.addDefaultComponentOrPackage("package/class");
         serializer.startDocument(null, true);
-        service1.writeXml(serializer, false, 0);
+        service1.writeXml(serializer, false, 0, null);
         serializer.endDocument();
         outStream.flush();
 
@@ -498,7 +505,7 @@ public class ManagedServicesTest extends UiServiceTestCase {
 
         parser.setInput(input, StandardCharsets.UTF_8.name());
         XmlUtils.beginDocument(parser, "test");
-        service2.readXml(parser, null, false, 0);
+        service2.readXml(parser, null, false, 0, null);
         ArraySet<ComponentName> defaults = service2.getDefaultComponents();
 
         assertEquals(1, defaults.size());
@@ -651,16 +658,23 @@ public class ManagedServicesTest extends UiServiceTestCase {
                             service,
                             getXmlEntry(resolvedValue0, 0, true),
                             getXmlEntry(resolvedValue10, 10, true));
-            service.readXml(parser, null, false, UserHandle.USER_ALL);
+            service.readXml(parser, null, false, UserHandle.USER_ALL, null);
 
             // Write backup.
             TypedXmlSerializer serializer = Xml.newFastSerializer();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
             serializer.startDocument(null, true);
-            service.writeXml(serializer, true, 10);
+            service.writeXml(serializer, true, 10, mLogger);
             serializer.endDocument();
             serializer.flush();
+
+            if (android.app.Flags.backupRestoreLogging()) {
+                verify(mLogger).logItemsBackedUp(
+                        DATA_TYPE_MANAGED_SERVICE_PRIMARY_APPROVED, 1);
+                verify(mLogger).logItemsBackedUp(
+                        DATA_TYPE_MANAGED_SERVICE_SECONDARY_APPROVED, 0);
+            }
 
             // Reset values.
             service.setPackageOrComponentEnabled(resolvedValue0, 0, true, false);
@@ -671,11 +685,20 @@ public class ManagedServicesTest extends UiServiceTestCase {
             restoreParser.setInput(
                     new BufferedInputStream(new ByteArrayInputStream(baos.toByteArray())), null);
             restoreParser.nextTag();
-            service.readXml(restoreParser, null, true, 10);
+            service.readXml(restoreParser, null, true, 10, mLogger);
+
+            if (android.app.Flags.backupRestoreLogging()) {
+                verify(mLogger).logItemsRestored(
+                        DATA_TYPE_MANAGED_SERVICE_PRIMARY_APPROVED, 1);
+                verify(mLogger).logItemsRestored(
+                        DATA_TYPE_MANAGED_SERVICE_SECONDARY_APPROVED, 0);
+            }
 
             assertFalse(service.isPackageOrComponentAllowed(resolvedValue0, 0));
             assertFalse(service.isPackageOrComponentAllowed(resolvedValue0, 10));
             assertTrue(service.isPackageOrComponentAllowed(resolvedValue10, 10));
+
+            Mockito.reset(mLogger);
         }
     }
 
@@ -723,7 +746,7 @@ public class ManagedServicesTest extends UiServiceTestCase {
             serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
             serializer.startDocument(null, true);
             for (UserInfo userInfo : mUm.getUsers()) {
-                service.writeXml(serializer, true, userInfo.id);
+                service.writeXml(serializer, true, userInfo.id, mLogger);
             }
             serializer.endDocument();
             serializer.flush();
@@ -733,7 +756,7 @@ public class ManagedServicesTest extends UiServiceTestCase {
                     new ByteArrayInputStream(baos.toByteArray())), null);
             parser.nextTag();
             for (UserInfo userInfo : mUm.getUsers()) {
-                service.readXml(parser, null, true, userInfo.id);
+                service.readXml(parser, null, true, userInfo.id, mLogger);
             }
 
             verifyExpectedApprovedEntries(service);
@@ -754,7 +777,7 @@ public class ManagedServicesTest extends UiServiceTestCase {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
             serializer.startDocument(null, true);
-            service.writeXml(serializer, false, UserHandle.USER_ALL);
+            service.writeXml(serializer, false, UserHandle.USER_ALL, null);
             serializer.endDocument();
             serializer.flush();
 
@@ -786,7 +809,7 @@ public class ManagedServicesTest extends UiServiceTestCase {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
             serializer.startDocument(null, true);
-            service.writeXml(serializer, false, UserHandle.USER_ALL);
+            service.writeXml(serializer, false, UserHandle.USER_ALL, null);
             serializer.endDocument();
             serializer.flush();
 
@@ -810,7 +833,7 @@ public class ManagedServicesTest extends UiServiceTestCase {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
             serializer.startDocument(null, true);
-            service.writeXml(serializer, false, UserHandle.USER_ALL);
+            service.writeXml(serializer, false, UserHandle.USER_ALL, null);
             serializer.endDocument();
             serializer.flush();
 
@@ -820,7 +843,7 @@ public class ManagedServicesTest extends UiServiceTestCase {
                     new ByteArrayInputStream(rawOutput)), null);
             parser.nextTag();
             for (UserInfo userInfo : mUm.getUsers()) {
-                service.readXml(parser, null, true, userInfo.id);
+                service.readXml(parser, null, false, userInfo.id, null);
             }
 
             String resolvedUserSetComponent = approvalLevel == APPROVAL_BY_PACKAGE
@@ -2760,7 +2783,7 @@ public class ManagedServicesTest extends UiServiceTestCase {
         parser.setInput(new BufferedInputStream(
                 new ByteArrayInputStream(xmlString.getBytes())), null);
         parser.nextTag();
-        service.readXml(parser, null, false, UserHandle.USER_ALL);
+        service.readXml(parser, null, false, UserHandle.USER_ALL, null);
     }
 
     private String createXml(ManagedServices service) {

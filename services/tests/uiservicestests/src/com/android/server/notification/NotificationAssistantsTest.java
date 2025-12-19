@@ -50,6 +50,7 @@ import android.Manifest;
 import android.app.ActivityManager;
 import android.app.Flags;
 import android.app.INotificationManager;
+import android.app.backup.BackupRestoreEventLogger;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.IPackageManager;
@@ -126,6 +127,8 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
     NotificationManagerService mNm;
     @Mock
     private INotificationManager mINm;
+    @Mock
+    BackupRestoreEventLogger mLogger;
 
     NotificationAssistants mAssistants;
 
@@ -155,7 +158,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
         serializer.startDocument(null, true);
-        mAssistants.writeXml(serializer, false, userId);
+        mAssistants.writeXml(serializer, false, userId, null);
         serializer.endDocument();
         serializer.flush();
 
@@ -167,7 +170,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
 
         parser.nextTag();
         mAssistants = spy(mNm.new NotificationAssistants(mContext, mLock, mUserProfiles, miPm));
-        mAssistants.readXml(parser, mNm::canUseManagedServices, false, USER_ALL);
+        mAssistants.readXml(parser, mNm::canUseManagedServices, false, USER_ALL, null);
     }
 
 
@@ -311,7 +314,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
                 new ByteArrayInputStream(xml.toString().getBytes())), null);
 
         parser.nextTag();
-        mAssistants.readXml(parser, mNm::canUseManagedServices, false, USER_ALL);
+        mAssistants.readXml(parser, mNm::canUseManagedServices, false, USER_ALL, null);
 
         ArrayMap<Boolean, ArraySet<String>> approved = mAssistants.mApproved.get(0);
 
@@ -334,7 +337,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
 
         parser.nextTag();
         mAssistants.readXml(parser, mNm::canUseManagedServices, true,
-                ActivityManager.getCurrentUser());
+                ActivityManager.getCurrentUser(), mLogger);
 
         ArrayMap<Boolean, ArraySet<String>> approved = mAssistants.mApproved.get(
                 ActivityManager.getCurrentUser());
@@ -359,7 +362,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
                 new ByteArrayInputStream(xml.toString().getBytes())), null);
 
         parser.nextTag();
-        mAssistants.readXml(parser, mNm::canUseManagedServices, false, USER_ALL);
+        mAssistants.readXml(parser, mNm::canUseManagedServices, false, USER_ALL, null);
 
         verify(mAssistants, times(1)).upgradeUserSet();
         assertTrue(mAssistants.mIsUserChanged.get(0));
@@ -377,7 +380,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
                 new ByteArrayInputStream(xml.toString().getBytes())), null);
 
         parser.nextTag();
-        mAssistants.readXml(parser, mNm::canUseManagedServices, false, USER_ALL);
+        mAssistants.readXml(parser, mNm::canUseManagedServices, false, USER_ALL, null);
 
         verify(mAssistants, times(0)).upgradeUserSet();
         assertTrue(isUserSetServicesEmpty(mAssistants, 0));
@@ -396,7 +399,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
                 new ByteArrayInputStream(xml.toString().getBytes())), null);
 
         parser.nextTag();
-        mAssistants.readXml(parser, mNm::canUseManagedServices, false, USER_ALL);
+        mAssistants.readXml(parser, mNm::canUseManagedServices, false, USER_ALL, null);
 
         verify(mAssistants, times(0)).upgradeUserSet();
         assertTrue(isUserSetServicesEmpty(mAssistants, 0));
@@ -414,7 +417,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
                 new ByteArrayInputStream(xml.toString().getBytes())), null);
 
         parser.nextTag();
-        mAssistants.readXml(parser, mNm::canUseManagedServices, false, USER_ALL);
+        mAssistants.readXml(parser, mNm::canUseManagedServices, false, USER_ALL, null);
 
         verify(mAssistants, times(1)).upgradeUserSet();
         assertTrue(isUserSetServicesEmpty(mAssistants, 0));
@@ -432,7 +435,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
                 new ByteArrayInputStream(xml.toString().getBytes())), null);
 
         parser.nextTag();
-        mAssistants.readXml(parser, mNm::canUseManagedServices, false, USER_ALL);
+        mAssistants.readXml(parser, mNm::canUseManagedServices, false, USER_ALL, null);
 
         verify(mAssistants, times(1)).upgradeUserSet();
         assertTrue(isUserSetServicesEmpty(mAssistants, 0));
@@ -455,7 +458,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
                 new ByteArrayInputStream(xml.toString().getBytes())), null);
 
         parser.nextTag();
-        mAssistants.readXml(parser, null, false, USER_ALL);
+        mAssistants.readXml(parser, null, false, USER_ALL, null);
 
         assertEquals(1, mAssistants.getAllowedComponents(0).size());
         assertEquals(new ArrayList(Arrays.asList(new ComponentName("a", "a"))),
@@ -472,7 +475,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         parser.setInput(new BufferedInputStream(
                 new ByteArrayInputStream(xml.toString().getBytes())), null);
         parser.nextTag();
-        mAssistants.readXml(parser, null, false, USER_ALL);
+        mAssistants.readXml(parser, null, false, USER_ALL, null);
 
         verify(mNm, never()).setDefaultAssistantForUser(anyInt());
         verify(mAssistants, times(1)).addApprovedList(
