@@ -7822,8 +7822,7 @@
 
     <!-- @hide @SystemApi Allows an application running a foreground service to hide the
     notification icon from the status bar.
-    <p>Not for use by third-party applications.
-    @FlaggedApi(android.app.Flags.FLAG_HIDE_STATUS_BAR_NOTIFICATION)-->
+    <p>Not for use by third-party applications.-->
     <permission android:name="android.permission.HIDE_STATUS_BAR_NOTIFICATION"
         android:protectionLevel="signature|privileged"
         android:featureFlag="android.app.hide_status_bar_notification"/>

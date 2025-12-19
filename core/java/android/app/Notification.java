@@ -18,7 +18,6 @@ package android.app;
 
 import static android.annotation.Dimension.DP;
 import static android.app.Flags.FLAG_BRIDGED_NOTIFICATIONS;
-import static android.app.Flags.FLAG_HIDE_STATUS_BAR_NOTIFICATION;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION_ALL;
 import static android.app.Flags.FLAG_NOTIFICATION_IS_ANIMATED_ACTION_API;
 import static android.app.Flags.apiMetricStyle;
@@ -1903,8 +1902,7 @@ public class Notification implements Parcelable
      * @hide
      */
     @SystemApi
-    @RequiresPermission("android.Manifest.permission.HIDE_STATUS_BAR_NOTIFICATION")
-    @FlaggedApi(FLAG_HIDE_STATUS_BAR_NOTIFICATION)
+    @RequiresPermission(android.Manifest.permission.HIDE_STATUS_BAR_NOTIFICATION)
     public static final String EXTRA_HIDE_STATUS_BAR_NOTIFICATION =
             "android.hideStatusBarNotification";
 
