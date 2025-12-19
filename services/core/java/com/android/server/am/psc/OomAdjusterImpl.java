@@ -1618,6 +1618,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                 }
             }
 
+            // LINT.IfChange(getForegroundServiceCapability)
             if (s.isForeground()) {
                 final int fgsType = s.getForegroundServiceType();
                 if (s.isFgsAllowedWiu_forCapabilities()) {
@@ -1646,6 +1647,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                     }
                 }
             }
+            // LINT.ThenChange(CapabilityController.java:getForegroundServiceCapability)
         }
 
         final ProcessProviderRecordInternal ppr = app.getProviders();
