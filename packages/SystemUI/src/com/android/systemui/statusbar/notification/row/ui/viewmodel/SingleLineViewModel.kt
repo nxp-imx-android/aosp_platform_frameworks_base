@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.notification.row.ui.viewmodel
 
 import android.annotation.ColorInt
 import android.graphics.drawable.Drawable
+import com.android.systemui.statusbar.notification.shared.Metric
 
 /**
  * ViewModel for SingleLine Notification View.
@@ -33,10 +34,13 @@ data class SingleLineViewModel(
     var contentText: CharSequence?,
     var summarization: CharSequence?,
     var conversationData: ConversationData?,
+    var metric: Metric?,
 ) {
     fun isConversation(): Boolean {
         return conversationData != null
     }
+
+    fun isMetric(): Boolean = metric != null
 }
 
 /**
