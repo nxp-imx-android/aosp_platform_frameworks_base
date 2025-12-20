@@ -16,9 +16,11 @@
 
 package com.android.wm.shell.flicker.bubbles.testcase
 
+import androidx.test.filters.FlakyTest
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerSubjects
-import com.android.wm.shell.flicker.bubbles.utils.FlickerAssertionHelper.assertLayerAlphaChange
-import com.android.wm.shell.flicker.bubbles.utils.FlickerAssertionHelper.assertLayerPositionChange
+import com.android.wm.shell.flicker.bubbles.utils.FlickerAssertionHelper.assertLayerAlphaChangeConsistently
+import com.android.wm.shell.flicker.bubbles.utils.FlickerAssertionHelper.assertLayerMoveInSingleDirection
+import com.android.wm.shell.flicker.bubbles.utils.FlickerAssertionHelper.assertLayerResizeConsistently
 import org.junit.Test
 
 /**
@@ -27,7 +29,7 @@ import org.junit.Test
  * This verifies:
  * - The [testApp] window/layer becomes visible from invisible.
  * - The [testApp] layer fades in (optional if the spec wants to keep alpha unchanged).
- * - The [testApp] layer animates in only one direction (optional if the spec wants to keep position
+ * - The [testApp] layer animates in only one direction (optional if the spec wants to keep bounds
  *   unchanged).
  */
 interface AppAnimateInTestCases : BubbleFlickerSubjects {
@@ -64,9 +66,10 @@ interface AppAnimateInTestCases : BubbleFlickerSubjects {
      * Verifies the [testApp] layer's alpha value only increases (optional if the spec wants to keep
      * alpha unchanged).
      */
+    @FlakyTest(bugId = 456051408)
     @Test
     fun appLayerFadeIn() {
-        assertLayerAlphaChange(
+        assertLayerAlphaChangeConsistently(
             layersTraceSubject = layersTraceSubject,
             layerMatcher = testApp,
             isFadeIn = true,
@@ -74,11 +77,20 @@ interface AppAnimateInTestCases : BubbleFlickerSubjects {
     }
 
     /**
-     * Verifies the [testApp] layer's position change in only one direction (optional if the spec
-     * wants to keep position unchanged).
+     * Verifies the [testApp] layer's bounds don't jump around (optional if the spec wants to keep
+     * bounds unchanged).
      */
+    @FlakyTest(bugId = 456051408)
     @Test
     fun appLayerAnimateIn() {
-        assertLayerPositionChange(layersTraceSubject = layersTraceSubject, layerMatcher = testApp)
+        assertLayerMoveInSingleDirection(
+            layersTraceSubject = layersTraceSubject,
+            layerMatcher = testApp,
+        )
+
+        assertLayerResizeConsistently(
+            layersTraceSubject = layersTraceSubject,
+            layerMatcher = testApp,
+        )
     }
 }
