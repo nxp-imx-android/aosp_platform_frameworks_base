@@ -16,6 +16,8 @@
 
 package com.android.systemui.statusbar.notification.row.icon
 
+import android.content.Context
+import android.service.notification.StatusBarNotification
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.util.time.fakeSystemClock
@@ -24,5 +26,20 @@ import org.mockito.kotlin.mock
 val Kosmos.mockNotificationIconStyleProvider by
     Kosmos.Fixture { mock<NotificationIconStyleProvider>() }
 
-val Kosmos.notificationIconStyleProvider by
+val Kosmos.realNotificationIconStyleProvider by
     Kosmos.Fixture { NotificationIconStyleProviderImpl(dumpManager, fakeSystemClock) }
+
+val Kosmos.alwaysShowNotificationIconStyleProvider by
+    Kosmos.Fixture {
+        object : NotificationIconStyleProvider {
+            override fun shouldShowAppIcon(
+                notification: StatusBarNotification,
+                context: Context,
+            ): Boolean = true
+
+            override fun purgeCache(wantedPackages: Collection<String>) {}
+        }
+    }
+
+var Kosmos.notificationIconStyleProvider: NotificationIconStyleProvider by
+    Kosmos.Fixture { realNotificationIconStyleProvider }

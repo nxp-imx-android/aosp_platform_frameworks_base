@@ -38,7 +38,6 @@ import com.android.systemui.flags.FakeFeatureFlagsClassic
 import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.flags.Flags
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.media.NotificationMediaManager
 import com.android.systemui.media.dialog.MediaOutputDialogManager
 import com.android.systemui.plugins.ActivityStarter
@@ -78,19 +77,13 @@ import com.android.systemui.statusbar.notification.headsup.mockHeadsUpManager
 import com.android.systemui.statusbar.notification.icon.IconBuilder
 import com.android.systemui.statusbar.notification.icon.IconManager
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationContentExtractorImpl
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationLogger
+import com.android.systemui.statusbar.notification.promoted.promotedNotificationContentExtractor
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow.ExpandableNotificationRowLogger
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow.OnExpandClickListener
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.FLAG_CONTENT_VIEW_ALL
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.InflationFlag
-import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProviderImpl
 import com.android.systemui.statusbar.notification.row.icon.NotificationRowIconViewInflaterFactory
-import com.android.systemui.statusbar.notification.row.icon.appIconProvider
-import com.android.systemui.statusbar.notification.row.icon.mockAppIconProvider
-import com.android.systemui.statusbar.notification.row.icon.mockBridgedIconProvider
-import com.android.systemui.statusbar.notification.row.icon.notificationIconStyleProvider
-import com.android.systemui.statusbar.notification.row.shared.SkeletonImageTransform
+import com.android.systemui.statusbar.notification.row.icon.notificationRowIconViewInflaterFactory
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainerLogger
 import com.android.systemui.statusbar.phone.KeyguardBypassController
 import com.android.systemui.statusbar.phone.KeyguardDismissUtil
@@ -141,7 +134,7 @@ class ExpandableNotificationRowBuilder(
     private val mTestScope: TestScope = TestScope()
     private val mBgCoroutineContext = mTestScope.backgroundScope.coroutineContext
     private val mMainCoroutineContext = mTestScope.coroutineContext
-    private val mFakeSystemClock = FakeSystemClock()
+    private val mFakeSystemClock = kosmos.fakeSystemClock
     private val mMainExecutor = FakeExecutor(mFakeSystemClock)
     private val mHeadsUpStyleProvider: HeadsUpStyleProvider
 
@@ -215,14 +208,6 @@ class ExpandableNotificationRowBuilder(
                 Mockito.mock(LauncherApps::class.java, STUB_ONLY),
                 Mockito.mock(ConversationNotificationManager::class.java, STUB_ONLY),
             )
-        val promotedNotificationContentExtractor =
-            PromotedNotificationContentExtractorImpl(
-                kosmos.notificationIconStyleProvider,
-                kosmos.appIconProvider,
-                SkeletonImageTransform(context),
-                mFakeSystemClock,
-                PromotedNotificationLogger(logcatLogBuffer("PromotedNotifLog")),
-            )
 
         mContentBinder =
             NotificationRowContentBinderImpl(
@@ -233,8 +218,8 @@ class ExpandableNotificationRowBuilder(
                 smartReplyStateInflater,
                 notifLayoutInflaterFactoryProvider,
                 mHeadsUpStyleProvider,
-                promotedNotificationContentExtractor,
-                Mockito.mock(NotificationRowContentBinderLogger::class.java, STUB_ONLY),
+                kosmos.promotedNotificationContentExtractor,
+                kosmos.notificationRowContentBinderLogger,
             )
         mContentBinder.setInflateSynchronously(true)
         mBindStage =
@@ -275,23 +260,13 @@ class ExpandableNotificationRowBuilder(
     private fun getNotifRemoteViewsFactoryContainer(
         featureFlags: FeatureFlagsClassic
     ): NotifRemoteViewsFactoryContainer {
-        val iconDrawable = mock<Drawable>()
-        whenever(
-                kosmos.mockAppIconProvider.getOrFetchAppIcon(anyOrNull(), anyOrNull(), anyOrNull())
-            )
-            .thenReturn(iconDrawable)
-
         return NotifRemoteViewsFactoryContainerImpl(
             featureFlags,
             PrecomputedTextViewFactory(),
             BigPictureLayoutInflaterFactory(),
             NotificationOptimizedLinearLayoutFactory(),
             { Mockito.mock(NotificationViewFlipperFactory::class.java) },
-            NotificationRowIconViewInflaterFactory(
-                kosmos.mockAppIconProvider,
-                NotificationIconStyleProviderImpl(kosmos.dumpManager, kosmos.fakeSystemClock),
-                kosmos.mockBridgedIconProvider,
-            ),
+            kosmos.notificationRowIconViewInflaterFactory,
         )
     }
 
