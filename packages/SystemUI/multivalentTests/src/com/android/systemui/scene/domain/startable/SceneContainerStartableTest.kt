@@ -1428,6 +1428,43 @@ class SceneContainerStartableTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
+    fun switchToGoneWhenDeviceStartsToWakeUpWhileTransitioningToLockscreenAndCanIgnoreAuth() =
+        kosmos.runTest {
+            val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
+            val transitionStateFlow =
+                prepareState(
+                    initialSceneKey = Scenes.Shade,
+                    authenticationMethod = AuthenticationMethodModel.None,
+                    isLockscreenEnabled = false,
+                    startsAwake = false,
+                )
+
+            underTest.start()
+            runCurrent()
+
+            kosmos.keyguardRepository.setCanIgnoreAuthAndReturnToGone(true)
+            runCurrent()
+
+            transitionStateFlow.value =
+                ObservableTransitionState.Transition(
+                    fromScene = Scenes.Shade,
+                    toScene = Scenes.Lockscreen,
+                    currentScene = flowOf(Scenes.Lockscreen),
+                    progress = flowOf(0.1f),
+                    isInitiatedByUserInput = false,
+                    isUserInputOngoing = flowOf(false),
+                )
+
+            powerInteractor.setAwakeForTest()
+            runCurrent()
+
+            // The device should transition to Gone if it `canWakeDirectlyToGone`, even when it's
+            // already transitioning to the Lockscreen.
+            assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
+        }
+
+    @Test
+    @EnableSceneContainer
     fun doesNotSwitchToGoneWhenDeviceStartsToWakeUp_authMethodNone_canNotIgnoreAuth() =
         kosmos.runTest {
             val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
