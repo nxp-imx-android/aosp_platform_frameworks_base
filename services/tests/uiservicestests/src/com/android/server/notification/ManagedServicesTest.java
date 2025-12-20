@@ -167,8 +167,7 @@ public class ManagedServicesTest extends UiServiceTestCase {
 
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
-        return FlagsParameterization.allCombinationsOf(
-                Flags.FLAG_FIX_MANAGED_SERVICES_DOUBLE_BINDING);
+        return FlagsParameterization.allCombinationsOf();
     }
 
     public ManagedServicesTest(FlagsParameterization flags) {
@@ -2692,7 +2691,6 @@ public class ManagedServicesTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_MANAGED_SERVICES_DOUBLE_BINDING)
     public void registerGuestService_doesNotLinkToDeath() throws Exception {
         ManagedServices ownerService = new TestManagedServices(getContext(), mLock, mUserProfiles,
                 mIpm, APPROVAL_BY_PACKAGE);

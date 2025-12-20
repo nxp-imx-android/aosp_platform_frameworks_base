@@ -2478,12 +2478,10 @@ public class NotificationManagerService extends SystemService {
                     }
                 }
 
-                if (Flags.fixManagedServicesDoubleBinding()) {
-                    if (queryRemove && !removingPackage) {
-                        // For PACKAGE_REMOVED with EXTRA_REPLACING, this will be immediately
-                        // followed by a PACKAGE_ADDED, so this one is safe to ignore.
-                        return;
-                    }
+                if (queryRemove && !removingPackage) {
+                    // For PACKAGE_REMOVED with EXTRA_REPLACING, this will be immediately
+                    // followed by a PACKAGE_ADDED, so this one is safe to ignore.
+                    return;
                 }
 
                 mHandler.scheduleOnPackageChanged(removingPackage, changeUserId, pkgList, uidList);
