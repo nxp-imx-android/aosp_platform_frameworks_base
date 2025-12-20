@@ -13,13 +13,6 @@ flag {
 }
 
 flag {
-    name: "cleanup_a11y_overlays"
-    namespace: "accessibility"
-    description: "Removes all attached accessibility overlays when a service is removed."
-    bug: "271490102"
-}
-
-flag {
     name: "enable_autoclick_for_connected_displays"
     namespace: "accessibility"
     description: "Fix autoclick to work with connected displays."
