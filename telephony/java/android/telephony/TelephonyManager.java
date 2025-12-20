@@ -6205,7 +6205,7 @@ public class TelephonyManager {
     }
 
     /**
-     * Returns the IMS home network domain name that was loaded from the ISIM {@see #APPTYPE_ISIM}.
+     * Returns the IMS home network domain name that was loaded from the ISIM {@link #APPTYPE_ISIM}.
      * @return the IMS domain name. Returns {@code null} if ISIM hasn't been loaded or IMS domain
      * hasn't been loaded or isn't present on the ISIM.
      *
@@ -16428,7 +16428,8 @@ public class TelephonyManager {
      * forwarding otherwise.
      *
      * If you wish to be notified about the results of this operation, provide an {@link Executor}
-     * and {@link Consumer<Integer>} to be notified asynchronously when the operation completes.
+     * and {@link Consumer} of {@link Integer} to be notified asynchronously when the operation
+     * completes.
      *
      * @param callForwardingInfo Info about whether calls should be forwarded and where they
      *                           should be forwarded to.
@@ -16616,7 +16617,8 @@ public class TelephonyManager {
      * Sets the call waiting status of this device with the network.
      *
      * If you wish to be notified about the results of this operation, provide an {@link Executor}
-     * and {@link Consumer<Integer>} to be notified asynchronously when the operation completes.
+     * and {@link Consumer} of {@link Integer} to be notified asynchronously when the operation
+     * completes.
      *
      * @see #getCallWaitingStatus for a description of the call waiting functionality.
      *

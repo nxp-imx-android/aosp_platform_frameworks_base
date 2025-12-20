@@ -22,7 +22,6 @@ import android.app.Flags.richOngoingImprovements
 import android.app.Notification
 import android.content.Context
 import android.content.res.ColorStateList
-import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.graphics.Typeface
@@ -499,6 +498,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         if (!richOngoingImprovements()) {
             updateHeader(content, collapsed = false, null)
             updateNotifIcon(icon, content.skeletonNotifIcon, content.iconLevel)
+            updateRightIconAndSpacing(content.skeletonLargeIcon)
             val hasTitle = !content.title.isNullOrEmpty()
             altTitle?.text = content.title
             altTitle?.isVisible = hasTitle
@@ -530,6 +530,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
                     metricView.chronometer?.isUseAdaptiveFormat = metric.useAdaptiveFormat
                     metricView.chronometer?.format = null
                     metricView.chronometer?.setStarted(metric !is Metric.TimeDifference.Paused)
+                    metricView.chronometer?.setLowFrequency(true)
                     when (metric) {
                         is Metric.TimeDifference.ElapsedRealtime ->
                             metricView.chronometer?.setBase(metric.zeroElapsedRealtime)
@@ -552,8 +553,69 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         collapsed: Boolean,
         headerTitleView: TextView?,
     ) {
+        if (richOngoingImprovements()) {
+            when (content.style) {
+                Style.Base,
+                Style.CollapsedBase,
+                Style.BigText -> {
+                    val hasSubText = !content.subText.isNullOrEmpty()
+                    val hasText = !content.text.isNullOrEmpty()
+                    val hasProgress = content.oldProgress != null
+                    updateTitle(headerTitleView, content)
+                    updateAppName(content, forceHide = true)
+                    updateTextView(altSubtext, content.subText)
+                    updateTimeAndChronometer(content)
+                    updateProfileBadge(content)
 
-        val isMetricStyle = !content.metrics.isNullOrEmpty()
+                    val isTopLineOnly = !hasSubText && !hasText
+                    header?.centerTopLine(isTopLineOnly && !hasProgress)
+                    actionsContainer?.isVisible = !isTopLineOnly
+                    updateHeaderDividers(content, hideTitle = false, hideAppName = true)
+                }
+                Style.Progress -> {
+                    val hasSubText = !content.subText.isNullOrEmpty()
+                    val hasText = !content.text.isNullOrEmpty()
+                    updateTitle(headerTitleView, content)
+                    updateAppName(content, forceHide = true)
+                    updateTextView(altSubtext, content.subText)
+                    updateTimeAndChronometer(content)
+                    updateProfileBadge(content)
+
+                    val isTopLineOnly = !hasSubText && !hasText
+
+                    header?.centerTopLine(isTopLineOnly)
+                    actionsContainer?.isVisible = true
+                    updateHeaderDividers(content, hideTitle = false, hideAppName = true)
+                }
+                Style.Metric,
+                Style.MetricSingle -> {
+                    val hasTitle = !content.title.isNullOrEmpty()
+                    updateTitle(headerTitleView, content)
+                    updateAppName(content, forceHide = hasTitle)
+                    updateTextView(headerTextSecondary, content.subText)
+                    updateTimeAndChronometer(content)
+                    updateProfileBadge(content)
+
+                    header?.centerTopLine(false)
+                    actionsContainer?.isVisible = true
+                    updateHeaderDividers(content, hideTitle = !hasTitle, hideAppName = hasTitle)
+                }
+                Style.Call,
+                Style.CollapsedCall -> {
+                    // #updateConversationHeader takes care of header
+                    // handling for Notification.CallStyle
+                    Log.wtf(
+                        TAG,
+                        "updateHeader called for call style. " + "Style is: ${content.style}",
+                    )
+                }
+                Style.Ineligible -> {
+                    Log.wtf(TAG, "updateHeader called for ineligible style.")
+                }
+            }
+
+            return
+        }
 
         val hasTitleInHeader = headerTitleView != null && !content.title.isNullOrEmpty()
         val hasSubText = !content.subText.isNullOrEmpty()
@@ -561,39 +623,23 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         // Determine if the notification has no content *below* the header/top line
         val hasTextBelowHeader = !content.text.isNullOrEmpty()
         val hasTitleBelowHeader = !content.title.isNullOrEmpty() && headerTitleView == null
+
         val isSingleLine = !hasTitleBelowHeader && !hasTextBelowHeader
 
         // the collapsed form doesn't show the app name unless there is no other text in the header
         val appNameRequired = !hasTitleInHeader && !hasSubText
-        var hideAppName = (!appNameRequired && collapsed)
+        val hideAppName = (!appNameRequired && collapsed)
 
         // We're only showing the top line (e.g. for redacted notifs), so center it
-        header?.centerTopLine(!isMetricStyle && isSingleLine)
+        header?.centerTopLine(isSingleLine)
         // We normally use the (empty) actions container for the bottom padding of the notification,
         // but that's not necessary when single line
         // NOTE: Metric Style notifications show title in topline and
         // they have only 1 line below topline for single metric
         actionsContainer?.isVisible = !isSingleLine
 
-        if (richOngoingImprovements()) {
-            // For metric style notifications, we show app name in topline only if there is no title
-            if (isMetricStyle && !hasTitleInHeader) {
-                hideAppName = false
-            } else {
-                hideAppName = true
-            }
-        }
-
         updateAppName(content, forceHide = hideAppName)
-
-        val isSubTextOnHeader = !richOngoingImprovements() || isMetricStyle
-
-        if (isSubTextOnHeader) {
-            updateTextView(headerTextSecondary, content.subText)
-        } else {
-            updateTextView(altSubtext, content.subText)
-        }
-
+        updateTextView(headerTextSecondary, content.subText)
         updateTitle(headerTitleView, content)
         updateTimeAndChronometer(content)
         updateProfileBadge(content)
@@ -733,6 +779,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
                 chronometer?.base = content.time.elapsedRealtimeMillis
                 chronometer?.isCountDown = content.time.isCountDown
                 chronometer?.setStarted(true)
+                chronometer?.setLowFrequency(true)
                 chronometer?.isVisible = true
                 setTextViewColor(chronometer, SecondaryText)
             }

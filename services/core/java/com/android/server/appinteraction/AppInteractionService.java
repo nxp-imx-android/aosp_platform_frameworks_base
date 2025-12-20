@@ -16,6 +16,7 @@
 
 package com.android.server.appinteraction;
 
+import android.annotation.CurrentTimeMillisLong;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.AppInteractionAttribution;
@@ -55,14 +56,12 @@ public interface AppInteractionService {
      * @param targetPackage The target package name.
      * @param appInteractionAttribution The {@link AppInteractionAttribution}.
      * @param accessTime The timestamp when the interaction first started.
-     * @param duration The total duration of the interaction.
      * @param userId The user id.
      */
     void noteAppInteraction(
             @NonNull String sourcePackage,
             @NonNull String targetPackage,
             @Nullable AppInteractionAttribution appInteractionAttribution,
-            long accessTime,
-            long duration,
+            @CurrentTimeMillisLong long accessTime,
             int userId);
 }

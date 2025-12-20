@@ -31,18 +31,24 @@ import android.content.pm.PackageManager;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Map;
 
 @RunWith(JUnit4.class)
 public class SystemFeaturesGeneratorTest {
 
     @Rule public final MockitoRule mockito = MockitoJUnit.rule();
+
+    @Rule public final TemporaryFolder mTemporaryFolder = new TemporaryFolder();
 
     @Mock private Context mContext;
     @Mock private PackageManager mPackageManager;
@@ -290,5 +296,59 @@ public class SystemFeaturesGeneratorTest {
                 .isNull();
         assertThat(RoUnavailableFeaturesFromXml.maybeHasFeature("", 0)).isNull();
         assertThat(RoUnavailableFeaturesFromXml.getReadOnlySystemEnabledFeatures()).isEmpty();
+    }
+
+    @Test
+    public void testGenerateProguardRules() throws IOException {
+        File proguardRulesFile = mTemporaryFolder.newFile("proguard-rules.pro");
+        String[] args =
+                new String[] {
+                    "com.android.systemfeatures.RoFeatures",
+                    "--readonly=true",
+                    "--feature=WATCH:1",
+                    "--feature=WIFI:0",
+                    "--feature=VULKAN:UNAVAILABLE",
+                    "--feature=AUTO:",
+                    "--output-proguard-rules=" + proguardRulesFile.getAbsolutePath()
+                };
+        SystemFeaturesGenerator.generate(args, new StringBuilder());
+
+        // While we could test individual lines for the generated rules, we also want to ensure it's
+        // sorted alphabetically for stability of output.
+        String content = Files.readString(proguardRulesFile.toPath());
+        String expectedOutput =
+                """
+                -assumevalues class android.content.pm.PackageManager {
+                  public boolean hasSystemFeature(java.lang.String = android.content.pm.PackageManager.FEATURE_VULKAN) return false;
+                  public boolean hasSystemFeature(java.lang.String = android.content.pm.PackageManager.FEATURE_VULKAN, int) return false;
+                  public boolean hasSystemFeature(java.lang.String = android.content.pm.PackageManager.FEATURE_WATCH) return true;
+                  public boolean hasSystemFeature(java.lang.String = android.content.pm.PackageManager.FEATURE_WATCH, int = -2147483648..1) return true;
+                  public boolean hasSystemFeature(java.lang.String = android.content.pm.PackageManager.FEATURE_WIFI) return true;
+                  public boolean hasSystemFeature(java.lang.String = android.content.pm.PackageManager.FEATURE_WIFI, int = -2147483648..0) return true;
+                }
+                """;
+        assertThat(content.trim()).isEqualTo(expectedOutput.trim());
+    }
+
+    @Test
+    public void testGenerateProguardRulesNoReadonlyFeatures() throws IOException {
+        File proguardRulesFile = mTemporaryFolder.newFile("proguard-rules.pro");
+        String[] args =
+                new String[] {
+                    "com.android.systemfeatures.RwFeatures",
+                    "--readonly=false",
+                    "--feature=WIFI:0",
+                    "--feature=VULKAN:UNAVAILABLE",
+                    "--output-proguard-rules=" + proguardRulesFile.getAbsolutePath()
+                };
+        SystemFeaturesGenerator.generate(args, new StringBuilder());
+
+        // If there are no read-only features, the generated proguard output should either be empty
+        // or consist entirely of comments.
+        assertThat(
+                        Files.readAllLines(proguardRulesFile.toPath()).stream()
+                                .map(String::trim)
+                                .filter(line -> !line.isEmpty() && !line.startsWith("#")))
+                .isEmpty();
     }
 }

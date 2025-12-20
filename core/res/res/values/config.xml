@@ -3513,14 +3513,15 @@
 
     <!-- Controls if local secondary displays should be private or not. Value specified in the array
          represents physical port address of each display and display in this list will be marked
-         as private. {@see android.view.Display#FLAG_PRIVATE} -->
+         as private.
+	 @see android.view.Display#FLAG_PRIVATE -->
     <integer-array translatable="false" name="config_localPrivateDisplayPorts"></integer-array>
 
     <!-- Controls if local secondary displays should be able to steal focus and become top display.
          Value specified in the array represents physical port address of each display and displays
          in this list due to flag dependencies will be marked with the following flags:
-         {@see android.view.Display#FLAG_STEAL_TOP_FOCUS_DISABLED}
-         {@see android.view.Display#FLAG_OWN_FOCUS} -->
+         @see android.view.Display#FLAG_STEAL_TOP_FOCUS_DISABLED
+         @see android.view.Display#FLAG_OWN_FOCUS -->
     <integer-array translatable="false" name="config_localNotStealTopFocusDisplayPorts">
     </integer-array>
 
@@ -5650,7 +5651,7 @@
          support system decorations.
          This launcher package must have an activity that supports multiple instances and has
          corresponding launch mode set in AndroidManifest.
-         {@see android.view.Display#FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS} -->
+         @see android.view.Display#FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS -->
     <string name="config_secondaryHomePackage" translatable="false">com.android.launcher3</string>
 
     <!-- Force secondary home launcher specified in config_secondaryHomePackage always. If this is

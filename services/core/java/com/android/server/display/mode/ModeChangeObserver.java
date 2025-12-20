@@ -106,7 +106,8 @@ final class ModeChangeObserver {
         mModeChangeListener = new DisplayEventReceiver(mLooper) {
             @Override
             public void onModeRejected(long physicalDisplayId, int modeId) {
-                Slog.d(TAG, "Mode Rejected event received");
+                Slog.d(TAG, "[Display " + physicalDisplayId + "] Mode Rejected event received,"
+                        + " mode id = " + modeId);
                 updateRejectedModesListByDisplay(physicalDisplayId, modeId);
                 if (mPhysicalIdToLogicalIdMap.indexOfKey(physicalDisplayId) < 0) {
                     Slog.d(TAG, "Rejected Modes Vote will be updated after display is added");

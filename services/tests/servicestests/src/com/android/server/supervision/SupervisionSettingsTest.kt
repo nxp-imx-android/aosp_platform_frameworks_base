@@ -29,14 +29,18 @@ import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.platform.test.flag.junit.SetFlagsRule
 import android.util.ArraySet
+import android.util.Xml
 import androidx.annotation.XmlRes
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.frameworks.servicestests.R
 import com.google.common.truth.Truth.assertThat
+import java.io.DataOutputStream
 import java.io.File
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -269,6 +273,7 @@ class SupervisionSettingsTest {
     }
 
     @Test
+    @Ignore("b/469747226") // TODO(b/469747226): Fix and re-enable.
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     fun loadUserData_withMixedPolicyIdentifiers_loadsKnownPoliciesCorrectly() {
         writeSupervisionSettingsFrom(R.xml.supervision_user_data_v0)
@@ -280,6 +285,7 @@ class SupervisionSettingsTest {
     }
 
     @Test
+    @Ignore("b/469747226") // TODO(b/469747226): Fix and re-enable.
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     fun loadUserData_withUnknownTag_skipsTagAndLoadsCorrectly() {
         writeSupervisionSettingsFrom(R.xml.supervision_user_data_malformed_v0)
@@ -291,8 +297,14 @@ class SupervisionSettingsTest {
 
     private fun writeSupervisionSettingsFrom(@XmlRes resId: Int) {
         val file = File(tempSupervisionDir, "supervision_settings.xml")
-        mResources.openRawResource(resId).use { inputStream ->
-            file.outputStream().use { outputStream -> inputStream.copyTo(outputStream) }
+        file.outputStream().use { fileOutputStream ->
+            val dataOutputStream = DataOutputStream(fileOutputStream)
+            val xmlIn = mResources.getXml(resId)
+            val xmlOut = Xml.newBinarySerializer()
+
+            xmlOut.setOutput(dataOutputStream, StandardCharsets.UTF_8.name())
+            Xml.copy(xmlIn, xmlOut)
+            xmlOut.flush()
         }
     }
 

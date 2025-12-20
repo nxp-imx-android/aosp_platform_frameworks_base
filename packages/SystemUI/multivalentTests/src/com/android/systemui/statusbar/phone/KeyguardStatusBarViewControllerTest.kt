@@ -64,6 +64,7 @@ import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.StatusBarState
 import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler
+import com.android.systemui.statusbar.events.systemStatusAnimationScheduler
 import com.android.systemui.statusbar.layout.mockStatusBarContentInsetsProvider
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController
 import com.android.systemui.statusbar.phone.ui.TintedIconManager
@@ -157,7 +158,8 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
     @Throws(Exception::class)
     fun setup() {
         looper = TestableLooper.get(this)
-        kosmos = testKosmos()
+        MockitoAnnotations.initMocks(this)
+        kosmos = testKosmos().apply { systemStatusAnimationScheduler = animationScheduler }
         testScope = kosmos.testScope
         secureSettings = kosmos.fakeSettings
         shadeViewStateProvider = TestShadeViewStateProvider()
@@ -167,8 +169,6 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
                     .getStatusBarContentInsetsForCurrentRotation()
             )
             .thenReturn(Insets.of(0, 0, 0, 0))
-
-        MockitoAnnotations.initMocks(this)
 
         whenever(iconManagerFactory.create(ArgumentMatchers.any(), ArgumentMatchers.any()))
             .thenReturn(iconManager)

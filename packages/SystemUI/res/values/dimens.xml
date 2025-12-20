@@ -2271,4 +2271,8 @@
     <item name="bouncer_container_size_percentage" format="float" type="dimen">0.72</item>
     <!-- Bouncer containerization on large screens end -->
 
+    <!-- Lockscreen blur values -->
+    <dimen name="notification_background_blur_radius">25dp</dimen>
+    <!-- Lockscreen blur values end -->
+
 </resources>

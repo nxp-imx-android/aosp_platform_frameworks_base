@@ -1138,7 +1138,7 @@ public class JobInfo implements Parcelable {
         out.writeString(mTraceTag);
     }
 
-    public static final @android.annotation.NonNull Creator<JobInfo> CREATOR = new Creator<JobInfo>() {
+    public static final @NonNull Creator<JobInfo> CREATOR = new Creator<JobInfo>() {
         @Override
         public JobInfo createFromParcel(Parcel in) {
             return new JobInfo(in);

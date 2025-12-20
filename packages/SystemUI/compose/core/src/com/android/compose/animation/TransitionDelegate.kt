@@ -34,8 +34,8 @@ import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
-import com.android.systemui.animation.Expandable
 import com.android.systemui.animation.TransitionAnimator
+import com.android.systemui.animation.TransitionSource
 import kotlin.math.roundToInt
 
 /** Holds the actual implementation details and business logic for the transitions. */
@@ -62,8 +62,8 @@ class TransitionDelegate(
         var currentNodeInOverlay: DrawModifierNode?
     }
 
-    private val expandableDelegate: Expandable by lazy {
-        object : Expandable {
+    private val transitionSource: TransitionSource by lazy {
+        object : TransitionSource {
             override fun activityTransitionController(
                 launchCujType: Int?,
                 cookie: ActivityTransitionAnimator.TransitionCookie?,
@@ -91,8 +91,8 @@ class TransitionDelegate(
     }
 
     // Public accessor for the Impl class
-    internal val expandable: Expandable
-        get() = expandableDelegate
+    internal val source: TransitionSource
+        get() = transitionSource
 
     fun disposeController() {
         mutableTransitionState.activityControllerForDisposal?.onDispose()

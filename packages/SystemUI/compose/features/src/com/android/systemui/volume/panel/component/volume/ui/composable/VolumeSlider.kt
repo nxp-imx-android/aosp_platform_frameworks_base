@@ -167,7 +167,7 @@ fun VolumeSlider(
                                                     icon = icon,
                                                     tint = null,
                                                     modifier =
-                                                        Modifier.size(24.dp)
+                                                        Modifier.size(dimensions.iconSize)
                                                             .testTag(
                                                                 VolumeSlidersMotionTestKeys
                                                                     .ACTIVE_ICON_TAG
@@ -187,7 +187,7 @@ fun VolumeSlider(
                                                     icon = icon,
                                                     tint = null,
                                                     modifier =
-                                                        Modifier.size(24.dp)
+                                                        Modifier.size(dimensions.iconSize)
                                                             .testTag(
                                                                 VolumeSlidersMotionTestKeys
                                                                     .INACTIVE_ICON_TAG
@@ -436,6 +436,7 @@ object VolumeSlidersMotionTestKeys {
 }
 
 data class VolumeSliderDimensions(
+    val iconSize: Dp,
     val thumbHeight: Dp,
     val thumbWidth: Dp,
     val trackHeight: Dp,
@@ -444,6 +445,7 @@ data class VolumeSliderDimensions(
     companion object {
         val Defaults =
             VolumeSliderDimensions(
+                iconSize = 24.dp,
                 thumbHeight = 52.dp,
                 thumbWidth = 4.dp,
                 trackHeight = 40.dp,

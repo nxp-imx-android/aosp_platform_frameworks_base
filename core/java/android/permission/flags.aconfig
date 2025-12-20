@@ -724,3 +724,11 @@ flag {
     description: "This flag controls role managers' ability to manage the notes role via RoleManager#getDefaultApplication and RoleManager#setDefaultApplication."
     bug: "443222861"
 }
+
+flag {
+    name: "location_button_enabled"
+    namespace: "permissions"
+    is_exported: true
+    description: "Whether location button (rendered by a system process) APIs are enabled."
+    bug: "413293601"
+}

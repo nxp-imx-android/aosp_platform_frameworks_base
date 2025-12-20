@@ -2594,7 +2594,7 @@
          <p>A local network refers to an IP network that utilizes a broadcast-capable
          network interface, such as Wi-Fi or Ethernet, but excludes cellular (WWAN) or VPN
          connections.
-         @see https://developer.android.com/privacy-and-security/local-network-definition
+         @see <a href="https://developer.android.com/privacy-and-security/local-network-definition">Local Network Definition</a>
          @FlaggedApi(android.permission.flags.Flags.FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED)
          <p>Protection level: dangerous -->
     <permission android:name="android.permission.ACCESS_LOCAL_NETWORK"
@@ -4586,7 +4586,7 @@
          for the embedded app to consent.
          <p>For now, this permission is only granted to the Assistant application selected by
          the user.
-         {@see https://developer.android.com/guide/topics/large-screens/activity-embedding#trust_model}
+         @see <a href="https://developer.android.com/guide/topics/large-screens/activity-embedding#trust_model">Activity Embedding: Trust Model</a>
          @SystemApi
          @FlaggedApi("com.android.window.flags.untrusted_embedding_any_app_permission")
          @hide
@@ -4775,8 +4775,8 @@
                 android:protectionLevel="normal" />
 
     <!-- Allows a companion app to start a foreground service from the background.
-         {@see android.Manifest.permission#REQUEST_COMPANION_RUN_IN_BACKGROUND}
          <p>Protection level: normal
+         @see android.Manifest.permission#REQUEST_COMPANION_RUN_IN_BACKGROUND
          -->
     <permission android:name="android.permission.REQUEST_COMPANION_START_FOREGROUND_SERVICES_FROM_BACKGROUND"
                 android:label="@string/permlab_startForegroundServicesFromBackground"
@@ -5630,9 +5630,9 @@
          "XR_ACTIVITY_START_MODE_FULL_SPACE_UNMANAGED") do not require
          this permission to get head tracking data.
 
-         {@see https://developer.android.com/develop/xr/get-started#property_activity_xr_start_mode_property}
-
          <p>Protection level: dangerous
+
+         @see <a href="https://developer.android.com/develop/xr/openxr/get-started#property_xr_activity_start_mode-property">PROPERTY_XR_ACTIVITY_START_MODE property</a>
 
          @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES) -->
     <permission android:name="android.permission.HEAD_TRACKING"
@@ -6312,9 +6312,11 @@
          permission KEYPHRASE_ENROLLMENT_APPLICATION. For the caller to enroll sound models with
          this permission, it must hold the permission and be the active VoiceInteractionService in
          the system.
-         {@see Settings.Secure.VOICE_INTERACTION_SERVICE}
-         @hide @SystemApi Intended for OEM and system apps.
+
          <p>Protection level: signature|privileged
+
+         @see Settings.Secure.VOICE_INTERACTION_SERVICE
+         @hide @SystemApi Intended for OEM and system apps.
     -->
     <permission android:name="android.permission.MANAGE_VOICE_KEYPHRASES"
         android:protectionLevel="signature|privileged" />
@@ -9032,6 +9034,19 @@
     <permission android:name="android.permission.LAUNCH_DEVICE_MANAGER_SETUP"
         android:protectionLevel="signature|role" />
 
+    <!-- @hide @SystemApi
+         @FlaggedApi(android.os.Flags.FLAG_INITIATE_BUGREPORT_AS_NON_ADMIN)
+         Allows a privileged app to initiate a bug report even when the active user is not an
+         admin user (e.g., a Guest or Secondary User). This is intended for use by designated
+         feedback applications on devices with specific multi-user configurations like HSUM.
+         <p>Protection level: signature|privileged
+         <p>Not for use by third-party applications.
+    -->
+    <permission
+        android:name="android.permission.INITIATE_BUGREPORT_AS_NON_ADMIN"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="android.os.initiate_bugreport_as_non_admin" />
+
     <!-- @SystemApi Allows an application to update certain device management related system
          resources.
          @hide -->
@@ -9162,7 +9177,7 @@
         navigating out of the application.
 
         <p> Protection level: normal
-        {@see android.view.WindowManager.LayoutParams#setKeyboardCaptureEnabled}
+        @see android.view.WindowManager.LayoutParams#setKeyboardCaptureEnabled
     -->
     <permission android:name="android.permission.CAPTURE_KEYBOARD"
         android:protectionLevel="normal"
@@ -9359,12 +9374,24 @@
     <!-- Allows an app use location button, which grants temporary location permission when a user
          clicks the button.
          <p>Protection level: normal
-         @FlaggedApi(android.widget.flags.Flags.FLAG_LOCATION_BUTTON_ENABLED)
+         @FlaggedApi(android.permission.flags.Flags.FLAG_LOCATION_BUTTON_ENABLED)
     -->
     <permission
         android:name="android.permission.USE_LOCATION_BUTTON"
         android:protectionLevel="normal"
-        android:featureFlag="android.widget.flags.location_button_enabled" />
+        android:featureFlag="android.permission.flags.location_button_enabled" />
+
+    <!-- @hide @SystemApi
+        Allows an application to start the location button consent activity in
+        PermissionController. This permission should only be held by the system component rendering
+        the location button.
+        <p>Protection level: signature
+        @FlaggedApi(android.permission.flags.Flags.FLAG_LOCATION_BUTTON_ENABLED)
+    -->
+    <permission
+        android:name="android.permission.REQUEST_LOCATION_BUTTON_PERMISSIONS"
+        android:protectionLevel="signature"
+        android:featureFlag="android.permission.flags.location_button_enabled" />
 
     <!-- @SystemApi Allows an app to query apps in clone profile. The permission is
          bidirectional in nature, i.e. cloned apps would be able to query apps in root user.
@@ -9753,8 +9780,9 @@
         android:featureFlag="android.companion.task_continuity" />
 
     <!-- @SystemApi Allows an app to manage AiSeal Virtual Machine.
-         {@see android.aiseal.AiSealManager}
          <p>Protection level: signature|privileged
+
+         @see android.aiseal.AiSealManager
          @FlaggedApi(android.aiseal.Flags.FLAG_AISEAL_HOST_APIS)
          @SystemApi
          @hide
@@ -9800,7 +9828,7 @@
         android:featureFlag="android.media.tv.flags.enable_tv_watchdog_emmc_protection" />
 
     <!-- Permission required to set or update the anomaly detector configuration via
-         {@see android.os.AnomalyDetectorManager}.
+         {@link android.os.AnomalyDetectorManager}.
          Only one app per device is permitted to hold this permission and set or update the config.
          <p>Protection level: signature|privileged
          @FlaggedApi(android.os.profiling.anomaly.flags.Flags.FLAG_ANOMALY_DETECTOR_CORE)
@@ -9811,10 +9839,10 @@
         android:protectionLevel="signature|privileged"
         android:featureFlag="android.os.profiling.anomaly.flags.anomaly_detector_core" />
 
-    <!-- @FlaggedApi(android.media.audio.Flags.FLAG_GUARD_STREAM_VOLUME_APIS)
-    Purpose guarded permission to query volume-related APIs.
-    {@see android.media.AudioManager}
-    <p>Protection level: normal
+    <!-- Purpose guarded permission to query volume-related APIs.
+         <p>Protection level: normal
+         @see android.media.AudioManager
+         @FlaggedApi(android.media.audio.Flags.FLAG_GUARD_STREAM_VOLUME_APIS)
     -->
     <permission android:name="android.permission.QUERY_AUDIO_VOLUME"
             android:protectionLevel="normal"

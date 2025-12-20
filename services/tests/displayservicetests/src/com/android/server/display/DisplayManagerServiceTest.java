@@ -3879,6 +3879,60 @@ public class DisplayManagerServiceTest {
     }
 
     @Test
+    public void testSetUserPreferredHdrMode_defaultModeHdrAllowed() {
+        mPermissionEnforcer.grant(android.Manifest.permission.MANAGE_DISPLAYS);
+        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
+        mDisplayManager.onBootPhase(SystemService.PHASE_BOOT_COMPLETED);
+        DisplayManagerService.BinderService bs = mDisplayManager.new BinderService();
+
+        Display.Mode[] modes = new Display.Mode[1];
+        modes[0] =
+                new Display.Mode(/* id= */ 1, /* width= */ 1920, /* height= */ 1080, /* rr= */ 60);
+        String uniqueId = "external:123";
+        FakeDisplayDevice displayDevice =
+                createFakeDisplayDevice(mDisplayManager, modes, Display.TYPE_EXTERNAL, uniqueId);
+        mDisplayManager
+                .getDisplayDeviceRepository()
+                .onDisplayDeviceEvent(displayDevice, DisplayAdapter.DISPLAY_DEVICE_EVENT_ADDED);
+        flushHandlers();
+
+        int displayId = getDisplayIdForDisplayDevice(mDisplayManager, bs, displayDevice);
+        assertEquals(
+                DisplayManager.HDR_PREFERENCE_HDR_ALLOWED, bs.getUserPreferredHdrMode(displayId));
+    }
+
+    @Test
+    public void testSetUserPreferredHdrMode_setToSdrOnlyAndSwitchBackToHdrAllowed() {
+        mPermissionEnforcer.grant(android.Manifest.permission.MANAGE_DISPLAYS);
+        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
+        mDisplayManager.onBootPhase(SystemService.PHASE_BOOT_COMPLETED);
+        DisplayManagerService.BinderService bs = mDisplayManager.new BinderService();
+
+        Display.Mode[] modes = new Display.Mode[1];
+        modes[0] =
+                new Display.Mode(/* id= */ 1, /* width= */ 1920, /* height= */ 1080, /* rr= */ 60);
+        String uniqueId = "external:123";
+        FakeDisplayDevice displayDevice =
+                createFakeDisplayDevice(mDisplayManager, modes, Display.TYPE_EXTERNAL, uniqueId);
+        mDisplayManager
+                .getDisplayDeviceRepository()
+                .onDisplayDeviceEvent(displayDevice, DisplayAdapter.DISPLAY_DEVICE_EVENT_ADDED);
+        flushHandlers();
+
+        int displayId = getDisplayIdForDisplayDevice(mDisplayManager, bs, displayDevice);
+        bs.setUserPreferredHdrMode(displayId, DisplayManager.HDR_PREFERENCE_SDR_ONLY);
+        flushHandlers();
+
+        assertEquals(DisplayManager.HDR_PREFERENCE_SDR_ONLY, bs.getUserPreferredHdrMode(displayId));
+
+        bs.setUserPreferredHdrMode(displayId, DisplayManager.HDR_PREFERENCE_HDR_ALLOWED);
+        flushHandlers();
+
+        assertEquals(
+                DisplayManager.HDR_PREFERENCE_HDR_ALLOWED, bs.getUserPreferredHdrMode(displayId));
+    }
+
+    @Test
     public void testHighestHdrSdrRatio() {
         mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
         DisplayManagerService.BinderService displayManagerBinderService =
@@ -4513,6 +4567,29 @@ public class DisplayManagerServiceTest {
         assertThrows(SecurityException.class, () -> displayManagerBinderService
                 .setUserPreferredDisplayMode(Display.DEFAULT_DISPLAY, new Display.Mode(
                         /* width= */ 800, /* height= */ 600, /* refreshRate= */ 60), true));
+    }
+
+    @Test
+    public void getUserPreferredHdrMode_withoutPermission_shouldThrowException() {
+        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
+        DisplayManagerService.BinderService displayManagerBinderService =
+                mDisplayManager.new BinderService();
+        assertThrows(
+                SecurityException.class,
+                () -> displayManagerBinderService.getUserPreferredHdrMode(Display.DEFAULT_DISPLAY));
+    }
+
+    @Test
+    public void setUserPreferredHdrMode_withoutPermission_shouldThrowException() {
+        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
+        DisplayManagerService.BinderService displayManagerBinderService =
+                mDisplayManager.new BinderService();
+        assertThrows(
+                SecurityException.class,
+                () ->
+                        displayManagerBinderService.setUserPreferredHdrMode(
+                                Display.DEFAULT_DISPLAY,
+                                DisplayManager.HDR_PREFERENCE_HDR_ALLOWED));
     }
 
     @Test

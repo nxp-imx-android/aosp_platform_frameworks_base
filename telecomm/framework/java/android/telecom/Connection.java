@@ -3951,7 +3951,7 @@ public abstract class Connection extends Conferenceable {
      * The returned {@code Connection} can be assumed to {@link #destroy()} itself when appropriate,
      * so users of this method need not maintain a reference to its return value to destroy it.
      *
-     * @param disconnectCause The disconnect cause, ({@see android.telecomm.DisconnectCause}).
+     * @param disconnectCause The disconnect cause, (see {@link android.telecomm.DisconnectCause}).
      * @return A {@code Connection} which indicates failure.
      */
     public static Connection createFailedConnection(DisconnectCause disconnectCause) {

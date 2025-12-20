@@ -544,6 +544,7 @@ public class SystemActions implements CoreStartable, ConfigurationController.Con
     private void handleLockScreen() {
         IWindowManager windowManager = WindowManagerGlobal.getWindowManagerService();
 
+        Log.d(TAG, "going to sleep for accessibility");
         mContext.getSystemService(PowerManager.class).goToSleep(SystemClock.uptimeMillis(),
                 PowerManager.GO_TO_SLEEP_REASON_ACCESSIBILITY, 0);
         try {

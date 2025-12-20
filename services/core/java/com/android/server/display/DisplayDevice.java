@@ -34,6 +34,7 @@ import android.view.Surface;
 import android.view.SurfaceControl;
 
 import com.android.server.display.mode.DisplayModeDirector;
+import com.android.server.display.utils.DebugTransactionDetails;
 
 import java.io.PrintWriter;
 import java.util.Arrays;
@@ -347,9 +348,11 @@ abstract class DisplayDevice {
      * @param displayRect defines where on the display will layerStackRect be
      *            mapped to. displayRect is specified post-orientation, that is
      *            it uses the orientation seen by the end-user
+     * @param debugTransactionDetails optional object to populate filled transaction details to
      */
     public final void setProjectionLocked(SurfaceControl.Transaction t, int orientation,
-            Rect layerStackRect, Rect displayRect) {
+            Rect layerStackRect, Rect displayRect,
+            @Nullable DebugTransactionDetails debugTransactionDetails) {
         if (mCurrentOrientation != orientation
                 || mCurrentLayerStackRect == null
                 || !mCurrentLayerStackRect.equals(layerStackRect)
@@ -369,29 +372,39 @@ abstract class DisplayDevice {
 
             t.setDisplayProjection(mDisplayToken,
                     orientation, layerStackRect, displayRect);
+
+            if (debugTransactionDetails != null) {
+                debugTransactionDetails.setProjection(orientation, layerStackRect, displayRect);
+            }
         }
     }
 
     /**
      * Configure transaction with the display size.
      */
-    public void configureDisplaySizeLocked(SurfaceControl.Transaction t) {
+    public void configureDisplaySizeLocked(SurfaceControl.Transaction t,
+            DebugTransactionDetails debugTransactionDetails) {
         DisplayDeviceInfo info = getDisplayDeviceInfoLocked();
         boolean isInstalledRotated = info.installOrientation == ROTATION_90
                 || info.installOrientation == ROTATION_270;
         int displayWidth = isInstalledRotated ? info.height : info.width;
         int displayHeight = isInstalledRotated ? info.width : info.height;
-        setDisplaySizeLocked(t, displayWidth, displayHeight);
+        setDisplaySizeLocked(t, displayWidth, displayHeight, debugTransactionDetails);
     }
 
     /**
      * Sets display size while in a transaction.
      */
-    public final void setDisplaySizeLocked(SurfaceControl.Transaction t, int width, int height) {
+    public final void setDisplaySizeLocked(SurfaceControl.Transaction t, int width, int height,
+            DebugTransactionDetails debugTransactionDetails) {
         if (width != mLastDisplayWidth || height != mLastDisplayHeight) {
             mLastDisplayWidth = width;
             mLastDisplayHeight = height;
             t.setDisplaySize(mDisplayToken, width, height);
+
+            if (debugTransactionDetails != null) {
+                debugTransactionDetails.setDisplaySize(width, height);
+            }
         }
     }
 

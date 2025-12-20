@@ -112,7 +112,9 @@ import android.util.Slog;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.view.Display;
+import android.view.IWindowManager;
 import android.view.WindowManager;
+import android.view.WindowManagerGlobal;
 import android.widget.Toast;
 import android.window.DisplayWindowPolicyController;
 
@@ -241,6 +243,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     private final UiModeManagerInternal mUiModeManagerInternal;
     @NonNull
     private final PowerManager mPowerManager;
+    @NonNull
+    private final IWindowManager mWindowManager;
     @GuardedBy("mIntentInterceptors")
     private final Map<IBinder, IntentFilter> mIntentInterceptors = new ArrayMap<>();
 
@@ -488,6 +492,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
                 soundEffectListener,
                 params,
                 DisplayManagerGlobal.getInstance(),
+                WindowManagerGlobal.getWindowManagerService(),
                 isVirtualCameraEnabled()
                         ? new VirtualCameraController(
                                 params.getDevicePolicy(POLICY_TYPE_CAMERA), deviceId)
@@ -513,6 +518,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
             @Nullable IVirtualDeviceSoundEffectListener soundEffectListener,
             @NonNull VirtualDeviceParams params,
             @NonNull DisplayManagerGlobal displayManager,
+            @NonNull IWindowManager windowManager,
             @Nullable VirtualCameraController virtualCameraController,
             @Nullable ViewConfigurationController viewConfigurationController) {
         mVirtualDeviceLog = virtualDeviceLog;
@@ -534,6 +540,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         mParams = params;
         mDevicePolicies = params.getDevicePolicies();
         mDisplayManager = displayManager;
+        mWindowManager = windowManager;
         mDisplayManagerInternal = LocalServices.getService(DisplayManagerInternal.class);
         mUiModeManagerInternal = LocalServices.getService(UiModeManagerInternal.class);
         mPowerManager = Objects.requireNonNull(context.getSystemService(PowerManager.class));
@@ -1203,6 +1210,20 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         } finally {
             Binder.restoreCallingIdentity(ident);
         }
+    }
+
+    @Override // Binder call
+    public void setDisplayInTouchMode(int displayId, boolean inTouchMode) {
+        checkCallerIsDeviceOwner();
+        synchronized (mVirtualDeviceLock) {
+            checkDisplayOwnedByVirtualDeviceLocked(displayId);
+            VirtualDisplayWrapper wrapper = mVirtualDisplays.get(displayId);
+            if (!wrapper.isTrusted() || wrapper.isMirror()) {
+                throw new SecurityException("Cannot set touch mode on untrusted or mirror display");
+            }
+        }
+        Binder.withCleanCallingIdentity(
+                () -> mWindowManager.setInTouchMode(inTouchMode, displayId));
     }
 
     @Override // Binder call

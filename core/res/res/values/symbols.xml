@@ -761,6 +761,10 @@
   <java-symbol type="string" name="display_manager_overlay_display_title" />
   <java-symbol type="string" name="elapsed_time_short_format_h_mm_ss" />
   <java-symbol type="string" name="elapsed_time_short_format_mm_ss" />
+  <java-symbol type="string" name="adaptive_low_frequency_less_than_one_minute" />
+  <java-symbol type="string" name="adaptive_low_frequency_neg_less_than_one_minute" />
+  <java-symbol type="string" name="elapsed_time_low_frequency_short_format_h_mm" />
+  <java-symbol type="string" name="elapsed_time_low_frequency_short_format_mm" />
   <java-symbol type="string" name="emailTypeCustom" />
   <java-symbol type="string" name="emailTypeHome" />
   <java-symbol type="string" name="emailTypeMobile" />
@@ -1445,6 +1449,7 @@
   <java-symbol type="drawable" name="ic_emergency" />
   <java-symbol type="drawable" name="ic_info_outline" />
   <java-symbol type="drawable" name="ic_media_stop" />
+  <java-symbol type="drawable" name="ic_mobile_phone" />
   <java-symbol type="drawable" name="ic_text_dot" />
   <java-symbol type="drawable" name="ic_print" />
   <java-symbol type="drawable" name="ic_print_error" />
@@ -2360,6 +2365,8 @@
   <java-symbol type="string" name="fallback_wallpaper_component" />
   <java-symbol type="bool" name="config_isLiveWallpaperSupportedInDesktopExperience" />
   <java-symbol type="string" name="input_method_binding_label" />
+  <java-symbol type="string" name="input_method_language_settings" />
+  <java-symbol type="string" name="input_method_switcher_settings_button" />
   <java-symbol type="string" name="input_method_ime_switch_long_click_action_desc" />
   <java-symbol type="string" name="launch_warning_original" />
   <java-symbol type="string" name="launch_warning_replace" />

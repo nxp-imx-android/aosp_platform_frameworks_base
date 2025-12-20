@@ -44,8 +44,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * Network configuration to be set for the user profile
- * {@see DevicePolicyManager#setPreferentialNetworkServiceConfigs}.
+ * Network configuration to be set for the user profile.
+ * @see DevicePolicyManager#setPreferentialNetworkServiceConfigs
  */
 public final class PreferentialNetworkServiceConfig implements Parcelable {
     final boolean mIsEnabled;

@@ -81,12 +81,14 @@ per-file ViewRootImpl.java = file:/services/core/java/com/android/server/input/O
 per-file ViewRootImpl.java = file:/services/core/java/com/android/server/wm/OWNERS
 per-file ViewRootImpl.java = file:/core/java/android/view/inputmethod/OWNERS
 per-file ViewRootImpl.java = file:/core/java/android/text/OWNERS
-per-file AccessibilityInteractionController.java = file:/services/accessibility/OWNERS
 per-file OnReceiveContentListener.java = file:/core/java/android/service/autofill/OWNERS
 per-file OnReceiveContentListener.java = file:/core/java/android/widget/OWNERS
 per-file ContentInfo.java = file:/core/java/android/service/autofill/OWNERS
 per-file ContentInfo.java = file:/core/java/android/widget/OWNERS
 per-file view_flags.aconfig = file:/services/core/java/com/android/server/wm/OWNERS
+
+# Accessibility
+per-file *Accessibility*.java = file:/services/accessibility/OWNERS
 
 # WindowManager
 per-file ContentRecordingSession.aidl = file:/media/java/android/media/projection/OWNERS

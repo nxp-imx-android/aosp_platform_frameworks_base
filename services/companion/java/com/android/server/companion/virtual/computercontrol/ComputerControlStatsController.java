@@ -34,16 +34,18 @@ import static com.android.server.companion.virtual.computercontrol.ComputerContr
 import static com.android.server.companion.virtual.computercontrol.ComputerControlStatsLog.COMPUTER_CONTROL_SESSION_REPORTED__CLOSE_REASON__USER_INITIATED;
 
 import android.annotation.NonNull;
+import android.annotation.UserIdInt;
 import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.content.AttributionSource;
 import android.content.pm.PackageManager;
+import android.os.UserHandle;
 import android.util.IntArray;
 import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
-
 import com.android.internal.annotations.VisibleForTesting;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -101,7 +103,8 @@ final class ComputerControlStatsController {
                 COMPUTER_CONTROL_FAILED_SESSION_REPORTED,
                 attributionSourceToUids(attributionSource),
                 attributionSourceToTags(attributionSource),
-                packageNamesToUids(packageManager, params.getTargetPackageNames()),
+                packageNamesToUids(packageManager, params.getTargetPackageNames(),
+                        getUserId(attributionSource)),
                 params.getTargetPackageNames().size(),
                 statsReason);
     }
@@ -160,11 +163,13 @@ final class ComputerControlStatsController {
                     } else {
                         duration = Duration.between(creationTime, mClock.get());
                     }
+                    int userId = getUserId(mAttributionSource);
                     ComputerControlStatsLog.write(
                             COMPUTER_CONTROL_SESSION_REPORTED,
                             attributionSourceToUids(mAttributionSource),
                             attributionSourceToTags(mAttributionSource),
-                            packageNamesToUids(mPackageManager, mParams.getTargetPackageNames()),
+                            packageNamesToUids(mPackageManager, mParams.getTargetPackageNames(),
+                                    userId),
                             mParams.getTargetPackageNames().size(),
                             closeReasonToStats(closeReason),
                             duration.toMillis(),
@@ -172,7 +177,8 @@ final class ComputerControlStatsController {
                             mBlockReasons.size(),
                             mMirroredViews.get(),
                             mMirroredViewsInteractive.get(),
-                            packageNamesToUids(mPackageManager, mApplicationLaunchPackages),
+                            packageNamesToUids(mPackageManager, mApplicationLaunchPackages,
+                                    userId),
                             mApplicationLaunchPackages.size(),
                             mTaps.get(),
                             mSwipes.get(),
@@ -313,11 +319,12 @@ final class ComputerControlStatsController {
 
     /** Returns the uids of the package names. */
     private static int[] packageNamesToUids(
-            @NonNull PackageManager packageManager, @NonNull List<String> packageNames) {
+            @NonNull PackageManager packageManager, @NonNull List<String> packageNames,
+            @UserIdInt int userId) {
         IntArray uids = new IntArray(packageNames.size());
         for (String packageName : packageNames) {
             try {
-                uids.add(packageManager.getPackageUid(packageName, /* flags= */ 0));
+                uids.add(packageManager.getPackageUidAsUser(packageName, userId));
             } catch (PackageManager.NameNotFoundException e) {
                 // Ignoring, it's up to the caller to handle invalid input - not the logger.
             }
@@ -334,5 +341,9 @@ final class ComputerControlStatsController {
             current = current.getNext();
         }
         return size;
+    }
+
+    private static int getUserId(@NonNull AttributionSource attributionSource) {
+        return UserHandle.getUserId(attributionSource.getUid());
     }
 }

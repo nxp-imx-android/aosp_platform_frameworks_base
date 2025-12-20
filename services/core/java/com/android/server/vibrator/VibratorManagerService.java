@@ -91,12 +91,14 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.IBatteryStats;
 import com.android.internal.util.DumpUtils;
+import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.pm.BackgroundUserSoundNotifier;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.vibrator.VibrationSession.CallerInfo;
 import com.android.server.vibrator.VibrationSession.DebugInfo;
 import com.android.server.vibrator.VibrationSession.Status;
+import com.android.server.vibrator.VibratorManagerInternal;
 import com.android.tools.r8.keepanno.annotations.KeepItemKind;
 import com.android.tools.r8.keepanno.annotations.UsedByNative;
 
@@ -155,6 +157,7 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
         public void onStart() {
             mService = new VibratorManagerService(getContext(), new Injector());
             publishBinderService(Context.VIBRATOR_MANAGER_SERVICE, mService);
+            mService.publishLocalServices();
         }
 
         @Override
@@ -200,6 +203,7 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
     private final VibratorControlService mVibratorControlService;
     private final InputDeviceDelegate mInputDeviceDelegate;
     private final DeviceAdapter mDeviceAdapter;
+    private final VibratorManagerInternal mInternalService;
 
     @GuardedBy("mLock")
     @Nullable private SparseArray<VibratorInfo> mVibratorInfos;
@@ -382,6 +386,9 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
         // Load vibrator adapter, that depends on hardware info.
         mDeviceAdapter = new DeviceAdapter(mVibrationSettings, availableVibrators);
 
+        // Initiate Local Service
+        mInternalService = new LocalService();
+
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         if (UserManagerInternal.shouldShowNotificationForBackgroundUserSounds()) {
@@ -394,6 +401,14 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
             injector.addService(VIBRATOR_CONTROL_SERVICE, mVibratorControlService);
         }
 
+    }
+
+    /** Publishes the local service. Separated for testability. */
+    @VisibleForTesting
+    void publishLocalServices() {
+        if (Flags.enableTrustedCallers()) {
+            LocalServices.addService(VibratorManagerInternal.class, mInternalService);
+        }
     }
 
     /** Finish initialization at boot phase {@link SystemService#PHASE_SYSTEM_SERVICES_READY}. */
@@ -770,31 +785,36 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
             mContext.enforceCallingOrSelfPermission(
                     android.Manifest.permission.VIBRATE,
                     "cancelVibrate");
-
-            synchronized (mLock) {
-                if (DEBUG) {
-                    Slog.d(TAG, "Canceling vibration");
-                }
-                // TODO(b/378492007): Investigate if we can move this around AppOpsManager calls
-                final long ident = Binder.clearCallingIdentity();
-                try {
-                    // TODO(b/370948466): investigate why token not checked on external vibrations.
-                    IBinder cancelToken =
-                            (mNextSession instanceof ExternalVibrationSession) ? null : token;
-                    if (shouldCancelSession(mNextSession, usageFilter, cancelToken)) {
-                        clearNextSessionLocked(Status.CANCELLED_BY_USER);
-                    }
-                    cancelToken =
-                            (mCurrentSession instanceof ExternalVibrationSession) ? null : token;
-                    if (shouldCancelSession(mCurrentSession, usageFilter, cancelToken)) {
-                        mCurrentSession.requestEnd(Status.CANCELLED_BY_USER);
-                    }
-                } finally {
-                    Binder.restoreCallingIdentity(ident);
-                }
-            }
+            cancelVibrateInternal(usageFilter, token);
         } finally {
             Trace.traceEnd(TRACE_TAG_VIBRATOR);
+        }
+    }
+
+    void cancelVibrateWithoutPermissionCheck(int usageFilter, IBinder token) {
+        Trace.traceBegin(TRACE_TAG_VIBRATOR, "cancelVibrateWithoutPermissionCheck");
+        try {
+            cancelVibrateInternal(usageFilter, token);
+        } finally {
+            Trace.traceEnd(TRACE_TAG_VIBRATOR);
+        }
+    }
+
+    private void cancelVibrateInternal(int usageFilter, IBinder token) {
+        // TODO(b/378492007): Investigate if we can move this around AppOpsManager calls
+        final long ident = Binder.clearCallingIdentity();
+        try {
+            // TODO(b/370948466): investigate why token not checked on external vibrations.
+            IBinder cancelToken = (mNextSession instanceof ExternalVibrationSession) ? null : token;
+            if (shouldCancelSession(mNextSession, usageFilter, cancelToken)) {
+                clearNextSessionLocked(Status.CANCELLED_BY_USER);
+            }
+            cancelToken = (mCurrentSession instanceof ExternalVibrationSession) ? null : token;
+            if (shouldCancelSession(mCurrentSession, usageFilter, cancelToken)) {
+                mCurrentSession.requestEnd(Status.CANCELLED_BY_USER);
+            }
+        } finally {
+            Binder.restoreCallingIdentity(ident);
         }
     }
 
@@ -3159,6 +3179,40 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                 }
             }
             return false;
+        }
+    }
+
+    @VisibleForTesting
+    final class LocalService extends VibratorManagerInternal {
+        @Override
+        public void vibrateWithoutPermissionCheck(
+                int deviceId,
+                @NonNull VibrationEffect effect,
+                @NonNull VibrationAttributes attrs,
+                String reason,
+                @NonNull IBinder token) {
+            Trace.traceBegin(TRACE_TAG_VIBRATOR, "LocalService.vibrateWithoutPermissionCheck");
+            try {
+                final int uid = Binder.getCallingUid();
+                final String opPkg = mContext.getOpPackageName();
+                final String decoratedReason = "[LocalService] " + reason;
+                CombinedVibration vib = CombinedVibration.createParallel(effect);
+                VibratorManagerService.this.vibrateWithoutPermissionCheck(
+                        uid, deviceId, opPkg, vib, attrs, decoratedReason, token);
+            } finally {
+                Trace.traceEnd(TRACE_TAG_VIBRATOR);
+            }
+        }
+
+        @Override
+        public void cancelVibrateWithoutPermissionCheck(int usageFilter, @NonNull IBinder token) {
+            Trace.traceBegin(
+                    TRACE_TAG_VIBRATOR, "LocalService.cancelVibrateWithoutPermissionCheck");
+            try {
+                VibratorManagerService.this.cancelVibrateWithoutPermissionCheck(usageFilter, token);
+            } finally {
+                Trace.traceEnd(TRACE_TAG_VIBRATOR);
+            }
         }
     }
 

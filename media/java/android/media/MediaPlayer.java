@@ -2139,11 +2139,11 @@ public class MediaPlayer extends PlayerBase
      *
      * @param update_only controls whether the full set of available
      * metadata is returned or just the set that changed since the
-     * last call. See {@see #METADATA_UPDATE_ONLY} and {@see
+     * last call. See {@link #METADATA_UPDATE_ONLY} and {@link
      * #METADATA_ALL}.
      *
      * @param apply_filter if true only metadata that matches the
-     * filter is returned. See {@see #APPLY_METADATA_FILTER} and {@see
+     * filter is returned. See {@link #APPLY_METADATA_FILTER} and {@link
      * #BYPASS_METADATA_FILTER}.
      *
      * @return The metadata, possibly empty. null if an error occured.
@@ -2470,8 +2470,9 @@ public class MediaPlayer extends PlayerBase
     /**
      * Returns the audio session ID.
      *
-     * @return the audio session ID. {@see #setAudioSessionId(int)}
+     * @return the audio session ID.
      * Note that the audio session ID is 0 only if a problem occured when the MediaPlayer was contructed.
+     * @see #setAudioSessionId(int)
      */
     public native int getAudioSessionId();
 

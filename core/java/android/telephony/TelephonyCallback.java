@@ -1578,8 +1578,8 @@ public class TelephonyCallback {
          * {@link android.Manifest.permission#READ_PRECISE_PHONE_STATE}.
          *
          * @param callAttributes the call attributes
-         * @deprecated Use onCallStatesChanged({@link List<CallState>}) to get each of call
-         *          state for all ongoing calls on the subscription.
+         * @deprecated Use onCallStatesChanged({@link List List<CallState>}) to get each
+         *          of call state for all ongoing calls on the subscription.
          */
         @RequiresPermission(Manifest.permission.READ_PRECISE_PHONE_STATE)
         @Deprecated

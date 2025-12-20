@@ -126,6 +126,10 @@ private class OneOffShowOrHideOverlayTransition(
     override fun freezeAndAnimateToCurrentState() {
         oneOffAnimation.freezeAndAnimateToCurrentState()
     }
+
+    override fun onTransitionPrepared() {
+        oneOffAnimation.onTransitionPrepared()
+    }
 }
 
 private class OneOffOverlayReplacingTransition(
@@ -151,5 +155,9 @@ private class OneOffOverlayReplacingTransition(
 
     override fun freezeAndAnimateToCurrentState() {
         oneOffAnimation.freezeAndAnimateToCurrentState()
+    }
+
+    override fun onTransitionPrepared() {
+        oneOffAnimation.onTransitionPrepared()
     }
 }

@@ -20,6 +20,7 @@ import android.content.applicationContext
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
+import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -56,6 +57,7 @@ import org.mockito.Mockito.`when` as whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@RunWithLooper
 class GroupExpansionManagerTest : SysuiTestCase() {
     @get:Rule val setFlagsRule = SetFlagsRule()
 
@@ -81,6 +83,7 @@ class GroupExpansionManagerTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
+        allowTestableLooperAsMainThread()
         summary1 =
             kosmos.buildNotificationEntry() {
                 modifyNotification(kosmos.applicationContext)

@@ -25,6 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
@@ -154,6 +155,8 @@ public class ComputerControlSessionProcessorTest {
 
         Context context = spy(new ContextWrapper(
                 InstrumentationRegistry.getInstrumentation().getTargetContext()));
+        doReturn(context).when(context).createContextAsUser(any(UserHandle.class), anyInt());
+
         when(context.getSystemService(Context.KEYGUARD_SERVICE)).thenReturn(mKeyguardManager);
         when(context.getSystemService(Context.APP_OPS_SERVICE)).thenReturn(mAppOpsManager);
 
@@ -201,7 +204,7 @@ public class ComputerControlSessionProcessorTest {
 
     @Test
     public void keyguardLocked_sessionNotCreated() throws Exception {
-        when(mKeyguardManager.isDeviceLocked()).thenReturn(true);
+        when(mKeyguardManager.isDeviceLocked(anyInt())).thenReturn(true);
 
         mProcessor.processNewSessionRequest(
                 mAppThread, ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);

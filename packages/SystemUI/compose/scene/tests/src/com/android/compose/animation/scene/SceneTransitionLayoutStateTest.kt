@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.compose.animation.scene.TestOverlays.OverlayA
 import com.android.compose.animation.scene.TestScenes.SceneA
 import com.android.compose.animation.scene.TestScenes.SceneB
 import com.android.compose.animation.scene.TestScenes.SceneC
@@ -521,5 +522,18 @@ class SceneTransitionLayoutStateTest {
             composeStlState = true
         }
         rule.waitForIdle()
+    }
+
+    @Test
+    // Regression test for b/467108447.
+    fun readProgressDirectlyAfterTransitionIsStarted() = runMonotonicClockTest {
+        val state =
+            MutableSceneTransitionLayoutStateForTests(
+                SceneA,
+                onTransitionStart = { transition -> assertThat(transition.progress).isEqualTo(0f) },
+            )
+        state.setTargetScene(SceneB, animationScope = this)
+        state.showOverlay(OverlayA, animationScope = this)
+        state.hideOverlay(OverlayA, animationScope = this)
     }
 }

@@ -539,6 +539,14 @@ public class VirtualDeviceInternal {
         }
     }
 
+    void setDisplayInTouchMode(int displayId, boolean inTouchMode) {
+        try {
+            mVirtualDevice.setDisplayInTouchMode(displayId, inTouchMode);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
     void setDisplayUiMode(int displayId, int uiMode) {
         try {
             mVirtualDevice.setDisplayUiMode(displayId, uiMode);
@@ -546,6 +554,7 @@ public class VirtualDeviceInternal {
             throw e.rethrowFromSystemServer();
         }
     }
+
     void addActivityListener(
             @CallbackExecutor @NonNull Executor executor,
             @NonNull VirtualDeviceManager.ActivityListener listener) {

@@ -1132,7 +1132,7 @@ public class AudioPolicy {
 
     /**
      * Callback class to receive volume change-related events.
-     * See {@link #Builder.setAudioPolicyVolumeCallback(AudioPolicyCallback)} to configure the
+     * See {@link Builder#setAudioPolicyVolumeCallback(AudioPolicyCallback)} to configure the
      * {@link AudioPolicy} to receive those events.
      *
      */

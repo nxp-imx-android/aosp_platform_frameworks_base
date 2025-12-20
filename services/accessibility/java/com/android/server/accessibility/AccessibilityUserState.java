@@ -36,7 +36,6 @@ import static com.android.internal.accessibility.common.ShortcutConstants.UserSh
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.SOFTWARE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TOP_ROW_KEY;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TRIPLETAP;
-import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TWOFINGER_DOUBLETAP;
 
 import android.accessibilityservice.AccessibilityService.SoftKeyboardShowMode;
 import android.accessibilityservice.AccessibilityServiceInfo;
@@ -138,7 +137,6 @@ public class AccessibilityUserState {
     private boolean mIsAudioDescriptionByDefaultRequested;
     private boolean mIsAutoclickEnabled;
     private boolean mIsMagnificationSingleFingerTripleTapEnabled;
-    private boolean mMagnificationTwoFingerTripleTapEnabled;
     private boolean mIsFilterKeyEventsEnabled;
     private boolean mIsPerformGesturesEnabled;
     private boolean mAccessibilityFocusOnlyInActiveWindow;
@@ -259,7 +257,6 @@ public class AccessibilityUserState {
         mRequestTwoFingerPassthrough = false;
         mSendMotionEventsEnabled = false;
         mIsMagnificationSingleFingerTripleTapEnabled = false;
-        mMagnificationTwoFingerTripleTapEnabled = false;
         mIsAutoclickEnabled = false;
         mUserNonInteractiveUiTimeout = 0;
         mUserInteractiveUiTimeout = 0;
@@ -694,14 +691,6 @@ public class AccessibilityUserState {
         mIsMagnificationSingleFingerTripleTapEnabled = enabled;
     }
 
-    public boolean isMagnificationTwoFingerTripleTapEnabledLocked() {
-        return mMagnificationTwoFingerTripleTapEnabled;
-    }
-
-    public void setMagnificationTwoFingerTripleTapEnabledLocked(boolean enabled) {
-        mMagnificationTwoFingerTripleTapEnabled = enabled;
-    }
-
     public boolean isFilterKeyEventsEnabledLocked() {
         return mIsFilterKeyEventsEnabled;
     }
@@ -864,10 +853,7 @@ public class AccessibilityUserState {
             if ((shortcutTypes & shortcutType) != shortcutType) {
                 continue;
             }
-            if ((shortcutType == TRIPLETAP
-                    && isMagnificationSingleFingerTripleTapEnabledLocked()) || (
-                    shortcutType == TWOFINGER_DOUBLETAP
-                            && isMagnificationTwoFingerTripleTapEnabledLocked())) {
+            if (shortcutType == TRIPLETAP && isMagnificationSingleFingerTripleTapEnabledLocked()) {
                 targets.add(MAGNIFICATION_CONTROLLER_NAME);
             } else if (mShortcutTargets.containsKey(shortcutType)) {
                 targets.addAll(mShortcutTargets.get(shortcutType));
@@ -879,17 +865,16 @@ public class AccessibilityUserState {
     /**
      * Updates the corresponding shortcut targets with the provided set.
      * Tap shortcuts don't operate using sets of targets,
-     * so trying to update {@code TRIPLETAP} or {@code TWOFINGER_DOUBLETAP}
+     * so trying to update {@code TRIPLETAP}
      * will instead throw an {@code IllegalArgumentException}
      * @param newTargets set of targets to replace the existing set.
      * @param shortcutType type to be replaced.
      * @return {@code true} if the set was changed, or {@code false} if the elements are the same.
-     * @throws IllegalArgumentException if {@code TRIPLETAP} or {@code TWOFINGER_DOUBLETAP} is used.
+     * @throws IllegalArgumentException if {@code TRIPLETAP} is used.
      */
     boolean updateShortcutTargetsLocked(
             Set<String> newTargets, @UserShortcutType int shortcutType) {
-        final int mask = TRIPLETAP | TWOFINGER_DOUBLETAP;
-        if ((shortcutType & mask) != 0) {
+        if ((shortcutType & TRIPLETAP) != 0) {
             throw new IllegalArgumentException("Tap shortcuts cannot be updated with target sets.");
         }
         if (!mShortcutTargets.containsKey(shortcutType)) {
@@ -1019,10 +1004,9 @@ public class AccessibilityUserState {
      */
     public boolean removeShortcutTargetLocked(
             @UserShortcutType int shortcutType, ComponentName target) {
-        if (shortcutType == TRIPLETAP
-                || shortcutType == TWOFINGER_DOUBLETAP) {
+        if (shortcutType == TRIPLETAP) {
             throw new UnsupportedOperationException(
-                    "removeShortcutTargetLocked does not support TRIPLETAP or TWOFINGER_DOUBLETAP."
+                    "removeShortcutTargetLocked does not support TRIPLETAP."
             );
         }
 

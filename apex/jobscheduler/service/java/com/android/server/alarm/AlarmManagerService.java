@@ -2963,6 +2963,13 @@ public class AlarmManagerService extends SystemService {
         }
 
         @Override
+        public long getPrioritizedAlarmDelay() {
+            synchronized (mLock) {
+                return mConstants.PRIORITY_ALARM_DELAY;
+            }
+        }
+
+        @Override
         protected void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
             if (!DumpUtils.checkDumpAndUsageStatsPermission(getContext(), TAG, pw)) return;
 

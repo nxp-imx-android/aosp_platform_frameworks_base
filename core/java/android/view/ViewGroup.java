@@ -8099,7 +8099,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes) {
@@ -8107,7 +8107,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public void onNestedScrollAccepted(View child, View target, int axes) {
@@ -8115,7 +8115,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * <p>The default implementation of onStopNestedScroll calls
      * {@link #stopNestedScroll()} to halt any recursive nested scrolling in progress.</p>
@@ -8128,7 +8128,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public void onNestedScroll(View target, int dxConsumed, int dyConsumed,
@@ -8138,7 +8138,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
@@ -8147,7 +8147,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public boolean onNestedFling(View target, float velocityX, float velocityY, boolean consumed) {
@@ -8156,7 +8156,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public boolean onNestedPreFling(View target, float velocityX, float velocityY) {

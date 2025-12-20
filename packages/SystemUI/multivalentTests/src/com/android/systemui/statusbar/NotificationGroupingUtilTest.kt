@@ -19,6 +19,7 @@ package com.android.systemui.statusbar
 import android.app.Notification
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
+import android.testing.TestableLooper.RunWithLooper
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.res.R
@@ -32,6 +33,7 @@ import com.android.systemui.statusbar.notification.row.entryAdapterFactory
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
@@ -40,6 +42,7 @@ import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
 
 @SmallTest
+@RunWithLooper
 @RunWith(ParameterizedAndroidJunit4::class)
 class NotificationGroupingUtilTest(flags: FlagsParameterization) : SysuiTestCase() {
     private val kosmos = testKosmos()
@@ -57,6 +60,11 @@ class NotificationGroupingUtilTest(flags: FlagsParameterization) : SysuiTestCase
 
     init {
         mSetFlagsRule.setFlagsParameterization(flags)
+    }
+
+    @Before
+    fun setUp() {
+        allowTestableLooperAsMainThread()
     }
 
     @Test

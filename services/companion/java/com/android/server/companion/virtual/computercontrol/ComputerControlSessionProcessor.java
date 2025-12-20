@@ -178,12 +178,12 @@ public final class ComputerControlSessionProcessor {
         }
     }
 
-    private void validateParams(AttributionSource attributionSource,
-            ComputerControlSessionParams params) {
+    private void validateParams(@NonNull AttributionSource attributionSource,
+            @NonNull ComputerControlSessionParams params) {
+        final UserHandle ownerUser = UserHandle.getUserHandleForUid(attributionSource.getUid());
         // TODO: b/445856399 - Support managed profiles.
         Binder.withCleanCallingIdentity(() -> {
-            if (mDevicePolicyManagerInternal.isUserOrganizationManaged(
-                    UserHandle.getUserId(attributionSource.getUid()))) {
+            if (mDevicePolicyManagerInternal.isUserOrganizationManaged(ownerUser.getIdentifier())) {
                 ComputerControlStatsController.writeFailedSessionWithStatsReason(
                         mPackageManager, attributionSource, params,
                         COMPUTER_CONTROL_FAILED_SESSION_REPORTED__REASON__MANAGED_POLICY_DISABLED);
@@ -192,9 +192,12 @@ public final class ComputerControlSessionProcessor {
             }
         });
 
+        final Context ownerContext = Binder.withCleanCallingIdentity(
+                () -> mContext.createContextAsUser(ownerUser, /* flags = */ 0));
+        final PackageManager ownerPackageManager = ownerContext.getPackageManager();
         final String callerPackageName = attributionSource.getPackageName();
         if (!mAllowlistController.isPackageAllowedToCreateSession(callerPackageName,
-                mPackageManager)) {
+                ownerPackageManager)) {
             ComputerControlStatsController.writeFailedSessionWithStatsReason(
                     mPackageManager, attributionSource, params,
                     COMPUTER_CONTROL_FAILED_SESSION_REPORTED__REASON__CALLER_NOT_ALLOWED);
@@ -215,21 +218,19 @@ public final class ComputerControlSessionProcessor {
             }
         }
 
-        Binder.withCleanCallingIdentity(() -> {
-            for (int i = 0; i < params.getTargetPackageNames().size(); i++) {
-                final String packageName = params.getTargetPackageNames().get(i);
+        for (int i = 0; i < params.getTargetPackageNames().size(); i++) {
+            final String packageName = params.getTargetPackageNames().get(i);
 
-                if (!mAllowlistController.isPackageAutomatable(
-                        packageName, callerPackageName, mPackageManager)) {
-                    ComputerControlStatsController.writeFailedSessionWithStatsReason(
-                            mPackageManager, attributionSource, params,
-                            COMPUTER_CONTROL_FAILED_SESSION_REPORTED__REASON__INVALID_TARGET_APPLICATION
-                    );
-                    throw new IllegalArgumentException(
-                            "Invalid target package for ComputerControl: " + packageName);
-                }
+            if (!mAllowlistController.isPackageAutomatable(
+                    packageName, callerPackageName, ownerPackageManager)) {
+                ComputerControlStatsController.writeFailedSessionWithStatsReason(
+                        mPackageManager, attributionSource, params,
+                        COMPUTER_CONTROL_FAILED_SESSION_REPORTED__REASON__INVALID_TARGET_APPLICATION
+                );
+                throw new IllegalArgumentException(
+                        "Invalid target package for ComputerControl: " + packageName);
             }
-        });
+        }
     }
 
     /**
@@ -320,7 +321,8 @@ public final class ComputerControlSessionProcessor {
             @NonNull ComputerControlSessionParams params,
             @NonNull IComputerControlSessionCallback callback) {
         boolean isDeviceLocked = Binder.withCleanCallingIdentity(
-            () -> mKeyguardManager.isDeviceLocked());
+                () -> mKeyguardManager.isDeviceLocked(
+                        UserHandle.getUserId(attributionSource.getUid())));
         if (isDeviceLocked) {
             dispatchSessionCreationFailed(callback, attributionSource, params,
                     ComputerControlSession.ERROR_DEVICE_LOCKED);

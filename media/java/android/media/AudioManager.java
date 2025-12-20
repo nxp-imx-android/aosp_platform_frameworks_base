@@ -9022,7 +9022,7 @@ public class AudioManager {
      * @hide
      * Indicates whether the platform supports capturing content from the hotword recognition
      * pipeline. To capture content of this type, create an AudioRecord with
-     * {@link AudioRecord.Builder.setRequestHotwordStream(boolean, boolean)}.
+     * {@link AudioRecord.Builder#setRequestHotwordStream(boolean, boolean)}.
      * @param lookbackAudio Query if the hotword stream additionally supports providing buffered
      * audio prior to stream open.
      * @return True if the platform supports capturing hotword content, and if lookbackAudio
@@ -9050,7 +9050,7 @@ public class AudioManager {
      * application to start streaming data using these {@link AudioAttributes} on the selected
      * device by Audio Policy Engine.
      * @return a (possibly zero-length) array of
-     *         {@see android.media.audiopolicy.AudioProductStrategy} objects.
+     *         {@link android.media.audiopolicy.AudioProductStrategy} objects.
      */
     @SystemApi
     @NonNull
@@ -9074,7 +9074,7 @@ public class AudioManager {
      * When implementing {Car|Oem}AudioManager, use this method  to retrieve the collection of
      * audio volume groups.
      * @return a (possibly zero-length) List of
-     *         {@see android.media.audiopolicy.AudioVolumeGroup} objects.
+     *         {@link android.media.audiopolicy.AudioVolumeGroup} objects.
      */
     @SystemApi
     @NonNull

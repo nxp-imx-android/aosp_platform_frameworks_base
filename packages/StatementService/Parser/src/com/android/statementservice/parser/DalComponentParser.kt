@@ -60,6 +60,7 @@ fun parseMatchingExpression(expression: String): Pair<Int, String> {
                     append('.')
                 }
                 '.' -> {
+                    count += 1
                     append("\\.")
                 }
                 '[', ']', '{', '}' -> {

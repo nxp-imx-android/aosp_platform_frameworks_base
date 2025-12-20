@@ -17,7 +17,6 @@
 package com.android.server.notification;
 
 import static android.app.AppOpsManager.OP_SYSTEM_ALERT_WINDOW;
-import static android.app.Flags.notificationClassificationUi;
 import static android.app.NotificationChannel.DEFAULT_CHANNEL_ID;
 import static android.app.NotificationChannel.PLACEHOLDER_CONVERSATION_ID;
 import static android.app.NotificationChannel.USER_LOCKED_IMPORTANCE;
@@ -2560,16 +2559,14 @@ public class PreferencesHelper implements RankingConfig {
     private int[] getDeniedAdjustmentsForPackage(
             @NonNull Map<Integer, Map<String, List<String>>> adjustmentDeniedPackages,
             @UserIdInt int userId, String pkg) {
-        if (notificationClassificationUi()) {
-            if (adjustmentDeniedPackages.containsKey(userId)) {
-                List<String> deniedKeys = adjustmentDeniedPackages.get(userId).getOrDefault(pkg,
-                        Collections.EMPTY_LIST);
-                int[] out = new int[deniedKeys.size()];
-                for (int i = 0; i < deniedKeys.size(); i++) {
-                    out[i] = NotificationPullStatsEvent.adjustmentKeyEnum(deniedKeys.get(i));
-                }
-                return out;
+        if (adjustmentDeniedPackages.containsKey(userId)) {
+            List<String> deniedKeys = adjustmentDeniedPackages.get(userId).getOrDefault(pkg,
+                    Collections.EMPTY_LIST);
+            int[] out = new int[deniedKeys.size()];
+            for (int i = 0; i < deniedKeys.size(); i++) {
+                out[i] = NotificationPullStatsEvent.adjustmentKeyEnum(deniedKeys.get(i));
             }
+            return out;
         }
         return new int[]{};
     }

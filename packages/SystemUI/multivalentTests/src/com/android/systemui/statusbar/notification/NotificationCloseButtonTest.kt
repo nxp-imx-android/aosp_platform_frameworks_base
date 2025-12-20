@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.notification
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
+import android.testing.TestableLooper.RunWithLooper
 import android.view.MotionEvent
 import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -32,6 +33,7 @@ import com.android.systemui.statusbar.notification.row.createInitializedRow
 import com.android.systemui.statusbar.notification.shared.NotificationXButtonClipFix
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
@@ -48,10 +50,26 @@ private fun getCloseButton(row: ExpandableNotificationRow): View {
     }
 }
 
+private fun getMotionEventFor(action: Int) =
+    MotionEvent.obtain(
+        /*downTime=*/ 0,
+        /*eventTime=*/ 0,
+        action,
+        /*x=*/ 0f,
+        /*y=*/ 0f,
+        /*metaState=*/ 0,
+    )!!
+
 @SmallTest
+@RunWithLooper
 @RunWith(AndroidJUnit4::class)
 class NotificationCloseButtonTest : SysuiTestCase() {
     private val kosmos = testKosmos()
+
+    @Before
+    fun setUp() {
+        allowTestableLooperAsMainThread()
+    }
 
     @Test
     @DisableFlags(Flags.FLAG_NOTIFICATION_ADD_X_ON_HOVER_TO_DISMISS)
@@ -62,15 +80,7 @@ class NotificationCloseButtonTest : SysuiTestCase() {
         assertThat(closeButton).isNotNull()
         assertThat(closeButton.visibility).isEqualTo(View.GONE)
 
-        val hoverEnterEvent =
-            MotionEvent.obtain(
-                0, // downTime
-                0, // eventTime
-                MotionEvent.ACTION_HOVER_ENTER, // action
-                0f, // x
-                0f, // y
-                0, // metaState
-            )
+        val hoverEnterEvent = getMotionEventFor(MotionEvent.ACTION_HOVER_ENTER)
 
         // The close button should not show if the feature is disabled.
         row.onInterceptHoverEvent(hoverEnterEvent)
@@ -78,13 +88,19 @@ class NotificationCloseButtonTest : SysuiTestCase() {
     }
 }
 
-@RunWith(ParameterizedAndroidJunit4::class)
 @SmallTest
+@RunWithLooper
+@RunWith(ParameterizedAndroidJunit4::class)
 class NotificationCloseButtonParameterizedTest(flags: FlagsParameterization) : SysuiTestCase() {
     private val kosmos = testKosmos()
 
     init {
         mSetFlagsRule.setFlagsParameterization(flags)
+    }
+
+    @Before
+    fun setUp() {
+        allowTestableLooperAsMainThread()
     }
 
     @Test
@@ -98,29 +114,13 @@ class NotificationCloseButtonParameterizedTest(flags: FlagsParameterization) : S
         assertThat(closeButton).isNotNull()
         assertThat(closeButton.visibility).isEqualTo(View.GONE)
 
-        val hoverEnterEvent =
-            MotionEvent.obtain(
-                0, // downTime
-                0, // eventTime
-                MotionEvent.ACTION_HOVER_ENTER, // action
-                0f, // x
-                0f, // y
-                0, // metaState
-            )
+        val hoverEnterEvent = getMotionEventFor(MotionEvent.ACTION_HOVER_ENTER)
 
         // When the row is hovered, the close button should show.
         row.onInterceptHoverEvent(hoverEnterEvent)
         assertThat(closeButton.visibility).isEqualTo(View.VISIBLE)
 
-        val hoverExitEvent =
-            MotionEvent.obtain(
-                0, // downTime
-                0, // eventTime
-                MotionEvent.ACTION_HOVER_EXIT, // action
-                0f, // x
-                0f, // y
-                0, // metaState
-            )
+        val hoverExitEvent = getMotionEventFor(MotionEvent.ACTION_HOVER_EXIT)
 
         // When hover exits the row, the close button should be gone again.
         row.onInterceptHoverEvent(hoverExitEvent)
@@ -138,22 +138,14 @@ class NotificationCloseButtonParameterizedTest(flags: FlagsParameterization) : S
         assertThat(closeButton).isNotNull()
         assertThat(closeButton.visibility).isEqualTo(View.GONE)
 
-        val hoverEnterEvent =
-            MotionEvent.obtain(
-                0, // downTime
-                0, // eventTime
-                MotionEvent.ACTION_HOVER_ENTER, // action
-                0f, // x
-                0f, // y
-                0, // metaState
-            )
+        val hoverEnterEvent = getMotionEventFor(MotionEvent.ACTION_HOVER_ENTER)
 
         // Because the host notification cannot be dismissed, the close button should not show.
         row.onInterceptHoverEvent(hoverEnterEvent)
         assertThat(closeButton.visibility).isEqualTo(View.GONE)
     }
 
-    companion object {
+    private companion object {
         @get:Parameters(name = "{0}")
         @JvmStatic
         val params = FlagsParameterization.allCombinationsOf(NotificationXButtonClipFix.FLAG_NAME)

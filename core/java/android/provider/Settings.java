@@ -2699,8 +2699,8 @@ public final class Settings {
      * <p>
      * Type: Integer with a value from the one of the SUPERVISOR_VERIFICATION_* constants below.
      * <ul>
-     * <li>{@see #SUPERVISOR_VERIFICATION_SETTING_UNKNOWN}
-     * <li>{@see #SUPERVISOR_VERIFICATION_SETTING_BIOMETRICS}
+     * <li>{@link #SUPERVISOR_VERIFICATION_SETTING_UNKNOWN}
+     * <li>{@link #SUPERVISOR_VERIFICATION_SETTING_BIOMETRICS}
      * </ul>
      * </p>
      */
@@ -13243,15 +13243,6 @@ public final class Settings {
          */
         public static final String ACCESSIBILITY_MAGNIFICATION_JOYSTICK_ENABLED =
                 "accessibility_magnification_joystick_enabled";
-
-        /**
-         * Setting that specifies whether the display magnification is enabled via a system-wide
-         * two fingers triple tap gesture.
-         *
-         * @hide
-         */
-        public static final String ACCESSIBILITY_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP_ENABLED =
-                "accessibility_magnification_two_finger_triple_tap_enabled";
 
         /**
          * Whether to always expand notification bundles in the notification shade.

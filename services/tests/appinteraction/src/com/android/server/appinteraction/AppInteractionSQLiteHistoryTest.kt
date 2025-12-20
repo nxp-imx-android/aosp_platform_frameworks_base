@@ -51,7 +51,6 @@ class AppInteractionSQLiteHistoryTest {
         val sourcePackage = TEST_AGENT_PACKAGE_NAME
         val targetPackage = TEST_TARGET_PACKAGE_NAME
         val accessTime = System.currentTimeMillis()
-        val duration = 100L
 
         val rowId =
             interactionHistory.insertAppInteractionHistory(
@@ -59,7 +58,6 @@ class AppInteractionSQLiteHistoryTest {
                 targetPackage,
                 /* appInteractionAttribution= */ null,
                 accessTime,
-                duration,
             )
 
         assertThat(rowId).isNotEqualTo(-1)
@@ -109,12 +107,6 @@ class AppInteractionSQLiteHistoryTest {
                     )
                 )
                 .isEqualTo(accessTime)
-            assertThat(
-                    cursor.getLong(
-                        cursor.getColumnIndexOrThrow(AppInteractionContract.COLUMN_DURATION)
-                    )
-                )
-                .isEqualTo(duration)
         }
     }
 
@@ -126,7 +118,6 @@ class AppInteractionSQLiteHistoryTest {
             AppInteractionAttribution.Builder(AppInteractionAttribution.INTERACTION_TYPE_USER_QUERY)
                 .build()
         val accessTime = System.currentTimeMillis()
-        val duration = 100L
 
         val rowId =
             interactionHistory.insertAppInteractionHistory(
@@ -134,7 +125,6 @@ class AppInteractionSQLiteHistoryTest {
                 targetPackage,
                 attribution,
                 accessTime,
-                duration,
             )
 
         assertThat(rowId).isNotEqualTo(-1)
@@ -185,12 +175,6 @@ class AppInteractionSQLiteHistoryTest {
                     )
                 )
                 .isEqualTo(accessTime)
-            assertThat(
-                    cursor.getLong(
-                        cursor.getColumnIndexOrThrow(AppInteractionContract.COLUMN_DURATION)
-                    )
-                )
-                .isEqualTo(duration)
         }
     }
 
@@ -204,7 +188,6 @@ class AppInteractionSQLiteHistoryTest {
                 .setInteractionUri(TEST_INTERACTION_URI)
                 .build()
         val accessTime = System.currentTimeMillis()
-        val duration = 100L
 
         val rowId =
             interactionHistory.insertAppInteractionHistory(
@@ -212,7 +195,6 @@ class AppInteractionSQLiteHistoryTest {
                 targetPackage,
                 attribution,
                 accessTime,
-                duration,
             )
 
         assertThat(rowId).isNotEqualTo(-1)
@@ -262,12 +244,6 @@ class AppInteractionSQLiteHistoryTest {
                     )
                 )
                 .isEqualTo(accessTime)
-            assertThat(
-                    cursor.getLong(
-                        cursor.getColumnIndexOrThrow(AppInteractionContract.COLUMN_DURATION)
-                    )
-                )
-                .isEqualTo(duration)
         }
     }
 
@@ -283,14 +259,12 @@ class AppInteractionSQLiteHistoryTest {
             targetPackage,
             /* appInteractionAttribution= */ null,
             oldAccessTime,
-            /* duration= */ 100L,
         )
         interactionHistory.insertAppInteractionHistory(
             sourcePackage,
             targetPackage,
             /* appInteractionAttribution= */ null,
             newAccessTime,
-            /* duration= */ 100L,
         )
 
         interactionHistory.deleteExpiredAppInteractionHistories(retentionPeriodMillis)
@@ -318,7 +292,6 @@ class AppInteractionSQLiteHistoryTest {
             targetPackage,
             /* appInteractionAttribution= */ null,
             accessTime,
-            /* duration= */ 100L,
         )
         // Swap the target/source package
         interactionHistory.insertAppInteractionHistory(
@@ -326,7 +299,6 @@ class AppInteractionSQLiteHistoryTest {
             sourcePackage,
             /* appInteractionAttribution= */ null,
             accessTime,
-            /* duration= */ 100L,
         )
         // Use otherPackageName as target package
         interactionHistory.insertAppInteractionHistory(
@@ -334,7 +306,6 @@ class AppInteractionSQLiteHistoryTest {
             otherPackageName,
             /* appInteractionAttribution= */ null,
             accessTime,
-            /* duration= */ 100L,
         )
 
         interactionHistory.deleteAppInteractionHistories(TEST_AGENT_PACKAGE_NAME)

@@ -16,8 +16,8 @@
 
 package com.android.server;
 
-import static android.net.platform.flags.Flags.FLAG_CLEAR_APP_EXCLUSION_LIST_UPON_VPN_INSTALL_UNINSTALL;
 import static android.net.platform.flags.Flags.FLAG_DELETE_VPN_PROFILE_WHEN_APP_UNINSTALLED;
+import static android.provider.Flags.FLAG_EXPOSE_VPN_APP_EXCLUSION_SETTINGS;
 
 import static com.android.testutils.ContextUtils.mockService;
 import static com.android.testutils.MiscAsserts.assertThrows;
@@ -467,7 +467,7 @@ public class VpnManagerServiceTest extends VpnTestBase {
     }
 
     @Test
-    @EnableFlags(FLAG_CLEAR_APP_EXCLUSION_LIST_UPON_VPN_INSTALL_UNINSTALL)
+    @EnableFlags(FLAG_EXPOSE_VPN_APP_EXCLUSION_SETTINGS)
     public void testRemoveVpnAppExclusionListOnPackageAdded() {
         final String addedPackage = PKGS[0];
         // Receive other App's Added broadcast
@@ -476,7 +476,7 @@ public class VpnManagerServiceTest extends VpnTestBase {
     }
 
     @Test
-    @EnableFlags(FLAG_CLEAR_APP_EXCLUSION_LIST_UPON_VPN_INSTALL_UNINSTALL)
+    @EnableFlags(FLAG_EXPOSE_VPN_APP_EXCLUSION_SETTINGS)
     public void testRemoveVpnAppExclusionListOnPackageRemoved() {
         final String removedPackage = PKGS[0];
         // Receive other App's Removed broadcast
@@ -485,7 +485,7 @@ public class VpnManagerServiceTest extends VpnTestBase {
     }
 
     @Test
-    @EnableFlags(FLAG_CLEAR_APP_EXCLUSION_LIST_UPON_VPN_INSTALL_UNINSTALL)
+    @EnableFlags(FLAG_EXPOSE_VPN_APP_EXCLUSION_SETTINGS)
     public void testRemoveVpnAppExclusionListOnPackageDataCleared() {
         final String clearedPackage = PKGS[0];
         verifyClearAppExclusionList(clearedPackage,

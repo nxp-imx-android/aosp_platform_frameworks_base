@@ -16,6 +16,8 @@
 
 package com.android.server.rollback;
 
+import static android.os.Process.INVALID_UID;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -84,7 +86,8 @@ public class AppDataRollbackHelperTest {
         // One of the users is unlocked but the other isn't
         doReturn(false).when(helper).isUserCredentialLocked(eq(10));
         doReturn(true).when(helper).isUserCredentialLocked(eq(11));
-        when(installer.snapshotAppData(anyString(), anyInt(), anyInt(), anyInt())).thenReturn(true);
+        when(installer.snapshotAppData(
+                anyString(), anyInt(), anyInt(), anyInt())).thenReturn(true);
 
         PackageRollbackInfo info2 = createPackageRollbackInfo("com.foo.bar");
         helper.snapshotAppData(7, info2, new int[]{10, 11});
@@ -96,7 +99,8 @@ public class AppDataRollbackHelperTest {
                 eq("com.foo.bar"), eq(10), eq(7),
                 eq(Installer.FLAG_STORAGE_CE | Installer.FLAG_STORAGE_DE));
         inOrder.verify(installer).snapshotAppData(
-                eq("com.foo.bar"), eq(11), eq(7), eq(Installer.FLAG_STORAGE_DE));
+                eq("com.foo.bar"), eq(11), eq(7),
+                eq(Installer.FLAG_STORAGE_DE));
         inOrder.verifyNoMoreInteractions();
     }
 
@@ -136,13 +140,14 @@ public class AppDataRollbackHelperTest {
         pendingBackups.add(11);
 
         assertTrue(helper.restoreAppData(13 /* rollbackId */, info, 10 /* userId */, 1 /* appId */,
-                      "seinfo"));
+                    INVALID_UID /* pccId */, "seinfo"));
 
         // Should only require FLAG_STORAGE_DE here because we have a pending backup that we
         // didn't manage to execute.
         InOrder inOrder = Mockito.inOrder(installer);
         inOrder.verify(installer).restoreAppDataSnapshot(
-                eq("com.foo"), eq(1) /* appId */, eq("seinfo"), eq(10) /* userId */,
+                eq("com.foo"), eq(1) /* appId */, eq(INVALID_UID), eq("seinfo"),
+                eq(10) /* userId */,
                 eq(13) /* rollbackId */, eq(Installer.FLAG_STORAGE_DE));
         inOrder.verifyNoMoreInteractions();
 
@@ -159,11 +164,12 @@ public class AppDataRollbackHelperTest {
         PackageRollbackInfo info = createPackageRollbackInfo("com.foo");
 
         assertTrue(helper.restoreAppData(73 /* rollbackId */, info, 10 /* userId */, 1 /* appId */,
-                      "seinfo"));
+                30001 /* pccId */, "seinfo"));
 
         InOrder inOrder = Mockito.inOrder(installer);
         inOrder.verify(installer).restoreAppDataSnapshot(
-                eq("com.foo"), eq(1) /* appId */, eq("seinfo"), eq(10) /* userId */,
+                eq("com.foo"), eq(1) /* appId */, eq(30001), eq("seinfo"),
+                eq(10) /* userId */,
                 eq(73) /* rollbackId */, eq(Installer.FLAG_STORAGE_DE));
         inOrder.verifyNoMoreInteractions();
 
@@ -171,7 +177,9 @@ public class AppDataRollbackHelperTest {
         assertEquals(1, pendingRestores.size());
         assertEquals(10, pendingRestores.get(0).userId);
         assertEquals(1, pendingRestores.get(0).appId);
+        assertEquals(30001, pendingRestores.get(0).pccId);
         assertEquals("seinfo", pendingRestores.get(0).seInfo);
+
     }
 
     @Test
@@ -182,11 +190,12 @@ public class AppDataRollbackHelperTest {
 
         PackageRollbackInfo info = createPackageRollbackInfo("com.foo");
         assertFalse(helper.restoreAppData(101 /* rollbackId */, info, 10 /* userId */,
-                      1 /* appId */, "seinfo"));
+                      1 /* appId */, INVALID_UID /* pccId */, "seinfo"));
 
         InOrder inOrder = Mockito.inOrder(installer);
         inOrder.verify(installer).restoreAppDataSnapshot(
-                eq("com.foo"), eq(1) /* appId */, eq("seinfo"), eq(10) /* userId */,
+                eq("com.foo"), eq(1) /* appId */, eq(INVALID_UID),
+                eq("seinfo"), eq(10) /* userId */,
                 eq(101) /* rollbackId */,
                 eq(Installer.FLAG_STORAGE_DE | Installer.FLAG_STORAGE_CE));
         inOrder.verifyNoMoreInteractions();
@@ -219,7 +228,8 @@ public class AppDataRollbackHelperTest {
         Installer installer = mock(Installer.class);
         AppDataRollbackHelper helper = new AppDataRollbackHelper(installer, mApexManager);
 
-        when(installer.snapshotAppData(anyString(), anyInt(), anyInt(), anyInt())).thenReturn(true);
+        when(installer.snapshotAppData(anyString(), anyInt(), anyInt(), anyInt()))
+                .thenReturn(true);
 
         // This one should be backed up.
         PackageRollbackInfo pendingBackup = createPackageRollbackInfo("com.foo", new int[]{37, 73});
@@ -230,13 +240,13 @@ public class AppDataRollbackHelperTest {
                 new int[]{37, 73});
         wasRecentlyRestored.addPendingBackup(37);
         wasRecentlyRestored.getPendingRestores().add(
-                new RestoreInfo(37 /* userId */, 239 /* appId*/, "seInfo"));
+                new RestoreInfo(37 /* userId */, 239 /* appId*/, INVALID_UID, "seInfo"));
 
         // This one should be restored
         PackageRollbackInfo pendingRestore = createPackageRollbackInfo("com.abc",
                 new int[]{37, 73});
         pendingRestore.getPendingRestores().add(
-                new RestoreInfo(37 /* userId */, 57 /* appId*/, "seInfo"));
+                new RestoreInfo(37 /* userId */, 57 /* appId*/, INVALID_UID, "seInfo"));
 
         // This one shouldn't be processed, because it hasn't pending backups/restores for userId
         // 37.
@@ -245,7 +255,7 @@ public class AppDataRollbackHelperTest {
         wasRecentlyRestored.addPendingBackup(3);
         wasRecentlyRestored.addPendingBackup(73);
         wasRecentlyRestored.getPendingRestores().add(
-                new RestoreInfo(73 /* userId */, 239 /* appId*/, "seInfo"));
+                new RestoreInfo(73 /* userId */, 239 /* appId*/, INVALID_UID, "seInfo"));
 
         Rollback dataWithPendingBackup = createRollbackForId(101);
         dataWithPendingBackup.info.getPackages().add(pendingBackup);
@@ -268,7 +278,8 @@ public class AppDataRollbackHelperTest {
         assertNull(wasRecentlyRestored.getRestoreInfo(37));
 
         // Check that backup was performed.
-        assertTrue(helper.commitPendingBackupAndRestoreForUser(37, dataWithPendingBackup));
+        assertTrue(helper.commitPendingBackupAndRestoreForUser(
+                37, dataWithPendingBackup));
         inOrder.verify(installer).snapshotAppData(eq("com.foo"), eq(37), eq(101),
                 eq(Installer.FLAG_STORAGE_CE));
         assertEquals(-1, pendingBackup.getPendingBackups().indexOf(37));
@@ -276,7 +287,8 @@ public class AppDataRollbackHelperTest {
         // Check that restore was performed.
         assertTrue(helper.commitPendingBackupAndRestoreForUser(37, dataForRestore));
         inOrder.verify(installer).restoreAppDataSnapshot(
-                eq("com.abc"), eq(57) /* appId */, eq("seInfo"), eq(37) /* userId */,
+                eq("com.abc"), eq(57) /* appId */, eq(INVALID_UID) /* pccId */,
+                eq("seInfo"), eq(37) /* userId */,
                 eq(17239) /* rollbackId */, eq(Installer.FLAG_STORAGE_CE));
         assertNull(pendingRestore.getRestoreInfo(37));
 

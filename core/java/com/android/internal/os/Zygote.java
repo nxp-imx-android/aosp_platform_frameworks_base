@@ -1291,9 +1291,9 @@ public final class Zygote {
     private static final long NATIVE_HEAP_ZERO_INIT = 178038272; // This is a bug id.
 
 
-    /** Enable execute-only memory for apps which target SDK versions after BAKLAVA  */
+    /** Enable execute-only memory for apps which target SDK versions after CINNAMON_BUN  */
     @ChangeId
-    @EnabledSince(targetSdkVersion = Build.VERSION_CODES.BAKLAVA)
+    @EnabledSince(targetSdkVersion = Build.VERSION_CODES.CINNAMON_BUN)
     static final long ENFORCE_EXECUTE_ONLY_MEMORY = 441041342L;
 
 

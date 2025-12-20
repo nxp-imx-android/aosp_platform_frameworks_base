@@ -16,8 +16,6 @@
 
 package com.android.systemui.statusbar.notification.row;
 
-import static android.app.Flags.notificationClassificationUi;
-
 import android.app.Flags;
 import android.app.INotificationManager;
 import android.app.NotificationChannel;

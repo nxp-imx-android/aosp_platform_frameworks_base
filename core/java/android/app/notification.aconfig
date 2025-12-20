@@ -91,13 +91,6 @@ flag {
 }
 
 flag {
-  name: "notification_classification_ui"
-  namespace: "systemui"
-  description: "Adds UI for NAS classification of notifications"
-  bug: "367996732"
-}
-
-flag {
   name: "nm_collapsed_lines"
   namespace: "systemui"
   description: "Shows 2 lines for collapsed notifications by default"
@@ -286,6 +279,14 @@ flag {
   namespace: "notifications"
   description: "Guards new android.app.Notification.ProjectedExtender api"
   bug: "455909258"
+  is_exported: true
+}
+
+flag {
+  name: "prefer_small_icon"
+  namespace: "notifications"
+  description: "Makes prefer small icon fully public"
+  bug: "469460575"
   is_exported: true
 }
 

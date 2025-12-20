@@ -41,7 +41,7 @@
     <java-symbol type="string" name="config_bandwidthEstimateSource" />
 
     <!-- Whether to adopt the predefined handover policies for IWLAN.
-         {@see CarrierConfigManager#KEY_IWLAN_HANDOVER_POLICY_STRING_ARRAY}
+         @see CarrierConfigManager#KEY_IWLAN_HANDOVER_POLICY_STRING_ARRAY
     -->
     <bool name="config_enable_iwlan_handover_policy">true</bool>
     <java-symbol type="bool" name="config_enable_iwlan_handover_policy" />
@@ -567,7 +567,7 @@
 
     <!-- Indicates the maximum allowed data mode specified by the OEMs. It ensures the entitled and
          carrier config overridden data mode by the carrier is within this value.
-         Refer {@see CarrierConfigManager#SATELLITE_DATA_SUPPORT_MODE} to see the possible values -->
+         Refer to {@link CarrierConfigManager#SATELLITE_DATA_SUPPORT_MODE} to see the possible values -->
     <integer name="max_allowed_data_mode">1</integer>
     <java-symbol type="integer" name="max_allowed_data_mode" />
 

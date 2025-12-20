@@ -193,6 +193,7 @@ package android {
     field @Deprecated public static final String HIDE_NON_SYSTEM_OVERLAY_WINDOWS = "android.permission.HIDE_NON_SYSTEM_OVERLAY_WINDOWS";
     field @FlaggedApi("android.app.hide_status_bar_notification") public static final String HIDE_STATUS_BAR_NOTIFICATION = "android.permission.HIDE_STATUS_BAR_NOTIFICATION";
     field @FlaggedApi("android.xr.xr_manifest_entries") public static final String IMPORT_XR_ANCHOR = "android.permission.IMPORT_XR_ANCHOR";
+    field @FlaggedApi("android.os.initiate_bugreport_as_non_admin") public static final String INITIATE_BUGREPORT_AS_NON_ADMIN = "android.permission.INITIATE_BUGREPORT_AS_NON_ADMIN";
     field public static final String INJECT_EVENTS = "android.permission.INJECT_EVENTS";
     field @FlaggedApi("com.android.hardware.input.create_virtual_keyboard_api") public static final String INJECT_KEY_EVENTS = "android.permission.INJECT_KEY_EVENTS";
     field @Deprecated @FlaggedApi("android.content.pm.sdk_dependency_installer_deprecation") public static final String INSTALL_DEPENDENCY_SHARED_LIBRARIES = "android.permission.INSTALL_DEPENDENCY_SHARED_LIBRARIES";
@@ -397,6 +398,7 @@ package android {
     field public static final String REMOVE_TASKS = "android.permission.REMOVE_TASKS";
     field public static final String RENOUNCE_PERMISSIONS = "android.permission.RENOUNCE_PERMISSIONS";
     field public static final String REPORT_USAGE_STATS = "android.permission.REPORT_USAGE_STATS";
+    field @FlaggedApi("android.permission.flags.location_button_enabled") public static final String REQUEST_LOCATION_BUTTON_PERMISSIONS = "android.permission.REQUEST_LOCATION_BUTTON_PERMISSIONS";
     field @Deprecated public static final String REQUEST_NETWORK_SCORES = "android.permission.REQUEST_NETWORK_SCORES";
     field public static final String REQUEST_NOTIFICATION_ASSISTANT_SERVICE = "android.permission.REQUEST_NOTIFICATION_ASSISTANT_SERVICE";
     field @FlaggedApi("android.companion.task_continuity") public static final String REQUEST_TASK_HANDOFF = "android.permission.REQUEST_TASK_HANDOFF";
@@ -720,7 +722,6 @@ package android.app {
     field public static final String COLUMN_ACCESS_TIME = "access_time";
     field public static final String COLUMN_AGENT_PACKAGE_NAME = "agent_package_name";
     field public static final String COLUMN_CUSTOM_INTERACTION_TYPE = "custom_interaction_type";
-    field public static final String COLUMN_DURATION = "access_duration";
     field public static final String COLUMN_INTERACTION_TYPE = "interaction_type";
     field public static final String COLUMN_INTERACTION_URI = "interaction_uri";
     field public static final String COLUMN_TARGET_PACKAGE_NAME = "target_package_name";
@@ -1134,7 +1135,6 @@ package android.app {
     field public static final String CATEGORY_CAR_WARNING = "car_warning";
     field @RequiresPermission(android.Manifest.permission.NOTIFICATION_DURING_SETUP) public static final String EXTRA_ALLOW_DURING_SETUP = "android.allowDuringSetup";
     field @FlaggedApi("android.app.hide_status_bar_notification") @RequiresPermission("android.Manifest.permission.HIDE_STATUS_BAR_NOTIFICATION") public static final String EXTRA_HIDE_STATUS_BAR_NOTIFICATION = "android.hideStatusBarNotification";
-    field @RequiresPermission(android.Manifest.permission.PACKAGE_VERIFICATION_AGENT) public static final String EXTRA_PREFER_SMALL_ICON = "android.app.preferSmallIcon";
     field @RequiresPermission(android.Manifest.permission.SUBSTITUTE_NOTIFICATION_APP_NAME) public static final String EXTRA_SUBSTITUTE_APP_NAME = "android.substName";
     field public static final int FLAG_AUTOGROUP_SUMMARY = 1024; // 0x400
   }
@@ -2530,6 +2530,15 @@ package android.app.people {
 
 }
 
+package android.app.permissionui {
+
+  @FlaggedApi("android.permission.flags.location_button_enabled") public interface LocationButtonClient {
+    field @FlaggedApi("android.permission.flags.location_button_enabled") public static final String ACTION_REQUEST_LOCATION_BUTTON_PERMISSIONS = "android.app.permissionui.action.REQUEST_LOCATION_BUTTON_PERMISSIONS";
+    field @FlaggedApi("android.permission.flags.location_button_enabled") public static final String EXTRA_PERMISSION_RESULT = "android.app.permissionui.extra.PERMISSION_RESULT";
+  }
+
+}
+
 package android.app.prediction {
 
   public final class AppPredictionContext implements android.os.Parcelable {
@@ -3686,6 +3695,7 @@ package android.companion {
     method @FlaggedApi("android.companion.trusted_devices") public void addOnMessageReceivedListener(@NonNull java.util.concurrent.Executor, int, @NonNull java.util.function.BiConsumer<java.lang.Integer,byte[]>);
     method @RequiresPermission(android.Manifest.permission.ASSOCIATE_COMPANION_DEVICES) public void associate(@NonNull String, @NonNull android.net.MacAddress, @NonNull byte[]);
     method @RequiresPermission("android.permission.MANAGE_COMPANION_DEVICES") public boolean canPairWithoutPrompt(@NonNull String, @NonNull String, @NonNull android.os.UserHandle);
+    method @FlaggedApi("android.companion.enable_data_sync") @RequiresPermission(anyOf={"android.permission.USE_COMPANION_TRANSPORTS", android.Manifest.permission.ACCESS_COMPANION_MESSAGE_PCC}) public void clearOnActionResultListener(@NonNull String);
     method @NonNull @RequiresPermission("android.permission.MANAGE_COMPANION_DEVICES") public java.util.List<android.companion.AssociationInfo> getAllAssociations();
     method @FlaggedApi("android.companion.association_verification") @Nullable @RequiresPermission(android.Manifest.permission.ACCESS_COMPANION_INFO) public android.companion.AssociationInfo getAssociationByDeviceId(@NonNull android.companion.DeviceId);
     method @FlaggedApi("android.companion.trusted_devices") @NonNull @RequiresPermission(android.Manifest.permission.ACCESS_COMPANION_MESSAGE_PCC) @WorkerThread public java.util.List<android.companion.AssociationInfo> getTrustedAssociations();
@@ -3695,7 +3705,9 @@ package android.companion {
     method @FlaggedApi("android.companion.enable_data_sync") @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public void notifyDevicePresence(int, @NonNull android.companion.DevicePresenceEvent);
     method @RequiresPermission("android.permission.MANAGE_COMPANION_DEVICES") public void removeOnAssociationsChangedListener(@NonNull android.companion.CompanionDeviceManager.OnAssociationsChangedListener);
     method @FlaggedApi("android.companion.trusted_devices") public void removeOnMessageReceivedListener(int, @NonNull java.util.function.BiConsumer<java.lang.Integer,byte[]>);
+    method @FlaggedApi("android.companion.enable_data_sync") @RequiresPermission(anyOf={"android.permission.USE_COMPANION_TRANSPORTS", android.Manifest.permission.ACCESS_COMPANION_MESSAGE_PCC}) public void requestAction(@NonNull android.companion.ActionRequest, @NonNull String, @NonNull int[]);
     method @FlaggedApi("android.companion.trusted_devices") public void sendMessage(int, @NonNull byte[], @NonNull int[]);
+    method @FlaggedApi("android.companion.enable_data_sync") @RequiresPermission(anyOf={"android.permission.USE_COMPANION_TRANSPORTS", android.Manifest.permission.ACCESS_COMPANION_MESSAGE_PCC}) public void setOnActionResultListener(@NonNull int[], @NonNull String, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.BiConsumer<java.lang.Integer,android.companion.ActionResult>);
     field @FlaggedApi("android.companion.enable_data_sync") @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public static final int FLAG_UNIVERSAL_CLIPBOARD = 8; // 0x8
     field @FlaggedApi("android.companion.enable_data_sync") @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public static final int FLAG_UNIVERSAL_MODES = 4; // 0x4
     field @FlaggedApi("android.companion.trusted_devices") @RequiresPermission(android.Manifest.permission.ACCESS_COMPANION_MESSAGE_PCC) public static final int MESSAGE_ONEWAY_PCC = 1132488551; // 0x43806767
@@ -3896,6 +3908,7 @@ package android.companion.virtual {
     method public void setDevicePolicy(int, int);
     method @FlaggedApi("android.companion.virtualdevice.flags.activity_control_api") public void setDevicePolicy(int, int, int);
     method public void setDisplayImePolicy(int, int);
+    method @FlaggedApi("android.companion.virtualdevice.flags.device_aware_touch_mode") public void setDisplayInTouchMode(int, boolean);
     method @FlaggedApi("android.companion.virtualdevice.flags.device_aware_ui_mode") public void setDisplayUiMode(int, int);
     method public void setShowPointerIcon(boolean);
     method public void unregisterIntentInterceptor(@NonNull android.companion.virtual.VirtualDeviceManager.IntentInterceptorCallback);
@@ -16298,8 +16311,12 @@ package android.telephony {
     method public int getIntegrity();
     method public boolean isUnprotectedEmergency();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field public static final int CONNECTION_EVENT_AS_SIGNALLING_5G = 11; // 0xb
-    field public static final int CONNECTION_EVENT_AS_SIGNALLING_LTE = 5; // 0x5
+    field @Deprecated public static final int CONNECTION_EVENT_AS_SIGNALLING_5G = 11; // 0xb
+    field @FlaggedApi("com.android.internal.telephony.flags.drb_security_transparency") public static final int CONNECTION_EVENT_AS_SIGNALLING_5G_DRB = 18; // 0x12
+    field @FlaggedApi("com.android.internal.telephony.flags.drb_security_transparency") public static final int CONNECTION_EVENT_AS_SIGNALLING_5G_NON_DRB = 19; // 0x13
+    field @Deprecated public static final int CONNECTION_EVENT_AS_SIGNALLING_LTE = 5; // 0x5
+    field @FlaggedApi("com.android.internal.telephony.flags.drb_security_transparency") public static final int CONNECTION_EVENT_AS_SIGNALLING_LTE_DRB = 16; // 0x10
+    field @FlaggedApi("com.android.internal.telephony.flags.drb_security_transparency") public static final int CONNECTION_EVENT_AS_SIGNALLING_LTE_NON_DRB = 17; // 0x11
     field public static final int CONNECTION_EVENT_CS_SIGNALLING_3G = 2; // 0x2
     field public static final int CONNECTION_EVENT_CS_SIGNALLING_GSM = 0; // 0x0
     field public static final int CONNECTION_EVENT_NAS_SIGNALLING_5G = 10; // 0xa

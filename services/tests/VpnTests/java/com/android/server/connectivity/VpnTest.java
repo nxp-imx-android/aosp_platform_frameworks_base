@@ -1909,16 +1909,35 @@ public class VpnTest extends VpnTestBase {
     private LinkProperties getVpnNetworkLinkProperties(
             boolean mtuSupportsIpv6, boolean hasIpv6Address) {
         final LinkProperties lp = new LinkProperties();
-        if (mtuSupportsIpv6) {
-            lp.setMtu(IPV6_MIN_MTU);
-        } else {
-            lp.setMtu(IPV6_MIN_MTU - 1);
-        }
+        lp.setInterfaceName(TEST_IFACE_NAME);
+        lp.setMtu(mtuSupportsIpv6 ? IPV6_MIN_MTU : IPV6_MIN_MTU - 1);
+        lp.setDomains("");
+
+        // Add IPv4 address, DNS, and route
         lp.addLinkAddress(new LinkAddress(TEST_VPN_INTERNAL_IP, IP4_PREFIX_LEN));
+        lp.addDnsServer(TEST_VPN_INTERNAL_DNS);
+        lp.addRoute(
+                new RouteInfo(
+                        new IpPrefix(Inet4Address.ANY, 0),
+                        null,
+                        TEST_IFACE_NAME,
+                        RouteInfo.RTN_UNICAST
+                )
+        );
+
+        // Add IPv6 address, DNS, and route if applicable
         if (hasIpv6Address) {
             lp.addLinkAddress(new LinkAddress(TEST_VPN_INTERNAL_IP6, IP6_PREFIX_LEN));
+            lp.addDnsServer(TEST_VPN_INTERNAL_DNS6);
+            lp.addRoute(
+                    new RouteInfo(
+                            new IpPrefix(Inet6Address.ANY, 0),
+                            null,
+                            TEST_IFACE_NAME,
+                            RouteInfo.RTN_UNICAST
+                    )
+            );
         }
-        lp.setInterfaceName(TEST_IFACE_NAME);
         return lp;
     }
 
@@ -2722,6 +2741,8 @@ public class VpnTest extends VpnTestBase {
                         createIkeConfig(createIkeConnectInfo(), true /* isMobikeEnabled */),
                         mtuSupportsV6Before /* mtuSupportsIpv6 */);
 
+        reset(mExecutor);
+
         // Reset interaction for verifying Vpn network logic
         reset(mIpSecService);
 
@@ -2734,8 +2755,15 @@ public class VpnTest extends VpnTestBase {
                         mtuSupportsV6After /* mtuSupportsIpv6 */,
                         lpHasIpv6Address /* hasIpv6Address */);
 
+
+        // Allow Executor finished calling onLinkPropertiesChanged
+        mExecutor.delayMs = TestExecutor.REAL_DELAY;
+        mExecutor.executeDirect = true;
+
         // Trigger LinkProperties changes
         vpnSnapShot.mVpnNwCb.onLinkPropertiesChanged(TEST_NETWORK_2, lp);
+
+        verify(mExecutor).execute(any(Runnable.class));
     }
 
     @Test

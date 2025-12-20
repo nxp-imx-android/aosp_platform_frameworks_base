@@ -29,14 +29,9 @@ java_library_static {
     ],
 }
 
-filegroup {
-    name: "wm_shell-shared-aidls",
-
-    srcs: [
-        "**/*.aidl",
-    ],
-
-    path: "src",
+java_library {
+    name: "WindowManager-Shell-shared-aidls",
+    srcs: ["**/*.aidl"],
 }
 
 // NOTE: This shared lib is built with various apps and should not
@@ -51,9 +46,9 @@ android_library {
     srcs: [
         "**/*.java",
         "**/*.kt",
-        ":wm_shell-shared-aidls",
     ],
     static_libs: [
+        "WindowManager-Shell-shared-aidls",
         "androidx.core_core-animation",
         "androidx.dynamicanimation_dynamicanimation",
         "com_android_wm_shell_flags_lib",

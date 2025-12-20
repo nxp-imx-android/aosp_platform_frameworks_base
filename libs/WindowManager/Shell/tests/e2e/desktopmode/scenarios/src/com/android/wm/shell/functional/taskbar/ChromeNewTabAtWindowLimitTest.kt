@@ -17,7 +17,6 @@
 package com.android.wm.shell.functional.taskbar
 
 import android.platform.test.annotations.Postsubmit
-import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
 import com.android.wm.shell.scenarios.ChromeNewTabAtWindowLimit
 import org.junit.runner.RunWith
@@ -25,7 +24,6 @@ import org.junit.runners.BlockJUnit4ClassRunner
 
 /* Functional test for [ChromeNewTabAtWindowLimit]. */
 @RunWith(BlockJUnit4ClassRunner::class)
-@RequiresDesktopDevice
 @Postsubmit
 @ScreenRecordRule.ScreenRecord
 class ChromeNewTabAtWindowLimitTest : ChromeNewTabAtWindowLimit()

@@ -26,6 +26,7 @@ import com.android.systemui.animation.DelegateTransitionAnimatorController
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
+import com.android.systemui.animation.TransitionSource
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.LogLevel
 import com.android.systemui.log.dagger.QSLog
@@ -277,8 +278,14 @@ constructor(
     fun resetState() = setState(State.IDLE)
 
     fun createExpandableFromView(view: View) {
-        expandable =
-            object : Expandable {
+        val transitionSource =
+            object : TransitionSource {
+                override fun dialogTransitionController(
+                    cuj: DialogCuj?
+                ): DialogTransitionAnimator.Controller? {
+                    return DialogTransitionAnimator.Controller.fromView(view, cuj)
+                }
+
                 override fun activityTransitionController(
                     launchCujType: Int?,
                     cookie: ActivityTransitionAnimator.TransitionCookie?,
@@ -297,12 +304,9 @@ constructor(
                         )
                     return delegatedController?.let { createTransitionControllerDelegate(it) }
                 }
-
-                override fun dialogTransitionController(
-                    cuj: DialogCuj?
-                ): DialogTransitionAnimator.Controller? =
-                    DialogTransitionAnimator.Controller.fromView(view, cuj)
             }
+
+        expandable = Expandable(transitionSource)
     }
 
     @VisibleForTesting

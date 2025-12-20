@@ -25,7 +25,6 @@ import static com.android.internal.accessibility.common.ShortcutConstants.UserSh
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.KEY_GESTURE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.QUICK_ACCESS;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.SOFTWARE;
-import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TWOFINGER_DOUBLETAP;
 import static com.android.server.testutils.MockitoUtilsKt.eq;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -389,8 +388,6 @@ public class ShortcutUtilsTest {
             @TestParameter(valuesProvider = ShortcutTypeValueProvider.class) int shortcutType) {
         Assume.assumeFalse("Non user-facing shortcut types are excluded",
                 shortcutType == KEY_GESTURE);
-        Assume.assumeFalse("Twofinger doubletap is unsupported",
-                shortcutType == TWOFINGER_DOUBLETAP);
         Assume.assumeFalse("Quick Access shortcuts are not user facing",
                 shortcutType == QUICK_ACCESS);
         ShortcutUtils.typeToString(shortcutType);

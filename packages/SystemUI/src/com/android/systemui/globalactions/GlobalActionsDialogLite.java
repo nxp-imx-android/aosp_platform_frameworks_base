@@ -1386,6 +1386,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             mHandler.postDelayed(() -> {
                 mUiEventLogger.log(GlobalActionsEvent.GA_STANDBY_PRESS);
                 mBackgroundExecutor.execute(() -> {
+                    Log.d(TAG, "going to sleep due to power button press");
                     mPowerManager.goToSleep(SystemClock.uptimeMillis(),
                             PowerManager.GO_TO_SLEEP_REASON_POWER_BUTTON, 0);
                 });

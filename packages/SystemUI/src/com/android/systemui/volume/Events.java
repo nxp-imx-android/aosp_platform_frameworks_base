@@ -102,6 +102,7 @@ public class Events {
     public static final int DISMISS_REASON_CSD_WARNING_TIMEOUT = 10;
     public static final int DISMISS_REASON_POSTURE_CHANGED = 11;
     public static final int DISMISS_REASON_QUICK_SETTINGS_EXPANDED = 12;
+    public static final int DISMISS_REASON_BRIGHTNESS_DIALOG_SHOWING = 13;
 
     public static final String[] DISMISS_REASONS = {
             "unknown",

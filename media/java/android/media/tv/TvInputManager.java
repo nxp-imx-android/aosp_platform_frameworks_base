@@ -2540,9 +2540,9 @@ public final class TvInputManager {
      * status.
      *
      * @param useCase the use case type of the client.
-     *        {@see TvInputService#PriorityHintUseCaseType}.
+     *        See {@link TvInputService#PriorityHintUseCaseType}.
      * @param sessionId the unique id of the session owned by the client.
-     *        {@see TvInputService#onCreateSession(String, String, AttributionSource)}.
+     *        See {@link TvInputService#onCreateSession(String, String, AttributionSource)}.
      *
      * @return the use case priority value for the given use case type and the client's foreground
      *         or background status.
@@ -2565,7 +2565,7 @@ public final class TvInputManager {
      * status.
      *
      * @param useCase the use case type of the caller.
-     *        {@see TvInputService#PriorityHintUseCaseType}.
+     *        See {@link TvInputService#PriorityHintUseCaseType}.
      *
      * @return the use case priority value for the given use case type and the caller's foreground
      *         or background status.
@@ -2790,9 +2790,10 @@ public final class TvInputManager {
      * @param deviceId The device ID to acquire Hardware for.
      * @param info The TV input which will use the acquired Hardware.
      * @param tvInputSessionId a String returned to TIS when the session was created.
-     *        {@see TvInputService#onCreateSession(String, String, AttributionSource)}. If null, the
-     *        client will be treated as a background app.
-     * @param priorityHint The use case of the client. {@see TvInputService#PriorityHintUseCaseType}
+     *        See {@link TvInputService#onCreateSession(String, String, AttributionSource)}. If
+     *        null, the client will be treated as a background app.
+     * @param priorityHint The use case of the client. See
+     *        {@link TvInputService#PriorityHintUseCaseType}
      * @param executor the executor on which the listener would be invoked.
      * @param callback A callback to receive updates on Hardware.
      * @return Hardware on success, {@code null} otherwise. When the TRM decides to not grant

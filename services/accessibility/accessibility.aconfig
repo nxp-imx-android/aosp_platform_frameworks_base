@@ -86,13 +86,6 @@ flag {
 }
 
 flag {
-    name: "enable_magnification_multiple_finger_multiple_tap_gesture"
-    namespace: "accessibility"
-    description: "Whether to enable multi-finger-multi-tap gesture for magnification"
-    bug: "257274411"
-}
-
-flag {
     name: "enable_magnification_one_finger_panning_gesture"
     namespace: "accessibility"
     description: "Whether to allow easy-mode (one finger panning gesture) for magnification"

@@ -355,7 +355,7 @@ package android {
     field @Deprecated public static final String USE_FINGERPRINT = "android.permission.USE_FINGERPRINT";
     field public static final String USE_FULL_SCREEN_INTENT = "android.permission.USE_FULL_SCREEN_INTENT";
     field public static final String USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER = "android.permission.USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER";
-    field @FlaggedApi("android.widget.flags.location_button_enabled") public static final String USE_LOCATION_BUTTON = "android.permission.USE_LOCATION_BUTTON";
+    field @FlaggedApi("android.permission.flags.location_button_enabled") public static final String USE_LOCATION_BUTTON = "android.permission.USE_LOCATION_BUTTON";
     field @FlaggedApi("android.permission.flags.use_loopback_interface_permission_enabled") public static final String USE_LOOPBACK_INTERFACE = "android.permission.USE_LOOPBACK_INTERFACE";
     field @FlaggedApi("com.android.window.flags.enable_interactive_picture_in_picture") public static final String USE_PINNED_WINDOWING_LAYER = "android.permission.USE_PINNED_WINDOWING_LAYER";
     field public static final String USE_SIP = "android.permission.USE_SIP";
@@ -6695,6 +6695,7 @@ package android.app {
     field public static final String EXTRA_PICTURE = "android.picture";
     field public static final String EXTRA_PICTURE_CONTENT_DESCRIPTION = "android.pictureContentDescription";
     field public static final String EXTRA_PICTURE_ICON = "android.pictureIcon";
+    field @FlaggedApi("android.app.prefer_small_icon") public static final String EXTRA_PREFER_SMALL_ICON = "android.app.preferSmallIcon";
     field public static final String EXTRA_PROGRESS = "android.progress";
     field public static final String EXTRA_PROGRESS_INDETERMINATE = "android.progressIndeterminate";
     field public static final String EXTRA_PROGRESS_MAX = "android.progressMax";
@@ -9995,6 +9996,60 @@ package android.app.people {
 
 }
 
+package android.app.permissionui {
+
+  @FlaggedApi("android.permission.flags.location_button_enabled") public interface LocationButtonClient {
+    method public void onPermissionResult(boolean);
+    method public void onSessionError(@NonNull Throwable);
+    method public void onSessionOpened(@NonNull android.app.permissionui.LocationButtonSession);
+  }
+
+  @FlaggedApi("android.permission.flags.location_button_enabled") public interface LocationButtonProvider {
+    method public void openSession(@NonNull android.app.Activity, @NonNull android.os.IBinder, int, @NonNull android.app.permissionui.LocationButtonRequest, @NonNull java.util.concurrent.Executor, @NonNull android.app.permissionui.LocationButtonClient);
+  }
+
+  @FlaggedApi("android.permission.flags.location_button_enabled") public class LocationButtonProviderFactory {
+    method @NonNull public static android.app.permissionui.LocationButtonProvider create(@NonNull android.content.Context);
+  }
+
+  @FlaggedApi("android.permission.flags.location_button_enabled") public final class LocationButtonRequest implements android.os.Parcelable {
+    ctor public LocationButtonRequest(int, int, @ColorInt int, @ColorInt int, int, float, @ColorInt int, int, @ColorInt int, @NonNull android.content.res.Configuration);
+    method public int describeContents();
+    method @ColorInt public int getBackgroundColor();
+    method @NonNull public android.content.res.Configuration getConfiguration();
+    method public float getCornerRadius();
+    method public int getHeight();
+    method @ColorInt public int getIconTint();
+    method @ColorInt public int getStrokeColor();
+    method public int getStrokeWidth();
+    method @ColorInt public int getTextColor();
+    method public int getTextType();
+    method public int getWidth();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.permissionui.LocationButtonRequest> CREATOR;
+  }
+
+  @FlaggedApi("android.permission.flags.location_button_enabled") public interface LocationButtonSession extends java.lang.AutoCloseable {
+    method public void changeConfiguration(@NonNull android.content.res.Configuration);
+    method public void close();
+    method @NonNull public android.view.SurfaceControlViewHost.SurfacePackage getSurfacePackage();
+    method public void resize(int, int);
+    method public void setBackgroundColor(@ColorInt int);
+    method public void setCornerRadius(float);
+    method public void setIconTint(@ColorInt int);
+    method public void setStrokeColor(@ColorInt int);
+    method public void setStrokeWidth(int);
+    method public void setTextColor(@ColorInt int);
+    method public void setTextType(int);
+    field public static final int TEXT_TYPE_NEAR_PRECISE_LOCATION = 1; // 0x1
+    field public static final int TEXT_TYPE_NONE = 0; // 0x0
+    field public static final int TEXT_TYPE_PRECISE_LOCATION = 2; // 0x2
+    field public static final int TEXT_TYPE_SHARE_PRECISE_LOCATION = 3; // 0x3
+    field public static final int TEXT_TYPE_USE_PRECISE_LOCATION = 4; // 0x4
+  }
+
+}
+
 package android.app.privatecompute {
 
   @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public class PccClient {
@@ -10682,7 +10737,7 @@ package android.companion {
     method @NonNull public java.util.List<android.companion.AssociationInfo> getMyAssociations();
     method @Deprecated public boolean hasNotificationAccess(android.content.ComponentName);
     method @FlaggedApi("android.companion.perm_sync_user_consent") public boolean isPermissionTransferUserConsented(int);
-    method @FlaggedApi("android.companion.enable_data_sync") public boolean isSystemDataTransportAttached(int);
+    method @FlaggedApi("android.companion.enable_data_sync") @RequiresPermission(value="android.permission.ACCESS_COMPANION_MESSAGE_PCC", conditional=true) public boolean isSystemDataTransportAttached(int);
     method @FlaggedApi("android.companion.enable_data_sync") public void notifyActionResult(int, @NonNull android.companion.ActionResult);
     method @FlaggedApi("android.companion.unpair_associated_device") @RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT) public boolean removeBond(int);
     method public void requestNotificationAccess(android.content.ComponentName);
@@ -63687,60 +63742,6 @@ package android.widget.inline {
     ctor public InlinePresentationSpec.Builder(@NonNull android.util.Size, @NonNull android.util.Size);
     method @NonNull public android.widget.inline.InlinePresentationSpec build();
     method @NonNull public android.widget.inline.InlinePresentationSpec.Builder setStyle(@NonNull android.os.Bundle);
-  }
-
-}
-
-package android.widget.location {
-
-  @FlaggedApi("android.widget.flags.location_button_enabled") public interface LocationButtonClient {
-    method public void onPermissionResult(boolean);
-    method public void onSessionError(@NonNull Throwable);
-    method public void onSessionOpened(@NonNull android.widget.location.LocationButtonSession);
-  }
-
-  @FlaggedApi("android.widget.flags.location_button_enabled") public interface LocationButtonProvider {
-    method public void openSession(@NonNull android.os.IBinder, int, @NonNull android.widget.location.LocationButtonRequest, @NonNull java.util.concurrent.Executor, @NonNull android.widget.location.LocationButtonClient);
-  }
-
-  @FlaggedApi("android.widget.flags.location_button_enabled") public class LocationButtonProviderFactory {
-    method @NonNull public static android.widget.location.LocationButtonProvider create(@NonNull android.content.Context);
-  }
-
-  @FlaggedApi("android.widget.flags.location_button_enabled") public final class LocationButtonRequest implements android.os.Parcelable {
-    ctor public LocationButtonRequest(int, int, @ColorInt int, @ColorInt int, int, float, @ColorInt int, int, @ColorInt int, @NonNull android.content.res.Configuration);
-    method public int describeContents();
-    method @ColorInt public int getBackgroundColor();
-    method @NonNull public android.content.res.Configuration getConfiguration();
-    method public float getCornerRadius();
-    method public int getHeight();
-    method @ColorInt public int getIconTint();
-    method @ColorInt public int getStrokeColor();
-    method public int getStrokeWidth();
-    method @ColorInt public int getTextColor();
-    method public int getTextType();
-    method public int getWidth();
-    method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.widget.location.LocationButtonRequest> CREATOR;
-  }
-
-  @FlaggedApi("android.widget.flags.location_button_enabled") public interface LocationButtonSession extends java.lang.AutoCloseable {
-    method public void changeConfiguration(@NonNull android.content.res.Configuration);
-    method public void close();
-    method @NonNull public android.view.SurfaceControlViewHost.SurfacePackage getSurfacePackage();
-    method public void resize(int, int);
-    method public void setBackgroundColor(@ColorInt int);
-    method public void setCornerRadius(float);
-    method public void setIconTint(@ColorInt int);
-    method public void setStrokeColor(@ColorInt int);
-    method public void setStrokeWidth(int);
-    method public void setTextColor(@ColorInt int);
-    method public void setTextType(int);
-    field public static final int TEXT_TYPE_NEAR_PRECISE_LOCATION = 1; // 0x1
-    field public static final int TEXT_TYPE_NONE = 0; // 0x0
-    field public static final int TEXT_TYPE_PRECISE_LOCATION = 2; // 0x2
-    field public static final int TEXT_TYPE_SHARE_PRECISE_LOCATION = 3; // 0x3
-    field public static final int TEXT_TYPE_USE_PRECISE_LOCATION = 4; // 0x4
   }
 
 }

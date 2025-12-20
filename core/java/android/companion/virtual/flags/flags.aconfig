@@ -264,3 +264,11 @@ flag {
     bug: "462710537"
     is_exported: true
 }
+
+flag {
+    name: "device_aware_touch_mode"
+    namespace: "virtual_devices"
+    description: "API for setting the touch mode for a virtual display"
+    bug: "434903682"
+    is_exported: true
+}

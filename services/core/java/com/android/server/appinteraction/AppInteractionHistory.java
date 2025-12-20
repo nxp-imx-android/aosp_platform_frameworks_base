@@ -16,6 +16,7 @@
 
 package com.android.server.appinteraction;
 
+import android.annotation.CurrentTimeMillisLong;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.WorkerThread;
@@ -42,8 +43,7 @@ public interface AppInteractionHistory extends AutoCloseable {
             @NonNull String sourcePackage,
             @NonNull String targetPackage,
             @Nullable AppInteractionAttribution appInteractionAttribution,
-            long accessTime,
-            long duration);
+            @CurrentTimeMillisLong long accessTime);
 
     /**
      * Deletes expired App Interaction histories.

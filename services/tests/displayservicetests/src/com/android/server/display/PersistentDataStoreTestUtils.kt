@@ -84,6 +84,11 @@ internal class DisplayStateBuilder(private val uniqueId: String) {
         return this
     }
 
+    fun withHdrPreference(preference: Int): DisplayStateBuilder {
+        properties.append("<hdr-preference>$preference</hdr-preference>\n")
+        return this
+    }
+
     fun withBrightness(userSerial: Int, value: Float): DisplayStateBuilder {
         properties.append(
             "<brightness-value user-serial=\"$userSerial\">$value</brightness-value>\n"

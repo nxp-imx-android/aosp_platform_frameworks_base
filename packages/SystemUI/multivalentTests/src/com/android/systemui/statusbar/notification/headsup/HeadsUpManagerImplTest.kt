@@ -23,7 +23,6 @@ import android.os.Handler
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
-import android.testing.TestableLooper
 import android.testing.TestableLooper.RunWithLooper
 import android.view.accessibility.accessibilityManager
 import android.view.accessibility.accessibilityManagerWrapper
@@ -37,7 +36,6 @@ import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
-import com.android.systemui.log.assertLogsWtfs
 import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.shadeTestUtil
@@ -1028,6 +1026,34 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
         assertThat(underTest.canRemoveImmediately(notifEntry.key)).isTrue()
     }
 
+    @Test
+    fun testHunTimerPausedOnHover() {
+        val timeout = (TEST_AUTO_DISMISS_TIME + TEST_TOUCH_ACCEPTANCE_TIME).toLong()
+        val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
+        useAccessibilityTimeout(false)
+
+        underTest.showNotification(entry)
+
+        assertThat(underTest.isHeadsUpEntry(entry.key)).isTrue()
+
+        // When time is advanced to almost the timeout and the hover starts
+        systemClock.advanceTime(timeout - 10L)
+        underTest.setHeadsUpDismissTimerPaused(entry.key, true)
+        systemClock.advanceTime(20L)
+
+        assertThat(underTest.isHeadsUpEntry(entry.key)).isTrue()
+
+        // When the hover ends
+        underTest.setHeadsUpDismissTimerPaused(entry.key, false)
+        systemClock.advanceTime(1L)
+
+        assertThat(underTest.isHeadsUpEntry(entry.key)).isTrue()
+
+        systemClock.advanceTime(TEST_MINIMUM_DISPLAY_TIME_DEFAULT.toLong())
+
+        assertThat(underTest.isHeadsUpEntry(entry.key)).isFalse()
+    }
+
     private fun createStickyEntry(id: Int): NotificationEntry {
         val notif =
             Notification.Builder(mContext, "")
@@ -1082,9 +1108,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
         val flags: List<FlagsParameterization>
             get() = buildList {
                 addAll(
-                    FlagsParameterization.allCombinationsOf(
-                            NotificationThrottleHun.FLAG_NAME,
-                        )
+                    FlagsParameterization.allCombinationsOf(NotificationThrottleHun.FLAG_NAME)
                         .andSceneContainer()
                 )
             }

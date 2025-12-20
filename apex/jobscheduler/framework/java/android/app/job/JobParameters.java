@@ -574,7 +574,7 @@ public class JobParameters implements Parcelable {
      * <p>Once you are done with the {@link JobWorkItem} returned by this method, you must call
      * {@link #completeWork(JobWorkItem)} with it to inform the system that you are done
      * executing the work.  The job will not be finished until all dequeued work has been
-     * completed.  You do not, however, have to complete each returned work item before deqeueing
+     * completed.  You do not, however, have to complete each returned work item before dequeuing
      * the next one -- you can use {@link #dequeueWork()} multiple times before completing
      * previous work if you want to process work in parallel, and you can complete the work
      * in whatever order you want.</p>
@@ -837,7 +837,7 @@ public class JobParameters implements Parcelable {
         }
     }
 
-    public static final @android.annotation.NonNull Creator<JobParameters> CREATOR = new Creator<JobParameters>() {
+    public static final @NonNull Creator<JobParameters> CREATOR = new Creator<JobParameters>() {
         @Override
         public JobParameters createFromParcel(Parcel in) {
             return new JobParameters(in);

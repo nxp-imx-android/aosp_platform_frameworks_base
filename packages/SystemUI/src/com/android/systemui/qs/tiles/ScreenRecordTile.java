@@ -54,6 +54,8 @@ import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInter
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor;
 import com.android.systemui.screenrecord.ScreenRecordUxController;
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel;
+import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor;
+import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus;
 import com.android.systemui.settings.UserContextProvider;
 import com.android.systemui.statusbar.phone.KeyguardDismissUtil;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
@@ -81,6 +83,7 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
     private final MediaProjectionMetricsLogger mMediaProjectionMetricsLogger;
     private final UserContextProvider mUserContextProvider;
     private final ScreenCaptureUiInteractor mScreenCaptureUiInteractor;
+    private final ScreenRecordingServiceInteractor mScreenRecordingServiceInteractor;
     private final ScreenCaptureRecordFeaturesInteractor mScreenCaptureRecordFeaturesInteractor;
 
     private long mMillisUntilFinished = 0;
@@ -105,6 +108,7 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
             MediaProjectionMetricsLogger mediaProjectionMetricsLogger,
             ScreenCaptureUiInteractor screenCaptureUiInteractor,
             UserContextProvider userContextProvider,
+            ScreenRecordingServiceInteractor screenRecordingServiceInteractor,
             ScreenCaptureRecordFeaturesInteractor screenCaptureRecordFeaturesInteractor
     ) {
         super(host, uiEventLogger, backgroundLooper, mainHandler, falsingManager, metricsLogger,
@@ -119,6 +123,7 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
         mMediaProjectionMetricsLogger = mediaProjectionMetricsLogger;
         mScreenCaptureUiInteractor = screenCaptureUiInteractor;
         mUserContextProvider = userContextProvider;
+        mScreenRecordingServiceInteractor = screenRecordingServiceInteractor;
         mScreenCaptureRecordFeaturesInteractor = screenCaptureRecordFeaturesInteractor;
     }
 
@@ -133,15 +138,20 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
     @Override
     protected void handleClick(@Nullable Expandable expandable) {
         if (mScreenCaptureRecordFeaturesInteractor.getShouldShowNewRecordingToolbar()) {
-            mUiHandler.post(() -> mActivityStarter.executeRunnableDismissingKeyguard(
-                    () -> mScreenCaptureUiInteractor.show(
-                            new ScreenCaptureUiParameters.Record()
-                    ),
-                    /* cancelAction= */ null,
-                    /* dismissShade= */ true,
-                    /* afterKeyguardGone= */ true,
-                    /* deferred= */ false
-            ));
+            if (mScreenRecordingServiceInteractor.getStatus().getValue()
+                    instanceof ScreenRecordingStatus.Stopped) {
+                mUiHandler.post(() -> mActivityStarter.executeRunnableDismissingKeyguard(
+                        () -> mScreenCaptureUiInteractor.show(
+                                new ScreenCaptureUiParameters.Record()
+                        ),
+                        /* cancelAction= */ null,
+                        /* dismissShade= */ true,
+                        /* afterKeyguardGone= */ true,
+                        /* deferred= */ false
+                ));
+            } else {
+                mScreenRecordingServiceInteractor.stopRecording(StopReason.STOP_QS_TILE);
+            }
         } else {
             // TODO(b/409330121): call mController.onScreenRecordQsTileClick() instead.
             handleClick(() -> showDialog(expandable));

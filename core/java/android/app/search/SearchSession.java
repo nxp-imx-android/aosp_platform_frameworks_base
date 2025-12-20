@@ -165,7 +165,7 @@ public final class SearchSession implements AutoCloseable {
      * via the provided callback to render for zero state, until the given callback is
      * unregistered. Zero state means when user entered search ui but not issued any query yet.
      *
-     * @see SearchSession.Callback#onTargetsAvailable(List).
+     * @see SearchSession.Callback#onTargetsAvailable(List)
      *
      * @param callbackExecutor The callback executor to use when calling the callback.
      * @param callback The Callback to be called when updates of search targets for zero state

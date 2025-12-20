@@ -212,6 +212,9 @@ interface IVirtualDevice {
     /** Sets an IME policy for the given display. */
     void setDisplayImePolicy(int displayId, int policy);
 
+    /** Sets whether the given display should be in touch mode. */
+    void setDisplayInTouchMode(int displayId, boolean inTouchMode);
+
     /** Sets the UI mode for the given display. */
     void setDisplayUiMode(int displayId, int uiMode);
 

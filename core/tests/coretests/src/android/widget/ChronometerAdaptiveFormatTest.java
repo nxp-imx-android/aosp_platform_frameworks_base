@@ -26,10 +26,12 @@ import android.platform.test.annotations.Presubmit;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.time.Duration;
+import java.util.Locale;
 
 /**
  * Tests for {@link ChronometerAdaptiveFormat}.
@@ -38,6 +40,7 @@ import java.time.Duration;
 @SmallTest
 @Presubmit
 public class ChronometerAdaptiveFormatTest {
+    @Rule public LocaleRule localeRule = new LocaleRule(Locale.ENGLISH);
 
     @Test
     public void format_daysAndHours() {
