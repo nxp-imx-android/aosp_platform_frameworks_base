@@ -1303,7 +1303,7 @@
     <string name="whichSendToApplication" msgid="77101541959464018">"Odeslat pomocí aplikace"</string>
     <string name="whichSendToApplicationNamed" msgid="3385686512014670003">"Odeslat pomocí aplikace %1$s"</string>
     <string name="whichSendToApplicationLabel" msgid="3543240188816513303">"Odeslat"</string>
-    <string name="whichHomeApplication" msgid="8276350727038396616">"Výběr aplikace na plochu"</string>
+    <string name="whichHomeApplication" msgid="8276350727038396616">"Výběr vstupní aplikace"</string>
     <string name="whichHomeApplicationNamed" msgid="5855990024847433794">"Jako plochu používat aplikaci %1$s."</string>
     <string name="whichHomeApplicationLabel" msgid="8907334282202933959">"Vyfotit"</string>
     <string name="whichImageCaptureApplication" msgid="2737413019463215284">"Vyfotit pomocí aplikace"</string>
@@ -1832,6 +1832,8 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"gesto"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"rychlé nastavení"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"trojité klepnutí"</string>
+    <!-- no translation found for accessibility_shortcut_label_top_row_key (1488840908672437180) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"Služba <xliff:g id="SERVICE_NAME">%s</xliff:g> byla vypnuta"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Upravit zkratky"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Hotovo"</string>
@@ -2108,8 +2110,7 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"Aplikace <xliff:g id="APP_NAME_0">%1$s</xliff:g> momentálně není dostupná. Tato předvolba se spravuje v aplikaci <xliff:g id="APP_NAME_1">%2$s</xliff:g>."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"Další informace"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"Zrušit pozastavení aplikace"</string>
-    <!-- no translation found for locked_app_biometric_prompt_description (6853122652400451464) -->
-    <skip />
+    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"Aplikace <xliff:g id="APP_NAME">%1$s</xliff:g> je uzamčená"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"Zrušit pozastavení pracovních aplikací?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Zrušit pozastavení"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Stav nouze"</string>
@@ -2549,10 +2550,8 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"Klon"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"Komunální"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"Soukromý prostor"</string>
-    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
-    <skip />
-    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
-    <skip />
+    <string name="app_locked_new_notification" msgid="4409730436247596215">"Nové oznámení"</string>
+    <string name="app_locked_notification_message" msgid="4576179600328065280">"Nová zpráva"</string>
     <string name="redacted_notification_message" msgid="1520587845842228816">"Obsah citlivých oznámení je skrytý"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Obsah aplikace je z bezpečnostních důvodů při sdílení obrazovky skryt"</string>
