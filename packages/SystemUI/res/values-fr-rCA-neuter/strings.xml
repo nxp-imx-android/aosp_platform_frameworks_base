@@ -19,6 +19,7 @@
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="screenrecord_permission_dialog_warning_entire_screen" msgid="1321758636709366068">"Lorsque vous enregistrez l\'intégralité de votre écran, tout ce qui s\'affiche sur votre écran est enregistré. Par conséquent, faites preuve de prudence avec les mots de passe, les détails de paiement, les messages, les photos et les contenus audio et vidéo."</string>
     <string name="screenrecord_permission_dialog_warning_single_app" msgid="3738199712880063924">"Lorsque vous enregistrez une appli, tout ce qui est affiché ou lu dans cette appli est enregistré. Par conséquent, faites preuve de prudence avec les mots de passe, les détails de paiement, les messages, les photos et les contenus audio et vidéo."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Connexion à <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="zen_priority_introduction" msgid="3159291973383796646">"Les sons et les vibrations ne causeront pas de distractions, sauf pour les alarmes, les rappels, les événements et les appelants que vous sélectionnez. Vous entendrez tout ce que vous choisissez d\'écouter, y compris la musique, les vidéos et les jeux."</string>
