@@ -252,6 +252,7 @@ private fun PowerMenuToggleButton(
     Row(
         modifier =
             modifier
+                .borderOnFocus(MaterialTheme.colorScheme.secondary, CornerSize(percent = 50))
                 .clip(shape)
                 .clickable(onClick = viewModel.onClick)
                 .background(bgColor)
