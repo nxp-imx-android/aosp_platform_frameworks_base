@@ -28,6 +28,7 @@ import static android.app.AppOpsManager.MODE_ALLOWED;
 import static android.app.AppOpsManager.MODE_DEFAULT;
 import static android.app.AppOpsManager.OP_POST_PROMOTED_NOTIFICATIONS;
 import static android.app.AppOpsManager.OP_RECEIVE_SENSITIVE_NOTIFICATIONS;
+import static android.app.Flags.nmRemoveMustHaveFlags;
 import static android.app.Notification.BubbleMetadata.FLAG_SUPPRESS_NOTIFICATION;
 import static android.app.Notification.EXTRA_APP_SUMMARIZATION;
 import static android.app.Notification.EXTRA_BUILDER_APPLICATION_INFO;
@@ -1449,22 +1450,40 @@ public class NotificationManagerService extends SystemService {
                         nv.rank, nv.count);
 
                 StatusBarNotification sbn = r.getSbn();
-                // Notifications should be cancelled on click if they have been lifetime extended,
-                // regardless of presence or absence of FLAG_AUTO_CANCEL.
-                if ((sbn.getNotification().flags & FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY) != 0) {
-                    cancelNotification(callingUid, callingPid, sbn.getPackageName(), sbn.getTag(),
-                            sbn.getId(), FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY,
-                            FlagChecker.mustNotHave(FLAG_FOREGROUND_SERVICE
-                                    | FLAG_USER_INITIATED_JOB | FLAG_BUBBLE),
-                            false, r.getUserId(), REASON_CLICK, nv.rank, nv.count, null);
+                Notification notification = sbn.getNotification();
+                FlagChecker flagChecker = FlagChecker.mustNotHave(
+                        FLAG_FOREGROUND_SERVICE | FLAG_USER_INITIATED_JOB | FLAG_BUBBLE);
+                if (nmRemoveMustHaveFlags()) {
+                    // Notifications which have been lifetime extended should be cancelled on click,
+                    // regardless of presence or absence of FLAG_AUTO_CANCEL.
+                    if (hasFlag(notification.flags, FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY)) {
+                        cancelNotification(callingUid, callingPid, sbn.getPackageName(),
+                                sbn.getTag(), sbn.getId(), 0, flagChecker,
+                                false, r.getUserId(), REASON_CLICK, nv.rank, nv.count, null);
 
+                    } else if (hasFlag(notification.flags, FLAG_AUTO_CANCEL)) {
+                        // Otherwise, only FLAG_AUTO_CANCEL notifications (and their children)
+                        // should be canceled on click.
+                        cancelNotification(callingUid, callingPid, sbn.getPackageName(),
+                                sbn.getTag(), sbn.getId(), 0, flagChecker,
+                                false, r.getUserId(), REASON_CLICK, nv.rank, nv.count, null);
+                    }
                 } else {
-                    // Otherwise, only FLAG_AUTO_CANCEL notifications should be canceled on click.
-                    cancelNotification(callingUid, callingPid, sbn.getPackageName(), sbn.getTag(),
-                            sbn.getId(), FLAG_AUTO_CANCEL,
-                            FlagChecker.mustNotHave(FLAG_FOREGROUND_SERVICE
-                                    | FLAG_USER_INITIATED_JOB | FLAG_BUBBLE),
-                            false, r.getUserId(), REASON_CLICK, nv.rank, nv.count, null);
+                    // Notifications should be cancelled on click if they have been lifetime extended,
+                    // regardless of presence or absence of FLAG_AUTO_CANCEL.
+                    if ((notification.flags & FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY) != 0) {
+                        cancelNotification(callingUid, callingPid, sbn.getPackageName(),
+                                sbn.getTag(), sbn.getId(), FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY,
+                                flagChecker,
+                                false, r.getUserId(), REASON_CLICK, nv.rank, nv.count, null);
+
+                    } else {
+                        // Otherwise, only FLAG_AUTO_CANCEL notifications should be canceled on click.
+                        cancelNotification(callingUid, callingPid, sbn.getPackageName(), sbn.getTag(),
+                                sbn.getId(), FLAG_AUTO_CANCEL,
+                                flagChecker,
+                                false, r.getUserId(), REASON_CLICK, nv.rank, nv.count, null);
+                    }
                 }
                 nv.recycle();
                 reportUserInteraction(r);
@@ -1528,8 +1547,12 @@ public class NotificationManagerService extends SystemService {
                                 r.getSbn().getPackageName(),
                                 r.getSbn().getTag(),
                                 r.getSbn().getId(),
-                                FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY /*=mustHaveFlags*/,
-                                FlagChecker.mustNotHave(FLAG_NO_DISMISS),
+                                 /*=mustHaveFlags*/ nmRemoveMustHaveFlags()
+                                        ? 0 : FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY,
+                                FlagChecker.mustHaveAndMustNotHave(
+                                        /* mustHaveFlags= */ nmRemoveMustHaveFlags()
+                                                ? FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY : 0,
+                                        /* mustNotHaveFlags= */ FLAG_NO_DISMISS),
                                 false /*=sendDelete*/,
                                 r.getUserId(),
                                 REASON_CLICK,
@@ -10108,6 +10131,11 @@ public class NotificationManagerService extends SystemService {
             this.mCount = count;
             this.mListener = listener;
             this.mCancellationElapsedTimeMs = cancellationElapsedTimeMs;
+
+            if (nmRemoveMustHaveFlags() && mustHaveFlags != 0) {
+                throw new IllegalArgumentException(
+                    "mustHaveFlags must be 0 because nmRemoveMustHaveFlags() is enabled");
+            }
         }
 
         @Override
@@ -10143,8 +10171,10 @@ public class NotificationManagerService extends SystemService {
                         mNotificationDelegate.onBubbleMetadataFlagChanged(r.getKey(), flags);
                         return;
                     }
-                    if ((r.getNotification().flags & mMustHaveFlags) != mMustHaveFlags) {
-                        return;
+                    if (!nmRemoveMustHaveFlags()) {
+                        if ((r.getNotification().flags & mMustHaveFlags) != mMustHaveFlags) {
+                            return;
+                        }
                     }
                     if (mFlagChecker != null && !mFlagChecker.apply(r.getNotification().flags)) {
                         // If cancellation will be prevented due to lifetime extension,
