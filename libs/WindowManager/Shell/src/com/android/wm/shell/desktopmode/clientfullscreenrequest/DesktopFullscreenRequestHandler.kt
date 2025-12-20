@@ -15,7 +15,7 @@
  */
 package com.android.wm.shell.desktopmode.clientfullscreenrequest
 
-import android.app.ActivityManager
+import android.app.ActivityManager.RunningTaskInfo
 import android.app.FullscreenRequestHandler.RESULT_FAILED_NOT_SUPPORTED
 import android.app.WindowConfiguration
 import android.app.WindowConfiguration.ACTIVITY_TYPE_HOME
@@ -34,6 +34,7 @@ import com.android.wm.shell.common.ClientFullscreenRequestController
 import com.android.wm.shell.common.ClientFullscreenRequestController.FullscreenRequestHandler
 import com.android.wm.shell.common.ClientFullscreenRequestController.FullscreenRequestHandler.EnterResult
 import com.android.wm.shell.common.ClientFullscreenRequestController.FullscreenRequestHandler.EnterResult.Approved.RestorableState
+import com.android.wm.shell.common.ClientFullscreenRequestController.FullscreenRequestHandler.ExitResult
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ExitReason
@@ -41,7 +42,9 @@ import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.animation.DesktopToFullscreenTaskAnimator
 import com.android.wm.shell.desktopmode.animation.EnterDesktopTaskAnimator
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
+import com.android.wm.shell.desktopmode.multidesks.DesksController
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.TransitionUtil
@@ -51,6 +54,7 @@ import com.android.wm.shell.transition.Transitions.TransitionFinishCallback
 import com.android.wm.shell.windowdecor.OnTaskResizeAnimationListener
 import com.android.wm.shell.windowdecor.extension.isFullscreen
 import java.util.Optional
+import kotlinx.coroutines.runBlocking
 
 /**
  * Handles client-started fullscreen requests when the requester task was a desktop task. See
@@ -65,6 +69,7 @@ open class DesktopFullscreenRequestHandler(
     private val context: Context,
     private val desktopUserRepositories: DesktopUserRepositories,
     private val desksOrganizer: DesksOrganizer,
+    private val desksController: DesksController,
     private val desktopWallpaperActivityTokenProvider: DesktopWallpaperActivityTokenProvider,
     private val displayController: DisplayController,
     private val clientFullscreenRequestController: Optional<ClientFullscreenRequestController>,
@@ -76,6 +81,7 @@ open class DesktopFullscreenRequestHandler(
         context: Context,
         desktopUserRepositories: DesktopUserRepositories,
         desksOrganizer: DesksOrganizer,
+        desksController: DesksController,
         desktopWallpaperActivityTokenProvider: DesktopWallpaperActivityTokenProvider,
         displayController: DisplayController,
         clientFullscreenRequestController: Optional<ClientFullscreenRequestController>,
@@ -84,6 +90,7 @@ open class DesktopFullscreenRequestHandler(
         context = context,
         desktopUserRepositories = desktopUserRepositories,
         desksOrganizer = desksOrganizer,
+        desksController = desksController,
         desktopWallpaperActivityTokenProvider = desktopWallpaperActivityTokenProvider,
         displayController = displayController,
         clientFullscreenRequestController = clientFullscreenRequestController,
@@ -105,10 +112,7 @@ open class DesktopFullscreenRequestHandler(
 
     override val name: String = TAG
 
-    override fun handleEnterFullscreen(
-        transition: IBinder,
-        task: ActivityManager.RunningTaskInfo,
-    ): EnterResult? {
+    override fun handleEnterFullscreen(transition: IBinder, task: RunningTaskInfo): EnterResult? {
         val repository = desktopUserRepositories.getProfile(task.userId)
         val activeDesk = repository.getActiveDeskId(task.displayId)
         val isActiveTaskInDesk =
@@ -154,9 +158,9 @@ open class DesktopFullscreenRequestHandler(
 
     override fun handleExitFullscreen(
         transition: IBinder,
-        task: ActivityManager.RunningTaskInfo,
+        task: RunningTaskInfo,
         restorableState: RestorableState?,
-    ): FullscreenRequestHandler.ExitResult? {
+    ): ExitResult? = runBlocking {
         val repository = desktopUserRepositories.getProfile(task.userId)
         val activeDesk = repository.getActiveDeskId(task.displayId)
         val deskIdFromTaskInfo = desksOrganizer.getDeskIdFromTaskInfo(task)
@@ -172,24 +176,20 @@ open class DesktopFullscreenRequestHandler(
         )
         if (restorableState == null) {
             logI("handleExitFullscreen with null restorable state, ignoring")
-            return null
+            return@runBlocking null
         }
         if (restorableState !is RestorableState.Desktop) {
             logI("handleExitFullscreen for non-desktop state, ignoring")
-            return null
+            return@runBlocking null
         }
 
-        val originalDeskId = restorableState.originalDeskId
-        val targetDeskId =
-            if (repository.getAllDeskIds().contains(originalDeskId)) {
-                originalDeskId
-            } else {
-                // The original desk does not exist, use the default one if available.
-                repository.getDefaultDeskId(task.displayId)
-            }
+        val targetDeskId = getExitTargetDeskId(task, restorableState, repository)
         if (targetDeskId == null) {
             logI("handleExitFullscreen but could not find a target desk, rejecting")
-            return FullscreenRequestHandler.ExitResult.Failed(RESULT_FAILED_NOT_SUPPORTED, this)
+            return@runBlocking ExitResult.Failed(
+                resultCode = RESULT_FAILED_NOT_SUPPORTED,
+                handler = this@DesktopFullscreenRequestHandler,
+            )
         }
         val targetDisplayId = repository.getDisplayForDesk(targetDeskId)
 
@@ -206,9 +206,40 @@ open class DesktopFullscreenRequestHandler(
             )
         if (wct == null) {
             logI("handleExitFullscreen but placement failed, rejecting")
-            return FullscreenRequestHandler.ExitResult.Failed(RESULT_FAILED_NOT_SUPPORTED, this)
+            return@runBlocking ExitResult.Failed(
+                resultCode = RESULT_FAILED_NOT_SUPPORTED,
+                handler = this@DesktopFullscreenRequestHandler,
+            )
         }
-        return FullscreenRequestHandler.ExitResult.Approved(wct, this)
+        return@runBlocking ExitResult.Approved(wct, this@DesktopFullscreenRequestHandler)
+    }
+
+    private suspend fun getExitTargetDeskId(
+        task: RunningTaskInfo,
+        restorableState: RestorableState.Desktop,
+        repository: DesktopRepository,
+    ): Int? {
+        val originalDeskId = restorableState.originalDeskId
+        val deskIdsInDisplay = repository.getDeskIds(task.displayId)
+        if (deskIdsInDisplay.contains(originalDeskId)) {
+            // Original desk still exists, use it.
+            return originalDeskId
+        }
+        if (deskIdsInDisplay.isNotEmpty()) {
+            logI("getExitTargetDeskId original desk does not exist, falling back to the default")
+            return checkNotNull(repository.getDefaultDeskId(task.displayId)) {
+                "Expected a default desk to exist after having checked at least 1 desk exists"
+            }
+        }
+        if (!desksController.canCreateDeskInDisplay(task.displayId, task.userId)) {
+            logW("getExitTargetDeskId original desk does not exist and can't create new one")
+            return null
+        }
+        logI("getExitTargetDeskId original desk does not exist, creating a new one")
+        return desktopTasksController.createDeskSuspending(
+            displayId = task.displayId,
+            userId = task.userId,
+        )
     }
 
     /** Whether the given [request] should be handled by this handler. */
@@ -503,6 +534,6 @@ open class DesktopFullscreenRequestHandler(
     }
 
     companion object {
-        private const val TAG = "ClientFullscreenRequestTransitionHandler"
+        private const val TAG = "DesktopFullscreenRequestHandler"
     }
 }

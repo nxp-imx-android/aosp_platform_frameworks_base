@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.desktopmode
+package com.android.wm.shell.desktopmode.multidesks
 
+import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.shared.desktopmode.DesktopConfig
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellController
 
 /** Encapsulate all the logic related to Desks. */
@@ -24,6 +26,7 @@ class DesksController(
     private val shellController: ShellController,
     private val userRepositories: DesktopUserRepositories,
     private val desktopConfig: DesktopConfig,
+    private val desktopState: DesktopState,
 ) {
 
     /** Returns whether the given display has an active desk. */
@@ -41,5 +44,25 @@ class DesksController(
         val deskLimit = desktopConfig.maxDeskLimit
         val repository = userRepositories.getProfile(userId)
         return deskLimit == 0 || repository.getNumberOfDesks() < deskLimit
+    }
+
+    /**
+     * Returns whether the user can create a new desk in the given display.
+     *
+     * @param enforceDeskLimit set to false to bypass the desk-limit verification.
+     */
+    fun canCreateDeskInDisplay(
+        displayId: Int,
+        userId: Int = shellController.currentUserId,
+        enforceDeskLimit: Boolean = true,
+    ): Boolean {
+        if (!desktopState.isDesktopModeSupportedOnDisplay(displayId)) {
+            return false
+        }
+        if (enforceDeskLimit && !canCreateDesks(userId)) {
+            // At the limit, no-op.
+            return false
+        }
+        return true
     }
 }

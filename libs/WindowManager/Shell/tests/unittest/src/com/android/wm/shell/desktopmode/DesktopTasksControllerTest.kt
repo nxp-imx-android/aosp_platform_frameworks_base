@@ -157,6 +157,7 @@ import com.android.wm.shell.desktopmode.desktopfirst.TOUCH_FIRST_DISPLAY_WINDOWI
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.desktopmode.multidesks.DeskSwitchTransitionHandler
 import com.android.wm.shell.desktopmode.multidesks.DeskTransition
+import com.android.wm.shell.desktopmode.multidesks.DesksController
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
 import com.android.wm.shell.desktopmode.multidesks.PreserveDisplayRequestHandler
@@ -490,7 +491,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         whenever(transactionPool.acquire()).thenReturn(surfaceControlTransaction)
         whenever(splitScreenController.multiDisplayProvider).thenReturn(splitMultiDisplayProvider)
 
-        desksController = DesksController(shellController, userRepositories, desktopConfig)
+        desksController =
+            DesksController(shellController, userRepositories, desktopConfig, desktopState)
 
         controller = createController()
         controller.setSplitScreenController(splitScreenController)
@@ -10237,29 +10239,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         assumeTrue(UserManager.isHeadlessSystemUserMode())
 
         controller.createDesk(DEFAULT_DISPLAY, UserHandle.USER_SYSTEM)
-
-        verify(desksOrganizer, never()).createDesk(any(), any(), any())
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun testCreateDesk_enforceLimitAndOverLimit_dropsRequest() {
-        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
-        desktopConfig.maxDeskLimit = 2
-        // Add a second desk to bring the number up to the limit.
-        taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
-
-        controller.createDesk(DEFAULT_DISPLAY)
-
-        verify(desksOrganizer, never()).createDesk(any(), any(), any())
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun testCreateDesk_displayDoesNotSupportDesks_dropsRequest() {
-        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = false
-
-        controller.createDesk(DEFAULT_DISPLAY)
 
         verify(desksOrganizer, never()).createDesk(any(), any(), any())
     }

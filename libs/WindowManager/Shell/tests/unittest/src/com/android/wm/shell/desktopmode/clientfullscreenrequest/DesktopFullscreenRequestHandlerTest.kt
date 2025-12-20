@@ -45,6 +45,7 @@ import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.RunOnTransitStart
 import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
+import com.android.wm.shell.desktopmode.multidesks.DesksController
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.sysui.ShellInit
@@ -75,6 +76,7 @@ class DesktopFullscreenRequestHandlerTest : ShellTestCase() {
     private val shellInit = ShellInit(TestShellExecutor())
     private val desktopUserRepositories = mock<DesktopUserRepositories>()
     private val desksOrganizer = mock<DesksOrganizer>()
+    private val desksController = mock<DesksController>()
     private val desktopWallpaperActivityTokenProvider =
         mock<DesktopWallpaperActivityTokenProvider>()
     private val desktopTasksController = mock<DesktopTasksController>()
@@ -89,6 +91,8 @@ class DesktopFullscreenRequestHandlerTest : ShellTestCase() {
 
     @Before
     fun setUp() {
+        whenever(desksController.canCreateDeskInDisplay(eq(DISPLAY_ID), eq(USER_ID), any()))
+            .thenReturn(false) // Must allow creation explicitly in tests.
         repository =
             DesktopRepository(
                 persistentRepository = mock(),
@@ -104,6 +108,7 @@ class DesktopFullscreenRequestHandlerTest : ShellTestCase() {
                 mContext,
                 desktopUserRepositories,
                 desksOrganizer,
+                desksController,
                 desktopWallpaperActivityTokenProvider,
                 displayController,
                 Optional.of(clientFullscreenRequestController),
@@ -389,7 +394,7 @@ class DesktopFullscreenRequestHandlerTest : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_DELEGATE_REQUEST_FULLSCREEN_HANDLING_TO_SHELL)
-    fun handleExitFullscreen_nullDesktopRestorableState_rejects() = runTest {
+    fun handleExitFullscreen_nullDesktopRestorableState_ignores() = runTest {
         val task = createFullscreenTask()
 
         val result =
@@ -515,6 +520,72 @@ class DesktopFullscreenRequestHandlerTest : ShellTestCase() {
             )
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_DELEGATE_REQUEST_FULLSCREEN_HANDLING_TO_SHELL)
+    fun handleExitFullscreen_accepted_originalDeskDeletedA_noOtherDeskExist_movesToNewDesk() =
+        runTest {
+            val restoreBounds = Rect(200, 200, 800, 800)
+            val transition = Binder()
+            val task = createFullscreenTask()
+            val deskId = 5
+            setUpDeskCreationRequest(deskId)
+            whenever(
+                    desktopTasksController.handleFreeformTaskPlacement(
+                        task = eq(task),
+                        transition = eq(transition),
+                        targetDisplayId = eq(task.displayId),
+                        suggestedTargetDeskId = eq(deskId),
+                        requestedTaskBounds = eq(restoreBounds),
+                        requestType = eq(TRANSIT_CHANGE),
+                        enterReason = eq(EnterReason.CLIENT_REQUEST_EXIT_FULLSCREEN),
+                        forceBringTaskToFront = eq(true),
+                    )
+                )
+                .thenReturn(WindowContainerTransaction())
+
+            handler.handleExitFullscreen(
+                transition = transition,
+                task = task,
+                // Desk doesn't exist.
+                restorableState =
+                    RestorableState.Desktop(originalDeskId = 10, bounds = restoreBounds),
+            )
+
+            verify(desktopTasksController)
+                .handleFreeformTaskPlacement(
+                    task = eq(task),
+                    transition = eq(transition),
+                    targetDisplayId = eq(task.displayId),
+                    suggestedTargetDeskId = eq(deskId),
+                    requestedTaskBounds = eq(restoreBounds),
+                    requestType = eq(TRANSIT_CHANGE),
+                    enterReason = eq(EnterReason.CLIENT_REQUEST_EXIT_FULLSCREEN),
+                    forceBringTaskToFront = eq(true),
+                )
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_DELEGATE_REQUEST_FULLSCREEN_HANDLING_TO_SHELL)
+    fun handleExitFullscreen_originalDeskDeleted_noOtherDeskExist_cannotCreate_rejects() = runTest {
+        val restoreBounds = Rect(200, 200, 800, 800)
+        val transition = Binder()
+        val task = createFullscreenTask()
+        whenever(desksController.canCreateDeskInDisplay(eq(DISPLAY_ID), eq(USER_ID), any()))
+            .thenReturn(false)
+
+        val result =
+            handler.handleExitFullscreen(
+                transition = transition,
+                task = task,
+                // Desk doesn't exist.
+                restorableState =
+                    RestorableState.Desktop(originalDeskId = 10, bounds = restoreBounds),
+            )
+
+        assertThat(result).isNotNull()
+        assertThat(result is ExitResult.Failed).isTrue()
+    }
+
     private fun setUpActiveDeskWithTask(displayId: Int, deskId: Int, taskId: Int) {
         setUpActiveDesk(displayId, deskId)
         repository.addTaskToDesk(
@@ -549,6 +620,23 @@ class DesktopFullscreenRequestHandlerTest : ShellTestCase() {
         repository.setDeskInactive(deskId)
     }
 
+    private suspend fun setUpDeskCreationRequest(deskId: Int) {
+        whenever(desksController.canCreateDeskInDisplay(eq(DISPLAY_ID), eq(USER_ID), any()))
+            .thenReturn(true)
+        whenever(
+                desktopTasksController.createDeskSuspending(
+                    displayId = eq(DISPLAY_ID),
+                    userId = eq(USER_ID),
+                    enforceDeskLimit = any(),
+                )
+            )
+            .thenAnswer { invocationOnMock ->
+                val displayId = invocationOnMock.arguments[0] as Int
+                repository.addDesk(displayId, deskId)
+                return@thenAnswer deskId
+            }
+    }
+
     private fun createFreeformTask(bounds: Rect? = null): RunningTaskInfo {
         return DesktopTestHelpers.createFreeformTask(userId = USER_ID, bounds = bounds)
     }
@@ -566,5 +654,6 @@ class DesktopFullscreenRequestHandlerTest : ShellTestCase() {
 
     private companion object {
         private const val USER_ID = 0
+        private const val DISPLAY_ID = 0
     }
 }
