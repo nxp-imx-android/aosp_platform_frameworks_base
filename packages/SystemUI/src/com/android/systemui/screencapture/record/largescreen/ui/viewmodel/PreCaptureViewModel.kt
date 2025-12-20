@@ -114,7 +114,7 @@ constructor(
             selectedType == ScreenCaptureType.RECORDING &&
                 captureRegion == ScreenCaptureRegion.PARTIAL
         ) {
-            captureRegionSource.value = ScreenCaptureRegion.FULLSCREEN
+            updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN)
         }
         captureTypeSource.value = selectedType
         uiEventLogger.log(
