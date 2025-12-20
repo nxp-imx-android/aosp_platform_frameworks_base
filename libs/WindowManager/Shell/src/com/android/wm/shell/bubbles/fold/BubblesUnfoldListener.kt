@@ -38,6 +38,7 @@ class BubblesUnfoldListener(
             isFolded &&
                 bubbleData.isExpanded &&
                 selectedBubble is Bubble &&
+                selectedBubble.isTaskValidToBubbleOnSmallScreen() &&
                 foldLockSettingsObserver.isStayAwakeOnFold()
         ) {
             onStartBarToFloatingTransition(selectedBubble)

@@ -59,6 +59,7 @@ import com.android.wm.shell.bubbles.util.BubblePolicyHelper;
 import com.android.wm.shell.bubbles.util.DefaultBubblePolicyHelper;
 import com.android.wm.shell.dagger.HasWMComponent;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
+import com.android.wm.shell.shared.bubbles.ContextUtils;
 import com.android.wm.shell.taskview.TaskView;
 
 import java.io.PrintWriter;
@@ -396,9 +397,11 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
 
     @Override
     public void onTaskInfoChanged(ActivityManager.RunningTaskInfo taskInfo) {
-        if (!mBubblePolicyHelper.isValidToBubble(taskInfo)) {
-            mBubblePolicyHelper.showBubbleNotSupportedErrorToast(mContext);
-            mBubblePolicyHelper.moveExistingTaskOutOfBubble(mBubble, taskInfo);
+        if (mManager != null && taskInfo != null
+                && !mBubblePolicyHelper.isValidToBubble(taskInfo)) {
+            // Since the task is no longer valid to be bubbled after a state change (e.g. on fold),
+            // collapse the stack. When the user taps the bubble again, it will move out of bubble.
+            mManager.collapseStack();
         } else if (mCaptionView != null && taskInfo != null && taskInfo.taskDescription != null) {
             final int statusBarColor = taskInfo.taskDescription.getStatusBarColor();
             final int bgColor = taskInfo.taskDescription.getBackgroundColor();
@@ -411,7 +414,11 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
             }
         }
         if (mBubble != null && taskInfo != null) {
-            mBubble.setIsTaskValidToBubble(mBubblePolicyHelper.isValidToBubble(taskInfo));
+            final boolean isTaskResizable = taskInfo.isResizeable;
+            final boolean isNonResizableTaskAndValidOnSmallScreen = !isTaskResizable
+                    && ContextUtils.getSupportsNonResizableMultiWindowOnSmallScreen(mContext);
+            mBubble.setIsTaskValidToBubbleOnSmallScreen(
+                    isTaskResizable || isNonResizableTaskAndValidOnSmallScreen);
         }
     }
 

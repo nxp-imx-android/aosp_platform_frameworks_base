@@ -167,7 +167,7 @@ public class Bubble implements BubbleViewProvider {
     @Nullable
     private Icon mIcon;
     private boolean mIsBubble;
-    private boolean mIsTaskValidToBubble;
+    private boolean mIsTaskValidToBubbleOnSmallScreen = true;
     private boolean mIsTextChanged;
     private boolean mIsDismissable;
     private boolean mShouldSuppressNotificationDot;
@@ -1077,10 +1077,10 @@ public class Bubble implements BubbleViewProvider {
     }
 
     /**
-     * Sets whether the task is valid to bubble.
+     * Sets whether the task is valid to bubble on small screens.
      */
-    public void setIsTaskValidToBubble(boolean isTaskValidToBubble) {
-        mIsTaskValidToBubble = isTaskValidToBubble;
+    public void setIsTaskValidToBubbleOnSmallScreen(boolean isTaskValidToBubbleOnSmallScreen) {
+        mIsTaskValidToBubbleOnSmallScreen = isTaskValidToBubbleOnSmallScreen;
     }
 
     /**
@@ -1328,8 +1328,8 @@ public class Bubble implements BubbleViewProvider {
         return mFlags;
     }
 
-    public boolean isTaskValidToBubble() {
-        return mIsTaskValidToBubble;
+    public boolean isTaskValidToBubbleOnSmallScreen() {
+        return mIsTaskValidToBubbleOnSmallScreen;
     }
 
     @Override
