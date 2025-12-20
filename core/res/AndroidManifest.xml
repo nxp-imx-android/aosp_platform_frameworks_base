@@ -3014,6 +3014,19 @@
         android:protectionLevel="normal"
         android:featureFlag="android.permission.flags.restrict_assist_structure_screen_content_enabled" />
 
+    <!-- Allows an application to manage voice interaction read screen context requests (e.g.
+        request denial count)
+
+        <p>Protection level: signature|installer
+        @FlaggedApi(android.permission.flags.Flags.FLAG_ASSIST_SETTINGS_PRIVACY_IMPROVEMENTS_ENABLED)
+        @SystemApi
+        @hide
+    -->
+    <permission
+        android:name="android.permission.MANAGE_READ_SCREEN_CONTEXT_REQUEST"
+        android:protectionLevel="signature|installer"
+        android:featureFlag="android.permission.flags.assist_settings_privacy_improvements_enabled" />
+
     <!-- ======================================== -->
     <!-- Permissions for factory reset protection -->
     <!-- ======================================== -->

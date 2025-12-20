@@ -1116,6 +1116,9 @@
     <!-- Permission required for CTS test - CtsMotionCuesTestCases -->
     <uses-permission android:name="android.permission.DRAW_MOTION_CUES" />
 
+    <!-- Permissions required for CTS test - CtsVoiceInteractionTestCases -->
+    <uses-permission android:name="android.permission.MANAGE_READ_SCREEN_CONTEXT_REQUEST" />
+
     <application
         android:label="@string/app_label"
         android:theme="@android:style/Theme.DeviceDefault.DayNight"

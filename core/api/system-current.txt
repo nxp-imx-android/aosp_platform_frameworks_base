@@ -260,6 +260,7 @@ package android {
     field public static final String MANAGE_NOTIFICATION_LISTENERS = "android.permission.MANAGE_NOTIFICATION_LISTENERS";
     field public static final String MANAGE_ONE_TIME_PERMISSION_SESSIONS = "android.permission.MANAGE_ONE_TIME_PERMISSION_SESSIONS";
     field public static final String MANAGE_PROFILE_AND_DEVICE_OWNERS = "android.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS";
+    field @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public static final String MANAGE_READ_SCREEN_CONTEXT_REQUEST = "android.permission.MANAGE_READ_SCREEN_CONTEXT_REQUEST";
     field public static final String MANAGE_ROLE_HOLDERS = "android.permission.MANAGE_ROLE_HOLDERS";
     field public static final String MANAGE_ROLLBACKS = "android.permission.MANAGE_ROLLBACKS";
     field public static final String MANAGE_ROTATION_RESOLVER = "android.permission.MANAGE_ROTATION_RESOLVER";
@@ -3514,6 +3515,9 @@ package android.app.usage {
 package android.app.voiceinteraction {
 
   @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public final class VoiceInteractionManager {
+    method @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") @RequiresPermission(allOf={android.Manifest.permission.MANAGE_READ_SCREEN_CONTEXT_REQUEST, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL}, conditional=true) public void clearReadScreenContextRequestDeniedCount();
+    method @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") @CheckResult @RequiresPermission(allOf={android.Manifest.permission.MANAGE_READ_SCREEN_CONTEXT_REQUEST, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL}, conditional=true) public int getReadScreenContextRequestState(int);
+    method @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") @RequiresPermission(allOf={android.Manifest.permission.MANAGE_READ_SCREEN_CONTEXT_REQUEST, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL}, conditional=true) public void incrementReadScreenContextRequestDeniedCount();
     field @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public static final String ACTION_REQUEST_ASSIST_STRUCTURE = "android.app.voiceinteraction.action.REQUEST_ASSIST_STRUCTURE";
   }
 

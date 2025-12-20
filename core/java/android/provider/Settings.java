@@ -8309,6 +8309,13 @@ public final class Settings {
         @Readable
         public static final String VOICE_INTERACTION_SERVICE = "voice_interaction_service";
 
+        /**
+         * The count of denied read screen context requests by the current assistant.
+         * @hide
+         */
+        public static final String READ_SCREEN_CONTEXT_REQUEST_DENIED_COUNT =
+                "read_screen_context_request_denied_count";
+
 
         /**
          * The currently selected credential service(s) flattened ComponentName.
