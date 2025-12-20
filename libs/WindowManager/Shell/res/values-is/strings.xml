@@ -135,6 +135,8 @@
     <string name="new_window_text" msgid="6318648868380652280">"Nýr gluggi"</string>
     <string name="manage_windows_text" msgid="5567366688493093920">"Stjórna gluggum"</string>
     <string name="change_aspect_ratio_text" msgid="9104456064548212806">"Breyta myndhlutfalli"</string>
+    <!-- no translation found for handle_menu_game_controls_text (8049059289860078063) -->
+    <skip />
     <string name="handle_menu_restart_text" msgid="3907767216238298098">"Fínstilla yfirlit"</string>
     <string name="handle_menu_error_icon_text" msgid="7200375184879808684">"Villutákn"</string>
     <string name="close_text" msgid="4986518933445178928">"Loka"</string>
@@ -177,4 +179,6 @@
     <string name="open_by_default_splash_dialog_browser_text" msgid="4439951040200685938">"Opna í vafra"</string>
     <string name="open_by_default_splash_dialog_app_text" msgid="2680408983754147907">"Vera áfram í forriti"</string>
     <string name="open_by_default_splash_dialog_ask_me_later_text" msgid="2706872945449736432">"Spyrja mig síðar"</string>
+    <!-- no translation found for package_update_text (196015273357188152) -->
+    <skip />
 </resources>
