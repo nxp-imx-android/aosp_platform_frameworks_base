@@ -11,8 +11,8 @@ import com.android.systemui.haptics.msdl.msdlPlayer
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.keyguard.ui.transitions.blurConfig
+import com.android.systemui.keyguard.ui.viewmodel.BurnInMovementState
 import com.android.systemui.keyguard.ui.viewmodel.aodBurnInViewModel
-import com.android.systemui.keyguard.ui.viewmodel.keyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.lightRevealScrimViewModel
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
@@ -135,8 +135,6 @@ val Kosmos.sceneContainerViewModelFactory by Fixture {
                 wallpaperViewModel = wallpaperViewModel,
                 keyguardInteractor = keyguardInteractor,
                 keyguardTransitionInteractor = keyguardTransitionInteractor,
-                burnIn = aodBurnInViewModel,
-                clock = keyguardClockViewModel,
                 onBootTransitionInteractor = onBootTransitionInteractor,
                 notificationContainerInteractor = notificationContainerInteractor,
                 dualShadeEducationalTooltipsViewModelFactory =
@@ -144,6 +142,10 @@ val Kosmos.sceneContainerViewModelFactory by Fixture {
                 animateQsTilesViewModelFactory = animateQsTilesViewModelFactory,
                 sceneTransitionBlurViewModelFactory = sceneTransitionBlurViewModelFactory,
                 toastDisplayer = { sceneContainerToastDisplayer },
+                burnInMovementFactory =
+                    object : BurnInMovementState.Factory {
+                        override fun create() = BurnInMovementState(aodBurnInViewModel)
+                    },
             )
     }
 }

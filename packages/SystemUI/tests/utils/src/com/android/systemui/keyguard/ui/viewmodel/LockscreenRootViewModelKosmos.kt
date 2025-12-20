@@ -32,6 +32,10 @@ val Kosmos.lockscreenRootViewModelFactory by Fixture {
                 deviceEntryBypassInteractor = deviceEntryBypassInteractor,
                 deviceEntryUdfpsInteractor = deviceEntryUdfpsInteractor,
                 wallpaperFocalAreaInteractor = wallpaperFocalAreaInteractor,
+                burnInMovementFactory =
+                    object : BurnInMovementState.Factory {
+                        override fun create() = BurnInMovementState(aodBurnInViewModel)
+                    },
             )
         }
     }

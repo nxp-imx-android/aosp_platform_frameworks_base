@@ -18,6 +18,8 @@ package com.android.systemui.keyguard.ui.viewmodel
 
 import android.util.Log
 import android.util.MathUtils
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.geometry.Offset
 import com.android.app.animation.Interpolators
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.dagger.SysUISingleton
@@ -31,9 +33,12 @@ import com.android.systemui.keyguard.shared.model.BurnInModel.Companion.MAX_LARG
 import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.ui.StateToValue
+import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeDisplayAware
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import javax.inject.Inject
 import kotlin.math.max
 import kotlinx.coroutines.CoroutineScope
@@ -202,6 +207,25 @@ constructor(
                 scaleClockOnly = useScaleOnly,
             )
         }
+    }
+}
+
+class BurnInMovementState
+@AssistedInject
+constructor(private val aodBurnInViewModel: AodBurnInViewModel) : HydratedActivatable() {
+    val translation: Offset by
+        aodBurnInViewModel.movement
+            .map { Offset(it.translationX.toFloat(), it.translationY.toFloat()) }
+            .hydratedStateOf(traceName = "translation", initialValue = Offset(0f, 0f))
+
+    val scale: BurnInScaleViewModel by
+        aodBurnInViewModel.movement
+            .map { BurnInScaleViewModel(it.scale, it.scaleClockOnly) }
+            .hydratedStateOf(traceName = "scale", initialValue = BurnInScaleViewModel())
+
+    @AssistedFactory
+    interface Factory {
+        fun create(): BurnInMovementState
     }
 }
 

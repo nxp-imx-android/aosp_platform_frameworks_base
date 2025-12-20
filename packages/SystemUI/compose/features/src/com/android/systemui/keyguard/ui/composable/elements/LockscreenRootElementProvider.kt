@@ -19,6 +19,8 @@ package com.android.systemui.keyguard.ui.composable.elements
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.HorizontalAlignmentLine
@@ -33,7 +35,7 @@ import com.android.compose.modifiers.thenIf
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.ui.composable.LockscreenTouchHandling
 import com.android.systemui.keyguard.ui.composable.modifier.burnInAware
-import com.android.systemui.keyguard.ui.composable.rememberBurnIn
+import com.android.systemui.keyguard.ui.composable.trackBurnInParameters
 import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenRootViewModel
@@ -79,35 +81,25 @@ constructor(
         @Composable
         override fun LockscreenScope<ElementContentScope>.LockscreenElement() {
             val viewModel =
-                rememberViewModel("LockscreenContent-viewModel") { viewModelFactory.create() }
-
-            val burnIn = rememberBurnIn(keyguardClockViewModel)
+                rememberViewModel("LockscreenRoot-viewModel") { viewModelFactory.create() }
+            val burnInTracker =
+                trackBurnInParameters(aodBurnInViewModel, viewModel.burnIn, keyguardClockViewModel)
             LockscreenTouchHandling(viewModel.touchHandlingFactory) { onSettingsMenuPlaced ->
                 val innerContext =
                     context.copy(
                         burnInModifiers =
                             BurnInModifiers(
-                                clock =
-                                    Modifier.burnInAware(
-                                        viewModel = aodBurnInViewModel,
-                                        params = burnIn.parameters,
-                                        isClock = true,
-                                    ),
-                                nonClock =
-                                    Modifier.burnInAware(
-                                        viewModel = aodBurnInViewModel,
-                                        params = burnIn.parameters,
-                                        isClock = false,
-                                    ),
+                                clock = Modifier.burnInAware(viewModel.burnIn, isClock = true),
+                                nonClock = Modifier.burnInAware(viewModel.burnIn, isClock = false),
                             ),
                         onElementPositioned = { key, rect ->
                             when (key) {
                                 Clock.Small -> {
-                                    burnIn.onSmallClockTopChanged(rect.top)
+                                    burnInTracker.onSmallClockTopChanged(rect.top)
                                     viewModel.setSmallClockBottom(rect.bottom)
                                 }
                                 Smartspace.Cards -> {
-                                    burnIn.onSmartspaceTopChanged(rect.top)
+                                    burnInTracker.onSmartspaceTopChanged(rect.top)
                                     viewModel.setSmartspaceCardBottom(rect.bottom)
                                 }
                                 MediaCarousel -> viewModel.setMediaPlayerBottom(rect.bottom)
