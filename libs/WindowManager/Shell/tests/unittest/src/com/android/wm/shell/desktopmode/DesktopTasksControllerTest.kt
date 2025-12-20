@@ -11368,6 +11368,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         assertNotNull(wct, "should handle request")
         wct.assertWithoutHop(ReorderPredicate(token = task.token))
+        wct.assertWithoutHop(ReparentPredicate(token = task.token))
     }
 
     @Test
@@ -12307,14 +12308,14 @@ private class ReorderPredicate(
 
 private class ReparentPredicate(
     val token: WindowContainerToken,
-    val parentToken: WindowContainerToken,
+    val parentToken: WindowContainerToken? = null,
     val toTop: Boolean? = null,
 ) : ((WindowContainerTransaction.HierarchyOp) -> Boolean) {
     override fun invoke(hop: WindowContainerTransaction.HierarchyOp): Boolean =
         hop.isReparent &&
             (toTop == null || hop.toTop == toTop) &&
             hop.container == token.asBinder() &&
-            hop.newParent == parentToken.asBinder()
+            (parentToken == null || hop.newParent == parentToken.asBinder())
 }
 
 private fun WindowContainerTransaction.assertReorder(
