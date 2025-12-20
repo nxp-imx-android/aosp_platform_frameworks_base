@@ -899,6 +899,7 @@ class DesktopTasksController(
     /**
      * Returns a WindowContainerTransaction containing all the changes when a display is
      * disconnected.
+     * TODO: b/469817261 - Refactor all disconnect/reconnect logic into a separate controller.
      */
     fun onDisplayDisconnect(
         disconnectedDisplayId: Int,
@@ -1214,6 +1215,7 @@ class DesktopTasksController(
         )
         // TODO: b/365873835 - Utilize DesktopTask data class once it is
         //  implemented in DesktopRepository.
+        // TODO: b/469492330 - Gather this data inside the coroutine.
         val repository = userRepositories.getProfile(userId)
         val preservedTaskIdsByDeskId =
             repository.getPreservedTasksByDeskIdInZOrder(preservedDisplay)
@@ -1235,6 +1237,7 @@ class DesktopTasksController(
         // Preserve focus state on reconnect, regardless if focused task is restored or not.
         val globallyFocusedTask =
             shellTaskOrganizer.getRunningTaskInfo(focusTransitionObserver.globallyFocusedTaskId)
+        var focusedTaskRestoredToInactiveDesk = false
         mainScope.launch {
             preservedTaskIdsByDeskId.forEach { (preservedDeskId, preservedTaskIds) ->
                 val newDeskId =
@@ -1279,6 +1282,9 @@ class DesktopTasksController(
                             )
                             ?.let { runOnTransitStartList.add(it) }
                     }
+                    if (!isActiveDesk && globallyFocusedTask?.taskId in preservedTaskIds) {
+                        focusedTaskRestoredToInactiveDesk = true
+                    }
                 }
 
                 val preservedTilingData =
@@ -1294,8 +1300,12 @@ class DesktopTasksController(
                     )
                 }
             }
-            globallyFocusedTask?.let {
-                wct.reorder(it.token, /* onTop= */ true, /* includingParents= */ true)
+            // Globally focused task should retain focus unless it was restored to an
+            // inactive desk.
+            if (!focusedTaskRestoredToInactiveDesk) {
+                globallyFocusedTask?.let {
+                    wct.reorder(it.token, /* onTop= */ true, /* includingParents= */ true)
+                }
             }
             val transition = transitions.startTransition(TRANSIT_CHANGE, wct, null)
             tilingReconnectHandler.activationBinder = transition
