@@ -60,6 +60,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.android.compose.modifiers.padding
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.rememberViewModel
@@ -261,15 +262,15 @@ constructor(
                             targetOffsetX = { -it },
                         ),
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.Start) {
                     PostRecordingThumbnail(
                         viewmodel = postRecordingViewModel,
                         preview = thumbnail?.bitmap?.asImageBitmap(),
                         modifier =
-                            Modifier.clip(RoundedCornerShape(12.dp))
-                                .border(3.dp, MaterialTheme.colorScheme.surfaceVariant)
-                                .width(190.dp)
-                                .height(107.dp)
+                            Modifier.clip(RoundedCornerShape(16.dp))
+                                .border(4.dp, MaterialTheme.colorScheme.surfaceBright)
+                                .width(200.dp)
+                                .height(128.dp)
                                 .clickable {
                                     postRecordingViewModel.view()
                                     hide()
@@ -277,7 +278,7 @@ constructor(
                     )
                     PostCaptureToastBar(
                         actionButtonGroup = actionButtonItems,
-                        modifier = Modifier.padding(8.dp),
+                        modifier = Modifier.padding(vertical = 8.dp),
                     )
                 }
             }
@@ -304,7 +305,7 @@ constructor(
         modifier: Modifier = Modifier,
     ) {
         Box(
-            modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
+            modifier = modifier.background(MaterialTheme.colorScheme.surfaceBright).padding(4.dp),
             contentAlignment = Alignment.Center,
         ) {
             if (preview != null) {
@@ -312,19 +313,29 @@ constructor(
                     bitmap = preview,
                     contentDescription =
                         stringResource(R.string.screen_capture_post_recording_shelf_thumbnail_a11y),
-                    modifier = Modifier.matchParentSize(),
-                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.matchParentSize().clip(RoundedCornerShape(12.dp)),
+                    contentScale = ContentScale.Crop,
                 )
             } else {
-                LoadingIcon(
-                    loadIcon(
-                            viewModel = viewmodel,
-                            resId = R.drawable.ic_screen_capture_movie,
-                            contentDescription = null,
-                        )
-                        .value,
-                    modifier = Modifier.size(24.dp),
-                )
+                Box(
+                    modifier =
+                        Modifier.matchParentSize()
+                            .background(
+                                MaterialTheme.colorScheme.surfaceContainerHigh,
+                                RoundedCornerShape(12.dp),
+                            ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    LoadingIcon(
+                        loadIcon(
+                                viewModel = viewmodel,
+                                resId = R.drawable.ic_screen_capture_movie,
+                                contentDescription = null,
+                            )
+                            .value,
+                        modifier = Modifier.size(24.dp),
+                    )
+                }
             }
         }
     }
