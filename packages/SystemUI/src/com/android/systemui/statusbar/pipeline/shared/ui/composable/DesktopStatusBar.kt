@@ -72,6 +72,7 @@ import com.android.systemui.statusbar.phone.ui.TintedIconManager
 import com.android.systemui.statusbar.pipeline.battery.ui.composable.UnifiedBattery
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel
+import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.AvControlsPopupViewModel
 import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.quickactions.ui.compose.QuickActionChipsContainer
 import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
@@ -99,6 +100,7 @@ fun DesktopStatusBar(
     iconManagerFactory: TintedIconManager.Factory,
     mediaHierarchyManager: MediaHierarchyManager,
     mediaViewModelFactory: MediaViewModel.Factory,
+    avControlsPopupViewModelFactory: AvControlsPopupViewModel.Factory,
     mediaHost: MediaHost,
     iconViewStore: NotificationIconContainerViewBinder.IconViewStore?,
     modifier: Modifier = Modifier,
@@ -169,6 +171,7 @@ fun DesktopStatusBar(
                     onMediaControlPopupVisibilityChanged = { popupShowing ->
                         mediaHierarchyManager.isMediaControlPopupShowing = popupShowing
                     },
+                    avControlsPopupViewModelFactory = avControlsPopupViewModelFactory,
                 )
             }
 

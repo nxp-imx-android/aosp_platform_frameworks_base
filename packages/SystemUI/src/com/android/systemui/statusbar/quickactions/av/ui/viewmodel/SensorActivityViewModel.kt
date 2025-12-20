@@ -28,15 +28,15 @@ class SensorActivityViewModel
 @AssistedInject
 constructor(
     private val avControlsChipInteractor: AvControlsChipInteractor,
-    @Assisted private val setCurrentScreen: (Screen) -> Unit,
+    @Assisted private val setCurrentPage: (PageType) -> Unit,
 ) : HydratedActivatable() {
 
-    fun returnToMainScreen() {
-        setCurrentScreen(Screen.MAIN)
+    fun returnToMainPage() {
+        setCurrentPage(PageType.MAIN)
     }
 
-    fun enterDedicatedScreen() {
-        setCurrentScreen(Screen.SENSOR_ACTIVITY)
+    fun enterDedicatedPage() {
+        setCurrentPage(PageType.SENSOR_ACTIVITY)
     }
 
     /** List of apps using camera or microphone. */
@@ -49,9 +49,17 @@ constructor(
         avControlsChipInteractor.closeApp(packageName)
     }
 
+    fun manageApp(packageName: String) {
+        avControlsChipInteractor.manageApp(packageName)
+    }
+
+    fun openPrivacyDashboard() {
+        avControlsChipInteractor.openPrivacyDashboard()
+    }
+
     /** A factory to be used to create view model instances. */
     @AssistedFactory
     interface Factory {
-        fun create(setCurrentScreen: (Screen) -> Unit): SensorActivityViewModel
+        fun create(setCurrentPage: (PageType) -> Unit): SensorActivityViewModel
     }
 }

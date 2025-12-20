@@ -26,7 +26,7 @@ import dagger.assisted.AssistedInject
 class AvControlsPopupViewModel
 @AssistedInject
 constructor(
-    val mainScreenViewModelFactory: MainScreenViewModel.Factory,
+    val avControlsPanelContentViewModelFactory: AvControlsPanelContentViewModel.Factory,
     val sensorActivityViewModelFactory: SensorActivityViewModel.Factory,
     val blurDrillInViewModelFactory: BlurDrillInViewModel.Factory,
     val studioLookDrillInViewModelFactory: StudioLookDrillInViewModel.Factory,

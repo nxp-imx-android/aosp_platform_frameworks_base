@@ -14,9 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.quickactions.av.ui.compose
+package com.android.systemui.statusbar.quickactions.av.ui.viewmodel
 
-import androidx.compose.runtime.Composable
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.statusbar.quickactions.av.domain.interactor.desktopEffectInteractor
 
-/** Displays a popup containing media controls. Embeds the MediaCarousel within a Compose popup. */
-@Composable fun AvControlsChipPopup() {}
+val Kosmos.studioMicViewModelFactory: StudioMicViewModel.Factory by
+    Kosmos.Fixture {
+        object : StudioMicViewModel.Factory {
+            override fun create(): StudioMicViewModel {
+                return StudioMicViewModel(desktopEffectInteractor = desktopEffectInteractor)
+            }
+        }
+    }

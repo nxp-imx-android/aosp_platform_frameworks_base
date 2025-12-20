@@ -16,8 +16,8 @@
 
 package com.android.systemui.statusbar.quickactions.av.ui.viewmodel
 
-/** Type of screen that is currently active in the popup. */
-enum class Screen {
+/** Type of content page that is currently active in the popup. */
+enum class PageType {
     MAIN,
     BLUR,
     STUDIO_LOOK,

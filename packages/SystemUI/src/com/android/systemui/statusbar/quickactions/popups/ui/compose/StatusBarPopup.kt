@@ -36,10 +36,12 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.android.systemui.Flags
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.av.ui.compose.AvControlsChipPopup
+import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.AvControlsPopupViewModel
 import com.android.systemui.statusbar.quickactions.media.ui.compose.MediaControlPopup
 import com.android.systemui.statusbar.quickactions.sharescreen.ui.compose.ShareScreenPrivacyIndicatorPopup
 import com.android.systemui.statusbar.quickactions.sharescreen.ui.viewmodel.ShareScreenPrivacyIndicatorPopupViewModel
@@ -55,6 +57,7 @@ fun StatusBarPopup(
     viewModel: QuickActionChipUiState.PopupChip,
     mediaViewModelFactory: MediaViewModel.Factory,
     mediaHost: MediaHost,
+    avControlsPopupViewModelFactory: AvControlsPopupViewModel.Factory,
 ) {
     val density = Density(LocalContext.current)
 
@@ -96,7 +99,9 @@ fun StatusBarPopup(
                 }
 
                 is QuickActionChipId.AvControlsIndicator -> {
-                    AvControlsChipPopup()
+                    if (!Flags.desktopAvControlsPopup()) {
+                        AvControlsChipPopup(avControlsPopupViewModelFactory)
+                    }
                 }
 
                 is QuickActionChipId.ShareScreenPrivacyIndicator -> {
