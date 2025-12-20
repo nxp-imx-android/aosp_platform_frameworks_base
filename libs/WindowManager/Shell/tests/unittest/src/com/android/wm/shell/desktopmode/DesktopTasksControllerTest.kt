@@ -10660,7 +10660,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         Flags.FLAG_ENABLE_DISPLAY_RECONNECT_INTERACTION,
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
     )
-    fun restoreDisplay_globalFocusedTaskRetainsFocus() =
+    fun restoreDisplay_globalFocusedTaskOnDefaultDisplay_retainsFocus() =
         testScope.runTest {
             val defaultDisplayTask = setUpFreeformTask()
             whenever(focusTransitionObserver.globallyFocusedTaskId)
@@ -10712,6 +10712,128 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             verify(transitions).startTransition(anyInt(), wctCaptor.capture(), anyOrNull())
             val wct = wctCaptor.firstValue
             wct.assertReorder(defaultDisplayTask.token, toTop = true, includingParents = true)
+        }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_DISPLAY_RECONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun restoreDisplay_globalFocusedTaskRestoredToActiveDesk_retainsFocus() =
+        testScope.runTest {
+            val defaultDisplayTask = setUpFreeformTask()
+            taskRepository.addDesk(SECOND_DISPLAY, DISCONNECTED_DESK_ID)
+            taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
+
+            val firstTaskBounds = Rect(100, 300, 1000, 1200)
+            val firstTask =
+                setUpFreeformTask(
+                    displayId = SECOND_DISPLAY,
+                    deskId = DISCONNECTED_DESK_ID,
+                    bounds = firstTaskBounds,
+                )
+            val secondTaskBounds = Rect(400, 400, 1600, 900)
+            val secondTask =
+                setUpFreeformTask(
+                    displayId = SECOND_DISPLAY,
+                    deskId = DISCONNECTED_DESK_ID,
+                    bounds = secondTaskBounds,
+                )
+            whenever(focusTransitionObserver.globallyFocusedTaskId).thenReturn(secondTask.taskId)
+            val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+            taskRepository.preserveDisplay(SECOND_DISPLAY, SECOND_DISPLAY_UNIQUE_ID)
+            taskRepository.onDeskDisplayChanged(
+                DISCONNECTED_DESK_ID,
+                DEFAULT_DISPLAY,
+                DEFAULT_DISPLAY_UNIQUE_ID,
+            )
+            whenever(desksOrganizer.createDesk(eq(SECOND_DISPLAY_ON_RECONNECT), any(), any()))
+                .thenAnswer { invocation ->
+                    (invocation.arguments[2] as DesksOrganizer.OnCreateCallback).onCreated(
+                        deskId = 5
+                    )
+                }
+            val transition = Binder()
+            whenever(transitions.startTransition(eq(TRANSIT_CHANGE), any(), anyOrNull()))
+                .thenReturn(transition)
+            val preservedDisplay =
+                taskRepository.removePreservedDisplay(SECOND_DISPLAY_UNIQUE_ID)
+                    ?: fail("Expected to find preserved display.")
+
+            controller.restoreDisplay(
+                displayId = SECOND_DISPLAY_ON_RECONNECT,
+                preservedDisplay = preservedDisplay,
+                userId = taskRepository.userId,
+            )
+            runCurrent()
+
+            verify(transitions).startTransition(anyInt(), wctCaptor.capture(), anyOrNull())
+            val wct = wctCaptor.firstValue
+            wct.assertReorder(secondTask.token, toTop = true, includingParents = true)
+        }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_DISPLAY_RECONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun restoreDisplay_globalFocusedTaskRestoredToInactiveDesk_losesFocus() =
+        testScope.runTest {
+            val defaultDisplayTask = setUpFreeformTask()
+            taskRepository.addDesk(SECOND_DISPLAY, DISCONNECTED_DESK_ID)
+
+            val firstTaskBounds = Rect(100, 300, 1000, 1200)
+            val firstTask =
+                setUpFreeformTask(
+                    displayId = SECOND_DISPLAY,
+                    deskId = DISCONNECTED_DESK_ID,
+                    bounds = firstTaskBounds,
+                )
+            val secondTaskBounds = Rect(400, 400, 1600, 900)
+            val secondTask =
+                setUpFreeformTask(
+                    displayId = SECOND_DISPLAY,
+                    deskId = DISCONNECTED_DESK_ID,
+                    bounds = secondTaskBounds,
+                )
+            whenever(focusTransitionObserver.globallyFocusedTaskId).thenReturn(secondTask.taskId)
+            val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+            taskRepository.preserveDisplay(SECOND_DISPLAY, SECOND_DISPLAY_UNIQUE_ID)
+            taskRepository.onDeskDisplayChanged(
+                DISCONNECTED_DESK_ID,
+                DEFAULT_DISPLAY,
+                DEFAULT_DISPLAY_UNIQUE_ID,
+            )
+            whenever(desksOrganizer.createDesk(eq(SECOND_DISPLAY_ON_RECONNECT), any(), any()))
+                .thenAnswer { invocation ->
+                    (invocation.arguments[2] as DesksOrganizer.OnCreateCallback).onCreated(
+                        deskId = 5
+                    )
+                }
+            val transition = Binder()
+            whenever(transitions.startTransition(eq(TRANSIT_CHANGE), any(), anyOrNull()))
+                .thenReturn(transition)
+            val preservedDisplay =
+                taskRepository.removePreservedDisplay(SECOND_DISPLAY_UNIQUE_ID)
+                    ?: fail("Expected to find preserved display.")
+
+            controller.restoreDisplay(
+                displayId = SECOND_DISPLAY_ON_RECONNECT,
+                preservedDisplay = preservedDisplay,
+                userId = taskRepository.userId,
+            )
+            runCurrent()
+
+            verify(transitions).startTransition(anyInt(), wctCaptor.capture(), anyOrNull())
+            val wct = wctCaptor.firstValue
+            wct.assertWithoutHop { hop ->
+                hop.type == HIERARCHY_OP_TYPE_REORDER &&
+                    hop.container == secondTask.token.asBinder() &&
+                    hop.toTop &&
+                    hop.includingParents()
+            }
         }
 
     @Test
@@ -11246,6 +11368,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         assertNotNull(wct, "should handle request")
         wct.assertWithoutHop(ReorderPredicate(token = task.token))
+        wct.assertWithoutHop(ReparentPredicate(token = task.token))
     }
 
     @Test
@@ -12185,14 +12308,14 @@ private class ReorderPredicate(
 
 private class ReparentPredicate(
     val token: WindowContainerToken,
-    val parentToken: WindowContainerToken,
+    val parentToken: WindowContainerToken? = null,
     val toTop: Boolean? = null,
 ) : ((WindowContainerTransaction.HierarchyOp) -> Boolean) {
     override fun invoke(hop: WindowContainerTransaction.HierarchyOp): Boolean =
         hop.isReparent &&
             (toTop == null || hop.toTop == toTop) &&
             hop.container == token.asBinder() &&
-            hop.newParent == parentToken.asBinder()
+            (parentToken == null || hop.newParent == parentToken.asBinder())
 }
 
 private fun WindowContainerTransaction.assertReorder(

@@ -140,8 +140,11 @@ object MobileIconBinder {
                                 val shouldRequestLayout =
                                     when {
                                         oldIcon == null -> true
-                                        oldIcon is SignalIconModel.Cellular &&
-                                            newIcon is SignalIconModel.Cellular -> {
+                                        oldIcon::class != newIcon::class &&
+                                            (oldIcon is SignalIconModel.Satellite ||
+                                                newIcon is SignalIconModel.Satellite) -> true
+                                        oldIcon is SignalIconModel.CellularTypeIconModel &&
+                                            newIcon is SignalIconModel.CellularTypeIconModel -> {
                                             oldIcon.numberOfLevels != newIcon.numberOfLevels
                                         }
                                         else -> false
@@ -149,15 +152,16 @@ object MobileIconBinder {
                                 Pair(shouldRequestLayout, newIcon)
                             }
                             .collect { (shouldRequestLayout, newIcon) ->
-                                if (newIcon is SignalIconModel.Cellular) {
+                                if (newIcon is SignalIconModel.CellularTypeIconModel) {
                                     val packedSignalDrawableState = newIcon.toSignalDrawableState()
-                                    viewModel.verboseLogger?.logBinderReceivedSignalCellularIcon(
-                                        parentView = view,
-                                        subId = viewModel.subscriptionId,
-                                        icon = newIcon,
-                                        packedSignalDrawableState = packedSignalDrawableState,
-                                        shouldRequestLayout = shouldRequestLayout,
-                                    )
+                                    viewModel.verboseLogger
+                                        ?.logBinderReceivedSignalCellularTypeIcon(
+                                            parentView = view,
+                                            subId = viewModel.subscriptionId,
+                                            icon = newIcon,
+                                            packedSignalDrawableState = packedSignalDrawableState,
+                                            shouldRequestLayout = shouldRequestLayout,
+                                        )
                                     iconView.setImageDrawable(mobileDrawable)
                                     mobileDrawable.level = packedSignalDrawableState
                                     viewModel.verboseLogger?.logBinderSignalIconResult(

@@ -178,7 +178,7 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
 
         bubbleTaskView.cleanup()
 
-        if (BubbleAnythingFlagHelper.enableCreateAnyBubble() || Flags.bugDontRemoveTaskBubble()) {
+        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
             verify(taskView).unregisterTask()
             verify(taskView, never()).removeTask()
         } else {

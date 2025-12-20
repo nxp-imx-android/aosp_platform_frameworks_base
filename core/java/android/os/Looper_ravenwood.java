@@ -13,10 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package android.os;
 
-package com.android.systemui.statusbar.quickactions.av.ui.compose
+import android.platform.test.ravenwood.RavenwoodEnvironment;
 
-import androidx.compose.runtime.Composable
+class Looper_ravenwood {
+    static boolean isLooperClearsThreadInterruptedEnabled() {
+        // On Ravenwood, @ChangeIds may not yet be ready when this method is called,
+        // so manually check the test's target SDK version.
+        return RavenwoodEnvironment.getInstance().getTargetSdkLevel()
+                >= android.os.Build.VERSION_CODES.CINNAMON_BUN;
+    }
 
-/** Displays a popup containing media controls. Embeds the MediaCarousel within a Compose popup. */
-@Composable fun AvControlsChipPopup() {}
+    static int getThresholdOverride() {
+        return -1;
+    }
+}

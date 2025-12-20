@@ -28,6 +28,7 @@ import com.android.systemui.statusbar.notification.icon.ui.viewbinder.connectedD
 import com.android.systemui.statusbar.phone.ui.statusBarIconController
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.defaultDisplayHomeStatusBarViewModelFactory
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.homeStatusBarViewBinder
+import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.avControlsPopupViewModelFactory
 import com.android.systemui.statusbar.ui.viewmodel.statusBarRegionSamplingViewModelFactory
 import org.mockito.kotlin.mock
 
@@ -49,5 +50,6 @@ val Kosmos.statusBarRootFactory by
             homeStatusBarViewBinder = homeStatusBarViewBinder,
             homeStatusBarViewModelFactory = defaultDisplayHomeStatusBarViewModelFactory,
             statusBarRegionSamplingViewModelFactory = statusBarRegionSamplingViewModelFactory,
+            avControlsPopupViewModelFactory = avControlsPopupViewModelFactory,
         )
     }

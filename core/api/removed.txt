@@ -58,7 +58,7 @@ package android.content.pm {
     method public abstract boolean setInstantAppCookie(@Nullable byte[]);
   }
 
-  @IntDef(prefix={"FLAG_PERMISSION_"}, value={0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x100, 0x200, 0x2000, 0x1000, 0x800, 0x4000, 0x8000, 0x8, 0x10000, 0x20000}) @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.SOURCE) public static @interface PackageManager.PermissionFlags {
+  @IntDef(prefix={"FLAG_PERMISSION_"}, value={0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x100, 0x200, 0x2000, 0x1000, 0x800, 0x4000, 0x8000, 0x8, 0x10000, 0x20000, 0x80000, 0x100000}) @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.SOURCE) public static @interface PackageManager.PermissionFlags {
   }
 
   public final class SharedLibraryInfo implements android.os.Parcelable {

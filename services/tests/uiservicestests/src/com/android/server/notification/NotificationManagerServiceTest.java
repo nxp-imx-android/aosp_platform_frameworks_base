@@ -4590,6 +4590,24 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    public void testCancelNotificationsFromListener_clearAll_PromotedOngoing()
+            throws Exception {
+        final NotificationRecord child2 = generateNotificationRecord(
+                mTestNotificationChannel, 3, null, false);
+        child2.getNotification().extras
+                .putBoolean(Notification.EXTRA_REQUEST_PROMOTED_ONGOING, true);
+        child2.getNotification().flags |= FLAG_ONGOING_EVENT | FLAG_PROMOTED_ONGOING;
+        assertThat(child2.getNotification().hasPromotableCharacteristics()).isTrue();
+        mService.addNotification(child2);
+        String[] keys = {child2.getSbn().getKey()};
+        mService.getBinderService().cancelNotificationsFromListener(null, keys);
+        waitForIdle();
+        StatusBarNotification[] notifs =
+                mBinderService.getActiveNotifications(child2.getSbn().getPackageName());
+        assertEquals(0, notifs.length);
+    }
+
+    @Test
     public void testCancelNotificationsFromListener_clearAll_NoClear()
             throws Exception {
         final NotificationRecord child2 = generateNotificationRecord(
@@ -4817,6 +4835,24 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         StatusBarNotification[] notifs =
                 mBinderService.getActiveNotifications(child2.getSbn().getPackageName());
         assertEquals(1, notifs.length);
+    }
+
+    @Test
+    public void testCancelNotificationsFromListener_byKey_PromotedOngoing()
+            throws Exception {
+        final NotificationRecord child2 = generateNotificationRecord(
+                mTestNotificationChannel, 3, null, false);
+        child2.getNotification().extras
+                .putBoolean(Notification.EXTRA_REQUEST_PROMOTED_ONGOING, true);
+        child2.getNotification().flags |= FLAG_ONGOING_EVENT | FLAG_PROMOTED_ONGOING;
+        assertThat(child2.getNotification().hasPromotableCharacteristics()).isTrue();
+        mService.addNotification(child2);
+        String[] keys = {child2.getSbn().getKey()};
+        mService.getBinderService().cancelNotificationsFromListener(null, keys);
+        waitForIdle();
+        StatusBarNotification[] notifs =
+                mBinderService.getActiveNotifications(child2.getSbn().getPackageName());
+        assertEquals(0, notifs.length);
     }
 
     @Test
@@ -21438,7 +21474,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_MANAGED_SERVICES_DOUBLE_BINDING)
     public void onBroadcast_packageReplaced_notifiesListenersOnce() {
         simulatePackageReplacedBroadcasts("pkg", 123);
         waitForIdle();

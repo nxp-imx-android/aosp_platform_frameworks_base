@@ -762,16 +762,10 @@ constructor(
                     )
                 } else {
                     if (wakeDirectlyToGoneInteractor.canWakeDirectlyToGone.value) {
-                        val isTransitioningToLockscreen =
-                            sceneInteractor.transitioningTo.value == Scenes.Lockscreen
-                        if (!isTransitioningToLockscreen) {
-                            switchToScene(
-                                targetSceneKey = Scenes.Gone,
-                                loggingReason =
-                                    "device is waking up while we can wake directly to gone, and " +
-                                        "is not already en route to lockscreen",
-                            )
-                        }
+                        switchToScene(
+                            targetSceneKey = Scenes.Gone,
+                            loggingReason = "device is waking up while we can wake directly to gone",
+                        )
                     } else if (
                         authenticationInteractor.get().authenticationMethod.value ==
                             AuthenticationMethodModel.Sim
@@ -1279,11 +1273,15 @@ constructor(
                         it == ShowWhileAwakeReason.KEYGUARD_REENABLED
                 }
                 .collect {
-                    // If keyguard is enabled, lock and switch to Lockscreen scene. If it's not
-                    // enabled, it'll be re-shown when it's enabled again.
+                    // If keyguard is enabled, lock and switch to Lockscreen scene if needed.
+                    // If it's not enabled, it'll be re-shown when it's enabled again.
                     if (keyguardEnabledInteractor.isKeyguardEnabled.value) {
                         deviceEntryInteractor.lockNow("Screen timed out or WM#lockNow() called")
-                        switchToScene(Scenes.Lockscreen, "Keyguard re-enabled")
+
+                        // If we're dreaming, DreamStartable will take us to Scenes.Dream.
+                        if (!keyguardInteractor.isDreamingNotDozing.value) {
+                            switchToScene(Scenes.Lockscreen, "Not dreaming, and $it")
+                        }
                     }
                 }
         }

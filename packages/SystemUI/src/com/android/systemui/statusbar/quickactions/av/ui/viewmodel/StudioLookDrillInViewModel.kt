@@ -25,7 +25,7 @@ class StudioLookDrillInViewModel
 constructor(
     val portraitRelightButtonViewModelFactory: PortraitRelightButtonViewModel.Factory,
     val faceRetouchButtonViewModelFactory: FaceRetouchButtonViewModel.Factory,
-    @Assisted val returnToMainScreen: () -> Unit,
+    @Assisted val returnToMainPage: () -> Unit,
 ) {
 
     // TODO(b/436222258): Replace hardcoded strings with resource resolution
@@ -34,6 +34,6 @@ constructor(
     /** A factory to be used to create view model instances. */
     @AssistedFactory
     interface Factory {
-        fun create(returnToMainScreen: () -> Unit): StudioLookDrillInViewModel
+        fun create(returnToMainPage: () -> Unit): StudioLookDrillInViewModel
     }
 }

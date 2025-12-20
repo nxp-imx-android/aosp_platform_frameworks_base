@@ -186,6 +186,10 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"ಇಡೀ ಸ್ಕ್ರೀನ್‌ನ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"ಇಡೀ ಸ್ಕ್ರೀನ್ ಅನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"ಸ್ಕ್ರೀನ್ ಕ್ಯಾಪ್ಚರ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು"</string>
+    <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"ಸ್ಕ್ರೀನ್ ರೆಕಾರ್ಡಿಂಗ್ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಿ"</string>
+    <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"ಫೈಲ್ ಮ್ಯಾನೇಜರ್‌ನಲ್ಲಿ ಸ್ಕ್ರೀನ್ ರೆಕಾರ್ಡಿಂಗ್ ಅನ್ನು ತೆರೆಯಿರಿ"</string>
+    <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"ಸ್ಕ್ರೀನ್ ರೆಕಾರ್ಡಿಂಗ್ ಅನ್ನು ಅಳಿಸಿ"</string>
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"ವೀಡಿಯೊ ವೀಕ್ಷಕದಲ್ಲಿ ಸ್ಕ್ರೀನ್ ರೆಕಾರ್ಡಿಂಗ್ ಅನ್ನು ತೆರೆಯಿರಿ"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"ಕ್ಲಿಕ್‌ಗಳು ಮತ್ತು ಕೀಗಳನ್ನು ತೋರಿಸಿ"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"ಸಾಧನದ ಆಡಿಯೋ"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"ಮೈಕ್ರೊಫೋನ್‌"</string>
@@ -376,8 +380,7 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"ಎಲ್ಲಾ ಅಧಿಸೂಚನೆಗಳನ್ನು ತೆರವುಗೊಳಿಸು."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"ನೋಟಿಫಿಕೇಶನ್‌ಗಳು"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
-    <!-- no translation found for accessibility_status_bar_input_method_indicator (4316411266975554038) -->
-    <skip />
+    <string name="accessibility_status_bar_input_method_indicator" msgid="4316411266975554038">"ಇನ್‌ಪುಟ್ ವಿಧಾನ"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{ಇನ್ನೂ # ನೋಟಿಫಿಕೇಶನ್ ಒಳಗಿದೆ.}one{ಇನ್ನೂ # ನೋಟಿಫಿಕೇಶನ್‌ಗಳು ಒಳಗಿವೆ.}other{ಇನ್ನೂ # ನೋಟಿಫಿಕೇಶನ್‌ಗಳು ಒಳಗಿವೆ.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"ಪರದೆಯನ್ನು ಲ್ಯಾಂಡ್‌ಸ್ಕೇಪ್ ಓರಿಯಂಟೇಶನ್‍ನಲ್ಲಿ ಲಾಕ್ ಮಾಡಲಾಗಿದೆ."</string>
@@ -419,7 +422,6 @@
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"ಸ್ವಯಂ-ತಿರುಗುವಿಕೆ"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"ಪರದೆಯನ್ನು ಸ್ವಯಂ-ತಿರುಗಿಸಿ"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"ಸ್ಥಳ"</string>
-    <string name="quick_settings_screensaver_label" msgid="1495003469366524120">"ಸ್ಕ್ರೀನ್ ಸೇವರ್"</string>
     <string name="quick_settings_camera_label" msgid="5612076679385269339">"ಕ್ಯಾಮರಾ ಆ್ಯಕ್ಸೆಸ್"</string>
     <string name="quick_settings_mic_label" msgid="8392773746295266375">"ಮೈಕ್ ಆ್ಯಕ್ಸೆಸ್"</string>
     <string name="quick_settings_camera_mic_available" msgid="1453719768420394314">"ಲಭ್ಯವಿದೆ"</string>
@@ -645,8 +647,11 @@
     <string name="communal_widget_picker_title" msgid="1953369090475731663">"ಲಾಕ್ ಸ್ಕ್ರೀನ್ ವಿಜೆಟ್‌ಗಳು"</string>
     <string name="communal_widget_picker_description" msgid="6927728582371632782">"ನಿಮ್ಮ ಸಾಧನ ಲಾಕ್ ಆಗಿದ್ದರೂ ಸಹ ಯಾರಾದರೂ ನಿಮ್ಮ ಲಾಕ್ ಸ್ಕ್ರೀನ್‌ನಲ್ಲಿ ವಿಜೆಟ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಬಹುದು."</string>
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"ವಿಜೆಟ್ ಅನ್ನು ಆಯ್ಕೆ ಮಾಡಬೇಡಿ"</string>
+    <string name="accessibility_action_label_resize_widget" msgid="639756010934310745">"ವಿಜೆಟ್ ಅನ್ನು ಮರುಗಾತ್ರಗೊಳಿಸಿ"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"ಎತ್ತರವನ್ನು ಕಡಿಮೆ ಮಾಡಿ"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"ಎತ್ತರವನ್ನು ಹೆಚ್ಚಿಸಿ"</string>
+    <string name="accessibility_announcement_expand_widget" msgid="1123324821904704150">"ಎತ್ತರವನ್ನು ವಿಸ್ತರಿಸಲಾಗಿದೆ"</string>
+    <string name="accessibility_announcement_shrink_widget" msgid="2720176058287945622">"ಎತ್ತರ ಕಡಿಮೆಯಾಗಿದೆ"</string>
     <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"ಮುಂದಿನದನ್ನು ತೋರಿಸಿ"</string>
     <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"ಹಿಂದಿನದನ್ನು ತೋರಿಸಿ"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"ಲಾಕ್ ಸ್ಕ್ರೀನ್ ವಿಜೆಟ್‌ಗಳು"</string>
@@ -732,7 +737,7 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"ನೀವು ಏಕಕಾಲದಲ್ಲಿ ತೀರಾ ಹೆಚ್ಚು ನೋಟಿಫಿಕೇಶನ್‌‍‍ಗಳನ್ನು ಪಡೆದಾಗ 2 ನಿಮಿಷಗಳವರೆಗೆ ನಿಮ್ಮ ಸಾಧನದ ವಾಲ್ಯೂಮ್ ಮತ್ತು ಅಲರ್ಟ್‌‍‍ಗಳನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಕಡಿಮೆ ಮಾಡಲಾಗುತ್ತದೆ."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"ಆಫ್ ಮಾಡಿ"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"ಹಳೆಯ ಅಧಿಸೂಚನೆಗಳನ್ನು ನೋಡಲು ಅನ್‌ಲಾಕ್ ಮಾಡಿ"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="5560100935261229784">"ಕೆಲವು ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ನಿಮ್ಮ ಪೋಷಕರು ನಿರ್ವಹಿಸುತ್ತಾರೆ"</string>
+    <string name="quick_settings_disclosure_parental_controls" msgid="9196246842317344981">"ಪೋಷಕ ನಿಯಂತ್ರಣಗಳು ಸಕ್ರಿಯವಾಗಿವೆ"</string>
     <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"ಈ ಸಾಧನವನ್ನು ನಿಮ್ಮ ಪೋಷಕರು ನಿರ್ವಹಿಸುತ್ತಿದ್ದಾರೆ"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"ಕೆಲವು ಸಾಧನ ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಪಿನ್ ಮೂಲಕ ಸಂರಕ್ಷಿತವಾಗಿವೆ."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"ನಿಮ್ಮ ಸಂಸ್ಥೆಯು ಈ ಸಾಧನದ ಮಾಲೀಕತ್ವವನ್ನು ಹೊಂದಿದೆ ಮತ್ತು ಅದು ನೆಟ್‌ವರ್ಕ್ ಟ್ರಾಫಿಕ್‌ನ ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಬಹುದು"</string>
@@ -1189,7 +1194,23 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"ಇದು ಸ್ಕ್ರೀನ್ ಮೇಲಿನ ಎಲ್ಲಾ ಕಂಟೆಂಟ್ ಅನ್ನು ಓದಬಹುದು ಮತ್ತು ಇತರ ಆ್ಯಪ್‌ಗಳ ಮೇಲೆ ಕಂಟೆಂಟ್ ಅನ್ನು ಪ್ರದರ್ಶಿಸಬಹುದು."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"ಆ್ಯಕ್ಷನ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಿ ಮತ್ತು ನಿರ್ವಹಿಸಿ"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"ಇದು ಆ್ಯಪ್ ಅಥವಾ ಹಾರ್ಡ್‌ವೇರ್ ಸೆನ್ಸರ್‌ನ ಜೊತೆಗಿನ ನಿಮ್ಮ ಸಂವಹನಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಬಹುದು ಮತ್ತು ನಿಮ್ಮ ಪರವಾಗಿ ಆ್ಯಪ್‌ಗಳ ಜೊತೆ ಸಂವಹನ ನಡೆಸಬಹುದು."</string>
+    <!-- no translation found for accessibility_key_gesture_select_to_speak_dialog_content (2241403419620826861) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ಐಕಾನ್"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> ಒತ್ತಿದರೆ <xliff:g id="ID_4">^4</xliff:g> ಆನ್ ಆಗುತ್ತದೆ, ಇದು ಆ್ಯಕ್ಸೆಸಿಬಿಲಿಟಿ ಫೀಚರ್ ಆಗಿದೆ. ಇದು ನಿಮ್ಮ ಸಾಧನವನ್ನು ಹ್ಯಾಂಡ್ಸ್-ಫ್ರೀ ಆಗಿ ನಿಯಂತ್ರಿಸಲು ನಿಮಗೆ ಅವಕಾಶ ನೀಡುತ್ತದೆ."</string>
+    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_title (4659318395231105188) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_content (7058726404278534674) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text (7095579813773247709) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcutchooser_editor_dialog_title (7881631878787325869) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcutchooser_done_button (5288975589451082156) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcutchooser_picker_dialog_title (6067291073174568750) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcutchooser_edit_button (1924449663239985111) -->
+    <skip />
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"ಆ್ಯಕ್ಸೆಸಿಬಿಲಿಟಿ"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ಲಾಕ್ ಸ್ಕ್ರೀನ್"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"ಶಟ್ ಡೌನ್‌ ಮಾಡಲಾಗುತ್ತಿದೆ…"</string>
@@ -1606,7 +1627,8 @@
     <string name="start_desktop_mode" msgid="5459815912537830841">"ಡೆಸ್ಕ್‌ಟಾಪ್"</string>
     <string name="start_mirroring" msgid="3611044878130481882">"ಪ್ರತಿಬಿಂಬಿಸುವಿಕೆ"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"ಡಿಸ್‌ಪ್ಲೇ ಕನೆಕ್ಟ್ ಆಗಿದೆ"</string>
-    <string name="connected_display_extended_mode_text" msgid="2457269692913653696">"ಬಾಹ್ಯ ಡಿಸ್‌ಪ್ಲೇಗೆ ಕನೆಕ್ಟ್‌ ಮಾಡಲಾಗಿದೆ"</string>
+    <string name="connected_display_connection_text" msgid="6787771675124372815">"ಬಾಹ್ಯ ಡಿಸ್‌ಪ್ಲೇಗೆ ಕನೆಕ್ಟ್‌ ಮಾಡಲಾಗಿದೆ"</string>
+    <string name="connected_display_removal_text" msgid="8270253839172935318">"ಬಾಹ್ಯ ಡಿಸ್‌ಪ್ಲೇ ಡಿಸ್‌ಕನೆಕ್ಟ್ ಆಗಿದೆ"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"ಮೈಕ್ರೊಫೋನ್‌, ಕ್ಯಾಮರಾ ಹಾಗೂ ಸ್ಥಳ"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"ಇತ್ತೀಚಿನ ಆ್ಯಪ್ ಬಳಕೆ"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"ಇತ್ತೀಚಿನ ಆ್ಯಕ್ಸೆಸ್ ಅನ್ನು ನೋಡಿ"</string>
@@ -1661,7 +1683,7 @@
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"ಹೌದು, ರೀಸೆಟ್ ಮಾಡಿ"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"ರದ್ದುಮಾಡಿ"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"ಕೀ ಅನ್ನು ಒತ್ತಿರಿ"</string>
-    <string name="shortcut_helper_customizer_action_key_text" msgid="3979063901857046887">"ಸಾಹಸ"</string>
+    <string name="shortcut_helper_customizer_action_key_text" msgid="3979063901857046887">"ಕ್ರಿಯೆ"</string>
     <string name="shortcut_customizer_key_combination_in_use_error_message" msgid="3325858369539848162">"ಕೀ ಸಂಯೋಜನೆಯು ಈಗಾಗಲೇ ಬಳಕೆಯಲ್ಲಿದೆ. ಮತ್ತೊಂದು ಸಂಯೋಜನೆಯನ್ನು ನೋಡಿ."</string>
     <string name="shortcut_customizer_generic_error_message" msgid="3128454624049722741">"ಶಾರ್ಟ್‌ಕಟ್‌ ಅನ್ನು ಸೆಟ್‌ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ."</string>
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>

@@ -5040,6 +5040,7 @@ package android.app {
     method public int getPendingIntentCreatorBackgroundActivityStartMode();
     method public int getSplashScreenStyle();
     method @FlaggedApi("com.android.window.flags.touch_pass_through_opt_in") public boolean isAllowPassThroughOnTouchOutside();
+    method @FlaggedApi("com.android.window.flags.enable_require_movable_task_api") public boolean isMovableTaskRequired();
     method @Deprecated public boolean isPendingIntentBackgroundActivityLaunchAllowed();
     method public boolean isShareIdentityEnabled();
     method public static android.app.ActivityOptions makeBasic();
@@ -5058,6 +5059,7 @@ package android.app {
     method public android.app.ActivityOptions setLaunchBounds(@Nullable android.graphics.Rect);
     method public android.app.ActivityOptions setLaunchDisplayId(int);
     method public android.app.ActivityOptions setLockTaskEnabled(boolean);
+    method @FlaggedApi("com.android.window.flags.enable_require_movable_task_api") @NonNull @RequiresPermission(android.Manifest.permission.REPOSITION_SELF_WINDOWS) public android.app.ActivityOptions setMovableTaskRequired(boolean);
     method @Deprecated public void setPendingIntentBackgroundActivityLaunchAllowed(boolean);
     method @NonNull public android.app.ActivityOptions setPendingIntentBackgroundActivityStartMode(int);
     method @NonNull public android.app.ActivityOptions setPendingIntentCreatorBackgroundActivityStartMode(int);
@@ -6302,6 +6304,9 @@ package android.app {
     method @NonNull public android.app.HandoffActivityParams.Builder setAllowHandoffWithoutPackageInstalled(boolean);
   }
 
+  @FlaggedApi("com.android.window.flags.enable_require_movable_task_api") public class InfeasibleActivityOptionsException extends android.util.AndroidRuntimeException {
+  }
+
   public class Instrumentation {
     ctor public Instrumentation();
     method public android.os.TestLooperManager acquireLooperManager(android.os.Looper);
@@ -6632,6 +6637,7 @@ package android.app {
     method @FlaggedApi("android.app.opt_in_rich_ongoing") public boolean isRequestPromotedOngoing();
     method @FlaggedApi("android.app.api_notification_chip") @NonNull public android.app.Notification.ResolvedCompactContent resolveCompactContent(@NonNull android.content.Context);
     method public void writeToParcel(android.os.Parcel, int);
+    field @FlaggedApi("android.app.bridged_notifications") public static final String ACTION_BRIDGED_NOTIFICATION_PREFERENCES = "android.app.action.BRIDGED_NOTIFICATION_PREFERENCES";
     field public static final android.media.AudioAttributes AUDIO_ATTRIBUTES_DEFAULT;
     field public static final int BADGE_ICON_LARGE = 2; // 0x2
     field public static final int BADGE_ICON_NONE = 0; // 0x0
@@ -10379,6 +10385,10 @@ package android.app.voiceinteraction {
   @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public final class VoiceInteractionManager {
     method @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public boolean canReadAssistStructure();
     method @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") @NonNull public android.content.Intent createRequestAssistStructureIntent();
+    method @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") @CheckResult public int getReadScreenContextRequestState();
+    field @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public static final int READ_SCREEN_CONTEXT_REQUEST_STATE_GRANTED = 0; // 0x0
+    field @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public static final int READ_SCREEN_CONTEXT_REQUEST_STATE_REQUESTABLE = 1; // 0x1
+    field @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public static final int READ_SCREEN_CONTEXT_REQUEST_STATE_UNREQUESTABLE = 2; // 0x2
   }
 
 }

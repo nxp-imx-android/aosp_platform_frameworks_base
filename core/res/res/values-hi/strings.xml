@@ -38,7 +38,7 @@
     <string name="serviceErased" msgid="997354043770513494">"मिटाना सफल था."</string>
     <string name="passwordIncorrect" msgid="917087532676155877">"गलत पासवर्ड"</string>
     <string name="mmiComplete" msgid="6341884570892520140">"MMI पूरा हुआ."</string>
-    <string name="badPin" msgid="888372071306274355">"  लिखा गया पुराना पिन सही नहीं है."</string>
+    <string name="badPin" msgid="888372071306274355">"लिखा गया पुराना पिन सही नहीं है."</string>
     <string name="badPuk" msgid="4232069163733147376">"लिखा गया PUK सही नहीं है."</string>
     <string name="mismatchPin" msgid="2929611853228707473">"आपने जो पिन लिखे हैं उसका मिलान नहीं होता."</string>
     <string name="invalidPin" msgid="7542498253319440408">"कोई ऐसा पिन लिखें, जिसमें 4 से 8 अंक हों."</string>
@@ -1830,6 +1830,8 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"हाथ के जेस्चर"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"क्विक सेटिंग"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"तीन बार टैप करें"</string>
+    <!-- no translation found for accessibility_shortcut_label_top_row_key (1488840908672437180) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> को बंद कर दिया गया है"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"शॉर्टकट में बदलाव करें"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"हो गया"</string>
@@ -2546,10 +2548,8 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"क्लोन"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"कम्यूनिटी"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"प्राइवेट स्पेस"</string>
-    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
-    <skip />
-    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
-    <skip />
+    <string name="app_locked_new_notification" msgid="4409730436247596215">"नई सूचना"</string>
+    <string name="app_locked_notification_message" msgid="4576179600328065280">"नया मैसेज"</string>
     <string name="redacted_notification_message" msgid="1520587845842228816">"संवेदनशील जानकारी वाली सूचना का कॉन्टेंट छिपा है"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"स्क्रीन शेयर करने के दौरान सुरक्षा के लिए, ऐप्लिकेशन का कॉन्टेंट छिपाया गया"</string>

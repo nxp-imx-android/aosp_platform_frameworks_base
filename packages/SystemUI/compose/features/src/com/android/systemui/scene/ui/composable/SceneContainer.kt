@@ -58,7 +58,6 @@ import com.android.compose.animation.scene.transitions
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffectFactory
 import com.android.compose.snapshot.ObserveReads
 import com.android.systemui.keyguard.ui.composable.modifier.burnInAware
-import com.android.systemui.keyguard.ui.composable.rememberBurnIn
 import com.android.systemui.lifecycle.rememberActivated
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.ribbon.ui.composable.BottomRightCornerRibbon
@@ -300,11 +299,7 @@ fun SceneContainer(
                 colorSaturation = { viewModel.ribbonColorSaturation },
                 modifier =
                     Modifier.align(Alignment.BottomEnd)
-                        .burnInAware(
-                            viewModel = viewModel.burnIn,
-                            params = rememberBurnIn(viewModel.clock).parameters,
-                            isClock = false,
-                        ),
+                        .burnInAware(movement = viewModel.burnInMovementState, isClock = false),
             )
         }
     }

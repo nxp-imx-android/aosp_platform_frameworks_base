@@ -186,6 +186,14 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Prendre une capture d\'écran de l\'écran entier"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Enregistrer l\'écran entier"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Paramètres de capture d\'écran"</string>
+    <!-- no translation found for screen_capture_post_recording_shelf_share_button_a11y (2907313384921655711) -->
+    <skip />
+    <!-- no translation found for screen_capture_post_recording_shelf_folder_button_a11y (4217075254383938093) -->
+    <skip />
+    <!-- no translation found for screen_capture_post_recording_shelf_delete_button_a11y (8519897681775354217) -->
+    <skip />
+    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (8342622016203434332) -->
+    <skip />
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Afficher les clics et les touches"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"Son de l\'appareil"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Microphone"</string>
@@ -376,8 +384,7 @@
     <string name="accessibility_clear_all" msgid="970525598287244592">"Supprimer toutes les notifications"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Notifications"</string>
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
-    <!-- no translation found for accessibility_status_bar_input_method_indicator (4316411266975554038) -->
-    <skip />
+    <string name="accessibility_status_bar_input_method_indicator" msgid="4316411266975554038">"Méthode d\'entrée"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# autre notification à l\'intérieur.}one{# autre notification à l\'intérieur.}many{# d\'autres notifications à l\'intérieur.}other{# autres notifications à l\'intérieur.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"L\'écran est verrouillé en mode paysage."</string>
@@ -419,7 +426,6 @@
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"Rotation auto"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Rotation automatique de l\'écran"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Localisation"</string>
-    <string name="quick_settings_screensaver_label" msgid="1495003469366524120">"Écran de veille"</string>
     <string name="quick_settings_camera_label" msgid="5612076679385269339">"Accès à l\'appareil photo"</string>
     <string name="quick_settings_mic_label" msgid="8392773746295266375">"Accès au micro"</string>
     <string name="quick_settings_camera_mic_available" msgid="1453719768420394314">"Accessible"</string>
@@ -645,8 +651,14 @@
     <string name="communal_widget_picker_title" msgid="1953369090475731663">"Widgets de l\'écran de verrouillage"</string>
     <string name="communal_widget_picker_description" msgid="6927728582371632782">"N\'importe qui peut voir les widgets sur l\'écran de verrouillage, même si l\'appareil est verrouillé."</string>
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"désélectionner le widget"</string>
+    <!-- no translation found for accessibility_action_label_resize_widget (639756010934310745) -->
+    <skip />
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"Diminuer la hauteur"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"Augmenter la hauteur"</string>
+    <!-- no translation found for accessibility_announcement_expand_widget (1123324821904704150) -->
+    <skip />
+    <!-- no translation found for accessibility_announcement_shrink_widget (2720176058287945622) -->
+    <skip />
     <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"Afficher le suivant"</string>
     <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"Afficher le précédent"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"Widgets de l\'écran de verrouillage"</string>
@@ -732,7 +744,8 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"Les alertes et le volume de l\'appareil sont réduits automatiquement pendant 2 minutes maximum quand vous recevez trop de notifications à la fois."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Désactiver"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Déverr. pour voir les anciennes notif."</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="5560100935261229784">"Certains paramètres sont gérés par ton parent"</string>
+    <!-- no translation found for quick_settings_disclosure_parental_controls (9196246842317344981) -->
+    <skip />
     <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"Cet appareil est géré par ton parent"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Certains paramètres de l\'appareil sont protégés par un NIP."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Votre organisation possède cet appareil et peut contrôler le trafic réseau"</string>
@@ -1178,7 +1191,7 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Activer le raccourci-clavier <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Ne pas activer"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Activer le raccourci"</string>
-    <string name="accessibility_key_gesture_color_inversion_dialog_content" msgid="8831745570619953566">"Raccourci-clavier pour utiliser l\'inversion des couleurs : "<annotation id="action_key_icon">"icône"</annotation>" <xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g>. L\'inversion des couleurs assombrit les écrans lumineux. Elle illumine également les écrans sombres."</string>
+    <string name="accessibility_key_gesture_color_inversion_dialog_content" msgid="8831745570619953566">"Raccourci-clavier pour utiliser l\'inversion des couleurs : "<annotation id="action_key_icon">"icône"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>. L\'inversion des couleurs assombrit les écrans lumineux. Elle illumine également les écrans sombres."</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Raccourci-clavier activé : <xliff:g id="ID_1">%1$s</xliff:g>"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"Raccourci-clavier pour utiliser <xliff:g id="ID_4">^4</xliff:g> (fonctionnalité d\'accessibilité) : "<annotation id="action_key_icon">"icône"</annotation>" <xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g>. Cette action vous permet de zoomer rapidement sur l\'écran pour agrandir le contenu. Raccourci-clavier pour régler le zoom une fois l\'agrandissement activé : "<annotation id="action_key_icon">"icône"</annotation>" <xliff:g id="ID_5">^1</xliff:g>+<xliff:g id="ID_6">^2</xliff:g> et « + » ou « - »."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Désactiver le raccourci"</string>
@@ -1191,7 +1204,23 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Cette fonctionnalité peut lire tout le contenu à l\'écran et afficher du contenu par-dessus d\'autres applis."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Afficher et effectuer des actions"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Cette fonctionnalité peut faire le suivi de vos interactions avec une appli ou un capteur matériel et interagir avec des applis en votre nom."</string>
+    <!-- no translation found for accessibility_key_gesture_select_to_speak_dialog_content (2241403419620826861) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Raccourci-clavier pour activer <xliff:g id="ID_4">^4</xliff:g> (fonctionnalité d\'accessibilité) : "<annotation id="action_key_icon">"icône"</annotation>" <xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g>. Cette fonctionnalité vous permet de contrôler votre appareil en mode Mains libres."</string>
+    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_title (4659318395231105188) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_content (7058726404278534674) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text (7095579813773247709) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcutchooser_editor_dialog_title (7881631878787325869) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcutchooser_done_button (5288975589451082156) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcutchooser_picker_dialog_title (6067291073174568750) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcutchooser_edit_button (1924449663239985111) -->
+    <skip />
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Accessibilité"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Écran de verrouillage"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Arrêt en cours…"</string>
@@ -1608,7 +1637,10 @@
     <string name="start_desktop_mode" msgid="5459815912537830841">"Ordinateur de bureau"</string>
     <string name="start_mirroring" msgid="3611044878130481882">"Dupliquer"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Écran connecté"</string>
-    <string name="connected_display_extended_mode_text" msgid="2457269692913653696">"Connecté à un écran externe"</string>
+    <!-- no translation found for connected_display_connection_text (6787771675124372815) -->
+    <skip />
+    <!-- no translation found for connected_display_removal_text (8270253839172935318) -->
+    <skip />
     <string name="privacy_dialog_title" msgid="5201413527644766025">"Micro, appareil photo, position"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Utilisation récente par les applis"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Afficher l\'accès récent"</string>

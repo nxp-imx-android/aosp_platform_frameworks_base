@@ -21,8 +21,12 @@ import static com.android.internal.app.procstats.ProcessStats.ADJ_MEM_FACTOR_CRI
 import static com.android.internal.app.procstats.ProcessStats.ADJ_MEM_FACTOR_LOW;
 import static com.android.internal.app.procstats.ProcessStats.ADJ_MEM_FACTOR_MODERATE;
 import static com.android.internal.app.procstats.ProcessStats.ADJ_MEM_FACTOR_NORMAL;
+import static com.android.internal.util.FrameworkStatsLog.FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_DECLARED_AND_GRANTED;
+import static com.android.internal.util.FrameworkStatsLog.FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_NOT_DECLARED;
+import static com.android.internal.util.FrameworkStatsLog.FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_DECLARED_BUT_DENIED;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,14 +38,19 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import android.Manifest;
 import android.app.IApplicationThread;
 import android.app.compat.CompatChanges;
 import android.app.usage.UsageStatsManagerInternal;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ServiceInfo;
 import android.os.Process;
@@ -94,9 +103,15 @@ public final class ActiveServicesTest {
         DEFAULT_SERVICE_MIN_RESTART_TIME_BETWEEN * 3
     };
 
+    private static final int TEST_UID = 10123;
+    private static final int TEST_USERID = 0;
+    private static final int TEST_PID = 1234;
+
     private MockitoSession mMockingSession;
     private ActivityManagerService mService;
     private ActiveServices mActiveServices;
+    private PackageManagerInternal mPackageManagerInternal;
+    private Context mContext;
 
     @Before
     public void setUp() {
@@ -594,7 +609,6 @@ public final class ActiveServicesTest {
     @Test
     public void attachApplicationLocked_pcc() throws Exception {
         prepareTestRescheduleServiceRestarts();
-        mService = mock(ActivityManagerService.class);
         mService.mProcessStateController = mock(ProcessStateController.class);
         mService.mAppProfiler = mock(AppProfiler.class);
         mService.mActivityTaskManager = mock(ActivityTaskManagerService.class);
@@ -634,7 +648,6 @@ public final class ActiveServicesTest {
     }
 
     private void prepareTestRescheduleServiceRestarts() {
-        mService = mock(ActivityManagerService.class);
         mService.mConstants = mock(ActivityManagerConstants.class);
         mService.mConstants.mEnableExtraServiceRestartDelayOnMemPressure = true;
         mService.mConstants.mExtraServiceRestartDelayOnMemPressure =
@@ -886,4 +899,169 @@ public final class ActiveServicesTest {
         String seInfo = activeServices.generateAdditionalSeInfoFromService(null, r);
         assertEquals("", seInfo);
     }
+
+    @Test
+    public void testGetNotificationPermissionState_notificationPermissionNotDeclared() {
+        mActiveServices = new ActiveServices(mService);
+        mPackageManagerInternal = mock(PackageManagerInternal.class);
+
+        ServiceRecord r = createServiceRecord();
+        when(mService.getPackageManagerInternal()).thenReturn(mPackageManagerInternal);
+
+        PackageInfo packageInfo = setupPackageInfo(false);
+        when(mPackageManagerInternal.getPackageInfo(eq(PACKAGE_NAME_1), anyLong(), eq(TEST_UID),
+                eq(TEST_USERID)))
+                .thenReturn(packageInfo);
+
+        int result = mActiveServices.getNotificationPermissionState(r);
+        assertEquals(
+                FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_NOT_DECLARED,
+                result);
+        assertFalse(mActiveServices.mNotificationPermCache.get(TEST_UID));
+    }
+
+    @Test
+    public void testGetNotificationPermissionState_notificationPermissionDeclaredAndGranted() {
+        mActiveServices = new ActiveServices(mService);
+        mPackageManagerInternal = mock(PackageManagerInternal.class);
+        mContext = mock(Context.class);
+
+        ServiceRecord r = createServiceRecord();
+        when(mService.getPackageManagerInternal()).thenReturn(mPackageManagerInternal);
+
+        PackageInfo packageInfo = setupPackageInfo(true);
+        when(mPackageManagerInternal.getPackageInfo(eq(PACKAGE_NAME_1), anyLong(), eq(TEST_UID),
+                eq(TEST_USERID)))
+                .thenReturn(packageInfo);
+
+        setFieldValue(ActivityManagerService.class, mService, "mContext", mContext);
+        when(mContext.checkPermission(eq(Manifest.permission.POST_NOTIFICATIONS), eq(TEST_PID),
+                eq(TEST_UID)))
+                .thenReturn(PackageManager.PERMISSION_GRANTED);
+
+        int result = mActiveServices.getNotificationPermissionState(r);
+
+        assertEquals(
+                FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_DECLARED_AND_GRANTED,
+                result);
+        assertTrue(mActiveServices.mNotificationPermCache.get(TEST_UID));
+    }
+
+    @Test
+    public void testGetNotificationPermissionState_notificationPermissionDeclaredAndDenied() {
+        mActiveServices = new ActiveServices(mService);
+        mPackageManagerInternal = mock(PackageManagerInternal.class);
+        mContext = mock(Context.class);
+
+        ServiceRecord r = createServiceRecord();
+        when(mService.getPackageManagerInternal()).thenReturn(mPackageManagerInternal);
+
+        PackageInfo packageInfo = setupPackageInfo(true);
+        when(mPackageManagerInternal.getPackageInfo(eq(PACKAGE_NAME_1), anyLong(), eq(TEST_UID),
+                eq(TEST_USERID)))
+                .thenReturn(packageInfo);
+
+        setFieldValue(ActivityManagerService.class, mService, "mContext", mContext);
+        when(mContext.checkPermission(eq(Manifest.permission.POST_NOTIFICATIONS), eq(TEST_PID),
+                eq(TEST_UID)))
+                .thenReturn(PackageManager.PERMISSION_DENIED);
+
+        int result = mActiveServices.getNotificationPermissionState(r);
+
+        assertEquals(
+                FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_DECLARED_BUT_DENIED,
+                result);
+        assertTrue(mActiveServices.mNotificationPermCache.get(TEST_UID));
+    }
+
+    @Test
+    public void testGetNotificationPermissionState_notificationPermissionCacheHit() {
+        mActiveServices = new ActiveServices(mService);
+        mPackageManagerInternal = mock(PackageManagerInternal.class);
+
+        ServiceRecord r = createServiceRecord();
+        when(mService.getPackageManagerInternal()).thenReturn(mPackageManagerInternal);
+
+        PackageInfo packageInfo = setupPackageInfo(false);
+        when(mPackageManagerInternal.getPackageInfo(eq(PACKAGE_NAME_1), anyLong(), eq(TEST_UID),
+                eq(TEST_USERID)))
+                .thenReturn(packageInfo);
+
+
+        // Populates cache on first call
+        mActiveServices.getNotificationPermissionState(r);
+        verify(mPackageManagerInternal, times(1)).getPackageInfo(eq(PACKAGE_NAME_1), anyLong(),
+                eq(TEST_UID), eq(TEST_USERID));
+
+        // Gets the permission state from cache on second call
+        int result = mActiveServices.getNotificationPermissionState(r);
+        assertEquals(
+                FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_NOT_DECLARED,
+                result);
+        verify(mPackageManagerInternal, times(1)).getPackageInfo(eq(PACKAGE_NAME_1), anyLong(),
+                eq(TEST_UID), eq(TEST_USERID));
+    }
+
+
+    @Test
+    public void testGetNotificationPermissionState_cacheInvalidationOnPackageUpdate() {
+        mActiveServices = new ActiveServices(mService);
+        mPackageManagerInternal = mock(PackageManagerInternal.class);
+        mContext = mock(Context.class);
+
+        ServiceRecord r = createServiceRecord();
+        when(mService.getPackageManagerInternal()).thenReturn(mPackageManagerInternal);
+
+        PackageInfo packageInfo = setupPackageInfo(false);
+        when(mPackageManagerInternal.getPackageInfo(eq(PACKAGE_NAME_1), anyLong(), eq(TEST_UID),
+                eq(TEST_USERID)))
+                .thenReturn(packageInfo);
+
+        // Populates cache with false
+        mActiveServices.getNotificationPermissionState(r);
+        assertFalse(mActiveServices.mNotificationPermCache.get(TEST_UID));
+
+        // Triggering package update
+        mActiveServices.mPackageMonitor.onPackageUpdateFinished(PACKAGE_NAME_1, TEST_UID);
+
+        packageInfo = setupPackageInfo(true);
+        when(mPackageManagerInternal.getPackageInfo(eq(PACKAGE_NAME_1), anyLong(), eq(TEST_UID),
+                eq(TEST_USERID)))
+                .thenReturn(packageInfo);
+
+
+        setFieldValue(ActivityManagerService.class, mService, "mContext", mContext);
+        when(mContext.checkPermission(eq(Manifest.permission.POST_NOTIFICATIONS), eq(TEST_PID),
+                eq(TEST_UID)))
+                .thenReturn(PackageManager.PERMISSION_GRANTED);
+
+        int result = mActiveServices.getNotificationPermissionState(r);
+        assertEquals(
+                FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_DECLARED_AND_GRANTED,
+                result);
+    }
+
+    private ServiceRecord createServiceRecord() {
+        ServiceRecord r = mock(ServiceRecord.class);
+        setFieldValue(ServiceRecord.class, r, "packageName", PACKAGE_NAME_1);
+        r.appInfo = new ApplicationInfo();
+        r.appInfo.uid = TEST_UID;
+        setFieldValue(ServiceRecord.class, r, "userId", TEST_USERID);
+        ProcessRecord processRecord = mock(ProcessRecord.class);
+        processRecord.mPid = TEST_PID;
+        when(r.getHostProcess()).thenReturn(processRecord);
+        return r;
+    }
+
+    private PackageInfo setupPackageInfo(boolean declarePermission) {
+        PackageInfo packageInfo = new PackageInfo();
+        packageInfo.packageName = PACKAGE_NAME_1;
+        if (declarePermission) {
+            packageInfo.requestedPermissions = new String[]{Manifest.permission.POST_NOTIFICATIONS};
+        } else {
+            packageInfo.requestedPermissions = new String[]{};
+        }
+        return packageInfo;
+    }
+
 }

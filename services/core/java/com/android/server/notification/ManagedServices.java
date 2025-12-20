@@ -1192,33 +1192,16 @@ abstract public class ManagedServices {
                     }
                 }
 
-                if (Flags.fixManagedServicesDoubleBinding()) {
-                    if (uidList != null && uidList.length == pkgList.length) {
-                        @UserIdInt int userId = UserHandle.getUserId(uidList[i]);
-                        if (managedServicesConcurrentMultiuser()) {
-                            if (isComponentEnabledForPackage(pkgName, userId)) {
-                                anyServicesInvolved = true;
-                            }
-                        }
-                        if (isPackageAllowed(pkgName, userId)) {
+                if (uidList != null && uidList.length == pkgList.length) {
+                    @UserIdInt int userId = UserHandle.getUserId(uidList[i]);
+                    if (managedServicesConcurrentMultiuser()) {
+                        if (isComponentEnabledForPackage(pkgName, userId)) {
                             anyServicesInvolved = true;
-                            trimApprovedListsForInvalidServices(pkgName, userId);
                         }
                     }
-                } else {
-                    if (uidList != null && uidList.length > 0) {
-                        for (int uid : uidList) {
-                            @UserIdInt int userId = UserHandle.getUserId(uid);
-                            if (managedServicesConcurrentMultiuser()) {
-                                if (isComponentEnabledForPackage(pkgName, userId)) {
-                                    anyServicesInvolved = true;
-                                }
-                            }
-                            if (isPackageAllowed(pkgName, userId)) {
-                                anyServicesInvolved = true;
-                                trimApprovedListsForInvalidServices(pkgName, userId);
-                            }
-                        }
+                    if (isPackageAllowed(pkgName, userId)) {
+                        anyServicesInvolved = true;
+                        trimApprovedListsForInvalidServices(pkgName, userId);
                     }
                 }
             }
@@ -1938,8 +1921,7 @@ abstract public class ManagedServices {
                             }
                             binder.linkToDeath(info, 0);
 
-                            if (Flags.fixManagedServicesDoubleBinding()
-                                    && isServiceBoundLocked(info)) {
+                            if (isServiceBoundLocked(info)) {
                                 Slog.wtfStack(TAG, "Duplicate binding " + info);
                             }
                             added = mServices.add(info);
@@ -1993,16 +1975,11 @@ abstract public class ManagedServices {
                     serviceConnection,
                     BindServiceFlags.of(getBindFlags()),
                     new UserHandle(userid))) {
-                if (!Flags.fixManagedServicesDoubleBinding()) {
-                    mServicesBound.remove(servicesBindingTag);
-                }
                 Slog.w(TAG, "Unable to bind " + getCaption() + " service: " + intent
                         + " in user " + userid);
                 // Need to call Context.unbindService() to dispose of the ServiceConnection even
                 // when bindService returns false.
-                if (Flags.fixManagedServicesDoubleBinding()) {
-                    unbindService(serviceConnection, name, userid);
-                }
+                unbindService(serviceConnection, name, userid);
             }
         } catch (SecurityException ex) {
             mServicesBound.remove(servicesBindingTag);
@@ -2091,13 +2068,9 @@ abstract public class ManagedServices {
     private ManagedServiceInfo registerServiceImpl(ManagedServiceInfo info) {
         synchronized (mMutex) {
             try {
-                if (Flags.fixManagedServicesDoubleBinding()) {
-                    if (!info.isGuest(this)) {
-                        // Guest services are already linkedToDeath in their hosts, and the host
-                        // will call unregisterService() to remove them from this.mServices.
-                        info.service.asBinder().linkToDeath(info, 0);
-                    }
-                } else {
+                if (!info.isGuest(this)) {
+                    // Guest services are already linkedToDeath in their hosts, and the host
+                    // will call unregisterService() to remove them from this.mServices.
                     info.service.asBinder().linkToDeath(info, 0);
                 }
                 mServices.add(info);

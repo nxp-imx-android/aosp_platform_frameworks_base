@@ -623,6 +623,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
     fun convertExpandedBubbleToBar_startsConvertingToBar() {
         val bubble = createBubble("key")
         bubble.setShouldAutoExpand(true)
+        bubble.setIsTaskValidToBubbleOnSmallScreen(true)
         getInstrumentation().runOnMainSync {
             bubbleController.inflateAndAdd(
                 bubble,
@@ -650,6 +651,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
     fun convertExpandedBubbleToBar_updatesTaskViewParent() {
         val bubble = createBubble("key")
         bubble.setShouldAutoExpand(true)
+        bubble.setIsTaskValidToBubbleOnSmallScreen(true)
         getInstrumentation().runOnMainSync {
             bubbleController.inflateAndAdd(
                 bubble,
@@ -679,6 +681,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
     fun convertExpandedBubbleToBar_screenOff_doesNotCollapse() {
         val bubble = createBubble("key")
         bubble.setShouldAutoExpand(true)
+        bubble.setIsTaskValidToBubbleOnSmallScreen(true)
         getInstrumentation().runOnMainSync {
             bubbleController.inflateAndAdd(
                 bubble,
@@ -718,7 +721,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
 
         val bubble = createBubble("key")
         bubble.setShouldAutoExpand(true)
-        bubble.setIsTaskValidToBubble(true)
+        bubble.setIsTaskValidToBubbleOnSmallScreen(true)
         getInstrumentation().runOnMainSync {
             bubbleController.inflateAndAdd(
                 bubble,
@@ -764,7 +767,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
 
         val bubble = createBubble("key")
         bubble.setShouldAutoExpand(true)
-        bubble.setIsTaskValidToBubble(true)
+        bubble.setIsTaskValidToBubbleOnSmallScreen(true)
         getInstrumentation().runOnMainSync {
             bubbleController.inflateAndAdd(
                 bubble,

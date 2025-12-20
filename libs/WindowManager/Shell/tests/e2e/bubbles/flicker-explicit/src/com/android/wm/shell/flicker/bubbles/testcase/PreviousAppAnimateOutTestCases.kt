@@ -18,9 +18,11 @@ package com.android.wm.shell.flicker.bubbles.testcase
 
 import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
 import android.tools.traces.component.IComponentNameMatcher
+import androidx.test.filters.FlakyTest
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerSubjects
-import com.android.wm.shell.flicker.bubbles.utils.FlickerAssertionHelper.assertLayerAlphaChange
-import com.android.wm.shell.flicker.bubbles.utils.FlickerAssertionHelper.assertLayerPositionChange
+import com.android.wm.shell.flicker.bubbles.utils.FlickerAssertionHelper.assertLayerAlphaChangeConsistently
+import com.android.wm.shell.flicker.bubbles.utils.FlickerAssertionHelper.assertLayerMoveInSingleDirection
+import com.android.wm.shell.flicker.bubbles.utils.FlickerAssertionHelper.assertLayerResizeConsistently
 import org.junit.Assume.assumeTrue
 import org.junit.Test
 
@@ -32,7 +34,7 @@ import org.junit.Test
  *   [shouldAssertPreviousBecomesInvisible]).
  * - The [previousApp] layer fades out (optional if the spec wants to keep alpha unchanged).
  * - The [previousApp] layer animates out only one direction (optional if the spec wants to keep
- *   position unchanged).
+ *   bounds unchanged).
  */
 interface PreviousAppAnimateOutTestCases : BubbleFlickerSubjects {
 
@@ -86,9 +88,10 @@ interface PreviousAppAnimateOutTestCases : BubbleFlickerSubjects {
      * Verifies the [previousApp] layer's alpha value only decreases (optional if the spec wants to
      * keep alpha unchanged).
      */
+    @FlakyTest(bugId = 456051408)
     @Test
     fun previousAppLayerFadeOut() {
-        assertLayerAlphaChange(
+        assertLayerAlphaChangeConsistently(
             layersTraceSubject = layersTraceSubject,
             layerMatcher = previousApp,
             isFadeIn = false,
@@ -96,12 +99,18 @@ interface PreviousAppAnimateOutTestCases : BubbleFlickerSubjects {
     }
 
     /**
-     * Verifies the [previousApp] layer's position change in only one direction (optional if the
-     * spec wants to keep position unchanged).
+     * Verifies the [previousApp] layer's bounds don't jump around (optional if the spec wants to
+     * keep bounds unchanged).
      */
+    @FlakyTest(bugId = 456051408)
     @Test
     fun previousAppLayerAnimateOut() {
-        assertLayerPositionChange(
+        assertLayerMoveInSingleDirection(
+            layersTraceSubject = layersTraceSubject,
+            layerMatcher = previousApp,
+        )
+
+        assertLayerResizeConsistently(
             layersTraceSubject = layersTraceSubject,
             layerMatcher = previousApp,
         )

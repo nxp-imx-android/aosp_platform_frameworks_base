@@ -632,18 +632,18 @@
     <string name="permdesc_bluetooth" product="tablet" msgid="3053222571491402635">"‏מאפשר לאפליקציה להציג את תצורת ה-Bluetooth בטאבלט, וכן ליצור ולקבל חיבורים עם מכשירים מותאמים."</string>
     <string name="permdesc_bluetooth" product="tv" msgid="8851534496561034998">"‏מאפשרת לאפליקציה להציג את הגדרת ה-Bluetooth במכשיר ה-Android TV, וליצור ולקבל חיבורים עם מכשירים מותאמים."</string>
     <string name="permdesc_bluetooth" product="default" msgid="2779606714091276746">"‏מאפשרת לאפליקציה להציג את תצורת ה-Bluetooth בטלפון, וכן ליצור ולקבל חיבורים עם מכשירים מותאמים."</string>
-    <string name="permlab_bluetooth_scan" msgid="5402587142833124594">"‏גילוי מכשירי Bluetooth בקרבת מקום והתאמה ביניהם"</string>
+    <string name="permlab_bluetooth_scan" msgid="5402587142833124594">"‏זיהוי והתאמה עם מכשירי Bluetooth קרובים"</string>
     <string name="permdesc_bluetooth_scan" product="default" msgid="6540723536925289276">"‏מאפשרת לאפליקציה לגלות מכשירי Bluetooth בקרבת מקום ולבצע התאמה איתם"</string>
     <string name="permlab_bluetooth_connect" msgid="6657463246355003528">"‏התחברות למכשירי Bluetooth מתאימים"</string>
     <string name="permdesc_bluetooth_connect" product="default" msgid="4546016548795544617">"‏מאפשרת לאפליקציה להתחבר למכשירי Bluetooth מותאמים"</string>
     <string name="permlab_bluetooth_advertise" msgid="2781147747928853177">"‏פרסום במכשירי Bluetooth בקרבת מקום"</string>
     <string name="permdesc_bluetooth_advertise" product="default" msgid="6085174451034210183">"‏האפליקציה תוכל לפרסם במכשירי Bluetooth בקרבת מקום"</string>
-    <string name="permlab_uwb_ranging" msgid="8141915781475770665">"‏זיהוי מיקום יחסי בין מכשירי Ultra Wideband ‏(UWB) קרובים"</string>
+    <string name="permlab_uwb_ranging" msgid="8141915781475770665">"‏זיהוי מיקום יחסי בין מכשירים קרובים בטכנולוגיית Ultra Wideband ‏(UWB)"</string>
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"‏האפליקציה תזהה את המיקום היחסי בין מכשירים קרובים שמשדרים בטכנולוגיית Ultra Wideband ‏(UWB)"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"‏אינטראקציה עם מכשירי Wi-Fi בקרבת מקום"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"‏האפליקציה תוכל לפרסם במכשירי Wi-Fi בקרבת מקום, להתחבר אליהם ולהעריך את המיקום היחסי שלהם"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"גישה למכשירים ברשת המקומית"</string>
-    <string name="permdesc_access_local_network" msgid="6364679803386822638">"ההרשאה מאפשרת לאפליקציה לגשת למכשירים ברשת המקומית"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"האפליקציה תוכל לגשת למכשירים ברשת המקומית"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"‏שימוש בממשק לולאה חוזרת (loopback)"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"‏ההרשאה מאפשרת לאפליקציה ליצור אינטראקציה עם אפליקציות אחרות דרך ממשק לולאה חוזרת (loopback)"</string>
     <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"‏אילוץ השימוש בממשק לולאה חוזרת (loopback)"</string>
@@ -1831,6 +1831,8 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"תנועה"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"הגדרות מהירות"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"לחיצה מהירה 3 פעמים"</string>
+    <!-- no translation found for accessibility_shortcut_label_top_row_key (1488840908672437180) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"שירות <xliff:g id="SERVICE_NAME">%s</xliff:g> כבוי"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"עריכת קיצורי הדרך"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"סיום"</string>
@@ -2107,8 +2109,7 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"האפליקציה <xliff:g id="APP_NAME_0">%1$s</xliff:g> לא זמינה כרגע. אפשר לנהל זאת באפליקציה <xliff:g id="APP_NAME_1">%2$s</xliff:g>."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"מידע נוסף"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"ביטול ההשהיה של האפליקציה"</string>
-    <!-- no translation found for locked_app_biometric_prompt_description (6853122652400451464) -->
-    <skip />
+    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"האפליקציה <xliff:g id="APP_NAME">%1$s</xliff:g> נעולה"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"להפעיל את האפליקציות לעבודה?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"ביטול ההשהיה"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"שיחת חירום"</string>
@@ -2548,10 +2549,8 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"שכפול"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"שיתופי"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"המרחב הפרטי"</string>
-    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
-    <skip />
-    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
-    <skip />
+    <string name="app_locked_new_notification" msgid="4409730436247596215">"התראה חדשה"</string>
+    <string name="app_locked_notification_message" msgid="4576179600328065280">"הודעה חדשה"</string>
     <string name="redacted_notification_message" msgid="1520587845842228816">"יש תוכן רגיש בהתראה שהוסתר"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"תוכן האפליקציה מוסתר משיתוף המסך מטעמי אבטחה"</string>

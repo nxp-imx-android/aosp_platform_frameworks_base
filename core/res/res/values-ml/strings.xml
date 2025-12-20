@@ -1830,6 +1830,8 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"ജെസ്ച്ചർ"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"ദ്രുത ക്രമീകരണം"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"ട്രിപ്പിൾ ടാപ്പ്"</string>
+    <!-- no translation found for accessibility_shortcut_label_top_row_key (1488840908672437180) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> ഓഫാക്കിയിരിക്കുന്നു"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"കുറുക്കുവഴികൾ തിരുത്തുക"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"പൂർത്തിയാക്കി"</string>
@@ -2546,10 +2548,8 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"ക്ലോൺ ചെയ്യുക"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"കമ്മ്യൂണൽ"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"സ്വകാര്യ സ്പേസ്"</string>
-    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
-    <skip />
-    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
-    <skip />
+    <string name="app_locked_new_notification" msgid="4409730436247596215">"പുതിയ അറിയിപ്പ്"</string>
+    <string name="app_locked_notification_message" msgid="4576179600328065280">"പുതിയ സന്ദേശം"</string>
     <string name="redacted_notification_message" msgid="1520587845842228816">"സൂക്ഷ്‌മമായി കൈകാര്യം ചെയ്യേണ്ട അറിയിപ്പ് ഉള്ളടക്കം മറച്ചിരിക്കുന്നു"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"സുരക്ഷയ്ക്കായി സ്ക്രീൻ പങ്കിടലിൽ നിന്ന് ആപ്പ് ഉള്ളടക്കം മറച്ചിരിക്കുന്നു"</string>

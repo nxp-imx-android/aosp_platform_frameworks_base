@@ -141,6 +141,9 @@ constructor(
                         task.isBubbleToFullscreen() || task.isBubbleToSplit(splitScreenController)
                     ) {
                         taskView.unregisterTask()
+                    } else if (!isCreated) {
+                        // Task should be removed if cleanup is called before the task was created.
+                        taskView.removeTask()
                     } else if (Flags.bugDontRemoveTaskBubble()) {
                         if (taskShouldBeRemoved) {
                             taskView.removeTask()

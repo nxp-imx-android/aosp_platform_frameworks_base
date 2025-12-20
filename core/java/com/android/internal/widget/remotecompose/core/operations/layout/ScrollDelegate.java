@@ -66,4 +66,14 @@ public interface ScrollDelegate {
      * @param component
      */
     void applyEdgeEffect(@NonNull PaintContext context, @NonNull Component component, int phase);
+
+    /**
+     * Return current content width
+     */
+    float contentWidth();
+
+    /**
+     * Return current content height
+     */
+    float contentHeight();
 }

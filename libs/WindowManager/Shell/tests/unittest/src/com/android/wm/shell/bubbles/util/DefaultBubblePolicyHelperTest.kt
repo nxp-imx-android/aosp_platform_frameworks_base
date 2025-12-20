@@ -17,6 +17,7 @@
 package com.android.wm.shell.bubbles.util
 
 import android.app.ActivityManager.RunningTaskInfo
+import android.content.Context
 import android.os.Binder
 import android.widget.Toast
 import android.window.WindowContainerToken
@@ -42,6 +43,7 @@ import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.quality.Strictness
 
 /**
@@ -75,11 +77,10 @@ class DefaultBubblePolicyHelperTest : ShellTestCase() {
         taskViewTaskController = mock {
             on { taskOrganizer } doReturn taskOrganizer
         }
-
-        captionInsetsOwner = Binder()
         taskView = mock {
             on { controller } doReturn taskViewTaskController
-            on { captionInsetsOwner } doReturn captionInsetsOwner
+            on { captionInsetsOwner } doReturn mock<Binder>()
+            on { getContext() } doReturn mock<Context>()
         }
 
         bubble = mock {
@@ -101,9 +102,22 @@ class DefaultBubblePolicyHelperTest : ShellTestCase() {
     }
 
     @Test
-    fun testMoveExistingTaskOutOfBubble() {
+    fun testMoveExistingTaskOutOfBubble_supportsMultiWindow_toastNotShownAndTaskRemoved() {
+        taskInfo.supportsMultiWindow = true
         DefaultBubblePolicyHelper.moveExistingTaskOutOfBubble(bubble, taskInfo)
 
+        verify(errorToast, never()).show()
+        val wctCaptor = ArgumentCaptor.forClass(WindowContainerTransaction::class.java)
+        verify(taskOrganizer).applyTransaction(wctCaptor.capture())
+        verify(taskViewTaskController).notifyTaskRemovalStarted(taskInfo)
+    }
+
+    @Test
+    fun testMoveExistingTaskOutOfBubble_doesNotSupportsMultiWindow_toastShownAndTaskRemoved() {
+        taskInfo.supportsMultiWindow = false
+        DefaultBubblePolicyHelper.moveExistingTaskOutOfBubble(bubble, taskInfo)
+
+        verify(errorToast).show()
         val wctCaptor = ArgumentCaptor.forClass(WindowContainerTransaction::class.java)
         verify(taskOrganizer).applyTransaction(wctCaptor.capture())
         verify(taskViewTaskController).notifyTaskRemovalStarted(taskInfo)

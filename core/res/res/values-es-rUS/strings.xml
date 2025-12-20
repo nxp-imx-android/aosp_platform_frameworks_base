@@ -634,16 +634,16 @@
     <string name="permdesc_bluetooth" product="default" msgid="2779606714091276746">"Permite que la aplicación vea la configuración de Bluetooth del dispositivo y que cree y acepte conexiones con los dispositivos vinculados."</string>
     <string name="permlab_bluetooth_scan" msgid="5402587142833124594">"descubrir y vincular disp. Bluetooth cercanos"</string>
     <string name="permdesc_bluetooth_scan" product="default" msgid="6540723536925289276">"Permite que la app descubra dispositivos Bluetooth cercanos y se conecte a ellos"</string>
-    <string name="permlab_bluetooth_connect" msgid="6657463246355003528">"conectarse a dispositivos Bluetooth vinculados"</string>
+    <string name="permlab_bluetooth_connect" msgid="6657463246355003528">"Conectarse a dispositivos Bluetooth vinculados"</string>
     <string name="permdesc_bluetooth_connect" product="default" msgid="4546016548795544617">"Permite que la app se conecte a dispositivos Bluetooth vinculados"</string>
-    <string name="permlab_bluetooth_advertise" msgid="2781147747928853177">"mostrar anuncios a dispositivos Bluetooth cercanos"</string>
+    <string name="permlab_bluetooth_advertise" msgid="2781147747928853177">"Mostrar anuncios a dispositivos Bluetooth cercanos"</string>
     <string name="permdesc_bluetooth_advertise" product="default" msgid="6085174451034210183">"Permite que la app muestre anuncios a dispositivos Bluetooth cercanos"</string>
     <string name="permlab_uwb_ranging" msgid="8141915781475770665">"determinar posición entre disposit. Ultra Wideband"</string>
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"Permite que la app determine la posición relativa con dispositivos Ultra Wideband cercanos"</string>
-    <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"interactuar con dispositivos Wi-Fi cercanos"</string>
+    <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"Interactuar con dispositivos Wi-Fi cercanos"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Permite que la app muestre anuncios, se conecte y determine la posición relativa de los dispositivos Wi-Fi cercanos"</string>
-    <string name="permlab_access_local_network" msgid="3420360767259066877">"acceder a dispositivos de la red local"</string>
-    <string name="permdesc_access_local_network" msgid="6364679803386822638">"Permite que la app acceda a los dispositivos de la red local"</string>
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"Acceder a dispositivos de la red local"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"Permite que la app acceda a dispositivos de la red local"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"uso de interfaz de bucle invertido"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Permite que la app interactúe con otras a través de la interfaz de bucle invertido"</string>
     <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"forzar uso de la interfaz de bucle invertido"</string>
@@ -826,11 +826,11 @@
     <string name="permdesc_readMediaAudio" msgid="5299772574434619399">"Permite que la app lea los archivos de audio del almacenamiento compartido."</string>
     <string name="permlab_readMediaVideo" msgid="7768003311260655007">"leer los archivos de video del almacenamiento compartido"</string>
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"Permite que la app lea los archivos de video del almacenamiento compartido."</string>
-    <string name="permlab_readMediaImages" msgid="4057590631020986789">"leer los archivos de imagen del almacenamiento compartido"</string>
+    <string name="permlab_readMediaImages" msgid="4057590631020986789">"Leer los archivos de imagen del almacenamiento compartido"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"Permite que la app lea los archivos de imagen del almacenamiento compartido."</string>
     <string name="permlab_readMediaDocuments" msgid="5716810755602938263">"leer los archivos de documento del almacenamiento compartido"</string>
     <string name="permdesc_readMediaDocuments" msgid="5665930210237304120">"Permite que la app lea los archivos de documento del almacenamiento compartido."</string>
-    <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"leer los archivos de imagen y video que el usuario haya seleccionado del almacenamiento compartido"</string>
+    <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"Leer los archivos de imagen y video que el usuario haya seleccionado del almacenamiento compartido"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"Permite que la app lea los archivos de imagen y video que selecciones del almacenamiento compartido."</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"cambiar o borrar contenido de almacenamiento compartido"</string>
     <string name="permdesc_sdcardWrite" msgid="8376047679331387102">"Editar almacen. compartido"</string>
@@ -1831,6 +1831,8 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"gesto"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"configuración rápida"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"presionar tres veces"</string>
+    <!-- no translation found for accessibility_shortcut_label_top_row_key (1488840908672437180) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"Se desactivó <xliff:g id="SERVICE_NAME">%s</xliff:g>"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Editar accesos directos"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Listo"</string>
@@ -2107,8 +2109,7 @@
     <string name="app_suspended_default_message" msgid="6451215678552004172">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> no está disponible en este momento. Esta opción se administra en <xliff:g id="APP_NAME_1">%2$s</xliff:g>."</string>
     <string name="app_suspended_more_details" msgid="211260942831587014">"Más información"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"Reanudar app"</string>
-    <!-- no translation found for locked_app_biometric_prompt_description (6853122652400451464) -->
-    <skip />
+    <string name="locked_app_biometric_prompt_description" msgid="6853122652400451464">"<xliff:g id="APP_NAME">%1$s</xliff:g> está bloqueado"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"¿Reanudar apps de trabajo?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Reanudar"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Emergencia"</string>
@@ -2548,10 +2549,8 @@
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"Clon"</string>
     <string name="accessibility_label_communal_profile" msgid="1437173163111334791">"Compartido"</string>
     <string name="private_space_biometric_prompt_title" msgid="5777592909271728154">"Espacio privado"</string>
-    <!-- no translation found for app_locked_new_notification (4409730436247596215) -->
-    <skip />
-    <!-- no translation found for app_locked_notification_message (4576179600328065280) -->
-    <skip />
+    <string name="app_locked_new_notification" msgid="4409730436247596215">"Notificación nueva"</string>
+    <string name="app_locked_notification_message" msgid="4576179600328065280">"Mensaje nuevo"</string>
     <string name="redacted_notification_message" msgid="1520587845842228816">"Se ocultó contenido sensible de la notificación"</string>
     <string name="redacted_notification_action_title" msgid="6942924973335920935"></string>
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Se ocultó el contenido de la app durante el uso compartido de la pantalla por motivos de seguridad"</string>

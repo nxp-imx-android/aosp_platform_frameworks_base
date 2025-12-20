@@ -1831,6 +1831,8 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"gesto"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"definições rápidas"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"tocar três vezes"</string>
+    <!-- no translation found for accessibility_shortcut_label_top_row_key (1488840908672437180) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"O serviço <xliff:g id="SERVICE_NAME">%s</xliff:g> foi desativado."</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Editar atalhos"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Concluído"</string>

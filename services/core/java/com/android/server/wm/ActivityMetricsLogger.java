@@ -216,7 +216,7 @@ class ActivityMetricsLogger {
         /** Non-null when a {@link TransitionInfo} is created for this state. */
         private TransitionInfo mAssociatedTransitionInfo;
         /** Tracking origination for the consecutive launch among trampoline activities. */
-        private ActivityRecord mOriginalCaller;
+        private int mOriginalCallerUid = ActivityStarter.Request.DEFAULT_REAL_CALLING_UID;
         /** The sequence id for trace. It is used to map the traces before resolving intent. */
         private static int sTraceSeqId;
         /** The trace format is "launchingActivity#$seqId:$state(:$packageName)". */
@@ -279,12 +279,21 @@ class ActivityMetricsLogger {
             return mAssociatedTransitionInfo != null && mAssociatedTransitionInfo.contains(r);
         }
 
-        @NonNull
-        ActivityRecord tracksOriginator(@NonNull ActivityRecord caller) {
-            if (mOriginalCaller == null) {
-                mOriginalCaller = caller;
+        /**
+         * Tracks the original caller UID for the launch sequence.
+         *
+         * <p>If the original caller UID is not set yet, it will be set to the given
+         * {@code callingUid}. This is used by {@link ActivityStarter#execute()} to track the
+         * originator of the launch, especially for trampoline launches.
+         *
+         * @param callingUid the UID of the caller.
+         * @return the original caller UID.
+         */
+        int tracksOriginator(int callingUid) {
+            if (mOriginalCallerUid == ActivityStarter.Request.DEFAULT_REAL_CALLING_UID) {
+                mOriginalCallerUid = callingUid;
             }
-            return mOriginalCaller;
+            return mOriginalCallerUid;
         }
     }
 

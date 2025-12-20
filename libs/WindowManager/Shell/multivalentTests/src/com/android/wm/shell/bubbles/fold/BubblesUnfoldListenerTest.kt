@@ -115,7 +115,7 @@ class BubblesUnfoldListenerTest {
     fun fold_expandedBubble_staysAwakeOnFold_shouldStartTransition() {
         isStayAwakeOnFold = true
         val bubble = FakeBubbleFactory.createChatBubble(context)
-        bubble.setIsTaskValidToBubble(true)
+        bubble.setIsTaskValidToBubbleOnSmallScreen(true)
         bubbleData.notificationEntryUpdated(bubble, true, false)
         assertThat(bubbleData.hasBubbles()).isTrue()
         bubbleData.setSelectedBubbleAndExpandStack(bubble)

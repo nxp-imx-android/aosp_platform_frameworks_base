@@ -201,8 +201,7 @@ public final class MessageQueue {
         // and we know that it's safe to use the concurrent implementation in SystemUI.
         if (processName.equals("com.android.systemui")
                 || processName.startsWith("com.android.systemui:")) {
-            // If holdback is in effect, use legacy (NOT concurrent) implementation in SystemUI.
-            return !Flags.holdbackConcurrentMessageQueueInSystemui();
+            return true;
         }
         // On Android distributions where SystemUI has a different process name,
         // the above condition may need to be adjusted accordingly.

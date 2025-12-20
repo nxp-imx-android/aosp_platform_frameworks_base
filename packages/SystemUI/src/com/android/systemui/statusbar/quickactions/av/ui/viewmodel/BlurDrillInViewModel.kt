@@ -31,7 +31,7 @@ class BlurDrillInViewModel
 @AssistedInject
 constructor(
     private val desktopEffectInteractor: DesktopEffectInteractor,
-    @Assisted val returnToMainScreen: () -> Unit,
+    @Assisted val returnToMainPage: () -> Unit,
 ) : HydratedActivatable() {
 
     // TODO(b/436222258): Replace hardcoded strings with resource resolution
@@ -94,6 +94,6 @@ constructor(
     /** A factory to be used to create view model instances. */
     @AssistedFactory
     interface Factory {
-        fun create(returnToMainScreen: () -> Unit): BlurDrillInViewModel
+        fun create(returnToMainPage: () -> Unit): BlurDrillInViewModel
     }
 }

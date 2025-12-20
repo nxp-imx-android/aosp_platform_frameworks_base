@@ -89,6 +89,7 @@ public class ActivityOptionsTest {
         opts.setRotationAnimationHint(ROTATION_ANIMATION_ROTATE);
         opts.setTaskAlwaysOnTop(true);
         opts.setTaskOverlay(true, true);
+        opts.setMovableTaskRequired(true);
         Bundle optsBundle = opts.toBundle();
 
         // Try and merge the constructed options with a new set of options
@@ -106,6 +107,7 @@ public class ActivityOptionsTest {
         assertTrue(restoredOpts.getTaskAlwaysOnTop());
         assertTrue(restoredOpts.getTaskOverlay());
         assertTrue(restoredOpts.canTaskOverlayResume());
+        assertTrue(restoredOpts.isMovableTaskRequired());
     }
 
     @Test
@@ -312,6 +314,7 @@ public class ActivityOptionsTest {
                 case "android:activity.animAbortListener": // KEY_ANIM_ABORT_LISTENER
                 case "android.activity.allowPassThroughOnTouchOutside":
                     // KEY_ALLOW_PASS_THROUGH_ON_TOUCH_OUTSIDE
+                case "android.activity.movableTaskRequired": // KEY_MOVABLE_TASK_REQUIRED
                     // Existing keys
 
                     break;

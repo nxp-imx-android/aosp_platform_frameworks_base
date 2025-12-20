@@ -36,9 +36,11 @@ constructor(
     shadeModeInteractor: ShadeModeInteractor,
     deviceEntryBypassInteractor: DeviceEntryBypassInteractor,
     deviceEntryUdfpsInteractor: DeviceEntryUdfpsInteractor,
+    private val burnInMovementFactory: BurnInMovementState.Factory,
     private val wallpaperFocalAreaInteractor: WallpaperFocalAreaInteractor,
 ) : ExclusiveActivatable() {
     private val hydrator = Hydrator("LockscreenRootViewModel.hydrator")
+    val burnIn: BurnInMovementState = burnInMovementFactory.create()
 
     /** @see ShadeModeInteractor.isFullWidthShade */
     val isFullWidthShade: Boolean by
@@ -65,6 +67,7 @@ constructor(
     override suspend fun onActivated(): Nothing {
         coroutineScope {
             launch { hydrator.activate() }
+            launch("BurnIn") { burnIn.activate() }
             awaitCancellation()
         }
     }

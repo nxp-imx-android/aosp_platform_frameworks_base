@@ -18,7 +18,6 @@ package android.app;
 
 import static android.annotation.Dimension.DP;
 import static android.app.Flags.FLAG_BRIDGED_NOTIFICATIONS;
-import static android.app.Flags.FLAG_HIDE_STATUS_BAR_NOTIFICATION;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION_ALL;
 import static android.app.Flags.FLAG_NOTIFICATION_IS_ANIMATED_ACTION_API;
 import static android.app.Flags.apiMetricStyle;
@@ -222,6 +221,15 @@ public class Notification implements Parcelable
     @SdkConstant(SdkConstantType.INTENT_CATEGORY)
     public static final String INTENT_CATEGORY_NOTIFICATION_PREFERENCES
             = "android.intent.category.NOTIFICATION_PREFERENCES";
+
+    /**
+     * An activity that provides a user interface for adjusting notification preferences for its
+     * bridged notification which originated on another device.
+     */
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
+    @FlaggedApi(FLAG_BRIDGED_NOTIFICATIONS)
+    public static final String ACTION_BRIDGED_NOTIFICATION_PREFERENCES =
+            "android.app.action.BRIDGED_NOTIFICATION_PREFERENCES";
 
     /**
      * Optional extra for {@link #INTENT_CATEGORY_NOTIFICATION_PREFERENCES}. If provided, will
@@ -1903,8 +1911,7 @@ public class Notification implements Parcelable
      * @hide
      */
     @SystemApi
-    @RequiresPermission("android.Manifest.permission.HIDE_STATUS_BAR_NOTIFICATION")
-    @FlaggedApi(FLAG_HIDE_STATUS_BAR_NOTIFICATION)
+    @RequiresPermission(android.Manifest.permission.HIDE_STATUS_BAR_NOTIFICATION)
     public static final String EXTRA_HIDE_STATUS_BAR_NOTIFICATION =
             "android.hideStatusBarNotification";
 

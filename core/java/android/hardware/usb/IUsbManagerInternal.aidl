@@ -18,11 +18,16 @@ package android.hardware.usb;
 
 import android.hardware.usb.IUsbOperationInternal;
 import android.hardware.usb.InternalUsbDataSignalDisableReason;
+import android.hardware.usb.InternalPciTunnelControlDisableReason;
 
 /** @hide */
 interface IUsbManagerInternal {
 
     /* Disable/enable USB data on a port for System Service callers. */
     boolean enableUsbDataSignal(boolean enable, InternalUsbDataSignalDisableReason disableReason);
+
+    /* Disallow/allow PCI tunnel control for System Service callers. */
+    boolean allowPciTunnelControl(boolean allow,
+            InternalPciTunnelControlDisableReason disableReason);
 }
 

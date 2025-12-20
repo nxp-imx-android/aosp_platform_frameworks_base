@@ -47,14 +47,6 @@ flag {
 }
 
 flag {
-    name: "adpf_obtainview_boost"
-    namespace: "game"
-    description: "Guards use of a boost in response to HWUI obtainView"
-    is_fixed_read_only: true
-    bug: "328238660"
-}
-
-flag {
     name: "adpf_platform_power_efficiency"
     namespace: "game"
     description: "Guards use of the ADPF power efficiency API within the platform"
@@ -264,13 +256,6 @@ flag {
     description: "Guards a new Private Profile API in LauncherApps"
     bug: "346294653"
     is_exported: true
-}
-
-flag {
-     name: "holdback_concurrent_message_queue_in_systemui"
-     namespace: "system_performance"
-     description: "Holdback for concurrent MessageQueue in SystemUI; if enabled, don't use concurrent MessageQueue in SystemUI."
-     bug: "463114494"
 }
 
 flag {

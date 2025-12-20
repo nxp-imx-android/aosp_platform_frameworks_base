@@ -47,6 +47,7 @@ import static android.app.ForegroundServiceTypePolicy.FGS_TYPE_POLICY_CHECK_UNKN
 import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.content.Context.BIND_ALLOW_WHITELIST_MANAGEMENT;
 import static android.content.flags.Flags.enableBindPackageIsolatedProcess;
+import static android.content.pm.PackageManager.GET_PERMISSIONS;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST;
@@ -100,6 +101,10 @@ import static android.os.Process.ZYGOTE_POLICY_FLAG_EMPTY;
 import static android.os.Process.ZYGOTE_POLICY_FLAG_NATIVE_PROCESS;
 
 import static com.android.internal.messages.nano.SystemMessageProto.SystemMessage.NOTE_FOREGROUND_SERVICE_BG_LAUNCH;
+import static com.android.internal.util.FrameworkStatsLog.FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_DECLARED_AND_GRANTED;
+import static com.android.internal.util.FrameworkStatsLog.FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_DECLARED_BUT_DENIED;
+import static com.android.internal.util.FrameworkStatsLog.FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_NOT_DECLARED;
+import static com.android.internal.util.FrameworkStatsLog.FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_UNKNOWN;
 import static com.android.internal.util.FrameworkStatsLog.FOREGROUND_SERVICE_STATE_CHANGED__FGS_START_API__FGSSTARTAPI_DELEGATE;
 import static com.android.internal.util.FrameworkStatsLog.FOREGROUND_SERVICE_STATE_CHANGED__FGS_START_API__FGSSTARTAPI_NA;
 import static com.android.internal.util.FrameworkStatsLog.FOREGROUND_SERVICE_STATE_CHANGED__FGS_START_API__FGSSTARTAPI_NONE;
@@ -186,6 +191,7 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ParceledListSlice;
@@ -227,6 +233,7 @@ import android.util.Pair;
 import android.util.PrintWriterPrinter;
 import android.util.Slog;
 import android.util.SparseArray;
+import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
 import android.util.SparseLongArray;
 import android.util.TimeUtils;
@@ -235,7 +242,9 @@ import android.webkit.WebViewZygote;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.procstats.ServiceState;
+import com.android.internal.content.PackageMonitor;
 import com.android.internal.notification.SystemNotificationChannels;
 import com.android.internal.os.SomeArgs;
 import com.android.internal.os.TimeoutRecord;
@@ -470,6 +479,15 @@ public final class ActiveServices {
      * Uptime at which a given uid becomes eliglible again for FGS notification deferral
      */
     final SparseLongArray mFgsDeferralEligible = new SparseLongArray();
+
+    /**
+     * Cache of whether an application has declared the POST_NOTIFICATIONS permission
+     * in its manifest. This avoids repeated GET_PERMISSIONS lookups and is invalidated
+     * on package updates.
+     */
+    @VisibleForTesting
+    @GuardedBy("mNotificationPermCache")
+    final SparseBooleanArray mNotificationPermCache = new SparseBooleanArray();
 
     /**
      * Foreground service observers: track what apps have FGSes
@@ -815,6 +833,7 @@ public final class ActiveServices {
         initSystemExemptedFgsTypePermission();
         initMediaProjectFgsTypeCustomPermission();
         mPccSandboxManagerInternal = LocalServices.getService(PccSandboxManagerInternal.class);
+        mPackageMonitor.register(mAm.mContext, mAm.mHandler.getLooper(), UserHandle.ALL, false);
     }
 
     private AppStateTracker getAppStateTracker() {
@@ -9525,6 +9544,27 @@ public final class ActiveServices {
     }
 
     /**
+     * Listens for package changes to invalidate the notification permission cache as permission
+     * state may change on package updates or removals.
+     */
+    @VisibleForTesting
+    final PackageMonitor mPackageMonitor = new PackageMonitor() {
+        @Override
+        public void onPackageUpdateFinished(String packageName, int uid) {
+            synchronized (mNotificationPermCache) {
+                mNotificationPermCache.delete(uid);
+            }
+        }
+
+        @Override
+        public void onPackageRemoved(String packageName, int uid) {
+            synchronized (mNotificationPermCache) {
+                mNotificationPermCache.delete(uid);
+            }
+        }
+    };
+
+    /**
      * Log the statsd event for FGS.
      * @param r ServiceRecord
      * @param state one of ENTER/EXIT/DENIED event.
@@ -9556,6 +9596,12 @@ public final class ActiveServices {
         }
         final int callerTargetSdkVersion = r.mRecentCallerApplicationInfo != null
                 ? r.mRecentCallerApplicationInfo.targetSdkVersion : 0;
+
+        int notificationPermissionState =
+                FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_UNKNOWN;
+        if (state == FOREGROUND_SERVICE_STATE_CHANGED__STATE__ENTER) {
+            notificationPermissionState = getNotificationPermissionState(r);
+        }
 
         // TODO(short-service): Log the UID capabilities (for BFSL) too, and also the procstate?
         FrameworkStatsLog.write(FrameworkStatsLog.FOREGROUND_SERVICE_STATE_CHANGED,
@@ -9597,7 +9643,8 @@ public final class ActiveServices {
                 r.mAllowStart_inBindService,
                 r.mAllowStart_byBindings,
                 fgsStartApi,
-                fgsRestrictionRecalculated);
+                fgsRestrictionRecalculated,
+                notificationPermissionState);
 
         int event = 0;
         if (state == FOREGROUND_SERVICE_STATE_CHANGED__STATE__ENTER) {
@@ -9625,6 +9672,75 @@ public final class ActiveServices {
                 r.mStartForegroundCount,
                 fgsStopReasonToString(fgsStopReason),
                 r.getForegroundServiceType());
+    }
+
+    /**
+     * Returns the state of the {@link android.Manifest.permission#POST_NOTIFICATIONS} permission
+     * for the application associated with
+     * the given ServiceRecord.
+     *
+     * @param r The ServiceRecord to check the notification permission state for.
+     * @return An integer representing the notification permission state, one of
+     * {@link
+     * FrameworkStatsLog#FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_NOT_DECLARED},
+     * {@link
+     * FrameworkStatsLog#FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_DECLARED_AND_GRANTED},
+     * or
+     * {@link
+     * FrameworkStatsLog#FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_DECLARED_BUT_DENIED}.
+     */
+    @VisibleForTesting
+    @GuardedBy("mAm")
+    int getNotificationPermissionState(ServiceRecord r) {
+        final boolean hasDeclared = hasDeclaredNotificationPermission(r);
+
+        if (!hasDeclared) {
+            return FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_NOT_DECLARED;
+        }
+        final boolean isNotificationPermissionGranted = mAm.mContext.checkPermission(
+                Manifest.permission.POST_NOTIFICATIONS, r.getHostProcess().getPid(), r.appInfo.uid)
+                == PERMISSION_GRANTED;
+        if (isNotificationPermissionGranted) {
+            return FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_DECLARED_AND_GRANTED;
+        } else {
+            return FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_DECLARED_BUT_DENIED;
+        }
+    }
+
+    /**
+     * Checks if the application associated with the given ServiceRecord has declared the
+     * {@link android.Manifest.permission#POST_NOTIFICATIONS} permission in its manifest and the
+     * result is cached.
+     *
+     * @param r The ServiceRecord of the service.
+     * @return true if the application has declared the
+     * {@link android.Manifest.permission#POST_NOTIFICATIONS} permission, false otherwise.
+     */
+    @GuardedBy("mAm")
+    private boolean hasDeclaredNotificationPermission(ServiceRecord r) {
+        synchronized (mNotificationPermCache) {
+            final int index = mNotificationPermCache.indexOfKey(r.appInfo.uid);
+            if (index >= 0) {
+                return mNotificationPermCache.valueAt(index);
+            }
+        }
+
+        boolean hasDeclaredNotificationPermission = false;
+        final PackageInfo packageInfo = mAm.getPackageManagerInternal().getPackageInfo(
+                r.packageName, GET_PERMISSIONS, r.appInfo.uid, r.userId);
+        if (packageInfo != null && packageInfo.requestedPermissions != null) {
+            String[] requestedPermissions = packageInfo.requestedPermissions;
+            for (String permission : requestedPermissions) {
+                if (Manifest.permission.POST_NOTIFICATIONS.equals(permission)) {
+                    hasDeclaredNotificationPermission = true;
+                    break;
+                }
+            }
+        }
+        synchronized (mNotificationPermCache) {
+            mNotificationPermCache.put(r.appInfo.uid, hasDeclaredNotificationPermission);
+        }
+        return hasDeclaredNotificationPermission;
     }
 
     private void updateNumForegroundServicesLocked() {

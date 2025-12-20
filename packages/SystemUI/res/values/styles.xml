@@ -1683,13 +1683,13 @@
     </style>
 
     <!-- Tile Details -->
-    <style name="TextAppearance.TileDetailsEntryTitle">
+    <style name="TextAppearance.TileDetailsEntryTitle" parent="TextAppearance.Material3.TitleSmall">
         <item name="android:fontFamily">variable-title-small-emphasized</item>
         <item name="android:textColor">@androidprv:color/materialColorOnSurface</item>
         <item name="android:textDirection">locale</item>
     </style>
 
-    <style name="TextAppearance.TileDetailsEntrySubTitle">
+    <style name="TextAppearance.TileDetailsEntrySubTitle" parent="TextAppearance.Material3.LabelMedium">
         <item name="android:fontFamily">variable-label-medium</item>
         <item name="android:textColor">@androidprv:color/materialColorOnSurfaceVariant</item>
         <item name="android:textDirection">locale</item>

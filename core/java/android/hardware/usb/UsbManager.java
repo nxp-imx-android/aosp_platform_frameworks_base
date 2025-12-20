@@ -49,12 +49,12 @@ import android.hardware.usb.gadget.UsbSpeed;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
-import android.system.ErrnoException;
-import android.system.Os;
 import android.os.ParcelFileDescriptor;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.SystemProperties;
+import android.system.ErrnoException;
+import android.system.Os;
 import android.util.ArrayMap;
 import android.util.Log;
 import android.util.Slog;
@@ -63,9 +63,9 @@ import com.android.internal.annotations.GuardedBy;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InterruptedIOException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -594,6 +594,51 @@ public class UsbManager {
     public static final int USB_DATA_TRANSFER_RATE_40G = 40 * 1024;
 
     /**
+     * Usb tunnel control is supported on current system.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_PCI_TUNNEL_CONTROL)
+    @SystemApi
+    public static final int PCI_TUNNEL_CTRL_SUPPORTED = 0;
+
+    /**
+     * Usb tunnel control is not supported on the current system.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_PCI_TUNNEL_CONTROL)
+    @SystemApi
+    public static final int PCI_TUNNEL_CTRL_UNSUPPORTED = 1;
+
+    /**
+     * Usb tunnel control is not supported for current, non-admin user.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_PCI_TUNNEL_CONTROL)
+    @SystemApi
+    public static final int PCI_TUNNEL_CTRL_DISALLOWED_FOR_NONADMIN_USER = 2;
+
+    /**
+     * Usb tunnel control is disabled by enterprise policy.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_PCI_TUNNEL_CONTROL)
+    @SystemApi
+    public static final int PCI_TUNNEL_CTRL_DISALLOWED_BY_ENTERPRISE_POLICY = 3;
+
+    /**
+     * Usb tunnel control is disabled by Advanced Protection Mode (APM).
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_PCI_TUNNEL_CONTROL)
+    @SystemApi
+    public static final int PCI_TUNNEL_CTRL_DISALLOWED_BY_APM = 4;
+
+    /**
      * Returned when the client has to retry querying the version.
      *
      * @hide
@@ -790,6 +835,19 @@ public class UsbManager {
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface UsbHalVersion {}
+
+    /** @hide */
+    @IntDef(
+            prefix = {"PCI_TUNNEL_CTRL_"},
+            value = {
+                PCI_TUNNEL_CTRL_SUPPORTED,
+                PCI_TUNNEL_CTRL_UNSUPPORTED,
+                PCI_TUNNEL_CTRL_DISALLOWED_FOR_NONADMIN_USER,
+                PCI_TUNNEL_CTRL_DISALLOWED_BY_ENTERPRISE_POLICY,
+                PCI_TUNNEL_CTRL_DISALLOWED_BY_APM,
+            })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface PciTunnelControlAllowedStatus {}
 
     /**
      * Listener to register for when the {@link DisplayPortAltModeInfo} changes on a
@@ -2585,5 +2643,57 @@ public class UsbManager {
         }
 
         return halVersion;
+    }
+
+    /**
+     * Enable PCI tunneling over USB Type-C for alternate modes that support it.
+     *
+     * @param enable - Enable PCI tunneling
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_PCI_TUNNEL_CONTROL)
+    @SystemApi
+    @RequiresPermission(Manifest.permission.MANAGE_USB)
+    public void setPciTunnelingEnabled(boolean enable) {
+        try {
+            mService.setPciTunnelingEnabled(enable);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Check whether PCI tunneling is currently enabled.
+     *
+     * @return True if pci tunneling is enabled, false otherwise.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_PCI_TUNNEL_CONTROL)
+    @SystemApi
+    @RequiresPermission(Manifest.permission.MANAGE_USB)
+    public boolean isPciTunnelingEnabled() {
+        try {
+            return mService.isPciTunnelingEnabled();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Checks whether control of PCI tunneling is allowed.
+     *
+     * @return {@link PciTunnelControlAllowedStatus}
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_PCI_TUNNEL_CONTROL)
+    @SystemApi
+    @RequiresPermission(Manifest.permission.MANAGE_USB)
+    @PciTunnelControlAllowedStatus
+    public int isPciTunnelingControlAllowed() {
+        try {
+            return mService.isPciTunnelingControlAllowed();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 }

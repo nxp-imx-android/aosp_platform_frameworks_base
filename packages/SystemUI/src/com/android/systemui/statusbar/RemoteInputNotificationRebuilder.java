@@ -16,8 +16,6 @@
 
 package com.android.systemui.statusbar;
 
-import static android.app.Flags.lifetimeExtensionRefactor;
-
 import android.annotation.NonNull;
 import android.app.Notification;
 import android.app.RemoteInputHistoryItem;
@@ -25,6 +23,8 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Parcelable;
 import android.service.notification.StatusBarNotification;
+import android.text.SpanWatcher;
+import android.text.Spannable;
 import android.text.TextUtils;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -115,6 +115,19 @@ public class RemoteInputNotificationRebuilder {
 
         if (entry.remoteInputs == null) {
             entry.remoteInputs = new ArrayList<RemoteInputHistoryItem>();
+        }
+
+        if (remoteInputText != null && remoteInputText instanceof Spannable) {
+            // remoteInputText will be annotated with (main thread) span watchers since it comes
+            // from an EditText. Strip these from the string before including it in the
+            // notification so that inflating the updated notification doesn't throw a
+            // CalledFromWrongThreadException
+            final SpanWatcher[] watchers = ((Spannable) remoteInputText).getSpans(
+                    0, remoteInputText.length(), SpanWatcher.class);
+            final int count = watchers.length;
+            for (SpanWatcher watcher : watchers) {
+                ((Spannable) remoteInputText).removeSpan(watcher);
+            }
         }
 
         // Append new remote input information to remoteInputs list

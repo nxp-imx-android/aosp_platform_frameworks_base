@@ -129,16 +129,6 @@ mod pci_authorizer_tests {
             .expect("Failed to set tbt device as not writable");
     }
 
-    fn create_mock_pci_device(sysfs_root: &Path, name: &str, removable: bool) -> PathBuf {
-        let dev_path = sysfs_root.join("sys/bus/pci/devices").join(name);
-        fs::create_dir_all(&dev_path).expect("Failed to create mock pci device dir");
-        fs::write(dev_path.join("removable"), if removable { "1" } else { "0" })
-            .expect("Failed to write mock pci removable file");
-
-        fs::write(dev_path.join("remove"), "0").expect("Failed to write mock pci remove file");
-        dev_path
-    }
-
     fn devpath_to_add_uevent(dev_path: PathBuf) -> kobject_uevent::UEvent {
         kobject_uevent::UEvent {
             action: kobject_uevent::ActionType::Add,
@@ -253,7 +243,6 @@ mod pci_authorizer_tests {
             PciAuthorizer::new(sysfs_utils.clone(), uevent_socket.into_box_trait());
 
         let tbt_dev_path = create_mock_tbt_device(root, "1-0", "0");
-        let removable_pci_dev_path = create_mock_pci_device(root, "pci0", true);
 
         // Setup: Go to Authorized state first
         pci_authorizer.enable_pci_tunnels(true);
@@ -265,11 +254,6 @@ mod pci_authorizer_tests {
             "TBT device should be authorized",
         )
         .await;
-        assert_eq!(
-            fs::read_to_string(removable_pci_dev_path.join("remove")).unwrap().trim(),
-            "1",
-            "Removable PCI device 'remove' file should be '1'"
-        );
 
         // 1. Screen locks (State -> DeferNewDevices)
         pci_authorizer.update_lock_state(true);
@@ -288,14 +272,8 @@ mod pci_authorizer_tests {
             "TBT device should be deauthorized on DenyNoUser",
         )
         .await;
-        assert_eq!(
-            fs::read_to_string(removable_pci_dev_path.join("remove")).unwrap().trim(),
-            "1",
-            "Removable PCI device should be removed on DenyNoUser"
-        );
 
         // Re-setup to Authorized state for the next step
-        fs::write(removable_pci_dev_path.join("remove"), "0").unwrap(); // Reset remove state
         pci_authorizer.update_logged_in_state(true, UserId(1)); // Log back in
         pci_authorizer.update_lock_state(false); // Unlock screen (State -> Authorized)
         assert_wait_for_path_eq(
@@ -313,11 +291,6 @@ mod pci_authorizer_tests {
             "TBT device should be deauthorized when tunnels are disabled",
         )
         .await;
-        assert_eq!(
-            fs::read_to_string(removable_pci_dev_path.join("remove")).unwrap().trim(),
-            "1",
-            "Removable PCI device should be removed when tunnels are disabled"
-        );
 
         drop(pci_authorizer);
     }

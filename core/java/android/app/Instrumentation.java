@@ -2484,6 +2484,9 @@ public class Instrumentation {
             case ActivityManager.START_NOT_ALLOWED_FOR_USER:
                 throw new AndroidRuntimeException(
                         "Cannot start activity for " + intent + " for this user");
+            case ActivityManager.START_CANNOT_GUARANTEE_TASK_MOVABILITY:
+                throw new InfeasibleActivityOptionsException(
+                        "Cannot guarantee that the activity will start in a movable task");
             // NOTE: new cases should always throw AndroidRuntimeException, otherwise they could
             // break existing apps.
             default:
