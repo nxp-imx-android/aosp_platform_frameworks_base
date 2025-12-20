@@ -26,6 +26,7 @@ import android.annotation.NonNull;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.flags.Flags;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
 import android.os.Binder;
 import android.os.BugreportManager.BugreportCallback;
@@ -63,6 +64,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.HashSet;
+import java.util.Set;
 
 @RunWith(AndroidJUnit4.class)
 public class BugreportManagerServiceImplTest {
@@ -254,6 +257,62 @@ public class BugreportManagerServiceImplTest {
     }
 
     @Test
+    public void testStartBugreport_nonAdminWithPermission_flagEnabled() throws Exception {
+        when(mMockUserManager.isUserAdmin(anyInt())).thenReturn(false);
+        mInjector.grantPermission(android.Manifest.permission.INITIATE_BUGREPORT_AS_NON_ADMIN);
+        mInjector.setInitiateBugreportAsNonAdminEnabled(true);
+
+        mService.startBugreport(mCallingUid, mContext.getPackageName(),
+                new FileDescriptor(), /* screenshotFd= */ null,
+                BugreportParams.BUGREPORT_MODE_FULL,
+                /* flags= */ 0, new Listener(new CountDownLatch(1)),
+                /* isScreenshotRequested= */ false,
+                /* skipUserConsentUnused = */ false);
+
+        assertThat(mInjector.isBugreportStarted()).isTrue();
+    }
+
+    @Test
+    public void testStartBugreport_nonAdminWithPermission_flagDisabled() throws Exception {
+        when(mMockUserManager.isUserAdmin(anyInt())).thenReturn(false);
+        mInjector.grantPermission(android.Manifest.permission.INITIATE_BUGREPORT_AS_NON_ADMIN);
+        mInjector.setInitiateBugreportAsNonAdminEnabled(false);
+        if (android.multiuser.Flags.hsuNotAdmin()
+                && !android.multiuser.Flags.hsuNotAdminNoExemptions()) {
+            mInjector.setTreatCallerAsAdmin(false);
+        }
+
+        Exception thrown = assertThrows(IllegalArgumentException.class,
+                () -> mService.startBugreport(mCallingUid, mContext.getPackageName(),
+                        new FileDescriptor(), /* screenshotFd= */ null,
+                        BugreportParams.BUGREPORT_MODE_FULL,
+                        /* flags= */ 0, new Listener(new CountDownLatch(1)),
+                        /* isScreenshotRequested= */ false,
+                        /* skipUserConsentUnused = */ false));
+
+        assertThat(thrown.getMessage()).contains("not an admin user");
+    }
+
+    @Test
+    public void testStartBugreport_nonAdminWithoutPermission_flagEnabled() throws Exception {
+        when(mMockUserManager.isUserAdmin(anyInt())).thenReturn(false);
+        if (android.multiuser.Flags.hsuNotAdmin()
+                && !android.multiuser.Flags.hsuNotAdminNoExemptions()) {
+            mInjector.setTreatCallerAsAdmin(false);
+        }
+
+        Exception thrown = assertThrows(IllegalArgumentException.class,
+                () -> mService.startBugreport(mCallingUid, mContext.getPackageName(),
+                        new FileDescriptor(), /* screenshotFd= */ null,
+                        BugreportParams.BUGREPORT_MODE_FULL,
+                        /* flags= */ 0, new Listener(new CountDownLatch(1)),
+                        /* isScreenshotRequested= */ false,
+                        /* skipUserConsentUnused = */ false));
+
+        assertThat(thrown.getMessage()).contains("not an admin user");
+    }
+
+    @Test
     @RequiresFlagsEnabled(android.os.Flags.FLAG_BUGREPORT_MULTI_DISPLAY_SCREENSHOT_ENABLED)
     public void testStartBugreportWithMultiDisplayScreenshotFlag() {
         mService.startBugreport(mCallingUid, mContext.getPackageName(),
@@ -359,6 +418,8 @@ public class BugreportManagerServiceImplTest {
         private final DevicePolicyManager mDevicePolicyManager;
         private boolean mBugreportStarted = false;
         private boolean mTreatCallerAsAdmin = false;
+        private final Set<String> mGrantedPermissions = new HashSet<>();
+        private boolean mIsInitiateBugreportAsNonAdminEnabled = false;
 
         TestInjector(Context context, ArraySet<String> allowlistedPackages, AtomicFile mappingFile,
                 UserManager um, DevicePolicyManager dpm, String grantedRole) {
@@ -411,6 +472,27 @@ public class BugreportManagerServiceImplTest {
         @Override
         boolean treatAsAdminAnyway(int userId) {
             return mTreatCallerAsAdmin;
+        }
+
+        @Override
+        int checkCallingOrSelfPermission(String permission) {
+            if (mGrantedPermissions.contains(permission)) {
+                return PackageManager.PERMISSION_GRANTED;
+            }
+            return PackageManager.PERMISSION_DENIED;
+        }
+
+        @Override
+        boolean isInitiateBugreportAsNonAdminEnabled() {
+            return mIsInitiateBugreportAsNonAdminEnabled;
+        }
+
+        void grantPermission(String permission) {
+            mGrantedPermissions.add(permission);
+        }
+
+        void setInitiateBugreportAsNonAdminEnabled(boolean enabled) {
+            mIsInitiateBugreportAsNonAdminEnabled = enabled;
         }
     }
 }

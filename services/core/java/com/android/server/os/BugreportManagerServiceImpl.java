@@ -470,6 +470,10 @@ class BugreportManagerServiceImpl extends IDumpstate.Stub {
                     && userId == UserHandle.USER_SYSTEM;
         }
 
+        boolean isInitiateBugreportAsNonAdminEnabled() {
+            return android.os.Flags.initiateBugreportAsNonAdmin();
+        }
+
         PackageManager getPackageManager() {
             return mContext.getPackageManager();
         }
@@ -785,8 +789,14 @@ class BugreportManagerServiceImpl extends IDumpstate.Stub {
                     && isUserAffiliated(effectiveCallingUserId)) {
                 return;
             }
-            logAndThrow(TextUtils.formatSimple("Calling user %s is not an admin user."
-                    + " Only admin users and their profiles are allowed to take bugreport.",
+            if ( mInjector.isInitiateBugreportAsNonAdminEnabled()
+                    && mInjector.checkCallingOrSelfPermission(
+                            android.Manifest.permission.INITIATE_BUGREPORT_AS_NON_ADMIN)
+                    == PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
+            logAndThrow(TextUtils.formatSimple("Calling user %s is not an admin user"
+                    + " and lacks required permissions to take a bugreport.",
                     effectiveCallingUserId));
         }
     }

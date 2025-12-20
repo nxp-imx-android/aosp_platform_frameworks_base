@@ -268,8 +268,9 @@ flag {
 flag {
     name: "initiate_bugreport_as_non_admin"
     namespace: "feedback"
-    description: "Enable non-admin users to generate a bug report"
+    description: "Allow non-admin users with the INITIATE_BUGREPORT_AS_NON_ADMIN permission to generate a bug report."
     bug: "450735514"
+    is_exported: true
 }
 
 flag {
