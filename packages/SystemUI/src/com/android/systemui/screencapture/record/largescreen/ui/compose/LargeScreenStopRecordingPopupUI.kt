@@ -16,6 +16,11 @@
 
 package com.android.systemui.screencapture.record.largescreen.ui.compose
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -37,6 +42,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,60 +65,77 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun LargeScreenStopRecordingPopupUI(viewModel: LargeScreenStopRecordingPopupViewModel) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        horizontalAlignment =
-            if (StatusBarForDesktop.isEnabled) {
-                Alignment.End
-            } else {
-                Alignment.Start
-            },
-        modifier =
-            Modifier.fillMaxSize()
-                .windowInsetsPadding(
-                    WindowInsets.safeContent.only(
-                        WindowInsetsSides.Top + WindowInsetsSides.Horizontal
-                    )
-                )
-                .padding(horizontal = 30.dp),
+
+    // Controls the visibility of the popup, allowing for enter/exit animations.
+    // Initial state is `false` with a target of `true` to ensure the enter animation runs on
+    // first composition.
+    val uiVisibilityState = remember { MutableTransitionState(false).apply { targetState = true } }
+
+    // Wait for animation to finish before calling viewModel.dismiss()
+    if (uiVisibilityState.isIdle && !uiVisibilityState.targetState) {
+        SideEffect { viewModel.dismiss() }
+    }
+
+    AnimatedVisibility(
+        visibleState = uiVisibilityState,
+        enter = fadeIn(tween(200)),
+        exit = fadeOut(tween(50)),
     ) {
-        Surface(
-            shape = FloatingToolbarDefaults.ContainerShape,
-            color = MaterialTheme.colorScheme.surface,
-            shadowElevation = 6.dp,
+        Column(
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalAlignment =
+                if (StatusBarForDesktop.isEnabled) {
+                    Alignment.End
+                } else {
+                    Alignment.Start
+                },
+            modifier =
+                Modifier.fillMaxSize()
+                    .windowInsetsPadding(
+                        WindowInsets.safeContent.only(
+                            WindowInsetsSides.Top + WindowInsetsSides.Horizontal
+                        )
+                    )
+                    .padding(horizontal = 30.dp),
         ) {
-            Row(
-                modifier = Modifier.height(64.dp).padding(horizontal = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
+            Surface(
+                shape = FloatingToolbarDefaults.ContainerShape,
+                color = MaterialTheme.colorScheme.surface,
+                shadowElevation = 6.dp,
             ) {
-                PlatformIconButton(
-                    onClick = { viewModel.dismiss() },
-                    contentDescription =
-                        stringResource(id = R.string.underlay_close_button_content_description),
-                    colors =
-                        IconButtonDefaults.iconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
-                        ),
-                    iconResource = R.drawable.ic_close,
-                )
+                Row(
+                    modifier = Modifier.height(64.dp).padding(horizontal = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    PlatformIconButton(
+                        onClick = { uiVisibilityState.targetState = false },
+                        contentDescription =
+                            stringResource(id = R.string.underlay_close_button_content_description),
+                        colors =
+                            IconButtonDefaults.iconButtonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                            ),
+                        iconResource = R.drawable.ic_close,
+                    )
 
-                Spacer(Modifier.width(12.dp))
+                    Spacer(Modifier.width(12.dp))
 
-                val coroutineScope = rememberCoroutineScope()
-                var buttonJob: Job? by remember { mutableStateOf(null) }
-                StopRecordingButton(
-                    onClick = {
-                        if (buttonJob == null) {
-                            buttonJob =
-                                coroutineScope.launch {
-                                    viewModel.onStopButtonTapped()
-                                    buttonJob = null
-                                }
-                        }
-                    },
-                    viewModel = viewModel,
-                    modifier = Modifier.height(40.dp),
-                )
+                    val coroutineScope = rememberCoroutineScope()
+                    var buttonJob: Job? by remember { mutableStateOf(null) }
+                    StopRecordingButton(
+                        onClick = {
+                            if (buttonJob == null) {
+                                buttonJob =
+                                    coroutineScope.launch {
+                                        viewModel.onStopButtonTapped()
+                                        buttonJob = null
+                                    }
+                            }
+                        },
+                        viewModel = viewModel,
+                        modifier = Modifier.height(40.dp),
+                    )
+                }
             }
         }
     }
