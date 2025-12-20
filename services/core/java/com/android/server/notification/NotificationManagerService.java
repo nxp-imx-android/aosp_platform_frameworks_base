@@ -5259,7 +5259,7 @@ public class NotificationManagerService extends SystemService {
                     callingUser, REASON_CHANNEL_REMOVED);
 
             deleteNotificationChannelDirectly(pkg, callingUid, callingUser,
-                    channelId, callingUid,true);
+                    channelId, callingUid,isSystemOrSystemUi);
         }
 
         @Override
