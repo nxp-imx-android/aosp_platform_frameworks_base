@@ -32,10 +32,13 @@ import android.content.Context;
 import android.os.DeadObjectException;
 import android.os.DeadSystemRuntimeException;
 import android.platform.test.annotations.RequiresFlagsDisabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.view.WindowManager;
 
 import com.android.internal.util.RingBuffer;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -54,6 +57,9 @@ import java.util.Set;
 @RunWith(MockitoJUnitRunner.class)
 @SuppressLint("VisibleForTests") // Suppress "method should only be accessed from tests"
 public class ContentCaptureManagerTest {
+
+    @Rule
+    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
     private static final int BUFFER_SIZE = 100;
 
@@ -196,7 +202,8 @@ public class ContentCaptureManagerTest {
     }
 
     @Test
-    @RequiresFlagsDisabled("android.view.contentcapture.deprecate_set_content_capture_enabled")
+    @RequiresFlagsDisabled(
+        "android.view.contentcapture.flags.deprecate_set_content_capture_enabled")
     public void testUpdateWindowAttribute_clearFlagSecureAfterDisabledByApp() {
         final ContentCaptureManager manager =
                 new ContentCaptureManager(mMockContext, mMockContentCaptureManager, EMPTY_OPTIONS);
