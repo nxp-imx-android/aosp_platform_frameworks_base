@@ -41,6 +41,7 @@ import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.text.format.DateUtils;
 import android.util.Log;
 
 import com.android.internal.annotations.GuardedBy;
@@ -76,6 +77,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @RavenwoodKeepWholeClass
 public class ContentProviderClient implements ContentInterface, AutoCloseable {
     private static final String TAG = "ContentProviderClient";
+    private static final long CALL_NOT_CANCELLED_TIMEOUT_MILLIS = 6 * DateUtils.HOUR_IN_MILLIS;
 
     private static final Object sLock = new Object();
 
@@ -123,6 +125,18 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
      */
     @Nullable
     private NotRespondingRunnable mAnrRunnableOnCancel;
+
+    /**
+     * Time (im ms) before which a stalled {@link ContentProvider} call is expected to be cancelled.
+     * Reaching this timeout usually indicates a bug in the calling application.
+     */
+    private long mCallNotCancelledTimeoutMillis = CALL_NOT_CANCELLED_TIMEOUT_MILLIS;
+
+    /**
+     * A Runnable that is executed after {@link mCallNotCancelledTimeoutMillis} passes, logging an
+     * error.
+     */
+    @Nullable private CallNotCancelledRunnable mCallNotCancelledRunnable;
 
     /** @hide */
     @VisibleForTesting
@@ -220,6 +234,8 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
 
             mAnrRunnable = timeoutFixedMillis > 0 ? new NotRespondingRunnable() : null;
             mAnrRunnableOnCancel = timeoutOnCancelMillis > 0 ? new NotRespondingRunnable() : null;
+            mCallNotCancelledRunnable =
+                    timeoutOnCancelMillis > 0 ? new CallNotCancelledRunnable() : null;
 
             if (timeoutFixedMillis > 0 || timeoutOnCancelMillis > 0) {
                 Binder.allowBlocking(mContentProvider.asBinder());
@@ -227,6 +243,12 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
                 Binder.defaultBlocking(mContentProvider.asBinder());
             }
         }
+    }
+
+    /** @hide */
+    @VisibleForTesting
+    public void setCallNotCancelledTimeout(@DurationMillisLong long timeoutMillis) {
+        mCallNotCancelledTimeoutMillis = timeoutMillis;
     }
 
     private void beforeRemote() {
@@ -241,14 +263,16 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
             return;
         }
 
-        if (mAnrRunnable == null) {
-            return;
+        if (mCallNotCancelledRunnable != null) {
+            sAnrHandler.postDelayed(mCallNotCancelledRunnable, mCallNotCancelledTimeoutMillis);
         }
 
-        // Apply fixed timeout to calls without cancellation signal, or calls
-        // with cancellation signal when timeout on cancel is not set.
-        if (cancellationSignal == null || mAnrRunnableOnCancel == null) {
-            sAnrHandler.postDelayed(mAnrRunnable, mAnrTimeout);
+        if (mAnrRunnable != null) {
+            // Apply fixed timeout to calls without cancellation signal, or calls
+            // with cancellation signal when timeout on cancel is not set.
+            if (cancellationSignal == null || mAnrRunnableOnCancel == null) {
+                sAnrHandler.postDelayed(mAnrRunnable, mAnrTimeout);
+            }
         }
     }
 
@@ -259,6 +283,9 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
         if (enableContentProviderClientAnrOnCancel()) {
             if (mAnrRunnableOnCancel != null) {
                 sAnrHandler.removeCallbacks(mAnrRunnableOnCancel);
+            }
+            if (mCallNotCancelledRunnable != null) {
+                sAnrHandler.removeCallbacks(mCallNotCancelledRunnable);
             }
         }
     }
@@ -799,6 +826,13 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
             throw e;
         } finally {
             afterRemote();
+        }
+    }
+
+    private final class CallNotCancelledRunnable implements Runnable {
+        @Override
+        public void run() {
+            Log.wtf(TAG, "Provider call is not cancelled: " + mContentProvider);
         }
     }
 
