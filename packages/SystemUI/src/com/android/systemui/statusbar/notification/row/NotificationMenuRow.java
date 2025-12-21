@@ -16,8 +16,6 @@
 
 package com.android.systemui.statusbar.notification.row;
 
-import static android.app.Flags.notificationsRedesignTemplates;
-
 import static com.android.systemui.SwipeHelper.SWIPED_FAR_ENOUGH_SIZE_FRACTION;
 
 import android.animation.Animator;
@@ -722,9 +720,7 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
     static NotificationMenuItem createConversationItem(Context context) {
         Resources res = context.getResources();
         String infoDescription = res.getString(R.string.notification_menu_gear_description);
-        int layoutId = notificationsRedesignTemplates()
-                ? R.layout.notification_2025_conversation_info
-                : R.layout.notification_conversation_info;
+        int layoutId = R.layout.notification_2025_conversation_info;
         NotificationConversationInfo infoContent =
                 (NotificationConversationInfo) LayoutInflater.from(context).inflate(
                         layoutId, null, false);
@@ -745,9 +741,7 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
     static NotificationMenuItem createPartialConversationItem(Context context) {
         Resources res = context.getResources();
         String infoDescription = res.getString(R.string.notification_menu_gear_description);
-        int layoutId = notificationsRedesignTemplates()
-                ? R.layout.notification_2025_partial_conversation_info
-                : R.layout.partial_conversation_info;
+        int layoutId = R.layout.notification_2025_partial_conversation_info;
         PartialConversationInfo infoContent =
                 (PartialConversationInfo) LayoutInflater.from(context).inflate(
                         layoutId, null, false);
@@ -836,9 +830,7 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
     static NotificationMenuItem createInfoItem(Context context) {
         Resources res = context.getResources();
         String infoDescription = res.getString(R.string.notification_menu_gear_description);
-        int layoutId = notificationsRedesignTemplates()
-                ? R.layout.notification_2025_info
-                : R.layout.notification_info;
+        int layoutId = R.layout.notification_2025_info;
         NotificationInfo infoContent = (NotificationInfo) LayoutInflater.from(context).inflate(
                 layoutId, null, false);
         return new NotificationMenuItem(context, infoDescription, infoContent,

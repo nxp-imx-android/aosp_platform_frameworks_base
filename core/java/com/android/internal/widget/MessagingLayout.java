@@ -16,8 +16,6 @@
 
 package com.android.internal.widget;
 
-import static android.app.Flags.notificationsRedesignTemplates;
-
 import static com.android.internal.widget.MessagingGroup.IMAGE_DISPLAY_LOCATION_EXTERNAL;
 import static com.android.internal.widget.MessagingGroup.IMAGE_DISPLAY_LOCATION_INLINE;
 
@@ -145,14 +143,12 @@ public class MessagingLayout extends FrameLayout
                 R.dimen.notification_2025_right_icon_content_margin);
         mSpacingForImage = iconMarginStart + imageWidth;
 
-        if (notificationsRedesignTemplates()) {
-            // The left_icon in the header has the default rounded square background. Make sure
-            // we're using the circular background instead.
-            ImageView leftIcon = findViewById(R.id.left_icon);
-            if (leftIcon != null) {
-                leftIcon.setBackgroundResource(
-                        R.drawable.notification_2025_conversation_icon_background);
-            }
+        // The left_icon in the header has the default rounded square background. Make sure
+        // we're using the circular background instead.
+        ImageView leftIcon = findViewById(R.id.left_icon);
+        if (leftIcon != null) {
+            leftIcon.setBackgroundResource(
+                    R.drawable.notification_2025_conversation_icon_background);
         }
         // We still want to clip, but only on the top, since views can temporarily out of bounds
         // during transitions.
@@ -449,17 +445,15 @@ public class MessagingLayout extends FrameLayout
      * text in the same way we do for large icons, to leave space for the image.
      */
     private void adjustSpacingForImage() {
-        if (notificationsRedesignTemplates()) {
-            updateMarginEnd(mImageMessageContainer, mSpacingForExpander);
+        updateMarginEnd(mImageMessageContainer, mSpacingForExpander);
 
-            int spacingForImage = getSpacingForImage();
-            int textMargin = spacingForImage + mSpacingForExpander;
-            updateMarginEnd(mTopLine, textMargin);
-            // Only apply spacing to second line if there's an image - otherwise the text should
-            // flow under the expander.
-            if (spacingForImage > 0) {
-                updateMarginEnd(mMessagingLinearLayout, textMargin);
-            }
+        int spacingForImage = getSpacingForImage();
+        int textMargin = spacingForImage + mSpacingForExpander;
+        updateMarginEnd(mTopLine, textMargin);
+        // Only apply spacing to second line if there's an image - otherwise the text should flow
+        // under the expander.
+        if (spacingForImage > 0) {
+            updateMarginEnd(mMessagingLinearLayout, textMargin);
         }
     }
 

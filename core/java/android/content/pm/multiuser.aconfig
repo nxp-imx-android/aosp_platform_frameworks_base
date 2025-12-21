@@ -441,9 +441,16 @@ flag {
 }
 
 flag {
+    name: "hsu_disable_notifications"
+    namespace: "multiuser"
+    description: "Disables notifications when the current user is the headless system user"
+    bug: "469851439"
+}
+
+flag {
     name: "hsu_allowlist_notifications"
     namespace: "multiuser"
-    description: "Adds an allowlist mechanism to device which notifications can be shown when the current user is the headless system user"
+    description: "Adds logging for which notifications are shown when the current user is the headless system user. Implementation will use a separate flag."
     bug: "412176703"
 }
 

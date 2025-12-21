@@ -28,7 +28,6 @@ import static android.hardware.serial.flags.Flags.enableWiredSerialApi;
 import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.annotation.RequiresNoPermission;
 import android.annotation.RequiresPermission;
 import android.annotation.UserIdInt;
 import android.content.Context;
@@ -64,9 +63,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -75,7 +72,8 @@ import java.util.function.Supplier;
  * <p>This service acts as a facade for a native service that handles device enumeration and file
  * operations. This service manages user consent and proxies requests to the native service.
  */
-public class SerialManagerService extends ISerialManager.Stub {
+public class SerialManagerService extends ISerialManager.Stub implements
+        SerialDeviceFilter.FilteredSerialPortListener {
     private static final String TAG = "SerialManagerService";
 
     private static final int OPEN_MODE_BITS =
@@ -89,27 +87,27 @@ public class SerialManagerService extends ISerialManager.Stub {
 
     private static final String DEV_DIR_PREFIX = "/dev/";
 
-    // keyed by the serial port name (eg. ttyS0)
-    @GuardedBy("mLock")
-    private final HashMap<String, SerialPortInfo> mSerialPorts = new HashMap<>();
-
-    private final Object mLock = new Object();
-
     private final Context mContext;
 
     private final String[] mPortsInConfig;
+
+    private final String[] mBlockedPortsInConfig;
 
     private final String mDialogComponent;
 
     private final Supplier<android.hardware.serialservice.ISerialManager> mNativeServiceSupplier;
 
-    private final SerialDeviceFilterFactory mSerialDeviceFilterFactory;
-
     private final SerialUserAccessManagerFactory mAccessManagerFactory;
+
+    private final Object mLock = new Object();
 
     // Binder proxy for the native serial service.
     @GuardedBy("mLock")
     private android.hardware.serialservice.ISerialManager mNativeService;
+
+    // Manages the list of available serial ports. Lazily initialized in connectToNativeService().
+    @GuardedBy("mLock")
+    private SerialDeviceFilter mSerialDeviceFilter;
 
     @GuardedBy("mLock")
     private final SparseArray<SerialUserAccessManagerInterface> mAccessManagerPerUser =
@@ -121,50 +119,27 @@ public class SerialManagerService extends ISerialManager.Stub {
     @GuardedBy("mLock")
     private boolean mIsConnectedToNativeService;
 
-    // PTY port is only exposed in CTS tests
-    @GuardedBy("mLock")
-    private boolean mIsPtyExposed;
-
-    // This filter may allow PTY ports, depending on `mIsPtyExposed`
-    @GuardedBy("mLock")
-    private Predicate<android.hardware.serialservice.SerialPortInfo> mSerialDeviceFilter;
-
-
     private SerialManagerService(Context context) {
         this(context, context.getResources().getStringArray(R.array.config_serialPorts),
+                context.getResources().getStringArray(R.array.config_blockedSerialPorts),
                 context.getResources().getString(R.string.config_portAccessDialogComponent),
-                createSerialDeviceFilterFactory(context),
                 () -> android.hardware.serialservice.ISerialManager.Stub.asInterface(
                         ServiceManager.getService(NATIVE_SERIAL_SERVICE_NAME)),
                 SerialUserAccessManager::new);
     }
 
     @VisibleForTesting
-    SerialManagerService(Context context, String[] portsInConfig, String dialogComponent,
-            SerialDeviceFilterFactory serialDeviceFilterFactory,
+    SerialManagerService(Context context, String[] portsInConfig, String[] blockedPortsInConfig,
+            String dialogComponent,
             Supplier<android.hardware.serialservice.ISerialManager> nativeServiceSupplier,
             SerialUserAccessManagerFactory accessManagerFactory) {
         mContext = context;
         mDialogComponent = dialogComponent;
         mPortsInConfig = stripDevPrefix(portsInConfig);
+        mBlockedPortsInConfig = stripDevPrefix(blockedPortsInConfig);
         mNativeServiceSupplier = nativeServiceSupplier;
-        mSerialDeviceFilterFactory = serialDeviceFilterFactory;
         mAccessManagerFactory = accessManagerFactory;
     }
-
-    private static SerialDeviceFilterFactory createSerialDeviceFilterFactory(Context context) {
-        var blockedPorts = context.getResources().getStringArray(R.array.config_blockedSerialPorts);
-        var blocklistFiler = new BlockedSerialPortsFilter(stripDevPrefix(blockedPorts));
-        return isPtyExposed -> {
-            Predicate<android.hardware.serialservice.SerialPortInfo> filter =
-                    new SerialDeviceFilter();
-            if (isPtyExposed) {
-                filter = filter.or(new PtyPortFilter());
-            }
-            return filter.and(blocklistFiler);
-        };
-    }
-
 
     private static String[] stripDevPrefix(String[] portPaths) {
         if (portPaths.length == 0) {
@@ -189,7 +164,8 @@ public class SerialManagerService extends ISerialManager.Stub {
             if (!connectToNativeService()) {
                 return Collections.emptyList();
             }
-            return Collections.unmodifiableList(new ArrayList<>(mSerialPorts.values()));
+            return Collections.unmodifiableList(
+                    new ArrayList<>(mSerialDeviceFilter.getAvailablePorts().values()));
         }
     }
 
@@ -230,7 +206,7 @@ public class SerialManagerService extends ISerialManager.Stub {
                         + serialPort);
                 return;
             }
-            if (!mSerialPorts.containsKey(serialPort)) {
+            if (!mSerialDeviceFilter.getAvailablePorts().containsKey(serialPort)) {
                 Slog.w(TAG, "Not granting access to missing port " + serialPort);
                 return;
             }
@@ -275,8 +251,11 @@ public class SerialManagerService extends ISerialManager.Stub {
                 deliverErrorToCallback(callback, ErrorCode.ERROR_PORT_NOT_FOUND, portName);
                 return;
             }
-            SerialPortInfo port = mSerialPorts.get(portName);
+            SerialPortInfo port = mSerialDeviceFilter.getAvailablePorts().get(portName);
             if (port == null && hasSerialPortPermission(mContext, callingPid, callingUid)) {
+                // Allow privileged apps to open ports listed in the config, even if they are not
+                // currently available (e.g. built-in UARTs that are normally hidden for security).
+                // This is for legacy use cases.
                 for (int i = 0; i < mPortsInConfig.length; ++i) {
                     if (portName.equals(mPortsInConfig[i])) {
                         port = new SerialPortInfo(portName, INVALID_ID, INVALID_ID);
@@ -401,65 +380,21 @@ public class SerialManagerService extends ISerialManager.Stub {
             Slog.e(TAG, "Native Serial Service not found");
             return false;
         }
-        if (!filterSerialPorts()) {
-            return false;
-        }
         try {
-            mNativeService.registerSerialPortListener(new SerialPortListener());
+            mSerialDeviceFilter = new SerialDeviceFilter(mContext, mBlockedPortsInConfig,
+                    mNativeService, mLock);
         } catch (RemoteException e) {
-            Slog.e(TAG, "Error registering serial port listener with native service", e);
+            Slog.e(TAG, "Error communicating with native service", e);
             return false;
         }
+        mSerialDeviceFilter.setFilteredSerialPortListener(this);
         mIsConnectedToNativeService = true;
         return true;
     }
 
-    /**
-     * Filters the list of serial ports obtained from the native service according to current
-     * filtering conditions.
-     *
-     * @return true if this operation succeeded, false otherwise.
-     */
+    @Override
     @GuardedBy("mLock")
-    private boolean filterSerialPorts() {
-        mSerialDeviceFilter = mSerialDeviceFilterFactory.createFilter(mIsPtyExposed);
-        try {
-            var ports = mNativeService.getSerialPorts();
-            for (int i = 0; i < ports.size(); i++) {
-                addSerialDevice(ports.get(i));
-            }
-        } catch (RemoteException e) {
-            Slog.e(TAG, "Error getting serial ports from native service", e);
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Refreshes the list of available serial ports, to be called when the filtering conditions
-     * change.
-     *
-     * @return true if this operation succeeded, false otherwise.
-     */
-    @GuardedBy("mLock")
-    private boolean refilterSerialPorts() {
-        mSerialPorts.clear();
-        return mIsConnectedToNativeService ? filterSerialPorts() : connectToNativeService();
-    }
-
-    private void addSerialDevice(android.hardware.serialservice.SerialPortInfo info) {
-        if (!mSerialDeviceFilter.test(info)) {
-            return;
-        }
-
-        // Convert from the native service's AIDL type to the framework's AIDL type.
-        var port = new SerialPortInfo(info.name, info.vendorId, info.productId);
-        synchronized (mLock) {
-            if (mSerialPorts.containsKey(port.getName())) {
-                return;
-            }
-            mSerialPorts.put(port.getName(), port);
-        }
+    public void onSerialPortAdded(SerialPortInfo port) {
         Slog.d(TAG, "Added serial device " + port.getName());
         int n = mListeners.beginBroadcast();
         for (int i = 0; i < n; i++) {
@@ -472,18 +407,13 @@ public class SerialManagerService extends ISerialManager.Stub {
         mListeners.finishBroadcast();
     }
 
-    private void removeSerialDevice(String name) {
-        SerialPortInfo port;
-        synchronized (mLock) {
-            port = mSerialPorts.remove(name);
-            if (port == null) {
-                return;
-            }
-        }
+    @Override
+    @GuardedBy("mLock")
+    public void onSerialPortRemoved(SerialPortInfo port) {
         for (int i = mAccessManagerPerUser.size() - 1; i >= 0; --i) {
-            mAccessManagerPerUser.valueAt(i).onPortRemoved(name);
+            mAccessManagerPerUser.valueAt(i).onPortRemoved(port.getName());
         }
-        Slog.d(TAG, "Removed serial device " + name);
+        Slog.d(TAG, "Removed serial device " + port.getName());
         int n = mListeners.beginBroadcast();
         for (int i = 0; i < n; i++) {
             try {
@@ -495,34 +425,19 @@ public class SerialManagerService extends ISerialManager.Stub {
         mListeners.finishBroadcast();
     }
 
-    /**
-     * For CTS tests: expose or hide PTY via adb shell command.
-     *
-     * Side effect: clean granted access for all users.
-     *
-     * @return 0 if this operation succeeded, 1 otherwise.
-     */
-    int setExposePty(boolean isPtyExposed) {
-        synchronized (mLock) {
-            mAccessManagerPerUser.clear();
-            if (mIsPtyExposed == isPtyExposed) {
-                return 0;
-            }
-            mIsPtyExposed = isPtyExposed;
-            return refilterSerialPorts() ? 0 : 1;
-        }
-    }
-
     @Override
     public void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
         if (!DumpUtils.checkDumpPermission(mContext, TAG, pw)) {
             return;
         }
-        pw.println("Available ports (" + mSerialPorts.size() + "):");
-        for (SerialPortInfo port : mSerialPorts.values()) {
-            pw.println("Port " + port.getName() + ":");
-            pw.println("   Vendor ID: " + Integer.toHexString(port.getVendorId()));
-            pw.println("   Product ID: " + Integer.toHexString(port.getProductId()));
+        synchronized (mLock) {
+            var ports = mSerialDeviceFilter.getAvailablePorts();
+            pw.println("Available ports (" + ports.size() + "):");
+            for (SerialPortInfo port : ports.values()) {
+                pw.println("Port " + port.getName() + ":");
+                pw.println("   Vendor ID: " + Integer.toHexString(port.getVendorId()));
+                pw.println("   Product ID: " + Integer.toHexString(port.getProductId()));
+            }
         }
     }
 
@@ -535,29 +450,24 @@ public class SerialManagerService extends ISerialManager.Stub {
             String[] args, ShellCallback callback, ResultReceiver resultReceiver) {
         mContext.enforceCallingPermission(Manifest.permission.MANAGE_SERIAL_PORTS,
                 "The caller doesn't have MANAGE_SERIAL_PORTS permission.");
-        (new SerialShellCommand(this)).exec(this, in, out, err, args, callback, resultReceiver);
+
+        var shellCommand = new SerialShellCommand(this, mSerialDeviceFilter);
+        shellCommand.exec(this, in, out, err, args, callback, resultReceiver);
+    }
+
+    /**
+     * Clears all user-granted access permissions. This method is used in `SerialShellCommand` to
+     * implement the "clear-user-access" shell command.
+     */
+    void clearUserAccess() {
+        synchronized (mLock) {
+            mAccessManagerPerUser.clear();
+        }
     }
 
     static boolean hasSerialPortPermission(Context context, int pid, int uid) {
         return context.checkPermission(Manifest.permission.SERIAL_PORT, pid, uid)
                 == PackageManager.PERMISSION_GRANTED;
-    }
-
-    /**
-     * Listener for serial port connection events from the native service.
-     */
-    private class SerialPortListener extends
-            android.hardware.serialservice.ISerialPortListener.Stub {
-
-        @RequiresNoPermission
-        public void onSerialPortConnected(android.hardware.serialservice.SerialPortInfo info) {
-            addSerialDevice(info);
-        }
-
-        @RequiresNoPermission
-        public void onSerialPortDisconnected(android.hardware.serialservice.SerialPortInfo info) {
-            removeSerialDevice(info.name);
-        }
     }
 
     interface SerialUserAccessManagerFactory {
@@ -579,20 +489,5 @@ public class SerialManagerService extends ISerialManager.Stub {
                 publishBinderService(Context.SERIAL_SERVICE, new SerialManagerService(mContext));
             }
         }
-    }
-
-    /**
-     * Creates a filter for the list of serial devices obtained from the native service.
-     */
-    interface SerialDeviceFilterFactory {
-
-        /**
-         * Create a serial device filter.
-         *
-         * @param isPtyExposed The value of the system parameter used to expose PTY port for CTS
-         *                     tests.
-         * @return a predicate for filtering serial devices
-         */
-        Predicate<android.hardware.serialservice.SerialPortInfo> createFilter(boolean isPtyExposed);
     }
 }

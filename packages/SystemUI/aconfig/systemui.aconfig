@@ -1953,6 +1953,13 @@ flag {
 }
 
 flag {
+  name: "use_android_ui_dispatcher"
+  namespace: "systemui"
+  description: "Use compose's AndroidUiDispatcher as default"
+  bug: "460414443"
+}
+
+flag {
     name: "use_systemui_views_for_system_toolbar"
     namespace: "permissions"
     description: "Use the views moved into system ui from the framework for the system selection toolbar."

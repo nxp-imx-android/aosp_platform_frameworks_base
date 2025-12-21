@@ -48,7 +48,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import android.app.Flags;
 import android.app.INotificationManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -71,7 +70,6 @@ import android.graphics.drawable.Icon;
 import android.os.Handler;
 import android.os.UserHandle;
 import android.os.UserManager;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.service.notification.StatusBarNotification;
@@ -92,17 +90,9 @@ import com.android.systemui.people.widget.PeopleSpaceWidgetManager;
 import com.android.systemui.res.R;
 import com.android.systemui.shade.ShadeController;
 import com.android.systemui.statusbar.RankingBuilder;
-import com.android.systemui.statusbar.SbnBuilder;
-import com.android.systemui.statusbar.notification.NotificationActivityStarter;
 import com.android.systemui.statusbar.notification.collection.EntryAdapter;
-import com.android.systemui.statusbar.notification.collection.EntryAdapterFactoryImpl;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
-import com.android.systemui.statusbar.notification.collection.coordinator.VisualStabilityCoordinator;
-import com.android.systemui.statusbar.notification.collection.provider.HighPriorityProvider;
-import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
-import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
-import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
 import com.android.systemui.wmshell.BubblesManager;
 import com.android.systemui.wmshell.BubblesTestActivity;
 
@@ -190,9 +180,7 @@ public class NotificationConversationInfoTest extends SysuiTestCase {
         mDependency.injectTestDependency(ShadeController.class, mShadeController);
         // Inflate the layout
         final LayoutInflater layoutInflater = LayoutInflater.from(mContext);
-        int layoutId = Flags.notificationsRedesignTemplates()
-                ? R.layout.notification_2025_conversation_info
-                : R.layout.notification_conversation_info;
+        int layoutId = R.layout.notification_2025_conversation_info;
         mNotificationInfo = (NotificationConversationInfo) layoutInflater.inflate(
                 layoutId,
                 null);

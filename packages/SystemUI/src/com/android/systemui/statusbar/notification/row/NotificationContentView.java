@@ -16,8 +16,6 @@
 
 package com.android.systemui.statusbar.notification.row;
 
-import static android.app.Flags.notificationsRedesignTemplates;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.Flags;
@@ -728,9 +726,7 @@ public class NotificationContentView extends FrameLayout implements Notification
      */
     private int getMinContentHeightHint() {
         int actionListHeight = mContext.getResources().getDimensionPixelSize(
-                notificationsRedesignTemplates()
-                        ? com.android.internal.R.dimen.notification_2025_action_list_height
-                        : com.android.internal.R.dimen.notification_action_list_height);
+                com.android.internal.R.dimen.notification_2025_action_list_height);
         if (mIsChildInGroup && isVisibleOrTransitioning(VISIBLE_TYPE_SINGLELINE)) {
             return actionListHeight;
         }
@@ -1623,12 +1619,10 @@ public class NotificationContentView extends FrameLayout implements Notification
             }
         }
         ImageView bubbleButton = layout.findViewById(com.android.internal.R.id.bubble_button);
-        // With the new design, the actions_container should always be visible to act as padding
-        // when there are no actions. We're making its child visible/invisible instead.
+        // The actions_container should always be visible to act as padding when there are no
+        // actions. We're making its child visible/invisible instead.
         View actionsContainerForVisibilityChange = layout.findViewById(
-                notificationsRedesignTemplates()
-                        ? com.android.internal.R.id.actions_container_layout
-                        : com.android.internal.R.id.actions_container);
+                com.android.internal.R.id.actions_container_layout);
         if (bubbleButton == null || actionsContainerForVisibilityChange == null) {
             return;
         }
@@ -1651,27 +1645,8 @@ public class NotificationContentView extends FrameLayout implements Notification
             bubbleButton.setOnClickListener(mContainingNotification.getBubbleClickListener());
             bubbleButton.setVisibility(VISIBLE);
             actionsContainerForVisibilityChange.setVisibility(VISIBLE);
-            if (!notificationsRedesignTemplates()) {
-                // Set notification_action_list_margin_target's bottom margin to 0 when showing
-                // bubble
-                ViewGroup actionListMarginTarget = layout.findViewById(
-                        com.android.internal.R.id.notification_action_list_margin_target);
-                if (actionListMarginTarget != null) {
-                    removeBottomMargin(actionListMarginTarget);
-                }
-            }
         } else  {
             bubbleButton.setVisibility(GONE);
-        }
-    }
-
-    private static void removeBottomMargin(ViewGroup actionListMarginTarget) {
-        ViewGroup.LayoutParams lp = actionListMarginTarget.getLayoutParams();
-        if (lp instanceof MarginLayoutParams) {
-            final MarginLayoutParams mlp = (MarginLayoutParams) lp;
-            if (mlp.bottomMargin > 0) {
-                mlp.setMargins(mlp.leftMargin, mlp.topMargin, mlp.rightMargin, 0);
-            }
         }
     }
 
@@ -1709,12 +1684,10 @@ public class NotificationContentView extends FrameLayout implements Notification
             return;
         }
         ImageView snoozeButton = layout.findViewById(com.android.internal.R.id.snooze_button);
-        // With the new design, the actions_container should always be visible to act as padding
-        // when there are no actions. We're making its child visible/invisible instead.
+        // The actions_container should always be visible to act as padding when there are no
+        // actions. We're making its child visible/invisible instead.
         View actionsContainerForVisibilityChange = layout.findViewById(
-                notificationsRedesignTemplates()
-                        ? com.android.internal.R.id.actions_container_layout
-                        : com.android.internal.R.id.actions_container);
+                com.android.internal.R.id.actions_container_layout);
         if (snoozeButton == null || actionsContainerForVisibilityChange == null) {
             return;
         }

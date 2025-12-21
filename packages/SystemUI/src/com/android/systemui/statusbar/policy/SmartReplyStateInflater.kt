@@ -18,7 +18,6 @@ package com.android.systemui.statusbar.policy
 
 import android.app.ActivityOptions
 import android.app.Flags.notificationAnimatedActionContentDescription
-import android.app.Flags.notificationsRedesignTemplates
 import android.app.Notification
 import android.app.Notification.Action.SEMANTIC_ACTION_MARK_CONVERSATION_AS_PRIORITY
 import android.app.PendingIntent
@@ -455,11 +454,7 @@ constructor(
             if (isAnimatedAction) {
                 R.layout.animated_action_button
             } else {
-                if (notificationsRedesignTemplates()) {
-                    R.layout.notification_2025_smart_action_button
-                } else {
-                    R.layout.smart_action_button
-                }
+                R.layout.notification_2025_smart_action_button
             }
         return (LayoutInflater.from(parent.context).inflate(layoutRes, parent, false) as Button)
             .apply {
@@ -483,9 +478,7 @@ constructor(
                         )
                     } else {
                         context.resources.getDimensionPixelSize(
-                            if (notificationsRedesignTemplates())
-                                R.dimen.notification_2025_smart_action_button_icon_size
-                            else R.dimen.smart_action_button_icon_size
+                            R.dimen.notification_2025_smart_action_button_icon_size
                         )
                     }
                 val iconDrawable =
@@ -582,8 +575,7 @@ constructor(
             if (enableAnimatedReply) {
                 R.layout.animated_action_button
             } else {
-                if (notificationsRedesignTemplates()) R.layout.notification_2025_smart_reply_button
-                else R.layout.smart_reply_button
+                R.layout.notification_2025_smart_reply_button
             }
 
         return (LayoutInflater.from(parent.context).inflate(layoutRes, parent, false) as Button)

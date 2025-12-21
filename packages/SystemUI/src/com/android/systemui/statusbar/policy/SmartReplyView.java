@@ -1,7 +1,5 @@
 package com.android.systemui.statusbar.policy;
 
-import static android.app.Flags.notificationsRedesignTemplates;
-
 import static java.lang.Float.NaN;
 
 import android.annotation.ColorInt;
@@ -118,9 +116,8 @@ public class SmartReplyView extends ViewGroup {
 
         // The default color is white, as it helps us ensure ideal contrast. However, the actual
         // color will be based on the notification background (set in setBackgroundTintColor).
-        // When notificationsRedesignTemplates is on, we use that color to calculate the colors of
-        // the other elements, but we make the button transparent so that the translucent
-        // background of the notification is visible.
+        // We use that color to calculate the colors of the other elements, but we make the button
+        // transparent so that the translucent background of the notification is visible.
         mDefaultBackgroundColor = context.getColor(R.color.smart_reply_button_background);
         mTransparentBackgroundColor = context.getColor(R.color.transparent);
         mDefaultTextColor = mContext.getColor(R.color.smart_reply_button_text);
@@ -839,11 +836,10 @@ public class SmartReplyView extends ViewGroup {
                 Drawable background = ((InsetDrawable) inset).getDrawable();
                 if (background instanceof GradientDrawable) {
                     GradientDrawable gradientDrawable = (GradientDrawable) background;
-                    // With the redesign, we let the background be transparent (so the notification
-                    // surface gets through), but all other colors are calculated and applied
-                    // as usual to ensure contrast.
-                    gradientDrawable.setColor(notificationsRedesignTemplates()
-                            ? mTransparentBackgroundColor : mCurrentBackgroundColor);
+                    // We let the background be transparent (so the notification surface gets
+                    // through), but all other colors are calculated and applied as usual to ensure
+                    // contrast.
+                    gradientDrawable.setColor(mTransparentBackgroundColor);
                     gradientDrawable.setStroke(mStrokeWidth, mCurrentStrokeColor);
                 }
             }

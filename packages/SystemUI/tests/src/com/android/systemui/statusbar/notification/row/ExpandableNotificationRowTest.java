@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.notification.row;
 
-import static android.app.Flags.FLAG_NOTIFICATIONS_REDESIGN_TEMPLATES;
 import static android.app.Notification.FLAG_FSI_REQUESTED_BUT_DENIED;
 import static android.app.NotificationChannel.NEWS_ID;
 
@@ -67,7 +66,6 @@ import com.android.internal.R;
 import com.android.internal.widget.CachingIconView;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.SysuiTestableContext;
-import com.android.systemui.flags.FakeFeatureFlagsClassic;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.plugins.statusbar.NotificationMenuRowPlugin;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
@@ -102,7 +100,6 @@ import java.util.function.Consumer;
 @RunWithLooper
 public class ExpandableNotificationRowTest extends SysuiTestCase {
 
-    private final FakeFeatureFlagsClassic mFeatureFlags = new FakeFeatureFlagsClassic();
     private KosmosJavaAdapter mKosmos;
     @Rule public MockitoRule mockito = MockitoJUnit.rule();
 
@@ -201,7 +198,6 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATIONS_REDESIGN_TEMPLATES)
     public void setSensitive_doesNothingIfCalledAgain() throws Exception {
         ExpandableNotificationRow row = mKosmos.createRow();
         measureAndLayout(row);
@@ -226,7 +222,6 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATIONS_REDESIGN_TEMPLATES)
     public void testSetSensitiveOnNotifRowUpdatesLayout() throws Exception {
         // GIVEN a sensitive notification row that's currently redacted
         ExpandableNotificationRow row = mKosmos.createRow();
@@ -245,30 +240,6 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
         // VERIFY that the layout is updated
         assertThat(row.getShowingLayout()).isSameInstanceAs(row.getPrivateLayout());
         verify(mockPrivateLayout).requestSelectLayout(eq(true));
-    }
-
-    @Test
-    @DisableFlags(FLAG_NOTIFICATIONS_REDESIGN_TEMPLATES)
-    public void testSetSensitiveOnNotifRowNotifiesOfHeightChange() throws Exception {
-        // GIVEN a sensitive notification row that's currently redacted
-        ExpandableNotificationRow row = mKosmos.createRow();
-        measureAndLayout(row);
-        row.setHideSensitiveForIntrinsicHeight(true);
-        row.setSensitive(true, true);
-        assertThat(row.getShowingLayout()).isSameInstanceAs(row.getPublicLayout());
-        assertThat(row.getIntrinsicHeight()).isGreaterThan(0);
-
-        // GIVEN that the row has a height change listener
-        OnHeightChangedListener listener = mock(OnHeightChangedListener.class);
-        row.setOnHeightChangedListener(listener);
-
-        // WHEN the row is set to no longer be sensitive
-        row.setSensitive(false, true);
-
-        // VERIFY that the height change listener is invoked
-        assertThat(row.getShowingLayout()).isSameInstanceAs(row.getPrivateLayout());
-        assertThat(row.getIntrinsicHeight()).isGreaterThan(0);
-        verify(listener).onHeightChanged(eq(row), eq(true), anyString());
     }
 
     @Test

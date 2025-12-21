@@ -353,4 +353,36 @@ public class ExternalStorageProviderTest {
                 .getStorageVolume(MediaStore.Files.getContentUri(
                         MediaStore.VOLUME_EXTERNAL_PRIMARY)).getDirectory();
     }
+
+    @Test
+    public void testIsTrashSupported() throws Exception {
+        File downloadsDir = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOWNLOADS);
+        File recordingsDir = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_RECORDINGS);
+        File trashDir = Environment.getExternalStoragePublicDirectory("/.trash-storage");
+        File testFile = new File(downloadsDir, "example.txt");
+        File testFileInTrash = new File(trashDir, "example.txt");
+        try {
+            testFile.createNewFile();
+            recordingsDir.mkdir();
+            trashDir.mkdir();
+            testFileInTrash.createNewFile();
+            MediaScannerConnection.scanFile(sTargetContext,
+                    new String[]{testFile.getAbsolutePath(), recordingsDir.getAbsolutePath(),
+                            testFileInTrash.getAbsolutePath()},
+                    null, null);
+
+            assertTrue("Trash should be supported for a regular file",
+                    mExternalStorageProvider.isTrashSupported(testFile));
+            assertFalse("Trash should not be supported for a top-level default directory",
+                    mExternalStorageProvider.isTrashSupported(recordingsDir));
+            assertFalse("Trash should not be supported for a file in trash",
+                    mExternalStorageProvider.isTrashSupported(testFileInTrash));
+        } finally {
+            CleanupTemporaryFilesRule.removeFilesRecursively(downloadsDir);
+            CleanupTemporaryFilesRule.removeFilesRecursively(recordingsDir);
+            CleanupTemporaryFilesRule.removeFilesRecursively(trashDir);
+        }
+    }
 }

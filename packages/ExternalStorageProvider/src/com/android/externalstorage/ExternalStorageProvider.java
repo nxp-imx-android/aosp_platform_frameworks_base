@@ -109,6 +109,24 @@ public class ExternalStorageProvider extends FileSystemProvider {
             Document.COLUMN_LAST_MODIFIED, Document.COLUMN_FLAGS, Document.COLUMN_SIZE,
     };
 
+    // Note: If you change this list, you may also need to change
+    // packages/providers/MediaProvider/src/com/android/providers/media/util/FileUtils.java
+    private static final List<String> DEFAULT_TOP_LEVEL_DIRECTORIES = Arrays.asList(
+            Environment.DIRECTORY_MUSIC,
+            Environment.DIRECTORY_PODCASTS,
+            Environment.DIRECTORY_RINGTONES,
+            Environment.DIRECTORY_ALARMS,
+            Environment.DIRECTORY_NOTIFICATIONS,
+            Environment.DIRECTORY_PICTURES,
+            Environment.DIRECTORY_MOVIES,
+            Environment.DIRECTORY_DOWNLOADS,
+            Environment.DIRECTORY_DCIM,
+            Environment.DIRECTORY_DOCUMENTS,
+            Environment.DIRECTORY_AUDIOBOOKS,
+            Environment.DIRECTORY_RECORDINGS,
+            Environment.DIR_ANDROID,
+            DIRECTORY_TRASH_STORAGE);
+
     private static class RootInfo {
         public String rootId;
         public String volumeId;
@@ -660,15 +678,25 @@ public class ExternalStorageProvider extends FileSystemProvider {
     }
 
     @Override
-    protected boolean isTrashSupported(File file) {
+    protected boolean isTrashSupported(@NonNull File file) {
         try {
             String documentId = getDocIdForFile(file);
-            // Trash not supported on USB devices
+            // Trash not supported on USB devices.
             if (isOnRemovableUsbStorage(documentId)) {
                 return false;
             }
 
+            // Top level default directories cannot be trashed.
+            if (isTopLevelDefaultDir(file)) {
+                return false;
+            }
+
             final RootInfo root = getRootFromDocId(documentId);
+            // Trash operation not supported for the files present in trash location.
+            if (isFileExistInTrashLocation(root, file)) {
+                return false;
+            }
+
             final String canonicalPath = getPathFromDocId(documentId);
             return !isRestrictedPath(root.rootId, canonicalPath);
         } catch (Exception e) {
@@ -901,5 +929,34 @@ public class ExternalStorageProvider extends FileSystemProvider {
 
     private static boolean equalIgnoringCase(@NonNull String a, @NonNull String b) {
         return TextUtils.equals(a.toLowerCase(Locale.ROOT), b.toLowerCase(Locale.ROOT));
+    }
+
+    private boolean isTopLevelDefaultDir(File file) {
+        if (!file.isDirectory()) {
+            return false;
+        }
+
+        try {
+            final String relativePath = getRelativePathFromRoot(file.getAbsolutePath());
+            final String[] relativePathSegments = relativePath.split("/");
+            if (relativePathSegments.length == 1) {
+                final String dirName = file.getName();
+                for (String defaultDir : DEFAULT_TOP_LEVEL_DIRECTORIES) {
+                    if (dirName.equalsIgnoreCase(defaultDir)) {
+                        return true;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            // If we can't get the relative path, we can't determine if it is a top-level
+            // directory.
+            return false;
+        }
+        return false;
+    }
+
+    private boolean isFileExistInTrashLocation(@NonNull RootInfo rootInfo, @NonNull File file) {
+        File trashDir = new File(rootInfo.visiblePath, DIRECTORY_TRASH_STORAGE);
+        return file.getAbsolutePath().startsWith(trashDir.getAbsolutePath());
     }
 }

@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.notification.row;
 
-import static android.app.Flags.notificationsRedesignTemplates;
 import static android.app.Notification.Action.SEMANTIC_ACTION_MARK_CONVERSATION_AS_PRIORITY;
 import static android.service.notification.NotificationListenerService.REASON_CANCEL;
 import static android.view.accessibility.AccessibilityEvent.CONTENT_CHANGE_TYPE_EXPANDED;
@@ -2344,13 +2343,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 R.dimen.notification_min_height_before_p);
         mMaxSmallHeightBeforeS = NotificationUtils.getFontScaledHeight(mContext,
                 R.dimen.notification_min_height_before_s);
-        if (notificationsRedesignTemplates()) {
-            mMaxSmallHeight = NotificationUtils.getFontScaledHeight(mContext,
-                    R.dimen.notification_2025_min_height);
-        } else {
-            mMaxSmallHeight = NotificationUtils.getFontScaledHeight(mContext,
-                    R.dimen.notification_min_height);
-        }
+        mMaxSmallHeight = NotificationUtils.getFontScaledHeight(mContext,
+                R.dimen.notification_2025_min_height);
         mMaxSmallHeightWithSummarization = NotificationUtils.getFontScaledHeight(mContext,
                 com.android.internal.R.dimen.notification_collapsed_height_with_summarization);
         mMaxExpandedHeight = NotificationUtils.getFontScaledHeight(mContext,
@@ -3562,8 +3556,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     public void setSensitive(boolean sensitive, boolean hideSensitive) {
-        if (notificationsRedesignTemplates()
-                && sensitive == mSensitive && hideSensitive == mSensitiveHiddenInGeneral) {
+        if (sensitive == mSensitive && hideSensitive == mSensitiveHiddenInGeneral) {
             return; // nothing has changed
         }
 
@@ -3573,7 +3566,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         int intrinsicAfter = getIntrinsicHeight();
         if (intrinsicBefore != intrinsicAfter) {
             notifyHeightChanged(/* needsAnimation= */ true, "ENR.setSensitive");
-        } else if (notificationsRedesignTemplates()) {
+        } else {
             // Just request the correct layout, even if the height hasn't changed
             getShowingLayout().requestSelectLayout(/* needsAnimation= */ true);
         }
@@ -4185,8 +4178,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             }
         } else if (isChildInGroup()) {
             final int childColor = getShowingLayout().getBackgroundColorForExpansionState();
-            if ((Flags.notificationRowTransparency() || notificationsRedesignTemplates())
-                    && childColor == Color.TRANSPARENT) {
+            if (childColor == Color.TRANSPARENT) {
                 // If child is not customizing its background color, switch from the parent to
                 // the child background when the expansion finishes.
                 mShowNoBackground = !mNotificationParent.mShowNoBackground;
