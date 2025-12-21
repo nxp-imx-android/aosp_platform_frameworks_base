@@ -34,7 +34,6 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import android.app.Flags;
 import android.app.INotificationManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -48,7 +47,6 @@ import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.os.UserHandle;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.service.notification.StatusBarNotification;
 import android.testing.TestableLooper;
@@ -121,9 +119,7 @@ public class PartialConversationInfoTest extends SysuiTestCase {
         mDependency.injectTestDependency(MetricsLogger.class, mMetricsLogger);
         // Inflate the layout
         final LayoutInflater layoutInflater = LayoutInflater.from(mContext);
-        int layoutId = Flags.notificationsRedesignTemplates()
-                ? R.layout.notification_2025_partial_conversation_info
-                : R.layout.partial_conversation_info;
+        int layoutId = R.layout.notification_2025_partial_conversation_info;
         mInfo = (PartialConversationInfo) layoutInflater.inflate(layoutId,
                 null);
         mInfo.setGutsParent(mock(NotificationGuts.class));

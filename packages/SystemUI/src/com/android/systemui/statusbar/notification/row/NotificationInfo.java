@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.notification.row;
 
-import static android.app.Flags.notificationsRedesignTemplates;
 import static android.app.Notification.EXTRA_BUILDER_APPLICATION_INFO;
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 import static android.app.NotificationManager.IMPORTANCE_LOW;
@@ -33,7 +32,6 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 import android.annotation.IntDef;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
-import android.app.Flags;
 import android.app.INotificationManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -306,27 +304,13 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
         ApplicationInfo info =
                 mSbn.getNotification().extras.getParcelable(EXTRA_BUILDER_APPLICATION_INFO,
                         ApplicationInfo.class);
-        if (notificationsRedesignTemplates()) {
-            if (info != null) {
-                try {
-                    mAppName = String.valueOf(mPm.getApplicationLabel(info));
-                    // The app icon is likely already in the cache, so let's use it
-                    mPkgIcon = mAppIconProvider.getOrFetchAppIcon(info.packageName,
-                            UserHandle.of(mSbn.getNormalizedUserId()), /* instanceKey= */ "LEGACY");
-                } catch (Exception ignored) {
-                }
-            }
-        } else {
-            if (info != null) {
-                try {
-                    mAppName = String.valueOf(mPm.getApplicationLabel(info));
-                    mPkgIcon = mPm.getApplicationIcon(info);
-                } catch (Exception ignored) {
-                }
-            }
-            if (mPkgIcon == null) {
-                // app is gone, just show package name and generic icon
-                mPkgIcon = mPm.getDefaultActivityIcon();
+        if (info != null) {
+            try {
+                mAppName = String.valueOf(mPm.getApplicationLabel(info));
+                // The app icon is likely already in the cache, so let's use it
+                mPkgIcon = mAppIconProvider.getOrFetchAppIcon(info.packageName,
+                        UserHandle.of(mSbn.getNormalizedUserId()), /* instanceKey= */ "LEGACY");
+            } catch (Exception ignored) {
             }
         }
         ((ImageView) findViewById(R.id.pkg_icon)).setImageDrawable(mPkgIcon);

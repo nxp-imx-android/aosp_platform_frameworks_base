@@ -16,8 +16,6 @@
 
 package com.android.systemui.statusbar;
 
-import static android.app.Flags.notificationsRedesignTemplates;
-
 import android.app.Flags;
 import android.app.Notification;
 import android.graphics.drawable.Drawable;
@@ -36,7 +34,6 @@ import androidx.annotation.VisibleForTesting;
 
 import com.android.internal.R;
 import com.android.internal.widget.CachingIconView;
-import com.android.internal.widget.ConversationLayout;
 import com.android.internal.widget.ImageFloatingTextView;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.NotificationContentView;
@@ -58,7 +55,6 @@ public class NotificationGroupingUtil {
     private static final TextViewComparator APP_NAME_COMPARATOR = new AppNameComparator();
     private static final ViewComparator BADGE_COMPARATOR = new BadgeComparator();
     private static final VisibilityApplicator VISIBILITY_APPLICATOR = new VisibilityApplicator();
-    private static final VisibilityApplicator APP_NAME_APPLICATOR = new AppNameApplicator();
     private static final ResultApplicator LEFT_ICON_APPLICATOR = new LeftIconApplicator();
 
     @VisibleForTesting
@@ -143,7 +139,7 @@ public class NotificationGroupingUtil {
                 com.android.internal.R.id.app_name_text,
                 null,
                 APP_NAME_COMPARATOR,
-                APP_NAME_APPLICATOR));
+                VISIBILITY_APPLICATOR));
         // To hide the header text if it's the same
         mProcessors.add(Processor.forTextView(mRow, com.android.internal.R.id.header_text));
 
@@ -459,19 +455,6 @@ public class NotificationGroupingUtil {
         }
     }
 
-    private static class AppNameApplicator extends VisibilityApplicator {
-
-        @Override
-        public void apply(View parent, View view, boolean apply, boolean reset) {
-            if (!notificationsRedesignTemplates()
-                    && reset && parent instanceof ConversationLayout) {
-                ConversationLayout layout = (ConversationLayout) parent;
-                apply = layout.shouldHideAppName();
-            }
-            super.apply(parent, view, apply, reset);
-        }
-    }
-
     private static class AppNameComparator extends TextViewComparator {
         @Override
         public boolean compare(View parent, View child, Object parentData, Object childData) {
@@ -493,7 +476,7 @@ public class NotificationGroupingUtil {
                 R.id.title,
                 R.id.notification_main_column,
                 R.id.notification_header,
-                notificationsRedesignTemplates() ? R.id.notification_top_line : -1
+                R.id.notification_top_line
         };
 
         @Override
@@ -512,9 +495,7 @@ public class NotificationGroupingUtil {
                 Drawable rightDrawable = rightIcon == null ? null : rightIcon.getDrawable();
                 leftIcon.setImageDrawable(apply && !keepRightIcon ? rightDrawable : null);
             }
-            boolean shouldShowLeftIcon = notificationsRedesignTemplates()
-                            ? apply && leftIcon.getDrawable() != null
-                            : apply;
+            boolean shouldShowLeftIcon = apply && leftIcon.getDrawable() != null;
             leftIcon.setVisibility(shouldShowLeftIcon ? View.VISIBLE : View.GONE);
 
             // update the right icon as well
