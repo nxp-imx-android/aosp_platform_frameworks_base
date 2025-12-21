@@ -569,7 +569,7 @@ private enum class PropertyType {
 
 private enum class Category {
     STL,
-    SCENE,
+    CONTENT,
     ELEMENT,
 }
 
@@ -636,23 +636,23 @@ private fun getAllDebugProperties(): List<DebugProperty> {
             PropertyType.BOOLEAN,
         ),
 
-        // --- Scene ---
+        // --- Content ---
         DebugProperty(
-            Category.SCENE,
+            Category.CONTENT,
             "Show Borders",
-            StlDebugKeys.SHOW_SCENE_BORDERS.key,
+            StlDebugKeys.SHOW_CONTENT_BORDERS.key,
             PropertyType.BOOLEAN,
         ),
         DebugProperty(
-            Category.SCENE,
+            Category.CONTENT,
             "Show Labels",
-            StlDebugKeys.SHOW_SCENE_LABELS.key,
+            StlDebugKeys.SHOW_CONTENT_LABELS.key,
             PropertyType.BOOLEAN,
         ),
         DebugProperty(
-            Category.SCENE,
+            Category.CONTENT,
             "Label Position",
-            StlDebugKeys.POS_SCENE_LABEL.key,
+            StlDebugKeys.POS_CONTENT_LABEL.key,
             PropertyType.ENUM,
             positions,
         ),

@@ -19,14 +19,23 @@ package com.android.compose.animation.scene.debugger
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -35,9 +44,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
+import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SceneTransitionLayout
 import com.android.compose.animation.scene.Swipe
@@ -45,11 +56,16 @@ import com.android.compose.animation.scene.ValueKey
 import com.android.compose.animation.scene.animateContentColorAsState
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.transitions
+import kotlinx.coroutines.CoroutineScope
 
 object ParentSTL {
     object Scenes {
         val SceneA = SceneKey("SceneA")
         val SceneB = SceneKey("SceneBWithVeryLongDebugName")
+    }
+
+    object Overlays {
+        val OverlayA = OverlayKey("OverlayA")
     }
 }
 
@@ -78,6 +94,7 @@ fun DebugPreviewStl(modifier: Modifier = Modifier) {
         val state =
             rememberMutableSceneTransitionLayoutState(
                 ParentSTL.Scenes.SceneA,
+                initialOverlays = setOf(ParentSTL.Overlays.OverlayA),
                 transitions =
                     remember {
                         transitions {
@@ -86,6 +103,10 @@ fun DebugPreviewStl(modifier: Modifier = Modifier) {
                                 translate(Elements.NotShared, y = (-20).dp)
                                 fade(Elements.NotShared)
                                 scaleSize(Elements.NotShared, 0.5f, 0.5f)
+                            }
+                            from(ParentSTL.Overlays.OverlayA) {
+                                spec = tween(1000)
+                                fade(Elements.Container)
                             }
                         }
                     },
@@ -109,16 +130,26 @@ fun DebugPreviewStl(modifier: Modifier = Modifier) {
                     },
             )
         val scope = rememberCoroutineScope()
+
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            OptionButton(text = "Toggle ParentStl", onClick = { state.toggleParentScene(scope) })
+            OptionButton(
+                text = "Toggle NestedStl",
+                onClick = { childState.toggleNestedScene(scope) },
+            )
+            OptionButton(
+                text = "Toggle OverlayA",
+                onClick = { state.toggleOverlay(ParentSTL.Overlays.OverlayA, scope) },
+            )
+        }
+
         SceneTransitionLayout(
             state,
-            Modifier.clickable(null, null) {
-                val targetScene =
-                    when (state.currentScene) {
-                        ParentSTL.Scenes.SceneA -> ParentSTL.Scenes.SceneB
-                        else -> ParentSTL.Scenes.SceneA
-                    }
-                state.setTargetScene(targetScene, scope)
-            },
+            Modifier.weight(1f).clickable(null, null) { state.toggleParentScene(scope) },
             debugName = "ParentSTL",
         ) {
             scene(ParentSTL.Scenes.SceneA) {
@@ -130,14 +161,6 @@ fun DebugPreviewStl(modifier: Modifier = Modifier) {
                             .fillMaxHeight()
                             .padding(24.dp),
                     )
-
-                    Box(
-                        Modifier.align(Alignment.BottomStart)
-                            .size(150.dp)
-                            .element(Elements.Container)
-                    ) {
-                        Box(Modifier.fillMaxSize().padding(50.dp).element(Elements.Child))
-                    }
                 }
             }
             scene(ParentSTL.Scenes.SceneB) {
@@ -145,7 +168,70 @@ fun DebugPreviewStl(modifier: Modifier = Modifier) {
                     SharedElement(Color.Magenta, Modifier.size(30.dp).align(Alignment.TopStart))
                 }
             }
+            overlay(
+                ParentSTL.Overlays.OverlayA,
+                alignment = Alignment.CenterStart,
+                isModal = false,
+            ) {
+                Box(Modifier.size(200.dp)) {
+                    Box(
+                        Modifier.align(Alignment.BottomStart)
+                            .size(150.dp)
+                            .element(Elements.Container)
+                            .background(Color.LightGray)
+                    ) {
+                        Box(Modifier.fillMaxSize().padding(50.dp).element(Elements.Child)) {}
+                    }
+                    Text(text = "OverlayA", modifier = Modifier.align(Alignment.Center))
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun RowScope.OptionButton(text: String, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = Color.LightGray,
+                contentColor = Color.Black,
+            ),
+        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
+        shape = RoundedCornerShape(6.dp),
+        modifier = Modifier.defaultMinSize(minWidth = 1.dp, minHeight = 1.dp),
+    ) {
+        Text(text = text, fontSize = 10.sp)
+    }
+}
+
+private fun MutableSceneTransitionLayoutState.toggleParentScene(scope: CoroutineScope) {
+    val targetScene =
+        when (currentScene) {
+            ParentSTL.Scenes.SceneA -> ParentSTL.Scenes.SceneB
+            else -> ParentSTL.Scenes.SceneA
+        }
+    setTargetScene(targetScene, scope)
+}
+
+private fun MutableSceneTransitionLayoutState.toggleNestedScene(scope: CoroutineScope) {
+    val targetScene =
+        when (currentScene) {
+            ChildSTL.Scenes.NestedTop -> ChildSTL.Scenes.NestedBottom
+            else -> ChildSTL.Scenes.NestedTop
+        }
+    setTargetScene(targetScene, scope)
+}
+
+private fun MutableSceneTransitionLayoutState.toggleOverlay(
+    overlayKey: OverlayKey,
+    scope: CoroutineScope,
+) {
+    if (currentOverlays.any { it == overlayKey }) {
+        hideOverlay(overlayKey, scope)
+    } else {
+        showOverlay(overlayKey, scope)
     }
 }
 
@@ -158,15 +244,7 @@ private fun ContentScope.ChildSTL(
     NestedSceneTransitionLayout(
         state,
         debugName = "NestedSTL",
-        modifier =
-            modifier.clickable(null, null) {
-                val targetScene =
-                    when (state.currentScene) {
-                        ChildSTL.Scenes.NestedTop -> ChildSTL.Scenes.NestedBottom
-                        else -> ChildSTL.Scenes.NestedTop
-                    }
-                state.setTargetScene(targetScene, scope)
-            },
+        modifier = modifier.clickable(null, null) { state.toggleNestedScene(scope) },
     ) {
         scene(ChildSTL.Scenes.NestedTop, mapOf(Swipe.Down to ChildSTL.Scenes.NestedBottom)) {
             Box(Modifier.fillMaxSize()) {
