@@ -16,6 +16,7 @@
 
 package com.android.protolog.tool
 
+import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.protolog.common.IProtoLog
 import com.android.internal.protolog.common.LogLevel
 import com.android.internal.protolog.common.ProtoLogToolInjected
@@ -59,6 +60,13 @@ import kotlin.math.absoluteValue
 import kotlin.system.exitProcess
 
 object ProtoLogTool {
+    // ANSI color codes are used here to improve the readability of the log output.
+    // This is acceptable as the build system forces color diagnostics (see -fcolor-diagnostics)
+    // and build tools like Ninja are capable of stripping the color codes when not in a terminal.
+    private const val ANSI_RESET = "\u001B[0m"
+    private const val ANSI_RED = "\u001B[31m"
+    private const val ANSI_YELLOW = "\u001B[33m"
+
     const val PROTOLOG_IMPL_SRC_PATH =
         "frameworks/base/core/java/com/android/internal/protolog/ProtoLogImpl.java"
 
@@ -158,10 +166,7 @@ object ProtoLogTool {
                                     text
                                 }
                             } catch (ex: ParsingException) {
-                                // If we cannot parse this file, skip it (and log why). Compilation
-                                // will
-                                // fail in a subsequent build step.
-                                injector.reportProcessingError(ex)
+                                reportParsingException(text, ex, command.javacWrapperPathArg)
                                 text
                             }
                         path to outSrc
@@ -435,10 +440,7 @@ object ProtoLogTool {
                                 val code = tryParse(text, path)
                                 findLogCalls(code, path, packagePath(file, code), processor)
                             } catch (ex: ParsingException) {
-                                // If we cannot parse this file, skip it (and log why). Compilation
-                                // will
-                                // fail in a subsequent build step.
-                                injector.reportProcessingError(ex)
+                                reportParsingException(text, ex, command.javacWrapperPathArg)
                                 null
                             }
                         } else {
@@ -489,16 +491,84 @@ object ProtoLogTool {
         return packagePath
     }
 
+    @VisibleForTesting
+    fun hasJavaSyntaxErrors(code: String, javacWrapperPath: String?): Boolean {
+        val tempFile = File.createTempFile("temp", ".java")
+        try {
+            tempFile.writeText(code)
+
+            val cmd = mutableListOf<String>()
+            if (javacWrapperPath != null) {
+                // The command wrapper is required because in the soong environment we can only use
+                // commands that have been provided through the tools build rule parameter.
+                cmd.add(javacWrapperPath)
+            }
+            cmd.addAll(
+                listOf(
+                    "javac",
+                    "-nowarn",
+                    "-Xlint:none",
+                    "-d",
+                    "/dev/null",
+                    "-sourcepath",
+                    "",
+                    "-classpath",
+                    "",
+                    "-XDshould-stop.at=PARSE",
+                    tempFile.absolutePath,
+                )
+            )
+
+            val process = ProcessBuilder(cmd).start()
+            val exitCode = process.waitFor()
+            return exitCode != 0
+        } finally {
+            tempFile.delete()
+        }
+    }
+
+    private fun reportParsingException(
+        code: String,
+        ex: ParsingException,
+        javacWrapperPathArg: String?,
+    ) {
+        if (injector.hasJavaSyntaxErrors(code, javacWrapperPathArg)) {
+            // It's a real syntax error, let javac handle it.
+            val warnMsg =
+                "Failed to parse ${ex.context.filePath}:${ex.context.lineNumber}.\n" +
+                    "This is likely a syntax error that will be reported by javac.\n" +
+                    "Skipping file..."
+            injector.reportWarning(ParsingException(warnMsg, ex.context, ex))
+        } else {
+            // javaparser failed, but javac thinks it's ok. This is a protologtool issue.
+            val errorMsg =
+                "Failed to parse ${ex.context.filePath}:${ex.context.lineNumber}.\n" +
+                    "The file appears to be valid Java, but the ProtoLogTool parser failed.\n" +
+                    "This might be due to new Java features not yet supported by the tool.\n" +
+                    "Please file a bug against the Winscope team."
+            injector.reportProcessingError(ParsingException(errorMsg, ex.context, ex))
+        }
+    }
+
     @JvmStatic
     fun main(args: Array<String>) {
         try {
             val command = CommandOptions(args)
             invoke(command)
 
+            if (injector.processingWarnings.isNotEmpty()) {
+                injector.processingWarnings.forEachIndexed { index, it ->
+                    println(
+                        "${ANSI_YELLOW}WARNING: CodeProcessingException$ANSI_RESET " +
+                            "(${index + 1}/${injector.processingWarnings.size}): \n${it.message}\n"
+                    )
+                }
+            }
+
             if (injector.processingErrors.isNotEmpty()) {
                 injector.processingErrors.forEachIndexed { index, it ->
                     println(
-                        "CodeProcessingException " +
+                        "${ANSI_RED}ERROR: CodeProcessingException$ANSI_RESET " +
                             "(${index + 1}/${injector.processingErrors.size}): \n${it.message}\n"
                     )
                 }
@@ -522,6 +592,7 @@ object ProtoLogTool {
 
     var injector =
         object : Injector {
+            override val processingWarnings: MutableList<CodeProcessingException> = mutableListOf()
             override val processingErrors: MutableList<CodeProcessingException> = mutableListOf()
 
             override fun fileOutputStream(file: String) = FileOutputStream(file)
@@ -531,21 +602,33 @@ object ProtoLogTool {
             override fun readLogGroups(jarPath: String, className: String) =
                 ProtoLogGroupReader().loadFromJar(jarPath, className)
 
+            override fun reportWarning(ex: CodeProcessingException) {
+                processingWarnings.add(ex)
+            }
+
             override fun reportProcessingError(ex: CodeProcessingException) {
                 processingErrors.add(ex)
             }
+
+            override fun hasJavaSyntaxErrors(code: String, javacWrapperPath: String?) =
+                this@ProtoLogTool.hasJavaSyntaxErrors(code, javacWrapperPath)
         }
 
     interface Injector {
+        val processingWarnings: Collection<CodeProcessingException>
+        val processingErrors: Collection<CodeProcessingException>
+
         fun fileOutputStream(file: String): OutputStream
 
         fun readText(file: File): String
 
         fun readLogGroups(jarPath: String, className: String): Map<String, LogGroup>
 
+        fun reportWarning(ex: CodeProcessingException)
+
         fun reportProcessingError(ex: CodeProcessingException)
 
-        val processingErrors: Collection<CodeProcessingException>
+        fun hasJavaSyntaxErrors(code: String, javacWrapperPath: String?): Boolean
     }
 }
 
