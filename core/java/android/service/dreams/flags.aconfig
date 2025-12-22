@@ -122,16 +122,6 @@ flag {
 }
 
 flag {
-    name: "dream_overlay_started_fix"
-    namespace: "systemui"
-    description: "Guards fix for the lifetime of when the dream is considered started"
-    bug: "432039567"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "user_selectable_metadata"
     namespace: "systemui"
     description: "Controls whether a dream can be selected by the user"

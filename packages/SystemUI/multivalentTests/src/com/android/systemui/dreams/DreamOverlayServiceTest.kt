@@ -23,7 +23,6 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.service.dreams.Flags
-import android.service.dreams.Flags.FLAG_DREAM_OVERLAY_STARTED_FIX
 import android.service.dreams.IDreamOverlay
 import android.service.dreams.IDreamOverlayCallback
 import android.service.dreams.IDreamOverlayClient
@@ -1439,7 +1438,6 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
             assertThat(gestureRepository.gestureBlockedMatchers.value).isEmpty()
         }
 
-    @EnableFlags(FLAG_DREAM_OVERLAY_STARTED_FIX)
     @Test
     fun testGestureBlocking_dreamEnded_gestureBlockingNotUpdated() =
         kosmos.runTest {
@@ -1481,41 +1479,6 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
             mMainExecutor.runAllReady()
 
             // Gesture blocking removed on dream end.
-            assertThat(gestureRepository.gestureBlockedMatchers.value).isEmpty()
-        }
-
-    @DisableFlags(FLAG_DREAM_OVERLAY_STARTED_FIX)
-    @Test
-    fun testGestureBlocking_dreamEnded_gestureBlockingUpdated() =
-        kosmos.runTest {
-            val client = client
-
-            // Inform the overlay service of dream starting. Do not show dream complications.
-            client.startDream(
-                mWindowParams,
-                mDreamOverlayCallback,
-                DREAM_COMPONENT,
-                false /*isPreview*/,
-                false, /*shouldShowComplication*/
-            )
-            mMainExecutor.runAllReady()
-
-            val callbackCaptor = argumentCaptor<KeyguardUpdateMonitorCallback>()
-            verify(mKeyguardUpdateMonitor).registerCallback(callbackCaptor.capture())
-
-            // Gesture are blocked to start.
-            assertThat(gestureRepository.gestureBlockedMatchers.value).hasSize(1)
-
-            // Trigger dream end, but delay the reset.
-            whenever(mStateController.areExitAnimationsRunning()).thenReturn(true)
-            client.endDream()
-            mMainExecutor.runAllReady()
-
-            // Shade is shown.
-            callbackCaptor.firstValue.onShadeExpandedChanged(true)
-            mMainExecutor.runAllReady()
-
-            // Gesture blocking is still updated as the reset has not happened yet.
             assertThat(gestureRepository.gestureBlockedMatchers.value).isEmpty()
         }
 
@@ -1664,7 +1627,6 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_DREAM_OVERLAY_STARTED_FIX)
     fun testRequestExit_notCalledWhenDreamEnded() {
         // Start dream in preview mode
         val client = client
@@ -1724,7 +1686,6 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         fun getParams(): List<FlagsParameterization> {
             return FlagsParameterization.allCombinationsOf(
                     FLAG_GLANCEABLE_HUB_V2,
-                    FLAG_DREAM_OVERLAY_STARTED_FIX,
                 )
                 .andSceneContainer()
         }
