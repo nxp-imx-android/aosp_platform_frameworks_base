@@ -21,6 +21,7 @@ import android.app.Notification.EXTRA_SUMMARIZED_CONTENT
 import android.content.pm.LauncherApps
 import android.content.pm.launcherApps
 import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import android.text.SpannableStringBuilder
 import android.text.style.ImageSpan
@@ -73,6 +74,7 @@ class ConversationNotificationProcessorTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(NmSummarizationAllFlag.FLAG_NAME)
     fun processNotification_messagingStyleWithSummarization_flagOff() {
         val summarization = "hello"
         val entry = kosmos.makeEntryOfPeopleType()
