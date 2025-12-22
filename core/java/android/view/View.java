@@ -43,6 +43,7 @@ import static android.view.accessibility.Flags.removeChildHoverCheckForTouchExpl
 import static android.view.accessibility.Flags.supplementalDescription;
 import static android.view.accessibility.Flags.supportMultipleLabeledby;
 import static android.view.contentcapture.flags.Flags.newHeuristicsForImportanceEnabled;
+import static android.view.contentcapture.flags.Flags.contentInteractionApiEnabled;
 import static android.view.displayhash.DisplayHashResultCallback.DISPLAY_HASH_ERROR_INVALID_BOUNDS;
 import static android.view.displayhash.DisplayHashResultCallback.DISPLAY_HASH_ERROR_MISSING_WINDOW;
 import static android.view.displayhash.DisplayHashResultCallback.DISPLAY_HASH_ERROR_NOT_VISIBLE_ON_SCREEN;
@@ -204,6 +205,7 @@ import android.view.autofill.AutofillId;
 import android.view.autofill.AutofillManager;
 import android.view.autofill.AutofillValue;
 import android.view.contentcapture.ContentCaptureContext;
+import android.view.contentcapture.ContentCaptureEvent;
 import android.view.contentcapture.ContentCaptureManager;
 import android.view.contentcapture.ContentCaptureSession;
 import android.view.displayhash.DisplayHash;
@@ -997,6 +999,11 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * fields as important.
      */
     private static boolean sNewHeuristicsForContentCaptureImportanceEnabledFlagValue;
+
+    /**
+     * When true, enables reporting content interaction events.
+     */
+    private static boolean sContentInteractionApiEnabledFlagValue;
 
     /**
      * Allow setForeground/setBackground to be called (and ignored) on a textureview,
@@ -2683,6 +2690,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         sUseMeasureCacheDuringForceLayoutFlagValue = enableUseMeasureCacheDuringForceLayout();
         sNewHeuristicsForContentCaptureImportanceEnabledFlagValue =
                 newHeuristicsForImportanceEnabled();
+        sContentInteractionApiEnabledFlagValue = contentInteractionApiEnabled();
     }
 
     /**
@@ -8234,6 +8242,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 
         sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_CLICKED);
 
+        dispatchContentCaptureInteractionEvent();
+
         notifyEnterOrExitForAutoFillIfNeeded(true);
 
         return result;
@@ -8303,6 +8313,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     private boolean performLongClickInternal(float x, float y) {
         sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_LONG_CLICKED);
 
+        dispatchContentCaptureInteractionEvent();
+
         boolean handled = false;
         final OnLongClickListener listener =
                 mListenerInfo == null ? null : mListenerInfo.mOnLongClickListener;
@@ -8349,6 +8361,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      */
     public boolean performContextClick() {
         sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_CONTEXT_CLICKED);
+
+        dispatchContentCaptureInteractionEvent();
 
         boolean handled = false;
         ListenerInfo li = mListenerInfo;
@@ -11576,6 +11590,37 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         } finally {
             session.notifyViewTreeEvent(/* started= */ false);
         }
+    }
+
+    private void dispatchContentCaptureInteractionEvent() {
+     if (!sContentInteractionApiEnabledFlagValue) {
+        return;
+     }
+
+     if (!getNotifiedContentCaptureAppeared()) {
+        if (Log.isLoggable(CONTENT_CAPTURE_LOG_TAG, Log.DEBUG)) {
+                Log.d(CONTENT_CAPTURE_LOG_TAG, "dispatchContentCaptureInteractionEvent(): "
+                        + "View has not appeared.");
+        }
+        return;
+      }
+      ContentCaptureSession session = getContentCaptureSession();
+      if (session == null) {
+        if (Log.isLoggable(CONTENT_CAPTURE_LOG_TAG, Log.DEBUG)) {
+            Log.d(CONTENT_CAPTURE_LOG_TAG,
+                        "dispatchContentCaptureInteractionEvent(): no session for " + this);
+        }
+        return;
+      }
+      AttachInfo ai = mAttachInfo;
+      if (ai == null) {
+        if (Log.isLoggable(CONTENT_CAPTURE_LOG_TAG, Log.DEBUG)) {
+            Log.d(CONTENT_CAPTURE_LOG_TAG,
+                        "dispatchContentCaptureInteractionEvent(): no AttachInfo for " + this);
+        }
+        return;
+      }
+      ai.delayNotifyContentInteractionEvent(session, this);
     }
 
     /** @hide */
@@ -32893,6 +32938,12 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         SparseArray<ArrayList<Object>> mContentCaptureEvents;
 
         /**
+         * Map(keyed by session) of content capture interaction events that need to be notified
+         * after the view hierarchy is traversed: value is the autofill id.
+         */
+        SparseArray<ArrayList<Object>> mContentCaptureInteractionEvents;
+
+        /**
          * Cached reference to the {@link ContentCaptureManager}.
          */
         ContentCaptureManager mContentCaptureManager;
@@ -33005,21 +33056,50 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             events.add(appeared ? view : view.getAutofillId());
         }
 
+
+        private void delayNotifyContentInteractionEvent(@NonNull ContentCaptureSession session,
+                @NonNull View view) {
+            ArrayList<Object> events = ensureInteractionEvents(session);
+            events.add(view.getAutofillId());
+        }
+
         @NonNull
         private ArrayList<Object> ensureEvents(@NonNull ContentCaptureSession session) {
-            if (mContentCaptureEvents == null) {
-                // Most of the time there will be just one session, so intial capacity is 1
-                mContentCaptureEvents = new SparseArray<>(1);
-            }
             int sessionId = session.getId();
-            // TODO: life would be much easier if we provided a MultiMap implementation somwhere...
-            ArrayList<Object> events = mContentCaptureEvents.get(sessionId);
-            if (events == null) {
-                events = new ArrayList<>();
-                mContentCaptureEvents.put(sessionId, events);
+            mContentCaptureEvents = getOrCreateSessionEvents(mContentCaptureEvents,
+                        sessionId);
+            return mContentCaptureEvents.get(sessionId);
+        }
+
+        @NonNull
+        private ArrayList<Object> ensureInteractionEvents(@NonNull ContentCaptureSession session) {
+            int sessionId = session.getId();
+            mContentCaptureInteractionEvents = getOrCreateSessionEvents(
+                        mContentCaptureInteractionEvents, sessionId);
+            return mContentCaptureInteractionEvents.get(sessionId);
+        }
+
+
+        /**
+         * Returns a map of session id to list of events by creating a new map if necessary.
+         *
+         * @param sessionEvents the map to return if not null, otherwise create a new map
+         * @param sessionId the session id to get the events for
+         * @return the map of session id to list of events. The input sessionId is guaranteed to be
+         *         present in the returned map
+         */
+        private SparseArray<ArrayList<Object>> getOrCreateSessionEvents(
+            @Nullable SparseArray<ArrayList<Object>> sessionEvents, int sessionId) {
+            if (sessionEvents == null) {
+                // Most of the time there will be just one session, so initial capacity is 1
+                sessionEvents = new SparseArray<>(1);
+            }
+            if (!sessionEvents.contains(sessionId)) {
+                ArrayList<Object> events = new ArrayList<>();
+                sessionEvents.put(sessionId, events);
             }
 
-            return events;
+            return sessionEvents;
         }
 
         @Nullable

@@ -166,4 +166,11 @@ final class ChildContentCaptureSession extends ContentCaptureSession {
             @NonNull SparseArray<ArrayList<Object>> contentCaptureEvents) {
         getMainCaptureSession().notifyContentCaptureEvents(contentCaptureEvents);
     }
+
+    @Override
+    public void notifyContentCaptureInteractionEvents(
+            @NonNull SparseArray<ArrayList<Object>> contentCaptureInteractionEvents) {
+        getMainCaptureSession().notifyContentCaptureInteractionEvents(
+                contentCaptureInteractionEvents);
+    }
 }

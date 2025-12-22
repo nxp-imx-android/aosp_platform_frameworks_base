@@ -643,6 +643,10 @@ public abstract class ContentCaptureSession implements AutoCloseable {
     public abstract void notifyContentCaptureEvents(
             @NonNull SparseArray<ArrayList<Object>> contentCaptureEvents);
 
+    /** @hide */
+    public abstract void notifyContentCaptureInteractionEvents(
+            @NonNull SparseArray<ArrayList<Object>> contentCaptureInteractionEvents);
+
     /**
      * Creates a {@link ViewStructure} for a "standard" view.
      *

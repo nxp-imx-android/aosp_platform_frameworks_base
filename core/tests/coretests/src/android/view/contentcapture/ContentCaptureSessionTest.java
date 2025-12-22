@@ -303,6 +303,12 @@ public class ContentCaptureSessionTest {
         }
 
         @Override
+        public void notifyContentCaptureInteractionEvents(
+                @NonNull SparseArray<ArrayList<Object>> contentCaptureInteractionEvents) {
+
+        }
+
+        @Override
         void internalNotifyViewInsetsChanged(final int sessionId, Insets viewInsets) {
             throw new UnsupportedOperationException("should not have been called");
         }
