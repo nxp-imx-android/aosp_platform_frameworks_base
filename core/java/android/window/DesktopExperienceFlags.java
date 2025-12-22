@@ -154,9 +154,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_FULLSCREEN_WINDOW_CONTROLS),
     ENABLE_GAME_CONTROLS_ENTRY_IN_HANDLE_MENU(Flags::enableGameControlsEntryInHandleMenu, false,
             Flags.FLAG_ENABLE_GAME_CONTROLS_ENTRY_IN_HANDLE_MENU),
-    ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP(
-            Flags::enableInorderTransitionCallbacksForDesktop, false,
-            Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP),
     ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS(
             Flags::enableInteractionDependentTabTearingBounds, false,
             Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS),
