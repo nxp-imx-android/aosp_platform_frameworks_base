@@ -910,21 +910,8 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         final long origId = Binder.clearCallingIdentity();
         try {
             synchronized (mGlobalLock) {
-                final DisplayContent display = mService.mRootWindowContainer.getDisplayContent(
-                        params.getDisplayId());
-                if (display == null) {
-                    ProtoLog.e(WM_DEBUG_WINDOW_ORGANIZER,
-                            "createTask unknown displayId=%d", params.getDisplayId());
-                    return null;
-                }
-
-                final TaskPropertiesRequest request = params.getTaskPropertiesRequest();
-                final Task task = createTask(display, params.getWindowingMode(),
-                        params.getLaunchCookie(), true /* removeWithTaskOrganizer */,
-                        request.isReparentOnDisplayRemoval(), params.getName(),
-                        request.isForceOpaque(), request.isIgnoreInsets(),
-                        request.isDisableAppCompatRoundedCorners());
-                return task.mRemoteToken.toWindowContainerToken();
+                final Task task = createTaskInner(params);
+                return task != null ? task.mRemoteToken.toWindowContainerToken() : null;
             }
         } finally {
             Binder.restoreCallingIdentity(origId);
@@ -932,35 +919,36 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
     }
 
     @VisibleForTesting
-    Task createRootTask(DisplayContent display, int windowingMode, @Nullable IBinder launchCookie) {
-        return createTask(display, windowingMode, launchCookie,
-                false /* removeWithTaskOrganizer */, false /* reparentOnDisplayRemoval */,
-                "test", false /* isForceOpaque */, false /* shouldIgnoreInsets */,
-                false /* disableAppCompatRoundedCorners */);
-    }
-
-    private Task createTask(DisplayContent display, int windowingMode,
-            @Nullable IBinder launchCookie, boolean removeWithTaskOrganizer,
-            boolean reparentOnDisplayRemoval, @Nullable String name, boolean isForceOpaque,
-            boolean shouldIgnoreInsets, boolean disableAppCompatRoundedCorners) {
+    @Nullable
+    Task createTaskInner(@NonNull TaskCreationParams params) {
+        final DisplayContent display = mService.mRootWindowContainer.getDisplayContent(
+                params.getDisplayId());
+        if (display == null) {
+            ProtoLog.e(WM_DEBUG_WINDOW_ORGANIZER,
+                    "createTask unknown displayId=%d", params.getDisplayId());
+            return null;
+        }
         ProtoLog.v(WM_DEBUG_WINDOW_ORGANIZER, "Create task displayId=%d winMode=%d",
-                display.mDisplayId, windowingMode);
+                display.mDisplayId, params.getWindowingMode());
+        final WindowContainer parent = display.getDefaultTaskDisplayArea();
+        final TaskPropertiesRequest properties = params.getTaskPropertiesRequest();
+
         // We want to defer the task appear signal until the task is fully created and attached to
         // to the hierarchy so that the complete starting configuration is in the task info we send
         // over to the organizer.
         final Task task = new Task.Builder(mService)
-                .setName(name)
-                .setWindowingMode(windowingMode)
+                .setName(params.getName())
+                .setWindowingMode(params.getWindowingMode())
                 .setIntent(new Intent())
                 .setCreatedByOrganizer(true)
                 .setDeferTaskAppear(true)
-                .setLaunchCookie(launchCookie)
-                .setParent(display.getDefaultTaskDisplayArea())
-                .setRemoveWithTaskOrganizer(removeWithTaskOrganizer)
-                .setReparentOnDisplayRemoval(reparentOnDisplayRemoval)
-                .setForceOpaque(isForceOpaque)
-                .setShouldIgnoreInsets(shouldIgnoreInsets)
-                .setDisableAppCompatRoundedCorners(disableAppCompatRoundedCorners)
+                .setLaunchCookie(params.getLaunchCookie())
+                .setParent(parent)
+                .setRemoveWithTaskOrganizer(true)
+                .setReparentOnDisplayRemoval(properties.isReparentOnDisplayRemoval())
+                .setForceOpaque(properties.isForceOpaque())
+                .setShouldIgnoreInsets(properties.isIgnoreInsets())
+                .setDisableAppCompatRoundedCorners(properties.isDisableAppCompatRoundedCorners())
                 .build();
         task.setDeferTaskAppear(false /* deferTaskAppear */);
         return task;
