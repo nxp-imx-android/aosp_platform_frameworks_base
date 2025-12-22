@@ -158,6 +158,14 @@
     <string name="wfc_mode_wifi_preferred_summary" msgid="1035175836270943089">"‏تماس ازطریق Wi-Fi"</string>
     <string name="wfc_mode_cellular_preferred_summary" msgid="4958965609212575619">"تماس ازطریق شبکه تلفن همراه"</string>
     <string name="wfc_mode_wifi_only_summary" msgid="104951993894678665">"‏فقط Wi-Fi"</string>
+    <!-- no translation found for adaptive_low_frequency_less_than_one_minute (8869498183646028708) -->
+    <skip />
+    <!-- no translation found for adaptive_low_frequency_neg_less_than_one_minute (2590062535985417056) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_h_mm (6728141238066668781) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_mm (2405181895215514414) -->
+    <skip />
     <!-- no translation found for crossSimFormat_spn (9125246077491634262) -->
     <skip />
     <string name="crossSimFormat_spn_cross_sim_calling" msgid="5620807020002879057">"<xliff:g id="SPN">%s</xliff:g> تماس پشتیبان"</string>
@@ -1329,7 +1337,7 @@
     <string name="anr_application_process" msgid="4978772139461676184">"<xliff:g id="APPLICATION">%1$s</xliff:g> پاسخ نمی‌دهد"</string>
     <string name="anr_process" msgid="1664277165911816067">"فرآیند <xliff:g id="PROCESS">%1$s</xliff:g> پاسخ نمی‌دهد"</string>
     <string name="force_close" msgid="9035203496368973803">"تأیید"</string>
-    <string name="report" msgid="2149194372340349521">"گزارش"</string>
+    <string name="report" msgid="2149194372340349521">"گزارش کردن"</string>
     <string name="wait" msgid="7765985809494033348">"منتظر بمانید"</string>
     <string name="webpage_unresponsive" msgid="7850879412195273433">"این صفحه پاسخ نمی‌دهد.\n\nآیا می‌خواهید آن را ببندید؟"</string>
     <string name="launch_warning_title" msgid="6725456009564953595">"برنامه مجدداً هدایت شد"</string>
@@ -1830,8 +1838,7 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"اشاره"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"تنظیمات فوری"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"سه تک‌ضرب زدن"</string>
-    <!-- no translation found for accessibility_shortcut_label_top_row_key (1488840908672437180) -->
-    <skip />
+    <string name="accessibility_shortcut_label_top_row_key" msgid="1488840908672437180">"کلید دسترس‌پذیری"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> خاموش شده است"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"ویرایش میان‌برها"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"تمام"</string>
@@ -2486,7 +2493,7 @@
     <string name="sensor_privacy_start_use_mic_notification_content_title" msgid="2420858361276370367">"لغو انسداد میکروفون دستگاه"</string>
     <string name="sensor_privacy_start_use_camera_notification_content_title" msgid="7287720213963466672">"لغو انسداد دوربین دستگاه"</string>
     <string name="sensor_privacy_start_use_notification_content_text" msgid="7595608891015777346">"‏برای &lt;b&gt;<xliff:g id="APP">%s</xliff:g>&lt;/b&gt; و همه برنامه‌ها و سرویس‌ها"</string>
-    <string name="sensor_privacy_start_use_dialog_turn_on_button" msgid="7089318886628390827">"لغو انسداد"</string>
+    <string name="sensor_privacy_start_use_dialog_turn_on_button" msgid="7089318886628390827">"رفع انسداد"</string>
     <string name="sensor_privacy_notification_channel_label" msgid="936036783155261349">"حریم خصوصی حسگر"</string>
     <string name="splash_screen_view_icon_description" msgid="180638751260598187">"نماد برنامه"</string>
     <string name="splash_screen_view_branding_description" msgid="7911129347402728216">"تصویر نمانام‌سازی برنامه"</string>

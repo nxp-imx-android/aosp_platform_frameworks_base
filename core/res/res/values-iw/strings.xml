@@ -159,6 +159,14 @@
     <string name="wfc_mode_wifi_preferred_summary" msgid="1035175836270943089">"‏שיחה בחיבור Wi-Fi"</string>
     <string name="wfc_mode_cellular_preferred_summary" msgid="4958965609212575619">"שיחה ברשת סלולרית"</string>
     <string name="wfc_mode_wifi_only_summary" msgid="104951993894678665">"‏Wi-Fi בלבד"</string>
+    <!-- no translation found for adaptive_low_frequency_less_than_one_minute (8869498183646028708) -->
+    <skip />
+    <!-- no translation found for adaptive_low_frequency_neg_less_than_one_minute (2590062535985417056) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_h_mm (6728141238066668781) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_mm (2405181895215514414) -->
+    <skip />
     <!-- no translation found for crossSimFormat_spn (9125246077491634262) -->
     <skip />
     <string name="crossSimFormat_spn_cross_sim_calling" msgid="5620807020002879057">"אמצעי גיבוי להתקשרות באמצעות <xliff:g id="SPN">%s</xliff:g>"</string>
@@ -634,7 +642,7 @@
     <string name="permdesc_bluetooth" product="default" msgid="2779606714091276746">"‏מאפשרת לאפליקציה להציג את תצורת ה-Bluetooth בטלפון, וכן ליצור ולקבל חיבורים עם מכשירים מותאמים."</string>
     <string name="permlab_bluetooth_scan" msgid="5402587142833124594">"‏זיהוי והתאמה עם מכשירי Bluetooth קרובים"</string>
     <string name="permdesc_bluetooth_scan" product="default" msgid="6540723536925289276">"‏מאפשרת לאפליקציה לגלות מכשירי Bluetooth בקרבת מקום ולבצע התאמה איתם"</string>
-    <string name="permlab_bluetooth_connect" msgid="6657463246355003528">"‏התחברות למכשירי Bluetooth מתאימים"</string>
+    <string name="permlab_bluetooth_connect" msgid="6657463246355003528">"‏התחברות למכשירי Bluetooth מותאמים"</string>
     <string name="permdesc_bluetooth_connect" product="default" msgid="4546016548795544617">"‏מאפשרת לאפליקציה להתחבר למכשירי Bluetooth מותאמים"</string>
     <string name="permlab_bluetooth_advertise" msgid="2781147747928853177">"‏פרסום במכשירי Bluetooth בקרבת מקום"</string>
     <string name="permdesc_bluetooth_advertise" product="default" msgid="6085174451034210183">"‏האפליקציה תוכל לפרסם במכשירי Bluetooth בקרבת מקום"</string>
