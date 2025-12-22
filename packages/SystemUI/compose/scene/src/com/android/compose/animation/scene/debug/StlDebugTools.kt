@@ -50,6 +50,7 @@ import com.android.compose.animation.scene.SceneTransitionLayoutState
 import com.android.compose.animation.scene.content.Content
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.animation.scene.debug.StlDebugConfig.elementFilterList
+import com.android.compose.animation.scene.debug.StlDebugConfig.excludeStlsList
 import com.android.compose.animation.scene.getAllNestedTransitionStates
 import java.util.Locale
 import kotlin.collections.mutableMapOf
@@ -173,7 +174,7 @@ internal fun Modifier.debugStl(
             val inset = nestingLevel * (textSize.toPx() + labelPadding) * 2
 
             onDrawWithContent {
-                if (StlDebugConfig.showStlBorders()) {
+                if (StlDebugConfig.showStlBorders() && !excludeStlFromDebugging(debugName)) {
                     // 1. Draw Border
                     drawDebugBorder(
                         color = color,
@@ -199,7 +200,7 @@ internal fun Modifier.debugStl(
                         }
                     }
 
-                if (StlDebugConfig.showStlLabels()) {
+                if (StlDebugConfig.showStlLabels() && !excludeStlFromDebugging(debugName)) {
                     // 3. Draw Label
                     drawDebugLabel(
                         textMeasurer = textMeasurer,
@@ -565,6 +566,11 @@ internal fun filterOutElementExclusive(key: ElementKey): Boolean {
 internal fun filterOutElement(key: ElementKey): Boolean {
     if (elementFilterList.isEmpty()) return false
     return filterOutElementExclusive(key)
+}
+
+/** Returns true if the STL with [debugName] should be excluded from debugging. */
+internal fun excludeStlFromDebugging(debugName: String): Boolean {
+    return excludeStlsList.any { debugName.equals(it, ignoreCase = true) }
 }
 
 internal const val TAG = "StlDebug"

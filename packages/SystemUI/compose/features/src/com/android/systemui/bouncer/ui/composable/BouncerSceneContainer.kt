@@ -49,6 +49,7 @@ fun BouncerSceneContainer(
         state = state,
         transitions = transitions { sharedBouncerTransitions() },
         modifier = modifier,
+        debugName = "BouncerTopSTL",
     ) {
         scene(key = Scenes.Gone, userActions = emptyMap()) { Box(Modifier.fillMaxSize()) }
 

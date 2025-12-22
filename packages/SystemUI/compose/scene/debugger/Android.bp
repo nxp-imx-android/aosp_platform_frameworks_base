@@ -38,6 +38,7 @@ android_library {
         "androidx.compose.runtime_runtime",
         "androidx.compose.runtime_runtime-tracing",
         "androidx.navigation_navigation-compose",
+        "androidx.datastore_datastore-preferences",
     ],
 
     libs: ["android.test.mock.stubs.system"],

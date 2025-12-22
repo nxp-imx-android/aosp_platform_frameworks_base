@@ -28,6 +28,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.android.compose.animation.scene.debug.StlDebugConfig.elementKeyFilter
 import com.android.compose.animation.scene.debug.StlDebugKeys.ELEMENT_FILTER
+import com.android.compose.animation.scene.debug.StlDebugKeys.EXCLUDE_STLS
 import com.android.compose.animation.scene.debug.StlDebugKeys.LOG_ELEMENTS
 import com.android.compose.animation.scene.debug.StlDebugKeys.LOG_ELEMENTS_VERBOSE
 import com.android.compose.animation.scene.debug.StlDebugKeys.POS_ELEMENT_LABEL
@@ -180,6 +181,19 @@ internal object StlDebugConfig {
     /** Position of the STL label */
     var stlLabelPosition by mutableStateOf(DebugLabelPosition.CenterLow)
 
+    /**
+     * A comma separated string of STL [debugName]'s to exclude from debugging (case insensitive).
+     */
+    private var excludeStls: String = ""
+        set(value) {
+            field = value
+            excludeStlsList = value.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+        }
+
+    /** List of STL [debugName]'s to exclude from debugging (case insensitive). */
+    var excludeStlsList by mutableStateOf(emptyList<String>())
+        private set
+
     private var isListening = false
 
     /** Call to setup Setting listeners that will set debug vars. */
@@ -228,6 +242,7 @@ internal object StlDebugConfig {
         }
 
         elementKeyFilter = readStr(ELEMENT_FILTER.key)
+        excludeStls = readStr(EXCLUDE_STLS.key)
 
         val defaultToggleValue = false
         showElementBorders = readBool(SHOW_ELEMENT_BORDERS.key, defaultToggleValue)
@@ -281,4 +296,5 @@ enum class StlDebugKeys(val key: String) {
     SHOW_STL_BORDERS("debug_stl_show_stl_borders"),
     SHOW_STL_LABELS("debug_stl_show_stl_labels"),
     POS_STL_LABEL("debug_stl_pos_stl_label"),
+    EXCLUDE_STLS("debug_stl_exclude_stls"),
 }

@@ -292,7 +292,7 @@ private fun PropertyRow(
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
 
-    if (prop.key == StlDebugKeys.ELEMENT_FILTER.key) {
+    if (prop.key == StlDebugKeys.ELEMENT_FILTER.key || prop.key == StlDebugKeys.EXCLUDE_STLS.key) {
         FilterPropertyEditor(prop = prop, onChanged = onChanged)
         return
     }
@@ -658,6 +658,12 @@ private fun getAllDebugProperties(): List<DebugProperty> {
         ),
 
         // --- STL Global ---
+        DebugProperty(
+            Category.STL,
+            "Exclude STLs",
+            StlDebugKeys.EXCLUDE_STLS.key,
+            PropertyType.STRING,
+        ),
         DebugProperty(
             Category.STL,
             "Show Borders",
