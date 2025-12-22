@@ -310,34 +310,17 @@ class MultiDisplayVeiledResizeTaskPositioner(
                     displayIds,
                     t,
                 )
-                if (DesktopExperienceFlags.ENABLE_WINDOW_DROP_SMOOTH_TRANSITION.isTrue) {
-                    // Move the original task surface off-screen to hide it. A mirrored surface is
-                    // used for the drag indicator on all displays, including the start display.
-                    // This is necessary for independent opacity control, as a mirror's alpha is
-                    // capped by its source.
-                    if (!hasMovedTaskSurfaceOffScreen) {
-                        hasMovedTaskSurfaceOffScreen = true
-                        t.setPosition(
-                            windowDecoration.taskSurface,
-                            startDisplayLayout.width().toFloat(),
-                            startDisplayLayout.height().toFloat(),
-                        )
-                    }
-                } else {
+                // Move the original task surface off-screen to hide it. A mirrored surface is
+                // used for the drag indicator on all displays, including the start display.
+                // This is necessary for independent opacity control, as a mirror's alpha is
+                // capped by its source.
+                if (!hasMovedTaskSurfaceOffScreen) {
+                    hasMovedTaskSurfaceOffScreen = true
                     t.setPosition(
                         windowDecoration.taskSurface,
-                        repositionTaskBounds.left.toFloat(),
-                        repositionTaskBounds.top.toFloat(),
+                        startDisplayLayout.width().toFloat(),
+                        startDisplayLayout.height().toFloat(),
                     )
-                    // Make the window translucent in the case when the cursor moves to another
-                    // display.
-                    val alpha =
-                        if (startDisplayId == displayId) {
-                            ALPHA_FOR_WINDOW_ON_DISPLAY_WITH_CURSOR
-                        } else {
-                            ALPHA_FOR_WINDOW_ON_NON_CURSOR_DISPLAY
-                        }
-                    t.setAlpha(windowDecoration.taskSurface, alpha)
                 }
             }
             t.setFrameTimeline(Choreographer.getInstance().vsyncId)
@@ -434,16 +417,6 @@ class MultiDisplayVeiledResizeTaskPositioner(
                 if (displayId != startDisplayId) {
                     currentDisplayLayout.getStableBounds(stableBounds)
                 }
-            }
-
-            // Call the MultiDisplayDragMoveIndicatorController to clear any active indicator
-            // surfaces. This is necessary even if the drag ended on the same display, as surfaces
-            // may have been created for other displays during the drag.
-            if (!DesktopExperienceFlags.ENABLE_WINDOW_DROP_SMOOTH_TRANSITION.isTrue) {
-                multiDisplayDragMoveIndicatorController.onDragEnd(
-                    windowDecoration.taskInfo.taskId,
-                    transactionSupplier(),
-                )
             }
 
             interactionJankMonitor.end(Cuj.CUJ_DESKTOP_MODE_DRAG_WINDOW)

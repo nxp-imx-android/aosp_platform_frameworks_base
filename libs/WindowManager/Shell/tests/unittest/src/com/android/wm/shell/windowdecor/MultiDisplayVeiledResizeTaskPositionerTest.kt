@@ -220,7 +220,6 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
     fun testDragResize_movesTask_doesNotShowResizeVeil() = runOnUiThread {
         taskPositioner.onDragPositioningStart(
             CTRL_TYPE_UNDEFINED,
@@ -252,7 +251,6 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
     fun testDragResize_movesTask_movesTaskSurfaceOffscreen() = runOnUiThread {
         whenever(spyDisplayLayout0.width()).thenReturn(DISPLAY_BOUNDS.width())
         whenever(spyDisplayLayout0.height()).thenReturn(DISPLAY_BOUNDS.height())
@@ -288,7 +286,6 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
     fun testDragResize_movesTaskOnSameDisplay_noPxDpConversion() = runOnUiThread {
         taskPositioner.onDragPositioningStart(
             CTRL_TYPE_UNDEFINED,
@@ -310,7 +307,6 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
     fun testDragResize_movesTaskToNewDisplay() = runOnUiThread {
         taskPositioner.onDragPositioningStart(
             CTRL_TYPE_UNDEFINED,
@@ -332,7 +328,6 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
     fun testDragResize_movesTaskToNewDisplay_movesTaskSurfaceOffscreen() = runOnUiThread {
         whenever(spyDisplayLayout0.width()).thenReturn(DISPLAY_BOUNDS.width())
         whenever(spyDisplayLayout0.height()).thenReturn(DISPLAY_BOUNDS.height())
@@ -364,7 +359,6 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
     fun testDragResize_movesTaskToNewDisplayThenBackToOriginalDisplay() = runOnUiThread {
         taskPositioner.onDragPositioningStart(
             CTRL_TYPE_UNDEFINED,
@@ -391,7 +385,6 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
     fun testDragResize_movesTaskToNewDisplayThenBackToOriginalDisplay_movesTaskSurfaceOffscreen() =
         runOnUiThread {
             whenever(spyDisplayLayout0.width()).thenReturn(DISPLAY_BOUNDS.width())

@@ -8403,7 +8403,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
     @DisableFlags(Flags.FLAG_REFACTOR_CAPTION_SANDBOXING_TO_CORE)
     fun onDesktopDragEnd_noIndicator_updatesTaskBounds() {
         val task = setUpFreeformTask()
@@ -8456,10 +8455,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG,
-        Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG)
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onDesktopDragEnd_noIndicatorAndMoveToNewDisplay_reparent() {
         val task = setUpFreeformTask()
@@ -8552,7 +8548,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
     fun onDesktopDragEnd_fullscreenIndicator_dragToExitDesktop() {
         val task = setUpFreeformTask(bounds = Rect(0, 0, 100, 100))
         val spyController = spy(controller)
@@ -8845,7 +8840,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
     fun onDesktopDragEnd_noIndicator_dropOnInEligibleDisplay_updateSurfacePosition_noWct() {
         val task = setUpFreeformTask(bounds = STABLE_BOUNDS)
         val spyController = spy(controller)

@@ -1413,7 +1413,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
     fun testOnFreeformWindowDragEnd_toDesktopModeDisplay_updateBounds() {
         val onTouchListenerCaptor = argumentCaptor<View.OnTouchListener>()
         val decor =
@@ -1540,7 +1539,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
     fun testOnFreeformWindowDragMove_toNonDesktopModeDisplay_setsNoDropIcon() {
         val onTouchListenerCaptor = argumentCaptor<View.OnTouchListener>()
         val decor =
