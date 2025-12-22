@@ -920,7 +920,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
 
                 final TaskPropertiesRequest request = params.getTaskPropertiesRequest();
                 final Task task = createTask(display, params.getWindowingMode(),
-                        params.getLaunchCookie(), params.isRemoveWithTaskOrganizer(),
+                        params.getLaunchCookie(), true /* removeWithTaskOrganizer */,
                         request.isReparentOnDisplayRemoval(), params.getName(),
                         request.isForceOpaque(), request.isIgnoreInsets(),
                         request.isDisableAppCompatRoundedCorners());

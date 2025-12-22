@@ -57,10 +57,6 @@ public final class TaskCreationParams implements Parcelable {
     @NonNull
     private IBinder mLaunchCookie = new Binder();
 
-    // TODO: shouldn't it always be true?
-    /** Whether the Task should be removed when its organizer is unregistered. */
-    private boolean mRemoveWithTaskOrganizer = false;
-
     /** The initial {@link TaskPropertiesRequest}. */
     @NonNull
     private TaskPropertiesRequest mTaskPropertiesRequest = new TaskPropertiesRequest();
@@ -86,7 +82,6 @@ public final class TaskCreationParams implements Parcelable {
             int displayId,
             @WindowingMode int windowingMode,
             @NonNull IBinder launchCookie,
-            boolean removeWithTaskOrganizer,
             @NonNull TaskPropertiesRequest taskPropertiesRequest) {
         this.mName = name;
         this.mDisplayId = displayId;
@@ -96,7 +91,6 @@ public final class TaskCreationParams implements Parcelable {
         this.mLaunchCookie = launchCookie;
         com.android.internal.util.AnnotationValidations.validate(
                 NonNull.class, null, mLaunchCookie);
-        this.mRemoveWithTaskOrganizer = removeWithTaskOrganizer;
         this.mTaskPropertiesRequest = taskPropertiesRequest;
         com.android.internal.util.AnnotationValidations.validate(
                 NonNull.class, null, mTaskPropertiesRequest);
@@ -138,15 +132,7 @@ public final class TaskCreationParams implements Parcelable {
     }
 
     /**
-     * Whether the Task should be removed when its organizer is unregistered.
-     */
-    @DataClass.Generated.Member
-    public boolean isRemoveWithTaskOrganizer() {
-        return mRemoveWithTaskOrganizer;
-    }
-
-    /**
-     * The initial {@link TaskProperties}.
+     * The initial {@link TaskPropertiesRequest}.
      */
     @DataClass.Generated.Member
     public @NonNull TaskPropertiesRequest getTaskPropertiesRequest() {
@@ -164,7 +150,6 @@ public final class TaskCreationParams implements Parcelable {
                 "displayId = " + mDisplayId + ", " +
                 "windowingMode = " + mWindowingMode + ", " +
                 "launchCookie = " + mLaunchCookie + ", " +
-                "removeWithTaskOrganizer = " + mRemoveWithTaskOrganizer + ", " +
                 "taskPropertiesRequest = " + mTaskPropertiesRequest +
         " }";
     }
@@ -186,7 +171,6 @@ public final class TaskCreationParams implements Parcelable {
                 && mDisplayId == that.mDisplayId
                 && mWindowingMode == that.mWindowingMode
                 && Objects.equals(mLaunchCookie, that.mLaunchCookie)
-                && mRemoveWithTaskOrganizer == that.mRemoveWithTaskOrganizer
                 && Objects.equals(mTaskPropertiesRequest, that.mTaskPropertiesRequest);
     }
 
@@ -201,7 +185,6 @@ public final class TaskCreationParams implements Parcelable {
         _hash = 31 * _hash + mDisplayId;
         _hash = 31 * _hash + mWindowingMode;
         _hash = 31 * _hash + Objects.hashCode(mLaunchCookie);
-        _hash = 31 * _hash + Boolean.hashCode(mRemoveWithTaskOrganizer);
         _hash = 31 * _hash + Objects.hashCode(mTaskPropertiesRequest);
         return _hash;
     }
@@ -213,7 +196,6 @@ public final class TaskCreationParams implements Parcelable {
         // void parcelFieldName(Parcel dest, int flags) { ... }
 
         byte flg = 0;
-        if (mRemoveWithTaskOrganizer) flg |= 0x10;
         if (mName != null) flg |= 0x1;
         dest.writeByte(flg);
         if (mName != null) dest.writeString(mName);
@@ -235,7 +217,6 @@ public final class TaskCreationParams implements Parcelable {
         // static FieldType unparcelFieldName(Parcel in) { ... }
 
         byte flg = in.readByte();
-        boolean removeWithTaskOrganizer = (flg & 0x10) != 0;
         String name = (flg & 0x1) == 0 ? null : in.readString();
         int displayId = in.readInt();
         int windowingMode = in.readInt();
@@ -250,7 +231,6 @@ public final class TaskCreationParams implements Parcelable {
         this.mLaunchCookie = launchCookie;
         com.android.internal.util.AnnotationValidations.validate(
                 NonNull.class, null, mLaunchCookie);
-        this.mRemoveWithTaskOrganizer = removeWithTaskOrganizer;
         this.mTaskPropertiesRequest = taskPropertiesRequest;
         com.android.internal.util.AnnotationValidations.validate(
                 NonNull.class, null, mTaskPropertiesRequest);
@@ -283,7 +263,6 @@ public final class TaskCreationParams implements Parcelable {
         private int mDisplayId;
         private @WindowingMode int mWindowingMode;
         private @NonNull IBinder mLaunchCookie;
-        private boolean mRemoveWithTaskOrganizer;
         private @NonNull TaskPropertiesRequest mTaskPropertiesRequest;
 
         private long mBuilderFieldsSet = 0L;
@@ -337,23 +316,12 @@ public final class TaskCreationParams implements Parcelable {
         }
 
         /**
-         * Whether the Task should be removed when its organizer is unregistered.
-         */
-        @DataClass.Generated.Member
-        public @NonNull Builder setRemoveWithTaskOrganizer(boolean value) {
-            checkNotUsed();
-            mBuilderFieldsSet |= 0x10;
-            mRemoveWithTaskOrganizer = value;
-            return this;
-        }
-
-        /**
-         * The initial {@link TaskProperties}.
+         * The initial {@link TaskPropertiesRequest}.
          */
         @DataClass.Generated.Member
         public @NonNull Builder setTaskPropertiesRequest(@NonNull TaskPropertiesRequest value) {
             checkNotUsed();
-            mBuilderFieldsSet |= 0x20;
+            mBuilderFieldsSet |= 0x10;
             mTaskPropertiesRequest = value;
             return this;
         }
@@ -361,7 +329,7 @@ public final class TaskCreationParams implements Parcelable {
         /** Builds the instance. This builder should not be touched after calling this! */
         public @NonNull TaskCreationParams build() {
             checkNotUsed();
-            mBuilderFieldsSet |= 0x40; // Mark builder used
+            mBuilderFieldsSet |= 0x20; // Mark builder used
 
             if ((mBuilderFieldsSet & 0x1) == 0) {
                 mName = null;
@@ -376,9 +344,6 @@ public final class TaskCreationParams implements Parcelable {
                 mLaunchCookie = new Binder();
             }
             if ((mBuilderFieldsSet & 0x10) == 0) {
-                mRemoveWithTaskOrganizer = false;
-            }
-            if ((mBuilderFieldsSet & 0x20) == 0) {
                 mTaskPropertiesRequest = new TaskPropertiesRequest();
             }
             TaskCreationParams o = new TaskCreationParams(
@@ -386,13 +351,12 @@ public final class TaskCreationParams implements Parcelable {
                     mDisplayId,
                     mWindowingMode,
                     mLaunchCookie,
-                    mRemoveWithTaskOrganizer,
                     mTaskPropertiesRequest);
             return o;
         }
 
         private void checkNotUsed() {
-            if ((mBuilderFieldsSet & 0x40) != 0) {
+            if ((mBuilderFieldsSet & 0x20) != 0) {
                 throw new IllegalStateException(
                         "This Builder should not be reused. Use a new Builder instance instead");
             }
@@ -400,10 +364,10 @@ public final class TaskCreationParams implements Parcelable {
     }
 
     @DataClass.Generated(
-            time = 1766243429375L,
+            time = 1766379991672L,
             codegenVersion = "1.0.23",
             sourceFile = "frameworks/base/core/java/android/window/TaskCreationParams.java",
-            inputSignatures = "private @android.annotation.Nullable java.lang.String mName\nprivate  int mDisplayId\nprivate @android.app.WindowConfiguration.WindowingMode int mWindowingMode\nprivate @android.annotation.NonNull android.os.IBinder mLaunchCookie\nprivate  boolean mRemoveWithTaskOrganizer\nprivate @android.annotation.NonNull android.window.TaskPropertiesRequest mTaskPropertiesRequest\nclass TaskCreationParams extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genEqualsHashCode=true, genParcelable=true, genToString=true, genBuilder=true)")
+            inputSignatures = "private @android.annotation.Nullable java.lang.String mName\nprivate  int mDisplayId\nprivate @android.app.WindowConfiguration.WindowingMode int mWindowingMode\nprivate @android.annotation.NonNull android.os.IBinder mLaunchCookie\nprivate @android.annotation.NonNull android.window.TaskPropertiesRequest mTaskPropertiesRequest\nclass TaskCreationParams extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genEqualsHashCode=true, genParcelable=true, genToString=true, genBuilder=true)")
     @Deprecated
     private void __metadata() {}
 
