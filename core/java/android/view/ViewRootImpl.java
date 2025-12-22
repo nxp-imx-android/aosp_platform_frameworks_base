@@ -14130,9 +14130,7 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     private void preInitBufferAllocator() {
-        if (com.android.graphics.hwui.flags.Flags.earlyPreinitBufferAllocator()) {
-            ThreadedRenderer.preInitBufferAllocator();
-        }
+        ThreadedRenderer.preInitBufferAllocator();
     }
 
     /**

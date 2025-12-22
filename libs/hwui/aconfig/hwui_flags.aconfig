@@ -159,14 +159,6 @@ flag {
 }
 
 flag {
-  name: "early_preinit_buffer_allocator"
-  namespace: "core_graphics"
-  description: "Initialize GraphicBufferAllocater on ViewRootImpl init, to avoid blocking on init during buffer allocation, improving app launch latency."
-  bug: "389908734"
-  is_fixed_read_only: true
-}
-
-flag {
   name: "fix_avd_wrong_resources"
   namespace: "core_graphics"
   description: "Fix that AVD loads from the wrong Resources instance in applyTheme"
