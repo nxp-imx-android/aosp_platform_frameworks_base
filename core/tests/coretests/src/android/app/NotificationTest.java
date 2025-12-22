@@ -147,7 +147,7 @@ public class NotificationTest {
     public void setUp() {
         mContext = InstrumentationRegistry.getContext();
         mRemoteViews = new RemoteViews(
-                mContext.getPackageName(), R.layout.notification_template_header);
+                mContext.getPackageName(), R.layout.notification_2025_template_header);
 
         mDefaultColors = new Notification.Colors();
         boolean nightMode = (mContext.getResources().getConfiguration().uiMode

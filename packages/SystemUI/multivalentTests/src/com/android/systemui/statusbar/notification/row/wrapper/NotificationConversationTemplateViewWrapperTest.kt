@@ -134,11 +134,9 @@ class NotificationConversationTemplateViewWrapperTest : SysuiTestCase() {
                 whenever(requireViewById<NotificationRowIconView>(R.id.icon)).thenReturn(mock())
                 whenever(requireViewById<View>(R.id.conversation_icon_badge_bg)).thenReturn(mock())
                 whenever(requireViewById<View>(R.id.expand_button)).thenReturn(mock())
-                whenever(requireViewById<View>(R.id.expand_button_container)).thenReturn(mock())
                 whenever(requireViewById<View>(R.id.conversation_icon_badge_ring))
                     .thenReturn(mock())
                 whenever(requireViewById<View>(R.id.app_name_text)).thenReturn(mock())
-                whenever(requireViewById<View>(R.id.conversation_text)).thenReturn(mock())
                 whenever(requireViewById<View>(R.id.title)).thenReturn(mock())
             }
         return mockView
