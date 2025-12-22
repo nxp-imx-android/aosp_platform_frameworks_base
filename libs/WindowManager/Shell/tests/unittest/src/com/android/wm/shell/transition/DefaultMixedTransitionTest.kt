@@ -29,7 +29,7 @@ import com.android.wm.shell.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.activityembedding.ActivityEmbeddingController
 import com.android.wm.shell.bubbles.BubbleHelper
-import com.android.wm.shell.bubbles.BubbleTransitions
+import com.android.wm.shell.bubbles.transitions.BubbleTransitions
 import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerHandler

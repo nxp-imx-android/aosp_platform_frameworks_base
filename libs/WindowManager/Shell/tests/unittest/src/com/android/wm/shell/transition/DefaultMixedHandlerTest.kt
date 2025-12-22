@@ -41,7 +41,7 @@ import com.android.wm.shell.activityembedding.ActivityEmbeddingController
 import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.bubbles.BubbleHelperImpl
 import com.android.wm.shell.bubbles.BubbleRootTask
-import com.android.wm.shell.bubbles.BubbleTransitions
+import com.android.wm.shell.bubbles.transitions.BubbleTransitions
 import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.NormalAppLayerHandler
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler

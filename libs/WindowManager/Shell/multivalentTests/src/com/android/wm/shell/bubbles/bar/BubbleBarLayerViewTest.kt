@@ -49,7 +49,6 @@ import com.android.wm.shell.bubbles.BubbleExpandedViewManager
 import com.android.wm.shell.bubbles.BubbleHelper
 import com.android.wm.shell.bubbles.BubblePositioner
 import com.android.wm.shell.bubbles.BubbleResizabilityChecker
-import com.android.wm.shell.bubbles.BubbleTransitions
 import com.android.wm.shell.bubbles.Bubbles
 import com.android.wm.shell.bubbles.Bubbles.SysuiProxy
 import com.android.wm.shell.bubbles.FakeBubbleAppInfoProvider
@@ -63,6 +62,7 @@ import com.android.wm.shell.bubbles.logging.BubbleLogger
 import com.android.wm.shell.bubbles.logging.BubbleSessionTracker
 import com.android.wm.shell.bubbles.logging.BubbleSessionTrackerImpl
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository
+import com.android.wm.shell.bubbles.transitions.BubbleTransitions
 import com.android.wm.shell.bubbles.user.data.FakeBubbleUserResolver
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayImeController
