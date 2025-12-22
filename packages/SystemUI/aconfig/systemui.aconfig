@@ -1554,6 +1554,16 @@ flag {
 }
 
 flag {
+    name: "screenshot_disable_long_screenshot_for_system_shade"
+    namespace: "systemui"
+    description: "Disable long screenshot when the system shade is expanded."
+    bug: "457677963"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "screenshot_dismissal_spring"
     namespace: "systemui"
     description: "Use a spring animator for screenshot dismissal, fade out after const distance"
