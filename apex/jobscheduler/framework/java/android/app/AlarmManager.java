@@ -17,6 +17,7 @@
 package android.app;
 
 import android.Manifest;
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -1348,6 +1349,39 @@ public class AlarmManager {
         Objects.requireNonNull(listener);
         setImpl(type, triggerAtMillis, WINDOW_EXACT, 0, FLAG_ALLOW_WHILE_IDLE, null, listener, tag,
                 executor, workSource, null);
+    }
+
+    /**
+     * Like {@link #setExact(int, long, String, Executor, WorkSource, OnAlarmListener)}, but this
+     * alarm will be allowed to execute even when the system is in low-power idle modes with relaxed
+     * quota.
+     *
+     * <p> See {@link #setExactAndAllowWhileIdle(int, long, PendingIntent)} for more details.
+     *
+     * <p class="note"><strong>Note:</strong>
+     * The system will explicitly drop any alarms set via this API when the calling app goes out
+     * of lifecycle.
+     *
+     * @param type            type of alarm.
+     * @param triggerAtMillis The exact time in milliseconds, that the alarm should be delivered,
+     *                        expressed in the appropriate clock's units (depending on the alarm
+     *                        type).
+     * @param executor        The {@link Executor} on which to execute the listener's onAlarm()
+     *                        callback.
+     * @param tag             A string tag used to identify this alarm in logs and
+     *                        battery-attribution.
+     * @param listener        {@link OnAlarmListener} instance whose
+     *                        {@link OnAlarmListener#onAlarm() onAlarm()} method will be called when
+     *                        the alarm time is reached.
+     */
+    @FlaggedApi(Flags.FLAG_ALLOW_LISTENERS_WHILE_IDLE)
+    public void setExactAndAllowWhileIdle(@AlarmType int type, long triggerAtMillis,
+            @NonNull String tag, @NonNull Executor executor, @NonNull OnAlarmListener listener) {
+        Objects.requireNonNull(tag);
+        Objects.requireNonNull(executor);
+        Objects.requireNonNull(listener);
+        setImpl(type, triggerAtMillis, WINDOW_EXACT, 0, FLAG_ALLOW_WHILE_IDLE, /* operation= */null,
+                listener, tag, executor, /* workSource= */null, /* alarmClock= */null);
     }
 
     /**
