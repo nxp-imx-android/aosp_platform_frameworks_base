@@ -75,19 +75,21 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
         }
 
     override fun getApplicableMethodNames(): List<String> =
-        parsedBinderCalls.map { it.methodName }.toList()
+        // Use `toSet` first so that we don't visit the same method multiple times.
+        parsedBinderCalls.map { it.methodName }.toSet().toList()
 
     override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
-        // TODO: b/469073407 - Handle the same method name in a different class/package gracefully.
-        val matchingBinderCall: BinderCall =
-            parsedBinderCalls.find { it.methodName == method.name } ?: return
+        val methodName = method.name
+        val packageName = context.evaluator.getPackage(method)?.qualifiedName
+        val className = (method.parent as? PsiClass)?.name ?: return
 
-        val className = method.parent
-        val classMatches = className is PsiClass && className.name == matchingBinderCall.className
-        val packageMatches =
-            context.evaluator.getPackage(method)?.qualifiedName == matchingBinderCall.packageName
-
-        if (!classMatches || !packageMatches) {
+        val isBinderCall: Boolean =
+            parsedBinderCalls.any {
+                methodName == it.methodName &&
+                    className == it.className &&
+                    packageName == it.packageName
+            }
+        if (!isBinderCall) {
             return
         }
 
