@@ -12090,6 +12090,12 @@ public final class Settings {
                 "mandatory_biometrics_requirements_satisfied";
 
         /**
+         * Number of trusted locations added by the user.
+         * @hide
+         */
+        public static final String TRUSTED_LOCATIONS_COUNT = "trusted_locations_count";
+
+        /**
          * Whether or not active unlock triggers on wake.
          * @hide
          */
