@@ -16,6 +16,7 @@
 
 package com.android.internal.systemui.lint
 
+import com.android.internal.systemui.lint.BindServiceOnMainThreadDetector.Companion.containingMethodOrClassHasWorkerThreadAnnotation
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Implementation
@@ -90,6 +91,12 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
             return
         }
 
+        if (node.containingMethodOrClassHasWorkerThreadAnnotation(context)) {
+            // This binder call is inside a method or class marked `@WorkerThread`, and that
+            // annotation enforces that the method will only be invoked on the background thread.
+            return
+        }
+
         val containingBlock = findContainingBlock(node)
         if (containingBlock != null) {
             if (
@@ -107,7 +114,6 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
             return
         }
 
-        // TODO: b/469073407 - Don't warn for calls inside a method annotated with @WorkerThread.
         // TODO: b/469073407 - Don't warn for calls followed by `.flowOn(backgroundDispatcher)`.
 
         context.report(ISSUE, context.getNameLocation(node), message = "Binder call on main thread")

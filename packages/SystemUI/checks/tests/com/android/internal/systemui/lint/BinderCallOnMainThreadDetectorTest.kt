@@ -222,6 +222,59 @@ src/test/pkg/TestClass.kt:12: Warning: Binder call on main thread [BinderCallOnM
     }
 
     @Test
+    fun binderCall_inMethodAnnotatedWithWorkerThread_clean() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                        package test.pkg
+
+                        import android.app.PendingIntent
+                        import androidx.annotation.WorkerThread
+
+                        @WorkerThread
+                        fun doSomething() {
+                            val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                        }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expectClean()
+    }
+
+    @Test
+    fun binderCall_inClassAnnotatedWithWorkerThread_clean() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+                    import android.media.projection.MediaProjectionManager
+                    import androidx.annotation.WorkerThread
+
+                    @WorkerThread
+                    class TestRepository(private val mediaProjectionManager: MediaProjectionManager) {
+                       fun onStopped() {
+                            mediaProjectionManager.stopActiveProjection(0)
+                        }
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expectClean()
+    }
+
+    @Test
     fun binderCall_withMainDispatcher_error() {
         lint()
             .files(
