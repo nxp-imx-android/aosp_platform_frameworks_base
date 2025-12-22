@@ -20,7 +20,6 @@ import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.annotation.VisibleForTesting
-import com.android.settingslib.catalyst.flags.Flags as CatalystFlags
 import java.util.concurrent.CancellationException
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
@@ -83,7 +82,7 @@ class PreferenceHierarchy : PreferenceHierarchyNode {
      * @throws NullPointerException if screen is not registered to [PreferenceScreenRegistry]
      */
     operator fun String.unaryPlus() =
-        if (CatalystFlags.catalystUseKeyParameters()) {
+        if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
             addPreferenceScreenWithKeyParameters(this, null)
         } else {
             addPreferenceScreen(this, null)
@@ -231,7 +230,7 @@ class PreferenceHierarchy : PreferenceHierarchyNode {
      * @throws NullPointerException if screen is not registered to [PreferenceScreenRegistry]
      */
     fun addPreferenceScreen(screenKey: String) =
-        if (CatalystFlags.catalystUseKeyParameters()) {
+        if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
             addPreferenceScreenWithKeyParameters(screenKey, null)
         } else {
             addPreferenceScreen(screenKey, null)

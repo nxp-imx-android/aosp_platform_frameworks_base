@@ -19,7 +19,6 @@ package com.android.settingslib.metadata
 import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
-import com.android.settingslib.catalyst.flags.Flags as CatalystFlags
 
 /**
  * Coordinate to locate a preference.
@@ -101,7 +100,7 @@ open class PreferenceScreenCoordinate : Parcelable {
     constructor(parcel: Parcel) {
         screenKey = parcel.readString()!!
 
-        if (CatalystFlags.catalystUseKeyParameters()) {
+        if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
             keyParameters = parcel.readString()?.let { KeyParameters(it.deserializeToMap()) }
             args = null
         } else {
@@ -113,7 +112,7 @@ open class PreferenceScreenCoordinate : Parcelable {
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(screenKey)
 
-        if (CatalystFlags.catalystUseKeyParameters()) {
+        if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
             parcel.writeString(keyParameters?.toParametersString())
         } else {
             parcel.writeBundle(args)

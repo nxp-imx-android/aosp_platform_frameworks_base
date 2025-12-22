@@ -23,7 +23,7 @@ import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceScreen
 import androidx.preference.SeekBarPreference
-import com.android.settingslib.catalyst.flags.Flags as CatalystFlags
+import com.android.settingslib.metadata.CatalystFlagProviderFactory
 import com.android.settingslib.metadata.DiscreteIntValue
 import com.android.settingslib.metadata.DiscreteValue
 import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_ARGS
@@ -91,7 +91,7 @@ interface PreferenceBinding {
                 // Pass the preference key to fragment, so that the fragment could find associated
                 // preference screen registered in PreferenceScreenRegistry
                 extras.putString(EXTRA_BINDING_SCREEN_KEY, key)
-                if (CatalystFlags.catalystUseKeyParameters()) {
+                if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
                     screenMetadata.keyParameters?.let {
                         extras.putBundle(EXTRA_BINDING_SCREEN_ARGS, it.toBundle())
                     }

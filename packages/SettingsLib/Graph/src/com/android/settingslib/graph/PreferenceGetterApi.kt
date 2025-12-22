@@ -23,7 +23,7 @@ import com.android.settingslib.graph.proto.PreferenceProto
 import com.android.settingslib.ipc.ApiDescriptor
 import com.android.settingslib.ipc.ApiHandler
 import com.android.settingslib.ipc.ApiPermissionChecker
-import com.android.settingslib.catalyst.flags.Flags as CatalystFlags
+import com.android.settingslib.metadata.CatalystFlagProviderFactory
 import com.android.settingslib.metadata.PreferenceCoordinate
 import com.android.settingslib.metadata.PreferenceHierarchyNode
 import com.android.settingslib.metadata.PreferenceRemoteOpMetricsLogger
@@ -110,7 +110,7 @@ class PreferenceGetterApiHandler(
         val flags = request.flags
         val groups =
             request.preferences.groupBy {
-                if (CatalystFlags.catalystUseKeyParameters()) {
+                if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
                     PreferenceScreenCoordinate(it.screenKey, it.keyParameters)
                 } else {
                     PreferenceScreenCoordinate(it.screenKey, it.args)

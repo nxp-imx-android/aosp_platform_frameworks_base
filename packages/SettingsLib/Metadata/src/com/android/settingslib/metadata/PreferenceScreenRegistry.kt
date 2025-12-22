@@ -19,7 +19,6 @@ package com.android.settingslib.metadata
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import com.android.settingslib.catalyst.flags.Flags as CatalystFlags
 import com.android.settingslib.datastore.KeyValueStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -89,7 +88,7 @@ object PreferenceScreenRegistry {
 
     /** Creates [PreferenceScreenMetadata] of particular screen. */
     fun create(context: Context, screenCoordinate: PreferenceScreenCoordinate) =
-        if (CatalystFlags.catalystUseKeyParameters()) {
+        if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
             val validatedKeyParameters = screenCoordinate.keyParameters?.let {
                 getScreenParametersSchema(screenCoordinate.screenKey)?.prepare(it)
             }
