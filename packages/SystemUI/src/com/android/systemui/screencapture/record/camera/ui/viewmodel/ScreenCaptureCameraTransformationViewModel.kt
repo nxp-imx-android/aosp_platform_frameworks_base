@@ -72,6 +72,14 @@ constructor(private val interactor: ScreenCaptureCameraTransformationInteractor)
         recalculateTransformation()
     }
 
+    fun onTransformationStarted() {
+        interactor.isTransforming = true
+    }
+
+    fun onTransformationEnded() {
+        interactor.isTransforming = false
+    }
+
     private fun recalculateTransformation() =
         with(transformation) {
             reset()
