@@ -862,6 +862,46 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         verify(configurationController, never()).addCallback(any())
     }
 
+    @Test
+    fun testMediaTargetChanges_ViewAttached() {
+        connectSession()
+
+        val mediaComponent = ComponentName("testpackage", "media")
+        val action =
+            SmartspaceAction.Builder("deviceMediaTitle", "TITLE").setSubtitle("ARTIST").build()
+        val target =
+            SmartspaceTarget.Builder("deviceMedia", mediaComponent, userHandlePrimary)
+                .setFeatureType(41) // MEDIA_CURRENT_PLAYING
+                .setHeaderAction(action)
+                .build()
+
+        // controller should immediately send target to all attached views
+        controller.setMediaTarget(target)
+        verify(smartspaceView).setMediaTarget(target)
+    }
+
+    @Test
+    fun testMediaTargetChanges_ViewDetached() {
+        connectSession()
+        controller.stateChangeListener.onViewDetachedFromWindow(smartspaceView as View)
+
+        val mediaComponent = ComponentName("testpackage", "media")
+        val action =
+            SmartspaceAction.Builder("deviceMediaTitle", "TITLE").setSubtitle("ARTIST").build()
+        val target =
+            SmartspaceTarget.Builder("deviceMedia", mediaComponent, userHandlePrimary)
+                .setFeatureType(41) // MEDIA_CURRENT_PLAYING
+                .setHeaderAction(action)
+                .build()
+
+        // controller should only send target to view when it is next attached
+        controller.setMediaTarget(target)
+        verify(smartspaceView, never()).setMediaTarget(target)
+
+        controller.stateChangeListener.onViewAttachedToWindow(smartspaceView as View)
+        verify(smartspaceView).setMediaTarget(target)
+    }
+
     private fun connectSession() {
         val dateView = controller.buildAndConnectDateView(context, false)
         dateSmartspaceView = dateView as SmartspaceView
