@@ -73,6 +73,10 @@ public class BackupManagerConstants extends KeyValueSettingObserver {
     @VisibleForTesting
     public static final String WAKELOCK_TIMEOUT_MILLIS = "wakelock_timeout_millis";
 
+    @VisibleForTesting
+    public static final String FULL_BACKUP_TRANSPORT_READ_SIZE =
+            "full_backup_transport_read_size";
+
     // Hard coded default values.
     @VisibleForTesting
     public static final long DEFAULT_KEY_VALUE_BACKUP_INTERVAL_MILLISECONDS =
@@ -101,6 +105,9 @@ public class BackupManagerConstants extends KeyValueSettingObserver {
     @VisibleForTesting
     public static final long DEFAULT_WAKELOCK_TIMEOUT_MILLIS = 30 * 60 * 1000; // 30 minutes
 
+    @VisibleForTesting
+    public static final int DEFAULT_FULL_BACKUP_TRANSPORT_READ_SIZE = 64 * 1024; // 64KB
+
     // Backup manager constants.
     private long mKeyValueBackupIntervalMilliseconds;
     private long mKeyValueBackupFuzzMilliseconds;
@@ -111,6 +118,7 @@ public class BackupManagerConstants extends KeyValueSettingObserver {
     private int mFullBackupRequiredNetworkType;
     private String[] mBackupFinishedNotificationReceivers;
     private long mWakelockTimeoutMillis;
+    private int mFullBackupTransportReadSize;
 
     public BackupManagerConstants(Handler handler, ContentResolver resolver) {
         super(handler, resolver, Settings.Secure.getUriFor(SETTING));
@@ -159,6 +167,10 @@ public class BackupManagerConstants extends KeyValueSettingObserver {
         }
         mWakelockTimeoutMillis = parser.getLong(WAKELOCK_TIMEOUT_MILLIS,
                 DEFAULT_WAKELOCK_TIMEOUT_MILLIS);
+        mFullBackupTransportReadSize =
+                parser.getInt(
+                        FULL_BACKUP_TRANSPORT_READ_SIZE,
+                        DEFAULT_FULL_BACKUP_TRANSPORT_READ_SIZE);
     }
 
     // The following are access methods for the individual parameters.
@@ -216,5 +228,17 @@ public class BackupManagerConstants extends KeyValueSettingObserver {
     public synchronized long getWakelockTimeoutMillis() {
         Slog.d(TAG, "wakelock timeout: " + mWakelockTimeoutMillis);
         return mWakelockTimeoutMillis;
+    }
+
+    /**
+     * Returns the size of the read buffer used by the full backup transport.
+     *
+     * Note: This is going to be the read size of the transport in
+     * {@link android.app.backup.BackupTransport#sendBackupData}
+     */
+    public synchronized int getFullBackupTransportReadSize() {
+        Slog.d(TAG, "getFullBackupTransportReadSize(...) returns "
+                + mFullBackupTransportReadSize);
+        return mFullBackupTransportReadSize;
     }
 }
