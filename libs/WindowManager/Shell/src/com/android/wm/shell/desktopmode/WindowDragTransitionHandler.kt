@@ -52,13 +52,11 @@ class WindowDragTransitionHandler(
             finishTransaction
                 .setWindowCrop(sc, endBounds.width(), endBounds.height())
                 .setPosition(sc, endPosition.x.toFloat(), endPosition.y.toFloat())
-            if (DesktopExperienceFlags.ENABLE_WINDOW_DROP_SMOOTH_TRANSITION.isTrue) {
-                change.taskInfo?.let { taskInfo ->
-                    multiDisplayDragMoveIndicatorController.onDragEnd(
-                        taskInfo.taskId,
-                        finishTransaction,
-                    )
-                }
+            change.taskInfo?.let { taskInfo ->
+                multiDisplayDragMoveIndicatorController.onDragEnd(
+                    taskInfo.taskId,
+                    finishTransaction,
+                )
             }
         }
 
@@ -79,10 +77,8 @@ class WindowDragTransitionHandler(
         // dragging multiple windows simultaneously and one drag transition aborts, the indicators
         // for all dragged windows will be removed. This is an acceptable trade-off due to the low
         // probability of this scenario.
-        if (DesktopExperienceFlags.ENABLE_WINDOW_DROP_SMOOTH_TRANSITION.isTrue) {
-            finishTransaction?.let {
-                multiDisplayDragMoveIndicatorController.disposeAllIndicators(finishTransaction)
-            }
+        finishTransaction?.let {
+            multiDisplayDragMoveIndicatorController.disposeAllIndicators(finishTransaction)
         }
     }
 }

@@ -6363,10 +6363,7 @@ class DesktopTasksController(
                     val repository = userRepositories.getProfile(taskInfo.userId)
                     repository.removeBoundsBeforeSnapOrMaximize(taskInfo.taskId)
                 }
-                if (
-                    DesktopExperienceFlags.ENABLE_WINDOW_DROP_SMOOTH_TRANSITION.isTrue &&
-                        !desktopState.isEligibleWindowDropTarget(motionEvent.displayId)
-                ) {
+                if (!desktopState.isEligibleWindowDropTarget(motionEvent.displayId)) {
                     // The task surface was moved off-screen during the drag operation.
                     // If the window is dropped on an ineligible display, this resets
                     // the surface to its original position.

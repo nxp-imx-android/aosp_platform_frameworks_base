@@ -73,7 +73,6 @@ class WindowDragTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
     fun startAnimation_verifyTransformationsApplied() {
         val mockChange1 = mock<TransitionInfo.Change>()
         val leash1 = mock<SurfaceControl>()
@@ -119,7 +118,6 @@ class WindowDragTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
     fun onTransitionConsumed_disposesIndicators() {
         handler.onTransitionConsumed(mockTransition, false, mockFinishTransaction)
         verify(mockMultiDisplayDragMoveIndicatorController)

@@ -59,11 +59,7 @@ class MultiDisplayDragMoveIndicatorController(
             displayController.getDisplayLayout(startDisplayId)?.densityDpi() ?: return
         for (displayId in displayIds) {
             val allowDropToDisplay = shellDesktopState.isEligibleWindowDropTarget(displayId)
-            if (
-                (displayId == startDisplayId &&
-                    !DesktopExperienceFlags.ENABLE_WINDOW_DROP_SMOOTH_TRANSITION.isTrue) ||
-                    !allowDropToDisplay
-            ) {
+            if (!allowDropToDisplay) {
                 // No need to render indicators on displays that do not support desktop mode.
                 continue
             }
@@ -127,9 +123,6 @@ class MultiDisplayDragMoveIndicatorController(
             ?.takeIf { it.isNotEmpty() }
             ?.let { indicators ->
                 indicators.forEach { indicator -> indicator.dispose(transaction) }
-                if (!DesktopExperienceFlags.ENABLE_WINDOW_DROP_SMOOTH_TRANSITION.isTrue) {
-                    transaction.apply()
-                }
             }
     }
 
