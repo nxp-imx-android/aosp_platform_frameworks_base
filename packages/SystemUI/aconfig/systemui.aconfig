@@ -1900,6 +1900,16 @@ flag {
 }
 
 flag {
+    name: "synchronized_queue_cascade_notify"
+    namespace: "systemui"
+    description: "Cascade notify() in SynchornizedLinkedBlockingQueue to prevent waking up all threads unnecessarily"
+    bug: "470412661"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
    name: "system_status_animation_per_display"
    namespace: "systemui"
    description: "Make system status events / animations per display"
