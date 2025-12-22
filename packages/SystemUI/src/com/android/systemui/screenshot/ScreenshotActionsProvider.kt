@@ -33,7 +33,6 @@ import com.android.systemui.screenshot.ScreenshotEvent.SCREENSHOT_PREVIEW_TAPPED
 import com.android.systemui.screenshot.ScreenshotEvent.SCREENSHOT_SHARE_TAPPED
 import com.android.systemui.screenshot.ui.viewmodel.ActionButtonAppearance
 import com.android.systemui.screenshot.ui.viewmodel.PreviewAction
-import com.android.systemui.shared.Flags.screenshotContextUrl
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -116,15 +115,14 @@ constructor(
             uiEventLogger.log(SCREENSHOT_SHARE_TAPPED, 0, request.packageNameString)
             onDeferrableActionTapped { result ->
                 val uri = webUri
-                val shareIntent =
-                    if (screenshotContextUrl() && uri != null) {
-                        actionIntentCreator.createShareWithText(
-                            result.uri,
-                            extraText = uri.toString(),
-                        )
-                    } else {
-                        actionIntentCreator.createShareWithSubject(result.uri, result.subject)
-                    }
+                val shareIntent = if (uri != null) {
+                    actionIntentCreator.createShareWithText(
+                        result.uri,
+                        extraText = uri.toString(),
+                    )
+                } else {
+                    actionIntentCreator.createShareWithSubject(result.uri, result.subject)
+                }
                 actionExecutor.startSharedTransition(shareIntent, result.user, false)
             }
         }
