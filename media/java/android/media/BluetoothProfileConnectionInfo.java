@@ -16,6 +16,7 @@
 package android.media;
 
 import static android.media.audio.Flags.FLAG_SCO_MANAGED_BY_AUDIO;
+import static android.media.audio.Flags.FLAG_BLE_PERIPHERAL_DEVICES;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
@@ -187,5 +188,21 @@ public final class BluetoothProfileConnectionInfo implements Parcelable {
     public static @NonNull BluetoothProfileConnectionInfo createHfpInfo() {
         return new BluetoothProfileConnectionInfo(BluetoothProfile.HEADSET, false,
                 -1, false);
+    }
+
+    /**
+     * Factory method for <code>BluetoothProfileConnectionInfo</code> for an LE device
+     * Use this method for an input device connection,
+     * or for an output device connection if the connection volume is unknown,
+     * otherwise use {@link #createLeAudioOutputInfo(boolean, int)}.
+     *
+     * @param isOutput if true mean the device is an output device, if false it's an input device
+     */
+    @FlaggedApi(FLAG_BLE_PERIPHERAL_DEVICES)
+    public static @NonNull BluetoothProfileConnectionInfo createLeAudioPeripheralInfo(
+            boolean isOutput) {
+        //TODO b/423053144: use actual LE Audio Peripheral profile ID when available
+        return new BluetoothProfileConnectionInfo(BluetoothProfile.LE_AUDIO,
+                false /*suppressNoisyIntent*/, -1, isOutput);
     }
 }
