@@ -47,8 +47,8 @@ import android.net.NetworkCapabilities;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
+import android.platform.test.annotations.DisableFlags;
 import android.telephony.ServiceState;
 import android.telephony.SignalStrength;
 import android.telephony.SubscriptionInfo;
@@ -81,7 +81,6 @@ import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.connectivity.AccessPointController;
-import com.android.systemui.statusbar.core.NewStatusBarIcons;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.LocationController;
 import com.android.systemui.toast.SystemUIToast;
@@ -1103,49 +1102,6 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
 
         verify(mTelephonyManager).setMobileDataPolicyEnabled(eq(
                 TelephonyManager.MOBILE_DATA_POLICY_AUTO_DATA_SWITCH), eq(true));
-    }
-
-    @Test
-    @EnableFlags(NewStatusBarIcons.FLAG_NAME)
-    public void getSignalStrengthDrawable_newIconFlagEnabled_getIconFromLibrary() {
-        InternetDetailsContentController spyController = spy(mInternetDetailsContentController);
-        spyController.getSignalStrengthDrawable(SUB_ID);
-
-        verify(spyController).getSignalStrengthIcon(eq(SUB_ID), any(), eq(0), anyInt(), anyInt(),
-                anyBoolean());
-    }
-
-    @Test
-    @DisableFlags(NewStatusBarIcons.FLAG_NAME)
-    public void getSignalStrengthDrawable_newIconFlagDisabled_getIconFromResources() {
-        mInternetDetailsContentController.getSignalStrengthDrawable(SUB_ID);
-
-        verify(mTestableResources.getResources())
-                .getDrawable(eq(R.drawable.ic_signal_strength_zero_bar_no_internet), any());
-    }
-
-    @Test
-    @EnableFlags(NewStatusBarIcons.FLAG_NAME)
-    public void getSignalStrengthDrawableNoInternet_newIconAndInflate_getInflateIconBars() {
-        when(mCarrierConfigTracker.getInflateSignalStrengthBool(SUB_ID)).thenReturn(true);
-
-        InternetDetailsContentController spyController = spy(mInternetDetailsContentController);
-        spyController.getSignalStrengthDrawableNoInternet(SUB_ID);
-
-        verify(spyController).getSignalStrengthIcon(eq(SUB_ID), any(), eq(0),
-                eq(NUM_SIGNAL_STRENGTH_BINS + 1), anyInt(), anyBoolean());
-    }
-
-    @Test
-    @EnableFlags(NewStatusBarIcons.FLAG_NAME)
-    public void getSignalStrengthDrawableNoInternet_newIconAndNoInflate_getNoInflateIconBars() {
-        when(mCarrierConfigTracker.getInflateSignalStrengthBool(SUB_ID)).thenReturn(false);
-
-        InternetDetailsContentController spyController = spy(mInternetDetailsContentController);
-        spyController.getSignalStrengthDrawableNoInternet(SUB_ID);
-
-        verify(spyController).getSignalStrengthIcon(eq(SUB_ID), any(), eq(0),
-                eq(NUM_SIGNAL_STRENGTH_BINS), anyInt(), anyBoolean());
     }
 
     @Test
