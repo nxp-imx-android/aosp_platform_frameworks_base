@@ -82,12 +82,12 @@ import com.android.systemui.statusbar.notification.promoted.AodPromotedNotificat
 import com.android.systemui.statusbar.notification.promoted.AodPromotedNotificationColor.PrimaryText
 import com.android.systemui.statusbar.notification.promoted.AodPromotedNotificationColor.SecondaryText
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
-import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Metric
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Style
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.When
 import com.android.systemui.statusbar.notification.promoted.ui.viewmodel.AODPromotedNotificationViewModel
 import com.android.systemui.statusbar.notification.row.shared.ImageModel
 import com.android.systemui.statusbar.notification.row.shared.isNullOrEmpty
+import com.android.systemui.statusbar.notification.shared.Metric
 import kotlin.math.min
 
 @Composable
