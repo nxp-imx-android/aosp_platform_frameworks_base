@@ -140,8 +140,14 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
 
     /** Returns true if the given [node] is contained within a `.stateIn(backgroundScope)` block. */
     private fun isInStateFlowOnBackground(node: UCallExpression): Boolean {
-        val containingDeclaration = node.getContainingDeclaration() ?: return false
-        return containingDeclaration.text.contains(Regex("stateIn\\s*\\(\\s*(bg|background)"))
+        var containingDeclaration = node.getContainingDeclaration()
+        while (containingDeclaration != null) {
+            if (containingDeclaration.text.contains(Regex("stateIn\\s*\\(\\s*(bg|background)"))) {
+                return true
+            }
+            containingDeclaration = containingDeclaration.getContainingDeclaration()
+        }
+        return false
     }
 
     /**
