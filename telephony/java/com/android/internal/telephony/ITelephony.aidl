@@ -3630,4 +3630,31 @@ interface ITelephony {
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
                        + "android.Manifest.permission.CONTROL_SIM_AUTO_PIN_MANAGEMENT)")
     void getAutoManagedPinForSim(in int subId, in ResultReceiver result);
+
+    /**
+     * Notify Telephony about entitlement status change.
+     *
+     * Callers (like FCM client app) could invoke this API to inform Telephony whenever
+     * there's a change on Entitlement State, so that Telephony would be able to decide to
+     * fetch latest Entitlement values and operate accordingly.
+     *
+     * For example: In case of Entitlement for Satellite, when user purchases a Satellite Plan,
+     * carriers would push notify devices. The push notifications are handled by FCM client,
+     * which then is supposed to notify Telephony about the same, so that Telephony-Satellite
+     * Framework could enable Satellite functionality based on latest subscription plan information.
+     *
+     * Same applies for all other Entitlement driven feature enablement for all Telephony features,
+     * in addition to Satellite.
+     *
+     * <p> Requires permission:
+     * {@link android.Manifest.permission#MODIFY_PHONE_STATE MODIFY_PHONE_STATE}
+     *
+     * @param subId subscription id
+     * @param appIds list of application IDs for which the entitlement status has changed
+     * @param timeInMillis time when entitlement status changed
+     * @hide
+     */
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.MODIFY_PHONE_STATE)")
+    void notifyEntitlementStatusChanged(in int subId, in List<String> appIds, in long timeInMillis);
 }
