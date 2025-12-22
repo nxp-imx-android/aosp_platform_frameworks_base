@@ -1148,9 +1148,7 @@ public class BubbleController implements ConfigurationChangeListener,
                     BubbleLog.w(
                             "BubbleController.addToWindowManagerMaybe() - BubbleStackView is "
                                     + "already expanded!");
-                    if (Flags.fixBubbleStackViewExpandedWhenAdded()) {
-                        mStackView.overrideCollapsed();
-                    }
+                    mStackView.overrideCollapsed();
                 }
                 mWindowManager.addView(mStackView, mWmLayoutParams);
                 mStackView.setOnApplyWindowInsetsListener((view, windowInsets) -> {
