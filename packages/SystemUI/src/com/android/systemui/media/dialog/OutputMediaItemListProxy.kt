@@ -13,229 +13,219 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.systemui.media.dialog
 
-package com.android.systemui.media.dialog;
-
-import android.content.Context;
-
-import androidx.annotation.Nullable;
-
-import com.android.settingslib.media.MediaDevice;
-import com.android.systemui.res.R;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
+import android.content.Context
+import com.android.settingslib.media.MediaDevice
+import com.android.systemui.res.R
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.stream.Collectors
 
 /** A proxy of holding the list of Output Switcher's output media items. */
-public class OutputMediaItemListProxy {
-    private static final int MAX_SUGGESTED_DEVICE_COUNT = 2;
-    private final Context mContext;
-    private final List<MediaItem> mOutputMediaItemList;
+class OutputMediaItemListProxy(private val mContext: Context) {
+    private val mOutputMediaItemList: MutableList<MediaItem> = CopyOnWriteArrayList()
 
     // Use separated lists to hold different media items and create the list of output media items
     // by using those separated lists and group dividers.
-    private final List<MediaItem> mSelectedMediaItems;
-    private final List<MediaItem> mSuggestedMediaItems;
-    private final List<MediaItem> mSpeakersAndDisplaysMediaItems;
-
-    public OutputMediaItemListProxy(Context context) {
-        mContext = context;
-        mOutputMediaItemList = new CopyOnWriteArrayList<>();
-        mSelectedMediaItems = new CopyOnWriteArrayList<>();
-        mSuggestedMediaItems = new CopyOnWriteArrayList<>();
-        mSpeakersAndDisplaysMediaItems = new CopyOnWriteArrayList<>();
-    }
+    private val mSelectedMediaItems: MutableList<MediaItem> = CopyOnWriteArrayList()
+    private val mSuggestedMediaItems: MutableList<MediaItem> = CopyOnWriteArrayList()
+    private val mSpeakersAndDisplaysMediaItems: MutableList<MediaItem> = CopyOnWriteArrayList()
 
     /** Returns the list of output media items. */
-    public List<MediaItem> getOutputMediaItemList() {
+    fun getOutputMediaItemList(): MutableList<MediaItem> {
         if (isEmpty() && !mOutputMediaItemList.isEmpty()) {
             // Ensures mOutputMediaItemList is empty when all individual media item lists are empty,
             // preventing unexpected state issues.
-            mOutputMediaItemList.clear();
+            mOutputMediaItemList.clear()
         } else if (!isEmpty() && mOutputMediaItemList.isEmpty()) {
             // When any individual media item list is modified, the cached mOutputMediaItemList is
             // emptied. On the next request for the output media item list, a fresh list is created
             // and stored in the cache.
-            mOutputMediaItemList.addAll(createOutputMediaItemList());
+            mOutputMediaItemList.addAll(createOutputMediaItemList())
         }
-        return mOutputMediaItemList;
+        return mOutputMediaItemList
     }
 
-    private List<MediaItem> createOutputMediaItemList() {
-        List<MediaItem> finalMediaItems = new CopyOnWriteArrayList<>();
-        finalMediaItems.addAll(mSelectedMediaItems);
+    private fun createOutputMediaItemList(): MutableList<MediaItem> {
+        val finalMediaItems: MutableList<MediaItem> = CopyOnWriteArrayList()
+        finalMediaItems.addAll(mSelectedMediaItems)
         if (!mSuggestedMediaItems.isEmpty()) {
-            finalMediaItems.add(MediaItem.createGroupDividerMediaItem(
-                    mContext.getString(R.string.media_output_group_title_suggested)));
-            finalMediaItems.addAll(mSuggestedMediaItems);
+            finalMediaItems.add(
+                MediaItem.createGroupDividerMediaItem(
+                    mContext.getString(R.string.media_output_group_title_suggested)
+                )
+            )
+            finalMediaItems.addAll(mSuggestedMediaItems)
         }
         if (!mSpeakersAndDisplaysMediaItems.isEmpty()) {
             finalMediaItems.add(
-                    MediaItem.createGroupDividerMediaItem(
-                            mContext.getString(
-                                    R.string.media_output_group_title_speakers_and_displays)));
-            finalMediaItems.addAll(mSpeakersAndDisplaysMediaItems);
+                MediaItem.createGroupDividerMediaItem(
+                    mContext.getString(R.string.media_output_group_title_speakers_and_displays)
+                )
+            )
+            finalMediaItems.addAll(mSpeakersAndDisplaysMediaItems)
         }
-        return finalMediaItems;
+        return finalMediaItems
     }
 
     /** Updates the list of output media items with a given list of media devices. */
-    public void updateMediaDevices(
-            List<MediaDevice> devices,
-            @Nullable MediaDevice connectedMediaDevice,
-            boolean needToHandleMutingExpectedDevice) {
-        Set<String> selectedOrConnectedMediaDeviceIds =
-                devices.stream().filter(MediaDevice::isSelected).map(MediaDevice::getId).collect(
-                        Collectors.toSet());
-        if (connectedMediaDevice != null) {
-            selectedOrConnectedMediaDeviceIds.add(connectedMediaDevice.getId());
-        }
+    fun updateMediaDevices(
+        devices: List<MediaDevice>,
+        connectedMediaDevice: MediaDevice?,
+        needToHandleMutingExpectedDevice: Boolean,
+    ) {
+        val selectedOrConnectedMediaDeviceIds =
+            devices.stream().filter { it.isSelected }.map { it.id }.collect(Collectors.toSet())
+        connectedMediaDevice?.let { selectedOrConnectedMediaDeviceIds.add(it.id) }
 
-        List<MediaItem> selectedMediaItems = new ArrayList<>();
-        List<MediaItem> suggestedMediaItems = new ArrayList<>();
-        List<MediaItem> speakersAndDisplaysMediaItems = new ArrayList<>();
-        Map<String, MediaItem> deviceIdToMediaItemMap = new HashMap<>();
+        val selectedMediaItems = mutableListOf<MediaItem>()
+        val suggestedMediaItems = mutableListOf<MediaItem>()
+        val speakersAndDisplaysMediaItems = mutableListOf<MediaItem>()
+        val deviceIdToMediaItemMap: MutableMap<String, MediaItem> = HashMap()
         buildMediaItems(
-                devices,
-                selectedOrConnectedMediaDeviceIds,
-                needToHandleMutingExpectedDevice,
-                selectedMediaItems,
-                suggestedMediaItems,
-                speakersAndDisplaysMediaItems,
-                deviceIdToMediaItemMap);
+            devices,
+            selectedOrConnectedMediaDeviceIds,
+            needToHandleMutingExpectedDevice,
+            selectedMediaItems,
+            suggestedMediaItems,
+            speakersAndDisplaysMediaItems,
+            deviceIdToMediaItemMap,
+        )
 
-        List<MediaItem> updatedSelectedMediaItems = new CopyOnWriteArrayList<>();
-        List<MediaItem> updatedSuggestedMediaItems = new CopyOnWriteArrayList<>();
-        List<MediaItem> updatedSpeakersAndDisplaysMediaItems = new CopyOnWriteArrayList<>();
+        val updatedSelectedMediaItems: MutableList<MediaItem> = CopyOnWriteArrayList()
+        val updatedSuggestedMediaItems: MutableList<MediaItem> = CopyOnWriteArrayList()
+        val updatedSpeakersAndDisplaysMediaItems: MutableList<MediaItem> = CopyOnWriteArrayList()
         if (isEmpty()) {
-            updatedSelectedMediaItems.addAll(selectedMediaItems);
-            updatedSuggestedMediaItems.addAll(suggestedMediaItems);
-            updatedSpeakersAndDisplaysMediaItems.addAll(speakersAndDisplaysMediaItems);
+            updatedSelectedMediaItems.addAll(selectedMediaItems)
+            updatedSuggestedMediaItems.addAll(suggestedMediaItems)
+            updatedSpeakersAndDisplaysMediaItems.addAll(speakersAndDisplaysMediaItems)
         } else {
-            Set<String> updatedDeviceIds = new HashSet<>();
+            val updatedDeviceIds: MutableSet<String> = HashSet()
             // Preserve the existing media item order while updating with the latest device
             // information. Some items may retain their original group (suggested, speakers and
             // displays) to maintain this order.
             updateMediaItems(
-                    mSelectedMediaItems,
-                    updatedSelectedMediaItems,
-                    deviceIdToMediaItemMap,
-                    updatedDeviceIds);
+                mSelectedMediaItems,
+                updatedSelectedMediaItems,
+                deviceIdToMediaItemMap,
+                updatedDeviceIds,
+            )
             updateMediaItems(
-                    mSuggestedMediaItems,
-                    updatedSuggestedMediaItems,
-                    deviceIdToMediaItemMap,
-                    updatedDeviceIds);
+                mSuggestedMediaItems,
+                updatedSuggestedMediaItems,
+                deviceIdToMediaItemMap,
+                updatedDeviceIds,
+            )
             updateMediaItems(
-                    mSpeakersAndDisplaysMediaItems,
-                    updatedSpeakersAndDisplaysMediaItems,
-                    deviceIdToMediaItemMap,
-                    updatedDeviceIds);
+                mSpeakersAndDisplaysMediaItems,
+                updatedSpeakersAndDisplaysMediaItems,
+                deviceIdToMediaItemMap,
+                updatedDeviceIds,
+            )
 
             // Append new media items that are not already in the existing lists to the output list.
-            List<MediaItem> remainingMediaItems = new ArrayList<>();
+            val remainingMediaItems = mutableListOf<MediaItem>()
+            remainingMediaItems.addAll(getRemainingMediaItems(selectedMediaItems, updatedDeviceIds))
             remainingMediaItems.addAll(
-                    getRemainingMediaItems(selectedMediaItems, updatedDeviceIds));
+                getRemainingMediaItems(suggestedMediaItems, updatedDeviceIds)
+            )
             remainingMediaItems.addAll(
-                    getRemainingMediaItems(suggestedMediaItems, updatedDeviceIds));
-            remainingMediaItems.addAll(
-                    getRemainingMediaItems(speakersAndDisplaysMediaItems, updatedDeviceIds));
-            updatedSpeakersAndDisplaysMediaItems.addAll(remainingMediaItems);
+                getRemainingMediaItems(speakersAndDisplaysMediaItems, updatedDeviceIds)
+            )
+            updatedSpeakersAndDisplaysMediaItems.addAll(remainingMediaItems)
         }
 
         if (!updatedSelectedMediaItems.isEmpty()) {
-            MediaItem selectedMediaItem = updatedSelectedMediaItems.get(0);
-            Optional<MediaDevice> mediaDeviceOptional = selectedMediaItem.getMediaDevice();
-            if (mediaDeviceOptional.isPresent()) {
-                MediaItem updatedMediaItem =
-                        MediaItem.createDeviceMediaItem(
-                                mediaDeviceOptional.get(), /* isFirstDeviceInGroup= */ true);
-                updatedSelectedMediaItems.remove(0);
-                updatedSelectedMediaItems.add(0, updatedMediaItem);
+            val selectedMediaItem = updatedSelectedMediaItems[0]
+            val mediaDeviceOptional = selectedMediaItem.mediaDevice
+            if (mediaDeviceOptional.isPresent) {
+                val updatedMediaItem =
+                    MediaItem.createDeviceMediaItem(
+                        mediaDeviceOptional.get(),
+                        /* isFirstDeviceInGroup= */ true,
+                    )
+                updatedSelectedMediaItems.removeAt(0)
+                updatedSelectedMediaItems.add(0, updatedMediaItem)
             }
         }
 
-        mSelectedMediaItems.clear();
-        mSelectedMediaItems.addAll(updatedSelectedMediaItems);
-        mSuggestedMediaItems.clear();
-        mSuggestedMediaItems.addAll(updatedSuggestedMediaItems);
-        mSpeakersAndDisplaysMediaItems.clear();
-        mSpeakersAndDisplaysMediaItems.addAll(updatedSpeakersAndDisplaysMediaItems);
+        mSelectedMediaItems.clear()
+        mSelectedMediaItems.addAll(updatedSelectedMediaItems)
+        mSuggestedMediaItems.clear()
+        mSuggestedMediaItems.addAll(updatedSuggestedMediaItems)
+        mSpeakersAndDisplaysMediaItems.clear()
+        mSpeakersAndDisplaysMediaItems.addAll(updatedSpeakersAndDisplaysMediaItems)
 
         // The cached mOutputMediaItemList is cleared upon any update to individual media item
         // lists. This ensures getOutputMediaItemList() computes and caches a fresh list on the next
         // invocation.
-        mOutputMediaItemList.clear();
+        mOutputMediaItemList.clear()
     }
 
     /** Removes the media items with muting expected devices. */
-    public void removeMutingExpectedDevices() {
-        mSelectedMediaItems.removeIf((MediaItem::isMutingExpectedDevice));
-        mSuggestedMediaItems.removeIf((MediaItem::isMutingExpectedDevice));
-        mSpeakersAndDisplaysMediaItems.removeIf((MediaItem::isMutingExpectedDevice));
-        mOutputMediaItemList.removeIf((MediaItem::isMutingExpectedDevice));
+    fun removeMutingExpectedDevices() {
+        mSelectedMediaItems.removeIf { it.isMutingExpectedDevice }
+        mSuggestedMediaItems.removeIf { it.isMutingExpectedDevice }
+        mSpeakersAndDisplaysMediaItems.removeIf { it.isMutingExpectedDevice }
+        mOutputMediaItemList.removeIf { it.isMutingExpectedDevice }
     }
 
     /** Clears the output media item list. */
-    public void clear() {
-        mSelectedMediaItems.clear();
-        mSuggestedMediaItems.clear();
-        mSpeakersAndDisplaysMediaItems.clear();
-        mOutputMediaItemList.clear();
+    fun clear() {
+        mSelectedMediaItems.clear()
+        mSuggestedMediaItems.clear()
+        mSpeakersAndDisplaysMediaItems.clear()
+        mOutputMediaItemList.clear()
     }
 
     /** Returns whether the output media item list is empty. */
-    public boolean isEmpty() {
-        return mSelectedMediaItems.isEmpty()
-                && mSuggestedMediaItems.isEmpty()
-                && mSpeakersAndDisplaysMediaItems.isEmpty();
-    }
+    fun isEmpty(): Boolean =
+        mSelectedMediaItems.isEmpty() &&
+            mSuggestedMediaItems.isEmpty() &&
+            mSpeakersAndDisplaysMediaItems.isEmpty()
 
-    private void buildMediaItems(
-            List<MediaDevice> devices,
-            Set<String> selectedOrConnectedMediaDeviceIds,
-            boolean needToHandleMutingExpectedDevice,
-            List<MediaItem> selectedMediaItems,
-            List<MediaItem> suggestedMediaItems,
-            List<MediaItem> speakersAndDisplaysMediaItems,
-            Map<String, MediaItem> deviceIdToMediaItemMap) {
-        for (MediaDevice device : devices) {
-            String deviceId = device.getId();
-            MediaItem mediaItem = MediaItem.createDeviceMediaItem(device);
-            if (needToHandleMutingExpectedDevice && device.isMutingExpectedDevice()) {
-                selectedMediaItems.add(0, mediaItem);
-            } else if (!needToHandleMutingExpectedDevice
-                    && selectedOrConnectedMediaDeviceIds.contains(device.getId())) {
-                selectedMediaItems.add(mediaItem);
-            } else if (device.isSuggestedDevice()
-                    && suggestedMediaItems.size() < MAX_SUGGESTED_DEVICE_COUNT) {
-                suggestedMediaItems.add(mediaItem);
+    private fun buildMediaItems(
+        devices: List<MediaDevice>,
+        selectedOrConnectedMediaDeviceIds: MutableSet<String>,
+        needToHandleMutingExpectedDevice: Boolean,
+        selectedMediaItems: MutableList<MediaItem>,
+        suggestedMediaItems: MutableList<MediaItem>,
+        speakersAndDisplaysMediaItems: MutableList<MediaItem>,
+        deviceIdToMediaItemMap: MutableMap<String, MediaItem>,
+    ) {
+        for (device in devices) {
+            val deviceId = device.id
+            val mediaItem = MediaItem.createDeviceMediaItem(device)
+            if (needToHandleMutingExpectedDevice && device.isMutingExpectedDevice) {
+                selectedMediaItems.add(0, mediaItem)
+            } else if (
+                !needToHandleMutingExpectedDevice &&
+                    selectedOrConnectedMediaDeviceIds.contains(device.id)
+            ) {
+                selectedMediaItems.add(mediaItem)
+            } else if (
+                device.isSuggestedDevice && suggestedMediaItems.size < MAX_SUGGESTED_DEVICE_COUNT
+            ) {
+                suggestedMediaItems.add(mediaItem)
             } else {
-                speakersAndDisplaysMediaItems.add(mediaItem);
+                speakersAndDisplaysMediaItems.add(mediaItem)
             }
-            deviceIdToMediaItemMap.put(deviceId, mediaItem);
+            deviceIdToMediaItemMap.put(deviceId, mediaItem)
         }
     }
 
-    /** Returns a list of media items that remains the same order as the existing media items. */
-    private void updateMediaItems(
-            List<MediaItem> existingMediaItems,
-            List<MediaItem> updatedMediaItems,
-            Map<String, MediaItem> deviceIdToMediaItemMap,
-            Set<String> updatedDeviceIds) {
-        List<String> existingDeviceIds = getDeviceIds(existingMediaItems);
-        for (String deviceId : existingDeviceIds) {
-            MediaItem mediaItem = deviceIdToMediaItemMap.get(deviceId);
-            if (mediaItem != null) {
-                updatedMediaItems.add(mediaItem);
-                updatedDeviceIds.add(deviceId);
+    /** Updates the input media items in-place based on the latest existing media items. */
+    private fun updateMediaItems(
+        existingMediaItems: MutableList<MediaItem>,
+        updatedMediaItems: MutableList<MediaItem>,
+        deviceIdToMediaItemMap: MutableMap<String, MediaItem>,
+        updatedDeviceIds: MutableSet<String>,
+    ) {
+        val existingDeviceIds = getDeviceIds(existingMediaItems)
+        for (deviceId in existingDeviceIds) {
+            deviceIdToMediaItemMap[deviceId]?.let {
+                updatedMediaItems.add(it)
+                updatedDeviceIds.add(deviceId)
             }
         }
     }
@@ -243,29 +233,35 @@ public class OutputMediaItemListProxy {
     /**
      * Returns media items from the input list that are not associated with the given device IDs.
      */
-    private List<MediaItem> getRemainingMediaItems(
-            List<MediaItem> mediaItems, Set<String> deviceIds) {
-        List<MediaItem> remainingMediaItems = new ArrayList<>();
-        for (MediaItem item : mediaItems) {
-            Optional<MediaDevice> mediaDeviceOptional = item.getMediaDevice();
-            if (mediaDeviceOptional.isPresent()) {
-                String deviceId = mediaDeviceOptional.get().getId();
+    private fun getRemainingMediaItems(
+        mediaItems: MutableList<MediaItem>,
+        deviceIds: MutableSet<String>,
+    ): MutableList<MediaItem> {
+        val remainingMediaItems = mutableListOf<MediaItem>()
+        for (item in mediaItems) {
+            val mediaDeviceOptional = item.mediaDevice
+            if (mediaDeviceOptional.isPresent) {
+                val deviceId = mediaDeviceOptional.get().id
                 if (!deviceIds.contains(deviceId)) {
-                    remainingMediaItems.add(item);
+                    remainingMediaItems.add(item)
                 }
             }
         }
-        return remainingMediaItems;
+        return remainingMediaItems
     }
 
     /** Returns a list of media device IDs for the given list of media items. */
-    private List<String> getDeviceIds(List<MediaItem> mediaItems) {
-        List<String> deviceIds = new ArrayList<>();
-        for (MediaItem item : mediaItems) {
-            if (item != null && item.getMediaDevice().isPresent()) {
-                deviceIds.add(item.getMediaDevice().get().getId());
+    private fun getDeviceIds(mediaItems: MutableList<MediaItem>): MutableList<String> {
+        val deviceIds = mutableListOf<String>()
+        for (item in mediaItems) {
+            if (item.mediaDevice.isPresent) {
+                deviceIds.add(item.mediaDevice.get().id)
             }
         }
-        return deviceIds;
+        return deviceIds
+    }
+
+    companion object {
+        private const val MAX_SUGGESTED_DEVICE_COUNT = 2
     }
 }
