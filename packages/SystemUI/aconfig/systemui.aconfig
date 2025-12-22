@@ -1980,16 +1980,6 @@ flag {
 }
 
 flag {
-   name: "user_encrypted_source"
-   namespace: "systemui"
-   description: "Get rid of the local cache and rely on UserManager.isUserUnlocked directly to determine whether user CE storage is encrypted."
-   bug: "333656491"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
     name: "volume_redesign"
     namespace: "systemui"
     description: "Enables Volume visuals update"
