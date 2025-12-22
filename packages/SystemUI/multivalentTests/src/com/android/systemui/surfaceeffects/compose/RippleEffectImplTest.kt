@@ -33,6 +33,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.surfaceeffects.core.ripple.RippleAnimationConfig
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
+import org.junit.Before
 import org.junit.Rule
 import org.junit.runner.RunWith
 
@@ -40,50 +41,67 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class RippleEffectImplTest : SysuiTestCase() {
     @get:Rule val composeTestRule = createComposeRule()
+    var config by mutableStateOf(RippleAnimationConfig())
+    lateinit var node: RippleEffectNode
+    var isEnabled by mutableStateOf(false)
 
-    @Test
-    fun rippleProgress_reachesIntermediateAndFinalValues_afterDuration() {
-        val config = RippleAnimationConfig()
-        var triggerKey by mutableStateOf(0)
+    @Before
+    fun setup() {
         composeTestRule.setContent {
             Box(
                 modifier =
                     Modifier.size(100.dp)
                         .testTag(TEST_TAG)
-                        .rippleCircleEffect(shaderConfig = config, triggerKey = triggerKey)
+                        .rippleCircleEffect(
+                            shaderConfig = config,
+                            isEnabled = isEnabled,
+                            onAnimationFinished = { isEnabled = false },
+                        )
             )
         }
-        val node: RippleEffectNode =
-            composeTestRule.onNode(hasTestTag(TEST_TAG)).fetchSemanticsNode().rippleEffect
-        triggerKey += 1
+        node = composeTestRule.onNode(hasTestTag(TEST_TAG)).fetchSemanticsNode().rippleEffect
+    }
+
+    @Test
+    fun rippleProgress_reachesIntermediateAndFinalValues_afterDuration() {
+        isEnabled = true
 
         composeTestRule.mainClock.advanceTimeBy(config.duration / 3)
         assertThat(node.rawProgress).isWithin(PROGRESS_TOLERANCE).of(0.33F)
 
         composeTestRule.mainClock.advanceTimeBy(config.duration * 2 / 3)
         assertThat(node.rawProgress).isWithin(PROGRESS_TOLERANCE).of(1F)
+
+        composeTestRule.waitForIdle()
+        assertThat(isEnabled).isEqualTo(false)
     }
 
     @Test
-    fun triggerKeyChanges_rippleEffectReplays() {
-        val config = RippleAnimationConfig()
-        var triggerKey by mutableStateOf(0)
-        composeTestRule.setContent {
-            Box(
-                modifier =
-                    Modifier.size(100.dp)
-                        .testTag(TEST_TAG)
-                        .rippleCircleEffect(shaderConfig = config, triggerKey = triggerKey)
-            )
-        }
-        val node: RippleEffectNode =
-            composeTestRule.onNode(hasTestTag(TEST_TAG)).fetchSemanticsNode().rippleEffect
-        triggerKey += 1
+    fun isEnabledUnsetsWhenRippleIsEnabled_rippleEffectDoesNotStop() {
+        isEnabled = true
         composeTestRule.mainClock.advanceTimeByFrame()
         assertThat(node.rawProgress).isWithin(PROGRESS_TOLERANCE).of(0F)
         composeTestRule.mainClock.advanceTimeBy(config.duration / 3)
         assertThat(node.rawProgress).isWithin(PROGRESS_TOLERANCE).of(0.33F)
-        triggerKey += 1
+
+        isEnabled = false
+        composeTestRule.mainClock.advanceTimeByFrame()
+        composeTestRule.mainClock.advanceTimeBy(config.duration / 3)
+        assertThat(node.rawProgress).isWithin(PROGRESS_TOLERANCE).of(0.67F)
+    }
+
+    @Test
+    fun isEnabledResetsAfterRippleFinishes_rippleEffectReplays() {
+        isEnabled = true
+        composeTestRule.mainClock.advanceTimeByFrame()
+        assertThat(node.rawProgress).isWithin(PROGRESS_TOLERANCE).of(0F)
+        composeTestRule.mainClock.advanceTimeBy(config.duration)
+        assertThat(node.rawProgress).isWithin(PROGRESS_TOLERANCE).of(1F)
+
+        isEnabled = false
+        composeTestRule.mainClock.advanceTimeByFrame()
+        isEnabled = true
+        composeTestRule.mainClock.advanceTimeByFrame()
         composeTestRule.mainClock.advanceTimeBy(config.duration / 3)
         assertThat(node.rawProgress).isWithin(PROGRESS_TOLERANCE).of(0.33F)
     }

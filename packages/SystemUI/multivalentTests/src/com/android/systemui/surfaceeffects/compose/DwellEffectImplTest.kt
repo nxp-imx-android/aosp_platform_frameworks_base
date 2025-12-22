@@ -53,7 +53,11 @@ class DwellEffectImplTest : SysuiTestCase() {
                 modifier =
                     Modifier.size(100.dp)
                         .testTag(TEST_TAG)
-                        .dwellEffectImpl(shaderConfig = config, isExpanding = isExpanding)
+                        .dwellEffectImpl(
+                            shaderConfig = config,
+                            isExpanding = isExpanding,
+                            onAnimationFinished = {},
+                        )
             )
         }
         node = composeTestRule.onNode(hasTestTag(TEST_TAG)).fetchSemanticsNode().dwellRippleEffect
