@@ -829,7 +829,6 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @EnableFlags({android.multiuser.Flags.FLAG_ALLOW_SUPERVISING_PROFILE})
     public void testGetProfileIdsIncludingAlwaysVisible_supervisingProfile() {
         assumeTrue(mUms.canAddMoreUsersOfType(USER_TYPE_FULL_SECONDARY));
         UserInfo secondaryUser = mUms.createUserWithThrow("Secondary", USER_TYPE_FULL_SECONDARY, 0);

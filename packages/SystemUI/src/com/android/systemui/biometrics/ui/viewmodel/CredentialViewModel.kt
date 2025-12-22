@@ -2,7 +2,6 @@ package com.android.systemui.biometrics.ui.viewmodel
 
 import android.content.Context
 import android.graphics.drawable.Drawable
-import android.hardware.biometrics.Flags
 import android.hardware.biometrics.PromptContentView
 import android.text.InputType
 import com.android.internal.widget.LockPatternView
@@ -271,10 +270,7 @@ private fun Context.asLockIcon(userId: Int): Drawable {
     val id =
         if (Utils.isManagedProfile(this, userId)) {
             R.drawable.auth_dialog_enterprise
-        } else if (
-            android.multiuser.Flags.allowSupervisingProfile() &&
-                Utils.isSupervisingProfile(this, userId)
-        ) {
+        } else if (Utils.isSupervisingProfile(this, userId)) {
             R.drawable.ic_account_child_invert
         } else {
             R.drawable.auth_dialog_lock

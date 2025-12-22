@@ -4244,11 +4244,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
 
     @NonNull
     private int[] getProfileIds(@UserIdInt int userId) {
-        if (android.multiuser.Flags.allowSupervisingProfile()) {
-            return mUserManagerInternal.getProfileIds(userId, /* enabledOnly */ false,
-                    /* includeAlwaysVisible */ true);
-        }
-        return mUserManagerInternal.getProfileIds(userId, /* enabledOnly */ false);
+        return mUserManagerInternal.getProfileIds(userId, /* enabledOnly */ false,
+                /* includeAlwaysVisible */ true);
     }
 
     @GuardedBy("ImfLock.class")
