@@ -155,7 +155,7 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"വീഡിയോ സംരക്ഷിച്ചു"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"വീഡിയോ ഇല്ലാതാക്കി"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"പഴയപടിയാക്കുക"</string>
-    <string name="screen_record_retake" msgid="3846643688365398450">"വീണ്ടും എടുക്കുക"</string>
+    <string name="screen_record_take_another" msgid="8071412867905614800">"മറ്റൊന്ന് എടുക്കുക"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"എഡിറ്റ് ചെയ്യുക"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"ഇല്ലാതാക്കുക"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"ഈ റെക്കോർഡിംഗ് ഇല്ലാതാക്കണോ?"</string>
@@ -897,6 +897,8 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"സാറ്റലൈറ്റ്, മോശം കണക്ഷൻ"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"സാറ്റലൈറ്റ്, മികച്ച കണക്ഷൻ"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"സാറ്റലൈറ്റ്, കണക്ഷൻ ലഭ്യമാണ്"</string>
+    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
+    <skip />
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"സാറ്റലൈറ്റ് SOS"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"എമർജൻസി കോളുകൾ അല്ലെങ്കിൽ SOS മാത്രം"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"സാറ്റലൈറ്റ് നെറ്റ്‌വർക്കുകൾ"</string>
@@ -1194,23 +1196,15 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"ഇതിന് സ്‌ക്രീനിലെ എല്ലാ ഉള്ളടക്കവും വായിക്കാനും മറ്റ് ആപ്പുകളിൽ ഉള്ളടക്കം പ്രദർശിപ്പിക്കാനുമാകും."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"കാണുക, പ്രവർത്തനങ്ങൾ നിർവഹിക്കുക"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"ഇതിന് ഒരു ആപ്പുമായോ ഹാർഡ്‌വെയർ സെൻസറുമായോ ഉള്ള നിങ്ങളുടെ ആശയവിനിമയങ്ങൾ ട്രാക്ക് ചെയ്യാനും നിങ്ങളുടെ പേരിൽ ആശയവിനിമയം നടത്താനും കഴിയും."</string>
-    <!-- no translation found for accessibility_key_gesture_select_to_speak_dialog_content (2241403419620826861) -->
-    <skip />
+    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861">"<xliff:g id="ID_4">^4</xliff:g> ഉപയോഗിക്കാനുള്ള കീബോർഡ് കുറുക്കുവഴികൾ <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ഐക്കൺ"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> ആണ്. ഫോണ്ടും സ്പെയ്‌സിംഗും ഇഷ്ടാനുസൃതമാക്കാനും നിങ്ങളുടെ ഉപകരണത്തിൽ തന്നെ ടെക്‌സ്‌റ്റ് ഉച്ചത്തിൽ വായിച്ചുകേൾക്കാനും ഇത് നിങ്ങളെ അനുവദിക്കുന്നു."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ഐക്കൺ"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> അമർത്തുന്നത്, ഉപയോഗസഹായി ഫീച്ചറായ <xliff:g id="ID_4">^4</xliff:g> ഓണാക്കുന്നു. ഉപകരണം ഹാൻഡ്‌സ്-ഫ്രീ ആയി നിയന്ത്രിക്കാൻ ഇത് നിങ്ങളെ അനുവദിക്കുന്നു."</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_title (4659318395231105188) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_content (7058726404278534674) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text (7095579813773247709) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_editor_dialog_title (7881631878787325869) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_done_button (5288975589451082156) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_picker_dialog_title (6067291073174568750) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_edit_button (1924449663239985111) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"ഉപയോഗസഹായി കീ"</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"ഉപയോഗസഹായി ഫീച്ചറുകൾ ഉപയോഗിച്ച് തുടങ്ങാൻ നിങ്ങൾക്ക് ഉപയോഗസഹായി കീ അമർത്താം."</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"ഫീച്ചറുകൾ ചേർക്കുക"</string>
+    <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"<xliff:g id="ID_1">%1$s</xliff:g> സജ്ജീകരിക്കുക"</string>
+    <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"പൂർത്തിയായി"</string>
+    <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"ഒരു ഫീച്ചർ തിരഞ്ഞെടുക്കുക"</string>
+    <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"എഡിറ്റ് ചെയ്യുക"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"ഉപയോഗസഹായി"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ലോക്ക് സ്‌ക്രീൻ"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"ഷട്ട്‌ഡൗൺ ചെയ്യുന്നു…"</string>
@@ -1531,6 +1525,8 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"ദ്രുത ക്രമീകരണത്തിൽ ടൈൽ ചേർക്കൂ"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"ചെറിയ ഫോർമാറ്റ്"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"വലിയ ഫോർമാറ്റ്"</string>
+    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
+    <skip />
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"ഉപയോക്താവിനെ തിരഞ്ഞെടുക്കൂ"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# ആപ്പ് സജീവമാണ്}other{# ആപ്പുകൾ സജീവമാണ്}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"പുതിയ വിവരങ്ങൾ"</string>

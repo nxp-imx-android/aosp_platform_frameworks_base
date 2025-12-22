@@ -155,7 +155,8 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"បាន​រក្សាទុក​វីដេអូ​"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"បាន​លុប​វីដេអូ"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"ត្រឡប់វិញ"</string>
-    <string name="screen_record_retake" msgid="3846643688365398450">"ថតឡើងវិញ"</string>
+    <!-- no translation found for screen_record_take_another (8071412867905614800) -->
+    <skip />
     <string name="screen_record_edit" msgid="8733014191240769309">"កែ"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"លុប"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"លុប​សំឡេងថត​នេះឬ?"</string>
@@ -186,14 +187,10 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"ថតរូបអេក្រង់ទាំងមូល"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"ថតអេក្រង់ទាំងមូល"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"ការកំណត់​ការថតអេក្រង់"</string>
-    <!-- no translation found for screen_capture_post_recording_shelf_share_button_a11y (2907313384921655711) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_folder_button_a11y (4217075254383938093) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_delete_button_a11y (8519897681775354217) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (8342622016203434332) -->
-    <skip />
+    <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"ចែករំលែកវីដេអូអេក្រង់"</string>
+    <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"បើកវីដេអូអេក្រង់នៅក្នុងកម្មវិធីគ្រប់គ្រងឯកសារ"</string>
+    <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"លុបវីដេអូអេក្រង់"</string>
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"បើកវីដេអូអេក្រង់នៅក្នុងឧបករណ៍មើលវីដេអូ"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"បង្ហាញការចុច និងគ្រាប់ចុច"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"សំឡេង​ឧបករណ៍"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"មីក្រូហ្វូន"</string>
@@ -651,14 +648,11 @@
     <string name="communal_widget_picker_title" msgid="1953369090475731663">"ធាតុ​ក្រាហ្វិកអេក្រង់ចាក់សោ"</string>
     <string name="communal_widget_picker_description" msgid="6927728582371632782">"អ្នកគ្រប់គ្នាអាចមើលធាតុក្រាហ្វិកលើអេក្រង់ចាក់សោរបស់អ្នក ទោះបីជាឧបករណ៍របស់អ្នកត្រូវបានចាក់សោក៏ដោយ។"</string>
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"ដក​ការ​ជ្រើសរើសធាតុ​ក្រាហ្វិក"</string>
-    <!-- no translation found for accessibility_action_label_resize_widget (639756010934310745) -->
-    <skip />
+    <string name="accessibility_action_label_resize_widget" msgid="639756010934310745">"ប្ដូរទំហំធាតុ​ក្រាហ្វិក"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"បន្ថយកម្ពស់"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"បង្កើនកម្ពស់"</string>
-    <!-- no translation found for accessibility_announcement_expand_widget (1123324821904704150) -->
-    <skip />
-    <!-- no translation found for accessibility_announcement_shrink_widget (2720176058287945622) -->
-    <skip />
+    <string name="accessibility_announcement_expand_widget" msgid="1123324821904704150">"បានពង្រីកកម្ពស់"</string>
+    <string name="accessibility_announcement_shrink_widget" msgid="2720176058287945622">"បានបន្ថយកម្ពស់"</string>
     <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"បង្ហាញ​កម្មវិធីចាក់មេឌៀបន្ទាប់"</string>
     <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"បង្ហាញ​កម្មវិធីចាក់មេឌៀមុន"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"ធាតុ​ក្រាហ្វិកលើអេក្រង់ចាក់សោ"</string>
@@ -744,8 +738,7 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"កម្រិតសំឡេង និងការជូនដំណឹងនៅលើឧបករណ៍របស់អ្នកត្រូវបានកាត់បន្ថយដោយស្វ័យប្រវត្តិរហូតដល់ 2 នាទី នៅពេលអ្នកទទួលបានការជូនដំណឹងច្រើនពេកក្នុងពេលតែមួយ។"</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"បិទ"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"ដោះសោដើម្បីមើលការជូនដំណឹងចាស់ៗ"</string>
-    <!-- no translation found for quick_settings_disclosure_parental_controls (9196246842317344981) -->
-    <skip />
+    <string name="quick_settings_disclosure_parental_controls" msgid="9196246842317344981">"ការគ្រប់គ្រងដោយមាតាបិតាកំពុងដំណើរការ"</string>
     <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"ឧបករណ៍នេះស្ថិតក្រោមការគ្រប់គ្រងរបស់មាតាបិតាអ្នក"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"ការកំណត់ឧបករណ៍មួយចំនួនត្រូវបានការពារដោយកូដ PIN។"</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"ស្ថាប័ន​របស់អ្នក​ជាម្ចាស់​ឧបករណ៍​នេះ ហើយ​អាចនឹង​តាមដាន​ចរាចរណ៍បណ្តាញ"</string>
@@ -905,6 +898,8 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"ផ្កាយរណប ការតភ្ជាប់ខ្សោយ"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"ផ្កាយរណប មានការតភ្ជាប់ល្អ"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"ផ្កាយរណប អាចតភ្ជាប់បាន"</string>
+    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
+    <skip />
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"ការប្រកាសអាសន្នតាមផ្កាយរណប"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"សម្រាប់​ការហៅទៅ​លេខ​សង្គ្រោះបន្ទាន់ ឬ​ការប្រកាសអាសន្ន​តែប៉ុណ្ណោះ"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"បណ្ដាញផ្កាយរណប"</string>
@@ -1202,23 +1197,15 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"វាអាចអានខ្លឹមសារទាំងអស់​នៅលើអេក្រង់ និងបង្ហាញខ្លឹមសារ​លើកម្មវិធីផ្សេងទៀត។"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"មើល និង​ធ្វើសកម្មភាព"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"វា​អាចតាមដានអន្តរកម្មរបស់អ្នកជាមួយកម្មវិធី ឬសេនស័រហាតវែរ និងធ្វើអន្តរកម្ម​ជាមួយកម្មវិធីនានា​ជំនួសឱ្យអ្នក។"</string>
-    <!-- no translation found for accessibility_key_gesture_select_to_speak_dialog_content (2241403419620826861) -->
-    <skip />
+    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"រូប"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> គឺជាផ្លូវកាត់​ក្ដារ​ចុចសម្រាប់ប្រើ <xliff:g id="ID_4">^4</xliff:g>។ ការធ្វើបែបនេះអនុញ្ញាតឱ្យអ្នកប្ដូរពុម្ពអក្សរ និងគម្លាតតាមបំណង និងស្ដាប់ការអានអក្សរឮៗនៅលើឧបករណ៍​របស់​អ្នក។"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"ការចុច <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"រូប"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> នឹងបើក <xliff:g id="ID_4">^4</xliff:g> ដែលជាមុខងារភាពងាយស្រួល។ ការធ្វើបែបនេះអនុញ្ញាតឱ្យអ្នកគ្រប់គ្រងឧបករណ៍របស់អ្នកដោយមិន​ប្រើ​ដៃ។"</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_title (4659318395231105188) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_content (7058726404278534674) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text (7095579813773247709) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_editor_dialog_title (7881631878787325869) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_done_button (5288975589451082156) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_picker_dialog_title (6067291073174568750) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_edit_button (1924449663239985111) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"គ្រាប់ចុចភាពងាយស្រួល"</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"អ្នកអាចចុចគ្រាប់ចុចភាពងាយស្រួល ដើម្បីចាប់ផ្ដើមប្រើមុខងារភាពងាយស្រួល។"</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"បញ្ចូលមុខងារ"</string>
+    <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"រៀបចំ <xliff:g id="ID_1">%1$s</xliff:g>"</string>
+    <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"រួចរាល់"</string>
+    <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"ជ្រើសរើស​មុខងារ"</string>
+    <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"កែ"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"ភាពងាយស្រួល"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"អេក្រង់​ចាក់សោ"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"កំពុង​បិទ…"</string>
@@ -1539,6 +1526,8 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"បញ្ចូលប្រអប់ទៅការកំណត់រហ័ស"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"ទម្រង់តូច"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"ទម្រង់ធំ"</string>
+    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
+    <skip />
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"ជ្រើសរើសអ្នកប្រើប្រាស់"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{កម្មវិធី # កំពុងដំណើរការ}other{កម្មវិធី # កំពុងដំណើរការ}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"ព័ត៌មានថ្មី"</string>
@@ -1635,10 +1624,8 @@
     <string name="start_desktop_mode" msgid="5459815912537830841">"កុំព្យូទ័រ"</string>
     <string name="start_mirroring" msgid="3611044878130481882">"បញ្ចាំង"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"ផ្ទាំងអេក្រង់ត្រូវបានភ្ជាប់"</string>
-    <!-- no translation found for connected_display_connection_text (6787771675124372815) -->
-    <skip />
-    <!-- no translation found for connected_display_removal_text (8270253839172935318) -->
-    <skip />
+    <string name="connected_display_connection_text" msgid="6787771675124372815">"បានភ្ជាប់ទៅផ្ទាំង​អេក្រង់​ខាង​ក្រៅ"</string>
+    <string name="connected_display_removal_text" msgid="8270253839172935318">"បានផ្ដាច់ផ្ទាំងអេក្រង់ខាងក្រៅ"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"មីក្រូហ្វូន កាមេរ៉ា និងទីតាំង"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"ការប្រើប្រាស់កម្មវិធីថ្មីៗនេះ"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"មើលការចូលប្រើនាពេលថ្មីៗនេះ"</string>

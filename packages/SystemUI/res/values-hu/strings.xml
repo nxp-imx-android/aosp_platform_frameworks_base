@@ -155,7 +155,8 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Videó mentve"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Videó törölve"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Visszavonás"</string>
-    <string name="screen_record_retake" msgid="3846643688365398450">"Új felvétel"</string>
+    <!-- no translation found for screen_record_take_another (8071412867905614800) -->
+    <skip />
     <string name="screen_record_edit" msgid="8733014191240769309">"Szerkesztés"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Törlés"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Törli ezt a felvételt?"</string>
@@ -186,14 +187,10 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Képernyőkép készítése a teljes képernyőről"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Teljes képernyő rögzítése"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Képernyőfelvétel beállításai"</string>
-    <!-- no translation found for screen_capture_post_recording_shelf_share_button_a11y (2907313384921655711) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_folder_button_a11y (4217075254383938093) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_delete_button_a11y (8519897681775354217) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (8342622016203434332) -->
-    <skip />
+    <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"Képernyőfelvétel megosztása"</string>
+    <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"Képernyőfelvétel megnyitása a fájlkezelőben"</string>
+    <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"Képernyőfelvétel törlése"</string>
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"Képernyőfelvétel megnyitása videómegtekintőben"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Kattintások és billentyűparancsok mutatása"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"Eszköz hangja"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofon"</string>
@@ -651,14 +648,11 @@
     <string name="communal_widget_picker_title" msgid="1953369090475731663">"A lezárási képernyő moduljai"</string>
     <string name="communal_widget_picker_description" msgid="6927728582371632782">"Bárki megtekintheti a modulokat az Ön lezárási képernyőjén, még ha az eszköze zárolva is van."</string>
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"modul kijelölésének megszüntetése"</string>
-    <!-- no translation found for accessibility_action_label_resize_widget (639756010934310745) -->
-    <skip />
+    <string name="accessibility_action_label_resize_widget" msgid="639756010934310745">"Modul átméretezése"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"Magasság csökkentése"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"Magasság növelése"</string>
-    <!-- no translation found for accessibility_announcement_expand_widget (1123324821904704150) -->
-    <skip />
-    <!-- no translation found for accessibility_announcement_shrink_widget (2720176058287945622) -->
-    <skip />
+    <string name="accessibility_announcement_expand_widget" msgid="1123324821904704150">"Magasság megnövelve"</string>
+    <string name="accessibility_announcement_shrink_widget" msgid="2720176058287945622">"Magasság csökkentve"</string>
     <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"Következő mutatása"</string>
     <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"Előző mutatása"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"A lezárási képernyő moduljai"</string>
@@ -744,8 +738,7 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"Az eszköz hangerejét és értesítéseit a rendszer automatikusan legfeljebb két percig csökkenti, ha egyszerre túl sok értesítést kap."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Igen"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"A régebbiek feloldás után láthatók"</string>
-    <!-- no translation found for quick_settings_disclosure_parental_controls (9196246842317344981) -->
-    <skip />
+    <string name="quick_settings_disclosure_parental_controls" msgid="9196246842317344981">"A szülői felügyelet aktív"</string>
     <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"Az eszközt a szülőd felügyeli"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Egyes eszközbeállítások PIN-kóddal védettek."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Az eszköz az Ön szervezetének tulajdonában van, és lehetséges, hogy a hálózati forgalmat is figyelik"</string>
@@ -905,6 +898,8 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"Műhold, gyenge kapcsolat"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"Műhold, jó kapcsolat"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Műhold, van rendelkezésre álló kapcsolat"</string>
+    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
+    <skip />
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"Műholdas SOS"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Csak segélyhívás vagy SOS"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"Műholdas hálózatok"</string>
@@ -1194,7 +1189,7 @@
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"A(z) <xliff:g id="ID_1">%1$s</xliff:g> billentyűparancs bekapcsolva"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"A(z) <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ikon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> billentyűparanccsal használhatja a(z) <xliff:g id="ID_4">^4</xliff:g> kisegítő lehetőséget. Ez lehetővé teszi, hogy gyorsan nagyíthasson a képernyőn a tartalom felnagyítása érdekében. A nagyítás bekapcsolása után a nagyítást a(z) <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"ikon"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> és a „+” vagy „-” billentyűparanccsal módosíthatja."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Billentyűparancs kikapcsolása"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Nem"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Megtartás"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"A(z) <xliff:g id="ID_4">^4</xliff:g> a következő billentyűparanccsal használható: <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ikon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>. A <xliff:g id="ID_5">^4</xliff:g> egy képernyőolvasó, amely lehetővé teszi a hangosan felolvasott elemek meghallgatását. Olyan felhasználók számára lehet hasznos, akik nem látják jól a képernyőt. Ez hatással lehet az eszköz működésére."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"A billentyűparancs bekapcsolásával teljes körű vezérlést biztosít a TalkBack számára az eszköze felett."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"A teljes körű vezérlés indokolt olyan alkalmazásoknál, amelyek kisegítő lehetőségeket nyújtanak, a legtöbb alkalmazásnál azonban nem."</string>
@@ -1202,23 +1197,15 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Elolvashatja a képernyő tartalmát, és tartalmakat jeleníthet meg más alkalmazások felett."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Műveletek megtekintése és elvégzése"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Követheti az alkalmazásokkal és hardveres érzékelőkkel való interakcióit, és műveleteket végezhet az alkalmazásokkal az Ön nevében."</string>
-    <!-- no translation found for accessibility_key_gesture_select_to_speak_dialog_content (2241403419620826861) -->
-    <skip />
+    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861">"A(z) <xliff:g id="ID_4">^4</xliff:g> a következő billentyűparanccsal használható: <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ikon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>. Ez lehetővé teszi a betűtípus és a szóközök személyre szabását, valamint a szövegfelolvasást közvetlenül az eszközön."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"A(z) <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ikon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> billentyűparancs megnyomásával bekapcsolhatja a(z) <xliff:g id="ID_4">^4</xliff:g> kisegítő lehetőséget. Így szabadkezes módon vezérelheti eszközét."</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_title (4659318395231105188) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_content (7058726404278534674) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text (7095579813773247709) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_editor_dialog_title (7881631878787325869) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_done_button (5288975589451082156) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_picker_dialog_title (6067291073174568750) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_edit_button (1924449663239985111) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Kisegítő lehetőségek billentyű"</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"A kisegítő lehetőségek használatának megkezdéséhez nyomja meg a kisegítő lehetőségek billentyűt."</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Funkciók hozzáadása"</string>
+    <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"A(z) <xliff:g id="ID_1">%1$s</xliff:g> beállítása"</string>
+    <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Kész"</string>
+    <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Funkció kiválasztása"</string>
+    <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Szerkesztés"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Kisegítő lehetőségek"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Lezárási képernyő"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Leállítás…"</string>
@@ -1539,6 +1526,8 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Gyorsbeállítások-mozaik hozzáadása"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Kis formátum"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Nagy formátum"</string>
+    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
+    <skip />
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Felhasználóválasztás"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# alkalmazás aktív}other{# alkalmazás aktív}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Új információ"</string>
@@ -1635,10 +1624,8 @@
     <string name="start_desktop_mode" msgid="5459815912537830841">"Asztali"</string>
     <string name="start_mirroring" msgid="3611044878130481882">"Tükör"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Kijelző csatlakoztatva"</string>
-    <!-- no translation found for connected_display_connection_text (6787771675124372815) -->
-    <skip />
-    <!-- no translation found for connected_display_removal_text (8270253839172935318) -->
-    <skip />
+    <string name="connected_display_connection_text" msgid="6787771675124372815">"Csatlakoztatva külső kijelzőhöz"</string>
+    <string name="connected_display_removal_text" msgid="8270253839172935318">"Külső kijelző leválasztva"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"Mikrofon, kamera és hely"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Legutóbbi alkalmazáshasználat"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Legutóbbi hozzáférés"</string>

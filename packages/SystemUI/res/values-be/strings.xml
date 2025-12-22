@@ -155,7 +155,8 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Відэа захавана"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Відэа выдалена"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Адрабіць"</string>
-    <string name="screen_record_retake" msgid="3846643688365398450">"Перазняць"</string>
+    <!-- no translation found for screen_record_take_another (8071412867905614800) -->
+    <skip />
     <string name="screen_record_edit" msgid="8733014191240769309">"Змяніць"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Выдаліць"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Выдаліць гэты запіс?"</string>
@@ -897,6 +898,8 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"Спадарожнікавая сувязь, дрэннае падключэнне"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"Спадарожнікавая сувязь, добрае падключэнне"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Спадарожнікавая сувязь, падключэнне даступнае"</string>
+    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
+    <skip />
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"Экстраннае спадарожнікавае падключэнне"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Экстранныя выклікі або толькі экстраннае спадарожнікавае падключэнне"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"Спадарожнікавыя сеткі"</string>
@@ -1194,23 +1197,15 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Функцыя можа распазнаваць усё змесціва на экране і паказваць яго паверх іншых праграм."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Прагляд і выкананне дзеянняў"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Гэта функцыя можа адсочваць вашы ўзаемадзеянні з праграмай ці датчыкам апаратнага забеспячэння і ўзаемадзейнічаць з праграмамі ад вашага імя."</string>
-    <!-- no translation found for accessibility_key_gesture_select_to_speak_dialog_content (2241403419620826861) -->
-    <skip />
+    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861"><annotation id="action_key_icon">"Значок"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> – гэта спалучэнне клавіш для выкарыстання функцыі \"<xliff:g id="ID_4">^4</xliff:g>\". Яна дазваляе наладжваць шрыфт і інтэрвал, а таксама слухаць агучванне тэксту на прыладзе."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Калі націснуць "<annotation id="action_key_icon">"значок"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>, уключыцца функцыя спецыяльных магчымасцей \"<xliff:g id="ID_4">^4</xliff:g>\". Вы зможаце кіраваць прыладай з дапамогай галасавых каманд."</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_title (4659318395231105188) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_content (7058726404278534674) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text (7095579813773247709) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_editor_dialog_title (7881631878787325869) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_done_button (5288975589451082156) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_picker_dialog_title (6067291073174568750) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_edit_button (1924449663239985111) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Клавіша спецыяльных магчымасцей"</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Каб пачаць выкарыстоўваць функцыі спецыяльных магчымасцей, націсніце клавішу спецыяльных магчымасцей."</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Дадаць функцыі"</string>
+    <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"Наладзьце функцыю \"<xliff:g id="ID_1">%1$s</xliff:g>\""</string>
+    <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Гатова"</string>
+    <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Выберыце функцыю"</string>
+    <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Змяніць"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Спецыяльныя магчымасці"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Экран блакіроўкі"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Ідзе завяршэнне працы…"</string>
@@ -1531,6 +1526,8 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Дадаванне пліткі"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Малы фармат"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Вялікі фармат"</string>
+    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
+    <skip />
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Выбар карыстальніка"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# праграма актыўная}one{# праграма актыўныя}few{# праграмы актыўныя}many{# праграм актыўныя}other{# праграмы актыўныя}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Новая інфармацыя"</string>

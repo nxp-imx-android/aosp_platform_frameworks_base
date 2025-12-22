@@ -155,7 +155,7 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ವೀಡಿಯೊ ಸೇವ್ ಆಗಿದೆ"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"ವೀಡಿಯೊವನ್ನು ಅಳಿಸಲಾಗಿದೆ"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"ರದ್ದುಮಾಡಿ"</string>
-    <string name="screen_record_retake" msgid="3846643688365398450">"ಮತ್ತೆ ಸೆರೆಹಿಡಿಯಿರಿ"</string>
+    <string name="screen_record_take_another" msgid="8071412867905614800">"ಇನ್ನೊಂದು ತೆಗೆಯಿರಿ"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"ಎಡಿಟ್ ಮಾಡಿ"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"ಅಳಿಸಿ"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"ಈ ರೆಕಾರ್ಡಿಂಗ್ ಅನ್ನು ಅಳಿಸಬೇಕೇ?"</string>
@@ -897,6 +897,8 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"ಸ್ಯಾಟಲೈಟ್‌, ಕನೆಕ್ಷನ್ ಕಳಪೆಯಾಗಿದೆ"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"ಸ್ಯಾಟಲೈಟ್‌, ಕನೆಕ್ಷನ್ ಉತ್ತಮವಾಗಿದೆ"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"ಸ್ಯಾಟಲೈಟ್, ಕನೆಕ್ಷನ್ ಲಭ್ಯವಿದೆ"</string>
+    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
+    <skip />
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"ಸ್ಯಾಟಲೈಟ್ SOS"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"ತುರ್ತು ಕರೆಗಳು ಅಥವಾ SOS ಮಾತ್ರ"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"ಸ್ಯಾಟಲೈಟ್ ನೆಟ್‌ವರ್ಕ್‌ಗಳು"</string>
@@ -1194,23 +1196,15 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"ಇದು ಸ್ಕ್ರೀನ್ ಮೇಲಿನ ಎಲ್ಲಾ ಕಂಟೆಂಟ್ ಅನ್ನು ಓದಬಹುದು ಮತ್ತು ಇತರ ಆ್ಯಪ್‌ಗಳ ಮೇಲೆ ಕಂಟೆಂಟ್ ಅನ್ನು ಪ್ರದರ್ಶಿಸಬಹುದು."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"ಆ್ಯಕ್ಷನ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಿ ಮತ್ತು ನಿರ್ವಹಿಸಿ"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"ಇದು ಆ್ಯಪ್ ಅಥವಾ ಹಾರ್ಡ್‌ವೇರ್ ಸೆನ್ಸರ್‌ನ ಜೊತೆಗಿನ ನಿಮ್ಮ ಸಂವಹನಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಬಹುದು ಮತ್ತು ನಿಮ್ಮ ಪರವಾಗಿ ಆ್ಯಪ್‌ಗಳ ಜೊತೆ ಸಂವಹನ ನಡೆಸಬಹುದು."</string>
-    <!-- no translation found for accessibility_key_gesture_select_to_speak_dialog_content (2241403419620826861) -->
-    <skip />
+    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ಐಕಾನ್"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> ಎಂಬುದು <xliff:g id="ID_4">^4</xliff:g> ಅನ್ನು ಬಳಸಲು ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ಆಗಿದೆ. ಇದು ಫಾಂಟ್ ಮತ್ತು ಸ್ಪೇಸಿಂಗ್ ಅನ್ನು ಕಸ್ಟಮೈಸ್ ಮಾಡಲು ಮತ್ತು ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿಯೇ ಪಠ್ಯವನ್ನು ಗಟ್ಟಿಯಾಗಿ ಓದುವುದನ್ನು ಕೇಳಲು ನಿಮಗೆ ಅನುಮತಿಸುತ್ತದೆ."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ಐಕಾನ್"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> ಒತ್ತಿದರೆ <xliff:g id="ID_4">^4</xliff:g> ಆನ್ ಆಗುತ್ತದೆ, ಇದು ಆ್ಯಕ್ಸೆಸಿಬಿಲಿಟಿ ಫೀಚರ್ ಆಗಿದೆ. ಇದು ನಿಮ್ಮ ಸಾಧನವನ್ನು ಹ್ಯಾಂಡ್ಸ್-ಫ್ರೀ ಆಗಿ ನಿಯಂತ್ರಿಸಲು ನಿಮಗೆ ಅವಕಾಶ ನೀಡುತ್ತದೆ."</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_title (4659318395231105188) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_content (7058726404278534674) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text (7095579813773247709) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_editor_dialog_title (7881631878787325869) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_done_button (5288975589451082156) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_picker_dialog_title (6067291073174568750) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_edit_button (1924449663239985111) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"ಆ್ಯಕ್ಸೆಸಿಬಿಲಿಟಿ ಕೀ"</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"ಆ್ಯಕ್ಸೆಸಿಬಿಲಿಟಿ ಫೀಚರ್‌ಗಳನ್ನು ಬಳಸುವುದನ್ನು ಪ್ರಾರಂಭಿಸಲು ನೀವು ಆ್ಯಕ್ಸೆಸಿಬಿಲಿಟಿ ಕೀಯನ್ನು ಒತ್ತಬಹುದು."</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"ಫೀಚರ್‌ಗಳನ್ನು ಸೇರಿಸಿ"</string>
+    <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"<xliff:g id="ID_1">%1$s</xliff:g> ಸೆಟಪ್ ಮಾಡಿ"</string>
+    <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"ಮುಗಿದಿದೆ"</string>
+    <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"ಫೀಚರ್ ಅನ್ನು ಆಯ್ಕೆ ಮಾಡಿ"</string>
+    <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"ಎಡಿಟ್"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"ಆ್ಯಕ್ಸೆಸಿಬಿಲಿಟಿ"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ಲಾಕ್ ಸ್ಕ್ರೀನ್"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"ಶಟ್ ಡೌನ್‌ ಮಾಡಲಾಗುತ್ತಿದೆ…"</string>
@@ -1531,6 +1525,8 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"ತ್ವರಿತ ಸೆಟ್ಟಿಂಗ್‍ಗಳಿಗೆ ಟೈಲ್ ಸೇರಿಸಿ"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"ಚಿಕ್ಕ ಫಾರ್ಮ್ಯಾಟ್"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"ದೊಡ್ಡ ಫಾರ್ಮ್ಯಾಟ್"</string>
+    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
+    <skip />
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"ಬಳಕೆದಾರರನ್ನು ಆಯ್ಕೆಮಾಡಿ"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# ಆ್ಯಪ್ ಸಕ್ರಿಯವಾಗಿದೆ}one{# ಆ್ಯಪ್‌ಗಳು ಸಕ್ರಿಯವಾಗಿವೆ}other{# ಆ್ಯಪ್‌ಗಳು ಸಕ್ರಿಯವಾಗಿವೆ}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"ಹೊಸ ಮಾಹಿತಿ"</string>

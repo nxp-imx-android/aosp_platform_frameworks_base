@@ -155,7 +155,8 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"视频已保存"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"视频已删除"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"撤销"</string>
-    <string name="screen_record_retake" msgid="3846643688365398450">"重录"</string>
+    <!-- no translation found for screen_record_take_another (8071412867905614800) -->
+    <skip />
     <string name="screen_record_edit" msgid="8733014191240769309">"修改"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"删除"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"要删除此录像吗？"</string>
@@ -186,14 +187,10 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"全屏截图"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"录制整个屏幕"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"屏幕截图设置"</string>
-    <!-- no translation found for screen_capture_post_recording_shelf_share_button_a11y (2907313384921655711) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_folder_button_a11y (4217075254383938093) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_delete_button_a11y (8519897681775354217) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (8342622016203434332) -->
-    <skip />
+    <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"分享屏幕录制内容"</string>
+    <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"在文件管理器中打开屏幕录制内容"</string>
+    <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"删除屏幕录制内容"</string>
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"在视频观看器中打开屏幕录制"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"显示点击操作和按键"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"设备音频"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"麦克风"</string>
@@ -651,14 +648,11 @@
     <string name="communal_widget_picker_title" msgid="1953369090475731663">"锁屏微件"</string>
     <string name="communal_widget_picker_description" msgid="6927728582371632782">"任何人都可以查看锁屏上的微件，即使设备处于锁定状态。"</string>
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"取消选中微件"</string>
-    <!-- no translation found for accessibility_action_label_resize_widget (639756010934310745) -->
-    <skip />
+    <string name="accessibility_action_label_resize_widget" msgid="639756010934310745">"调整 widget 大小"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"减小高度"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"增加高度"</string>
-    <!-- no translation found for accessibility_announcement_expand_widget (1123324821904704150) -->
-    <skip />
-    <!-- no translation found for accessibility_announcement_shrink_widget (2720176058287945622) -->
-    <skip />
+    <string name="accessibility_announcement_expand_widget" msgid="1123324821904704150">"高度已展开"</string>
+    <string name="accessibility_announcement_shrink_widget" msgid="2720176058287945622">"高度已减小"</string>
     <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"显示下一个"</string>
     <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"显示上一个"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"锁屏微件"</string>
@@ -727,7 +721,7 @@
     <string name="manage_notifications_history_text" msgid="57055985396576230">"历史记录"</string>
     <string name="notification_dismiss_button_text" msgid="2443352751894142153">"关闭"</string>
     <string name="notification_settings_button_description" msgid="2441994740884163889">"通知设置"</string>
-    <string name="notification_history_button_description" msgid="1578657591405033383">"通知历史记录"</string>
+    <string name="notification_history_button_description" msgid="1578657591405033383">"历史通知"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"最新"</string>
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"静音"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"通知"</string>
@@ -744,8 +738,7 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"如果您在短时间内收到很多通知，设备音量和提醒次数会自动降低，最长持续 2 分钟。"</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"关闭"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"解锁即可查看旧通知"</string>
-    <!-- no translation found for quick_settings_disclosure_parental_controls (9196246842317344981) -->
-    <skip />
+    <string name="quick_settings_disclosure_parental_controls" msgid="9196246842317344981">"家长控制功能已启用"</string>
     <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"此设备由家长管理"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"部分设备设置受 PIN 码保护。"</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"贵单位拥有此设备，且可能会监控网络流量"</string>
@@ -905,6 +898,8 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"卫星，连接质量不佳"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"卫星，连接质量良好"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"卫星，可连接"</string>
+    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
+    <skip />
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"卫星紧急呼救"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"仅限紧急呼叫或紧急求救"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"卫星网络"</string>
@@ -1202,23 +1197,15 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"此功能可以读出屏幕上的所有内容，并在其他应用上层显示内容。"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"查看和执行操作"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"此功能可以跟踪您与应用或硬件传感器的互动，并代表您与应用互动。"</string>
-    <!-- no translation found for accessibility_key_gesture_select_to_speak_dialog_content (2241403419620826861) -->
-    <skip />
+    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861">"按住 <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"图标"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> 键盘快捷键即可打开 <xliff:g id="ID_4">^4</xliff:g>，您可以自定义字体和间距，并让设备大声朗读文字。"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"同时按下“<xliff:g id="ID_1">^1</xliff:g>”"<annotation id="action_key_icon">"图标"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> 即可开启无障碍功能“<xliff:g id="ID_4">^4</xliff:g>”。开启该功能后，您无需动手就能控制设备。"</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_title (4659318395231105188) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_content (7058726404278534674) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text (7095579813773247709) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_editor_dialog_title (7881631878787325869) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_done_button (5288975589451082156) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_picker_dialog_title (6067291073174568750) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_edit_button (1924449663239985111) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"无障碍键"</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"按下无障碍键即可开始使用无障碍功能。"</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"添加功能"</string>
+    <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"设置 <xliff:g id="ID_1">%1$s</xliff:g>"</string>
+    <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"完成"</string>
+    <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"选择功能"</string>
+    <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"修改"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"无障碍"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"锁定屏幕"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"正在关机…"</string>
@@ -1539,6 +1526,8 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"将功能块添加到“快捷设置”"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"小尺寸"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"大尺寸"</string>
+    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
+    <skip />
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"选择用户"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# 个应用处于运行状态}other{# 个应用处于运行状态}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"新信息"</string>
@@ -1635,10 +1624,8 @@
     <string name="start_desktop_mode" msgid="5459815912537830841">"桌面设备"</string>
     <string name="start_mirroring" msgid="3611044878130481882">"镜像"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"显示屏已连接"</string>
-    <!-- no translation found for connected_display_connection_text (6787771675124372815) -->
-    <skip />
-    <!-- no translation found for connected_display_removal_text (8270253839172935318) -->
-    <skip />
+    <string name="connected_display_connection_text" msgid="6787771675124372815">"已连接到外接显示屏"</string>
+    <string name="connected_display_removal_text" msgid="8270253839172935318">"外接显示屏已断开连接"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"麦克风、相机和位置信息"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"近期被应用使用的情况"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"查看近期使用情况"</string>

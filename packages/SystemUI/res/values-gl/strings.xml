@@ -155,7 +155,8 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Gardouse o vídeo"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Eliminouse o vídeo"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Desfacer"</string>
-    <string name="screen_record_retake" msgid="3846643688365398450">"Repetir"</string>
+    <!-- no translation found for screen_record_take_another (8071412867905614800) -->
+    <skip />
     <string name="screen_record_edit" msgid="8733014191240769309">"Editar"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Eliminar"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Queres eliminar esta gravación?"</string>
@@ -186,14 +187,10 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Facer unha captura de toda a pantalla"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Gravar toda a pantalla"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Configuración da captura de pantalla"</string>
-    <!-- no translation found for screen_capture_post_recording_shelf_share_button_a11y (2907313384921655711) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_folder_button_a11y (4217075254383938093) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_delete_button_a11y (8519897681775354217) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (8342622016203434332) -->
-    <skip />
+    <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"Compartir a gravación da pantalla"</string>
+    <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"Abrir a gravación da pantalla no xestor de ficheiros"</string>
+    <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"Eliminar a gravación da pantalla"</string>
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"Abrir a gravación da pantalla no visor de vídeos"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Mostrar clics e teclas"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"Audio do dispositivo"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Micrófono"</string>
@@ -651,14 +648,11 @@
     <string name="communal_widget_picker_title" msgid="1953369090475731663">"Widgets da pantalla de bloqueo"</string>
     <string name="communal_widget_picker_description" msgid="6927728582371632782">"Calquera persoa poderá ver os widgets da túa pantalla de bloqueo, mesmo co dispositivo bloqueado."</string>
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"anular a selección do widget"</string>
-    <!-- no translation found for accessibility_action_label_resize_widget (639756010934310745) -->
-    <skip />
+    <string name="accessibility_action_label_resize_widget" msgid="639756010934310745">"Cambiar o tamaño do widget"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"Reducir a altura"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"Aumentar a altura"</string>
-    <!-- no translation found for accessibility_announcement_expand_widget (1123324821904704150) -->
-    <skip />
-    <!-- no translation found for accessibility_announcement_shrink_widget (2720176058287945622) -->
-    <skip />
+    <string name="accessibility_announcement_expand_widget" msgid="1123324821904704150">"Altura ampliada"</string>
+    <string name="accessibility_announcement_shrink_widget" msgid="2720176058287945622">"Altura reducida"</string>
     <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"Mostrar seguinte"</string>
     <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"Mostrar anterior"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"Widgets da pantalla de bloqueo"</string>
@@ -744,8 +738,7 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"Ao recibir moitas notificacións, o volume e as alertas redúcense automaticamente ata dous minutos."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Desactivar"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Desbloquea para ver máis notificacións"</string>
-    <!-- no translation found for quick_settings_disclosure_parental_controls (9196246842317344981) -->
-    <skip />
+    <string name="quick_settings_disclosure_parental_controls" msgid="9196246842317344981">"Os controis parentais están activos"</string>
     <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"O teu pai ou nai xestiona este dispositivo"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Algunhas opcións de configuración do dispositivo están protexidas cun PIN."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"A túa organización é propietaria deste dispositivo e pode controlar o tráfico de rede"</string>
@@ -905,6 +898,8 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"Satélite, mala conexión"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"Satélite, boa conexión"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Satélite, conexión dispoñible"</string>
+    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
+    <skip />
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"SOS por satélite"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Só chamadas de emerxencia ou SOS"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"Redes de satélite"</string>
@@ -1202,23 +1197,15 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Pode ler todo o contido da pantalla e mostralo sobre outras aplicacións."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Ver e realizar accións"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Pode facer un seguimento das túas interaccións cunha aplicación ou cun sensor de hardware, así como interactuar por ti coas aplicacións."</string>
-    <!-- no translation found for accessibility_key_gesture_select_to_speak_dialog_content (2241403419620826861) -->
-    <skip />
+    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861">"O atallo de teclado para usar <xliff:g id="ID_4">^4</xliff:g> é <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>. Permíteche personalizar o tipo de letra e o espazo entre liñas, así como oír o texto en voz alta no teu dispositivo."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Se premes <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>, activarase <xliff:g id="ID_4">^4</xliff:g>, unha función de accesibilidade. Así poderás controlar o dispositivo sen usar as mans."</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_title (4659318395231105188) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_content (7058726404278534674) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text (7095579813773247709) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_editor_dialog_title (7881631878787325869) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_done_button (5288975589451082156) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_picker_dialog_title (6067291073174568750) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_edit_button (1924449663239985111) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Tecla de accesibilidade"</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Podes premer a tecla de accesibilidade para comezar a usar as funcións de accesibilidade."</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Engadir funcións"</string>
+    <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"Configurar <xliff:g id="ID_1">%1$s</xliff:g>"</string>
+    <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Feito"</string>
+    <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Seleccionar unha función"</string>
+    <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Editar"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Accesibilidade"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Pantalla de bloqueo"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Apagando…"</string>
@@ -1539,6 +1526,8 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Engadir atallo"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Formato pequeno"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Formato grande"</string>
+    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
+    <skip />
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Seleccionar usuario"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{Hai # aplicación activa}other{Hai # aplicacións activas}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Nova información"</string>
@@ -1635,10 +1624,8 @@
     <string name="start_desktop_mode" msgid="5459815912537830841">"Ordenador"</string>
     <string name="start_mirroring" msgid="3611044878130481882">"Réplica"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Pantalla conectada"</string>
-    <!-- no translation found for connected_display_connection_text (6787771675124372815) -->
-    <skip />
-    <!-- no translation found for connected_display_removal_text (8270253839172935318) -->
-    <skip />
+    <string name="connected_display_connection_text" msgid="6787771675124372815">"Pantalla externa conectada"</string>
+    <string name="connected_display_removal_text" msgid="8270253839172935318">"Pantalla externa desconectada"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"Micrófono, cámara e localización"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Uso recente por parte de aplicacións"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Ver acceso recente"</string>
