@@ -295,42 +295,44 @@ private fun ContentScope.QuickSettingsScene(
                     .padding(horizontal = shadeHorizontalPadding),
         )
 
-        val screenHeight =
-            with(LocalDensity.current) { LocalConfiguration.current.screenHeightDp.dp.toPx() }
-        /**
-         * The minimum possible value for the top of the notification stack. In other words: how
-         * high is the notification stack allowed to get when the scene is at rest. It may still be
-         * translated farther upwards by a transition animation but, at rest, the top edge of its
-         * bounds must be limited to be at or below this value.
-         *
-         * A 1 pixel is added to compensate for any kind of rounding errors to make sure 100% that
-         * the notification stack is entirely "below" the entire screen.
-         */
-        val minNotificationStackTop = screenHeight.roundToInt() + 1
+        if (isAlwaysComposedContentVisible()) {
+            val screenHeight =
+                with(LocalDensity.current) { LocalConfiguration.current.screenHeightDp.dp.toPx() }
+            /**
+             * The minimum possible value for the top of the notification stack. In other words: how
+             * high is the notification stack allowed to get when the scene is at rest. It may still
+             * be translated farther upwards by a transition animation but, at rest, the top edge of
+             * its bounds must be limited to be at or below this value.
+             *
+             * A 1 pixel is added to compensate for any kind of rounding errors to make sure 100%
+             * that the notification stack is entirely "below" the entire screen.
+             */
+            val minNotificationStackTop = screenHeight.roundToInt() + 1
 
-        // TODO(b/436646848): remove ScrollingNotificationPanel from QuickSettings
-        ScrollingNotificationPanel(
-            tag = "QSScene",
-            shadeSession = shadeSession,
-            stackScrollView = notificationStackScrollView,
-            viewModel = notificationsPlaceholderViewModel,
-            jankMonitor = jankMonitor,
-            shouldPunchHoleBehindScrim = true,
-            shouldFillMaxHeight = true,
-            isTransparencyEnabled = viewModel.isTransparencyEnabled,
-            stackTopPadding = dimensionResource(id = R.dimen.notification_side_paddings),
-            stackBottomPadding =
-                WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
-            shouldIncludeHeadsUpSpace = false,
-            isActivated = false,
-            modifier =
-                Modifier.fillMaxWidth()
-                    // Match the screen height with the scrim, so it covers the whole screen,
-                    // when the stack "passes by" during the QS -> Gone transition.
-                    .height(LocalWindowInfo.current.containerSize.height.dp)
-                    .offset { IntOffset(x = 0, y = minNotificationStackTop) }
-                    .padding(horizontal = shadeHorizontalPadding),
-        )
+            // TODO(b/436646848): remove ScrollingNotificationPanel from QuickSettings
+            ScrollingNotificationPanel(
+                tag = "QSScene",
+                shadeSession = shadeSession,
+                stackScrollView = notificationStackScrollView,
+                viewModel = notificationsPlaceholderViewModel,
+                jankMonitor = jankMonitor,
+                shouldPunchHoleBehindScrim = true,
+                shouldFillMaxHeight = true,
+                isTransparencyEnabled = viewModel.isTransparencyEnabled,
+                stackTopPadding = dimensionResource(id = R.dimen.notification_side_paddings),
+                stackBottomPadding =
+                    WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
+                shouldIncludeHeadsUpSpace = false,
+                isActivated = false,
+                modifier =
+                    Modifier.fillMaxWidth()
+                        // Match the screen height with the scrim, so it covers the whole screen,
+                        // when the stack "passes by" during the QS -> Gone transition.
+                        .height(LocalWindowInfo.current.containerSize.height.dp)
+                        .offset { IntOffset(x = 0, y = minNotificationStackTop) }
+                        .padding(horizontal = shadeHorizontalPadding),
+            )
+        }
     }
 }
 
