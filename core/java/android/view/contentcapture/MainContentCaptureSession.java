@@ -1030,6 +1030,34 @@ public final class MainContentCaptureSession extends ContentCaptureSession {
         });
     }
 
+    @Override
+    public void notifyContentCaptureInteractionEvents(
+            @NonNull SparseArray<ArrayList<Object>> contentCaptureInteractionEvents) {
+            runOnContentCaptureThread(() -> {
+                try {
+                    if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
+                        Trace.traceBegin(Trace.TRACE_TAG_VIEW,
+                                "notifyContentCaptureInteractionEvents");
+                    }
+                    for (int i = 0; i < contentCaptureInteractionEvents.size(); i++) {
+                        int sessionId = contentCaptureInteractionEvents.keyAt(i);
+                        ArrayList<Object> events = contentCaptureInteractionEvents.valueAt(i);
+                        for_each_event: for (int j = 0; j < events.size(); j++) {
+                            Object event = events.get(j);
+                            if (event instanceof AutofillId autofillId) {
+                                internalNotifyContentInteractionEvent(sessionId, autofillId);
+                            } else {
+                                Log.w(TAG, "Invalid content capture interaction event: " + event);
+                            }
+                        }
+                    }
+                } finally {
+                    Trace.traceEnd(Trace.TRACE_TAG_VIEW);
+                }
+
+            });
+    }
+
     /**
      * Traverse events and pre-process {@link View} events to {@link ViewStructureSession} events.
      * If a {@link View} event is invalid, an empty {@link ViewStructureSession} will still be
