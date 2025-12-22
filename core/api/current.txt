@@ -62564,6 +62564,7 @@ package android.widget {
     method public void setViewOutlinePreferredRadiusAttr(@IdRes int, @AttrRes int);
     method public void setViewOutlinePreferredRadiusDimen(@IdRes int, @DimenRes int);
     method public void setViewPadding(@IdRes int, @Px int, @Px int, @Px int, @Px int);
+    method @FlaggedApi("android.appwidget.flags.widget_display_changes") public void setViewPadding(@IdRes int, float, float, float, float, int);
     method public void setViewVisibility(@IdRes int, int);
     method @Deprecated public void showNext(@IdRes int);
     method @Deprecated public void showPrevious(@IdRes int);
