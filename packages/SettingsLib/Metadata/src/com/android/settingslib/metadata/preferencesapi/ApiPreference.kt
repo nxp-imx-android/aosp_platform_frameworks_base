@@ -262,35 +262,6 @@ abstract class ApiPreference<V : Any>(val isFlagEnabled: Boolean) : PersistentPr
 @DslMarker
 internal annotation class ApiPreferenceDsl
 
-@ApiPreferenceDsl
-class FlagConfigBuilder(val lambda: () -> Boolean) {
-    internal fun build(): FlagConfig {
-        return FlagConfig(check = lambda)
-    }
-}
-
-@ApiPreferenceDsl
-class PermissionsConfigBuilder(val permissions: List<String>) {
-    internal fun build(): PermissionsConfig {
-        return PermissionsConfig(
-            incomingPermissions = permissions,
-        )
-    }
-}
-
-@ApiPreferenceDsl
-class PreconditionsConfigBuilder(
-    @StringRes val description: Int,
-    val lambda: suspend ApiOperationContext.() -> ApiPreconditions
-) {
-    internal fun build(): PreconditionsConfig {
-        return PreconditionsConfig(
-            description = description,
-            check = lambda,
-        )
-    }
-}
-
 /**
  * Get configuration builder for an [ApiPreference].
  *
@@ -448,7 +419,7 @@ class ApiPreferenceConfigBuilder<V : Any>(
     private var setConfig: SetConfig<V>? = null
 
     /**
-     * Build the [FlagConfig] from the given [FlagConfigBuilder] block.
+     * Build the [FlagConfig] from the given block.
      */
     fun flag(lambda: () -> Boolean) {
         if (flagConfig != null) {
@@ -459,11 +430,11 @@ class ApiPreferenceConfigBuilder<V : Any>(
             error(getExceptionMessageWrongOrder("flag"))
         }
 
-        flagConfig = FlagConfigBuilder(lambda).build()
+        flagConfig = FlagConfig(check = lambda)
     }
 
     /**
-     * Build the [PermissionsConfig] from the given [PermissionsConfigBuilder] block.
+     * Build the [PermissionsConfig] from the given permissions.
      */
     fun permissions(permissionsList: List<String>) {
         if (permissionsConfig != null) {
@@ -474,11 +445,11 @@ class ApiPreferenceConfigBuilder<V : Any>(
             error(getExceptionMessageWrongOrder("permissions"))
         }
 
-        permissionsConfig = PermissionsConfigBuilder(permissionsList).build()
+        permissionsConfig = PermissionsConfig(incomingPermissions = permissionsList)
     }
 
     /**
-     * Build the [PreconditionsConfig] from the given [PreconditionsConfigBuilder] block.
+     * Build the [PreconditionsConfig] from the given block.
      */
     fun preconditions(@StringRes description: Int, lambda: ApiOperationContext.() -> ApiPreconditions) {
         if (preconditionsConfig != null) {
@@ -489,7 +460,7 @@ class ApiPreferenceConfigBuilder<V : Any>(
             error(getExceptionMessageWrongOrder("preconditions"))
         }
 
-        preconditionsConfig = PreconditionsConfigBuilder(description, lambda).build()
+        preconditionsConfig = PreconditionsConfig(description = description, check = lambda)
     }
 
     /**
