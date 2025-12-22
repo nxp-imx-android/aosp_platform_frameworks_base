@@ -454,4 +454,43 @@ public class QuickStepContract {
             }
         }
     }
+
+    /**
+     * Broadcast action to launch the accessibility shortcut chooser dialog in SystemUI.
+     */
+    public static final String ACTION_LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG =
+            "com.android.systemui.action.LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG";
+
+    /**
+     * Extra key for the accessibility shortcut type in the chooser dialog intent.
+     */
+    public static final String EXTRA_ACCESSIBILITY_SHORTCUT_TYPE = "SHORTCUT_TYPE";
+
+    /**
+     * Extra key for the display id in the chooser dialog intent.
+     */
+    public static final String EXTRA_ACCESSIBILITY_DISPLAY_ID = "DISPLAY_ID";
+
+    /**
+     * Package name of the SystemUI.
+     */
+    public static final String SYSUI_PACKAGE =
+            Resources.getSystem().getString(com.android.internal.R.string.config_systemUi);
+    /**
+     * Broadcast action to launch the accessibility quick access dialog in SystemUI.
+     */
+    public static final String ACTION_LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG =
+            "com.android.systemui.action.LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG";
+
+    /**
+     * Permission required to launch the accessibility quick access dialog.
+     */
+    public static final String PERMISSION_LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG =
+            "com.android.systemui.permission.LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG";
+
+    /**
+     * Permission required to launch the accessibility shortcut chooser dialog.
+     */
+    public static final String PERMISSION_LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG =
+            "com.android.systemui.permission.LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG";
 }

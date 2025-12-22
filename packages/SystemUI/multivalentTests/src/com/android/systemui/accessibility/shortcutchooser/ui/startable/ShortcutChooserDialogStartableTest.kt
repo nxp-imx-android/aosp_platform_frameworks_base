@@ -585,6 +585,47 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
         }
 
     @Test
+    fun createDialog_softwareShortcut_showsNavBarChooser() =
+        kosmos.runTest {
+            underTest.start()
+
+            sendIntentInMainThreadWaitForIdle(UserShortcutType.SOFTWARE)
+
+            assertCurrentDialog(DialogType.NAV_BAR_CHOOSER)
+        }
+
+    @Test
+    fun createDialog_softwareShortcut_clickDoneButton_dismissesDialog() =
+        kosmos.runTest {
+            underTest.start()
+
+            sendIntentInMainThreadWaitForIdle(UserShortcutType.SOFTWARE)
+
+            assertCurrentDialog(DialogType.NAV_BAR_CHOOSER)
+
+            composeTestRule.onDoneButton().performScrollAndClick()
+            composeTestRule.waitForIdle()
+
+            assertCurrentDialog(DialogType.NONE)
+        }
+
+    @Test
+    fun navBarChooser_selectTarget_updatesSecureSettings() =
+        kosmos.runTest {
+            setTalkBackSelected(UserShortcutType.SOFTWARE)
+            underTest.start()
+
+            sendIntentInMainThreadWaitForIdle(UserShortcutType.SOFTWARE)
+            assertCurrentDialog(DialogType.NAV_BAR_CHOOSER)
+
+            composeTestRule.onNodeWithTag(TALKBACK_TARGET_NAME).performClick()
+            composeTestRule.waitForIdle()
+
+            assertThat(fakeRepository.accessibilityButtonTargetComponent.value)
+                .isEqualTo(TALKBACK_TARGET_NAME)
+        }
+
+    @Test
     @EnableFlags(SystemUIFlags.FLAG_LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG_PERMISSION)
     fun showWarningDialog_quickAccess_clickUntrustedTarget_showsWarningDialog() =
         runTestAndDismiss {
@@ -706,6 +747,9 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
         composeTestRule
             .onQuickAccessDialogTitle()
             .assertDialogVisibility(dialogType, DialogType.QUICK_ACCESS)
+        composeTestRule
+            .onNavBarMoreOptionsDialogTitle()
+            .assertDialogVisibility(dialogType, DialogType.NAV_BAR_CHOOSER)
     }
 
     private fun ComposeTestRule.onAddFeaturesButton() = onNodeWithTag("add_features_button")
@@ -753,6 +797,11 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
         )
 
     private fun ComposeTestRule.onWarningDialog() = onNodeWithTag("service_warning_dialog")
+
+    private fun ComposeTestRule.onNavBarMoreOptionsDialogTitle() =
+        onNodeWithText(
+            context.resources.getString(R.string.accessibility_nav_bar_more_options_title)
+        )
 
     private fun SemanticsNodeInteraction.assertDialogVisibility(
         expectedDialogType: DialogType,
