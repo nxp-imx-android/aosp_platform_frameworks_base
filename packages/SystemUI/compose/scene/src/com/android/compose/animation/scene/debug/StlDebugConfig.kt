@@ -31,13 +31,13 @@ import com.android.compose.animation.scene.debug.StlDebugKeys.ELEMENT_FILTER
 import com.android.compose.animation.scene.debug.StlDebugKeys.EXCLUDE_STLS
 import com.android.compose.animation.scene.debug.StlDebugKeys.LOG_ELEMENTS
 import com.android.compose.animation.scene.debug.StlDebugKeys.LOG_ELEMENTS_VERBOSE
+import com.android.compose.animation.scene.debug.StlDebugKeys.POS_CONTENT_LABEL
 import com.android.compose.animation.scene.debug.StlDebugKeys.POS_ELEMENT_LABEL
-import com.android.compose.animation.scene.debug.StlDebugKeys.POS_SCENE_LABEL
 import com.android.compose.animation.scene.debug.StlDebugKeys.POS_STL_LABEL
+import com.android.compose.animation.scene.debug.StlDebugKeys.SHOW_CONTENT_BORDERS
+import com.android.compose.animation.scene.debug.StlDebugKeys.SHOW_CONTENT_LABELS
 import com.android.compose.animation.scene.debug.StlDebugKeys.SHOW_ELEMENT_BORDERS
 import com.android.compose.animation.scene.debug.StlDebugKeys.SHOW_ELEMENT_LABELS
-import com.android.compose.animation.scene.debug.StlDebugKeys.SHOW_SCENE_BORDERS
-import com.android.compose.animation.scene.debug.StlDebugKeys.SHOW_SCENE_LABELS
 import com.android.compose.animation.scene.debug.StlDebugKeys.SHOW_STL_BORDERS
 import com.android.compose.animation.scene.debug.StlDebugKeys.SHOW_STL_LABELS
 import com.android.systemui.util.Compile
@@ -135,28 +135,28 @@ internal object StlDebugConfig {
     var elementFilterList by mutableStateOf(emptyList<String>())
         private set
 
-    // ====================== SCENE ======================
+    // ====================== CONTENT ======================
 
-    /** Shows borders around scenes */
-    private var showSceneBorders by mutableStateOf(false)
+    /** Shows borders around contents */
+    private var showContentBorders by mutableStateOf(false)
 
-    inline fun showSceneBorders(): Boolean {
-        return DEBUG_STL && showSceneBorders
+    inline fun showContentBorders(): Boolean {
+        return DEBUG_STL && showContentBorders
     }
 
-    /** Show the scene name on a label */
-    private var showSceneLabels by mutableStateOf(false)
+    /** Show the content name on a label */
+    private var showContentLabels by mutableStateOf(false)
 
-    inline fun showSceneLabels(): Boolean {
-        return DEBUG_STL && showSceneLabels
+    inline fun showContentLabels(): Boolean {
+        return DEBUG_STL && showContentLabels
     }
 
-    inline fun isDebuggingScene(): Boolean {
-        return DEBUG_STL && (showSceneBorders or showSceneLabels)
+    inline fun isDebuggingContent(): Boolean {
+        return DEBUG_STL && (showContentBorders or showContentLabels)
     }
 
-    /** Position of the scene label within the scene */
-    var sceneLabelPosition by mutableStateOf(DebugLabelPosition.BottomRight)
+    /** Position of the content label within the content */
+    var contentLabelPosition by mutableStateOf(DebugLabelPosition.BottomRight)
 
     // ====================== STL ======================
 
@@ -250,8 +250,8 @@ internal object StlDebugConfig {
         logElements = readBool(LOG_ELEMENTS.key, defaultToggleValue)
         logElementsVerbose = readBool(LOG_ELEMENTS_VERBOSE.key, defaultToggleValue)
 
-        showSceneBorders = readBool(SHOW_SCENE_BORDERS.key, defaultToggleValue)
-        showSceneLabels = readBool(SHOW_SCENE_LABELS.key, defaultToggleValue)
+        showContentBorders = readBool(SHOW_CONTENT_BORDERS.key, defaultToggleValue)
+        showContentLabels = readBool(SHOW_CONTENT_LABELS.key, defaultToggleValue)
 
         showStlBorders = readBool(SHOW_STL_BORDERS.key, defaultToggleValue)
         showStlLabels = readBool(SHOW_STL_LABELS.key, defaultToggleValue)
@@ -260,8 +260,8 @@ internal object StlDebugConfig {
             readEnum(POS_ELEMENT_LABEL.key, DebugLabelPosition.CenterTop) {
                 DebugLabelPosition.valueOf(it)
             }
-        sceneLabelPosition =
-            readEnum(POS_SCENE_LABEL.key, DebugLabelPosition.BottomRight) {
+        contentLabelPosition =
+            readEnum(POS_CONTENT_LABEL.key, DebugLabelPosition.BottomRight) {
                 DebugLabelPosition.valueOf(it)
             }
         stlLabelPosition =
@@ -290,9 +290,9 @@ enum class StlDebugKeys(val key: String) {
     POS_ELEMENT_LABEL("debug_stl_pos_element_label"),
     LOG_ELEMENTS("debug_stl_log_elements"),
     LOG_ELEMENTS_VERBOSE("debug_stl_log_elements_verbose"),
-    SHOW_SCENE_BORDERS("debug_stl_show_scene_borders"),
-    SHOW_SCENE_LABELS("debug_stl_show_scene_labels"),
-    POS_SCENE_LABEL("debug_stl_pos_scene_label"),
+    SHOW_CONTENT_BORDERS("debug_stl_show_content_borders"),
+    SHOW_CONTENT_LABELS("debug_stl_show_content_labels"),
+    POS_CONTENT_LABEL("debug_stl_pos_content_label"),
     SHOW_STL_BORDERS("debug_stl_show_stl_borders"),
     SHOW_STL_LABELS("debug_stl_show_stl_labels"),
     POS_STL_LABEL("debug_stl_pos_stl_label"),

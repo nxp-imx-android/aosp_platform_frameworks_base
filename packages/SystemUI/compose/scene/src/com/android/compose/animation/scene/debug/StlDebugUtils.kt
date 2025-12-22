@@ -16,10 +16,10 @@
 
 package com.android.compose.animation.scene.debug
 
-import android.os.Build
+import com.android.compose.animation.scene.debug.StlDebugConfig.DEBUG_STL
 
 internal fun generateDefaultStlDebugName(): String {
-    if (!Build.IS_DEBUGGABLE) {
+    if (!DEBUG_STL) {
         return "STL"
     }
     val stackTrace = Thread.currentThread().stackTrace

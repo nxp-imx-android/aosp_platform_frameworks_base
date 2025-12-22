@@ -43,10 +43,13 @@ import androidx.compose.ui.util.fastForEachReversed
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.Element
 import com.android.compose.animation.scene.ElementKey
+import com.android.compose.animation.scene.Key
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SceneTransitionLayoutImpl
 import com.android.compose.animation.scene.SceneTransitionLayoutState
+import com.android.compose.animation.scene.TransitionKey
+import com.android.compose.animation.scene.ValueKey
 import com.android.compose.animation.scene.content.Content
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.animation.scene.debug.StlDebugConfig.elementFilterList
@@ -119,7 +122,7 @@ internal fun Modifier.debugElement(key: ElementKey, content: Content): Modifier 
     }
 }
 
-internal fun Modifier.debugScene(key: SceneKey): Modifier {
+internal fun Modifier.debugContent(key: ContentKey): Modifier {
     return composed {
         val textMeasurer = rememberTextMeasurer()
 
@@ -129,7 +132,7 @@ internal fun Modifier.debugScene(key: SceneKey): Modifier {
             val strokeWidth = 2.dp.toPx()
 
             onDrawWithContent {
-                if (StlDebugConfig.showSceneBorders()) {
+                if (StlDebugConfig.showContentBorders()) {
                     // 1. Draw Border FIRST (so it ends up behind the content)
                     drawDebugBorder(
                         color = color,
@@ -142,13 +145,13 @@ internal fun Modifier.debugScene(key: SceneKey): Modifier {
                 // 2. Draw Content
                 drawContent()
 
-                if (StlDebugConfig.showSceneLabels()) {
+                if (StlDebugConfig.showContentLabels()) {
                     // 3. Draw Label (Always on top)
                     drawDebugLabel(
                         textMeasurer = textMeasurer,
-                        text = listOf("Scene: ${key.debugName.truncateText()}"),
+                        text = listOf(key.toShortDebugString()),
                         color = color,
-                        position = StlDebugConfig.sceneLabelPosition,
+                        position = StlDebugConfig.contentLabelPosition,
                         textSize = 12.sp,
                     )
                 }
@@ -528,18 +531,13 @@ internal fun performLog(elementKey: ElementKey, contentKey: ContentKey? = null, 
 }
 
 private fun getContextString(contentKey: ContentKey?, elementKey: ElementKey): String {
-    val contentStr =
-        when (contentKey) {
-            null -> ""
-            is SceneKey -> "[S:${contentKey.debugName.truncateText()}]"
-            is OverlayKey -> "[O:${contentKey.debugName.truncateText()}]"
-        }
-    return "[E:${elementKey.debugName.truncateText()}]$contentStr "
+    val contentStr = contentKey?.toShortDebugString() ?: ""
+    return "[${elementKey.toShortDebugString()}]$contentStr "
 }
 
 /**
  * Shortens the text to the [maxLength] if it exceeds it. The text is represented as: "<first m/2
- * chars><number of skipped chars><last m/2 chars>"
+ * chars>..<last m/2 chars>"
  */
 private fun String.truncateText(maxLength: Int = 18): String {
     if (this.length <= maxLength) return this
@@ -547,6 +545,16 @@ private fun String.truncateText(maxLength: Int = 18): String {
     val first = this.take(split)
     val last = this.takeLast(split)
     return "$first..$last"
+}
+
+private fun Key.toShortDebugString(): String {
+    return when (this) {
+        is SceneKey -> "S:${debugName.truncateText()}"
+        is OverlayKey -> "O:${debugName.truncateText()}"
+        is ElementKey -> "E:${debugName.truncateText()}"
+        is TransitionKey -> "T:${debugName.truncateText()}"
+        is ValueKey -> "V:${debugName.truncateText()}"
+    }
 }
 
 /**
