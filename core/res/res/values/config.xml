@@ -7285,6 +7285,9 @@
     <!-- Default component for QR code scanner -->
     <string name="config_defaultQrCodeComponent"></string>
 
+    <!-- Intent action of the default QR code scanner component  -->
+    <string name="config_defaultQrCodeComponentIntentAction"></string>
+
     <!-- Whether Low Power Standby is supported and can be enabled. -->
     <bool name="config_lowPowerStandbySupported">false</bool>
 

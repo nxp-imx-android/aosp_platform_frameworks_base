@@ -464,6 +464,12 @@ public final class SystemUiDeviceConfigFlags {
     public static final String DEFAULT_QR_CODE_SCANNER = "default_qr_code_scanner";
 
     /**
+     * (string) Intent action of the default QR code scanner activity.
+     */
+    public static final String DEFAULT_QR_CODE_SCANNER_INTENT_ACTION =
+            "default_qr_code_scanner_intent_action";
+
+    /**
      * (boolean) Whether the task manager should show an attention grabbing dot when tasks changed.
      */
     public static final String TASK_MANAGER_SHOW_FOOTER_DOT = "task_manager_show_footer_dot";
