@@ -594,12 +594,6 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    public void createSession_setsForceShowTouchesOnDisplay() {
-        createComputerControlSession(mDefaultParams);
-        verify(mInputManagerInternal).setForceShowTouchesOnDisplay(VIRTUAL_DISPLAY_ID, true);
-    }
-
-    @Test
     public void launchApplication_launchesApplication() throws RemoteException {
         createComputerControlSession(mDefaultParams);
         when(mOwnerPackageManager.queryIntentActivities(any(), any()))
@@ -794,6 +788,7 @@ public class ComputerControlSessionImplTest {
         verify(returnedMirrorSurface).copyFrom(eq(mSurfaceControlArgumentCaptor.getValue()), any());
         assertThat(mSurfaceControlArgumentCaptor.getValue()).isNotEqualTo(mirrorSurface);
         verify(mTransaction).setDropInputMode(eq(mirrorSurface), eq(DropInputMode.ALL));
+        verify(mInputManagerInternal).setForceShowTouchesOnDisplay(VIRTUAL_DISPLAY_ID, true);
     }
 
     @Test
@@ -826,6 +821,7 @@ public class ComputerControlSessionImplTest {
 
         verify(displayMirror).close();
         verify(mTransaction).remove(mSurfaceControlArgumentCaptor.getValue());
+        verify(mInputManagerInternal).setForceShowTouchesOnDisplay(VIRTUAL_DISPLAY_ID, false);
     }
 
     @Test
@@ -836,6 +832,7 @@ public class ComputerControlSessionImplTest {
                 .thenReturn(displayMirror1);
         IInteractiveMirror mirror1 = mSession.createInteractiveMirror(new SurfaceControl());
         assertThat(mirror1).isNotNull();
+        verify(mInputManagerInternal).setForceShowTouchesOnDisplay(VIRTUAL_DISPLAY_ID, true);
         final var displayMirror2 = mockDisplayMirror();
         when(mWindowManagerInternal.createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID))
                 .thenReturn(displayMirror2);
@@ -848,6 +845,7 @@ public class ComputerControlSessionImplTest {
 
         verify(displayMirror1).close();
         verify(displayMirror2).close();
+        verify(mInputManagerInternal).setForceShowTouchesOnDisplay(VIRTUAL_DISPLAY_ID, false);
     }
 
     @Test

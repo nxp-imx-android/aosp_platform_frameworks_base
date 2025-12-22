@@ -238,6 +238,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private PendingIntent mPreviewIntent = null;
 
     @GuardedBy("mInteractiveMirrors")
+    // A list of active interactive mirrors. The presence of mirrors indicates foreground
+    // automation, which enables touch visualization.
     private final List<InteractiveMirrorImpl> mInteractiveMirrors = new ArrayList<>();
 
     @Nullable
@@ -353,9 +355,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mWindowManagerInternal.setAnimationsDisabledForDisplay(
                     mVirtualDisplay.getDisplay().getDisplayId(), true);
             mVirtualDisplayId = mVirtualDisplay.getDisplay().getDisplayId();
-
-            mInputManagerInternal.setForceShowTouchesOnDisplay(mVirtualDisplayId,
-                    true /* enabled */);
 
             mVirtualDevice.setDisplayImePolicy(
                     mVirtualDisplayId, WindowManager.DISPLAY_IME_POLICY_HIDE);
@@ -584,6 +583,11 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             return null;
         }
         synchronized (mInteractiveMirrors) {
+            if (mInteractiveMirrors.isEmpty()) {
+                // Automation is no longer running in the background. Show touches.
+                mInputManagerInternal.setForceShowTouchesOnDisplay(mVirtualDisplayId,
+                        true /* enabled */);
+            }
             mInteractiveMirrors.add(mirror);
         }
         outMirrorSurface.copyFrom(mirror.getMirrorLeash(),
@@ -635,6 +639,11 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             if (!mInteractiveMirrors.remove(interactiveMirror)) {
                 return;
             }
+            if (mInteractiveMirrors.isEmpty()) {
+                // Automation is fully running in the background. No need to show touches.
+                mInputManagerInternal.setForceShowTouchesOnDisplay(mVirtualDisplayId,
+                        false /* enabled */);
+            }
         }
         try (var transaction = mTransactionSupplier.get()) {
             interactiveMirror.closeWithTransaction(transaction);
@@ -654,6 +663,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 transaction.apply();
             }
             mInteractiveMirrors.clear();
+
+            // Automation is fully running in the background. No need to show touches.
+            mInputManagerInternal.setForceShowTouchesOnDisplay(mVirtualDisplayId,
+                    false /* enabled */);
         }
     }
 
