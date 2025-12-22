@@ -4686,7 +4686,7 @@ final class ActivityManagerShellCommand extends ShellCommand {
                 }
 
                 case "status" -> {
-                    pw.println(limiter.isEnabled() ? "enabled" : "disabled");
+                    limiter.dump(pw);
                 }
 
                 default -> {
@@ -5177,9 +5177,10 @@ final class ActivityManagerShellCommand extends ShellCommand {
             pw.println("         Set an app's media service inactive or active.");
             pw.println("  clear-bad-process [--user USER_ID] <PROCESS_NAME>");
             pw.println("         Clears a process from the bad processes list.");
-            pw.println("  memory-limiter ignore <UID|none>");
-            pw.println("         Prevents the limiter from managing any process under the uid.");
-
+            pw.println("  memory-limiter <SUBCOMMAND>");
+            pw.println("         ignore <UID> do not configure limits for the UID.");
+            pw.println("         ignore none  resume normal operation for all UIDs.");
+            pw.println("         status       report the status of the limiter.");
             Intent.printIntentArgsHelp(pw, "");
         }
     }

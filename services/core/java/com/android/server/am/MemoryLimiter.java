@@ -21,6 +21,7 @@ import static android.os.Process.INVALID_UID;
 import static android.os.Process.FIRST_APPLICATION_UID;
 import static android.text.TextUtils.formatSimple;
 
+import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.ActivityManager.ProcessState;
 import android.os.Handler;
@@ -29,11 +30,13 @@ import android.os.Process;
 import android.os.Trace;
 import android.util.Slog;
 
+import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.MemInfoReader;
 import com.android.tools.r8.keepanno.annotations.UsedByNative;
 
+import java.io.PrintWriter;
 import java.util.Objects;
 
 /**
@@ -94,7 +97,7 @@ class MemoryLimiter implements AutoCloseable {
         boolean isEnabled();
 
         // The pid or uid of the object has changed.  Push the update to the native layer.
-        void setPidUid(int pid, int uid);
+        void setPidUid(int pid, int uid, @Nullable String pkg);
 
         // The process limit has changed.  Push the update to the native layer.
         void setLimit(int pid, int uid, Long limit);
@@ -104,13 +107,16 @@ class MemoryLimiter implements AutoCloseable {
 
         // The callback when an over-limit event occurs.
         @UsedByNative
-        void onLimitExceeded(int pid, int uid, int limit);
+        void onLimitExceeded(int pid, int uid, int limit, @Nullable String pkg);
 
         // Block or unblock the limiter from monitoring/configuring the UID.
         void ignoreUid(int uid, boolean ignore);
 
         // Close and release any resources.
         void close();
+
+        // The controller status, for debug and reports.
+        void dump(PrintWriter pw);
     }
 
     /**
@@ -123,7 +129,7 @@ class MemoryLimiter implements AutoCloseable {
         }
 
         @Override
-        public void setPidUid(int pid, int uid) {
+        public void setPidUid(int pid, int uid, @Nullable String pkg) {
         }
 
         @Override
@@ -136,7 +142,7 @@ class MemoryLimiter implements AutoCloseable {
         }
 
         @Override
-        public void onLimitExceeded(int pid, int uid, int limit) {
+        public void onLimitExceeded(int pid, int uid, int limit, @Nullable String pkg) {
         }
 
         @Override
@@ -145,6 +151,11 @@ class MemoryLimiter implements AutoCloseable {
 
         @Override
         public void close() {
+        }
+
+        @Override
+        public void dump(PrintWriter pw) {
+            pw.println("disabled");
         }
     }
 
@@ -155,6 +166,10 @@ class MemoryLimiter implements AutoCloseable {
      */
     @UsedByNative
     static class ControllerEnabled implements Controller {
+
+        // A lock for information that is shared between the status() method and the handler.  The
+        // lock is only taken one of those two places.
+        private final Object mLock = new Object();
 
         // The message queue that distributes calls into the native layer.
         private final Handler mQueue;
@@ -179,6 +194,7 @@ class MemoryLimiter implements AutoCloseable {
 
         // The ignore list.  The code supports exactly one ignored uid.  The invalid uid never
         // matches a uid, so that value turns off ignoring.
+        @GuardedBy("mLock")
         private int mIgnoredUid = INVALID_UID;
 
         /**
@@ -204,33 +220,37 @@ class MemoryLimiter implements AutoCloseable {
                         final int pid = msg.arg1;
                         final int uid = msg.arg2;
                         final int op = msg.what;
-                        switch (op) {
-                            case MESSAGE_START -> {
-                                if (uid != mIgnoredUid) {
-                                    onProcessStarted(mNative, pid, uid);
+                        synchronized (mLock) {
+                            switch (op) {
+                                case MESSAGE_START -> {
+                                    if (uid != mIgnoredUid) {
+                                        String pkg = (String) msg.obj;
+                                        onProcessStarted(mNative, pid, uid, pkg);
+                                    }
                                 }
-                            }
 
-                            case MESSAGE_CONFIG -> {
-                                if (msg.obj != null && uid != mIgnoredUid) {
-                                    long limit = (Long) msg.obj;
-                                    configureLimit(mNative, pid, uid, limit);
+                                case MESSAGE_CONFIG -> {
+                                    if (msg.obj != null && uid != mIgnoredUid) {
+                                        long limit = (Long) msg.obj;
+                                        configureLimit(mNative, pid, uid, limit);
+                                    }
                                 }
-                            }
 
-                            case MESSAGE_IGNORE -> {
-                                // This message is only issued during testing.
-                                Slog.i(TAG, "ignoring " + uid + " was " + mIgnoredUid);
-                                mIgnoredUid = uid;
-                            }
+                                case MESSAGE_IGNORE -> {
+                                    // This message is only issued during testing.
+                                    String oldValue = ignoredUid();
+                                    mIgnoredUid = uid;
+                                    Slog.i(TAG, "ignoring " + ignoredUid() + " was " + oldValue);
+                                }
 
-                            case MESSAGE_CLOSE -> {
-                                closeLimiter(mNative);
-                                mOpen = false;
-                            }
+                                case MESSAGE_CLOSE -> {
+                                    closeLimiter(mNative);
+                                    mOpen = false;
+                                }
 
-                            default ->
-                                    Slog.e(TAG, "invalid message: op=" + op);
+                                default ->
+                                        Slog.e(TAG, "invalid message: op=" + op);
+                            }
                         }
                     }
                 };
@@ -243,12 +263,9 @@ class MemoryLimiter implements AutoCloseable {
                 mMemoryVisible = vmem / 2;
                 mMemoryNotVisible = vmem / 4;
                 final long meg = 1024 * 1024;
-                Slog.i(TAG, formatSimple("Limits set to visible=%dMB not-visible=%dMB",
-                                mMemoryVisible / meg, mMemoryNotVisible / meg));
             } else {
                 mMemoryVisible = MAX_MEMORY;
                 mMemoryNotVisible = MAX_MEMORY;
-                Slog.i(TAG, "Limits set to visible=max not-visible=max");
             }
         }
 
@@ -265,8 +282,8 @@ class MemoryLimiter implements AutoCloseable {
         }
 
         @Override
-        public void setPidUid(int pid, int uid) {
-            sendCommand(MESSAGE_START, pid, uid, null);
+        public void setPidUid(int pid, int uid, @Nullable String pkg) {
+            sendCommand(MESSAGE_START, pid, uid, pkg);
         }
 
         @Override
@@ -297,9 +314,9 @@ class MemoryLimiter implements AutoCloseable {
 
         @UsedByNative
         @Override
-        public void onLimitExceeded(int pid, int uid, int limit) {
-            Slog.w(TAG, formatSimple("limits exceeded: pid=%d uid=%d limit=%s", pid, uid,
-                            limitTypeToString(limit)));
+        public void onLimitExceeded(int pid, int uid, int limit, @Nullable String pkg) {
+            Slog.i(TAG, formatSimple("limits exceeded: pid=%d uid=%d limit=%s pkg=%s",
+                                pid, uid, limitTypeToString(limit), pkg));
         }
 
         @Override
@@ -310,6 +327,20 @@ class MemoryLimiter implements AutoCloseable {
         @Override
         public void close() {
             sendCommand(MESSAGE_CLOSE, INVALID_PID, INVALID_UID, null);
+        }
+
+        // A simple function to string-ify the ignored UID.
+        private String ignoredUid() {
+            return (mIgnoredUid == INVALID_UID) ? "none" : Integer.toString(mIgnoredUid);
+        }
+
+        @Override
+        public void dump(PrintWriter pw) {
+            final long meg = 1024 * 1024;
+            synchronized (mLock) {
+                pw.format("enabled low=%dMB high=%dMB ignored=%s\n",
+                        mMemoryNotVisible / meg, mMemoryVisible / meg, ignoredUid());
+            }
         }
     }
 
@@ -356,6 +387,9 @@ class MemoryLimiter implements AutoCloseable {
     // this class are not thread-safe.  Normally, these are called inside the AMS lock.
     class Limiter {
 
+        // The package associated with this instance.
+        private final String mPackage;
+
         // The pid that this instance controls.
         private int mPid = INVALID_PID;
         // The uid that this instance controls.
@@ -364,29 +398,62 @@ class MemoryLimiter implements AutoCloseable {
         private Long mLimit = null;
 
         /**
+         * Construct the instance with a fixed package name.
+         */
+        Limiter(@Nullable String pkg) {
+            mPackage = pkg;
+        }
+
+        /**
+         * Return true if the process should be monitored and limited.
+         */
+        private boolean shouldMonitor() {
+            return (mPid != INVALID_PID && mUid != INVALID_UID && mUid >= FIRST_APPLICATION_UID);
+        }
+
+        /**
+         * Return true if the object is ready to manage a process.  The pid and uid must be valid
+         * and the UID must belong to the application name space.  This method is called whenever
+         * the pid or uid changes.
+         */
+        private void maybeStart() {
+            if (!shouldMonitor()) return;
+            mLimit = null;
+            mController.setPidUid(mPid, mUid, mPackage);
+        }
+
+        /**
+         * Set the UID.  If this is change from the previous pid/uid combination then start the
+         * process.
+         */
+        void setUid(int uid) {
+            if (!mController.isEnabled()) return;
+            if (uid == mUid) {
+                return;
+            }
+            mUid = uid;
+            maybeStart();
+        }
+
+
+        /**
          * Set the pid and uid of the instance.  The instance is created before the pid is known,
          * so both are set at this time, and the native layer is notified that the process has
-         * started.
+         * started.  The pid and uid are saved for reuse when the process memory limits is
+         * changed.  The package name is passed to the native layer and is not retained by this
+         * class.
          *
          * This method should be called while holding the AMS lock.  The actual work happens on a
          * handler thread.
          */
-        void setPidUid(int pid, int uid) {
+        void setPid(int pid) {
             if (!mController.isEnabled()) return;
 
-            mPid = pid;
-            mUid = uid;
-
-            if (mPid == INVALID_PID || mUid == INVALID_UID || mUid < FIRST_APPLICATION_UID) {
-                // A zero pid/zero uid is not valid for monitoring.  Do not forward any change to
-                // the controller.  The pid may change in the future, so reset the last-known
-                // limit.
-                mPid = INVALID_PID;
-                mUid = INVALID_UID;
-                mLimit = null;
+            if (pid == mPid) {
                 return;
             }
-            mController.setPidUid(pid, uid);
+            mPid = pid;
+            maybeStart();
         }
 
         /**
@@ -399,8 +466,8 @@ class MemoryLimiter implements AutoCloseable {
         void onProcStateUpdated(@ProcessState int newState) {
             if (!mController.isEnabled()) return;
 
-            // The process is not running, so we cannot assign limits.
-            if (mPid == INVALID_PID) return;
+            // Do not assign limits if the process should not be monitored.
+            if (!shouldMonitor()) return;
 
             final Long newLimit = mController.getStateLimit(newState);
             if (newLimit != null && !Objects.equals(mLimit, newLimit)) {
@@ -413,8 +480,8 @@ class MemoryLimiter implements AutoCloseable {
     /**
      * Return a new Process object bound to this instance.
      */
-    Limiter newLimiter() {
-        return new Limiter();
+    Limiter newLimiter(@Nullable String pkg) {
+        return new Limiter(pkg);
     }
 
     /**
@@ -430,6 +497,13 @@ class MemoryLimiter implements AutoCloseable {
      */
     boolean isEnabled() {
         return mController.isEnabled();
+    }
+
+    /**
+     * Display the status of the limiter.
+     */
+    void dump(PrintWriter pw) {
+        mController.dump(pw);
     }
 
     /**
@@ -460,7 +534,8 @@ class MemoryLimiter implements AutoCloseable {
      * Inform the native layer that a process has started.  No profile is assigned to the process
      * but monitoring starts.  The function returns true on success.
      */
-    private static native boolean onProcessStarted(long servicePtr, int pid, int uid);
+    private static native boolean onProcessStarted(long servicePtr, int pid, int uid,
+            @Nullable String pkg);
 
     /**
      * Request that a process's memory.high be configured to limit.  Negative values for the limit
