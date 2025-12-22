@@ -801,20 +801,26 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
     }
 
     private void cancelVibrateInternal(int usageFilter, IBinder token) {
-        // TODO(b/378492007): Investigate if we can move this around AppOpsManager calls
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            // TODO(b/370948466): investigate why token not checked on external vibrations.
-            IBinder cancelToken = (mNextSession instanceof ExternalVibrationSession) ? null : token;
-            if (shouldCancelSession(mNextSession, usageFilter, cancelToken)) {
-                clearNextSessionLocked(Status.CANCELLED_BY_USER);
+        synchronized (mLock) {
+            if (DEBUG) {
+                Slog.d(TAG, "Canceling vibration");
             }
-            cancelToken = (mCurrentSession instanceof ExternalVibrationSession) ? null : token;
-            if (shouldCancelSession(mCurrentSession, usageFilter, cancelToken)) {
-                mCurrentSession.requestEnd(Status.CANCELLED_BY_USER);
+            // TODO(b/378492007): Investigate if we can move this around AppOpsManager calls
+            final long ident = Binder.clearCallingIdentity();
+            try {
+                // TODO(b/370948466): investigate why token not checked on external vibrations.
+                IBinder cancelToken =
+                        (mNextSession instanceof ExternalVibrationSession) ? null : token;
+                if (shouldCancelSession(mNextSession, usageFilter, cancelToken)) {
+                    clearNextSessionLocked(Status.CANCELLED_BY_USER);
+                }
+                cancelToken = (mCurrentSession instanceof ExternalVibrationSession) ? null : token;
+                if (shouldCancelSession(mCurrentSession, usageFilter, cancelToken)) {
+                    mCurrentSession.requestEnd(Status.CANCELLED_BY_USER);
+                }
+            } finally {
+                Binder.restoreCallingIdentity(ident);
             }
-        } finally {
-            Binder.restoreCallingIdentity(ident);
         }
     }
 
