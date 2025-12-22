@@ -23,12 +23,12 @@ import androidx.fragment.app.Fragment
 import com.android.settingslib.metadata.KeyParametersSchema
 import com.android.settingslib.metadata.PreferenceHierarchy
 import com.android.settingslib.metadata.PreferenceScreenMetadata
-import com.android.settingslib.metadata.preferencesapi.ExceptionMessagesFormatter.getExceptionMessageMultipleDefines
-import com.android.settingslib.metadata.preferencesapi.ExceptionMessagesFormatter.getExceptionMessageWrongOrder
+import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageMultipleDefines
+import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageWrongOrder
 import com.android.settingslib.metadata.preferencesapi.category.Category
 import com.android.settingslib.metadata.ValidatedKeyParameters
-import com.android.settingslib.metadata.preferencesapi.ExceptionMessagesFormatter.EXCEPTION_MESSAGE_NO_PARAMETER_DEFINED
-import com.android.settingslib.metadata.preferencesapi.ExceptionMessagesFormatter.getExceptionMessageMultipleParametersDefined
+import com.android.settingslib.metadata.preferencesapi.Utils.EXCEPTION_MESSAGE_NO_PARAMETER_DEFINED
+import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageMultipleParametersDefined
 import com.android.settingslib.metadata.preferencesapi.preconditions.ApiPreconditions
 import com.android.settingslib.metadata.preferencesapi.types.ApiType
 import com.android.settingslib.metadata.preferencesapi.types.GeneratedParameterType
@@ -351,6 +351,17 @@ abstract class PreferencesApiScreen(
         @StringRes description: Int,
         lambda: suspend ApiOperationContext.() -> ApiPreconditions
     ) {
+        setPreconditions(PreconditionsConfig(description, lambda))
+    }
+
+    protected fun preconditions(
+        description: String,
+        lambda: suspend ApiOperationContext.() -> ApiPreconditions
+    ) {
+        setPreconditions(PreconditionsConfig(description, lambda))
+    }
+
+    private fun setPreconditions(config: PreconditionsConfig) {
         if (screenPreconditions != null) {
             error(getExceptionMessageMultipleDefines("preconditions"))
         }
@@ -359,7 +370,7 @@ abstract class PreferencesApiScreen(
             error(getExceptionMessageWrongOrder("preconditions"))
         }
 
-        screenPreconditions = PreconditionsConfig(description, lambda)
+        screenPreconditions = config
     }
 
     companion object {

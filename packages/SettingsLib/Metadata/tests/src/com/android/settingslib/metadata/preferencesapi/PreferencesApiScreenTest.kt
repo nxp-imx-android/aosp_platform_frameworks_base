@@ -20,17 +20,21 @@ import android.Manifest
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.android.settingslib.metadata.preferencesapi.ExceptionMessagesFormatter.EXCEPTION_MESSAGE_NO_PARAMETER_DEFINED
+import com.android.settingslib.metadata.ValidatedKeyParameters
+import com.android.settingslib.metadata.preferencesapi.Utils.EXCEPTION_MESSAGE_NO_PARAMETER_DEFINED
 import com.android.settingslib.metadata.test.R
-import com.android.settingslib.metadata.preferencesapi.ExceptionMessagesFormatter.getExceptionMessageMultipleDefines
-import com.android.settingslib.metadata.preferencesapi.ExceptionMessagesFormatter.getExceptionMessageMultipleParametersDefined
-import com.android.settingslib.metadata.preferencesapi.ExceptionMessagesFormatter.getExceptionMessageWrongOrder
 import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreen.Companion.PARTIALLY_MIGRATED_PREFIX
+import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreenTest.Companion.ApiPreconditionsMapper.*
+import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageMultipleDefines
+import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageMultipleParametersDefined
+import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageWrongOrder
 import com.android.settingslib.metadata.preferencesapi.category.Category
 import com.android.settingslib.metadata.preferencesapi.preconditions.Allowed
 import com.android.settingslib.metadata.preferencesapi.preconditions.Custom
 import com.android.settingslib.metadata.preferencesapi.preconditions.EnterpriseRestriction
 import com.android.settingslib.metadata.preferencesapi.preconditions.HardwareUnsupported
+import com.android.settingslib.metadata.preferencesapi.preconditions.InvalidPreference
+import com.android.settingslib.metadata.preferencesapi.preconditions.MissingPermission
 import com.android.settingslib.metadata.preferencesapi.types.AnyBoolean
 import com.android.settingslib.metadata.preferencesapi.types.AnyInt
 import com.android.settingslib.metadata.preferencesapi.types.GeneratedParameterType
@@ -39,6 +43,7 @@ import kotlinx.coroutines.test.runTest
 import com.android.settingslib.preference.PreferenceFragment
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -231,6 +236,164 @@ class PreferencesApiScreenTest {
         assertThat(
             secondPreference.storage(context).getValue(preferenceKey2, Int::class.java)
         ).isEqualTo(newPreferenceValue2)
+    }
+
+    @Test
+    fun createPreferencesApiScreenWithPreconditions_stringResDescriptionsAndReasons_returnsCorrectDescriptionsAndReasons() {
+        val preferenceValue = false
+        val preferenceKey = "ApiPreference"
+        var preconditionsCase = ALLOWED
+
+        val preferenceScreen = object : PreferencesApiScreen(
+            key = SCREEN_KEY,
+            topLevelSettingsCategory = Category.SYSTEM,
+            fragment = PreferenceFragment::class,
+            purpose = R.string.preference_screen_purpose
+        ) {
+            init {
+                preference(
+                    key = preferenceKey,
+                    purpose = R.string.preference_purpose1,
+                    type = AnyBoolean
+                ) {
+                    get {
+                        preconditions(R.string.preconditions_description1) {
+                            when (preconditionsCase) {
+                                ALLOWED -> Allowed
+                                CUSTOM -> Custom(R.string.preconditions_custom_message)
+                                ENTERPRISE_RESTRICTION -> EnterpriseRestriction(R.string.preconditions_enterprise_restriction_message)
+                                HARDWARE_UNSUPPORTED -> HardwareUnsupported(R.string.preconditions_hardware_unsupported_message)
+                                INVALID_PREFERENCE -> InvalidPreference("", "", R.string.preconditions_invalid_preference_message)
+                                MISSING_PERMISSION -> MissingPermission(listOf(Manifest.permission.ACCESS_FINE_LOCATION), R.string.preconditions_missing_permission_message)
+                            }
+                        }
+                        execute {
+                            preferenceValue
+                        }
+                    }
+                }
+            }
+        }
+
+        // Check we only have 1 preference in the list
+        assertThat(preferenceScreen.preferences.size).isEqualTo(1)
+
+        // Check get preconditions description message
+        val preference = preferenceScreen.preferences[0] as ApiPreference<Boolean>
+        assertThat(preference.get.preconditions?.getDescription(context)).isEqualTo(context.getString(R.string.preconditions_description1))
+
+        // Create the API operation context to be used in ApiPreference calls
+        val apiOperationContext = ApiOperationContext(context, ValidatedKeyParameters.EMPTY)
+
+        // Evaluate each preconditions case
+        for (case in ApiPreconditionsMapper.entries) {
+            preconditionsCase = case
+
+            runBlocking {
+                when (case) {
+                    ALLOWED -> {
+                        assertThat(preference.get.execute(apiOperationContext)).isFalse()
+                    }
+                    CUSTOM -> {
+                        assertThat((preference.get.preconditions?.check(apiOperationContext) as Custom).getReason(context)).isEqualTo(context.getString(R.string.preconditions_custom_message))
+                    }
+                    ENTERPRISE_RESTRICTION -> {
+                        assertThat((preference.get.preconditions?.check(apiOperationContext) as EnterpriseRestriction).getReason(context)).isEqualTo(context.getString(R.string.preconditions_enterprise_restriction_message))
+                    }
+                    HARDWARE_UNSUPPORTED -> {
+                        assertThat((preference.get.preconditions?.check(apiOperationContext) as HardwareUnsupported).getReason(context)).isEqualTo(context.getString(R.string.preconditions_hardware_unsupported_message))
+                    }
+                    INVALID_PREFERENCE -> {
+                        assertThat((preference.get.preconditions?.check(apiOperationContext) as InvalidPreference).getReason(context)).isEqualTo(context.getString(R.string.preconditions_invalid_preference_message))
+                    }
+                    MISSING_PERMISSION -> {
+                        assertThat((preference.get.preconditions?.check(apiOperationContext) as MissingPermission).getReason(context)).isEqualTo(context.getString(R.string.preconditions_missing_permission_message))
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun createPreferencesApiScreenWithPreconditions_stringDescriptionsAndReasons_returnsCorrectDescriptionsAndReasons() {
+        val preferenceValue = true
+        val preferenceKey = "ApiPreference"
+        var preconditionsCase = ALLOWED
+        val preconditionDescription = "Preconditions description"
+        val customPreconditionsMessage = "Custom preconditions message"
+        val enterpriseRestrictionPreconditionsMessage = "Blocked by admin"
+        val hardwareUnsupportedPreconditionsMessage = "Plug in the device"
+        val invalidPreferencePreconditionsMessage = "Requesting invalid preference"
+        val missingPermissionPreconditionsMessage = "You miss an important permission"
+
+        val preferenceScreen = object : PreferencesApiScreen(
+            key = SCREEN_KEY,
+            topLevelSettingsCategory = Category.SYSTEM,
+            fragment = PreferenceFragment::class,
+            purpose = R.string.preference_screen_purpose
+        ) {
+            init {
+                preference(
+                    key = preferenceKey,
+                    purpose = R.string.preference_purpose1,
+                    type = AnyBoolean
+                ) {
+                    get {
+                        preconditions(preconditionDescription) {
+                            when (preconditionsCase) {
+                                ALLOWED -> Allowed
+                                CUSTOM -> Custom(customPreconditionsMessage)
+                                ENTERPRISE_RESTRICTION -> EnterpriseRestriction(enterpriseRestrictionPreconditionsMessage)
+                                HARDWARE_UNSUPPORTED -> HardwareUnsupported(hardwareUnsupportedPreconditionsMessage)
+                                INVALID_PREFERENCE -> InvalidPreference("", "", invalidPreferencePreconditionsMessage)
+                                MISSING_PERMISSION -> MissingPermission(listOf(Manifest.permission.ACCESS_FINE_LOCATION), missingPermissionPreconditionsMessage)
+                            }
+                        }
+                        execute {
+                            preferenceValue
+                        }
+                    }
+                }
+            }
+        }
+
+        // Check we only have 1 preference in the list
+        assertThat(preferenceScreen.preferences.size).isEqualTo(1)
+
+        // Check get preconditions description message
+        val preference = preferenceScreen.preferences[0] as ApiPreference<Boolean>
+        assertThat(preference.get.preconditions?.getDescription(context)).isEqualTo(preconditionDescription)
+
+        // Create the API operation context to be used in ApiPreference calls
+        val apiOperationContext = ApiOperationContext(context, ValidatedKeyParameters.EMPTY)
+
+        // Evaluate each preconditions case
+        for (case in ApiPreconditionsMapper.entries) {
+            preconditionsCase = case
+
+            runBlocking {
+                when (case) {
+                    ALLOWED -> {
+                        assertThat(preference.get.execute(apiOperationContext)).isTrue()
+                    }
+                    CUSTOM -> {
+                        assertThat((preference.get.preconditions?.check(apiOperationContext) as Custom).getReason(context)).isEqualTo(customPreconditionsMessage)
+                    }
+                    ENTERPRISE_RESTRICTION -> {
+                        assertThat((preference.get.preconditions?.check(apiOperationContext) as EnterpriseRestriction).getReason(context)).isEqualTo(enterpriseRestrictionPreconditionsMessage)
+                    }
+                    HARDWARE_UNSUPPORTED -> {
+                        assertThat((preference.get.preconditions?.check(apiOperationContext) as HardwareUnsupported).getReason(context)).isEqualTo(hardwareUnsupportedPreconditionsMessage)
+                    }
+                    INVALID_PREFERENCE -> {
+                        assertThat((preference.get.preconditions?.check(apiOperationContext) as InvalidPreference).getReason(context)).isEqualTo(invalidPreferencePreconditionsMessage)
+                    }
+                    MISSING_PERMISSION -> {
+                        assertThat((preference.get.preconditions?.check(apiOperationContext) as MissingPermission).getReason(context)).isEqualTo(missingPermissionPreconditionsMessage)
+                    }
+                }
+            }
+        }
     }
 
     @Test
@@ -1305,5 +1468,13 @@ class PreferencesApiScreenTest {
 
     companion object {
         const val SCREEN_KEY = "ApiScreen"
+        enum class ApiPreconditionsMapper {
+            ALLOWED,
+            ENTERPRISE_RESTRICTION,
+            HARDWARE_UNSUPPORTED,
+            INVALID_PREFERENCE,
+            MISSING_PERMISSION,
+            CUSTOM,
+        }
     }
 }

@@ -16,5 +16,11 @@
 
 package com.android.settingslib.metadata.preferencesapi.preconditions
 
+import androidx.annotation.StringRes
+
 /** The getter is unavailable due to some hardware issue, the reason should give details. */
-class HardwareUnsupported(override val reason: Int) : Disallowed
+class HardwareUnsupported : Disallowed {
+    constructor(@StringRes reason: Int) : super(reason)
+
+    constructor(reason: String) : super(reason)
+}
