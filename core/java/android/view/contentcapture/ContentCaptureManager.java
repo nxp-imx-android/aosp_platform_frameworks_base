@@ -750,7 +750,9 @@ public final class ContentCaptureManager {
      *
      * <p>There are many reasons it could be disabled, such as:
      * <ul>
-     *   <li>App itself disabled content capture through {@link #setContentCaptureEnabled(boolean)}.
+     *   <li>App itself disabled content capture through {@link #setContentCaptureEnabled(boolean)}
+     *   (for apps targeting SDK 36 or lower) or by applying
+     *   {@link android.view.WindowManager.LayoutParams#FLAG_SECURE}.
      *   <li>Intelligence service did not allowlist content capture for this activity's package.
      *   <li>Intelligence service did not allowlist content capture for this specific activity.
      *   <li>Intelligence service disabled content capture globally.
