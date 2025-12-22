@@ -133,6 +133,72 @@ public final class Telephony {
     }
 
     /**
+     * Constants related to read restriction of messages stored in sms and pdu tables. Messages can
+     * be marked as restricted by the message creator if it's granted the
+     * {@link AppOpsManager#OP_WRITE_RESTRICTED_MESSAGES} app op. A restricted message can be
+     * accessed only by an app with a {@link AppOpsManager#OP_READ_RESTRICTED_MESSAGES} app op.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_SECURE_ACCESS_TO_RESTRICTED_RCS_MESSAGES)
+    public static final class ReadRestriction {
+
+        /**
+         * Not instantiable.
+         * @hide
+         */
+        private ReadRestriction() {}
+
+        /**
+         * Column that specifies read access restriction for the message. The message can be marked
+         * as restricted by the message creator if it's granted the
+         * {@link AppOpsManager#OP_WRITE_RESTRICTED_MESSAGES} app op.
+         * <P>Type: INTEGER</P>
+         * @hide
+         */
+        public static final String READ_RESTRICTION_COLUMN_NAME = "read_restriction";
+
+        /**
+         * Mask for the message read restriction information.
+         * @hide
+         */
+        public static final int READ_RESTRICTION_MASK = 0xFF0000;
+
+        /**
+         * Bit shift for the read restriction information.
+         * @hide
+         */
+        public static final int READ_RESTRICTION_SHIFT = 16;
+
+        /**
+         * Bit values for the read restriction column that can be set within the
+         * {@link #READ_RESTRICTION_MASK} in the {@link #READ_RESTRICTION_COLUMN_NAME}.
+         * @hide
+         */
+        public static final class ReadRestrictionValues {
+            /**
+             * The message is restricted and can be accessed only by apps with a read restricted
+             * messages app op.
+             * @hide
+             */
+            public static final int READ_RESTRICTION_RESTRICTED = 1 << READ_RESTRICTION_SHIFT;
+        }
+
+        /**
+         * Boolean bundle entry that specifies the read access restriction for the message. It's
+         * immutable and can be set to set only when a new sms or pdu message is inserted and the
+         * writer has the {@link AppOpsManager#OP_WRITE_RESTRICTED_MESSAGES} app op, otherwise it
+         * defaults to false. A restricted message can be accessed only by apps
+         * with a {@link AppOpsManager#OP_READ_RESTRICTED_MESSAGES} app op.
+         * <p>Type: BOOLEAN</p>
+         * @hide
+         */
+        @SystemApi
+        @FlaggedApi(Flags.FLAG_SECURE_ACCESS_TO_RESTRICTED_RCS_MESSAGES)
+        public static final String RESTRICTED = "restricted";
+    }
+
+    /**
      * Base columns for tables that contain text-based SMSs.
      */
     public interface TextBasedSmsColumns {
@@ -348,6 +414,16 @@ public final class Telephony {
         @FlaggedApi(android.view.flags.Flags.FLAG_REDACT_OTP_APP_COMPAT_API)
         @TestApi
         public static final int OTP_SUBTYPE_WEB_OTP = 2 << OTP_SUBTYPE_SHIFT;
+
+        /**
+         * Specifies read access restriction for the message. The message can be marked as
+         * restricted by the message creator if it's granted the
+         * {@link AppOpsManager#OP_WRITE_RESTRICTED_MESSAGES} app op. The values that can be stored
+         * in this column defined in {@link ReadRestriction}.
+         * <P>Type: INTEGER</P>
+         * @hide
+         */
+        public static final String READ_RESTRICTION = ReadRestriction.READ_RESTRICTION_COLUMN_NAME;
     }
 
     /**
@@ -2142,6 +2218,16 @@ public final class Telephony {
         public static final String SUBSCRIPTION_ID = "sub_id";
 
         /**
+         * Column specifying read access restriction for the message. The message can be marked as
+         * restricted by the message creator if it's granted the
+         * {@link AppOpsManager#OP_WRITE_RESTRICTED_MESSAGES} app op. The values that can be stored
+         * in this column defined in {@link ReadRestriction}.
+         * <P>Type: INTEGER</P>
+         * @hide
+         */
+        public static final String READ_RESTRICTION = ReadRestriction.READ_RESTRICTION_COLUMN_NAME;
+
+        /**
          * The identity of the sender of a sent message. It is
          * usually the package name of the app which sends the message.
          * <p class="note"><strong>Note:</strong>
@@ -2171,6 +2257,15 @@ public final class Telephony {
          * @hide
          */
         public static final String SUBSCRIPTION_ID = "sub_id";
+
+        /**
+         * Column to specify if the address is read restricted. The address is considered restricted
+         * if it's used exclusively in threads that are restricted. This column is not directly
+         * accessible by any apps and modified only by the system.
+         * <P>Type: INTEGER</P>
+         * @hide
+         */
+        public static final String READ_RESTRICTION = ReadRestriction.READ_RESTRICTION_COLUMN_NAME;
     }
 
     /**
@@ -2247,6 +2342,16 @@ public final class Telephony {
          * @hide
          */
         public static final String SUBSCRIPTION_ID = "sub_id";
+
+        /**
+         * Column to specify if the thread is restricted. The thread is restricted if it exclusively
+         * contains restricted messages. A restricted thread is only visible to apps with
+         * the {@link AppOpsManager#OP_READ_RESTRICTED_MESSAGES} app op. This column is not
+         * directly accessible by any apps and modified only by the system.
+         * <P>Type: INTEGER</P>
+         * @hide
+         */
+        public static final String READ_RESTRICTION = ReadRestriction.READ_RESTRICTION_COLUMN_NAME;
     }
 
     /**

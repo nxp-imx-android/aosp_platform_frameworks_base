@@ -13549,6 +13549,10 @@ package android.provider {
     field @NonNull public static final String ENABLE_TEST_ALERT_PREF = "enable_test_alerts";
   }
 
+  @FlaggedApi("com.android.internal.telephony.flags.secure_access_to_restricted_rcs_messages") public static final class Telephony.ReadRestriction {
+    field @FlaggedApi("com.android.internal.telephony.flags.secure_access_to_restricted_rcs_messages") public static final String RESTRICTED = "restricted";
+  }
+
   public static final class Telephony.Sms.Intents {
     field public static final String ACTION_SMS_EMERGENCY_CB_RECEIVED = "android.provider.action.SMS_EMERGENCY_CB_RECEIVED";
   }
