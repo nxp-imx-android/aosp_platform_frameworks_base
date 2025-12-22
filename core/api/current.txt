@@ -53218,6 +53218,7 @@ package android.view {
     field public static final int KEYCODE_8 = 15; // 0xf
     field public static final int KEYCODE_9 = 16; // 0x10
     field public static final int KEYCODE_A = 29; // 0x1d
+    field @FlaggedApi("com.android.hardware.input.enable_new_26q2_keycodes") public static final int KEYCODE_ACCESSIBILITY = 338; // 0x152
     field public static final int KEYCODE_ALL_APPS = 284; // 0x11c
     field public static final int KEYCODE_ALT_LEFT = 57; // 0x39
     field public static final int KEYCODE_ALT_RIGHT = 58; // 0x3a
