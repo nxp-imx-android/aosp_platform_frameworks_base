@@ -16,9 +16,10 @@
 
 package com.android.settingslib.metadata
 
+import android.content.Context
 import android.os.Bundle
-import com.android.settingslib.metadata.KeyParametersSchema.ParameterDefinition.Companion.DESCRIPTION_KEY
-import com.android.settingslib.metadata.KeyParametersSchema.ParameterDefinition.Companion.REQUIRED_KEY
+import androidx.annotation.StringRes
+import com.android.settingslib.metadata.R
 import org.json.JSONObject
 
 /**
@@ -122,7 +123,7 @@ data class ValidatedKeyParameters internal constructor(
 }
 
 /**
- * Defines the schema for a set of parameters, including their names, descriptions, and validation rules.
+ * Defines the schema for a set of parameters, including their names, purposes, and validation rules.
  * This class acts as a factory for creating validated [ValidatedKeyParameters] instances.
  *
  * Use the DSL function `KeyParametersSchema { ... }` to create an instance.
@@ -136,26 +137,50 @@ class KeyParametersSchema private constructor(
      * Holds the definition and rules for a single parameter within the schema.
      *
      * @property name The unique name of the parameter.
-     * @property description A human-readable description of what the parameter is for.
+     * @property purpose The string resource of a human-readable purpose of what the parameter is for.
      * @property required If `true`, this parameter must be provided when creating [ValidatedKeyParameters].
      */
     data class ParameterDefinition(
         val name: String,
-        val description: String,
+        @StringRes val purpose: Int,
         val required: Boolean
     ) {
+        constructor(
+            name: String,
+            description: String,
+            required: Boolean
+        ) : this(name, description.hashCode(), required) {
+            purposeHashMap[description.hashCode()] = description
+        }
+
+        // TODO (b/468973102): remove this when all current parameterized screens migrated to string res purpose
+        private val purposeHashMap = hashMapOf<Int, String>()
+
         /**
-         * Returns a map representation of the parameter definition.
+         * Returns a map representation of the parameter definition, suitable for serialization.
+         *
+         * @param context The [Context] used to resolve the string resource for the `purpose` resource id.
+         * @return A map containing the resolved purpose string and the `required` flag.
          */
-        fun toParameterSchemaMap(): Map<String, Any> {
+        fun toParameterSchemaMap(context: Context): Map<String, Any> {
             return mapOf(
-                DESCRIPTION_KEY to description,
+                PURPOSE_KEY to (purposeHashMap[purpose] ?: context.getString(purpose)),
+                REQUIRED_KEY to required
+            )
+        }
+
+        /**
+         * Returns a map representation of the parameter definition with an unresolved purpose.
+         */
+        internal fun toUnresolvedParameterSchemaMap(): Map<String, Any> {
+            return mapOf(
+                PURPOSE_KEY to purpose,
                 REQUIRED_KEY to required
             )
         }
 
         companion object {
-            const val DESCRIPTION_KEY = "description"
+            const val PURPOSE_KEY = "purpose"
             const val REQUIRED_KEY = "required"
         }
     }
@@ -170,14 +195,24 @@ class KeyParametersSchema private constructor(
          * Defines a parameter and adds it to the schema.
          *
          * @param name The unique name for the parameter.
-         * @param description A human-readable description of the parameter.
+         * @param purpose The string resource if of a human-readable purpose of the parameter.
          * @param required Whether this parameter must be provided. Defaults to `false`.
          * @throws IllegalArgumentException if a parameter with the same name is already defined.
          */
+        fun parameter(name: String, @StringRes purpose: Int, required: Boolean = false) {
+            if (parameters.containsKey(name)) {
+                throw IllegalArgumentException("Parameter '$name' is already defined.")
+            }
+            parameters[name] = ParameterDefinition(name, purpose, required)
+        }
+
+        // TODO (b/468973102): remove this when all current parameterized screens migrated to string res purpose
+        @Deprecated("This method is no longer used")
         fun parameter(name: String, description: String, required: Boolean = false) {
             if (parameters.containsKey(name)) {
                 throw IllegalArgumentException("Parameter '$name' is already defined.")
             }
+
             parameters[name] = ParameterDefinition(name, description, required)
         }
 
@@ -308,40 +343,35 @@ class KeyParametersSchema private constructor(
     /**
      * Returns a JSON string representation of the schema.
      *
-     * The format is a JSON string like `{"key1":{"description":"...","required":true},...}`.
+     * This method serializes the entire schema, including the names of all defined parameters,
+     * their resolved human-readable purposes, and whether they are required. The resulting JSON
+     * is suitable for clients to understand the parameterization.
+     *
+     * The format is a JSON string like:
+     * `{"key1":{"purpose":"The purpose of this parameter","required":true},...}`
+     *
+     * @param context The [Context] used to resolve the string resources for the parameter purposes.
+     * @return A JSON string representing the complete schema.
      */
-    fun toJsonString(): String {
-        val schemaMap = schema.mapValues { it.value.toParameterSchemaMap() }
+    fun toJsonString(context: Context): String {
+        val schemaMap = schema.mapValues { it.value.toParameterSchemaMap(context) }
         return JSONObject(schemaMap).toString()
     }
 
-    override fun toString() = "KeyParametersSchema(schema=${toJsonString()})"
-
-    companion object {
-        /**
-         * Creates a [KeyParametersSchema] from a string representation.
-         *
-         * The expected format is a JSON string like `{"key1":{"description":"...","required":true},...}`.
-         *
-         * @param jsonString The string representation of the schema.
-         * @return A [KeyParametersSchema] instance.
-         * @throws org.json.JSONException if the string is not a valid JSON.
-         */
-        @JvmStatic
-        fun fromJsonString(jsonString: String): KeyParametersSchema {
-            val json = JSONObject(jsonString)
-            val builder = Builder()
-            json.keys().forEach { key ->
-                val def = json.getJSONObject(key)
-                builder.parameter(
-                    name = key,
-                    description = def.getString(DESCRIPTION_KEY),
-                    required = def.getBoolean(REQUIRED_KEY)
-                )
-            }
-            return builder.build()
-        }
+    /**
+     * Returns a JSON string representation of the schema with unresolved `purpose` resource IDs.
+     *
+     * The format is a JSON string like:
+     * `{"key1":{"purpose":2737,"required":true},...}`
+     *
+     * @return A JSON string representing the complete schema.
+     */
+    fun toUnresolvedJsonString(): String {
+        val schemaMap = schema.mapValues { it.value.toUnresolvedParameterSchemaMap() }
+        return JSONObject(schemaMap).toString()
     }
+
+    override fun toString() = "KeyParametersSchema(schema: ${toUnresolvedJsonString()})"
 }
 
 /**
@@ -350,7 +380,7 @@ class KeyParametersSchema private constructor(
  * Example:
  * ```
  * val mySchema = KeyParametersSchema {
- *     parameter("pkg", "The package name", required = true)
+ *     parameter("pkg", R.string.purpose_package_name, required = true)
  * }
  * ```
  */
@@ -367,7 +397,7 @@ const val KEY_PACKAGE_NAME = "pkg"
  * Adds the app package name parameter to the schema.
  */
 fun KeyParametersSchema.Builder.withAppPackageName() {
-    parameter(KEY_PACKAGE_NAME, "The package name of the app", required = true)
+    parameter(KEY_PACKAGE_NAME, R.string.parameter_pkg_purpose, required = true)
 }
 
 /**
