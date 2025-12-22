@@ -81,6 +81,10 @@ constructor(
         override val context = this@SmartspaceElementProvider.context
         override val source = ElementSource.STANDARD
 
+        private val view: View by lazy {
+            setupDate(context, isLargeClock) { it.orientation = LinearLayout.VERTICAL }
+        }
+
         @Composable
         override fun LockscreenScope<MovableElementContentScope>.LockscreenElement() {
             if (!keyguardSmartspaceViewModel.isSmartspaceEnabled) {
@@ -91,9 +95,7 @@ constructor(
                 keyguardSmartspaceViewModel.isWeatherEnabled.collectAsStateWithLifecycle(false)
 
             LookaheadAndroidView(
-                factory = { ctx ->
-                    setupDate(ctx, isLargeClock) { it.orientation = LinearLayout.VERTICAL }
-                },
+                factory = { view },
                 modifier = context.burnInModifiers.nonClock.then(context.nonAuthUIModifier),
                 update = { view -> updateDWA(view as LinearLayout, isWeatherEnabled, isLargeClock) },
             )
@@ -107,6 +109,10 @@ constructor(
         override val context = this@SmartspaceElementProvider.context
         override val source = ElementSource.STANDARD
 
+        private val view: View by lazy {
+            setupDate(context, isLargeClock) { it.orientation = LinearLayout.HORIZONTAL }
+        }
+
         @Composable
         override fun LockscreenScope<MovableElementContentScope>.LockscreenElement() {
             if (!keyguardSmartspaceViewModel.isSmartspaceEnabled) {
@@ -117,9 +123,7 @@ constructor(
                 keyguardSmartspaceViewModel.isWeatherEnabled.collectAsStateWithLifecycle(false)
 
             LookaheadAndroidView(
-                factory = { ctx ->
-                    setupDate(ctx, isLargeClock) { it.orientation = LinearLayout.HORIZONTAL }
-                },
+                factory = { view },
                 modifier = context.burnInModifiers.nonClock.then(context.nonAuthUIModifier),
                 update = { view -> updateDWA(view as LinearLayout, isWeatherEnabled, isLargeClock) },
             )
@@ -169,6 +173,8 @@ constructor(
         override val context = this@SmartspaceElementProvider.context
         override val source = ElementSource.STANDARD
 
+        private val view: View by lazy { smartspaceController.buildAndConnectView(context)!! }
+
         @Composable
         override fun LockscreenScope<MovableElementContentScope>.LockscreenElement() {
             if (!keyguardSmartspaceViewModel.isSmartspaceEnabled) {
@@ -190,7 +196,6 @@ constructor(
 
             LookaheadAndroidView(
                 factory = { ctx ->
-                    val view = smartspaceController.buildAndConnectView(ctx)!!
                     keyguardUnlockAnimationController.lockscreenSmartspace = view
                     view
                 },
