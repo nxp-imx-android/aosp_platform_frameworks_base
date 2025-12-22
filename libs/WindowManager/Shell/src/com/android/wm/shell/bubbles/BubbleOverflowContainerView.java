@@ -205,7 +205,7 @@ public class BubbleOverflowContainerView extends LinearLayout {
     /**
      * Handle theme changes.
      */
-    void updateTheme() {
+    public void updateTheme() {
         Resources res = getResources();
         final int mode = res.getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
         final boolean isNightMode = (mode == Configuration.UI_MODE_NIGHT_YES);
@@ -240,6 +240,7 @@ public class BubbleOverflowContainerView extends LinearLayout {
 
     }
 
+    /** Handle font size changes.*/
     public void updateFontSize() {
         final float fontSize = mContext.getResources()
                 .getDimensionPixelSize(com.android.internal.R.dimen.text_size_body_2_material);
@@ -247,6 +248,7 @@ public class BubbleOverflowContainerView extends LinearLayout {
         mEmptyStateSubtitle.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize);
     }
 
+    /** Handle locale changes.*/
     public void updateLocale() {
         mEmptyStateTitle.setText(mContext.getString(R.string.bubble_overflow_empty_title));
         mEmptyStateSubtitle.setText(mContext.getString(R.string.bubble_overflow_empty_subtitle));

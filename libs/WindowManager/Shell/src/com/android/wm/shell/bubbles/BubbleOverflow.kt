@@ -104,6 +104,24 @@ class BubbleOverflow(private val context: Context, private val positioner: Bubbl
         expandedView?.updateDimensions()
     }
 
+    /** Handle font size changes. */
+    fun updateFontSize() {
+        expandedView?.updateFontSize()
+        bubbleBarExpandedView?.updateFontSize()
+    }
+
+    /** Handle locale changes. */
+    fun updateLocale() {
+        expandedView?.updateLocale()
+        bubbleBarExpandedView?.updateLocale()
+    }
+
+    /** Handle theme changes. */
+    fun updateTheme() {
+        expandedView?.updateTheme()
+        bubbleBarExpandedView?.updateTheme()
+    }
+
     private fun updateBtnTheme() {
         val res = context.resources
 
