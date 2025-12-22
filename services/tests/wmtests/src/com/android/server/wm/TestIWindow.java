@@ -124,4 +124,9 @@ public class TestIWindow extends IWindow.Stub {
     public void dumpWindow(ParcelFileDescriptor pfd) {
 
     }
+
+    @Override
+    public void requestHardwareRendererOutputDisabled(boolean disabled) throws RemoteException {
+
+    }
 }

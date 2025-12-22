@@ -849,6 +849,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      */
     private final List<DisplayMirrorImpl> mDisplayMirrors = new ArrayList<>();
 
+    /**
+     * Whether to request HardwareRenderer output to be disabled for all window clients on this
+     * display.
+     */
+    private boolean mIsHardwareRendererOutputDisabled = false;
+
     private final Consumer<WindowState> mUpdateWindowsForAnimator = w -> {
         WindowStateAnimator winAnimator = w.mWinAnimator;
         final ActivityRecord activity = w.mActivityRecord;
@@ -1484,6 +1490,23 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         for (int i = 0; i < displayMirrors.size(); i++) {
             displayMirrors.get(i).closeWithTransaction(t);
         }
+    }
+
+    void requestHardwareRendererOutputDisabled(boolean disabled) {
+        if (disabled && mIsHardwareRendererOutputDisabled) {
+            return;
+        }
+        mIsHardwareRendererOutputDisabled = disabled;
+        forAllWindows(w -> {
+            try {
+                w.mClient.requestHardwareRendererOutputDisabled(disabled);
+            } catch (RemoteException e) {
+            }
+        }, true /* traverseTopToBottom */);
+    }
+
+    boolean isHardwareRendererOutputDisabled() {
+        return mIsHardwareRendererOutputDisabled;
     }
 
     void setAnimationsDisabledLocked(boolean disabled) {

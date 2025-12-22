@@ -1141,6 +1141,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         mOverrideScale = mWmService.mAtmService.mCompatModePackages.getCompatScale(
                 mAttrs.packageName, s.mUid);
         updateGlobalScale();
+        updateClientHardwareRendererOutputState(null, mDisplayContent);
 
         // Make sure we initial all fields before adding to parentWindow, to prevent exception
         // during onDisplayChanged.
@@ -1501,6 +1502,21 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         return !mWindowFrames.mFrame.equals(mWindowFrames.mLastFrame);
     }
 
+    private void updateClientHardwareRendererOutputState(DisplayContent oldDisplay,
+            DisplayContent newDisplay) {
+        final boolean oldState =
+                oldDisplay != null && oldDisplay.isHardwareRendererOutputDisabled();
+        final boolean newState =
+                newDisplay != null && newDisplay.isHardwareRendererOutputDisabled();
+        if (oldState == newState) {
+            return;
+        }
+        try {
+            mClient.requestHardwareRendererOutputDisabled(newState);
+        } catch (RemoteException e) {
+        }
+    }
+
     @Override
     void onDisplayChanged(DisplayContent dc) {
         if (mDisplayContent != null && dc != mDisplayContent) {
@@ -1527,6 +1543,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 }
             }
         }
+        updateClientHardwareRendererOutputState(mDisplayContent, dc);
         super.onDisplayChanged(dc);
         // Window was not laid out for this display yet, so make sure mLayoutSeq does not match.
         if (dc != null && mInputWindowHandle.getDisplayId() != dc.getDisplayId()) {

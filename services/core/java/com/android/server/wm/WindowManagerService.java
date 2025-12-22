@@ -403,7 +403,9 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /** @hide */
@@ -8746,6 +8748,70 @@ public class WindowManagerService extends IWindowManager.Stub
                         mirrorSurfaceControlCopy.release();
                     }
                 };
+            }
+        }
+
+        @Override
+        public boolean requestHardwareRendererOutputDisabled(int displayId) {
+            synchronized (mGlobalLock) {
+                final DisplayContent dc = mRoot.getDisplayContent(displayId);
+                if (dc == null) {
+                    Slog.e(TAG, "Failed to request HardwareRenderer output to be disabled"
+                            + " for display: " + displayId
+                            + " - DisplayContent not found.");
+                    return false;
+                }
+                dc.requestHardwareRendererOutputDisabled(true);
+                return true;
+            }
+        }
+
+        @Override
+        public boolean requestHardwareRendererOutputEnabled(int displayId, long timeoutMs,
+                Consumer<Boolean> callback, Executor executor) {
+            synchronized (mGlobalLock) {
+                final DisplayContent dc = mRoot.getDisplayContent(displayId);
+                if (dc == null) {
+                    Slog.e(TAG, "Failed to request HardwareRenderer output to be re-enabled"
+                            + " for display: " + displayId
+                            + " - DisplayContent not found.");
+                    return false;
+                }
+
+                final BLASTSyncEngine.TransactionReadyListener listener =
+                        new BLASTSyncEngine.TransactionReadyListener() {
+                            @Override
+                            public void onTransactionReady(int mSyncId,
+                                    SurfaceControl.Transaction transaction) {
+                                transaction.apply();
+                            }
+
+                            @Override
+                            public void onTransactionCommitted() {
+                                executor.execute(() -> callback.accept(true));
+                            }
+
+                            @Override
+                            public void onTransactionCommitTimeout() {
+                                Slog.w(TAG, "waitForAllWindowsDrawnBlast timeout on display "
+                                        + displayId);
+                                executor.execute(() -> callback.accept(false));
+                            }
+                        };
+
+                final int syncId = mSyncEngine.startSyncSet(listener, timeoutMs,
+                        "requestHardwareRendererOutputEnabled", false /* parallel */);
+                dc.forAllWindows(win -> {
+                    if (win.isVisibleNow()) {
+                        mSyncEngine.addToSyncSet(syncId, win);
+                    }
+                }, true /* traverseTopToBottom */);
+
+                // Re-enabling has the side effect of causing windows to be re-drawn.
+                dc.requestHardwareRendererOutputDisabled(false);
+
+                mSyncEngine.setReady(syncId);
+                return true;
             }
         }
 
