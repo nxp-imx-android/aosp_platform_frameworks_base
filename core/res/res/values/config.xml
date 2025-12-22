@@ -7918,8 +7918,6 @@
 
     <!-- Whether contextual mode (e.g. Do Not Disturb Mode) sync is supported by this device. -->
     <bool name="config_supportContextualModeSync">true</bool>
-    <!-- If supported, should contextual mode sync be enabled by default. -->
-    <bool name="config_enableContextualModeSyncByDefault">true</bool>
 
     <!-- The number of top UID I/O usage summaries to report on TV watchdog I/O usage
          summary atom pull. -->

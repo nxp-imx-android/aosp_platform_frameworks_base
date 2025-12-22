@@ -34,31 +34,20 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.robolectric.shadow.api.Shadow.extract;
 
 import android.app.AutomaticZenRule;
 import android.app.NotificationManager;
 import android.app.NotificationManager.Policy;
-import android.app.modes.ContextualModeManager;
-import android.companion.AssociationInfo;
-import android.companion.CompanionDeviceManager;
 import android.content.Context;
 import android.net.Uri;
-import android.os.PersistableBundle;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.service.notification.Condition;
-import android.service.notification.Flags;
 import android.service.notification.ZenDeviceEffects;
 import android.service.notification.ZenModeConfig;
 import android.service.notification.ZenPolicy;
 
 import androidx.test.core.app.ApplicationProvider;
-
-import com.android.settingslib.notification.modes.ZenModesBackendTest.ShadowCompanionDeviceManager;
-import com.android.settingslib.notification.modes.ZenModesBackendTest.ShadowContextualModeManager;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -70,17 +59,12 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(shadows = {ShadowContextualModeManager.class, ShadowCompanionDeviceManager.class})
 public class ZenModesBackendTest {
 
     private static final String ZEN_RULE_ID = "rule";
@@ -102,8 +86,6 @@ public class ZenModesBackendTest {
 
     private Context mContext;
     private ZenModesBackend mBackend;
-    private ShadowContextualModeManager mShadowContextualModeManager;
-    private ShadowCompanionDeviceManager mShadowCompanionDeviceManager;
 
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule(
@@ -163,14 +145,7 @@ public class ZenModesBackendTest {
     @Before
     public void setup() {
         mContext = ApplicationProvider.getApplicationContext();
-        // We have to use the hidden ctor here since getSystemService() can't get a
-        // ContextualModeManager in robolectric tests.
-        ContextualModeManager cmm = new ContextualModeManager(mContext);
-        CompanionDeviceManager cdm = mContext.getSystemService(CompanionDeviceManager.class);
-        mShadowContextualModeManager = extract(cmm);
-        mShadowCompanionDeviceManager = extract(cdm);
-
-        mBackend = new ZenModesBackend(mContext, () -> mNm, () -> cdm, () -> cmm);
+        mBackend = new ZenModesBackend(mContext, mNm);
 
         // Default catch-all case with no data. This isn't realistic, but tests below that rely
         // on the config to get data on rules active will create those individually.
@@ -453,129 +428,7 @@ public class ZenModesBackendTest {
                 () -> mBackend.removeMode(manualDndMode(false)));
     }
 
-    @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DND_SYNC, android.companion.Flags.FLAG_ENABLE_DATA_SYNC})
-    public void isModeSyncSupported_disabledByApi_unsupported() {
-        mShadowContextualModeManager.setModeSyncSupported(false);
-
-        assertThat(mBackend.isModeSyncSupported()).isFalse();
-    }
-
-    @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DND_SYNC, android.companion.Flags.FLAG_ENABLE_DATA_SYNC})
-    public void isModeSyncSupported_associationsDoNotSupportSync_unsupported() {
-        mShadowContextualModeManager.setModeSyncSupported(true);
-        AssociationInfo association1 = newAssociation(1, /* supportSync= */ false);
-        AssociationInfo association2 = newAssociation(2, /* supportSync= */ false);
-        mShadowCompanionDeviceManager.addAssociation(association1);
-        mShadowCompanionDeviceManager.addAssociation(association2);
-
-        assertThat(mBackend.isModeSyncSupported()).isFalse();
-    }
-
-    @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DND_SYNC, android.companion.Flags.FLAG_ENABLE_DATA_SYNC})
-    public void isModeSyncSupported_associationsSupportSync_supported() {
-        mShadowContextualModeManager.setModeSyncSupported(true);
-        AssociationInfo association1 = newAssociation(1, /* supportSync= */ false);
-        AssociationInfo association2 = newAssociation(2, /* supportSync= */ true);
-        mShadowCompanionDeviceManager.addAssociation(association1);
-        mShadowCompanionDeviceManager.addAssociation(association2);
-
-        assertThat(mBackend.isModeSyncSupported()).isTrue();
-    }
-
-    @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DND_SYNC, android.companion.Flags.FLAG_ENABLE_DATA_SYNC})
-    public void isModeSyncEnabled_enabledByApi() {
-        mShadowContextualModeManager.setModeSyncEnabled(true);
-
-        assertThat(mBackend.isModeSyncEnabled()).isTrue();
-    }
-
-    @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DND_SYNC, android.companion.Flags.FLAG_ENABLE_DATA_SYNC})
-    public void isModeSyncEnabled_disabledByApi() {
-        mShadowContextualModeManager.setModeSyncEnabled(false);
-
-        assertThat(mBackend.isModeSyncEnabled()).isFalse();
-    }
-
-    @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DND_SYNC, android.companion.Flags.FLAG_ENABLE_DATA_SYNC})
-    public void setModeSyncEnabled_setState() {
-        mBackend.setModeSyncEnabled(true);
-
-        assertThat(mShadowContextualModeManager.isModeSyncEnabled()).isTrue();
-
-        mBackend.setModeSyncEnabled(false);
-
-        assertThat(mShadowContextualModeManager.isModeSyncEnabled()).isFalse();
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_DND_SYNC)
-    public void setModeSyncEnabled_throwsExceptionWhenFlagDisabled() {
-        assertThrows(UnsupportedOperationException.class, () -> mBackend.setModeSyncEnabled(true));
-    }
-
-    private AssociationInfo newAssociation(int associationId, boolean supportSync) {
-        PersistableBundle metadata = new PersistableBundle();
-        metadata.putPersistableBundle(
-                CompanionDeviceManager.FEATURE_CROSS_DEVICE_SYNC, new PersistableBundle());
-        metadata.getPersistableBundle(CompanionDeviceManager.FEATURE_CROSS_DEVICE_SYNC)
-                .putBoolean(
-                        ZenModesBackend.CDM_METADATA_KEY_CONTEXTUAL_MODE_SYNC_SUPPORTED,
-                        supportSync);
-        return new AssociationInfo.Builder(associationId, mContext.getUserId(), "package")
-                .setMetadata(metadata)
-                .setDisplayName("test")
-                .build();
-    }
-
     private static ZenMode manualDndMode(boolean isActive) {
         return ZenMode.manualDndMode(MANUAL_DND_RULE, isActive, null);
-    }
-
-    /** Shadow implementation of {@link ContextualModeManager}. */
-    @Implements(ContextualModeManager.class)
-    public static class ShadowContextualModeManager {
-
-        private boolean mModeSyncSupported;
-        private boolean mModeSyncEnabled;
-
-        @Implementation
-        public boolean isModeSyncSupported() {
-            return mModeSyncSupported;
-        }
-
-        public void setModeSyncSupported(boolean supported) {
-            mModeSyncSupported = supported;
-        }
-
-        @Implementation
-        public boolean isModeSyncEnabled() {
-            return mModeSyncEnabled;
-        }
-
-        @Implementation
-        public void setModeSyncEnabled(boolean enabled) {
-            mModeSyncEnabled = enabled;
-        }
-    }
-
-    /** Shadow implementation of {@link CompanionDeviceManager}. */
-    @Implements(CompanionDeviceManager.class)
-    public static class ShadowCompanionDeviceManager {
-        private final List<AssociationInfo> mAssociationInfos = new ArrayList<>();
-
-        @Implementation
-        public List<AssociationInfo> getAllAssociations(int userId) {
-            return mAssociationInfos;
-        }
-
-        public void addAssociation(AssociationInfo associationInfo) {
-            mAssociationInfos.add(associationInfo);
-        }
     }
 }
