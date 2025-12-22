@@ -16,11 +16,55 @@
 
 package com.android.server.security.talisman;
 
-import com.android.framework.protobuf.ByteString;
+import java.util.Arrays;
 
-/** Represents a key pair used for Talisman operations. The private key may be encrypted. */
-record TalismanKey(ByteString publicKey, ByteString privateKey) {
+/**
+ * Represents a key pair used for Talisman operations.
+ *
+ * <p>The private key is wrapped. Do not use it directly. Use {@link TalismanMasterkey} to interact
+ * with it instead.
+ */
+class TalismanKey {
+    private final byte[] mPublicKey;
+    private final byte[] mPrivateKey;
+
     TalismanKey(byte[] publicKey, byte[] privateKey) {
-        this(ByteString.copyFrom(publicKey), ByteString.copyFrom(privateKey));
+        mPublicKey = Arrays.copyOf(publicKey, publicKey.length);
+        mPrivateKey = Arrays.copyOf(privateKey, privateKey.length);
+    }
+
+    byte[] getPublicKey() {
+        return mPublicKey;
+    }
+
+    byte[] getPrivateKey() {
+        return mPrivateKey;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TalismanKey)) return false;
+        TalismanKey that = (TalismanKey) o;
+        return Arrays.equals(mPublicKey, that.mPublicKey)
+                && Arrays.equals(mPrivateKey, that.mPrivateKey);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Arrays.hashCode(mPublicKey);
+        result = 31 * result + Arrays.hashCode(mPrivateKey);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "TalismanKey["
+                + "publicKey="
+                + Arrays.toString(mPublicKey)
+                + ", "
+                + "privateKey="
+                + Arrays.toString(mPrivateKey)
+                + "]";
     }
 }

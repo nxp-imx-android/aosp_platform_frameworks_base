@@ -49,7 +49,7 @@ public final class TalismanMasterKeyTest {
                 InvalidKeySpecException.class,
                 () ->
                         keyFactory.generatePrivate(
-                                new PKCS8EncodedKeySpec(talismanKey.privateKey().toByteArray())));
+                                new PKCS8EncodedKeySpec(talismanKey.getPrivateKey())));
     }
 
     @Test
@@ -61,8 +61,7 @@ public final class TalismanMasterKeyTest {
         var keyFactory = KeyFactory.getInstance("Ed25519");
         var verifier = Signature.getInstance("Ed25519");
         var publicKey =
-                keyFactory.generatePublic(
-                        new X509EncodedKeySpec(talismanKey.publicKey().toByteArray()));
+                keyFactory.generatePublic(new X509EncodedKeySpec(talismanKey.getPublicKey()));
         verifier.initVerify(publicKey);
         verifier.update(message);
         assertThat(verifier.verify(signature)).isTrue();
@@ -73,8 +72,8 @@ public final class TalismanMasterKeyTest {
         var masterKey = TalismanMasterKey.generateMasterKey("talisman-");
         var talismanKey =
                 new TalismanKey(
-                        masterKey.generatePerTalismanKey().publicKey(),
-                        masterKey.generatePerTalismanKey().privateKey());
+                        masterKey.generatePerTalismanKey().getPublicKey(),
+                        masterKey.generatePerTalismanKey().getPrivateKey());
         byte[] message = "talisman".getBytes();
         assertThrows(IllegalArgumentException.class, () -> masterKey.sign(talismanKey, message));
     }
@@ -93,15 +92,16 @@ public final class TalismanMasterKeyTest {
         var masterKey = TalismanMasterKey.generateMasterKey("talisman-");
         TalismanKey talismanKey = masterKey.generatePerTalismanKey();
         TalismanBatchAttestation attestation = masterKey.attest(Arrays.asList(talismanKey));
-        assertThat(attestation.batchHash().length).isGreaterThan(0);
-        assertThat(attestation.signature().length).isGreaterThan(0);
-        assertThat(attestation.certificates().size()).isAtLeast(2);
+        assertThat(attestation.getBatchHash().length).isGreaterThan(0);
+        assertThat(attestation.getSignature().length).isGreaterThan(0);
+        assertThat(attestation.getCertificates().size()).isAtLeast(2);
         // TODO(b/468195017): Change to Ed25519 once the issue with loading Ed25519 keys is
         // resolved.
         var verifier = Signature.getInstance("SHA256WithECDSA");
-        verifier.initVerify(attestation.certificates().get(attestation.certificates().size() - 1));
-        verifier.update(attestation.batchHash());
-        assertThat(verifier.verify(attestation.signature())).isTrue();
+        verifier.initVerify(
+                attestation.getCertificates().get(attestation.getCertificates().size() - 1));
+        verifier.update(attestation.getBatchHash());
+        assertThat(verifier.verify(attestation.getSignature())).isTrue();
     }
 
     @Test

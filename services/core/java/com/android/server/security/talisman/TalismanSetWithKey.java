@@ -16,5 +16,41 @@
 
 package com.android.server.security.talisman;
 
+import java.util.Objects;
+
 /** Represents a {@link TalismanSet} and the associated {@link TalismanKey}. */
-record TalismanSetWithKey(TalismanKey key, TalismanSet talismanSet) {}
+class TalismanSetWithKey {
+    private final TalismanKey mKey;
+    private final TalismanSet mTalismanSet;
+
+    TalismanSetWithKey(TalismanKey key, TalismanSet talismanSet) {
+        mKey = key;
+        mTalismanSet = talismanSet;
+    }
+
+    TalismanKey getKey() {
+        return mKey;
+    }
+
+    TalismanSet getTalismanSet() {
+        return mTalismanSet;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TalismanSetWithKey)) return false;
+        TalismanSetWithKey that = (TalismanSetWithKey) o;
+        return Objects.equals(mKey, that.mKey) && Objects.equals(mTalismanSet, that.mTalismanSet);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mKey, mTalismanSet);
+    }
+
+    @Override
+    public String toString() {
+        return "TalismanSetWithKey[" + "key=" + mKey + ", " + "talismanSet=" + mTalismanSet + "]";
+    }
+}
