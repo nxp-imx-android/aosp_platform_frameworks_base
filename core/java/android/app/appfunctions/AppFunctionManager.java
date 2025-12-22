@@ -25,6 +25,7 @@ import static android.app.appfunctions.AppFunctionManagerHelper.executionExcepti
 import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_MANAGER;
 import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS;
 import static android.permission.flags.Flags.FLAG_APP_FUNCTION_ACCESS_UI_ENABLED;
+import static android.permission.flags.Flags.allowlistServiceEnabled;
 
 import android.Manifest;
 import android.annotation.CallbackExecutor;
@@ -900,13 +901,18 @@ public final class AppFunctionManager {
     @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
     public @NonNull List<SignedPackage> getAgentAllowlist() {
         try {
-            List<SignedPackageParcel> packageParcels = mService.getAgentAllowlist();
-            int packageParcelsSize = packageParcels.size();
-            List<SignedPackage> packages = new ArrayList<>(packageParcelsSize);
-            for (int i = 0; i < packageParcelsSize; i++) {
-                packages.add(new SignedPackage(packageParcels.get(i)));
+            if (allowlistServiceEnabled()) {
+                List<SignedPackage> packages = mService.getAgentAllowlist();
+                return packages;
+            } else {
+                List<SignedPackageParcel> packageParcels = mService.getAgentAllowlistLegacy();
+                int packageParcelsSize = packageParcels.size();
+                List<SignedPackage> packages = new ArrayList<>(packageParcelsSize);
+                for (int i = 0; i < packageParcelsSize; i++) {
+                    packages.add(new SignedPackage(packageParcels.get(i)));
+                }
+                return packages;
             }
-            return packages;
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

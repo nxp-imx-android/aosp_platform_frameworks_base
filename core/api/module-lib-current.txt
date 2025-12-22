@@ -138,12 +138,6 @@ package android.content.pm {
     field public static final int MATCH_STATIC_SHARED_AND_SDK_LIBRARIES = 67108864; // 0x4000000
   }
 
-  @FlaggedApi("android.permission.flags.enhanced_confirmation_mode_apis_enabled") public class SignedPackage {
-    method @NonNull public byte[] getCertificateDigest();
-    method @NonNull public String getPackageName();
-    method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public boolean hasCertificateDigest();
-  }
-
 }
 
 package android.hardware.usb {

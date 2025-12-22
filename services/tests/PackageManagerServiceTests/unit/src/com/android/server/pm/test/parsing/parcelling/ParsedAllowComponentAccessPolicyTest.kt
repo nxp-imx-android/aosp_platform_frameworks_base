@@ -16,7 +16,7 @@
 
 package com.android.server.pm.test.parsing.parcelling
 
-import android.content.pm.SignedPackageParcel
+import android.content.pm.SignedPackage
 import android.os.Parcel
 import com.android.internal.pm.pkg.component.ParsedAllowComponentAccessPolicy
 import com.android.internal.pm.pkg.component.ParsedAllowComponentAccessPolicyImpl
@@ -48,14 +48,8 @@ class ParsedAllowComponentAccessPolicyTest : ParcelableComponentTest(
 
     override fun extraParams(): Collection<Param?> {
         val testRules = listOf(
-            SignedPackageParcel().apply {
-                packageName = "com.test.extra"
-                certificateDigest = "EXTRA_CERT".toByteArray()
-            },
-            SignedPackageParcel().apply {
-                packageName = "com.test.another"
-                certificateDigest = null
-            },
+            SignedPackage("com.test.extra", "EXTRA_CERT".toByteArray()),
+            SignedPackage("com.test.another", null)
         )
 
         return listOf(
@@ -68,7 +62,9 @@ class ParsedAllowComponentAccessPolicyTest : ParcelableComponentTest(
                     if (list1.size != list2.size) return@getSetByValue false
 
                     list1.zip(list2).all { (a, b) ->
-                        a.packageName == b.packageName && a.certificateDigest.contentEquals(b.certificateDigest)
+                        a.packageName == b.packageName
+                                && (!a.hasCertificateDigest() && !b.hasCertificateDigest() ||
+                                a.certificateDigest.contentEquals(b.certificateDigest))
                     }
                 })
         )
@@ -76,14 +72,8 @@ class ParsedAllowComponentAccessPolicyTest : ParcelableComponentTest(
 
     override fun initialObject(): ParsedAllowComponentAccessPolicyImpl {
         val testRules = listOf(
-            SignedPackageParcel().apply {
-                packageName = "com.test.app1"
-                certificateDigest = "EXTRA_CERT".toByteArray()
-            },
-            SignedPackageParcel().apply {
-                packageName = "com.test.app2"
-                certificateDigest = null
-            },
+            SignedPackage("com.test.app1", "EXTRA_CERT".toByteArray()),
+            SignedPackage("com.test.app2", null)
         )
         return ParsedAllowComponentAccessPolicyImpl(testRules)
     }

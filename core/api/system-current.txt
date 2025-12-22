@@ -5000,6 +5000,15 @@ package android.content.pm {
     field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.ShortcutManager.ShareShortcutInfo> CREATOR;
   }
 
+  @FlaggedApi("android.permission.flags.allowlist_service_enabled") public final class SignedPackage implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public byte[] getCertificateDigest();
+    method @NonNull public String getPackageName();
+    method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public boolean hasCertificateDigest();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.SignedPackage> CREATOR;
+  }
+
   public final class SuspendDialogInfo implements android.os.Parcelable {
     method public int describeContents();
     method public void writeToParcel(android.os.Parcel, int);

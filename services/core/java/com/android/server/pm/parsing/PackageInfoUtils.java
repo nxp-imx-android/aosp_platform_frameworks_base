@@ -43,7 +43,6 @@ import android.content.pm.ServiceInfo;
 import android.content.pm.SharedLibraryInfo;
 import android.content.pm.Signature;
 import android.content.pm.SignedPackage;
-import android.content.pm.SignedPackageParcel;
 import android.content.pm.SigningDetails;
 import android.content.pm.SigningInfo;
 import android.content.pm.UsesPermissionPurposeInfo;
@@ -1274,12 +1273,8 @@ public class PackageInfoUtils {
             return null;
         }
 
-        final List<SignedPackage> allowlistedSignedPackages = new ArrayList<>(
-                parsedPolicy.getParsedAllowlistedSignedPackages().size());
-        for (SignedPackageParcel packageParcel :
-                parsedPolicy.getParsedAllowlistedSignedPackages()) {
-            allowlistedSignedPackages.add(new SignedPackage(packageParcel));
-        }
+        final List<SignedPackage> allowlistedSignedPackages =
+                parsedPolicy.getParsedAllowlistedSignedPackages();
 
         return new AllowComponentAccessPolicyInfo(allowlistedSignedPackages);
 

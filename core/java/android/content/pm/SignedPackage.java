@@ -20,7 +20,8 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SystemApi;
-import android.annotation.TestApi;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.permission.flags.Flags;
 
 import java.util.Arrays;
@@ -31,63 +32,97 @@ import java.util.Objects;
  *
  * @hide
  */
-@SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
-@TestApi
-@FlaggedApi(Flags.FLAG_ENHANCED_CONFIRMATION_MODE_APIS_ENABLED)
-public class SignedPackage {
+@SystemApi
+@FlaggedApi(Flags.FLAG_ALLOWLIST_SERVICE_ENABLED)
+public final class SignedPackage implements Parcelable {
+
     @NonNull
-    private final SignedPackageParcel mData;
+    private final String mPackageName;
+    @Nullable
+    private final byte[] mCertificateDigest;
 
     /** @hide */
     public SignedPackage(@NonNull String packageName, @Nullable byte[] certificateDigest) {
-        SignedPackageParcel data = new SignedPackageParcel();
-        data.packageName = packageName;
-        data.certificateDigest = certificateDigest;
-        mData = data;
+        mPackageName = packageName;
+        mCertificateDigest = certificateDigest;
+    }
+
+    /** @hide */
+    public SignedPackage(@NonNull Parcel data) {
+        mPackageName = Objects.requireNonNull(data.readString8());
+        mCertificateDigest = data.createByteArray();
     }
 
     /** @hide */
     public SignedPackage(@NonNull SignedPackageParcel data) {
-        mData = data;
+        mPackageName = data.packageName;
+        mCertificateDigest = data.certificateDigest;
     }
 
     /** @hide */
-    public final @NonNull SignedPackageParcel getData() {
-        return mData;
+    public SignedPackageParcel toSignedPackageParcel() {
+        SignedPackageParcel parcel = new SignedPackageParcel();
+        parcel.packageName = mPackageName;
+        parcel.certificateDigest = mCertificateDigest;
+        return parcel;
     }
 
+
+    public static final @NonNull Creator<SignedPackage> CREATOR = new Creator<>() {
+        @Override
+        public SignedPackage createFromParcel(Parcel in) {
+            return new SignedPackage(in);
+        }
+
+        @Override
+        public SignedPackage[] newArray(int size) {
+            return new SignedPackage[size];
+        }
+    };
+
     public @NonNull String getPackageName() {
-        return mData.packageName;
+        return mPackageName;
     }
 
     /** @return the certificate digest. If none was provided, the method will throw an Exception */
     public @NonNull byte[] getCertificateDigest() {
-        return Objects.requireNonNull(mData.certificateDigest);
+        return Objects.requireNonNull(mCertificateDigest);
     }
 
     /** @return true if this SignedPackage has a certificate attached, false otherwise */
     @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
     public boolean hasCertificateDigest() {
-        return mData.certificateDigest != null;
+        return mCertificateDigest != null;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof SignedPackage that)) return false;
-        return mData.packageName.equals(that.mData.packageName) && Arrays.equals(
-                mData.certificateDigest, that.mData.certificateDigest);
+        return mPackageName.equals(that.mPackageName) && Arrays.equals(
+                mCertificateDigest, that.mCertificateDigest);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mData.packageName, Arrays.hashCode(mData.certificateDigest));
+        return Objects.hash(mPackageName, Arrays.hashCode(mCertificateDigest));
     }
 
     @Override
     public String toString() {
         return "SignedPackage{"
-                + "packageName='" + mData.packageName
-                + ", certificateDigest=" + Arrays.toString(mData.certificateDigest) + "}";
+                + "packageName='" + mPackageName
+                + ", certificateDigest=" + Arrays.toString(mCertificateDigest) + "}";
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@androidx.annotation.NonNull Parcel dest, int flags) {
+        dest.writeString8(mPackageName);
+        dest.writeByteArray(mCertificateDigest);
     }
 }
