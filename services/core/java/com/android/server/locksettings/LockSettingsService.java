@@ -3694,7 +3694,7 @@ public class LockSettingsService extends ILockSettings.Stub {
         }
 
         // Lock user's Keystore by wiping the user's super key cache.
-        if (com.android.server.flags.Flags.keystoreInMemoryCleanup()) {
+        if (com.android.server.flags.Flags.fixKeystoreMemoryCleanup()) {
             lockKeystore(userId);
         }
 
