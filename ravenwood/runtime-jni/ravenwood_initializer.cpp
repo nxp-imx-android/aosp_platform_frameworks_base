@@ -22,8 +22,6 @@
  * want to expose and override globally.
  */
 
-#include <nativehelper/ScopedUtfChars.h>
-
 #include <dlfcn.h>
 #include <fcntl.h>
 

@@ -249,9 +249,6 @@ cc_library_host_shared {
     name: "libravenwood_runtime",
     defaults: ["ravenwood_jni_defaults"],
     header_libs: ["libicuuc_headers"],
-    cflags: [
-        "-DNATIVE_HELPER_EMULATE_ART_UTF_CHARS=1",
-    ],
     srcs: [
         "runtime-jni/ravenwood_os_constants.cpp",
         "runtime-jni/ravenwood_runtime.cpp",
@@ -260,7 +257,6 @@ cc_library_host_shared {
         "libbase",
         "libcutils",
         "libutils",
-        "libandroid_runtime_ravenwood",
     ],
 }
 
