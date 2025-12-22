@@ -509,6 +509,49 @@ public class BackNavigationControllerTests extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_FIX_CROSS_ACTIVITY_BACK_ANIMATION_IN_BUBBLES)
+    public void getAnimatablePrevActivities_taskOrganizerIntercepts_nonRootActivity() {
+        // Setup: Task with 2 activities, organizer intercepts back.
+        CrossActivityTestCase testCase = createTopTaskWithTwoActivities();
+        spyOn(mAtm.mTaskOrganizerController);
+        doReturn(true).when(mAtm.mTaskOrganizerController)
+                .shouldInterceptBackPressedOnRootTask(testCase.task);
+
+        // Action: Call getAnimatablePrevActivities for the top (non-root) activity.
+        final ArrayList<ActivityRecord> outPrevActivities = new ArrayList<>();
+        boolean predictable = BackNavigationController.getAnimatablePrevActivities(
+                testCase.task, testCase.recordFront, outPrevActivities);
+
+        // Verification: Animation should be allowed for a non-root activity even if the organizer
+        // intercepts.
+        assertTrue("Animation should be allowed for non-root activity", predictable);
+        // The method should find the previous activity as the destination.
+        assertTrue(outPrevActivities.contains(testCase.recordBack));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FIX_CROSS_ACTIVITY_BACK_ANIMATION_IN_BUBBLES)
+    public void getAnimatablePrevActivities_taskOrganizerIntercepts_rootActivity() {
+        // Setup: Task with 1 activity (which is the root), organizer intercepts back.
+        Task task = createTopTaskWithActivity();
+        ActivityRecord rootActivity = task.getTopMostActivity();
+        spyOn(mAtm.mTaskOrganizerController);
+        doReturn(true).when(mAtm.mTaskOrganizerController)
+                .shouldInterceptBackPressedOnRootTask(task);
+
+        // Action: Call getAnimatablePrevActivities for the root activity.
+        final ArrayList<ActivityRecord> outPrevActivities = new ArrayList<>();
+        boolean predictable = BackNavigationController.getAnimatablePrevActivities(
+                task, rootActivity, outPrevActivities);
+
+        // Verification: Animation should be prevented for the root activity because the organizer
+        // intercepts.
+        assertFalse("Animation should be prevented for root activity when organizer intercepts",
+                predictable);
+        assertTrue(outPrevActivities.isEmpty());
+    }
+
+    @Test
     public void backTypeDialogCloseWhenBackFromDialog() {
         DialogCloseTestCase testCase = createTopTaskWithActivityAndDialog();
         IOnBackInvokedCallback callback = withSystemCallback(testCase.task);
