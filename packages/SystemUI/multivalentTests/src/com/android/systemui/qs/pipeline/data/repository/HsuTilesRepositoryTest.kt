@@ -16,8 +16,8 @@
 
 package com.android.systemui.qs.pipeline.data.repository
 
-import android.platform.test.annotations.RequiresFlagsDisabled
-import android.platform.test.annotations.RequiresFlagsEnabled
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -79,7 +79,7 @@ class HsuTilesRepositoryTest : SysuiTestCase() {
         }
 
     @Test
-    @RequiresFlagsEnabled(QsSplitInternetTile.FLAG_NAME)
+    @EnableFlags(QsSplitInternetTile.FLAG_NAME)
     fun flagEnabled_internetTileAllowed_convertedToWifi() =
         kosmos.runTest {
             overrideAllowListResource(arrayOf("internet"))
@@ -90,7 +90,7 @@ class HsuTilesRepositoryTest : SysuiTestCase() {
         }
 
     @Test
-    @RequiresFlagsDisabled(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.FLAG_NAME)
     fun flagDisabled_wifiTileAllowed_convertedToInternet() =
         kosmos.runTest {
             overrideAllowListResource(arrayOf("wifi"))
