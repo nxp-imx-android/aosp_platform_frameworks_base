@@ -110,7 +110,7 @@ public enum ShellProtoLogGroup implements IProtoLogGroup {
         private static final String TAG_WM_BUBBLES = "Bubbles";
         private static final String TAG_WM_APP_HANDLES = "AppHandles";
         private static final String TAG_WM_WINDOWING_LAYER = "WindowingLayer";
-        private static final String TAG_WM_PACKAGE_UPDATE = "PackageUpdate";
+        private static final String TAG_WM_PACKAGE_UPDATE = "ShellPackageUpdate";
 
         private static final boolean ENABLE_DEBUG = true;
         private static final boolean ENABLE_LOG_TO_PROTO_DEBUG = true;
