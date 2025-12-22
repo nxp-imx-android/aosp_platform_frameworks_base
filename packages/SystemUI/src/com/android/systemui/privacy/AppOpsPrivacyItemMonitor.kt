@@ -511,12 +511,8 @@ constructor(
             }
         }
 
-        if (android.location.flags.Flags.locationIndicatorGetUidImportanceFallback()) {
-            // In case a uid is not found because runningAppProcesses might return stale results
-            return activityManager.getUidImportance(uid)
-        }
-
-        return -1
+        // In case a uid is not found because runningAppProcesses might return stale results
+        return activityManager.getUidImportance(uid)
     }
 
     override fun dump(pw: PrintWriter, args: Array<out String>) {
