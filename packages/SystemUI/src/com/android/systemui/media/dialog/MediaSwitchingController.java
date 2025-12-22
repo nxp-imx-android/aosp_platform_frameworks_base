@@ -1069,26 +1069,24 @@ public class MediaSwitchingController
             return null;
         }
 
-        boolean inBroadcast = Flags.enableOutputSwitcherPersonalAudioSharing()
-                && getSessionReleaseType() == RELEASE_TYPE_SHARING;
-        if (inBroadcast) {
-            return R.string.media_output_dialog_button_stop_sharing;
-        } else if (isCurrentConnectedDeviceRemote()) {
-            // TODO: b/448827170 - Change isCurrentConnectedDeviceRemote to RELEASE_TYPE_SHARING
-            return R.string.media_output_dialog_button_stop_casting;
+        if (Flags.enableUseOfSessionReleaseTypeForStopButton()) {
+            return switch (getSessionReleaseType()) {
+                case RELEASE_TYPE_SHARING -> Flags.enableOutputSwitcherPersonalAudioSharing()
+                        ? R.string.media_output_dialog_button_stop_sharing
+                        : null;
+                case RELEASE_TYPE_CASTING -> R.string.media_output_dialog_button_stop_casting;
+                default -> null;
+            };
+        } else {
+            boolean inBroadcast = Flags.enableOutputSwitcherPersonalAudioSharing()
+                    && getSessionReleaseType() == RELEASE_TYPE_SHARING;
+            if (inBroadcast) {
+                return R.string.media_output_dialog_button_stop_sharing;
+            } else if (isCurrentConnectedDeviceRemote()) {
+                return R.string.media_output_dialog_button_stop_casting;
+            }
         }
         return null;
-    }
-
-
-    @Nullable
-    // TODO: b/448827170 - use value returned by this method for both text and visibility getters.
-    private @StringRes Integer getTextForSessionReleaseType() {
-        return switch (getSessionReleaseType()) {
-            case RELEASE_TYPE_CASTING -> R.string.media_output_dialog_button_stop_casting;
-            case RELEASE_TYPE_SHARING -> R.string.media_output_dialog_button_stop_sharing;
-            default -> null;
-        };
     }
 
     private void startActivity(Intent intent, ActivityTransitionAnimator.Controller controller) {

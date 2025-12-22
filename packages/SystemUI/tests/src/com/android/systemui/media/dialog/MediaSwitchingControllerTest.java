@@ -74,6 +74,7 @@ import android.os.Bundle;
 import android.os.PowerExemptionManager;
 import android.os.RemoteException;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
@@ -1968,6 +1969,48 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
         assertThat(mMediaSwitchingController.getStopButtonStringRes()).isEqualTo(
                 R.string.media_output_dialog_button_stop_sharing);
+    }
+
+    @Test
+    @EnableFlags({
+            Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON,
+            Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING
+    })
+    public void getStopButtonText_sessionReleaseSharing_returnsSharingText() {
+        doReturn(RoutingSessionInfo.RELEASE_TYPE_SHARING).when(
+                mLocalMediaManager).getSessionReleaseType();
+
+        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isEqualTo(
+                R.string.media_output_dialog_button_stop_sharing);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
+    @DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
+    public void getStopButtonText_sessionReleaseSharingDisabled_returnsNull() {
+        doReturn(RoutingSessionInfo.RELEASE_TYPE_SHARING).when(
+                mLocalMediaManager).getSessionReleaseType();
+
+        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isNull();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
+    public void getStopButtonText_sessionReleaseCasting_returnsCastingText() {
+        doReturn(RoutingSessionInfo.RELEASE_TYPE_CASTING).when(
+                mLocalMediaManager).getSessionReleaseType();
+
+        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isEqualTo(
+                R.string.media_output_dialog_button_stop_casting);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
+    public void getStopButtonText_sessionReleaseUnsupported_returnsNull() {
+        doReturn(RoutingSessionInfo.RELEASE_UNSUPPORTED).when(
+                mLocalMediaManager).getSessionReleaseType();
+
+        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isNull();
     }
 
     @Test
