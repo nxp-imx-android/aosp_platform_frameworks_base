@@ -774,7 +774,8 @@ public abstract class WMShellModule {
             DesktopState desktopState,
             IActivityTaskManager activityTaskManager,
             MSDLPlayer msdlPlayer,
-            Optional<BubbleController> bubbleController) {
+            Optional<BubbleController> bubbleController,
+            Optional<ClientFullscreenRequestController> clientFullscreenRequestController) {
         return new SplitScreenController(
                 context,
                 shellInit,
@@ -804,7 +805,8 @@ public abstract class WMShellModule {
                 desktopState,
                 activityTaskManager,
                 msdlPlayer,
-                bubbleController);
+                bubbleController,
+                clientFullscreenRequestController);
     }
 
     //

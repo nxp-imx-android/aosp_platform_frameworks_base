@@ -43,6 +43,8 @@ import com.android.wm.shell.common.ClientFullscreenRequestController.FullscreenR
 import com.android.wm.shell.common.ClientFullscreenRequestController.FullscreenRequestHandler.EnterResult.Approved.RestorableState
 import com.android.wm.shell.common.ClientFullscreenRequestController.FullscreenRequestHandler.ExitResult
 import com.android.wm.shell.protolog.ShellProtoLogGroup
+import com.android.wm.shell.shared.split.SplitScreenConstants.PersistentSnapPosition
+import com.android.wm.shell.shared.split.SplitScreenConstants.SplitPosition
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 
@@ -251,7 +253,13 @@ class ClientFullscreenRequestController(
                 sealed class RestorableState {
                     data class Desktop(val originalDeskId: Int, val bounds: Rect) :
                         RestorableState()
-                    // TODO: b/296268915 - add pip and split states.
+
+                    data class SplitScreen(
+                        @SplitPosition val originalSplitPosition: Int,
+                        @PersistentSnapPosition val originalSnapPosition: Int,
+                        val otherTaskId: Int,
+                    ) : RestorableState()
+                    // TODO: b/296268915 - add support for 3-app split.
                 }
             }
 
