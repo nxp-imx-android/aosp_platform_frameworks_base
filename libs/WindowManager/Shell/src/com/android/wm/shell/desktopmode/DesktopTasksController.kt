@@ -4771,13 +4771,7 @@ class DesktopTasksController(
         )
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             if (!inDesktop && !isDesktopFirstLegacy(displayId)) return null
-            if (
-                isTransparentTask &&
-                    (DesktopExperienceFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue ||
-                        DesktopModeFlags
-                            .INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
-                            .isTrue)
-            ) {
+            if (isTransparentTask) {
                 // Only update task repository for transparent task.
                 val deskId = repository.getActiveDeskId(displayId)
                 deskId?.let { repository.setTopTransparentFullscreenTaskData(it, task) }
@@ -4804,12 +4798,7 @@ class DesktopTasksController(
             logD("handleIncompatibleTaskLaunch not in desktop, not a freeform task, nothing to do")
             return null
         }
-        if (
-            isTransparentTask &&
-                (DesktopExperienceFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue ||
-                    DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
-                        .isTrue)
-        ) {
+        if (isTransparentTask) {
             // Only update task repository for transparent task.
             val deskId = repository.getActiveDeskId(displayId)
             deskId?.let { repository.setTopTransparentFullscreenTaskData(it, task) }
@@ -5554,7 +5543,6 @@ class DesktopTasksController(
         launchingTaskId: Int?,
         userId: Int,
     ): Int? {
-        if (!DesktopExperienceFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue) return null
         val repository = userRepositories.getProfile(userId)
         val data = repository.getTopTransparentFullscreenTaskData(deskId) ?: return null
 

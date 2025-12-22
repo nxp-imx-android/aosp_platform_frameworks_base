@@ -26,8 +26,6 @@ import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_OPEN
 import android.view.WindowManager.TRANSIT_TO_BACK
-import android.window.DesktopExperienceFlags
-import android.window.DesktopModeFlags
 import android.window.DesktopModeFlags.ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER
 import android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY
 import android.window.TransitionInfo
@@ -86,16 +84,11 @@ class DesktopTasksTransitionObserver(
         finishTransaction: SurfaceControl.Transaction,
     ) {
         // TODO: b/332682201 Update repository state
-        if (
-            DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC.isTrue ||
-                DesktopExperienceFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue
-        ) {
-            updateTopTransparentFullscreenTaskId(info)
-        }
+        updateTopTransparentFullscreenTaskId(info)
         updateWallpaperToken(info)
         if (
             !desktopMixedTransitionHandler.hasTransition(transition) &&
-            containsClosingTaskInDesktop(info)
+                containsClosingTaskInDesktop(info)
         ) {
             desktopMixedTransitionHandler.addPendingMixedTransition(
                 DesktopMixedTransitionHandler.PendingMixedTransition.Close(transition)
