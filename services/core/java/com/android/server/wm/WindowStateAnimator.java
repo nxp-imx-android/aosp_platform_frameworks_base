@@ -639,6 +639,7 @@ class WindowStateAnimator {
         mDrawState = NO_SURFACE;
         if (WindowManager.useClientSurface()) {
             mLastHidden = true;
+            t.hide(mWin.mSurfaceControl);
         }
     }
 }

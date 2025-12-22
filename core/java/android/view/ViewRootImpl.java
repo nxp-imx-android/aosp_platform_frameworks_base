@@ -9755,7 +9755,7 @@ public final class ViewRootImpl implements ViewParent,
                 & WindowManager.LayoutParams.PRIVATE_FLAG_IS_ROUNDED_CORNERS_OVERLAY) != 0) {
             surfaceFlags |= SurfaceControl.SKIP_SCREENSHOT;
         }
-        return new SurfaceControl.Builder()
+        final SurfaceControl.Builder builder = new SurfaceControl.Builder()
                 .setCallsite("ViewRootImpl.createSurfaceControl")
                 .setName("VRI-" + getTitle())
                 .setFlags(surfaceFlags)
@@ -9763,7 +9763,14 @@ public final class ViewRootImpl implements ViewParent,
                         & WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED) != 0
                         ? PixelFormat.TRANSLUCENT : mWindowAttributes.format)
                 .setMetadata(SurfaceControl.METADATA_WINDOW_TYPE, mWindowAttributes.type)
-                .setBLASTLayer().build();
+                .setBLASTLayer();
+        try {
+            return builder.build();
+        } catch (OutOfResourcesException e) {
+            Slog.w(mTag, "OutOfResourcesException creating surface", e);
+            // Return an invalid surface as a fallback to skip drawing.
+            return new SurfaceControl();
+        }
     }
 
     private int updateSurfaceControl(int viewVisibility) {
