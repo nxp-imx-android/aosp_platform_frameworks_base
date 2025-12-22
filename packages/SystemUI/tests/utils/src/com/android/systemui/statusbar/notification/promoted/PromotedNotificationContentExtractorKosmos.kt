@@ -23,7 +23,7 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_PUBLIC
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.row.RowImageInflater
-import com.android.systemui.statusbar.notification.row.icon.mockAppIconProvider
+import com.android.systemui.statusbar.notification.row.icon.appIconProvider
 import com.android.systemui.statusbar.notification.row.icon.notificationIconStyleProvider
 import com.android.systemui.statusbar.notification.row.shared.skeletonImageTransform
 import com.android.systemui.util.time.systemClock
@@ -32,7 +32,7 @@ var Kosmos.promotedNotificationContentExtractor by
     Kosmos.Fixture {
         PromotedNotificationContentExtractorImpl(
             notificationIconStyleProvider,
-            mockAppIconProvider, // Real AppIconProvider doesn't work in Robolectric (b/415767135)
+            appIconProvider,
             skeletonImageTransform,
             systemClock,
             promotedNotificationLogger,

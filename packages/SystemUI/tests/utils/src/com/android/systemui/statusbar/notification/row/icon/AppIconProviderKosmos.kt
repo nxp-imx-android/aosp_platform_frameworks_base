@@ -16,8 +16,13 @@
 
 package com.android.systemui.statusbar.notification.row.icon
 
+import android.content.Context
 import android.content.applicationContext
 import android.graphics.Color
+import android.graphics.drawable.Drawable
+import android.os.UserHandle
+import android.util.Log
+import androidx.annotation.DrawableRes
 import androidx.core.graphics.drawable.toDrawable
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
@@ -34,5 +39,66 @@ val Kosmos.mockAppIconProvider by
         }
     }
 
-var Kosmos.appIconProvider: AppIconProvider by
+public data class FakeAppIcons(
+    @DrawableRes val colorAppIconRes: Int,
+    @DrawableRes val skeletonAppIconRes: Int,
+)
+
+/** Sets up an [AppIconProvider] that returns the given fake app icons for all packages. */
+fun Kosmos.setupFakeAppIcons(context: Context, fakeAppIcons: FakeAppIcons) {
+    appIconProvider =
+        object : AppIconProvider {
+            override fun getOrFetchAppIcon(
+                packageName: String,
+                userHandle: UserHandle,
+                instanceKey: String,
+            ): Drawable = context.getDrawable(fakeAppIcons.colorAppIconRes)!!
+
+            override fun getOrFetchSkeletonAppIcon(
+                packageName: String,
+                userHandle: UserHandle,
+            ): Drawable = context.getDrawable(fakeAppIcons.skeletonAppIconRes)!!
+
+            override fun purgeCache(wantedPackages: Collection<String>) {}
+        }
+    notificationIconStyleProvider = alwaysShowNotificationIconStyleProvider
+}
+
+var Kosmos.realAppIconProvider: AppIconProviderImpl by
     Kosmos.Fixture { AppIconProviderImpl(applicationContext, dumpManager, fakeSystemClock) }
+
+class FallbackAppIconProvider(
+    private val realProvider: AppIconProvider,
+    private val fallbackProvider: AppIconProvider,
+) : AppIconProvider {
+    override fun getOrFetchAppIcon(
+        packageName: String,
+        userHandle: UserHandle,
+        instanceKey: String,
+    ): Drawable =
+        try {
+            requireNotNull(realProvider.getOrFetchAppIcon(packageName, userHandle, instanceKey))
+        } catch (e: Exception) {
+            Log.d("FallbackAppIconProvider", "Error for ${userHandle.identifier}|$packageName: $e")
+            fallbackProvider.getOrFetchAppIcon(packageName, userHandle, instanceKey)
+        }
+
+    override fun getOrFetchSkeletonAppIcon(packageName: String, userHandle: UserHandle): Drawable =
+        try {
+            requireNotNull(realProvider.getOrFetchSkeletonAppIcon(packageName, userHandle))
+        } catch (e: Exception) {
+            Log.d("FallbackAppIconProvider", "Error for ${userHandle.identifier}|$packageName: $e")
+            fallbackProvider.getOrFetchSkeletonAppIcon(packageName, userHandle)
+        }
+
+    override fun purgeCache(wantedPackages: Collection<String>) {
+        realProvider.purgeCache(wantedPackages)
+        fallbackProvider.purgeCache(wantedPackages)
+    }
+}
+
+var Kosmos.appIconProvider: AppIconProvider by
+    Kosmos.Fixture {
+        // Real AppIconProvider doesn't work in Robolectric (b/415767135)
+        FallbackAppIconProvider(realAppIconProvider, mockAppIconProvider)
+    }
