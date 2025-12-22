@@ -101,6 +101,7 @@ import com.android.systemui.navigationbar.NavigationBarComponent;
 import com.android.systemui.navigationbar.gestural.dagger.GestureModule;
 import com.android.systemui.notetask.NoteTaskModule;
 import com.android.systemui.people.PeopleModule;
+import com.android.systemui.personalcontext.AutofillRendererService;
 import com.android.systemui.personalcontext.SysuiVisualizerService;
 import com.android.systemui.personalcontext.dagger.PersonalContextModule;
 import com.android.systemui.plugins.BcSmartspaceConfigPlugin;
@@ -495,6 +496,12 @@ public abstract class SystemUIModule {
     @IntoMap
     @ClassKey(SysuiVisualizerService.class)
     abstract Service bindSysuiVisualizerService(SysuiVisualizerService service);
+
+    /** Binds the renderer service that converts personal context insights to inline autofill UI. */
+    @Binds
+    @IntoMap
+    @ClassKey(AutofillRendererService.class)
+    abstract Service bindAutofillRenderService(AutofillRendererService service);
 
     @Provides
     @SysUISingleton
