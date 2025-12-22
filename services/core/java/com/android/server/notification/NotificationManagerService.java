@@ -7854,8 +7854,7 @@ public class NotificationManagerService extends SystemService {
 
                     handleSavePolicyFile();
                 }
-
-                if (Flags.disableNasAffectsClassificationAndSummarization() && !granted) {
+                if (!granted) {
                     if (notificationRegroupOnClassification()) {
                         applyNotificationUpdateForUserProfiles(userId,
                                 NotificationManagerService.this::unclassifyNotificationLocked);
