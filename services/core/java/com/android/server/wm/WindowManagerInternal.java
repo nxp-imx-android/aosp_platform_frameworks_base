@@ -1083,6 +1083,21 @@ public abstract class WindowManagerInternal {
     public abstract boolean shouldRestoreImeVisibility(IBinder imeTargetWindowToken);
 
     /**
+     * Check whether the current ime input target window is stale in WM or not before updating it
+     * to the given {@code windowToken}.
+     *
+     * <p>The existing target is considered as stale only when the window that is different from the
+     * given {@code windowToken} is set but is being or already removed.
+     *
+     * <p>TODO(b/429304155): Come back  to this and properly address the underlying issue.
+     *
+     * @param windowToken The token of the window of the next ime input target
+     * @return {@code true} if the IME input target window in the given window's display is stale,
+     *         {@code false} otherwise.
+     */
+    public abstract boolean isImeInputTargetStaleForUpdate(@NonNull IBinder windowToken);
+
+    /**
      * Internal methods for other parts of SystemServer to manage
      * SurfacePackage based overlays on tasks.
      *
