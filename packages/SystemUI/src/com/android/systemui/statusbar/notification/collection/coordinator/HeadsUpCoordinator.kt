@@ -40,6 +40,7 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.plugga
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifCollectionListener
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifLifetimeExtender
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifLifetimeExtender.OnEndLifetimeExtensionCallback
+import com.android.systemui.statusbar.notification.collection.notifcollection.UpdateSource
 import com.android.systemui.statusbar.notification.collection.provider.LaunchFullScreenIntentProvider
 import com.android.systemui.statusbar.notification.collection.render.NodeController
 import com.android.systemui.statusbar.notification.dagger.IncomingHeader
@@ -159,7 +160,7 @@ constructor(
             PostedEntry(
                 entry,
                 wasAdded = false,
-                wasUpdated = false,
+                wasUpdatedBy = null,
                 // We want the chip to act as a toggle, so if the chip's notification is currently
                 // showing as heads up, then we should stop showing it.
                 shouldHeadsUpEver = !isCurrentlyHeadsUp,
@@ -330,7 +331,7 @@ constructor(
                             ?: PostedEntry(
                                 logicalSummary,
                                 wasAdded = false,
-                                wasUpdated = false,
+                                wasUpdatedBy = null,
                                 shouldHeadsUpEver = false,
                                 shouldHeadsUpAgain = false,
                                 isHeadsUpEntry = mHeadsUpManager.isHeadsUpEntry(logicalSummary.key),
@@ -387,7 +388,7 @@ constructor(
                         PostedEntry(
                             childToReceiveParentHeadsUp,
                             wasAdded = false,
-                            wasUpdated = false,
+                            wasUpdatedBy = null,
                             shouldHeadsUpEver = true,
                             shouldHeadsUpAgain = true,
                             isHeadsUpEntry =
@@ -568,7 +569,7 @@ constructor(
             addForFSIReconsideration(entry, mSystemClock.currentTimeMillis())
         }
         if (LaunchNewFsiOnUpdate.isEnabled) {
-            entry.markFullScreenIntentEvaluated();
+            entry.markFullScreenIntentEvaluated()
         }
     }
 
@@ -581,7 +582,7 @@ constructor(
             override fun onEntryAdded(entry: NotificationEntry) {
                 // First check whether this notification should launch a full screen intent, and
                 // launch it if needed.
-                evaluateNewFullScreenIntent(entry);
+                evaluateNewFullScreenIntent(entry)
 
                 // makeAndLogHeadsUpDecision includes check for whether this notification should be
                 // filtered
@@ -593,7 +594,7 @@ constructor(
                     PostedEntry(
                         entry,
                         wasAdded = true,
-                        wasUpdated = false,
+                        wasUpdatedBy = null,
                         shouldHeadsUpEver = shouldHeadsUpEver,
                         shouldHeadsUpAgain = true,
                         isHeadsUpEntry = false,
@@ -605,27 +606,57 @@ constructor(
             }
 
             /**
+             * Because this object implements update logic inside the 2-argument version of
+             * [onEntryUpdated], it needs to delegate to that version from this version to ensure
+             * the logic is consistent regardless of the method called.
+             *
+             * Because this version is a conveneience for *implementers*, and is not called by the
+             * [NotifCollection], this is mainly for tests.
+             */
+            override fun onEntryUpdated(entry: NotificationEntry) {
+                onEntryUpdated(entry, UpdateSource.App)
+            }
+
+            /**
              * Notification could've updated to be heads up or not heads up. Even if it did update
              * to heads up, if the notification specified that it only wants to heads up once, don't
              * heads up again.
              */
-            override fun onEntryUpdated(entry: NotificationEntry) {
+            override fun onEntryUpdated(entry: NotificationEntry, source: UpdateSource) {
                 // First check whether this notification should launch a full screen intent, and
                 // launch it if needed.
                 if (LaunchNewFsiOnUpdate.isEnabled && entry.isFullScreenIntentNewlyAdded()) {
-                    evaluateNewFullScreenIntent(entry);
+                    evaluateNewFullScreenIntent(entry)
                 }
-                val shouldHeadsUpEver =
-                    mVisualInterruptionDecisionProvider
-                        .makeAndLogHeadsUpDecision(entry)
-                        .shouldInterrupt
-                val shouldHeadsUpAgain = shouldHunAgain(entry)
+
+                // First check basic heads up state.
                 val isHeadsUpEntry = mHeadsUpManager.isHeadsUpEntry(entry.key)
                 val isBinding = isEntryBinding(entry)
+                val isHeadsUpAlready = isHeadsUpEntry || isBinding
+                val isSilentSystemServerUpdateDuringHeadsUp =
+                    source == UpdateSource.SystemServer &&
+                        entry.sbn.notification.isSilent &&
+                        isHeadsUpAlready
+
+                if (isSilentSystemServerUpdateDuringHeadsUp) {
+                    mInterruptLogger.logSilentSystemServerUpdateDuringHeadsUp(entry)
+                }
+
+                // Determine if we can be heads up. If we get a silent system server update while
+                // heads up, we should not bother evaluating for interruption; just set the values
+                // to ensure we continue to show the heads up without starting it again.
+                val shouldHeadsUpEver =
+                    isSilentSystemServerUpdateDuringHeadsUp ||
+                        mVisualInterruptionDecisionProvider
+                            .makeAndLogHeadsUpDecision(entry)
+                            .shouldInterrupt
+                val shouldHeadsUpAgain =
+                    !isSilentSystemServerUpdateDuringHeadsUp && shouldHunAgain(entry)
+
                 val posted =
                     mPostedEntries.compute(entry.key) { _, value ->
                         value?.also { update ->
-                            update.wasUpdated = true
+                            update.wasUpdatedBy = source
                             update.shouldHeadsUpEver = shouldHeadsUpEver
                             update.shouldHeadsUpAgain =
                                 update.shouldHeadsUpAgain || shouldHeadsUpAgain
@@ -635,7 +666,7 @@ constructor(
                             ?: PostedEntry(
                                 entry,
                                 wasAdded = false,
-                                wasUpdated = true,
+                                wasUpdatedBy = source,
                                 shouldHeadsUpEver = shouldHeadsUpEver,
                                 shouldHeadsUpAgain = shouldHeadsUpAgain,
                                 isHeadsUpEntry = isHeadsUpEntry,
@@ -695,16 +726,13 @@ constructor(
                 for (entry in mNotifPipeline.allNotifs) {
                     // Only consider entries that are recent enough, since we want to apply a fairly
                     // strict threshold for when an entry should be updated via only ranking and not
-                    // an
-                    // app-provided notification update.
+                    // an app-provided notification update.
                     if (!isNewEnoughForRankingUpdate(entry)) continue
 
                     // The only entries we consider heads up for here are entries that have never
                     // interrupted and that now say they should heads up or FSI; if they've heads
-                    // uped in
-                    // the past, we don't want to incorrectly heads up a second time if there wasn't
-                    // an
-                    // explicit notification update.
+                    // uped in the past, we don't want to incorrectly heads up a second time if
+                    // there wasn't an explicit notification update.
                     if (entry.hasInterrupted()) continue
 
                     // Before potentially allowing heads-up, check for any candidates for a FSI
@@ -748,15 +776,15 @@ constructor(
 
                     // The cases where we should consider this notification to be updated:
                     // - if this entry is not present in PostedEntries, and is now in a
-                    // shouldHeadsUp
-                    //   state
+                    //   shouldHeadsUp state
                     // - if it is present in PostedEntries and the previous state of shouldHeadsUp
                     //   differs from the updated one
                     val decision =
                         mVisualInterruptionDecisionProvider.makeUnloggedHeadsUpDecision(entry)
                     val shouldHeadsUpEver = decision.shouldInterrupt
-                    val postedShouldHeadsUpEver =
-                        mPostedEntries[entry.key]?.shouldHeadsUpEver ?: false
+                    val postedEntry = mPostedEntries[entry.key]
+                    val postedShouldHeadsUpEver = postedEntry?.shouldHeadsUpEver ?: false
+                    val updatedSource = postedEntry?.wasUpdatedBy ?: UpdateSource.SystemServer
                     val shouldUpdateEntry = postedShouldHeadsUpEver != shouldHeadsUpEver
 
                     if (shouldUpdateEntry) {
@@ -765,7 +793,7 @@ constructor(
                             shouldHeadsUpEver,
                             decision.logReason,
                         )
-                        onEntryUpdated(entry)
+                        onEntryUpdated(entry, source = updatedSource)
                     }
                 }
             }
@@ -1007,7 +1035,7 @@ constructor(
     data class PostedEntry(
         val entry: NotificationEntry,
         val wasAdded: Boolean,
-        var wasUpdated: Boolean,
+        var wasUpdatedBy: UpdateSource?,
         var shouldHeadsUpEver: Boolean,
         var shouldHeadsUpAgain: Boolean,
         var isPinnedByUser: Boolean = false,
@@ -1015,6 +1043,9 @@ constructor(
         var isBinding: Boolean,
     ) {
         val key = entry.key
+        val wasUpdated: Boolean
+            get() = wasUpdatedBy != null
+
         val isHeadsUpAlready: Boolean
             get() = isHeadsUpEntry || isBinding
 
