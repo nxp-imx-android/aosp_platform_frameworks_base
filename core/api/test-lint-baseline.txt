@@ -2359,6 +2359,38 @@ UnflaggedApi: android.view.inputmethod.InputMethodManager#isStylusHandwritingAva
     New API must be flagged with @FlaggedApi: method android.view.inputmethod.InputMethodManager.isStylusHandwritingAvailableAsUser(android.os.UserHandle)
 UnflaggedApi: android.view.inputmethod.InsertModeGesture:
     New API must be flagged with @FlaggedApi: class android.view.inputmethod.InsertModeGesture
+UnflaggedApi: android.window.TaskCreationParams:
+    New API must be flagged with @FlaggedApi: class android.window.TaskCreationParams
+UnflaggedApi: android.window.TaskCreationParams#CREATOR:
+    New API must be flagged with @FlaggedApi: field android.window.TaskCreationParams.CREATOR
+UnflaggedApi: android.window.TaskCreationParams#describeContents():
+    New API must be flagged with @FlaggedApi: method android.window.TaskCreationParams.describeContents()
+UnflaggedApi: android.window.TaskCreationParams#getDisplayId():
+    New API must be flagged with @FlaggedApi: method android.window.TaskCreationParams.getDisplayId()
+UnflaggedApi: android.window.TaskCreationParams#getLaunchCookie():
+    New API must be flagged with @FlaggedApi: method android.window.TaskCreationParams.getLaunchCookie()
+UnflaggedApi: android.window.TaskCreationParams#getName():
+    New API must be flagged with @FlaggedApi: method android.window.TaskCreationParams.getName()
+UnflaggedApi: android.window.TaskCreationParams#getWindowingMode():
+    New API must be flagged with @FlaggedApi: method android.window.TaskCreationParams.getWindowingMode()
+UnflaggedApi: android.window.TaskCreationParams#writeToParcel(android.os.Parcel, int):
+    New API must be flagged with @FlaggedApi: method android.window.TaskCreationParams.writeToParcel(android.os.Parcel,int)
+UnflaggedApi: android.window.TaskCreationParams.Builder:
+    New API must be flagged with @FlaggedApi: class android.window.TaskCreationParams.Builder
+UnflaggedApi: android.window.TaskCreationParams.Builder#Builder():
+    New API must be flagged with @FlaggedApi: constructor android.window.TaskCreationParams.Builder()
+UnflaggedApi: android.window.TaskCreationParams.Builder#build():
+    New API must be flagged with @FlaggedApi: method android.window.TaskCreationParams.Builder.build()
+UnflaggedApi: android.window.TaskCreationParams.Builder#setDisplayId(int):
+    New API must be flagged with @FlaggedApi: method android.window.TaskCreationParams.Builder.setDisplayId(int)
+UnflaggedApi: android.window.TaskCreationParams.Builder#setName(String):
+    New API must be flagged with @FlaggedApi: method android.window.TaskCreationParams.Builder.setName(String)
+UnflaggedApi: android.window.TaskCreationParams.Builder#setWindowingMode(int):
+    New API must be flagged with @FlaggedApi: method android.window.TaskCreationParams.Builder.setWindowingMode(int)
+UnflaggedApi: android.window.TaskOrganizer#createTask(android.window.TaskCreationParams):
+    New API must be flagged with @FlaggedApi: method android.window.TaskOrganizer.createTask(android.window.TaskCreationParams)
+UnflaggedApi: android.window.TaskOrganizer#deleteTask(android.window.WindowContainerToken):
+    New API must be flagged with @FlaggedApi: method android.window.TaskOrganizer.deleteTask(android.window.WindowContainerToken)
 UnflaggedApi: android.window.TaskOrganizer#getImeLayeringTarget(int):
     New API must be flagged with @FlaggedApi: method android.window.TaskOrganizer.getImeLayeringTarget(int)
 UnflaggedApi: android.window.TaskOrganizer#onBackPressedOnTaskRoot(android.app.ActivityManager.RunningTaskInfo, boolean, boolean):
