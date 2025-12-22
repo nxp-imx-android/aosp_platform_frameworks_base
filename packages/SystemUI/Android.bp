@@ -42,6 +42,7 @@ java_library {
 
     proto: {
         type: "nano",
+        canonical_path_from_root: false,
     },
 
     libs: [
