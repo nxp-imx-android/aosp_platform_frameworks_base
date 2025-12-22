@@ -4172,10 +4172,8 @@ public class WindowManagerService extends IWindowManager.Stub
                 displayContent.setForcedDensity(targetDensity, UserHandle.USER_CURRENT);
 
                 mRoot.forAllDisplays(display -> {
-                    if (Flags.moveUserDisplaySettingsToDeStorage()) {
-                        mDisplayWindowSettings.applySettingsToDisplayLocked(display);
-                        display.reconfigureDisplayLocked();
-                    }
+                    mDisplayWindowSettings.applySettingsToDisplayLocked(display);
+                    display.reconfigureDisplayLocked();
 
                     // Because DisplayWindowSettingsProvider.mOverrideSettings has been reset for
                     // the new user, we need to update DisplayWindowSettings.mShouldShowSystemDecors

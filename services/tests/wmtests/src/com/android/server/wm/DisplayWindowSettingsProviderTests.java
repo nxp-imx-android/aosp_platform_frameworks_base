@@ -37,8 +37,6 @@ import static org.testng.Assert.assertFalse;
 import android.annotation.Nullable;
 import android.app.backup.BackupManager;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.annotations.RequiresFlagsDisabled;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.util.AtomicFile;
 import android.util.Xml;
 import android.view.Display;
@@ -50,7 +48,6 @@ import androidx.test.filters.SmallTest;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.server.wm.DisplayWindowSettings.SettingsProvider.SettingsEntry;
 import com.android.server.wm.TestDisplayWindowSettingsProvider.TestStorage;
-import com.android.window.flags.Flags;
 
 import org.junit.After;
 import org.junit.Before;
@@ -414,17 +411,8 @@ public class DisplayWindowSettingsProviderTests extends WindowTestsBase {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_MOVE_USER_DISPLAY_SETTINGS_TO_DE_STORAGE)
     public void testGetOverrideSettingsFileForUser_nonSystemUser_underSystemDeDirectory() {
         final File expected = new File("/data/system_de/10/display_settings.xml");
-        final AtomicFile actual = DisplayWindowSettingsProvider.getOverrideSettingsFileForUser(10);
-        assertEquals(expected, actual.getBaseFile());
-    }
-
-    @Test
-    @RequiresFlagsDisabled(Flags.FLAG_MOVE_USER_DISPLAY_SETTINGS_TO_DE_STORAGE)
-    public void testGetOverrideSettingsFileForUser_nonSystemUser_underSystemCeDirectory() {
-        final File expected = new File("/data/system_ce/10/system/display_settings.xml");
         final AtomicFile actual = DisplayWindowSettingsProvider.getOverrideSettingsFileForUser(10);
         assertEquals(expected, actual.getBaseFile());
     }
