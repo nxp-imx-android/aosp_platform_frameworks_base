@@ -20904,6 +20904,14 @@ public final class Settings {
             public static final String BEDTIME_HARD_MODE = "bedtime_hard_mode";
 
             /**
+             * Whether the Wear-specific charging experience is enabled, which applies a
+             * dedicated brightness curve and timeout.
+             * @hide
+             */
+            public static final String WEAR_CHARGING_EXPERIENCE_ENABLED =
+                    "wear_charging_experience_enabled";
+
+            /**
              * Whether the current watchface is decomposable.
              * @hide
              */
