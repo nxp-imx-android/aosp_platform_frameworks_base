@@ -115,35 +115,8 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
             @NonNull TransitionInfo info,
             @NonNull SurfaceControl.Transaction startT,
             @NonNull SurfaceControl.Transaction finishT) {
-        if (DesktopExperienceFlags.ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP.isTrue()) {
-            mDesktopInOrderTransitionObserver.ifPresent(
-                    o -> o.onTransitionReady(transition, info, startT, finishT));
-        } else {
-            // Update desk state first, otherwise [TaskChangeListener] may update desktop task state
-            // under an outdated active desk if a desk switch and a task update happen in the same
-            // transition, such as when unminimizing a task from an inactive desk.
-            mDesksTransitionObserver.ifPresent(o -> o.onTransitionReady(transition, info));
-            if (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()) {
-                // TODO(b/367268953): Remove when DesktopTaskListener is introduced and the
-                //  repository
-                //  is updated from there **before** the |mWindowDecorViewModel| methods are
-                //  invoked.
-                //  Otherwise window decoration relayout won't run with the immersive state up to
-                //  date.
-                mDesktopImmersiveController.ifPresent(
-                        h -> h.onTransitionReady(transition, info, startT, finishT));
-            }
-            // Update focus state first to ensure the correct state can be queried from listeners.
-            // TODO(371503964): Remove this once the unified task repository is ready.
-            mFocusTransitionObserver.updateFocusState(info);
-
-            // Call after the focus state update to have the correct focused window.
-            mDesktopImeHandler.ifPresent(o -> o.onTransitionReady(transition, info));
-            mDesktopBackNavTransitionObserver.ifPresent(o -> o.onTransitionReady(transition, info));
-            mDesktopModeLoggerTransitionObserver.onTransitionReady(transition, info, startT,
-                    finishT);
-
-        }
+        mDesktopInOrderTransitionObserver.ifPresent(
+                o -> o.onTransitionReady(transition, info, startT, finishT));
         final ArrayList<ActivityManager.RunningTaskInfo> taskInfoList = new ArrayList<>();
         final ArrayList<WindowContainerToken> taskParents = new ArrayList<>();
         final ArrayList<TransitionInfo.Change> filteredChanges = new ArrayList<>();
@@ -280,27 +253,12 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
 
     @Override
     public void onTransitionStarting(@NonNull IBinder transition) {
-        if (DesktopExperienceFlags.ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP.isTrue()) {
-            mDesktopInOrderTransitionObserver.ifPresent(o -> o.onTransitionStarting(transition));
-        } else {
-            if (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()) {
-                // TODO(b/367268953): Remove when DesktopTaskListener is introduced.
-                mDesktopImmersiveController.ifPresent(h -> h.onTransitionStarting(transition));
-            }
-        }
+        mDesktopInOrderTransitionObserver.ifPresent(o -> o.onTransitionStarting(transition));
     }
 
     @Override
     public void onTransitionMerged(@NonNull IBinder merged, @NonNull IBinder playing) {
-        if (DesktopExperienceFlags.ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP.isTrue()) {
-            mDesktopInOrderTransitionObserver.ifPresent(o -> o.onTransitionMerged(merged, playing));
-        } else {
-            mDesksTransitionObserver.ifPresent(o -> o.onTransitionMerged(merged, playing));
-            if (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()) {
-                // TODO(b/367268953): Remove when DesktopTaskListener is introduced.
-                mDesktopImmersiveController.ifPresent(h -> h.onTransitionMerged(merged, playing));
-            }
-        }
+        mDesktopInOrderTransitionObserver.ifPresent(o -> o.onTransitionMerged(merged, playing));
 
         final List<ActivityManager.RunningTaskInfo> infoOfMerged =
                 mTransitionToTaskInfo.get(merged);
@@ -322,18 +280,8 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
 
     @Override
     public void onTransitionFinished(@NonNull IBinder transition, boolean aborted) {
-        if (DesktopExperienceFlags.ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP.isTrue()) {
-            mDesktopInOrderTransitionObserver.ifPresent(
-                    o -> o.onTransitionFinished(transition, aborted));
-        } else {
-            mDesksTransitionObserver.ifPresent(o -> o.onTransitionFinished(transition));
-            if (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()) {
-                // TODO(b/367268953): Remove when DesktopTaskListener is introduced.
-                mDesktopImmersiveController.ifPresent(
-                        h -> h.onTransitionFinished(transition, aborted));
-            }
-            mDesktopModeLoggerTransitionObserver.onTransitionFinished(transition, aborted);
-        }
+        mDesktopInOrderTransitionObserver.ifPresent(
+                o -> o.onTransitionFinished(transition, aborted));
 
         final List<ActivityManager.RunningTaskInfo> taskInfo =
                 mTransitionToTaskInfo.getOrDefault(transition, Collections.emptyList());
