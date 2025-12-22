@@ -25,6 +25,7 @@ import android.os.UserHandle
 import android.util.Log
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.CubicBezierEasing
@@ -47,6 +48,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.android.compose.theme.PlatformTheme
+import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
 import com.android.systemui.screencapture.common.ScreenCaptureComponent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
@@ -59,8 +61,12 @@ import kotlinx.coroutines.flow.onEach
 /**
  * An activity that hosts the pre screen share UI, started from MediaProjectionPermissionActivity.
  */
-class ShareScreenActivity @Inject constructor(private val builder: ScreenCaptureComponent.Builder) :
-    ComponentActivity() {
+class ShareScreenActivity
+@Inject
+constructor(
+    private val builder: ScreenCaptureComponent.Builder,
+    private val mediaProjectionMetricsLogger: MediaProjectionMetricsLogger,
+) : ComponentActivity() {
 
     // Controls the visibility and animation state of the Compose UI.
     private val visibleState = MutableTransitionState(false)
@@ -113,6 +119,7 @@ class ShareScreenActivity @Inject constructor(private val builder: ScreenCapture
                     }
 
                 val shareScreenUiInteractor = uiComponent.shareScreenUiInteractor
+                BackHandler { shareScreenUiInteractor.onClose() }
                 LaunchedEffect(shareScreenUiInteractor) {
                     shareScreenUiInteractor.sharingState
                         .onEach { state ->
@@ -124,6 +131,9 @@ class ShareScreenActivity @Inject constructor(private val builder: ScreenCapture
                                 }
                                 is ShareScreenUiInteractor.SharingState.Denied -> {
                                     setResult(RESULT_CANCELED)
+                                    mediaProjectionMetricsLogger.notifyProjectionRequestCancelled(
+                                        uid
+                                    )
                                     hide()
                                 }
                                 is ShareScreenUiInteractor.SharingState.NotStarted -> {
