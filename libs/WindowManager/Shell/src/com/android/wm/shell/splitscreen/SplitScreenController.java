@@ -646,7 +646,6 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
 
     /**
      * Starts an existing task into split.
-     * TODO(b/351900580): We should remove this path and use StageCoordinator#startTask() instead
      * @param hideTaskToken is not supported.
      */
     public void startTask(int taskId, @SplitPosition int position, @Nullable Bundle options,
@@ -654,6 +653,11 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_DRAG_AND_DROP,
                 "Legacy startTask does not support hide task token");
         if (isTaskInSplitScreenForeground(taskId)) return;
+        if (com.android.systemui.shared.Flags.enableRecentsInTaskbar()) {
+            mStageCoordinator.startTask(taskId, position, options, hideTaskToken,
+                    SPLIT_INDEX_UNDEFINED);
+            return;
+        }
         final int[] result = new int[1];
         IRemoteAnimationRunner wrapper = new IRemoteAnimationRunner.Stub() {
             @Override
