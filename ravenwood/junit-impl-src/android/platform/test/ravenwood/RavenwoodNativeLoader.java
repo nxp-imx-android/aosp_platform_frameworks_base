@@ -21,6 +21,9 @@ import static com.android.ravenwood.common.RavenwoodInternalUtils.getRavenwoodRu
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
+import com.android.ravenwood.RavenwoodRuntimeNative;
+import com.android.ravenwood.common.RavenwoodInternalUtils;
+
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -34,6 +37,8 @@ public final class RavenwoodNativeLoader {
     public static final String ICU_DATA_PATH = "icu.data.path";
     public static final String KEYBOARD_PATHS = "keyboard_paths";
     public static final String GRAPHICS_NATIVE_CLASSES = "graphics_native_classes";
+
+    public static final String LIBANDROID_RUNTIME_NAME = "android_runtime_ravenwood";
 
     /**
      * Classes with native methods that are backed by libandroid_runtime.
@@ -161,8 +166,6 @@ public final class RavenwoodNativeLoader {
         }
     }
 
-    private static native void initFrameworkNativeCode(String runtimePath);
-
     /**
      * libandroid_runtime uses Java's system properties to decide what JNI methods to set up.
      * Set up these properties and load the native library
@@ -179,7 +182,15 @@ public final class RavenwoodNativeLoader {
         ensurePropertyNotSet(KEYBOARD_PATHS);
         ensurePropertyNotSet(GRAPHICS_NATIVE_CLASSES);
 
+        // Set ICU data file
+        String icuData = getRavenwoodRuntimePath()
+                + "ravenwood-data/"
+                + RavenwoodRuntimeNative.getIcuDataName()
+                + ".dat";
+        setProperty(ICU_DATA_PATH, icuData);
+
         // Build the property values
+        final var joiner = Collectors.joining(",");
 
         // Libandroid classes. Maybe enable experimental classes too.
         final var libandroidClasses = getLoadingClassesAsCsv(
@@ -189,13 +200,12 @@ public final class RavenwoodNativeLoader {
         final var libhwuiClasses = getLoadingClassesAsCsv(
                 sLibhwuiClasses, sLibhwuiExperimentalClasses, GRAPHICS_EXTRA_INIT_PARAMS);
 
-        // Initialize the libraries
+        // Load the libraries
         setProperty(CORE_NATIVE_CLASSES, libandroidClasses);
         setProperty(GRAPHICS_NATIVE_CLASSES, libhwuiClasses);
-        log("Initializing android_runtime for '" + libandroidClasses + "' and '"
+        log("Loading " + LIBANDROID_RUNTIME_NAME + " for '" + libandroidClasses + "' and '"
                 + libhwuiClasses + "'");
-
-        initFrameworkNativeCode(getRavenwoodRuntimePath());
+        RavenwoodInternalUtils.loadJniLibrary(LIBANDROID_RUNTIME_NAME);
     }
 
     private static String getLoadingClassesAsCsv(
