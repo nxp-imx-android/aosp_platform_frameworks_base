@@ -4855,14 +4855,12 @@ package android.app {
     method @RequiresPermission(android.Manifest.permission.REORDER_TASKS) public void moveTaskToFront(int, int);
     method @RequiresPermission(android.Manifest.permission.REORDER_TASKS) public void moveTaskToFront(int, int, android.os.Bundle);
     method @FlaggedApi("android.app.enable_anr_warning_callback") public void registerAnrWarningListener(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<android.app.AnrWarningResult>);
-    method @FlaggedApi("com.android.window.flags.enable_task_move_allowed_listener_api") public void registerTaskDisplayPolicyStateListener(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.util.List<android.app.TaskDisplayPolicyState>>);
     method public void removeApplicationStartInfoCompletionListener(@NonNull java.util.function.Consumer<android.app.ApplicationStartInfo>);
     method @Deprecated public void restartPackage(String);
     method public void setProcessStateSummary(@Nullable byte[]);
     method public static void setVrThread(int);
     method public void setWatchHeapLimit(long);
     method @FlaggedApi("android.app.enable_anr_warning_callback") public void unregisterAnrWarningListener(@NonNull java.util.function.Consumer<android.app.AnrWarningResult>);
-    method @FlaggedApi("com.android.window.flags.enable_task_move_allowed_listener_api") public void unregisterTaskDisplayPolicyStateListener(@NonNull java.util.function.Consumer<java.util.List<android.app.TaskDisplayPolicyState>>);
     field public static final String ACTION_REPORT_HEAP_LIMIT = "android.app.action.REPORT_HEAP_LIMIT";
     field public static final int LOCK_TASK_MODE_LOCKED = 1; // 0x1
     field public static final int LOCK_TASK_MODE_NONE = 0; // 0x0
@@ -8013,14 +8011,6 @@ package android.app {
     method @Deprecated public android.widget.TabWidget getTabWidget();
     method @Deprecated public void setDefaultTab(String);
     method @Deprecated public void setDefaultTab(int);
-  }
-
-  @FlaggedApi("com.android.window.flags.enable_task_move_allowed_listener_api") public final class TaskDisplayPolicyState {
-    method public int getDisplayId();
-    method public int getTaskMoveState();
-    field public static final int TASK_MOVE_ALLOWED = 1; // 0x1
-    field public static final int TASK_MOVE_DISALLOWED = 2; // 0x2
-    field public static final int TASK_MOVE_UNKNOWN = 0; // 0x0
   }
 
   public class TaskInfo {
