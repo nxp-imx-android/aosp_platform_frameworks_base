@@ -42,7 +42,6 @@ import android.view.DisplayInfo;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.wm.DisplayWindowSettings.SettingsProvider;
 import com.android.server.wm.DisplayWindowSettingsXmlHelper.FileData;
-import com.android.window.flags.Flags;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -404,10 +403,7 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
         if (userId == USER_SYSTEM) {
             directory = new File(Environment.getDataDirectory(), "system");
         } else {
-            directory = Flags.moveUserDisplaySettingsToDeStorage()
-                    ? Environment.getDataSystemDeDirectory(userId)
-                    // TODO(b/442757820): Remove once flag is cleaned up.
-                    : new File(Environment.getDataSystemCeDirectory(userId), "system");
+            directory = Environment.getDataSystemDeDirectory(userId);
         }
         final File overrideSettingsFile = new File(directory, DISPLAY_SETTINGS_FILENAME);
         return new AtomicFile(overrideSettingsFile, WM_DISPLAY_COMMIT_TAG);
