@@ -4428,6 +4428,7 @@ package android.view.inputmethod {
     method @RequiresPermission(allOf={android.Manifest.permission.WRITE_SECURE_SETTINGS, android.Manifest.permission.TEST_INPUT_METHOD, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL}, conditional=true) public void resetInputMethodsForTesting(int);
     method @FlaggedApi("android.view.inputmethod.enforce_device_policy_ime") @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public void setAllowedImesByPolicyForTest(@Nullable java.util.List<java.lang.String>);
     method @RequiresPermission(allOf={android.Manifest.permission.WRITE_SECURE_SETTINGS, android.Manifest.permission.TEST_INPUT_METHOD, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL}, conditional=true) public boolean setInputMethodForTesting(@NonNull String, int);
+    method @FlaggedApi("android.view.inputmethod.prevent_ime_startup_bypassed_apps") @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public void setPreventImeStartupBypassedAppsForTest(@Nullable java.util.List<java.lang.String>);
     method @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public void setStylusWindowIdleTimeoutForTest(long);
     method @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public boolean shouldShowImeSwitcherButtonForTest();
     method @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public void waitUntilNoPendingRequests(long);
