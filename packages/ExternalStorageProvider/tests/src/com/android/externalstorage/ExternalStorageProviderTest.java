@@ -25,6 +25,7 @@ import static com.android.providers.media.flags.Flags.FLAG_ENABLE_TRASH_AND_REST
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.spy;
@@ -33,9 +34,13 @@ import static org.mockito.Mockito.verify;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.content.pm.ProviderInfo;
+import android.database.ContentObserver;
 import android.database.Cursor;
 import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.storage.StorageManager;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
@@ -53,6 +58,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.File;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * These tests don't fake / mock StorageManager and thus can only test simpler functionality.
@@ -383,6 +390,126 @@ public class ExternalStorageProviderTest {
             CleanupTemporaryFilesRule.removeFilesRecursively(downloadsDir);
             CleanupTemporaryFilesRule.removeFilesRecursively(recordingsDir);
             CleanupTemporaryFilesRule.removeFilesRecursively(trashDir);
+        }
+    }
+
+    @Test
+    @RequiresFlagsEnabled({FLAG_ENABLE_TRASH_AND_RESTORE_BY_FILE_PATH_API,
+            FLAG_ENABLE_DOCUMENTS_TRASH_API})
+    public void test_queryTrashDocuments_setsNotificationUri() throws Exception {
+        // query trash documents
+        try (Cursor c = mExternalStorageProvider.queryTrashDocuments(
+                EXTERNAL_STORAGE_PRIMARY_EMULATED_ROOT_ID, null, null, null)) {
+            Uri expectedUri = DocumentsContract.buildTrashDocumentsUri(AUTHORITY,
+                    EXTERNAL_STORAGE_PRIMARY_EMULATED_ROOT_ID);
+            assertEquals("Cursor should have the trash notification URI set",
+                    expectedUri, c.getNotificationUri());
+        }
+    }
+
+    @Test
+    @RequiresFlagsEnabled({FLAG_ENABLE_TRASH_AND_RESTORE_BY_FILE_PATH_API,
+            FLAG_ENABLE_DOCUMENTS_TRASH_API})
+    public void test_deleteDocument_notifiesTrashChange() throws Exception {
+        File downloadsDir = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOWNLOADS);
+        File targetFile = new File(downloadsDir, "test_delete.txt");
+        File volumePath = getPrimaryVolumePath();
+        try {
+            targetFile.createNewFile();
+            MediaScannerConnection.scanFile(sTargetContext,
+                    new String[]{targetFile.getAbsolutePath()},
+                    null, null);
+            String docId = targetFile.getPath().replace(volumePath.getPath() + File.separator, "");
+            String trashedDocId = mExternalStorageProvider.trashDocument(buildDocId(docId));
+
+            // Call queryTrashDocuments to get the notification URI set by the provider
+            Uri trashNotificationUri;
+            try (Cursor c = mExternalStorageProvider.queryTrashDocuments(
+                    EXTERNAL_STORAGE_PRIMARY_EMULATED_ROOT_ID, null, null, null)) {
+                trashNotificationUri = c.getNotificationUri();
+            }
+
+            assertNotNull("Trash notification URI should not be null", trashNotificationUri);
+
+            // Setup observer using the URI obtained from the cursor
+            CountDownLatch latch = new CountDownLatch(1);
+            ContentObserver observer = new ContentObserver(new Handler(Looper.getMainLooper())) {
+                @Override
+                public void onChange(boolean selfChange, Uri uri) {
+                    if (trashNotificationUri.equals(uri)) {
+                        latch.countDown();
+                    }
+                }
+            };
+            sTargetContext.getContentResolver().registerContentObserver(
+                    trashNotificationUri, false, observer);
+
+            try {
+                // Action: Delete the trashed document
+                mExternalStorageProvider.deleteDocument(trashedDocId);
+
+                // Verify: Notification was sent to the trash URI
+                assertTrue("Notification should be sent when a trashed document is deleted",
+                        latch.await(5, TimeUnit.SECONDS));
+            } finally {
+                sTargetContext.getContentResolver().unregisterContentObserver(observer);
+            }
+        } finally {
+            CleanupTemporaryFilesRule.removeFilesRecursively(downloadsDir);
+        }
+    }
+
+    @Test
+    @RequiresFlagsEnabled({FLAG_ENABLE_TRASH_AND_RESTORE_BY_FILE_PATH_API,
+            FLAG_ENABLE_DOCUMENTS_TRASH_API})
+    public void test_restoreDocumentFromTrash_notifiesTrashChange() throws Exception {
+        File downloadsDir = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOWNLOADS);
+        File targetFile = new File(downloadsDir, "test_restore.txt");
+        File volumePath = getPrimaryVolumePath();
+        try {
+            targetFile.createNewFile();
+            MediaScannerConnection.scanFile(sTargetContext,
+                    new String[]{targetFile.getAbsolutePath()},
+                    null, null);
+            String docId = targetFile.getPath().replace(volumePath.getPath() + File.separator, "");
+            String trashedDocId = mExternalStorageProvider.trashDocument(buildDocId(docId));
+
+            // Call queryTrashDocuments to get the notification URI set by the provider
+            Uri trashNotificationUri;
+            try (Cursor c = mExternalStorageProvider.queryTrashDocuments(
+                    EXTERNAL_STORAGE_PRIMARY_EMULATED_ROOT_ID, null, null, null)) {
+                trashNotificationUri = c.getNotificationUri();
+            }
+
+            assertNotNull("Trash notification URI should not be null", trashNotificationUri);
+
+            // Setup observer using the URI obtained from the cursor
+            CountDownLatch latch = new CountDownLatch(1);
+            ContentObserver observer = new ContentObserver(new Handler(Looper.getMainLooper())) {
+                @Override
+                public void onChange(boolean selfChange, Uri uri) {
+                    if (trashNotificationUri.equals(uri)) {
+                        latch.countDown();
+                    }
+                }
+            };
+            sTargetContext.getContentResolver().registerContentObserver(
+                    trashNotificationUri, false, observer);
+
+            try {
+                // Action: Restore the document
+                mExternalStorageProvider.restoreDocumentFromTrash(trashedDocId, null);
+
+                // Verify: Notification was sent to the trash URI
+                assertTrue("Notification should be sent when a trashed document is restored",
+                        latch.await(5, TimeUnit.SECONDS));
+            } finally {
+                sTargetContext.getContentResolver().unregisterContentObserver(observer);
+            }
+        } finally {
+            CleanupTemporaryFilesRule.removeFilesRecursively(downloadsDir);
         }
     }
 }

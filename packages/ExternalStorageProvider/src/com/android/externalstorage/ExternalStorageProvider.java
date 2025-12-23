@@ -622,6 +622,21 @@ public class ExternalStorageProvider extends FileSystemProvider {
         return DocumentsContract.buildChildDocumentsUri(AUTHORITY, docId);
     }
 
+    @Nullable
+    @Override
+    protected Uri buildTrashNotificationUri(@NonNull String docId) {
+        if (!enableDocumentsTrashApi()) {
+            return null;
+        }
+
+        try {
+            RootInfo root = getRootFromDocId(docId);
+            return DocumentsContract.buildTrashDocumentsUri(AUTHORITY, root.rootId);
+        } catch (FileNotFoundException e) {
+            return null;
+        }
+    }
+
     @Override
     protected void onDocIdChanged(String docId) {
         try {

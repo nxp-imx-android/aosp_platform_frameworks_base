@@ -375,6 +375,7 @@ public abstract class FileSystemProvider extends DocumentsProvider {
     public void deleteDocument(String docId) throws FileNotFoundException {
         final File file = getFileForDocId(docId);
         final File visibleFile = getFileForDocId(docId, true);
+        final boolean isTrashedDocument = isTrashFile(file);
 
         final boolean isDirectory = file.isDirectory();
         if (isDirectory) {
@@ -388,6 +389,11 @@ public abstract class FileSystemProvider extends DocumentsProvider {
 
         onDocIdChanged(docId);
         onDocIdDeleted(docId, /* shouldRevokeUriPermission */ true);
+        // Notify if deleting a trashed document.
+        if (isTrashedDocument) {
+            notifyTrashChange(docId);
+        }
+
         updateMediaStore(getContext(), visibleFile);
     }
 
@@ -667,6 +673,13 @@ public abstract class FileSystemProvider extends DocumentsProvider {
         includeTrashFiles(result, parent);
         // include MediaStore trashed files which are not in .trash-storage location
         includeMediaStoreTrashFiles(result);
+
+        // Set notification URI for trash
+        final Uri trashUri = buildTrashNotificationUri(docId);
+        if (trashUri != null) {
+            result.setNotificationUri(getContext().getContentResolver(), trashUri);
+        }
+
         return result;
     }
 
@@ -702,6 +715,8 @@ public abstract class FileSystemProvider extends DocumentsProvider {
         final String restoredDocId = getDocIdForFile(restoredFile);
         onDocIdChanged(documentId);
         onDocIdChanged(restoredDocId);
+        // Notify if restoring a trashed document.
+        notifyTrashChange(documentId);
 
         return restoredDocId;
     }
@@ -894,6 +909,11 @@ public abstract class FileSystemProvider extends DocumentsProvider {
         return getFileForDocId(docId, false);
     }
 
+    @Nullable
+    protected Uri buildTrashNotificationUri(@NonNull String docId) {
+        return null;
+    }
+
     private String[] resolveProjection(String[] projection) {
         return projection == null ? mDefaultProjection : projection;
     }
@@ -1037,6 +1057,17 @@ public abstract class FileSystemProvider extends DocumentsProvider {
             return matcher.group(3);
         }
         return segment;
+    }
+
+    private void notifyTrashChange(String docId) {
+        if (!enableDocumentsTrashApi()) {
+            return;
+        }
+
+        Uri trashUri = buildTrashNotificationUri(docId);
+        if (trashUri != null) {
+            getContext().getContentResolver().notifyChange(trashUri, /* observer */ null);
+        }
     }
 
     private static class DirectoryObserver extends FileObserver {
