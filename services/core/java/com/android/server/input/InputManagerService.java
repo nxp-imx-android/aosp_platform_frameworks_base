@@ -736,10 +736,6 @@ public class InputManagerService extends IInputManager.Stub
             vArray[i] = viewports.get(i);
         }
         mNative.setDisplayViewports(vArray);
-
-        // Attempt to update the default pointer display when the viewports change.
-        // Take care to not make calls to window manager while holding internal locks.
-        mNative.setPointerDisplayId(mWindowManagerCallbacks.getPointerDisplayId());
     }
 
     private void setDisplayTopologyInternal(DisplayTopologyGraph topology) {

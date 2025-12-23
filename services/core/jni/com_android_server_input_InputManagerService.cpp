@@ -48,7 +48,6 @@
 #include <ftl/enum.h>
 #include <include/gestures.h>
 #include <input/Input.h>
-#include <input/InputFlags.h>
 #include <input/PointerController.h>
 #include <input/PrintTools.h>
 #include <input/SpriteController.h>
@@ -338,7 +337,6 @@ public:
     void setMinTimeBetweenUserActivityPokes(int64_t intervalMillis);
     void setInputDispatchMode(bool enabled, bool frozen);
     void setSystemUiLightsOut(bool lightsOut);
-    void setPointerDisplayId(ui::LogicalDisplayId displayId);
     int32_t getMousePointerSpeed();
     void setPointerSpeed(int32_t speed);
     void setMouseScalingEnabled(ui::LogicalDisplayId displayId, bool enabled);
@@ -689,10 +687,6 @@ void NativeInputManager::setDisplayViewports(JNIEnv* env, jobjectArray viewportO
 }
 
 void NativeInputManager::setDisplayTopology(JNIEnv* env, jobject topologyGraph) {
-    if (!InputFlags::connectedDisplaysCursorEnabled()) {
-        return;
-    }
-
     const base::Result<DisplayTopologyGraph> result =
             android_hardware_display_DisplayTopologyGraph_toNative(env, topologyGraph);
     if (!result.ok()) {
@@ -1419,10 +1413,6 @@ void NativeInputManager::updateInactivityTimeoutLocked() REQUIRES(mLock) {
     forEachPointerControllerLocked([lightsOut = mLocked.systemUiLightsOut](PointerController& pc) {
         pc.setInactivityTimeout(lightsOut ? InactivityTimeout::SHORT : InactivityTimeout::NORMAL);
     });
-}
-
-void NativeInputManager::setPointerDisplayId(ui::LogicalDisplayId displayId) {
-    mInputManager->getChoreographer().setDefaultMouseDisplayId(displayId);
 }
 
 int32_t NativeInputManager::getMousePointerSpeed() {
@@ -3351,11 +3341,6 @@ static void nativeCancelCurrentTouch(JNIEnv* env, jobject nativeImplObj) {
     im->getInputManager()->getDispatcher().cancelCurrentTouch();
 }
 
-static void nativeSetPointerDisplayId(JNIEnv* env, jobject nativeImplObj, jint displayId) {
-    NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
-    im->setPointerDisplayId(ui::LogicalDisplayId{displayId});
-}
-
 static jstring nativeGetBluetoothAddress(JNIEnv* env, jobject nativeImplObj, jint deviceId) {
     NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
     const auto address = im->getBluetoothAddress(deviceId);
@@ -3595,7 +3580,6 @@ static const JNINativeMethod gInputManagerMethods[] = {
         {"disableSensor", "(II)V", (void*)nativeDisableSensor},
         {"flushSensor", "(II)Z", (void*)nativeFlushSensor},
         {"cancelCurrentTouch", "()V", (void*)nativeCancelCurrentTouch},
-        {"setPointerDisplayId", "(I)V", (void*)nativeSetPointerDisplayId},
         {"getBluetoothAddress", "(I)Ljava/lang/String;", (void*)nativeGetBluetoothAddress},
         {"setStylusButtonMotionEventsEnabled", "(Z)V",
          (void*)nativeSetStylusButtonMotionEventsEnabled},

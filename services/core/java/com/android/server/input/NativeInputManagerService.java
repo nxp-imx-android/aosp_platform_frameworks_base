@@ -259,9 +259,6 @@ interface NativeInputManagerService {
 
     void cancelCurrentTouch();
 
-    /** Set the displayId on which the mouse cursor should be shown. */
-    void setPointerDisplayId(int displayId);
-
     /** Get the bluetooth address of an input device if known, otherwise return null. */
     String getBluetoothAddress(int deviceId);
 
@@ -652,9 +649,6 @@ interface NativeInputManagerService {
 
         @Override
         public native void cancelCurrentTouch();
-
-        @Override
-        public native void setPointerDisplayId(int displayId);
 
         @Override
         public native String getBluetoothAddress(int deviceId);
