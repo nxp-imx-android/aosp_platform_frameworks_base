@@ -16,45 +16,30 @@
 
 package com.android.server.privatecompute;
 
-import android.content.pm.PackageManagerInternal;
-import android.os.Binder;
-import android.os.UserHandle;
-import com.android.internal.annotations.GuardedBy;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
 import android.app.privatecompute.IPccSandboxManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.os.Environment;
+import android.content.pm.PackageManagerInternal;
+import android.os.Binder;
 import android.os.PersistableBundle;
 import android.os.Process;
-
+import android.os.ResultReceiver;
+import android.os.ShellCallback;
+import android.os.ShellCommand;
+import android.os.UserHandle;
 import android.util.Log;
-import com.android.internal.annotations.VisibleForTesting;
 
+import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+
+import java.io.FileDescriptor;
+import java.io.PrintWriter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.nio.file.StandardOpenOption;
-import java.util.function.Supplier;
 
 /**
  * Implementation of the {@link IPccSandboxManager} binder service.
@@ -73,9 +58,15 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
     private final Object mAuditModeLock = new Object();
     private final ExecutorService mExecutorService = Executors.newSingleThreadExecutor();
 
+    private PccSandboxManagerInternal mInternal;
+
     public PccSandboxManagerServiceImpl(Context context) {
         mContext = context;
         mPackageManagerInternal = LocalServices.getService(PackageManagerInternal.class);
+    }
+
+    public void setPccSandboxManagerInternal(PccSandboxManagerInternal internal) {
+        mInternal = internal;
     }
 
     public ExecutorService getExecutorService() {
@@ -155,6 +146,66 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
                 mAuditModeContext = AuditModeContext.create();
             }
             mAuditModeContext.writeToAuditLog(bundle, packageName);
+        }
+    }
+
+    @Override
+    @RequiresNoPermission
+    public void onShellCommand(FileDescriptor in, FileDescriptor out, FileDescriptor err,
+            String[] args, ShellCallback callback, ResultReceiver resultReceiver) {
+        (new Shell()).exec(this, in, out, err, args, callback, resultReceiver);
+    }
+
+    private class Shell extends ShellCommand {
+        @Override
+        public int onCommand(String cmd) {
+            if (cmd == null) {
+                return handleDefaultCommands(cmd);
+            }
+            final PrintWriter pw = getOutPrintWriter();
+            switch (cmd) {
+                case "add-allowed-package" -> {
+                    final int callingUid = Binder.getCallingUid();
+                    if (callingUid != Process.ROOT_UID && callingUid != Process.SHELL_UID) {
+                        pw.println("Error: must be root or shell to use this command");
+                        return -1;
+                    }
+                    final String packageName = getNextArgRequired();
+                    if (mInternal != null) {
+                        mInternal.addTestAllowedPackage(packageName);
+                        pw.println("Added " + packageName + " to allowed packages");
+                    }
+                    return 0;
+                }
+                case "remove-allowed-package" -> {
+                    final int callingUid = Binder.getCallingUid();
+                    if (callingUid != Process.ROOT_UID && callingUid != Process.SHELL_UID) {
+                        pw.println("Error: must be root or shell to use this command");
+                        return -1;
+                    }
+                    final String packageName = getNextArgRequired();
+                    if (mInternal != null) {
+                        mInternal.removeTestAllowedPackage(packageName);
+                        pw.println("Removed " + packageName + " from allowed packages");
+                    }
+                    return 0;
+                }
+                default -> {
+                    return handleDefaultCommands(cmd);
+                }
+            }
+        }
+
+        @Override
+        public void onHelp() {
+            final PrintWriter pw = getOutPrintWriter();
+            pw.println("PccSandboxManager commands:");
+            pw.println("  help");
+            pw.println("    Print this help text.");
+            pw.println("  add-allowed-package PACKAGE");
+            pw.println("    Add a package to the list of allowed PCC packages for testing.");
+            pw.println("  remove-allowed-package PACKAGE");
+            pw.println("    Remove a package from the list of allowed PCC packages for testing.");
         }
     }
 }

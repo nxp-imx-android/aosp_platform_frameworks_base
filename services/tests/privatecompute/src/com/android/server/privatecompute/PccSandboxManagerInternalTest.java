@@ -22,12 +22,17 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import android.app.privatecompute.IPccService;
 import android.app.privatecompute.IResultCallback;
+import android.app.role.RoleManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -43,6 +48,7 @@ import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
 import android.os.UserHandle;
+import android.os.UserManager;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 
 import androidx.annotation.NonNull;
@@ -62,6 +68,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.io.FileDescriptor;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
@@ -100,11 +108,15 @@ public class PccSandboxManagerInternalTest {
 
     @Mock
     private PackageManagerInternal mPackageManagerInternal;
+    @Mock
+    private RoleManager mMockRoleManager;
+    @Mock
+    private UserManager mMockUserManager;
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        Context context = InstrumentationRegistry.getInstrumentation().getContext();
+        Context context = spy(InstrumentationRegistry.getInstrumentation().getContext());
         LocalServices.addService(PackageManagerInternal.class, mPackageManagerInternal);
 
         int testUid = android.os.Process.myUid();
@@ -115,6 +127,13 @@ public class PccSandboxManagerInternalTest {
 
         when(mMockPccSandboxManagerService.getExecutorService())
                 .thenReturn(Executors.newSingleThreadExecutor());
+        when(context.getSystemService(RoleManager.class)).thenReturn(mMockRoleManager);
+        when(context.getSystemService(UserManager.class)).thenReturn(mMockUserManager);
+
+        // Mock UserManager to return some users
+        when(mMockUserManager.getUserHandles(anyBoolean())).thenReturn(
+                Arrays.asList(UserHandle.of(USER_ID_1), UserHandle.of(USER_ID_2)));
+
         mPccSandboxManagerInternal = new PccSandboxManagerInternal(
                 context, mMockPccSandboxManagerService);
         mRealBinder = new IPccService.Stub() {
@@ -534,6 +553,61 @@ public class PccSandboxManagerInternalTest {
 
         assertFalse("Service association with a Bundle containing a Binder should be denied",
                 allowed);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testPopulatePccAllowedPackages_populatesCorrectly() {
+        // Setup mocks
+        String rolePackage = "com.example.role";
+        String testRole = "android.app.role.ASSISTANT";
+        when(mMockRoleManager.getRoleHoldersAsUser(eq(testRole), any(UserHandle.class)))
+                .thenReturn(Collections.singletonList(rolePackage));
+
+        // Call populate
+        mPccSandboxManagerInternal.populatePccAllowedPackages();
+
+        // Verify
+        assertTrue(mPccSandboxManagerInternal.isPccAllowedPackage(rolePackage, USER_ID_1));
+        assertTrue(mPccSandboxManagerInternal.isPccAllowedPackage(rolePackage, USER_ID_2));
+        assertFalse(mPccSandboxManagerInternal.isPccAllowedPackage("com.other.package", USER_ID_1));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testOnRoleHoldersChanged_updatesAllowedPackages() {
+        // Setup initial state
+        String rolePackage = "com.example.role";
+        String testRole = "android.app.role.ASSISTANT";
+        when(mMockRoleManager.getRoleHoldersAsUser(eq(testRole), eq(UserHandle.of(USER_ID_1))))
+                .thenReturn(Collections.singletonList(rolePackage));
+
+        // Initial populate
+        mPccSandboxManagerInternal.updateAllowedPackagesForUser(USER_ID_1);
+        assertTrue(mPccSandboxManagerInternal.isPccAllowedPackage(rolePackage, USER_ID_1));
+
+        // Change role holder
+        String newRolePackage = "com.example.newrole";
+        when(mMockRoleManager.getRoleHoldersAsUser(eq(testRole), eq(UserHandle.of(USER_ID_1))))
+                .thenReturn(Collections.singletonList(newRolePackage));
+
+        // Trigger change
+        mPccSandboxManagerInternal.onRoleHoldersChanged(testRole, UserHandle.of(USER_ID_1));
+
+        // Verify update
+        assertTrue(mPccSandboxManagerInternal.isPccAllowedPackage(newRolePackage, USER_ID_1));
+        assertFalse(mPccSandboxManagerInternal.isPccAllowedPackage(rolePackage, USER_ID_1));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testIsPccAllowedPackage_respectsTestList() {
+        String testPackage = "com.test.package";
+        mPccSandboxManagerInternal.addTestAllowedPackage(testPackage);
+        assertTrue(mPccSandboxManagerInternal.isPccAllowedPackage(testPackage, USER_ID_1));
+
+        mPccSandboxManagerInternal.removeTestAllowedPackage(testPackage);
+        assertFalse(mPccSandboxManagerInternal.isPccAllowedPackage(testPackage, USER_ID_1));
     }
 }
 
