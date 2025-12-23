@@ -100,6 +100,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.R;
 import com.android.internal.policy.TransitionAnimation;
+import com.android.testing.wm.util.ChangeBuilder;
 import com.android.testing.wm.util.StubTransaction;
 import com.android.testing.wm.util.TransitionInfoBuilder;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
@@ -398,20 +399,15 @@ public class ShellTransitionTests extends ShellTestCase {
 
         final RunningTaskInfo taskInfo = createTaskInfo(1);
         final TransitionInfo sameDisplay = new TransitionInfoBuilder(
-                        TRANSIT_CHANGE, /* flags= */ 0, /* asNoOp= */ false, /* displayId= */ 0)
-                .addChange(
-                        TRANSIT_CHANGE,
-                        taskInfo,
-                        /* endDisplayId= */ 0)
+                        TRANSIT_CHANGE, /* flags= */ 0, /* displayId= */ 0)
+                .addChange(new ChangeBuilder(taskInfo, TRANSIT_CHANGE).setDisplayId(0).build())
                 .build();
         assertFalse(filter.matches(sameDisplay));
 
         final TransitionInfo differentDisplays = new TransitionInfoBuilder(
-                        TRANSIT_CHANGE, /* flags= */ 0, /* asNoOp= */ false, /* displayId= */ 0)
-                .addChange(
-                        TRANSIT_CHANGE,
-                        taskInfo,
-                        /* endDisplayId= */ 1)
+                        TRANSIT_CHANGE, /* flags= */ 0, /* displayId= */ 0)
+                .addChange(new ChangeBuilder(taskInfo, TRANSIT_CHANGE)
+                        .moveToDisplay(/* start= */ 0, /* end= */ 1).build())
                 .build();
         assertTrue(filter.matches(differentDisplays));
     }
@@ -932,7 +928,7 @@ public class ShellTransitionTests extends ShellTestCase {
         displayChange.getStartAbsBounds().set(0, 0, 1000, 2000);
         final TransitionInfo normalDispRotate = new TransitionInfoBuilder(TRANSIT_CHANGE)
                 .addChange(displayChange)
-                .addChange(new ChangeBuilder(TRANSIT_CHANGE).setTask(taskInfo).setRotate().build())
+                .addChange(new ChangeBuilder(taskInfo, TRANSIT_CHANGE).setRotate().build())
                 .build();
         assertEquals(ROTATION_ANIMATION_ROTATE, DefaultTransitionHandler.getRotationAnimationHint(
                 displayChange, normalDispRotate, displays));
@@ -940,7 +936,7 @@ public class ShellTransitionTests extends ShellTestCase {
         // Seamless if all tasks are seamless
         final TransitionInfo rotateSeamless = new TransitionInfoBuilder(TRANSIT_CHANGE)
                 .addChange(displayChange)
-                .addChange(new ChangeBuilder(TRANSIT_CHANGE).setTask(taskInfo)
+                .addChange(new ChangeBuilder(taskInfo, TRANSIT_CHANGE)
                         .setRotate(ROTATION_ANIMATION_SEAMLESS).build())
                 .build();
         assertEquals(ROTATION_ANIMATION_SEAMLESS, DefaultTransitionHandler.getRotationAnimationHint(
@@ -949,9 +945,9 @@ public class ShellTransitionTests extends ShellTestCase {
         // Not seamless if there is PiP (or any other non-seamless task)
         final TransitionInfo pipDispRotate = new TransitionInfoBuilder(TRANSIT_CHANGE)
                 .addChange(displayChange)
-                .addChange(new ChangeBuilder(TRANSIT_CHANGE).setTask(taskInfo)
+                .addChange(new ChangeBuilder(taskInfo, TRANSIT_CHANGE)
                         .setRotate(ROTATION_ANIMATION_SEAMLESS).build())
-                .addChange(new ChangeBuilder(TRANSIT_CHANGE).setTask(taskInfoPip)
+                .addChange(new ChangeBuilder(taskInfoPip, TRANSIT_CHANGE)
                         .setRotate().build())
                 .build();
         assertEquals(ROTATION_ANIMATION_ROTATE, DefaultTransitionHandler.getRotationAnimationHint(
@@ -970,7 +966,7 @@ public class ShellTransitionTests extends ShellTestCase {
                 .setRotate(upsideDown, ROTATION_ANIMATION_UNSPECIFIED).build();
         final TransitionInfo seamlessUpsideDown = new TransitionInfoBuilder(TRANSIT_CHANGE)
                 .addChange(displayChange)
-                .addChange(new ChangeBuilder(TRANSIT_CHANGE).setTask(taskInfo)
+                .addChange(new ChangeBuilder(taskInfo, TRANSIT_CHANGE)
                         .setRotate(upsideDown, ROTATION_ANIMATION_SEAMLESS).build())
                 .build();
         assertEquals(ROTATION_ANIMATION_ROTATE, DefaultTransitionHandler.getRotationAnimationHint(
@@ -981,7 +977,7 @@ public class ShellTransitionTests extends ShellTestCase {
                 .setFlags(FLAG_IS_DISPLAY | FLAG_DISPLAY_HAS_ALERT_WINDOWS).setRotate().build();
         final TransitionInfo seamlessButAlert = new TransitionInfoBuilder(TRANSIT_CHANGE)
                 .addChange(displayChange)
-                .addChange(new ChangeBuilder(TRANSIT_CHANGE).setTask(taskInfo)
+                .addChange(new ChangeBuilder(taskInfo, TRANSIT_CHANGE)
                         .setRotate(ROTATION_ANIMATION_SEAMLESS).build())
                 .build();
         assertEquals(ROTATION_ANIMATION_ROTATE, DefaultTransitionHandler.getRotationAnimationHint(
@@ -993,7 +989,7 @@ public class ShellTransitionTests extends ShellTestCase {
         final TransitionInfo seamlessDisplay = new TransitionInfoBuilder(TRANSIT_CHANGE)
                 .addChange(displayChange)
                 // The animation hint of task will be ignored.
-                .addChange(new ChangeBuilder(TRANSIT_CHANGE).setTask(taskInfo)
+                .addChange(new ChangeBuilder(taskInfo, TRANSIT_CHANGE)
                         .setRotate(ROTATION_ANIMATION_ROTATE).build())
                 .build();
         assertEquals(ROTATION_ANIMATION_SEAMLESS, DefaultTransitionHandler.getRotationAnimationHint(
@@ -1375,7 +1371,7 @@ public class ShellTransitionTests extends ShellTestCase {
 
         // Recents transition should finish itself when it sees the sleep transition coming.
         verify(observer).onTransitionFinished(eq(transitRecents), eq(false));
-        verify(observer).onTransitionFinished(eq(transitSleep), eq(false));
+        verify(observer).onTransitionFinished(eq(transitSleep), eq(true));
     }
 
     private void onTransitionReady(Transitions transitions, IBinder token, TransitionInfo info) {
@@ -1394,7 +1390,7 @@ public class ShellTransitionTests extends ShellTestCase {
 
         // Make a no-op transition
         TransitionInfo info = new TransitionInfoBuilder(
-                TRANSIT_OPEN, TRANSIT_FLAG_KEYGUARD_GOING_AWAY, true /* noOp */).build();
+                TRANSIT_OPEN, TRANSIT_FLAG_KEYGUARD_GOING_AWAY).build();
         transitions.onTransitionReady(transitToken, info, new StubTransaction(),
                 new StubTransaction());
 
@@ -1413,7 +1409,7 @@ public class ShellTransitionTests extends ShellTestCase {
 
         // Make a no-op transition
         TransitionInfo info = new TransitionInfoBuilder(
-                TRANSIT_SLEEP, TRANSIT_FLAG_KEYGUARD_GOING_AWAY, true /* noOp */).build();
+                TRANSIT_SLEEP, TRANSIT_FLAG_KEYGUARD_GOING_AWAY).build();
         transitions.onTransitionReady(transitToken, info, new StubTransaction(),
                 new StubTransaction());
 
@@ -1452,8 +1448,7 @@ public class ShellTransitionTests extends ShellTestCase {
                 new TransitionRequestInfo(TRANSIT_SLEEP, null /* trigger */, null /* remote */));
 
         // Make a no-op transition
-        TransitionInfo info = new TransitionInfoBuilder(
-                TRANSIT_SLEEP, 0x0, true /* noOp */).build();
+        TransitionInfo info = new TransitionInfoBuilder(TRANSIT_SLEEP, 0x0).build();
         transitions.onTransitionReady(transitToken, info, new StubTransaction(),
                 new StubTransaction());
 

@@ -52,6 +52,7 @@ import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.jank.InteractionJankMonitor;
+import com.android.testing.wm.util.ChangeBuilder;
 import com.android.testing.wm.util.TransitionInfoBuilder;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTestCase;
@@ -124,12 +125,10 @@ public class DefaultTransitionHandlerTest extends ShellTestCase {
 
     @Test
     public void testAnimationBackgroundCreatedForTaskTransition() {
-        final TransitionInfo.Change openTask = new ChangeBuilder(TRANSIT_OPEN)
-                .setTask(createTaskInfo(1))
+        final TransitionInfo.Change openTask = new ChangeBuilder(createTaskInfo(1), TRANSIT_OPEN)
                 .build();
-        final TransitionInfo.Change closeTask = new ChangeBuilder(TRANSIT_TO_BACK)
-                .setTask(createTaskInfo(2))
-                .build();
+        final TransitionInfo.Change closeTask =
+                new ChangeBuilder(createTaskInfo(2), TRANSIT_TO_BACK).build();
 
         final IBinder token = new Binder();
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_OPEN)
@@ -153,9 +152,8 @@ public class DefaultTransitionHandlerTest extends ShellTestCase {
         // This test verifies that a background color layer is not created when there is only
         // a single change in the transition, even if it's an opaque task. This prevents the
         // background from incorrectly occluding other UI elements.
-        final TransitionInfo.Change closeTask = new ChangeBuilder(TRANSIT_TO_BACK)
-                .setTask(createTaskInfo(1))
-                .build();
+        final TransitionInfo.Change closeTask = new ChangeBuilder(createTaskInfo(1),
+                TRANSIT_TO_BACK).build();
 
         final IBinder token = new Binder();
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_TO_BACK)
@@ -176,14 +174,13 @@ public class DefaultTransitionHandlerTest extends ShellTestCase {
 
     @Test
     public void testNoAnimationBackgroundForTranslucentTasks() {
-        final TransitionInfo.Change openTask = new ChangeBuilder(TRANSIT_OPEN)
-                .setTask(createTaskInfo(1))
+        final TransitionInfo.Change openTask = new ChangeBuilder(createTaskInfo(1), TRANSIT_OPEN)
                 .setFlags(FLAG_TRANSLUCENT)
                 .build();
-        final TransitionInfo.Change closeTask = new ChangeBuilder(TRANSIT_TO_BACK)
-                .setTask(createTaskInfo(2))
-                .setFlags(FLAG_TRANSLUCENT)
-                .build();
+        final TransitionInfo.Change closeTask =
+                new ChangeBuilder(createTaskInfo(2), TRANSIT_TO_BACK)
+                        .setFlags(FLAG_TRANSLUCENT)
+                        .build();
 
         final IBinder token = new Binder();
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_OPEN)
@@ -258,9 +255,8 @@ public class DefaultTransitionHandlerTest extends ShellTestCase {
 
     @Test
     public void startAnimation_freeformOpenChange_doesntReparentTask() {
-        final TransitionInfo.Change openChange = new ChangeBuilder(TRANSIT_OPEN)
-                .setTask(createTaskInfo(
-                        /* taskId= */ 1, /* windowingMode= */ WINDOWING_MODE_FULLSCREEN))
+        final TransitionInfo.Change openChange = new ChangeBuilder(createTaskInfo(
+                /* taskId= */ 1, /* windowingMode= */ WINDOWING_MODE_FULLSCREEN), TRANSIT_OPEN)
                 .build();
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_OPEN)
                 .addChange(openChange)
@@ -277,13 +273,11 @@ public class DefaultTransitionHandlerTest extends ShellTestCase {
 
     @Test
     public void startAnimation_freeformMinimizeChange_underFullscreenChange_doesntReparentTask() {
-        final TransitionInfo.Change openChange = new ChangeBuilder(TRANSIT_OPEN)
-                .setTask(createTaskInfo(
-                        /* taskId= */ 1, /* windowingMode= */ WINDOWING_MODE_FULLSCREEN))
-                .build();
-        final TransitionInfo.Change toBackChange = new ChangeBuilder(TRANSIT_TO_BACK)
-                .setTask(createTaskInfo(
-                        /* taskId= */ 2, /* windowingMode= */ WINDOWING_MODE_FREEFORM))
+        final TransitionInfo.Change openChange = new ChangeBuilder(createTaskInfo(
+                        /* taskId= */ 1, /* windowingMode= */ WINDOWING_MODE_FULLSCREEN),
+                TRANSIT_OPEN).build();
+        final TransitionInfo.Change toBackChange = new ChangeBuilder(createTaskInfo(
+                /* taskId= */ 2, /* windowingMode= */ WINDOWING_MODE_FREEFORM), TRANSIT_TO_BACK)
                 .build();
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_OPEN)
                 .addChange(openChange)
@@ -345,13 +339,11 @@ public class DefaultTransitionHandlerTest extends ShellTestCase {
 
     @Test
     public void startAnimation_freeform_minimizeAnimation_reparentsTask() {
-        final TransitionInfo.Change openChange = new ChangeBuilder(TRANSIT_OPEN)
-                .setTask(createTaskInfo(
-                        /* taskId= */ 1, /* windowingMode= */ WINDOWING_MODE_FREEFORM))
+        final TransitionInfo.Change openChange = new ChangeBuilder(createTaskInfo(
+                /* taskId= */ 1, /* windowingMode= */ WINDOWING_MODE_FREEFORM), TRANSIT_OPEN)
                 .build();
-        final TransitionInfo.Change toBackChange = new ChangeBuilder(TRANSIT_TO_BACK)
-                .setTask(createTaskInfo(
-                        /* taskId= */ 2, /* windowingMode= */ WINDOWING_MODE_FREEFORM))
+        final TransitionInfo.Change toBackChange = new ChangeBuilder(createTaskInfo(
+                /* taskId= */ 2, /* windowingMode= */ WINDOWING_MODE_FREEFORM), TRANSIT_TO_BACK)
                 .build();
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_OPEN)
                 .addChange(openChange)

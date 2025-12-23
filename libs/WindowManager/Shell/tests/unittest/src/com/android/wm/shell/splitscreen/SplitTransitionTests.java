@@ -83,6 +83,7 @@ import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.launcher3.icons.IconProvider;
+import com.android.testing.wm.util.ChangeBuilder;
 import com.android.testing.wm.util.MockToken;
 import com.android.testing.wm.util.TransitionInfoBuilder;
 import com.android.wm.shell.Flags;
@@ -602,8 +603,10 @@ public class SplitTransitionTests extends ShellTestCase {
         // include the launcher becoming visible underneath.
         TransitionInfo info = new TransitionInfoBuilder(TRANSIT_OPEN, 0)
                 .addChange(TRANSIT_TO_FRONT, TransitionInfo.FLAG_SHOW_WALLPAPER, mHomeTask)
-                .addChange(TRANSIT_TO_FRONT, TransitionInfo.FLAG_IS_WALLPAPER, null)
-                .addChange(TRANSIT_CHANGE, movedMainChild, mSecondaryDisplayAreaInfo.displayId)
+                .addChange(TRANSIT_TO_FRONT, TransitionInfo.FLAG_IS_WALLPAPER)
+                .addChange(new ChangeBuilder(movedMainChild, TRANSIT_CHANGE)
+                        .moveToDisplay(DEFAULT_DISPLAY, mSecondaryDisplayAreaInfo.displayId)
+                        .build())
                 .build();
 
         // Simulate the transition. Split does not need to play it, but does need to know about it.

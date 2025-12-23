@@ -288,8 +288,9 @@ public class PipExpandHandlerTest {
     private TransitionInfo getExpandFromPipTransitionInfo(@WindowManager.TransitionType int type,
             @Nullable ActivityManager.RunningTaskInfo pipTaskInfo,
             @Nullable WindowContainerToken lastParent, boolean toSplit) {
-        final TransitionInfo info = new TransitionInfoBuilder(type)
-                .addChange(TRANSIT_CHANGE, pipTaskInfo).build();
+        final TransitionInfo info = pipTaskInfo == null
+                ? new TransitionInfoBuilder(type).addChange(TRANSIT_CHANGE).build()
+                : new TransitionInfoBuilder(type).addChange(TRANSIT_CHANGE, pipTaskInfo).build();
         final TransitionInfo.Change pipChange = info.getChanges().getFirst();
         pipChange.setRotation(DISPLAY_ROTATION,
                 WindowConfiguration.ROTATION_UNDEFINED);
