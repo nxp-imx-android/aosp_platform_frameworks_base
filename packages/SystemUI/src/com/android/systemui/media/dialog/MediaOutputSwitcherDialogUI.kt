@@ -13,59 +13,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.systemui.media.dialog
 
-package com.android.systemui.media.dialog;
-
-import android.annotation.MainThread;
-import android.annotation.Nullable;
-import android.content.Context;
-import android.media.session.MediaSession;
-import android.os.UserHandle;
-import android.text.TextUtils;
-import android.util.Log;
-
-import com.android.systemui.CoreStartable;
-import com.android.systemui.dagger.SysUISingleton;
-import com.android.systemui.statusbar.CommandQueue;
-
-import javax.inject.Inject;
+import android.annotation.MainThread
+import android.media.session.MediaSession
+import android.os.UserHandle
+import android.text.TextUtils
+import android.util.Log
+import com.android.systemui.CoreStartable
+import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.statusbar.CommandQueue
+import javax.inject.Inject
 
 /** Controls display of media output switcher. */
 @SysUISingleton
-public class MediaOutputSwitcherDialogUI implements CoreStartable, CommandQueue.Callbacks {
+class MediaOutputSwitcherDialogUI
+@Inject
+constructor(
+    private val mCommandQueue: CommandQueue,
+    private val mMediaOutputDialogManager: MediaOutputDialogManager,
+) : CoreStartable, CommandQueue.Callbacks {
 
-    private static final String TAG = "MediaOutputSwitcherDialogUI";
-
-    private final CommandQueue mCommandQueue;
-    private final MediaOutputDialogManager mMediaOutputDialogManager;
-
-    @Inject
-    public MediaOutputSwitcherDialogUI(
-            Context context,
-            CommandQueue commandQueue,
-            MediaOutputDialogManager mediaOutputDialogManager) {
-        mCommandQueue = commandQueue;
-        mMediaOutputDialogManager = mediaOutputDialogManager;
+    override fun start() {
+        mCommandQueue.addCallback(this)
     }
 
-    @Override
-    public void start() {
-        mCommandQueue.addCallback(this);
-    }
-
-    @Override
     @MainThread
-    public void showMediaOutputSwitcher(String packageName, UserHandle userHandle,
-            @Nullable MediaSession.Token sessionToken) {
+    override fun showMediaOutputSwitcher(
+        packageName: String,
+        userHandle: UserHandle,
+        sessionToken: MediaSession.Token?,
+    ) {
         if (!TextUtils.isEmpty(packageName)) {
             mMediaOutputDialogManager.createAndShow(
-                    packageName,
-                    /* aboveStatusBar= */ false,
-                    /* view= */ null,
-                    userHandle,
-                    sessionToken);
+                packageName,
+                aboveStatusBar = false,
+                view = null,
+                userHandle,
+                sessionToken,
+            )
         } else {
-            Log.e(TAG, "Unable to launch media output dialog. Package name is empty.");
+            Log.e(TAG, "Unable to launch media output dialog. Package name is empty.")
         }
+    }
+
+    companion object {
+        private const val TAG = "MediaOutputSwitcherDialogUI"
     }
 }
