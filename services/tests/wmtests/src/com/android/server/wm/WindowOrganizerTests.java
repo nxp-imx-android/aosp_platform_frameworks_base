@@ -53,6 +53,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
 import static com.android.server.wm.WindowContainer.SYNC_STATE_READY;
+import static com.android.server.wm.WindowContainer.fromBinder;
 import static com.android.server.wm.WindowState.BLAST_TIMEOUT_DURATION;
 import static com.android.server.wm.testing.Assert.assertThrows;
 
@@ -270,9 +271,12 @@ public class WindowOrganizerTests extends WindowTestsBase {
     @Test
     public void testRemoveWithOrganizerRemovesTask() throws RemoteException {
         final ITaskOrganizer organizer = registerMockOrganizer();
-        final Task rootTask = createRootTask();
-        final Task task = createTask(rootTask);
-        rootTask.mRemoveWithTaskOrganizer = true;
+        final Task rootTask = new TaskBuilder(mSupervisor)
+                .setTaskDisplayArea(mDisplayContent.getDefaultTaskDisplayArea())
+                .setRemoveWithTaskOrganizer(true)
+                .build();
+        createTask(rootTask);
+        assertTrue(rootTask.mRemoveWithTaskOrganizer);
 
         mWm.mAtmService.mTaskOrganizerController.dispatchPendingEvents();
         verify(organizer).onTaskAppeared(any(RunningTaskInfo.class), any(SurfaceControl.class));
@@ -289,8 +293,8 @@ public class WindowOrganizerTests extends WindowTestsBase {
     public void testNoRemoveWithOrganizerNoRemoveTask() throws RemoteException {
         final ITaskOrganizer organizer = registerMockOrganizer();
         final Task rootTask = createRootTask();
-        final Task task = createTask(rootTask);
-        rootTask.mRemoveWithTaskOrganizer = false;
+        createTask(rootTask);
+        assertFalse(rootTask.mRemoveWithTaskOrganizer);
 
         mWm.mAtmService.mTaskOrganizerController.dispatchPendingEvents();
         verify(organizer).onTaskAppeared(any(RunningTaskInfo.class), any(SurfaceControl.class));
@@ -2429,6 +2433,113 @@ public class WindowOrganizerTests extends WindowTestsBase {
         mWm.mAtmService.mWindowOrganizerController.applyTransaction(t);
 
         verify(mRootWindowContainer, never()).ensureActivitiesVisible();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
+    public void testCreateTask_setParentContainer_inRootTask() {
+        final Task rootTask = new TaskBuilder(mSupervisor).setCreatedByOrganizer(true).build();
+        final TaskCreationParams params = new TaskCreationParams.Builder()
+                .setParentContainer(rootTask.mRemoteToken.toWindowContainerToken())
+                .build();
+
+        final WindowContainerToken token =
+                mWm.mAtmService.mTaskOrganizerController.createTask(params);
+
+        assertNotNull(token);
+        assertNotNull(fromBinder(token.asBinder()));
+        final Task newTask = fromBinder(token.asBinder()).asTask();
+        assertNotNull(newTask);
+        assertEquals(params.getLaunchCookie(), newTask.mLaunchCookie);
+        assertEquals(rootTask, newTask.getParent());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
+    public void testCreateTask_setParentContainer_inTaskDisplayArea() {
+        final TaskDisplayArea tda = createTaskDisplayArea(mDisplayContent, mWm, "test", 1000);
+        final TaskCreationParams params = new TaskCreationParams.Builder()
+                .setParentContainer(tda.mRemoteToken.toWindowContainerToken())
+                .build();
+
+        final WindowContainerToken token =
+                mWm.mAtmService.mTaskOrganizerController.createTask(params);
+
+        assertNotNull(token);
+        assertNotNull(fromBinder(token.asBinder()));
+        final Task newTask = fromBinder(token.asBinder()).asTask();
+        assertNotNull(newTask);
+        assertEquals(params.getLaunchCookie(), newTask.mLaunchCookie);
+        assertEquals(tda, newTask.getParent());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
+    public void testCreateTask_setParentContainer_inRootTaskOfNonDefaultDisplay() {
+        final DisplayContent dc = createNewDisplay();
+        final Task rootTask = new TaskBuilder(mSupervisor)
+                .setDisplay(dc)
+                .setCreatedByOrganizer(true)
+                .build();
+        final TaskCreationParams params = new TaskCreationParams.Builder()
+                .setDisplayId(dc.mDisplayId)
+                .setParentContainer(rootTask.mRemoteToken.toWindowContainerToken())
+                .build();
+
+        final WindowContainerToken token =
+                mWm.mAtmService.mTaskOrganizerController.createTask(params);
+
+        assertNotNull(token);
+        assertNotNull(fromBinder(token.asBinder()));
+        final Task newTask = fromBinder(token.asBinder()).asTask();
+        assertNotNull(newTask);
+        assertEquals(params.getLaunchCookie(), newTask.mLaunchCookie);
+        assertEquals(rootTask, newTask.getParent());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
+    public void testCreateTask_setParentContainer_inValidRootTask() {
+        final Task rootTask = new TaskBuilder(mSupervisor).setCreatedByOrganizer(false).build();
+        final TaskCreationParams params = new TaskCreationParams.Builder()
+                .setParentContainer(rootTask.mRemoteToken.toWindowContainerToken())
+                .build();
+
+        assertNull(mWm.mAtmService.mTaskOrganizerController.createTask(params));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
+    public void testCreateTask_setParentContainer_unmatchedDisplay() {
+        final DisplayContent dc = createNewDisplay();
+        final Task rootTask = new TaskBuilder(mSupervisor)
+                .setDisplay(dc)
+                .setCreatedByOrganizer(true)
+                .build();
+        final TaskCreationParams params = new TaskCreationParams.Builder()
+                .setDisplayId(mDisplayContent.mDisplayId) // Not the same as the rootTask's display
+                .setParentContainer(rootTask.mRemoteToken.toWindowContainerToken())
+                .build();
+
+        assertNull(mWm.mAtmService.mTaskOrganizerController.createTask(params));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
+    public void testCreateTask_setVisibilityBarrier() {
+        final TaskCreationParams params = new TaskCreationParams.Builder()
+                .setVisibilityBarrier(true)
+                .build();
+
+        final WindowContainerToken token =
+                mWm.mAtmService.mTaskOrganizerController.createTask(params);
+
+        assertNotNull(token);
+        assertNotNull(fromBinder(token.asBinder()));
+        final Task newTask = fromBinder(token.asBinder()).asTask();
+        assertNotNull(newTask);
+        assertEquals(params.getLaunchCookie(), newTask.mLaunchCookie);
+        assertTrue(newTask.isVisibilityBarrier());
     }
 
     private void testSetAlwaysOnTop(WindowContainer wc) {

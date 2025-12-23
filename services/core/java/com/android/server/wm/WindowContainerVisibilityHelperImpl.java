@@ -98,10 +98,13 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
         final Rect tmpRect = new Rect();
         final List<TaskFragment> adjacentTaskFragments = new ArrayList<>();
         for (int i = parent.getChildCount() - 1; i >= 0; --i) {
-            final WindowContainer other = parent.getChildAt(i);
-            if (other == null) continue;
+            final WindowContainer<?> other = parent.getChildAt(i);
+            if (other.asTask() != null && other.asTask().isVisibilityBarrier()) {
+                // Visibility barrier and siblings below it are all invisible.
+                return TASK_FRAGMENT_VISIBILITY_INVISIBLE;
+            }
 
-            final boolean hasRunningActivities = hasRunningActivity(other);
+            final boolean containsCanBeVisibleActivity = containsCanBeVisibleActivity(other);
             if (other == current) {
                 if (Flags.fixTfAdjacentVisibility()) {
                     if (adjacentVisibilityHelper != null
@@ -137,13 +140,13 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
                 }
                 // Should be visible if there is no other fragment occluding it, unless it doesn't
                 // have any running activities, not starting one and not home stack.
-                shouldBeVisible = hasRunningActivities
+                shouldBeVisible = containsCanBeVisibleActivity
                         || (starting != null && starting.isDescendantOf(current))
                         || (current.isActivityTypeHome() && !current.isEmbedded());
                 break;
             }
 
-            if (!hasRunningActivities) {
+            if (!containsCanBeVisibleActivity) {
                 continue;
             }
 
@@ -251,6 +254,11 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
         AdjacentVisibilityHelper adjacentVisibilityHelper = null;
         for (int i = childCount - 1; i >= 0; --i) {
             final WindowContainer<?> child = current.getChildAt(i);
+            if (child.asTask() != null && child.asTask().isVisibilityBarrier()) {
+                // Siblings behind the visibility barrier cannot be made visible, nor filling
+                // parent.
+                return false;
+            }
             if (child.fillsParentBounds() && child.hasFillingContent()) {
                 // At least one child fills this container and has content filling itself.
                 return true;
@@ -306,8 +314,30 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
                 && currentTf.getBounds().intersect(otherTf.getBounds());
     }
 
-    private static boolean hasRunningActivity(@NonNull WindowContainer wc) {
+    /**
+     * Whether this or any of its activities can be made visible without changing their z-order.
+     */
+    private static boolean containsCanBeVisibleActivity(@NonNull WindowContainer wc) {
         if (wc.asTaskFragment() != null) {
+            if (Flags.visibilityManagementInBubbleRoot()) {
+                if (wc.asTaskFragment().isForceHidden()) {
+                    // Activity in hidden container cannot be made visible.
+                    return false;
+                }
+                if (wc.asTask() != null && !wc.asTask().isLeafTask()) {
+                    for (int i = wc.getChildCount() - 1; i >= 0; --i) {
+                        final WindowContainer<?> child = wc.getChildAt(i);
+                        if (child.asTask() != null && child.asTask().isVisibilityBarrier()) {
+                            // Siblings behind the visibility barrier cannot be made visible.
+                            return false;
+                        }
+                        if (containsCanBeVisibleActivity(child)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            }
             return wc.asTaskFragment().topRunningActivity() != null;
         }
         return wc.asActivityRecord() != null && !wc.asActivityRecord().finishing;
@@ -492,6 +522,11 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
             AdjacentVisibilityHelper adjacentVisibilityHelper = null;
             for (int i = container.getChildCount() - 1; i >= 0; --i) {
                 final WindowContainer<?> child = container.getChildAt(i);
+                if (child.asTask() != null && child.asTask().isVisibilityBarrier()) {
+                    // Siblings behind the visibility barrier cannot be made visible, nor opaque.
+                    break;
+                }
+
                 if (child.fillsParent() && (Flags.improveOcclusionCalculation()
                         ? isOpaqueInner(child)
                         : isOpaque(child))) {

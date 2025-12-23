@@ -32,6 +32,7 @@ import static com.android.server.wm.TaskFragment.FLAG_FORCE_HIDDEN_FOR_TASK_ORG;
 import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_INVISIBLE;
 import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_VISIBLE;
 import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_VISIBLE_BEHIND_TRANSLUCENT;
+import static com.android.server.wm.WindowContainer.POSITION_TOP;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -884,6 +885,53 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
+    public void testShouldBeVisible_behindVisibilityBarrier() {
+        final Task bottomTask = createTaskWithActivity(mDefaultTaskDisplayArea,
+                WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD, true /* onTop */,
+                false /* twoLevelTask */);
+        final Task visibilityBarrier = new Task.Builder(mAtm)
+                .setIsVisibilityBarrier(true)
+                .build();
+        mDefaultTaskDisplayArea.addChild(visibilityBarrier, POSITION_TOP);
+        final Task topTask = createTaskWithActivity(mDefaultTaskDisplayArea,
+                WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD, true /* onTop */,
+                false /* twoLevelTask */);
+
+        bottomTask.setBounds(new Rect(0, 0, 500, 1000));
+        topTask.setBounds(new Rect(500, 0, 1000, 1000));
+
+        assertThat(topTask.shouldBeVisible(null)).isTrue();
+        assertThat(visibilityBarrier.shouldBeVisible(null)).isFalse();
+        assertThat(bottomTask.shouldBeVisible(null)).isFalse();
+
+        visibilityBarrier.removeImmediately();
+
+        assertThat(bottomTask.shouldBeVisible(null)).isTrue();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
+    public void testShouldBeVisible_rootTaskWithAllChildBehindVisibilityBarrier() {
+        final Task rootTask = createTaskWithActivity(mDefaultTaskDisplayArea,
+                WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD, true /* onTop */,
+                true /* twoLevelTask */);
+        final Task leafTask = rootTask.getTopLeafTask();
+
+        assertThat(rootTask.shouldBeVisible(null)).isTrue();
+        assertThat(leafTask.shouldBeVisible(null)).isTrue();
+
+        final Task visibilityBarrier = new Task.Builder(mAtm)
+                .setIsVisibilityBarrier(true)
+                .build();
+        rootTask.addChild(visibilityBarrier, POSITION_TOP);
+
+        assertThat(rootTask.shouldBeVisible(null)).isFalse();
+        assertThat(leafTask.shouldBeVisible(null)).isFalse();
+        assertThat(visibilityBarrier.shouldBeVisible(null)).isFalse();
+    }
+
+    @Test
     public void testOpaque_leafTask_occludingActivity_isOpaque() {
         final ActivityRecord activity = new ActivityBuilder(mAtm).setCreateTask(true).build();
         activity.setOccludesParent(true);
@@ -1044,6 +1092,27 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
         activity.setOccludesParent(false);
 
         assertIsOpaque(forceOpaqueTaskWithTranslucentActivity, true);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
+    public void testOpaque_rootTaskWithAllChildBehindVisibilityBarrier() {
+        final Task rootTask = createTaskWithActivity(mDefaultTaskDisplayArea,
+                WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD, true /* onTop */,
+                true /* twoLevelTask */);
+        final Task leafTask = rootTask.getTopLeafTask();
+
+        assertIsOpaque(rootTask, true);
+        assertIsOpaque(leafTask, true);
+
+        final Task visibilityBarrier = new Task.Builder(mAtm)
+                .setIsVisibilityBarrier(true)
+                .build();
+        rootTask.addChild(visibilityBarrier, POSITION_TOP);
+
+        assertIsOpaque(rootTask, false);
+        assertIsOpaque(leafTask, true);
+        assertIsOpaque(visibilityBarrier, false);
     }
 
     private Task createTaskWithActivityAndOverrideTranslucent(
