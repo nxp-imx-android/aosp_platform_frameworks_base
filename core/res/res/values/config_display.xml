@@ -37,4 +37,7 @@
     <integer-array name="config_availableEMValueOptions">
         <item>0</item> <!-- DEFAULT -->
     </integer-array>
+    <!-- Whether High Brightness Mode Controller is overridden or not -->
+    <bool name="config_highBrightnessModeControllerOverridden">false</bool>
+
 </resources>
