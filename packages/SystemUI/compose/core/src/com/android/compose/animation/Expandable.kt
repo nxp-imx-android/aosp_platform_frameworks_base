@@ -210,7 +210,10 @@ fun Expandable(
     content: @Composable (Expandable) -> Unit,
 ) {
     val controller = controller as ExpandableControllerImpl
-    val expandable = expandable ?: Expandable(controller.transitionSource)
+
+    val expandable =
+        expandable
+            ?: remember(controller.transitionSource) { Expandable(controller.transitionSource) }
 
     if (controller.transitionControllerFactory != null) {
         DisposableEffect(controller.transitionControllerFactory) {
