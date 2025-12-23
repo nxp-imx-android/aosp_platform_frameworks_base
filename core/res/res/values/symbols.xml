@@ -4845,7 +4845,6 @@
   <java-symbol type="dimen" name="conversation_icon_circle_start" />
   <java-symbol type="dimen" name="notification_icon_circle_start" />
 
-  <java-symbol type="attr" name="notificationHeaderTextAppearance" />
   <java-symbol type="string" name="conversation_single_line_name_display" />
   <java-symbol type="string" name="conversation_single_line_image_placeholder" />
   <java-symbol type="string" name="conversation_title_fallback_one_to_one" />
@@ -6013,7 +6012,6 @@
   <java-symbol type="style" name="Theme.DeviceDefault.NoActionBar.Overscan" />
   <java-symbol type="style" name="Theme.DeviceDefault.NoActionBar.TranslucentDecor" />
   <java-symbol type="style" name="Theme.DeviceDefault.NoActionBar" />
-  <java-symbol type="style" name="Theme.DeviceDefault.Notification" />
   <java-symbol type="style" name="Theme.DeviceDefault.Panel" />
   <java-symbol type="style" name="Theme.DeviceDefault.ResolverCommon" />
   <java-symbol type="style" name="Theme.DeviceDefault.SearchBar" />
