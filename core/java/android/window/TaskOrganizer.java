@@ -26,6 +26,7 @@ import android.annotation.RequiresPermission;
 import android.annotation.SuppressLint;
 import android.annotation.TestApi;
 import android.app.ActivityManager;
+import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.view.SurfaceControl;
@@ -45,9 +46,11 @@ public class TaskOrganizer extends WindowOrganizer {
 
     /**
      * Data associated with a request to create a new root task.
+     * @deprecated use {@link TaskCreationParams} instead.
      * @hide
      */
-    // TODO(b/468029217): Consider making this class Parcelable.
+    // TODO(b/468029217): Remove
+    @Deprecated
     public static class CreateRootTaskRequest {
         public int displayId;
         public int windowingMode;
@@ -177,7 +180,7 @@ public class TaskOrganizer extends WindowOrganizer {
      * Register a TaskOrganizer to manage tasks as they enter a supported windowing mode.
      *
      * @return a list of the tasks that should be managed by the organizer, not including tasks
-     *         created via {@link #createRootTask}.
+     *         created via {@link #createTask}.
      */
     @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
     @CallSuper
@@ -297,62 +300,103 @@ public class TaskOrganizer extends WindowOrganizer {
             @NonNull List<ActivityManager.RunningTaskInfo> updatedTasks) { }
 
     /**
-     * @deprecated Use {@link #createRootTask(CreateRootTaskRequest)}
+     * @deprecated use {@link #createTask} instead.
      * @hide
      */
     @Deprecated
     @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
     public void createRootTask(int displayId, int windowingMode, @Nullable IBinder launchCookie,
             boolean removeWithTaskOrganizer, boolean reparentOnDisplayRemoval) {
-        createRootTask(new CreateRootTaskRequest()
+        final TaskPropertiesRequest taskProperties = new TaskPropertiesRequest()
+                .setReparentOnDisplayRemoval(reparentOnDisplayRemoval);
+        createTask(
+                new TaskCreationParams.Builder()
                         .setDisplayId(displayId)
                         .setWindowingMode(windowingMode)
-                        .setLaunchCookie(launchCookie)
+                        .setLaunchCookie(launchCookie != null ? launchCookie : new Binder())
                         .setRemoveWithTaskOrganizer(removeWithTaskOrganizer)
-                        .setReparentOnDisplayRemoval(reparentOnDisplayRemoval));
+                        .setTaskPropertiesRequest(taskProperties)
+                        .build());
     }
 
     /**
      * Creates a persistent root task in WM for a particular windowing-mode.
-     * This call is deprecated, use {@link #createRootTask(CreateRootTaskRequest)}.
+     * This call is deprecated, use {@link #createTask} instead.
      */
     @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
     @Nullable
     public void createRootTask(int displayId, int windowingMode, @Nullable IBinder launchCookie) {
-        // TODO(b/378565144): Deprecate this method and expose CreateRootTaskRequest as TestApi
-        createRootTask(new CreateRootTaskRequest()
-                .setDisplayId(displayId)
-                .setWindowingMode(windowingMode)
-                .setLaunchCookie(launchCookie));
+        // TODO(b/378565144): Deprecate this method and expose TaskCreationParams as TestApi
+        createTask(
+                new TaskCreationParams.Builder()
+                        .setDisplayId(displayId)
+                        .setWindowingMode(windowingMode)
+                        .setLaunchCookie(launchCookie != null ? launchCookie : new Binder())
+                        .build());
     }
 
     /**
-     * Creates a persistent root task in WM for a particular windowing-mode.
-     * @param request The data for this request
-     * @return the WindowContainerToken of the newly created root task. This can be null if the root
-     * task creation fails in the system server (e.g., due to invalid displayId).
+     * @deprecated use {@link #createTask} instead.
+     * @hide
+     */
+    @Deprecated
+    @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
+    @Nullable
+    public WindowContainerToken createRootTask(@NonNull CreateRootTaskRequest request) {
+        final TaskPropertiesRequest taskProperties = new TaskPropertiesRequest()
+                .setReparentOnDisplayRemoval(request.reparentOnDisplayRemoval)
+                .setForceOpaque(request.isForceOpaque)
+                .setIgnoreInsets(request.shouldIgnoreInsets)
+                .setDisableAppCompatRoundedCorners(request.disableAppCompatRoundedCorners);
+        return createTask(
+                new TaskCreationParams.Builder()
+                        .setName(request.name)
+                        .setDisplayId(request.displayId)
+                        .setWindowingMode(request.windowingMode)
+                        .setLaunchCookie(request.launchCookie != null
+                                ? request.launchCookie
+                                : new Binder())
+                        .setRemoveWithTaskOrganizer(request.removeWithTaskOrganizer)
+                        .setTaskPropertiesRequest(taskProperties)
+                        .build());
+    }
+
+    /**
+     * Creates a persistent Task.
+     * @param params The creation params
+     * @return the WindowContainerToken of the newly created Task. This can be {@code null} if the
+     * Task creation fails in the system server (e.g., due to invalid displayId).
      *
+     * @see #deleteTask for removal.
      * @hide
      */
     @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
     @Nullable
-    public WindowContainerToken createRootTask(@NonNull CreateRootTaskRequest request) {
+    public WindowContainerToken createTask(@NonNull TaskCreationParams params) {
         try {
-            return mTaskOrganizerController.createRootTask(request.displayId, request.windowingMode,
-                    request.launchCookie, request.removeWithTaskOrganizer,
-                    request.reparentOnDisplayRemoval, request.name,
-                    request.isForceOpaque, request.shouldIgnoreInsets,
-                    request.disableAppCompatRoundedCorners);
+            return mTaskOrganizerController.createTask(params);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
     }
 
-    /** Deletes a persistent root task in WM */
+    /**
+     * This call is deprecated, use {@link #deleteTask} instead.
+     */
     @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
     public boolean deleteRootTask(@NonNull WindowContainerToken task) {
+        // TODO(b/378565144): Deprecate this method
+        return deleteTask(task);
+    }
+
+    /**
+     * Deletes a persistent Task.
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
+    public boolean deleteTask(@NonNull WindowContainerToken task) {
         try {
-            return mTaskOrganizerController.deleteRootTask(task);
+            return mTaskOrganizerController.deleteTask(task);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
