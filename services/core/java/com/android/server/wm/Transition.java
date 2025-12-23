@@ -3036,8 +3036,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             } else {
                 parentChange.mFlags |= ChangeInfo.FLAG_CHANGE_YES_ANIMATION;
             }
-            if (Flags.promoteExistenceChangedStateToParent() && targetChange.mExistenceChanged
-                    && parent.getChildCount() == 1
+            if (targetChange.mExistenceChanged && parent.getChildCount() == 1
                     // The creation and removal of an organizer-created container are independent
                     // of its children.
                     && (parent.asTaskFragment() == null
