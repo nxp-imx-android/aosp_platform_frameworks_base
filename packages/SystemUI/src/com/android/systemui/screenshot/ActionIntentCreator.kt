@@ -31,7 +31,6 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.res.R
 import com.android.systemui.screenshot.scroll.LongScreenshotActivity
-import com.android.systemui.shared.Flags.usePreferredImageEditor
 import java.util.function.Consumer
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -102,15 +101,8 @@ constructor(
         val uri = uriWithoutUserId(rawUri)
         val editIntent = Intent(Intent.ACTION_EDIT)
 
-        if (usePreferredImageEditor()) {
-            // Use the preferred editor if it's available, otherwise fall back to the default editor
-            editIntent.component = preferredEditor() ?: defaultEditor()
-        } else {
-            val editor = context.getString(R.string.config_screenshotEditor)
-            if (editor.isNotEmpty()) {
-                editIntent.component = ComponentName.unflattenFromString(editor)
-            }
-        }
+        // Use the preferred editor if it's available, otherwise fall back to the default editor
+        editIntent.component = preferredEditor() ?: defaultEditor()
 
         return editIntent
             .setDataAndType(uri, "image/png")
