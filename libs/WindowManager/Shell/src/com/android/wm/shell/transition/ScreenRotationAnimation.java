@@ -23,6 +23,8 @@ import static android.view.WindowManagerPolicyConstants.SCREEN_FREEZE_LAYER_BASE
 
 import static com.android.internal.policy.TransitionAnimation.MAX_ANIMATION_DURATION;
 import static com.android.wm.shell.transition.DefaultSurfaceAnimator.buildSurfaceAnimation;
+import static com.android.wm.shell.transition.DefaultSurfaceAnimator.buildWindowAnimation;
+import static com.android.wm.shell.transition.DefaultSurfaceAnimator.createAnimator;
 import static com.android.wm.shell.transition.Transitions.TAG;
 
 import android.animation.Animator;
@@ -51,6 +53,7 @@ import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.shared.TransactionPool;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 /**
  * This class handles the rotation animation when the device is rotated.
@@ -139,12 +142,14 @@ class ScreenRotationAnimation {
     private float mStartLuma;
     /** Intensity of light/whiteness of the layout after rotation occurs. */
     private float mEndLuma;
+    private final TransitionInfo.Change mChange;
 
     ScreenRotationAnimation(Context context, TransactionPool pool, Transaction t,
             TransitionInfo.Change change, SurfaceControl rootLeash, int animHint, int flags) {
         mContext = context;
         mTransactionPool = pool;
         mAnimHint = animHint;
+        mChange = change;
 
         mSurfaceControl = change.getLeash();
         mRootLeash = rootLeash;
@@ -204,7 +209,7 @@ class ScreenRotationAnimation {
                 hardwareBuffer.close();
             }
             if (isRotationChange) {
-                final float[] color = new float[] {mStartLuma, mStartLuma, mStartLuma};
+                final float[] color = new float[]{mStartLuma, mStartLuma, mStartLuma};
                 if ((flags & FLAG_HAS_WALLPAPER) != 0) {
                     mBackEffectSurface = new SurfaceControl.Builder()
                             .setCallsite("ShellRotationAnimation").setParent(rootLeash)
@@ -301,18 +306,20 @@ class ScreenRotationAnimation {
     /**
      * Returns true if any animations were added to `animations`.
      */
-    boolean buildAnimation(@NonNull ArrayList<Animator> animations,
-            @NonNull Runnable finishCallback, float animationScale,
-            @NonNull ShellExecutor mainExecutor) {
+    @NonNull
+    WindowAnimation buildAnimation(@NonNull Consumer<WindowAnimation> finishCallback,
+            float animationScale, @NonNull ShellExecutor mainExecutor) {
         if (mScreenshotLayer == null) {
             // Can't do animation.
-            return false;
+            return null;
         }
 
         // TODO : Found a way to get right end luma and re-enable color frame animation.
         // End luma value is very not stable so it will cause more flicker is we run background
         // color frame animation.
         //mEndLuma = getLumaOfSurfaceControl(mEndBounds, mSurfaceControl);
+
+        final ArrayList<Animator> siblings = new ArrayList<>();
 
         final boolean customRotate = isCustomRotate();
         if (customRotate) {
@@ -364,9 +371,8 @@ class ScreenRotationAnimation {
                     fadeOut.setStartOffset(anim.getStartOffset());
                     fadeOut.setDuration(anim.getDuration());
                     fadeOut.scaleCurrentDuration(animationScale);
-                    buildSurfaceAnimation(animations, fadeOut, mColorOverlay, finishCallback,
-                            mTransactionPool, mainExecutor, null /* position */,
-                            0 /* cornerRadius */, null /* clipRect */, null /* roundedBounds */);
+                    siblings.add(createAnimator(fadeOut, mColorOverlay, mTransactionPool,
+                            null /* position */, 0 /* cornerRadius */, null /* clipRect */));
                     break;
                 }
             }
@@ -379,58 +385,57 @@ class ScreenRotationAnimation {
         mRotateEnterAnimation.restrictDuration(MAX_ANIMATION_DURATION);
         mRotateEnterAnimation.scaleCurrentDuration(animationScale);
 
+        final WindowAnimation mainAnim;
         if (customRotate) {
             mRotateAlphaAnimation.initialize(mEndWidth, mEndHeight, mStartWidth, mStartHeight);
             mRotateAlphaAnimation.restrictDuration(MAX_ANIMATION_DURATION);
             mRotateAlphaAnimation.scaleCurrentDuration(animationScale);
 
-            buildScreenshotAlphaAnimation(animations, finishCallback, mainExecutor);
-            startDisplayRotation(animations, finishCallback, mainExecutor);
+            siblings.add(buildScreenshotAlphaAnimation());
+            mainAnim = startDisplayRotation();
         } else {
-            startDisplayRotation(animations, finishCallback, mainExecutor);
-            startScreenshotRotationAnimation(animations, finishCallback, mainExecutor);
+            mainAnim = startDisplayRotation();
+            siblings.add(startScreenshotRotationAnimation());
             if (mBackEffectSurface != null && mStartLuma > 0.1f) {
                 // Animate from the color of background to black for smooth alpha blending.
-                buildLumaAnimation(animations, mStartLuma, 0f /* endLuma */, mBackEffectSurface,
-                        animationScale, finishCallback, mainExecutor);
+                siblings.add(buildLumaAnimation(mStartLuma, 0f /* endLuma */,
+                        mBackEffectSurface, animationScale));
             }
         }
 
-        return true;
+        final WindowAnimation composite =
+                new MultiPartWindowAnimation(mainAnim, siblings,
+                        (winAnim) -> mainExecutor.execute(() -> finishCallback.accept(winAnim)));
+        return composite;
     }
 
-    private void startDisplayRotation(@NonNull ArrayList<Animator> animations,
-            @NonNull Runnable finishCallback, @NonNull ShellExecutor mainExecutor) {
-        buildSurfaceAnimation(animations, mRotateEnterAnimation, getEnterSurface(), finishCallback,
-                mTransactionPool, mainExecutor, null /* position */, 0 /* cornerRadius */,
+    private WindowAnimation startDisplayRotation() {
+        return buildWindowAnimation(mRotateEnterAnimation, mChange,
+                getEnterSurface(), null /* finishCallback */, mTransactionPool,
+                null /* mainExecutor*/, null /* position */, 0 /* cornerRadius */,
                 null /* clipRect */, null /* roundedBounds */);
     }
 
-    private void startScreenshotRotationAnimation(@NonNull ArrayList<Animator> animations,
-            @NonNull Runnable finishCallback, @NonNull ShellExecutor mainExecutor) {
-        buildSurfaceAnimation(animations, mRotateExitAnimation, mAnimLeash, finishCallback,
-                mTransactionPool, mainExecutor, null /* position */, 0 /* cornerRadius */,
-                null /* clipRect */, null /* roundedBounds */);
+    private ValueAnimator startScreenshotRotationAnimation() {
+        return createAnimator(mRotateExitAnimation, mAnimLeash, mTransactionPool,
+                null /* position */, 0 /* cornerRadius */, null /* clipRect */);
     }
 
-    private void buildScreenshotAlphaAnimation(@NonNull ArrayList<Animator> animations,
-            @NonNull Runnable finishCallback, @NonNull ShellExecutor mainExecutor) {
-        buildSurfaceAnimation(animations, mRotateAlphaAnimation, mAnimLeash, finishCallback,
-                mTransactionPool, mainExecutor, null /* position */, 0 /* cornerRadius */,
-                null /* clipRect */, null);
+    private ValueAnimator buildScreenshotAlphaAnimation() {
+        return createAnimator(mRotateAlphaAnimation, mAnimLeash, mTransactionPool,
+                null /* position */, 0 /* cornerRadius */, null /* clipRect */);
     }
 
-    private void buildLumaAnimation(@NonNull ArrayList<Animator> animations,
-            float startLuma, float endLuma, SurfaceControl surface, float animationScale,
-            @NonNull Runnable finishCallback, @NonNull ShellExecutor mainExecutor) {
+    private ValueAnimator buildLumaAnimation(float startLuma, float endLuma,
+            SurfaceControl surface, float animationScale) {
         final long durationMillis = (long) (mContext.getResources().getInteger(
                 R.integer.config_screen_rotation_color_transition) * animationScale);
         final LumaAnimation animation = new LumaAnimation(durationMillis);
         // Align the end with the enter animation.
         animation.setStartOffset(mRotateEnterAnimation.getDuration() - durationMillis);
         final LumaAnimationAdapter adapter = new LumaAnimationAdapter(surface, startLuma, endLuma);
-        DefaultSurfaceAnimator.buildSurfaceAnimation(animations, animation, finishCallback,
-                mTransactionPool, mainExecutor, adapter);
+        return buildSurfaceAnimation(animation, null /* finishCallback */,
+                mTransactionPool, null /* mainExecutor */, adapter);
     }
 
     public void kill() {
