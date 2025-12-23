@@ -5033,8 +5033,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         synchronized (mGlobalLock) {
             TaskDisplayArea tda = mRootWindowContainer.getDefaultTaskDisplayArea();
             // If the PiP is on a non-default display
-            if (com.android.window.flags.Flags.enablePipUiStateChangeCallbackForConnectedDisplays()
-                    && displayId != DEFAULT_DISPLAY) {
+            if (displayId != DEFAULT_DISPLAY) {
                 DisplayContent dc = mRootWindowContainer.getDisplayContent(displayId);
                 if (dc != null) {
                     tda = dc.getDefaultTaskDisplayArea();

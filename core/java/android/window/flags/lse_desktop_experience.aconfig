@@ -952,16 +952,6 @@ flag {
 }
 
 flag {
-    name: "enable_pip_ui_state_change_callback_for_connected_displays"
-    namespace: "lse_desktop_experience"
-    description: "Enables sending Picture-in-Picture UI state change callbacks to apps on non-default displays."
-    bug: "449857733"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_presentation_for_connected_displays"
     namespace: "lse_desktop_experience"
     description: "Enables full support of presentation API for connected displays."
