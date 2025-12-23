@@ -36,6 +36,7 @@ import com.android.systemui.statusbar.TransformableView;
 import com.android.systemui.statusbar.ViewTransformationHelper;
 import com.android.systemui.statusbar.notification.NotificationFadeAware;
 import com.android.systemui.statusbar.notification.TransformState;
+import com.android.systemui.statusbar.notification.row.ui.viewmodel.SingleLineViewPayload;
 
 /**
  * A hybrid view which may contain information about one ore more notifications.
@@ -75,17 +76,18 @@ public class HybridNotificationView extends AlphaOptimizedLinearLayout
     }
 
     /**
-     * Get layout resource for this view based on {@code isConversation} and {@code isMetric}.
+     * Get layout resource for this view based on SingleLineViewPayload.
      */
-    public static int getLayoutResource(boolean isConversation, boolean isMetric) {
-        // Note: isConversation and isMetric are expected to be mutually exclusive.
-        if (isConversation) {
-            return R.layout.notification_2025_hybrid_conversation;
-        } else if (isMetric) {
-            return R.layout.hybrid_metric_notification;
-        } else {
-            return R.layout.notification_2025_hybrid;
-        }
+    public static int getLayoutResource(SingleLineViewPayload payload) {
+        return switch (payload) {
+            case SingleLineViewPayload.ConversationData ignored ->
+                    R.layout.notification_2025_hybrid_conversation;
+            case SingleLineViewPayload.MetricPayload ignored ->
+                    R.layout.notification_2025_hybrid_metric;
+            case SingleLineViewPayload.StandardPayload ignored ->
+                    R.layout.notification_2025_hybrid;
+            case null, default -> throw new IllegalArgumentException("Unknown payload type");
+        };
     }
 
     @Override

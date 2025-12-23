@@ -34,10 +34,10 @@ import com.android.systemui.statusbar.notification.logKey
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.FLAG_CONTENT_VIEW_SINGLE_LINE
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.ConversationAvatar
-import com.android.systemui.statusbar.notification.row.ui.viewmodel.ConversationData
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.FacePile
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.SingleIcon
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.SingleLineViewModel
+import com.android.systemui.statusbar.notification.row.ui.viewmodel.SingleLineViewPayload
 import com.android.systemui.statusbar.notification.shared.extractMetrics
 import com.android.systemui.util.annotations.DeprecatedSysuiVisibleForTesting
 
@@ -86,8 +86,10 @@ object SingleLineViewInflater {
                 // MetricStyle notifications display metric data instead of content text.
                 contentText = null,
                 summarization = if (redactText) null else summarization,
-                conversationData = null,
-                metric = metricStyle.extractMetrics(systemUiContext).first(),
+                payload =
+                    SingleLineViewPayload.MetricPayload(
+                        metricStyle.extractMetrics(systemUiContext).first()
+                    ),
             )
         } else if (messagingStyle != null) {
 
@@ -110,7 +112,7 @@ object SingleLineViewInflater {
                 )
 
             val conversationData =
-                ConversationData(
+                SingleLineViewPayload.ConversationData(
                     // We don't show the sender's name for one-to-one conversation
                     conversationSenderName =
                         if (isGroupConversation) conversationTextData?.senderName else null,
@@ -122,8 +124,7 @@ object SingleLineViewInflater {
                 titleText = titleText,
                 contentText = contentText,
                 summarization = if (redactText) null else summarization,
-                conversationData = conversationData,
-                metric = null,
+                payload = conversationData,
             )
         } else {
             // If we have no title AND no text (e.g. for some custom view notifications), show a
@@ -136,16 +137,14 @@ object SingleLineViewInflater {
                         ),
                     contentText = null,
                     summarization = if (redactText) null else summarization,
-                    conversationData = null,
-                    metric = null,
+                    payload = SingleLineViewPayload.StandardPayload,
                 )
             }
             return SingleLineViewModel(
                 titleText = titleText,
                 contentText = contentText,
                 summarization = if (redactText) null else summarization,
-                conversationData = null,
-                metric = null,
+                payload = SingleLineViewPayload.StandardPayload,
             )
         }
     }
@@ -155,29 +154,30 @@ object SingleLineViewInflater {
         context: Context,
         isConversation: Boolean = false,
     ): SingleLineViewModel {
-        val conversationData =
+        val payload =
             if (isConversation) {
-                ConversationData(
-                    null,
-                    SingleIcon(
-                        context.getDrawable(
-                            com.android.systemui.res.R.drawable
-                                .ic_public_notification_single_line_icon
-                        )
-                    ),
-                    null,
+                SingleLineViewPayload.ConversationData(
+                    conversationSenderName = null,
+                    avatar =
+                        SingleIcon(
+                            context.getDrawable(
+                                com.android.systemui.res.R.drawable
+                                    .ic_public_notification_single_line_icon
+                            )
+                        ),
+                    summarization = null,
                 )
             } else {
-                null
+                SingleLineViewPayload.StandardPayload
             }
         return SingleLineViewModel(
-            context.getString(
-                com.android.systemui.res.R.string.public_notification_single_line_title
-            ),
-            null,
-            null,
-            conversationData,
-            null,
+            titleText =
+                context.getString(
+                    com.android.systemui.res.R.string.public_notification_single_line_title
+                ),
+            contentText = null,
+            summarization = null,
+            payload = payload,
         )
     }
 
@@ -395,8 +395,7 @@ object SingleLineViewInflater {
 
     @JvmStatic
     fun inflatePublicSingleLineView(
-        isConversation: Boolean,
-        isMetric: Boolean,
+        payload: SingleLineViewPayload,
         reinflateFlags: Int,
         entry: NotificationEntry,
         context: Context,
@@ -405,14 +404,13 @@ object SingleLineViewInflater {
         return if ((reinflateFlags and FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE) == 0) {
             null
         } else {
-            inflateSingleLineView(isConversation, isMetric, reinflateFlags, entry, context, logger)
+            inflateSingleLineView(payload, reinflateFlags, entry, context, logger)
         }
     }
 
     @JvmStatic
     fun inflatePrivateSingleLineView(
-        isConversation: Boolean,
-        isMetric: Boolean,
+        payload: SingleLineViewPayload,
         reinflateFlags: Int,
         entry: NotificationEntry,
         context: Context,
@@ -421,27 +419,26 @@ object SingleLineViewInflater {
         return if ((reinflateFlags and FLAG_CONTENT_VIEW_SINGLE_LINE) == 0) {
             null
         } else {
-            inflateSingleLineView(isConversation, isMetric, reinflateFlags, entry, context, logger)
+            inflateSingleLineView(payload, reinflateFlags, entry, context, logger)
         }
     }
 
     private fun inflateSingleLineView(
-        isConversation: Boolean,
-        isMetric: Boolean,
+        payload: SingleLineViewPayload,
         reinflateFlags: Int,
         entry: NotificationEntry,
         context: Context,
         logger: NotificationRowContentBinderLogger,
     ): HybridNotificationView? {
 
-        logger.logInflateSingleLine(entry.logKey, reinflateFlags, isConversation)
+        logger.logInflateSingleLine(entry.logKey, reinflateFlags, payload.javaClass.simpleName)
         logger.logAsyncTaskProgress(entry.logKey, "inflating single-line content view")
 
         var view: HybridNotificationView? = null
 
         traceSection("SingleLineViewInflater#inflateSingleLineView") {
             val inflater = LayoutInflater.from(context)
-            val layoutRes: Int = HybridNotificationView.getLayoutResource(isConversation, isMetric)
+            val layoutRes: Int = HybridNotificationView.getLayoutResource(payload)
             view = inflater.inflate(layoutRes, /* root= */ null) as HybridNotificationView
             if (view == null) {
                 Log.wtf(TAG, "Single-line view inflation result is null for entry: ${entry.logKey}")
