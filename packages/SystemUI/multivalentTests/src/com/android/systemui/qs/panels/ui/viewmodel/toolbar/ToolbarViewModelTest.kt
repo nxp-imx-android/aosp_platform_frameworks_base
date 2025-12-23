@@ -37,6 +37,7 @@ import com.android.systemui.qs.footerActionsInteractor
 import com.android.systemui.qs.panels.LargeScreenQSInlinePowerMenu
 import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
+import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.testKosmosNew
 import com.android.systemui.user.data.model.SelectedUserModel
 import com.android.systemui.user.data.model.SelectionStatus
@@ -259,6 +260,23 @@ class ToolbarViewModelTest : SysuiTestCase() {
                 underTest.onPowerMenuDismissed()
                 assertThat(underTest.isInlinePowerMenuVisible).isFalse()
                 assertThat(underTest.powerMenuToggleButtonUiState.isSelected).isFalse()
+            }
+        }
+
+    @EnableFlags(LargeScreenQSInlinePowerMenu.FLAG_NAME)
+    @Test
+    fun powerMenuVisible_whenShadePartiallyCollapsed_hidesMenu() =
+        with(kosmos) {
+            runTest {
+                setQsInlinePowerMenuEnabled(true)
+
+                shadeTestUtil.setQsExpansion(1.0f)
+
+                underTest.powerMenuToggleButtonUiState.onClick.invoke()
+                assertThat(underTest.isInlinePowerMenuVisible).isTrue()
+
+                shadeTestUtil.setQsExpansion(0.9f)
+                assertThat(underTest.isInlinePowerMenuVisible).isFalse()
             }
         }
 
