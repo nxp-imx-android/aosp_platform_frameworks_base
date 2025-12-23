@@ -109,13 +109,6 @@ flag {
 }
 
 flag {
-    name: "enable_activity_embedding_support_for_connected_displays"
-    namespace: "lse_desktop_experience"
-    description: "Enables activity embedding support for connected displays, including enabling AE optimization for Settings."
-    bug: "369438353"
-}
-
-flag {
     name: "enable_add_window_decoration_to_all_tasks"
     namespace: "lse_desktop_experience"
     description: "Adds window decorations to all tasks, even if caption is not being shown."
