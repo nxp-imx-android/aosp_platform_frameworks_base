@@ -52,7 +52,6 @@ import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.common.ui.viewmodel.AppContentsViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DisplaysViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
-import com.android.systemui.screencapture.common.ui.viewmodel.TargetViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.TargetsViewModel
 
 @Composable
@@ -93,7 +92,7 @@ fun ShareContentSelector(targetsViewModel: TargetsViewModel) {
                 )
             }
             DisclaimerText(targetsViewModel)
-            AudioSwitch(targetsViewModel, selectedItem)
+            AudioSwitch(targetsViewModel)
         }
     }
 }
@@ -148,10 +147,7 @@ private fun DisclaimerText(targetsViewModel: TargetsViewModel) {
 }
 
 @Composable
-private fun AudioSwitch(
-    targetsViewModel: TargetsViewModel,
-    selectedTargetViewModel: TargetViewModel?,
-) {
+private fun AudioSwitch(targetsViewModel: TargetsViewModel) {
     val checked by targetsViewModel.captureAudio
 
     Row(
@@ -180,7 +176,6 @@ private fun AudioSwitch(
         Switch(
             checked = checked,
             onCheckedChange = targetsViewModel::setCaptureAudio,
-            enabled = selectedTargetViewModel != null,
             thumbContent =
                 if (checked) {
                     {

@@ -81,7 +81,11 @@ constructor(
      * Called when the user approves sharing of a specific piece of app content (e.g. a browser
      * tab).
      */
-    fun onAppContentSharingApproved(contentId: Int, callback: IAppContentProjectionCallback) {
+    fun onAppContentSharingApproved(
+        contentId: Int,
+        callback: IAppContentProjectionCallback,
+        isAudioRequested: Boolean,
+    ) {
         try {
             val session =
                 object : IAppContentProjectionSession.Stub() {
@@ -100,8 +104,7 @@ constructor(
                     }
                 }
 
-            // TODO(b/460506436) Hook up the audio with the user's selection.
-            callback.onLoopbackProjectionStarted(session, contentId, /* isAudioRequested= */ false)
+            callback.onLoopbackProjectionStarted(session, contentId, isAudioRequested)
 
             mediaProjectionHelper.setReviewedConsentIfNeeded(
                 ReviewGrantedConsentResult.RECORD_CONTENT_TASK,

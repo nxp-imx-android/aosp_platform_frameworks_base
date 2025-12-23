@@ -24,6 +24,7 @@ import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.common.ui.viewmodel.AppContentsViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.AudioSwitchViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DisplaysViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
@@ -67,6 +68,8 @@ constructor(
                 else ->
                     throw IllegalArgumentException("Unsupported ScreenCaptureTarget type: $type")
             }
+        // Reset the audio state on the newly selected view model.
+        (currentTargetsModel as AudioSwitchViewModel).setCaptureAudio(false)
     }
 
     fun onShareClicked() {
@@ -93,6 +96,7 @@ constructor(
                     shareScreenUiInteractor.onAppContentSharingApproved(
                         it.model.contentId,
                         callback,
+                        currentModel.captureAudio.value,
                     )
                 }
             }
