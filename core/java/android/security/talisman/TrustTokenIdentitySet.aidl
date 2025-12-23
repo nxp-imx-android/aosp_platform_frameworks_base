@@ -16,4 +16,4 @@
 
 package android.security.talisman;
 
-parcelable Talisman;
+parcelable TrustTokenIdentitySet;

@@ -1,12 +1,12 @@
 {
   "presubmit": [
     {
-      "name": "TalismanTestsDevice"
+      "name": "TrustTokenTestsDevice"
     }
   ],
   "cross-device-identity-robolectric-presubmit": [
     {
-      "name": "TalismanTestsRobolectric",
+      "name": "TrustTokenTestsRobolectric",
       "host": true
     }
   ]

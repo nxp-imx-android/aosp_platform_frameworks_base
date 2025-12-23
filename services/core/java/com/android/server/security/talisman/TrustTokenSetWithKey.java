@@ -18,39 +18,39 @@ package com.android.server.security.talisman;
 
 import java.util.Objects;
 
-/** Represents a {@link TalismanSet} and the associated {@link TalismanKey}. */
-class TalismanSetWithKey {
-    private final TalismanKey mKey;
-    private final TalismanSet mTalismanSet;
+/** Represents a {@link TrustTokenSet} and the associated {@link TrustTokenKey}. */
+class TrustTokenSetWithKey {
+    private final TrustTokenKey mKey;
+    private final TrustTokenSet mTokenSet;
 
-    TalismanSetWithKey(TalismanKey key, TalismanSet talismanSet) {
+    TrustTokenSetWithKey(TrustTokenKey key, TrustTokenSet tokenSet) {
         mKey = key;
-        mTalismanSet = talismanSet;
+        mTokenSet = tokenSet;
     }
 
-    TalismanKey getKey() {
+    TrustTokenKey getKey() {
         return mKey;
     }
 
-    TalismanSet getTalismanSet() {
-        return mTalismanSet;
+    TrustTokenSet getTokenSet() {
+        return mTokenSet;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof TalismanSetWithKey)) return false;
-        TalismanSetWithKey that = (TalismanSetWithKey) o;
-        return Objects.equals(mKey, that.mKey) && Objects.equals(mTalismanSet, that.mTalismanSet);
+        if (!(o instanceof TrustTokenSetWithKey)) return false;
+        TrustTokenSetWithKey that = (TrustTokenSetWithKey) o;
+        return Objects.equals(mKey, that.mKey) && Objects.equals(mTokenSet, that.mTokenSet);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mKey, mTalismanSet);
+        return Objects.hash(mKey, mTokenSet);
     }
 
     @Override
     public String toString() {
-        return "TalismanSetWithKey[" + "key=" + mKey + ", " + "talismanSet=" + mTalismanSet + "]";
+        return "TrustTokenSetWithKey[" + "key=" + mKey + ", " + "tokenSet=" + mTokenSet + "]";
     }
 }

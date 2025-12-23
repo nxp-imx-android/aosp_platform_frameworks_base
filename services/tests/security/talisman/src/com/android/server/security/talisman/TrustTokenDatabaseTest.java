@@ -38,82 +38,85 @@ import java.time.Instant;
 import java.util.Arrays;
 
 @RunWith(AndroidJUnit4.class)
-public final class TalismanDatabaseTest {
-    TalismanDatabase mDatabase;
+public final class TrustTokenDatabaseTest {
+    TrustTokenDatabase mDatabase;
     MockClock mClock = new MockClock();
 
     @Before
     public void setUp() {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         try {
-            File databaseFile = File.createTempFile("talisman.sqlite", null, context.getCacheDir());
-            mDatabase = TalismanSqliteDatabase.create(context, databaseFile, mClock);
+            File databaseFile =
+                    File.createTempFile("trust_token.sqlite", null, context.getCacheDir());
+            mDatabase = TrustTokenSqliteDatabase.create(context, databaseFile, mClock);
         } catch (IOException e) {
             throw new AssertionError("cannot create the database file");
         }
     }
 
     @Test
-    public void addTalismanSets_success() {
-        TalismanSetWithKey talisman1 =
-                new TalismanSetWithKey(
+    public void addTrustTokenSets_success() {
+        TrustTokenSetWithKey token1 =
+                new TrustTokenSetWithKey(
                         buildKey("somePublicKey", "someSecretKey"),
-                        talismanSetBuilder("somePublicKey", "someTalisman").build());
-        TalismanSetWithKey talisman2 =
-                new TalismanSetWithKey(
+                        tokenSetBuilder("somePublicKey", "someToken").build());
+        TrustTokenSetWithKey token2 =
+                new TrustTokenSetWithKey(
                         buildKey("otherPublicKey", "otherSecretKey"),
-                        talismanSetBuilder("otherPublicKey", "otherTalisman").build());
-        mDatabase.addTalismanSets(Arrays.asList(talisman2, talisman1));
+                        tokenSetBuilder("otherPublicKey", "otherToken").build());
+        mDatabase.addTrustTokenSets(Arrays.asList(token2, token1));
         // No exception means success for this test.
     }
 
     @Test
-    public void addTalismanSets_key_already_exists() {
-        TalismanSetWithKey talisman1 =
-                new TalismanSetWithKey(
+    public void addTrustTokenSets_key_already_exists() {
+        TrustTokenSetWithKey token1 =
+                new TrustTokenSetWithKey(
                         buildKey("somePublicKey", "someSecretKey"),
-                        talismanSetBuilder("somePublicKey", "someTalisman").build());
-        mDatabase.addTalismanSets(Arrays.asList(talisman1));
-        TalismanSetWithKey talisman2 =
-                new TalismanSetWithKey(
+                        tokenSetBuilder("somePublicKey", "someToken").build());
+        mDatabase.addTrustTokenSets(Arrays.asList(token1));
+        TrustTokenSetWithKey token2 =
+                new TrustTokenSetWithKey(
                         buildKey("otherPublicKey", "otherSecretKey"),
-                        talismanSetBuilder("otherPublicKey", "otherTalisman").build());
-        TalismanSetWithKey talisman3 =
-                new TalismanSetWithKey(
+                        tokenSetBuilder("otherPublicKey", "otherToken").build());
+        TrustTokenSetWithKey token3 =
+                new TrustTokenSetWithKey(
                         buildKey("somePublicKey", "someSecretKey"),
-                        talismanSetBuilder("somePublicKey", "yetAnotherTalisman").build());
+                        tokenSetBuilder("somePublicKey", "yetAnotherToken").build());
         assertThrows(
                 IllegalArgumentException.class,
-                () -> mDatabase.addTalismanSets(Arrays.asList(talisman3, talisman2)));
+                () -> mDatabase.addTrustTokenSets(Arrays.asList(token3, token2)));
     }
 
     @Test
-    public void getTalismanSet_success() throws Exception {
-        TalismanSetWithKey talisman1 =
-                new TalismanSetWithKey(
+    public void getTrustTokenSet_success() throws Exception {
+        TrustTokenSetWithKey token1 =
+                new TrustTokenSetWithKey(
                         buildKey("somePublicKey", "someSecretKey"),
-                        talismanSetBuilder("somePublicKey", "someTalisman").build());
-        TalismanSetWithKey talisman2 =
-                new TalismanSetWithKey(
+                        tokenSetBuilder("somePublicKey", "someToken").build());
+        TrustTokenSetWithKey token2 =
+                new TrustTokenSetWithKey(
                         buildKey("otherPublicKey", "otherSecretKey"),
-                        talismanSetBuilder("otherPublicKey", "otherTalisman").build());
-        mDatabase.addTalismanSets(Arrays.asList(talisman2, talisman1));
+                        tokenSetBuilder("otherPublicKey", "otherToken").build());
+        mDatabase.addTrustTokenSets(Arrays.asList(token2, token1));
 
-        TalismanSetWithKey result1 = mDatabase.getTalismanSet(TalismanSet.TYPE_VERIFIED_DEVICE);
-        TalismanSetWithKey result2 = mDatabase.getTalismanSet(TalismanSet.TYPE_VERIFIED_DEVICE);
-        assertThat(Arrays.asList(result1, result2)).containsExactly(talisman1, talisman2);
+        TrustTokenSetWithKey result1 =
+                mDatabase.getTrustTokenSet(TrustTokenSet.TYPE_VERIFIED_DEVICE);
+        TrustTokenSetWithKey result2 =
+                mDatabase.getTrustTokenSet(TrustTokenSet.TYPE_VERIFIED_DEVICE);
+        assertThat(Arrays.asList(result1, result2)).containsExactly(token1, token2);
 
         assertThrows(
-                TalismanExhaustedException.class,
-                () -> mDatabase.getTalismanSet(TalismanSet.TYPE_VERIFIED_DEVICE));
+                TrustTokenExhaustedException.class,
+                () -> mDatabase.getTrustTokenSet(TrustTokenSet.TYPE_VERIFIED_DEVICE));
     }
 
     @Test
-    public void getTalismanSet_skip_expired() throws Exception {
-        TalismanSetWithKey talisman1 =
-                new TalismanSetWithKey(
+    public void getTrustTokenSet_skip_expired() throws Exception {
+        TrustTokenSetWithKey token1 =
+                new TrustTokenSetWithKey(
                         buildKey("somePublicKey", "someSecretKey"),
-                        talismanSetBuilder("somePublicKey", "someTalisman")
+                        tokenSetBuilder("somePublicKey", "someToken")
                                 .setCreatedAt(
                                         Instant.ofEpochMilli(mClock.currentTimeMillis())
                                                 .minus(Duration.ofDays(2)))
@@ -121,28 +124,29 @@ public final class TalismanDatabaseTest {
                                         Instant.ofEpochMilli(mClock.currentTimeMillis())
                                                 .minus(Duration.ofDays(1))) // Expired
                                 .build());
-        TalismanSetWithKey talisman2 =
-                new TalismanSetWithKey(
+        TrustTokenSetWithKey token2 =
+                new TrustTokenSetWithKey(
                         buildKey("otherPublicKey", "otherSecretKey"),
-                        talismanSetBuilder("otherPublicKey", "otherTalisman").build());
-        mDatabase.addTalismanSets(Arrays.asList(talisman1, talisman2));
+                        tokenSetBuilder("otherPublicKey", "otherToken").build());
+        mDatabase.addTrustTokenSets(Arrays.asList(token1, token2));
 
-        assertThat(mDatabase.getTalismanSet(TalismanSet.TYPE_VERIFIED_DEVICE)).isEqualTo(talisman2);
+        assertThat(mDatabase.getTrustTokenSet(TrustTokenSet.TYPE_VERIFIED_DEVICE))
+                .isEqualTo(token2);
     }
 
     @Test
-    public void getTalismanSet_no_talisman() throws Exception {
+    public void getTrustTokenSet_no_token() throws Exception {
         assertThrows(
-                TalismanExhaustedException.class,
-                () -> mDatabase.getTalismanSet(TalismanSet.TYPE_VERIFIED_DEVICE));
+                TrustTokenExhaustedException.class,
+                () -> mDatabase.getTrustTokenSet(TrustTokenSet.TYPE_VERIFIED_DEVICE));
     }
 
     @Test
-    public void getTalismanSet_all_expired() throws Exception {
-        TalismanSetWithKey talisman1 =
-                new TalismanSetWithKey(
+    public void getTrustTokenSet_all_expired() throws Exception {
+        TrustTokenSetWithKey token1 =
+                new TrustTokenSetWithKey(
                         buildKey("somePublicKey", "someSecretKey"),
-                        talismanSetBuilder("somePublicKey", "someTalisman")
+                        tokenSetBuilder("somePublicKey", "someToken")
                                 .setCreatedAt(
                                         Instant.ofEpochMilli(mClock.currentTimeMillis())
                                                 .minus(Duration.ofDays(2)))
@@ -150,10 +154,10 @@ public final class TalismanDatabaseTest {
                                         Instant.ofEpochMilli(mClock.currentTimeMillis())
                                                 .minus(Duration.ofDays(1))) // Expired
                                 .build());
-        TalismanSetWithKey talisman2 =
-                new TalismanSetWithKey(
+        TrustTokenSetWithKey token2 =
+                new TrustTokenSetWithKey(
                         buildKey("otherPublicKey", "otherSecretKey"),
-                        talismanSetBuilder("otherPublicKey", "otherTalisman")
+                        tokenSetBuilder("otherPublicKey", "otherToken")
                                 .setCreatedAt(
                                         Instant.ofEpochMilli(mClock.currentTimeMillis())
                                                 .minus(Duration.ofDays(3)))
@@ -162,37 +166,37 @@ public final class TalismanDatabaseTest {
                                                 .minus(Duration.ofDays(2))) // Expired
                                 .build());
 
-        mDatabase.addTalismanSets(Arrays.asList(talisman1, talisman2));
+        mDatabase.addTrustTokenSets(Arrays.asList(token1, token2));
 
         assertThrows(
-                TalismanExhaustedException.class,
-                () -> mDatabase.getTalismanSet(TalismanSet.TYPE_VERIFIED_DEVICE));
+                TrustTokenExhaustedException.class,
+                () -> mDatabase.getTrustTokenSet(TrustTokenSet.TYPE_VERIFIED_DEVICE));
     }
 
     @Test
-    public void getTalismanSet_type_mismatch() throws Exception {
-        TalismanSetWithKey talisman1 =
-                new TalismanSetWithKey(
+    public void getTrustTokenSet_type_mismatch() throws Exception {
+        TrustTokenSetWithKey token1 =
+                new TrustTokenSetWithKey(
                         buildKey("somePublicKey", "someSecretKey"),
-                        talismanSetBuilder("somePublicKey", "someTalisman").build());
-        mDatabase.addTalismanSets(Arrays.asList(talisman1));
+                        tokenSetBuilder("somePublicKey", "someToken").build());
+        mDatabase.addTrustTokenSets(Arrays.asList(token1));
 
         // Requesting a different type
         assertThrows(
-                TalismanExhaustedException.class,
-                () -> mDatabase.getTalismanSet(TalismanSet.TYPE_VERIFIED_IDENTITIES));
+                TrustTokenExhaustedException.class,
+                () -> mDatabase.getTrustTokenSet(TrustTokenSet.TYPE_VERIFIED_IDENTITIES));
     }
 
-    private TalismanKey buildKey(String publicKey, String privateKey) {
-        return new TalismanKey(publicKey.getBytes(), privateKey.getBytes());
+    private TrustTokenKey buildKey(String publicKey, String privateKey) {
+        return new TrustTokenKey(publicKey.getBytes(), privateKey.getBytes());
     }
 
-    private TalismanSet.Builder talismanSetBuilder(String publicKey, String talisman) {
+    private TrustTokenSet.Builder tokenSetBuilder(String publicKey, String token) {
         Instant now = Instant.ofEpochMilli(mClock.currentTimeMillis());
-        return new TalismanSet.Builder()
-                .setType(TalismanSet.TYPE_VERIFIED_DEVICE)
+        return new TrustTokenSet.Builder()
+                .setType(TrustTokenSet.TYPE_VERIFIED_DEVICE)
                 .setPublicKey(publicKey.getBytes())
-                .setTalismanSet(talisman.getBytes())
+                .setTokenSet(token.getBytes())
                 .setCreatedAt(now)
                 .setExpireAt(now.plus(Duration.ofDays(1)));
     }

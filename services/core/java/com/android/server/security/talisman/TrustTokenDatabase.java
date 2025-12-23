@@ -20,25 +20,25 @@ import android.annotation.NonNull;
 
 import java.util.List;
 
-/** The database for pending and existing talismans. */
-abstract class TalismanDatabase {
+/** The database for pending and existing trust tokens. */
+abstract class TrustTokenDatabase {
     /**
-     * Gets a new {@link TalismanSet} of the specified type from the database.
+     * Gets a new {@link TrustTokenSet} of the specified type from the database.
      *
-     * @throws TalismanExhaustedException if the database contains no more valid talismans of the
-     *     specified type.
+     * @throws TrustTokenExhaustedException if the database contains no more valid trust tokens of
+     *     the specified type.
      */
     @NonNull
-    abstract TalismanSetWithKey getTalismanSet(@TalismanSet.Type int type)
-            throws TalismanExhaustedException;
+    abstract TrustTokenSetWithKey getTrustTokenSet(@TrustTokenSet.Type int type)
+            throws TrustTokenExhaustedException;
 
     /**
-     * Adds a batch of {@link TalismanSet} to the database. The keys associated with the talismans
-     * must be unique in the database.
+     * Adds a batch of {@link TrustTokenSet} to the database. The keys associated with the trust
+     * tokens must be unique in the database.
      *
-     * @throws IllegalArgumentException if the keys associated with the talismans do already exist
-     *     in the database.
+     * @throws IllegalArgumentException if the keys associated with the trust tokens do already
+     *     exist in the database.
      */
-    abstract void addTalismanSets(@NonNull List<TalismanSetWithKey> talismans)
+    abstract void addTrustTokenSets(@NonNull List<TrustTokenSetWithKey> tokens)
             throws IllegalArgumentException;
 }

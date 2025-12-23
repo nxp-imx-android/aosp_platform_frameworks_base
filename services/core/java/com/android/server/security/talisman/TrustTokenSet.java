@@ -17,8 +17,8 @@
 package com.android.server.security.talisman;
 
 import android.annotation.IntDef;
-import android.security.talisman.Talisman;
-import android.security.talisman.TalismanIdentitySet;
+import android.security.talisman.TrustToken;
+import android.security.talisman.TrustTokenIdentitySet;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -27,10 +27,10 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * Represents a set of talismans, which can be either a verified device talisman or a {@link
- * TalismanIdentitySet}. The talismans are under the same public key.
+ * Represents a set of trust tokens, which can be either a verified device trust token or a {@link
+ * TrustTokenIdentitySet}. The trust tokens are under the same public key.
  */
-class TalismanSet {
+class TrustTokenSet {
     static final int TYPE_VERIFIED_DEVICE = 1;
     static final int TYPE_VERIFIED_IDENTITIES = 2;
 
@@ -46,30 +46,30 @@ class TalismanSet {
     private final @Type int mType;
     private final byte[] mPublicKey;
 
-    /** The serialized talismans. */
-    private final byte[] mTalismanSet;
+    /** The serialized trust tokens. */
+    private final byte[] mTokenSet;
 
     /**
-     * The time at which the talismans was created. If the talismans have different creation time,
-     * the earliest one is chosen.
+     * The time at which the trust tokens was created. If the trust tokens have different creation
+     * time, the earliest one is chosen.
      */
     private final Instant mCreatedAt;
 
     /**
-     * The time at which the talismans expires. If the talismans have different expiry time, the
-     * earliest one is chosen.
+     * The time at which the trust tokens expires. If the trust tokens have different expiry time,
+     * the earliest one is chosen.
      */
     private final Instant mExpireAt;
 
-    TalismanSet(
+    TrustTokenSet(
             @Type int type,
             byte[] publicKey,
-            byte[] talismanSet,
+            byte[] tokenSet,
             Instant createdAt,
             Instant expireAt) {
         mType = type;
         mPublicKey = publicKey;
-        mTalismanSet = talismanSet;
+        mTokenSet = tokenSet;
         mCreatedAt = createdAt;
         mExpireAt = expireAt;
     }
@@ -83,8 +83,8 @@ class TalismanSet {
         return mPublicKey;
     }
 
-    byte[] getTalismanSet() {
-        return mTalismanSet;
+    byte[] getTokenSet() {
+        return mTokenSet;
     }
 
     Instant getCreatedAt() {
@@ -98,11 +98,11 @@ class TalismanSet {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof TalismanSet)) return false;
-        TalismanSet that = (TalismanSet) o;
+        if (!(o instanceof TrustTokenSet)) return false;
+        TrustTokenSet that = (TrustTokenSet) o;
         return mType == that.mType
                 && Arrays.equals(mPublicKey, that.mPublicKey)
-                && Arrays.equals(mTalismanSet, that.mTalismanSet)
+                && Arrays.equals(mTokenSet, that.mTokenSet)
                 && Objects.equals(mCreatedAt, that.mCreatedAt)
                 && Objects.equals(mExpireAt, that.mExpireAt);
     }
@@ -111,21 +111,21 @@ class TalismanSet {
     public int hashCode() {
         int result = Objects.hash(mType, mCreatedAt, mExpireAt);
         result = 31 * result + Arrays.hashCode(mPublicKey);
-        result = 31 * result + Arrays.hashCode(mTalismanSet);
+        result = 31 * result + Arrays.hashCode(mTokenSet);
         return result;
     }
 
     @Override
     public String toString() {
-        return "TalismanSet["
+        return "TrustTokenSet["
                 + "type="
                 + mType
                 + ", "
                 + "publicKey="
                 + Arrays.toString(mPublicKey)
                 + ", "
-                + "talismanSet="
-                + Arrays.toString(mTalismanSet)
+                + "tokenSet="
+                + Arrays.toString(mTokenSet)
                 + ", "
                 + "createdAt="
                 + mCreatedAt
@@ -136,50 +136,51 @@ class TalismanSet {
     }
 
     /**
-     * Converts this TalismanSet to a {@link Talisman} if its type is {@link #TYPE_VERIFIED_DEVICE}.
-     *
-     * @return A {@link Talisman} instance.
-     */
-    Talisman asVerifiedDeviceTalisman() {
-        throw new UnsupportedOperationException("TODO");
-    }
-
-    /**
-     * Converts this TalismanSet to a {@link TalismanIdentitySet} if its type is {@link
-     * #TYPE_VERIFIED_IDENTITIES}.
-     *
-     * @return A {@link TalismanIdentitySet} instance.
-     */
-    TalismanIdentitySet asTalismanIdentitySet() {
-        throw new UnsupportedOperationException("TODO");
-    }
-
-    /**
-     * Creates a {@link TalismanSet} from a {@link Talisman}. The type will be {@link
+     * Converts this TrustTokenSet to a {@link TrustToken} if its type is {@link
      * #TYPE_VERIFIED_DEVICE}.
      *
-     * @param talisman The {@link Talisman} to convert.
-     * @return A new {@link TalismanSet}.
+     * @return A {@link TrustToken} instance.
      */
-    static TalismanSet fromVerifiedDeviceTalisman(Talisman talisman) {
+    TrustToken asVerifiedDeviceToken() {
         throw new UnsupportedOperationException("TODO");
     }
 
     /**
-     * Creates a {@link TalismanSet} from a {@link TalismanIdentitySet}. The type will be {@link
+     * Converts this TrustTokenSet to a {@link TrustTokenIdentitySet} if its type is {@link
      * #TYPE_VERIFIED_IDENTITIES}.
      *
-     * @param identitySet The {@link TalismanIdentitySet} to convert.
-     * @return A new {@link TalismanSet}.
+     * @return A {@link TrustTokenIdentitySet} instance.
      */
-    static TalismanSet fromTalismanIdentitySet(TalismanIdentitySet identitySet) {
+    TrustTokenIdentitySet asTrustTokenIdentitySet() {
+        throw new UnsupportedOperationException("TODO");
+    }
+
+    /**
+     * Creates a {@link TrustTokenSet} from a {@link TrustToken}. The type will be {@link
+     * #TYPE_VERIFIED_DEVICE}.
+     *
+     * @param token The {@link TrustToken} to convert.
+     * @return A new {@link TrustTokenSet}.
+     */
+    static TrustTokenSet fromVerifiedDeviceToken(TrustToken token) {
+        throw new UnsupportedOperationException("TODO");
+    }
+
+    /**
+     * Creates a {@link TrustTokenSet} from a {@link TrustTokenIdentitySet}. The type will be {@link
+     * #TYPE_VERIFIED_IDENTITIES}.
+     *
+     * @param identitySet The {@link TrustTokenIdentitySet} to convert.
+     * @return A new {@link TrustTokenSet}.
+     */
+    static TrustTokenSet fromTrustTokenIdentitySet(TrustTokenIdentitySet identitySet) {
         throw new UnsupportedOperationException("TODO");
     }
 
     static final class Builder {
         private @Type int mType;
         private byte[] mPublicKey;
-        private byte[] mTalismanSet;
+        private byte[] mTokenSet;
         private Instant mCreatedAt;
         private Instant mExpireAt;
 
@@ -195,8 +196,8 @@ class TalismanSet {
             return this;
         }
 
-        Builder setTalismanSet(byte[] talismanSet) {
-            this.mTalismanSet = Arrays.copyOf(talismanSet, talismanSet.length);
+        Builder setTokenSet(byte[] tokenSet) {
+            this.mTokenSet = Arrays.copyOf(tokenSet, tokenSet.length);
             return this;
         }
 
@@ -210,8 +211,8 @@ class TalismanSet {
             return this;
         }
 
-        TalismanSet build() {
-            return new TalismanSet(mType, mPublicKey, mTalismanSet, mCreatedAt, mExpireAt);
+        TrustTokenSet build() {
+            return new TrustTokenSet(mType, mPublicKey, mTokenSet, mCreatedAt, mExpireAt);
         }
     }
 }
