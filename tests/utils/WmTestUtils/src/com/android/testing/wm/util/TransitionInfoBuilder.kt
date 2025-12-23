@@ -20,6 +20,7 @@ import android.app.ActivityManager
 import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.content.ComponentName
 import android.os.IBinder
+import android.view.Display.INVALID_DISPLAY
 import android.view.SurfaceControl
 import android.view.WindowManager
 import android.window.ActivityTransitionInfo
@@ -38,96 +39,50 @@ import org.mockito.kotlin.mock
 class TransitionInfoBuilder @JvmOverloads constructor(
     @WindowManager.TransitionType type: Int,
     @WindowManager.TransitionFlags flags: Int = 0,
-    asNoOp: Boolean = false,
     private val displayId: Int = DEFAULT_DISPLAY_ID,
 ) {
     // The underlying TransitionInfo object being built.
-    private val info: TransitionInfo = TransitionInfo(type, flags).apply {
-        if (asNoOp) {
-            return@apply
-        }
-        // Add a root leash by default, unless asNoOp is true.
-        addRootLeash(
-            displayId,
-            createMockSurface(), /* leash */
-            0, /* offsetLeft */
-            0, /* offsetTop */
-        )
-    }
+    private val info: TransitionInfo = TransitionInfo(type, flags)
 
     /** Adds a change to the [TransitionInfo]. */
     @JvmOverloads
     fun addChange(
         @WindowManager.TransitionType mode: Int,
         @TransitionInfo.ChangeFlags flags: Int = TransitionInfo.FLAG_NONE,
-    ) = addChange(mode, flags, activityTransitionInfo = null, taskInfo = null)
+    ) = addChange(ChangeBuilder(mode).setDisplayId(displayId).setFlags(flags).build())
 
     /** Adds a change to the [TransitionInfo] for task transition with [flags]. */
     fun addChange(
         @WindowManager.TransitionType mode: Int,
         @TransitionInfo.ChangeFlags flags: Int,
-        taskInfo: ActivityManager.RunningTaskInfo?,
-    ) = addChange(mode, flags, activityTransitionInfo = null, taskInfo = taskInfo)
+        taskInfo: ActivityManager.RunningTaskInfo,
+    ) = addChange(ChangeBuilder(taskInfo, mode).setDisplayId(displayId).setFlags(flags).build())
 
-    /** Adds a change to the [TransitionInfo] for task transition. */
-    @JvmOverloads
+    /** Adds a change to the [TransitionInfo] for task transition with [flags]. */
     fun addChange(
         @WindowManager.TransitionType mode: Int,
-        taskInfo: ActivityManager.RunningTaskInfo?,
-        endDisplayId: Int? = null,
-    ) = addChange(mode, activityTransitionInfo = null, taskInfo = taskInfo, endDisplayId = endDisplayId)
+        taskInfo: ActivityManager.RunningTaskInfo,
+    ) = addChange(ChangeBuilder(taskInfo, mode).setDisplayId(displayId).build())
 
     /** Adds a change to the [TransitionInfo] for activity transition. */
     fun addChange(
         @WindowManager.TransitionType mode: Int,
-        activityTransitionInfo: ActivityTransitionInfo?,
-    ) = addChange(mode, activityTransitionInfo = activityTransitionInfo, taskInfo = null)
+        activityTransitionInfo: ActivityTransitionInfo,
+    ) = addChange(ChangeBuilder(mode).setDisplayId(displayId)
+        .setActivityTransitionInfo(activityTransitionInfo).build())
 
     /** Adds a change to the [TransitionInfo] for activity transition without task id. */
-    fun addChange(@WindowManager.TransitionType mode: Int, activityComponent: ComponentName?) =
-        addChange(mode, activityTransitionInfo = activityComponent?.let { component ->
-            ActivityTransitionInfo(component, INVALID_TASK_ID)
-        })
+    fun addChange(@WindowManager.TransitionType mode: Int, activityComponent: ComponentName) =
+        addChange(
+            ChangeBuilder(mode).setDisplayId(displayId)
+                .setActivityTransitionInfo(
+                    ActivityTransitionInfo(activityComponent, INVALID_TASK_ID)
+        ).build())
 
     /** Add a change to the [TransitionInfo] for task fragment. */
-    fun addChange(@WindowManager.TransitionType mode: Int, taskFragmentToken: IBinder?) =
-        addChange(
-            mode,
-            activityTransitionInfo = null,
-            taskInfo = null,
-            taskFragmentToken = taskFragmentToken,
-        )
-
-    /**
-     * Adds a change to the [TransitionInfo].
-     *
-     * @param mode the mode of the change. See [WindowManager.TransitionType].
-     * @param flags the flags for this change. See [TransitionInfo.ChangeFlags].
-     * @param activityTransitionInfo the activity transition info associated with this change for
-     *        activity transition.
-     * @param taskInfo the task info associated with this change for task transition.
-     * @param taskFragmentToken the task fragment token associated with this change.
-     * @return this [TransitionInfoBuilder] instance for chaining.
-     */
-    private fun addChange(
-        @WindowManager.TransitionType mode: Int,
-        @TransitionInfo.ChangeFlags flags: Int = TransitionInfo.FLAG_NONE,
-        activityTransitionInfo: ActivityTransitionInfo? = null,
-        taskInfo: ActivityManager.RunningTaskInfo? = null,
-        taskFragmentToken: IBinder? = null,
-        endDisplayId: Int? = null,
-    ): TransitionInfoBuilder {
-        val container = taskInfo?.token
-        val leash = createMockSurface()
-        val change = TransitionInfo.Change(container, leash).apply {
-            setMode(mode)
-            setFlags(flags)
-            setActivityTransitionInfo(activityTransitionInfo)
-            setTaskInfo(taskInfo)
-            setTaskFragmentToken(taskFragmentToken)
-        }
-        return addChange(change, endDisplayId)
-    }
+    fun addChange(@WindowManager.TransitionType mode: Int, taskFragmentToken: IBinder) =
+        addChange(ChangeBuilder(mode).setDisplayId(displayId)
+            .setTaskFragmentToken(taskFragmentToken).build())
 
     /**
      * Adds a pre-configured change to the [TransitionInfo].
@@ -137,9 +92,18 @@ class TransitionInfoBuilder @JvmOverloads constructor(
      * @return this TransitionInfoBuilder instance for chaining.
      */
     @JvmOverloads
-    fun addChange(change: TransitionInfo.Change, endDisplayId: Int? = null): TransitionInfoBuilder {
-        // Set the display ID for the change.
-        change.setDisplayId(displayId /* start */, endDisplayId ?: displayId /* end */)
+    fun addChange(change: TransitionInfo.Change): TransitionInfoBuilder {
+        if (change.endDisplayId == INVALID_DISPLAY) {
+            change.setDisplayId(displayId, displayId)
+        }
+        if (info.findRootIndex(change.endDisplayId) < 0) {
+            info.addRootLeash(
+                change.endDisplayId,
+                createMockSurface(), /* leash */
+                0, /* offsetLeft */
+                0, /* offsetTop */
+            )
+        }
         // Add the change to the internal TransitionInfo object.
         info.addChange(change)
         return this // Return this for fluent builder pattern.
