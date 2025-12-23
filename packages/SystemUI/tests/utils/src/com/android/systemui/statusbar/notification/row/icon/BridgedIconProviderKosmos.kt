@@ -23,6 +23,8 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 
+var Kosmos.bridgedIconProvider: BridgedIconProvider by Kosmos.Fixture { mockBridgedIconProvider }
+
 val Kosmos.mockBridgedIconProvider by
     Kosmos.Fixture {
         mock<BridgedIconProvider> {

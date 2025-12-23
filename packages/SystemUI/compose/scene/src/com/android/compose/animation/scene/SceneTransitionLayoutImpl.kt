@@ -64,7 +64,7 @@ import com.android.compose.animation.scene.content.Scene
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.animation.scene.debug.StateLogger
 import com.android.compose.animation.scene.debug.StlDebugConfig
-import com.android.compose.animation.scene.debug.debugScene
+import com.android.compose.animation.scene.debug.debugContent
 import com.android.compose.animation.scene.debug.debugStl
 import com.android.compose.animation.scene.debug.logElementsOnTransitionChange
 import com.android.compose.animation.scene.debug.withoutReadObservation
@@ -556,9 +556,9 @@ internal class SceneTransitionLayoutImpl(
                     isInvisible = isInvisible,
                     modifier =
                         Modifier.then(ContentElement(scene.zIndex, isInvisible)).thenIf(
-                            StlDebugConfig.isDebuggingScene()
+                            StlDebugConfig.isDebuggingContent()
                         ) {
-                            Modifier.debugScene(scene.key)
+                            Modifier.debugContent(scene.key)
                         },
                 )
             }
@@ -652,7 +652,14 @@ internal class SceneTransitionLayoutImpl(
                         )
                     }
 
-                    overlay.Content(Modifier.align(overlay.alignment), isInvisible = isInvisible)
+                    overlay.Content(
+                        Modifier.align(overlay.alignment).thenIf(
+                            StlDebugConfig.isDebuggingContent()
+                        ) {
+                            Modifier.debugContent(key)
+                        },
+                        isInvisible = isInvisible,
+                    )
                 }
             }
         }

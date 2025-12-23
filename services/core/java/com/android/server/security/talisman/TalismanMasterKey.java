@@ -125,10 +125,7 @@ final class TalismanMasterKey {
     @NonNull
     byte[] sign(@NonNull TalismanKey key, @NonNull byte[] message) {
         PrivateKey privateKey =
-                mHelper.unwrap(
-                        mEncryptionKey,
-                        key.privateKey().toByteArray(),
-                        key.publicKey().toByteArray());
+                mHelper.unwrap(mEncryptionKey, key.getPrivateKey(), key.getPublicKey());
         return mHelper.sign(privateKey, message);
     }
 
@@ -136,12 +133,11 @@ final class TalismanMasterKey {
     TalismanBatchAttestation attest(@NonNull List<TalismanKey> keys) {
         for (TalismanKey key : keys) {
             // Verify the keys are valid and owned by this master key.
-            mHelper.unwrap(
-                    mEncryptionKey, key.privateKey().toByteArray(), key.publicKey().toByteArray());
+            mHelper.unwrap(mEncryptionKey, key.getPrivateKey(), key.getPublicKey());
         }
         MessageDigest digest = mHelper.sha256Digest();
         for (TalismanKey key : keys) {
-            digest.update(key.publicKey().asReadOnlyByteBuffer());
+            digest.update(key.getPublicKey());
         }
         byte[] batchHash = digest.digest();
         return new TalismanBatchAttestation(

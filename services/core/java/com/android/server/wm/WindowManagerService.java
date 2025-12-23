@@ -4172,10 +4172,8 @@ public class WindowManagerService extends IWindowManager.Stub
                 displayContent.setForcedDensity(targetDensity, UserHandle.USER_CURRENT);
 
                 mRoot.forAllDisplays(display -> {
-                    if (Flags.moveUserDisplaySettingsToDeStorage()) {
-                        mDisplayWindowSettings.applySettingsToDisplayLocked(display);
-                        display.reconfigureDisplayLocked();
-                    }
+                    mDisplayWindowSettings.applySettingsToDisplayLocked(display);
+                    display.reconfigureDisplayLocked();
 
                     // Because DisplayWindowSettingsProvider.mOverrideSettings has been reset for
                     // the new user, we need to update DisplayWindowSettings.mShouldShowSystemDecors
@@ -4694,20 +4692,6 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         return screenshotBuffer;
-    }
-
-    /**
-     * Requests a screenshot to be taken for Assist purposes.
-     *
-     * This method initiates the process of capturing the current screen content and delivering it
-     * to the provided {@link IAssistDataReceiver}.
-     *
-     * @param receiver The {@link IAssistDataReceiver} that will receive the screenshot bitmap. Must
-     * not be null.
-     */
-    @Override
-    public void requestAssistScreenshot(final IAssistDataReceiver receiver) {
-        requestAssistScreenshotInternal(receiver, DEFAULT_DISPLAY);
     }
 
     /**

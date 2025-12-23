@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.systemui;
+package com.android.systemui
 
-import androidx.annotation.NonNull;
-
-import java.io.PrintWriter;
+import java.io.PrintWriter
 
 /**
  * Code that needs to be run when SystemUI is started.
@@ -35,6 +33,7 @@ import java.io.PrintWriter;
  *
  * If your CoreStartable depends on different CoreStartables starting before it, you can specify
  * another map binding listing out its dependencies:
+ *
  *  <pre>
  *  &#64;Provides
  *  &#64;IntoMap
@@ -45,37 +44,29 @@ import java.io.PrintWriter;
  *  }
  *  </pre>
  *
- *
  * @see com.android.systemui.application.SystemUIApplication#startSystemUserServicesIfNeeded()
  */
-public interface CoreStartable extends Dumpable {
-    String STARTABLE_DEPENDENCIES = "startable_dependencies";
-
+public fun interface CoreStartable : Dumpable {
     /** Main entry point for implementations. Called shortly after SysUI startup. */
-    void start();
+    public fun start()
 
-    @Override
-    default void dump(@NonNull PrintWriter pw, @NonNull String[] args) {
-    }
+    override fun dump(pw: PrintWriter, args: Array<out String>) {}
 
     /** Called to determine if the dumpable should be registered as critical or normal priority */
-    default boolean isDumpCritical() {
-        return true;
-    }
+    public fun isDumpCritical(): Boolean = true
 
-    /** Called immediately after the system broadcasts
-     * {@link android.content.Intent#ACTION_LOCKED_BOOT_COMPLETED} or during SysUI startup if the
-     * property {@code sys.boot_completed} is already set to 1. The latter typically occurs when
-     * starting a new SysUI instance, such as when starting SysUI for a secondary user.
-     * {@link #onBootCompleted()} will never be called before {@link #start()}. */
-    default void onBootCompleted() {
-    }
+    /**
+     * Called immediately after the system broadcasts
+     * [android.content.Intent#ACTION_LOCKED_BOOT_COMPLETED] or during SysUI startup if the property
+     * {@code sys.boot_completed} is already set to 1. The latter typically occurs when starting a
+     * new SysUI instance, such as when starting SysUI for a secondary user.
+     *
+     * [onBootCompleted] will never be called before [start].
+     */
+    public fun onBootCompleted() {}
 
     /** No op implementation that can be used when feature flagging on the Dagger Module level. */
-    CoreStartable NOP = new Nop();
-
-    class Nop implements CoreStartable {
-        @Override
-        public void start() {}
+    public object NOP : CoreStartable {
+        override fun start() {}
     }
 }

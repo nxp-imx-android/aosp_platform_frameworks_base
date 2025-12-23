@@ -16,12 +16,15 @@
 
 package com.android.server.wm;
 
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.DISPLAY_POLICY;
+import static android.server.wm.ProtoExtractors.extract;
 import static android.view.DisplayCutout.NO_CUTOUT;
 import static android.view.InsetsSource.ID_IME;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static android.view.WindowInsets.Type.navigationBars;
 import static android.view.WindowInsets.Type.statusBars;
+import static android.view.WindowInsets.Type.systemGestures;
 import static android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
 import static android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE;
 import static android.view.WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM;
@@ -54,17 +57,23 @@ import android.graphics.Rect;
 import android.os.Binder;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.util.proto.ProtoOutputStream;
 import android.view.DisplayInfo;
+import android.view.InsetsFrameProvider;
 import android.view.InsetsSource;
 import android.view.InsetsState;
 import android.view.WindowManager;
 
 import androidx.test.filters.SmallTest;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+
 import com.android.window.flags.Flags;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import perfetto.protos.Windowmanagerservice;
 
 @SmallTest
 @Presubmit
@@ -596,5 +605,61 @@ public class DisplayPolicyTests extends WindowTestsBase {
         assertFalse(insetsPolicy.areTypesForciblyHidden(statusBars()));
         assertFalse(insetsPolicy.areTypesForciblyHidden(navigationBars()));
 
+    }
+
+    @SetupWindows(addWindows = W_NAVIGATION_BAR)
+    @Test
+    public void testDumpDebug() throws InvalidProtocolBufferException {
+        final DisplayPolicy displayPolicy = mDisplayContent.getDisplayPolicy();
+        final DisplayPolicy.DecorInsets decorInsets = displayPolicy.mDecorInsets;
+        final DisplayPolicy.DecorInsets.Info info = decorInsets.get(0, 0, 0);
+        info.mOverrideConfigInsets.set(1, 2, 3, 4);
+        info.mOverrideNonDecorInsets.set(5, 6, 7, 8);
+        info.mOverrideConfigFrame.set(9, 10, 11, 12);
+        info.mOverrideNonDecorFrame.set(13, 14, 15, 16);
+        final Binder caller = new Binder();
+        displayPolicy.setSystemBarVisibilityOverride(caller, statusBars(), navigationBars());
+
+        final String windowTitle = "LeftGestureHostWindow";
+        final WindowState win = newWindowBuilder(windowTitle, TYPE_APPLICATION).build();
+        final InsetsFrameProvider frameProvider = new InsetsFrameProvider(null, 0,
+                systemGestures());
+        frameProvider.setInsetsSize(Insets.of(50, 0, 0, 0));
+        final WindowManager.LayoutParams attrs = win.mAttrs;
+        attrs.providedInsets = new InsetsFrameProvider[] { frameProvider };
+        displayPolicy.addWindowLw(win, attrs);
+        final InsetsSourceProvider sourceProvider = win.getInsetsSourceProviders()
+                .get(frameProvider.getId());
+        sourceProvider.setServerVisible(true);
+        sourceProvider.updateSourceFrame(win.getBounds());
+        displayPolicy.applyPostLayoutPolicyLw(win, attrs, null, null);
+
+        final ProtoOutputStream proto = new ProtoOutputStream();
+        displayPolicy.dumpDebug(proto, DISPLAY_POLICY);
+
+        final Windowmanagerservice.DisplayPolicyProto displayPolicyProto =
+                Windowmanagerservice.DisplayContentProto.parseFrom(proto.getBytes())
+                        .getDisplayPolicy();
+
+        final Windowmanagerservice.DecorInsetsProto decorInsetsProto = displayPolicyProto
+                .getDecorInsets();
+
+        final Windowmanagerservice.DecorInsetsInfoProto infoProto = decorInsetsProto
+                .getDecorInsetsInfoList().getFirst();
+        assertEquals(info.mOverrideConfigInsets, extract(infoProto.getOverrideConfigInsets()));
+        assertEquals(info.mOverrideNonDecorInsets, extract(infoProto.getOverrideNonDecorInsets()));
+        assertEquals(info.mOverrideConfigFrame, extract(infoProto.getOverrideConfigFrame()));
+        assertEquals(info.mOverrideNonDecorFrame, extract(infoProto.getOverrideNonDecorFrame()));
+
+        assertEquals(1, displayPolicyProto.getSystemBarVisibilityOverrideCount());
+        final Windowmanagerservice.SystemBarVisibilityOverrideProto sbvoProto =
+                displayPolicyProto.getSystemBarVisibilityOverrideList().getFirst();
+        assertEquals(caller.hashCode(), sbvoProto.getCaller());
+        assertEquals(statusBars(), sbvoProto.getShow());
+        assertEquals(navigationBars(), sbvoProto.getHide());
+
+        final Windowmanagerservice.IdentifierProto leftGestureHostIdentifier =
+                displayPolicyProto.getLeftGestureHostIdentifier();
+        assertEquals(windowTitle, leftGestureHostIdentifier.getTitle());
     }
 }

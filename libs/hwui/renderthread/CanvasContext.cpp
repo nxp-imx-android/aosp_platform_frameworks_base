@@ -639,7 +639,7 @@ void CanvasContext::draw(bool solelyTextureViewUpdates) {
     mIdleDuration = 0;
 
     const auto skippedFrameReason = [&]() -> std::optional<SkippedFrameReason> {
-        if (!Properties::isDrawingEnabled()) {
+        if (!Properties::isDrawingEnabled() || !mDrawingEnabled) {
             return SkippedFrameReason::DrawingOff;
         }
 

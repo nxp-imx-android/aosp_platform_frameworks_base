@@ -2793,6 +2793,16 @@ interface ITelephony {
     unregisterForSatelliteDisallowedReasonsChanged(ISatelliteDisallowedReasonsCallback callback);
 
     /**
+     * Request to refresh the satellite entitlement status.
+     *
+     * @param subId The subscription ID to use for the connection.
+     * @param callback The callback to get the result of the request.
+     */
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
+            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void requestEntitlementRefresh(int subId, IIntegerConsumer callback);
+
+    /**
      * Request to get whether satellite communication is allowed for the current location.
      *
      * @param subId The subId of the subscription to get whether satellite communication is allowed

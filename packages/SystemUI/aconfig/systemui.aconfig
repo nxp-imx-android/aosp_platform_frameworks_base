@@ -164,13 +164,6 @@ flag {
 }
 
 flag {
-    name: "clock_fidget_animation"
-    namespace: "systemui"
-    description: "Enables the clock fidget animation"
-    bug: "364664389"
-}
-
-flag {
     name: "clock_modernization"
     namespace: "systemui"
     description: "Implement the status bar/shade header clock in the recommended architecture"
@@ -1367,6 +1360,16 @@ flag {
 }
 
 flag {
+    name: "qr_code_scanner_intent_action"
+    namespace: "systemui"
+    description: "Adds an intent action to the intent used to launch the QR code scanner from the quick settings tile."
+    bug: "461701811"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "qs_delete_uninstalled_tile_service"
     namespace: "systemui"
     description: "When a TileService package is uninstalled, remove the tile completely and all associated data."
@@ -1701,13 +1704,6 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
-}
-
-flag {
-    name: "split_show_passwords_to_touch_and_physical"
-    namespace: "systemui"
-    description: "Splits the 'Show passwords' setting into two new settings: one for touch inputs and one for physical inputs."
-    bug: "417951523"
 }
 
 flag {

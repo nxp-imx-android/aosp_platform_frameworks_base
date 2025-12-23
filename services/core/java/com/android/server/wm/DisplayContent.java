@@ -37,6 +37,7 @@ import static android.internal.perfetto.protos.Windowmanagerservice.DisplayConte
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.CURRENT_FOCUS_IDENTIFIER;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.DISPLAY_FRAMES;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.DISPLAY_INFO;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.DISPLAY_POLICY;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.DISPLAY_READY;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.DISPLAY_ROTATION;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.DPI;
@@ -48,6 +49,7 @@ import static android.internal.perfetto.protos.Windowmanagerservice.DisplayConte
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.INPUT_METHOD_CONTROL_TARGET_IDENTIFIER;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.INPUT_METHOD_INPUT_TARGET_IDENTIFIER;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.INPUT_METHOD_LAYERING_TARGET_IDENTIFIER;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.INSETS_STATE_CONTROLLER;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.IS_SLEEPING;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.KEEP_CLEAR_AREAS;
 import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.MIN_SIZE_OF_RESIZEABLE_TASK_DP;
@@ -1991,6 +1993,19 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         return (int) TypedValue.complexToFloat(value.data);
     }
 
+    @Nullable
+    private ActivityRecord getTopActivityFollowingBehindOrientation() {
+        final ActivityRecord top = topRunningActivity();
+        if (top != null) {
+            final int orientation = top.getRequestedOrientation();
+            if ((orientation == SCREEN_ORIENTATION_UNSPECIFIED && !top.providesOrientation())
+                    || (orientation == ActivityInfo.SCREEN_ORIENTATION_BEHIND)) {
+                return top;
+            }
+        }
+        return null;
+    }
+
     private boolean updateOrientation(boolean forceUpdate) {
         final WindowContainer prevOrientationSource = mLastOrientationSource;
         final int orientation = getOrientation();
@@ -2009,9 +2024,16 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 mAtmService.getTaskChangeNotificationController()
                         .notifyTaskRequestedOrientationChanged(task.mTaskId, orientation);
             }
-            // The orientation source may not be the top if it uses SCREEN_ORIENTATION_BEHIND.
-            final ActivityRecord topCandidate = !r.isVisibleRequested() ? topRunningActivity() : r;
-            if (topCandidate != null && handleTopActivityLaunchingInDifferentOrientation(
+            // The orientation source may not be the top if it uses SCREEN_ORIENTATION_BEHIND,
+            // or it is a translucent SCREEN_ORIENTATION_UNSPECIFIED activity.
+            ActivityRecord topCandidate = r;
+            if (r != mFocusedApp && !r.isOnTop()) {
+                final ActivityRecord topFollowBehind = getTopActivityFollowingBehindOrientation();
+                if (topFollowBehind != null) {
+                    topCandidate = topFollowBehind;
+                }
+            }
+            if (handleTopActivityLaunchingInDifferentOrientation(
                     topCandidate, r, true /* checkOpening */)) {
                 // Display orientation should be deferred until the top fixed rotation is finished.
                 return false;
@@ -2075,9 +2097,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 orientation = nextCandidate.getRequestedOrientation();
             }
         }
-        if (orientation == topOrientation) {
-            if (mFixedRotationLaunchingApp != null
-                    && orientation == mFixedRotationLaunchingApp.getRequestedOrientation()) {
+        if (orientation == topOrientation || orientation == SCREEN_ORIENTATION_UNSPECIFIED) {
+            if (mFixedRotationLaunchingApp != null) {
                 // Reuse the transform if the non-top-visible activity has the same orientation as
                 // the rotated launching top.
                 ar.linkFixedRotationTransform(mFixedRotationLaunchingApp);
@@ -3912,7 +3933,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             mCurrentFocus.writeIdentifierToProto(proto, CURRENT_FOCUS_IDENTIFIER);
         }
         if (mInsetsStateController != null) {
-            mInsetsStateController.dumpDebug(proto, logLevel);
+            mInsetsStateController.dumpDebug(proto, INSETS_STATE_CONTROLLER);
         }
         proto.write(IME_POLICY, getImePolicy());
         for (Rect r : mRestrictedKeepClearAreas) {
@@ -3924,6 +3945,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         if (com.android.window.flags.Flags.deviceEngagementMode()) {
             proto.write(ENGAGEMENT_MODE, mEngagementMode);
         }
+        mDisplayPolicy.dumpDebug(proto, DISPLAY_POLICY);
+        mInsetsPolicy.dumpDebug(proto, DisplayContentProto.INSETS_POLICY);
         proto.end(token);
     }
 
@@ -7433,6 +7456,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                     + "}";
         }
 
+        @Override
         public void writeIdentifierToProto(ProtoOutputStream proto, long fieldId) {
             final long token = proto.start(fieldId);
             proto.write(HASH_CODE, System.identityHashCode(this));

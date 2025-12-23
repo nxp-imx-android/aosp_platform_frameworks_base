@@ -503,6 +503,7 @@ public class DesktopModeLaunchParamsModifierTests extends
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
+    @DisableFlags(Flags.FLAG_REFACTOR_CAPTION_SANDBOXING_TO_CORE)
     public void testPreserveOrientationAndAspectRatioFromRecentsTaskRelaunch() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -1343,6 +1344,7 @@ public class DesktopModeLaunchParamsModifierTests extends
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
+    @DisableFlags(Flags.FLAG_REFACTOR_CAPTION_SANDBOXING_TO_CORE)
     public void testDefaultLandscapeBounds_landscapeDevice_unResizable_landscapeOrientation() {
         setupDesktopModeLaunchParamsModifier();
         final int captionHeight = getDesktopViewAppHeaderHeightPx(mContext);
@@ -1367,6 +1369,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_REFACTOR_CAPTION_SANDBOXING_TO_CORE)
     public void testUnResizablePortraitBounds_landscapeDevice_unResizable_portraitOrientation() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -1517,6 +1520,7 @@ public class DesktopModeLaunchParamsModifierTests extends
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
+    @DisableFlags(Flags.FLAG_REFACTOR_CAPTION_SANDBOXING_TO_CORE)
     public void testDefaultPortraitBounds_portraitDevice_unResizable_portraitOrientation() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -1542,6 +1546,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_REFACTOR_CAPTION_SANDBOXING_TO_CORE)
     public void testUnResizableLandscapeBounds_portraitDevice_unResizable_landscapeOrientation() {
         setupDesktopModeLaunchParamsModifier();
 

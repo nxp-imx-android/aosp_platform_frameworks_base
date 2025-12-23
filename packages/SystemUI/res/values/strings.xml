@@ -2373,6 +2373,9 @@
     <string name="inline_turn_off_notifications">Turn off</string>
 
     <!-- Notification Inline controls: device type for button to open bridged notification settings on associated device [CHAR_LIMIT=20] -->
+    <string name="bridged_device_type_unknown">device</string>
+
+    <!-- Notification Inline controls: device type for button to open bridged notification settings on associated device [CHAR_LIMIT=20] -->
     <string name="bridged_device_type_phone">phone</string>
 
     <!-- Notification Inline controls: device type for button to open bridged notification settings on associated device [CHAR_LIMIT=20] -->

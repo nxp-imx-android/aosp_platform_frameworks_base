@@ -1,3 +1,7 @@
 # Bug component: 34867
 
-include /services/core/java/com/android/server/inputmethod/OWNERS
+muratori@google.com
+wzwonarz@google.com
+
+# backup (will be removed in Q1 2026)
+cosminbaies@google.com

@@ -1984,6 +1984,15 @@ public class BubbleStackView extends FrameLayout
                             mPositioner.getAllowableStackPositionRegion(getBubbleCount())));
         }
         if (mIsExpanded) {
+            // when rotating the device with the IME open, TaskViewTransitions may calculate
+            // incorrect bounds, so pass the right bounds here so that WM state is correct.
+            // TODO: b/470369406 - we should be able to clean this up once Bubbles always passes the
+            // bounds on the transition request.
+            if (mExpandedBubble instanceof Bubble b && b.getTaskView() != null) {
+                Rect bounds = new Rect();
+                mPositioner.getTaskViewRestBounds(bounds);
+                b.getTaskView().onLocationChanged(bounds);
+            }
             updateExpandedView();
         }
         setUpManageMenu();

@@ -952,7 +952,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC)
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun isAnyDeskActive_topTransparentFullscreenTask_returnsTrue() {
         val topTransparentTask = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
@@ -2241,7 +2240,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK)
     fun launchNewTask_topTransparentFullscreenTaskIdPassedToClear() {
         setUpLandscapeDisplay()
         val topTransparentTask =
@@ -6400,7 +6398,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC)
     fun handleRequest_topActivityTransparent_savedToDesktopRepository() {
         val freeformTask = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
         markTaskVisible(freeformTask)
@@ -6428,7 +6425,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC)
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun handleRequest_onlyTopTransparentFullscreenTask_multiDesksDisabled_returnSwitchToFreeformWCT() {
         val topTransparentTask = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
@@ -6442,7 +6438,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK)
     fun handleRequest_newTaskLaunch_topTransparentFullscreenTaskIdPassedToClear() {
         val transition = Binder()
         val topTransparentTask = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
@@ -6463,7 +6458,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK)
     fun handleRequest_newTaskLaunch_sameAsTopTransparentFullscreenTask_clearsTopTransparent() {
         val transition = Binder()
         val topTransparentTask = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
@@ -8359,6 +8353,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_REFACTOR_CAPTION_SANDBOXING_TO_CORE)
     fun onDesktopDragMove_endsOutsideValidDragArea_snapsToValidBounds() {
         val task = setUpFreeformTask()
         val spyController = spy(controller)
@@ -8409,6 +8404,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
+    @DisableFlags(Flags.FLAG_REFACTOR_CAPTION_SANDBOXING_TO_CORE)
     fun onDesktopDragEnd_noIndicator_updatesTaskBounds() {
         val task = setUpFreeformTask()
         val spyController = spy(controller)

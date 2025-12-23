@@ -50,6 +50,7 @@ public class CustomTestActivity extends Activity {
     private static final int LAYOUT_GROUP_VIRTUAL_NODES_ID =
             R.layout.test_export_virtual_assist_node_activity;
     private static final int VIEW_GROUP_LAYOUT_ID = R.layout.test_view_group_activity;
+    private static final int BUTTON_LAYOUT_ID = R.layout.test_button_activity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +85,13 @@ public class CustomTestActivity extends Activity {
                             findViewById(R.id.view_group_root_view),
                             getIntent().getIntExtra(INTENT_EXTRA_CUSTOM_VIEWS, MAX_VIEWS));
                 }
+            } else if (layoutId == BUTTON_LAYOUT_ID) {
+                View rootView = findViewById(R.id.root_view);
+                findViewById(R.id.button).setOnClickListener(v -> {
+                    // Reset the visibility to trigger the session flush event.
+                    rootView.setVisibility(View.GONE);
+                    rootView.setVisibility(View.VISIBLE);
+                });
             }
         }
 

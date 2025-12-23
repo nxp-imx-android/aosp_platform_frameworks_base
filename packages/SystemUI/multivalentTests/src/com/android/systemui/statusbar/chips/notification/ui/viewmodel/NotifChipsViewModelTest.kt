@@ -60,6 +60,7 @@ import com.android.systemui.statusbar.notification.promoted.shared.model.Promote
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.When
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
+import com.android.systemui.statusbar.notification.shared.Metric
 import com.android.systemui.statusbar.notification.shared.NotificationChipFromCompactContent
 import com.android.systemui.statusbar.notification.stack.data.repository.headsUpNotificationRepository
 import com.android.systemui.testKosmos
@@ -786,13 +787,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.shortCriticalText = "Arrived"
                     this.time = When.Time(currentTime + 30.minutes.inWholeMilliseconds)
-                    this.metrics =
-                        listOf(
-                            PromotedNotificationContentModel.Metric.Text(
-                                metricValue = "1000m",
-                                label = "distance",
-                            )
-                        )
+                    this.metrics = listOf(Metric.Text(metricValue = "1000m", label = "distance"))
                 }
             setNotifs(
                 listOf(
@@ -822,13 +817,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             val promotedContentBuilder =
                 newPromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentTime + 30.minutes.inWholeMilliseconds)
-                    this.metrics =
-                        listOf(
-                            PromotedNotificationContentModel.Metric.Text(
-                                metricValue = "Arrived",
-                                label = "status",
-                            )
-                        )
+                    this.metrics = listOf(Metric.Text(metricValue = "Arrived", label = "status"))
                 }
             setNotifs(
                 listOf(
@@ -1292,7 +1281,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     this.time = When.Time(currentSystemTime)
                     this.metrics =
                         listOf(
-                            PromotedNotificationContentModel.Metric.TimeDifference.Instant(
+                            Metric.TimeDifference.Instant(
                                 zeroTime = Instant.ofEpochMilli(currentSystemTime + timerLength),
                                 isTimer = true,
                                 useAdaptiveFormat = true,
@@ -1384,7 +1373,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     this.time = When.Time(currentSystemTime)
                     this.metrics =
                         listOf(
-                            PromotedNotificationContentModel.Metric.TimeDifference.ElapsedRealtime(
+                            Metric.TimeDifference.ElapsedRealtime(
                                 zeroElapsedRealtime = currentElapsedTime + timerLength,
                                 isTimer = true,
                                 useAdaptiveFormat = true,
@@ -1476,7 +1465,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     this.time = When.Time(currentSystemTime)
                     this.metrics =
                         listOf(
-                            PromotedNotificationContentModel.Metric.TimeDifference.Instant(
+                            Metric.TimeDifference.Instant(
                                 zeroTime = Instant.ofEpochMilli(currentSystemTime + timerLength),
                                 isTimer = true,
                                 useAdaptiveFormat = false,
@@ -1574,7 +1563,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     this.time = When.Time(currentSystemTime)
                     this.metrics =
                         listOf(
-                            PromotedNotificationContentModel.Metric.TimeDifference.ElapsedRealtime(
+                            Metric.TimeDifference.ElapsedRealtime(
                                 zeroElapsedRealtime = currentElapsedTime + timerLength,
                                 isTimer = true,
                                 useAdaptiveFormat = false,
@@ -1672,7 +1661,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     this.time = When.Time(currentSystemTime)
                     this.metrics =
                         listOf(
-                            PromotedNotificationContentModel.Metric.TimeDifference.Instant(
+                            Metric.TimeDifference.Instant(
                                 zeroTime = Instant.ofEpochMilli(currentSystemTime - stopwatchValue),
                                 isTimer = true,
                                 useAdaptiveFormat = false,
@@ -1770,7 +1759,7 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     this.time = When.Time(currentSystemTime)
                     this.metrics =
                         listOf(
-                            PromotedNotificationContentModel.Metric.TimeDifference.ElapsedRealtime(
+                            Metric.TimeDifference.ElapsedRealtime(
                                 zeroElapsedRealtime = currentElapsedTime - stopwatchValue,
                                 isTimer = false,
                                 useAdaptiveFormat = false,

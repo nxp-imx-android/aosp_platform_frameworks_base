@@ -438,6 +438,53 @@ public class LoginTest extends AbstractContentCapturePerfTestCase {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_CONTENT_INTERACTION_API_ENABLED)
+    public void testButtonClick_flagEnabled() throws Throwable {
+        // Arrange
+        MyContentCaptureService service = enableService();
+        CustomTestActivity activity = launchActivity(R.layout.test_button_activity, 0);
+        View rootView = activity.findViewById(R.id.root_view);
+        View buttonView = rootView.findViewById(R.id.button);
+        int sessionId = rootView.getContentCaptureSession().getId();
+        int expectedFlushCount = 2;
+        int expectedViewAppearedCount = 2; // 1 Button + 1 container
+        int expectedInteractionCount = 1;
+        int eventTimeoutMs = 10000;
+        BenchmarkState state = mPerfStatusReporter.getBenchmarkState();
+        // Force flush the initial events.
+        state.pauseTiming();
+        sInstrumentation.runOnMainSync(() -> rootView.setVisibility(View.GONE));
+        sInstrumentation.waitForIdleSync();
+        sInstrumentation.runOnMainSync(() -> rootView.setVisibility(View.VISIBLE));
+        sInstrumentation.waitForIdleSync();
+        service.waitForFlushEvents(expectedFlushCount, eventTimeoutMs);
+        state.resumeTiming();
+
+        // Act
+        while (state.keepRunning()) {
+            state.pauseTiming();
+            service.clearEvents();
+            ContentCaptureService.PendingMetrics pendingMetrics =
+                    service.mPendingMetrics.get(sessionId);
+            if (pendingMetrics != null) {
+                pendingMetrics.getMetrics().reset();
+            }
+            state.resumeTiming();
+            sInstrumentation.runOnMainSync(() -> buttonView.performClick());
+            sInstrumentation.waitForIdleSync();
+            state.pauseTiming();
+            service.waitForFlushEvents(1, eventTimeoutMs);
+
+            // Assert
+            assertThat(service.getAppearedCount()).isEqualTo(expectedViewAppearedCount);
+            assertThat(service.getInteractionCount()).isEqualTo(expectedInteractionCount);
+            assertThat(service.getCapturedEvents().get(0).getType()).isEqualTo(
+                    ContentCaptureEvent.TYPE_CONTENT_INTERACTION);
+            state.resumeTiming();
+        }
+    }
+
+    @Test
     @RequiresFlagsEnabled(Flags.FLAG_NEW_HEURISTICS_FOR_IMPORTANCE_ENABLED)
     public void testNotifyViewGroupWithA11yText() throws Throwable {
         // Arrange

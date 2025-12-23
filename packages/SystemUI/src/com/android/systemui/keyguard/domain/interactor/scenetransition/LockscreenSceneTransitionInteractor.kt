@@ -324,7 +324,7 @@ constructor(
                 animator = null,
                 modeOnCanceled = TransitionModeOnCanceled.RESET,
             )
-        repository.nextLockscreenTargetState.value = null
+        setNextLockscreenTargetState(null)
         startTransition(newTransition)
     }
 
@@ -347,7 +347,7 @@ constructor(
                 animator = null,
                 modeOnCanceled = TransitionModeOnCanceled.RESET,
             )
-        repository.nextLockscreenTargetState.value = null
+        setNextLockscreenTargetState(null)
         startTransition(newTransition)
     }
 

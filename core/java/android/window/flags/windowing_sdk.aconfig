@@ -161,16 +161,6 @@ flag {
 }
 
 flag {
-    name: "move_user_display_settings_to_de_storage"
-    namespace: "windowing_sdk"
-    description: "Moves non-system user display settings from CE to DE storage to resolve early user setup access issues."
-    bug: "442757820"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "pause_invisible_activity"
     namespace: "windowing_sdk"
     description: "Pause the invisible activity vs. stopping it after idle."

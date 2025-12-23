@@ -55,6 +55,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -63,6 +64,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.android.settingslib.spa.R
+import com.android.settingslib.spa.framework.compose.contentDescription
+import com.android.settingslib.spa.framework.compose.thenIf
 import com.android.settingslib.spa.framework.theme.SettingsDimension
 import com.android.settingslib.spa.framework.theme.SettingsDimension.buttonPaddingVertical
 import com.android.settingslib.spa.framework.theme.SettingsDimension.itemPaddingEnd
@@ -161,18 +165,17 @@ private fun ExpressiveActionButton(
     textStyle: TextStyle,
     textHorizontalPadding: Dp
 ) {
-    // Make entire column clickable only if action button is enabled
-    val columnModifier = if (actionButton.enabled) {
-        Modifier.clickable(onClick = actionButton.onClick)
-    } else {
-        Modifier
-    }
-
+    val disabledContentDescription = stringResource(R.string.spa_action_button_disabled_item)
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = modifier
-            .then(columnModifier)
+        // The entire column is made clickable to provide a single semantic node for accessibility.
+        // This ensures TalkBack announces the button's state correctly (e.g., "disabled").
+        // NOTE: This makes the component clickable even when visually disabled.
+        modifier = modifier.clickable(onClick = actionButton.onClick)
+            .thenIf(!actionButton.enabled) {
+                modifier.contentDescription(disabledContentDescription)
+            }
     ) {
         IconButton(actionButton)
         Spacer(Modifier.height(SettingsSpace.extraSmall3))

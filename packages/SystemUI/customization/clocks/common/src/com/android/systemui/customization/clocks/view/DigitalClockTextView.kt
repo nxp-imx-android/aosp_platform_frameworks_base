@@ -35,7 +35,6 @@ import android.widget.TextView
 import androidx.core.graphics.withSave
 import com.android.app.animation.Interpolators
 import com.android.internal.annotations.VisibleForTesting
-import com.android.systemui.Flags.clockFidgetAnimation
 import com.android.systemui.animation.AxisDefinition
 import com.android.systemui.animation.GSFAxes
 import com.android.systemui.animation.TextAnimator
@@ -200,7 +199,7 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
         if (super.onTouchEvent(evt)) return true
         if (isDozing) return false
 
-        if (clockFidgetAnimation() && evt.action == MotionEvent.ACTION_DOWN) {
+        if (evt.action == MotionEvent.ACTION_DOWN) {
             val pt = VPointF(evt.x, evt.y)
             return (parent as? IDigitalClockViewGroup)?.animateFidget(pt, enforceBounds = false)
                 ?: animateFidget(pt, enforceBounds = false)

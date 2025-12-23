@@ -136,7 +136,6 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC)
     fun topTransparentTaskClosed_clearTaskDataFromRepository() {
         val mockTransition = Mockito.mock(IBinder::class.java)
         val topTransparentTask = createTaskInfo(1)
@@ -157,7 +156,6 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC)
     fun topTransparentTaskSentToBack_clearTaskDataFromRepository() {
         val mockTransition = Mockito.mock(IBinder::class.java)
         val topTransparentTask = createTaskInfo(1)
@@ -178,7 +176,6 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC)
     fun nonTopTransparentTaskOpened_clearTopTransparentTaskIdFromRepository() {
         val mockTransition = Mockito.mock(IBinder::class.java)
         val topTransparentTask = createTaskInfo(1)
@@ -200,7 +197,6 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC)
     fun nonTopTransparentTaskSentToFront_clearTopTransparentTaskIdFromRepository() {
         val mockTransition = Mockito.mock(IBinder::class.java)
         val topTransparentTask = createTaskInfo(1)

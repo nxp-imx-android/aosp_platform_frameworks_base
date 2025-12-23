@@ -28,7 +28,7 @@ import com.android.internal.widget.NotificationProgressModel
 import com.android.systemui.statusbar.notification.row.ImageResult
 import com.android.systemui.statusbar.notification.row.LazyImage
 import com.android.systemui.statusbar.notification.row.shared.ImageModel
-import java.time.Duration
+import com.android.systemui.statusbar.notification.shared.Metric
 
 data class PromotedNotificationContentModels(
     /** The potentially redacted version of the content that will be exposed to the public */
@@ -180,38 +180,6 @@ data class PromotedNotificationContentModel(
 
     /** The fields needed to render the old-style progress bar. */
     data class OldProgress(val progress: Int, val max: Int, val isIndeterminate: Boolean)
-
-    sealed interface Metric {
-        val label: CharSequence
-
-        sealed interface TimeDifference : Metric {
-            val isTimer: Boolean
-            val useAdaptiveFormat: Boolean
-
-            data class Instant(
-                val zeroTime: java.time.Instant,
-                override val isTimer: Boolean,
-                override val useAdaptiveFormat: Boolean,
-                override val label: CharSequence,
-            ) : TimeDifference
-
-            data class ElapsedRealtime(
-                val zeroElapsedRealtime: Long,
-                override val isTimer: Boolean,
-                override val useAdaptiveFormat: Boolean,
-                override val label: CharSequence,
-            ) : TimeDifference
-
-            data class Paused(
-                val pausedDuration: Duration,
-                override val isTimer: Boolean,
-                override val useAdaptiveFormat: Boolean,
-                override val label: CharSequence,
-            ) : TimeDifference
-        }
-
-        data class Text(val metricValue: CharSequence, override val label: CharSequence) : Metric
-    }
 
     /** The promotion-eligible style of a notification, or [Style.Ineligible] if not. */
     enum class Style {

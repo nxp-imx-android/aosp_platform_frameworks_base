@@ -149,7 +149,7 @@ filegroup {
         ":statslog-framework-java-gen", // FrameworkStatsLog.java
         ":statslog-hwui-java-gen", // HwuiStatsLog.java
         ":audio_policy_configuration_V7_0",
-    ] + select(release_flag("RELEASE_USE_AIDL_UNFROZEN"), {
+    ] + select(release_flag("RELEASE_AIDL_USE_UNFROZEN"), {
         // TODO(b/462036047): remove switch when HALs are re-frozen
         true: [
             ":android.hardware.security.keymint-V5-java-source",

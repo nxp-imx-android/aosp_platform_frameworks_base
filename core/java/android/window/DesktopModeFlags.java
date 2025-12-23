@@ -79,8 +79,6 @@ public enum DesktopModeFlags {
     ENABLE_TASK_STACK_OBSERVER_IN_SHELL(Flags::enableTaskStackObserverInShell, true),
     ENABLE_THEMED_APP_HEADERS(Flags::enableThemedAppHeaders, true),
     ENABLE_WINDOWING_EDGE_DRAG_RESIZE(Flags::enableWindowingEdgeDragResize, true),
-    INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC(
-            Flags::includeTopTransparentFullscreenTaskInDesktopHeuristic, true),
     SKIP_DECOR_VIEW_RELAYOUT_WHEN_CLOSING_BUGFIX(
             Flags::skipDecorViewRelayoutWhenClosingBugfix, true),
     // go/keep-sorted end

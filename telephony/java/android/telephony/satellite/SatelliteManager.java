@@ -3008,6 +3008,55 @@ public final class SatelliteManager {
     }
 
     /**
+     * Request to refresh the satellite entitlement status.
+     *
+     * <p>This API should be invoked only after receiving an FCM push confirming that the
+     * entitlement status has been updated on the server. It is expected to be invoked by
+     * a system App acting as an FCM client for the entitlement server. This allows applications
+     * to trigger a refresh of the satellite entitlement status with the entitlement server.
+     *
+     * @param subId The subscription ID for which to refresh the entitlement status.
+     * @param executor The executor on which the listener will be called.
+     * @param resultListener The listener to report the result of the request.
+     * @throws SecurityException if the caller does not have the required permission.
+     * @throws IllegalStateException if the Telephony service is not available.
+     * @throws IllegalArgumentException if executor or resultListener is null.
+     *
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.SATELLITE_COMMUNICATION)
+    public void requestEntitlementRefresh(
+            int subId,
+            @NonNull @CallbackExecutor Executor executor,
+            @SatelliteResult @NonNull Consumer<Integer> resultListener
+    ) {
+        Objects.requireNonNull(executor, "Executor must not be null");
+        Objects.requireNonNull(resultListener, "ResultListener must not be null");
+
+        try {
+            final ITelephony telephony = getITelephony();
+            if (telephony == null) {
+                loge("requestEntitlementRefresh() invalid telephony");
+                executor.execute(() -> Binder.withCleanCallingIdentity(
+                        () -> resultListener.accept(SATELLITE_RESULT_ILLEGAL_STATE)));
+                return;
+            }
+            final IIntegerConsumer callback = new IIntegerConsumer.Stub() {
+                @Override
+                public void accept(int result) {
+                    executor.execute(() -> Binder.withCleanCallingIdentity(
+                            () -> resultListener.accept(result)));
+                }
+            };
+            telephony.requestEntitlementRefresh(subId, callback);
+        } catch (RemoteException ex) {
+            loge("requestEntitlementRefresh() RemoteException: " + ex);
+            executor.execute(() -> Binder.withCleanCallingIdentity(
+                    () -> resultListener.accept(SATELLITE_RESULT_ILLEGAL_STATE)));
+        }
+    }
+
+    /**
      * Request to get the signal strength of the satellite connection.
      *
      * <p>

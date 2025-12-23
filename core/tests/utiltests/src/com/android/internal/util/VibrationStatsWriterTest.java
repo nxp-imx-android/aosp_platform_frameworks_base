@@ -18,7 +18,6 @@ package com.android.internal.util;
 
 import static android.media.Utils.VIBRATION_URI_PARAM;
 
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -205,10 +204,6 @@ public class VibrationStatsWriterTest {
     public void testVibrationStatsWriter_nullAppContext_noException() {
         when(mContext.getApplicationContext()).thenReturn(null);
 
-        try {
-            VibrationStatsWriter.getInstance(mContext);
-        } catch (Exception e) {
-            fail("VibrationStatsWriter getInstance should not have exception.");
-        }
+        VibrationStatsWriter.getInstance(mContext);
     }
 }

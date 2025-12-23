@@ -355,7 +355,14 @@ public abstract class AppsFilterBase implements AppsFilterSnapshot {
                 if (callingAppId == targetPccId) {
                     return false;
                 }
+                PackageSetting packageSetting = (PackageSetting) callingSetting;
+                if (packageSetting == null) {
+                    Slog.wtf(TAG, "No setting found for pcc uid " + callingUid);
+                    return true;
+                }
                 // else, intentional fall-through
+                // if the caller is pcc uid, use the visibility of its app uid
+                callingUid = UserHandle.getUid(userId, packageSetting.getAppId());
             }
             // use cache
             if (mCacheReady && mCacheEnabled) {

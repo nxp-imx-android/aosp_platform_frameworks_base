@@ -28,6 +28,7 @@ import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_NOSENSOR;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowContainerChildProto.DISPLAY_CONTENT;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.view.Display.DEFAULT_DISPLAY;
@@ -90,6 +91,7 @@ import static com.android.server.wm.TransitionSubject.assertThat;
 import static com.android.server.wm.WindowContainer.AnimationFlags.PARENTS;
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
 import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_NORMAL;
+import static com.android.server.wm.WindowTracingLogLevel.ALL;
 import static com.android.window.flags.Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING;
 import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE;
@@ -140,6 +142,7 @@ import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.util.proto.ProtoOutputStream;
 import android.view.Display;
 import android.view.DisplayCutout;
 import android.view.DisplayInfo;
@@ -173,6 +176,8 @@ import com.android.server.policy.WindowManagerPolicy;
 import com.android.server.wm.utils.WmDisplayCutout;
 import com.android.window.flags.Flags;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -188,6 +193,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BooleanSupplier;
+
+import perfetto.protos.Windowmanagerservice.DisplayContentProto;
+import perfetto.protos.Windowmanagerservice.DisplayFramesProto;
+import perfetto.protos.Windowmanagerservice.WindowContainerChildProto;
 
 /**
  * Tests for the {@link DisplayContent} class.
@@ -1215,6 +1224,46 @@ public class DisplayContentTests extends WindowTestsBase {
                 .setOnTop(false).setScreenOrientation(SCREEN_ORIENTATION_BEHIND).build();
         mDisplayContent.applyFixedRotationForNonTopVisibleActivityIfNeeded(behindTop);
         assertFalse(behindTop.hasFixedRotationTransform());
+    }
+
+    @Test
+    public void testUnspecifiedOrientationTranslucentTop() {
+        mDisplayContent.setIgnoreOrientationRequest(false);
+        final ActivityRecord bottom = new ActivityBuilder(mAtm).setVisible(false)
+                .setCreateTask(true)
+                .setScreenOrientation(getRotatedOrientation(mDisplayContent)).build();
+        final ActivityRecord translucentTop = new ActivityBuilder(mAtm).setVisible(false)
+                .setTask(bottom.getTask())
+                .setActivityTheme(android.R.style.Theme_Translucent)
+                .setScreenOrientation(SCREEN_ORIENTATION_UNSPECIFIED).build();
+        requestTransition(translucentTop, WindowManager.TRANSIT_OPEN);
+        doCallRealMethod().when(mRootWindowContainer).ensureActivitiesVisible(
+                any() /* starting */, anyBoolean() /* notifyClients */);
+        // Make 'translucentTop' and 'bottom' visible with updating orientation.
+        mRootWindowContainer.ensureVisibilityAndConfig(translucentTop, mDisplayContent,
+                false /* deferResume */);
+
+        assertEquals("The orientation source is the bottom because a translucent activity"
+                        + " with unspecified orientation won't affect parent orientation",
+                bottom, mDisplayContent.getLastOrientationSource());
+        assertTrue("The translucent activity doesn't provide orientation, so it uses the"
+                        + " orientation from the bottom which provides a rotated orientation",
+                translucentTop.hasFixedRotationTransform());
+        assertTrue("The non-top visible activity shares the same transform",
+                bottom.hasFixedRotationTransform(translucentTop));
+
+        // Verify that the 'bottom' orientation source should not apply its orientation to the
+        // launching activity, which has its own orientation (it may be put on top but not yet
+        // visible if the previous activity is pausing).
+        final ActivityRecord launchingTop = new ActivityBuilder(mAtm).setVisible(false)
+                .setCreateTask(true)
+                .setScreenOrientation(SCREEN_ORIENTATION_NOSENSOR).build();
+        launchingTop.mTransitionController.collect(launchingTop);
+        mDisplayContent.updateOrientation();
+
+        assertFalse(launchingTop.hasFixedRotationTransform());
+        assertEquals(launchingTop.getConfiguration().orientation,
+                mDisplayContent.getConfiguration().orientation);
     }
 
     @Test
@@ -3631,5 +3680,30 @@ public class DisplayContentTests extends WindowTestsBase {
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Test
+    public void testDumpDebug() throws InvalidProtocolBufferException {
+        final ProtoOutputStream proto = new ProtoOutputStream();
+
+        mDisplayContent.dumpDebug(proto, DISPLAY_CONTENT, ALL);
+        final DisplayFrames displayFrames = mDisplayContent.mDisplayFrames;
+
+        final DisplayContentProto displayContentProto =
+                WindowContainerChildProto.parseFrom(proto.getBytes()).getDisplayContent();
+        final DisplayFramesProto displayFramesProto = displayContentProto.getDisplayFrames();
+        assertEquals(mDisplayContent.getDisplayId(), displayContentProto.getId());
+        assertEquals(mDisplayContent.mBaseDisplayDensity, displayContentProto.getDpi());
+        assertEquals(displayFrames.mWidth, displayFramesProto.getWidth());
+        assertEquals(displayFrames.mHeight, displayFramesProto.getHeight());
+        assertEquals(displayFrames.mRotation, displayFramesProto.getRotation());
+        assertEquals(mDisplayContent.mMinSizeOfResizeableTaskDp,
+                displayContentProto.getMinSizeOfResizeableTaskDp());
+        assertEquals(mDisplayContent.isReady(), displayContentProto.getDisplayReady());
+        assertEquals(mDisplayContent.isSleeping(), displayContentProto.getIsSleeping());
+        assertEquals(0, displayContentProto.getSleepTokensCount());
+        assertEquals(mDisplayContent.getImePolicy(), displayContentProto.getImePolicy());
+        assertEquals(0, displayContentProto.getKeepClearAreasCount());
+        assertEquals(mDisplayContent.getEngagementMode(), displayContentProto.getEngagementMode());
     }
 }

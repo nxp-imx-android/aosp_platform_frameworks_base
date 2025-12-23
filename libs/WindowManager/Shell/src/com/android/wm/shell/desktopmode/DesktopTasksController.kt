@@ -2904,26 +2904,28 @@ class DesktopTasksController(
                 if (bounds != null) {
                     wct.setBounds(task.token, bounds)
 
-                    val prevCaptionInsets = task.freeformCaptionInsets
-                    if (prevCaptionInsets != 0) {
-                        val appBounds =
-                            Rect(bounds).apply {
-                                if (captionInsets != 0) {
-                                    this.top += captionInsets
-                                } else {
-                                    val captionInsetsDp =
-                                        displayController
-                                            .getDisplayLayout(task.getDisplayId())
-                                            ?.pxToDp(prevCaptionInsets)
-                                            ?.toInt() ?: 0
-                                    val newDisplayLayout =
-                                        displayController.getDisplayLayout(displayId)
-                                    val insets =
-                                        newDisplayLayout?.dpToPx(captionInsetsDp)?.toInt() ?: 0
-                                    this.top += insets
+                    if (!Flags.refactorCaptionSandboxingToCore()) {
+                        val prevCaptionInsets = task.freeformCaptionInsets
+                        if (prevCaptionInsets != 0) {
+                            val appBounds =
+                                Rect(bounds).apply {
+                                    if (captionInsets != 0) {
+                                        this.top += captionInsets
+                                    } else {
+                                        val captionInsetsDp =
+                                            displayController
+                                                .getDisplayLayout(task.getDisplayId())
+                                                ?.pxToDp(prevCaptionInsets)
+                                                ?.toInt() ?: 0
+                                        val newDisplayLayout =
+                                            displayController.getDisplayLayout(displayId)
+                                        val insets =
+                                            newDisplayLayout?.dpToPx(captionInsetsDp)?.toInt() ?: 0
+                                        this.top += insets
+                                    }
                                 }
-                            }
-                        wct.setAppBounds(task.token, appBounds)
+                            wct.setAppBounds(task.token, appBounds)
+                        }
                     }
                 } else {
                     applyFreeformDisplayChange(
@@ -4769,13 +4771,7 @@ class DesktopTasksController(
         )
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             if (!inDesktop && !isDesktopFirstLegacy(displayId)) return null
-            if (
-                isTransparentTask &&
-                    (DesktopExperienceFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue ||
-                        DesktopModeFlags
-                            .INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
-                            .isTrue)
-            ) {
+            if (isTransparentTask) {
                 // Only update task repository for transparent task.
                 val deskId = repository.getActiveDeskId(displayId)
                 deskId?.let { repository.setTopTransparentFullscreenTaskData(it, task) }
@@ -4802,12 +4798,7 @@ class DesktopTasksController(
             logD("handleIncompatibleTaskLaunch not in desktop, not a freeform task, nothing to do")
             return null
         }
-        if (
-            isTransparentTask &&
-                (DesktopExperienceFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue ||
-                    DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
-                        .isTrue)
-        ) {
+        if (isTransparentTask) {
             // Only update task repository for transparent task.
             val deskId = repository.getActiveDeskId(displayId)
             deskId?.let { repository.setTopTransparentFullscreenTaskData(it, task) }
@@ -5139,7 +5130,9 @@ class DesktopTasksController(
             wct.setWindowingMode(taskInfo.token, targetWindowingMode)
         }
         wct.setBounds(taskInfo.token, Rect())
-        wct.setAppBounds(taskInfo.token, null)
+        if (!Flags.refactorCaptionSandboxingToCore()) {
+            wct.setAppBounds(taskInfo.token, null)
+        }
 
         if (desktopConfig.useDesktopOverrideDensity) {
             wct.setDensityDpi(taskInfo.token, getDefaultDensityDpi())
@@ -5550,7 +5543,6 @@ class DesktopTasksController(
         launchingTaskId: Int?,
         userId: Int,
     ): Int? {
-        if (!DesktopExperienceFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue) return null
         val repository = userRepositories.getProfile(userId)
         val data = repository.getTopTransparentFullscreenTaskData(deskId) ?: return null
 
@@ -6466,7 +6458,7 @@ class DesktopTasksController(
                     // leash
                     val wct = WindowContainerTransaction()
                     wct.setBounds(taskInfo.token, destinationBounds)
-                    if (prevCaptionInsets != 0) {
+                    if (!Flags.refactorCaptionSandboxingToCore() && prevCaptionInsets != 0) {
                         val appBounds =
                             Rect(destinationBounds).apply { this.top += prevCaptionInsets }
                         wct.setAppBounds(taskInfo.token, appBounds)

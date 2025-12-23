@@ -649,7 +649,6 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK)
     fun startAndAnimateLaunchTransition_withClosingTopTransTask_callsModalsTransitionHandler() {
         val launchingTask = createTask(WINDOWING_MODE_FREEFORM)
         val closingTopTransparentTask = createTask(WINDOWING_MODE_FULLSCREEN)

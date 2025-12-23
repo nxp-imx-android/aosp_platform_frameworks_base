@@ -210,6 +210,16 @@ flag {
 }
 
 flag {
+    name: "enable_use_of_session_release_type_for_stop_button"
+    namespace: "media_better_together"
+    description: "Use LocalMediaManager#getSessionReleaseType exclusively for stop button logic."
+    bug: "448827170"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_waiting_state_for_system_session_creation_request"
     namespace: "media_solutions"
     description: "Introduces a waiting state for the session creation request and prevents it from early failing when the selectedRoute from the bluetooth stack doesn't match the pending request route id."

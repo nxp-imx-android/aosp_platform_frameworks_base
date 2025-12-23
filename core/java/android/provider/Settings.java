@@ -14067,7 +14067,7 @@ public final class Settings {
          * 1 = On, 0 = Off
          * @hide
          */
-        @FlaggedApi("com.android.systemui.split_show_passwords_to_touch_and_physical")
+        @FlaggedApi(com.android.text.flags.Flags.FLAG_SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)
         public static final String TEXT_SHOW_PASSWORD_TOUCH = "show_passwords_touch";
 
         /**
@@ -14075,7 +14075,7 @@ public final class Settings {
          * 1 = On, 0 = Off
          * @hide
          */
-        @FlaggedApi("com.android.systemui.split_show_passwords_to_touch_and_physical")
+        @FlaggedApi(com.android.text.flags.Flags.FLAG_SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)
         public static final String TEXT_SHOW_PASSWORD_PHYSICAL = "show_passwords_physical";
     }
 
@@ -20902,6 +20902,14 @@ public final class Settings {
              * Whether hard bedtime mode is active thus limiting user interactions.
              */
             public static final String BEDTIME_HARD_MODE = "bedtime_hard_mode";
+
+            /**
+             * Whether the Wear-specific charging experience is enabled, which applies a
+             * dedicated brightness curve and timeout.
+             * @hide
+             */
+            public static final String WEAR_CHARGING_EXPERIENCE_ENABLED =
+                    "wear_charging_experience_enabled";
 
             /**
              * Whether the current watchface is decomposable.

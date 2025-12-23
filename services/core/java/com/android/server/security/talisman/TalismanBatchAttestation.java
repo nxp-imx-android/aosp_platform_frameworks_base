@@ -19,14 +19,61 @@ package com.android.server.security.talisman;
 import java.security.cert.Certificate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /** Attestation for a batch of Talisman keys. */
-record TalismanBatchAttestation(
-        byte[] batchHash, byte[] signature, List<Certificate> certificates) {
+class TalismanBatchAttestation {
+    private final byte[] mBatchHash;
+    private final byte[] mSignature;
+    private final List<Certificate> mCertificates;
 
-    public TalismanBatchAttestation {
-        batchHash = Arrays.copyOf(batchHash, batchHash.length);
-        signature = Arrays.copyOf(signature, signature.length);
-        certificates = List.copyOf(certificates);
+    TalismanBatchAttestation(byte[] batchHash, byte[] signature, List<Certificate> certificates) {
+        mBatchHash = Arrays.copyOf(batchHash, batchHash.length);
+        mSignature = Arrays.copyOf(signature, signature.length);
+        mCertificates = List.copyOf(certificates);
+    }
+
+    byte[] getBatchHash() {
+        return mBatchHash;
+    }
+
+    byte[] getSignature() {
+        return mSignature;
+    }
+
+    List<Certificate> getCertificates() {
+        return mCertificates;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TalismanBatchAttestation)) return false;
+        TalismanBatchAttestation that = (TalismanBatchAttestation) o;
+        return Arrays.equals(mBatchHash, that.mBatchHash)
+                && Arrays.equals(mSignature, that.mSignature)
+                && Objects.equals(mCertificates, that.mCertificates);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(mCertificates);
+        result = 31 * result + Arrays.hashCode(mBatchHash);
+        result = 31 * result + Arrays.hashCode(mSignature);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "TalismanBatchAttestation["
+                + "batchHash="
+                + Arrays.toString(mBatchHash)
+                + ", "
+                + "signature="
+                + Arrays.toString(mSignature)
+                + ", "
+                + "certificates="
+                + mCertificates
+                + "]";
     }
 }

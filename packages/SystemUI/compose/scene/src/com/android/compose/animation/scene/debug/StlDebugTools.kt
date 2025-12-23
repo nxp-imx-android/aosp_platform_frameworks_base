@@ -43,13 +43,17 @@ import androidx.compose.ui.util.fastForEachReversed
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.Element
 import com.android.compose.animation.scene.ElementKey
+import com.android.compose.animation.scene.Key
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SceneTransitionLayoutImpl
 import com.android.compose.animation.scene.SceneTransitionLayoutState
+import com.android.compose.animation.scene.TransitionKey
+import com.android.compose.animation.scene.ValueKey
 import com.android.compose.animation.scene.content.Content
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.animation.scene.debug.StlDebugConfig.elementFilterList
+import com.android.compose.animation.scene.debug.StlDebugConfig.excludeStlsList
 import com.android.compose.animation.scene.getAllNestedTransitionStates
 import java.util.Locale
 import kotlin.collections.mutableMapOf
@@ -118,7 +122,7 @@ internal fun Modifier.debugElement(key: ElementKey, content: Content): Modifier 
     }
 }
 
-internal fun Modifier.debugScene(key: SceneKey): Modifier {
+internal fun Modifier.debugContent(key: ContentKey): Modifier {
     return composed {
         val textMeasurer = rememberTextMeasurer()
 
@@ -128,7 +132,7 @@ internal fun Modifier.debugScene(key: SceneKey): Modifier {
             val strokeWidth = 2.dp.toPx()
 
             onDrawWithContent {
-                if (StlDebugConfig.showSceneBorders()) {
+                if (StlDebugConfig.showContentBorders()) {
                     // 1. Draw Border FIRST (so it ends up behind the content)
                     drawDebugBorder(
                         color = color,
@@ -141,13 +145,13 @@ internal fun Modifier.debugScene(key: SceneKey): Modifier {
                 // 2. Draw Content
                 drawContent()
 
-                if (StlDebugConfig.showSceneLabels()) {
+                if (StlDebugConfig.showContentLabels()) {
                     // 3. Draw Label (Always on top)
                     drawDebugLabel(
                         textMeasurer = textMeasurer,
-                        text = listOf("Scene: ${key.debugName.truncateText()}"),
+                        text = listOf(key.toShortDebugString()),
                         color = color,
-                        position = StlDebugConfig.sceneLabelPosition,
+                        position = StlDebugConfig.contentLabelPosition,
                         textSize = 12.sp,
                     )
                 }
@@ -173,7 +177,7 @@ internal fun Modifier.debugStl(
             val inset = nestingLevel * (textSize.toPx() + labelPadding) * 2
 
             onDrawWithContent {
-                if (StlDebugConfig.showStlBorders()) {
+                if (StlDebugConfig.showStlBorders() && !excludeStlFromDebugging(debugName)) {
                     // 1. Draw Border
                     drawDebugBorder(
                         color = color,
@@ -199,7 +203,7 @@ internal fun Modifier.debugStl(
                         }
                     }
 
-                if (StlDebugConfig.showStlLabels()) {
+                if (StlDebugConfig.showStlLabels() && !excludeStlFromDebugging(debugName)) {
                     // 3. Draw Label
                     drawDebugLabel(
                         textMeasurer = textMeasurer,
@@ -527,18 +531,13 @@ internal fun performLog(elementKey: ElementKey, contentKey: ContentKey? = null, 
 }
 
 private fun getContextString(contentKey: ContentKey?, elementKey: ElementKey): String {
-    val contentStr =
-        when (contentKey) {
-            null -> ""
-            is SceneKey -> "[S:${contentKey.debugName.truncateText()}]"
-            is OverlayKey -> "[O:${contentKey.debugName.truncateText()}]"
-        }
-    return "[E:${elementKey.debugName.truncateText()}]$contentStr "
+    val contentStr = contentKey?.toShortDebugString() ?: ""
+    return "[${elementKey.toShortDebugString()}]$contentStr "
 }
 
 /**
  * Shortens the text to the [maxLength] if it exceeds it. The text is represented as: "<first m/2
- * chars><number of skipped chars><last m/2 chars>"
+ * chars>..<last m/2 chars>"
  */
 private fun String.truncateText(maxLength: Int = 18): String {
     if (this.length <= maxLength) return this
@@ -546,6 +545,16 @@ private fun String.truncateText(maxLength: Int = 18): String {
     val first = this.take(split)
     val last = this.takeLast(split)
     return "$first..$last"
+}
+
+private fun Key.toShortDebugString(): String {
+    return when (this) {
+        is SceneKey -> "S:${debugName.truncateText()}"
+        is OverlayKey -> "O:${debugName.truncateText()}"
+        is ElementKey -> "E:${debugName.truncateText()}"
+        is TransitionKey -> "T:${debugName.truncateText()}"
+        is ValueKey -> "V:${debugName.truncateText()}"
+    }
 }
 
 /**
@@ -565,6 +574,11 @@ internal fun filterOutElementExclusive(key: ElementKey): Boolean {
 internal fun filterOutElement(key: ElementKey): Boolean {
     if (elementFilterList.isEmpty()) return false
     return filterOutElementExclusive(key)
+}
+
+/** Returns true if the STL with [debugName] should be excluded from debugging. */
+internal fun excludeStlFromDebugging(debugName: String): Boolean {
+    return excludeStlsList.any { debugName.equals(it, ignoreCase = true) }
 }
 
 internal const val TAG = "StlDebug"

@@ -981,18 +981,12 @@ class DesktopRepository(
             val hasVisibleTasks = desk.visibleTasks.isNotEmpty()
             val hasTopTransparentFullscreenTask =
                 getTopTransparentFullscreenTaskData(desk.deskId) != null
-            if (
-                DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC.isTrue
-            ) {
-                logD(
-                    "isAnyDeskActive: hasVisibleTasks=%s hasTopTransparentFullscreenTask=%s",
-                    hasVisibleTasks,
-                    hasTopTransparentFullscreenTask,
-                )
-                return hasVisibleTasks || hasTopTransparentFullscreenTask
-            }
-            logD("isAnyDeskActive: hasVisibleTasks=%s", hasVisibleTasks)
-            return hasVisibleTasks
+            logD(
+                "isAnyDeskActive: hasVisibleTasks=%s hasTopTransparentFullscreenTask=%s",
+                hasVisibleTasks,
+                hasTopTransparentFullscreenTask,
+            )
+            return hasVisibleTasks || hasTopTransparentFullscreenTask
         }
         return desktopData.getActiveDesk(displayId) != null
     }

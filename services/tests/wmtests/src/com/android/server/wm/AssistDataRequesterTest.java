@@ -109,6 +109,7 @@ public class AssistDataRequesterTest {
     private AppOpsManager mAppOpsManager;
     private StaticMockitoSession mMockitoSession;
     private ActivityTaskManagerInternal mAtmInternal;
+    private WindowManagerInternal mWmInternal;
 
     /**
      * The requests to fetch assist data are done incrementally from the text thread, and we
@@ -151,6 +152,14 @@ public class AssistDataRequesterTest {
             return true;
         }).when(mAtm).requestAssistContextExtras(anyInt(), any(), any(), any(), anyBoolean(),
                 anyBoolean());
+        final MockSettings spyStubOnly = withSettings().stubOnly().defaultAnswer(
+                CALLS_REAL_METHODS);
+        mMockitoSession = mockitoSession().mockStatic(LocalServices.class, spyStubOnly).strictness(
+                Strictness.LENIENT).startMocking();
+        mAtmInternal = mock(ActivityTaskManagerInternal.class);
+        doReturn(mAtmInternal)
+                .when(() -> LocalServices.getService(eq(ActivityTaskManagerInternal.class)));
+        mWmInternal = mock(WindowManagerInternal.class);
         doAnswer(invocation -> {
             mHandler.post(() -> {
                 try {
@@ -161,17 +170,8 @@ public class AssistDataRequesterTest {
                 }
             });
             return true;
-        }).when(mWm).requestAssistScreenshot(any());
-
-        final MockSettings spyStubOnly = withSettings().stubOnly().defaultAnswer(
-                CALLS_REAL_METHODS);
-        mMockitoSession = mockitoSession().mockStatic(LocalServices.class, spyStubOnly).strictness(
-                Strictness.LENIENT).startMocking();
-        mAtmInternal = mock(ActivityTaskManagerInternal.class);
-        doReturn(mAtmInternal)
-                .when(() -> LocalServices.getService(eq(ActivityTaskManagerInternal.class)));
-        final WindowManagerInternal wmInternal = mock(WindowManagerInternal.class);
-        doReturn(wmInternal).when(() -> LocalServices.getService(eq(WindowManagerInternal.class)));
+        }).when(mWmInternal).requestAssistScreenshot(any(), any());
+        doReturn(mWmInternal).when(() -> LocalServices.getService(eq(WindowManagerInternal.class)));
         doAnswer(
                         invocation -> {
                             mHandler.post(
@@ -186,7 +186,7 @@ public class AssistDataRequesterTest {
                                     });
                             return true;
                         })
-                .when(wmInternal)
+                .when(mWmInternal)
                 .requestAssistScreenshot(any(), any());
     }
 
@@ -200,7 +200,7 @@ public class AssistDataRequesterTest {
             boolean assistStructureAllowed,
             boolean assistScreenshotAllowed)
             throws Exception {
-        doReturn(currentActivityAssistAllowed).when(mAtm).isAssistDataAllowed();
+        doReturn(currentActivityAssistAllowed).when(mAtmInternal).isAssistDataAllowed();
         doReturn(currentActivityAssistAllowed)
                 .when(mAtmInternal)
                 .isAssistDataForActivitiesAllowed(any());

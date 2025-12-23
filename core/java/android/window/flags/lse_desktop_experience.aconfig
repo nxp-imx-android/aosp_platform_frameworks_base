@@ -171,17 +171,6 @@ flag {
 }
 
 flag {
-    name: "enable_backup_and_restore_display_window_settings"
-    namespace: "lse_desktop_experience"
-    description: "Enables backup and restore for display window settings."
-    bug: "346499008"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_bounds_restoring_on_drag_exit"
     namespace: "lse_desktop_experience"
     description: "Enables restoring to previous bounds when exiting via dragging for \n"
@@ -763,6 +752,13 @@ flag {
 }
 
 flag {
+    name: "enable_fluid_resizing_for_listed_apps"
+    namespace: "lse_desktop_experience"
+    description: "Enable fluid resizing for apps controlled by app compatibility framework."
+    bug: "460405642"
+}
+
+flag {
     name: "enable_focus_transition_observer_cleanup"
     namespace: "lse_desktop_experience"
     description: "Enable migration from TaskInfo#isFocused to FocusTransitionObserver on per display focus use case"
@@ -1234,17 +1230,6 @@ flag {
 }
 
 flag {
-    name: "force_close_top_transparent_fullscreen_task"
-    namespace: "lse_desktop_experience"
-    description: "If a top transparent fullscreen task is on top of desktop mode, force it to /n"
-                 "close if another task is opened or brought to front."
-    bug: "395041610"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "form_factor_based_desktop_first_switch"
     namespace: "lse_desktop_experience"
     description: "Enables the desktop-first mode switching logic based on its form factor."
@@ -1288,17 +1273,6 @@ flag {
     description: "Fixes issue with retrieving the home package during the windowing exemptions \n"
                  "check."
     bug: "447111827"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "include_top_transparent_fullscreen_task_in_desktop_heuristic"
-    namespace: "lse_desktop_experience"
-    description: "Whether to include any top transparent fullscreen task launched in desktop /n"
-                 "mode in the heuristic for if desktop windowing is showing or not."
-    bug: "379543275"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

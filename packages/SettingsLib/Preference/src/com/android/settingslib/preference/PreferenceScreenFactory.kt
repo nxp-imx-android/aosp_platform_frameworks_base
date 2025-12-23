@@ -23,7 +23,7 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import androidx.preference.PreferenceScreen
-import com.android.settingslib.catalyst.flags.Flags as CatalystFlags
+import com.android.settingslib.metadata.CatalystFlagProviderFactory
 import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_ARGS
 import com.android.settingslib.metadata.ValidatedKeyParameters
 import com.android.settingslib.metadata.PreferenceScreenRegistry
@@ -130,7 +130,7 @@ class PreferenceScreenFactory {
             val context = preference.context
             val args = preference.peekExtras()?.getBundle(EXTRA_BINDING_SCREEN_ARGS)
 
-            val preferenceScreenMetadata = if (CatalystFlags.catalystUseKeyParameters()) {
+            val preferenceScreenMetadata = if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
                 val parametersSchema = PreferenceScreenRegistry.getScreenParametersSchema(preference.key)
                 val keyParameters = args?.let { parametersSchema?.prepare(it) }
 
