@@ -30,6 +30,7 @@ class SystemUIIssueRegistry : IssueRegistry() {
         get() =
             listOf(
                 BindServiceOnMainThreadDetector.ISSUE,
+                // TODO(b/469073407): Add BinderCallOnMainThreadDetector.ISSUE here when ready.
                 BroadcastSentViaContextDetector.ISSUE,
                 CleanArchitectureDependencyViolationDetector.ISSUE,
                 CollectAsStateDetector.ISSUE,

@@ -1,0 +1,751 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.internal.systemui.lint
+
+import org.junit.Test
+
+class BinderCallOnMainThreadDetectorTest : SystemUILintDetectorTest() {
+    override fun getDetector() = BinderCallOnMainThreadDetector()
+
+    override fun getIssues() = listOf(BinderCallOnMainThreadDetector.ISSUE)
+
+    @Test
+    fun noBinderCalls_clean() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    class TestClass {
+                        val helper = HelperClass()
+                        fun doSomething() {
+                            val three = 1 + 2
+                            val multiplied = helper.multiply(three)
+                        }
+                    }
+
+                    class HelperClass {
+                        fun multiply(input: Int): Int {
+                            return input * 2
+                        }
+                    }
+
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expectClean()
+    }
+
+    @Test
+    fun binderCall_noWithContext_staticMethod_error() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                        package test.pkg
+
+                        import android.app.PendingIntent
+
+                        fun doSomething() {
+                            val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                        }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expect(
+                """
+src/test/pkg/test.kt:6: Warning: Binder call on main thread [BinderCallOnMainThread]
+    val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                                      ~~~~~~~~~~~~
+0 errors, 1 warnings
+                """
+            )
+    }
+
+    @Test
+    fun binderCall_noWithContext_nonStaticMethod_error() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+                    import android.media.projection.MediaProjectionManager
+
+                    class TestRepository(private val mediaProjectionManager: MediaProjectionManager) {
+                       fun onStopped() {
+                            mediaProjectionManager.stopActiveProjection(0)
+                        }
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expect(
+                """
+src/test/pkg/TestRepository.kt:8: Warning: Binder call on main thread [BinderCallOnMainThread]
+        mediaProjectionManager.stopActiveProjection(0)
+                               ~~~~~~~~~~~~~~~~~~~~
+0 errors, 1 warnings
+                """
+            )
+    }
+
+    @Test
+    fun binderCall_withMainContext_error() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+
+                    import kotlin.coroutines.CoroutineContext
+                    import kotlinx.coroutines.withContext
+                    import com.android.systemui.dagger.qualifiers.Main
+
+                    class TestClass(@Main private val mainCoroutineContext: CoroutineContext) {
+                        suspend fun doSomething() {
+                            withContext(mainCoroutineContext) {
+                                    val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                             }
+                        }
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expect(
+                """
+src/test/pkg/TestClass.kt:12: Warning: Binder call on main thread [BinderCallOnMainThread]
+                val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                                                  ~~~~~~~~~~~~
+0 errors, 1 warnings
+                """
+            )
+    }
+
+    @Test
+    fun binderCall_withBackgroundContext_clean() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+
+                    import kotlin.coroutines.CoroutineContext
+                    import kotlinx.coroutines.withContext
+                    import com.android.systemui.dagger.qualifiers.Background
+
+                    class TestClass(@Background private val backgroundContext: CoroutineContext) {
+                        suspend fun doSomething() {
+                            withContext(backgroundContext) {
+                                val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                            }
+                        }
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expectClean()
+    }
+
+    @Test
+    fun binderCall_withBackgroundContext_nested_clean() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+
+                    import kotlin.coroutines.CoroutineContext
+                    import kotlinx.coroutines.withContext
+                    import com.android.systemui.dagger.qualifiers.Background
+
+                    class TestClass(@Background private val backgroundContext: CoroutineContext) {
+                        private val doTheThing = true
+                        suspend fun doSomething() {
+                            withContext(backgroundContext) {
+                                if (doTheThing) {
+                                    val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                                }
+                            }
+                        }
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expectClean()
+    }
+
+    @Test
+    fun binderCall_inMethodAnnotatedWithWorkerThread_clean() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                        package test.pkg
+
+                        import android.app.PendingIntent
+                        import androidx.annotation.WorkerThread
+
+                        @WorkerThread
+                        fun doSomething() {
+                            val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                        }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expectClean()
+    }
+
+    @Test
+    fun binderCall_inClassAnnotatedWithWorkerThread_clean() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+                    import android.media.projection.MediaProjectionManager
+                    import androidx.annotation.WorkerThread
+
+                    @WorkerThread
+                    class TestRepository(private val mediaProjectionManager: MediaProjectionManager) {
+                       fun onStopped() {
+                            mediaProjectionManager.stopActiveProjection(0)
+                        }
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expectClean()
+    }
+
+    @Test
+    fun binderCall_withMainDispatcher_error() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+
+                    import kotlin.coroutines.CoroutineDispatcher
+                    import kotlinx.coroutines.withContext
+                    import com.android.systemui.dagger.qualifiers.Main
+
+                    class TestClass(@Main private val mainDispatcher: CoroutineDispatcher) {
+                        suspend fun doSomething() {
+                            withContext(mainDispatcher) {
+                                val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                            }
+                        }
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expect(
+                """
+src/test/pkg/TestClass.kt:12: Warning: Binder call on main thread [BinderCallOnMainThread]
+            val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                                              ~~~~~~~~~~~~
+0 errors, 1 warnings
+                """
+            )
+    }
+
+    @Test
+    fun binderCall_withBackgroundDispatcher_shortenedToBg_clean() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+
+                    import kotlin.coroutines.CoroutineDispatcher
+                    import kotlinx.coroutines.withContext
+                    import com.android.systemui.dagger.qualifiers.Background
+
+                    class TestClass(
+                        @Background private val bgDispatcher: CoroutineDispatcher,
+                    ) {
+                        suspend fun doSomething() {
+                            withContext(bgDispatcher) {
+                                val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                            }
+                        }
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expectClean()
+    }
+
+    @Test
+    fun binderCall_withCustomBackgroundDispatcher_clean() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+
+                    import kotlin.coroutines.CoroutineDispatcher
+                    import kotlinx.coroutines.withContext
+                    import com.android.systemui.dagger.qualifiers.Background
+
+                    class TestClass(@Background private val myCustomBackgroundDispatcher: CoroutineDispatcher) {
+                        suspend fun doSomething() {
+                            withContext(myCustomBackgroundDispatcher) {
+                                val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                            }
+                        }
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expectClean()
+    }
+
+    @Test
+    fun binderCall_withContext_butNotBackground_error() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+
+                    import kotlin.coroutines.CoroutineDispatcher
+                    import kotlinx.coroutines.withContext
+                    import com.android.systemui.dagger.qualifiers.Background
+
+                    // "hobgoblin" has "bg" in its string but ot isn't a background dispatcher, so
+                    // there should be an error
+                    class TestClass(private val hobgoblinDispatcher: CoroutineDispatcher) {
+                        suspend fun doSomething() {
+                            withContext(hobgoblinDispatcher) {
+                                val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                            }
+                        }
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expect(
+                """
+src/test/pkg/TestClass.kt:14: Warning: Binder call on main thread [BinderCallOnMainThread]
+            val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                                              ~~~~~~~~~~~~
+0 errors, 1 warnings
+            """
+            )
+    }
+
+    @Test
+    fun binderCall_launchedOnApplicationScope_error() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+
+                    import kotlin.coroutines.CoroutineScope
+                    import kotlinx.coroutines.withContext
+                    import com.android.systemui.dagger.qualifiers.Application
+
+                    class TestClass(@Application private val applicationScope: CoroutineScope) {
+                        fun doSomething() {
+                            applicationScope.launch {
+                                val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                            }
+                        }
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expect(
+                """
+src/test/pkg/TestClass.kt:12: Warning: Binder call on main thread [BinderCallOnMainThread]
+            val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                                              ~~~~~~~~~~~~
+0 errors, 1 warnings
+                """
+            )
+    }
+
+    @Test
+    fun binderCall_launchedOnBackgroundScope_clean() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+
+                    import kotlin.coroutines.CoroutineScope
+                    import kotlinx.coroutines.withContext
+                    import com.android.systemui.dagger.qualifiers.Application
+
+                    class TestClass(@Background private val backgroundScope: CoroutineScope) {
+                        fun doSomething() {
+                            backgroundScope.launch {
+                                val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                            }
+                        }
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expectClean()
+    }
+
+    @Test
+    fun binderCall_launchTracedOnBackgroundScope_clean() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+                    import com.android.app.tracing.coroutines.launchTraced
+                    import kotlin.coroutines.CoroutineScope
+                    import kotlinx.coroutines.withContext
+                    import com.android.systemui.dagger.qualifiers.Application
+
+                    class TestClass(@Background private val backgroundScope: CoroutineScope) {
+                        fun doSomething() {
+                            backgroundScope.launchTraced {
+                                val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                            }
+                        }
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expectClean()
+    }
+
+    @Test
+    fun binderCall_launchTracedAliasedOnBackgroundScope_clean() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+                    import com.android.app.tracing.coroutines.launchTraced as launch
+                    import kotlin.coroutines.CoroutineScope
+                    import kotlinx.coroutines.withContext
+                    import com.android.systemui.dagger.qualifiers.Application
+
+                    class TestClass(@Background private val backgroundScope: CoroutineScope) {
+                        fun doSomething() {
+                            backgroundScope.launch {
+                                val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                            }
+                        }
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expectClean()
+    }
+
+    @Test
+    fun binderCall_launchedOnCustomBackgroundScope_clean() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+
+                    import kotlin.coroutines.CoroutineScope
+                    import kotlinx.coroutines.withContext
+                    import com.android.systemui.dagger.qualifiers.Application
+
+                    class TestClass(
+                        @Background private val myCustomBackgroundScope: CoroutineScope,
+                    ) {
+                        fun doSomething() {
+                            myCustomBackgroundScope.launch {
+                                val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                            }
+                        }
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expectClean()
+    }
+
+    @Test
+    fun binderCall_launchedOnApplicationScopeWithBackgroundDispatcher_clean() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+
+                    import kotlin.coroutines.CoroutineDispatcher
+                    import kotlin.coroutines.CoroutineScope
+                    import kotlinx.coroutines.withContext
+                    import com.android.systemui.dagger.qualifiers.Application
+
+                    class TestClass(
+                        @Application private val applicationScope: CoroutineScope,
+                        @Background private val backgroundDispatcher: CoroutineDispatcher,
+                    ) {
+                        fun doSomething() {
+                            applicationScope.launch(backgroundDispatcher) {
+                                val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                            }
+                        }
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expectClean()
+    }
+
+    @Test
+    fun binderCall_stateFlowOnApplicationScope_error() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+                    import com.android.systemui.dagger.qualifiers.Main
+                    import kotlinx.coroutines.flow.flowOf
+                    import kotlinx.coroutines.flow.stateIn
+                    import kotlinx.coroutines.flow.map
+                    import kotlinx.coroutines.flow.SharingStarted
+                    import kotlinx.coroutines.CoroutineScope
+                    import kotlinx.coroutines.withContext
+
+                    class TestClass(@Application private val applicationScope: CoroutineScope) {
+                        suspend fun doSomething() {
+                            val stateFlow =
+                                flowOf(1, 2, 3)
+                                .map {
+                                      PendingIntent.getBroadcast(context, it, intent, 0)
+                                 }
+                                .stateIn(applicationScope, SharingStarted.Eagerly, 0)
+                        }
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expect(
+                """
+src/test/pkg/TestClass.kt:17: Warning: Binder call on main thread [BinderCallOnMainThread]
+                  PendingIntent.getBroadcast(context, it, intent, 0)
+                                ~~~~~~~~~~~~
+0 errors, 1 warnings
+                """
+            )
+    }
+
+    @Test
+    fun binderCall_stateFlowOnBackgroundScope_clean() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+                    import com.android.systemui.dagger.qualifiers.Main
+                    import kotlinx.coroutines.flow.flowOf
+                    import kotlinx.coroutines.flow.stateIn
+                    import kotlinx.coroutines.flow.map
+                    import kotlinx.coroutines.flow.SharingStarted
+                    import kotlinx.coroutines.CoroutineScope
+                    import kotlinx.coroutines.withContext
+
+                    class TestClass(@Background private val backgroundScope: CoroutineScope) {
+                        suspend fun doSomething() {
+                            val stateFlow =
+                                flowOf(1, 2, 3)
+                                .map {
+                                      PendingIntent.getBroadcast(context, it, intent, 0)
+                                 }
+                                .stateIn(backgroundScope, SharingStarted.Eagerly, 0)
+                        }
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expectClean()
+    }
+
+    @Test
+    fun queryIntentComponents_error() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                        package test.pkg
+
+                        import android.app.PendingIntent
+
+                        fun doSomething(intent: PendingIntent) {
+                            val components = intent.queryIntentComponents(0)
+                        }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expect(
+                """
+src/test/pkg/test.kt:6: Warning: Binder call on main thread [BinderCallOnMainThread]
+    val components = intent.queryIntentComponents(0)
+                            ~~~~~~~~~~~~~~~~~~~~~
+0 errors, 1 warnings
+                """
+            )
+    }
+
+    companion object {
+        private val launchTracedStub =
+            kotlin(
+                """
+                    package com.android.app.tracing.coroutines
+
+                    import kotlinx.coroutines.CoroutineScope
+
+                    fun CoroutineScope.launchTraced(block: suspend CoroutineScope.() -> Unit) {}
+                """
+                    .trimIndent()
+            )
+
+        private val stubs =
+            arrayOf(
+                *androidStubs,
+                launchTracedStub,
+                MainThreadCoroutineScopeDetectorTest.applicationQualifierStub,
+                MainThreadCoroutineScopeDetectorTest.mainQualifierStub,
+                MainThreadCoroutineScopeDetectorTest.backgroundQualifierStub,
+            )
+    }
+}
