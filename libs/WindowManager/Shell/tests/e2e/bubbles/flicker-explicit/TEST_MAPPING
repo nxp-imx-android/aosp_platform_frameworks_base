@@ -81,7 +81,11 @@
       "keywords": ["device"]
     },
     {
-      "name": "WMShellExplicitFlickerTestsBubbles-ExpandBubbleViaBubbleStackTest",
+      "name": "WMShellExplicitFlickerTestsBubbles-ExpandBubbleViaRelaunchFromSplitTest",
+      "keywords": ["device"]
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-RelaunchBubbleIntoSplitScreenTest",
       "keywords": ["device"]
     },
     {
@@ -132,10 +136,6 @@
     },
     {
       "name": "WMShellExplicitFlickerTestsBubbles-RelaunchSplitScreenToBubbleTrampolineTest",
-      "keywords": ["device"]
-    },
-    {
-      "name": "WMShellExplicitFlickerTestsBubbles-RelaunchBubbleIntoSplitScreenTest",
       "keywords": ["device"]
     },
     {
