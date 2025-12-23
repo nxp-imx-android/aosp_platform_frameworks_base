@@ -44,6 +44,7 @@ import android.provider.DocumentsContract;
 import android.provider.DocumentsContract.Document;
 import android.provider.DocumentsContract.Path;
 import android.provider.DocumentsContract.Root;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.system.ErrnoException;
 import android.system.Os;
@@ -138,6 +139,7 @@ public class ExternalStorageProvider extends FileSystemProvider {
         public File path;
         // TODO (b/157033915): Make getFreeBytes() faster
         public boolean reportAvailableBytes = false;
+        public String volumeName;
     }
 
     private static final String ROOT_ID_PRIMARY_EMULATED =
@@ -213,11 +215,13 @@ public class ExternalStorageProvider extends FileSystemProvider {
             final String rootId;
             final String title;
             final UUID storageUuid;
+            final String volumeName;
             if (volume.getType() == VolumeInfo.TYPE_EMULATED) {
                 // We currently only support a single emulated volume per user mounted at
                 // a time, and it's always considered the primary
                 if (DEBUG) Log.d(TAG, "Found primary volume: " + volume);
                 rootId = ROOT_ID_PRIMARY_EMULATED;
+                volumeName = MediaStore.VOLUME_EXTERNAL_PRIMARY;
 
                 if (volume.isPrimaryEmulatedForUser(userId)) {
                     // This is basically the user's primary device storage.
@@ -243,6 +247,7 @@ public class ExternalStorageProvider extends FileSystemProvider {
             } else if (volume.getType() == VolumeInfo.TYPE_PUBLIC
                     || volume.getType() == VolumeInfo.TYPE_STUB) {
                 rootId = volume.getFsUuid();
+                volumeName = volume.getFsUuid();
                 title = mStorageManager.getBestVolumeDescription(volume);
                 storageUuid = null;
             } else {
@@ -264,6 +269,7 @@ public class ExternalStorageProvider extends FileSystemProvider {
 
             root.rootId = rootId;
             root.volumeId = volume.id;
+            root.volumeName = volumeName;
             root.storageUuid = storageUuid;
             root.flags = Root.FLAG_LOCAL_ONLY
                     | Root.FLAG_SUPPORTS_SEARCH
@@ -736,12 +742,12 @@ public class ExternalStorageProvider extends FileSystemProvider {
         }
 
         RootInfo rootInfo = mRoots.get(rootId);
-        if (rootInfo == null || rootInfo.visiblePath == null) {
+        if (rootInfo == null || rootInfo.visiblePath == null || rootInfo.volumeName == null) {
             return null;
         }
 
         File trashDir = new File(rootInfo.visiblePath, DIRECTORY_TRASH_STORAGE);
-        return queryTrashDocuments(trashDir, projection);
+        return queryTrashDocuments(trashDir, rootInfo.volumeName, projection);
     }
 
     @Override
