@@ -531,3 +531,10 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "improve_fluid_resizing_performance"
+    namespace: "windowing_frontend"
+    description: "Improve the performance during fluid resizing."
+    bug: "429960813"
+}
