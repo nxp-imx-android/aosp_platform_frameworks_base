@@ -60,6 +60,7 @@ import com.android.wm.shell.desktopmode.compatui.SystemModalsTransitionHandler
 import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.desktopmode.multidesks.DeskSwitchTransitionHandler
+import com.android.wm.shell.desktopmode.multidesks.DesksController
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
 import com.android.wm.shell.freeform.FreeformTaskTransitionHandler
@@ -135,6 +136,7 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
                 context = context,
                 desktopUserRepositories = userRepositories,
                 desksOrganizer = mock(),
+                desksController = mock(),
                 desktopWallpaperActivityTokenProvider = mock(),
                 displayController = mock(),
                 clientFullscreenRequestController = Optional.empty(),
@@ -921,6 +923,7 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
         context: Context,
         desktopUserRepositories: DesktopUserRepositories,
         desksOrganizer: DesksOrganizer,
+        desksController: DesksController,
         desktopWallpaperActivityTokenProvider: DesktopWallpaperActivityTokenProvider,
         displayController: DisplayController,
         clientFullscreenRequestController: Optional<ClientFullscreenRequestController>,
@@ -930,6 +933,7 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
             context,
             desktopUserRepositories,
             desksOrganizer,
+            desksController,
             desktopWallpaperActivityTokenProvider,
             displayController,
             clientFullscreenRequestController,

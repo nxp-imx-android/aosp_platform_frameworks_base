@@ -148,6 +148,7 @@ import com.android.wm.shell.desktopmode.desktopfirst.isDisplayDesktopFirst
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.desktopmode.multidesks.DeskSwitchTransitionHandler
 import com.android.wm.shell.desktopmode.multidesks.DeskTransition
+import com.android.wm.shell.desktopmode.multidesks.DesksController
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
 import com.android.wm.shell.desktopmode.multidesks.OnDeskRemovedListener
@@ -786,17 +787,11 @@ class DesktopTasksController(
             userId,
             enforceDeskLimit,
         )
-        if (!desktopState.isDesktopModeSupportedOnDisplay(displayId)) {
-            // Display does not support desktops, no-op.
-            logW("createDesk displayId $displayId does not support desktops, ignoring request")
+        if (!desksController.canCreateDeskInDisplay(displayId, userId)) {
+            logW("createDesk new desk cannot be created, ignoring request")
             return
         }
         val repository = userRepositories.getProfile(userId)
-        if (enforceDeskLimit && !canCreateDesks(userId)) {
-            // At the limit, no-op.
-            logW("createDesk already at desk-limit, ignoring request")
-            return
-        }
         createDeskRoot(displayId, userId) { deskId ->
             if (deskId == null) {
                 logW("Failed to add desk in displayId=%d for userId=%d", displayId, userId)
@@ -831,10 +826,16 @@ class DesktopTasksController(
         return deskId
     }
 
-    private suspend fun createDeskSuspending(
+    /**
+     * Creates a new desk in the given display for the given user.
+     *
+     * Note that the caller is expected to have verified desk creation is allowed before calling
+     * this function using [DesksController.canCreateDeskInDisplay].
+     */
+    suspend fun createDeskSuspending(
         displayId: Int,
         userId: Int,
-        enforceDeskLimit: Boolean,
+        enforceDeskLimit: Boolean = true,
     ): Int = suspendCoroutine { cont ->
         createDesk(displayId = displayId, userId = userId, enforceDeskLimit = enforceDeskLimit) {
             deskId ->
@@ -899,6 +900,7 @@ class DesktopTasksController(
     /**
      * Returns a WindowContainerTransaction containing all the changes when a display is
      * disconnected.
+     *
      * TODO: b/469817261 - Refactor all disconnect/reconnect logic into a separate controller.
      */
     fun onDisplayDisconnect(
