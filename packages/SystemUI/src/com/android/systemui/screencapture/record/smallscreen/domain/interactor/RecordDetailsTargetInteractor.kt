@@ -24,7 +24,7 @@ import com.android.systemui.screencapture.common.domain.interactor.ScreenCapture
 import com.android.systemui.screencapture.common.domain.interactor.ScreenCaptureMarkupInteractor
 import com.android.systemui.screencapture.common.domain.interactor.ScreenCaptureRecentTaskInteractor
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
-import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenRecordCameraInteractor
+import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenRecordCameraSurfaceInteractor
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordParametersInteractor
 import com.android.systemui.screencapture.record.smallscreen.shared.model.RecordDetailsTargetModel
 import com.android.systemui.screencapture.record.smallscreen.shared.model.SmallScreenRecordTargetsModel
@@ -52,7 +52,7 @@ constructor(
     recentTaskInteractor: ScreenCaptureRecentTaskInteractor,
     private val screenCaptureLabelInteractor: ScreenCaptureLabelInteractor,
     private val parametersInteractor: ScreenCaptureRecordParametersInteractor,
-    private val cameraInteracor: ScreenRecordCameraInteractor,
+    private val cameraInteracor: ScreenRecordCameraSurfaceInteractor,
     private val markupInteractor: ScreenCaptureMarkupInteractor,
 ) {
 

@@ -17,7 +17,6 @@
 package com.android.systemui.screencapture.record.camera.ui.viewmodel
 
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.screencapture.domain.interactor.screenCaptureOverlayStateInteractor
 import com.android.systemui.screencapture.record.camera.domain.interactor.screenRecordCameraInteractor
 import com.android.systemui.screencapture.record.camera.domain.interactor.screenRecordCameraSurfaceInteractor
 
@@ -32,7 +31,6 @@ val Kosmos.screenCaptureCameraViewModelFactory by
                 ScreenCaptureCameraViewModel(
                     screenRecordCameraSurfaceInteractor,
                     screenRecordCameraInteractor,
-                    screenCaptureOverlayStateInteractor,
                 )
         }
     }

@@ -19,12 +19,14 @@ package com.android.systemui.screencapture.record.camera.data.repository
 import android.util.Size
 import android.view.Surface
 import androidx.annotation.ColorInt
+import com.android.systemui.screencapture.record.camera.shared.model.CameraState
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 interface ScreenRecordCameraRepository {
 
     val errors: Flow<Int>
-    val state: Flow<Int>
+    val state: StateFlow<CameraState>
     val isConnected: Flow<Boolean>
 
     fun connect()
@@ -42,8 +44,8 @@ interface ScreenRecordCameraRepository {
     suspend fun isBackgroundColorSupported(): Boolean
 
     suspend fun prepareStream(
-        displayId: Int,
-        displayOrientation: Int,
+        displayUniqueId: String?,
+        @Surface.Rotation displayRotation: Int,
     ): Size?
 
     suspend fun setBackgroundColor(@ColorInt color: Int)

@@ -29,14 +29,17 @@ import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ScreenCapture
 import com.android.systemui.screencapture.common.ScreenCaptureScope
+import com.android.systemui.screencapture.common.ScreenCaptureStartable
 import com.android.systemui.screencapture.record.camera.data.repository.ScreenRecordCameraRepository
-import com.android.systemui.settings.DisplayTracker
+import com.android.systemui.screencapture.record.camera.shared.model.CameraState
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -53,19 +56,21 @@ constructor(
     @Main resources: Resources,
     @ScreenCapture private val coroutineScope: CoroutineScope,
     private val repository: ScreenRecordCameraRepository,
-    private val displayTracker: DisplayTracker,
-) {
+) : ScreenCaptureStartable {
 
     val cameraBackgroundColors: List<Int> =
         resources.obtainTypedArray(R.array.screen_record_color_palette).use { array ->
             array.map { index -> getColor(index, Color.TRANSPARENT) }
         }
     val errors: Flow<Int> = repository.errors
-    val state: Flow<Int> = repository.state
+    val state: Flow<CameraState> = repository.state
     val isConnected: Flow<Boolean> = repository.isConnected
 
     private val _cameraBackground = MutableStateFlow(cameraBackgroundColors.first())
     val cameraBackground: StateFlow<Int> = _cameraBackground
+
+    private val surfaceParameters = MutableStateFlow<CameraSurfaceParameters?>(null)
+    private val displayParameters = MutableStateFlow<CameraDisplayParameters?>(null)
 
     val isCameraSupported: Flow<Boolean> =
         repository.isConnected
@@ -97,51 +102,60 @@ constructor(
                 null,
             )
             .filterNotNull()
-    val optimalCameraStreamSize: Flow<Size> =
-        repository.isConnected
-            .map {
-                repository.prepareStream(
-                    displayId = displayTracker.defaultDisplayId,
-                    displayOrientation =
-                        displayTracker.getDisplay(displayTracker.defaultDisplayId).rotation,
-                )
+    val optimalCameraStreamSize: StateFlow<Size?> =
+        combine(repository.isConnected.filter { it }, displayParameters.filterNotNull()) {
+                isConnected,
+                displayParameters ->
+                repository
+                    .prepareStream(
+                        displayUniqueId = displayParameters.uniqueId,
+                        displayRotation = displayParameters.rotation,
+                    )
+                    .also { size ->
+                        Log.d(TAG, "Prepared the stream: dp=$displayParameters size=$size")
+                    }
             }
+            .filter { it == null || !it.isEmpty() }
             .stateInTraced(
                 "ScreenRecordCameraInteractor#optimalCameraStreamSize",
                 coroutineScope,
                 SharingStarted.Eagerly,
                 null,
             )
-            .filterNotNull()
 
-    init {
+    override suspend fun start() {
         // Keep the service connected throughout the recording for faster camera on/off
-        coroutineScope.launch { setup() }
+        coroutineScope.launch { connect() }
 
         cameraBackground
             .onEach { color -> repository.setBackgroundColor(color) }
             .launchIn(coroutineScope)
+
+        combine(surfaceParameters.filterNotNull(), optimalCameraStreamSize.filterNotNull()) {
+                params,
+                optimalCameraStreamSize ->
+                if (params.surface == null || params.size != optimalCameraStreamSize) {
+                    Log.d(TAG, "Waiting for a properly sized surface")
+                    return@combine
+                }
+                Log.d(TAG, "Starting the stream: ${params.size}")
+                repository.startStream(surface = params.surface, size = optimalCameraStreamSize)
+            }
+            .launchIn(coroutineScope)
     }
 
-    private suspend fun setup(): Nothing = suspendCancellableCoroutine { continuation ->
+    private suspend fun connect(): Nothing = suspendCancellableCoroutine { continuation ->
         repository.connect()
 
         continuation.invokeOnCancellation { repository.disconnect() }
     }
 
-    suspend fun startStream(surface: Surface, width: Int, height: Int) {
-        val optimalSize =
-            repository.prepareStream(
-                displayId = displayTracker.defaultDisplayId,
-                displayOrientation =
-                    displayTracker.getDisplay(displayTracker.defaultDisplayId).rotation,
-            )
-        require(optimalSize != null) { "Couldn't get optimal size. Skipping stream start" }
-        require(width == optimalSize.width && height == optimalSize.height) {
-            "Surface dimensions aren't optimal: optimal=$optimalSize, width=$width, height=$height"
-        }
-        repository.startStream(surface, optimalSize)
-        Log.i(TAG, "Started a stream with size=$optimalSize")
+    fun onSurfaceReady(surface: Surface, size: Size) {
+        surfaceParameters.value = CameraSurfaceParameters(surface = surface, size = size)
+    }
+
+    fun onDisplayReady(uniqueId: String?, @Surface.Rotation rotation: Int) {
+        displayParameters.value = CameraDisplayParameters(uniqueId = uniqueId, rotation = rotation)
     }
 
     suspend fun stopStream() {
@@ -158,3 +172,12 @@ constructor(
         repository.onTap()
     }
 }
+
+private data class CameraDisplayParameters(
+    val uniqueId: String?,
+    @Surface.Rotation val rotation: Int,
+)
+
+private data class CameraSurfaceParameters(val surface: Surface?, val size: Size?)
+
+private fun Size.isEmpty(): Boolean = width == 0 || height == 0
