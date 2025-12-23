@@ -2941,8 +2941,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
     void invalidateTaskLayers() {
         if (!mTaskLayersChanged) {
             mTaskLayersChanged = true;
-            if (!com.android.window.flags.Flags.rankTaskLayerWithWindowLayout()
-                    || !mWindowManager.mWindowPlacerLocked.isLayoutDeferred()) {
+            if (!mWindowManager.mWindowPlacerLocked.isLayoutDeferred()) {
                 mService.mH.post(mRankTaskLayersRunnable);
             }
         }

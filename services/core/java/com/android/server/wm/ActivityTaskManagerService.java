@@ -5712,8 +5712,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         // Notify to continue.
         mLifecycleManager.onLayoutContinued();
 
-        if (com.android.window.flags.Flags.rankTaskLayerWithWindowLayout()
-                && mRootWindowContainer.mTaskLayersChanged
+        if (mRootWindowContainer.mTaskLayersChanged
                 // The later ActivityRecord#setState RESUMED will invoke WindowProcessController's
                 // updateProcessInfo -> prepareOomAdjustment -> rankTaskLayers.
                 && !mTaskSupervisor.hasPendingTopResumedSwitch()
