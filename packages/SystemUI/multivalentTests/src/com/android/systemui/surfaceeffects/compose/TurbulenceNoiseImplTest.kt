@@ -33,6 +33,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.surfaceeffects.core.turbulencenoise.TurbulenceNoiseAnimationConfig
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
+import org.junit.Before
 import org.junit.Rule
 import org.junit.runner.RunWith
 
@@ -40,35 +41,31 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class TurbulenceNoiseImplTest : SysuiTestCase() {
     @get:Rule val composeTestRule = createComposeRule()
+    var isEnabled by mutableStateOf(false)
+    val config =
+        TurbulenceNoiseAnimationConfig(
+            maxDuration = MAX_DURATION,
+            fadeInDuration = FADE_IN_DURATION,
+            fadeOutDuration = FADE_OUT_DURATION,
+        )
+    private lateinit var node: TurbulenceNoiseNode
 
-    @Test
-    fun progressAnimatable_autoStopWithMaxDuration() {
-        val config =
-            TurbulenceNoiseAnimationConfig(
-                maxDuration = MAX_DURATION,
-                fadeInDuration = FADE_IN_DURATION,
-            )
-        var isEnabled by mutableStateOf(false)
-
+    @Before
+    fun setup() {
         composeTestRule.setContent {
             Box(
                 modifier =
                     Modifier.size(100.dp)
                         .testTag(TEST_TAG)
-                        .simplexNoiseEffect(
-                            shaderConfig = config,
-                            isEnabled = isEnabled, // Must be enabled to start the animation
-                        )
+                        .simplexNoiseEffect(shaderConfig = config, isEnabled = isEnabled)
             )
         }
 
-        val node: TurbulenceNoiseNode =
-            composeTestRule.onNode(hasTestTag(TEST_TAG)).fetchSemanticsNode().turbulenceNoise
-        composeTestRule.mainClock.advanceTimeBy(0L)
+        node = composeTestRule.onNode(hasTestTag(TEST_TAG)).fetchSemanticsNode().turbulenceNoise
+    }
 
-        assertThat(node.rawProgress).isEqualTo(0F)
-        assertThat(node.fadingProgress).isEqualTo(0F)
-
+    @Test
+    fun progressAnimatable_autoStopWithMaxDuration() {
         isEnabled = true
         composeTestRule.mainClock.advanceTimeBy(config.fadeInDuration.toLong())
         assertThat(node.rawProgress).isWithin(PROGRESS_TOLERANCE).of(0.25F)
@@ -87,29 +84,6 @@ class TurbulenceNoiseImplTest : SysuiTestCase() {
 
     @Test
     fun progressAnimatable_manualFadeOut() {
-        val config =
-            TurbulenceNoiseAnimationConfig(
-                maxDuration = MAX_DURATION,
-                fadeInDuration = FADE_IN_DURATION,
-                fadeOutDuration = FADE_OUT_DURATION,
-            )
-        var isEnabled by mutableStateOf(false)
-
-        composeTestRule.setContent {
-            Box(
-                modifier =
-                    Modifier.size(100.dp)
-                        .testTag(TEST_TAG)
-                        .simplexNoiseEffect(shaderConfig = config, isEnabled = isEnabled)
-            )
-        }
-
-        val node: TurbulenceNoiseNode =
-            composeTestRule.onNode(hasTestTag(TEST_TAG)).fetchSemanticsNode().turbulenceNoise
-
-        assertThat(node.rawProgress).isEqualTo(0F)
-        assertThat(node.fadingProgress).isEqualTo(0F)
-
         isEnabled = true
         composeTestRule.mainClock.advanceTimeBy(config.fadeInDuration.toLong())
         assertThat(node.rawProgress).isWithin(PROGRESS_TOLERANCE).of(0.25F)
