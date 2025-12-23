@@ -28,3 +28,10 @@ flag {
     description: "Reset the first keyguard state dispatch flag when KeyguardService is connected"
     bug: "459721172"
 }
+
+flag {
+    name: "enable_filesystem_configuration"
+    namespace: "storage"
+    description: "Enables configuration of filesystem parameters like max_lock_elapsed_time during boot of StorageManagerService."
+    bug: "469596512"
+}
