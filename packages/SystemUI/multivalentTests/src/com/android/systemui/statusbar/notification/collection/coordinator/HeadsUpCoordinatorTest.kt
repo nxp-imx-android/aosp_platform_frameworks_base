@@ -15,6 +15,7 @@
  */
 package com.android.systemui.statusbar.notification.collection.coordinator
 
+import android.app.Notification
 import android.app.Notification.GROUP_ALERT_ALL
 import android.app.Notification.GROUP_ALERT_SUMMARY
 import android.app.NotificationChannel
@@ -49,6 +50,7 @@ import com.android.systemui.statusbar.notification.collection.notifPipeline
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifCollectionListener
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifLifetimeExtender
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifLifetimeExtender.OnEndLifetimeExtensionCallback
+import com.android.systemui.statusbar.notification.collection.notifcollection.UpdateSource
 import com.android.systemui.statusbar.notification.collection.provider.LaunchFullScreenIntentProvider
 import com.android.systemui.statusbar.notification.headsup.OnHeadsUpChangedListener
 import com.android.systemui.statusbar.notification.headsup.headsUpManager
@@ -62,8 +64,6 @@ import com.android.systemui.statusbar.notification.shared.LaunchNewFsiOnUpdate
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.testKosmos
 import com.android.systemui.util.concurrency.FakeExecutor
-import com.android.systemui.util.mockito.any
-import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.mockito.withArgCaptor
 import com.android.systemui.util.time.FakeSystemClock
 import java.util.function.Consumer
@@ -80,8 +80,11 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when` as whenever
+import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.spy
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -119,7 +122,7 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
     private lateinit var notifSectioner: NotifSectioner
     private lateinit var actionPressListener: Consumer<NotificationEntry>
 
-    private val interruptLogger: VisualInterruptionDecisionLogger = mock()
+    private val interruptLogger = spy(VisualInterruptionDecisionLogger(logcatLogBuffer()))
     private val headsUpViewBinder: HeadsUpViewBinder = mock()
     private val visualInterruptionDecisionProvider: VisualInterruptionDecisionProvider = mock()
     private val remoteInputManager: NotificationRemoteInputManager = mock()
@@ -490,6 +493,58 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
             // THEN the notification is never bound or shown
             verify(headsUpViewBinder, never()).bindHeadsUpView(any(), any(), any())
             verify(headsUpManager, never()).showNotification(any(), any())
+        }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags.FLAG_NOTIFICATION_SILENT_FLAG)
+    fun testOnEntryUpdated_toSilentByApp_removesHun() =
+        kosmos.runTest {
+            // GIVEN that an entry is posted that should heads up
+            setShouldHeadsUp(entry)
+            addHUN(entry)
+
+            // WHEN it's updated to silent by the app, and has been visible long enough to remove.
+            entry.sbn.notification.flags = entry.sbn.notification.flags or Notification.FLAG_SILENT
+            whenever(headsUpManager.canRemoveImmediately(anyString())).thenReturn(true)
+            setShouldHeadsUp(entry, false)
+            collectionListener.onEntryUpdated(entry)
+            beforeTransformGroupsListener.onBeforeTransformGroups(listOf(entry))
+            beforeFinalizeFilterListener.onBeforeFinalizeFilter(listOf(entry))
+
+            // Ensure deferred mutations can run
+            executor.advanceClockToLast()
+            executor.runAllReady()
+
+            // THEN the notification is never bound and is removed
+            verify(headsUpViewBinder, never()).bindHeadsUpView(any(), any(), any())
+            verify(headsUpManager, never()).showNotification(any(), any())
+            verify(headsUpManager).removeNotification(eq(entry.key), any(), any())
+        }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags.FLAG_NOTIFICATION_SILENT_FLAG)
+    fun testOnEntryUpdated_toSilentBySystem_doesNotRemoveHun() =
+        kosmos.runTest {
+            // GIVEN that an entry is posted that should heads up
+            setShouldHeadsUp(entry)
+            addHUN(entry)
+
+            // WHEN it's updated to silent by system, and has been visible long enough to remove.
+            entry.sbn.notification.flags = entry.sbn.notification.flags or Notification.FLAG_SILENT
+            whenever(headsUpManager.canRemoveImmediately(anyString())).thenReturn(true)
+            setShouldHeadsUp(entry, false)
+            collectionListener.onEntryUpdated(entry, UpdateSource.SystemServer)
+            beforeTransformGroupsListener.onBeforeTransformGroups(listOf(entry))
+            beforeFinalizeFilterListener.onBeforeFinalizeFilter(listOf(entry))
+
+            // Ensure deferred mutations can run
+            executor.advanceClockToLast()
+            executor.runAllReady()
+
+            // THEN the notification is never bound or removed
+            verify(headsUpViewBinder, never()).bindHeadsUpView(any(), any(), any())
+            verify(headsUpManager, never()).showNotification(any(), any())
+            verify(headsUpManager, never()).removeNotification(any(), any(), any())
         }
 
     @Test
