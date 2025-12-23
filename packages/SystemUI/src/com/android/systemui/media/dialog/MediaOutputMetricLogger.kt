@@ -13,66 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.systemui.media.dialog
 
-package com.android.systemui.media.dialog;
+import android.content.Context
+import android.content.pm.ApplicationInfo
+import android.media.MediaRoute2ProviderService.REASON_INVALID_COMMAND
+import android.media.MediaRoute2ProviderService.REASON_NETWORK_ERROR
+import android.media.MediaRoute2ProviderService.REASON_REJECTED
+import android.media.MediaRoute2ProviderService.REASON_ROUTE_NOT_AVAILABLE
+import android.media.MediaRoute2ProviderService.REASON_UNKNOWN_ERROR
+import android.util.Log
+import com.android.settingslib.media.MediaDevice
+import com.android.settingslib.media.MediaDevice.SUGGESTION_PROVIDER_DEVICE_SUGGESTION_APP
+import com.android.settingslib.media.MediaDevice.SUGGESTION_PROVIDER_DEVICE_SUGGESTION_OTHER
+import com.android.settingslib.media.MediaDevice.SUGGESTION_PROVIDER_RLP
+import com.android.settingslib.media.MediaDevice.SUGGESTION_PROVIDER_UNSPECIFIED
+import com.android.systemui.shared.system.SysUiStatsLog
 
-import static android.media.MediaRoute2ProviderService.REASON_INVALID_COMMAND;
-import static android.media.MediaRoute2ProviderService.REASON_NETWORK_ERROR;
-import static android.media.MediaRoute2ProviderService.REASON_REJECTED;
-import static android.media.MediaRoute2ProviderService.REASON_ROUTE_NOT_AVAILABLE;
-import static android.media.MediaRoute2ProviderService.REASON_UNKNOWN_ERROR;
-
-import static com.android.settingslib.media.MediaDevice.SUGGESTION_PROVIDER_DEVICE_SUGGESTION_APP;
-import static com.android.settingslib.media.MediaDevice.SUGGESTION_PROVIDER_DEVICE_SUGGESTION_OTHER;
-import static com.android.settingslib.media.MediaDevice.SUGGESTION_PROVIDER_RLP;
-import static com.android.settingslib.media.MediaDevice.SUGGESTION_PROVIDER_UNSPECIFIED;
-
-import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.util.Log;
-
-import com.android.settingslib.media.MediaDevice;
-import com.android.systemui.shared.system.SysUiStatsLog;
-
-import java.util.List;
-
-/**
- * Metric logger for media output features
- */
-public class MediaOutputMetricLogger {
-
-    private static final String TAG = "MediaOutputMetricLogger";
-    private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
-
-    private final Context mContext;
-    private final String mPackageName;
-    private MediaDevice mSourceDevice, mTargetDevice;
-    private int mWiredDeviceCount;
-    private int mConnectedBluetoothDeviceCount;
-    private int mRemoteDeviceCount;
-    private int mAppliedDeviceCountWithinRemoteGroup;
-
-    public MediaOutputMetricLogger(Context context, String packageName) {
-        mContext = context;
-        mPackageName = packageName;
-    }
+/** Metric logger for media output features. */
+class MediaOutputMetricLogger(private val mContext: Context, private val mPackageName: String?) {
+    private var mSourceDevice: MediaDevice? = null
+    private var mTargetDevice: MediaDevice? = null
+    private var mWiredDeviceCount = 0
+    private var mConnectedBluetoothDeviceCount = 0
+    private var mRemoteDeviceCount = 0
+    private var mAppliedDeviceCountWithinRemoteGroup = 0
 
     /**
-     * Update the endpoints of a content switching operation.
-     * This method should be called before a switching operation, so the metric logger can track
-     * source and target devices.
+     * Update the endpoints of a content switching operation. This method should be called before a
+     * switching operation, so the metric logger can track source and target devices.
      *
-     * @param source the current connected media device
+     * @param source the current connected media device, might be null is nothing is connected
      * @param target the target media device for content switching to
      */
-    public void updateOutputEndPoints(MediaDevice source, MediaDevice target) {
-        mSourceDevice = source;
-        mTargetDevice = target;
+    fun updateOutputEndPoints(source: MediaDevice?, target: MediaDevice) {
+        mSourceDevice = source
+        mTargetDevice = target
 
         if (DEBUG) {
-            Log.d(TAG, "updateOutputEndPoints -"
-                    + " source:" + mSourceDevice.toString()
-                    + " target:" + mTargetDevice.toString());
+            Log.d(TAG, "updateOutputEndPoints - source: $source, target: $target")
         }
     }
 
@@ -80,33 +59,34 @@ public class MediaOutputMetricLogger {
      * Do the metric logging of content switching success.
      *
      * @param selectedDeviceType string representation of the target media device
-     * @param deviceItemList     media item list for device count updating
+     * @param deviceItemList media item list for device count updating
      */
-    public void logOutputItemSuccess(String selectedDeviceType, List<MediaItem> deviceItemList) {
+    fun logOutputItemSuccess(selectedDeviceType: String, deviceItemList: List<MediaItem>) {
         if (DEBUG) {
-            Log.d(TAG, "logOutputSuccess - selected device: " + selectedDeviceType);
+            Log.d(TAG, "logOutputSuccess - selected device: $selectedDeviceType")
         }
 
         if (mSourceDevice == null && mTargetDevice == null) {
-            return;
+            return
         }
 
-        updateLoggingMediaItemCount(deviceItemList);
+        updateLoggingMediaItemCount(deviceItemList)
 
         SysUiStatsLog.write(
-                SysUiStatsLog.MEDIAOUTPUT_OP_SWITCH_REPORTED,
-                getLoggingDeviceType(mSourceDevice, true),
-                getLoggingDeviceType(mTargetDevice, false),
-                SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__RESULT__OK,
-                SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUBRESULT__NO_ERROR,
-                getLoggingPackageName(),
-                mWiredDeviceCount,
-                mConnectedBluetoothDeviceCount,
-                mRemoteDeviceCount,
-                mAppliedDeviceCountWithinRemoteGroup,
-                mTargetDevice.isSuggestedDevice(),
-                mTargetDevice.hasOngoingSession(),
-                getLoggingSuggestionProvider(mTargetDevice.getSuggestionProvider()));
+            SysUiStatsLog.MEDIAOUTPUT_OP_SWITCH_REPORTED,
+            getLoggingDeviceType(mSourceDevice, true),
+            getLoggingDeviceType(mTargetDevice, false),
+            SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__RESULT__OK,
+            SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUBRESULT__NO_ERROR,
+            getLoggingPackageName(),
+            mWiredDeviceCount,
+            mConnectedBluetoothDeviceCount,
+            mRemoteDeviceCount,
+            mAppliedDeviceCountWithinRemoteGroup,
+            mTargetDevice?.isSuggestedDevice ?: false,
+            mTargetDevice?.hasOngoingSession() ?: false,
+            getLoggingSuggestionProvider(mTargetDevice?.getSuggestionProvider()),
+        )
     }
 
     /**
@@ -114,338 +94,317 @@ public class MediaOutputMetricLogger {
      *
      * @param source the device been adjusted
      */
-    public void logInteractionAdjustVolume(MediaDevice source) {
+    fun logInteractionAdjustVolume(source: MediaDevice) {
         if (DEBUG) {
-            Log.d(TAG, "logInteraction - AdjustVolume");
+            Log.d(TAG, "logInteraction - AdjustVolume")
         }
 
         SysUiStatsLog.write(
-                SysUiStatsLog.MEDIAOUTPUT_OP_INTERACTION_REPORT,
-                SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__INTERACTION_TYPE__ADJUST_VOLUME,
-                getInteractionDeviceType(source),
-                getLoggingPackageName(),
-                source.isSuggestedDevice(),
-                getLoggingSuggestionProvider(source.getSuggestionProvider()));
+            SysUiStatsLog.MEDIAOUTPUT_OP_INTERACTION_REPORT,
+            SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__INTERACTION_TYPE__ADJUST_VOLUME,
+            getInteractionDeviceType(source),
+            getLoggingPackageName(),
+            source.isSuggestedDevice,
+            getLoggingSuggestionProvider(source.getSuggestionProvider()),
+        )
     }
 
-    /**
-     * Do the metric logging of stop sharing.
-     */
-    public void logInteractionStopSharing() {
+    /** Do the metric logging of stop sharing. */
+    fun logInteractionStopSharing() {
         if (DEBUG) {
-            Log.d(TAG, "logInteraction - Stop sharing");
+            Log.d(TAG, "logInteraction - Stop sharing")
         }
 
         SysUiStatsLog.write(
-                SysUiStatsLog.MEDIAOUTPUT_OP_INTERACTION_REPORT,
-                SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__INTERACTION_TYPE__STOP_SHARING,
-                SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__UNKNOWN_TYPE,
-                getLoggingPackageName(),
-                /* isSuggestedDevice= */ false,
-                SysUiStatsLog
-                        .MEDIA_OUTPUT_OP_INTERACTION_REPORTED__SUGGESTION_PROVIDER__UNSPECIFIED);
+            SysUiStatsLog.MEDIAOUTPUT_OP_INTERACTION_REPORT,
+            SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__INTERACTION_TYPE__STOP_SHARING,
+            SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__UNKNOWN_TYPE,
+            getLoggingPackageName(),
+            false, /* isSuggestedDevice */
+            SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__SUGGESTION_PROVIDER__UNSPECIFIED,
+        )
     }
 
-    /**
-     * Do the metric logging of stop casting.
-     */
-    public void logInteractionStopCasting() {
+    /** Do the metric logging of stop casting. */
+    fun logInteractionStopCasting() {
         if (DEBUG) {
-            Log.d(TAG, "logInteraction - Stop casting");
+            Log.d(TAG, "logInteraction - Stop casting")
         }
 
         SysUiStatsLog.write(
-                SysUiStatsLog.MEDIAOUTPUT_OP_INTERACTION_REPORT,
-                SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__INTERACTION_TYPE__STOP_CASTING,
-                SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__UNKNOWN_TYPE,
-                getLoggingPackageName(),
-                /* isSuggestedDevice= */ false,
-                SysUiStatsLog
-                        .MEDIA_OUTPUT_OP_INTERACTION_REPORTED__SUGGESTION_PROVIDER__UNSPECIFIED);
+            SysUiStatsLog.MEDIAOUTPUT_OP_INTERACTION_REPORT,
+            SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__INTERACTION_TYPE__STOP_CASTING,
+            SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__UNKNOWN_TYPE,
+            getLoggingPackageName(),
+            false, /* isSuggestedDevice */
+            SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__SUGGESTION_PROVIDER__UNSPECIFIED,
+        )
     }
 
-    /**
-     * Do the metric logging of device expansion.
-     */
-    public void logInteractionExpansion(MediaDevice source) {
+    /** Do the metric logging of device expansion. */
+    fun logInteractionExpansion(source: MediaDevice) {
         if (DEBUG) {
-            Log.d(TAG, "logInteraction - Expansion");
+            Log.d(TAG, "logInteraction - Expansion")
         }
 
         SysUiStatsLog.write(
-                SysUiStatsLog.MEDIAOUTPUT_OP_INTERACTION_REPORT,
-                SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__INTERACTION_TYPE__EXPANSION,
-                getInteractionDeviceType(source),
-                getLoggingPackageName(),
-                source.isSuggestedDevice(),
-                getLoggingSuggestionProvider(source.getSuggestionProvider()));
+            SysUiStatsLog.MEDIAOUTPUT_OP_INTERACTION_REPORT,
+            SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__INTERACTION_TYPE__EXPANSION,
+            getInteractionDeviceType(source),
+            getLoggingPackageName(),
+            source.isSuggestedDevice,
+            getLoggingSuggestionProvider(source.getSuggestionProvider()),
+        )
     }
 
-    /**
-     * Do the metric logging of device contraction.
-     */
-    public void logInteractionContraction(MediaDevice source) {
+    /** Do the metric logging of device contraction. */
+    fun logInteractionContraction(source: MediaDevice) {
         if (DEBUG) {
-            Log.d(TAG, "logInteraction - Contraction");
+            Log.d(TAG, "logInteraction - Contraction")
         }
 
         SysUiStatsLog.write(
-                SysUiStatsLog.MEDIAOUTPUT_OP_INTERACTION_REPORT,
-                SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__INTERACTION_TYPE__CONTRACTION,
-                getInteractionDeviceType(source),
-                getLoggingPackageName(),
-                source.isSuggestedDevice(),
-                getLoggingSuggestionProvider(source.getSuggestionProvider()));
-    }
-
-    /**
-     * Do the metric logging of muting device.
-     */
-    public void logInteractionMute(MediaDevice source) {
-        if (DEBUG) {
-            Log.d(TAG, "logInteraction - Mute");
-        }
-
-        SysUiStatsLog.write(
-                SysUiStatsLog.MEDIAOUTPUT_OP_INTERACTION_REPORT,
-                SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__INTERACTION_TYPE__MUTE,
-                getInteractionDeviceType(source),
-                getLoggingPackageName(),
-                source.isSuggestedDevice(),
-                getLoggingSuggestionProvider(source.getSuggestionProvider()));
-    }
-
-    /**
-     * Do the metric logging of unmuting device.
-     */
-    public void logInteractionUnmute(MediaDevice source) {
-        if (DEBUG) {
-            Log.d(TAG, "logInteraction - Unmute");
-        }
-
-        SysUiStatsLog.write(
-                SysUiStatsLog.MEDIAOUTPUT_OP_INTERACTION_REPORT,
-                SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__INTERACTION_TYPE__UNMUTE,
-                getInteractionDeviceType(source),
-                getLoggingPackageName(),
-                source.isSuggestedDevice(),
-                getLoggingSuggestionProvider(source.getSuggestionProvider()));
+            SysUiStatsLog.MEDIAOUTPUT_OP_INTERACTION_REPORT,
+            SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__INTERACTION_TYPE__CONTRACTION,
+            getInteractionDeviceType(source),
+            getLoggingPackageName(),
+            source.isSuggestedDevice,
+            getLoggingSuggestionProvider(source.getSuggestionProvider()),
+        )
     }
 
     /**
      * Do the metric logging of content switching failure.
      *
      * @param deviceItemList media item list for device count updating
-     * @param reason         the reason of content switching failure
+     * @param reason the reason of content switching failure
      */
-    public void logOutputItemFailure(List<MediaItem> deviceItemList, int reason) {
+    fun logOutputItemFailure(deviceItemList: List<MediaItem>, reason: Int) {
         if (DEBUG) {
-            Log.e(TAG, "logRequestFailed - " + reason);
+            Log.e(TAG, "logRequestFailed - $reason")
         }
 
         if (mSourceDevice == null && mTargetDevice == null) {
-            return;
+            return
         }
 
-        updateLoggingMediaItemCount(deviceItemList);
+        updateLoggingMediaItemCount(deviceItemList)
 
         SysUiStatsLog.write(
-                SysUiStatsLog.MEDIAOUTPUT_OP_SWITCH_REPORTED,
-                getLoggingDeviceType(mSourceDevice, true),
-                getLoggingDeviceType(mTargetDevice, false),
-                SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__RESULT__ERROR,
-                getLoggingSwitchOpSubResult(reason),
-                getLoggingPackageName(),
-                mWiredDeviceCount,
-                mConnectedBluetoothDeviceCount,
-                mRemoteDeviceCount,
-                mAppliedDeviceCountWithinRemoteGroup,
-                mTargetDevice.isSuggestedDevice(),
-                mTargetDevice.hasOngoingSession(),
-                getLoggingSuggestionProvider(mTargetDevice.getSuggestionProvider()));
+            SysUiStatsLog.MEDIAOUTPUT_OP_SWITCH_REPORTED,
+            getLoggingDeviceType(mSourceDevice, true),
+            getLoggingDeviceType(mTargetDevice, false),
+            SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__RESULT__ERROR,
+            getLoggingSwitchOpSubResult(reason),
+            getLoggingPackageName(),
+            mWiredDeviceCount,
+            mConnectedBluetoothDeviceCount,
+            mRemoteDeviceCount,
+            mAppliedDeviceCountWithinRemoteGroup,
+            mTargetDevice?.isSuggestedDevice ?: false,
+            mTargetDevice?.hasOngoingSession() ?: false,
+            getLoggingSuggestionProvider(mTargetDevice?.getSuggestionProvider()),
+        )
     }
 
-    private void updateLoggingDeviceCount(List<MediaDevice> deviceList) {
-        mWiredDeviceCount = mConnectedBluetoothDeviceCount = mRemoteDeviceCount = 0;
-        mAppliedDeviceCountWithinRemoteGroup = 0;
+    private fun updateLoggingDeviceCount(deviceList: List<MediaDevice>) {
+        mWiredDeviceCount = 0
+        mRemoteDeviceCount = 0
+        mAppliedDeviceCountWithinRemoteGroup = 0
 
-        for (MediaDevice mediaDevice : deviceList) {
-            if (mediaDevice.isConnected()) {
-                switch (mediaDevice.getDeviceType()) {
-                    case MediaDevice.MediaDeviceType.TYPE_3POINT5_MM_AUDIO_DEVICE:
-                    case MediaDevice.MediaDeviceType.TYPE_USB_C_AUDIO_DEVICE:
-                        mWiredDeviceCount++;
-                        break;
-                    case MediaDevice.MediaDeviceType.TYPE_BLUETOOTH_DEVICE:
-                        mConnectedBluetoothDeviceCount++;
-                        break;
-                    case MediaDevice.MediaDeviceType.TYPE_CAST_DEVICE:
-                    case MediaDevice.MediaDeviceType.TYPE_CAST_GROUP_DEVICE:
-                        mRemoteDeviceCount++;
-                        break;
-                    default:
+        for (mediaDevice in deviceList) {
+            if (mediaDevice.isConnected) {
+                when (mediaDevice.deviceType) {
+                    MediaDevice.MediaDeviceType.TYPE_3POINT5_MM_AUDIO_DEVICE,
+                    MediaDevice.MediaDeviceType.TYPE_USB_C_AUDIO_DEVICE -> mWiredDeviceCount++
+                    MediaDevice.MediaDeviceType.TYPE_BLUETOOTH_DEVICE ->
+                        mConnectedBluetoothDeviceCount++
+                    MediaDevice.MediaDeviceType.TYPE_CAST_DEVICE,
+                    MediaDevice.MediaDeviceType.TYPE_CAST_GROUP_DEVICE -> mRemoteDeviceCount++
+                    else -> {}
                 }
             }
         }
 
         if (DEBUG) {
-            Log.d(TAG, "connected devices:" + " wired: " + mWiredDeviceCount
-                    + " bluetooth: " + mConnectedBluetoothDeviceCount
-                    + " remote: " + mRemoteDeviceCount);
+            Log.d(
+                TAG,
+                "connected devices:" +
+                    " wired: " +
+                    mWiredDeviceCount +
+                    " bluetooth: " +
+                    mConnectedBluetoothDeviceCount +
+                    " remote: " +
+                    mRemoteDeviceCount,
+            )
         }
     }
 
-    private void updateLoggingMediaItemCount(List<MediaItem> deviceItemList) {
-        mWiredDeviceCount = mConnectedBluetoothDeviceCount = mRemoteDeviceCount = 0;
-        mAppliedDeviceCountWithinRemoteGroup = 0;
+    private fun updateLoggingMediaItemCount(deviceItemList: List<MediaItem>) {
+        mRemoteDeviceCount = 0
+        mConnectedBluetoothDeviceCount = mRemoteDeviceCount
+        mWiredDeviceCount = mConnectedBluetoothDeviceCount
+        mAppliedDeviceCountWithinRemoteGroup = 0
 
-        for (MediaItem mediaItem : deviceItemList) {
-            if (mediaItem.getMediaDevice().isPresent()
-                    && mediaItem.getMediaDevice().get().isConnected()) {
-                switch (mediaItem.getMediaDevice().get().getDeviceType()) {
-                    case MediaDevice.MediaDeviceType.TYPE_3POINT5_MM_AUDIO_DEVICE:
-                    case MediaDevice.MediaDeviceType.TYPE_USB_C_AUDIO_DEVICE:
-                        mWiredDeviceCount++;
-                        break;
-                    case MediaDevice.MediaDeviceType.TYPE_BLUETOOTH_DEVICE:
-                        mConnectedBluetoothDeviceCount++;
-                        break;
-                    case MediaDevice.MediaDeviceType.TYPE_CAST_DEVICE:
-                    case MediaDevice.MediaDeviceType.TYPE_CAST_GROUP_DEVICE:
-                        mRemoteDeviceCount++;
-                        break;
-                    default:
+        for (mediaItem in deviceItemList) {
+            if (mediaItem.mediaDevice.isPresent && mediaItem.mediaDevice.get().isConnected()) {
+                when (mediaItem.mediaDevice.get().deviceType) {
+                    MediaDevice.MediaDeviceType.TYPE_3POINT5_MM_AUDIO_DEVICE,
+                    MediaDevice.MediaDeviceType.TYPE_USB_C_AUDIO_DEVICE -> mWiredDeviceCount++
+                    MediaDevice.MediaDeviceType.TYPE_BLUETOOTH_DEVICE ->
+                        mConnectedBluetoothDeviceCount++
+                    MediaDevice.MediaDeviceType.TYPE_CAST_DEVICE,
+                    MediaDevice.MediaDeviceType.TYPE_CAST_GROUP_DEVICE -> mRemoteDeviceCount++
+                    else -> {}
                 }
             }
         }
 
         if (DEBUG) {
-            Log.d(TAG, "connected devices:" + " wired: " + mWiredDeviceCount
-                    + " bluetooth: " + mConnectedBluetoothDeviceCount
-                    + " remote: " + mRemoteDeviceCount);
+            Log.d(
+                TAG,
+                "connected devices: wired: $mWiredDeviceCount" +
+                    " bluetooth: $mConnectedBluetoothDeviceCount" +
+                    " remote: $mRemoteDeviceCount",
+            )
         }
     }
 
-    private int getLoggingDeviceType(MediaDevice device, boolean isSourceDevice) {
+    private fun getLoggingDeviceType(device: MediaDevice?, isSourceDevice: Boolean): Int {
         if (device == null) {
-            return isSourceDevice
-                    ? SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__UNKNOWN_TYPE
-                    : SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__UNKNOWN_TYPE;
+            return if (isSourceDevice)
+                SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__UNKNOWN_TYPE
+            else SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__UNKNOWN_TYPE
         }
-        switch (device.getDeviceType()) {
-            case MediaDevice.MediaDeviceType.TYPE_PHONE_DEVICE:
-                return isSourceDevice
-                        ? SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__BUILTIN_SPEAKER
-                        : SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__BUILTIN_SPEAKER;
-            case MediaDevice.MediaDeviceType.TYPE_3POINT5_MM_AUDIO_DEVICE:
-                return isSourceDevice
-                        ? SysUiStatsLog
-                        .MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__WIRED_3POINT5_MM_AUDIO
-                        : SysUiStatsLog
-                                .MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__WIRED_3POINT5_MM_AUDIO;
-            case MediaDevice.MediaDeviceType.TYPE_USB_C_AUDIO_DEVICE:
-                return isSourceDevice
-                        ? SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__USB_C_AUDIO
-                        : SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__USB_C_AUDIO;
-            case MediaDevice.MediaDeviceType.TYPE_BLUETOOTH_DEVICE:
-                return isSourceDevice
-                        ? SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__BLUETOOTH
-                        : SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__BLUETOOTH;
-            case MediaDevice.MediaDeviceType.TYPE_CAST_DEVICE:
-                return isSourceDevice
-                        ? SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__REMOTE_SINGLE
-                        : SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__REMOTE_SINGLE;
-            case MediaDevice.MediaDeviceType.TYPE_CAST_GROUP_DEVICE:
-                return isSourceDevice
-                        ? SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__REMOTE_GROUP
-                        : SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__REMOTE_GROUP;
-            case MediaDevice.MediaDeviceType.TYPE_REMOTE_AUDIO_VIDEO_RECEIVER:
-                return isSourceDevice
-                        ? SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__AVR
-                        : SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__AVR;
-            default:
-                return isSourceDevice
-                        ? SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__UNKNOWN_TYPE
-                        : SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__UNKNOWN_TYPE;
+        return when (device.deviceType) {
+            MediaDevice.MediaDeviceType.TYPE_PHONE_DEVICE ->
+                if (isSourceDevice)
+                    SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__BUILTIN_SPEAKER
+                else SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__BUILTIN_SPEAKER
+
+            MediaDevice.MediaDeviceType.TYPE_3POINT5_MM_AUDIO_DEVICE ->
+                if (isSourceDevice)
+                    SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__WIRED_3POINT5_MM_AUDIO
+                else SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__WIRED_3POINT5_MM_AUDIO
+
+            MediaDevice.MediaDeviceType.TYPE_USB_C_AUDIO_DEVICE ->
+                if (isSourceDevice)
+                    SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__USB_C_AUDIO
+                else SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__USB_C_AUDIO
+
+            MediaDevice.MediaDeviceType.TYPE_BLUETOOTH_DEVICE ->
+                if (isSourceDevice) SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__BLUETOOTH
+                else SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__BLUETOOTH
+
+            MediaDevice.MediaDeviceType.TYPE_CAST_DEVICE ->
+                if (isSourceDevice)
+                    SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__REMOTE_SINGLE
+                else SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__REMOTE_SINGLE
+
+            MediaDevice.MediaDeviceType.TYPE_CAST_GROUP_DEVICE ->
+                if (isSourceDevice)
+                    SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__REMOTE_GROUP
+                else SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__REMOTE_GROUP
+
+            MediaDevice.MediaDeviceType.TYPE_REMOTE_AUDIO_VIDEO_RECEIVER ->
+                if (isSourceDevice) SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__AVR
+                else SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__AVR
+
+            else ->
+                if (isSourceDevice)
+                    SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__UNKNOWN_TYPE
+                else SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__UNKNOWN_TYPE
         }
     }
 
-    private int getInteractionDeviceType(MediaDevice device) {
+    private fun getInteractionDeviceType(device: MediaDevice?): Int {
         if (device == null) {
-            return SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__UNKNOWN_TYPE;
+            return SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__UNKNOWN_TYPE
         }
-        switch (device.getDeviceType()) {
-            case MediaDevice.MediaDeviceType.TYPE_PHONE_DEVICE:
-                return SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__BUILTIN_SPEAKER;
-            case MediaDevice.MediaDeviceType.TYPE_3POINT5_MM_AUDIO_DEVICE:
-                return SysUiStatsLog
-                        .MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__WIRED_3POINT5_MM_AUDIO;
-            case MediaDevice.MediaDeviceType.TYPE_USB_C_AUDIO_DEVICE:
-                return SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__USB_C_AUDIO;
-            case MediaDevice.MediaDeviceType.TYPE_BLUETOOTH_DEVICE:
-                return SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__BLUETOOTH;
-            case MediaDevice.MediaDeviceType.TYPE_CAST_DEVICE:
-                return SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__REMOTE_SINGLE;
-            case MediaDevice.MediaDeviceType.TYPE_CAST_GROUP_DEVICE:
-                return SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__REMOTE_GROUP;
-            default:
-                return SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__UNKNOWN_TYPE;
-        }
-    }
+        return when (device.deviceType) {
+            MediaDevice.MediaDeviceType.TYPE_PHONE_DEVICE ->
+                SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__BUILTIN_SPEAKER
+            MediaDevice.MediaDeviceType.TYPE_3POINT5_MM_AUDIO_DEVICE ->
+                SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__WIRED_3POINT5_MM_AUDIO
 
-
-    private int getLoggingSwitchOpSubResult(int reason) {
-        switch (reason) {
-            case REASON_REJECTED:
-                return SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUBRESULT__REJECTED;
-            case REASON_NETWORK_ERROR:
-                return SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUBRESULT__NETWORK_ERROR;
-            case REASON_ROUTE_NOT_AVAILABLE:
-                return SysUiStatsLog
-                        .MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUBRESULT__ROUTE_NOT_AVAILABLE;
-            case REASON_INVALID_COMMAND:
-                return SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUBRESULT__INVALID_COMMAND;
-            case REASON_UNKNOWN_ERROR:
-            default:
-                return SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUBRESULT__UNKNOWN_ERROR;
+            MediaDevice.MediaDeviceType.TYPE_USB_C_AUDIO_DEVICE ->
+                SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__USB_C_AUDIO
+            MediaDevice.MediaDeviceType.TYPE_BLUETOOTH_DEVICE ->
+                SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__BLUETOOTH
+            MediaDevice.MediaDeviceType.TYPE_CAST_DEVICE ->
+                SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__REMOTE_SINGLE
+            MediaDevice.MediaDeviceType.TYPE_CAST_GROUP_DEVICE ->
+                SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__REMOTE_GROUP
+            else -> SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__UNKNOWN_TYPE
         }
     }
 
-    private String getLoggingPackageName() {
-        if (mPackageName != null && !mPackageName.isEmpty()) {
-            try {
-                final ApplicationInfo applicationInfo = mContext.getPackageManager()
-                        .getApplicationInfo(mPackageName, /* default flag */ 0);
-                if ((applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0
-                        || (applicationInfo.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0) {
-                    return mPackageName;
-                }
-            } catch (Exception ex) {
-                Log.e(TAG, mPackageName + " is invalid.");
+    private fun getLoggingSwitchOpSubResult(reason: Int): Int {
+        return when (reason) {
+            REASON_REJECTED -> SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUBRESULT__REJECTED
+            REASON_NETWORK_ERROR ->
+                SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUBRESULT__NETWORK_ERROR
+            REASON_ROUTE_NOT_AVAILABLE ->
+                SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUBRESULT__ROUTE_NOT_AVAILABLE
+
+            REASON_INVALID_COMMAND ->
+                SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUBRESULT__INVALID_COMMAND
+            REASON_UNKNOWN_ERROR ->
+                SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUBRESULT__UNKNOWN_ERROR
+            else -> SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUBRESULT__UNKNOWN_ERROR
+        }
+    }
+
+    private fun getLoggingPackageName(): String {
+        if (mPackageName == null || mPackageName.isEmpty()) return ""
+
+        try {
+            val applicationInfo =
+                mContext.getPackageManager().getApplicationInfo(mPackageName, /* flags= */ 0)
+            if (
+                (applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0 ||
+                    (applicationInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
+            ) {
+                return mPackageName
+            }
+        } catch (_: Exception) {
+            Log.e(TAG, "$mPackageName is invalid.")
+        }
+        return ""
+    }
+
+    companion object {
+        private const val TAG = "MediaOutputMetricLogger"
+        private val DEBUG = Log.isLoggable(TAG, Log.DEBUG)
+
+        private fun getLoggingSuggestionProvider(
+            @MediaDevice.SuggestionProvider suggestionProvider: Int?
+        ): Int {
+            if (suggestionProvider == null) {
+                return SysUiStatsLog
+                    .MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUGGESTION_PROVIDER__UNSPECIFIED
+            }
+
+            return when (suggestionProvider) {
+                SUGGESTION_PROVIDER_UNSPECIFIED ->
+                    SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUGGESTION_PROVIDER__UNSPECIFIED
+                SUGGESTION_PROVIDER_RLP ->
+                    SysUiStatsLog
+                        .MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUGGESTION_PROVIDER__ROUTE_LISTING_PREFERENCE
+
+                SUGGESTION_PROVIDER_DEVICE_SUGGESTION_APP ->
+                    SysUiStatsLog
+                        .MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUGGESTION_PROVIDER__DEVICE_SUGGESTION_APP
+
+                SUGGESTION_PROVIDER_DEVICE_SUGGESTION_OTHER ->
+                    SysUiStatsLog
+                        .MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUGGESTION_PROVIDER__DEVICE_SUGGESTION_OTHER
+
+                else ->
+                    throw IllegalArgumentException(
+                        "Unknown suggestion provider: $suggestionProvider"
+                    )
             }
         }
-
-        return "";
-    }
-
-    private static int getLoggingSuggestionProvider(
-            @MediaDevice.SuggestionProvider int suggestionProvider) {
-
-        return switch (suggestionProvider) {
-            case SUGGESTION_PROVIDER_UNSPECIFIED ->
-                    SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUGGESTION_PROVIDER__UNSPECIFIED;
-            case SUGGESTION_PROVIDER_RLP ->
-                    SysUiStatsLog
-                            .MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUGGESTION_PROVIDER__ROUTE_LISTING_PREFERENCE;
-            case SUGGESTION_PROVIDER_DEVICE_SUGGESTION_APP ->
-                    SysUiStatsLog
-                            .MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUGGESTION_PROVIDER__DEVICE_SUGGESTION_APP;
-            case SUGGESTION_PROVIDER_DEVICE_SUGGESTION_OTHER ->
-                    SysUiStatsLog
-                            .MEDIA_OUTPUT_OP_SWITCH_REPORTED__SUGGESTION_PROVIDER__DEVICE_SUGGESTION_OTHER;
-            default ->
-                    throw new IllegalArgumentException(
-                            "Unknown suggestion provider: " + suggestionProvider);
-        };
     }
 }
