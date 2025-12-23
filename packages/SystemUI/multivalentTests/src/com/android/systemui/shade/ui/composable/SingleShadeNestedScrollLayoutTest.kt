@@ -249,7 +249,8 @@ class SingleShadeNestedScrollLayoutTest : SysuiTestCase() {
                     shadeSession = rememberShadeSession(),
                     viewModel = kosmos.notificationsPlaceholderViewModel,
                     contentScrollState = contentScrollState,
-                    contentOverScrollEffect = rememberOffsetOverscrollEffect(),
+                    scrollingContentOverscrollEffect = rememberOffsetOverscrollEffect(),
+                    shortContentOverscrollEffect = rememberOffsetOverscrollEffect(),
                     jankMonitor = kosmos.interactionJankMonitor,
                     statusBarHeader = {
                         Box(Modifier.testTag(TAG_SB).fillMaxWidth().height(StatusBarHeight))

@@ -213,17 +213,19 @@ fun ContentScope.ScrollingNotificationPanel(
         },
     onEmptySpaceClick: (() -> Unit)? = null,
 ) {
-    val contentOverscrollEffect = rememberOffsetOverscrollEffect()
+    val scrollingContentOverscrollEffect = rememberOffsetOverscrollEffect()
+    val shortContentOverscrollEffect = rememberOffsetOverscrollEffect()
 
     if (isActivated && isAlwaysComposedContentVisible()) {
         val composeViewRoot = LocalView.current
         // whether the stack is moving due to a swipe or fling
-        val isScrollInProgress by
-            remember(contentScrollState, contentOverscrollEffect) {
-                derivedStateOf {
-                    contentScrollState.isScrollInProgress || contentOverscrollEffect.isInProgress
-                }
+        val isScrollInProgress by remember {
+            derivedStateOf {
+                contentScrollState.isScrollInProgress ||
+                    scrollingContentOverscrollEffect.isInProgress ||
+                    shortContentOverscrollEffect.isInProgress
             }
+        }
 
         LaunchedEffect(isScrollInProgress) {
             if (isScrollInProgress) {
@@ -264,7 +266,8 @@ fun ContentScope.ScrollingNotificationPanel(
         shouldIncludeHeadsUpSpace = shouldIncludeHeadsUpSpace,
         isActivated = isActivated,
         contentScrollState = contentScrollState,
-        contentOverscrollEffect = contentOverscrollEffect,
+        scrollingContentOverscrollEffect = scrollingContentOverscrollEffect,
+        shortContentOverscrollEffect = shortContentOverscrollEffect,
         onEmptySpaceClick = onEmptySpaceClick,
         onStackHeightChanged = { /* no-op without nested scroll */ },
     )
@@ -282,7 +285,8 @@ fun ContentScope.NestedScrollingNotificationPanel(
     stackTopPadding: Dp,
     stackBottomPadding: Dp,
     contentScrollState: ScrollState,
-    contentOverscrollEffect: OffsetOverscrollEffect,
+    scrollingContentOverscrollEffect: OffsetOverscrollEffect,
+    shortContentOverscrollEffect: OffsetOverscrollEffect,
     modifier: Modifier = Modifier,
     shouldContentFillMaxSize: Boolean,
     shouldScrimBackgroundFillMaxHeight: Boolean,
@@ -444,9 +448,6 @@ fun ContentScope.NestedScrollingNotificationPanel(
     // Prevent background gaps during overscroll.
     val backgroundHeightDp =
         LocalWindowInfo.current.containerDpSize.height + OffsetOverscrollEffect.DefaultMaxDistance
-
-    val scrollingContentOverscrollEffect = contentOverscrollEffect
-    val shortContentOverscrollEffect = rememberOffsetOverscrollEffect()
 
     Layout(
         modifier =

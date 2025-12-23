@@ -81,7 +81,8 @@ fun ContentScope.SingleShadeNestedScrollLayout(
     shadeSession: SaveableSession,
     viewModel: NotificationsPlaceholderViewModel,
     contentScrollState: ScrollState,
-    contentOverScrollEffect: OffsetOverscrollEffect,
+    scrollingContentOverscrollEffect: OffsetOverscrollEffect,
+    shortContentOverscrollEffect: OffsetOverscrollEffect,
     jankMonitor: InteractionJankMonitor,
     statusBarHeader: @Composable () -> Unit,
     mediaAndQqsHeader: @Composable () -> Unit,
@@ -114,14 +115,14 @@ fun ContentScope.SingleShadeNestedScrollLayout(
     // this is to remove these side effects when the content is not visible.
     if (isAlwaysComposedContentVisible()) {
         // whether the stack is moving due to a swipe or fling
-        val isScrollInProgress by
-            remember(contentScrollState, contentOverScrollEffect) {
-                derivedStateOf {
-                    contentScrollState.isScrollInProgress ||
-                        contentOverScrollEffect.isInProgress ||
-                        scrimOffset.isRunning
-                }
+        val isScrollInProgress by remember {
+            derivedStateOf {
+                contentScrollState.isScrollInProgress ||
+                    scrollingContentOverscrollEffect.isInProgress ||
+                    shortContentOverscrollEffect.isInProgress ||
+                    scrimOffset.isRunning
             }
+        }
 
         LaunchedEffect(isScrollInProgress) {
             if (isScrollInProgress) {
