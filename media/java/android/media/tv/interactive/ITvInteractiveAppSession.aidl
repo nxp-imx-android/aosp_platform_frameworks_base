@@ -37,6 +37,7 @@ oneway interface ITvInteractiveAppSession {
     void startInteractiveApp();
     void stopInteractiveApp();
     void resetInteractiveApp();
+    void startInteractiveAppWithHandle(int handle);
     void createBiInteractiveApp(in Uri biIAppUri, in Bundle params);
     void destroyBiInteractiveApp(in String biIAppId);
     void setTeletextAppEnabled(boolean enable);

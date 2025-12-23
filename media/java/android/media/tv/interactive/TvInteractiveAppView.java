@@ -552,6 +552,22 @@ public class TvInteractiveAppView extends ViewGroup {
     }
 
     /**
+     * Starts an interactive application using the unique identifier to this session.
+     *
+     * @param handle the handle id of the interactive application.
+     *
+     * @hide
+     */
+    public void startInteractiveApp(int handle) {
+        if (DEBUG) {
+            Log.d(TAG, "startInteractiveApp");
+        }
+        if (mSession != null) {
+            mSession.startInteractiveApp(handle);
+        }
+    }
+
+    /**
      * Sends current video bounds to related TV interactive app.
      *
      * @param bounds the rectangle area for rendering the current video.

@@ -514,6 +514,15 @@ public abstract class TvInteractiveAppService extends Service {
         }
 
         /**
+         * Callback when starts an interactive app using its handle id.
+         * @param handle the handle id of the interactive app.
+         *
+         * @hide
+         */
+        public void onStartInteractiveApp(int handle) {
+        }
+
+        /**
          * Creates broadcast-independent(BI) interactive application.
          *
          * <p>The implementation should call {@link #notifyBiInteractiveAppCreated(Uri, String)},
@@ -1761,6 +1770,10 @@ public abstract class TvInteractiveAppService extends Service {
 
         void resetInteractiveApp() {
             onResetInteractiveApp();
+        }
+
+        void startInteractiveApp(int handle) {
+            onStartInteractiveApp(handle);
         }
 
         void createBiInteractiveApp(@NonNull Uri biIAppUri, @Nullable Bundle params) {

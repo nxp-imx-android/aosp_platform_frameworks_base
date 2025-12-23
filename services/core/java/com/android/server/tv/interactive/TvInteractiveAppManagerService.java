@@ -2077,6 +2077,31 @@ public class TvInteractiveAppManagerService extends SystemService {
         }
 
         @Override
+        public void startInteractiveAppWithHandle(IBinder sessionToken, int userId, int handle) {
+            if (DEBUG) {
+                Slogf.d(TAG, "BinderService#start(userId=%d)", userId);
+            }
+            final int callingUid = Binder.getCallingUid();
+            final int resolvedUserId = resolveCallingUserId(Binder.getCallingPid(), callingUid,
+                    userId, "startInteractiveAppWithHandle");
+            SessionState sessionState = null;
+            final long identity = Binder.clearCallingIdentity();
+            try {
+                synchronized (mLock) {
+                    try {
+                        sessionState = getSessionStateLocked(sessionToken, callingUid,
+                                resolvedUserId);
+                        getSessionLocked(sessionState).startInteractiveAppWithHandle(handle);
+                    } catch (RemoteException | SessionNotFoundException e) {
+                        Slogf.e(TAG, "error in start", e);
+                    }
+                }
+            } finally {
+                Binder.restoreCallingIdentity(identity);
+            }
+        }
+
+        @Override
         public void createBiInteractiveApp(
                 IBinder sessionToken, Uri biIAppUri, Bundle params, int userId) {
             if (DEBUG) {
