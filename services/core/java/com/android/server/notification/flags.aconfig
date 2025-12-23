@@ -150,13 +150,6 @@ flag {
   bug: "344050265"
 }
 
-flag {
-  name: "random_conversation_ids"
-  namespace: "systemui"
-  description: "Use random ids for new conversation channels, instead of concatenating parent id and conversation id"
-  bug: "432250872"
-}
-
 # Start: Flags that have been cleaned up in code but must remain defined for CTS
 
 flag {

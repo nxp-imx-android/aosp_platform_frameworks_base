@@ -5967,8 +5967,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT,
-            Flags.FLAG_RANDOM_CONVERSATION_IDS})
+    @EnableFlags({FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT})
     public void createConvChannelForPkgFromPrivilegedListener_longParentId_differentChannels()
             throws Exception {
         String extremelyLongParentId = "x".repeat(NotificationChannel.MAX_TEXT_LENGTH - 1);
