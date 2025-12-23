@@ -94,6 +94,7 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
             }
         }
 
+        final boolean isForceLeafTaskNonOccluding = isForceNonOccludingByRootTask(current);
         AdjacentVisibilityHelper adjacentVisibilityHelper = null;
         final Rect tmpRect = new Rect();
         final List<TaskFragment> adjacentTaskFragments = new ArrayList<>();
@@ -147,6 +148,12 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
             }
 
             if (!containsCanBeVisibleActivity) {
+                continue;
+            }
+
+            if (isForceLeafTaskNonOccluding && other.asTask() != null
+                    && !other.asTask().isForceOpaque()) {
+                // Leaf Task is forced to be non-occluding unless it is force opaque.
                 continue;
             }
 
@@ -458,6 +465,12 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
         return top != activity ? top : null;
     }
 
+    /** Whether all leaf Tasks in the same root Task are forced to be non-occluding. */
+    private static boolean isForceNonOccludingByRootTask(@NonNull TaskFragment current) {
+        final Task rootTask = current.getRootTask();
+        return current != rootTask && rootTask != null && rootTask.isForceLeafTasksNonOccluding();
+    }
+
     /** The helper to calculate whether a container is opaque. */
     private static class OpaqueContainerHelper implements Predicate<ActivityRecord> {
         private final boolean mEnableMultipleDesktopsBackend =
@@ -503,11 +516,16 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
         private boolean isOpaqueInner(@NonNull WindowContainer<?> container) {
             final boolean isActivity = container.asActivityRecord() != null;
             final boolean isLeafTaskFragment = container.asTaskFragment() != null
-                    && ((TaskFragment) container).isLeafTaskFragment();
+                    && container.asTaskFragment().isLeafTaskFragment();
             final boolean isForceOpaque = container.asTask() != null
                     && container.asTask().isForceOpaque();
             if (isForceOpaque) {
                 return true;
+            }
+            if (container.asTask() != null && container.asTask().isLeafTask()
+                    && isForceNonOccludingByRootTask(container.asTask())) {
+                // All leaf Tasks are forced to be non-occluding.
+                return false;
             }
             if (isActivity || isLeafTaskFragment) {
                 // When it is an activity or leaf task fragment, then opacity is calculated based

@@ -674,6 +674,9 @@ class Task extends TaskFragment {
     /** @see #disableAppCompatRoundedCorners() */
     private boolean mDisableAppCompatRoundedCorners;
 
+    /** @see #isForceLeafTasksNonOccluding() */
+    private boolean mIsForceLeafTasksNonOccluding;
+
     private Task(ActivityTaskManagerService atmService, int _taskId, Intent _intent,
             Intent _affinityIntent, String _affinity, String _rootAffinity,
             ComponentName _realActivity, ComponentName _origActivity, boolean _rootWasReset,
@@ -4709,6 +4712,23 @@ class Task extends TaskFragment {
 
     boolean isForceHiddenForPinnedTask() {
         return (mForceHiddenFlags & FLAG_FORCE_HIDDEN_FOR_PINNED_TASK) != 0;
+    }
+
+    void setForceLeafTasksNonOccluding(boolean isForceLeafTasksNonOccluding) {
+        mIsForceLeafTasksNonOccluding = isForceLeafTasksNonOccluding;
+    }
+
+    /**
+     * Whether all leaf Tasks of this Task should be treated as non-occluding when calculating
+     * visibility.
+     * Note: leaf Tasks below {@link #isVisibilityBarrier()} Task will still be treated as
+     * invisible.
+     */
+    boolean isForceLeafTasksNonOccluding() {
+        if (!Flags.visibilityManagementInBubbleRoot()) {
+            return false;
+        }
+        return mIsForceLeafTasksNonOccluding;
     }
 
     @Override
