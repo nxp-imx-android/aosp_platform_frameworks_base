@@ -1079,14 +1079,15 @@ public class ActivityManager {
             | PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
 
     /**
-     * All implicit capabilities. This capability set is currently only used for processes under
-     * active instrumentation. The intent is to allow CTS tests to always have these capabilities
-     * so that every test doesn't need to launch FGS.
+     * Default capabilities for processes under active instrumentation. The intent is to allow CTS
+     * tests to always have these capabilities so that every test doesn't need to launch a
+     * foreground service or other special lifecycle only to get these capabilities.
+     *
      * @hide
      */
-    @TestApi
-    public static final int PROCESS_CAPABILITY_ALL_IMPLICIT = PROCESS_CAPABILITY_FOREGROUND_CAMERA
+    public static final int PROCESS_CAPABILITY_INSTRUMENTATION_DEFAULTS =
             // TODO: b/467684465 - CTS tests should gain capabilities explicitly where necessary
+            PROCESS_CAPABILITY_FOREGROUND_CAMERA
             | PROCESS_CAPABILITY_FOREGROUND_MICROPHONE
             | PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL;
 
