@@ -58,9 +58,7 @@ constructor(
     private lateinit var dateTimePatternGenerator: DateTimePatternGenerator
 
     private val contentDescriptionFormat: Flow<DateFormat> =
-        combine(clockInteractor.onTimezoneOrLocaleChanged, clockInteractor.showSeconds) {
-            _,
-            showSeconds ->
+        combine(clockInteractor.onTimeFormatChange, clockInteractor.showSeconds) { _, showSeconds ->
             getSimpleDateFormat(getContentDescriptionFormatString(showSeconds))
         }
 
@@ -79,9 +77,7 @@ constructor(
         )
 
     private val clockTextFormat: Flow<SimpleDateFormat> =
-        combine(clockInteractor.onTimezoneOrLocaleChanged, clockInteractor.showSeconds) {
-            _,
-            showSeconds ->
+        combine(clockInteractor.onTimeFormatChange, clockInteractor.showSeconds) { _, showSeconds ->
             getSimpleDateFormat(getClockTextFormatString(showSeconds))
         }
 
