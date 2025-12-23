@@ -15,6 +15,7 @@
  */
 package com.android.server.am.psc;
 
+import android.app.ActivityManagerInternal;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.Slog;
 
@@ -137,15 +138,34 @@ public class SyncBatchSession extends BatchSession {
 
     @Override
     protected void onLastClose() {
+        updateIfNecessary(mUpdateReason);
+    }
+
+    /**
+     * Calling will trigger an update mid batch session, if necessary.
+     * TODO: b/468431644 - This method defeats the purpose of having a batch session and usages
+     *  of it should be removed when ActiveService is restructured to better utilize batch sessions.
+     */
+    public void triggerUpdate(@ActivityManagerInternal.OomAdjReason int reason) {
+        if (!isActive()) {
+            Slog.wtfStack(TAG,
+                    "Attempted to forceUpdate while SyncBatchSession is not active! reason:"
+                            + reason);
+            return;
+        }
+        updateIfNecessary(reason);
+    }
+
+    private void updateIfNecessary(@ActivityManagerInternal.OomAdjReason int reason) {
         if (!mShouldUpdate) return;
         mShouldUpdate = false;
         if (mFullUpdate) {
             // Full update was triggered, reset the flag and run a full update.
             mFullUpdate = false;
-            mFullUpdater.accept(mUpdateReason);
+            mFullUpdater.accept(reason);
         } else {
             // Otherwise, run a partial update on anything that may have been enqueued.
-            mPartialUpdater.accept(mUpdateReason);
+            mPartialUpdater.accept(reason);
         }
     }
 

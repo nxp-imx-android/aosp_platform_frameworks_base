@@ -328,6 +328,10 @@ public class ServiceLifecycleImportanceTest extends BaseServiceTest {
 
         makeForegroundService(clientProc);
 
+        // While in the executing state, the process can have the elevated importance.
+        ProcessStateValidator executingStateValidator = ProcessStateValidator.create(
+                FOREGROUND_SERVICE_VALIDATOR_TEMPLATE, EXECUTING_STATE_VALIDATOR_TEMPLATE).clamp();
+
         // While the process is bound by an FGS with BIND_IMPORTANT it should have the importance
         // of an FGS.
         ProcessStateValidator boundStateValidator =
@@ -337,8 +341,13 @@ public class ServiceLifecycleImportanceTest extends BaseServiceTest {
         doAnswer((invocation) -> {
             bindServiceArgs.token = invocation.getArgument(0);
             bindServiceArgs.bindToken = invocation.getArgument(1);
-            // Service was already created, so will not be in the executing state.
-            boundStateValidator.validate(serviceProc);
+            if (Flags.pscBatchServiceUpdates()) {
+                executingStateValidator.validate(serviceProc);
+            } else {
+                // Legacy behavior incorrectly skips triggering an update after putting a bound
+                // service in the executing state.
+                boundStateValidator.validate(serviceProc);
+            }
             return null;
         }).when(serviceThread).scheduleBindService(any(), any(), any(), anyBoolean(), anyInt(),
                 anyLong());
