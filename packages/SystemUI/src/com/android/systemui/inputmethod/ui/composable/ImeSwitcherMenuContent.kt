@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import com.android.compose.PlatformOutlinedButton
 import com.android.compose.theme.PlatformTheme
 import com.android.internal.R
+import com.android.systemui.Flags
 import com.android.systemui.inputmethod.ui.viewmodel.ImeSwitcherMenuViewModel
 import com.android.systemui.lifecycle.rememberActivated
 
@@ -87,6 +88,9 @@ fun ImeSwitcherMenuContent(
     //  as a workaround, we remember the original theme and keep it on recomposition.
     val isCurrentlyInDarkTheme = isSystemInDarkTheme()
     val cachedDarkTheme = remember { isCurrentlyInDarkTheme }
+    // TODO(b/474600479): Remove remember val and PlatformTheme wrapper once flag is advanced.
+    val isDarkTheme =
+        if (Flags.dialogBackgroundRefresh()) isCurrentlyInDarkTheme else cachedDarkTheme
     val paneTitleDescription = stringResource(R.string.select_input_method)
     val buttonDescription = stringResource(R.string.input_method_language_settings)
 
