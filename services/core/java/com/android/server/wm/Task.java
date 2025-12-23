@@ -437,14 +437,6 @@ class Task extends TaskFragment {
     int mMultiWindowRestoreWindowingMode = INVALID_WINDOWING_MODE;
     WindowContainerToken mMultiWindowRestoreParent;
 
-    /**
-     * Last requested orientation reported to DisplayContent. This is different from {@link
-     * #mOrientation} in the sense that this takes activities' requested orientation into
-     * account. Start with {@link ActivityInfo#SCREEN_ORIENTATION_UNSPECIFIED} so that we don't need
-     * to notify for activities that don't specify any orientation.
-     */
-    int mLastReportedRequestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
-
     private final Rect mTmpRect = new Rect();
 
     // Resize mode of the task. See {@link ActivityInfo#resizeMode}

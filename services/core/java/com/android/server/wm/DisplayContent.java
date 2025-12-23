@@ -2018,12 +2018,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         final ActivityRecord r =
                 orientationSource != null ? orientationSource.asActivityRecord() : null;
         if (r != null) {
-            final Task task = r.getTask();
-            if (task != null && orientation != task.mLastReportedRequestedOrientation) {
-                task.mLastReportedRequestedOrientation = orientation;
-                mAtmService.getTaskChangeNotificationController()
-                        .notifyTaskRequestedOrientationChanged(task.mTaskId, orientation);
-            }
             // The orientation source may not be the top if it uses SCREEN_ORIENTATION_BEHIND,
             // or it is a translucent SCREEN_ORIENTATION_UNSPECIFIED activity.
             ActivityRecord topCandidate = r;
