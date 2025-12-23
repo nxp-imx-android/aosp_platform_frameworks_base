@@ -45,4 +45,37 @@ class ObserveReadsTest {
         rule.waitForIdle()
         assertThat(observedState).isEqualTo(2)
     }
+
+    @Test
+    fun nestedObserveReads_doesNotCrash_observedCorrectly() {
+        var stateInner by mutableIntStateOf(0)
+        var stateOuter by mutableIntStateOf(10)
+        var observedStateInner = -1 to -1
+        var observedStateOuter = -1
+        rule.setContent {
+            ObserveReadsRoot {
+                ObserveReads {
+                    observedStateOuter = stateOuter
+                }
+                ObserveReadsRoot {
+                    ObserveReads {
+                        observedStateInner = stateInner to stateOuter
+                    }
+                }
+            }
+        }
+        assertThat(observedStateOuter).isEqualTo(10)
+        assertThat(observedStateInner).isEqualTo(0 to 10)
+
+        stateInner = 1
+        rule.waitForIdle()
+        assertThat(observedStateOuter).isEqualTo(10)
+        assertThat(observedStateInner).isEqualTo(1 to 10)
+
+        stateInner = 2
+        stateOuter = 20
+        rule.waitForIdle()
+        assertThat(observedStateOuter).isEqualTo(20)
+        assertThat(observedStateInner).isEqualTo(2 to 20)
+    }
 }
