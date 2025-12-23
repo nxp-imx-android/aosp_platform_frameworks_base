@@ -87,7 +87,7 @@ public class MessagingGroup extends NotificationOptimizedLinearLayout implements
     private int mTextColor;
     private int mSendingTextColor;
     private List<MessagingMessage> mMessages;
-    private ArrayList<MessagingMessage> mAddedMessages = new ArrayList<>();
+    private final ArrayList<MessagingMessage> mAddedMessages = new ArrayList<>();
     private boolean mFirstLayout;
     private boolean mIsHidingAnimated;
     private boolean mNeedsGeneratedAvatar;
@@ -96,7 +96,7 @@ public class MessagingGroup extends NotificationOptimizedLinearLayout implements
     private ViewGroup mImageContainer;
     private MessagingImageMessage mIsolatedMessage;
     private boolean mClippingDisabled;
-    private Point mDisplaySize = new Point();
+    private final Point mDisplaySize = new Point();
     private ProgressBar mSendingSpinner;
     private View mSendingSpinnerContainer;
     private boolean mShowingAvatar = true;
@@ -110,11 +110,6 @@ public class MessagingGroup extends NotificationOptimizedLinearLayout implements
     private boolean mCanHideSenderIfFirst;
     private boolean mIsInConversation = true;
     private ViewGroup mMessagingIconContainer;
-    private int mConversationContentStart;
-    private int mNonConversationContentStart;
-    private int mNonConversationPaddingStart;
-    private int mConversationAvatarSize;
-    private int mNonConversationAvatarSize;
     private int mNotificationTextMarginTop;
 
     public MessagingGroup(@NonNull Context context) {
@@ -152,14 +147,6 @@ public class MessagingGroup extends NotificationOptimizedLinearLayout implements
         mDisplaySize.y = displayMetrics.heightPixels;
         mSenderTextPaddingSingleLine = res.getDimensionPixelSize(
                 R.dimen.messaging_group_singleline_sender_padding_end);
-        mConversationContentStart = res.getDimensionPixelSize(R.dimen.conversation_content_start);
-        mNonConversationContentStart = res.getDimensionPixelSize(
-                R.dimen.notification_content_margin_start);
-        mNonConversationPaddingStart = res.getDimensionPixelSize(
-                R.dimen.messaging_layout_icon_padding_start);
-        mConversationAvatarSize = res.getDimensionPixelSize(R.dimen.messaging_avatar_size);
-        mNonConversationAvatarSize = res.getDimensionPixelSize(
-                R.dimen.notification_icon_circle_size);
         mNotificationTextMarginTop = res.getDimensionPixelSize(
                 R.dimen.notification_text_margin_top);
     }
@@ -189,7 +176,7 @@ public class MessagingGroup extends NotificationOptimizedLinearLayout implements
         int position = 0;
         View view = searchedView;
         while(view != parent) {
-            position += view.getTop() + view.getTranslationY();
+            position += (int) (view.getTop() + view.getTranslationY());
             view = (View) view.getParent();
         }
         return position;
@@ -256,7 +243,7 @@ public class MessagingGroup extends NotificationOptimizedLinearLayout implements
         mAvatarName = "";
     }
 
-    static MessagingGroup createGroup(MessagingLinearLayout layout) {;
+    static MessagingGroup createGroup(MessagingLinearLayout layout) {
         MessagingGroup createdGroup = sInstancePool.acquire();
         if (createdGroup == null) {
             createdGroup = (MessagingGroup) LayoutInflater.from(layout.getContext()).inflate(
