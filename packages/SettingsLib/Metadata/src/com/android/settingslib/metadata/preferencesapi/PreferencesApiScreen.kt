@@ -17,6 +17,7 @@
 package com.android.settingslib.metadata.preferencesapi
 
 import android.content.Context
+import android.os.Bundle
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import com.android.settingslib.metadata.KeyParametersSchema
@@ -50,14 +51,15 @@ interface ProvidesParametersNonStatically {
  * Scope for parameterization-related declarations.
  */
 class ParameterizationConfig {
-    internal class ApiFirstParameterDefinition(
+    internal class ApiParameterDefinition(
         val name: String,
         @StringRes val purpose: Int,
         val required: Boolean,
         val type: GeneratedParameterType
     )
 
-    internal val parameters = mutableMapOf<String, ApiFirstParameterDefinition>()
+    internal val parameters = mutableMapOf<String, ApiParameterDefinition>()
+    internal var prepareScreenExtras: ((ValidatedKeyParameters, Bundle) -> Unit)? = null
 
     /**
      * Defines a parameter and adds it to the schema.
@@ -78,7 +80,18 @@ class ParameterizationConfig {
         if (parameters.containsKey(name)) {
             throw IllegalArgumentException("Parameter '$name' is already defined.")
         }
-        parameters[name] = ApiFirstParameterDefinition(name, purpose, required, type)
+        parameters[name] = ApiParameterDefinition(name, purpose, required, type)
+    }
+
+    /**
+     * Declares how to convert the API-First parameters into the `Bundle` of extras required
+     * to launch the fragment for this screen.
+     */
+    fun prepareScreenExtras(lambda: (ValidatedKeyParameters, Bundle) -> Unit) {
+        if (prepareScreenExtras != null) {
+            throw IllegalStateException(getExceptionMessageMultipleDefines("prepareScreenExtras"))
+        }
+        prepareScreenExtras = lambda
     }
 
     /**
@@ -124,12 +137,23 @@ abstract class PreferencesApiScreen(
     var screenPermissions: PermissionsConfig? = null
     var screenPreconditions: PreconditionsConfig? = null
 
-    private lateinit var screenParameters: ValidatedKeyParameters
-
     override val keyParameters: ValidatedKeyParameters?
         get() = if (::screenParameters.isInitialized) screenParameters else super.keyParameters
 
+    override val launchScreenExtra: Bundle
+        get() {
+            val bundle = super.launchScreenExtra ?: Bundle()
+            val keyParameters = keyParameters ?: return bundle
+
+            prepareScreenExtras?.invoke(keyParameters, bundle)
+
+            return bundle
+        }
+
+    private lateinit var screenParameters: ValidatedKeyParameters
+    private var prepareScreenExtras: ((ValidatedKeyParameters, Bundle) -> Unit)? = null
     private var allPossibleParameters: ((Context) -> Collection<ValidatedKeyParameters>) = { emptyList() }
+
     val preferencesPermissions = mutableListOf<String>()
 
     val preferences = mutableListOf<ApiPreference<*>>()
@@ -208,7 +232,7 @@ abstract class PreferencesApiScreen(
             V::class.java,
             screenPermissions,
             screenPreconditions,
-            keyParameters,
+            { keyParameters },
         )
         builder.lambda()
         preferences.add(builder.build())
@@ -257,6 +281,14 @@ abstract class PreferencesApiScreen(
      *         required = true,
      *         type = GeneratedParameterType(...)
      *     )
+     *
+     *     prepareScreenExtras { parameters, extras ->
+     *         // Convert from the specified parameters into the extras required
+     *         // to launch the screen. Look at the fragment to see what extras
+     *         // it depends on to figure out how to do this
+     *         extras.putString("package", parameters["package"])
+     *     }
+     *
      * }
      * ```
      */
@@ -269,6 +301,7 @@ abstract class PreferencesApiScreen(
             val scope = ParameterizationConfig()
             scope.lambda()
             parametersSchema = scope.buildSchema()
+            prepareScreenExtras = scope.prepareScreenExtras
 
             val parametersSize = scope.parameters.size
             if (parametersSize == 0) {

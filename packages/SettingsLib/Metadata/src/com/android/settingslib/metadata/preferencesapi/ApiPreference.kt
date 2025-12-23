@@ -124,7 +124,7 @@ abstract class ApiPreference<V : Any>(val isFlagEnabled: Boolean) : PersistentPr
      * @return An initialized [ApiOperationContext] instance.
      */
     private fun getApiOperationContext(context: Context): ApiOperationContext {
-        val keyParameters = screenParameters ?: ValidatedKeyParameters.EMPTY
+        val keyParameters = getScreenParameters.invoke() ?: ValidatedKeyParameters.EMPTY
         return ApiOperationContext(context, keyParameters)
     }
 
@@ -227,8 +227,14 @@ abstract class ApiPreference<V : Any>(val isFlagEnabled: Boolean) : PersistentPr
             }
         }
 
-    /** The validated key-value parameters from the preference screen this preference belongs to. */
-    abstract val screenParameters: ValidatedKeyParameters?
+    /**
+     *  A function that returns the validated key-value parameters from the preference screen this
+     *  preference belongs to.
+     *
+     *  Added as a function because initializeParameters runs after the preferences are built
+     *  in init block.
+     */
+    abstract val getScreenParameters: () -> ValidatedKeyParameters?
 
     /** Preference's permission on the screen level. */
     abstract val screenPermissions: PermissionsConfig?
@@ -429,7 +435,7 @@ class ApiPreferenceConfigBuilder<V : Any>(
     val valueType: Class<V>,
     val screenPermissions: PermissionsConfig?,
     val screenPreconditions: PreconditionsConfig?,
-    val screenParameters: ValidatedKeyParameters?
+    val getScreenParameters: () -> ValidatedKeyParameters?
 ) {
     private var flagConfig: FlagConfig? = null
     private var permissionsConfig: PermissionsConfig? = null
@@ -523,6 +529,6 @@ class ApiPreferenceConfigBuilder<V : Any>(
         override val valueType: Class<V> = this@ApiPreferenceConfigBuilder.valueType
         override val key: String = this@ApiPreferenceConfigBuilder.key
         override val purpose: Int = this@ApiPreferenceConfigBuilder.purpose
-        override val screenParameters: ValidatedKeyParameters? = this@ApiPreferenceConfigBuilder.screenParameters
+        override val getScreenParameters: () -> ValidatedKeyParameters? = this@ApiPreferenceConfigBuilder.getScreenParameters
     }
 }
