@@ -35,6 +35,7 @@ import android.tracing.perfetto.DataSourceInstance;
 import android.tracing.perfetto.FlushCallbackArguments;
 import android.tracing.perfetto.StartCallbackArguments;
 import android.tracing.perfetto.StopCallbackArguments;
+import android.util.Log;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.WireTypeMismatchException;
 
@@ -52,6 +53,7 @@ public class ProtoLogDataSource extends DataSource<ProtoLogDataSource.Instance,
         ProtoLogDataSource.TlsState,
         ProtoLogDataSource.IncrementalState> {
     private static final String DATASOURCE_NAME = "android.protolog";
+    private static final String TAG = "ProtoLogDataSource";
 
     private final Map<Integer, ProtoLogConfig> mRunningInstances = new TreeMap<>();
 
@@ -297,12 +299,15 @@ public class ProtoLogDataSource extends DataSource<ProtoLogDataSource.Instance,
         LogLevel defaultLogFromLevel = LogLevel.WTF;
         final Map<String, GroupConfig> groupConfigs = new HashMap<>();
 
+        LogLevel defaultLogFromLevelOverride = null;
+
         while (configStream.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
             switch (configStream.getFieldNumber()) {
                 case (int) DEFAULT_LOG_FROM_LEVEL:
                     int defaultLogFromLevelInt = configStream.readInt(DEFAULT_LOG_FROM_LEVEL);
-                    if (defaultLogFromLevelInt < defaultLogFromLevel.ordinal()) {
-                        defaultLogFromLevel =
+                    if (defaultLogFromLevelOverride == null
+                            || defaultLogFromLevelInt < defaultLogFromLevelOverride.ordinal()) {
+                        defaultLogFromLevelOverride =
                                 logLevelFromInt(defaultLogFromLevelInt);
                     }
                     break;
@@ -322,7 +327,7 @@ public class ProtoLogDataSource extends DataSource<ProtoLogDataSource.Instance,
                     final long group_overrides_token  = configStream.start(GROUP_OVERRIDES);
 
                     String tag = null;
-                    LogLevel logFromLevel = defaultLogFromLevel;
+                    LogLevel logFromLevel = null;
                     boolean collectStackTrace = false;
                     while (configStream.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
                         if (configStream.getFieldNumber() == (int) GROUP_NAME) {
@@ -342,11 +347,20 @@ public class ProtoLogDataSource extends DataSource<ProtoLogDataSource.Instance,
                                 + "Got a group override without a group tag.");
                     }
 
+                    if (logFromLevel == null) {
+                        Log.e(TAG, "Failed to decode proto config. "
+                                + "Got a group override without a log from level.");
+                        logFromLevel = defaultLogFromLevel;
+                    }
                     groupConfigs.put(tag, new GroupConfig(logFromLevel, collectStackTrace));
 
                     configStream.end(group_overrides_token);
                     break;
             }
+        }
+
+        if (defaultLogFromLevelOverride != null) {
+            defaultLogFromLevel = defaultLogFromLevelOverride;
         }
 
         configStream.end(config_token);
