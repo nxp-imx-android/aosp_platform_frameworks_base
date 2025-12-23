@@ -122,7 +122,7 @@ class NotificationInfoTest : SysuiTestCase() {
 
         // Inflate the layout
         val inflater = LayoutInflater.from(mContext)
-        underTest = inflater.inflate(R.layout.notification_info, null) as NotificationInfo
+        underTest = inflater.inflate(R.layout.notification_2025_info, null) as NotificationInfo
 
         underTest.setGutsParent(mock<NotificationGuts>())
 
@@ -511,17 +511,6 @@ class NotificationInfoTest : SysuiTestCase() {
         bindNotification()
 
         underTest.findViewById<View>(R.id.silence).performClick()
-        testableLooper.processAllMessages()
-        verify(mockINotificationManager, never())
-            .updateNotificationChannelForPackage(anyString(), eq(TEST_UID), any())
-    }
-
-    @Test
-    fun testDoesNotUpdateNotificationChannelAfterImportanceChangedAutomatic() {
-        notificationChannel.importance = NotificationManager.IMPORTANCE_DEFAULT
-        bindNotification()
-
-        underTest.findViewById<View>(R.id.automatic).performClick()
         testableLooper.processAllMessages()
         verify(mockINotificationManager, never())
             .updateNotificationChannelForPackage(anyString(), eq(TEST_UID), any())
