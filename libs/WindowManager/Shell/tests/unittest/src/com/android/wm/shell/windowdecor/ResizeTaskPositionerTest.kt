@@ -18,20 +18,27 @@ package com.android.wm.shell.windowdecor
 import android.app.ActivityManager
 import android.graphics.Rect
 import android.os.Handler
+import android.os.IBinder
 import android.os.Looper
 import android.testing.AndroidTestingRunner
+import android.view.Display
+import android.view.SurfaceControl
+import android.window.TransitionInfo
+import android.window.WindowContainerTransaction
 import androidx.test.filters.SmallTest
 import androidx.test.internal.runner.junit4.statement.UiThreadStatement.runOnUiThread
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
-import com.android.wm.shell.shared.desktopmode.FakeDesktopState
+import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.transition.Transitions
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 
 /**
@@ -42,18 +49,22 @@ import org.mockito.kotlin.whenever
 @SmallTest
 @RunWith(AndroidTestingRunner::class)
 class ResizeTaskPositionerTest : ShellTestCase() {
-    private val mockWindowDecoration = mock<WindowDecorationWrapper>()
+    private val mockDisplay = mock<Display>()
     private val mockDisplayController = mock<DisplayController>()
     private val mockTaskMover = mock<TaskMover>()
     private val mockTaskResizer = mock<TaskResizer>()
     private val mockTransitions = mock<Transitions>()
+    private val mockTransitionBinder = mock<IBinder>()
+    private val mockWindowContainerTransaction = mock<WindowContainerTransaction>()
+    private val mockWindowDecoration = mock<WindowDecorationWrapper>()
 
-    private val desktopState = FakeDesktopState()
     private val mainHandler = Handler(Looper.getMainLooper())
     private lateinit var taskPositioner: ResizeTaskPositioner
 
     @Before
     fun setUp() {
+        val displayLayout = DisplayLayout(mContext, mockDisplay)
+        whenever(mockDisplayController.getDisplayLayout(any())).thenReturn(displayLayout)
         whenever(mockWindowDecoration.taskInfo)
             .thenReturn(
                 ActivityManager.RunningTaskInfo().apply {
@@ -62,11 +73,15 @@ class ResizeTaskPositionerTest : ShellTestCase() {
                 }
             )
 
+        whenever(mockTaskResizer.onResizeEnd(any(), any(), any()))
+            .thenReturn(mockWindowContainerTransaction)
+        whenever(mockTransitions.startTransition(any(), any(), any()))
+            .thenReturn(mockTransitionBinder)
+
         taskPositioner =
             ResizeTaskPositioner(
                 mockWindowDecoration,
                 mockDisplayController,
-                desktopState,
                 mockTaskMover,
                 mockTaskResizer,
                 mockTransitions,
@@ -75,24 +90,8 @@ class ResizeTaskPositionerTest : ShellTestCase() {
     }
 
     @Test
-    fun dragMove_whenDragEventsAreDispatched_thenTaskMoverIsInvoked() = runOnUiThread {
-        taskPositioner.onDragPositioningStart(
-            DragPositioningCallback.CTRL_TYPE_UNDEFINED,
-            0,
-            100f,
-            100f,
-            DragPositioningCallback.INPUT_METHOD_TYPE_UNKNOWN,
-        )
-        taskPositioner.onDragPositioningMove(0, 200f, 200f)
-        taskPositioner.onDragPositioningEnd(1, 300f, 300f)
-
-        verify(mockTaskMover).onMoveStart(any(), any(), any())
-        verify(mockTaskMover).onMoveUpdate(0, 200f, 200f)
-        verify(mockTaskMover).onMoveEnd(1, 300f, 300f)
-    }
-
-    @Test
-    fun dragResize_whenResizeEventsAreDispatched_thenTaskResizerIsInvoked() = runOnUiThread {
+    fun testResize() = runOnUiThread {
+        // Start
         taskPositioner.onDragPositioningStart(
             DragPositioningCallback.CTRL_TYPE_RIGHT,
             0,
@@ -100,12 +99,58 @@ class ResizeTaskPositionerTest : ShellTestCase() {
             100f,
             DragPositioningCallback.INPUT_METHOD_TYPE_UNKNOWN,
         )
-        taskPositioner.onDragPositioningMove(0, 200f, 200f)
-        taskPositioner.onDragPositioningEnd(0, 200f, 200f)
 
-        verify(mockTaskResizer).onResizeStart(any(), any(), any())
-        verify(mockTaskResizer).onResizeUpdate(any(), any())
-        verify(mockTaskResizer).onResizeEnd(any(), any())
+        // Move
+        taskPositioner.onDragPositioningMove(0, 200f, 200f)
+        verify(mockTaskResizer).onResizeUpdate(any(), eq(200f), eq(200f))
+
+        // End
+
+        taskPositioner.onDragPositioningEnd(0, 50f, 50f)
+        verify(mockTaskResizer).onResizeEnd(any(), eq(50f), eq(50f))
+
+        // Start animation
+        taskPositioner.startAnimation(
+            mockTransitionBinder,
+            mock<TransitionInfo>(),
+            mock<SurfaceControl.Transaction>(),
+            mock<SurfaceControl.Transaction>(),
+            mock<Transitions.TransitionFinishCallback>(),
+        )
+        verify(mockTaskResizer).cleanup(any())
+
+        verifyNoInteractions(mockTaskMover)
+    }
+
+    @Test
+    fun testMove() = runOnUiThread {
+        // Start
+        taskPositioner.onDragPositioningStart(
+            DragPositioningCallback.CTRL_TYPE_UNDEFINED,
+            0,
+            100f,
+            100f,
+            DragPositioningCallback.INPUT_METHOD_TYPE_UNKNOWN,
+        )
+
+        // Move
+        taskPositioner.onDragPositioningMove(1, 200f, 200f)
+        verify(mockTaskMover).onMoveUpdate(any(), eq(1), eq(200f), eq(200f))
+
+        // End
+        taskPositioner.onDragPositioningEnd(2, 50f, 50f)
+        verify(mockTaskMover).onMoveEnd(any(), eq(2), eq(50f), eq(50f))
+
+        // Start animation
+        taskPositioner.startAnimation(
+            mockTransitionBinder,
+            mock<TransitionInfo>(),
+            mock<SurfaceControl.Transaction>(),
+            mock<SurfaceControl.Transaction>(),
+            mock<Transitions.TransitionFinishCallback>(),
+        )
+
+        verifyNoInteractions(mockTaskResizer)
     }
 
     companion object {
