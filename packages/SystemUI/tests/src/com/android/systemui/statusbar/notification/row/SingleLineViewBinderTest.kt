@@ -16,10 +16,13 @@
 package com.android.systemui.statusbar.notification.row
 
 import android.app.Notification
+import android.app.Notification.Metric
+import android.app.Notification.MetricStyle
 import android.app.Person
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import android.view.View.GONE
+import androidx.core.view.isVisible
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.R
@@ -32,6 +35,7 @@ import com.android.systemui.statusbar.notification.row.SingleLineViewInflater.in
 import com.android.systemui.statusbar.notification.row.SingleLineViewInflater.inflatePublicSingleLineView
 import com.android.systemui.statusbar.notification.row.ui.viewbinder.SingleLineViewBinder
 import com.android.systemui.testKosmos
+import java.time.Duration
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -68,6 +72,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
         val view =
             inflatePrivateSingleLineView(
                 isConversation = false,
+                isMetric = false,
                 reinflateFlags = FLAG_CONTENT_VIEW_SINGLE_LINE,
                 entry = entry,
                 context = context,
@@ -77,6 +82,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
         val publicView =
             inflatePublicSingleLineView(
                 isConversation = false,
+                isMetric = false,
                 reinflateFlags = FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE,
                 entry = entry,
                 context = context,
@@ -88,6 +94,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
             SingleLineViewInflater.inflateSingleLineViewModel(
                 notification = notification,
                 messagingStyle = null,
+                metricStyle = null,
                 builder = notificationBuilder,
                 systemUiContext = context,
                 redactText = false,
@@ -127,6 +134,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
         val view =
             inflatePrivateSingleLineView(
                 isConversation = true,
+                isMetric = false,
                 reinflateFlags = FLAG_CONTENT_VIEW_SINGLE_LINE,
                 entry = entry,
                 context = context,
@@ -137,6 +145,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
         val publicView =
             inflatePublicSingleLineView(
                 isConversation = true,
+                isMetric = false,
                 reinflateFlags = FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE,
                 entry = entry,
                 context = context,
@@ -149,6 +158,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
             SingleLineViewInflater.inflateSingleLineViewModel(
                 notification = notification,
                 messagingStyle = style,
+                metricStyle = null,
                 builder = notificationBuilder,
                 systemUiContext = context,
                 redactText = false,
@@ -178,6 +188,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
         val view =
             inflatePrivateSingleLineView(
                 isConversation = true,
+                isMetric = false,
                 reinflateFlags = FLAG_CONTENT_VIEW_SINGLE_LINE,
                 entry = entry,
                 context = context,
@@ -187,6 +198,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
         val publicView =
             inflatePublicSingleLineView(
                 isConversation = true,
+                isMetric = false,
                 reinflateFlags = FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE,
                 entry = entry,
                 context = context,
@@ -198,6 +210,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
             SingleLineViewInflater.inflateSingleLineViewModel(
                 notification = notification,
                 messagingStyle = null,
+                metricStyle = null,
                 builder = notificationBuilder,
                 systemUiContext = context,
                 redactText = false,
@@ -236,6 +249,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
         val view =
             inflatePrivateSingleLineView(
                 isConversation = true,
+                isMetric = false,
                 reinflateFlags = FLAG_CONTENT_VIEW_SINGLE_LINE,
                 entry = entry,
                 context = context,
@@ -246,6 +260,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
         val publicView =
             inflatePublicSingleLineView(
                 isConversation = true,
+                isMetric = false,
                 reinflateFlags = FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE,
                 entry = entry,
                 context = context,
@@ -258,6 +273,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
             SingleLineViewInflater.inflateSingleLineViewModel(
                 notification = notification,
                 messagingStyle = style,
+                metricStyle = null,
                 builder = notificationBuilder,
                 systemUiContext = context,
                 redactText = false,
@@ -285,6 +301,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
         val view =
             inflatePrivateSingleLineView(
                 isConversation = false,
+                isMetric = false,
                 reinflateFlags = FLAG_CONTENT_VIEW_SINGLE_LINE,
                 entry = entry,
                 context = context,
@@ -294,6 +311,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
         val publicView =
             inflatePublicSingleLineView(
                 isConversation = false,
+                isMetric = false,
                 reinflateFlags = FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE,
                 entry = entry,
                 context = context,
@@ -305,6 +323,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
             SingleLineViewInflater.inflateSingleLineViewModel(
                 notification = notification,
                 messagingStyle = null,
+                metricStyle = null,
                 builder = notificationBuilder,
                 systemUiContext = context,
                 redactText = false,
@@ -318,6 +337,153 @@ class SingleLineViewBinderTest : SysuiTestCase() {
         assertEquals(viewModel.titleText, view?.titleView?.text)
         assertEquals(viewModel.summarization, view?.textView?.text)
         assertEquals(SUMMARIZATION, viewModel.summarization)
+    }
+
+    @Test
+    fun bindMetricSingleLineView_noTitle() {
+        // GIVEN: a row with MetricStyle notification with Text metric
+        val metric = Metric(Metric.FixedInt(1245), "Steps")
+        val style = MetricStyle()
+        style.addMetric(metric)
+        notificationBuilder.setStyle(style)
+        notificationBuilder.setContentTitle(null)
+        val notification = notificationBuilder.build()
+        val entry = kosmos.buildNotificationEntry(notification)
+
+        val view =
+            inflatePrivateSingleLineView(
+                isConversation = false,
+                isMetric = true,
+                reinflateFlags = FLAG_CONTENT_VIEW_SINGLE_LINE,
+                entry = entry,
+                context = context,
+                logger = mock(),
+            )
+                as HybridMetricNotificationView
+
+        val viewModel =
+            SingleLineViewInflater.inflateSingleLineViewModel(
+                notification = notification,
+                messagingStyle = null,
+                metricStyle = style,
+                builder = notificationBuilder,
+                systemUiContext = context,
+                redactText = false,
+                summarization = null,
+            )
+
+        // WHEN: binds the viewHolder
+        SingleLineViewBinder.bind(viewModel, view)
+
+        // THEN: the single-line view should be bind with viewModel's title and metric data
+        assertEquals("Steps", view.titleView.text)
+        assertEquals("", view.textView.text)
+
+        assertEquals("", view.metricLabel.text)
+        assertEquals(false, view.metricLabel.isVisible)
+        assertEquals(false, view.metricChronometer.isVisible)
+        assertEquals(true, view.metricValue.isVisible)
+        assertEquals("1245", view.metricValue.text)
+    }
+
+    @Test
+    fun bindMetricSingleLineView_withText() {
+        // GIVEN: a row with MetricStyle notification with Text metric
+        val metric = Metric(Metric.FixedInt(1245), "Steps")
+        val style = MetricStyle()
+        style.addMetric(metric)
+        notificationBuilder.setStyle(style)
+        notificationBuilder.setContentTitle("Title")
+        val notification = notificationBuilder.build()
+        val entry = kosmos.buildNotificationEntry(notification)
+
+        val view =
+            inflatePrivateSingleLineView(
+                isConversation = false,
+                isMetric = true,
+                reinflateFlags = FLAG_CONTENT_VIEW_SINGLE_LINE,
+                entry = entry,
+                context = context,
+                logger = mock(),
+            )
+                as HybridMetricNotificationView
+
+        val viewModel =
+            SingleLineViewInflater.inflateSingleLineViewModel(
+                notification = notification,
+                messagingStyle = null,
+                metricStyle = style,
+                builder = notificationBuilder,
+                systemUiContext = context,
+                redactText = false,
+                summarization = null,
+            )
+
+        // WHEN: binds the viewHolder
+        SingleLineViewBinder.bind(viewModel, view)
+
+        // THEN: the single-line view should be bind with viewModel's title and metric data
+        assertEquals("Title", view.titleView.text)
+        assertEquals("", view.textView.text)
+
+        assertEquals("Steps", view.metricLabel.text)
+        assertEquals(false, view.metricChronometer.isVisible)
+        assertEquals(true, view.metricValue.isVisible)
+        assertEquals("1245", view.metricValue.text)
+    }
+
+    @Test
+    fun bindMetricSingleLineView_withTimeDifference() {
+        // GIVEN: a row with MetricStyle notification with TimeDifference metric
+        val metric =
+            Metric(
+                Metric.TimeDifference.forPausedStopwatch(
+                    Duration.ofMinutes(10),
+                    Metric.TimeDifference.FORMAT_CHRONOMETER,
+                ),
+                "Timer",
+            )
+        val style = MetricStyle()
+        style.addMetric(metric)
+        notificationBuilder.setStyle(style)
+        notificationBuilder.setContentTitle("Title")
+        val notification = notificationBuilder.build()
+        val entry = kosmos.buildNotificationEntry(notification)
+
+        val view =
+            inflatePrivateSingleLineView(
+                isConversation = false,
+                isMetric = true,
+                reinflateFlags = FLAG_CONTENT_VIEW_SINGLE_LINE,
+                entry = entry,
+                context = context,
+                logger = mock(),
+            )
+                as HybridMetricNotificationView
+
+        val viewModel =
+            SingleLineViewInflater.inflateSingleLineViewModel(
+                notification = notification,
+                messagingStyle = null,
+                metricStyle = style,
+                builder = notificationBuilder,
+                systemUiContext = context,
+                redactText = false,
+                summarization = null,
+            )
+
+        // WHEN: binds the viewHolder
+        SingleLineViewBinder.bind(viewModel, view)
+
+        // THEN: the single-line view should be bind with viewModel's title and metric data
+        assertEquals("Title", view.titleView.text)
+        assertEquals("", view.textView.text)
+
+        assertEquals(true, view.metricLabel.isVisible)
+        assertEquals("Timer", view.metricLabel.text)
+        assertEquals(true, view.metricChronometer.isVisible)
+        assertEquals("10:00", view.metricChronometer.text)
+        assertEquals(false, view.metricValue.isVisible)
     }
 
     private companion object {

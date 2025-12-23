@@ -198,6 +198,7 @@ constructor(
             result.contentModel.singleLineViewModel?.let { viewModel ->
                 SingleLineViewInflater.inflatePrivateSingleLineView(
                     viewModel.isConversation(),
+                    viewModel.isMetric(),
                     reInflateFlags,
                     entry,
                     systemUIContext,
@@ -208,6 +209,7 @@ constructor(
             result.contentModel.publicSingleLineViewModel?.let { viewModel ->
                 SingleLineViewInflater.inflatePublicSingleLineView(
                     viewModel.isConversation(),
+                    viewModel.isMetric(),
                     reInflateFlags,
                     entry,
                     systemUIContext,
@@ -449,6 +451,7 @@ constructor(
                 inflationProgress.contentModel.singleLineViewModel?.let {
                     SingleLineViewInflater.inflatePrivateSingleLineView(
                         it.isConversation(),
+                        it.isMetric(),
                         reInflateFlags,
                         entry,
                         context,
@@ -461,6 +464,7 @@ constructor(
                 inflationProgress.contentModel.publicSingleLineViewModel?.let { viewModel ->
                     SingleLineViewInflater.inflatePublicSingleLineView(
                         viewModel.isConversation(),
+                        viewModel.isMetric(),
                         reInflateFlags,
                         entry,
                         context,
@@ -669,34 +673,31 @@ constructor(
                     reinflating = reInflateFlags and FLAG_CONTENT_VIEW_CONTRACTED != 0,
                 )
 
-            logger.logAsyncTaskProgress(
-                entry.logKey,
-                "extracting promoted notification content",
-            )
+            logger.logAsyncTaskProgress(entry.logKey, "extracting promoted notification content")
             val imageModelProvider = rowImageInflater.useForContentModel()
             val promotedContent =
-                    promotedNotificationContentExtractor
-                        .extractContent(
-                            entry,
-                            builder,
-                            bindParams.redactionType,
-                            imageModelProvider,
-                            packageContext,
-                            systemUiContext,
+                promotedNotificationContentExtractor
+                    .extractContent(
+                        entry,
+                        builder,
+                        bindParams.redactionType,
+                        imageModelProvider,
+                        packageContext,
+                        systemUiContext,
+                    )
+                    .also {
+                        logger.logAsyncTaskProgress(
+                            entry.logKey,
+                            "extracted promoted notification content: ${it?.toRedactedString()}",
                         )
-                        .also {
-                            logger.logAsyncTaskProgress(
-                                entry.logKey,
-                                "extracted promoted notification content: ${it?.toRedactedString()}",
-                            )
-                        }
+                    }
 
             // process conversations and extract the messaging style
             val messagingStyle =
-                if (!NmSummarizationAllFlag.isEnabled || entry.ranking.isConversation
-                ) {
+                if (!NmSummarizationAllFlag.isEnabled || entry.ranking.isConversation) {
                     conversationProcessor.processNotification(entry, builder, logger)
                 } else null
+            val metricStyle = builder.style as? Notification.MetricStyle
 
             val remoteViews =
                 createRemoteViews(
@@ -718,6 +719,7 @@ constructor(
                     SingleLineViewInflater.inflateSingleLineViewModel(
                         notification = entry.sbn.notification,
                         messagingStyle = messagingStyle,
+                        metricStyle = metricStyle,
                         builder = builder,
                         systemUiContext = systemUiContext,
                         redactText = false,
@@ -736,6 +738,7 @@ constructor(
                         SingleLineViewInflater.inflateSingleLineViewModel(
                             notification = entry.sbn.notification,
                             messagingStyle = messagingStyle,
+                            metricStyle = metricStyle,
                             builder = builder,
                             systemUiContext = systemUiContext,
                             redactText = true,
@@ -862,9 +865,7 @@ constructor(
                         }
                     } else null
                 val normalGroupHeader =
-                    if (
-                        reInflateFlags and FLAG_GROUP_SUMMARY_HEADER != 0
-                    ) {
+                    if (reInflateFlags and FLAG_GROUP_SUMMARY_HEADER != 0) {
                         logger.logAsyncTaskProgress(
                             row.loggingKey,
                             "creating group summary remote view",
@@ -872,9 +873,7 @@ constructor(
                         builder.makeNotificationGroupHeader()
                     } else null
                 val minimizedGroupHeader =
-                    if (
-                        reInflateFlags and FLAG_LOW_PRIORITY_GROUP_SUMMARY_HEADER != 0
-                    ) {
+                    if (reInflateFlags and FLAG_LOW_PRIORITY_GROUP_SUMMARY_HEADER != 0) {
                         logger.logAsyncTaskProgress(
                             row.loggingKey,
                             "creating low-priority group summary remote view",
@@ -1087,22 +1086,17 @@ constructor(
                     logger = logger,
                 )
             }
-            val childrenContainer: NotificationChildrenContainer =
-                row.getChildrenContainerNonNull()
+            val childrenContainer: NotificationChildrenContainer = row.getChildrenContainerNonNull()
             if (reInflateFlags and FLAG_GROUP_SUMMARY_HEADER != 0) {
                 val isNewView =
                     !canReapplyRemoteView(
                         newView = result.remoteViews.normalGroupHeader,
-                        oldView =
-                            remoteViewCache.getCachedView(entry, FLAG_GROUP_SUMMARY_HEADER),
+                        oldView = remoteViewCache.getCachedView(entry, FLAG_GROUP_SUMMARY_HEADER),
                     )
                 val applyCallback: ApplyCallback =
                     object : ApplyCallback() {
                         override fun setResultView(v: View) {
-                            logger.logAsyncTaskProgress(
-                                entry.logKey,
-                                "group header view applied",
-                            )
+                            logger.logAsyncTaskProgress(entry.logKey, "group header view applied")
                             result.inflatedGroupHeaderView = v as NotificationHeaderView?
                         }
 
@@ -1148,17 +1142,13 @@ constructor(
                                 entry.logKey,
                                 "low-priority group header view applied",
                             )
-                            result.inflatedMinimizedGroupHeaderView =
-                                v as NotificationHeaderView?
+                            result.inflatedMinimizedGroupHeaderView = v as NotificationHeaderView?
                         }
 
                         override val remoteView: RemoteViews
                             get() = result.remoteViews.minimizedGroupHeader!!
                     }
-                logger.logAsyncTaskProgress(
-                    entry.logKey,
-                    "applying low priority group header view",
-                )
+                logger.logAsyncTaskProgress(entry.logKey, "applying low priority group header view")
                 applyRemoteView(
                     inflationExecutor = inflationExecutor,
                     inflateSynchronously = inflateSynchronously,

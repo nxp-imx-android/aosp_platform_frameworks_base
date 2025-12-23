@@ -38,6 +38,7 @@ import com.android.systemui.statusbar.notification.row.ui.viewmodel.Conversation
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.FacePile
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.SingleIcon
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.SingleLineViewModel
+import com.android.systemui.statusbar.notification.shared.extractMetrics
 import com.android.systemui.util.annotations.DeprecatedSysuiVisibleForTesting
 
 /** The inflater of SingleLineViewModel and SingleLineViewHolder */
@@ -61,6 +62,7 @@ object SingleLineViewInflater {
     fun inflateSingleLineViewModel(
         notification: Notification,
         messagingStyle: MessagingStyle?,
+        metricStyle: Notification.MetricStyle?,
         builder: Notification.Builder,
         systemUiContext: Context,
         redactText: Boolean,
@@ -78,7 +80,52 @@ object SingleLineViewInflater {
                 HybridGroupManager.resolveText(notification)
             }
 
-        if (messagingStyle == null) {
+        if (metricStyle != null) {
+            return SingleLineViewModel(
+                titleText = titleText,
+                // MetricStyle notifications display metric data instead of content text.
+                contentText = null,
+                summarization = if (redactText) null else summarization,
+                conversationData = null,
+                metric = metricStyle.extractMetrics(systemUiContext).first(),
+            )
+        } else if (messagingStyle != null) {
+
+            val isGroupConversation = messagingStyle.isGroupConversation
+
+            val conversationTextData = messagingStyle.loadConversationTextData(systemUiContext)
+            if (conversationTextData?.conversationTitle?.isNotEmpty() == true) {
+                titleText = conversationTextData.conversationTitle
+            }
+            if (!redactText && conversationTextData?.conversationText?.isNotEmpty() == true) {
+                contentText = conversationTextData.conversationText
+            }
+
+            val conversationAvatar =
+                messagingStyle.loadConversationAvatar(
+                    notification = notification,
+                    isGroupConversation = isGroupConversation,
+                    builder = builder,
+                    systemUiContext = systemUiContext,
+                )
+
+            val conversationData =
+                ConversationData(
+                    // We don't show the sender's name for one-to-one conversation
+                    conversationSenderName =
+                        if (isGroupConversation) conversationTextData?.senderName else null,
+                    avatar = conversationAvatar,
+                    summarization = summarization,
+                )
+
+            return SingleLineViewModel(
+                titleText = titleText,
+                contentText = contentText,
+                summarization = if (redactText) null else summarization,
+                conversationData = conversationData,
+                metric = null,
+            )
+        } else {
             // If we have no title AND no text (e.g. for some custom view notifications), show a
             // placeholder string
             if (TextUtils.isEmpty(titleText) && TextUtils.isEmpty(contentText)) {
@@ -90,6 +137,7 @@ object SingleLineViewInflater {
                     contentText = null,
                     summarization = if (redactText) null else summarization,
                     conversationData = null,
+                    metric = null,
                 )
             }
             return SingleLineViewModel(
@@ -97,42 +145,9 @@ object SingleLineViewInflater {
                 contentText = contentText,
                 summarization = if (redactText) null else summarization,
                 conversationData = null,
+                metric = null,
             )
         }
-
-        val isGroupConversation = messagingStyle.isGroupConversation
-
-        val conversationTextData = messagingStyle.loadConversationTextData(systemUiContext)
-        if (conversationTextData?.conversationTitle?.isNotEmpty() == true) {
-            titleText = conversationTextData.conversationTitle
-        }
-        if (!redactText && conversationTextData?.conversationText?.isNotEmpty() == true) {
-            contentText = conversationTextData.conversationText
-        }
-
-        val conversationAvatar =
-            messagingStyle.loadConversationAvatar(
-                notification = notification,
-                isGroupConversation = isGroupConversation,
-                builder = builder,
-                systemUiContext = systemUiContext,
-            )
-
-        val conversationData =
-            ConversationData(
-                // We don't show the sender's name for one-to-one conversation
-                conversationSenderName =
-                    if (isGroupConversation) conversationTextData?.senderName else null,
-                avatar = conversationAvatar,
-                summarization = summarization,
-            )
-
-        return SingleLineViewModel(
-            titleText = titleText,
-            contentText = contentText,
-            summarization = if (redactText) null else summarization,
-            conversationData = conversationData,
-        )
     }
 
     @JvmStatic
@@ -162,6 +177,7 @@ object SingleLineViewInflater {
             null,
             null,
             conversationData,
+            null,
         )
     }
 
@@ -380,6 +396,7 @@ object SingleLineViewInflater {
     @JvmStatic
     fun inflatePublicSingleLineView(
         isConversation: Boolean,
+        isMetric: Boolean,
         reinflateFlags: Int,
         entry: NotificationEntry,
         context: Context,
@@ -388,13 +405,14 @@ object SingleLineViewInflater {
         return if ((reinflateFlags and FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE) == 0) {
             null
         } else {
-            inflateSingleLineView(isConversation, reinflateFlags, entry, context, logger)
+            inflateSingleLineView(isConversation, isMetric, reinflateFlags, entry, context, logger)
         }
     }
 
     @JvmStatic
     fun inflatePrivateSingleLineView(
         isConversation: Boolean,
+        isMetric: Boolean,
         reinflateFlags: Int,
         entry: NotificationEntry,
         context: Context,
@@ -403,12 +421,13 @@ object SingleLineViewInflater {
         return if ((reinflateFlags and FLAG_CONTENT_VIEW_SINGLE_LINE) == 0) {
             null
         } else {
-            inflateSingleLineView(isConversation, reinflateFlags, entry, context, logger)
+            inflateSingleLineView(isConversation, isMetric, reinflateFlags, entry, context, logger)
         }
     }
 
     private fun inflateSingleLineView(
         isConversation: Boolean,
+        isMetric: Boolean,
         reinflateFlags: Int,
         entry: NotificationEntry,
         context: Context,
@@ -422,7 +441,7 @@ object SingleLineViewInflater {
 
         traceSection("SingleLineViewInflater#inflateSingleLineView") {
             val inflater = LayoutInflater.from(context)
-            val layoutRes: Int = HybridNotificationView.getLayoutResource(isConversation)
+            val layoutRes: Int = HybridNotificationView.getLayoutResource(isConversation, isMetric)
             view = inflater.inflate(layoutRes, /* root= */ null) as HybridNotificationView
             if (view == null) {
                 Log.wtf(TAG, "Single-line view inflation result is null for entry: ${entry.logKey}")

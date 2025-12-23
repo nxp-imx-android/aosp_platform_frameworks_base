@@ -75,11 +75,14 @@ public class HybridNotificationView extends AlphaOptimizedLinearLayout
     }
 
     /**
-     * Get layout resource for this view based on {@code isConversation}.
+     * Get layout resource for this view based on {@code isConversation} and {@code isMetric}.
      */
-    public static int getLayoutResource(boolean isConversation) {
+    public static int getLayoutResource(boolean isConversation, boolean isMetric) {
+        // Note: isConversation and isMetric are expected to be mutually exclusive.
         if (isConversation) {
             return R.layout.notification_2025_hybrid_conversation;
+        } else if (isMetric) {
+            return R.layout.hybrid_metric_notification;
         } else {
             return R.layout.notification_2025_hybrid;
         }
