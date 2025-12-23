@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.record.camera.ui.viewmodel
 
+import androidx.compose.foundation.gestures.TransformableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.geometry.Offset
@@ -25,17 +26,27 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.copy
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenCaptureCameraTransformationInteractor
+import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
+import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.sin
 import kotlin.properties.Delegates
+import kotlinx.coroutines.flow.map
 
 class ScreenCaptureCameraTransformationViewModel
 @AssistedInject
-constructor(private val interactor: ScreenCaptureCameraTransformationInteractor) :
-    HydratedActivatable() {
+constructor(
+    screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
+    private val interactor: ScreenCaptureCameraTransformationInteractor,
+) : HydratedActivatable() {
+
+    val transformableByTouchAnywhere: Boolean by
+        screenRecordingServiceInteractor.status
+            .map { it.transformableByTouchAnywhere() }
+            .hydratedStateOf(
+                "ScreenCaptureCameraTransformationViewModel#transformableByTouchAnywhere",
+                screenRecordingServiceInteractor.status.value.transformableByTouchAnywhere(),
+            )
 
     var bounds: Rect by
         Delegates.observable(Rect.Zero) { _, _, new ->
@@ -55,19 +66,30 @@ constructor(private val interactor: ScreenCaptureCameraTransformationInteractor)
     val rotation: Float
         get() = interactor.rotation
 
+    val state: TransformableState = TransformableState { _, zoomChange, panChange, rotationChange ->
+        changeTransformation(
+            offsetChange = panChange,
+            zoomChange = zoomChange,
+            rotationChange = rotationChange,
+        )
+    }
+
     private val transformation: Matrix by derivedStateOf { Matrix().apply {} }
 
     private val boundsAsPath = Path()
     var transformedBounds = Path()
         private set
 
-    fun changeTransformation(offsetChange: Offset, zoomChange: Float, rotationChange: Float) {
+    private fun changeTransformation(
+        offsetChange: Offset,
+        zoomChange: Float,
+        rotationChange: Float,
+    ) {
         with(interactor) {
             scale *= zoomChange
             rotation += rotationChange
-            val compensatedOffsetChange = offsetChange.rotateBy(rotation) * scale
-            offsetX += compensatedOffsetChange.x
-            offsetY += compensatedOffsetChange.y
+            offsetX += offsetChange.x
+            offsetY += offsetChange.y
         }
         recalculateTransformation()
     }
@@ -96,9 +118,5 @@ constructor(private val interactor: ScreenCaptureCameraTransformationInteractor)
     }
 }
 
-private fun Offset.rotateBy(angle: Float): Offset {
-    val angleInRadians = angle * (PI / 180)
-    val cos = cos(angleInRadians)
-    val sin = sin(angleInRadians)
-    return Offset((x * cos - y * sin).toFloat(), (x * sin + y * cos).toFloat())
-}
+private fun ScreenRecordingStatus.transformableByTouchAnywhere(): Boolean =
+    this is ScreenRecordingStatus.Stopped
