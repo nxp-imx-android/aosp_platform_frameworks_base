@@ -13,290 +13,295 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.systemui.media.dialog
 
-package com.android.systemui.media.dialog;
-
-import static com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_GO_TO_APP;
-import static com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_NONE;
-import static com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_TRANSFER;
-
-import android.content.Context;
-import android.graphics.drawable.Drawable;
-import android.text.TextUtils;
-import android.util.Log;
-import android.view.View;
-
-import androidx.annotation.DoNotInline;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.recyclerview.widget.RecyclerView;
-
-import com.android.internal.annotations.VisibleForTesting;
-import com.android.media.flags.Flags;
-import com.android.settingslib.media.LocalMediaManager.MediaDeviceState;
-import com.android.settingslib.media.MediaDevice;
-import com.android.systemui.res.R;
-
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import android.content.Context
+import android.graphics.drawable.Drawable
+import android.text.TextUtils
+import android.util.Log
+import android.view.View
+import androidx.annotation.DoNotInline
+import androidx.annotation.RequiresApi
+import androidx.recyclerview.widget.RecyclerView
+import com.android.media.flags.Flags
+import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTING
+import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTING_FAILED
+import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_GROUPING
+import com.android.settingslib.media.MediaDevice
+import com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_GO_TO_APP
+import com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_NONE
+import com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_TRANSFER
+import com.android.systemui.res.R
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * A parent RecyclerView adapter for the media output dialog device list. This class doesn't
  * manipulate the layout directly.
  */
-public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    public record OngoingSessionStatus(boolean host) {}
+abstract class MediaOutputAdapterBase(protected val mController: MediaSwitchingController) :
+    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    public record GroupStatus(Boolean selected, Boolean deselectable) {}
+    data class OngoingSessionStatus(val host: Boolean)
 
-    public enum ConnectionState {
+    data class GroupStatus(val selected: Boolean, val deselectable: Boolean)
+
+    enum class ConnectionState {
         CONNECTED,
         CONNECTING,
         DISCONNECTED,
     }
 
-    protected final MediaSwitchingController mController;
-    private int mCurrentActivePosition;
-    private boolean mIsDragging;
-    private static final String TAG = "MediaOutputAdapterBase";
-    private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
-    protected final List<MediaItem> mMediaItemList = new CopyOnWriteArrayList<>();
+    private var mCurrentActivePosition: Int
+    private var mIsDragging: Boolean = false
 
-    public MediaOutputAdapterBase(MediaSwitchingController controller) {
-        mController = controller;
-        mCurrentActivePosition = -1;
-        mIsDragging = false;
-        setHasStableIds(true);
+    protected val mMediaItemList: MutableList<MediaItem> = CopyOnWriteArrayList()
+
+    init {
+        mCurrentActivePosition = -1
+        setHasStableIds(true)
     }
 
-    boolean isCurrentlyConnected(MediaDevice device) {
-        MediaDevice currentConnectedMediaDevice = mController.getCurrentConnectedMediaDevice();
-        return (currentConnectedMediaDevice != null
-                && TextUtils.equals(device.getId(), currentConnectedMediaDevice.getId()))
-                || (!mController.hasGroupPlayback() && device.isSelected());
+    fun isCurrentlyConnected(device: MediaDevice): Boolean {
+        val currentConnectedMediaDevice = mController.currentConnectedMediaDevice
+        return (currentConnectedMediaDevice != null &&
+            TextUtils.equals(device.getId(), currentConnectedMediaDevice.getId())) ||
+            (!mController.hasGroupPlayback() && device.isSelected())
     }
 
-    boolean isDragging() {
-        return mIsDragging;
+    fun isDragging(): Boolean = mIsDragging
+
+    fun setIsDragging(isDragging: Boolean) {
+        mIsDragging = isDragging
     }
 
-    void setIsDragging(boolean isDragging) {
-        mIsDragging = isDragging;
-    }
+    fun getCurrentActivePosition(): Int = mCurrentActivePosition
 
-    int getCurrentActivePosition() {
-        return mCurrentActivePosition;
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        if (position >= mMediaItemList.size()) {
-            Log.d(TAG, "Incorrect position for item type: " + position);
-            return MediaItem.MediaItemType.TYPE_GROUP_DIVIDER;
+    override fun getItemViewType(position: Int): Int {
+        if (position >= mMediaItemList.size) {
+            Log.d(TAG, "Incorrect position for item type: $position")
+            return MediaItem.MediaItemType.TYPE_GROUP_DIVIDER
         }
-        return mMediaItemList.get(position).getMediaItemType();
+        return mMediaItemList[position].mediaItemType
     }
 
-    @Override
-    public int getItemCount() {
-        return mMediaItemList.size();
+    override fun getItemCount(): Int {
+        return mMediaItemList.size
     }
 
-    public abstract class MediaDeviceViewHolderBase extends RecyclerView.ViewHolder {
-
-        Context mContext;
-
-        MediaDeviceViewHolderBase(View view, Context context) {
-            super(view);
-            mContext = context;
-        }
-
-        void renderItem(MediaItem mediaItem, int position) {
-            MediaDevice device = mediaItem.getMediaDevice().get();
-            boolean isMutingExpectedDeviceExist = mController.hasMutingExpectedDevice();
-            final boolean currentlyConnected = isCurrentlyConnected(device);
+    abstract inner class MediaDeviceViewHolderBase
+    internal constructor(view: View, var mContext: Context) : RecyclerView.ViewHolder(view) {
+        fun renderItem(mediaItem: MediaItem, position: Int) {
+            val device = mediaItem.mediaDevice.get()
+            val isMutingExpectedDeviceExist = mController.hasMutingExpectedDevice()
+            val currentlyConnected = isCurrentlyConnected(device)
 
             if (DEBUG) {
-                Log.d(TAG, "#" + position + ": " + device);
+                Log.d(TAG, "#$position: $device")
             }
 
-            GroupStatus groupStatus = null;
-            OngoingSessionStatus ongoingSessionStatus = null;
-            ConnectionState connectionState = ConnectionState.DISCONNECTED;
-            boolean restrictVolumeAdjustment = mController.hasAdjustVolumeUserRestriction();
-            String subtitle = null;
-            Drawable deviceStatusIcon = null;
-            boolean deviceDisabled = false;
-            View.OnClickListener clickListener = null;
+            var groupStatus: GroupStatus? = null
+            var ongoingSessionStatus: OngoingSessionStatus? = null
+            var connectionState = ConnectionState.DISCONNECTED
+            var restrictVolumeAdjustment = mController.hasAdjustVolumeUserRestriction()
+            var subtitle: String? = null
+            var deviceStatusIcon: Drawable? = null
+            var deviceDisabled = false
+            var clickListener: View.OnClickListener? = null
 
             if (mCurrentActivePosition == position) {
-                mCurrentActivePosition = -1;
+                mCurrentActivePosition = -1
             }
 
             if (mController.isAnyDeviceTransferring()) {
-                if (device.getState() == MediaDeviceState.STATE_CONNECTING) {
-                    connectionState = ConnectionState.CONNECTING;
+                if (device.state == STATE_CONNECTING) {
+                    connectionState = ConnectionState.CONNECTING
                 }
             } else {
                 // Set different layout for each device
-                if (device.isMutingExpectedDevice()
-                        && !mController.isCurrentConnectedDeviceRemote()) {
-                    connectionState = ConnectionState.CONNECTED;
-                    restrictVolumeAdjustment = true;
-                    clickListener = v -> transferOutput(device);
-                } else if (currentlyConnected && isMutingExpectedDeviceExist
-                        && !mController.isCurrentConnectedDeviceRemote()) {
+                if (
+                    device.isMutingExpectedDevice && !mController.isCurrentConnectedDeviceRemote()
+                ) {
+                    connectionState = ConnectionState.CONNECTED
+                    restrictVolumeAdjustment = true
+                    clickListener = View.OnClickListener { transferOutput(device) }
+                } else if (
+                    currentlyConnected &&
+                        isMutingExpectedDeviceExist &&
+                        !mController.isCurrentConnectedDeviceRemote()
+                ) {
                     // mark as disconnected and set special click listener
-                    clickListener = v -> cancelMuteAwaitConnection();
-                } else if (device.getState() == MediaDeviceState.STATE_GROUPING) {
-                    connectionState = ConnectionState.CONNECTING;
+                    clickListener = View.OnClickListener { cancelMuteAwaitConnection() }
+                } else if (device.state == STATE_GROUPING) {
+                    connectionState = ConnectionState.CONNECTING
                 } else { // A connected or disconnected device.
-                    subtitle = device.hasSubtext() ? device.getSubtextString() : null;
-                    ongoingSessionStatus = getOngoingSessionStatus(device);
-                    groupStatus = getGroupStatus(device);
+                    subtitle = if (device.hasSubtext()) device.subtextString else null
+                    ongoingSessionStatus = getOngoingSessionStatus(device)
+                    groupStatus = getGroupStatus(device)
 
-                    if (device.getState() == MediaDeviceState.STATE_CONNECTING_FAILED) {
-                        deviceStatusIcon = mContext.getDrawable(
-                                R.drawable.media_output_status_failed);
-                        subtitle = mContext.getString(R.string.media_output_dialog_connect_failed);
-                        clickListener = v -> transferOutput(device);
+                    if (device.state == STATE_CONNECTING_FAILED) {
+                        deviceStatusIcon =
+                            mContext.getDrawable(R.drawable.media_output_status_failed)
+                        subtitle = mContext.getString(R.string.media_output_dialog_connect_failed)
+                        clickListener = View.OnClickListener { transferOutput(device) }
                     } else if (currentlyConnected || device.isSelected()) {
-                        connectionState = ConnectionState.CONNECTED;
+                        connectionState = ConnectionState.CONNECTED
                     } else { // disconnected
                         if (device.isSelectable()) { // groupable device
                             if (device.isTransferable() || device.hasRouteListingPreferenceItem()) {
-                                clickListener = v -> transferOutput(device);
+                                clickListener = View.OnClickListener { transferOutput(device) }
                             }
                         } else {
-                            deviceStatusIcon = getDeviceStatusIcon(device);
-                            clickListener = getClickListenerBasedOnSelectionBehavior(device);
+                            deviceStatusIcon = getDeviceStatusIcon(device)
+                            clickListener = getClickListenerBasedOnSelectionBehavior(device)
                         }
-                        deviceDisabled = clickListener == null;
+                        deviceDisabled = clickListener == null
                     }
                 }
             }
 
             if (connectionState == ConnectionState.CONNECTED) {
-                mCurrentActivePosition = position;
+                mCurrentActivePosition = position
             }
 
-            renderDeviceItem(device, connectionState, restrictVolumeAdjustment,
-                    groupStatus, ongoingSessionStatus, clickListener, deviceDisabled, subtitle,
-                    deviceStatusIcon);
+            renderDeviceItem(
+                device,
+                connectionState,
+                restrictVolumeAdjustment,
+                groupStatus,
+                ongoingSessionStatus,
+                clickListener,
+                deviceDisabled,
+                subtitle,
+                deviceStatusIcon,
+            )
         }
 
-        protected abstract void renderDeviceItem(MediaDevice device,
-                ConnectionState connectionState, boolean restrictVolumeAdjustment,
-                GroupStatus groupStatus, OngoingSessionStatus ongoingSessionStatus,
-                View.OnClickListener clickListener, boolean deviceDisabled, String subtitle,
-                Drawable deviceStatusIcon);
+        protected abstract fun renderDeviceItem(
+            device: MediaDevice,
+            connectionState: ConnectionState,
+            restrictVolumeAdjustment: Boolean,
+            groupStatus: GroupStatus?,
+            ongoingSessionStatus: OngoingSessionStatus?,
+            clickListener: View.OnClickListener?,
+            deviceDisabled: Boolean,
+            subtitle: String?,
+            deviceStatusIcon: Drawable?,
+        )
 
-        protected abstract void renderDeviceGroupItem();
+        protected abstract fun renderDeviceGroupItem()
 
-        protected abstract void disableSeekBar();
+        protected abstract fun disableSeekBar()
 
-        private OngoingSessionStatus getOngoingSessionStatus(MediaDevice device) {
-            return device.hasOngoingSession() ? new OngoingSessionStatus(
-                    device.isHostForOngoingSession()) : null;
+        private fun getOngoingSessionStatus(device: MediaDevice): OngoingSessionStatus? {
+            return if (device.hasOngoingSession())
+                OngoingSessionStatus(device.isHostForOngoingSession)
+            else null
         }
 
-        private GroupStatus getGroupStatus(@NonNull MediaDevice device) {
-            if (device.isInputDevice()) {
-                return null;
+        private fun getGroupStatus(device: MediaDevice): GroupStatus? {
+            if (device.isInputDevice) {
+                return null
             }
             // A device should either be selectable or, when the device selected, the list should
             // have other selectable or selected devices.
-            boolean selectedWithOtherGroupDevices =
-                    device.isSelected() && (mController.hasGroupPlayback()
-                            || hasSelectableDevices());
+            val selectedWithOtherGroupDevices =
+                device.isSelected() && (mController.hasGroupPlayback() || hasSelectableDevices())
             if (device.isSelectable() || selectedWithOtherGroupDevices) {
-                return new GroupStatus(device.isSelected(), device.isDeselectable());
+                return GroupStatus(device.isSelected(), device.isDeselectable())
             }
-            return null;
+            return null
         }
 
-        private boolean hasSelectableDevices() {
-            return mMediaItemList.stream()
-                    .anyMatch(item -> item.getMediaDevice().map(MediaDevice::isSelectable).orElse(
-                            false));
+        private fun hasSelectableDevices(): Boolean {
+            return mMediaItemList.stream().anyMatch { item ->
+                item.mediaDevice.map { it.isSelectable() }.orElse(false)
+            }
         }
 
-        @Nullable
-        private View.OnClickListener getClickListenerBasedOnSelectionBehavior(
-                @NonNull MediaDevice device) {
+        private fun getClickListenerBasedOnSelectionBehavior(
+            device: MediaDevice
+        ): View.OnClickListener? {
             return Api34Impl.getClickListenerBasedOnSelectionBehavior(
-                    device, mController, v -> transferOutput(device));
+                device,
+                mController,
+                defaultTransferListener = { transferOutput(device) },
+            )
         }
 
-        @Nullable
-        private Drawable getDeviceStatusIcon(MediaDevice device) {
-            return Api34Impl.getDeviceStatusIconBasedOnSelectionBehavior(device, mContext);
+        private fun getDeviceStatusIcon(device: MediaDevice): Drawable? {
+            return Api34Impl.getDeviceStatusIconBasedOnSelectionBehavior(device, mContext)
         }
 
-        protected void onGroupActionTriggered(boolean isChecked, MediaDevice device) {
-            disableSeekBar();
+        protected fun onGroupActionTriggered(isChecked: Boolean, device: MediaDevice) {
+            disableSeekBar()
             if (isChecked && device.isSelectable()) {
-                mController.addDeviceToPlayMedia(device);
+                mController.addDeviceToPlayMedia(device)
             } else if (!isChecked && device.isDeselectable()) {
-                mController.removeDeviceFromPlayMedia(device);
+                mController.removeDeviceFromPlayMedia(device)
             }
             if (Flags.enableOutputSwitcherPersonalAudioSharing()) {
-                notifyDataSetChanged();
+                notifyDataSetChanged()
             }
         }
 
-        private void transferOutput(MediaDevice device) {
+        private fun transferOutput(device: MediaDevice) {
             if (mController.isAnyDeviceTransferring()) {
-                return;
+                return
             }
             if (isCurrentlyConnected(device)) {
-                Log.d(TAG, "This device is already connected! : " + device.getName());
-                return;
+                Log.d(TAG, "This device is already connected! : ${device.getName()}")
+                return
             }
-            mController.setTemporaryAllowListExceptionIfNeeded(device);
-            mCurrentActivePosition = -1;
-            mController.connectDevice(device);
-            notifyDataSetChanged();
+            mController.setTemporaryAllowListExceptionIfNeeded(device)
+            mCurrentActivePosition = -1
+            mController.connectDevice(device)
+            notifyDataSetChanged()
         }
 
-        private void cancelMuteAwaitConnection() {
-            mController.cancelMuteAwaitConnection();
-            notifyDataSetChanged();
+        private fun cancelMuteAwaitConnection() {
+            mController.cancelMuteAwaitConnection()
+            notifyDataSetChanged()
         }
     }
 
     @RequiresApi(34)
-    private static class Api34Impl {
+    private object Api34Impl {
         @DoNotInline
-        static View.OnClickListener getClickListenerBasedOnSelectionBehavior(
-                MediaDevice device,
-                MediaSwitchingController controller,
-                View.OnClickListener defaultTransferListener) {
-            switch (device.getSelectionBehavior()) {
-                case SELECTION_BEHAVIOR_NONE:
-                    return null;
-                case SELECTION_BEHAVIOR_TRANSFER:
-                    return defaultTransferListener;
-                case SELECTION_BEHAVIOR_GO_TO_APP:
-                    return v -> controller.tryToLaunchInAppRoutingIntent(device.getId(), v);
+        fun getClickListenerBasedOnSelectionBehavior(
+            device: MediaDevice,
+            controller: MediaSwitchingController,
+            defaultTransferListener: View.OnClickListener,
+        ): View.OnClickListener? {
+            return when (device.selectionBehavior) {
+                SELECTION_BEHAVIOR_NONE -> null
+                SELECTION_BEHAVIOR_TRANSFER -> defaultTransferListener
+                SELECTION_BEHAVIOR_GO_TO_APP ->
+                    View.OnClickListener { v: View ->
+                        controller.tryToLaunchInAppRoutingIntent(device.getId(), v)
+                    }
+                else -> defaultTransferListener
             }
-            return defaultTransferListener;
         }
 
         @DoNotInline
-        @Nullable
-        static Drawable getDeviceStatusIconBasedOnSelectionBehavior(MediaDevice device,
-                Context context) {
-            switch (device.getSelectionBehavior()) {
-                case SELECTION_BEHAVIOR_NONE:
-                    return context.getDrawable(R.drawable.media_output_status_failed);
-                case SELECTION_BEHAVIOR_TRANSFER:
-                    return null;
-                case SELECTION_BEHAVIOR_GO_TO_APP:
-                    return context.getDrawable(R.drawable.media_output_status_help);
+        fun getDeviceStatusIconBasedOnSelectionBehavior(
+            device: MediaDevice,
+            context: Context,
+        ): Drawable? {
+            return when (device.selectionBehavior) {
+                SELECTION_BEHAVIOR_NONE ->
+                    context.getDrawable(R.drawable.media_output_status_failed)
+
+                SELECTION_BEHAVIOR_TRANSFER -> null
+                SELECTION_BEHAVIOR_GO_TO_APP ->
+                    context.getDrawable(R.drawable.media_output_status_help)
+                else -> null
             }
-            return null;
         }
+    }
+
+    companion object {
+        private const val TAG = "MediaOutputAdapterBase"
+        private val DEBUG = Log.isLoggable(TAG, Log.DEBUG)
     }
 }

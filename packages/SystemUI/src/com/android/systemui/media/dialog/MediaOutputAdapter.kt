@@ -128,7 +128,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
         get() = mController
 
     /** ViewHolder for binding device view. */
-    inner class MediaDeviceViewHolder(view: View, context: Context?) :
+    inner class MediaDeviceViewHolder(view: View, context: Context) :
         MediaDeviceViewHolderBase(view, context) {
         @VisibleForTesting val mMainContent: LinearLayout = view.requireViewById(R.id.main_content)
 
@@ -363,7 +363,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
             muteDrawable: Drawable?,
         ) {
             tryResolveVolumeUserRequest(currentVolume)
-            if (!isDragging && hasNoPendingVolumeRequests()) {
+            if (!isDragging() && hasNoPendingVolumeRequests()) {
                 mSlider.value = currentVolume.toFloat()
                 updateSliderIconsVisibility(
                     deviceDrawable = deviceDrawable,
