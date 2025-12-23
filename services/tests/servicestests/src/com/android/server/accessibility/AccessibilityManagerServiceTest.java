@@ -30,6 +30,7 @@ import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_3BUTTON;
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL;
 import static android.view.accessibility.Flags.FLAG_ENABLE_TRUSTED_ACCESSIBILITY_SERVICE_API;
 
+import static com.android.hardware.input.Flags.enableColorInversionKeyGestures;
 import static com.android.internal.accessibility.AccessibilityShortcutController.ACCESSIBILITY_HEARING_AIDS_COMPONENT_NAME;
 import static com.android.internal.accessibility.AccessibilityShortcutController.MAGNIFICATION_CONTROLLER_NAME;
 import static com.android.internal.accessibility.common.ShortcutConstants.USER_SHORTCUT_TYPES;
@@ -38,11 +39,12 @@ import static com.android.internal.accessibility.common.ShortcutConstants.UserSh
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.KEY_GESTURE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.QUICK_SETTINGS;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.SOFTWARE;
+import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TOP_ROW_KEY;
 import static com.android.internal.accessibility.dialog.AccessibilityButtonChooserActivity.EXTRA_TYPE_TO_CHOOSE;
 import static com.android.server.accessibility.AccessibilityManagerService.ACTION_DISMISS_KEY_GESTURE_CONFIRM_DIALOG;
+import static com.android.server.accessibility.AccessibilityManagerService.ACTION_LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG;
 import static com.android.server.accessibility.AccessibilityManagerService.ACTION_LAUNCH_HEARING_DEVICES_DIALOG;
 import static com.android.server.accessibility.AccessibilityManagerService.ACTION_LAUNCH_KEY_GESTURE_CONFIRM_DIALOG;
-import static com.android.hardware.input.Flags.enableColorInversionKeyGestures;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -2574,6 +2576,78 @@ public class AccessibilityManagerServiceTest {
                         .getValue()
                         .getIntExtra(KeyGestureEventConstants.KEY_GESTURE_TYPE, 0))
                 .isEqualTo(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DISPLAY_COLOR_INVERSION);
+    }
+
+    @Test
+    @EnableFlags(android.view.accessibility.Flags.FLAG_ENABLE_A11Y_TOP_ROW_SHORTCUT)
+    public void handleKeyGestureEvent_topRow_noAssignedFeature_sendBroadcastIntent() {
+        assertThat(
+                        ShortcutUtils.getShortcutTargetsFromSettings(
+                                mTestableContext, TOP_ROW_KEY, mA11yms.getCurrentUserIdLocked()))
+                .isEmpty();
+
+        sendKeyGestureEventComplete(
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TOP_ROW_ACCESSIBILITY_KEY,
+                /* modifierState= */ 0,
+                KeyEvent.KEYCODE_ACCESSIBILITY);
+
+        ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
+        verify(mTestableContext.getMockContext())
+                .sendBroadcastAsUser(intentCaptor.capture(), eq(UserHandle.SYSTEM));
+        assertThat(intentCaptor.getValue().getAction())
+                .isEqualTo(ACTION_LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG);
+    }
+
+    @Test
+    @EnableFlags(android.view.accessibility.Flags.FLAG_ENABLE_A11Y_TOP_ROW_SHORTCUT)
+    public void handleKeyGestureEvent_topRow_oneAssignedFeature_noBroadcast() {
+        mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
+        final AccessibilityUserState userState = mA11yms.getCurrentUserState();
+        clearShortcutType(TOP_ROW_KEY, userState.mUserId);
+        setupShortcutTargetServices();
+        userState.updateShortcutTargetsLocked(Set.of(TARGET_MAGNIFICATION), TOP_ROW_KEY);
+        mTestableLooper.processAllMessages();
+        assertThat(
+                        mA11yms.getAccessibilityShortcutTargets(
+                                        TOP_ROW_KEY, mA11yms.getCurrentUserIdLocked())
+                                .size())
+                .isEqualTo(1);
+
+        sendKeyGestureEventComplete(
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TOP_ROW_ACCESSIBILITY_KEY,
+                /* modifierState= */ 0,
+                KeyEvent.KEYCODE_ACCESSIBILITY);
+
+        verify(mTestableContext.getMockContext(), never()).sendBroadcastAsUser(any(), any());
+        verify(mInputFilter, timeout(100)).notifyMagnificationShortcutTriggered(anyInt());
+    }
+
+    @Test
+    @EnableFlags(android.view.accessibility.Flags.FLAG_ENABLE_A11Y_TOP_ROW_SHORTCUT)
+    public void handleKeyGestureEvent_topRow_twoAssignedFeature_sendBroadcastIntent() {
+        mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
+        final AccessibilityUserState userState = mA11yms.getCurrentUserState();
+        setupShortcutTargetServices(userState);
+        userState.updateShortcutTargetsLocked(
+                Set.of(TARGET_ALWAYS_ON_A11Y_SERVICE.flattenToString(), TARGET_MAGNIFICATION),
+                TOP_ROW_KEY);
+        mTestableLooper.processAllMessages();
+        assertThat(
+                        mA11yms.getAccessibilityShortcutTargets(
+                                        TOP_ROW_KEY, mA11yms.getCurrentUserIdLocked())
+                                .size())
+                .isEqualTo(2);
+
+        sendKeyGestureEventComplete(
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TOP_ROW_ACCESSIBILITY_KEY,
+                /* modifierState= */ 0,
+                KeyEvent.KEYCODE_ACCESSIBILITY);
+
+        ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
+        verify(mTestableContext.getMockContext())
+                .sendBroadcastAsUser(intentCaptor.capture(), eq(UserHandle.SYSTEM));
+        assertThat(intentCaptor.getValue().getAction())
+                .isEqualTo(ACTION_LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG);
     }
 
     @Test

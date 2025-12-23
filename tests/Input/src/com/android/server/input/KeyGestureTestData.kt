@@ -345,6 +345,14 @@ object KeyGestureTestData {
                 KeyEvent.META_META_ON,
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
             ),
+            KeyGestureData(
+                "ACCESSIBILITY -> Toggles one assistive technology or accessibility menu",
+                intArrayOf(KeyEvent.KEYCODE_ACCESSIBILITY),
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TOP_ROW_ACCESSIBILITY_KEY,
+                intArrayOf(KeyEvent.KEYCODE_ACCESSIBILITY),
+                0,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
+            ),
         )
 
     // All Key gestures that can be captured by the focused window (and should not happen in
@@ -648,7 +656,7 @@ object KeyGestureTestData {
                 intArrayOf(
                     KeyEvent.KEYCODE_META_LEFT,
                     KeyEvent.KEYCODE_ALT_LEFT,
-                    KeyEvent.KEYCODE_T
+                    KeyEvent.KEYCODE_T,
                 ),
                 KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER,
                 intArrayOf(KeyEvent.KEYCODE_T),
@@ -672,7 +680,7 @@ object KeyGestureTestData {
                 intArrayOf(
                     KeyEvent.KEYCODE_META_LEFT,
                     KeyEvent.KEYCODE_ALT_LEFT,
-                    KeyEvent.KEYCODE_I
+                    KeyEvent.KEYCODE_I,
                 ),
                 KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DISPLAY_COLOR_INVERSION,
                 intArrayOf(KeyEvent.KEYCODE_I),

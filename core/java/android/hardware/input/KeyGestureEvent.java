@@ -140,6 +140,7 @@ public final class KeyGestureEvent {
     public static final int KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH = 85;
     public static final int KEY_GESTURE_TYPE_TAKE_APP_WINDOW_SCREENSHOT = 86;
     public static final int KEY_GESTURE_TYPE_TOGGLE_DISPLAY_COLOR_INVERSION = 87;
+    public static final int KEY_GESTURE_TYPE_TOGGLE_TOP_ROW_ACCESSIBILITY_KEY = 88;
 
     public static final int FLAG_CANCELLED = 1 << 0;
     public static final int FLAG_LONG_PRESS = 1 << 1;
@@ -241,6 +242,7 @@ public final class KeyGestureEvent {
             KEY_GESTURE_TYPE_REJECT_HOME_ON_EXTERNAL_DISPLAY,
             KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH,
             KEY_GESTURE_TYPE_TOGGLE_DISPLAY_COLOR_INVERSION,
+            KEY_GESTURE_TYPE_TOGGLE_TOP_ROW_ACCESSIBILITY_KEY,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface KeyGestureType {
@@ -857,6 +859,8 @@ public final class KeyGestureEvent {
                 return "KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH";
             case KEY_GESTURE_TYPE_TOGGLE_DISPLAY_COLOR_INVERSION:
                 return "KEY_GESTURE_TYPE_TOGGLE_DISPLAY_COLOR_INVERSION";
+            case KEY_GESTURE_TYPE_TOGGLE_TOP_ROW_ACCESSIBILITY_KEY:
+                return "KEY_GESTURE_TYPE_TOGGLE_TOP_ROW_ACCESSIBILITY_KEY";
             default:
                 return Integer.toHexString(value);
         }
