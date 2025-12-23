@@ -300,26 +300,6 @@ public class TaskOrganizer extends WindowOrganizer {
             @NonNull List<ActivityManager.RunningTaskInfo> updatedTasks) { }
 
     /**
-     * @deprecated use {@link #createTask} instead.
-     * @hide
-     */
-    @Deprecated
-    @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
-    public void createRootTask(int displayId, int windowingMode, @Nullable IBinder launchCookie,
-            boolean removeWithTaskOrganizer, boolean reparentOnDisplayRemoval) {
-        final TaskPropertiesRequest taskProperties = new TaskPropertiesRequest()
-                .setReparentOnDisplayRemoval(reparentOnDisplayRemoval);
-        createTask(
-                new TaskCreationParams.Builder()
-                        .setDisplayId(displayId)
-                        .setWindowingMode(windowingMode)
-                        .setLaunchCookie(launchCookie != null ? launchCookie : new Binder())
-                        .setRemoveWithTaskOrganizer(removeWithTaskOrganizer)
-                        .setTaskPropertiesRequest(taskProperties)
-                        .build());
-    }
-
-    /**
      * Creates a persistent root task in WM for a particular windowing-mode.
      * This call is deprecated, use {@link #createTask} instead.
      */
@@ -332,32 +312,6 @@ public class TaskOrganizer extends WindowOrganizer {
                         .setDisplayId(displayId)
                         .setWindowingMode(windowingMode)
                         .setLaunchCookie(launchCookie != null ? launchCookie : new Binder())
-                        .build());
-    }
-
-    /**
-     * @deprecated use {@link #createTask} instead.
-     * @hide
-     */
-    @Deprecated
-    @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
-    @Nullable
-    public WindowContainerToken createRootTask(@NonNull CreateRootTaskRequest request) {
-        final TaskPropertiesRequest taskProperties = new TaskPropertiesRequest()
-                .setReparentOnDisplayRemoval(request.reparentOnDisplayRemoval)
-                .setForceOpaque(request.isForceOpaque)
-                .setIgnoreInsets(request.shouldIgnoreInsets)
-                .setDisableAppCompatRoundedCorners(request.disableAppCompatRoundedCorners);
-        return createTask(
-                new TaskCreationParams.Builder()
-                        .setName(request.name)
-                        .setDisplayId(request.displayId)
-                        .setWindowingMode(request.windowingMode)
-                        .setLaunchCookie(request.launchCookie != null
-                                ? request.launchCookie
-                                : new Binder())
-                        .setRemoveWithTaskOrganizer(request.removeWithTaskOrganizer)
-                        .setTaskPropertiesRequest(taskProperties)
                         .build());
     }
 

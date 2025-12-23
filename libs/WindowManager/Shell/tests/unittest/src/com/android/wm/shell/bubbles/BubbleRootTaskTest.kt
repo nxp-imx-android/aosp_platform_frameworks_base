@@ -68,7 +68,7 @@ class BubbleRootTaskTest : ShellTestCase() {
     @Test
     fun init_flagDisabled_doNothing() {
         verify(shellInit, never()).addInitCallback<BubbleRootTask>(any(), any())
-        verify(taskOrganizer, never()).createRootTask(any())
+        verify(taskOrganizer, never()).createTask(any())
     }
 
     @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ROOT_TASK)
@@ -78,11 +78,11 @@ class BubbleRootTaskTest : ShellTestCase() {
             verify(shellInit).addInitCallback<BubbleRootTask>(initCallbackCaptor.capture(), any())
             initCallbackCaptor.firstValue
         }
-        verify(taskOrganizer, never()).createRootTask(any())
+        verify(taskOrganizer, never()).createTask(any())
 
         initCallback.run()
 
-        verify(taskOrganizer).createRootTask(any(), eq(bubbleRootTask))
+        verify(taskOrganizer).createTask(any(), eq(bubbleRootTask))
     }
 
     @Test

@@ -128,7 +128,8 @@ import android.widget.Toast;
 import android.window.DesktopExperienceFlags;
 import android.window.DisplayAreaInfo;
 import android.window.RemoteTransition;
-import android.window.TaskOrganizer;
+import android.window.TaskCreationParams;
+import android.window.TaskPropertiesRequest;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
 import android.window.WindowContainerToken;
@@ -458,14 +459,15 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         mMSDLPlayer = msdlPlayer;
         mBubbleController = bubbleController;
 
-        final var request = new TaskOrganizer.CreateRootTaskRequest()
+        final TaskPropertiesRequest taskProperties = new TaskPropertiesRequest()
+                .setForceOpaque(com.android.window.flags.Flags.enableForceOpaque());
+        final TaskCreationParams params = new TaskCreationParams.Builder()
                 .setName("SplitRoot")
                 .setDisplayId(displayId)
-                .setWindowingMode(WINDOWING_MODE_FULLSCREEN);
-        if (com.android.window.flags.Flags.enableForceOpaque()) {
-            request.setForceOpaque(true);
-        }
-        mRootTaskToken = taskOrganizer.createRootTask(request, this);
+                .setWindowingMode(WINDOWING_MODE_FULLSCREEN)
+                .setTaskPropertiesRequest(taskProperties)
+                .build();
+        mRootTaskToken = taskOrganizer.createTask(params, this);
 
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "Creating main/side root task");
         if (enableFlexibleSplit()) {

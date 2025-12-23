@@ -33,7 +33,8 @@ import android.util.SparseArray
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.window.DesktopExperienceFlags
-import android.window.TaskOrganizer
+import android.window.TaskCreationParams
+import android.window.TaskPropertiesRequest
 import android.window.TransitionInfo
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
@@ -163,18 +164,21 @@ class RootTaskDesksOrganizer(
     private fun createDeskRoot(displayId: Int, userId: Int?, callback: OnCreateCallback) {
         logV("createDeskRoot in display: %d for user: %d", displayId, userId)
         createDeskRootRequests += CreateDeskRequest(displayId, userId, callback)
-        val token =
-            shellTaskOrganizer.createRootTask(
-                TaskOrganizer.CreateRootTaskRequest()
-                    .setName("Desk")
-                    .setDisplayId(displayId)
-                    .setWindowingMode(WINDOWING_MODE_FREEFORM)
-                    .setRemoveWithTaskOrganizer(true)
-                    .setReparentOnDisplayRemoval(
-                        DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue
-                    ),
-                this,
-            )
+
+        val taskProperties =
+            TaskPropertiesRequest()
+                .setReparentOnDisplayRemoval(
+                    DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue
+                )
+        val params =
+            TaskCreationParams.Builder()
+                .setName("Desk")
+                .setDisplayId(displayId)
+                .setWindowingMode(WINDOWING_MODE_FREEFORM)
+                .setRemoveWithTaskOrganizer(true)
+                .setTaskPropertiesRequest(taskProperties)
+                .build()
+        val token = shellTaskOrganizer.createTask(params, this)
 
         token?.let {
             val wct = WindowContainerTransaction()
@@ -750,17 +754,20 @@ class RootTaskDesksOrganizer(
                 deskId = deskId,
                 callback = callback,
             )
-        shellTaskOrganizer.createRootTask(
-            TaskOrganizer.CreateRootTaskRequest()
+        val taskProperties =
+            TaskPropertiesRequest()
+                .setReparentOnDisplayRemoval(
+                    DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue
+                )
+        val params =
+            TaskCreationParams.Builder()
                 .setName("MinimizedDesk_$deskId")
                 .setDisplayId(displayId)
                 .setWindowingMode(WINDOWING_MODE_FREEFORM)
                 .setRemoveWithTaskOrganizer(true)
-                .setReparentOnDisplayRemoval(
-                    DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue
-                ),
-            this,
-        )
+                .setTaskPropertiesRequest(taskProperties)
+                .build()
+        shellTaskOrganizer.createTask(params, this)
     }
 
     @SuppressLint("MissingPermission")

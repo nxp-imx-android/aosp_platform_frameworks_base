@@ -243,7 +243,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         organizer.createDesk(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY) {}
 
         // Only one desk attempt.
-        verify(mockShellTaskOrganizer, times(1)).createRootTask(any(), eq(organizer))
+        verify(mockShellTaskOrganizer, times(1)).createTask(any(), eq(organizer))
     }
 
     @Test
@@ -271,7 +271,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         organizer.createDesk(userId = PRIMARY_USER_ID, displayId = DEFAULT_DISPLAY) {}
 
         // One for the warmup/first desk and one for the second desk.
-        verify(mockShellTaskOrganizer, times(2)).createRootTask(any(), eq(organizer))
+        verify(mockShellTaskOrganizer, times(2)).createTask(any(), eq(organizer))
     }
 
     @Test
@@ -1276,7 +1276,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
                 this.displayId = displayId
             }
         Mockito.reset(mockShellTaskOrganizer)
-        whenever(mockShellTaskOrganizer.createRootTask(any(), eq(organizer)))
+        whenever(mockShellTaskOrganizer.createTask(any(), eq(organizer)))
             .thenAnswer { invocation ->
                 val listener = (invocation.arguments[1] as TaskListener)
                 listener.onTaskAppeared(freeformRootTask, SurfaceControl())
@@ -1305,7 +1305,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
                 this.displayId = displayId
             }
         Mockito.reset(mockShellTaskOrganizer)
-        whenever(mockShellTaskOrganizer.createRootTask(any(), eq(organizer)))
+        whenever(mockShellTaskOrganizer.createTask(any(), eq(organizer)))
             .thenAnswer { invocation ->
                 val listener = (invocation.arguments[1] as TaskListener)
                 listener.onTaskAppeared(freeformRootTask, SurfaceControl())
