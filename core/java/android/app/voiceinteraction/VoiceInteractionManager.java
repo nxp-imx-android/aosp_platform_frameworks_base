@@ -49,7 +49,7 @@ public final class VoiceInteractionManager {
     private final Context mContext;
 
     /**
-     * Activity action: Launch UI to for an assistant to request access to assist structure.
+     * Activity action: Launch UI to for an assistant to request access to screen context.
      *
      * <p>Output: Nothing.
      *
@@ -58,8 +58,8 @@ public final class VoiceInteractionManager {
     @FlaggedApi(FLAG_ASSIST_SETTINGS_PRIVACY_IMPROVEMENTS_ENABLED)
     @SystemApi
     @SdkConstant(SdkConstant.SdkConstantType.ACTIVITY_INTENT_ACTION)
-    public static final String ACTION_REQUEST_ASSIST_STRUCTURE =
-            "android.app.voiceinteraction.action.REQUEST_ASSIST_STRUCTURE";
+    public static final String ACTION_REQUEST_READ_SCREEN_CONTEXT =
+            "android.app.voiceinteraction.action.REQUEST_READ_SCREEN_CONTEXT";
 
     /**
      * Read screen context access is granted.
@@ -112,18 +112,18 @@ public final class VoiceInteractionManager {
     }
 
     /**
-     * Creates an intent which can be used to request access to
-     * {@link android.app.assist.AssistStructure} for current assistant role holder. This intent
-     * MUST be used with {@link android.app.Activity#startActivityForResult}.The result code of the
-     * activity will be {@link android.app.Activity#RESULT_OK} if the request was granted,
+     * Creates an intent which can be used to request access to screen context for current
+     * assistant role holder. This intent MUST be used with
+     * {@link android.app.Activity#startActivityForResult}. The result code of the activity will be
+     * {@link android.app.Activity#RESULT_OK} if the request was granted,
      * {@link android.app.Activity#RESULT_CANCELED} if not. If the caller is not the current
      * default assistant, the request will be denied automatically.
      *
      * @return The created intent.
      */
     @FlaggedApi(FLAG_ASSIST_SETTINGS_PRIVACY_IMPROVEMENTS_ENABLED)
-    public @NonNull Intent createRequestAssistStructureIntent() {
-        Intent intent = new Intent(ACTION_REQUEST_ASSIST_STRUCTURE);
+    public @NonNull Intent createRequestReadScreenContextIntent() {
+        Intent intent = new Intent(ACTION_REQUEST_READ_SCREEN_CONTEXT);
         intent.setPackage(mContext.getPackageManager().getPermissionControllerPackageName());
         return intent;
     }
@@ -185,14 +185,14 @@ public final class VoiceInteractionManager {
     }
 
     /**
-     * Returns whether the calling app can read the {@link android.app.assist.AssistStructure}.
+     * Returns whether the calling app can read screen context.
      *
-     * @return {@code true} if the calling app is the current assistant and has access to the assist
-     * structure, {@code false} otherwise.
+     * @return {@code true} if the calling app is the current assistant and has access to screen
+     * context , {@code false} otherwise.
      */
     @FlaggedApi(FLAG_ASSIST_SETTINGS_PRIVACY_IMPROVEMENTS_ENABLED)
     @UserHandleAware
-    public boolean canReadAssistStructure() {
+    public boolean canReadScreenContext() {
         final RoleManager roleManager = mContext.getSystemService(RoleManager.class);
         if (!roleManager.isRoleHeld(RoleManager.ROLE_ASSISTANT)) {
             return false;
@@ -200,7 +200,7 @@ public final class VoiceInteractionManager {
 
         final AppOpsManager appOpsManager = mContext.getSystemService(AppOpsManager.class);
         final int opMode = appOpsManager.checkOpNoThrow(
-                AppOpsManager.OPSTR_VOICE_INTERACTION_ASSIST_STRUCTURE,
+                AppOpsManager.OPSTR_READ_SCREEN_CONTEXT,
                 Process.myUid(), mContext.getOpPackageName());
 
         return opMode == AppOpsManager.MODE_DEFAULT || opMode == AppOpsManager.MODE_ALLOWED;
