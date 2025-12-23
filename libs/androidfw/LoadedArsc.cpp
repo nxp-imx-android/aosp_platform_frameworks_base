@@ -494,6 +494,30 @@ bool LoadType(
   return true;
 }
 
+std::ostream& operator<<(std::ostream& os, LoadedArscFeatureFlagStatus status) {
+  switch (status) {
+    case LoadedArscFeatureFlagStatus::Enabled:
+      os << "Enabled";
+      break;
+    case LoadedArscFeatureFlagStatus::Disabled:
+      os << "Disabled";
+      break;
+    case LoadedArscFeatureFlagStatus::AlwaysShown:
+      os << "AlwaysShown";
+      break;
+    case LoadedArscFeatureFlagStatus::AlwaysHidden:
+      os << "AlwaysHidden";
+      break;
+    case LoadedArscFeatureFlagStatus::Unknown:
+      os << "Unknown";
+      break;
+    default:
+      os << static_cast<int>(status); // Fallback to integer value for unrecognized enums
+      break;
+  }
+  return os;
+}
+
 std::unique_ptr<const LoadedPackage> LoadedPackage::Load(const Chunk& chunk,
                                                          package_property_t property_flags,
                                                          const FlagMap& flag_map) {
@@ -644,7 +668,6 @@ std::unique_ptr<const LoadedPackage> LoadedPackage::Load(const Chunk& chunk,
             LOG(ERROR) << "RES_TABLE_FLAGGED too small.";
             return {};
           }
-
 
           auto it = flag_map.find(flagged->flag_name_index.index);
           if (it == flag_map.end()) {
