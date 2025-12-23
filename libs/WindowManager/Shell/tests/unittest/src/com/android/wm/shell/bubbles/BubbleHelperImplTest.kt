@@ -26,6 +26,7 @@ import android.window.TransitionInfo
 import androidx.test.filters.SmallTest
 import com.android.testing.wm.util.MockToken
 import com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK
+import com.android.window.flags.Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
@@ -36,6 +37,7 @@ import com.google.common.truth.Truth.assertThat
 import java.util.Optional
 import org.junit.Before
 import org.junit.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
@@ -71,6 +73,18 @@ class BubbleHelperImplTest : ShellTestCase() {
         bubbleRootTask.prepareRootTaskForTest(bubbleRootTaskId = 123, bubbleRootToken = token)
 
         assertThat(bubbleHelper.getAppBubbleRootTaskToken()).isEqualTo(token)
+    }
+
+    @EnableFlags(FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
+    @Test
+    fun getAppBubbleVisibilityBarrierToken() {
+        val token = MockToken.token()
+        taskOrganizer.stub {
+            on { createTask(any(), any()) } doReturn token
+        }
+        bubbleRootTask.prepareRootTaskForTest(bubbleRootTaskId = 123)
+
+        assertThat(bubbleHelper.getAppBubbleVisibilityBarrierToken()).isEqualTo(token)
     }
 
     @Test

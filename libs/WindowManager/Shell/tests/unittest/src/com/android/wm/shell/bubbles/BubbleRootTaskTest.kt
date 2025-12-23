@@ -17,9 +17,12 @@
 package com.android.wm.shell.bubbles
 
 import android.app.ActivityManager
+import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.view.SurfaceControl
+import android.window.TaskCreationParams
+import android.window.TaskPropertiesRequest.REQUEST_NONE
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN
@@ -29,6 +32,7 @@ import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_S
 import androidx.test.filters.SmallTest
 import com.android.testing.wm.util.MockToken
 import com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK
+import com.android.window.flags.Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
@@ -38,9 +42,11 @@ import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 
 /**
@@ -80,7 +86,18 @@ class BubbleRootTaskTest : ShellTestCase() {
 
         initCallback.run()
 
-        verify(taskOrganizer).createTask(any(), eq(bubbleRootTask))
+        val rootTaskParams = argumentCaptor<TaskCreationParams>().let { paramsCaptor ->
+            verify(taskOrganizer).createTask(paramsCaptor.capture(), eq(bubbleRootTask))
+            paramsCaptor.firstValue
+        }
+
+        assertThat(rootTaskParams.windowingMode).isEqualTo(WINDOWING_MODE_MULTI_WINDOW)
+        val rootTaskProperties = rootTaskParams.taskPropertiesRequest
+        assertThat(rootTaskProperties.isIgnoreInsets).isTrue()
+        assertThat(rootTaskProperties.isDisableAppCompatRoundedCorners).isTrue()
+        if (com.android.window.flags.Flags.visibilityManagementInBubbleRoot()) {
+            assertThat(rootTaskProperties.isForceLeafTasksNonOccluding).isTrue()
+        }
     }
 
     @Test
@@ -135,6 +152,58 @@ class BubbleRootTaskTest : ShellTestCase() {
         bubbleRootTask.onTaskInfoChanged(updatedTaskInfo)
 
         assertThat(bubbleRootTask.taskId).isEqualTo(456)
+    }
+
+    @EnableFlags(FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
+    @Test
+    fun onTaskAppeared_addVisibilityBarrier() {
+        val rootTaskToken = MockToken.token()
+        val visibilityBarrierToken = MockToken.token()
+        taskOrganizer.stub {
+            on { createTask(any(), any()) } doReturn visibilityBarrierToken
+        }
+        bubbleRootTask.prepareRootTaskForTest(
+            bubbleRootTaskId = 123,
+            bubbleRootToken = rootTaskToken
+        )
+
+        assertThat(bubbleRootTask.visibilityBarrierToken).isEqualTo(visibilityBarrierToken)
+        val visibilityBarrierParams = argumentCaptor<TaskCreationParams>().let { paramsCaptor ->
+            verify(taskOrganizer).createTask(paramsCaptor.capture(), eq(bubbleRootTask))
+            paramsCaptor.firstValue
+        }
+        assertThat(visibilityBarrierParams.parentContainer).isEqualTo(rootTaskToken)
+        assertThat(visibilityBarrierParams.isVisibilityBarrier).isTrue()
+        assertThat(visibilityBarrierParams.taskPropertiesRequest.requestMask)
+            .isEqualTo(REQUEST_NONE)
+    }
+
+    @EnableFlags(FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
+    @Test
+    fun visibilityBarrier_onTaskAppearedOrChanged_doesNotAffectRootTask() {
+        val rootTaskToken = MockToken.token()
+        val visibilityBarrierToken = MockToken.token()
+        taskOrganizer.stub {
+            on { createTask(any(), any()) } doReturn visibilityBarrierToken
+        }
+        bubbleRootTask.prepareRootTaskForTest(
+            bubbleRootTaskId = 123,
+            bubbleRootToken = rootTaskToken
+        )
+        val visibilityBarrierTaskInfo = ActivityManager.RunningTaskInfo().apply {
+            taskId = 456
+            token = visibilityBarrierToken
+        }
+
+        bubbleRootTask.onTaskAppeared(visibilityBarrierTaskInfo, mock<SurfaceControl>())
+
+        assertThat(bubbleRootTask.windowContainerToken).isEqualTo(rootTaskToken)
+        assertThat(bubbleRootTask.taskId).isEqualTo(123)
+
+        bubbleRootTask.onTaskInfoChanged(visibilityBarrierTaskInfo)
+
+        assertThat(bubbleRootTask.windowContainerToken).isEqualTo(rootTaskToken)
+        assertThat(bubbleRootTask.taskId).isEqualTo(123)
     }
 
     companion object {
