@@ -59,6 +59,7 @@ import com.android.server.LocalServices;
 import com.android.server.SystemService;
 
 import java.io.FileDescriptor;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -450,9 +451,18 @@ public class SerialManagerService extends ISerialManager.Stub implements
             String[] args, ShellCallback callback, ResultReceiver resultReceiver) {
         mContext.enforceCallingPermission(Manifest.permission.MANAGE_SERIAL_PORTS,
                 "The caller doesn't have MANAGE_SERIAL_PORTS permission.");
-
-        var shellCommand = new SerialShellCommand(this, mSerialDeviceFilter);
-        shellCommand.exec(this, in, out, err, args, callback, resultReceiver);
+        synchronized (mLock) {
+            // Lazily connect to native service to initialize mSerialDeviceFilter.
+            if (!connectToNativeService()) {
+                PrintWriter errPw = new PrintWriter(new FileOutputStream(err));
+                errPw.println("Error: Could not connect to native serial service.");
+                errPw.flush();
+                resultReceiver.send(-1, null);
+                return;
+            }
+            var shellCommand = new SerialShellCommand(this, mSerialDeviceFilter);
+            shellCommand.exec(this, in, out, err, args, callback, resultReceiver);
+        }
     }
 
     /**
