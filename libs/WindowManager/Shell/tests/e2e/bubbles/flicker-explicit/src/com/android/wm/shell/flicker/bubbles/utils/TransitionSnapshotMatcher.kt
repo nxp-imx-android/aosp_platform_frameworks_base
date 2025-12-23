@@ -22,18 +22,27 @@ import android.tools.traces.surfaceflinger.Layer
 /**
  * Matcher for transition snapshot layers.
  *
- * @param activityMatcher the activity that involves the transition snapshot.
+ * @param snapShotName the transition snapshot name.
  */
-class TransitionSnapshotMatcher(private val activityMatcher: IComponentNameMatcher) :
-    LayerMatcher() {
+class TransitionSnapshotMatcher(private val snapShotName: String) : LayerMatcher() {
+
+    /**
+     * Matcher for transition snapshot layers.
+     *
+     * @param activityMatcher the activity that involves the transition snapshot.
+     */
+    constructor(activityMatcher: IComponentNameMatcher) : this(activityMatcher.className)
 
     override fun layerMatchesAnyOf(layers: Collection<Layer>): Boolean =
         layers.any {
-            if (!it.name.contains("transition snapshot:")) {
-                return@any false
-            }
-            return@any it.name.contains(activityMatcher.className)
+            // Use regular expression here because we may want to match only the package name for
+            // the transition snapshot of trampoline activity. Using contains() may also match
+            // activity with the same package name unexpectedly.
+            val escapedSnapShotName = Regex.escape(snapShotName)
+            return@any """^transition snapshot: Task\{.*?${escapedSnapShotName}\}.*$"""
+                .toRegex()
+                .matches(it.name)
         }
 
-    override fun toLayerIdentifier(): String = "transition snapshot:[${activityMatcher.className}]"
+    override fun toLayerIdentifier(): String = "transition snapshot:[${snapShotName}]"
 }
