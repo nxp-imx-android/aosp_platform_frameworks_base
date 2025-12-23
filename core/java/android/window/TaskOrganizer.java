@@ -26,7 +26,6 @@ import android.annotation.RequiresPermission;
 import android.annotation.SuppressLint;
 import android.annotation.TestApi;
 import android.app.ActivityManager;
-import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.view.SurfaceControl;
@@ -184,29 +183,12 @@ public class TaskOrganizer extends WindowOrganizer {
             @NonNull List<ActivityManager.RunningTaskInfo> updatedTasks) { }
 
     /**
-     * Creates a persistent root task in WM for a particular windowing-mode.
-     * This call is deprecated, use {@link #createTask} instead.
-     */
-    @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
-    @Nullable
-    public void createRootTask(int displayId, int windowingMode, @Nullable IBinder launchCookie) {
-        // TODO(b/378565144): Deprecate this method and expose TaskCreationParams as TestApi
-        createTask(
-                new TaskCreationParams.Builder()
-                        .setDisplayId(displayId)
-                        .setWindowingMode(windowingMode)
-                        .setLaunchCookie(launchCookie != null ? launchCookie : new Binder())
-                        .build());
-    }
-
-    /**
      * Creates a persistent Task.
      * @param params The creation params
      * @return the WindowContainerToken of the newly created Task. This can be {@code null} if the
      * Task creation fails in the system server (e.g., due to invalid displayId).
      *
      * @see #deleteTask for removal.
-     * @hide
      */
     @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
     @Nullable
@@ -219,17 +201,7 @@ public class TaskOrganizer extends WindowOrganizer {
     }
 
     /**
-     * This call is deprecated, use {@link #deleteTask} instead.
-     */
-    @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
-    public boolean deleteRootTask(@NonNull WindowContainerToken task) {
-        // TODO(b/378565144): Deprecate this method
-        return deleteTask(task);
-    }
-
-    /**
      * Deletes a persistent Task.
-     * @hide
      */
     @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
     public boolean deleteTask(@NonNull WindowContainerToken task) {
