@@ -43952,6 +43952,7 @@ package android.service.personalcontext.hint {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class RecentViewHint extends android.service.personalcontext.hint.ContextHint {
     method @NonNull public java.util.List<android.service.personalcontext.hint.CapturedText> getCapturedTexts();
     method @Nullable public String getLocusId();
+    method @NonNull public android.content.ComponentName getSourceAppActivityComponentName();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class RecentViewHint.Builder {
@@ -43960,6 +43961,7 @@ package android.service.personalcontext.hint {
     method @NonNull public android.service.personalcontext.hint.RecentViewHint.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.hint.RecentViewHint build();
     method @NonNull public android.service.personalcontext.hint.RecentViewHint.Builder setLocusId(@Nullable String);
+    method @NonNull public android.service.personalcontext.hint.RecentViewHint.Builder setSourceAppActivityComponentName(@NonNull android.content.ComponentName);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public class TextClassificationHint extends android.service.personalcontext.hint.ContextHint {
@@ -43974,6 +43976,7 @@ package android.service.personalcontext.hint {
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class UserInputHint extends android.service.personalcontext.hint.ContextHint {
+    method @NonNull public android.content.ComponentName getSourceAppActivityComponentName();
     method @NonNull public android.service.personalcontext.hint.UserInputText getUserInputText();
   }
 
@@ -43981,6 +43984,7 @@ package android.service.personalcontext.hint {
     ctor public UserInputHint.Builder(@NonNull android.service.personalcontext.hint.UserInputText);
     method @NonNull public android.service.personalcontext.hint.UserInputHint.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.hint.UserInputHint build();
+    method @NonNull public android.service.personalcontext.hint.UserInputHint.Builder setSourceAppActivityComponentName(@NonNull android.content.ComponentName);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class UserInputText implements android.os.Parcelable {
