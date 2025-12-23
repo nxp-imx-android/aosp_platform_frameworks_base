@@ -763,6 +763,13 @@ flag {
 }
 
 flag {
+    name: "enable_fluid_resizing_for_listed_apps"
+    namespace: "lse_desktop_experience"
+    description: "Enable fluid resizing for apps controlled by app compatibility framework."
+    bug: "460405642"
+}
+
+flag {
     name: "enable_focus_transition_observer_cleanup"
     namespace: "lse_desktop_experience"
     description: "Enable migration from TaskInfo#isFocused to FocusTransitionObserver on per display focus use case"
