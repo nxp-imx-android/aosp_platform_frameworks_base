@@ -17,10 +17,18 @@
 package com.android.settingslib.metadata.preferencesapi.types
 
 import android.content.Context
+import androidx.annotation.StringRes
 import kotlin.reflect.KClass
 
 /** An entry from the enum. */
 class CustomEnum<T, E>(enumClass: KClass<E>) : FiniteOptionsType<E> where E : Enum<E>, E : EnumApi<T> {
+    init {
+        val isStringApi = EnumApiWithString::class.java.isAssignableFrom(enumClass.java)
+        val isResApi = EnumApiWithRes::class.java.isAssignableFrom(enumClass.java)
+
+        // Enum class must implement either EnumApiWithString or EnumApiWithRes
+        require(isStringApi || isResApi)
+    }
 
     @Suppress("UNCHECKED_CAST")
     private val entries: Array<E> = enumClass.java.enumConstants ?: (emptyArray<Any>() as Array<E>)
@@ -33,14 +41,22 @@ class CustomEnum<T, E>(enumClass: KClass<E>) : FiniteOptionsType<E> where E : En
     /** Returns all entries. */
     fun getEntries(): List<E> = entries.toList()
 
-    override fun getOptions(context: Context) = entries.map {
-        it to context.getString(it.purpose)
+    override fun getOptions(context: Context) = entries.map { entry ->
+        val purposeString = when (entry) {
+            is EnumApiWithString<*> -> entry.purpose
+            is EnumApiWithRes<*> -> context.getString(entry.purpose)
+
+            // This case is unreachable because of the init block check
+            else -> error("Enum entry does not implement EnumApiWithString or EnumApiWithRes.")
+        }
+        entry to purposeString
     }.toList()
 }
 
 /**
  * Defines a contract for Enums that require mapping to a specific API value type and providing a
- * human-readable purpose.
+ * human-readable purpose. Enums using this API should implement one of its sub-interfaces:
+ * [EnumApiWithString] or [EnumApiWithRes].
  *
  * This interface allows generic wrappers to handle serialization and UI display logic uniformly
  * across different Enum types.
@@ -49,15 +65,40 @@ class CustomEnum<T, E>(enumClass: KClass<E>) : FiniteOptionsType<E> where E : En
  *
  * Example usage:
  * ```
- * enum class ConnectionState(override val asApiValue: Int, override val purpose: Int) :
- *     EnumApi<Int> {
- *     CONNECTED(1, R.string.connected),
- *     DISCONNECTED(0, R.string.disconnected),
+ * // Using strings
+ * enum class ConnectionState(
+ *   override val asApiValue: Int,
+ *   override val purpose: String
+ * ) : EnumApiWithString<Int> {
+ *   CONNECTED(1, "Connected state"),
+ *   DISCONNECTED(0, "Disconnected state"),
+ * }
+ *
+ * // Using string resources
+ * enum class ConnectionState(
+ *   override val asApiValue: Int,
+ *   override val purpose: Int
+ * ) : EnumApiWithRes<Int> {
+ *   CONNECTED(1, R.string.connected),
+ *   DISCONNECTED(0, R.string.disconnected),
  * }
  * ```
  */
 interface EnumApi<T> {
     val asApiValue: T
-    val purpose: Int
 }
 
+/**
+ * An [EnumApi] that provides a human-readable purpose as a direct [String].
+ */
+interface EnumApiWithString<T> : EnumApi<T> {
+    val purpose: String
+}
+
+/**
+ * An [EnumApi] that provides a human-readable purpose as a [StringRes] ID.
+ */
+interface EnumApiWithRes<T> : EnumApi<T> {
+    @get:StringRes
+    val purpose: Int
+}
