@@ -156,7 +156,7 @@ class LockscreenContent(
                 modifier.sysuiResTag("keyguard_root_view").graphicsLayer {
                     alpha = min(viewModel.alpha, contentAlphaAnimatable.value)
                 },
-                LockscreenElementContext(nonAuthUIModifier = Modifier.nonAuthUI(viewModel)),
+                LockscreenElementContext(nonAuthUI = { nonAuthUI(viewModel) }),
             )
         }
         LockscreenFrontScrim(lockscreenFrontScrimViewModel)

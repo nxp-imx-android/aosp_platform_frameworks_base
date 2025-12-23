@@ -96,7 +96,7 @@ constructor(
 
             LookaheadAndroidView(
                 factory = { view },
-                modifier = context.burnInModifiers.nonClock.then(context.nonAuthUIModifier),
+                modifier = Modifier.burnInAware(isClock = false).nonAuthUI(),
                 update = { view -> updateDWA(view as LinearLayout, isWeatherEnabled, isLargeClock) },
             )
         }
@@ -124,7 +124,7 @@ constructor(
 
             LookaheadAndroidView(
                 factory = { view },
-                modifier = context.burnInModifiers.nonClock.then(context.nonAuthUIModifier),
+                modifier = Modifier.burnInAware(isClock = false).nonAuthUI(),
                 update = { view -> updateDWA(view as LinearLayout, isWeatherEnabled, isLargeClock) },
             )
         }
@@ -212,8 +212,8 @@ constructor(
                             end = clockPadding,
                             bottom = dimensionResource(R.dimen.keyguard_status_view_bottom_margin),
                         )
-                        .then(context.burnInModifiers.nonClock)
-                        .then(context.nonAuthUIModifier),
+                        .burnInAware(isClock = false)
+                        .nonAuthUI(),
             )
         }
     }
