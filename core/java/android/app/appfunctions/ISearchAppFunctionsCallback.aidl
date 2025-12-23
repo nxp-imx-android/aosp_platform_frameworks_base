@@ -16,12 +16,11 @@
 
 package android.app.appfunctions;
 
-import android.app.appfunctions.AppFunctionException;
-import android.app.appfunctions.AppFunctionMetadata;
+import android.app.appfunctions.IAppFunctionSearchResults;
 import android.os.ParcelableException;
 
 /** @hide */
 oneway interface ISearchAppFunctionsCallback {
-    void onSuccess(in List<AppFunctionMetadata> result);
+    void onSuccess(in IAppFunctionSearchResults results);
     void onError(in ParcelableException exception);
 }

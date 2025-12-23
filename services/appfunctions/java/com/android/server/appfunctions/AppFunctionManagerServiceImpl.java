@@ -32,6 +32,7 @@ import android.Manifest;
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.PermissionManuallyEnforced;
 import android.annotation.WorkerThread;
 import android.app.IUriGrantsManager;
 import android.app.appfunctions.AppFunctionAccessServiceInterface;
@@ -40,7 +41,6 @@ import android.app.appfunctions.AppFunctionException;
 import android.app.appfunctions.AppFunctionManager;
 import android.app.appfunctions.AppFunctionManagerHelper;
 import android.app.appfunctions.AppFunctionManagerHelper.AppFunctionNotFoundException;
-import android.app.appfunctions.AppFunctionMetadata;
 import android.app.appfunctions.AppFunctionRuntimeMetadata;
 import android.app.appfunctions.AppFunctionSearchSpec;
 import android.app.appfunctions.AppFunctionStaticMetadataHelper;
@@ -50,6 +50,8 @@ import android.app.appfunctions.ExecuteAppFunctionResponse;
 import android.app.appfunctions.IAppFunctionEnabledCallback;
 import android.app.appfunctions.IAppFunctionExecutor;
 import android.app.appfunctions.IAppFunctionManager;
+import android.app.appfunctions.IAppFunctionSearchResultCallback;
+import android.app.appfunctions.IAppFunctionSearchResults;
 import android.app.appfunctions.IAppFunctionService;
 import android.app.appfunctions.ICancellationCallback;
 import android.app.appfunctions.IExecuteAppFunctionCallback;
@@ -492,11 +494,11 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                         canExecuteResult -> {
                             if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()
                                     && mAppFunctionMetadataReader.isDynamicFunction(
-                                                    targetPackageName,
-                                                    requestInternal
-                                                            .getClientRequest()
-                                                            .getFunctionIdentifier(),
-                                                    targetUser)) {
+                                            targetPackageName,
+                                            requestInternal
+                                                    .getClientRequest()
+                                                    .getFunctionIdentifier(),
+                                            targetUser)) {
                                 mDynamicAppFunctionRegistry.executeAppFunction(
                                         requestInternal,
                                         safeExecuteAppFunctionCallback,
@@ -613,9 +615,22 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                             mVisibilityHelper.applyVisiblePackageFilter(
                                     aidlSearchSpec, callingUid, callingPid);
                     if (filteredSearchSpec == null) {
-                        // Early return, search nothing
+                        // Early return when the calling package is unable to see any AppFunction
                         try {
-                            searchAppFunctionsCallback.onSuccess(Collections.emptyList());
+                            searchAppFunctionsCallback.onSuccess(
+                                    new IAppFunctionSearchResults.Stub() {
+                                        @PermissionManuallyEnforced
+                                        @Override
+                                        public void getNextPage(
+                                                IAppFunctionSearchResultCallback callback)
+                                                throws RemoteException {
+                                            callback.onResult(Collections.emptyList());
+                                        }
+
+                                        @PermissionManuallyEnforced
+                                        @Override
+                                        public void close() {}
+                                    });
                         } catch (RemoteException e) {
                             Slog.e(TAG, "Failed to execute callback#onSuccess.", e);
                         }
@@ -625,15 +640,23 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                     // Clear the caller identity since the AppFunction service needs to search
                     // with "android" capability and filter the documents via search query.
                     final long token = Binder.clearCallingIdentity();
-                    try (FutureGlobalSearchSession futureGlobalSearchSession =
-                            new FutureGlobalSearchSession(perUserAppSearchManager, Runnable::run)) {
-                        List<AppFunctionMetadata> resultMetadataList =
+                    try {
+                        FutureGlobalSearchSession futureGlobalSearchSession =
+                                new FutureGlobalSearchSession(
+                                        perUserAppSearchManager, Runnable::run);
+                        searchAppFunctionsCallback
+                                .asBinder()
+                                .linkToDeath(futureGlobalSearchSession::close, /* flags= */ 0);
+                        IAppFunctionSearchResults results =
                                 mAppFunctionMetadataReader.searchAppFunctions(
-                                        futureGlobalSearchSession, filteredSearchSpec);
+                                        futureGlobalSearchSession,
+                                        filteredSearchSpec,
+                                        THREAD_POOL_EXECUTOR);
                         try {
-                            searchAppFunctionsCallback.onSuccess(resultMetadataList);
+                            searchAppFunctionsCallback.onSuccess(results);
                         } catch (RemoteException e) {
                             Slog.e(TAG, "Failed to execute callback#onSuccess.", e);
+                            results.close();
                         }
                     } catch (Exception e) {
                         try {
@@ -659,7 +682,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         //  app functions
         if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()
                 && mAppFunctionMetadataReader.isDynamicFunction(
-                                targetPackage, functionIdentifier, targetUserHandle)
+                        targetPackage, functionIdentifier, targetUserHandle)
                 && !mDynamicAppFunctionRegistry.isAppFunctionEnabled(
                         targetPackage, functionIdentifier, targetUserHandle)) {
             // Dynamic app function without registered implementation.
@@ -758,13 +781,13 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             String packageName, String functionIdentifier, IAppFunctionExecutor session) {
         mCallerValidator.validateCallingPackage(packageName);
         if (!mAppFunctionMetadataReader.isDynamicFunction(
-                        packageName, functionIdentifier, Binder.getCallingUserHandle())) {
+                packageName, functionIdentifier, Binder.getCallingUserHandle())) {
             throw new IllegalArgumentException(
-                    "Unable to register AppFunction " + functionIdentifier
+                    "Unable to register AppFunction "
+                            + functionIdentifier
                             + ". Ensure this function is declared in the XML resource referenced"
                             + " by the property within the <application> tag of your "
-                            + "AndroidManifest.xml."
-            );
+                            + "AndroidManifest.xml.");
         }
         mDynamicAppFunctionRegistry.registerAppFunction(
                 packageName, functionIdentifier, session, Binder.getCallingUserHandle());
@@ -775,13 +798,13 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             String packageName, String functionIdentifier, IAppFunctionExecutor session) {
         mCallerValidator.validateCallingPackage(packageName);
         if (!mAppFunctionMetadataReader.isDynamicFunction(
-                        packageName, functionIdentifier, Binder.getCallingUserHandle())) {
+                packageName, functionIdentifier, Binder.getCallingUserHandle())) {
             throw new IllegalArgumentException(
-                    "Unable to unregister AppFunction " + functionIdentifier
+                    "Unable to unregister AppFunction "
+                            + functionIdentifier
                             + ". Ensure this function is declared in the XML resource referenced"
                             + " by the property within the <application> tag of your "
-                            + "AndroidManifest.xml."
-            );
+                            + "AndroidManifest.xml.");
         }
         mDynamicAppFunctionRegistry.unregisterAppFunction(
                 packageName, functionIdentifier, session, Binder.getCallingUserHandle());
@@ -1258,9 +1281,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                 (voidResult, ex) -> {
                                     if (ex != null) {
                                         Slog.e(TAG, "Failed to register observer: ", ex);
-                                    } else if (
-                                            android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()
-                                    ) {
+                                    } else if (android.app.appfunctions.flags.Flags
+                                            .enableDynamicAppFunctions()) {
                                         mAppFunctionMetadataReader.onMetadataObserveStartedForUser(
                                                 user.getUserHandle());
                                     }

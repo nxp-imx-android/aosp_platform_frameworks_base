@@ -66,7 +66,7 @@ public class AppFunctionManagerService extends SystemService {
                         MultiUserDynamicAppFunctionRegistry.getInstance(),
                         mAppInteractionService,
                         BackgroundThread.getExecutor(),
-                        new AppFunctionMetadataReader(context));
+                        new AppFunctionMetadataReader(context, new ServiceConfigImpl()));
     }
 
     @Override

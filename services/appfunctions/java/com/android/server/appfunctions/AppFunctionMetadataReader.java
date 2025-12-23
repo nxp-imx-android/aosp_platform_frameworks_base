@@ -24,27 +24,38 @@ import static java.util.Objects.requireNonNull;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.PermissionManuallyEnforced;
 import android.annotation.WorkerThread;
 import android.app.appfunctions.AppFunctionMetadata;
 import android.app.appfunctions.AppFunctionPackageMetadata;
 import android.app.appfunctions.AppFunctionRuntimeMetadata;
 import android.app.appfunctions.AppFunctionSearchSpec;
+import android.app.appfunctions.IAppFunctionSearchResultCallback;
+import android.app.appfunctions.IAppFunctionSearchResults;
 import android.app.appsearch.GenericDocument;
 import android.app.appsearch.JoinSpec;
 import android.app.appsearch.SearchResult;
 import android.app.appsearch.SearchSpec;
 import android.app.appsearch.observer.DocumentChangeInfo;
 import android.content.Context;
+import android.os.Binder;
+import android.os.ParcelableException;
+import android.os.RemoteException;
 import android.os.UserHandle;
 import android.text.TextUtils;
 import android.util.Slog;
 
+import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.infra.AndroidFuture;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 
 /** Manages app functions search requests. */
 public final class AppFunctionMetadataReader {
@@ -62,9 +73,12 @@ public final class AppFunctionMetadataReader {
                     .build();
 
     private final AppFunctionsMetadataCache mCache;
+    private final ServiceConfig mServiceConfig;
 
-    public AppFunctionMetadataReader(@NonNull Context context) {
-        mCache = new AppFunctionsMetadataCache(context);
+    public AppFunctionMetadataReader(
+            @NonNull Context context, @NonNull ServiceConfig serviceConfig) {
+        mCache = new AppFunctionsMetadataCache(Objects.requireNonNull(context));
+        mServiceConfig = Objects.requireNonNull(serviceConfig);
     }
 
     /** Called when observation of the user AppSearch app functions data has started. */
@@ -98,10 +112,7 @@ public final class AppFunctionMetadataReader {
      * @return {boolean} Whether app function is dynamic.
      */
     public boolean isDynamicFunction(
-            String packageName,
-            String functionIdentifier,
-            UserHandle user
-    ) {
+            String packageName, String functionIdentifier, UserHandle user) {
         return mCache.isDynamicFunction(packageName, functionIdentifier, user);
     }
 
@@ -112,16 +123,20 @@ public final class AppFunctionMetadataReader {
      * @param futureGlobalSearchSession The search session to use in searching for app function
      *     documents.
      * @param appFunctionSearchSpec The search spec used to filter app functions.
+     * @param resultExecutor The executor to be used by {@link IAppFunctionSearchResults} when
+     *     reading the next page.
      */
     // TODO(b/438413081): Handle enabled state of contextual app functions.
-    @NonNull
     @WorkerThread
-    List<AppFunctionMetadata> searchAppFunctions(
+    @NonNull
+    IAppFunctionSearchResults searchAppFunctions(
             @NonNull FutureGlobalSearchSession futureGlobalSearchSession,
-            @NonNull AppFunctionSearchSpec appFunctionSearchSpec)
+            @NonNull AppFunctionSearchSpec appFunctionSearchSpec,
+            @NonNull Executor resultExecutor)
             throws ExecutionException, InterruptedException {
         requireNonNull(futureGlobalSearchSession);
         requireNonNull(appFunctionSearchSpec);
+        requireNonNull(resultExecutor);
 
         SearchSpec appFunctionJoinedStaticWithRuntimeSearchSpec =
                 new SearchSpec.Builder()
@@ -132,40 +147,18 @@ public final class AppFunctionMetadataReader {
                         .setVerbatimSearchEnabled(true)
                         .setNumericSearchEnabled(true)
                         .setListFilterQueryLanguageEnabled(true)
+                        .setResultCountPerPage(
+                                mServiceConfig.getSearchAppFunctionInternalPageSize())
                         .build();
 
-        List<AppFunctionMetadata> result;
-
-        try (FutureSearchResults futureSearchResults =
+        FutureSearchResults futureSearchResults =
                 futureGlobalSearchSession
                         .search(
                                 appFunctionSearchSpec.getStaticMetadataAppSearchQuery(),
                                 appFunctionJoinedStaticWithRuntimeSearchSpec)
-                        .get(); ) {
-            result = readAllAppFunctions(futureSearchResults);
-        }
-        return result;
-    }
-
-    @NonNull
-    @WorkerThread
-    private List<AppFunctionMetadata> readAllAppFunctions(
-            @NonNull FutureSearchResults futureSearchResults)
-            throws ExecutionException, InterruptedException {
-        ArrayList<AppFunctionMetadata> resultMetadataList = new ArrayList<>();
-        List<SearchResult> pageResult = futureSearchResults.getNextPage().get();
-
-        while (!pageResult.isEmpty()) {
-            for (SearchResult result : pageResult) {
-                AppFunctionMetadata convertedResult =
-                        convertSearchResultToAppFunctionMetadata(result);
-                if (convertedResult != null) {
-                    resultMetadataList.add(convertedResult);
-                }
-            }
-            pageResult = futureSearchResults.getNextPage().get();
-        }
-        return resultMetadataList;
+                        .get();
+        return new AppFunctionSearchResultsImpl(
+                futureGlobalSearchSession, futureSearchResults, resultExecutor);
     }
 
     /**
@@ -201,6 +194,122 @@ public final class AppFunctionMetadataReader {
         } catch (RuntimeException e) {
             Slog.e(TAG, "Failed to convert SearchResult to AppFunctionMetadata.", e);
             return null;
+        }
+    }
+
+    private static class AppFunctionSearchResultsImpl extends IAppFunctionSearchResults.Stub {
+        @GuardedBy("mLock")
+        @NonNull
+        private final FutureGlobalSearchSession mGlobalSession;
+
+        @GuardedBy("mLock")
+        @NonNull
+        private final FutureSearchResults mSearchResults;
+
+        @NonNull private final Executor mExecutor;
+
+        private final Object mLock = new Object();
+
+        @GuardedBy("mLock")
+        private Boolean mIsClosed = false;
+
+        AppFunctionSearchResultsImpl(
+                @NonNull FutureGlobalSearchSession globalSession,
+                @NonNull FutureSearchResults searchResults,
+                @NonNull Executor executor) {
+            mGlobalSession = Objects.requireNonNull(globalSession);
+            mSearchResults = Objects.requireNonNull(searchResults);
+            mExecutor = Objects.requireNonNull(executor);
+        }
+
+        @PermissionManuallyEnforced
+        @Override
+        public void getNextPage(IAppFunctionSearchResultCallback callback) {
+            getNextValidPage()
+                    .whenComplete(
+                            (metadataList, exception) -> {
+                                if (exception != null) {
+                                    try {
+                                        callback.onError(new ParcelableException(exception));
+                                    } catch (RemoteException re) {
+                                        Slog.w(TAG, "Fail to call onError", re);
+                                    }
+                                } else {
+                                    try {
+                                        callback.onResult(metadataList);
+                                    } catch (RemoteException e) {
+                                        Slog.w(TAG, "Fail to call onSuccess", e);
+                                    }
+                                }
+                            });
+        }
+
+        /**
+         * Gets the next page and block the caller thread.
+         *
+         * @return The list of {@link AppFunctionMetadata} from next page. Empty list indicates that
+         *     there is no next page. However, {@code null} means all the documents from the current
+         *     page are invalid, but there is still next page to query.
+         */
+        @NonNull
+        @WorkerThread
+        private CompletableFuture<List<AppFunctionMetadata>> getNextValidPage() {
+            synchronized (mLock) {
+                if (mIsClosed) {
+                    return AndroidFuture.failedFuture(
+                            new IllegalStateException("Session is closed"));
+                }
+            }
+
+            final long token = Binder.clearCallingIdentity();
+            try {
+                return mSearchResults
+                        .getNextPage()
+                        .thenComposeAsync(
+                                page -> {
+                                    if (page.isEmpty()) {
+                                        // No more next page
+                                        return AndroidFuture.completedFuture(
+                                                Collections.emptyList());
+                                    }
+                                    List<AppFunctionMetadata> metadataList =
+                                            new ArrayList<>(page.size());
+                                    for (SearchResult result : page) {
+                                        AppFunctionMetadata meta =
+                                                AppFunctionMetadataReader
+                                                        .convertSearchResultToAppFunctionMetadata(
+                                                                result);
+                                        if (meta != null) metadataList.add(meta);
+                                    }
+
+                                    if (metadataList.isEmpty()) {
+                                        return getNextValidPage();
+                                    } else {
+                                        return AndroidFuture.completedFuture(metadataList);
+                                    }
+                                },
+                                mExecutor);
+            } finally {
+                Binder.restoreCallingIdentity(token);
+            }
+        }
+
+        @PermissionManuallyEnforced
+        @Override
+        public void close() {
+            try {
+                synchronized (mLock) {
+                    if (mIsClosed) {
+                        return;
+                    }
+
+                    mSearchResults.close();
+                    mGlobalSession.close();
+                    mIsClosed = true;
+                }
+            } catch (Exception e) {
+                Slog.w(TAG, "Fail to close AppFunctionSearchResultsImpl", e);
+            }
         }
     }
 }
