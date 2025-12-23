@@ -324,7 +324,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
         if (mLastConfigurationWidthDp != configuration.screenWidthDp
                 || mLastConfigurationHeightDp != configuration.screenHeightDp) {
             mLastConfigurationWidthDp = configuration.screenWidthDp;
-            mLastConfigurationHeightDp = configuration.compatScreenWidthDp;
+            mLastConfigurationHeightDp = configuration.screenHeightDp;
 
             updateWindowSize();
         }
