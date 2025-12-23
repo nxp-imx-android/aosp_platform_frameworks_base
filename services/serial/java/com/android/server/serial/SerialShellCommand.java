@@ -57,6 +57,7 @@ class SerialShellCommand extends ShellCommand {
         pw.println();
         pw.println("cmd serial hide-pty");
         pw.println("    Hide the PTY port from the list of available serial ports");
+        pw.println();
         pw.println("cmd serial clear-user-access");
         pw.println("    Clear all user-granted access permissions for serial ports.");
         pw.println();
