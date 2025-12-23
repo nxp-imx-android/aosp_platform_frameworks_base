@@ -31,7 +31,8 @@ enum class BouncerUiEvent(private val _id: Int) : UiEventLogger.UiEventEnum {
     @UiEvent(doc = "Bouncer is successfully unlocked using password.")
     BOUNCER_PASSWORD_SUCCESS(418),
     @UiEvent(doc = "An attempt to unlock bouncer using password has failed.")
-    BOUNCER_PASSWORD_FAILURE(419);
+    BOUNCER_PASSWORD_FAILURE(419),
+    @UiEvent(doc = "The alternate bouncer was shown.") ALTERNATE_BOUNCER_SHOWN(2577);
 
     override fun getId() = _id
 }

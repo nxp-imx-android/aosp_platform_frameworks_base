@@ -16,6 +16,7 @@
 
 package com.android.systemui.bouncer.domain.interactor
 
+import com.android.internal.logging.uiEventLogger
 import com.android.systemui.biometrics.data.repository.fingerprintPropertyRepository
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryBiometricsAllowedInteractor
@@ -24,6 +25,7 @@ import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.log.sessionTracker
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.securelockdevice.domain.interactor.secureLockDeviceInteractor
 
@@ -39,6 +41,8 @@ val Kosmos.alternateBouncerInteractor: AlternateBouncerInteractor by
             sceneInteractor = { sceneInteractor },
             displayStateInteractor = { displayStateInteractor },
             secureLockDeviceInteractor = { secureLockDeviceInteractor },
+            uiEventLogger = uiEventLogger,
+            sessionTracker = sessionTracker,
         )
     }
 

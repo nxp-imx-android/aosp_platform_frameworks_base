@@ -16,14 +16,19 @@
 
 package com.android.systemui.bouncer.domain.interactor
 
+import android.app.StatusBarManager.SESSION_KEYGUARD
 import android.platform.test.annotations.EnableFlags
 import android.security.Flags.FLAG_SECURE_LOCK_DEVICE
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.internal.logging.InstanceId.fakeInstanceId
+import com.android.internal.logging.testing.UiEventLoggerFake
+import com.android.internal.logging.uiEventLogger
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
+import com.android.systemui.bouncer.shared.logging.BouncerUiEvent
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
 import com.android.systemui.flags.DisableSceneContainer
@@ -31,10 +36,13 @@ import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.log.sessionTracker
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.securelockdevice.data.repository.fakeSecureLockDeviceRepository
 import com.android.systemui.testKosmos
+import com.android.systemui.util.mockito.mock
+import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runCurrent
@@ -44,11 +52,14 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.Mockito.verify
+import org.mockito.kotlin.eq
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class AlternateBouncerInteractorTest : SysuiTestCase() {
-    private val kosmos = testKosmos()
+    private val kosmos = testKosmos().apply { this.uiEventLogger = mock<UiEventLoggerFake>() }
 
     private lateinit var underTest: AlternateBouncerInteractor
 
@@ -116,5 +127,20 @@ class AlternateBouncerInteractorTest : SysuiTestCase() {
 
         assertFalse(underTest.hide())
         assertFalse(kosmos.keyguardBouncerRepository.alternateBouncerVisible.value)
+    }
+
+    @Test
+    fun show_logsUiEvent() {
+        val instanceId = fakeInstanceId(0)
+        whenever(kosmos.sessionTracker.getSessionId(SESSION_KEYGUARD)).thenReturn(instanceId)
+        underTest.forceShow()
+
+        verify(kosmos.uiEventLogger)
+            .logWithInstanceId(
+                eq(BouncerUiEvent.ALTERNATE_BOUNCER_SHOWN),
+                anyInt(),
+                eq(null),
+                eq(instanceId),
+            )
     }
 }
