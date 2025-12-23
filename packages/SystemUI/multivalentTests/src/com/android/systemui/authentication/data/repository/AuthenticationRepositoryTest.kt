@@ -38,7 +38,7 @@ import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.fake
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.mobileConnectionsRepository
 import com.android.systemui.testKosmos
-import com.android.systemui.user.data.repository.FakeUserRepository
+import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.util.mockito.whenever
 import com.android.systemui.util.time.FakeSystemClock
 import com.google.common.truth.Truth.assertThat
@@ -70,7 +70,7 @@ class AuthenticationRepositoryTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
     private val clock = FakeSystemClock()
-    private val userRepository = FakeUserRepository()
+    private val userRepository = kosmos.fakeUserRepository
     private val mobileConnectionsRepository = kosmos.mobileConnectionsRepository
 
     private lateinit var underTest: AuthenticationRepository

@@ -18,6 +18,7 @@ package com.android.systemui.user.data.repository
 
 import android.annotation.UserIdInt
 import android.content.pm.UserInfo
+import android.graphics.drawable.Drawable
 import android.os.UserHandle
 import com.android.systemui.user.data.model.SelectedUserModel
 import com.android.systemui.user.data.model.UserSwitcherSettingsModel
@@ -118,4 +119,10 @@ public interface UserRepository {
      * @see [UserManager.getMainUser]
      */
     @UserIdInt public suspend fun getMainUserId(): Int?
+
+    /** Returns the user image, potentially from a cache. */
+    public suspend fun getUserImage(@UserIdInt userId: Int, iconSize: Int): Drawable
+
+    /** Clears all cached user images for specified user. */
+    public fun clearUserImageCacheForUser(@UserIdInt userId: Int)
 }

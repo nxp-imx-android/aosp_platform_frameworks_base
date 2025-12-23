@@ -253,13 +253,7 @@ constructor(
 
             launch {
                 userSwitcher.selectedUser
-                    .map {
-                        val iconSize =
-                            applicationContext.resources.getDimensionPixelSize(
-                                R.dimen.bouncer_user_switcher_icon_size
-                            )
-                        it.image.toBitmap(iconSize, iconSize)
-                    }
+                    .map { it.image.toBitmap() }
                     .collect { _selectedUserImage.value = it }
             }
 

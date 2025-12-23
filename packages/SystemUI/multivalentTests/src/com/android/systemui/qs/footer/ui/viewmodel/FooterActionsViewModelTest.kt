@@ -55,6 +55,7 @@ import com.android.systemui.statusbar.policy.FakeUserInfoController
 import com.android.systemui.statusbar.policy.FakeUserInfoController.FakeInfo
 import com.android.systemui.statusbar.policy.MockUserSwitcherControllerWrapper
 import com.android.systemui.user.data.repository.FakeUserRepository
+import com.android.systemui.user.data.repository.UserIconProvider
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.nullable
@@ -83,7 +84,9 @@ import org.mockito.kotlin.eq
 class FooterActionsViewModelTest : SysuiTestCase() {
     private val testDispatcher = StandardTestDispatcher()
     private val testScope = TestScope(testDispatcher)
-    private val userRepository = FakeUserRepository()
+    private val userManager = mock<UserManager>()
+    private val userRepository =
+        FakeUserRepository(UserIconProvider(context, userManager, testDispatcher))
     private val selectedUserInteractor = SelectedUserInteractor(userRepository)
     private lateinit var utils: FooterActionsTestUtils
 
@@ -185,9 +188,6 @@ class FooterActionsViewModelTest : SysuiTestCase() {
         val settings = FakeGlobalSettings(testDispatcher)
         val userSwitcherControllerWrapper =
             MockUserSwitcherControllerWrapper(currentUserName = "foo")
-
-        // Mock UserManager.
-        val userManager = mock<UserManager>()
         var isUserSwitcherEnabled = false
         var isGuestUser = false
         whenever(userManager.isUserSwitcherEnabled(any())).thenAnswer { isUserSwitcherEnabled }
