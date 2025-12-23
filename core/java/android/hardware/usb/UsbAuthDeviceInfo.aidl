@@ -19,6 +19,8 @@ package android.hardware.usb;
 @RustDerive(Clone=true, Eq=true, PartialEq=true)
 parcelable UsbAuthDeviceInfo {
     String syspath;
+    int busNumber;
+    int deviceNumber;
     int vendorId;
     int productId;
     byte deviceClass;
