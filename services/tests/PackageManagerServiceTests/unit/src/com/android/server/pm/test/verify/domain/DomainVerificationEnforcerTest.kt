@@ -407,6 +407,7 @@ class DomainVerificationEnforcerTest {
         val allowPreferredApps = AtomicBoolean(false)
         val allowQueryAll = AtomicBoolean(false)
         val allowDump = AtomicBoolean(false)
+        val allowQueryDomainVerification = AtomicBoolean(false)
         val context: Context = mockThrowOnUnmocked {
             initPermission(
                 allowUserState,
@@ -418,6 +419,9 @@ class DomainVerificationEnforcerTest {
             )
             initPermission(allowQueryAll, android.Manifest.permission.QUERY_ALL_PACKAGES)
             initPermission(allowDump, android.Manifest.permission.DUMP)
+            initPermission(
+                allowQueryDomainVerification,
+                android.Manifest.permission.QUERY_DOMAIN_VERIFICATION)
         }
         val target = params.construct(context)
 
@@ -444,6 +448,11 @@ class DomainVerificationEnforcerTest {
         allowQueryAll.set(true)
 
         assertFails { runMethod(target, NON_VERIFIER_UID) }
+
+        // If QUERY_DOMAIN_VERIFICATION permission is granted, querent is approved.
+        allowQueryDomainVerification.set(true)
+        runMethod(target, NON_VERIFIER_UID)
+        allowQueryDomainVerification.set(false)
 
         allowDump.set(true)
 

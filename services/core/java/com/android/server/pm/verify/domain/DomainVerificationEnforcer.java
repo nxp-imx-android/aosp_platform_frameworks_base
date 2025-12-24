@@ -70,10 +70,29 @@ public class DomainVerificationEnforcer {
                 break;
             default:
                 if (!proxy.isCallerVerifier(callingUid)) {
-                    mContext.enforcePermission(android.Manifest.permission.DUMP,
-                            Binder.getCallingPid(), callingUid,
-                            "Caller " + callingUid
-                                    + " is not allowed to query domain verification state");
+                    if (android.view.flags.Flags.redactWebOtpSmsApi()) {
+                      boolean hasQueryDomainVerificationPermission =
+                          mContext.checkPermission(
+                              android.Manifest.permission.QUERY_DOMAIN_VERIFICATION,
+                              Binder.getCallingPid(),
+                              callingUid) == PackageManager.PERMISSION_GRANTED;
+                      boolean hasDumpPermission =
+                          mContext.checkPermission(
+                              android.Manifest.permission.DUMP,
+                              Binder.getCallingPid(),
+                              callingUid) == PackageManager.PERMISSION_GRANTED;
+                      if (!hasQueryDomainVerificationPermission && !hasDumpPermission) {
+                        throw new SecurityException(
+                              "Caller " + callingUid
+                                     + " does not have any of the following permission:"
+                                     + " QUERY_DOMAIN_VERIFICATION, DUMP");
+                      }
+                    } else {
+                      mContext.enforcePermission(android.Manifest.permission.DUMP,
+                              Binder.getCallingPid(), callingUid,
+                              "Caller " + callingUid
+                                      + " is not allowed to query domain verification state");
+                    }
                     break;
                 }
 
