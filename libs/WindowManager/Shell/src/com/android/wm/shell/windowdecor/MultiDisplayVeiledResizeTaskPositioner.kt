@@ -182,13 +182,10 @@ class MultiDisplayVeiledResizeTaskPositioner(
             )
         }
         repositionTaskBounds.set(taskBoundsAtDragStart)
-        val rotation = windowDecoration.taskInfo.configuration.windowConfiguration.displayRotation
-        if (stableBounds.isEmpty || this.rotation != rotation) {
-            this.rotation = rotation
-            displayController
-                .getDisplayLayout(windowDecoration.taskInfo.displayId)!!
-                .getStableBounds(stableBounds)
-        }
+        this.rotation = windowDecoration.taskInfo.configuration.windowConfiguration.displayRotation
+        displayController
+            .getDisplayLayout(windowDecoration.taskInfo.displayId)
+            ?.getStableBounds(stableBounds)
         return Rect(repositionTaskBounds)
     }
 
@@ -429,10 +426,6 @@ class MultiDisplayVeiledResizeTaskPositioner(
                         currentDisplayLayout,
                     )
                 )
-
-                if (displayId != startDisplayId) {
-                    currentDisplayLayout.getStableBounds(stableBounds)
-                }
             }
 
             // Call the MultiDisplayDragMoveIndicatorController to clear any active indicator
