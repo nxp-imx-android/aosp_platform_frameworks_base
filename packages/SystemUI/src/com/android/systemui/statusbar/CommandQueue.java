@@ -582,8 +582,8 @@ public class CommandQueue extends IStatusBar.Stub implements
         /**
          * @see IStatusBar#showMediaOutputSwitcher
          */
-        default void showMediaOutputSwitcher(String packageName, UserHandle userHandle,
-                @Nullable MediaSession.Token sessionToken) {}
+        default void showMediaOutputSwitcher(@NonNull String packageName,
+                @NonNull UserHandle userHandle, @Nullable MediaSession.Token sessionToken) {}
 
         /**
          * @see IStatusBar#confirmImmersivePrompt
@@ -1484,7 +1484,7 @@ public class CommandQueue extends IStatusBar.Stub implements
         }
     }
     @Override
-    public void showMediaOutputSwitcher(String packageName, UserHandle userHandle,
+    public void showMediaOutputSwitcher(@NonNull String packageName, @NonNull UserHandle userHandle,
             @Nullable MediaSession.Token sessionToken) {
         int callingUid = Binder.getCallingUid();
         if (callingUid != 0 && callingUid != Process.SYSTEM_UID) {
