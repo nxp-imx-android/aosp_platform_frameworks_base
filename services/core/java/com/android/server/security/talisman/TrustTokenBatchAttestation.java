@@ -21,13 +21,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-/** Attestation for a batch of Talisman keys. */
-class TalismanBatchAttestation {
+/** Attestation for a batch of TrustToken keys. */
+class TrustTokenBatchAttestation {
     private final byte[] mBatchHash;
     private final byte[] mSignature;
     private final List<Certificate> mCertificates;
 
-    TalismanBatchAttestation(byte[] batchHash, byte[] signature, List<Certificate> certificates) {
+    TrustTokenBatchAttestation(byte[] batchHash, byte[] signature, List<Certificate> certificates) {
         mBatchHash = Arrays.copyOf(batchHash, batchHash.length);
         mSignature = Arrays.copyOf(signature, signature.length);
         mCertificates = List.copyOf(certificates);
@@ -48,8 +48,8 @@ class TalismanBatchAttestation {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof TalismanBatchAttestation)) return false;
-        TalismanBatchAttestation that = (TalismanBatchAttestation) o;
+        if (!(o instanceof TrustTokenBatchAttestation)) return false;
+        TrustTokenBatchAttestation that = (TrustTokenBatchAttestation) o;
         return Arrays.equals(mBatchHash, that.mBatchHash)
                 && Arrays.equals(mSignature, that.mSignature)
                 && Objects.equals(mCertificates, that.mCertificates);
@@ -65,7 +65,7 @@ class TalismanBatchAttestation {
 
     @Override
     public String toString() {
-        return "TalismanBatchAttestation["
+        return "TrustTokenBatchAttestation["
                 + "batchHash="
                 + Arrays.toString(mBatchHash)
                 + ", "

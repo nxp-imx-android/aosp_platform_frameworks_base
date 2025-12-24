@@ -20,5 +20,5 @@
     <application/>
     <instrumentation android:name="androidx.test.runner.AndroidJUnitRunner"
          android:targetPackage="com.android.server.security.talisman"
-         android:label="Talisman Tests"/>
+         android:label="TrustToken Tests"/>
 </manifest>

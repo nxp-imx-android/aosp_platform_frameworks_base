@@ -1,4 +1,4 @@
 # Bug component: 1111171
-# TODO(dlm): Move into Talisman sub-component.
+# TODO(dlm): Move into TrustToken sub-component.
 
 include /core/java/android/security/talisman/OWNERS

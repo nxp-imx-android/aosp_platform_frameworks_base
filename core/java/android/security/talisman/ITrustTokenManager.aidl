@@ -16,18 +16,18 @@
 
 package android.security.talisman;
 
-import android.security.talisman.Talisman;
-import android.security.talisman.TalismanIdentitySet;
+import android.security.talisman.TrustToken;
+import android.security.talisman.TrustTokenIdentitySet;
 
 /**
- * Interface for the TalismanManagerService.
+ * Interface for the TrustTokenManagerService.
  * @hide
  */
-interface ITalismanManager {
-    Talisman acquireVerifiedDeviceTalisman();
-    TalismanIdentitySet acquirePreparedIdentitySet();
-    int verifyTalismanAndChallenge(in Talisman talisman, in byte[] remoteResponse,
+interface ITrustTokenManager {
+    TrustToken acquireVerifiedDeviceToken();
+    TrustTokenIdentitySet acquirePreparedIdentitySet();
+    int verifyTrustTokenAndChallenge(in TrustToken token, in byte[] remoteResponse,
             in byte[] expectedChallenge);
-    int[] verifyIdentityTalismans(in Talisman verifiedDeviceTalisman, in Talisman[] identityTalismans);
+    int[] verifyIdentityTokens(in TrustToken verifiedDeviceToken, in TrustToken[] identityTokens);
     void updatePreparedIdentities(in List<String> identities);
 }

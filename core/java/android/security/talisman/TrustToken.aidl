@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-package com.android.server.security.talisman;
+package android.security.talisman;
 
-public class TalismanExhaustedException extends Exception {
-    TalismanExhaustedException() {}
-}
+parcelable TrustToken;

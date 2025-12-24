@@ -59,14 +59,14 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 
 /**
- * Represents the master key that's used to encrypt and attest per-Talisman keys.
+ * Represents the master key that's used to encrypt and attest per-TrustToken keys.
  *
  * <p>The master key is stored in the hardware-backed keystore, which is used to encrypt and attest
- * the per-Talisman key. It provides methods to use the per-Talisman key. The plaintext of the
- * private part of the per-Talisman key created by this class is never revealed.
+ * the per-TrustToken key. It provides methods to use the per-TrustToken key. The plaintext of the
+ * private part of the per-TrustToken key created by this class is never revealed.
  */
-final class TalismanMasterKey {
-    private static final String TAG = "TalismanMasterKey";
+final class TrustTokenMasterKey {
+    private static final String TAG = "TrustTokenMasterKey";
     private static final String ANDROID_KEY_STORE = "AndroidKeyStore";
 
     @NonNull private final KeyStoreHelper mHelper;
@@ -75,7 +75,7 @@ final class TalismanMasterKey {
     @NonNull private final List<Certificate> mAttestationCertificateChain;
 
     @NonNull
-    static TalismanMasterKey generateMasterKey(@NonNull String keyPrefix) {
+    static TrustTokenMasterKey generateMasterKey(@NonNull String keyPrefix) {
         // Since AndroidKeyStore overwrites existing key with the same alias, we remove the key
         // manually to avoid any incompatibility error.
         try {
@@ -89,7 +89,7 @@ final class TalismanMasterKey {
     }
 
     @NonNull
-    static TalismanMasterKey fromKeyStore(@NonNull String keyPrefix) {
+    static TrustTokenMasterKey fromKeyStore(@NonNull String keyPrefix) {
         var helper = new KeyStoreHelper();
         var encryptionEntry =
                 (KeyStore.SecretKeyEntry) helper.getEntry(encryptionKeyAlias(keyPrefix));
@@ -99,7 +99,7 @@ final class TalismanMasterKey {
                 new ArrayList<Certificate>(1 + attestationEntry.getCertificateChain().length);
         certificates.addAll(Arrays.asList(attestationEntry.getCertificateChain()));
         certificates.add(attestationEntry.getCertificate());
-        return new TalismanMasterKey(
+        return new TrustTokenMasterKey(
                 helper,
                 encryptionEntry.getSecretKey(),
                 attestationEntry.getPrivateKey(),
@@ -113,38 +113,38 @@ final class TalismanMasterKey {
     }
 
     @NonNull
-    TalismanKey generatePerTalismanKey() {
+    TrustTokenKey generatePerTokenKey() {
         KeyPair key = mHelper.generateKeyPair();
         byte[] publicKey = mHelper.encode(key.getPublic());
         // Use the public key as the AAD so that we can easily verify that the public key and the
         // private key are a pair.
         byte[] privateKey = mHelper.wrap(mEncryptionKey, key.getPrivate(), publicKey);
-        return new TalismanKey(publicKey, privateKey);
+        return new TrustTokenKey(publicKey, privateKey);
     }
 
     @NonNull
-    byte[] sign(@NonNull TalismanKey key, @NonNull byte[] message) {
+    byte[] sign(@NonNull TrustTokenKey key, @NonNull byte[] message) {
         PrivateKey privateKey =
                 mHelper.unwrap(mEncryptionKey, key.getPrivateKey(), key.getPublicKey());
         return mHelper.sign(privateKey, message);
     }
 
     @NonNull
-    TalismanBatchAttestation attest(@NonNull List<TalismanKey> keys) {
-        for (TalismanKey key : keys) {
+    TrustTokenBatchAttestation attest(@NonNull List<TrustTokenKey> keys) {
+        for (TrustTokenKey key : keys) {
             // Verify the keys are valid and owned by this master key.
             mHelper.unwrap(mEncryptionKey, key.getPrivateKey(), key.getPublicKey());
         }
         MessageDigest digest = mHelper.sha256Digest();
-        for (TalismanKey key : keys) {
+        for (TrustTokenKey key : keys) {
             digest.update(key.getPublicKey());
         }
         byte[] batchHash = digest.digest();
-        return new TalismanBatchAttestation(
+        return new TrustTokenBatchAttestation(
                 batchHash, mHelper.sign(mAttestationKey, batchHash), mAttestationCertificateChain);
     }
 
-    private TalismanMasterKey(
+    private TrustTokenMasterKey(
             @NonNull KeyStoreHelper helper,
             @NonNull SecretKey encryptionKey,
             @NonNull PrivateKey attestationKey,
@@ -157,7 +157,7 @@ final class TalismanMasterKey {
 
     @NonNull
     private static String encryptionKeyAlias(@NonNull String keyPrefix) {
-        // WARNING: Modifying this invalidates all Talismans created before.
+        // WARNING: Modifying this invalidates all TrustTokens created before.
         return keyPrefix + "-encryption";
     }
 
@@ -170,15 +170,15 @@ final class TalismanMasterKey {
         private static final String ED25519 = "Ed25519";
 
         @NonNull private final KeyStore mKeyStore;
-        @NonNull private final KeyPairGenerator mPerTalismanKeyGenerator;
+        @NonNull private final KeyPairGenerator mPerTokenKeyGenerator;
         @NonNull private final KeyFactory mKeyFactory;
 
         KeyStoreHelper() {
             try {
                 mKeyStore = KeyStore.getInstance(ANDROID_KEY_STORE);
                 mKeyStore.load(null);
-                mPerTalismanKeyGenerator = KeyPairGenerator.getInstance(ED25519);
-                mPerTalismanKeyGenerator.initialize(255);
+                mPerTokenKeyGenerator = KeyPairGenerator.getInstance(ED25519);
+                mPerTokenKeyGenerator.initialize(255);
                 mKeyFactory = KeyFactory.getInstance(ED25519);
             } catch (KeyStoreException
                     | CertificateException
@@ -209,7 +209,7 @@ final class TalismanMasterKey {
         }
 
         KeyPair generateKeyPair() {
-            return mPerTalismanKeyGenerator.generateKeyPair();
+            return mPerTokenKeyGenerator.generateKeyPair();
         }
 
         byte[] encode(PublicKey key) {
