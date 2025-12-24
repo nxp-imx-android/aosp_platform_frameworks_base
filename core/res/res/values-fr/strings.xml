@@ -159,6 +159,14 @@
     <string name="wfc_mode_wifi_preferred_summary" msgid="1035175836270943089">"Appel via le Wi-Fi"</string>
     <string name="wfc_mode_cellular_preferred_summary" msgid="4958965609212575619">"Appel via le réseau mobile"</string>
     <string name="wfc_mode_wifi_only_summary" msgid="104951993894678665">"Wi-Fi uniquement"</string>
+    <!-- String.format failed for translation -->
+    <!-- no translation found for adaptive_low_frequency_less_than_one_minute (8869498183646028708) -->
+    <skip />
+    <!-- String.format failed for translation -->
+    <!-- no translation found for adaptive_low_frequency_neg_less_than_one_minute (2590062535985417056) -->
+    <skip />
+    <string name="elapsed_time_low_frequency_short_format_h_mm" msgid="6728141238066668781">"%1$d:%2$02d:--"</string>
+    <string name="elapsed_time_low_frequency_short_format_mm" msgid="2405181895215514414">"%1$02d:--"</string>
     <!-- no translation found for crossSimFormat_spn (9125246077491634262) -->
     <skip />
     <string name="crossSimFormat_spn_cross_sim_calling" msgid="5620807020002879057">"Appels de secours via <xliff:g id="SPN">%s</xliff:g>"</string>
@@ -499,7 +507,7 @@
     <string name="permdesc_broadcastSticky" product="tablet" msgid="5058486069846384013">"Permet à l\'application d\'envoyer des intentions de diffusion \"persistantes\", qui perdurent une fois la diffusion terminée. Une utilisation excessive peut ralentir la tablette ou la rendre instable en l\'obligeant à utiliser trop de mémoire."</string>
     <string name="permdesc_broadcastSticky" product="tv" msgid="2338185920171000650">"Permet à l\'application d\'envoyer des diffusions \"persistantes\", qui perdurent une fois la diffusion effectuée. Une utilisation excessive peut ralentir votre appareil Android TV ou le rendre instable en l\'obligeant à utiliser trop de mémoire."</string>
     <string name="permdesc_broadcastSticky" product="default" msgid="134529339678913453">"Permet à l\'application d\'envoyer des intentions de diffusion \"persistantes\", qui perdurent une fois la diffusion terminée. Une utilisation excessive peut ralentir le téléphone ou le rendre instable en l\'obligeant à utiliser trop de mémoire."</string>
-    <string name="permlab_readContacts" msgid="8776395111787429099">"Voir les contacts"</string>
+    <string name="permlab_readContacts" msgid="8776395111787429099">"voir les contacts"</string>
     <string name="permdesc_readContacts" product="tablet" msgid="6430093481659992692">"Permet à l\'application de lire les données liées aux contacts stockés sur votre tablette. Les applications auront également accès aux comptes de votre tablette pour lesquels des contacts ont été créés. Cela peut inclure les comptes créés via des applications que vous avez installées. Cette autorisation permet aux applications d\'enregistrer les données liées à vos contacts. Des applications malveillantes peuvent exploiter cette fonctionnalité pour partager ces données à votre insu."</string>
     <string name="permdesc_readContacts" product="tv" msgid="8400138591135554789">"Permet à l\'application de lire les données liées aux contacts stockés sur votre appareil Android TV. Les applications auront également accès aux comptes de votre appareil Android TV pour lesquels des contacts ont été créés. Cela peut inclure les comptes créés via des applications que vous avez installées. Cette autorisation permet aux applications d\'enregistrer les données liées à vos contacts. Des applications malveillantes peuvent exploiter cette fonctionnalité pour partager ces données à votre insu."</string>
     <string name="permdesc_readContacts" product="default" msgid="4911989776203207644">"Permet à l\'application de lire les données liées aux contacts stockés sur votre téléphone. Les applications auront également accès aux comptes de votre téléphone pour lesquels des contacts ont été créés. Cela peut inclure les comptes créés via des applications que vous avez installées. Cette autorisation permet aux applications d\'enregistrer les données liées à vos contacts. Des applications malveillantes peuvent exploiter cette fonctionnalité pour partager ces données à votre insu."</string>
@@ -642,7 +650,7 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"Autoriser l\'appli à déterminer la position relative entre des appareils ultra-wideband à proximité"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"interagir avec les appareils Wi-Fi à proximité"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Permet à l\'appli de déterminer la position approximative des appareils Wi‑Fi à proximité, de les afficher et de s\'y connecter"</string>
-    <string name="permlab_access_local_network" msgid="3420360767259066877">"Accès aux appareils du réseau local"</string>
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"accéder aux appareils du réseau local"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Autorise l\'appli à accéder aux appareils du réseau local"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"utiliser l\'interface de rebouclage"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Permet à l\'appli d\'interagir avec d\'autres applis par le biais de l\'interface de rebouclage"</string>
@@ -1831,8 +1839,7 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"geste"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"réglages rapides"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"appuyer trois fois"</string>
-    <!-- no translation found for accessibility_shortcut_label_top_row_key (1488840908672437180) -->
-    <skip />
+    <string name="accessibility_shortcut_label_top_row_key" msgid="1488840908672437180">"touche d\'accessibilité"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"Le service <xliff:g id="SERVICE_NAME">%s</xliff:g> a été désactivé"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Modifier les raccourcis"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"OK"</string>

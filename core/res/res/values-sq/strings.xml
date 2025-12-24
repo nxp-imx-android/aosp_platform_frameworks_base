@@ -158,6 +158,14 @@
     <string name="wfc_mode_wifi_preferred_summary" msgid="1035175836270943089">"Telefono nëpërmjet Wi-Fi"</string>
     <string name="wfc_mode_cellular_preferred_summary" msgid="4958965609212575619">"Telefono nëpërmjet rrjetit celular"</string>
     <string name="wfc_mode_wifi_only_summary" msgid="104951993894678665">"Vetëm Wi-Fi"</string>
+    <!-- no translation found for adaptive_low_frequency_less_than_one_minute (8869498183646028708) -->
+    <skip />
+    <!-- no translation found for adaptive_low_frequency_neg_less_than_one_minute (2590062535985417056) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_h_mm (6728141238066668781) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_mm (2405181895215514414) -->
+    <skip />
     <!-- no translation found for crossSimFormat_spn (9125246077491634262) -->
     <skip />
     <string name="crossSimFormat_spn_cross_sim_calling" msgid="5620807020002879057">"Opsioni rezervë i telefonatave të <xliff:g id="SPN">%s</xliff:g>"</string>
@@ -1453,7 +1461,7 @@
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"Brezi yt orar është ndryshuar"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"Tani je në <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
     <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"Ndryshimi i orës"</string>
-    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"Orët u shtynë përpara me <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. Tani je në <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"Orët u shtynë përpara me <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. Tani je në sistemin: <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
     <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"Orët u shtynë prapa me <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. Tani je në <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"Cakto kohën"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"Vendos datën"</string>

@@ -159,6 +159,14 @@
     <string name="wfc_mode_wifi_preferred_summary" msgid="1035175836270943089">"Chiamata tramite Wi-Fi"</string>
     <string name="wfc_mode_cellular_preferred_summary" msgid="4958965609212575619">"Chiamata su rete mobile"</string>
     <string name="wfc_mode_wifi_only_summary" msgid="104951993894678665">"Solo Wi-Fi"</string>
+    <!-- no translation found for adaptive_low_frequency_less_than_one_minute (8869498183646028708) -->
+    <skip />
+    <!-- no translation found for adaptive_low_frequency_neg_less_than_one_minute (2590062535985417056) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_h_mm (6728141238066668781) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_mm (2405181895215514414) -->
+    <skip />
     <!-- no translation found for crossSimFormat_spn (9125246077491634262) -->
     <skip />
     <string name="crossSimFormat_spn_cross_sim_calling" msgid="5620807020002879057">"Chiamate di backup <xliff:g id="SPN">%s</xliff:g>"</string>
@@ -638,7 +646,7 @@
     <string name="permdesc_bluetooth_connect" product="default" msgid="4546016548795544617">"Consente all\'app di connettersi ai dispositivi Bluetooth accoppiati"</string>
     <string name="permlab_bluetooth_advertise" msgid="2781147747928853177">"Trasmissione di annunci a dispositivi Bluetooth vicini"</string>
     <string name="permdesc_bluetooth_advertise" product="default" msgid="6085174451034210183">"Consente all\'app di trasmettere annunci ai dispositivi Bluetooth nelle vicinanze"</string>
-    <string name="permlab_uwb_ranging" msgid="8141915781475770665">"Possibilità di stabilire la posizione relativa tra dispositivi a banda ultralarga nelle vicinanze"</string>
+    <string name="permlab_uwb_ranging" msgid="8141915781475770665">"Possibilità di stabilire la posizione relativa tra dispositivi a banda ultralarga vicini"</string>
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"Consenti all\'app di stabilire la posizione relativa tra dispositivi a banda ultralarga nelle vicinanze"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"Interazione con dispositivi Wi-Fi vicini"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Consente all\'app di trasmettere annunci e connettersi a dispositivi Wi‑Fi vicini e di stabilirne la posizione relativa."</string>
@@ -1831,8 +1839,7 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"gesto"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"impostazioni rapide"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"triplo tocco"</string>
-    <!-- no translation found for accessibility_shortcut_label_top_row_key (1488840908672437180) -->
-    <skip />
+    <string name="accessibility_shortcut_label_top_row_key" msgid="1488840908672437180">"tasto di accessibilità"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"Il servizio <xliff:g id="SERVICE_NAME">%s</xliff:g> è stato disattivato"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Modifica scorciatoie"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Fine"</string>

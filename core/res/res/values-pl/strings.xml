@@ -160,6 +160,14 @@
     <string name="wfc_mode_wifi_preferred_summary" msgid="1035175836270943089">"Rozmowa przez Wi-Fi"</string>
     <string name="wfc_mode_cellular_preferred_summary" msgid="4958965609212575619">"Połączenia przez sieć komórkową"</string>
     <string name="wfc_mode_wifi_only_summary" msgid="104951993894678665">"Tylko Wi-Fi"</string>
+    <!-- no translation found for adaptive_low_frequency_less_than_one_minute (8869498183646028708) -->
+    <skip />
+    <!-- no translation found for adaptive_low_frequency_neg_less_than_one_minute (2590062535985417056) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_h_mm (6728141238066668781) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_mm (2405181895215514414) -->
+    <skip />
     <!-- no translation found for crossSimFormat_spn (9125246077491634262) -->
     <skip />
     <string name="crossSimFormat_spn_cross_sim_calling" msgid="5620807020002879057">"Zapasowa metoda wykonywania połączeń <xliff:g id="SPN">%s</xliff:g>"</string>
@@ -1455,8 +1463,8 @@
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"Zmieniła się Twoja strefa czasowa"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"Twoja aktualna strefa to <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
     <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"Zmiana czasu"</string>
-    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"Zegary zostały przestawione o <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> do przodu. Jesteś teraz w strefie <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
-    <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"Zegary zostały przestawione o <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> do tyłu. Jesteś teraz w strefie <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"Czas, o jaki zegary zostały przestawione do przodu, to <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. Jesteś teraz w strefie <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
+    <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"Czas, o jaki zegary zostały przestawione do tyłu, to <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> do tyłu. Jesteś teraz w strefie <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"Ustaw godzinę"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"Ustaw datę"</string>
     <string name="date_time_set" msgid="4603445265164486816">"Ustaw"</string>
@@ -1832,8 +1840,7 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"gest"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"szybkie ustawienia"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"kliknij trzykrotnie"</string>
-    <!-- no translation found for accessibility_shortcut_label_top_row_key (1488840908672437180) -->
-    <skip />
+    <string name="accessibility_shortcut_label_top_row_key" msgid="1488840908672437180">"klawisz ułatwień dostępu"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"Usługa <xliff:g id="SERVICE_NAME">%s</xliff:g> została wyłączona"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Edytuj skróty"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"OK"</string>

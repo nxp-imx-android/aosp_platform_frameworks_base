@@ -158,6 +158,14 @@
     <string name="wfc_mode_wifi_preferred_summary" msgid="1035175836270943089">"ਵਾਈ-ਫਾਈ \'ਤੇ ਕਾਲ ਕਰੋ"</string>
     <string name="wfc_mode_cellular_preferred_summary" msgid="4958965609212575619">"ਮੋਬਾਈਲ ਨੈੱਟਵਰਕ ਤੋਂ ਕਾਲ ਕਰੋ"</string>
     <string name="wfc_mode_wifi_only_summary" msgid="104951993894678665">"ਸਿਰਫ਼ ਵਾਈ-ਫਾਈ"</string>
+    <!-- no translation found for adaptive_low_frequency_less_than_one_minute (8869498183646028708) -->
+    <skip />
+    <!-- no translation found for adaptive_low_frequency_neg_less_than_one_minute (2590062535985417056) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_h_mm (6728141238066668781) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_mm (2405181895215514414) -->
+    <skip />
     <!-- no translation found for crossSimFormat_spn (9125246077491634262) -->
     <skip />
     <string name="crossSimFormat_spn_cross_sim_calling" msgid="5620807020002879057">"<xliff:g id="SPN">%s</xliff:g> ਬੈਕਅੱਪ ਕਾਲਿੰਗ"</string>
@@ -641,7 +649,7 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"ਐਪ ਨੂੰ ਨਜ਼ਦੀਕੀ ਅਲਟ੍ਰਾ-ਵਾਈਡਬੈਂਡ ਡੀਵਾਈਸਾਂ ਦੇ ਵਿਚਾਲੇ ਸੰਬੰਧਿਤ ਸਥਿਤੀ ਨੂੰ ਨਿਰਧਾਰਿਤ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"ਨਜ਼ਦੀਕੀ ਵਾਈ-ਫਾਈ ਡੀਵਾਈਸਾਂ ਨਾਲ ਅੰਤਰਕਿਰਿਆ ਕਰੋ"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"ਐਪ ਨੂੰ ਨਜ਼ਦੀਕੀ ਵਾਈ-ਫਾਈ ਡੀਵਾਈਸਾਂ \'ਤੇ ਵਿਗਿਆਪਨ ਦੇਣ, ਕਨੈਕਟ ਕਰਨ ਅਤੇ ਉਨ੍ਹਾਂ ਦੀ ਸੰਬੰਧਿਤ ਸਥਿਤੀ ਨੂੰ ਨਿਰਧਾਰਿਤ ਕਰਨ ਦੀ ਆਗਿਆ ਦਿੱਤੀ ਜਾਂਦੀ ਹੈ"</string>
-    <string name="permlab_access_local_network" msgid="3420360767259066877">"ਸਥਾਨਕ ਨੈੱਟਵਰਕ ਡੀਵਾਈਸਾਂ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਦੀ ਆਗਿਆ ਦਿਓ"</string>
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"ਸਥਾਨਕ ਨੈੱਟਵਰਕ ਡੀਵਾਈਸਾਂ ਤੱਕ ਪਹੁੰਚ ਕਰੋ"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"ਐਪ ਨੂੰ ਸਥਾਨਕ ਨੈੱਟਵਰਕ ਡੀਵਾਈਸਾਂ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਦੀ ਆਗਿਆ ਮਿਲਦੀ ਹੈ"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"ਲੂਪਬੈਕ ਇੰਟਰਫ਼ੇਸ ਦੀ ਵਰਤੋਂ ਕਰੋ"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"ਇਸ ਨਾਲ ਐਪ ਨੂੰ ਲੂਪਬੈਕ ਇੰਟਰਫ਼ੇਸ \'ਤੇ ਹੋਰ ਐਪਾਂ ਨਾਲ ਅੰਤਰਕਿਰਿਆ ਕਰਨ ਦੀ ਆਗਿਆ ਮਿਲਦੀ ਹੈ"</string>
@@ -1830,8 +1838,7 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"ਇਸ਼ਾਰਾ"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"ਤਤਕਾਲ ਸੈਟਿੰਗਾਂ"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"ਟ੍ਰਿਪਲ ਟੈਪ ਕਰੋ"</string>
-    <!-- no translation found for accessibility_shortcut_label_top_row_key (1488840908672437180) -->
-    <skip />
+    <string name="accessibility_shortcut_label_top_row_key" msgid="1488840908672437180">"ਪਹੁੰਚਯੋਗਤਾ ਕੁੰਜੀ"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> ਨੂੰ ਬੰਦ ਕਰ ਦਿੱਤਾ ਗਿਆ ਹੈ"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"ਸ਼ਾਰਟਕੱਟਾਂ ਦਾ ਸੰਪਾਦਨ ਕਰੋ"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"ਹੋ ਗਿਆ"</string>

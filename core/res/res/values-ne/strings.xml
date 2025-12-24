@@ -158,6 +158,14 @@
     <string name="wfc_mode_wifi_preferred_summary" msgid="1035175836270943089">"Wi-Fi मार्फत कल गर्नुहोस्"</string>
     <string name="wfc_mode_cellular_preferred_summary" msgid="4958965609212575619">"मोबाइल नेटवर्कमार्फत कल गर्नुहोस्"</string>
     <string name="wfc_mode_wifi_only_summary" msgid="104951993894678665">"Wi-Fi मात्र"</string>
+    <!-- no translation found for adaptive_low_frequency_less_than_one_minute (8869498183646028708) -->
+    <skip />
+    <!-- no translation found for adaptive_low_frequency_neg_less_than_one_minute (2590062535985417056) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_h_mm (6728141238066668781) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_mm (2405181895215514414) -->
+    <skip />
     <!-- no translation found for crossSimFormat_spn (9125246077491634262) -->
     <skip />
     <string name="crossSimFormat_spn_cross_sim_calling" msgid="5620807020002879057">"<xliff:g id="SPN">%s</xliff:g> ब्याकअप कलिङ"</string>
@@ -323,7 +331,7 @@
     <string name="notification_channel_usb" msgid="1528280969406244896">"USB जडान"</string>
     <string name="notification_channel_heavy_weight_app" msgid="17455756500828043">"एप चलिरहेको छ"</string>
     <string name="notification_channel_foreground_service" msgid="7102189948158885178">"एपहरूले ब्याट्री खपत गर्दै छन्"</string>
-    <string name="notification_channel_accessibility_magnification" msgid="1707913872219798098">"जुम इन गर्ने सुविधा"</string>
+    <string name="notification_channel_accessibility_magnification" msgid="1707913872219798098">"जुम इन"</string>
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"हियरिङ डिभाइस"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"सर्वसुलभतासम्बन्धी सेवाहरूको प्रयोग"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"डिस्प्ले"</string>
@@ -1830,8 +1838,7 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"जेस्चर"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"द्रुत सेटिङ"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"ट्रिपल ट्याप गर्नुहोस्"</string>
-    <!-- no translation found for accessibility_shortcut_label_top_row_key (1488840908672437180) -->
-    <skip />
+    <string name="accessibility_shortcut_label_top_row_key" msgid="1488840908672437180">"\"सर्वसुलभता\" की"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> निष्क्रिय पारिएको छ"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"सर्टकटहरू सम्पादन गर्नुहोस्"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"सम्पन्न भयो"</string>
@@ -1857,7 +1864,7 @@
     <string name="accessibility_button_instructional_text" msgid="6831154884557881996">"तपाईंले अर्को पटक एक्सेसिबिलिटी बटनमा ट्याप गर्दा यो सुविधा खुल्ने छ"</string>
     <string name="accessibility_gesture_instructional_text" msgid="4133877896011098550">"तपाईंले अर्को पटक यो सर्टकट प्रयोग गर्दा यो सुविधा खुल्ने छ। २ वटा औँलाले स्क्रिनको पुछारबाट माथितिर स्वाइप गर्नुहोस् र तुरुन्तै औँला उठाउनुहोस्।"</string>
     <string name="accessibility_gesture_3finger_instructional_text" msgid="1124458279366968154">"तपाईंले अर्को पटक यो सर्टकट प्रयोग गर्दा यो सुविधा खुल्ने छ। ३ वटा औँलाले स्क्रिनको पुछारबाट माथितिर स्वाइप गर्नुहोस् र तुरुन्तै औँला उठाउनुहोस्।"</string>
-    <string name="accessibility_magnification_chooser_text" msgid="1502075582164931596">"म्याग्निफिकेसन"</string>
+    <string name="accessibility_magnification_chooser_text" msgid="1502075582164931596">"जुम इन"</string>
     <string name="hearing_device_switch_phone_mic_notification_title" msgid="6645178038359708836">"फोनको माइक प्रयोग गर्ने हो?"</string>
     <string name="hearing_device_switch_hearing_mic_notification_title" msgid="4612074852145289569">"हियरिङ एडको माइक प्रयोग गर्ने हो?"</string>
     <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"अझ राम्रो आवाज सुनाउन वा तपाईंको हियरिङ एडको ब्याट्री कम भएका खण्डमा। यसले कल भइरहेका बेला मात्र तपाईंको माइक बदल्छ।"</string>
