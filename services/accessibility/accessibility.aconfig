@@ -158,6 +158,17 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "release_a11y_lock_before_input_filter_call"
+    namespace: "accessibility"
+    description: "Releases the AccessibilityManagerService lock before calling into AccessibilityInputFilter to prevent deadlocks with the Input system."
+    bug: "465546957"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
 flag {
     name: "send_a11y_action_cancel_on_reset"
     namespace: "accessibility"
