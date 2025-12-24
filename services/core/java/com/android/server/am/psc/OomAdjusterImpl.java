@@ -46,6 +46,7 @@ import static android.app.ActivityManager.PROCESS_STATE_TOP;
 import static android.app.ActivityManager.PROCESS_STATE_TOP_SLEEPING;
 import static android.app.ActivityManager.PROCESS_STATE_TRANSIENT_BACKGROUND;
 import static android.app.ActivityManager.PROCESS_STATE_UNKNOWN;
+import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_NONE;
 import static android.content.Context.BIND_TREAT_LIKE_VISIBLE_FOREGROUND_SERVICE;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
@@ -601,6 +602,8 @@ public class OomAdjusterImpl extends OomAdjuster {
     }
     private final ComputeConnectionsConsumer mComputeConnectionsConsumer =
             new ComputeConnectionsConsumer();
+
+    private int mZramWritebackOomAdj = DEFAULT_ZRAM_WRITEBACK_OOM_ADJ;
 
     public OomAdjusterImpl(Object serviceLock, Object procLock, ProcessListInternal processList,
             ActiveUidsInternal activeUids, ServiceThread adjusterThread, Constants oomConstants,
@@ -2378,5 +2381,23 @@ public class OomAdjusterImpl extends OomAdjuster {
         app.setCurCapability(capability);
 
         return false;
+    }
+
+    @Override
+    public void configureAdjForZramWriteback(int adj) {
+        mZramWritebackOomAdj = adj;
+    }
+
+    @Override
+    protected int getAdjForZramWriteback() {
+        return mZramWritebackOomAdj;
+    }
+
+    @GuardedBy({"mServiceLock", "mProcLock"})
+    @Override
+    public void onZramWritebackStateChanged(@NonNull ProcessRecordInternal app,
+            boolean inZramWritebackState) {
+        setIntermediateAdjLSP(app, app.getCurRawAdj(), app.getCurrentSchedulingGroup());
+        applyOomAdjLSP(app, /* isBatchingOomAdj= */ false);
     }
 }
