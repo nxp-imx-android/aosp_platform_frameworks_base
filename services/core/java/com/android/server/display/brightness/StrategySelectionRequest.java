@@ -44,15 +44,12 @@ public final class StrategySelectionRequest {
 
     private boolean mIsWearBedtimeModeEnabled;
 
-    private boolean mIsChargingModeEnabled;
-
     public StrategySelectionRequest(DisplayManagerInternal.DisplayPowerRequest displayPowerRequest,
             int targetDisplayState, float lastUserSetScreenBrightness,
             boolean userSetBrightnessChanged,
             DisplayManagerInternal.DisplayOffloadSession displayOffloadSession,
             boolean isStylusBeingUsed,
-            boolean isWearBedtimeModeEnabled,
-            boolean isChargingModeEnabled) {
+            boolean isWearBedtimeModeEnabled) {
         mDisplayPowerRequest = displayPowerRequest;
         mTargetDisplayState = targetDisplayState;
         mLastUserSetScreenBrightness = lastUserSetScreenBrightness;
@@ -60,7 +57,6 @@ public final class StrategySelectionRequest {
         mDisplayOffloadSession = displayOffloadSession;
         mIsStylusBeingUsed = isStylusBeingUsed;
         mIsWearBedtimeModeEnabled = isWearBedtimeModeEnabled;
-        mIsChargingModeEnabled = isChargingModeEnabled;
     }
 
     public DisplayManagerInternal.DisplayPowerRequest getDisplayPowerRequest() {
@@ -84,10 +80,6 @@ public final class StrategySelectionRequest {
         return mIsWearBedtimeModeEnabled;
     }
 
-    public boolean isChargingModeEnabled() {
-        return mIsChargingModeEnabled;
-    }
-
     public DisplayManagerInternal.DisplayOffloadSession getDisplayOffloadSession() {
         return mDisplayOffloadSession;
     }
@@ -108,8 +100,7 @@ public final class StrategySelectionRequest {
                 && mUserSetBrightnessChanged == other.isUserSetBrightnessChanged()
                 && mDisplayOffloadSession.equals(other.getDisplayOffloadSession())
                 && mIsStylusBeingUsed == other.isStylusBeingUsed()
-                && mIsWearBedtimeModeEnabled == other.isWearBedtimeModeEnabled()
-                && mIsChargingModeEnabled == other.isChargingModeEnabled();
+                && mIsWearBedtimeModeEnabled == other.isWearBedtimeModeEnabled();
     }
 
     @Override

@@ -17,7 +17,6 @@ package com.android.server.display.brightness.strategy;
 
 import static android.hardware.display.DisplayManagerInternal.DisplayPowerRequest.POLICY_DOZE;
 
-import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_CHARGING;
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR;
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_DEFAULT;
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_DOZE;
@@ -39,7 +38,6 @@ import com.android.server.display.brightness.BrightnessUtils;
 import com.android.server.display.brightness.StrategyExecutionRequest;
 import com.android.server.display.brightness.StrategySelectionNotifyRequest;
 import com.android.server.display.feature.DisplayManagerFlags;
-import com.android.server.display.feature.flags.Flags;
 
 import java.io.PrintWriter;
 
@@ -133,12 +131,11 @@ public class AutomaticBrightnessStrategy implements DisplayBrightnessStrategy{
     public void setAutoBrightnessState(int targetDisplayState,
             boolean allowAutoBrightnessWhileDozingConfig, int brightnessReason, int policy,
             boolean useNormalBrightnessForDoze, float lastUserSetScreenBrightness,
-            boolean userSetBrightnessChanged, boolean isBedtimeModeWearEnabled,
-            boolean isChargingModeEnabled) {
+            boolean userSetBrightnessChanged, boolean isBedtimeModeWearEnabled) {
         // We are still in the process of updating the power state, so there's no need to trigger
         // an update again
         switchMode(targetDisplayState, useNormalBrightnessForDoze, policy, isBedtimeModeWearEnabled,
-                isChargingModeEnabled, /* sendUpdate= */ false);
+                /* sendUpdate= */ false);
 
         // If the policy is POLICY_DOZE and the display state is not STATE_OFF, auto-brightness
         // should only be enabled if the config allows it
@@ -353,8 +350,7 @@ public class AutomaticBrightnessStrategy implements DisplayBrightnessStrategy{
                             .useNormalBrightnessForDoze,
                     strategySelectionNotifyRequest.getLastUserSetScreenBrightness(),
                     strategySelectionNotifyRequest.isUserSetBrightnessChanged(),
-                    strategySelectionNotifyRequest.isBedtimeModeWearEnabled(),
-                    strategySelectionNotifyRequest.isChargingModeEnabled());
+                    strategySelectionNotifyRequest.isBedtimeModeWearEnabled());
         }
         mIsConfigured = false;
     }
@@ -510,7 +506,7 @@ public class AutomaticBrightnessStrategy implements DisplayBrightnessStrategy{
     }
 
     private void switchMode(int state, boolean useNormalBrightnessForDoze, int policy,
-            boolean isWearBedtimeModeEnabled, boolean isChargingModeEnabled, boolean sendUpdate) {
+            boolean isWearBedtimeModeEnabled, boolean sendUpdate) {
         if (mAutomaticBrightnessController == null
                 || mAutomaticBrightnessController.isInIdleMode()) {
             return;
@@ -531,13 +527,7 @@ public class AutomaticBrightnessStrategy implements DisplayBrightnessStrategy{
                                 || Display.isDozeState(state)
                         : Display.isDozeState(state);
         if (shouldUseDozeMode) {
-            if (Flags.autoBrightnessModeCharging() && isChargingModeEnabled) {
-                mAutomaticBrightnessController.switchMode(
-                        AUTO_BRIGHTNESS_MODE_CHARGING, sendUpdate);
-            } else {
-                mAutomaticBrightnessController.switchMode(
-                        AUTO_BRIGHTNESS_MODE_DOZE, sendUpdate);
-            }
+            mAutomaticBrightnessController.switchMode(AUTO_BRIGHTNESS_MODE_DOZE, sendUpdate);
             return;
         }
 
