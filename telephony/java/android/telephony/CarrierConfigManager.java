@@ -6159,6 +6159,21 @@ public class CarrierConfigManager {
         public static final String KEY_NR_SA_DISABLE_POLICY_INT =
                 KEY_PREFIX + "sa_disable_policy_int";
 
+        /**
+         * Specifies the policy for disabling NR SA mode for emergency.
+         * Default value is {@link #SA_DISABLE_POLICY_NONE}.
+         * The value set as below:
+         * <ul>
+         * <li>0: {@link #SA_DISABLE_POLICY_NONE }</li>
+         * <li>1: {@link #SA_DISABLE_POLICY_WFC_ESTABLISHED }</li>
+         * <li>2: {@link #SA_DISABLE_POLICY_WFC_ESTABLISHED_WHEN_VONR_DISABLED  }</li>
+         * <li>3: {@link #SA_DISABLE_POLICY_VOWIFI_REGISTERED  }</li>
+         * </ul>
+         * @hide
+         */
+        public static final String KEY_NR_SA_DISABLE_POLICY_FOR_EMERGENCY_INT =
+                KEY_PREFIX + "sa_disable_policy_for_emergency_int";
+
         /** @hide */
         @IntDef({
                 NR_SA_DISABLE_POLICY_NONE,
@@ -6284,6 +6299,7 @@ public class CarrierConfigManager {
             defaults.putInt(KEY_REGISTRATION_RETRY_MAX_TIMER_MILLIS_INT, 1800000);
             defaults.putInt(KEY_REGISTRATION_SUBSCRIBE_EXPIRY_TIMER_SEC_INT, 600000);
             defaults.putInt(KEY_NR_SA_DISABLE_POLICY_INT, NR_SA_DISABLE_POLICY_NONE);
+            defaults.putInt(KEY_NR_SA_DISABLE_POLICY_FOR_EMERGENCY_INT, NR_SA_DISABLE_POLICY_NONE);
 
             defaults.putIntArray(
                     KEY_IPSEC_AUTHENTICATION_ALGORITHMS_INT_ARRAY,
