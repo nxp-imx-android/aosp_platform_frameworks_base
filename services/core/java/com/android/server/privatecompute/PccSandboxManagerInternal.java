@@ -349,25 +349,22 @@ public final class PccSandboxManagerInternal {
      * Returns true if the package {@code callerPackage} running under user
      * handle {@code callerUid} is allowed association with the package
      * {@code targetPackage} running under user handle {@code targetUid}.
-     * {@code extras} are checked for some associations, to ensure one-way
-     * information flow into the PCC sandbox.
+     * {@code extras} are checked when attempting to send broadcasts, to ensure
+     * one-way information flow into the PCC sandbox.
      */
     public boolean validateAssociationAllowed(
             int callerUid, String callerPackage, int targetUid, String targetPackage,
             @ActivityManagerService.AssociationType int associationType, @Nullable Bundle extras) {
-        // Self-association is allowed.
-        if (callerUid == targetUid) {
-            return true;
-        }
-
         final boolean callerIsPcc = Process.isPrivateComputeCoreUid(callerUid);
         final boolean targetIsPcc = Process.isPrivateComputeCoreUid(targetUid);
+
         // PCC to PCC association is allowed.
         if (callerIsPcc && targetIsPcc) {
             return true;
         }
 
-        // Allow some non-PCC to PCC association, with one-way data flow enforced.
+        // Allow non-PCC to PCC association, as one-way data flow will be
+        // enforced through other ActivityManager APIs.
         if (!callerIsPcc && targetIsPcc) {
             switch (associationType) {
                 case ActivityManagerService.ASSOCIATION_TYPE_PROVIDER -> {
@@ -375,15 +372,18 @@ public final class PccSandboxManagerInternal {
                     // because it can be used to egress sensitive data.
                     return isPccTrustedApp(callerUid, callerPackage);
                 }
-                case ActivityManagerService.ASSOCIATION_TYPE_RECEIVER,
-                     ActivityManagerService.ASSOCIATION_TYPE_SERVICE -> {
+                case ActivityManagerService.ASSOCIATION_TYPE_RECEIVER -> {
                     try {
                         PccBundleSanitizationUtil.sanitizeBundle(extras);
                         return true;
                     } catch (IllegalArgumentException e) {
-                        Slog.e(TAG, "Intent extras have disallowed data types", e);
+                        Slog.e(TAG, "Broadcast extras has disallowed active types", e);
                         return false;
                     }
+                }
+                case ActivityManagerService.ASSOCIATION_TYPE_SERVICE -> {
+                    // TODO(b/438433382): Update
+                    return true;
                 }
                 default -> {
                     // Should not be reached.
