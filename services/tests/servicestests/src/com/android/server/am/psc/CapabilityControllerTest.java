@@ -27,9 +27,6 @@ import static org.mockito.Mockito.mock;
 
 import android.platform.test.annotations.Presubmit;
 
-import com.android.server.am.psc.CapabilityController.Node;
-import com.android.server.am.psc.CapabilityController.ProcessEdge;
-
 import org.junit.Test;
 
 /**
@@ -45,18 +42,18 @@ public class CapabilityControllerTest {
         TestNode node = new TestNode.Builder().withProcessRunning(false).build();
         ProcessEdge edge = new ProcessEdge(node);
 
-        assertEquals(PROCESS_CAPABILITY_NONE, edge.evaluatePropagationFilter());
+        assertEquals(PROCESS_CAPABILITY_NONE, edge.evaluateCapabilityFilter());
     }
 
     @Test
-    public void testEvaluatePolicyMaxAdj_MaxAdjForeground_GrantsAllCapabilities() {
+    public void testEvaluateMaxAdjPolicy_MaxAdjForeground_GrantsAllCapabilities() {
         TestNode node = new TestNode.Builder().withMaxAdj(FOREGROUND_APP_ADJ).build();
         ProcessEdge edge = new ProcessEdge(node);
 
-        assertEquals(PROCESS_CAPABILITY_ALL, edge.evaluatePropagationFilter());
+        assertEquals(PROCESS_CAPABILITY_ALL, edge.evaluateCapabilityFilter());
     }
 
-    private static class TestNode extends Node {
+    private static class TestNode extends GraphNode {
         private final boolean mIsProcessRunning;
         private final int mMaxAdj;
 

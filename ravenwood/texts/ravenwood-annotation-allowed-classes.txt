@@ -741,7 +741,10 @@ com.android.server.am.psc.BatchSession
 com.android.server.am.psc.BinderSession
 com.android.server.am.psc.CapabilityController
 com.android.server.am.psc.ConnectionRecordInternal
+com.android.server.am.psc.GraphEdge
+com.android.server.am.psc.GraphNode
 com.android.server.am.psc.OomAdjuster
+com.android.server.am.psc.ProcessEdge
 com.android.server.am.psc.SyncBatchSession
 com.android.server.utils.TimingsTraceAndSlog
 com.google.android.collect.Lists
