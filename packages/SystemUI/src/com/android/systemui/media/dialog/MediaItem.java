@@ -35,7 +35,6 @@ public class MediaItem {
     private final String mTitle;
     @MediaItemType
     private final int mMediaItemType;
-    private final boolean mIsFirstDeviceInGroup;
     private final boolean mIsExpandableDivider;
     private final boolean mHasTopSeparator;
 
@@ -57,18 +56,7 @@ public class MediaItem {
      * name.
      */
     public static MediaItem createDeviceMediaItem(@NonNull MediaDevice device) {
-        return new MediaItem(device, device.getName(), MediaItemType.TYPE_DEVICE, false);
-    }
-
-    /**
-     * Returns a new {@link MediaItemType#TYPE_DEVICE} {@link MediaItem} with its {@link
-     * #getMediaDevice() media device} set to {@code device} and its title set to {@code device}'s
-     * name.
-     */
-    public static MediaItem createDeviceMediaItem(
-            @NonNull MediaDevice device, boolean isFirstDeviceInGroup) {
-        return new MediaItem(
-            device, device.getName(), MediaItemType.TYPE_DEVICE, isFirstDeviceInGroup);
+        return new MediaItem(device, device.getName(), MediaItemType.TYPE_DEVICE);
     }
 
     /**
@@ -79,8 +67,7 @@ public class MediaItem {
         return new MediaItem(
                 /* device */ null,
                 /* title */ null,
-                /* type */ MediaItemType.TYPE_DEVICE_GROUP,
-                /* misFirstDeviceInGroup */ false);
+                /* type */ MediaItemType.TYPE_DEVICE_GROUP);
     }
 
     /**
@@ -91,8 +78,7 @@ public class MediaItem {
         return new MediaItem(
             /* device */ null,
             title,
-            MediaItemType.TYPE_GROUP_DIVIDER,
-            /* misFirstDeviceInGroup */ false);
+            MediaItemType.TYPE_GROUP_DIVIDER);
     }
 
     /**
@@ -105,7 +91,6 @@ public class MediaItem {
                 /* device */ null,
                 title,
                 MediaItemType.TYPE_GROUP_DIVIDER,
-                /* isFirstDeviceInGroup */ false,
                 /* isExpandableDivider */ false,
                 /* hasTopSeparator */ true);
     }
@@ -120,7 +105,6 @@ public class MediaItem {
                 /* device */ null,
                 title,
                 MediaItemType.TYPE_GROUP_DIVIDER,
-                /* isFirstDeviceInGroup */ false,
                 /* isExpandableDivider */ true,
                 /* hasTopSeparator */ false);
     }
@@ -128,23 +112,19 @@ public class MediaItem {
     private MediaItem(
             @Nullable MediaDevice device,
             @Nullable String title,
-            @MediaItemType int type,
-            boolean isFirstDeviceInGroup) {
-        this(device, title, type, isFirstDeviceInGroup, /* isExpandableDivider */
-                false, /* hasTopSeparator */ false);
+            @MediaItemType int type) {
+        this(device, title, type, /* isExpandableDivider */ false, /* hasTopSeparator */ false);
     }
 
     private MediaItem(
             @Nullable MediaDevice device,
             @Nullable String title,
             @MediaItemType int type,
-            boolean isFirstDeviceInGroup,
             boolean isExpandableDivider,
             boolean hasTopSeparator) {
         this.mMediaDeviceOptional = Optional.ofNullable(device);
         this.mTitle = title;
         this.mMediaItemType = type;
-        this.mIsFirstDeviceInGroup = isFirstDeviceInGroup;
         this.mIsExpandableDivider = isExpandableDivider;
         this.mHasTopSeparator = hasTopSeparator;
     }
@@ -164,10 +144,6 @@ public class MediaItem {
 
     public int getMediaItemType() {
         return mMediaItemType;
-    }
-
-    public boolean isFirstDeviceInGroup() {
-        return mIsFirstDeviceInGroup;
     }
 
     /** Returns whether a group divider has a button that expands group device list */
