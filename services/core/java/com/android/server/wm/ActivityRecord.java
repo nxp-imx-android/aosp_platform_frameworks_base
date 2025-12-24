@@ -5419,7 +5419,7 @@ final class ActivityRecord extends WindowToken {
         boolean inFinishingTransition = false;
         if (mTransitionController.isShellTransitionsEnabled()) {
             if (mTransitionController.isCollecting()) {
-                if (Flags.promoteExistenceChangedStateToParent() && app == null) {
+                if (app == null) {
                     mTransitionController.collectExistenceChange(this);
                 } else {
                     mTransitionController.collect(this);
