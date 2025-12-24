@@ -20,6 +20,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.inOrder;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR;
+import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_CHARGING;
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_DEFAULT;
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_DOZE;
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_IDLE;
@@ -67,8 +68,10 @@ import android.os.PowerManager;
 import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.test.TestLooper;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.testing.TestableContext;
 import android.util.FloatProperty;
@@ -98,6 +101,7 @@ import com.android.server.display.color.ColorDisplayService;
 import com.android.server.display.config.HighBrightnessModeData;
 import com.android.server.display.config.HysteresisLevels;
 import com.android.server.display.feature.DisplayManagerFlags;
+import com.android.server.display.feature.flags.Flags;
 import com.android.server.display.layout.Layout;
 import com.android.server.display.plugin.PluginManager;
 import com.android.server.display.whitebalance.DisplayWhiteBalanceController;
@@ -193,6 +197,9 @@ public final class DisplayPowerControllerTest {
 
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
+
+    @Rule
+    public final SetFlagsRule setFlagsRule = new SetFlagsRule();
 
     @Before
     public void setUp() throws Exception {
@@ -1987,6 +1994,82 @@ public final class DisplayPowerControllerTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_AUTO_BRIGHTNESS_MODE_CHARGING)
+    public void testSwitchToChargingAutoBrightnessMode_chargingEnabledAndBrightRequest() {
+        Settings.Global.putInt(mContext.getContentResolver(),
+                Settings.Global.Wearable.WEAR_CHARGING_EXPERIENCE_ENABLED, /* value= */ 1);
+        mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);
+        when(mHolder.displayPowerState.getScreenState()).thenReturn(Display.STATE_ON);
+
+        mHolder.dpc.mChargingStateReceiver.setPlugged(true);
+
+        DisplayPowerRequest dpr = new DisplayPowerRequest();
+        dpr.policy = DisplayPowerRequest.POLICY_BRIGHT;
+        mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);
+        advanceTime(1); // Run updatePowerState
+
+        verify(mHolder.automaticBrightnessController)
+                .switchMode(eq(AUTO_BRIGHTNESS_MODE_DEFAULT), /* sendUpdate= */ anyBoolean());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_AUTO_BRIGHTNESS_MODE_CHARGING)
+    public void testSwitchToChargingAutoBrightnessMode_chargingEnabledAndDozeRequest() {
+        Settings.Global.putInt(mContext.getContentResolver(),
+                Settings.Global.Wearable.WEAR_CHARGING_EXPERIENCE_ENABLED, /* value= */ 1);
+        mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);
+        when(mHolder.displayPowerState.getScreenState()).thenReturn(Display.STATE_DOZE);
+
+        mHolder.dpc.mChargingStateReceiver.setPlugged(true);
+
+        DisplayPowerRequest dpr = new DisplayPowerRequest();
+        dpr.policy = DisplayPowerRequest.POLICY_DOZE;
+        mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);
+        advanceTime(1); // Run updatePowerState
+
+        verify(mHolder.automaticBrightnessController)
+                .switchMode(eq(AUTO_BRIGHTNESS_MODE_CHARGING), /* sendUpdate= */ anyBoolean());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_AUTO_BRIGHTNESS_MODE_CHARGING)
+    public void testNotSwitchToChargingAutoBrightnessMode_chargingExperienceDisabled()  {
+        Settings.Global.putInt(mContext.getContentResolver(),
+                Settings.Global.Wearable.WEAR_CHARGING_EXPERIENCE_ENABLED, /* value= */ 0);
+        mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);
+        when(mHolder.displayPowerState.getScreenState()).thenReturn(Display.STATE_DOZE);
+
+        mHolder.dpc.mChargingStateReceiver.setPlugged(true);
+
+        DisplayPowerRequest dpr = new DisplayPowerRequest();
+        dpr.policy = DisplayPowerRequest.POLICY_DOZE;
+        mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);
+        advanceTime(1); // Run updatePowerState
+
+        verify(mHolder.automaticBrightnessController)
+                .switchMode(eq(AUTO_BRIGHTNESS_MODE_DOZE), /* sendUpdate= */ anyBoolean());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_AUTO_BRIGHTNESS_MODE_CHARGING)
+    public void testNotSwitchToChargingAutoBrightnessMode_deviceUnplugged()  {
+        Settings.Global.putInt(mContext.getContentResolver(),
+                Settings.Global.Wearable.WEAR_CHARGING_EXPERIENCE_ENABLED, /* value= */ 0);
+        mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);
+        when(mHolder.displayPowerState.getScreenState()).thenReturn(Display.STATE_DOZE);
+
+        mHolder.dpc.mChargingStateReceiver.setPlugged(false);
+
+        DisplayPowerRequest dpr = new DisplayPowerRequest();
+        dpr.policy = DisplayPowerRequest.POLICY_DOZE;
+        mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);
+        advanceTime(1); // Run updatePowerState
+
+        verify(mHolder.automaticBrightnessController)
+                .switchMode(eq(AUTO_BRIGHTNESS_MODE_DOZE), /* sendUpdate= */ anyBoolean());
+    }
+
+    @Test
     public void testOnSwitchUserUpdatesBrightness() {
         int userSerial = 12345;
         float brightness = 0.65f;
@@ -2856,6 +2939,12 @@ public final class DisplayPowerControllerTest {
         DisplayWhiteBalanceController getDisplayWhiteBalanceController(Handler handler,
                 SensorManager sensorManager, Resources resources) {
             return mDisplayWhiteBalanceControllerMock;
+        }
+
+        @Override
+        DisplayPowerController.ChargingStateReceiver getChargingStateReceiver(
+                DisplayPowerController dpc) {
+            return dpc.new ChargingStateReceiver(true);
         }
     }
 }
