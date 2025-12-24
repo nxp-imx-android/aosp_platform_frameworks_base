@@ -51,7 +51,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
@@ -68,6 +67,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
@@ -111,8 +111,7 @@ class DeviceSettingServiceConnection(
     private var isServiceEnabled =
         coroutineScope.async(backgroundCoroutineContext, start = CoroutineStart.LAZY) {
             val states =
-                getSettingsProviderServices()?.filter { (endPoint, _) -> !endPoint.isOptional() }
-                    ?.values ?: return@async false
+                getSettingsProviderServices(includeOptional = false)?.values ?: return@async false
             if (states.isEmpty()) {
                 return@async true
             }
@@ -156,12 +155,12 @@ class DeviceSettingServiceConnection(
                         is ServiceConnectionStatus.Connected ->
                             flowOf(
                                 getDeviceSettingsConfigFromService(
-                                    deviceInfo { setBluetoothAddress(cachedDevice.address) },
-                                    it.service,
-                                    DeviceSettingConfigOptions.Builder()
-                                        .setOptionalItemSupported(true)
-                                        .build(),
-                                )
+                                        deviceInfo { setBluetoothAddress(cachedDevice.address) },
+                                        it.service,
+                                        DeviceSettingConfigOptions.Builder()
+                                            .setOptionalItemSupported(true)
+                                            .build(),
+                                    )
                                     .also { config ->
                                         Log.i(
                                             TAG,
@@ -174,7 +173,8 @@ class DeviceSettingServiceConnection(
                                                         item -> item.settingId.toString()
                                                     }
                                                 } ?: "null"
-                                            }")
+                                            }",
+                                        )
                                     }
                             )
                         is ServiceConnectionStatus.Connecting -> flowOf()
@@ -183,6 +183,14 @@ class DeviceSettingServiceConnection(
                 }
                 .first()
         }
+
+    private val services =
+        ConcurrentHashMap<
+            EndPoint,
+            StateFlow<ServiceConnectionStatus<IDeviceSettingsProviderService>>,
+        >()
+    private val serviceDeviceSettingsMapping =
+        ConcurrentHashMap<IDeviceSettingsProviderService, Flow<List<DeviceSetting>>>()
 
     private suspend fun getDeviceSettingsConfigFromService(
         deviceInfo: DeviceInfo,
@@ -207,58 +215,44 @@ class DeviceSettingServiceConnection(
                 options,
             )
         } catch (e: RemoteException) {
-            Log.i(TAG, "Fail to get config")
+            Log.i(TAG, "Fail to get config", e)
             continuation.resume(null)
         }
     }
 
-    private fun getSettingIdToItemMapping(skipOptional: Boolean): SharedFlow<Map<Int, DeviceSetting>> {
-        return flow {
-            if (!isServiceEnabled.await()) {
-                Log.w(TAG, "Service is disabled")
-                return@flow
-            }
-            val services = if (skipOptional) {
-                getSettingsProviderServices()?.filter { (endPoint, _) -> !endPoint.isOptional() }
-                    ?.values
-            } else {
-                getSettingsProviderServices()?.values
-            }
-            if (services == null || services.isEmpty()) {
-                emit(mapOf())
-                return@flow
-            }
-            services
-                .map {
-                    if (skipOptional) {
-                        it.filterIsInstance<
-                                ServiceConnectionStatus.Connected<IDeviceSettingsProviderService>
-                                >()
-                            .flatMapLatest { status ->
-                                getDeviceSettingsFromService(cachedDevice, status.service)
-                            }
-                    } else {
-                        it.flatMapLatest { status ->
-                            if (status is ServiceConnectionStatus.Connected<IDeviceSettingsProviderService>) {
-                                getDeviceSettingsFromService(cachedDevice, status.service)
-                            } else {
-                                flowOf(emptyList())
-                            }
-                        }
-                    }
-                }
-                .let { items -> combine(items) { it.toList().flatten() } }
-                .map { items -> items.associateBy { it.settingId } }
-                .let { emitAll(it) }
+    private suspend fun waitUntilNonOptionalProviderReady() {
+        if (!isServiceEnabled.await()) {
+            Log.w(TAG, "Service is disabled")
+            return
         }
-            .shareIn(scope = coroutineScope, started = SharingStarted.WhileSubscribed(), replay = 1)
+        val services = getSettingsProviderServices(includeOptional = false)?.values
+        if (services == null || services.isEmpty()) {
+            return
+        }
+        services
+            .map { getSettingsFromStatus(it) }
+            .let { items -> combine(items) { it.toList().flatten() } }
+            .first()
     }
 
-    private val services =
-        ConcurrentHashMap<
-            EndPoint,
-            StateFlow<ServiceConnectionStatus<IDeviceSettingsProviderService>>,
-        >()
+    private val settingIdToItemMapping =
+        flow {
+                if (!isServiceEnabled.await()) {
+                    Log.w(TAG, "Service is disabled")
+                    return@flow
+                }
+                val services = getSettingsProviderServices(includeOptional = true)?.values
+                if (services == null || services.isEmpty()) {
+                    emit(mapOf())
+                    return@flow
+                }
+                services
+                    .map { getSettingsFromStatus(it).onStart { emit(emptyList()) } }
+                    .let { items -> combine(items) { it.toList().flatten() } }
+                    .map { items -> items.associateBy { it.settingId } }
+                    .let { emitAll(it) }
+            }
+            .shareIn(scope = coroutineScope, started = SharingStarted.WhileSubscribed(), replay = 1)
 
     /** Gets [DeviceSettingsConfig] for the device, return null when failed. */
     suspend fun getDeviceSettingsConfig(): DeviceSettingsConfig? {
@@ -267,13 +261,13 @@ class DeviceSettingServiceConnection(
             return null
         }
         // Wait until all settings providers are ready.
-        getSettingIdToItemMapping(skipOptional = true).firstOrNull()
+        waitUntilNonOptionalProviderReady()
         return readConfig()
     }
 
     /** Gets the device settings with the ID for the device. */
     fun getDeviceSetting(@DeviceSettingId deviceSettingId: Int): Flow<DeviceSetting?> =
-        getSettingIdToItemMapping(skipOptional = false).map { it[deviceSettingId] }
+        settingIdToItemMapping.map { it[deviceSettingId] }
 
     /** Updates the device setting state for the device. */
     suspend fun updateDeviceSettings(
@@ -288,14 +282,9 @@ class DeviceSettingServiceConnection(
             (config.mainContentItems + config.moreSettingsItems)
                 .find { it.settingId == deviceSettingId }
                 ?.let {
-                    getSettingsProviderServices()
+                    getSettingsProviderServices(includeOptional = true)
                         ?.get(
-                            EndPoint(
-                                it.packageName,
-                                it.className,
-                                it.intentAction,
-                                it.isOptional
-                            )
+                            EndPoint(it.packageName, it.className, it.intentAction, it.isOptional)
                         )
                         ?.filterIsInstance<
                             ServiceConnectionStatus.Connected<IDeviceSettingsProviderService>
@@ -315,37 +304,43 @@ class DeviceSettingServiceConnection(
 
     private suspend fun readConfig(): DeviceSettingsConfig? = config.await()
 
-    private suspend fun getSettingsProviderServices():
-            Map<EndPoint, StateFlow<ServiceConnectionStatus<IDeviceSettingsProviderService>>>? =
-        distinctEndPoints()
-            ?.mapNotNull { endpoint ->
-                endpoint.toIntent()?.let { intent ->
-                    Pair(
-                        endpoint,
-                        services.computeIfAbsent(endpoint) {
-                            getService(intent, IDeviceSettingsProviderService.Stub::asInterface)
-                                .stateIn(
-                                    coroutineScope.plus(backgroundCoroutineContext),
-                                    SharingStarted.WhileSubscribed(
-                                        stopTimeoutMillis = SERVICE_CONNECTION_STOP_MILLIS
-                                    ),
-                                    ServiceConnectionStatus.Connecting,
-                                )
-                        },
-                    )
+    private var settingsProviderServices =
+        coroutineScope.async(backgroundCoroutineContext, start = CoroutineStart.LAZY) {
+            distinctEndPoints()
+                ?.mapNotNull { endpoint ->
+                    endpoint.toIntent()?.let { intent ->
+                        Pair(
+                            endpoint,
+                            services.computeIfAbsent(endpoint) {
+                                getService(intent, IDeviceSettingsProviderService.Stub::asInterface)
+                                    .stateIn(
+                                        coroutineScope.plus(backgroundCoroutineContext),
+                                        SharingStarted.WhileSubscribed(
+                                            stopTimeoutMillis = SERVICE_CONNECTION_STOP_MILLIS
+                                        ),
+                                        ServiceConnectionStatus.Connecting,
+                                    )
+                            },
+                        )
+                    }
                 }
-            }
-            ?.toMap()
+                ?.toMap()
+        }
+
+    private suspend fun getSettingsProviderServices(
+        includeOptional: Boolean
+    ): Map<EndPoint, StateFlow<ServiceConnectionStatus<IDeviceSettingsProviderService>>>? =
+        settingsProviderServices.await()?.filter { includeOptional || !it.key.isOptional() }
 
     private suspend fun distinctEndPoints(): List<EndPoint>? {
-        val endPoints = readConfig()
-            ?.let { config ->
+        val endPoints =
+            readConfig()?.let { config ->
                 (config.mainContentItems + config.moreSettingsItems).map {
                     EndPoint(
                         packageName = it.packageName,
                         className = it.className,
                         intentAction = it.intentAction,
-                        isOptional = it.isOptional
+                        isOptional = it.isOptional,
                     )
                 }
             }
@@ -356,47 +351,60 @@ class DeviceSettingServiceConnection(
         // of the same service may be optional.
         val nonOptionalEndPointIntents =
             endPoints.stream().filter { !it.isOptional() }.map { it.toIntent() }.toList().toSet()
-        return endPoints.stream()
+        return endPoints
             .filter { !it.isOptional() || !nonOptionalEndPointIntents.contains(it.toIntent()) }
             .distinct()
-            .toList()
     }
 
+    private fun getSettingsFromStatus(
+        statusFlow: Flow<ServiceConnectionStatus<IDeviceSettingsProviderService>>
+    ): Flow<List<DeviceSetting>> =
+        statusFlow
+            .filterIsInstance<ServiceConnectionStatus.Connected<IDeviceSettingsProviderService>>()
+            .flatMapLatest { getDeviceSettingsFromService(it.service) }
+
     private fun getDeviceSettingsFromService(
-        cachedDevice: CachedBluetoothDevice,
-        service: IDeviceSettingsProviderService,
+        service: IDeviceSettingsProviderService
     ): Flow<List<DeviceSetting>> {
-        return callbackFlow {
-                val listener =
-                    object : IDeviceSettingsListener.Stub() {
-                        override fun onDeviceSettingsChanged(settings: List<DeviceSetting>) {
-                            Log.i(TAG, "Receive setting ids ${settings.map { it.settingId }}")
-                            launch { send(settings) }
+        return serviceDeviceSettingsMapping.computeIfAbsent(service) {
+            callbackFlow {
+                    val listener =
+                        object : IDeviceSettingsListener.Stub() {
+                            override fun onDeviceSettingsChanged(settings: List<DeviceSetting>) {
+                                Log.i(TAG, "Receive setting ids ${settings.map { it.settingId }}")
+                                launch { send(settings) }
+                            }
                         }
-                    }
-            val deviceInfo = deviceInfo {
-                setBluetoothAddress(cachedDevice.address)
-                setExtras(
-                    Bundle().apply {
-                        putLong(
-                            BluetoothUtils.CONNECTION_FAILURE_TIME_KEY,
-                            cachedDevice.connectionFailureTimeMillis
+                    val deviceInfo = deviceInfo {
+                        setBluetoothAddress(cachedDevice.address)
+                        setExtras(
+                            Bundle().apply {
+                                putLong(
+                                    BluetoothUtils.CONNECTION_FAILURE_TIME_KEY,
+                                    cachedDevice.connectionFailureTimeMillis,
+                                )
+                            }
                         )
                     }
-                )
-            }
-                service.registerDeviceSettingsListener(deviceInfo, listener)
-                awaitClose { service.unregisterDeviceSettingsListener(deviceInfo, listener) }
-            }
-            .catch { e ->
-                if (e is DeadObjectException) {
-                    Log.e(TAG, "DeadObjectException happens when registering listener.", e)
-                    emit(listOf())
-                } else {
-                    throw e
+                    service.registerDeviceSettingsListener(deviceInfo, listener)
+                    awaitClose { service.unregisterDeviceSettingsListener(deviceInfo, listener) }
                 }
-            }
-            .shareIn(coroutineScope, SharingStarted.WhileSubscribed(), 1)
+                .catch { e ->
+                    if (e is DeadObjectException) {
+                        Log.e(TAG, "DeadObjectException happens when registering listener.", e)
+                        emit(listOf())
+                    } else {
+                        throw e
+                    }
+                }
+                .shareIn(
+                    coroutineScope,
+                    SharingStarted.WhileSubscribed(
+                        stopTimeoutMillis = SERVICE_CONNECTION_STOP_MILLIS
+                    ),
+                    replay = 1,
+                )
+        }
     }
 
     private fun <T : IInterface> getService(
