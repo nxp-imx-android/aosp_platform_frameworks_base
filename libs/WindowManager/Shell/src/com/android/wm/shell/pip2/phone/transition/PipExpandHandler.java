@@ -40,7 +40,6 @@ import android.graphics.Rect;
 import android.os.IBinder;
 import android.view.Surface;
 import android.view.SurfaceControl;
-import android.window.DesktopExperienceFlags;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
 import android.window.WindowContainerToken;
@@ -155,8 +154,7 @@ public class PipExpandHandler implements Transitions.TransitionHandler,
             return false;
         }
 
-        return DesktopExperienceFlags.ENABLE_CROSS_DISPLAYS_PIP_TASK_LAUNCH.isTrue()
-                && TransitionUtil.isOpeningType(request.getType())
+        return TransitionUtil.isOpeningType(request.getType())
                 && mPipTransitionState.getPipTaskInfo().taskId == taskInfo.taskId
                 && mPipTransitionState.getPipTaskInfo().topActivity != null
                 && mPipTransitionState.getPipTaskInfo().topActivity.equals(taskInfo.topActivity)
