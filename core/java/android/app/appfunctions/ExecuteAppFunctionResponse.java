@@ -16,15 +16,13 @@
 
 package android.app.appfunctions;
 
-import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_MANAGER;
-
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.app.appfunctions.flags.Flags;
 import android.app.appsearch.GenericDocument;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.permission.flags.Flags;
 
 import java.util.Collections;
 import java.util.List;
@@ -40,7 +38,7 @@ import java.util.Objects;
  * <p>The {@link ExecuteAppFunctionResponse#getExtras()} provides any extra metadata returned by the
  * function. The AppFunction SDK can expose structured APIs by packing and unpacking this Bundle.
  */
-@FlaggedApi(FLAG_ENABLE_APP_FUNCTION_MANAGER)
+@FlaggedApi(Flags.FLAG_ENABLE_APP_FUNCTION_MANAGER)
 public final class ExecuteAppFunctionResponse implements Parcelable {
     @NonNull
     public static final Creator<ExecuteAppFunctionResponse> CREATOR =
@@ -53,7 +51,7 @@ public final class ExecuteAppFunctionResponse implements Parcelable {
                     Bundle extras =
                             Objects.requireNonNull(
                                     parcel.readBundle(Bundle.class.getClassLoader()));
-                    if (Flags.appFunctionAccessApiEnabled()) {
+                    if (Flags.enableAppFunctionPermissionV2()) {
                         List<AppFunctionUriGrant> uriGrants =
                                 Objects.requireNonNull(
                                         parcel.createTypedArrayList(AppFunctionUriGrant.CREATOR));
@@ -100,8 +98,8 @@ public final class ExecuteAppFunctionResponse implements Parcelable {
     @NonNull private final Bundle mExtras;
 
     /**
-     * The list of {@link AppFunctionUriGrant} to which the caller of this
-     * app function execution should have temporary access granted.
+     * The list of {@link AppFunctionUriGrant} to which the caller of this app function execution
+     * should have temporary access granted.
      */
     @NonNull private final List<AppFunctionUriGrant> mUriGrants;
 
@@ -126,12 +124,12 @@ public final class ExecuteAppFunctionResponse implements Parcelable {
     /**
      * @param resultDocument The return value of the executed function.
      * @param extras The additional metadata for this function execution response.
-     * @param uriGrants The list of {@link AppFunctionUriGrant} to which
-     *     the caller of this app function execution should have temporary access granted. These
-     *     grants typically persist until the device reboots. Uri owner could consider clearing
-     *     data associated with these URIs after a reboot.
+     * @param uriGrants The list of {@link AppFunctionUriGrant} to which the caller of this app
+     *     function execution should have temporary access granted. These grants typically persist
+     *     until the device reboots. Uri owner could consider clearing data associated with these
+     *     URIs after a reboot.
      */
-    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    @FlaggedApi(Flags.FLAG_ENABLE_APP_FUNCTION_PERMISSION_V2)
     public ExecuteAppFunctionResponse(
             @NonNull GenericDocument resultDocument,
             @NonNull Bundle extras,
@@ -172,10 +170,10 @@ public final class ExecuteAppFunctionResponse implements Parcelable {
     }
 
     /**
-     * The list of {@link AppFunctionUriGrant} to which the caller of this
-     * app function execution should have temporary access granted.
+     * The list of {@link AppFunctionUriGrant} to which the caller of this app function execution
+     * should have temporary access granted.
      */
-    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    @FlaggedApi(Flags.FLAG_ENABLE_APP_FUNCTION_PERMISSION_V2)
     @NonNull
     public List<AppFunctionUriGrant> getUriGrants() {
         return mUriGrants;
@@ -199,7 +197,7 @@ public final class ExecuteAppFunctionResponse implements Parcelable {
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         mResultDocumentWrapper.writeToParcel(dest, flags);
         dest.writeBundle(mExtras);
-        if (Flags.appFunctionAccessApiEnabled()) {
+        if (Flags.enableAppFunctionPermissionV2()) {
             dest.writeTypedList(mUriGrants, flags);
         }
     }
