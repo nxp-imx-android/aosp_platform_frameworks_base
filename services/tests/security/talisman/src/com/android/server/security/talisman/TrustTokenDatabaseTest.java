@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 
 import android.content.Context;
+import android.security.talisman.TrustConfiguration;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -185,6 +186,21 @@ public final class TrustTokenDatabaseTest {
         assertThrows(
                 TrustTokenExhaustedException.class,
                 () -> mDatabase.getTrustTokenSet(TrustTokenSet.TYPE_VERIFIED_IDENTITIES));
+    }
+
+    @Test
+    public void trustConfiguration() throws Exception {
+        assertThrows(
+                TrustConfigurationUnavailableException.class,
+                () -> mDatabase.getTrustConfiguration());
+        var config =
+                new TrustConfiguration.Builder()
+                        .addRootKey("some-key".getBytes())
+                        .addIntermediateCertificate("some-cert".getBytes())
+                        .setUpdatedAt(Instant.ofEpochMilli(23333))
+                        .build();
+        mDatabase.updateTrustConfiguration(config);
+        assertThat(mDatabase.getTrustConfiguration()).isEqualTo(config);
     }
 
     private TrustTokenKey buildKey(String publicKey, String privateKey) {
