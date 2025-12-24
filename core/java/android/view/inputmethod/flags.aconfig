@@ -256,6 +256,16 @@ flag {
 }
 
 flag {
+  name: "force_hide_for_stale_window"
+  namespace: "input_method"
+  description: "Preventing stale IME surface by force hiding IME on start input with a stale window"
+  bug: "429304155"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "ime_switcher_menu_systemui"
   namespace: "input_method"
   description: "Migration of the IME Switcher Menu to SystemUi"
