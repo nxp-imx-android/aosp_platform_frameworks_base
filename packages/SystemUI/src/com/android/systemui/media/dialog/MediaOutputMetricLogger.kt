@@ -24,6 +24,13 @@ import android.media.MediaRoute2ProviderService.REASON_ROUTE_NOT_AVAILABLE
 import android.media.MediaRoute2ProviderService.REASON_UNKNOWN_ERROR
 import android.util.Log
 import com.android.settingslib.media.MediaDevice
+import com.android.settingslib.media.MediaDevice.MediaDeviceType.TYPE_3POINT5_MM_AUDIO_DEVICE
+import com.android.settingslib.media.MediaDevice.MediaDeviceType.TYPE_BLUETOOTH_DEVICE
+import com.android.settingslib.media.MediaDevice.MediaDeviceType.TYPE_CAST_DEVICE
+import com.android.settingslib.media.MediaDevice.MediaDeviceType.TYPE_CAST_GROUP_DEVICE
+import com.android.settingslib.media.MediaDevice.MediaDeviceType.TYPE_PHONE_DEVICE
+import com.android.settingslib.media.MediaDevice.MediaDeviceType.TYPE_REMOTE_AUDIO_VIDEO_RECEIVER
+import com.android.settingslib.media.MediaDevice.MediaDeviceType.TYPE_USB_C_AUDIO_DEVICE
 import com.android.settingslib.media.MediaDevice.SUGGESTION_PROVIDER_DEVICE_SUGGESTION_APP
 import com.android.settingslib.media.MediaDevice.SUGGESTION_PROVIDER_DEVICE_SUGGESTION_OTHER
 import com.android.settingslib.media.MediaDevice.SUGGESTION_PROVIDER_RLP
@@ -207,54 +214,20 @@ class MediaOutputMetricLogger(private val mContext: Context, private val mPackag
         )
     }
 
-    private fun updateLoggingDeviceCount(deviceList: List<MediaDevice>) {
-        mWiredDeviceCount = 0
-        mRemoteDeviceCount = 0
-        mAppliedDeviceCountWithinRemoteGroup = 0
-
-        for (mediaDevice in deviceList) {
-            if (mediaDevice.isConnected) {
-                when (mediaDevice.deviceType) {
-                    MediaDevice.MediaDeviceType.TYPE_3POINT5_MM_AUDIO_DEVICE,
-                    MediaDevice.MediaDeviceType.TYPE_USB_C_AUDIO_DEVICE -> mWiredDeviceCount++
-                    MediaDevice.MediaDeviceType.TYPE_BLUETOOTH_DEVICE ->
-                        mConnectedBluetoothDeviceCount++
-                    MediaDevice.MediaDeviceType.TYPE_CAST_DEVICE,
-                    MediaDevice.MediaDeviceType.TYPE_CAST_GROUP_DEVICE -> mRemoteDeviceCount++
-                    else -> {}
-                }
-            }
-        }
-
-        if (DEBUG) {
-            Log.d(
-                TAG,
-                "connected devices:" +
-                    " wired: " +
-                    mWiredDeviceCount +
-                    " bluetooth: " +
-                    mConnectedBluetoothDeviceCount +
-                    " remote: " +
-                    mRemoteDeviceCount,
-            )
-        }
-    }
-
     private fun updateLoggingMediaItemCount(deviceItemList: List<MediaItem>) {
         mRemoteDeviceCount = 0
-        mConnectedBluetoothDeviceCount = mRemoteDeviceCount
-        mWiredDeviceCount = mConnectedBluetoothDeviceCount
+        mConnectedBluetoothDeviceCount = 0
+        mWiredDeviceCount = 0
         mAppliedDeviceCountWithinRemoteGroup = 0
 
         for (mediaItem in deviceItemList) {
             if (mediaItem.mediaDevice.isPresent && mediaItem.mediaDevice.get().isConnected()) {
                 when (mediaItem.mediaDevice.get().deviceType) {
-                    MediaDevice.MediaDeviceType.TYPE_3POINT5_MM_AUDIO_DEVICE,
-                    MediaDevice.MediaDeviceType.TYPE_USB_C_AUDIO_DEVICE -> mWiredDeviceCount++
-                    MediaDevice.MediaDeviceType.TYPE_BLUETOOTH_DEVICE ->
-                        mConnectedBluetoothDeviceCount++
-                    MediaDevice.MediaDeviceType.TYPE_CAST_DEVICE,
-                    MediaDevice.MediaDeviceType.TYPE_CAST_GROUP_DEVICE -> mRemoteDeviceCount++
+                    TYPE_3POINT5_MM_AUDIO_DEVICE,
+                    TYPE_USB_C_AUDIO_DEVICE -> mWiredDeviceCount++
+                    TYPE_BLUETOOTH_DEVICE -> mConnectedBluetoothDeviceCount++
+                    TYPE_CAST_DEVICE,
+                    TYPE_CAST_GROUP_DEVICE -> mRemoteDeviceCount++
                     else -> {}
                 }
             }
@@ -277,36 +250,36 @@ class MediaOutputMetricLogger(private val mContext: Context, private val mPackag
             else SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__UNKNOWN_TYPE
         }
         return when (device.deviceType) {
-            MediaDevice.MediaDeviceType.TYPE_PHONE_DEVICE ->
+            TYPE_PHONE_DEVICE ->
                 if (isSourceDevice)
                     SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__BUILTIN_SPEAKER
                 else SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__BUILTIN_SPEAKER
 
-            MediaDevice.MediaDeviceType.TYPE_3POINT5_MM_AUDIO_DEVICE ->
+            TYPE_3POINT5_MM_AUDIO_DEVICE ->
                 if (isSourceDevice)
                     SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__WIRED_3POINT5_MM_AUDIO
                 else SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__WIRED_3POINT5_MM_AUDIO
 
-            MediaDevice.MediaDeviceType.TYPE_USB_C_AUDIO_DEVICE ->
+            TYPE_USB_C_AUDIO_DEVICE ->
                 if (isSourceDevice)
                     SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__USB_C_AUDIO
                 else SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__USB_C_AUDIO
 
-            MediaDevice.MediaDeviceType.TYPE_BLUETOOTH_DEVICE ->
+            TYPE_BLUETOOTH_DEVICE ->
                 if (isSourceDevice) SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__BLUETOOTH
                 else SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__BLUETOOTH
 
-            MediaDevice.MediaDeviceType.TYPE_CAST_DEVICE ->
+            TYPE_CAST_DEVICE ->
                 if (isSourceDevice)
                     SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__REMOTE_SINGLE
                 else SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__REMOTE_SINGLE
 
-            MediaDevice.MediaDeviceType.TYPE_CAST_GROUP_DEVICE ->
+            TYPE_CAST_GROUP_DEVICE ->
                 if (isSourceDevice)
                     SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__REMOTE_GROUP
                 else SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__REMOTE_GROUP
 
-            MediaDevice.MediaDeviceType.TYPE_REMOTE_AUDIO_VIDEO_RECEIVER ->
+            TYPE_REMOTE_AUDIO_VIDEO_RECEIVER ->
                 if (isSourceDevice) SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__SOURCE__AVR
                 else SysUiStatsLog.MEDIA_OUTPUT_OP_SWITCH_REPORTED__TARGET__AVR
 
@@ -322,18 +295,18 @@ class MediaOutputMetricLogger(private val mContext: Context, private val mPackag
             return SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__UNKNOWN_TYPE
         }
         return when (device.deviceType) {
-            MediaDevice.MediaDeviceType.TYPE_PHONE_DEVICE ->
+            TYPE_PHONE_DEVICE ->
                 SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__BUILTIN_SPEAKER
-            MediaDevice.MediaDeviceType.TYPE_3POINT5_MM_AUDIO_DEVICE ->
+            TYPE_3POINT5_MM_AUDIO_DEVICE ->
                 SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__WIRED_3POINT5_MM_AUDIO
 
-            MediaDevice.MediaDeviceType.TYPE_USB_C_AUDIO_DEVICE ->
+            TYPE_USB_C_AUDIO_DEVICE ->
                 SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__USB_C_AUDIO
-            MediaDevice.MediaDeviceType.TYPE_BLUETOOTH_DEVICE ->
+            TYPE_BLUETOOTH_DEVICE ->
                 SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__BLUETOOTH
-            MediaDevice.MediaDeviceType.TYPE_CAST_DEVICE ->
+            TYPE_CAST_DEVICE ->
                 SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__REMOTE_SINGLE
-            MediaDevice.MediaDeviceType.TYPE_CAST_GROUP_DEVICE ->
+            TYPE_CAST_GROUP_DEVICE ->
                 SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__REMOTE_GROUP
             else -> SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__UNKNOWN_TYPE
         }
