@@ -1047,7 +1047,7 @@ public final class ActiveServicesTest {
         r.appInfo.uid = TEST_UID;
         setFieldValue(ServiceRecord.class, r, "userId", TEST_USERID);
         ProcessRecord processRecord = mock(ProcessRecord.class);
-        processRecord.mPid = TEST_PID;
+        when(processRecord.getPid()).thenReturn(TEST_PID);
         when(r.getHostProcess()).thenReturn(processRecord);
         return r;
     }
