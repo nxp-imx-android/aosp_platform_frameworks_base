@@ -4036,8 +4036,14 @@ public final class ActiveServices {
             }
 
             try {
-                sr.getHostProcess().getThread().scheduleTimeoutServiceForType(sr,
-                        sr.getLastStartId(), fgsType);
+                // The host process might be dying, in which case getThread() will be null.
+                final IApplicationThread thread = sr.getHostProcess().getThread();
+                if (thread != null) {
+                    thread.scheduleTimeoutServiceForType(sr, sr.getLastStartId(), fgsType);
+                } else {
+                    Slog.w(TAG_SERVICE, "Failed to scheduleTimeoutServiceForType for "
+                            + sr.shortInstanceName + ": process thread is null.");
+                }
             } catch (RemoteException e) {
                 Slog.w(TAG_SERVICE, "Exception from scheduleTimeoutServiceForType: " + e);
             }
