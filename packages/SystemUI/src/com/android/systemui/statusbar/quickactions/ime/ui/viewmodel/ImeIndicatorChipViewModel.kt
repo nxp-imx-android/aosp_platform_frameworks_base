@@ -28,6 +28,7 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.ime.domain.interactor.ImeIndicatorChipInteractor
 import com.android.systemui.statusbar.quickactions.ime.shared.model.ImeIndicatorChipModel
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupChipViewModel
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipContent
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipIcon
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
@@ -92,7 +93,7 @@ constructor(
         return QuickActionChipUiState.PopupChip(
             chipId = QuickActionChipId.ImeIndicator,
             icons = icons,
-            chipText = chipText,
+            chipContent = chipText?.let { ChipContent.Text(it) },
             showPopup = { imeIndicatorChipInteractor.showInputMethodPicker(displayId) },
             contentDescription =
                 ContentDescription.Resource(

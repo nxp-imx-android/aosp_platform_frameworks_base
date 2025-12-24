@@ -135,8 +135,8 @@ private fun QuickActionChipUiState.verifyShown(): QuickActionChipUiState.PopupCh
     return this as QuickActionChipUiState.PopupChip
 }
 
-private fun QuickActionChipUiState.PopupChip.verifyHasNoText() {
-    assertThat(this.chipText).isEqualTo(null)
+private fun QuickActionChipUiState.PopupChip.verifyHasNoContent() {
+    assertThat(this.chipContent).isEqualTo(null)
 }
 
 private fun QuickActionChipUiState.PopupChip.verifyHasIcon(res: Int) {
@@ -150,18 +150,18 @@ private fun QuickActionChipUiState.PopupChip.verifyNumberOfIcons(num: Int) {
 private fun QuickActionChipUiState.PopupChip.verifyIsCameraOnlyChip() {
     verifyNumberOfIcons(1)
     verifyHasIcon(AvControlsChipViewModel.CAMERA_DRAWABLE)
-    verifyHasNoText()
+    verifyHasNoContent()
 }
 
 private fun QuickActionChipUiState.PopupChip.verifyIsMicrophoneOnlyChip() {
     verifyNumberOfIcons(1)
     verifyHasIcon(AvControlsChipViewModel.MICROPHONE_DRAWABLE)
-    verifyHasNoText()
+    verifyHasNoContent()
 }
 
 private fun QuickActionChipUiState.PopupChip.verifyIsCameraAndMicrophoneChip() {
     verifyNumberOfIcons(2)
     verifyHasIcon(AvControlsChipViewModel.CAMERA_DRAWABLE)
     verifyHasIcon(AvControlsChipViewModel.MICROPHONE_DRAWABLE)
-    verifyHasNoText()
+    verifyHasNoContent()
 }

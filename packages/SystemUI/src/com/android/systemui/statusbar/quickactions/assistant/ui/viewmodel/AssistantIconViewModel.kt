@@ -69,7 +69,7 @@ fun AssistantIconSharedModel.toPopupChipModel(startAssistant: () -> Unit): Quick
         QuickActionChipUiState.PopupChip(
             chipId = QuickActionChipId.AssistantIcon,
             icons = listOf(ChipIcon(icon = iconDrawable)),
-            chipText = null,
+            chipContent = null,
             showPopup = startAssistant,
             contentDescription =
                 ContentDescription.Resource(R.string.accessibility_status_bar_assistant_icon),

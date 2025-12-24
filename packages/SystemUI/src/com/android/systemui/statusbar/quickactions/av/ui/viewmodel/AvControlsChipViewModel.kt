@@ -68,7 +68,7 @@ constructor(
                 QuickActionChipUiState.PopupChip(
                     chipId = chipId,
                     icons = icons(sensorActivityModel = sensorActivityModel),
-                    chipText = null,
+                    chipContent = null,
                     colors = ChipColors.AvControlsTheme,
                     contentDescription =
                         contentDescription(sensorActivityModel = sensorActivityModel),

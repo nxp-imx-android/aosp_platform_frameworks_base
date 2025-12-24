@@ -39,7 +39,11 @@ sealed interface ChipColors {
     @Composable fun chipOutline(isSelected: Boolean, colorScheme: ColorScheme): Color
 
     /** The color to use for the icon */
-    @Composable fun icon(isSelected: Boolean, colorScheme: ColorScheme): Color
+    @Composable
+    fun icon(isSelected: Boolean, isHighlighted: Boolean, colorScheme: ColorScheme): Color
+
+    /** The background color applied to the icon area when it is hovered/highlighted */
+    @Composable fun iconBackground(isSelected: Boolean, colorScheme: ColorScheme): Color
 
     /** The default system themed chip colors, changing based on the popup state. */
     data object SystemTheme : ChipColors {
@@ -56,8 +60,20 @@ sealed interface ChipColors {
             colorScheme.outlineVariant
 
         @Composable
-        override fun icon(isSelected: Boolean, colorScheme: ColorScheme): Color =
-            chipContent(isSelected = isSelected, colorScheme = colorScheme)
+        override fun icon(
+            isSelected: Boolean,
+            isHighlighted: Boolean,
+            colorScheme: ColorScheme,
+        ): Color =
+            if (isHighlighted) {
+                chipBackground(isSelected = isSelected, colorScheme = colorScheme)
+            } else {
+                chipContent(isSelected = isSelected, colorScheme = colorScheme)
+            }
+
+        @Composable
+        override fun iconBackground(isSelected: Boolean, colorScheme: ColorScheme): Color =
+            if (isSelected) colorScheme.onPrimary else colorScheme.onSurface
     }
 
     /** The colors for the AvControls (Privacy Indicator) Chip */
@@ -77,7 +93,14 @@ sealed interface ChipColors {
             colorScheme.onPrimary
 
         @Composable
-        override fun icon(isSelected: Boolean, colorScheme: ColorScheme): Color =
+        override fun icon(
+            isSelected: Boolean,
+            isHighlighted: Boolean,
+            colorScheme: ColorScheme,
+        ): Color = colorScheme.onPrimary
+
+        @Composable
+        override fun iconBackground(isSelected: Boolean, colorScheme: ColorScheme): Color =
             colorScheme.onPrimary
     }
 }

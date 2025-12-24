@@ -38,8 +38,8 @@ fun QuickActionChipsContainer(
             chips.forEach { chip ->
                 QuickActionChip(
                     isSelected = chip.isPopupShown,
-                    text = chip.chipText,
                     icons = chip.icons,
+                    chipContent = chip.chipContent,
                     colors = chip.colors,
                     contentDescription = chip.contentDescription,
                     onClick = { chip.showPopup() },
