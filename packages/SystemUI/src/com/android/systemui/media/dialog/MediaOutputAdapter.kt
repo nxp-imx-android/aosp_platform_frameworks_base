@@ -552,7 +552,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
             val iconDrawableId =
                 if (isHost) R.drawable.media_output_status_edit_session
                 else R.drawable.ic_sound_bars_anim
-            mOngoingSessionButton.setOnClickListener { v: View? ->
+            mOngoingSessionButton.setOnClickListener { v: View ->
                 mController.tryToLaunchInAppRoutingIntent(device.id, v)
             }
             val drawable = AppCompatResources.getDrawable(mContext, iconDrawableId)
