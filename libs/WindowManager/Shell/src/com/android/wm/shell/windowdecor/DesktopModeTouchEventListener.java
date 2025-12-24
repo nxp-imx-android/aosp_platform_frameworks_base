@@ -23,7 +23,6 @@ import static android.view.MotionEvent.ACTION_HOVER_EXIT;
 import static android.view.MotionEvent.ACTION_MOVE;
 import static android.view.MotionEvent.ACTION_UP;
 
-import static com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.MinimizeReason;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION;
 import static com.android.wm.shell.windowdecor.DragPositioningCallbackUtility.getInputMethodFromMotionEvent;
 
@@ -43,7 +42,6 @@ import android.view.PointerIcon;
 import android.view.SurfaceControl;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.WindowContainerToken;
 
@@ -245,16 +243,7 @@ public class DesktopModeTouchEventListener
                         getInputMethod(mMotionEvent));
             }
         } else if (id == R.id.minimize_window) {
-            final ActivityManager.RunningTaskInfo taskInfo = decoration.getTaskInfo();
-            final int nextFocusedTaskId =
-                    mDesktopTasksController.getTopTask(
-                            taskInfo.getDisplayId(),
-                            taskInfo.userId,
-                            taskInfo.getTaskId());
-            final WindowDecorationWrapper nextFocusedWindow =
-                    mWindowDecorationFinder.apply(nextFocusedTaskId);
-            if (nextFocusedWindow != null) nextFocusedWindow.a11yAnnounceNewFocusedWindow();
-            mDesktopTasksController.minimizeTask(taskInfo, MinimizeReason.MINIMIZE_BUTTON);
+            mWindowDecorationActions.onMinimize(decoration.getTaskInfo());
         }
     }
 

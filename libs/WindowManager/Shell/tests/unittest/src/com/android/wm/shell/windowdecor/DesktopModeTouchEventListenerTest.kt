@@ -393,6 +393,49 @@ class DesktopModeTouchEventListenerTest : ShellTestCase() {
             assertThat(testInputPilferer.lastPilferedView).isEqualTo(appHeader)
         }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DECORATION_REFACTOR)
+    fun testAppHeaderClick_minimizesTask() =
+        testScope.runTest {
+            val decor = setUpWindowDecoration(createAppHeaderTask(TASK_BOUNDS))
+            val minimizeBtn =
+                assertNotNull(
+                    decor.findViewById(com.android.wm.shell.R.id.minimize_window),
+                    "Expected decoration to have a minimize button",
+                )
+
+            val minimizeBtnLocation = IntArray(2)
+            minimizeBtn.getLocationOnScreen(minimizeBtnLocation)
+            val x = minimizeBtnLocation[0].toFloat()
+            val y = minimizeBtnLocation[1].toFloat()
+
+            val startTime = SystemClock.uptimeMillis()
+            minimizeBtn.dispatchTouchEvent(
+                MotionEvent.obtain(
+                    /* downTime = */ startTime,
+                    /* eventTime = */ startTime,
+                    /* action = */ MotionEvent.ACTION_DOWN,
+                    /* x = */ x,
+                    /* y = */ y,
+                    /* metaState = */ 0,
+                )
+            )
+            minimizeBtn.dispatchTouchEvent(
+                MotionEvent.obtain(
+                    /* downTime = */ startTime,
+                    /* eventTime = */ startTime + 20,
+                    /* action = */ MotionEvent.ACTION_UP,
+                    /* x = */ x,
+                    /* y = */ y,
+                    /* metaState = */ 0,
+                )
+            )
+            flushAll()
+
+            verify(mockWindowDecorationActions)
+                .onMinimize(taskInfo = decor.defaultWindowDecoration.taskInfo)
+        }
+
     private fun setUpWindowDecoration(
         taskInfo: ActivityManager.RunningTaskInfo
     ): TestWindowDecoration =
