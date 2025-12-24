@@ -26,6 +26,7 @@ import android.annotation.RequiresPermission;
 import android.annotation.SuppressLint;
 import android.annotation.TestApi;
 import android.app.ActivityManager;
+import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.view.SurfaceControl;
@@ -183,6 +184,22 @@ public class TaskOrganizer extends WindowOrganizer {
             @NonNull List<ActivityManager.RunningTaskInfo> updatedTasks) { }
 
     /**
+     * @deprecated use {@link #createTask(TaskCreationParams)} instead
+     */
+    @Deprecated
+    @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
+    @Nullable
+    public void createRootTask(int displayId, int windowingMode, @Nullable IBinder launchCookie) {
+        // TODO(b/468029217): Remove in major release
+        createTask(
+                new TaskCreationParams.Builder()
+                        .setDisplayId(displayId)
+                        .setWindowingMode(windowingMode)
+                        .setLaunchCookie(launchCookie != null ? launchCookie : new Binder())
+                        .build());
+    }
+
+    /**
      * Creates a persistent Task.
      * @param params The creation params
      * @return the WindowContainerToken of the newly created Task. This can be {@code null} if the
@@ -198,6 +215,16 @@ public class TaskOrganizer extends WindowOrganizer {
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
+    }
+
+    /**
+     * @deprecated use {@link #deleteTask(WindowContainerToken)} instead
+     */
+    @Deprecated
+    @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
+    public boolean deleteRootTask(@NonNull WindowContainerToken task) {
+        // TODO(b/468029217): Remove in major release
+        return deleteTask(task);
     }
 
     /**

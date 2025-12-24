@@ -56,8 +56,8 @@ public final class TaskCreationParams implements Parcelable {
     private int mWindowingMode = WINDOWING_MODE_UNDEFINED;
 
     /**
-     * The unique launch cookie associated with the new Task, which can be used to identify the Task
-     * from {@link android.app.TaskInfo#containsLaunchCookie}.
+     * The unique launch cookie associated with the new Task, which can be used to identify
+     * the Task from {@link android.app.TaskInfo#containsLaunchCookie}.
      */
     @NonNull
     private IBinder mLaunchCookie = new Binder();
@@ -69,9 +69,15 @@ public final class TaskCreationParams implements Parcelable {
     @NonNull
     private TaskPropertiesRequest mTaskPropertiesRequest = new TaskPropertiesRequest();
 
+    // TODO(b/468029217) uncomment and remove setLaunchCookie after TaskOrganizer#createRootTask is
+    //  removed from @TestApi.
     // Suppress setter generation for mLaunchCookie that is not supposed to come from user input.
-    @DataClass.Suppress("setLaunchCookie")
+    // @DataClass.Suppress("setLaunchCookie")
     static abstract class BaseBuilder {
+        /**
+         * @hide
+         */
+        abstract Builder setLaunchCookie(@NonNull IBinder value);
     }
 
 
@@ -137,8 +143,8 @@ public final class TaskCreationParams implements Parcelable {
     }
 
     /**
-     * The unique launch cookie associated with the new Task, which can be used to identify the Task
-     * from {@link android.app.TaskInfo#containsLaunchCookie}.
+     * The unique launch cookie associated with the new Task, which can be used to identify
+     * the Task from {@link android.app.TaskInfo#containsLaunchCookie}.
      */
     @DataClass.Generated.Member
     public @NonNull IBinder getLaunchCookie() {
@@ -321,6 +327,19 @@ public final class TaskCreationParams implements Parcelable {
         }
 
         /**
+         * The unique launch cookie associated with the new Task, which can be used to identify
+         * the Task from {@link android.app.TaskInfo#containsLaunchCookie}.
+         */
+        @DataClass.Generated.Member
+        @Override
+        @NonNull Builder setLaunchCookie(@NonNull IBinder value) {
+            checkNotUsed();
+            mBuilderFieldsSet |= 0x8;
+            mLaunchCookie = value;
+            return this;
+        }
+
+        /**
          * The initial {@link TaskPropertiesRequest}.
          *
          * @hide
@@ -371,10 +390,10 @@ public final class TaskCreationParams implements Parcelable {
     }
 
     @DataClass.Generated(
-            time = 1766389300389L,
+            time = 1766565999494L,
             codegenVersion = "1.0.23",
             sourceFile = "frameworks/base/core/java/android/window/TaskCreationParams.java",
-            inputSignatures = "private @android.annotation.Nullable java.lang.String mName\nprivate  int mDisplayId\nprivate @android.app.WindowConfiguration.WindowingMode int mWindowingMode\nprivate @android.annotation.NonNull android.os.IBinder mLaunchCookie\nprivate @android.annotation.NonNull android.window.TaskPropertiesRequest mTaskPropertiesRequest\nclass TaskCreationParams extends java.lang.Object implements [android.os.Parcelable]\nclass BaseBuilder extends java.lang.Object implements []\n@com.android.internal.util.DataClass(genEqualsHashCode=true, genParcelable=true, genToString=true, genBuilder=true)\nclass BaseBuilder extends java.lang.Object implements []")
+            inputSignatures = "private @android.annotation.Nullable java.lang.String mName\nprivate  int mDisplayId\nprivate @android.app.WindowConfiguration.WindowingMode int mWindowingMode\nprivate @android.annotation.NonNull android.os.IBinder mLaunchCookie\nprivate @android.annotation.NonNull android.window.TaskPropertiesRequest mTaskPropertiesRequest\nclass TaskCreationParams extends java.lang.Object implements [android.os.Parcelable]\nabstract  android.window.TaskCreationParams.Builder setLaunchCookie(android.os.IBinder)\nclass BaseBuilder extends java.lang.Object implements []\n@com.android.internal.util.DataClass(genEqualsHashCode=true, genParcelable=true, genToString=true, genBuilder=true)\nabstract  android.window.TaskCreationParams.Builder setLaunchCookie(android.os.IBinder)\nclass BaseBuilder extends java.lang.Object implements []")
     @Deprecated
     private void __metadata() {}
 
