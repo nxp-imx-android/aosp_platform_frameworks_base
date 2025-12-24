@@ -19,11 +19,17 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.Rect
 import android.graphics.RectF
+import android.os.Bundle
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import android.view.accessibility.AccessibilityEvent
 import androidx.core.content.withStyledAttributes
+import androidx.core.view.ViewCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
+import androidx.customview.widget.ExploreByTouchHelper
 import com.android.settingslib.widget.preference.segmentedbarchart.R
 import kotlin.math.max
 
@@ -62,6 +68,8 @@ class SegmentedBarChartView @JvmOverloads constructor(
     private val segmentCornerRadius: Float
     private val gapBetweenSegments: Float
 
+    private val accessibilityHelper = SegmentedBarAccessibilityHelper(this)
+
     init {
         context.withStyledAttributes(
             attrs,
@@ -86,6 +94,8 @@ class SegmentedBarChartView @JvmOverloads constructor(
         gapBetweenSegments = context.resources.getDimensionPixelSize(
             com.android.settingslib.widget.theme.R.dimen.settingslib_expressive_space_extrasmall1
         ).toFloat()
+
+        ViewCompat.setAccessibilityDelegate(this, accessibilityHelper)
     }
 
     /**
@@ -99,7 +109,9 @@ class SegmentedBarChartView @JvmOverloads constructor(
     fun setSegments(items: List<SegmentItem>, newMaxValue: Float? = null) {
         segments = items
         newMaxValue?.let { maxValue = it }
+
         invalidate()
+        accessibilityHelper.invalidateRoot()
     }
 
     fun setOnSegmentClickListener(l: OnSegmentClickListener?) {
@@ -133,6 +145,10 @@ class SegmentedBarChartView @JvmOverloads constructor(
             MotionEvent.ACTION_DOWN -> return true
         }
         return super.onTouchEvent(event)
+    }
+
+    override fun dispatchHoverEvent(event: MotionEvent): Boolean {
+        return accessibilityHelper.dispatchHoverEvent(event) || super.dispatchHoverEvent(event)
     }
 
     override fun performClick(): Boolean {
@@ -236,6 +252,101 @@ class SegmentedBarChartView @JvmOverloads constructor(
             segmentRadii[2] = roundEnd; segmentRadii[3] = roundEnd
             segmentRadii[4] = roundEnd; segmentRadii[5] = roundEnd
             segmentRadii[6] = roundStart; segmentRadii[7] = roundStart
+        }
+    }
+
+    private inner class SegmentedBarAccessibilityHelper(val host: View) :
+        ExploreByTouchHelper(host) {
+        // Temporary Rect to avoid allocs during data transfer
+        private val tempRect = Rect()
+        private val tempParentLocation = IntArray(2)
+
+        /**
+         * 1. Hit Test: Find which ID is under (x, y).
+         * We use the List Index as the Virtual View ID.
+         */
+        override fun getVirtualViewAt(x: Float, y: Float): Int {
+            for (i in segments.indices) {
+                if (segmentBounds.getOrNull(i)?.contains(x, y) == true) {
+                    return i
+                }
+            }
+            return HOST_ID
+        }
+
+        /**
+         * 2. Listing: Tell TalkBack what IDs exist.
+         */
+        override fun getVisibleVirtualViews(virtualViewIds: MutableList<Int>) {
+            for (i in segments.indices) {
+                virtualViewIds.add(i)
+            }
+        }
+
+        /**
+         * 3. Details: Configure the node for a specific ID.
+         */
+        override fun onPopulateNodeForVirtualView(
+            virtualViewId: Int,
+            node: AccessibilityNodeInfoCompat
+        ) {
+            val segment = segments.getOrNull(virtualViewId)
+            if (segment == null) {
+                node.contentDescription = ""
+                node.setBoundsInParent(Rect(0, 0, 0, 0))
+                return
+            }
+
+            // Set content description
+            node.contentDescription = getContentDescription(segment)
+
+            // Set bounds for the focus box
+            val fRect = segmentBounds.getOrNull(virtualViewId)
+            if (fRect != null) {
+                fRect.round(tempRect)
+                host.getLocationOnScreen(tempParentLocation)
+                tempRect.offset(tempParentLocation[0], tempParentLocation[1])
+                node.setBoundsInScreen(tempRect)
+            }
+
+            node.addAction(AccessibilityNodeInfoCompat.ACTION_CLICK)
+            node.isClickable = true
+            node.className = "android.widget.Button"
+        }
+
+        private fun getContentDescription(segment: SegmentItem): String {
+            val valueText = if (segment.value % 1.0f == 0f) {
+                segment.value.toInt().toString()
+            } else {
+                segment.value.toString()
+            }
+
+            return if (!segment.label.isNullOrEmpty()) {
+                "${segment.label}, $valueText"
+            } else {
+                valueText
+            }
+        }
+
+        /**
+         * 4. Actions: Handle when TalkBack performs a click.
+         */
+        override fun onPerformActionForVirtualView(
+            virtualViewId: Int,
+            action: Int,
+            arguments: Bundle?
+        ): Boolean {
+            if (action == AccessibilityNodeInfoCompat.ACTION_CLICK) {
+                val segment = segments.getOrNull(virtualViewId) ?: return false
+
+                listener?.onSegmentClick(segment)
+
+                // Notify the system that the click happened
+                invalidateVirtualView(virtualViewId)
+                sendEventForVirtualView(virtualViewId, AccessibilityEvent.TYPE_VIEW_CLICKED)
+                return true
+            }
+            return false
         }
     }
 }
