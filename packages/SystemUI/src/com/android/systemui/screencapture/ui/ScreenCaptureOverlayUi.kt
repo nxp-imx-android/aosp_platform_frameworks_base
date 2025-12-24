@@ -166,6 +166,7 @@ constructor(
                     )
                 AndroidEmbeddedExternalSurface(
                     surfaceSize = surfaceSize,
+                    isOpaque = false,
                     modifier =
                         Modifier.fillMaxWidth()
                             .aspectRatio(surfaceSize.height.toFloat() / surfaceSize.width)
@@ -192,6 +193,13 @@ constructor(
                 ) {
                     onSurface { surface, width, height ->
                         viewModel.onSurfaceReady(surface = surface, width = width, height = height)
+                        surface.onChanged { newWidth, newHeight ->
+                            viewModel.onSurfaceReady(
+                                surface = surface,
+                                width = newWidth,
+                                height = newHeight,
+                            )
+                        }
                         surface.onDestroyed { viewModel.onSurfaceDestroyed() }
                     }
                 }
