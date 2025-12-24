@@ -22,7 +22,7 @@ import android.content.pm.ConfigurationInfo
 import android.content.pm.FeatureGroupInfo
 import android.content.pm.FeatureInfo
 import android.content.pm.PackageManager
-import android.content.pm.SignedPackageParcel
+import android.content.pm.SignedPackage
 import android.content.pm.SigningDetails
 import android.net.Uri
 import android.os.Bundle
@@ -365,10 +365,8 @@ class AndroidPackageTest : ParcelableComponentTest(AndroidPackage::class, Packag
             PackageImpl::setParsedAllowComponentAccessPolicy,
             ParsedAllowComponentAccessPolicyImpl(
                 listOf(
-                    SignedPackageParcel().apply {
-                        packageName = "com.test.package"
-                        certificateDigest = "TEST_CERT_DIGEST".toByteArray()
-                    })
+                    SignedPackage("com.test.package", "TEST_CERT_DIGEST".toByteArray())
+                )
             ),
             compare = { first, second ->
                 equalBy(

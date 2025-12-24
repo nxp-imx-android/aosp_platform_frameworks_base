@@ -750,6 +750,7 @@ public class AppWidgetManager {
             return;
         }
 
+        views.setOriginalDensity(mDisplayMetrics.density);
         tryAdapterConversion(view -> mService.updateAppWidgetIds(mPackageName, appWidgetIds,
                 view), views, appWidgetIds, "Error updating app widget views in background");
     }
@@ -856,6 +857,7 @@ public class AppWidgetManager {
             return;
         }
 
+        views.setOriginalDensity(mDisplayMetrics.density);
         tryAdapterConversion(view -> mService.partiallyUpdateAppWidgetIds(mPackageName,
                 appWidgetIds, view), views, appWidgetIds,
                 "Error partially updating app widget views in background");
@@ -910,6 +912,7 @@ public class AppWidgetManager {
             return;
         }
 
+        views.setOriginalDensity(mDisplayMetrics.density);
         tryAdapterConversion(view -> mService.updateAppWidgetProvider(provider, view), views,
                 new int[0], "Error updating app widget view using provider in background");
     }
@@ -1594,6 +1597,7 @@ public class AppWidgetManager {
             @AppWidgetProviderInfo.CategoryFlags int widgetCategories,
             @NonNull RemoteViews preview) {
         try {
+            preview.setOriginalDensity(mDisplayMetrics.density);
             return mService.setWidgetPreview(provider, widgetCategories, preview);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();

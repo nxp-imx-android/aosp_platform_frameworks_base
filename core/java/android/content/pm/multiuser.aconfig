@@ -429,6 +429,13 @@ flag {
 }
 
 flag {
+     name: "hsu_not_admin_for_bugreports"
+     namespace: "multiuser"
+     description: "If the Headless System User is not an Admin user, also don't hackingly treat it as one either for bugreports."
+     bug: "419105275"
+}
+
+flag {
      name: "disallow_removing_last_admin_user"
      namespace: "multiuser"
      description: "Disallow the removal of a user, if it is the last admin user"

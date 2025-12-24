@@ -109,10 +109,8 @@ class AppHandleAnimator(appHandleView: View, private val captionHandle: ImageBut
 
     /** Cancels any active animations. */
     fun cancel() {
-        if (DesktopExperienceFlags.ENABLE_REENABLE_APP_HANDLE_ANIMATIONS.isTrue) {
-            visibilityAnimator.cancel()
-            colorAnimator.cancel()
-        }
+        visibilityAnimator.cancel()
+        colorAnimator.cancel()
         cancelCaptionHandleAlphaAnimation()
     }
 

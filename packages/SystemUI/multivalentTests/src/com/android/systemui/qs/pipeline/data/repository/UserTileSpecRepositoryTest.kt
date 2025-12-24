@@ -2,8 +2,6 @@ package com.android.systemui.qs.pipeline.data.repository
 
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
-import android.platform.test.annotations.RequiresFlagsDisabled
-import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.FlagsParameterization
 import android.provider.Settings
 import androidx.test.filters.SmallTest
@@ -483,7 +481,7 @@ class UserTileSpecRepositoryTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
-    @RequiresFlagsEnabled(QsSplitInternetTile.FLAG_NAME)
+    @EnableFlags(QsSplitInternetTile.FLAG_NAME)
     fun flagEnabled_readFromSettings_largeInternetTileBecomesWifiAndCellSmall() =
         kosmos.runTest {
             val storedInSettings = "a,b,internet,c"
@@ -510,7 +508,7 @@ class UserTileSpecRepositoryTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
-    @RequiresFlagsEnabled(QsSplitInternetTile.FLAG_NAME)
+    @EnableFlags(QsSplitInternetTile.FLAG_NAME)
     fun flagEnabled_readFromSettings_smallInternetTileBecomesSmallWifi() =
         kosmos.runTest {
             val storedInSettings = "a,b,internet,c"
@@ -533,7 +531,7 @@ class UserTileSpecRepositoryTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
-    @RequiresFlagsDisabled(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.FLAG_NAME)
     fun flagDisabled_readFromSettings_justWifiTileBecomesInternet() =
         kosmos.runTest {
             val storedInSettings = "a,b,wifi,c"
@@ -552,7 +550,7 @@ class UserTileSpecRepositoryTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
-    @RequiresFlagsDisabled(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.FLAG_NAME)
     fun flagDisabled_readFromSettings_justCellTileBecomesInternet() =
         kosmos.runTest {
             val storedInSettings = "a,b,cell,c"

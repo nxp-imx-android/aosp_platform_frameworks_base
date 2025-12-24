@@ -364,7 +364,7 @@ class PreferencesApiScreenTest {
                     parameters {
                         parameter(
                             "package",
-                            "description",
+                            R.string.parameter_purpose1,
                             true,
                             GeneratedParameterType(R.string.parameter_type_description) {
                                 listOf(GeneratedValue("type_description", "value"))
@@ -394,7 +394,7 @@ class PreferencesApiScreenTest {
                     parameters {
                         parameter(
                             "package",
-                            "description",
+                            R.string.parameter_purpose1,
                             true,
                             GeneratedParameterType(R.string.parameter_type_description) {
                                 listOf(GeneratedValue("type_description", "value"))
@@ -476,7 +476,7 @@ class PreferencesApiScreenTest {
                     parameters {
                         parameter(
                             "package",
-                            "description",
+                            R.string.parameter_purpose1,
                             true,
                             GeneratedParameterType(R.string.parameter_type_description) {
                                 listOf(GeneratedValue("type_description", "value"))
@@ -487,7 +487,7 @@ class PreferencesApiScreenTest {
                     parameters {
                         parameter(
                             "component",
-                            "description",
+                            R.string.parameter_purpose2,
                             true,
                             GeneratedParameterType(R.string.parameter_type_description) {
                                 listOf(GeneratedValue("type_description", "value"))
@@ -544,7 +544,7 @@ class PreferencesApiScreenTest {
                     parameters {
                         parameter(
                             "package",
-                            "description",
+                            R.string.parameter_purpose1,
                             true,
                             GeneratedParameterType(R.string.parameter_type_description) {
                                 listOf(GeneratedValue("type_description", "value"))
@@ -552,7 +552,7 @@ class PreferencesApiScreenTest {
                         )
                         parameter(
                             "component",
-                            "description",
+                            R.string.parameter_purpose2,
                             true,
                             GeneratedParameterType(R.string.parameter_type_description) {
                                 listOf(GeneratedValue("type_description", "value"))
@@ -580,7 +580,7 @@ class PreferencesApiScreenTest {
                 parameters {
                     parameter(
                         "package",
-                        "description",
+                        R.string.parameter_purpose1,
                         true,
                         GeneratedParameterType(R.string.parameter_type_description) {
                             listOf(GeneratedValue("type_description", "value"))

@@ -57,7 +57,8 @@ public class NotificationBigPictureTemplateViewWrapperTest extends SysuiTestCase
     public void setup() throws Exception {
         allowTestableLooperAsMainThread();
         mView = LayoutInflater.from(mContext).inflate(
-                com.android.internal.R.layout.notification_template_material_big_picture, null);
+                com.android.internal.R.layout.notification_2025_template_expanded_big_picture,
+                null);
         mEntry = mKosmos.buildNotificationEntry(NotificationEntryBuilder::done);
         mRow = mKosmos.createRow(mEntry);
     }

@@ -638,16 +638,6 @@ flag {
 }
 
 flag {
-   name: "face_scanning_animation_npe_fix"
-   namespace: "systemui"
-   description: "Fix for the face scanning animation NPE"
-   bug: "392032258"
-   metadata {
-       purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
    namespace: "systemui"
    name: "fetch_bookmarks_xml_keyboard_shortcuts"
    description: "Fetches application launch keyboard shortcuts from system server rather than building a hardcoded list."
@@ -1431,6 +1421,13 @@ flag {
 }
 
 flag {
+    name: "qs_split_internet_tile_rw"
+    namespace: "systemui"
+    description: "Splits the Internet tile into Wifi (with internet info) + Mobile Data. Read/write"
+    bug: "201143076"
+}
+
+flag {
     name: "qs_tile_detailed_view"
     namespace: "systemui"
     description: "Enables the tile detailed view UI."
@@ -1466,16 +1463,6 @@ flag {
    metadata {
      purpose: PURPOSE_BUGFIX
    }
-}
-
-flag {
-  name: "remove_dream_overlay_hide_on_touch"
-  namespace: "systemui"
-  description: "Removes logic to hide the dream overlay on user interaction, as it conflicts with various transitions"
-  bug: "329091030"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
 }
 
 flag {
@@ -1551,6 +1538,16 @@ flag {
     namespace: "systemui"
     description: "Enables the new screen recording UX"
     bug: "410901215"
+}
+
+flag {
+    name: "screenshot_disable_long_screenshot_for_system_shade"
+    namespace: "systemui"
+    description: "Disable long screenshot when the system shade is expanded."
+    bug: "457677963"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -1960,16 +1957,6 @@ flag {
     namespace: "permissions"
     description: "Use the views moved into system ui from the framework for the system selection toolbar."
     bug: "450977221"
-}
-
-flag {
-   name: "user_encrypted_source"
-   namespace: "systemui"
-   description: "Get rid of the local cache and rely on UserManager.isUserUnlocked directly to determine whether user CE storage is encrypted."
-   bug: "333656491"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
 }
 
 flag {

@@ -20,9 +20,10 @@ import android.annotation.NonNull;
 
 import com.android.wm.shell.dagger.DynamicOverride;
 import com.android.wm.shell.dagger.WMSingleton;
-import com.android.wm.shell.desktopmode.DesksController;
+import com.android.wm.shell.desktopmode.multidesks.DesksController;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.shared.desktopmode.DesktopConfig;
+import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.sysui.ShellController;
 
 import dagger.Module;
@@ -39,9 +40,10 @@ public class DesktopModule {
     static DesksController provideDesksController(
             @NonNull ShellController shellController,
             @DynamicOverride @NonNull DesktopUserRepositories userRepositories,
-            @NonNull DesktopConfig desktopConfig
+            @NonNull DesktopConfig desktopConfig,
+            @NonNull DesktopState desktopState
     ) {
         return new DesksController(shellController, userRepositories,
-                desktopConfig);
+                desktopConfig, desktopState);
     }
 }

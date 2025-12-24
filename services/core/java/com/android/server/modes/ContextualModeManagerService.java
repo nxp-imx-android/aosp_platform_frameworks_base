@@ -115,7 +115,6 @@ public final class ContextualModeManagerService extends SystemService {
     private final Map<UserHandle, Set<ContextualMode>> mCurrentModeStates = new HashMap<>();
 
     private boolean mModeSyncSupported;
-    private boolean mModeSyncEnabledDefaultVal;
     @Nullable private volatile NotificationManagerInternal mNotificationManagerInternal;
     private UserManagerInternal mUserManagerInternal;
     private ActivityManagerInternal mActivityManagerInternal;
@@ -148,9 +147,6 @@ public final class ContextualModeManagerService extends SystemService {
     public void onStart() {
         mModeSyncSupported =
                 mResources.getBoolean(com.android.internal.R.bool.config_supportContextualModeSync);
-        mModeSyncEnabledDefaultVal =
-                mResources.getBoolean(
-                        com.android.internal.R.bool.config_enableContextualModeSyncByDefault);
         mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
         mActivityManagerInternal = LocalServices.getService(ActivityManagerInternal.class);
         // We can't get notification manager here since it initializes after contextual mode
@@ -388,7 +384,7 @@ public final class ContextualModeManagerService extends SystemService {
         return Settings.Secure.getIntForUser(
                         mResolver,
                         Settings.Secure.CONTEXTUAL_MODE_SYNC_ENABLED,
-                        mModeSyncEnabledDefaultVal ? 1 : 0,
+                        1, // Default enabled
                         userHandle.getIdentifier())
                 != 0;
     }

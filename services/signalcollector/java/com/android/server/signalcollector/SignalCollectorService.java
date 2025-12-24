@@ -27,7 +27,6 @@ import android.app.IActivityManager;
 import android.app.UidObserver;
 import android.content.Context;
 import android.os.RemoteException;
-import android.os.SystemClock;
 import android.os.binder.BinderSpamStats;
 import android.util.Slog;
 import android.util.SparseIntArray;
@@ -36,14 +35,12 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.Keep;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.os.profiling.anomaly.AnomalyDetectorManagerLocal;
-import com.android.os.profiling.anomaly.collector.binder.BinderSpamConfig;
+import com.android.os.profiling.anomaly.collector.binder.BinderSpamConfigList;
 import com.android.os.profiling.anomaly.collector.binder.BinderSpamData;
 import com.android.server.LocalManagerRegistry;
 import com.android.server.SystemService;
 import com.android.server.signalcollector.binder.BinderSpamSignalCollector;
 import com.android.server.signalcollector.binder.BinderSpamSignalCollectorImpl;
-
-import java.util.function.LongSupplier;
 
 /**
  * Service for managing signal collectors and tracking process state for anomaly
@@ -121,7 +118,7 @@ public final class SignalCollectorService extends SystemService {
         Slog.i(TAG, "Registering binder spam signal collector");
         mBinderSpamSignalCollector = mInjector.getBinderSpamSignalCollector();
         anomalyDetectorManagerLocal.registerSignalCollector(
-                BinderSpamConfig.class, BinderSpamData.class, mBinderSpamSignalCollector);
+                BinderSpamConfigList.class, BinderSpamData.class, mBinderSpamSignalCollector);
     }
 
     /**
@@ -170,11 +167,6 @@ public final class SignalCollectorService extends SystemService {
         /** Get the BinderSpamSignalCollector */
         public BinderSpamSignalCollector getBinderSpamSignalCollector() {
             return new BinderSpamSignalCollectorImpl();
-        }
-
-        /** Get the supplier of the {@link android.os.SystemClock#uptimeMillis()} */
-        public LongSupplier getUptimeMillisSupplier() {
-            return SystemClock::uptimeMillis;
         }
     }
 }

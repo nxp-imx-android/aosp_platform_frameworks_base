@@ -98,16 +98,6 @@ flag {
 }
 
 flag {
-  name: "fix_null_typeface_bolding"
-  namespace: "text"
-  description: "Use a bold typeface when bolding is enabled and the original typeface is null"
-  bug: "314811487"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "fix_selection_via_mouse_drag_in_editor"
   namespace: "text"
   description: "Fix the logic for text selection via mouse drag in Editor."

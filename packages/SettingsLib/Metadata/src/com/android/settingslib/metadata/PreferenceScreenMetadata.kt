@@ -55,6 +55,19 @@ interface PreferenceScreenMetadata : PreferenceGroup {
         get() = null
 
     /**
+     * Returns additional extras to be included in the intent used to launch this screen.
+     *
+     * These extras are typically used to pass specific data required by the destination
+     * fragment for its initialization.
+     *
+     * Note: The fragment will not receive this Bundle as a single nested extra. Instead,
+     * all values from this bundle will be added independently to the resulting launch
+     * intent's extras.
+     */
+    val launchScreenExtra: Bundle?
+        get() = null
+
+    /**
      * The screen title resource, which precedes [getScreenTitle] if provided.
      *
      * By default, screen title is same with [title].
@@ -158,6 +171,7 @@ interface PreferenceScreenMetadata : PreferenceGroup {
     ): Intent =
         Intent(LAUNCH_SETTINGS_PAGES_ACTION).apply {
             setPackage("com.android.settings")
+            launchScreenExtra?.let { putExtra(EXTRA_LAUNCH_SCREEN, it) }
             putExtra(EXTRA_SCREEN_KEY, screenKey)
             putExtra(EXTRA_SCREEN_ARGS, keyParameters.toBundle())
             if (key != null) {
@@ -186,6 +200,9 @@ interface PreferenceScreenMetadata : PreferenceGroup {
         internal const val EXTRA_SCREEN_KEY = "screen_key"
         internal const val EXTRA_SCREEN_ARGS = "screen_args"
         internal const val EXTRA_FRAGMENT_ARG_KEY = ":settings:fragment_args_key"
+
+        /** Key for a Bundle of extras to be added to the launch intent. See [launchScreenExtra]. */
+        const val EXTRA_LAUNCH_SCREEN = "launch_screen_extra"
     }
 }
 

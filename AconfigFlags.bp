@@ -1280,7 +1280,12 @@ aconfig_declarations {
     package: "android.app",
     container: "system",
     exportable: true,
-    srcs: ["core/java/android/app/*.aconfig"],
+    // Alarm flags are defined with AlarmManagerService in the jobscheduler APEX,
+    // but belong to the 'android.app' package.
+    srcs: [
+        "core/java/android/app/*.aconfig",
+        "apex/jobscheduler/framework/aconfig/alarm.aconfig",
+    ],
 }
 
 java_aconfig_library {

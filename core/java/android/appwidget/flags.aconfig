@@ -119,11 +119,19 @@ flag {
 }
 
 flag {
-    name: "limit_icon_memory"
-    namespace: "app_widgets"
-    description: "Include memory usage from Icons when checking RemoteView bitmap memory limits"
-    bug: "381943444"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
+  name: "limit_icon_memory"
+  namespace: "app_widgets"
+  description: "Include memory usage from Icons when checking RemoteView bitmap memory limits"
+  bug: "381943444"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
+  name: "widget_display_changes"
+  namespace: "app_widgets"
+  description: "Adds better support for widgets on connected displays"
+  bug: "454438561"
+  is_exported: true
 }

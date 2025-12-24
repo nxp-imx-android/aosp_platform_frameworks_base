@@ -3862,6 +3862,23 @@ public final class InputMethodManager {
     }
 
     /**
+     * A test-only method to set a list of allowed apps to bypass IME startup prevention.
+     *
+     * @param allowedPackages {@link List} of allowed apps for which the IME should start up. Set
+     *                        {@code null} to reset after the test run.
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(Flags.FLAG_PREVENT_IME_STARTUP_BYPASSED_APPS)
+    @RequiresPermission(Manifest.permission.TEST_INPUT_METHOD)
+    public void setPreventImeStartupBypassedAppsForTest(@Nullable List<String> allowedPackages) {
+        synchronized (mH) {
+            IInputMethodManagerGlobalInvoker.setPreventImeStartupBypassedAppsForTest(
+                    allowedPackages);
+        }
+    }
+
+    /**
      * An empty method only to avoid crashes of apps that call this method via reflection and do not
      * handle {@link NoSuchMethodException} in a graceful manner.
      *

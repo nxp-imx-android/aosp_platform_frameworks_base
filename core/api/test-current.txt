@@ -1275,12 +1275,6 @@ package android.content.pm {
     ctor public ShortcutManager(android.content.Context);
   }
 
-  @FlaggedApi("android.permission.flags.enhanced_confirmation_mode_apis_enabled") public class SignedPackage {
-    method @NonNull public byte[] getCertificateDigest();
-    method @NonNull public String getPackageName();
-    method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public boolean hasCertificateDigest();
-  }
-
   public class UserInfo implements android.os.Parcelable {
     ctor public UserInfo(int, String, int);
     ctor public UserInfo(int, String, String, int);
@@ -4095,7 +4089,7 @@ package android.view {
     method public final int getDisplayId();
     method public final void setDisplayId(int);
     field public static final int FLAG_IS_ACCESSIBILITY_EVENT = 2048; // 0x800
-    field public static final int LAST_KEYCODE = 337; // 0x151
+    field public static final int LAST_KEYCODE = 338; // 0x152
   }
 
   public final class KeyboardShortcutGroup implements android.os.Parcelable {
@@ -4434,6 +4428,7 @@ package android.view.inputmethod {
     method @RequiresPermission(allOf={android.Manifest.permission.WRITE_SECURE_SETTINGS, android.Manifest.permission.TEST_INPUT_METHOD, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL}, conditional=true) public void resetInputMethodsForTesting(int);
     method @FlaggedApi("android.view.inputmethod.enforce_device_policy_ime") @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public void setAllowedImesByPolicyForTest(@Nullable java.util.List<java.lang.String>);
     method @RequiresPermission(allOf={android.Manifest.permission.WRITE_SECURE_SETTINGS, android.Manifest.permission.TEST_INPUT_METHOD, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL}, conditional=true) public boolean setInputMethodForTesting(@NonNull String, int);
+    method @FlaggedApi("android.view.inputmethod.prevent_ime_startup_bypassed_apps") @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public void setPreventImeStartupBypassedAppsForTest(@Nullable java.util.List<java.lang.String>);
     method @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public void setStylusWindowIdleTimeoutForTest(long);
     method @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public boolean shouldShowImeSwitcherButtonForTest();
     method @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public void waitUntilNoPendingRequests(long);
@@ -4641,6 +4636,24 @@ package android.window {
     field @NonNull public static final android.os.Parcelable.Creator<android.window.TaskAppearedInfo> CREATOR;
   }
 
+  public final class TaskCreationParams implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getDisplayId();
+    method @NonNull public android.os.IBinder getLaunchCookie();
+    method @Nullable public String getName();
+    method public int getWindowingMode();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.window.TaskCreationParams> CREATOR;
+  }
+
+  public static final class TaskCreationParams.Builder {
+    ctor public TaskCreationParams.Builder();
+    method @NonNull public android.window.TaskCreationParams build();
+    method @NonNull public android.window.TaskCreationParams.Builder setDisplayId(int);
+    method @NonNull public android.window.TaskCreationParams.Builder setName(@NonNull String);
+    method @NonNull public android.window.TaskCreationParams.Builder setWindowingMode(int);
+  }
+
   public final class TaskFragmentCreationParams implements android.os.Parcelable {
     method public int describeContents();
     method @NonNull public android.os.IBinder getFragmentToken();
@@ -4751,8 +4764,8 @@ package android.window {
   public class TaskOrganizer extends android.window.WindowOrganizer {
     ctor public TaskOrganizer();
     method @BinderThread public void copySplashScreenView(int);
-    method @Nullable @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS) public void createRootTask(int, int, @Nullable android.os.IBinder);
-    method @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS) public boolean deleteRootTask(@NonNull android.window.WindowContainerToken);
+    method @Nullable @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS) public android.window.WindowContainerToken createTask(@NonNull android.window.TaskCreationParams);
+    method @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS) public boolean deleteTask(@NonNull android.window.WindowContainerToken);
     method @Nullable @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS) public java.util.List<android.app.ActivityManager.RunningTaskInfo> getChildTasks(@NonNull android.window.WindowContainerToken, @NonNull int[]);
     method @Nullable @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS) public android.window.WindowContainerToken getImeLayeringTarget(int);
     method @Nullable @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS) public java.util.List<android.app.ActivityManager.RunningTaskInfo> getRootTasks(int, @NonNull int[]);

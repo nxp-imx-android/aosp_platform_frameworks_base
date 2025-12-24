@@ -154,9 +154,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_FULLSCREEN_WINDOW_CONTROLS),
     ENABLE_GAME_CONTROLS_ENTRY_IN_HANDLE_MENU(Flags::enableGameControlsEntryInHandleMenu, false,
             Flags.FLAG_ENABLE_GAME_CONTROLS_ENTRY_IN_HANDLE_MENU),
-    ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP(
-            Flags::enableInorderTransitionCallbacksForDesktop, false,
-            Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP),
     ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS(
             Flags::enableInteractionDependentTabTearingBounds, false,
             Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS),
@@ -194,8 +191,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS),
     ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE(Flags::enableProjectedDisplayDesktopMode, true,
             Flags.FLAG_ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE),
-    ENABLE_REENABLE_APP_HANDLE_ANIMATIONS(Flags::reenableAppHandleAnimations,
-            false, Flags.FLAG_REENABLE_APP_HANDLE_ANIMATIONS),
     ENABLE_REENABLE_APP_HANDLE_COLOR_ANIMATIONS(Flags::reenableAppHandleColorAnimations,
             false, Flags.FLAG_REENABLE_APP_HANDLE_COLOR_ANIMATIONS),
     ENABLE_REJECT_HOME_TRANSITION(
@@ -227,8 +222,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS),
     ENABLE_WINDOW_DECORATION_REFACTOR(Flags::enableWindowDecorationRefactor, false,
             Flags.FLAG_ENABLE_WINDOW_DECORATION_REFACTOR),
-    ENABLE_WINDOW_DROP_SMOOTH_TRANSITION(Flags::enableWindowDropSmoothTransition, false,
-            Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION),
     ENABLE_WINDOW_REPOSITIONING_API(Flags::enableWindowRepositioningApi, false,
             Flags.FLAG_ENABLE_WINDOW_REPOSITIONING_API),
     ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAYS(Flags::enterDesktopByDefaultOnFreeformDisplays,

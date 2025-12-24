@@ -244,6 +244,12 @@ interface IInputMethodManager {
     void setAllowedImesByPolicyForTest(
             in IInputMethodClient client, in List<String> allowedPackages);
 
+    /** Test method to set the bypassed apps for preventImeStartup. */
+    @EnforcePermission("TEST_INPUT_METHOD")
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
+            + "android.Manifest.permission.TEST_INPUT_METHOD)")
+    void setPreventImeStartupBypassedAppsForTest(in List<String> packageNames);
+
     /**
      * A test API for CTS to reset the currently selected and enabled IMEs to the default ones for
      * a given user.

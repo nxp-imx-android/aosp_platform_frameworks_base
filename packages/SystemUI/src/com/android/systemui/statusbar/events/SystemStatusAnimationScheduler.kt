@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.events
 
+import androidx.annotation.MainThread
 import androidx.core.animation.Animator
 import androidx.core.animation.AnimatorSet
 import androidx.core.animation.PathInterpolator
@@ -34,9 +35,9 @@ interface SystemStatusAnimationScheduler :
      */
     val animationState: StateFlow<SystemEventAnimationState>
 
-    fun onStatusEvent(event: StatusEvent)
+    @MainThread fun onStatusEvent(event: StatusEvent)
 
-    fun removePersistentDot()
+    @MainThread fun removePersistentDot()
 }
 
 /**

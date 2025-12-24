@@ -68,9 +68,15 @@ constructor(
     @Background private val backgroundScope: CoroutineScope,
     private val tunerService: TunerService,
 ) {
-    /** [Flow] that emits `Unit` whenever the timezone or locale has changed. */
-    val onTimezoneOrLocaleChanged: Flow<Unit> =
-        broadcastFlowForActions(Intent.ACTION_TIMEZONE_CHANGED, Intent.ACTION_LOCALE_CHANGED)
+    /** [Flow] that emits `Unit` whenever the time settings have changed. */
+    val onTimeFormatChange: Flow<Unit> =
+        broadcastFlowForActions(
+                Intent.ACTION_TIMEZONE_CHANGED,
+                Intent.ACTION_LOCALE_CHANGED,
+                Intent.ACTION_TIME_CHANGED,
+                Intent.ACTION_CONFIGURATION_CHANGED,
+                Intent.ACTION_USER_SWITCHED,
+            )
             .emitOnStart()
 
     /** [StateFlow] that emits whether the clock should show seconds. */
@@ -142,11 +148,11 @@ constructor(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val longerDateFormat: Flow<DateFormat> =
-        onTimezoneOrLocaleChanged.mapLatest { getFormatFromPattern(longerPattern) }
+        onTimeFormatChange.mapLatest { getFormatFromPattern(longerPattern) }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val shorterDateFormat: Flow<DateFormat> =
-        onTimezoneOrLocaleChanged.mapLatest { getFormatFromPattern(shorterPattern) }
+        onTimeFormatChange.mapLatest { getFormatFromPattern(shorterPattern) }
 
     /** Launch the clock activity. */
     fun launchClockActivity() {

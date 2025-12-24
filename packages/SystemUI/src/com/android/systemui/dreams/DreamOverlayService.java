@@ -16,7 +16,6 @@
 
 package com.android.systemui.dreams;
 
-import static android.service.dreams.Flags.dreamOverlayStartedFix;
 import static android.service.dreams.Flags.dreamWakeRedirect;
 import static android.service.dreams.Flags.dreamsV2;
 
@@ -645,9 +644,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
 
     @Override
     public void onEndDream() {
-        if (dreamOverlayStartedFix()) {
-            mEnded = true;
-        }
+        mEnded = true;
         updateLifecycleStateLocked();
         mResetHandler.reset("ending dream");
     }
@@ -673,8 +670,8 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
      */
     private void updateGestureBlockingLocked() {
         final boolean shouldBlock = getLifecycleStateLocked() == Lifecycle.State.RESUMED
-                && (dreamOverlayStartedFix() || mStarted) && !mShadeExpanded && !mBouncerShowing
-                        && !isDreamInPreviewMode() && !mBiometricPromptShowing;
+                && !mShadeExpanded && !mBouncerShowing && !isDreamInPreviewMode()
+                && !mBiometricPromptShowing;
 
         if (shouldBlock) {
             mGestureInteractor.addGestureBlockedMatcher(DREAM_TYPE_MATCHER,

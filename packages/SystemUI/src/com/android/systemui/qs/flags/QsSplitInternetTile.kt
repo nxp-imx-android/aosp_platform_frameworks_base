@@ -24,7 +24,7 @@ import com.android.systemui.flags.RefactorFlagUtils
 @Suppress("NOTHING_TO_INLINE")
 object QsSplitInternetTile {
     /** The aconfig flag name */
-    const val FLAG_NAME = Flags.FLAG_QS_SPLIT_INTERNET_TILE
+    const val FLAG_NAME = Flags.FLAG_QS_SPLIT_INTERNET_TILE_RW
 
     /** A token used for dependency declaration */
     val token: FlagToken
@@ -33,7 +33,7 @@ object QsSplitInternetTile {
     /** Is the refactor enabled */
     @JvmStatic
     inline val isEnabled
-        get() = Flags.qsSplitInternetTile()
+        get() = Flags.qsSplitInternetTileRw()
 
     /**
      * Called to ensure code is only run when the flag is enabled. This protects users from the

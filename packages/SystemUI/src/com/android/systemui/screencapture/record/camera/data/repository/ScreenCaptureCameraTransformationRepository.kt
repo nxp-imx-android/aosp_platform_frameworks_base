@@ -18,6 +18,7 @@ package com.android.systemui.screencapture.record.camera.data.repository
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.android.systemui.screencapture.common.ScreenCaptureScope
 import javax.inject.Inject
@@ -25,6 +26,7 @@ import javax.inject.Inject
 @ScreenCaptureScope
 class ScreenCaptureCameraTransformationRepository @Inject constructor() {
 
+    var isTransforming by mutableStateOf(false)
     var offsetX by mutableFloatStateOf(0f)
     var offsetY by mutableFloatStateOf(0f)
     var scale by mutableFloatStateOf(1f)

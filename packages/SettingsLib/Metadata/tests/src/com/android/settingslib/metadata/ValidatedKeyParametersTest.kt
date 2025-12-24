@@ -16,32 +16,35 @@
 
 package com.android.settingslib.metadata
 
+import android.content.Context
 import android.os.Bundle
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.settingslib.metadata.test.R
 import com.google.common.truth.Truth.assertThat
-import org.json.JSONException
+import org.json.JSONObject
+import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.junit.Assert.assertThrows
 
 @RunWith(AndroidJUnit4::class)
 class ValidatedKeyParametersTest {
 
     private val testSchema = KeyParametersSchema {
-        parameter("required_param", "A required parameter", required = true)
-        parameter("optional_param", "An optional parameter")
+        parameter("required_param", R.string.required_param_purpose, required = true)
+        parameter("optional_param", R.string.optional_param_purpose)
     }
 
     private val optionalSchema = KeyParametersSchema {
-        parameter("optional_param", "An optional parameter")
+        parameter("optional_param", R.string.optional_param_purpose)
     }
 
     @Test
     fun schemaBuilder_duplicateParameter_throwsException() {
         val exception = assertThrows(IllegalArgumentException::class.java) {
             KeyParametersSchema {
-                parameter("param1", "description1")
-                parameter("param1", "description2")
+                parameter("param1", R.string.parameter_purpose1)
+                parameter("param1", R.string.parameter_purpose2)
             }
         }
         assertThat(exception.message).isEqualTo("Parameter 'param1' is already defined.")
@@ -50,7 +53,7 @@ class ValidatedKeyParametersTest {
     @Test
     fun schemaBuilder_noParameters() {
         val emptySchema = KeyParametersSchema {}
-        assertThat(emptySchema.toString()).isEqualTo("KeyParametersSchema(schema={})")
+        assertThat(emptySchema.toString()).isEqualTo("KeyParametersSchema(schema: {})")
     }
 
     @Test
@@ -257,7 +260,7 @@ class ValidatedKeyParametersTest {
 
     @Test
     fun prepareFromString_valueContainingEquals_succeeds() {
-        val schema = KeyParametersSchema { parameter("url", "some url", required = true) }
+        val schema = KeyParametersSchema { parameter("url", R.string.parameter_purpose1, required = true) }
         val params = schema.prepare("[url=http://example.com?a=1&b=2]")
         assertThat(params.get("url")).isEqualTo("http://example.com?a=1&b=2")
     }
@@ -383,49 +386,35 @@ class ValidatedKeyParametersTest {
 
     @Test
     fun toJsonString_returnsCorrectJson() {
-        val schemaString = testSchema.toJsonString()
-        val expectedString = "{\"required_param\":{\"description\":\"A required parameter\",\"required\":true},\"optional_param\":{\"description\":\"An optional parameter\",\"required\":false}}"
-        assertThat(schemaString).isEqualTo(expectedString)
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val schemaString = testSchema.toJsonString(context)
+        val json = JSONObject(schemaString)
+
+        assertThat(json.has("required_param")).isTrue()
+        val requiredParam = json.getJSONObject("required_param")
+        assertThat(requiredParam.getString("purpose")).isEqualTo(context.getString(R.string.required_param_purpose))
+        assertThat(requiredParam.getBoolean("required")).isTrue()
+
+        assertThat(json.has("optional_param")).isTrue()
+        val optionalParam = json.getJSONObject("optional_param")
+        assertThat(optionalParam.getString("purpose")).isEqualTo(context.getString(R.string.optional_param_purpose))
+        assertThat(optionalParam.getBoolean("required")).isFalse()
     }
 
     @Test
-    fun fromJsonString_validJson_parsesCorrectly() {
-        val jsonString = "{\"required_param\":{\"description\":\"A required parameter\",\"required\":true},\"optional_param\":{\"description\":\"An optional parameter\",\"required\":false}}"
-        val schema = KeyParametersSchema.fromJsonString(jsonString)
-        assertThat(schema.containsKey("required_param")).isTrue()
-        assertThat(schema.isRequiredParameter("required_param")).isTrue()
-        assertThat(schema.containsKey("optional_param")).isTrue()
-        assertThat(schema.isRequiredParameter("optional_param")).isFalse()
-    }
+    fun toUnresolvedJsonString_returnsCorrectJson() {
+        val schemaString = testSchema.toUnresolvedJsonString()
+        val json = JSONObject(schemaString)
 
-    @Test
-    fun fromJsonString_emptyJson_returnsEmptySchema() {
-        val schema = KeyParametersSchema.fromJsonString("{}")
-        assertThat(schema.toString()).isEqualTo("KeyParametersSchema(schema={})")
-    }
+        assertThat(json.has("required_param")).isTrue()
+        val requiredParam = json.getJSONObject("required_param")
+        assertThat(requiredParam.getInt("purpose")).isEqualTo(R.string.required_param_purpose)
+        assertThat(requiredParam.getBoolean("required")).isTrue()
 
-    @Test
-    fun fromJsonString_missingDescription_throwsException() {
-        val jsonString = "{\"required_param\":{\"required\":true}}"
-        assertThrows(JSONException::class.java) {
-            KeyParametersSchema.fromJsonString(jsonString)
-        }
-    }
-
-    @Test
-    fun fromJsonString_missingRequired_throwsException() {
-        val jsonString = "{\"required_param\":{\"description\":\"A required parameter\"}}"
-        assertThrows(JSONException::class.java) {
-            KeyParametersSchema.fromJsonString(jsonString)
-        }
-    }
-
-    @Test
-    fun fromJsonString_malformedJson_throwsException() {
-        val jsonString = "{\"required_param\":{\"description\":\"A required parameter\",\"required\":true"
-        assertThrows(JSONException::class.java) {
-            KeyParametersSchema.fromJsonString(jsonString)
-        }
+        assertThat(json.has("optional_param")).isTrue()
+        val optionalParam = json.getJSONObject("optional_param")
+        assertThat(optionalParam.getInt("purpose")).isEqualTo(R.string.optional_param_purpose)
+        assertThat(optionalParam.getBoolean("required")).isFalse()
     }
 
     @Test

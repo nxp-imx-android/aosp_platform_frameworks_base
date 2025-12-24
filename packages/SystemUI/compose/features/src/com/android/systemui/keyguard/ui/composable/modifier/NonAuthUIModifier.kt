@@ -16,13 +16,11 @@
 
 package com.android.systemui.keyguard.ui.composable.modifier
 
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
 
 /** Modifies the composable to account for nonAuthUI alpha. */
-@Composable
 fun Modifier.nonAuthUI(viewModel: LockscreenContentViewModel): Modifier {
     return this.graphicsLayer { this.alpha = viewModel.nonAuthUIAlpha }
 }

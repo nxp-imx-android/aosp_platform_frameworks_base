@@ -415,116 +415,6 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
-    @DisableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
-    public void onTransitionReady_forwardsToDesktopImmersiveController() {
-        final IBinder transition = mock(IBinder.class);
-        final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_CHANGE, 0).build();
-        final SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
-        final SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
-
-        mTransitionObserver.onTransitionReady(transition, info, startT, finishT);
-
-        verify(mDesktopImmersiveController).onTransitionReady(transition, info, startT, finishT);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
-    @DisableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
-    public void onTransitionMerged_forwardsToDesktopImmersiveController() {
-        final IBinder merged = mock(IBinder.class);
-        final IBinder playing = mock(IBinder.class);
-
-        mTransitionObserver.onTransitionMerged(merged, playing);
-
-        verify(mDesktopImmersiveController).onTransitionMerged(merged, playing);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
-    @DisableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
-    public void onTransitionStarting_forwardsToDesktopImmersiveController() {
-        final IBinder transition = mock(IBinder.class);
-
-        mTransitionObserver.onTransitionStarting(transition);
-
-        verify(mDesktopImmersiveController).onTransitionStarting(transition);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
-    @DisableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
-    public void onTransitionFinished_forwardsToDesktopImmersiveController() {
-        final IBinder transition = mock(IBinder.class);
-
-        mTransitionObserver.onTransitionFinished(transition, /* aborted= */ false);
-
-        verify(mDesktopImmersiveController).onTransitionFinished(transition, /* aborted= */ false);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
-    public void onTransitionReady_forwardsToDesksTransitionObserver() {
-        final IBinder transition = mock(IBinder.class);
-        final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_CLOSE, /* flags= */ 0)
-                .build();
-
-        mTransitionObserver.onTransitionReady(transition, info, new StubTransaction(),
-                new StubTransaction());
-
-        verify(mDesksTransitionObserver).onTransitionReady(transition, info);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
-    public void onTransitionMerged_forwardsToDesksTransitionObserver() {
-        final IBinder merged = mock(IBinder.class);
-        final IBinder playing = mock(IBinder.class);
-
-        mTransitionObserver.onTransitionMerged(merged, playing);
-
-        verify(mDesksTransitionObserver).onTransitionMerged(merged, playing);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
-    public void onTransitionFinished_forwardsToDesksTransitionObserver() {
-        final IBinder transition = mock(IBinder.class);
-
-        mTransitionObserver.onTransitionFinished(transition, /* aborted = */ false);
-
-        verify(mDesksTransitionObserver).onTransitionFinished(transition);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
-    public void onTransitionReady_forwardsToDesktopModeLoggerTransitionObserver() {
-        final IBinder transition = mock(IBinder.class);
-        final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_CHANGE, /* flags= */ 0)
-                .build();
-        final SurfaceControl.Transaction startT = new StubTransaction();
-        final SurfaceControl.Transaction finishT = new StubTransaction();
-
-
-        mTransitionObserver.onTransitionReady(transition, info, startT, finishT);
-
-        verify(mDesktopModeLoggerTransitionObserver).onTransitionReady(transition, info, startT,
-                finishT);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
-    public void onTransitionFinished_forwardsToDesktopModeLoggerTransitionObserver() {
-        final IBinder transition = mock(IBinder.class);
-        final boolean aborted = false;
-
-        mTransitionObserver.onTransitionFinished(transition, aborted);
-
-        verify(mDesktopModeLoggerTransitionObserver).onTransitionFinished(transition, aborted);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
     public void onTransitionReady_forwardsToDesktopInOrderTransitionObserver() {
         final IBinder transition = mock(IBinder.class);
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_CLOSE, /* flags= */ 0)
@@ -540,7 +430,6 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
     public void onTransitionMerged_forwardsToDesktopInOrderTransitionObserver() {
         final IBinder merged = mock(IBinder.class);
         final IBinder playing = mock(IBinder.class);
@@ -551,7 +440,6 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
     public void onTransitionFinished_forwardsToDesktopInOrderTransitionObserver() {
         final IBinder transition = mock(IBinder.class);
 

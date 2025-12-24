@@ -16,8 +16,8 @@
 
 package com.android.systemui.qs.pipeline.data.repository
 
-import android.platform.test.annotations.RequiresFlagsDisabled
-import android.platform.test.annotations.RequiresFlagsEnabled
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -44,7 +44,7 @@ class DefaultTilesQSHostRepositoryTest : SysuiTestCase() {
         }
 
     @Test
-    @RequiresFlagsDisabled(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.FLAG_NAME)
     fun flagDisabled_hasInternet_noWifi() =
         kosmos.runTest {
             assertThat(underTest.getDefaultTiles(false)).contains(internetTileSpec)
@@ -52,7 +52,7 @@ class DefaultTilesQSHostRepositoryTest : SysuiTestCase() {
         }
 
     @Test
-    @RequiresFlagsEnabled(QsSplitInternetTile.FLAG_NAME)
+    @EnableFlags(QsSplitInternetTile.FLAG_NAME)
     fun flagEnabled_hasWifi_noInternet() =
         kosmos.runTest {
             assertThat(underTest.getDefaultTiles(false)).contains(wifiTileSpec)
@@ -95,7 +95,7 @@ class DefaultTilesQSHostRepositoryTest : SysuiTestCase() {
         }
 
     @Test
-    @RequiresFlagsEnabled(QsSplitInternetTile.FLAG_NAME)
+    @EnableFlags(QsSplitInternetTile.FLAG_NAME)
     fun getDefaultTiles_headlessSystemUser_withInternetTile_flagEnabled_hasWifiInstead() =
         kosmos.runTest {
             overrideDefaultTilesResource(CUSTOM_DEFAULT_TILES)

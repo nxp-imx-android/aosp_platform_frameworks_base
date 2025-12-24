@@ -122,6 +122,7 @@ import com.android.systemui.keyguard.KeyguardViewMediator;
 import com.android.systemui.keyguard.ScreenLifecycle;
 import com.android.systemui.keyguard.WakefulnessLifecycle;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
+import com.android.systemui.log.SessionTracker;
 import com.android.systemui.media.NotificationMediaManager;
 import com.android.systemui.navigationbar.NavigationBarController;
 import com.android.systemui.notetask.NoteTaskController;
@@ -620,7 +621,8 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
                 mEmergencyGestureIntentFactory,
                 mQuickAccessWalletController,
                 mWindowManager,
-                mWindowManagerProvider
+                mWindowManagerProvider,
+                mock(SessionTracker.class)
         );
         mScreenLifecycle.addObserver(mCentralSurfaces.mScreenObserver);
         mCentralSurfaces.initShadeVisibilityListener();

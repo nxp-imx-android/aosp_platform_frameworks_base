@@ -21,6 +21,7 @@ import com.android.systemui.kosmos.backgroundCoroutineContext
 import com.android.systemui.screencapture.common.domain.interactor.screenCaptureMarkupInteractor
 import com.android.systemui.screencapture.common.ui.viewmodel.drawableLoaderViewModel
 import com.android.systemui.screencapture.domain.interactor.screenCaptureUiInteractor
+import com.android.systemui.screencapture.record.camera.domain.interactor.screenCaptureCameraTransformationInteractor
 import com.android.systemui.screencapture.record.domain.interactor.screenCaptureRecordFeaturesInteractor
 import com.android.systemui.screencapture.record.smallscreen.domain.interactor.recordDetailsStateInteractor
 import com.android.systemui.screencapture.record.smallscreen.domain.interactor.recordDetailsTargetInteractor
@@ -28,32 +29,29 @@ import com.android.systemui.screencapture.record.ui.viewmodel.screenCaptureRecor
 import com.android.systemui.screenrecord.domain.interactor.screenRecordingServiceInteractor
 import com.android.systemui.shared.system.activityManagerWrapper
 
-var Kosmos.currentSmallScreenCaptureRecordViewModel: SmallScreenCaptureRecordViewModel? by
-    Kosmos.Fixture { null }
-
 val Kosmos.smallScreenCaptureRecordViewModelFactory by
     Kosmos.Fixture {
         object : SmallScreenCaptureRecordViewModel.Factory {
             override fun create(): SmallScreenCaptureRecordViewModel =
                 SmallScreenCaptureRecordViewModel(
-                        bgContext = backgroundCoroutineContext,
-                        screenRecordingServiceInteractor = screenRecordingServiceInteractor,
-                        screenCaptureUiInteractor = screenCaptureUiInteractor,
-                        markupInteractor = screenCaptureMarkupInteractor,
-                        activityManager = activityManagerWrapper,
-                        recordDetailsAppSelectorViewModelFactory =
-                            recordDetailsAppSelectorViewModelFactory,
-                        screenCaptureRecordParametersViewModelFactory =
-                            screenCaptureRecordParametersViewModelFactory,
-                        recordDetailsTargetViewModelFactory = recordDetailsTargetViewModelFactory,
-                        drawableLoaderViewModel = drawableLoaderViewModel,
-                        screenCaptureRecordFeaturesInteractor =
-                            screenCaptureRecordFeaturesInteractor,
-                        recordDetailsMarkupColorPickerViewModelFactory =
-                            recordDetailsMarkupColorPickerViewModelFactory,
-                        recordDetailsTargetInteractor = recordDetailsTargetInteractor,
-                        recordDetailsStateInteractor = recordDetailsStateInteractor,
-                    )
-                    .also { currentSmallScreenCaptureRecordViewModel }
+                    bgContext = backgroundCoroutineContext,
+                    screenRecordingServiceInteractor = screenRecordingServiceInteractor,
+                    screenCaptureUiInteractor = screenCaptureUiInteractor,
+                    markupInteractor = screenCaptureMarkupInteractor,
+                    activityManager = activityManagerWrapper,
+                    recordDetailsAppSelectorViewModelFactory =
+                        recordDetailsAppSelectorViewModelFactory,
+                    screenCaptureRecordParametersViewModelFactory =
+                        screenCaptureRecordParametersViewModelFactory,
+                    recordDetailsTargetViewModelFactory = recordDetailsTargetViewModelFactory,
+                    drawableLoaderViewModel = drawableLoaderViewModel,
+                    screenCaptureRecordFeaturesInteractor = screenCaptureRecordFeaturesInteractor,
+                    recordDetailsMarkupColorPickerViewModelFactory =
+                        recordDetailsMarkupColorPickerViewModelFactory,
+                    recordDetailsTargetInteractor = recordDetailsTargetInteractor,
+                    recordDetailsStateInteractor = recordDetailsStateInteractor,
+                    screenCaptureCameraTransformationInteractor =
+                        screenCaptureCameraTransformationInteractor,
+                )
         }
     }

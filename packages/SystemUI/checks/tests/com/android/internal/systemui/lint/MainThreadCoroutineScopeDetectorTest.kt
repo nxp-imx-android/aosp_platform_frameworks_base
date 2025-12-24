@@ -196,6 +196,36 @@ class MainThreadCoroutineScopeDetectorTest : SystemUILintDetectorTest() {
     }
 
     companion object {
+        val backgroundQualifierStub =
+            TestFiles.kotlin(
+                    """
+                    package com.android.systemui.dagger.qualifiers
+
+                    @Qualifier @MustBeDocumented @Retention(AnnotationRetention.RUNTIME) annotation class Background
+                """
+                )
+                .indented()
+
+        val applicationQualifierStub =
+            TestFiles.kotlin(
+                    """
+                    package com.android.systemui.dagger.qualifiers
+
+                    @Qualifier @MustBeDocumented @Retention(AnnotationRetention.RUNTIME) annotation class Application
+                """
+                )
+                .indented()
+
+        val mainQualifierStub =
+            TestFiles.kotlin(
+                    """
+                    package com.android.systemui.dagger.qualifiers
+
+                    @Qualifier @MustBeDocumented @Retention(AnnotationRetention.RUNTIME) annotation class Main
+                """
+                )
+                .indented()
+
         private val DEPENDENCIES =
             arrayOf(
                 TestFiles.kotlin(
@@ -206,22 +236,8 @@ class MainThreadCoroutineScopeDetectorTest : SystemUILintDetectorTest() {
                 """
                     )
                     .indented(),
-                TestFiles.kotlin(
-                        """
-                    package com.android.systemui.dagger.qualifiers
-
-                    @Qualifier @MustBeDocumented @Retention(AnnotationRetention.RUNTIME) annotation class Application
-                """
-                    )
-                    .indented(),
-                TestFiles.kotlin(
-                        """
-                    package com.android.systemui.dagger.qualifiers
-
-                    @Qualifier @MustBeDocumented @Retention(AnnotationRetention.RUNTIME) annotation class Background
-                """
-                    )
-                    .indented(),
+                applicationQualifierStub,
+                backgroundQualifierStub,
             )
     }
 }

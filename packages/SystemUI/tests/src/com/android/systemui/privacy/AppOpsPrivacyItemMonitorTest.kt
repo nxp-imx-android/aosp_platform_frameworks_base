@@ -22,9 +22,7 @@ import android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND_S
 import android.app.AppOpsManager
 import android.content.pm.PackageManager
 import android.content.pm.UserInfo
-import android.location.flags.Flags
 import android.os.UserHandle
-import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -719,7 +717,6 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_LOCATION_INDICATOR_GET_UID_IMPORTANCE_FALLBACK)
     fun testLocationOp_getUidImportance_foreground() {
         setMapsToNonSystem()
 
@@ -784,7 +781,6 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_LOCATION_INDICATOR_GET_UID_IMPORTANCE_FALLBACK)
     fun testLocationOp_getUidImportance_background() {
         setMapsToNonSystem()
 

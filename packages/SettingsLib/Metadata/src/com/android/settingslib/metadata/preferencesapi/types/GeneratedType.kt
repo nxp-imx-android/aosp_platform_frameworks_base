@@ -41,7 +41,7 @@ class GeneratedTypeContext(val context: Context)
  * @property description A human-readable description of this specific value.
  * @property value The actual value.
  */
-class GeneratedValue<T>(
+data class GeneratedValue<T>(
     val description: String,
     val value: T,
 )

@@ -16,7 +16,7 @@
 
 package com.android.server.policy.keyguard;
 
-import android.app.ActivityManager;
+import android.annotation.UserIdInt;
 import android.content.Context;
 import android.os.RemoteException;
 import android.util.Slog;
@@ -45,21 +45,17 @@ public class KeyguardStateMonitor extends IKeyguardStateCallback.Stub {
     private volatile boolean mInputRestricted = true;
     private volatile boolean mTrusted = false;
 
+    @UserIdInt
     private int mCurrentUserId;
 
     private final LockPatternUtils mLockPatternUtils;
     private final StateCallback mCallback;
 
-    public KeyguardStateMonitor(Context context, IKeyguardService service, StateCallback callback) {
+    public KeyguardStateMonitor(Context context, StateCallback callback,
+            @UserIdInt int currentUserId) {
         mLockPatternUtils = new LockPatternUtils(context);
-        mCurrentUserId = ActivityManager.getCurrentUser();
         mCallback = callback;
-
-        try {
-            service.addStateMonitorCallback(this);
-        } catch (RemoteException e) {
-            Slog.w(TAG, "Remote Exception", e);
-        }
+        mCurrentUserId = currentUserId;
     }
 
     public boolean isShowing() {
@@ -78,16 +74,14 @@ public class KeyguardStateMonitor extends IKeyguardStateCallback.Stub {
         return mTrusted;
     }
 
-    public int getCurrentUser() {
-        return mCurrentUserId;
+    @Override // Binder interface
+    public void onShowingStateChanged(boolean showing, @UserIdInt int userId) {
+        if (userId != mCurrentUserId) return;
+        onShowingStateChanged(showing);
     }
 
-    @Override // Binder interface
-    public void onShowingStateChanged(boolean showing, int userId) {
-        if (userId != mCurrentUserId) return;
-
+    public void onShowingStateChanged(boolean showing) {
         mIsShowing = showing;
-
         mCallback.onShowingChanged();
     }
 

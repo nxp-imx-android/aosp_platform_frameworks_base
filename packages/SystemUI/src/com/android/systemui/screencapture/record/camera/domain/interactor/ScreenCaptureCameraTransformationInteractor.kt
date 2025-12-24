@@ -25,6 +25,7 @@ class ScreenCaptureCameraTransformationInteractor
 @Inject
 constructor(private val repository: ScreenCaptureCameraTransformationRepository) {
 
+    var isTransforming: Boolean by repository::isTransforming
     var offsetX: Float by repository::offsetX
     var offsetY: Float by repository::offsetY
     var scale: Float by repository::scale

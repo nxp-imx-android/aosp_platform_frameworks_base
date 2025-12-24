@@ -1,0 +1,9 @@
+package: "android.app"
+container: "system"
+
+flag {
+    name: "allow_listeners_while_idle"
+    namespace: "backstage_power"
+    description: "Enables the alarms that accept a callback to run with relaxed restrictions in idle or battery saver modes."
+    bug: "410015157"
+}

@@ -394,6 +394,12 @@ final class ZeroJankProxy implements IInputMethodManagerImpl.Callback {
         mInner.setAllowedImesByPolicyForTest(client, allowedPackages);
     }
 
+    @IInputMethodManagerImpl.PermissionVerified("android.permission.TEST_INPUT_METHOD")
+    @Override
+    public void setPreventImeStartupBypassedAppsForTest(@NonNull List<String> allowedPackages) {
+        mInner.setPreventImeStartupBypassedAppsForTest(allowedPackages);
+    }
+
     @Override
     public IImeTracker getImeTrackerService() {
         return mInner.getImeTrackerService();

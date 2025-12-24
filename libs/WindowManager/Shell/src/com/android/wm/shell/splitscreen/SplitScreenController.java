@@ -85,6 +85,7 @@ import com.android.wm.shell.RootDisplayAreaOrganizer;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.bubbles.BubbleController;
+import com.android.wm.shell.common.ClientFullscreenRequestController;
 import com.android.wm.shell.common.ComponentUtils;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
@@ -219,6 +220,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
     private final DesktopState mDesktopState;
     private final MSDLPlayer mMSDLPlayer;
     private final Optional<BubbleController> mBubbleController;
+    private final Optional<ClientFullscreenRequestController> mClientFullscreenRequestController;
 
     @VisibleForTesting
     StageCoordinator mStageCoordinator;
@@ -258,7 +260,8 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
             DesktopState desktopState,
             IActivityTaskManager activityTaskManager,
             MSDLPlayer msdlPlayer,
-            Optional<BubbleController> bubbleController) {
+            Optional<BubbleController> bubbleController,
+            Optional<ClientFullscreenRequestController> clientFullscreenRequestController) {
         mShellCommandHandler = shellCommandHandler;
         mShellController = shellController;
         mTaskOrganizer = shellTaskOrganizer;
@@ -289,6 +292,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
         mDesktopState = desktopState;
         mMSDLPlayer = msdlPlayer;
         mBubbleController = bubbleController;
+        mClientFullscreenRequestController = clientFullscreenRequestController;
         // TODO(b/238217847): Temporarily add this check here until we can remove the dynamic
         //                    override for this controller from the base module
         if (ActivityTaskManager.supportsSplitScreenMultiWindow(context)) {
@@ -325,6 +329,9 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
         }
         mWindowDecorViewModel.ifPresent(viewModel -> viewModel.setSplitScreenController(this));
         mDesktopTasksController.ifPresent(controller -> controller.setSplitScreenController(this));
+        mClientFullscreenRequestController.ifPresent(c -> {
+            new SplitScreenFullscreenRequestHandler(mTaskOrganizer, mStageCoordinator, c);
+        });
     }
 
     protected StageCoordinator createStageCoordinator() {
@@ -646,7 +653,6 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
 
     /**
      * Starts an existing task into split.
-     * TODO(b/351900580): We should remove this path and use StageCoordinator#startTask() instead
      * @param hideTaskToken is not supported.
      */
     public void startTask(int taskId, @SplitPosition int position, @Nullable Bundle options,
@@ -654,6 +660,11 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_DRAG_AND_DROP,
                 "Legacy startTask does not support hide task token");
         if (isTaskInSplitScreenForeground(taskId)) return;
+        if (com.android.systemui.shared.Flags.enableRecentsInTaskbar()) {
+            mStageCoordinator.startTask(taskId, position, options, hideTaskToken,
+                    SPLIT_INDEX_UNDEFINED);
+            return;
+        }
         final int[] result = new int[1];
         IRemoteAnimationRunner wrapper = new IRemoteAnimationRunner.Stub() {
             @Override

@@ -10383,8 +10383,8 @@ package android.app.usage {
 package android.app.voiceinteraction {
 
   @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public final class VoiceInteractionManager {
-    method @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public boolean canReadAssistStructure();
-    method @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") @NonNull public android.content.Intent createRequestAssistStructureIntent();
+    method @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public boolean canReadScreenContext();
+    method @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") @NonNull public android.content.Intent createRequestReadScreenContextIntent();
     method @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") @CheckResult public int getReadScreenContextRequestState();
     field @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public static final int READ_SCREEN_CONTEXT_REQUEST_STATE_GRANTED = 0; // 0x0
     field @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public static final int READ_SCREEN_CONTEXT_REQUEST_STATE_REQUESTABLE = 1; // 0x1
@@ -22545,6 +22545,8 @@ package android.media {
     method public boolean isSource();
     field public static final int TYPE_AUX_LINE = 19; // 0x13
     field public static final int TYPE_BLE_BROADCAST = 30; // 0x1e
+    field @FlaggedApi("android.media.audio.ble_peripheral_devices") public static final int TYPE_BLE_CENTRAL = 34; // 0x22
+    field @FlaggedApi("android.media.audio.ble_peripheral_devices") public static final int TYPE_BLE_CENTRAL_BROADCAST = 35; // 0x23
     field public static final int TYPE_BLE_HEADSET = 26; // 0x1a
     field @FlaggedApi("android.media.audio.ble_hearing_aid_device") public static final int TYPE_BLE_HEARING_AID = 33; // 0x21
     field public static final int TYPE_BLE_SPEAKER = 27; // 0x1b
@@ -53216,6 +53218,7 @@ package android.view {
     field public static final int KEYCODE_8 = 15; // 0xf
     field public static final int KEYCODE_9 = 16; // 0x10
     field public static final int KEYCODE_A = 29; // 0x1d
+    field @FlaggedApi("com.android.hardware.input.enable_new_26q2_keycodes") public static final int KEYCODE_ACCESSIBILITY = 338; // 0x152
     field public static final int KEYCODE_ALL_APPS = 284; // 0x11c
     field public static final int KEYCODE_ALT_LEFT = 57; // 0x39
     field public static final int KEYCODE_ALT_RIGHT = 58; // 0x3a
@@ -62562,6 +62565,7 @@ package android.widget {
     method public void setViewOutlinePreferredRadiusAttr(@IdRes int, @AttrRes int);
     method public void setViewOutlinePreferredRadiusDimen(@IdRes int, @DimenRes int);
     method public void setViewPadding(@IdRes int, @Px int, @Px int, @Px int, @Px int);
+    method @FlaggedApi("android.appwidget.flags.widget_display_changes") public void setViewPadding(@IdRes int, float, float, float, float, int);
     method public void setViewVisibility(@IdRes int, int);
     method @Deprecated public void showNext(@IdRes int);
     method @Deprecated public void showPrevious(@IdRes int);

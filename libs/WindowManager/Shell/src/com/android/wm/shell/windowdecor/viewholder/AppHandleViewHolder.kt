@@ -319,18 +319,7 @@ class AppHandleViewHolder(
     }
 
     private fun setVisibility(visible: Boolean) {
-        if (DesktopExperienceFlags.ENABLE_REENABLE_APP_HANDLE_ANIMATIONS.isTrue) {
-            animator.animateVisibilityChange(visible)
-            return
-        }
-        val v = if (visible) View.VISIBLE else View.GONE
-        if (
-            captionView.visibility == v ||
-                !DesktopModeFlags.ENABLE_DESKTOP_APP_HANDLE_ANIMATION.isTrue()
-        ) {
-            return
-        }
-        captionView.visibility = v
+        animator.animateVisibilityChange(visible)
     }
 
     @ColorInt

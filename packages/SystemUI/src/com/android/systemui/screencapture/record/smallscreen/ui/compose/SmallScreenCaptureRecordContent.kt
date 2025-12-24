@@ -21,8 +21,10 @@ import android.view.ViewTreeObserver.InternalInsetsInfo
 import android.view.Window
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -58,7 +60,6 @@ import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -71,12 +72,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.android.compose.PlatformIconButton
+import com.android.compose.modifiers.animatedBackground
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
@@ -146,11 +150,9 @@ constructor(
                         )
                         .padding(horizontal = 30.dp),
             ) {
-                // TODO(b/428686600) use Toolbar shared with the large screen
-                Surface(
+                TransientSurface(
+                    transient = viewModel.isTransient,
                     shape = FloatingToolbarDefaults.ContainerShape,
-                    color = MaterialTheme.colorScheme.surface,
-                    shadowElevation = 6.dp,
                     modifier =
                         Modifier.fillBoundsInWindowIf(
                             region = toolbarBounds,
@@ -269,17 +271,16 @@ constructor(
                     visible = viewModel.detailsPopup != RecordDetailsPopupType.Invisible,
                     enter = fadeIn(),
                     exit = fadeOut(),
-                    modifier =
-                        Modifier.fillBoundsInWindowIf(
-                            region = settingsBounds,
-                            condition = viewTreeObserver != null,
-                        ),
                 ) {
-                    Surface(
-                        color = MaterialTheme.colorScheme.surface,
+                    TransientSurface(
+                        transient = viewModel.isTransient,
                         shape = RoundedCornerShape(28.dp),
-                        shadowElevation = 2.dp,
-                        modifier = Modifier.animateContentSize(),
+                        modifier =
+                            Modifier.fillBoundsInWindowIf(
+                                    region = settingsBounds,
+                                    condition = viewTreeObserver != null,
+                                )
+                                .animateContentSize(),
                     ) {
                         AnimatedContent(
                             targetState = viewModel.detailsPopup,
@@ -425,5 +426,26 @@ private fun ToolbarPrimaryButton(
                 modifier = modifier,
             )
         }
+    }
+}
+
+@Composable
+private fun TransientSurface(
+    transient: Boolean,
+    shape: Shape,
+    modifier: Modifier = Modifier,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    val surfaceBackground by
+        animateColorAsState(
+            if (transient) {
+                MaterialTheme.colorScheme.surfaceBright.copy(alpha = 0.6f)
+            } else {
+                MaterialTheme.colorScheme.surface
+            }
+        )
+    val contentAlpha by animateFloatAsState(if (transient) 0f else 1f)
+    Box(modifier = modifier.animatedBackground(color = { surfaceBackground }, shape = shape)) {
+        Box(content = content, modifier = Modifier.graphicsLayer { alpha = contentAlpha })
     }
 }

@@ -40,6 +40,7 @@ import com.android.systemui.qs.panels.LargeScreenQSInlinePowerMenu
 import com.android.systemui.qs.panels.ui.viewmodel.TextFeedbackContentViewModel
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
@@ -51,6 +52,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -63,6 +65,7 @@ constructor(
     val textFeedbackContentViewModelFactory: TextFeedbackContentViewModel.Factory,
     val powerMenuViewModelFactory: PowerMenuViewModel.Factory,
     private val shadeModeInteractor: ShadeModeInteractor,
+    private val shadeInteractor: ShadeInteractor,
     private val footerActionsInteractor: FooterActionsInteractor,
     private val globalActionsDialogLiteProvider: Provider<GlobalActionsDialogLite>,
     private val falsingInteractor: FalsingInteractor,
@@ -143,6 +146,20 @@ constructor(
                 }
             }
             launch { hydrator.activate() }
+
+            if (useInlinePowerMenu) {
+                launch {
+                    shadeInteractor.qsExpansion
+                        .map { it == 1.0f }
+                        .distinctUntilChanged()
+                        .collect { fullyExpanded ->
+                            if (!fullyExpanded) {
+                                isInlinePowerMenuVisible = false
+                            }
+                        }
+                }
+            }
+
             launch {
                 footerActionsInteractor.securityButtonConfig
                     .map { it?.let { securityButtonViewModel(it, ::onSecurityButtonClicked) } }

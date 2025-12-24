@@ -22,6 +22,8 @@ jbolinger@google.com
 
 # Launcher
 hyunyoungs@google.com
+per-file android/widget/remoteviews.proto = file:/core/java/android/appwidget/OWNERS
+per-file android/service/appwidget.proto = file:/core/java/android/appwidget/OWNERS
 
 # Graphics stats
 jreck@google.com

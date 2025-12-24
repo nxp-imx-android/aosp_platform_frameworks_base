@@ -123,9 +123,6 @@ public class ContextualModeManagerServiceTest {
         when(mActivityManagerInternal.getCurrentUserId()).thenReturn(mContext.getUserId());
         when(mResources.getBoolean(com.android.internal.R.bool.config_supportContextualModeSync))
                 .thenReturn(true);
-        when(mResources.getBoolean(
-                        com.android.internal.R.bool.config_enableContextualModeSyncByDefault))
-                .thenReturn(true);
         when(mNotificationManagerInternal.hasZenModeConfig(mContext.getUser())).thenReturn(true);
         startNewService();
     }
@@ -208,17 +205,6 @@ public class ContextualModeManagerServiceTest {
         Secure.putString(mContentResolver, Secure.CONTEXTUAL_MODE_SYNC_ENABLED, null);
 
         assertThat(mBinderService.isModeSyncEnabled(mContext.getUser())).isTrue();
-    }
-
-    @Test
-    public void testIsModeSyncEnabled_defaultDisabled() throws Exception {
-        when(mResources.getBoolean(
-                        com.android.internal.R.bool.config_enableContextualModeSyncByDefault))
-                .thenReturn(false);
-        startNewService();
-        Secure.putString(mContentResolver, Secure.CONTEXTUAL_MODE_SYNC_ENABLED, null);
-
-        assertThat(mBinderService.isModeSyncEnabled(mContext.getUser())).isFalse();
     }
 
     @Test

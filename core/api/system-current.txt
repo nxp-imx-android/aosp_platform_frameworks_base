@@ -805,6 +805,7 @@ package android.app {
     field public static final String OPSTR_READ_OXYGEN_SATURATION = "android:read_oxygen_saturation";
     field @FlaggedApi("android.permission.flags.granular_health_permissions_phase_two_enabled") public static final String OPSTR_READ_RESPIRATORY_RATE = "android:read_respiratory_rate";
     field @FlaggedApi("com.android.internal.telephony.flags.secure_access_to_restricted_rcs_messages") public static final String OPSTR_READ_RESTRICTED_MESSAGES = "android:read_restricted_messages";
+    field @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public static final String OPSTR_READ_SCREEN_CONTEXT = "android:read_screen_context";
     field public static final String OPSTR_READ_SKIN_TEMPERATURE = "android:read_skin_temperature";
     field @FlaggedApi("android.permission.flags.granular_health_permissions_phase_two_enabled") public static final String OPSTR_READ_VO2_MAX = "android:read_vo2_max";
     field public static final String OPSTR_READ_WRITE_HEALTH_DATA = "android:read_write_health_data";
@@ -822,7 +823,6 @@ package android.app {
     field public static final String OPSTR_TOAST_WINDOW = "android:toast_window";
     field public static final String OPSTR_TURN_SCREEN_ON = "android:turn_screen_on";
     field public static final String OPSTR_VIBRATE = "android:vibrate";
-    field @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public static final String OPSTR_VOICE_INTERACTION_ASSIST_STRUCTURE = "android:voice_interaction_assist_structure";
     field public static final String OPSTR_WAKE_LOCK = "android:wake_lock";
     field public static final String OPSTR_WIFI_SCAN = "android:wifi_scan";
     field public static final String OPSTR_WRITE_CLIPBOARD = "android:write_clipboard";
@@ -3518,7 +3518,7 @@ package android.app.voiceinteraction {
     method @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") @RequiresPermission(allOf={android.Manifest.permission.MANAGE_READ_SCREEN_CONTEXT_REQUEST, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL}, conditional=true) public void clearReadScreenContextRequestDeniedCount();
     method @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") @CheckResult @RequiresPermission(allOf={android.Manifest.permission.MANAGE_READ_SCREEN_CONTEXT_REQUEST, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL}, conditional=true) public int getReadScreenContextRequestState(int);
     method @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") @RequiresPermission(allOf={android.Manifest.permission.MANAGE_READ_SCREEN_CONTEXT_REQUEST, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL}, conditional=true) public void incrementReadScreenContextRequestDeniedCount();
-    field @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public static final String ACTION_REQUEST_ASSIST_STRUCTURE = "android.app.voiceinteraction.action.REQUEST_ASSIST_STRUCTURE";
+    field @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public static final String ACTION_REQUEST_READ_SCREEN_CONTEXT = "android.app.voiceinteraction.action.REQUEST_READ_SCREEN_CONTEXT";
   }
 
 }
@@ -4998,6 +4998,15 @@ package android.content.pm {
     method @NonNull public android.content.ComponentName getTargetComponent();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.ShortcutManager.ShareShortcutInfo> CREATOR;
+  }
+
+  @FlaggedApi("android.permission.flags.allowlist_service_enabled") public final class SignedPackage implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public byte[] getCertificateDigest();
+    method @NonNull public String getPackageName();
+    method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public boolean hasCertificateDigest();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.SignedPackage> CREATOR;
   }
 
   public final class SuspendDialogInfo implements android.os.Parcelable {
@@ -13538,6 +13547,10 @@ package android.provider {
     field @NonNull public static final String ENABLE_PUBLIC_SAFETY_PREF = "enable_public_safety_messages";
     field @NonNull public static final String ENABLE_STATE_LOCAL_TEST_PREF = "enable_state_local_test_alerts";
     field @NonNull public static final String ENABLE_TEST_ALERT_PREF = "enable_test_alerts";
+  }
+
+  @FlaggedApi("com.android.internal.telephony.flags.secure_access_to_restricted_rcs_messages") public static final class Telephony.ReadRestriction {
+    field @FlaggedApi("com.android.internal.telephony.flags.secure_access_to_restricted_rcs_messages") public static final String RESTRICTED = "restricted";
   }
 
   public static final class Telephony.Sms.Intents {

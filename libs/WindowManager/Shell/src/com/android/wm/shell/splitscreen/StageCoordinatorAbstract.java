@@ -21,6 +21,7 @@ import static com.android.wm.shell.Flags.enable2x1Split;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager.RunningTaskInfo;
+import android.app.FullscreenRequestHandler;
 import android.app.IActivityTaskManager;
 import android.app.PendingIntent;
 import android.app.TaskInfo;
@@ -62,6 +63,7 @@ import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.shared.TransactionPool;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.shared.split.SplitScreenConstants.PersistentSnapPosition;
+import com.android.wm.shell.shared.split.SplitScreenConstants.SnapPosition;
 import com.android.wm.shell.shared.split.SplitScreenConstants.SplitIndex;
 import com.android.wm.shell.shared.split.SplitScreenConstants.SplitPosition;
 import com.android.wm.shell.splitscreen.SplitScreen.StageType;
@@ -141,6 +143,19 @@ public abstract class StageCoordinatorAbstract implements SplitLayout.SplitLayou
 
     /// ////////////////////////////////////////////////////////////////////////////////////////////
     ///
+    /// Fullscreen Requests
+    ///
+    /// ////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Sets the fullscreen request allow mode of the split hierarchy. See
+     * {@link android.app.Activity#requestFullscreenMode}.
+     */
+    abstract void setFullscreenRequestAllowMode(
+            @FullscreenRequestHandler.RequestAllowMode int mode);
+
+    /// ////////////////////////////////////////////////////////////////////////////////////////////
+    ///
     /// Start a task in split.
     ///
     /// ////////////////////////////////////////////////////////////////////////////////////////////
@@ -179,6 +194,27 @@ public abstract class StageCoordinatorAbstract implements SplitLayout.SplitLayou
             @Nullable Bundle options2, @SplitPosition int splitPosition,
             @PersistentSnapPosition int snapPosition,
             @Nullable RemoteTransition remoteTransition, InstanceId instanceId);
+
+    /**
+     * Augments a transition request with the changes to start 2 tasks. Useful when handling a
+     * core-started transition that supplies a transition {@link IBinder} and
+     * {@link WindowContainerTransaction wct} to which changes should be applied, for example,
+     * the fullscreen->split restore request handled by
+     * {@link com.android.wm.shell.common.ClientFullscreenRequestController}.
+     *
+     * See {@link #startTasks} for a version where WMShell directly starts a new transition that
+     * starts two tasks.
+     *
+     *
+     * @param transition the transition being augmented
+     * @param wct        transaction to augment the request
+     * @param taskId1 starts in the mSideStage
+     * @param taskId2 starts in the mainStage #startWithTask()
+     */
+    abstract void startTasksWithExistingTransition(@NonNull IBinder transition,
+            @NonNull WindowContainerTransaction wct, int taskId1, @Nullable Bundle options1,
+            int taskId2, @Nullable Bundle options2, @SplitPosition int splitPosition,
+            @PersistentSnapPosition int snapPosition);
 
     /** Start an intent and a task to a split pair in one transition. */
     abstract void startIntentAndTask(PendingIntent pendingIntent, Intent fillInIntent,
@@ -430,6 +466,9 @@ public abstract class StageCoordinatorAbstract implements SplitLayout.SplitLayou
     @SplitPosition
     abstract int getSplitPosition(int taskId);
 
+    @SnapPosition
+    abstract int calculateCurrentSnapPosition();
+
     /**
      * Set divider visibility flag and try to apply it, the param transaction is used to apply.
      * See applyDividerVisibility for more detail.
@@ -492,7 +531,6 @@ public abstract class StageCoordinatorAbstract implements SplitLayout.SplitLayou
      *
      * @return the {@link SplitScreenTransitions} object.
      */
-    @VisibleForTesting
     abstract SplitScreenTransitions getSplitTransitions();
 
     /**

@@ -26,6 +26,7 @@ import android.os.UserHandle
 import android.util.Log
 import android.view.WindowManager.TAKE_SCREENSHOT_FULLSCREEN
 import android.view.WindowManager.TAKE_SCREENSHOT_PROVIDED_IMAGE
+import com.android.systemui.Flags.screenshotDisableLongScreenshotForSystemShade
 import com.android.systemui.Flags.screenshotPolicySplitAndDesktopMode
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.screenshot.ImageCapture
@@ -65,6 +66,17 @@ class PolicyRequestProcessor(
             return original
         }
         val displayContent = displayTasks.getDisplayContent(original.displayId)
+        val original =
+            if (
+                screenshotDisableLongScreenshotForSystemShade() &&
+                    displayContent.systemUiState.shadeExpanded
+            ) {
+                // Suppress long screenshot if the shade is expanded; ScreenshotController will hide
+                // the long screenshot chip.
+                original.copy(suppressLongScreenshot = true)
+            } else {
+                original
+            }
 
         if (screenshotPolicySplitAndDesktopMode()) {
             Log.i(TAG, "Applying screenshot policy....")

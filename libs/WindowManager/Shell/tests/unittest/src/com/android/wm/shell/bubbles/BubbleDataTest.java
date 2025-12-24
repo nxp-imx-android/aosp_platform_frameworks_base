@@ -290,6 +290,25 @@ public class BubbleDataTest extends ShellTestCase {
     }
 
     @Test
+    public void testRemoveBubbleInLauncher_afterBubbleUpdate_shouldBeRemoved() {
+        // Setup
+        sendUpdatedEntryAtTime(mEntryA1, 1000);
+        sendUpdatedEntryAtTime(mEntryA2, 2000);
+        mBubbleData.setListener(mListener);
+
+        // Test: dismiss the bubble with a timestamp after the last activity time.
+        mBubbleData.dismissBubbleWithKey(
+                mEntryA2.getKey(), Bubbles.DISMISS_USER_GESTURE_FROM_LAUNCHER, 2500);
+
+        // Verify that the bubble is removed because the dismissal happened after the last update.
+        verifyUpdateReceived();
+        assertBubbleRemoved(mBubbleA2, Bubbles.DISMISS_USER_GESTURE_FROM_LAUNCHER);
+        assertThat(mBubbleData.hasBubbleInStackWithKey(mEntryA2.getKey())).isFalse();
+        // The bubble should be moved to the overflow.
+        assertThat(mBubbleData.getOverflowBubbleWithKey(mEntryA2.getKey())).isNotNull();
+    }
+
+    @Test
     public void testRemoveBubbleInLauncher_isNotSentBackToLauncher() {
         sendUpdatedEntryAtTime(mEntryA1, 1000);
         sendUpdatedEntryAtTime(mEntryA2, 2000);

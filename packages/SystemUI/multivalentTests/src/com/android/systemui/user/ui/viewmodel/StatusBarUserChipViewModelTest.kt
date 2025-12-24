@@ -41,6 +41,7 @@ import com.android.systemui.telephony.data.repository.FakeTelephonyRepository
 import com.android.systemui.telephony.domain.interactor.TelephonyInteractor
 import com.android.systemui.user.data.model.UserSwitcherSettingsModel
 import com.android.systemui.user.data.repository.FakeUserRepository
+import com.android.systemui.user.data.repository.UserIconProvider
 import com.android.systemui.user.domain.interactor.GuestUserInteractor
 import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode
 import com.android.systemui.user.domain.interactor.RefreshUsersScheduler
@@ -85,7 +86,7 @@ class StatusBarUserChipViewModelTest : SysuiTestCase() {
 
     private lateinit var underTest: StatusBarUserChipViewModel
 
-    private val userRepository = FakeUserRepository()
+    private lateinit var userRepository: FakeUserRepository
     private lateinit var guestUserInteractor: GuestUserInteractor
     private lateinit var refreshUsersScheduler: RefreshUsersScheduler
     private val testDispatcher = UnconfinedTestDispatcher()
@@ -109,7 +110,7 @@ class StatusBarUserChipViewModelTest : SysuiTestCase() {
             }
             .`when`(manager)
             .getUserIcon(anyInt())
-
+        userRepository = FakeUserRepository(UserIconProvider(context, manager, testDispatcher))
         userRepository.isStatusBarUserChipEnabled = true
 
         refreshUsersScheduler =

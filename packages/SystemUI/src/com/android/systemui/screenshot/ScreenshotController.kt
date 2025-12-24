@@ -220,7 +220,9 @@ internal constructor(
         window.setFocusable(true)
         viewProxy.requestFocus()
 
-        enqueueScrollCaptureRequest(requestId, screenshot.userHandle)
+        if (!screenshot.suppressLongScreenshot) {
+            enqueueScrollCaptureRequest(requestId, screenshot.userHandle)
+        }
 
         window.attachWindow()
 

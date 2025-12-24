@@ -16,9 +16,12 @@
 
 package com.android.systemui.bouncer.domain.interactor
 
+import android.app.StatusBarManager
 import android.util.Log
+import com.android.internal.logging.UiEventLogger
 import com.android.systemui.biometrics.data.repository.FingerprintPropertyRepository
 import com.android.systemui.bouncer.data.repository.KeyguardBouncerRepository
+import com.android.systemui.bouncer.shared.logging.BouncerUiEvent
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryBiometricsAllowedInteractor
@@ -26,6 +29,7 @@ import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
+import com.android.systemui.log.SessionTracker
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
@@ -63,6 +67,8 @@ constructor(
     sceneInteractor: Lazy<SceneInteractor>,
     secureLockDeviceInteractor: Lazy<SecureLockDeviceInteractor>,
     @Application scope: CoroutineScope,
+    private val uiEventLogger: UiEventLogger,
+    private val sessionTracker: SessionTracker,
 ) {
     private var receivedDownTouch = false
 
@@ -156,6 +162,12 @@ constructor(
      * calling this.
      */
     fun forceShow() {
+        uiEventLogger.logWithInstanceId(
+            BouncerUiEvent.ALTERNATE_BOUNCER_SHOWN,
+            0,
+            null,
+            sessionTracker.getSessionId(StatusBarManager.SESSION_KEYGUARD),
+        )
         bouncerRepository.setAlternateVisible(true)
     }
 

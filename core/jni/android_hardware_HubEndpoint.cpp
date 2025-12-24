@@ -552,9 +552,12 @@ static jboolean android_hardware_HubEndpoint_sinkSourceCanOverwriteReadPosition(
     ConsumerWrapper* consumerWrapper = resource->getConsumerWrapper(dataFlowId);
     RETURN_ON_FALSE(consumerWrapper != nullptr, JNI_FALSE, "Consumer not found for dataFlowId");
 
-    // TODO(b/457452333): Implement
-    (void)consumerWrapper;
-    return JNI_FALSE;
+    auto overwritableResult = consumerWrapper->getConsumer().isOverwritable();
+    RETURN_ON_FALSE(overwritableResult.ok(), JNI_FALSE,
+                    (std::string("Failed to get consumer overwritable: ") +
+                     overwritableResult.status().str())
+                            .c_str());
+    return static_cast<jboolean>(overwritableResult.value());
 }
 
 static jint android_hardware_HubEndpoint_sinkSize(JNIEnv* env, jobject /*thiz*/, jlong handle,

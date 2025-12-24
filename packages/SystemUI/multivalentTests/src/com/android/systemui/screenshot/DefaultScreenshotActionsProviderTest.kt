@@ -32,7 +32,6 @@ import com.android.systemui.res.R
 import com.android.systemui.screencapture.data.repository.fakeScreenCaptureDeviceStateRepository
 import com.android.systemui.screenshot.ui.viewmodel.ActionButtonAppearance
 import com.android.systemui.screenshot.ui.viewmodel.PreviewAction
-import com.android.systemui.shared.Flags
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import java.util.UUID
@@ -120,7 +119,7 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_SCREENSHOT_CONTEXT_URL, SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    @EnableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun shareAction_includesAssistContentUri() =
         kosmos.runTest {
             actionsProvider = createActionsProvider()

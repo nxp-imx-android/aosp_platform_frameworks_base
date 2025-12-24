@@ -16,8 +16,8 @@
 
 package com.android.systemui.qs.pipeline.shared
 
-import android.platform.test.annotations.RequiresFlagsDisabled
-import android.platform.test.annotations.RequiresFlagsEnabled
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -38,7 +38,7 @@ class InternetTileMigrationTest : SysuiTestCase() {
     private var scenario: InternetTileMigrationScenario? = null
 
     @Test
-    @RequiresFlagsEnabled(QsSplitInternetTile.FLAG_NAME)
+    @EnableFlags(QsSplitInternetTile.FLAG_NAME)
     fun largeInternetTile_toSmallWifiAndCellNextToEachOther() {
         val currentTiles =
             listOf(TileSpec.create("a"), TileSpec.create("b"), internetSpec, TileSpec.create("c"))
@@ -63,7 +63,7 @@ class InternetTileMigrationTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsEnabled(QsSplitInternetTile.FLAG_NAME)
+    @EnableFlags(QsSplitInternetTile.FLAG_NAME)
     fun smallInternetTile_toSmallWifi() {
         val currentTiles =
             listOf(TileSpec.create("a"), TileSpec.create("b"), internetSpec, TileSpec.create("c"))
@@ -81,7 +81,7 @@ class InternetTileMigrationTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsEnabled(QsSplitInternetTile.FLAG_NAME)
+    @EnableFlags(QsSplitInternetTile.FLAG_NAME)
     fun noInternetTile_noChanges() {
         val currentTiles = listOf(TileSpec.create("a"), TileSpec.create("b"), TileSpec.create("c"))
         val largeTiles = setOf(TileSpec.create("b"))
@@ -94,7 +94,7 @@ class InternetTileMigrationTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsDisabled(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.FLAG_NAME)
     fun wifiCellTogether_toInternetLarge() {
         val currentTiles =
             listOf(
@@ -124,7 +124,7 @@ class InternetTileMigrationTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsDisabled(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.FLAG_NAME)
     fun cellWifiTogether_toInternetLarge() {
         val currentTiles =
             listOf(
@@ -154,7 +154,7 @@ class InternetTileMigrationTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsDisabled(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.FLAG_NAME)
     fun wifiCellTogether_wifiLarge_toInternetLarge() {
         val currentTiles =
             listOf(
@@ -184,7 +184,7 @@ class InternetTileMigrationTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsDisabled(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.FLAG_NAME)
     fun wifiCellTogether_cellLarge_toInternetLarge() {
         val currentTiles =
             listOf(
@@ -214,7 +214,7 @@ class InternetTileMigrationTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsDisabled(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.FLAG_NAME)
     fun wifiCellTogether_bothLarge_toInternetLarge() {
         val currentTiles =
             listOf(
@@ -244,7 +244,7 @@ class InternetTileMigrationTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsDisabled(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.FLAG_NAME)
     fun wifiCellSeparate_wifiLarge_toInternetLarge_inWifiPosition() {
         val currentTiles =
             listOf(
@@ -274,7 +274,7 @@ class InternetTileMigrationTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsDisabled(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.FLAG_NAME)
     fun wifiCellSeparate_cellLargeWifiSmall_toInternetSmall_inWifiPosition() {
         val currentTiles =
             listOf(
@@ -304,7 +304,7 @@ class InternetTileMigrationTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsDisabled(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.FLAG_NAME)
     fun wifiCellNotAdjacent_cellFirst_toInternet_inWifiPosition() {
         val currentTiles =
             listOf(
@@ -334,7 +334,7 @@ class InternetTileMigrationTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsDisabled(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.FLAG_NAME)
     fun smallWifiOnly_toSmallInternetInSamePosition() {
         val currentTiles =
             listOf(TileSpec.create("a"), TileSpec.create("b"), wifiSpec, TileSpec.create("c"))
@@ -358,7 +358,7 @@ class InternetTileMigrationTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsDisabled(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.FLAG_NAME)
     fun largeWifiOnly_toLargeInternetInSamePosition() {
         val currentTiles =
             listOf(TileSpec.create("a"), TileSpec.create("b"), wifiSpec, TileSpec.create("c"))
@@ -382,7 +382,7 @@ class InternetTileMigrationTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsDisabled(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.FLAG_NAME)
     fun smallCellOnly_toSmallInternetInSamePosition() {
         val currentTiles =
             listOf(TileSpec.create("a"), TileSpec.create("b"), cellSpec, TileSpec.create("c"))
@@ -406,7 +406,7 @@ class InternetTileMigrationTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsDisabled(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.FLAG_NAME)
     fun largeCellOnly_toLargeInternetInSamePosition() {
         val currentTiles =
             listOf(TileSpec.create("a"), TileSpec.create("b"), cellSpec, TileSpec.create("c"))
@@ -430,7 +430,7 @@ class InternetTileMigrationTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsDisabled(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.FLAG_NAME)
     fun noWifiOrCellTile_noChanges() {
         val currentTiles = listOf(TileSpec.create("a"), TileSpec.create("b"), TileSpec.create("c"))
         val largeTiles = setOf(TileSpec.create("b"))

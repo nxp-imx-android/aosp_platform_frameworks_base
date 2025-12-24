@@ -377,10 +377,10 @@ public class VoiceInteractionManagerService extends SystemService {
                         final AppOpsManager appOpsManager = mContext.getSystemService(
                                 AppOpsManager.class);
                         appOpsManager.setUidMode(
-                                AppOpsManager.OPSTR_VOICE_INTERACTION_ASSIST_STRUCTURE,
+                                AppOpsManager.OPSTR_READ_SCREEN_CONTEXT,
                                 assistantUid, assistStructureMode);
                         if (DEBUG) {
-                            Slog.i(TAG, "Set OPSTR_VOICE_INTERACTION_ASSIST_STRUCTURE to "
+                            Slog.i(TAG, "Set OPSTR_READ_SCREEN_CONTEXT to "
                                     + assistStructureMode + " for assistant " + assistantPackage);
                         }
                     } catch (PackageManager.NameNotFoundException e) {
@@ -884,7 +884,7 @@ public class VoiceInteractionManagerService extends SystemService {
         public void systemServicesReady() {
             if (android.permission.flags.Flags.assistSettingsPrivacyImprovementsEnabled()) {
                 performAssistStructureUpgradeIfNeeded();
-                new AssistStructureAppOpObserver(BackgroundThread.getExecutor());
+                new ReadScreenContextAppOpObserver(BackgroundThread.getExecutor());
             }
         }
 
@@ -2715,7 +2715,7 @@ public class VoiceInteractionManagerService extends SystemService {
             }
             AppOpsManager appOpsManager = mContext.getSystemService(AppOpsManager.class);
             int mode = appOpsManager.checkOpNoThrow(
-                    AppOpsManager.OPSTR_VOICE_INTERACTION_ASSIST_STRUCTURE, uid, packageName);
+                    AppOpsManager.OPSTR_READ_SCREEN_CONTEXT, uid, packageName);
             if (DEBUG) {
                 Slog.i(TAG, "isAssistStructureEnabledInternal: packageName:" + packageName
                         + ", uid:" + uid + " -> " + mode);
@@ -3112,11 +3112,11 @@ public class VoiceInteractionManagerService extends SystemService {
             }
         }
 
-        private final class AssistStructureAppOpObserver implements
+        private final class ReadScreenContextAppOpObserver implements
                 AppOpsManager.OnOpChangedListener {
             private final Executor mExecutor;
 
-            AssistStructureAppOpObserver(@NonNull @CallbackExecutor Executor executor) {
+            ReadScreenContextAppOpObserver(@NonNull @CallbackExecutor Executor executor) {
                 mExecutor = executor;
 
                 // Do an initial sync of ASSIST_STRUCTURE app ops mode for all users
@@ -3126,7 +3126,7 @@ public class VoiceInteractionManagerService extends SystemService {
 
                 AppOpsManager appOpsManager = mContext.getSystemService(AppOpsManager.class);
                 appOpsManager.startWatchingMode(
-                        AppOpsManager.OPSTR_VOICE_INTERACTION_ASSIST_STRUCTURE,
+                        AppOpsManager.OPSTR_READ_SCREEN_CONTEXT,
                         null /* all packages */, this);
             }
 

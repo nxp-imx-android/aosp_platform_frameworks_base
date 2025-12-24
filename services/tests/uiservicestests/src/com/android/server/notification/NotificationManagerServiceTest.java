@@ -5967,8 +5967,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT,
-            Flags.FLAG_RANDOM_CONVERSATION_IDS})
+    @EnableFlags({FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT})
     public void createConvChannelForPkgFromPrivilegedListener_longParentId_differentChannels()
             throws Exception {
         String extremelyLongParentId = "x".repeat(NotificationChannel.MAX_TEXT_LENGTH - 1);
@@ -20820,8 +20819,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
-            Flags.FLAG_DISABLE_NAS_AFFECTS_CLASSIFICATION_AND_SUMMARIZATION})
+    @EnableFlags(FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION)
     public void disableNas_unclassifiesAllNotifications() throws Exception {
         List<UserInfo> userInfos = new ArrayList<>();
         userInfos.add(new UserInfo(mUserId, "", 0));
@@ -20874,8 +20872,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
-            Flags.FLAG_DISABLE_NAS_AFFECTS_CLASSIFICATION_AND_SUMMARIZATION})
+    @EnableFlags(FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION)
     public void disableNas_unsummarizesAllNotifications() throws Exception {
         List<UserInfo> userInfos = new ArrayList<>();
         userInfos.add(new UserInfo(mUserId, "", 0));

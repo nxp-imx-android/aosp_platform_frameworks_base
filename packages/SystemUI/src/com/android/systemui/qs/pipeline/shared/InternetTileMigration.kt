@@ -184,12 +184,13 @@ object InternetTileMigration {
         }
     }
 
-    private val flagCheckedMap: (TileSpec) -> TileSpec =
-        if (QsSplitInternetTile.isEnabled) {
-            ::fromInternetToWifi
-        } else {
-            ::fromWifiToInternet
-        }
+    private inline val flagCheckedMap: (TileSpec) -> TileSpec
+        get() =
+            if (QsSplitInternetTile.isEnabled) {
+                ::fromInternetToWifi
+            } else {
+                ::fromWifiToInternet
+            }
 
     private fun fromInternetToWifi(tile: TileSpec): TileSpec {
         return if (tile == internetTileSpec) wifiTileSpec else tile

@@ -18,6 +18,7 @@
 package com.android.systemui.user.data.repository
 
 import android.annotation.SuppressLint
+import android.annotation.UserIdInt
 import android.app.ActivityManager
 import android.app.admin.DevicePolicyManager
 import android.content.Context
@@ -25,6 +26,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.UserInfo
 import android.content.res.Resources
+import android.graphics.drawable.Drawable
 import android.os.UserHandle
 import android.os.UserManager
 import android.provider.Settings
@@ -84,6 +86,7 @@ constructor(
     private val broadcastDispatcher: BroadcastDispatcher,
     private val statusBarService: IStatusBarService,
     private val activityManager: ActivityManager,
+    private val userIconProvider: UserIconProvider,
 ) : UserRepository {
 
     private val _userSwitcherSettings: StateFlow<UserSwitcherSettingsModel> =
@@ -301,6 +304,14 @@ constructor(
 
     override suspend fun getMainUserId(): Int? {
         return withContext(backgroundDispatcher) { manager.mainUser?.identifier }
+    }
+
+    override suspend fun getUserImage(@UserIdInt userId: Int, iconSize: Int): Drawable {
+        return userIconProvider.getUserImage(userId, iconSize)
+    }
+
+    override fun clearUserImageCacheForUser(@UserIdInt userId: Int) {
+        userIconProvider.clearCacheForUser(userId)
     }
 
     private suspend fun getSettings(): UserSwitcherSettingsModel {

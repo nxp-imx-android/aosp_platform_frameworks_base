@@ -23,14 +23,11 @@ import android.content.pm.ActivityInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.ext.truth.content.IntentSubject.assertThat as assertThatIntent
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.res.R
-import com.android.systemui.shared.Flags
 import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.mockito.mock
 import com.google.common.truth.Truth.assertThat
@@ -139,55 +136,6 @@ class ActionIntentCreatorTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_USE_PREFERRED_IMAGE_EDITOR)
-    fun testCreateEditLegacy() = runTest {
-        val uri = Uri.parse("content://fake")
-
-        whenever(context.getString(eq(R.string.config_screenshotEditor))).thenReturn("")
-
-        val output = actionIntentCreator.createEdit(uri)
-
-        assertThatIntent(output).hasAction(Intent.ACTION_EDIT)
-        assertThatIntent(output).hasData(uri)
-        assertThatIntent(output).hasType("image/png")
-        assertWithMessage("getComponent()").that(output.component).isNull()
-        assertThat(output.getStringExtra("edit_source")).isEqualTo("screenshot")
-        assertThatIntent(output)
-            .hasFlags(
-                Intent.FLAG_GRANT_READ_URI_PERMISSION or
-                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION or
-                    Intent.FLAG_ACTIVITY_NEW_TASK or
-                    Intent.FLAG_ACTIVITY_CLEAR_TASK
-            )
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_USE_PREFERRED_IMAGE_EDITOR)
-    fun testCreateEditLegacy_embeddedUserIdRemoved() = runTest {
-        val uri = Uri.parse("content://555@fake")
-        whenever(context.getString(eq(R.string.config_screenshotEditor))).thenReturn("")
-
-        val output = actionIntentCreator.createEdit(uri)
-
-        assertThatIntent(output).hasData(Uri.parse("content://fake"))
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_USE_PREFERRED_IMAGE_EDITOR)
-    fun testCreateEditLegacy_withEditor() = runTest {
-        val uri = Uri.parse("content://fake")
-        val component = ComponentName("com.android.foo", "com.android.foo.Something")
-
-        whenever(context.getString(eq(R.string.config_screenshotEditor)))
-            .thenReturn(component.flattenToString())
-
-        val output = actionIntentCreator.createEdit(uri)
-
-        assertThatIntent(output).hasComponent(component)
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_USE_PREFERRED_IMAGE_EDITOR)
     fun testCreateEdit() = runTest {
         val uri = Uri.parse("content://fake")
 
@@ -210,7 +158,6 @@ class ActionIntentCreatorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_USE_PREFERRED_IMAGE_EDITOR)
     fun testCreateEdit_embeddedUserIdRemoved() = runTest {
         val uri = Uri.parse("content://555@fake")
         whenever(context.getString(eq(R.string.config_screenshotEditor))).thenReturn("")
@@ -221,7 +168,6 @@ class ActionIntentCreatorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_USE_PREFERRED_IMAGE_EDITOR)
     fun testCreateEdit_withPreferredEditorEnabled() = runTest {
         val uri = Uri.parse("content://fake")
         val fallbackComponent = ComponentName("com.android.foo", "com.android.foo.Something")
@@ -250,7 +196,6 @@ class ActionIntentCreatorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_USE_PREFERRED_IMAGE_EDITOR)
     fun testCreateEdit_withPreferredEditorDisabled() = runTest {
         val uri = Uri.parse("content://fake")
         val fallbackComponent = ComponentName("com.android.foo", "com.android.foo.Something")
@@ -273,7 +218,6 @@ class ActionIntentCreatorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_USE_PREFERRED_IMAGE_EDITOR)
     fun testCreateEdit_withFallbackEditor() = runTest {
         val uri = Uri.parse("content://fake")
         val component = ComponentName("com.android.foo", "com.android.foo.Something")

@@ -39,7 +39,6 @@ import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
-import com.android.systemui.res.R
 import com.android.systemui.settings.FakeUserTracker
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.model.SelectedUserModel
@@ -583,6 +582,7 @@ class UserRepositoryImplTest(flags: FlagsParameterization) : SysuiTestCase() {
             resources = context.resources,
             statusBarService = statusBarService,
             activityManager = activityManager,
+            userIconProvider = kosmos.userIconProvider,
         )
     }
 

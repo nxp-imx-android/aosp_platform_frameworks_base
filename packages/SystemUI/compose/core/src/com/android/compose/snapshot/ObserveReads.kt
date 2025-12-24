@@ -62,8 +62,11 @@ fun ObserveReads(block: () -> Unit) {
 @Composable
 @OptIn(InternalComposeApi::class)
 fun ObserveReadsRoot(content: @Composable () -> Unit) {
-    check(LocalSnapshotStateObserverWrapper.current == null) {
-        "ObserveReadsRoot should be composed only once, at the top of the UI hierarchy"
+    if (LocalSnapshotStateObserverWrapper.current != null) {
+        // There's already an observer in the hierarchy, so don't add a new one, just compose
+        // the content
+        content()
+        return
     }
 
     val interceptor =

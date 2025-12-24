@@ -51,7 +51,6 @@ import static android.app.Notification.FLAG_ONGOING_EVENT;
 import static android.app.Notification.FLAG_ONLY_ALERT_ONCE;
 import static android.app.Notification.FLAG_PROMOTED_ONGOING;
 import static android.app.Notification.FLAG_USER_INITIATED_JOB;
-import static android.app.NotificationChannel.OLD_CONVERSATION_CHANNEL_ID_FORMAT;
 import static android.app.NotificationManager.ACTION_APP_BLOCK_STATE_CHANGED;
 import static android.app.NotificationManager.ACTION_AUTOMATIC_ZEN_RULE_STATUS_CHANGED;
 import static android.app.NotificationManager.ACTION_CONSOLIDATED_NOTIFICATION_POLICY_CHANGED;
@@ -5179,12 +5178,7 @@ public class NotificationManagerService extends SystemService {
             }
 
             NotificationChannel conversationChannel = parentChannel;
-            if (Flags.randomConversationIds()) {
-                conversationChannel.setId(UUID.randomUUID().toString());
-            } else {
-                conversationChannel.setId(String.format(
-                        OLD_CONVERSATION_CHANNEL_ID_FORMAT, parentId, conversationId));
-            }
+            conversationChannel.setId(UUID.randomUUID().toString());
             conversationChannel.setConversationId(parentId, conversationId);
             createNotificationChannelsImpl(
                     pkg, uid, new ParceledListSlice(Arrays.asList(conversationChannel)));
@@ -7546,13 +7540,7 @@ public class NotificationManagerService extends SystemService {
             }
 
             NotificationChannel conversationChannel = parentChannel.copy();
-            if (Flags.randomConversationIds()) {
-                conversationChannel.setId(UUID.randomUUID().toString());
-            } else {
-                conversationChannel.setId(
-                        String.format(OLD_CONVERSATION_CHANNEL_ID_FORMAT, parentId,
-                                conversationId));
-            }
+            conversationChannel.setId(UUID.randomUUID().toString());
             conversationChannel.setConversationId(parentId, conversationId);
             createNotificationChannelsImpl(
                     pkg, uid, new ParceledListSlice<>(Arrays.asList(conversationChannel)));
@@ -7854,8 +7842,7 @@ public class NotificationManagerService extends SystemService {
 
                     handleSavePolicyFile();
                 }
-
-                if (Flags.disableNasAffectsClassificationAndSummarization() && !granted) {
+                if (!granted) {
                     if (notificationRegroupOnClassification()) {
                         applyNotificationUpdateForUserProfiles(userId,
                                 NotificationManagerService.this::unclassifyNotificationLocked);

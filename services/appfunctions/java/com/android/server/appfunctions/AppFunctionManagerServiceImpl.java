@@ -838,19 +838,31 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
     @Override
     @EnforcePermission(Manifest.permission.MANAGE_APP_FUNCTION_ACCESS)
-    public List<SignedPackageParcel> getAgentAllowlist() {
+    public List<SignedPackage> getAgentAllowlist() {
         getAgentAllowlist_enforcePermission();
         if (!accessCheckFlagsEnabled()) {
             return List.of();
         }
         synchronized (mAgentAllowlistLock) {
             int agentAllowlistSize = mAgentAllowlist.size();
-            List<SignedPackageParcel> agentAllowlistParcels = new ArrayList<>(agentAllowlistSize);
+            List<SignedPackage> agentAllowlist = new ArrayList<>(agentAllowlistSize);
             for (int i = 0; i < agentAllowlistSize; i++) {
-                agentAllowlistParcels.add(mAgentAllowlist.valueAt(i).getData());
+                agentAllowlist.add(mAgentAllowlist.valueAt(i));
             }
-            return agentAllowlistParcels;
+            return agentAllowlist;
         }
+    }
+
+    @Override
+    @EnforcePermission(Manifest.permission.MANAGE_APP_FUNCTION_ACCESS)
+    public List<SignedPackageParcel> getAgentAllowlistLegacy() {
+        getAgentAllowlistLegacy_enforcePermission();
+        List<SignedPackage> packages = getAgentAllowlist();
+        List<SignedPackageParcel> agentAllowlist = new ArrayList<>(packages.size());
+        for (int i = 0; i < packages.size(); i++) {
+            agentAllowlist.add(packages.get(i).toSignedPackageParcel());
+        }
+        return agentAllowlist;
     }
 
     @Override

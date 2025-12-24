@@ -28,6 +28,13 @@ flag {
 }
 
 flag {
+    name: "prevent_ime_startup_bypassed_apps"
+    namespace: "tv_os"
+    description: "Feature flag for adding config_preventImeStartupBypassedApps"
+    bug: "394569237"
+}
+
+flag {
     name: "home_screen_handwriting_delegator"
     is_exported: true
     namespace: "input_method"

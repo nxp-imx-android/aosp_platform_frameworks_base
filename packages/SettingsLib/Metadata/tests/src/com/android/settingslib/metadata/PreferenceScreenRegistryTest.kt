@@ -24,6 +24,7 @@ import android.platform.test.flag.junit.SetFlagsRule
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.settingslib.catalyst.flags.Flags
+import com.android.settingslib.metadata.test.R
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -127,7 +128,7 @@ class PreferenceScreenRegistryTest {
     @Test
     @EnableFlags(Flags.FLAG_CATALYST_USE_KEY_PARAMETERS)
     fun create_withKeyParameters_flagEnabled() {
-        val schema = KeyParametersSchema { parameter("id", "test id") }
+        val schema = KeyParametersSchema { parameter("id", R.string.required_param_purpose) }
         val keyParams = schema.prepare("id" to "123")
         setMetadataFactory(screenKey, object : TestParameterizedFactory {
             override fun createWithKeyParameters(context: Context, keyParameters: ValidatedKeyParameters): PreferenceScreenMetadata {
@@ -158,7 +159,7 @@ class PreferenceScreenRegistryTest {
     @Test
     @EnableFlags(Flags.FLAG_CATALYST_USE_KEY_PARAMETERS)
     fun create_fromCoordinate_flagEnabled() {
-        val schema = KeyParametersSchema { parameter("id", "test id") }
+        val schema = KeyParametersSchema { parameter("id", R.string.required_param_purpose) }
         val keyParams = schema.prepare("id" to "123")
         val coordinate = PreferenceScreenCoordinate(screenKey, keyParams)
         setMetadataFactory(screenKey, object : TestParameterizedFactory {
@@ -191,7 +192,7 @@ class PreferenceScreenRegistryTest {
     @Test
     fun getKeyParameters_returnsFlow() {
         runBlocking {
-            val schema = KeyParametersSchema { parameter("id", "test id") }
+            val schema = KeyParametersSchema { parameter("id", R.string.required_param_purpose) }
             val keyParams = schema.prepare("id" to "123")
             val flow = flowOf(keyParams)
             setMetadataFactory(screenKey, object : TestParameterizedFactory {
@@ -206,7 +207,7 @@ class PreferenceScreenRegistryTest {
 
     @Test
     fun getScreenParametersSchema_returnsSchema() {
-        val schema = KeyParametersSchema { parameter("id", "test id") }
+        val schema = KeyParametersSchema { parameter("id", R.string.required_param_purpose) }
         setMetadataFactory(screenKey, object : TestParameterizedFactory {
             override val parametersSchema = schema
         })

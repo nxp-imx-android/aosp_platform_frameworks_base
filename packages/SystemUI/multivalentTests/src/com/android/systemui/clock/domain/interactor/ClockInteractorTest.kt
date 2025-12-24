@@ -43,7 +43,6 @@ import java.util.Date
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
@@ -52,7 +51,6 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class ClockInteractorTest : SysuiTestCase() {
@@ -87,31 +85,19 @@ class ClockInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun onTimezoneOrLocaleChanged_localeAndTimezoneChanged_emitsForEach() =
+    fun onTimeFormatChange_formattingIntents_emits() =
         kosmos.runTest {
-            val timeZoneOrLocaleChanges by collectValues(underTest.onTimezoneOrLocaleChanged)
+            val formatChanges by collectValues(underTest.onTimeFormatChange)
 
-            assertThat(timeZoneOrLocaleChanges).hasSize(1)
+            assertThat(formatChanges).hasSize(1)
 
             sendIntentActionBroadcast(Intent.ACTION_TIMEZONE_CHANGED)
             sendIntentActionBroadcast(Intent.ACTION_LOCALE_CHANGED)
-            sendIntentActionBroadcast(Intent.ACTION_LOCALE_CHANGED)
-            sendIntentActionBroadcast(Intent.ACTION_TIMEZONE_CHANGED)
+            sendIntentActionBroadcast(Intent.ACTION_CONFIGURATION_CHANGED)
+            sendIntentActionBroadcast(Intent.ACTION_USER_SWITCHED)
 
-            assertThat(timeZoneOrLocaleChanges).hasSize(5)
-        }
-
-    @Test
-    fun onTimezoneOrLocaleChanged_timeChanged_doesNotEmit() =
-        kosmos.runTest {
-            val timeZoneOrLocaleChanges by collectValues(underTest.onTimezoneOrLocaleChanged)
-            assertThat(timeZoneOrLocaleChanges).hasSize(1)
-
-            sendIntentActionBroadcast(Intent.ACTION_TIME_CHANGED)
-            sendIntentActionBroadcast(Intent.ACTION_TIME_TICK)
-
-            // Expect only 1 event to have been emitted onStart, but no more.
-            assertThat(timeZoneOrLocaleChanges).hasSize(1)
+            // 1 (initial) + 4 (broadcasts) = 5
+            assertThat(formatChanges).hasSize(5)
         }
 
     @Test

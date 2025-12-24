@@ -143,6 +143,7 @@ constructor(
     private var showSensitiveContentForManagedUser = false
     private var managedUserHandle: UserHandle? = null
     private var mSplitShadeEnabled = false
+    private var mediaTarget: SmartspaceTarget? = null
 
     private val refreshInvoker: () -> Unit = { session?.requestSmartspaceUpdate() }
 
@@ -160,6 +161,7 @@ constructor(
         object : View.OnAttachStateChangeListener {
             override fun onViewAttachedToWindow(v: View) {
                 (v as SmartspaceView).setSplitShadeEnabled(mSplitShadeEnabled)
+                (v as SmartspaceView).setMediaTarget(mediaTarget)
                 smartspaceViews.add(v as SmartspaceView)
 
                 connectSession()
@@ -533,6 +535,11 @@ constructor(
     /** Requests the smartspace session for an update. */
     fun requestSmartspaceUpdate() {
         session?.requestSmartspaceUpdate()
+    }
+
+    fun setMediaTarget(target: SmartspaceTarget?) {
+        mediaTarget = target
+        smartspaceViews.forEach { it.setMediaTarget(target) }
     }
 
     /** Disconnects the smartspace view from the smartspace service and cleans up any resources. */

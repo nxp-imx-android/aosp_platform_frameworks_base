@@ -21,6 +21,7 @@ import static android.appwidget.flags.Flags.FLAG_REMOTE_VIEWS_PROTO;
 import static android.appwidget.flags.Flags.drawDataParcel;
 import static android.appwidget.flags.Flags.remoteAdapterConversion;
 import static android.content.res.Flags.FLAG_SELF_TARGETING_ANDROID_RESOURCE_FRRO;
+import static android.util.TypedValue.COMPLEX_UNIT_PX;
 import static android.util.TypedValue.TYPE_INT_COLOR_ARGB8;
 import static android.util.proto.ProtoInputStream.NO_MORE_FIELDS;
 import static android.view.inputmethod.Flags.FLAG_HOME_SCREEN_HANDWRITING_DELEGATOR;
@@ -472,6 +473,12 @@ public class RemoteViews implements Parcelable, Filter {
      */
     private boolean mHasDrawInstructions;
 
+    /**
+     * Captures the context's display density when this RemoteViews is sent to the app widget
+     * service.
+     */
+    private float mOriginalDensity = 0F;
+
     @Nullable
     private SparseArray<PendingIntent> mPendingIntentTemplate;
 
@@ -592,6 +599,21 @@ public class RemoteViews implements Parcelable, Filter {
      */
     public boolean hasFlags(@ApplyFlags int flag) {
         return (mApplyFlags & flag) == flag;
+    }
+
+    /**
+     * @hide
+     */
+    public void setOriginalDensity(float originalDensity) {
+        mOriginalDensity = originalDensity;
+        if (hasSizedRemoteViews()) {
+            for (RemoteViews remoteView : mSizedRemoteViews) {
+                remoteView.setOriginalDensity(originalDensity);
+            }
+        } else if (hasLandscapeAndPortraitLayouts()) {
+            mLandscape.setOriginalDensity(originalDensity);
+            mPortrait.setOriginalDensity(originalDensity);
+        }
     }
 
     /**
@@ -1369,7 +1391,8 @@ public class RemoteViews implements Parcelable, Filter {
                                     items,
                                     params.handler,
                                     params.colorResources,
-                                    onLightBackground);
+                                    onLightBackground,
+                                    params.originalDensity);
                 } catch (Throwable throwable) {
                     // setData should never failed with the validation in the items builder, but if
                     // it does, catch and rethrow.
@@ -1381,7 +1404,8 @@ public class RemoteViews implements Parcelable, Filter {
             try {
                 adapterView.setAdapter(
                         new RemoteCollectionItemsAdapter(
-                                items, params.handler, params.colorResources, onLightBackground));
+                                items, params.handler, params.colorResources, onLightBackground,
+                                params.originalDensity));
             } catch (Throwable throwable) {
                 // This could throw if the AdapterView somehow doesn't accept BaseAdapter due to
                 // a type error.
@@ -5085,7 +5109,10 @@ public class RemoteViews implements Parcelable, Filter {
         public void apply(View root, ViewGroup rootParent, ActionApplyParams params) {
             final TextView target = root.findViewById(mViewId);
             if (target == null) return;
-            target.setTextSize(mUnits, mSize);
+            final int resolvedPixels =  getScaledPixelsFromValueWithUnit(params,
+                    target.getResources().getDisplayMetrics(), mSize, mUnits,
+                    /* isOffset= */ false);
+            target.setTextSize(COMPLEX_UNIT_PX, resolvedPixels);
         }
 
         @Override
@@ -5150,38 +5177,52 @@ public class RemoteViews implements Parcelable, Filter {
      * Helper action to set padding on a View.
      */
     private static class ViewPaddingAction extends Action {
-        @Px int mLeft, mTop, mRight, mBottom;
+        float mLeft, mTop, mRight, mBottom;
+        int mUnits;
 
-        public ViewPaddingAction(@IdRes int viewId, @Px int left, @Px int top,
-                @Px int right, @Px int bottom) {
-            this.mViewId = viewId;
-            this.mLeft = left;
-            this.mTop = top;
-            this.mRight = right;
-            this.mBottom = bottom;
+        ViewPaddingAction(@IdRes int viewId, float left, float top, float right,
+                float bottom, @ComplexDimensionUnit int units) {
+            mViewId = viewId;
+            mLeft = left;
+            mTop = top;
+            mRight = right;
+            mBottom = bottom;
+            mUnits = units;
         }
 
         public ViewPaddingAction(Parcel parcel) {
             mViewId = parcel.readInt();
-            mLeft = parcel.readInt();
-            mTop = parcel.readInt();
-            mRight = parcel.readInt();
-            mBottom = parcel.readInt();
+            mLeft = parcel.readFloat();
+            mTop = parcel.readFloat();
+            mRight = parcel.readFloat();
+            mBottom = parcel.readFloat();
+            mUnits = parcel.readInt();
         }
 
         public void writeToParcel(Parcel dest, int flags) {
             dest.writeInt(mViewId);
-            dest.writeInt(mLeft);
-            dest.writeInt(mTop);
-            dest.writeInt(mRight);
-            dest.writeInt(mBottom);
+            dest.writeFloat(mLeft);
+            dest.writeFloat(mTop);
+            dest.writeFloat(mRight);
+            dest.writeFloat(mBottom);
+            dest.writeInt(mUnits);
         }
 
         @Override
         public void apply(View root, ViewGroup rootParent, ActionApplyParams params) {
             final View target = root.findViewById(mViewId);
             if (target == null) return;
-            target.setPadding(mLeft, mTop, mRight, mBottom);
+            final int leftPx = getScaledPixelsFromValueWithUnit(params,
+                    target.getResources().getDisplayMetrics(), mLeft, mUnits, /* isOffset= */ true);
+            final int topPx = getScaledPixelsFromValueWithUnit(params,
+                    target.getResources().getDisplayMetrics(), mTop, mUnits, /* isOffset= */ true);
+            final int rightPx = getScaledPixelsFromValueWithUnit(params,
+                    target.getResources().getDisplayMetrics(), mRight, mUnits,
+                    /* isOffset= */ true);
+            final int bottomPx = getScaledPixelsFromValueWithUnit(params,
+                    target.getResources().getDisplayMetrics(), mBottom, mUnits,
+                    /* isOffset= */ true);
+            target.setPadding(leftPx, topPx, rightPx, bottomPx);
         }
 
         @Override
@@ -5203,6 +5244,7 @@ public class RemoteViews implements Parcelable, Filter {
             out.write(RemoteViewsProto.ViewPaddingAction.RIGHT, mRight);
             out.write(RemoteViewsProto.ViewPaddingAction.TOP, mTop);
             out.write(RemoteViewsProto.ViewPaddingAction.BOTTOM, mBottom);
+            out.write(RemoteViewsProto.ViewPaddingAction.UNITS, mUnits);
             out.end(token);
         }
 
@@ -5217,21 +5259,41 @@ public class RemoteViews implements Parcelable, Filter {
                         values.put(RemoteViewsProto.ViewPaddingAction.VIEW_ID,
                                 in.readString(RemoteViewsProto.ViewPaddingAction.VIEW_ID));
                         break;
+                    case (int) RemoteViewsProto.ViewPaddingAction.LEFT_PX:
+                        values.put(RemoteViewsProto.ViewPaddingAction.LEFT,
+                                (float) in.readInt(RemoteViewsProto.ViewPaddingAction.LEFT));
+                        break;
+                    case (int) RemoteViewsProto.ViewPaddingAction.RIGHT_PX:
+                        values.put(RemoteViewsProto.ViewPaddingAction.RIGHT,
+                                (float) in.readInt(RemoteViewsProto.ViewPaddingAction.RIGHT));
+                        break;
+                    case (int) RemoteViewsProto.ViewPaddingAction.TOP_PX:
+                        values.put(RemoteViewsProto.ViewPaddingAction.TOP,
+                                (float) in.readInt(RemoteViewsProto.ViewPaddingAction.TOP));
+                        break;
+                    case (int) RemoteViewsProto.ViewPaddingAction.BOTTOM_PX:
+                        values.put(RemoteViewsProto.ViewPaddingAction.BOTTOM,
+                                (float) in.readInt(RemoteViewsProto.ViewPaddingAction.BOTTOM));
+                        break;
                     case (int) RemoteViewsProto.ViewPaddingAction.LEFT:
                         values.put(RemoteViewsProto.ViewPaddingAction.LEFT,
-                                in.readInt(RemoteViewsProto.ViewPaddingAction.LEFT));
+                                in.readFloat(RemoteViewsProto.ViewPaddingAction.LEFT));
                         break;
                     case (int) RemoteViewsProto.ViewPaddingAction.RIGHT:
                         values.put(RemoteViewsProto.ViewPaddingAction.RIGHT,
-                                in.readInt(RemoteViewsProto.ViewPaddingAction.RIGHT));
+                                in.readFloat(RemoteViewsProto.ViewPaddingAction.RIGHT));
                         break;
                     case (int) RemoteViewsProto.ViewPaddingAction.TOP:
                         values.put(RemoteViewsProto.ViewPaddingAction.TOP,
-                                in.readInt(RemoteViewsProto.ViewPaddingAction.TOP));
+                                in.readFloat(RemoteViewsProto.ViewPaddingAction.TOP));
                         break;
                     case (int) RemoteViewsProto.ViewPaddingAction.BOTTOM:
                         values.put(RemoteViewsProto.ViewPaddingAction.BOTTOM,
-                                in.readInt(RemoteViewsProto.ViewPaddingAction.BOTTOM));
+                                in.readFloat(RemoteViewsProto.ViewPaddingAction.BOTTOM));
+                        break;
+                    case (int) RemoteViewsProto.ViewPaddingAction.UNITS:
+                        values.put(RemoteViewsProto.ViewPaddingAction.UNITS,
+                                in.readInt(RemoteViewsProto.ViewPaddingAction.UNITS));
                         break;
                     default:
                         Log.w(LOG_TAG, "Unhandled field while reading RemoteViews proto!\n"
@@ -5246,10 +5308,12 @@ public class RemoteViews implements Parcelable, Filter {
                 int viewId = getAsIdentifier(resources, values,
                         RemoteViewsProto.ViewPaddingAction.VIEW_ID);
                 return new ViewPaddingAction(viewId,
-                        (int) values.get(RemoteViewsProto.ViewPaddingAction.LEFT, 0),
-                        (int) values.get(RemoteViewsProto.ViewPaddingAction.TOP, 0),
-                        (int) values.get(RemoteViewsProto.ViewPaddingAction.RIGHT, 0),
-                        (int) values.get(RemoteViewsProto.ViewPaddingAction.BOTTOM, 0));
+                        (float) values.get(RemoteViewsProto.ViewPaddingAction.LEFT, 0),
+                        (float) values.get(RemoteViewsProto.ViewPaddingAction.TOP, 0),
+                        (float) values.get(RemoteViewsProto.ViewPaddingAction.RIGHT, 0),
+                        (float) values.get(RemoteViewsProto.ViewPaddingAction.BOTTOM, 0),
+                        (int) values.get(RemoteViewsProto.ViewPaddingAction.UNITS,
+                                COMPLEX_UNIT_PX));
             };
         }
     }
@@ -5327,46 +5391,52 @@ public class RemoteViews implements Parcelable, Filter {
             switch (mProperty) {
                 case LAYOUT_MARGIN_LEFT:
                     if (layoutParams instanceof MarginLayoutParams) {
-                        ((MarginLayoutParams) layoutParams).leftMargin = getPixelOffset(target);
+                        ((MarginLayoutParams) layoutParams).leftMargin = getPixelOffset(target,
+                                params);
                         target.setLayoutParams(layoutParams);
                     }
                     break;
                 case LAYOUT_MARGIN_TOP:
                     if (layoutParams instanceof MarginLayoutParams) {
-                        ((MarginLayoutParams) layoutParams).topMargin = getPixelOffset(target);
+                        ((MarginLayoutParams) layoutParams).topMargin = getPixelOffset(target,
+                                params);
                         target.setLayoutParams(layoutParams);
                     }
                     break;
                 case LAYOUT_MARGIN_RIGHT:
                     if (layoutParams instanceof MarginLayoutParams) {
-                        ((MarginLayoutParams) layoutParams).rightMargin = getPixelOffset(target);
+                        ((MarginLayoutParams) layoutParams).rightMargin = getPixelOffset(target,
+                                params);
                         target.setLayoutParams(layoutParams);
                     }
                     break;
                 case LAYOUT_MARGIN_BOTTOM:
                     if (layoutParams instanceof MarginLayoutParams) {
-                        ((MarginLayoutParams) layoutParams).bottomMargin = getPixelOffset(target);
+                        ((MarginLayoutParams) layoutParams).bottomMargin = getPixelOffset(target,
+                                params);
                         target.setLayoutParams(layoutParams);
                     }
                     break;
                 case LAYOUT_MARGIN_START:
                     if (layoutParams instanceof MarginLayoutParams) {
-                        ((MarginLayoutParams) layoutParams).setMarginStart(getPixelOffset(target));
+                        ((MarginLayoutParams) layoutParams).setMarginStart(getPixelOffset(target,
+                                params));
                         target.setLayoutParams(layoutParams);
                     }
                     break;
                 case LAYOUT_MARGIN_END:
                     if (layoutParams instanceof MarginLayoutParams) {
-                        ((MarginLayoutParams) layoutParams).setMarginEnd(getPixelOffset(target));
+                        ((MarginLayoutParams) layoutParams).setMarginEnd(getPixelOffset(target,
+                                params));
                         target.setLayoutParams(layoutParams);
                     }
                     break;
                 case LAYOUT_WIDTH:
-                    layoutParams.width = getPixelSize(target);
+                    layoutParams.width = getPixelSize(target, params);
                     target.setLayoutParams(layoutParams);
                     break;
                 case LAYOUT_HEIGHT:
-                    layoutParams.height = getPixelSize(target);
+                    layoutParams.height = getPixelSize(target, params);
                     target.setLayoutParams(layoutParams);
                     break;
                 default:
@@ -5374,7 +5444,7 @@ public class RemoteViews implements Parcelable, Filter {
             }
         }
 
-        private int getPixelOffset(View target) {
+        private int getPixelOffset(View target, ActionApplyParams params) {
             try {
                 switch (mValueType) {
                     case VALUE_TYPE_ATTRIBUTE:
@@ -5391,8 +5461,9 @@ public class RemoteViews implements Parcelable, Filter {
                         }
                         return target.getResources().getDimensionPixelOffset(mValue);
                     case VALUE_TYPE_COMPLEX_UNIT:
-                        return TypedValue.complexToDimensionPixelOffset(mValue,
-                                target.getResources().getDisplayMetrics());
+                        return getScaledPixelsFromComplexValue(params,
+                                target.getResources().getDisplayMetrics(), mValue,
+                                /* isOffset= */ true);
                     default:
                         return mValue;
                 }
@@ -5401,7 +5472,7 @@ public class RemoteViews implements Parcelable, Filter {
             }
         }
 
-        private int getPixelSize(View target) {
+        private int getPixelSize(View target, ActionApplyParams params) {
             try {
                 switch (mValueType) {
                     case VALUE_TYPE_ATTRIBUTE:
@@ -5418,8 +5489,9 @@ public class RemoteViews implements Parcelable, Filter {
                         }
                         return target.getResources().getDimensionPixelSize(mValue);
                     case VALUE_TYPE_COMPLEX_UNIT:
-                        return TypedValue.complexToDimensionPixelSize(mValue,
-                                target.getResources().getDisplayMetrics());
+                        return getScaledPixelsFromComplexValue(params,
+                                target.getResources().getDisplayMetrics(), mValue,
+                                /* isOffset= */ false);
                     default:
                         return mValue;
                 }
@@ -5898,8 +5970,9 @@ public class RemoteViews implements Parcelable, Filter {
                         radius = mValue == 0 ? 0 : target.getResources().getDimension(mValue);
                         break;
                     case VALUE_TYPE_COMPLEX_UNIT:
-                        radius = TypedValue.complexToDimension(mValue,
-                                target.getResources().getDisplayMetrics());
+                        radius = getScaledPixelsFromComplexValue(params,
+                                target.getResources().getDisplayMetrics(), mValue,
+                                /* isOffset= */ false);
                         break;
                     default:
                         radius = mValue;
@@ -6368,6 +6441,7 @@ public class RemoteViews implements Parcelable, Filter {
         mIdealSize = src.mIdealSize;
         mProviderInstanceId = src.mProviderInstanceId;
         mHasDrawInstructions = src.mHasDrawInstructions;
+        mOriginalDensity = src.mOriginalDensity;
 
         if (src.hasLandscapeAndPortraitLayouts()) {
             mLandscape = createInitializedFrom(src.mLandscape, hierarchyRoot);
@@ -6481,6 +6555,7 @@ public class RemoteViews implements Parcelable, Filter {
         mApplyFlags = parcel.readInt();
         mProviderInstanceId = parcel.readLong();
         mHasDrawInstructions = parcel.readBoolean();
+        mOriginalDensity = parcel.readFloat();
 
         // Ensure that all descendants have their caches set up recursively.
         if (mIsRoot) {
@@ -7425,6 +7500,11 @@ public class RemoteViews implements Parcelable, Filter {
     /**
      * Equivalent to calling {@link android.view.View#setPadding(int, int, int, int)}.
      *
+     * <p>Prefer using the {@link #setViewPadding(int, float, float, float, float, int)}
+     * overload that accepts scalable units like {@link TypedValue#COMPLEX_UNIT_DIP}. As of Android
+     * 17, the pixel values set by this function will be automatically scaled when the RemoteViews
+     * is used on a display with a different density.</p>
+     *
      * @param viewId The id of the view to change
      * @param left the left padding in pixels
      * @param top the top padding in pixels
@@ -7433,7 +7513,29 @@ public class RemoteViews implements Parcelable, Filter {
      */
     public void setViewPadding(@IdRes int viewId,
             @Px int left, @Px int top, @Px int right, @Px int bottom) {
-        addAction(new ViewPaddingAction(viewId, left, top, right, bottom));
+        addAction(new ViewPaddingAction(viewId, left, top, right, bottom, COMPLEX_UNIT_PX));
+    }
+
+    /**
+     * Equivalent to calling {@link android.view.View#setPadding(int, int, int, int)}. This overload
+     * supports using values with complex units that are resolved when this RemoteViews is
+     * displayed.
+     *
+     * <p>Prefer using scalable units like {@link TypedValue#COMPLEX_UNIT_DIP}. As of Android 17,
+     * the {@link TypedValue#COMPLEX_UNIT_PX} values set by this function will be automatically
+     * scaled when the RemoteViews is used on a display with a different density.</p>.
+     *
+     * @param viewId The id of the view to change
+     * @param left the left padding value in the given units
+     * @param top the top padding value in the given units
+     * @param right the right padding value in the given units
+     * @param bottom the bottom padding value in the given units
+     * @param units The unit type of the value, e.g. {@link TypedValue#COMPLEX_UNIT_DIP}
+     */
+    @FlaggedApi(Flags.FLAG_WIDGET_DISPLAY_CHANGES)
+    public void setViewPadding(@IdRes int viewId, float left, float top, float right, float bottom,
+            @ComplexDimensionUnit int units) {
+        addAction(new ViewPaddingAction(viewId, left, top, right, bottom, units));
     }
 
     /**
@@ -7467,8 +7569,9 @@ public class RemoteViews implements Parcelable, Filter {
      * Only works if the {@link View#getLayoutParams()} supports margins.
      *
      * <p>NOTE: It is recommended to use {@link TypedValue#COMPLEX_UNIT_PX} only for 0.
-     * Setting margins in pixels will behave poorly when the RemoteViews object is used on a
-     * display with a different density.
+     * Otherwise, prefer using scalable units like {@link TypedValue#COMPLEX_UNIT_DIP}.
+     * As of Android 17, the {@link TypedValue#COMPLEX_UNIT_PX} values set by this function will be
+     * automatically scaled when the RemoteViews is used on a display with a different density.</p>.
      *
      * @param viewId The id of the view to change
      * @param type The margin being set e.g. {@link #MARGIN_END}
@@ -7486,8 +7589,9 @@ public class RemoteViews implements Parcelable, Filter {
      *
      * <p>NOTE: It is recommended to use {@link TypedValue#COMPLEX_UNIT_PX} only for 0,
      * {@link ViewGroup.LayoutParams#WRAP_CONTENT}, or {@link ViewGroup.LayoutParams#MATCH_PARENT}.
-     * Setting actual sizes in pixels will behave poorly when the RemoteViews object is used on a
-     * display with a different density.
+     * Otherwise, prefer using scalable units like {@link TypedValue#COMPLEX_UNIT_DIP}.
+     * As of Android 17, the {@link TypedValue#COMPLEX_UNIT_PX} values set by this function will be
+     * automatically scaled when the RemoteViews is used on a display with a different density.</p>.
      *
      * @param width Width of the view in the given units
      * @param units The unit type of the value e.g. {@link TypedValue#COMPLEX_UNIT_DIP}
@@ -7525,8 +7629,9 @@ public class RemoteViews implements Parcelable, Filter {
      *
      * <p>NOTE: It is recommended to use {@link TypedValue#COMPLEX_UNIT_PX} only for 0,
      * {@link ViewGroup.LayoutParams#WRAP_CONTENT}, or {@link ViewGroup.LayoutParams#MATCH_PARENT}.
-     * Setting actual sizes in pixels will behave poorly when the RemoteViews object is used on a
-     * display with a different density.
+     * Otherwise, prefer using scalable units like {@link TypedValue#COMPLEX_UNIT_DIP}.
+     * As of Android 17, the {@link TypedValue#COMPLEX_UNIT_PX} values set by this function will be
+     * automatically scaled when the RemoteViews is used on a display with a different density.</p>.
      *
      * @param height height of the view in the given units
      * @param units The unit type of the value e.g. {@link TypedValue#COMPLEX_UNIT_DIP}
@@ -7563,8 +7668,9 @@ public class RemoteViews implements Parcelable, Filter {
      * {@link TypedValue#applyDimension(int, float, DisplayMetrics)}.
      *
      * <p>NOTE: It is recommended to use {@link TypedValue#COMPLEX_UNIT_PX} only for 0.
-     * Setting margins in pixels will behave poorly when the RemoteViews object is used on a
-     * display with a different density.
+     * Otherwise, prefer using scalable units like {@link TypedValue#COMPLEX_UNIT_DIP}.
+     * As of Android 17, the {@link TypedValue#COMPLEX_UNIT_PX} values set by this function will be
+     * automatically scaled when the RemoteViews is used on a display with a different density.</p>.
      */
     public void setViewOutlinePreferredRadius(
             @IdRes int viewId, float radius, @ComplexDimensionUnit int units) {
@@ -8585,6 +8691,11 @@ public class RemoteViews implements Parcelable, Filter {
                         if (applyParams.handler == null) {
                             applyParams.handler = DEFAULT_INTERACTION_HANDLER;
                         }
+                        if (!applyParams.hasOriginalDensity()) {
+                            // Use this RemoteViews' originalDensity if one was not passed from a
+                            // parent.
+                            applyParams.originalDensity = mOriginalDensity;
+                        }
                         try {
                             Trace.beginSection(hasDrawInstructions()
                                     ? "RemoteViews#applyActionsAsyncWithDrawInstructions"
@@ -8774,6 +8885,10 @@ public class RemoteViews implements Parcelable, Filter {
         if (params.handler == null) {
             params.handler = DEFAULT_INTERACTION_HANDLER;
         }
+        if (!params.hasOriginalDensity()) {
+            // Use this RemoteViews' originalDensity if one was not passed from a parent.
+            params.originalDensity = mOriginalDensity;
+        }
         if (v instanceof RemoteComposePlayer player) {
             player.setTheme(v.getResources().getConfiguration().isNightModeActive()
                     ? Theme.DARK : Theme.LIGHT);
@@ -8893,6 +9008,7 @@ public class RemoteViews implements Parcelable, Filter {
         public ColorResources colorResources;
         public Executor executor;
         @StyleRes public int applyThemeResId;
+        public float originalDensity = 0F;
 
         @Override
         public ActionApplyParams clone() {
@@ -8900,7 +9016,8 @@ public class RemoteViews implements Parcelable, Filter {
                     .withInteractionHandler(handler)
                     .withColorResources(colorResources)
                     .withExecutor(executor)
-                    .withThemeResId(applyThemeResId);
+                    .withThemeResId(applyThemeResId)
+                    .withOriginalDensity(originalDensity);
         }
 
         public ActionApplyParams withInteractionHandler(InteractionHandler handler) {
@@ -8921,6 +9038,15 @@ public class RemoteViews implements Parcelable, Filter {
         public ActionApplyParams withExecutor(Executor executor) {
             this.executor = executor;
             return this;
+        }
+
+        public ActionApplyParams withOriginalDensity(float originalDensity) {
+            this.originalDensity = originalDensity;
+            return this;
+        }
+
+        public boolean hasOriginalDensity() {
+            return !Float.isNaN(originalDensity) && Float.compare(originalDensity, 0F) > 0;
         }
     }
 
@@ -9185,6 +9311,7 @@ public class RemoteViews implements Parcelable, Filter {
         dest.writeInt(mApplyFlags);
         dest.writeLong(mProviderInstanceId);
         dest.writeBoolean(mHasDrawInstructions);
+        dest.writeFloat(mOriginalDensity);
 
         dest.restoreAllowSquashing(prevSquashingAllowed);
     }
@@ -10412,6 +10539,7 @@ public class RemoteViews implements Parcelable, Filter {
         out.write(RemoteViewsProto.IS_ROOT, mIsRoot);
         out.write(RemoteViewsProto.APPLY_FLAGS, mApplyFlags);
         out.write(RemoteViewsProto.HAS_DRAW_INSTRUCTIONS, mHasDrawInstructions);
+        out.write(RemoteViewsProto.ORIGINAL_DENSITY, mOriginalDensity);
         if (mProviderInstanceId != -1) {
             out.write(RemoteViewsProto.PROVIDER_INSTANCE_ID, mProviderInstanceId);
         }
@@ -10485,6 +10613,7 @@ public class RemoteViews implements Parcelable, Filter {
             PendingResources<RemoteCollectionCache> mPopulateRemoteCollectionCache = null;
             boolean mIsRoot = false;
             boolean mHasDrawInstructions = false;
+            float mOriginalDensity = 0F;
         };
 
         try {
@@ -10563,6 +10692,9 @@ public class RemoteViews implements Parcelable, Filter {
                         ref.mHasDrawInstructions = in.readBoolean(
                                 RemoteViewsProto.HAS_DRAW_INSTRUCTIONS);
                         break;
+                    case (int) RemoteViewsProto.ORIGINAL_DENSITY:
+                        ref.mOriginalDensity = in.readFloat(RemoteViewsProto.ORIGINAL_DENSITY);
+                        break;
                     default:
                         Log.w(LOG_TAG, "Unhandled field while reading RemoteViews proto!\n"
                                 + ProtoUtils.currentFieldToString(in));
@@ -10583,6 +10715,7 @@ public class RemoteViews implements Parcelable, Filter {
             rv.mApplyFlags = ref.mApplyFlags;
             rv.mIsRoot = ref.mIsRoot;
             rv.mHasDrawInstructions = ref.mHasDrawInstructions;
+            rv.mOriginalDensity = ref.mOriginalDensity;
 
             // The root view will read its HierarchyRootData (bitmap cache, collection cache) from
             // proto; all nested views will instead get it through the rootData parameter.
@@ -10872,4 +11005,35 @@ public class RemoteViews implements Parcelable, Filter {
         return duration;
     }
 
+    /**
+     * For complex values that represent pixels, scales the pixel value to match the current density
+     * (using the original density defined in the ActionApplyParams). For other units, this function
+     * only resolves the complex value and returns pixels. isOffset determines whether the value
+     * will be resolved as an offset (truncates float to int) or a size (rounds to int and is always
+     * non-zero if the base value is non-zero).
+     */
+    private static int getScaledPixelsFromComplexValue(ActionApplyParams params,
+            DisplayMetrics displayMetrics, int complexValue, boolean isOffset) {
+        if (Flags.widgetDisplayChanges() && params.hasOriginalDensity()
+                && TypedValue.getUnitFromComplexDimension(complexValue) == COMPLEX_UNIT_PX) {
+            final float scaleFactor = displayMetrics.density / params.originalDensity;
+            final float value = TypedValue.complexToFloat(complexValue);
+            if (!isOffset && value <= 0) {
+                // Special handling for 0, ViewGroup.LayoutParams.{MATCH_PARENT, WRAP_CONTENT}. We
+                // do not want to scale these values when handling sizes (height/width). However,
+                // a negative value is valid for an offset and can be scaled.
+                return (int) value;
+            }
+            complexValue = TypedValue.createComplexDimension(scaleFactor * value,
+                    COMPLEX_UNIT_PX);
+        }
+        return isOffset ? TypedValue.complexToDimensionPixelOffset(complexValue, displayMetrics)
+                : TypedValue.complexToDimensionPixelSize(complexValue, displayMetrics);
+    }
+
+    private static int getScaledPixelsFromValueWithUnit(ActionApplyParams params,
+            DisplayMetrics displayMetrics, float value, int unit, boolean isOffset) {
+        return getScaledPixelsFromComplexValue(params, displayMetrics,
+                TypedValue.createComplexDimension(value, unit), isOffset);
+    }
 }

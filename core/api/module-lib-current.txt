@@ -138,12 +138,6 @@ package android.content.pm {
     field public static final int MATCH_STATIC_SHARED_AND_SDK_LIBRARIES = 67108864; // 0x4000000
   }
 
-  @FlaggedApi("android.permission.flags.enhanced_confirmation_mode_apis_enabled") public class SignedPackage {
-    method @NonNull public byte[] getCertificateDigest();
-    method @NonNull public String getPackageName();
-    method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public boolean hasCertificateDigest();
-  }
-
 }
 
 package android.hardware.usb {
@@ -208,6 +202,7 @@ package android.media {
     method @FlaggedApi("android.media.audio.sco_managed_by_audio") @NonNull public static android.media.BluetoothProfileConnectionInfo createHfpInfo();
     method @NonNull public static android.media.BluetoothProfileConnectionInfo createLeAudioInfo(boolean, boolean);
     method @NonNull public static android.media.BluetoothProfileConnectionInfo createLeAudioOutputInfo(boolean, int);
+    method @FlaggedApi("android.media.audio.ble_peripheral_devices") @NonNull public static android.media.BluetoothProfileConnectionInfo createLeAudioPeripheralInfo(boolean);
     method public int describeContents();
     method public int getProfile();
     method public int getVolume();

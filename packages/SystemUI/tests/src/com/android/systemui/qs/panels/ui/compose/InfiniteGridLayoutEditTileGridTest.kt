@@ -40,7 +40,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.Flags
-import com.android.systemui.Flags.qsSplitInternetTile
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.compose.modifiers.resIdToTestTag
 import com.android.systemui.flags.DisableSceneContainer
@@ -50,6 +49,7 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
+import com.android.systemui.qs.flags.QsSplitInternetTile
 import com.android.systemui.qs.panels.data.repository.defaultLargeTilesRepository
 import com.android.systemui.qs.panels.domain.interactor.iconTilesInteractor
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.InfiniteGridLayout
@@ -351,7 +351,7 @@ class InfiniteGridLayoutEditTileGridTest : SysuiTestCase() {
     companion object {
         private val AVAILABLE_TILES_GRID_TEST_TAG = resIdToTestTag("AvailableTilesGrid")
         private const val OPTIONS_DROP_DOWN_TEST_TAG = "OptionsDropdown"
-        private val internetTileSpec = if (qsSplitInternetTile()) "wifi" else "internet"
+        private val internetTileSpec = if (QsSplitInternetTile.isEnabled) "wifi" else "internet"
         private val TestEditTiles =
             listOf(
                 TileSpec.create(internetTileSpec),

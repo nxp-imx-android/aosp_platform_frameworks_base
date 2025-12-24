@@ -9,7 +9,7 @@ import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.testKosmos
-import com.android.systemui.user.data.repository.FakeUserRepository
+import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
@@ -26,7 +26,7 @@ class DeviceEntryRepositoryTest : SysuiTestCase() {
     @Mock private lateinit var lockPatternUtils: LockPatternUtils
 
     private val kosmos = testKosmos()
-    private val userRepository = FakeUserRepository()
+    private val userRepository = kosmos.fakeUserRepository
 
     private lateinit var underTest: DeviceEntryRepository
 

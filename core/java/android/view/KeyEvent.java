@@ -1378,6 +1378,16 @@ public class KeyEvent extends InputEvent implements Parcelable {
     /** Key code constant: F24 key. */
     @FlaggedApi(Flags.FLAG_ENABLE_NEW_25Q2_KEYCODES)
     public static final int KEYCODE_F24 = 337;
+    /**
+     * Key code constant: System Accessibility key.
+     * <p>
+     * Introduced by HUTRR116, toggles the system bound accessibility UI/command
+     * (i.e. invoke system-specific accessibility UI or user-customized accessibility
+     * feature). Some example usages could be to toggle Talkback or toggle display
+     * color inversion. Applications will not receive this keycode.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_NEW_26Q2_KEYCODES)
+    public static final int KEYCODE_ACCESSIBILITY = 338;
 
     /**
      * Integer value of the last KEYCODE. Increases as new keycodes are added to KeyEvent.
@@ -1385,7 +1395,7 @@ public class KeyEvent extends InputEvent implements Parcelable {
      */
     @TestApi
     @SuppressWarnings("FlaggedApi")
-    public static final int LAST_KEYCODE = KEYCODE_F24;
+    public static final int LAST_KEYCODE = KEYCODE_ACCESSIBILITY;
 
     /** @hide */
     @IntDef(prefix = {"KEYCODE_"}, value = {
@@ -1727,6 +1737,7 @@ public class KeyEvent extends InputEvent implements Parcelable {
             KEYCODE_F22,
             KEYCODE_F23,
             KEYCODE_F24,
+            KEYCODE_ACCESSIBILITY,
     })
     @Retention(RetentionPolicy.SOURCE)
     @interface KeyCode {}
@@ -2927,6 +2938,7 @@ public class KeyEvent extends InputEvent implements Parcelable {
             case KeyEvent.KEYCODE_SYSTEM_NAVIGATION_LEFT:
             case KeyEvent.KEYCODE_SYSTEM_NAVIGATION_RIGHT:
             case KeyEvent.KEYCODE_STEM_PRIMARY:
+            case KeyEvent.KEYCODE_ACCESSIBILITY:
                 return true;
         }
 
