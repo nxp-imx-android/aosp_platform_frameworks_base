@@ -21,6 +21,7 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.View
 import androidx.core.content.withStyledAttributes
 import com.android.settingslib.widget.preference.segmentedbarchart.R
@@ -44,6 +45,15 @@ class SegmentedBarChartView @JvmOverloads constructor(
     private val segmentPath = Path()
     private val segmentRect = RectF()
     private val segmentRadii = FloatArray(8)
+
+    // Cache the click boundaries to avoid allocating in onDraw
+    private val segmentBounds = ArrayList<RectF>()
+
+    fun interface OnSegmentClickListener {
+        fun onSegmentClick(item: SegmentItem)
+    }
+
+    private var listener: OnSegmentClickListener? = null
 
     private var segments: List<SegmentItem> = emptyList()
     private var maxValue: Float = 100f
@@ -92,9 +102,42 @@ class SegmentedBarChartView @JvmOverloads constructor(
         invalidate()
     }
 
+    fun setOnSegmentClickListener(l: OnSegmentClickListener?) {
+        listener = l
+        // View must be clickable to receive touch events if a listener is set
+        isClickable = (l != null)
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         drawSegments(canvas)
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        // Only handle if we have a listener or are explicitly clickable
+        if (listener == null && !isClickable) return super.onTouchEvent(event)
+
+        when (event.action) {
+            MotionEvent.ACTION_UP -> {
+                // Check if the touch point is inside any segment's bounds
+                // We only loop through 'segments.indices' to ignore the Remainder bar
+                for (i in segments.indices) {
+                    if (segmentBounds[i].contains(event.x, event.y)) {
+                        performClick() // Standard accessibility hook
+                        listener?.onSegmentClick(segments[i])
+                        return true
+                    }
+                }
+            }
+            // We must return true on DOWN to receive the UP event
+            MotionEvent.ACTION_DOWN -> return true
+        }
+        return super.onTouchEvent(event)
+    }
+
+    override fun performClick(): Boolean {
+        super.performClick()
+        return true
     }
 
     private fun drawSegments(canvas: Canvas) {
@@ -112,6 +155,10 @@ class SegmentedBarChartView @JvmOverloads constructor(
         // Total segments to draw = Data Segments + (Maybe 1 Remainder Segment (Empty Space))
         val drawCount = segments.size + (if (hasRemainder) 1 else 0)
 
+        while (segmentBounds.size < drawCount) {
+            segmentBounds.add(RectF())
+        }
+
         val totalDrawableWidth = width - (max(0, drawCount - 1) * gapBetweenSegments)
         if (totalDrawableWidth <= 0) return
 
@@ -123,7 +170,8 @@ class SegmentedBarChartView @JvmOverloads constructor(
                 widthAvailable = totalDrawableWidth,
                 isFirst = (index == 0),
                 isLast = (index == drawCount - 1), // Only last if NO remainder
-                paint = segmentPaint.apply { color = colors[index % colors.size] }
+                paint = segmentPaint.apply { color = colors[index % colors.size] },
+                rectCacheIndex = index
             )
             currentX += (segment.value / effectiveTotal * totalDrawableWidth) + gapBetweenSegments
         }
@@ -136,7 +184,8 @@ class SegmentedBarChartView @JvmOverloads constructor(
                 widthAvailable = totalDrawableWidth,
                 isFirst = (segments.isEmpty()), // It's first if there was no data
                 isLast = true,
-                paint = emptySegmentPaint
+                paint = emptySegmentPaint,
+                rectCacheIndex = segments.size
             )
         }
     }
@@ -147,7 +196,7 @@ class SegmentedBarChartView @JvmOverloads constructor(
     private fun drawSingleSegment(
         canvas: Canvas, isRtl: Boolean, x: Float,
         value: Float, total: Float, widthAvailable: Float,
-        isFirst: Boolean, isLast: Boolean, paint: Paint
+        isFirst: Boolean, isLast: Boolean, paint: Paint, rectCacheIndex: Int
     ) {
         val segmentWidth = (value / total) * widthAvailable
         if (segmentWidth <= 0) return
@@ -157,6 +206,9 @@ class SegmentedBarChartView @JvmOverloads constructor(
         val right = if (isRtl) width - x else rightEdge
 
         segmentRect.set(left, 0f, right, height.toFloat())
+        if (rectCacheIndex < segmentBounds.size) {
+            segmentBounds[rectCacheIndex].set(segmentRect)
+        }
         segmentPath.reset()
 
         // Radius Logic per segment:

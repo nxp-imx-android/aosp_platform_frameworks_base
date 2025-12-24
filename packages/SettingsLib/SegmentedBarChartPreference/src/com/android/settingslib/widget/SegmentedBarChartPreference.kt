@@ -41,20 +41,28 @@ class SegmentedBarChartPreference @JvmOverloads constructor(
      * Cache data in case [setSegments] is called *before* the view is created
      */
     private var pendingSegments: List<SegmentItem>? = null
+    private var pendingListener: SegmentedBarChartView.OnSegmentClickListener? = null
 
     init {
         layoutResource = R.layout.segmented_bar_preference_expressive
+        isSelectable = false
     }
 
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
         super.onBindViewHolder(holder)
         holder.isDividerAllowedBelow = false
         holder.isDividerAllowedAbove = false
+        holder.itemView.isFocusable = false
+        holder.itemView.isClickable = false
 
         barView = holder.findViewById(R.id.segmented_bar) as? SegmentedBarChartView
         pendingSegments?.let {
             barView?.setSegments(it)
             pendingSegments = null
+        }
+
+        if (pendingListener != null) {
+            barView?.setOnSegmentClickListener(pendingListener)
         }
     }
 
@@ -68,6 +76,22 @@ class SegmentedBarChartPreference @JvmOverloads constructor(
             barView?.setSegments(segments)
         } else {
             pendingSegments = segments
+        }
+    }
+
+    /**
+     * Registers a single listener for the entire chart to handle clicks on individual segments.
+     *
+     * The listener receives the clicked [SegmentItem], allowing you to define distinct behaviors
+     * based on the segment's ID or label (e.g., navigating to different screens for "Audio" vs "Images").
+     *
+     * @param listener The callback invoked with the [SegmentItem] data when a user taps a segment.
+     */
+    fun setOnSegmentClickListener(listener: SegmentedBarChartView.OnSegmentClickListener) {
+        if (barView != null) {
+            barView?.setOnSegmentClickListener(listener)
+        } else {
+            pendingListener = listener
         }
     }
 }
