@@ -155,7 +155,8 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Vidéo enregistrée"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Vidéo supprimée"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Annuler"</string>
-    <string name="screen_record_retake" msgid="3846643688365398450">"Reprendre"</string>
+    <!-- no translation found for screen_record_take_another (8071412867905614800) -->
+    <skip />
     <string name="screen_record_edit" msgid="8733014191240769309">"Modifier"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Supprimer"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Supprimer cet enregistrement?"</string>
@@ -186,14 +187,10 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Prendre une capture d\'écran de l\'écran entier"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Enregistrer l\'écran entier"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Paramètres de capture d\'écran"</string>
-    <!-- no translation found for screen_capture_post_recording_shelf_share_button_a11y (2907313384921655711) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_folder_button_a11y (4217075254383938093) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_delete_button_a11y (8519897681775354217) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (8342622016203434332) -->
-    <skip />
+    <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"Partager l\'enregistrement d\'écran"</string>
+    <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"Ouvrir l\'enregistrement d\'écran dans le gestionnaire de fichiers"</string>
+    <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"Supprimer l\'enregistrement d\'écran"</string>
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"Ouvrir l\'enregistrement d\'écran dans la visionneuse de vidéos"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Afficher les clics et les touches"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"Son de l\'appareil"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Microphone"</string>
@@ -651,14 +648,11 @@
     <string name="communal_widget_picker_title" msgid="1953369090475731663">"Widgets de l\'écran de verrouillage"</string>
     <string name="communal_widget_picker_description" msgid="6927728582371632782">"N\'importe qui peut voir les widgets sur l\'écran de verrouillage, même si l\'appareil est verrouillé."</string>
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"désélectionner le widget"</string>
-    <!-- no translation found for accessibility_action_label_resize_widget (639756010934310745) -->
-    <skip />
+    <string name="accessibility_action_label_resize_widget" msgid="639756010934310745">"Redimensionner le widget"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"Diminuer la hauteur"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"Augmenter la hauteur"</string>
-    <!-- no translation found for accessibility_announcement_expand_widget (1123324821904704150) -->
-    <skip />
-    <!-- no translation found for accessibility_announcement_shrink_widget (2720176058287945622) -->
-    <skip />
+    <string name="accessibility_announcement_expand_widget" msgid="1123324821904704150">"Hauteur développée"</string>
+    <string name="accessibility_announcement_shrink_widget" msgid="2720176058287945622">"Hauteur diminuée"</string>
     <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"Afficher le suivant"</string>
     <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"Afficher le précédent"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"Widgets de l\'écran de verrouillage"</string>
@@ -744,8 +738,7 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"Les alertes et le volume de l\'appareil sont réduits automatiquement pendant 2 minutes maximum quand vous recevez trop de notifications à la fois."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Désactiver"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Déverr. pour voir les anciennes notif."</string>
-    <!-- no translation found for quick_settings_disclosure_parental_controls (9196246842317344981) -->
-    <skip />
+    <string name="quick_settings_disclosure_parental_controls" msgid="9196246842317344981">"Les contrôles parentaux sont actifs"</string>
     <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"Cet appareil est géré par ton parent"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Certains paramètres de l\'appareil sont protégés par un NIP."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Votre organisation possède cet appareil et peut contrôler le trafic réseau"</string>
@@ -905,6 +898,8 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"Connexion satellite faible"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"Bonne connexion satellite"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Connexion satellite accessible"</string>
+    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
+    <skip />
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"SOS par satellite"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Appels d\'urgence ou SOS seulement"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"Réseaux satellites"</string>
@@ -1204,23 +1199,15 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Cette fonctionnalité peut lire tout le contenu à l\'écran et afficher du contenu par-dessus d\'autres applis."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Afficher et effectuer des actions"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Cette fonctionnalité peut faire le suivi de vos interactions avec une appli ou un capteur matériel et interagir avec des applis en votre nom."</string>
-    <!-- no translation found for accessibility_key_gesture_select_to_speak_dialog_content (2241403419620826861) -->
-    <skip />
+    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861">"Raccourci-clavier pour utiliser <xliff:g id="ID_4">^4</xliff:g> : <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icône"</annotation>"+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g>. Cela vous permet de personnaliser la police et l\'espacement, et d\'entendre le texte lu à voix haute directement sur votre appareil."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Raccourci-clavier pour activer <xliff:g id="ID_4">^4</xliff:g> (fonctionnalité d\'accessibilité) : "<annotation id="action_key_icon">"icône"</annotation>" <xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g>. Cette fonctionnalité vous permet de contrôler votre appareil en mode Mains libres."</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_title (4659318395231105188) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_content (7058726404278534674) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text (7095579813773247709) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_editor_dialog_title (7881631878787325869) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_done_button (5288975589451082156) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_picker_dialog_title (6067291073174568750) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_edit_button (1924449663239985111) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Touche d\'accessibilité"</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Vous pouvez appuyer sur la touche d\'accessibilité pour commencer à utiliser les fonctionnalités d\'accessibilité."</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Ajouter des fonctionnalités"</string>
+    <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"Configurer <xliff:g id="ID_1">%1$s</xliff:g>"</string>
+    <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Terminé"</string>
+    <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Sélectionner un élément"</string>
+    <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Modifier"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Accessibilité"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Écran de verrouillage"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Arrêt en cours…"</string>
@@ -1541,6 +1528,8 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Ajouter une tuile aux Paramètres rapides"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Petit format"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Grand format"</string>
+    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
+    <skip />
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Choisir l\'utilisateur"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# appli est active}one{# appli est active}many{# d\'applis sont actives}other{# applis sont actives}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Nouvelle information"</string>
@@ -1637,10 +1626,8 @@
     <string name="start_desktop_mode" msgid="5459815912537830841">"Ordinateur de bureau"</string>
     <string name="start_mirroring" msgid="3611044878130481882">"Dupliquer"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Écran connecté"</string>
-    <!-- no translation found for connected_display_connection_text (6787771675124372815) -->
-    <skip />
-    <!-- no translation found for connected_display_removal_text (8270253839172935318) -->
-    <skip />
+    <string name="connected_display_connection_text" msgid="6787771675124372815">"Connecté à un écran externe"</string>
+    <string name="connected_display_removal_text" msgid="8270253839172935318">"Écran externe déconnecté"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"Micro, appareil photo, position"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Utilisation récente par les applis"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Afficher l\'accès récent"</string>

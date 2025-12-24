@@ -155,7 +155,7 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"વીડિયો સાચવ્યો"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"વીડિયો ડિલીટ કર્યો"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"છેલ્લો ફેરફાર રદ કરો"</string>
-    <string name="screen_record_retake" msgid="3846643688365398450">"ફરીથી લો"</string>
+    <string name="screen_record_take_another" msgid="8071412867905614800">"અન્ય રેકોર્ડિંગ લો"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"ફેરફાર કરો"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"ડિલીટ કરો"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"આ રેકોર્ડિંગ ડિલીટ કરીએ?"</string>
@@ -897,6 +897,8 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"સૅટલાઇટ, નબળું કનેક્શન"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"સૅટલાઇટ, સારું કનેક્શન"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"સૅટલાઇટ, કનેક્શન ઉપલબ્ધ છે"</string>
+    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
+    <skip />
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"ઇમર્જન્સી સૅટલાઇટ સહાય"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"માત્ર ઇમર્જન્સી કૉલ કે ઇમર્જન્સી સૅટલાઇટ સહાય"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"સૅટલાઇટ નેટવર્ક"</string>
@@ -1194,23 +1196,15 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"તે સ્ક્રીન પરનું બધું કન્ટેન્ટ વાંચી શકે છે અને કન્ટેન્ટને અન્ય ઍપની ઉપર ડિસ્પ્લે કરી શકે છે."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"ઍક્શન જુઓ અને તેને પર્ફોર્મ કરો"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"તે કોઈ ઍપ અથવા હાર્ડવેર સેન્સર સાથેની તમારી ક્રિયાપ્રતિક્રિયાઓને ટ્રૅક કરી શકે છે અને તમારા વતી ઍપ સાથે ક્રિયાપ્રતિક્રિયા કરી શકે છે."</string>
-    <!-- no translation found for accessibility_key_gesture_select_to_speak_dialog_content (2241403419620826861) -->
-    <skip />
+    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"આઇકન"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> એ <xliff:g id="ID_4">^4</xliff:g>નો ઉપયોગ કરવા માટે કીબોર્ડ શૉર્ટકટ છે. આનાથી તમે ફૉન્ટ અને સ્પેસિંગ કસ્ટમાઇઝ કરી શકો છો અને સીધા તમારા ડિવાઇસ પર ટેક્સ્ટ મોટેથી વંચાતી સાંભળી શકો છો."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"આઇકન"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> દબાવવાથી <xliff:g id="ID_4">^4</xliff:g> ચાલુ થાય છે, જે એક ઍક્સેસિબિલિટી સુવિધા છે. આ તમને હાથના ઉપયોગ વિના તમારા ડિવાઇસને નિયંત્રિત કરવાની સુવિધા આપે છે."</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_title (4659318395231105188) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_content (7058726404278534674) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text (7095579813773247709) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_editor_dialog_title (7881631878787325869) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_done_button (5288975589451082156) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_picker_dialog_title (6067291073174568750) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_edit_button (1924449663239985111) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"ઍક્સેસિબિલિટી કી"</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"ઍક્સેસિબિલિટી સુવિધાઓનો ઉપયોગ કરવાનું શરૂ કરવા માટે, તમે ઍક્સેસિબિલિટી કી દબાવી શકો છો."</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"સુવિધાઓ ઉમેરો"</string>
+    <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"<xliff:g id="ID_1">%1$s</xliff:g>નું સેટઅપ કરો"</string>
+    <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"થઈ ગયું"</string>
+    <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"સુવિધા પસંદ કરો"</string>
+    <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"ફેરફાર કરો"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"ઍક્સેસિબિલિટી"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"લૉક સ્ક્રીન"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"શટ ડાઉન કરી રહ્યાં છીએ…"</string>
@@ -1531,6 +1525,8 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"\'ઝડપી સેટિંગ\'માં ટાઇલ ઉમેરો"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"નાનું ફૉર્મેટ"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"મોટું ફૉર્મેટ"</string>
+    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
+    <skip />
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"વપરાશકર્તા પસંદ કરો"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# ઍપ ઍક્ટિવ છે}one{# ઍપ ઍક્ટિવ છે}other{# ઍપ ઍક્ટિવ છે}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"નવી માહિતી"</string>

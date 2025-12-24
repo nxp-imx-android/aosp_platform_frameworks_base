@@ -155,7 +155,7 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video saved"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Video deleted"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Undo"</string>
-    <string name="screen_record_retake" msgid="3846643688365398450">"Retake"</string>
+    <string name="screen_record_take_another" msgid="8071412867905614800">"Take another"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Edit"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Delete"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Delete this recording?"</string>
@@ -897,6 +897,8 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"Satellite, poor connection"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"Satellite, good connection"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Satellite, connection available"</string>
+    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
+    <skip />
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"Satellite SOS"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Emergency calls or SOS only"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"Satellite networks"</string>
@@ -1523,6 +1525,8 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Add tile to Quick Settings"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Small format"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Large format"</string>
+    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
+    <skip />
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Select user"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# app is active}other{# apps are active}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"New information"</string>

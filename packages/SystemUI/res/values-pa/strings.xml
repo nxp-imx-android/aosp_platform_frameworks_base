@@ -155,7 +155,8 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ਵੀਡੀਓ ਨੂੰ ਰੱਖਿਅਤ ਕੀਤਾ ਗਿਆ"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"ਵੀਡੀਓ ਮਿਟਾਇਆ ਗਿਆ"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"ਅਣਕੀਤਾ ਕਰੋ"</string>
-    <string name="screen_record_retake" msgid="3846643688365398450">"ਦੁਬਾਰਾ ਕੈਪਚਰ ਕਰੋ"</string>
+    <!-- no translation found for screen_record_take_another (8071412867905614800) -->
+    <skip />
     <string name="screen_record_edit" msgid="8733014191240769309">"ਸੰਪਾਦਨ ਕਰੋ"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"ਮਿਟਾਓ"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"ਕੀ ਇਸ ਰਿਕਾਰਡਿੰਗ ਨੂੰ ਮਿਟਾਉਣਾ ਹੈ?"</string>
@@ -186,14 +187,10 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"ਪੂਰੀ ਸਕ੍ਰੀਨ ਦਾ ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਓ"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"ਪੂਰੀ ਸਕ੍ਰੀਨ ਨੂੰ ਰਿਕਾਰਡ ਕਰੋ"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"ਸਕ੍ਰੀਨ ਕੈਪਚਰ ਸੈਟਿੰਗਾਂ"</string>
-    <!-- no translation found for screen_capture_post_recording_shelf_share_button_a11y (2907313384921655711) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_folder_button_a11y (4217075254383938093) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_delete_button_a11y (8519897681775354217) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (8342622016203434332) -->
-    <skip />
+    <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"ਸਕ੍ਰੀਨ ਰਿਕਾਰਡਿੰਗ ਸਾਂਝੀ ਕਰੋ"</string>
+    <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"ਫ਼ਾਈਲ ਪ੍ਰਬੰਧਕ ਵਿੱਚ ਸਕ੍ਰੀਨ ਰਿਕਾਰਡਿੰਗ ਖੋਲ੍ਹੋ"</string>
+    <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"ਸਕ੍ਰੀਨ ਰਿਕਾਰਡਿੰਗ ਮਿਟਾਓ"</string>
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"ਵੀਡੀਓ ਵਿਊਅਰ ਵਿੱਚ ਸਕ੍ਰੀਨ ਰਿਕਾਰਡਿੰਗ ਖੋਲ੍ਹੋ"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"ਕਲਿੱਕ ਅਤੇ ਕੁੰਜੀਆਂ ਦਿਖਾਓ"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"ਡੀਵਾਈਸ ਆਡੀਓ"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"ਮਾਈਕ੍ਰੋਫ਼ੋਨ"</string>
@@ -651,14 +648,11 @@
     <string name="communal_widget_picker_title" msgid="1953369090475731663">"ਲਾਕ ਸਕ੍ਰੀਨ ਵਿਜੇਟ"</string>
     <string name="communal_widget_picker_description" msgid="6927728582371632782">"ਕੋਈ ਵੀ ਤੁਹਾਡੀ ਲਾਕ ਸਕ੍ਰੀਨ \'ਤੇ ਵਿਜੇਟ ਦੇਖ ਸਕਦਾ ਹੈ, ਭਾਵੇਂ ਤੁਹਾਡਾ ਡੀਵਾਈਸ ਲਾਕ ਹੋਵੇ।"</string>
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"ਵਿਜੇਟ ਨੂੰ ਅਣਚੁਣਿਆ ਕਰੋ"</string>
-    <!-- no translation found for accessibility_action_label_resize_widget (639756010934310745) -->
-    <skip />
+    <string name="accessibility_action_label_resize_widget" msgid="639756010934310745">"ਵਿਜੇਟ ਦਾ ਆਕਾਰ ਬਦਲੋ"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"ਉਚਾਈ ਘਟਾਓ"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"ਉਚਾਈ ਵਧਾਓ"</string>
-    <!-- no translation found for accessibility_announcement_expand_widget (1123324821904704150) -->
-    <skip />
-    <!-- no translation found for accessibility_announcement_shrink_widget (2720176058287945622) -->
-    <skip />
+    <string name="accessibility_announcement_expand_widget" msgid="1123324821904704150">"ਉਚਾਈ ਦਾ ਵਿਸਤਾਰ ਕੀਤਾ ਗਿਆ"</string>
+    <string name="accessibility_announcement_shrink_widget" msgid="2720176058287945622">"ਉਚਾਈ ਘਟਾਈ ਗਈ"</string>
     <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"ਅਗਲਾ ਦਿਖਾਓ"</string>
     <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"ਪਿਛਲਾ ਦਿਖਾਓ"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"ਲਾਕ ਸਕ੍ਰੀਨ ਵਿਜੇਟ"</string>
@@ -744,8 +738,7 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"ਇੱਕ ਵਾਰ \'ਚ ਕਈ ਸੂਚਨਾਵਾਂ ਮਿਲਣ \'ਤੇ, ਡੀਵਾਈਸ ਦੀ ਅਵਾਜ਼ ਅਤੇ ਅਲਰਟ ਵੱਧੋ-ਵੱਧ 2 ਮਿੰਟਾਂ ਲਈ ਆਪਣੇ-ਆਪ ਘੱਟ ਜਾਂਦੇ ਹਨ।"</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"ਬੰਦ ਕਰੋ"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"ਪੁਰਾਣੀਆਂ ਸੂਚਨਾਵਾਂ ਦੇਖਣ ਲਈ ਅਣਲਾਕ ਕਰੋ"</string>
-    <!-- no translation found for quick_settings_disclosure_parental_controls (9196246842317344981) -->
-    <skip />
+    <string name="quick_settings_disclosure_parental_controls" msgid="9196246842317344981">"ਮਾਪਿਆਂ ਦੇ ਕੰਟਰੋਲ ਕਿਰਿਆਸ਼ੀਲ ਹਨ"</string>
     <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"ਇਸ ਡੀਵਾਈਸ ਦਾ ਪ੍ਰਬੰਧਨ ਤੁਹਾਡੇ ਮਾਂ-ਪਿਓ ਵੱਲੋਂ ਕੀਤਾ ਜਾਂਦਾ ਹੈ"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"ਕੁਝ ਡੀਵਾਈਸ ਸੈਟਿੰਗਾਂ ਪਿੰਨ ਨਾਲ ਸੁਰੱਖਿਅਤ ਹਨ।"</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"ਤੁਹਾਡੀ ਸੰਸਥਾ ਕੋਲ ਇਸ ਡੀਵਾਈਸ ਦੀ ਮਲਕੀਅਤ ਹੈ ਅਤੇ ਇਹ ਨੈੱਟਵਰਕ ਟਰੈਫ਼ਿਕ ਦੀ ਨਿਗਰਾਨੀ ਕਰ ਸਕਦੀ ਹੈ"</string>
@@ -905,6 +898,8 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"ਸੈਟੇਲਾਈਟ, ਕਨੈਕਸ਼ਨ ਖਰਾਬ ਹੈ"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"ਸੈਟੇਲਾਈਟ, ਕਨੈਕਸ਼ਨ ਵਧੀਆ ਹੈ"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"ਸੈਟੇਲਾਈਟ, ਕਨੈਕਸ਼ਨ ਉਪਲਬਧ ਹੈ"</string>
+    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
+    <skip />
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"ਸੈਟੇਲਾਈਟ SOS"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"ਸਿਰਫ਼ ਐਮਰਜੈਂਸੀ ਕਾਲਾਂ ਜਾਂ ਸਹਾਇਤਾ"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"ਸੈਟੇਲਾਈਟ ਨੈੱਟਵਰਕ"</string>
@@ -1202,23 +1197,15 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"ਇਹ ਸਕ੍ਰੀਨ \'ਤੇ ਸਾਰੀ ਸਮੱਗਰੀ ਪੜ੍ਹ ਸਕਦਾ ਹੈ ਅਤੇ ਸਮੱਗਰੀ ਨੂੰ ਦੂਜੀਆਂ ਐਪਾਂ ਦੇ ਉੱਪਰ ਦਿਖਾ ਸਕਦਾ ਹੈ।"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"ਕਾਰਵਾਈਆਂ ਦੇਖੋ ਅਤੇ ਕਰੋ"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"ਇਹ ਕਿਸੇ ਐਪ ਜਾਂ ਹਾਰਡਵੇਅਰ ਸੈਂਸਰ ਦੇ ਨਾਲ ਤੁਹਾਡੀਆਂ ਅੰਤਰਕਿਰਿਆਵਾਂ ਨੂੰ ਟਰੈਕ ਕਰ ਸਕਦੀ ਹੈ ਅਤੇ ਤੁਹਾਡੀ ਤਰਫ਼ੋਂ ਐਪਾਂ ਦੇ ਨਾਲ ਅੰਤਰਕਿਰਿਆ ਕਰ ਸਕਦੀ ਹੈ।"</string>
-    <!-- no translation found for accessibility_key_gesture_select_to_speak_dialog_content (2241403419620826861) -->
-    <skip />
+    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ਪ੍ਰਤੀਕ"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> <xliff:g id="ID_4">^4</xliff:g> ਨੂੰ ਵਰਤਣ ਦਾ ਕੀ-ਬੋਰਡ ਸ਼ਾਰਟਕੱਟ ਹੈ। ਇਸ ਨਾਲ ਤੁਸੀਂ ਫ਼ੌਂਟ ਅਤੇ ਸਪੇਸਿੰਗ ਨੂੰ ਵਿਉਂਤਬੱਧ ਕਰ ਸਕਦੇ ਹੋ ਅਤੇ ਸਿੱਧਾ ਆਪਣੇ ਡੀਵਾਈਸ \'ਤੇ ਲਿਖਤ ਨੂੰ ਉੱਚੀ ਅਵਾਜ਼ ਵਿੱਚ ਸੁਣ ਸਕਦੇ ਹੋ।"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ਪ੍ਰਤੀਕ"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> ਦਬਾਉਣ \'ਤੇ <xliff:g id="ID_4">^4</xliff:g> ਚਾਲੂ ਹੋ ਜਾਂਦੀ ਹੈ, ਜੋ ਕਿ ਇੱਕ ਪਹੁੰਚਯੋਗਤਾ ਵਿਸ਼ੇਸ਼ਤਾ ਹੈ। ਇਸ ਨਾਲ ਤੁਸੀਂ ਆਪਣੇ ਡੀਵਾਈਸ ਨੂੰ ਹੱਥ-ਰਹਿਤ ਕੰਟਰੋਲ ਕਰ ਸਕਦੇ ਹੋ।"</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_title (4659318395231105188) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_content (7058726404278534674) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text (7095579813773247709) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_editor_dialog_title (7881631878787325869) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_done_button (5288975589451082156) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_picker_dialog_title (6067291073174568750) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_edit_button (1924449663239985111) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"ਪਹੁੰਚਯੋਗਤਾ ਕੁੰਜੀ"</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"ਤੁਸੀਂ ਪਹੁੰਚਯੋਗਤਾ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਦੀ ਵਰਤੋਂ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਪਹੁੰਚਯੋਗਤਾ ਕੁੰਜੀ ਨੂੰ ਦਬਾ ਸਕਦੇ ਹੋ।"</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਸ਼ਾਮਲ ਕਰੋ"</string>
+    <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"<xliff:g id="ID_1">%1$s</xliff:g> ਦਾ ਸੈੱਟਅੱਪ ਕਰੋ"</string>
+    <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"ਹੋ ਗਿਆ"</string>
+    <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"ਕੋਈ ਵਿਸ਼ੇਸ਼ਤਾ ਚੁਣੋ"</string>
+    <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"ਸੰਪਾਦਨ ਕਰੋ"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"ਪਹੁੰਚਯੋਗਤਾ"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">" ਲਾਕ  ਸਕ੍ਰੀਨ"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"ਬੰਦ ਹੋ ਰਿਹਾ ਹੈ…"</string>
@@ -1539,6 +1526,8 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"ਤਤਕਾਲ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਟਾਇਲ ਸ਼ਾਮਲ ਕਰੋ"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"ਛੋਟਾ ਫਾਰਮੈਟ"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"ਵੱਡਾ ਫਾਰਮੈਟ"</string>
+    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
+    <skip />
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"ਵਰਤੋਂਕਾਰ ਚੁਣੋ"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# ਐਪ ਕਿਰਿਆਸ਼ੀਲ ਹੈ}one{# ਐਪ ਕਿਰਿਆਸ਼ੀਲ ਹੈ}other{# ਐਪਾਂ ਕਿਰਿਆਸ਼ੀਲ ਹਨ}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"ਨਵੀਂ ਜਾਣਕਾਰੀ"</string>
@@ -1635,10 +1624,8 @@
     <string name="start_desktop_mode" msgid="5459815912537830841">"ਡੈਸਕਟਾਪ"</string>
     <string name="start_mirroring" msgid="3611044878130481882">"ਪ੍ਰਤਿਬਿੰਬ"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"ਡਿਸਪਲੇ ਨੂੰ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ"</string>
-    <!-- no translation found for connected_display_connection_text (6787771675124372815) -->
-    <skip />
-    <!-- no translation found for connected_display_removal_text (8270253839172935318) -->
-    <skip />
+    <string name="connected_display_connection_text" msgid="6787771675124372815">"ਬਾਹਰੀ ਡਿਸਪਲੇ ਨਾਲ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ"</string>
+    <string name="connected_display_removal_text" msgid="8270253839172935318">"ਬਾਹਰੀ ਡਿਸਪਲੇ ਡਿਸਕਨੈਕਟ ਕੀਤਾ ਗਿਆ"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"ਮਾਈਕ੍ਰੋਫ਼ੋਨ, ਕੈਮਰਾ ਅਤੇ ਟਿਕਾਣਾ"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"ਹਾਲ ਹੀ ਵਿੱਚ ਵਰਤੋਂ ਕਰਨ ਵਾਲੀ ਐਪ"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"ਹਾਲੀਆ ਪਹੁੰਚ ਦੇਖੋ"</string>

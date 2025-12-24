@@ -155,7 +155,8 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Videon har sparats"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Videon har raderats"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Ångra"</string>
-    <string name="screen_record_retake" msgid="3846643688365398450">"Ta om"</string>
+    <!-- no translation found for screen_record_take_another (8071412867905614800) -->
+    <skip />
     <string name="screen_record_edit" msgid="8733014191240769309">"Redigera"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Radera"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Vill du radera inspelningen?"</string>
@@ -186,14 +187,10 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Ta en skärmbild av hela skärmen"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Spela in hela skärmen"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Inställningar för skärmbilder/skärminspelning"</string>
-    <!-- no translation found for screen_capture_post_recording_shelf_share_button_a11y (2907313384921655711) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_folder_button_a11y (4217075254383938093) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_delete_button_a11y (8519897681775354217) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (8342622016203434332) -->
-    <skip />
+    <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"Dela skärminspelning"</string>
+    <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"Öppna skärminspelning i filhanteraren"</string>
+    <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"Radera skärminspelning"</string>
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"Öppna skärminspelningen i videovisaren"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Visa klick och tangenter"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"Enhetsljud"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofon"</string>
@@ -651,14 +648,11 @@
     <string name="communal_widget_picker_title" msgid="1953369090475731663">"Widgetar för låsskärm"</string>
     <string name="communal_widget_picker_description" msgid="6927728582371632782">"Vem som helst kan se widgetar på din låsskärm, även om enheten är låst."</string>
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"avmarkera widget"</string>
-    <!-- no translation found for accessibility_action_label_resize_widget (639756010934310745) -->
-    <skip />
+    <string name="accessibility_action_label_resize_widget" msgid="639756010934310745">"Ändra storlek på widgeten"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"Minska höjden"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"Öka höjden"</string>
-    <!-- no translation found for accessibility_announcement_expand_widget (1123324821904704150) -->
-    <skip />
-    <!-- no translation found for accessibility_announcement_shrink_widget (2720176058287945622) -->
-    <skip />
+    <string name="accessibility_announcement_expand_widget" msgid="1123324821904704150">"Höjden har ökats"</string>
+    <string name="accessibility_announcement_shrink_widget" msgid="2720176058287945622">"Höjden har minskats"</string>
     <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"Visa nästa"</string>
     <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"Visa föregående"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"Widgetar för låsskärm"</string>
@@ -744,8 +738,7 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"Enheten sänker volymen och minimerar aviseringar i upp till två minuter när du får för många aviseringar samtidigt."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Inaktivera"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Lås upp för att se äldre aviseringar"</string>
-    <!-- no translation found for quick_settings_disclosure_parental_controls (9196246842317344981) -->
-    <skip />
+    <string name="quick_settings_disclosure_parental_controls" msgid="9196246842317344981">"Föräldrakontroller är aktiverade"</string>
     <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"Den här enheten hanteras av din förälder"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Vissa enhetsinställningar är skyddade med pinkod."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Organisationen äger den här enheten och kan övervaka nätverkstrafiken"</string>
@@ -905,6 +898,8 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"Satellit, dålig anslutning"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"Satellit, bra anslutning"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Satellit, anslutning tillgänglig"</string>
+    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
+    <skip />
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"SOS-larm via satellit"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Endast nödsamtal eller SOS-larm"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"Satellitnätverk"</string>
@@ -1202,23 +1197,15 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Den kan läsa allt innehåll på skärmen och visa innehåll över andra appar."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Visa och vidta åtgärder"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Den kan registrera din användning av en app eller hårdvarusensor och interagera med appar åt dig."</string>
-    <!-- no translation found for accessibility_key_gesture_select_to_speak_dialog_content (2241403419620826861) -->
-    <skip />
+    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861"><annotation id="action_key_icon">"Ikonen"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> är kortkommandot för att använda <xliff:g id="ID_4">^4</xliff:g>. Med detta kan du anpassa font och avstånd samt få texten uppläst direkt på enheten."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Om du trycker på "<annotation id="action_key_icon">"ikonen"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> aktiveras tillgänglighetsfunktionen <xliff:g id="ID_4">^4</xliff:g>. Då kan du styra enheten med rösten."</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_title (4659318395231105188) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_content (7058726404278534674) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text (7095579813773247709) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_editor_dialog_title (7881631878787325869) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_done_button (5288975589451082156) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_picker_dialog_title (6067291073174568750) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_edit_button (1924449663239985111) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Tillgänglighetsnyckel"</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Du kan trycka på tillgänglighetsknappen för att börja använda tillgänglighetsfunktioner."</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Lägga till funktioner"</string>
+    <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"Konfigurera <xliff:g id="ID_1">%1$s</xliff:g>"</string>
+    <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Klar"</string>
+    <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Markera en funktion"</string>
+    <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Redigera"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Tillgänglighet"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Låsskärm"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Avslutar …"</string>
@@ -1539,6 +1526,8 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Ny ruta i Snabbinställningar"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Litet format"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Stort format"</string>
+    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
+    <skip />
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Välj användare"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# app är aktiv}other{# appar är aktiva}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Ny information"</string>
@@ -1635,10 +1624,8 @@
     <string name="start_desktop_mode" msgid="5459815912537830841">"Dator"</string>
     <string name="start_mirroring" msgid="3611044878130481882">"Spegel"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Skärm har anslutits"</string>
-    <!-- no translation found for connected_display_connection_text (6787771675124372815) -->
-    <skip />
-    <!-- no translation found for connected_display_removal_text (8270253839172935318) -->
-    <skip />
+    <string name="connected_display_connection_text" msgid="6787771675124372815">"Ansluten till extern skärm"</string>
+    <string name="connected_display_removal_text" msgid="8270253839172935318">"Den externa skärmen har kopplats från"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"Mikrofon, kamera och plats"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Senaste appanvändning"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Se senaste åtkomst"</string>

@@ -155,7 +155,7 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video salvestati"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Video kustutati"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Võta tagasi"</string>
-    <string name="screen_record_retake" msgid="3846643688365398450">"Tee uuesti"</string>
+    <string name="screen_record_take_another" msgid="8071412867905614800">"Tee veel üks"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Muuda"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Kustuta"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Kas kustutada see salvestis?"</string>
@@ -186,14 +186,10 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Tee kogu ekraanikuvast ekraanipilt"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Salvesta kogu ekraanikuva"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Ekraanikuva jäädvustamise seaded"</string>
-    <!-- no translation found for screen_capture_post_recording_shelf_share_button_a11y (2907313384921655711) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_folder_button_a11y (4217075254383938093) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_delete_button_a11y (8519897681775354217) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (8342622016203434332) -->
-    <skip />
+    <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"Ekraanisalvestise jagamine"</string>
+    <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"Ekraanisalvestise avamine failihalduris"</string>
+    <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"Ekraanikuva salvestise kustutamine"</string>
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"Ekraanisalvestise avamine videovaaturis"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Kuva klikid ja klahvid"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"Seadme heli"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofon"</string>
@@ -651,14 +647,11 @@
     <string name="communal_widget_picker_title" msgid="1953369090475731663">"Lukustuskuva vidinad"</string>
     <string name="communal_widget_picker_description" msgid="6927728582371632782">"Igaüks saab vaadata lukustuskuval olevaid vidinaid, isegi kui seade on lukus."</string>
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"tühistage vidina valimine"</string>
-    <!-- no translation found for accessibility_action_label_resize_widget (639756010934310745) -->
-    <skip />
+    <string name="accessibility_action_label_resize_widget" msgid="639756010934310745">"Muuda vidina suurust"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"Vähenda kõrgust"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"Suurenda kõrgust"</string>
-    <!-- no translation found for accessibility_announcement_expand_widget (1123324821904704150) -->
-    <skip />
-    <!-- no translation found for accessibility_announcement_shrink_widget (2720176058287945622) -->
-    <skip />
+    <string name="accessibility_announcement_expand_widget" msgid="1123324821904704150">"Kõrgust on laiendatud"</string>
+    <string name="accessibility_announcement_shrink_widget" msgid="2720176058287945622">"Kõrgust on vähendatud"</string>
     <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"Kuva järgmine"</string>
     <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"Kuva eelmine"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"Lukustuskuva vidinad"</string>
@@ -744,8 +737,7 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"Kui saate korraga liiga palju märguandeid, vähendab seade automaatselt helitugevust ja minimeerib märguanded kuni kaheks minutiks."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Lülita välja"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Vanemate märguannete nägemiseks avage"</string>
-    <!-- no translation found for quick_settings_disclosure_parental_controls (9196246842317344981) -->
-    <skip />
+    <string name="quick_settings_disclosure_parental_controls" msgid="9196246842317344981">"Vanemlik järelevalve on aktiivne."</string>
     <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"Seda seadet haldab sinu vanem."</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Mõned seadmed seaded on PIN-koodiga kaitstud."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Teie organisatsioon on selle seadme omanik ja võib jälgida võrguliiklust"</string>
@@ -905,6 +897,8 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"Satelliit, kehv ühendus"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"Satelliit, hea ühendus"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Satelliit, ühendus on saadaval"</string>
+    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
+    <skip />
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"Satelliit-SOS"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Ainult hädaabikõned või satelliit-SOS"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"Satelliitvõrgud"</string>
@@ -1202,23 +1196,15 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"See saab lugeda kogu ekraanil kuvatud sisu ja kuvada sisu rakenduste peal."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Toimingute vaatamine ja tegemine"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"See saab jälgida teie suhtlust rakenduse või riistvaraanduriga ja teie eest rakendustega suhelda."</string>
-    <!-- no translation found for accessibility_key_gesture_select_to_speak_dialog_content (2241403419620826861) -->
-    <skip />
+    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ikoon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> on funktsiooni <xliff:g id="ID_4">^4</xliff:g> kasutamiseks mõeldud klaviatuuri otsetee. See võimaldab teil kohandada fonti ja vahekaugust ning kuulata teksti ettelugemist otse oma seadmes."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Kui vajutate klahve <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ikoon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>, lülitatakse sisse juurdepääsetavuse funktsioon <xliff:g id="ID_4">^4</xliff:g>. See võimaldab teil seadet juhtida käsi kasutamata."</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_title (4659318395231105188) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_content (7058726404278534674) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text (7095579813773247709) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_editor_dialog_title (7881631878787325869) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_done_button (5288975589451082156) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_picker_dialog_title (6067291073174568750) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_edit_button (1924449663239985111) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Juurdepääsetavuse klahv"</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Juurdepääsetavuse funktsioonide kasutamise alustamiseks võite vajutada juurdepääsetavuse klahvi."</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Lisa funktsioonid"</string>
+    <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"Seadistage <xliff:g id="ID_1">%1$s</xliff:g>"</string>
+    <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Valmis"</string>
+    <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Funktsiooni valimine"</string>
+    <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Muuda"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Juurdepääsetavus"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Lukustuskuva"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Väljalülitamine …"</string>
@@ -1539,6 +1525,8 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Lisa paan kiirseadetesse"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Väike vorming"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Suur vorming"</string>
+    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
+    <skip />
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Kasutaja valimine"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# rakendus on aktiivne}other{# rakendust on aktiivsed}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Uus teave"</string>
@@ -1635,10 +1623,8 @@
     <string name="start_desktop_mode" msgid="5459815912537830841">"Lauaarvuti"</string>
     <string name="start_mirroring" msgid="3611044878130481882">"Peegelda"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Kuvar on ühendatud"</string>
-    <!-- no translation found for connected_display_connection_text (6787771675124372815) -->
-    <skip />
-    <!-- no translation found for connected_display_removal_text (8270253839172935318) -->
-    <skip />
+    <string name="connected_display_connection_text" msgid="6787771675124372815">"Ühendatud välise ekraaniga"</string>
+    <string name="connected_display_removal_text" msgid="8270253839172935318">"Välise ekraani ühendus on katkestatud"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"Mikrofon, kaamera ja asukoht"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Rakenduste hiljutine kasutamine"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Kuva hiljutine juurdepääs"</string>
