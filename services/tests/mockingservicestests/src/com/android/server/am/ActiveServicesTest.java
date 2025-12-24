@@ -22,13 +22,12 @@ import static com.android.internal.app.procstats.ProcessStats.ADJ_MEM_FACTOR_LOW
 import static com.android.internal.app.procstats.ProcessStats.ADJ_MEM_FACTOR_MODERATE;
 import static com.android.internal.app.procstats.ProcessStats.ADJ_MEM_FACTOR_NORMAL;
 import static com.android.internal.util.FrameworkStatsLog.FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_DECLARED_AND_GRANTED;
-import static com.android.internal.util.FrameworkStatsLog.FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_NOT_DECLARED;
 import static com.android.internal.util.FrameworkStatsLog.FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_DECLARED_BUT_DENIED;
+import static com.android.internal.util.FrameworkStatsLog.FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_NOT_DECLARED;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -317,7 +316,7 @@ public final class ActiveServicesTest {
         String processName =
                 ActiveServices.getProcessNameForService(
                         regularService, null, null, null, false, false, false);
-        assertEquals(PROCESS_NAME_1, processName);
+        assertThat(processName).isEqualTo(PROCESS_NAME_1);
     }
 
     @Test
@@ -329,7 +328,7 @@ public final class ActiveServicesTest {
         String processName =
                 ActiveServices.getProcessNameForService(
                         isolatedService, component, null, null, false, false, false);
-        assertEquals(PROCESS_NAME_1 + ":" + SERVICE_NAME, processName);
+        assertThat(processName).isEqualTo(PROCESS_NAME_1 + ":" + SERVICE_NAME);
     }
 
     @Test
@@ -342,7 +341,7 @@ public final class ActiveServicesTest {
         String processName =
                 ActiveServices.getProcessNameForService(
                         isolatedService, componentName, null, null, false, false, false);
-        assertEquals(TRUSTED_ISOLATED_PROCESS_NAME_1 + ":" + SERVICE_NAME, processName);
+        assertThat(processName).isEqualTo(TRUSTED_ISOLATED_PROCESS_NAME_1 + ":" + SERVICE_NAME);
     }
 
     @Test
@@ -361,7 +360,7 @@ public final class ActiveServicesTest {
                         false,
                         false,
                         true);
-        assertEquals(PROCESS_NAME_1 + ":" + SERVICE_NAME, packageSharedIsolatedProcessName);
+        assertThat(packageSharedIsolatedProcessName).isEqualTo(PROCESS_NAME_1 + ":" + SERVICE_NAME);
     }
 
     @Test
@@ -381,7 +380,7 @@ public final class ActiveServicesTest {
                         false,
                         false,
                         true);
-        assertEquals(TRUSTED_ISOLATED_PROCESS_NAME_1, packageSharedIsolatedProcessName);
+        assertThat(packageSharedIsolatedProcessName).isEqualTo(TRUSTED_ISOLATED_PROCESS_NAME_1);
     }
 
     @Test
@@ -406,7 +405,7 @@ public final class ActiveServicesTest {
                         false,
                         false,
                         true);
-        assertEquals(TRUSTED_ISOLATED_PROCESS_NAME_1, packageSharedIsolatedProcessName);
+        assertThat(packageSharedIsolatedProcessName).isEqualTo(TRUSTED_ISOLATED_PROCESS_NAME_1);
     }
 
     @Test
@@ -431,7 +430,7 @@ public final class ActiveServicesTest {
                         false,
                         false,
                         true);
-        assertEquals(TRUSTED_ISOLATED_PROCESS_NAME_1, packageSharedIsolatedProcessName);
+        assertThat(packageSharedIsolatedProcessName).isEqualTo(TRUSTED_ISOLATED_PROCESS_NAME_1);
     }
 
     @Test
@@ -458,7 +457,7 @@ public final class ActiveServicesTest {
                         false,
                         false,
                         true);
-        assertEquals(ISOLATED_PROCESS_NAME_2, packageSharedIsolatedProcessName);
+        assertThat(packageSharedIsolatedProcessName).isEqualTo(ISOLATED_PROCESS_NAME_2);
     }
 
     @Test
@@ -475,7 +474,7 @@ public final class ActiveServicesTest {
                         false,
                         true,
                         false);
-        assertEquals(SHARED_ISOLATED_PROCESS_NAME, sharedIsolatedProcessName1);
+        assertThat(sharedIsolatedProcessName1).isEqualTo(SHARED_ISOLATED_PROCESS_NAME);
     }
 
     @Test
@@ -506,7 +505,7 @@ public final class ActiveServicesTest {
                         false,
                         true,
                         false);
-        assertEquals(sharedIsolatedProcessName1, sharedIsolatedProcessName2);
+        assertThat(sharedIsolatedProcessName2).isEqualTo(sharedIsolatedProcessName1);
     }
 
     @Test
@@ -536,7 +535,7 @@ public final class ActiveServicesTest {
                         false,
                         true,
                         false);
-        assertNotEquals(sharedIsolatedProcessName1, sharedIsolatedProcessName2);
+        assertThat(sharedIsolatedProcessName2).isNotEqualTo(sharedIsolatedProcessName1);
     }
 
     @Test
@@ -603,7 +602,7 @@ public final class ActiveServicesTest {
                         eq(Process.ZYGOTE_POLICY_FLAG_EMPTY),
                         eq(false),
                         eq(false));
-        assertTrue(hostingRecord.getValue().isPcc());
+        assertThat(hostingRecord.getValue().isPcc()).isTrue();
     }
 
     @Test
@@ -644,7 +643,7 @@ public final class ActiveServicesTest {
 
         mActiveServices.attachApplicationLocked(proc, r.processName);
 
-        assertTrue(mActiveServices.mPendingServices.isEmpty());
+        assertThat(mActiveServices.mPendingServices).isEmpty();
     }
 
     private void prepareTestRescheduleServiceRestarts() {
@@ -692,15 +691,28 @@ public final class ActiveServicesTest {
                 .isServiceRestartBackoffEnabledLocked(any(String.class));
     }
 
+    /**
+     * Sets the value of a field in an object using reflection. This is useful for setting private
+     * or final fields in tests.
+     *
+     * @param clazz The class of the object.
+     * @param obj The object whose field to set.
+     * @param fieldName The name of the field to set.
+     * @param val The new value for the field.
+     * @param <T> The type of the field value.
+     * @throws RuntimeException if the field does not exist or cannot be accessed.
+     */
     private static <T> void setFieldValue(Class<?> clazz, Object obj, String fieldName, T val) {
         try {
             Field field = clazz.getDeclaredField(fieldName);
             field.setAccessible(true);
+            // Remove the 'final' modifier to allow re-assignment.
             Field mfield = Field.class.getDeclaredField("accessFlags");
             mfield.setAccessible(true);
             mfield.setInt(field, mfield.getInt(field) & ~(Modifier.FINAL | Modifier.PRIVATE));
             field.set(obj, val);
         } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -737,12 +749,10 @@ public final class ActiveServicesTest {
     private void verifyDelays(long now, long[] delays) {
         for (int i = 0; i < delays.length; i++) {
             final ServiceRecord r = mActiveServices.mRestartingServices.get(i);
-            assertEquals(
-                    "Expected restart delay=" + delays[i], Math.max(0, delays[i]), r.restartDelay);
-            assertEquals(
-                    "Expected next restart time=" + (now + delays[i]),
-                    now + delays[i],
-                    r.nextRestartTime);
+            assertWithMessage("Expected restart delay=" + delays[i]).that(r.restartDelay).isEqualTo(
+                    Math.max(0, delays[i]));
+            assertWithMessage("Expected next restart time=" + now + delays[i]).that(
+                    r.nextRestartTime).isEqualTo(now + delays[i]);
         }
     }
 
@@ -775,6 +785,7 @@ public final class ActiveServicesTest {
         r.appInfo.pccUid = 30001;
         r.appInfo.packageName = "com.android.pcc";
         final ServiceInfo si = new ServiceInfo();
+        si.applicationInfo = r.appInfo;
         si.flags = ServiceInfo.FLAG_RUN_IN_PCC_SANDBOX;
         setFieldValue(ServiceRecord.class, r, "serviceInfo", si);
         setFieldValue(ServiceRecord.class, r, "processName", "test");
@@ -794,7 +805,7 @@ public final class ActiveServicesTest {
         setFieldValue(ServiceRecord.class, r, "packageName", "com.foo");
         Intent intent = new Intent(HotwordDetectionService.SERVICE_INTERFACE);
         String seInfo = activeServices.generateAdditionalSeInfoFromService(intent, r);
-        assertEquals(":isolatedComputeApp", seInfo);
+        assertThat(seInfo).isEqualTo(":isolatedComputeApp");
     }
 
     @Test
@@ -807,7 +818,7 @@ public final class ActiveServicesTest {
         setFieldValue(ServiceRecord.class, r, "packageName", "com.foo");
         Intent intent = new Intent(VisualQueryDetectionService.SERVICE_INTERFACE);
         String seInfo = activeServices.generateAdditionalSeInfoFromService(intent, r);
-        assertEquals(":isolatedComputeApp", seInfo);
+        assertThat(seInfo).isEqualTo(":isolatedComputeApp");
     }
 
     @Test
@@ -820,7 +831,7 @@ public final class ActiveServicesTest {
         setFieldValue(ServiceRecord.class, r, "packageName", "com.foo");
         Intent intent = new Intent(OnDeviceSandboxedInferenceService.SERVICE_INTERFACE);
         String seInfo = activeServices.generateAdditionalSeInfoFromService(intent, r);
-        assertEquals(":isolatedComputeApp", seInfo);
+        assertThat(seInfo).isEqualTo(":isolatedComputeApp");
     }
 
     @Test
@@ -834,7 +845,7 @@ public final class ActiveServicesTest {
         Intent intent = new Intent(WearableSensingService.SERVICE_INTERFACE);
         when(mService.hasRestrictedAssociations(r.packageName)).thenReturn(false);
         String seInfo = activeServices.generateAdditionalSeInfoFromService(intent, r);
-        assertEquals(":isolatedComputeApp", seInfo);
+        assertThat(seInfo).isEqualTo(":isolatedComputeApp");
     }
 
     @Test
@@ -849,7 +860,7 @@ public final class ActiveServicesTest {
         Intent intent = new Intent(WearableSensingService.SERVICE_INTERFACE);
         when(mService.hasRestrictedAssociations(r.packageName)).thenReturn(true);
         String seInfo = activeServices.generateAdditionalSeInfoFromService(intent, r);
-        assertEquals("", seInfo);
+        assertThat(seInfo).isEmpty();
     }
 
     @Test
@@ -858,7 +869,7 @@ public final class ActiveServicesTest {
         ServiceRecord r = createPccServiceRecord();
         Intent intent = new Intent(HotwordDetectionService.SERVICE_INTERFACE);
         String seInfo = activeServices.generateAdditionalSeInfoFromService(intent, r);
-        assertEquals("", seInfo);
+        assertThat(seInfo).isEmpty();
     }
 
     @Test
@@ -871,7 +882,7 @@ public final class ActiveServicesTest {
         setFieldValue(ServiceRecord.class, r, "packageName", "com.foo");
         Intent intent = new Intent("com.foo.bar.MY_SERVICE");
         String seInfo = activeServices.generateAdditionalSeInfoFromService(intent, r);
-        assertEquals("", seInfo);
+        assertThat(seInfo).isEmpty();
     }
 
     @Test
@@ -884,7 +895,7 @@ public final class ActiveServicesTest {
         setFieldValue(ServiceRecord.class, r, "packageName", "com.foo");
         Intent intent = new Intent();
         String seInfo = activeServices.generateAdditionalSeInfoFromService(intent, r);
-        assertEquals("", seInfo);
+        assertThat(seInfo).isEmpty();
     }
 
     @Test
@@ -896,7 +907,7 @@ public final class ActiveServicesTest {
         setFieldValue(ServiceRecord.class, r, "serviceInfo", si);
         setFieldValue(ServiceRecord.class, r, "packageName", "com.foo");
         String seInfo = activeServices.generateAdditionalSeInfoFromService(null, r);
-        assertEquals("", seInfo);
+        assertThat(seInfo).isEmpty();
     }
 
     @Test
@@ -913,10 +924,10 @@ public final class ActiveServicesTest {
                 .thenReturn(packageInfo);
 
         int result = mActiveServices.getNotificationPermissionState(r);
-        assertEquals(
-                FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_NOT_DECLARED,
-                result);
-        assertFalse(mActiveServices.mNotificationPermCache.get(TEST_UID));
+        assertThat(result)
+                .isEqualTo(
+                        FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_NOT_DECLARED);
+        assertThat(mActiveServices.mNotificationPermCache.get(TEST_UID)).isFalse();
     }
 
     @Test
@@ -940,10 +951,10 @@ public final class ActiveServicesTest {
 
         int result = mActiveServices.getNotificationPermissionState(r);
 
-        assertEquals(
-                FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_DECLARED_AND_GRANTED,
-                result);
-        assertTrue(mActiveServices.mNotificationPermCache.get(TEST_UID));
+        assertThat(result)
+                .isEqualTo(
+                        FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_DECLARED_AND_GRANTED);
+        assertThat(mActiveServices.mNotificationPermCache.get(TEST_UID)).isTrue();
     }
 
     @Test
@@ -967,10 +978,10 @@ public final class ActiveServicesTest {
 
         int result = mActiveServices.getNotificationPermissionState(r);
 
-        assertEquals(
-                FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_DECLARED_BUT_DENIED,
-                result);
-        assertTrue(mActiveServices.mNotificationPermCache.get(TEST_UID));
+        assertThat(result)
+                .isEqualTo(
+                        FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_DECLARED_BUT_DENIED);
+        assertThat(mActiveServices.mNotificationPermCache.get(TEST_UID)).isTrue();
     }
 
     @Test
@@ -994,9 +1005,9 @@ public final class ActiveServicesTest {
 
         // Gets the permission state from cache on second call
         int result = mActiveServices.getNotificationPermissionState(r);
-        assertEquals(
-                FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_NOT_DECLARED,
-                result);
+        assertThat(result)
+                .isEqualTo(
+                        FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_NOT_DECLARED);
         verify(mPackageManagerInternal, times(1)).getPackageInfo(eq(PACKAGE_NAME_1), anyLong(),
                 eq(TEST_UID), eq(TEST_USERID));
     }
@@ -1018,7 +1029,7 @@ public final class ActiveServicesTest {
 
         // Populates cache with false
         mActiveServices.getNotificationPermissionState(r);
-        assertFalse(mActiveServices.mNotificationPermCache.get(TEST_UID));
+        assertThat(mActiveServices.mNotificationPermCache.get(TEST_UID)).isFalse();
 
         // Triggering package update
         mActiveServices.mPackageMonitor.onPackageUpdateFinished(PACKAGE_NAME_1, TEST_UID);
@@ -1035,9 +1046,9 @@ public final class ActiveServicesTest {
                 .thenReturn(PackageManager.PERMISSION_GRANTED);
 
         int result = mActiveServices.getNotificationPermissionState(r);
-        assertEquals(
-                FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_DECLARED_AND_GRANTED,
-                result);
+        assertThat(result)
+                .isEqualTo(
+                        FOREGROUND_SERVICE_STATE_CHANGED__FGS_NOTIFICATION_PERMISSION_STATE__FGS_NOTIFICATION_PERMISSION_DECLARED_AND_GRANTED);
     }
 
     private ServiceRecord createServiceRecord() {
@@ -1062,5 +1073,4 @@ public final class ActiveServicesTest {
         }
         return packageInfo;
     }
-
 }
