@@ -31,8 +31,15 @@ java_defaults {
         "androidx.test.ext.junit",
         "androidx.test.rules",
         "androidx.test.runner",
+        "mockito-target-extended-minus-junit4",
+        "testables",
         "testng",
         "truth",
+    ],
+    jni_libs: [
+        // Required by mockito
+        "libdexmakerjvmtiagent",
+        "libstaticjvmtiagent",
     ],
     platform_apis: true,
     certificate: "platform",
@@ -57,12 +64,16 @@ android_robolectric_test {
     static_libs: [
         "services.core",
     ],
-    java_resource_dirs: ["configs/robolectric"],
+    java_resource_dirs: [
+        "configs/robolectric",
+        "testdata",
+    ],
     upstream: true,
     test_suites: [
         "general-tests",
         "robolectric-tests",
     ],
+    jni_libs: ["libtrust_token_jni"],
 }
 
 android_test {
@@ -70,6 +81,7 @@ android_test {
     defaults: ["trust_token_tests_defaults"],
     manifest: "configs/AndroidManifest.xml",
     test_config: "configs/AndroidTest.xml",
+    java_resource_dirs: ["testdata"],
     srcs: [
         "src/**/*.java",
     ],
@@ -77,4 +89,10 @@ android_test {
         "services.core",
     ],
     test_suites: ["general-tests"],
+    // The tests cannot load the system's private native libraries, so we
+    // need to include them in the APK.
+    jni_libs: [
+        "libtrust_token_jni",
+        "libcrypto",
+    ],
 }

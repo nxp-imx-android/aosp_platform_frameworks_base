@@ -17,8 +17,10 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.android.server.security.talisman">
-    <application/>
+    <application android:debuggable="true"/>
     <instrumentation android:name="androidx.test.runner.AndroidJUnitRunner"
          android:targetPackage="com.android.server.security.talisman"
          android:label="TrustToken Tests"/>
+    <uses-permission android:name="android.permission.ACQUIRE_VERIFIED_DEVICE_TOKEN"/>
+    <uses-permission android:name="android.permission.SIGN_WITH_TRUST_TOKEN"/>
 </manifest>
