@@ -24,6 +24,7 @@ import android.os.Binder
 import android.view.WindowInsets
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
+import com.android.wm.shell.bubbles.BubbleHelper
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.splitscreen.SplitScreenController
 import dagger.Lazy
@@ -36,8 +37,8 @@ object BubbleUtils {
      * exiting Bubble.
      */
     private fun getBubbleTransaction(
+        bubbleHelper: BubbleHelper,
         token: WindowContainerToken,
-        rootToken: WindowContainerToken?,
         bounds: Rect,
         toBubble: Boolean,
         isAppBubble: Boolean,
@@ -46,6 +47,7 @@ object BubbleUtils {
     ): WindowContainerTransaction {
         val wct = WindowContainerTransaction()
         if (BubbleAnythingFlagHelper.enableRootTaskForBubble() && isAppBubble) {
+            val rootToken = bubbleHelper.getAppBubbleRootTaskToken()
             if (toBubble && rootToken != null) {
                 wct.reparent(token, rootToken, true /* onTop */)
                 wct.setBounds(rootToken, bounds)
@@ -111,15 +113,15 @@ object BubbleUtils {
     @JvmOverloads
     @JvmStatic
     fun getEnterBubbleTransaction(
+        bubbleHelper: BubbleHelper,
         token: WindowContainerToken,
-        rootToken: WindowContainerToken?,
         bounds: Rect,
         isAppBubble: Boolean,
         reparentToTda: Boolean = false,
     ): WindowContainerTransaction {
         return getBubbleTransaction(
+            bubbleHelper,
             token,
-            rootToken,
             bounds,
             toBubble = true,
             isAppBubble,
@@ -135,13 +137,14 @@ object BubbleUtils {
     @JvmOverloads
     @JvmStatic
     fun getExitBubbleTransaction(
+        bubbleHelper: BubbleHelper,
         token: WindowContainerToken,
         captionInsetsOwner: Binder?,
         reparentToTda: Boolean = BubbleAnythingFlagHelper.enableRootTaskForBubble(),
     ): WindowContainerTransaction {
         return getBubbleTransaction(
+            bubbleHelper,
             token,
-            rootToken = null,
             bounds = Rect(),
             toBubble = false,
             // Everything will be reset, so doesn't matter for exit.

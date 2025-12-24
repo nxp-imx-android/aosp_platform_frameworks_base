@@ -22,13 +22,18 @@ import android.widget.Toast
 import com.android.wm.shell.R
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.bubbles.Bubble
+import com.android.wm.shell.bubbles.BubbleHelper
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog
 import com.android.wm.shell.taskview.TaskViewTaskController
 
 /** Helper interface for methods related to bubbles policy. */
 interface BubblePolicyHelper {
     /** Moves an existing task that is currently in the stack out of Bubble. */
-    fun moveExistingTaskOutOfBubble(bubble: Bubble, task: ActivityManager.RunningTaskInfo)
+    fun moveExistingTaskOutOfBubble(
+        bubbleHelper: BubbleHelper,
+        bubble: Bubble,
+        task: ActivityManager.RunningTaskInfo,
+    )
 
     /** Shows a toast indicating that the task cannot be bubbled. */
     fun showBubbleNotSupportedErrorToast(context: Context)
@@ -41,6 +46,7 @@ interface BubblePolicyHelper {
 object DefaultBubblePolicyHelper : BubblePolicyHelper {
 
     override fun moveExistingTaskOutOfBubble(
+        bubbleHelper: BubbleHelper,
         bubble: Bubble,
         task: ActivityManager.RunningTaskInfo,
     ) {
@@ -59,7 +65,11 @@ object DefaultBubblePolicyHelper : BubblePolicyHelper {
         val taskOrganizer: ShellTaskOrganizer = taskViewTaskController.taskOrganizer
 
         val wct =
-            BubbleUtils.getExitBubbleTransaction(task.token, bubble.taskView.captionInsetsOwner)
+            BubbleUtils.getExitBubbleTransaction(
+                bubbleHelper,
+                task.token,
+                bubble.taskView.captionInsetsOwner,
+            )
         taskOrganizer.applyTransaction(wct)
 
         taskViewTaskController.notifyTaskRemovalStarted(task)
