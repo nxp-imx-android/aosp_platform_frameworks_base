@@ -21,6 +21,7 @@ import com.android.systemui.screencapture.record.shared.model.ScreenCaptureRecor
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
@@ -35,7 +36,7 @@ class ScreenCaptureRecordParametersRepository @Inject constructor() {
                 shouldShowFrontCamera = false,
             )
         )
-    val parameters = _parameters.asStateFlow()
+    val parameters: StateFlow<ScreenCaptureRecordParametersModel> = _parameters.asStateFlow()
 
     fun updateParameters(
         update: (ScreenCaptureRecordParametersModel) -> ScreenCaptureRecordParametersModel

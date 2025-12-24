@@ -16,6 +16,8 @@
 
 package com.android.systemui.screencapture.record.smallscreen.ui.compose
 
+import android.content.res.Resources
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
@@ -37,6 +39,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.android.systemui.common.shared.model.Icon as IconModel
@@ -95,6 +98,8 @@ fun RecordDetailsSettings(
                     ),
                 label = stringResource(R.string.screen_record_record_device_audio_label),
                 checked = parametersViewModel.shouldRecordDevice,
+                enabled = parametersViewModel.canChangeAudioSource,
+                disabledMessageRes = R.string.screen_record_record_audio_during_recording_warning,
                 onCheckedChange = { parametersViewModel.shouldRecordDevice = it },
                 modifier = Modifier,
             )
@@ -107,6 +112,8 @@ fun RecordDetailsSettings(
                     ),
                 label = stringResource(R.string.screen_record_record_microphone_label),
                 checked = parametersViewModel.shouldRecordMicrophone,
+                enabled = parametersViewModel.canChangeAudioSource,
+                disabledMessageRes = R.string.screen_record_record_audio_during_recording_warning,
                 onCheckedChange = { parametersViewModel.shouldRecordMicrophone = it },
                 modifier = Modifier,
             )
@@ -149,8 +156,23 @@ private fun RichSwitch(
     checked: Boolean,
     onCheckedChange: (isChecked: Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    disabledMessageRes: Int = Resources.ID_NULL,
 ) {
-    SettingsRow(modifier.clickable(onClick = { onCheckedChange(!checked) })) {
+    val context = LocalContext.current
+    SettingsRow(
+        modifier.clickable(
+            onClick = {
+                if (enabled) {
+                    onCheckedChange(!checked)
+                } else {
+                    if (disabledMessageRes != Resources.ID_NULL) {
+                        Toast.makeText(context, disabledMessageRes, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        )
+    ) {
         LoadingIcon(icon = icon.value, modifier = Modifier.size(40.dp).padding(8.dp))
         Text(
             text = label,
@@ -158,7 +180,7 @@ private fun RichSwitch(
             maxLines = 2,
             modifier = Modifier.padding(horizontal = 8.dp).weight(1f).basicMarquee(),
         )
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
+        Switch(checked = checked, enabled = enabled, onCheckedChange = onCheckedChange)
     }
 }
 
