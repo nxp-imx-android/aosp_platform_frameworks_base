@@ -41,7 +41,6 @@ fun QuickActionChipsContainer(
                     text = chip.chipText,
                     icons = chip.icons,
                     colors = chip.colors,
-                    hoverBehavior = chip.hoverBehavior,
                     contentDescription = chip.contentDescription,
                     onClick = { chip.showPopup() },
                 )

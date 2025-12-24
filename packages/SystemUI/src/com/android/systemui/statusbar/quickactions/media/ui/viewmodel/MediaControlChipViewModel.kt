@@ -27,7 +27,6 @@ import com.android.systemui.statusbar.quickactions.media.domain.interactor.Media
 import com.android.systemui.statusbar.quickactions.media.shared.model.MediaControlChipModel
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupChipViewModel
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipIcon
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.HoverBehavior
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 import dagger.assisted.AssistedFactory
@@ -89,28 +88,7 @@ constructor(
             chipId = QuickActionChipId.MediaControl,
             icons = listOf(ChipIcon(icon = defaultIcon)),
             chipText = model.songName.toString(),
-            hoverBehavior = createHoverBehavior(model),
             popupViewModelFactory = popupViewModelFactory,
-        )
-    }
-
-    private fun createHoverBehavior(model: MediaControlChipModel): HoverBehavior {
-        val playOrPause = model.playOrPause ?: return HoverBehavior.None
-        val icon = playOrPause.icon ?: return HoverBehavior.None
-        val action = playOrPause.action ?: return HoverBehavior.None
-
-        val contentDescription =
-            ContentDescription.Loaded(description = playOrPause.contentDescription.toString())
-
-        return HoverBehavior.Buttons(
-            icons =
-                listOf(
-                    ChipIcon(
-                        icon =
-                            Icon.Loaded(drawable = icon, contentDescription = contentDescription),
-                        onClick = { action.run() },
-                    )
-                )
         )
     }
 

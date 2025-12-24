@@ -30,7 +30,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -62,7 +61,6 @@ import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipIcon
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.HoverBehavior
 
 /**
  * A clickable chip that can show an anchored popup containing relevant system controls. The chip
@@ -75,15 +73,12 @@ fun QuickActionChip(
     text: String?,
     icons: List<ChipIcon>,
     colors: ChipColors,
-    hoverBehavior: HoverBehavior,
     contentDescription: ContentDescription?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
-    val hasHoverBehavior = hoverBehavior !is HoverBehavior.None
     val hoveredState by interactionSource.collectIsHoveredAsState()
-    val isHovered = hasHoverBehavior && hoveredState
     val indication = if (hoveredState) null else LocalIndication.current
     val chipShape =
         RoundedCornerShape(dimensionResource(id = R.dimen.ongoing_activity_chip_corner_radius))
@@ -129,18 +124,7 @@ fun QuickActionChip(
                     .indication(interactionSource, indication)
                     .padding(start = startPadding, end = endPadding),
         ) {
-            val chipIcons =
-                when {
-                    isHovered && hoverBehavior is HoverBehavior.Buttons -> hoverBehavior.icons
-                    else -> icons
-                }
-
-            ChipIcons(
-                chipIcons = chipIcons,
-                colors = colors,
-                isSelected = isSelected,
-                isHovered = isHovered,
-            )
+            ChipIcons(chipIcons = icons, colors = colors, isSelected = isSelected)
 
             if (text != null) {
                 val textStyle = MaterialTheme.typography.labelLarge
@@ -196,35 +180,15 @@ fun QuickActionChip(
 }
 
 @Composable
-private fun ChipIcons(
-    chipIcons: List<ChipIcon>,
-    colors: ChipColors,
-    isSelected: Boolean,
-    isHovered: Boolean,
-) {
-    val iconHoverBackgroundColor =
-        colors.iconBackgroundOnHover(
-            isSelected = isSelected,
-            colorScheme = MaterialTheme.colorScheme,
-        )
-    val iconColor =
-        colors.icon(
-            isSelected = isSelected,
-            isHovered = isHovered,
-            colorScheme = MaterialTheme.colorScheme,
-        )
+private fun ChipIcons(chipIcons: List<ChipIcon>, colors: ChipColors, isSelected: Boolean) {
+    val iconColor = colors.icon(isSelected = isSelected, colorScheme = MaterialTheme.colorScheme)
     for (chipIcon in chipIcons) {
         Icon(
             icon = chipIcon.icon,
             modifier =
-                Modifier.size(20.dp)
-                    .thenIf(chipIcon.onClick != null) {
-                        Modifier.clickable(role = Role.Button, onClick = chipIcon.onClick!!)
-                    }
-                    .thenIf(isHovered && iconHoverBackgroundColor != Color.Unspecified) {
-                        Modifier.background(color = iconHoverBackgroundColor, shape = CircleShape)
-                            .padding(2.dp)
-                    },
+                Modifier.size(20.dp).thenIf(chipIcon.onClick != null) {
+                    Modifier.clickable(role = Role.Button, onClick = chipIcon.onClick!!)
+                },
             tint = iconColor,
         )
     }
