@@ -174,14 +174,12 @@ public final class DisplayBrightnessController {
             DisplayManagerInternal.DisplayPowerRequest displayPowerRequest,
             int targetDisplayState,
             DisplayManagerInternal.DisplayOffloadSession displayOffloadSession,
-            boolean isBedtimeModeWearEnabled,
-            boolean isChargingModeEnabled) {
+            boolean isBedtimeModeWearEnabled) {
         DisplayBrightnessState state;
         synchronized (mLock) {
             mDisplayBrightnessStrategy = mDisplayBrightnessStrategySelector.selectStrategy(
                     constructStrategySelectionRequest(displayPowerRequest, targetDisplayState,
-                            displayOffloadSession, isBedtimeModeWearEnabled,
-                            isChargingModeEnabled));
+                            displayOffloadSession, isBedtimeModeWearEnabled));
             state = mDisplayBrightnessStrategy
                         .updateBrightness(constructStrategyExecutionRequestLocked(
                                 displayPowerRequest, displayOffloadSession));
@@ -765,7 +763,7 @@ public final class DisplayBrightnessController {
             DisplayManagerInternal.DisplayPowerRequest displayPowerRequest,
             int targetDisplayState,
             DisplayManagerInternal.DisplayOffloadSession displayOffloadSession,
-            boolean isBedtimeModeEnabled, boolean isChargingModeEnabled) {
+            boolean isBedtimeModeEnabled) {
         boolean userSetBrightnessChanged = updateUserSetScreenBrightness();
         float lastUserSetScreenBrightness;
         synchronized (mLock) {
@@ -773,7 +771,7 @@ public final class DisplayBrightnessController {
         }
         return new StrategySelectionRequest(displayPowerRequest, targetDisplayState,
                 lastUserSetScreenBrightness, userSetBrightnessChanged, displayOffloadSession,
-                mIsStylusBeingUsed, isBedtimeModeEnabled, isChargingModeEnabled);
+                mIsStylusBeingUsed, isBedtimeModeEnabled);
     }
 
     @GuardedBy("mLock")

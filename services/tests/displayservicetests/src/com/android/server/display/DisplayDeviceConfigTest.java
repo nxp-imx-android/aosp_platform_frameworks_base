@@ -19,7 +19,6 @@ package com.android.server.display;
 
 import static com.android.internal.display.BrightnessSynchronizer.brightnessIntToFloat;
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR;
-import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_CHARGING;
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_DEFAULT;
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_DOZE;
 import static com.android.server.display.DisplayDeviceConfig.CONFIG_FILE_FORMAT;
@@ -997,34 +996,6 @@ public final class DisplayDeviceConfigTest {
                 mDisplayDeviceConfig.getAutoBrightnessBrighteningLevels(
                         AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR,
                         Settings.System.SCREEN_BRIGHTNESS_AUTOMATIC_BRIGHT), SMALL_DELTA);
-
-        // Charging mode curve
-        assertArrayEquals(new float[]{0.0f, 10.0f},
-                mDisplayDeviceConfig.getAutoBrightnessBrighteningLevelsLux(
-                        AUTO_BRIGHTNESS_MODE_CHARGING,
-                        Settings.System.SCREEN_BRIGHTNESS_AUTOMATIC_DIM), ZERO_DELTA);
-        assertArrayEquals(new float[]{0.10f, 0.20f},
-                mDisplayDeviceConfig.getAutoBrightnessBrighteningLevels(
-                        AUTO_BRIGHTNESS_MODE_CHARGING,
-                        Settings.System.SCREEN_BRIGHTNESS_AUTOMATIC_DIM), SMALL_DELTA);
-
-        assertArrayEquals(new float[]{0.0f, 20.0f},
-                mDisplayDeviceConfig.getAutoBrightnessBrighteningLevelsLux(
-                        AUTO_BRIGHTNESS_MODE_CHARGING,
-                        Settings.System.SCREEN_BRIGHTNESS_AUTOMATIC_NORMAL), ZERO_DELTA);
-        assertArrayEquals(new float[]{0.10f, 0.30f},
-                mDisplayDeviceConfig.getAutoBrightnessBrighteningLevels(
-                        AUTO_BRIGHTNESS_MODE_CHARGING,
-                        Settings.System.SCREEN_BRIGHTNESS_AUTOMATIC_NORMAL), SMALL_DELTA);
-
-        assertArrayEquals(new float[]{0.0f, 30.0f},
-                mDisplayDeviceConfig.getAutoBrightnessBrighteningLevelsLux(
-                        AUTO_BRIGHTNESS_MODE_CHARGING,
-                        Settings.System.SCREEN_BRIGHTNESS_AUTOMATIC_BRIGHT), ZERO_DELTA);
-        assertArrayEquals(new float[]{0.10f, 0.50f},
-                mDisplayDeviceConfig.getAutoBrightnessBrighteningLevels(
-                        AUTO_BRIGHTNESS_MODE_CHARGING,
-                        Settings.System.SCREEN_BRIGHTNESS_AUTOMATIC_BRIGHT), SMALL_DELTA);
     }
 
     @Test
@@ -1497,51 +1468,6 @@ public final class DisplayDeviceConfigTest {
                 +       "</luxToBrightnessMapping>\n";
     }
 
-    private String getChargingModeCurveConfig() {
-        return  "<luxToBrightnessMapping>\n"
-                +           "<mode>charging</mode>\n"
-                +           "<setting>dim</setting>\n"
-                +           "<map>\n"
-                +               "<point>\n"
-                +                   "<first>0</first>\n"
-                +                   "<second>0.1</second>\n"
-                +               "</point>\n"
-                +               "<point>\n"
-                +                   "<first>10</first>\n"
-                +                   "<second>0.2</second>\n"
-                +               "</point>\n"
-                +           "</map>\n"
-                +       "</luxToBrightnessMapping>\n"
-                +       "<luxToBrightnessMapping>\n"
-                +           "<mode>charging</mode>\n"
-                +           "<setting>normal</setting>\n"
-                +           "<map>\n"
-                +               "<point>\n"
-                +                   "<first>0</first>\n"
-                +                   "<second>0.1</second>\n"
-                +               "</point>\n"
-                +               "<point>\n"
-                +                   "<first>20</first>\n"
-                +                   "<second>0.3</second>\n"
-                +               "</point>\n"
-                +           "</map>\n"
-                +       "</luxToBrightnessMapping>\n"
-                +       "<luxToBrightnessMapping>\n"
-                +           "<mode>charging</mode>\n"
-                +           "<setting>bright</setting>\n"
-                +           "<map>\n"
-                +               "<point>\n"
-                +                   "<first>0</first>\n"
-                +                   "<second>0.1</second>\n"
-                +               "</point>\n"
-                +               "<point>\n"
-                +                   "<first>30</first>\n"
-                +                   "<second>0.5</second>\n"
-                +               "</point>\n"
-                +           "</map>\n"
-                +       "</luxToBrightnessMapping>\n";
-    }
-
     private String getPowerThrottlingConfig() {
         return  "<powerThrottlingConfig >\n"
                 +       "<brightnessLowestCapAllowed>0.1</brightnessLowestCapAllowed>\n"
@@ -1734,7 +1660,6 @@ public final class DisplayDeviceConfigTest {
                 +           "</map>\n"
                 +       "</luxToBrightnessMapping>\n"
                 +       getBedTimeModeWearCurveConfig()
-                +       getChargingModeCurveConfig()
                 +       "<idleStylusTimeoutMillis>1000</idleStylusTimeoutMillis>\n"
                 +   "</autoBrightness>\n"
                 +  getPowerThrottlingConfig()
