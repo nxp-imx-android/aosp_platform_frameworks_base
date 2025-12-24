@@ -607,6 +607,7 @@ final class ActivityRecord extends WindowToken {
 
     boolean mVoiceInteraction;
 
+    int mPostponedRelaunchConfigChangesFlags;
     int mPendingRelaunchCount;
     long mRelaunchStartTime;
 
@@ -1505,9 +1506,8 @@ final class ActivityRecord extends WindowToken {
 
     @Override
     boolean canStartChangeTransition() {
-        final Task task = getTask();
         // Skip change transition when the Task is drag resizing.
-        return task != null && !task.isDragResizing() && super.canStartChangeTransition();
+        return !isDragResizing() && super.canStartChangeTransition();
     }
 
     @Override
@@ -4225,6 +4225,7 @@ final class ActivityRecord extends WindowToken {
     void finishOrAbortReplacingWindow() {
         mRelaunchStartTime = 0;
         mDisplayContent.getDisplayPolicy().removeRelaunchingApp(this);
+        resumePostponedRelaunch();
     }
 
     ActivityServiceConnectionsHolder getOrCreateServiceConnectionsHolder() {
@@ -8754,9 +8755,51 @@ final class ActivityRecord extends WindowToken {
                 | CONFIG_SCREEN_LAYOUT)) != 0;
     }
 
+    private boolean isDragResizing() {
+        return task != null && task.isDragResizing();
+    }
+
+    @Override
+    void resetDragResizingChangeReported() {
+        super.resetDragResizingChangeReported();
+        if (!Flags.improveFluidResizingPerformance()) {
+            return;
+        }
+        if (!isDragResizing()) {
+            // Stop waiting for the intermediate frames but resume the postponed relaunch now.
+            resumePostponedRelaunch();
+        }
+    }
+
+    /**
+     * Resumes a postponed relaunch if there is any. A relaunch can be postponed if it's triggered
+     * while the activity is already in the process of relaunching or before the main window has
+     * been drawn.
+     */
+    void resumePostponedRelaunch() {
+        if (!Flags.improveFluidResizingPerformance()) {
+            return;
+        }
+        if (mPostponedRelaunchConfigChangesFlags != 0) {
+            relaunchActivityLocked(true /* preserveWindow */, 0 /* configChangeFlags */);
+        }
+    }
+
     void relaunchActivityLocked(boolean preserveWindow, int configChangeFlags) {
         if (mAtmService.mSuppressResizeConfigChanges && preserveWindow) {
             return;
+        }
+        if (Flags.improveFluidResizingPerformance()) {
+            if (isDragResizing() && preserveWindow
+                        && (mPendingRelaunchCount > 0 || mRelaunchStartTime > 0)) {
+                mPostponedRelaunchConfigChangesFlags |= configChangeFlags;
+                // Don't relaunch during relaunching (mPendingRelaunchCount > 0) or before the main
+                // window is drawn (mRelaunchStartTime > 0). This helps increase the frame rate
+                // during drag-resizing.
+                return;
+            }
+            configChangeFlags |= mPostponedRelaunchConfigChangesFlags;
+            mPostponedRelaunchConfigChangesFlags = 0;
         }
 
         // Notify that the activity is already relaunching, therefore there's no need to refresh
