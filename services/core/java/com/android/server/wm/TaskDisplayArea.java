@@ -1103,7 +1103,8 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
             }
             if (com.android.window.flags.Flags.enableBubbleRootTask()) {
                 final Task parentTask = sourceTask.getParent().asTask();
-                if (parentTask != null && parentTask.mCreatedByOrganizer) {
+                if (parentTask != null && parentTask.mCreatedByOrganizer
+                        && parentTask.getTaskDisplayArea() == this) {
                     return parentTask;
                 }
             }
