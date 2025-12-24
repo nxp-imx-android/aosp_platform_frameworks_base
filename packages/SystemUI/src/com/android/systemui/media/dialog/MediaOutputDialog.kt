@@ -13,544 +13,491 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.systemui.media.dialog
 
-package com.android.systemui.media.dialog;
-
-import static android.view.WindowInsets.Type.navigationBars;
-import static android.view.WindowInsets.Type.statusBars;
-
-import android.annotation.NonNull;
-import android.annotation.Nullable;
-import android.app.Dialog;
-import android.app.WallpaperColors;
-import android.content.ActivityNotFoundException;
-import android.content.Context;
-import android.content.Intent;
-import android.content.res.ColorStateList;
-import android.content.res.Configuration;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.Icon;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.text.TextUtils;
-import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowInsets;
-import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-
-import androidx.annotation.VisibleForTesting;
-import androidx.core.graphics.drawable.IconCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import com.android.internal.logging.UiEvent;
-import com.android.internal.logging.UiEventLogger;
-import com.android.systemui.animation.DialogTransitionAnimator;
-import com.android.systemui.broadcast.BroadcastSender;
-import com.android.systemui.res.R;
-import com.android.systemui.statusbar.phone.SystemUIDialog;
-
-import com.google.android.material.button.MaterialButton;
-
-import java.util.concurrent.Executor;
+import android.app.Dialog
+import android.app.WallpaperColors
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.res.ColorStateList
+import android.content.res.Configuration
+import android.graphics.drawable.Icon
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.Window
+import android.view.WindowInsets
+import android.view.WindowManager
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.annotation.VisibleForTesting
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.android.internal.logging.UiEvent
+import com.android.internal.logging.UiEventLogger
+import com.android.systemui.animation.DialogTransitionAnimator
+import com.android.systemui.broadcast.BroadcastSender
+import com.android.systemui.res.R
+import com.android.systemui.statusbar.phone.SystemUIDialog
+import com.google.android.material.button.MaterialButton
 
 /** The Output Switcher dialog */
-public class MediaOutputDialog extends SystemUIDialog
-        implements MediaSwitchingController.Callback, Window.Callback {
-
-    private static final String TAG = "MediaOutputDialog";
-    public static final int SMALL_SCREEN_HEIGHT_DP = 400;
-
-    protected final Handler mMainThreadHandler = new Handler(Looper.getMainLooper());
-    private final LinearLayoutManager mLayoutManager;
-
-    final Context mContext;
-    final MediaSwitchingController mMediaSwitchingController;
-    final BroadcastSender mBroadcastSender;
-
+class MediaOutputDialog(
+    context: Context,
+    aboveStatusBar: Boolean,
+    private val mBroadcastSender: BroadcastSender,
+    private val mMediaSwitchingController: MediaSwitchingController,
+    private val mDialogTransitionAnimator: DialogTransitionAnimator,
+    private val mUiEventLogger: UiEventLogger,
     /**
-     * Signals whether the dialog should NOT show app-related metadata.
-     *
-     * <p>A metadata-less dialog hides the title, subtitle, and app icon in the header.
+     * Signals whether the dialog should NOT show app-related metadata. A metadata-less dialog hides
+     * the title, subtitle, and app icon in the header.
      */
-    private final boolean mIncludePlaybackAndAppMetadata;
+    private val mIncludePlaybackAndAppMetadata: Boolean,
+    private val mOnDialogEventListener: OnDialogEventListener?,
+) :
+    SystemUIDialog(context, R.style.Theme_SystemUI_Dialog_Media),
+    MediaSwitchingController.Callback,
+    Window.Callback {
 
+    // Save the context that is wrapped with our theme.
+    private val mContext: Context = getContext()
+
+    private val mMainThreadHandler: Handler = Handler(Looper.getMainLooper())
+    private val mLayoutManager: LinearLayoutManager = LayoutManagerWrapper(mContext)
+
+    @VisibleForTesting lateinit var mDialogView: View
+    private lateinit var mHeaderTitle: TextView
+    private lateinit var mHeaderSubtitle: TextView
+    private lateinit var mHeaderIcon: ImageView
+    private lateinit var mAppResourceIconNormal: ImageView
+    private lateinit var mAppResourceIconSmall: ImageView
+    private lateinit var mDevicesRecyclerView: RecyclerView
+    private lateinit var mDeviceListLayout: ViewGroup
+    private lateinit var mQuickAccessShelf: ViewGroup
+    private lateinit var mConnectDeviceButton: MaterialButton
+    private lateinit var mAudioSharingButton: MaterialButton
+    private lateinit var mMediaMetadataSectionLayout: LinearLayout
+    private lateinit var mDoneButton: Button
+    private lateinit var mDialogFooter: ViewGroup
+    private lateinit var mStopButton: Button
+    private lateinit var mWarningSection: ViewGroup
+    private lateinit var mWarningFixButton: Button
+    private val mWallpaperColors: WallpaperColors? = null
+    private var mDismissing = false
+
+    @JvmField
     @VisibleForTesting
-    View mDialogView;
-    private TextView mHeaderTitle;
-    private TextView mHeaderSubtitle;
-    private ImageView mHeaderIcon;
-    private ImageView mAppResourceIconNormal;
-    private ImageView mAppResourceIconSmall;
-    private RecyclerView mDevicesRecyclerView;
-    private ViewGroup mDeviceListLayout;
-    private ViewGroup mQuickAccessShelf;
-    private MaterialButton mConnectDeviceButton;
-    private MaterialButton mAudioSharingButton;
-    private LinearLayout mMediaMetadataSectionLayout;
-    private Button mDoneButton;
-    private ViewGroup mDialogFooter;
-    private Button mStopButton;
-    private ViewGroup mWarningSection;
-    private Button mWarningFixButton;
-    private WallpaperColors mWallpaperColors;
-    private boolean mDismissing;
+    var mAdapter: MediaOutputAdapter = MediaOutputAdapter(mMediaSwitchingController)
 
-    @VisibleForTesting
-    MediaOutputAdapter mAdapter;
-
-    protected Executor mExecutor;
-
-    private final DialogTransitionAnimator mDialogTransitionAnimator;
-    private final UiEventLogger mUiEventLogger;
-    @Nullable
-    private final OnDialogEventListener mOnDialogEventListener;
-
-    private class LayoutManagerWrapper extends LinearLayoutManager {
-        LayoutManagerWrapper(Context context) {
-            super(context);
-        }
-
-        @Override
-        public void onLayoutCompleted(RecyclerView.State state) {
-            super.onLayoutCompleted(state);
-            mMediaSwitchingController.setRefreshing(false);
-            mMediaSwitchingController.refreshDataSetIfNeeded();
+    private inner class LayoutManagerWrapper(context: Context?) : LinearLayoutManager(context) {
+        override fun onLayoutCompleted(state: RecyclerView.State?) {
+            super.onLayoutCompleted(state)
+            mMediaSwitchingController.setRefreshing(false)
+            mMediaSwitchingController.refreshDataSetIfNeeded()
         }
     }
 
-    public MediaOutputDialog(
-            Context context,
-            boolean aboveStatusbar,
-            BroadcastSender broadcastSender,
-            MediaSwitchingController mediaSwitchingController,
-            DialogTransitionAnimator dialogTransitionAnimator,
-            UiEventLogger uiEventLogger,
-            boolean includePlaybackAndAppMetadata,
-            @Nullable OnDialogEventListener onDialogEventListener) {
-        super(context, R.style.Theme_SystemUI_Dialog_Media);
-
-        // Save the context that is wrapped with our theme.
-        mContext = getContext();
-        mBroadcastSender = broadcastSender;
-        mMediaSwitchingController = mediaSwitchingController;
-        mLayoutManager = new LayoutManagerWrapper(mContext);
-        mIncludePlaybackAndAppMetadata = includePlaybackAndAppMetadata;
-        mDialogTransitionAnimator = dialogTransitionAnimator;
-        mUiEventLogger = uiEventLogger;
-        mAdapter = new MediaOutputAdapter(mMediaSwitchingController);
-        mOnDialogEventListener = onDialogEventListener;
-        if (!aboveStatusbar) {
-            getWindow().setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY);
+    init {
+        if (!aboveStatusBar) {
+            window?.setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY)
         }
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-        mDialogView = LayoutInflater.from(mContext).inflate(R.layout.media_output_dialog, null);
-        final Window window = getWindow();
-        final WindowManager.LayoutParams lp = window.getAttributes();
-        lp.gravity = Gravity.CENTER;
+        mDialogView = LayoutInflater.from(mContext).inflate(R.layout.media_output_dialog, null)
+        val lp = window?.attributes
+        lp?.gravity = Gravity.CENTER
         // Config insets to make sure the layout is above the navigation bar
-        lp.setFitInsetsTypes(statusBars() | navigationBars());
-        lp.setFitInsetsSides(WindowInsets.Side.all());
-        lp.setFitInsetsIgnoringVisibility(true);
-        window.setAttributes(lp);
-        window.setContentView(mDialogView);
-        window.setTitle(mContext.getString(R.string.media_output_dialog_accessibility_title));
-        window.setType(WindowManager.LayoutParams.TYPE_STATUS_BAR_SUB_PANEL);
+        lp?.setFitInsetsTypes(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+        lp?.setFitInsetsSides(WindowInsets.Side.all())
+        lp?.setFitInsetsIgnoringVisibility(true)
+        window?.setAttributes(lp)
+        window?.setContentView(mDialogView)
+        window?.setTitle(mContext.getString(R.string.media_output_dialog_accessibility_title))
+        window?.setType(WindowManager.LayoutParams.TYPE_STATUS_BAR_SUB_PANEL)
 
-        mHeaderTitle = mDialogView.requireViewById(R.id.header_title);
-        mHeaderSubtitle = mDialogView.requireViewById(R.id.header_subtitle);
-        mHeaderIcon = mDialogView.requireViewById(R.id.header_icon);
-        mAppResourceIconNormal = mDialogView.requireViewById(R.id.app_source_icon);
+        mHeaderTitle = mDialogView.requireViewById(R.id.header_title)
+        mHeaderSubtitle = mDialogView.requireViewById(R.id.header_subtitle)
+        mHeaderIcon = mDialogView.requireViewById(R.id.header_icon)
+        mAppResourceIconNormal = mDialogView.requireViewById(R.id.app_source_icon)
         mAppResourceIconSmall =
-                mDialogView.requireViewById(R.id.app_source_icon_small_screen_height);
-        mQuickAccessShelf = mDialogView.requireViewById(R.id.quick_access_shelf);
-        mConnectDeviceButton = mDialogView.requireViewById(R.id.connect_device);
-        mAudioSharingButton = mDialogView.requireViewById(R.id.audio_sharing);
-        mDevicesRecyclerView = mDialogView.requireViewById(R.id.list_result);
-        mDialogFooter = mDialogView.requireViewById(R.id.dialog_footer);
-        mMediaMetadataSectionLayout = mDialogView.requireViewById(R.id.media_metadata_section);
-        mDeviceListLayout = mDialogView.requireViewById(R.id.device_list);
-        mDoneButton = mDialogView.requireViewById(R.id.done);
-        mStopButton = mDialogView.requireViewById(R.id.stop);
-        mWarningSection = mDialogView.requireViewById(R.id.warning_section);
-        mWarningFixButton = mDialogView.requireViewById(R.id.warning_fix_button);
+            mDialogView.requireViewById(R.id.app_source_icon_small_screen_height)
+        mQuickAccessShelf = mDialogView.requireViewById(R.id.quick_access_shelf)
+        mConnectDeviceButton = mDialogView.requireViewById(R.id.connect_device)
+        mAudioSharingButton = mDialogView.requireViewById(R.id.audio_sharing)
+        mDevicesRecyclerView = mDialogView.requireViewById(R.id.list_result)
+        mDialogFooter = mDialogView.requireViewById(R.id.dialog_footer)
+        mMediaMetadataSectionLayout = mDialogView.requireViewById(R.id.media_metadata_section)
+        mDeviceListLayout = mDialogView.requireViewById(R.id.device_list)
+        mDoneButton = mDialogView.requireViewById(R.id.done)
+        mStopButton = mDialogView.requireViewById(R.id.stop)
+        mWarningSection = mDialogView.requireViewById(R.id.warning_section)
+        mWarningFixButton = mDialogView.requireViewById(R.id.warning_fix_button)
 
-        updateAppResourceIcon();
-        mMediaMetadataSectionLayout.setVisibility(isSmallScreenHeight() ? View.GONE : View.VISIBLE);
+        updateAppResourceIcon()
+        mMediaMetadataSectionLayout.visibility =
+            if (isSmallScreenHeight()) View.GONE else View.VISIBLE
 
         // Init device list
-        mLayoutManager.setAutoMeasureEnabled(true);
-        mDevicesRecyclerView.setLayoutManager(mLayoutManager);
-        mDevicesRecyclerView.setAdapter(mAdapter);
-        mDevicesRecyclerView.setHasFixedSize(false);
+        mLayoutManager.isAutoMeasureEnabled = true
+        mDevicesRecyclerView.setLayoutManager(mLayoutManager)
+        mDevicesRecyclerView.setAdapter(mAdapter)
+        mDevicesRecyclerView.setHasFixedSize(false)
         // Init bottom buttons
-        mDoneButton.setOnClickListener(v -> dismiss());
-        mStopButton.setOnClickListener(v -> onStopButtonClick());
+        mDoneButton.setOnClickListener { dismiss() }
+        mStopButton.setOnClickListener { onStopButtonClick() }
         if (mMediaSwitchingController.getAppLaunchIntent() != null) {
             // For a11y purposes only add listener if a section is clickable.
-            mMediaMetadataSectionLayout.setOnClickListener(
-                    mMediaSwitchingController::tryToLaunchMediaApplication);
+            mMediaMetadataSectionLayout.setOnClickListener { view: View ->
+                mMediaSwitchingController.tryToLaunchMediaApplication(view)
+            }
         }
 
-        mDismissing = false;
+        mDismissing = false
 
         // Change footer background color on scroll.
-        mDevicesRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                changeFooterColorForScroll();
+        mDevicesRecyclerView.addOnScrollListener(
+            object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+                    changeFooterColorForScroll()
+                }
             }
-        });
+        )
         // Changes footer background when the list dimensions changed without scroll.
-        mDevicesRecyclerView.addOnLayoutChangeListener(
-                (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
-                    changeFooterColorForScroll();
-                });
+        mDevicesRecyclerView.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+            changeFooterColorForScroll()
+        }
 
-        mUiEventLogger.log(MediaOutputEvent.MEDIA_OUTPUT_DIALOG_SHOW);
+        mUiEventLogger.log(MediaOutputEvent.MEDIA_OUTPUT_DIALOG_SHOW)
 
-        if (mOnDialogEventListener != null) {
-            mOnDialogEventListener.onCreate(this);
+        mOnDialogEventListener?.onCreate(this)
+    }
+
+    override fun onConfigurationChanged(configuration: Configuration) {
+        super.onConfigurationChanged(configuration)
+        mMainThreadHandler.post {
+            updateAppResourceIcon()
+            mMediaMetadataSectionLayout.visibility =
+                if (isSmallScreenHeight()) View.GONE else View.VISIBLE
         }
     }
 
-    @Override
-    public void onConfigurationChanged(Configuration configuration) {
-        super.onConfigurationChanged(configuration);
-        mMainThreadHandler.post(() -> {
-            updateAppResourceIcon();
-            mMediaMetadataSectionLayout.
-                    setVisibility(isSmallScreenHeight() ? View.GONE : View.VISIBLE);
-        });
-    }
-
-    @Override
-    public void dismiss() {
+    override fun dismiss() {
         // TODO(287191450): remove this once expensive binder calls are removed from refresh().
         // Due to these binder calls on the UI thread, calling refresh() during dismissal causes
         // significant frame drops for the dismissal animation. Since the dialog is going away
         // anyway, we use this state to turn refresh() into a no-op.
-        mDismissing = true;
-        super.dismiss();
+        mDismissing = true
+        super.dismiss()
     }
 
-    @Override
-    public void start() {
-        mMediaSwitchingController.start(this);
+    public override fun start() {
+        mMediaSwitchingController.start(this)
     }
 
-    @Override
-    public void stop() {
-        mMediaSwitchingController.stop();
-        if (mOnDialogEventListener != null) {
-            mOnDialogEventListener.onStop(this);
-        }
+    public override fun stop() {
+        mMediaSwitchingController.stop()
+        mOnDialogEventListener?.onStop(this)
     }
 
     @VisibleForTesting
-    void refresh() {
-        refresh(false);
+    fun refresh() {
+        refresh(false)
     }
 
-    void refresh(boolean deviceSetChanged) {
+    fun refresh(deviceSetChanged: Boolean) {
         // TODO(287191450): remove binder calls in this method from the UI thread.
         // If the dialog is going away or is already refreshing, do nothing.
         if (mDismissing || mMediaSwitchingController.isRefreshing()) {
-            return;
+            return
         }
-        mMediaSwitchingController.setRefreshing(true);
+        mMediaSwitchingController.setRefreshing(true)
         // Update header icon
-        final IconCompat headerIcon = mMediaSwitchingController.getHeaderIcon();
-        boolean colorSetUpdated = false;
+        val headerIcon = mMediaSwitchingController.getHeaderIcon()
+        var colorSetUpdated = false
         if (headerIcon != null) {
-            Icon icon = headerIcon.toIcon(mContext);
-            if (icon.getType() != Icon.TYPE_BITMAP && icon.getType() != Icon.TYPE_ADAPTIVE_BITMAP) {
+            val icon = headerIcon.toIcon(mContext)
+            if (icon.type != Icon.TYPE_BITMAP && icon.type != Icon.TYPE_ADAPTIVE_BITMAP) {
                 // icon doesn't support getBitmap, use default value for color scheme
-                updateButtonBackgroundColorFilter();
-                updateDialogBackgroundColor();
+                updateButtonBackgroundColorFilter()
+                updateDialogBackgroundColor()
             } else {
-                Configuration config = mContext.getResources().getConfiguration();
-                int currentNightMode = config.uiMode & Configuration.UI_MODE_NIGHT_MASK;
-                boolean isDarkThemeOn = currentNightMode == Configuration.UI_MODE_NIGHT_YES;
-                WallpaperColors wallpaperColors = WallpaperColors.fromBitmap(icon.getBitmap());
-                colorSetUpdated = !wallpaperColors.equals(mWallpaperColors);
+                val config = mContext.resources.configuration
+                val currentNightMode = config.uiMode and Configuration.UI_MODE_NIGHT_MASK
+                val isDarkThemeOn = currentNightMode == Configuration.UI_MODE_NIGHT_YES
+                val wallpaperColors = WallpaperColors.fromBitmap(icon.getBitmap())
+                colorSetUpdated = wallpaperColors != mWallpaperColors
                 if (colorSetUpdated) {
-                    mMediaSwitchingController.updateCurrentColorScheme(wallpaperColors,
-                            isDarkThemeOn);
-                    updateButtonBackgroundColorFilter();
-                    updateDialogBackgroundColor();
+                    mMediaSwitchingController.updateCurrentColorScheme(
+                        wallpaperColors,
+                        isDarkThemeOn,
+                    )
+                    updateButtonBackgroundColorFilter()
+                    updateDialogBackgroundColor()
                 }
             }
-            mHeaderIcon.setVisibility(View.VISIBLE);
-            mHeaderIcon.setImageIcon(icon);
+            mHeaderIcon.setVisibility(View.VISIBLE)
+            mHeaderIcon.setImageIcon(icon)
         } else {
-            updateButtonBackgroundColorFilter();
-            updateDialogBackgroundColor();
-            mHeaderIcon.setVisibility(View.GONE);
+            updateButtonBackgroundColorFilter()
+            updateDialogBackgroundColor()
+            mHeaderIcon.setVisibility(View.GONE)
         }
 
-        updateAppResourceIcon();
+        updateAppResourceIcon()
 
         if (!mIncludePlaybackAndAppMetadata) {
-            mHeaderTitle.setVisibility(View.GONE);
-            mHeaderSubtitle.setVisibility(View.GONE);
+            mHeaderTitle.visibility = View.GONE
+            mHeaderSubtitle.visibility = View.GONE
         } else {
             // Update title and subtitle
-            mHeaderTitle.setText(mMediaSwitchingController.getHeaderTitle());
-            mHeaderTitle.setTextColor(mMediaSwitchingController.getColorScheme().getOnSurface());
-            final CharSequence subTitle = mMediaSwitchingController.getHeaderSubTitle();
-            if (TextUtils.isEmpty(subTitle)) {
-                mHeaderSubtitle.setVisibility(View.GONE);
-                mHeaderTitle.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+            mHeaderTitle.text = mMediaSwitchingController.getHeaderTitle()
+            mHeaderTitle.setTextColor(mMediaSwitchingController.getColorScheme().getOnSurface())
+            val subTitle = mMediaSwitchingController.getHeaderSubTitle()
+            if (subTitle.isNullOrEmpty()) {
+                mHeaderSubtitle.visibility = View.GONE
+                mHeaderTitle.setGravity(Gravity.START or Gravity.CENTER_VERTICAL)
             } else {
-                mHeaderSubtitle.setVisibility(View.VISIBLE);
-                mHeaderSubtitle.setText(subTitle);
-                mHeaderSubtitle.setTextColor(mMediaSwitchingController
-                        .getColorScheme().getOnSurface());
-                mHeaderTitle.setGravity(Gravity.NO_GRAVITY);
+                mHeaderSubtitle.visibility = View.VISIBLE
+                mHeaderSubtitle.text = subTitle
+                mHeaderSubtitle.setTextColor(
+                    mMediaSwitchingController.getColorScheme().getOnSurface()
+                )
+                mHeaderTitle.setGravity(Gravity.NO_GRAVITY)
             }
         }
 
-        refreshQuickAccessShelf();
+        refreshQuickAccessShelf()
 
         // Show when remote media session is available or
         //      when the device supports BT LE audio + media is playing
-        Integer stopResId = mMediaSwitchingController.getStopButtonStringRes();
+        val stopResId = mMediaSwitchingController.getStopButtonStringRes()
         if (stopResId != null) {
-            mStopButton.setText(mContext.getString(stopResId));
-            mStopButton.setVisibility(View.VISIBLE);
+            mStopButton.text = mContext.getString(stopResId)
+            mStopButton.visibility = View.VISIBLE
         } else {
-            mStopButton.setVisibility(View.GONE);
+            mStopButton.visibility = View.GONE
         }
-        mStopButton.setEnabled(true);
-        mStopButton.setOnClickListener(v -> onStopButtonClick());
+        mStopButton.setEnabled(true)
+        mStopButton.setOnClickListener { onStopButtonClick() }
 
-        refreshWarningSection();
+        refreshWarningSection()
 
         if (!mAdapter.isDragging()) {
-            int currentActivePosition = mAdapter.getCurrentActivePosition();
-            if (!colorSetUpdated && !deviceSetChanged && currentActivePosition >= 0
-                    && currentActivePosition < mAdapter.getItemCount()) {
-                mAdapter.notifyItemChanged(currentActivePosition);
+            val currentActivePosition = mAdapter.getCurrentActivePosition()
+            if (
+                !colorSetUpdated &&
+                    !deviceSetChanged &&
+                    currentActivePosition in 0..<mAdapter.itemCount
+            ) {
+                mAdapter.notifyItemChanged(currentActivePosition)
             } else {
-                mAdapter.updateItems();
+                mAdapter.updateItems()
             }
         } else {
-            mMediaSwitchingController.setRefreshing(false);
-            mMediaSwitchingController.refreshDataSetIfNeeded();
+            mMediaSwitchingController.setRefreshing(false)
+            mMediaSwitchingController.refreshDataSetIfNeeded()
         }
     }
 
-    private void updateButtonBackgroundColorFilter() {
-        mDoneButton.getBackground().setTint(
-                mMediaSwitchingController.getColorScheme().getPrimary());
-        mDoneButton.setTextColor(mMediaSwitchingController.getColorScheme().getOnPrimary());
-        mStopButton.getBackground().setTint(
-                mMediaSwitchingController.getColorScheme().getOutlineVariant());
-        mStopButton.setTextColor(mMediaSwitchingController.getColorScheme().getPrimary());
-        mConnectDeviceButton.setTextColor(
-                mMediaSwitchingController.getColorScheme().getOnSurfaceVariant());
-        mConnectDeviceButton.setStrokeColor(ColorStateList.valueOf(
-                mMediaSwitchingController.getColorScheme().getOutlineVariant()));
-        mConnectDeviceButton.setIconTint(ColorStateList.valueOf(
-                mMediaSwitchingController.getColorScheme().getPrimary()));
+    private fun updateButtonBackgroundColorFilter() {
+        val colorScheme = mMediaSwitchingController.getColorScheme()
+        mDoneButton.background?.setTint(colorScheme.getPrimary())
+        mDoneButton.setTextColor(colorScheme.getOnPrimary())
+        mStopButton.background?.setTint(colorScheme.getOutlineVariant())
+        mStopButton.setTextColor(colorScheme.getPrimary())
+        mConnectDeviceButton.setTextColor(colorScheme.getOnSurfaceVariant())
+        mConnectDeviceButton.setStrokeColor(ColorStateList.valueOf(colorScheme.getOutlineVariant()))
+        mConnectDeviceButton.setIconTint(ColorStateList.valueOf(colorScheme.getPrimary()))
 
-        MediaOutputColorScheme colorScheme = mMediaSwitchingController.getColorScheme();
         mAudioSharingButton.setTextColor(
-                getButtonColorStateList(
-                        /* defaultColor= */ colorScheme.getOnSurfaceVariant(),
-                        /* activatedColor= */ colorScheme.getOnPrimary()));
+            getButtonColorStateList(
+                defaultColor = colorScheme.getOnSurfaceVariant(),
+                activatedColor = colorScheme.getOnPrimary(),
+            )
+        )
         mAudioSharingButton.setStrokeColor(
-                getButtonColorStateList(
-                        /* defaultColor= */ colorScheme.getOutlineVariant(),
-                        /* activatedColor= */ colorScheme.getPrimary()));
-        mAudioSharingButton.setBackgroundTintList(
-                getButtonColorStateList(
-                        /* defaultColor= */ colorScheme.getSurfaceContainer(),
-                        /* activatedColor= */ colorScheme.getPrimary()));
+            getButtonColorStateList(
+                defaultColor = colorScheme.getOutlineVariant(),
+                activatedColor = colorScheme.getPrimary(),
+            )
+        )
+        mAudioSharingButton.backgroundTintList =
+            getButtonColorStateList(
+                defaultColor = colorScheme.getSurfaceContainer(),
+                activatedColor = colorScheme.getPrimary(),
+            )
         mAudioSharingButton.setIconTint(
-                getButtonColorStateList(
-                        /* defaultColor= */ colorScheme.getPrimary(),
-                        /* activatedColor= */ colorScheme.getOnPrimary()));
+            getButtonColorStateList(
+                defaultColor = colorScheme.getPrimary(),
+                activatedColor = colorScheme.getOnPrimary(),
+            )
+        )
     }
 
-    private ColorStateList getButtonColorStateList(int defaultColor, int activatedColor) {
-        return new ColorStateList(
-                new int[][] {new int[] {android.R.attr.state_activated}, new int[] {}},
-                new int[] {activatedColor, defaultColor});
+    private fun getButtonColorStateList(defaultColor: Int, activatedColor: Int): ColorStateList {
+        return ColorStateList(
+            arrayOf(intArrayOf(android.R.attr.state_activated), intArrayOf()),
+            intArrayOf(activatedColor, defaultColor),
+        )
     }
 
-    private void updateDialogBackgroundColor() {
-        int backgroundColor = mMediaSwitchingController.getColorScheme().getSurfaceContainer();
-        getDialogView().getBackground().setTint(backgroundColor);
-        mDeviceListLayout.setBackgroundColor(backgroundColor);
+    private fun updateDialogBackgroundColor() {
+        val backgroundColor = mMediaSwitchingController.getColorScheme().getSurfaceContainer()
+        mDialogView.background?.setTint(backgroundColor)
+        mDeviceListLayout.setBackgroundColor(backgroundColor)
     }
 
-    private void changeFooterColorForScroll() {
-        int totalItemCount = mLayoutManager.getItemCount();
-        int lastVisibleItemPosition =
-                mLayoutManager.findLastCompletelyVisibleItemPosition();
-        boolean hasBottomScroll =
-                totalItemCount > 0 && lastVisibleItemPosition != totalItemCount - 1;
-        mDialogFooter.getBackground().setTint(
-                hasBottomScroll
-                        ? mMediaSwitchingController.getColorScheme().getSurfaceContainerHigh()
-                        : mMediaSwitchingController.getColorScheme().getSurfaceContainer());
+    private fun changeFooterColorForScroll() {
+        val totalItemCount = mLayoutManager.getItemCount()
+        val lastVisibleItemPosition = mLayoutManager.findLastCompletelyVisibleItemPosition()
+        val hasBottomScroll = totalItemCount > 0 && lastVisibleItemPosition != totalItemCount - 1
+        val colorScheme = mMediaSwitchingController.getColorScheme()
+        mDialogFooter.background?.setTint(
+            if (hasBottomScroll) colorScheme.getSurfaceContainerHigh()
+            else colorScheme.getSurfaceContainer()
+        )
     }
 
-    private void refreshQuickAccessShelf() {
-        boolean showQuickAccessShelf = false;
-        AudioSharingButtonState buttonState =
-                mMediaSwitchingController.getAudioSharingButtonState();
+    private fun refreshQuickAccessShelf() {
+        var showQuickAccessShelf = false
+        val buttonState = mMediaSwitchingController.getAudioSharingButtonState()
         if (buttonState == null) {
-            mAudioSharingButton.setVisibility(View.GONE);
+            mAudioSharingButton.visibility = View.GONE
         } else {
-            showQuickAccessShelf = true;
-            mAudioSharingButton.setVisibility(View.VISIBLE);
-            mAudioSharingButton.setText(buttonState.getResId());
-            mAudioSharingButton.setActivated(buttonState.isActive());
-            mAudioSharingButton.setOnClickListener(
-                    mMediaSwitchingController::launchAudioSharing);
+            showQuickAccessShelf = true
+            mAudioSharingButton.apply {
+                visibility = View.VISIBLE
+                setText(buttonState.resId)
+                isActivated = buttonState.isActive
+                setOnClickListener { view: View ->
+                    mMediaSwitchingController.launchAudioSharing(view)
+                }
+            }
         }
 
         if (mMediaSwitchingController.hasConnectDeviceButton()) {
-            showQuickAccessShelf = true;
-            mConnectDeviceButton.setVisibility(View.VISIBLE);
-            mConnectDeviceButton.setOnClickListener(
-                    mMediaSwitchingController::launchBluetoothPairing);
+            showQuickAccessShelf = true
+            mConnectDeviceButton.apply {
+                visibility = View.VISIBLE
+                setOnClickListener { view: View ->
+                    mMediaSwitchingController.launchBluetoothPairing(view)
+                }
+            }
         } else {
-            mConnectDeviceButton.setVisibility(View.GONE);
+            mConnectDeviceButton.visibility = View.GONE
         }
 
-        mQuickAccessShelf.setVisibility(showQuickAccessShelf ? View.VISIBLE : View.GONE);
+        mQuickAccessShelf.visibility = if (showQuickAccessShelf) View.VISIBLE else View.GONE
     }
 
-    private void updateAppResourceIcon() {
-        mAppResourceIconNormal.setVisibility(View.GONE);
-        mAppResourceIconSmall.setVisibility(View.GONE);
+    private fun updateAppResourceIcon() {
+        mAppResourceIconNormal.visibility = View.GONE
+        mAppResourceIconSmall.visibility = View.GONE
 
-        Drawable appIcon = mMediaSwitchingController.getAppIcon();
-        ImageView mAppResourceIcon =
-                isSmallScreenHeight() ? mAppResourceIconSmall : mAppResourceIconNormal;
+        val appIcon = mMediaSwitchingController.getAppIcon()
+        val mAppResourceIcon =
+            if (isSmallScreenHeight()) mAppResourceIconSmall else mAppResourceIconNormal
         if (mIncludePlaybackAndAppMetadata && appIcon != null) {
-            mAppResourceIcon.setColorFilter(
-                    mMediaSwitchingController.getColorScheme().getSecondary());
-            mAppResourceIcon.setImageDrawable(appIcon);
-            mAppResourceIcon.setVisibility(View.VISIBLE);
+            mAppResourceIcon.apply {
+                setColorFilter(mMediaSwitchingController.getColorScheme().getSecondary())
+                setImageDrawable(appIcon)
+                visibility = View.VISIBLE
+            }
         }
     }
 
-    private boolean isSmallScreenHeight() {
-        return mContext.getResources().getConfiguration().screenHeightDp <= SMALL_SCREEN_HEIGHT_DP;
-    }
+    private fun isSmallScreenHeight(): Boolean =
+        mContext.resources.configuration.screenHeightDp <= SMALL_SCREEN_HEIGHT_DP
 
-    private void refreshWarningSection() {
-        Intent intent = mMediaSwitchingController.getMissingPermissionsResolveIntent();
+    private fun refreshWarningSection() {
+        val intent = mMediaSwitchingController.getMissingPermissionsResolveIntent()
         if (intent == null) {
-            mWarningSection.setVisibility(View.GONE);
-            return;
+            mWarningSection.visibility = View.GONE
+            return
         }
-        mWarningSection.setVisibility(View.VISIBLE);
-        mWarningFixButton.setOnClickListener(v -> {
-            dismiss();
+        mWarningSection.visibility = View.VISIBLE
+        mWarningFixButton.setOnClickListener {
+            dismiss()
             try {
-                mContext.startActivity(intent);
-            } catch (ActivityNotFoundException e) {
+                mContext.startActivity(intent)
+            } catch (_: ActivityNotFoundException) {
                 // Checks for the intent to match an activity in the calling app are done at
                 // registration time, but in theory the app could be uninstalled just before this
                 // code runs.
-                Log.e(TAG, "No activity found to handle intent " + intent);
+                Log.e(TAG, "No activity found to handle intent $intent")
             }
-        });
-
-    }
-
-    @VisibleForTesting
-    void onStopButtonClick() {
-        mMediaSwitchingController.releaseSession();
-        mDialogTransitionAnimator.disableAllCurrentDialogsExitAnimations();
-        dismiss();
-    }
-
-    @Override
-    public void onMediaChanged() {
-        mMainThreadHandler.post(() -> refresh());
-    }
-
-    @Override
-    public void onMediaStoppedOrPaused() {
-        if (isShowing()) {
-            dismiss();
         }
     }
 
-    @Override
-    public void onRouteChanged() {
-        mMainThreadHandler.post(() -> refresh());
+    @VisibleForTesting
+    fun onStopButtonClick() {
+        mMediaSwitchingController.releaseSession()
+        mDialogTransitionAnimator.disableAllCurrentDialogsExitAnimations()
+        dismiss()
     }
 
-    @Override
-    public void onDeviceListChanged() {
-        mMainThreadHandler.post(() -> refresh(true));
+    override fun onMediaChanged() {
+        mMainThreadHandler.post { refresh() }
     }
 
-    @Override
-    public void dismissDialog() {
+    override fun onMediaStoppedOrPaused() {
+        if (isShowing) {
+            dismiss()
+        }
+    }
+
+    override fun onRouteChanged() {
+        mMainThreadHandler.post { refresh() }
+    }
+
+    override fun onDeviceListChanged() {
+        mMainThreadHandler.post { refresh(true) }
+    }
+
+    override fun dismissDialog() {
         // Explicitly use dismiss() to dismiss the dialog, as relying on closeSystemDialogs() for
         // dismissal is unstable on desktop.
         // TODO(b/457526674): Remove the dismiss() call once the issue with closeSystemDialogs() is
         // fixed on desktop.
-        dismiss();
-        mBroadcastSender.closeSystemDialogs();
+        dismiss()
+        mBroadcastSender.closeSystemDialogs()
     }
 
-    @Override
-    public void onQuickAccessButtonsChanged() {
-        mMainThreadHandler.post(this::refreshQuickAccessShelf);
-    }
-
-    View getDialogView() {
-        return mDialogView;
+    override fun onQuickAccessButtonsChanged() {
+        mMainThreadHandler.post { refreshQuickAccessShelf() }
     }
 
     @VisibleForTesting
-    public enum MediaOutputEvent implements UiEventLogger.UiEventEnum {
+    enum class MediaOutputEvent(private val mId: Int) : UiEventLogger.UiEventEnum {
         @UiEvent(doc = "The MediaOutput dialog became visible on the screen.")
         MEDIA_OUTPUT_DIALOG_SHOW(655);
 
-        private final int mId;
-
-        MediaOutputEvent(int id) {
-            mId = id;
-        }
-
-        @Override
-        public int getId() {
-            return mId;
-        }
+        override fun getId(): Int = mId
     }
 
     /** Callback for dialog events. */
-    public interface OnDialogEventListener {
+    interface OnDialogEventListener {
         /** Will be called when the dialog is created. */
-        void onCreate(@NonNull Dialog dialog);
+        fun onCreate(dialog: Dialog)
 
         /** Will be called when the dialog is stopping. */
-        void onStop(@NonNull Dialog dialog);
+        fun onStop(dialog: Dialog)
+    }
+
+    companion object {
+        private const val TAG = "MediaOutputDialog"
+        private const val SMALL_SCREEN_HEIGHT_DP: Int = 400
     }
 }
