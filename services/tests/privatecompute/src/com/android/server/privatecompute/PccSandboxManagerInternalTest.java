@@ -521,4 +521,19 @@ public class PccSandboxManagerInternalTest {
 
         assertFalse("Association with a Bundle containing a Binder should be denied", allowed);
     }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testValidateAssociationAllowed_service_bundleWithBinder_isDenied() {
+        Bundle extras = new Bundle();
+        extras.putBinder("binder", new Binder());
+
+        boolean allowed = mPccSandboxManagerInternal.validateAssociationAllowed(
+                REGULAR_UID, REGULAR_PACKAGE, PCC_UID_1, PCC_PACKAGE_1,
+                ActivityManagerService.ASSOCIATION_TYPE_SERVICE, extras);
+
+        assertFalse("Service association with a Bundle containing a Binder should be denied",
+                allowed);
+    }
 }
+
