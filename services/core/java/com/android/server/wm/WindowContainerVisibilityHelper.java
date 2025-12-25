@@ -44,4 +44,23 @@ interface WindowContainerVisibilityHelper {
      * @param current the {@link WindowContainer} to check.
      */
     boolean hasFillingContent(@NonNull WindowContainer current);
+
+    /**
+     * Whether the container is opaque.
+     *
+     * @param current the {@link WindowContainer} to check.
+     */
+    boolean isOpaque(@NonNull WindowContainer<?> current);
+
+    /**
+     * Whether the container is opaque.
+     *
+     * @param current the {@link WindowContainer} to check.
+     * @param starting the currently starting activity or {@code null} if there is none.
+     * @param ignoringKeyguard if {@code true}, returns the result ignoring the keyguard state.
+     * @param ignoringInvisibleActivity if {@code true}, only including visible activities in the
+     *                                  calculation.
+     */
+    boolean isOpaque(@NonNull WindowContainer<?> current, @Nullable ActivityRecord starting,
+            boolean ignoringKeyguard,  boolean ignoringInvisibleActivity);
 }

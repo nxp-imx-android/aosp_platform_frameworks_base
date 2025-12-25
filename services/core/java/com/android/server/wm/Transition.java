@@ -560,7 +560,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                 final WindowContainer<?> sibling = rootParent.getChildAt(j);
                 if (sibling == transientRoot) break;
                 if (!sibling.getWindowConfiguration().isAlwaysOnTop() && mController.mAtm
-                        .mTaskSupervisor.mOpaqueContainerHelper.isOpaque(sibling)) {
+                        .mVisibilityHelper.isOpaque(sibling)) {
                     occludedCount++;
                     break;
                 }

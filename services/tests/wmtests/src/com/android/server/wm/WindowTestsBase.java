@@ -69,6 +69,7 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityOptions;
+import android.app.WindowConfiguration;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -744,6 +745,20 @@ public class WindowTestsBase extends SystemServiceTestsBase {
                 .setUserId(userId)
                 .setParentTask(rootTask)
                 .build();
+        return task;
+    }
+
+    /** Creates a {@link Task} with an activity and adds to the given root {@link Task}. */
+    Task createLeafTaskWithActivity(Task rootTask,
+            @WindowConfiguration.WindowingMode int windowingMode, boolean opaque, boolean filling) {
+        final ActivityRecord activity = new ActivityBuilder(mAtm)
+                .setCreateTask(true)
+                .setParentTask(rootTask)
+                .build();
+        activity.setOccludesParent(opaque);
+        final Task task = activity.getTask();
+        task.setWindowingMode(windowingMode);
+        task.setBounds(filling ? new Rect() : new Rect(100, 100, 200, 200));
         return task;
     }
 

@@ -1489,10 +1489,9 @@ public class RootWindowContainerTests extends WindowTestsBase {
     @Test
     public void testGetTopVisibleActivities_fullscreen() {
         // Make every Task opaque.
-        final ActivityTaskSupervisor.OpaqueContainerHelper opaqueContainerHelper =
-                mAtm.mTaskSupervisor.mOpaqueContainerHelper;
-        spyOn(opaqueContainerHelper);
-        doReturn(true).when(opaqueContainerHelper).isOpaque(
+        final WindowContainerVisibilityHelper visibilityHelper = mAtm.mVisibilityHelper;
+        spyOn(visibilityHelper);
+        doReturn(true).when(visibilityHelper).isOpaque(
                 any(), any(), anyBoolean(), anyBoolean());
 
         final DisplayContent display = mRootWindowContainer.getDefaultDisplay();
@@ -1511,10 +1510,9 @@ public class RootWindowContainerTests extends WindowTestsBase {
     @Test
     public void testGetTopVisibleActivities_splitScreen() {
         // Make every Task opaque.
-        final ActivityTaskSupervisor.OpaqueContainerHelper opaqueContainerHelper =
-                mAtm.mTaskSupervisor.mOpaqueContainerHelper;
-        spyOn(opaqueContainerHelper);
-        doReturn(true).when(opaqueContainerHelper).isOpaque(
+        final WindowContainerVisibilityHelper visibilityHelper = mAtm.mVisibilityHelper;
+        spyOn(visibilityHelper);
+        doReturn(true).when(visibilityHelper).isOpaque(
                 any(), any(), anyBoolean(), anyBoolean());
 
         final DisplayContent display = mRootWindowContainer.getDefaultDisplay();
@@ -1581,10 +1579,9 @@ public class RootWindowContainerTests extends WindowTestsBase {
     @Test
     public void testGetTopVisibleActivities_focusedAndNonFocusedRootTasks() {
         // Make every Task opaque.
-        final ActivityTaskSupervisor.OpaqueContainerHelper opaqueContainerHelper =
-                mAtm.mTaskSupervisor.mOpaqueContainerHelper;
-        spyOn(opaqueContainerHelper);
-        doReturn(true).when(opaqueContainerHelper).isOpaque(
+        final WindowContainerVisibilityHelper visibilityHelper = mAtm.mVisibilityHelper;
+        spyOn(visibilityHelper);
+        doReturn(true).when(visibilityHelper).isOpaque(
                 any(), any(), anyBoolean(), anyBoolean());
 
         final DisplayContent display = mRootWindowContainer.getDefaultDisplay();
