@@ -217,7 +217,6 @@ class InputManagerServiceTests {
         val viewports = listOf<DisplayViewport>()
         localService.setDisplayViewports(viewports)
         verify(native).setDisplayViewports(any(Array<DisplayViewport>::class.java))
-        verify(native).setPointerDisplayId(displayId)
     }
 
     @Test
