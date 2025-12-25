@@ -230,6 +230,19 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
     }
 
     @Override
+    public boolean shouldActivityBeVisible(@NonNull ActivityRecord current,
+            boolean ignoringKeyguard) {
+        final Task task = current.getTask();
+        if (task == null) {
+            return false;
+        }
+
+        final boolean behindOccludedContainer = !task.shouldBeVisible(null /* starting */)
+                || getOccludingActivityAbove(task, current) != null;
+        return current.updateAndCheckVisibility(behindOccludedContainer, ignoringKeyguard);
+    }
+
+    @Override
     public boolean hasFillingContent(@NonNull WindowContainer current) {
         final int childCount = current.getChildCount();
         if (childCount == 0) {
@@ -341,6 +354,53 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
         }
         return task.forAllTasks(leafTask ->
                 !mService.getLockTaskController().isLockTaskModeViolation(leafTask));
+    }
+
+    /**
+     * Returns the top-most activity that occludes the given {@code activity}, or {@code null} if
+     * none.
+     */
+    @Nullable
+    private static ActivityRecord getOccludingActivityAbove(@NonNull Task current,
+            @NonNull ActivityRecord activity) {
+        final ActivityRecord top = current.getActivity(r -> {
+            if (r == activity) {
+                // Reached the given activity, return the activity to stop searching.
+                return true;
+            }
+
+            if (!r.occludesParent()) {
+                return false;
+            }
+
+            TaskFragment parent = r.getTaskFragment();
+            if (parent == activity.getTaskFragment()) {
+                // Found it. This activity on top of the given activity on the same TaskFragment.
+                return true;
+            }
+            if (parent != null && parent.asTask() != null) {
+                // Found it. This activity is the direct child of a leaf Task.
+                return true;
+            }
+            // The candidate activity is being embedded. Checking if the bounds of the containing
+            // TaskFragment equals to the outer TaskFragment.
+            TaskFragment grandParent = parent.getParent().asTaskFragment();
+            while (grandParent != null) {
+                if (!parent.getBounds().equals(grandParent.getBounds())) {
+                    // Not occluding the grandparent.
+                    break;
+                }
+                if (grandParent.asTask() != null) {
+                    // Found it. The activity occludes its parent TaskFragment and the parent
+                    // TaskFragment also occludes its parent all the way up.
+                    return true;
+                }
+                parent = grandParent;
+                grandParent = parent.getParent().asTaskFragment();
+            }
+            return false;
+        });
+        return top != activity ? top : null;
     }
 
     /** The helper to calculate whether a container is opaque. */
