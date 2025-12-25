@@ -90,6 +90,7 @@ final class SysfsNodeMonitor {
     private void startMonitoring(int deviceId) {
         final var inputDevice = mInputManager.getInputDevice(deviceId);
         if (inputDevice == null) {
+            Log.w(TAG, "Input device not found, skipping monitoring for deviceId: " + deviceId);
             return;
         }
         if (!inputDevice.isExternal()) {
