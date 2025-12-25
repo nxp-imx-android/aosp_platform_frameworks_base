@@ -27,8 +27,8 @@ import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.view.Display;
 
-import androidx.test.InstrumentationRegistry;
-import androidx.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.modules.utils.testing.ExtendedMockitoRule;
@@ -55,7 +55,7 @@ public class BatteryStatsServiceAtomTest {
 
     @Before
     public void setUp() {
-        final Context context = InstrumentationRegistry.getContext();
+        final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         mBatteryStatsService = new BatteryStatsService(context, context.getCacheDir());
     }
 

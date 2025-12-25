@@ -1836,13 +1836,13 @@ public class BubbleTransitions {
             final boolean reparentToTda =
                     mTaskInfo.getWindowingMode() == WINDOWING_MODE_MULTI_WINDOW
                             && mTaskInfo.getParentTaskId() != INVALID_TASK_ID;
-            final WindowContainerToken rootToken = mBubbleHelper.getAppBubbleRootTaskToken();
             final WindowContainerTransaction wct = getEnterBubbleTransaction(
-                    mTaskInfo.token, rootToken, launchBounds,
+                    mBubbleHelper, mTaskInfo.token, launchBounds,
                     true /* isAppBubble */, reparentToTda);
             mHomeIntentProvider.addLaunchHomePendingIntent(wct, mTaskInfo.displayId,
                     mTaskInfo.userId);
 
+            final WindowContainerToken rootToken = mBubbleHelper.getAppBubbleRootTaskToken();
             wct.setBounds(rootToken != null ? rootToken : mTaskInfo.token, launchBounds);
 
             final TaskView tv = b.getTaskView();
@@ -2070,7 +2070,7 @@ public class BubbleTransitions {
             final WindowContainerToken token = mTaskInfo.getToken();
             final Binder captionInsetsOwner = mBubble.getTaskView().getCaptionInsetsOwner();
             final WindowContainerTransaction wct =
-                    getExitBubbleTransaction(token, captionInsetsOwner);
+                    getExitBubbleTransaction(mBubbleHelper, token, captionInsetsOwner);
             mTaskViewTransitions.enqueueExternal(
                     mBubble.getTaskView().getController(),
                     () -> {
@@ -2253,7 +2253,7 @@ public class BubbleTransitions {
             final WindowContainerToken token = bubble.getTaskView().getTaskInfo().getToken();
             final Binder captionInsetsOwner = bubble.getTaskView().getCaptionInsetsOwner();
             final WindowContainerTransaction wct =
-                    getExitBubbleTransaction(token, captionInsetsOwner);
+                    getExitBubbleTransaction(mBubbleHelper, token, captionInsetsOwner);
             wct.reorder(token, /* onTop= */ true);
             mTaskViewTransitions.enqueueExternal(bubble.getTaskView().getController(), () -> {
                 mTransition = mTransitions.startTransition(TRANSIT_TO_FRONT, wct, this);

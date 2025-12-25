@@ -16,15 +16,33 @@
 
 package com.android.systemui.statusbar.notification.row.ui.viewbinder
 
+import android.util.Log
 import com.android.systemui.statusbar.notification.NmSummarizationAllFlag
 import com.android.systemui.statusbar.notification.row.HybridConversationNotificationView
+import com.android.systemui.statusbar.notification.row.HybridMetricNotificationView
 import com.android.systemui.statusbar.notification.row.HybridNotificationView
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.SingleLineViewModel
 
 object SingleLineViewBinder {
+    private const val TAG: String = "SingleLineViewBinder"
+
     @JvmStatic
     fun bind(viewModel: SingleLineViewModel?, view: HybridNotificationView?) {
-        if (view is HybridConversationNotificationView) {
+        if (viewModel == null) {
+            Log.wtf(TAG, "viewModel value is null.")
+        }
+
+        if (view == null) {
+            Log.wtf(TAG, "view value is null.")
+        }
+
+        if (view is HybridMetricNotificationView) {
+            if (viewModel != null && viewModel.metric == null) {
+                Log.wtf(TAG, "metric value is null.")
+            }
+
+            view.bind(viewModel?.titleText, viewModel?.metric)
+        } else if (view is HybridConversationNotificationView) {
             viewModel?.conversationData?.avatar?.let { view.setAvatar(it) }
             if (NmSummarizationAllFlag.isEnabled) {
                 view.setText(

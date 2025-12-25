@@ -1018,7 +1018,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @NonNull ExecuteAppFunctionAidlRequest requestInternal,
             @NonNull ExecuteAppFunctionResponse response,
             int callingUid) {
-        if (!accessCheckFlagsEnabled()) return;
+        if (!android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()) return;
 
         final int uriReceiverUserId = UserHandle.getUserId(callingUid);
         final int targetUserId = requestInternal.getUserHandle().getIdentifier();
@@ -1039,6 +1039,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 final int uriOwnerUserid =
                         ContentProvider.getUserIdFromUri(
                                 uriGrant.getUri(), UserHandle.getUserId(uriOwnerUid));
+
                 mUriGrantsManager.grantUriPermissionFromOwner(
                         mPermissionOwner,
                         uriOwnerUid,

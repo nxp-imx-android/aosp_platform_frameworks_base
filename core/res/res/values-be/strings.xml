@@ -160,6 +160,14 @@
     <string name="wfc_mode_wifi_preferred_summary" msgid="1035175836270943089">"Выклікаць праз Wi-Fi"</string>
     <string name="wfc_mode_cellular_preferred_summary" msgid="4958965609212575619">"Выклікаць праз мабільную сетку"</string>
     <string name="wfc_mode_wifi_only_summary" msgid="104951993894678665">"Толькі Wi-Fi"</string>
+    <!-- no translation found for adaptive_low_frequency_less_than_one_minute (8869498183646028708) -->
+    <skip />
+    <!-- no translation found for adaptive_low_frequency_neg_less_than_one_minute (2590062535985417056) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_h_mm (6728141238066668781) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_mm (2405181895215514414) -->
+    <skip />
     <!-- no translation found for crossSimFormat_spn (9125246077491634262) -->
     <skip />
     <string name="crossSimFormat_spn_cross_sim_calling" msgid="5620807020002879057">"Рэзервовае капіраванне выклікаў праз аператара \"<xliff:g id="SPN">%s</xliff:g>\""</string>
@@ -563,7 +571,7 @@
     <string name="permdesc_callPhone" msgid="7892422187827695656">"Дазваляе праграме тэлефанаваць на тэлефонныя нумары без вашага ўдзелу. У выніку вы можаце пабачыць нечаканыя плацяжы і званкі. Аднак праграма не зможа рабіць выклікі на нумары экстранных службаў. Шкодныя праграмы могуць прыносіць выдаткі, робячы выклікі без вашага пацвярджэння, або набіраючы коды аператараў, з якімі ўваходныя выклікі аўтаматычна перанакіроўваюцца на іншы нумар."</string>
     <string name="permlab_accessImsCallService" msgid="442192920714863782">"атрымліваць доступ да сэрвісу выклікаў IMS"</string>
     <string name="permdesc_accessImsCallService" msgid="6328551241649687162">"Дазваляе праграмам выкарыстоўваць службу IMS, каб рабіць выклікі без вашага ўмяшання."</string>
-    <string name="permlab_readPhoneState" msgid="8138526903259297969">"чытанне статусу тэлефона і ідэнтыфікацыя"</string>
+    <string name="permlab_readPhoneState" msgid="8138526903259297969">"чытаць статус і ідэнтыфікацыйныя даныя тэлефона"</string>
     <string name="permdesc_readPhoneState" msgid="7229063553502788058">"Дазваляе прыкладанням атрымлiваць доступ да функцый тэлефона на прыладзе. Дзякуючы гэтаму дазволу прыкладанне можа вызначаць iдэнтыфiкатары нумару тэлефона i прылады, незалежна ад таго, цi актыўны выклiк, i аддалены нумар, на якi робiцца выклiк."</string>
     <string name="permlab_readBasicPhoneState" msgid="3214853233263871347">"счытваць даныя пра асноўны стан тэлефаніі і ідэнтыфікацыю"</string>
     <string name="permdesc_readBasicPhoneState" msgid="828185691675460520">"Дазваляе праграме мець доступ да асноўных функцый тэлефаніі на прыладзе."</string>
@@ -643,7 +651,7 @@
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"Дазволіць праграме вызначаць адлегласць паміж прыладамі паблізу, якія выкарыстоўваюць звышшырокапалосную сувязь"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"узаемадзейнічаць з прыладамі з Wi‑Fi паблізу"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Праграма зможа адпраўляць даныя на прылады Wi-Fi паблізу, падключацца да іх і вызначаць іх месцазнаходжанне"</string>
-    <string name="permlab_access_local_network" msgid="3420360767259066877">"доступ да прылад, падключаных да лакальнай сеткі"</string>
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"атрымліваць доступ да прылад у лакальнай сетцы"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Дазваляе праграме атрымліваць доступ да прылад, падключаных да лакальнай сеткі"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"выкарыстоўваць інтэрфейс зваротнай пятлі"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Праграма зможа ўзаемадзейнічаць з іншымі праграмамі праз інтэрфейс зваротнай пятлі"</string>
@@ -1832,8 +1840,7 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"жэст"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"хуткія налады"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"трайны дотык"</string>
-    <!-- no translation found for accessibility_shortcut_label_top_row_key (1488840908672437180) -->
-    <skip />
+    <string name="accessibility_shortcut_label_top_row_key" msgid="1488840908672437180">"клавіша спецыяльных магчымасцей"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"Сэрвіс \"<xliff:g id="SERVICE_NAME">%s</xliff:g>\" выключаны"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Змяніць ярлыкі"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Гатова"</string>

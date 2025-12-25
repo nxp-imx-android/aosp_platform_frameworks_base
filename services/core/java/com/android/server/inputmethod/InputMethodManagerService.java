@@ -66,7 +66,6 @@ import android.annotation.PermissionManuallyEnforced;
 import android.annotation.RequiresNoPermission;
 import android.annotation.SpecialUsers.CanBeALL;
 import android.annotation.SpecialUsers.CanBeCURRENT;
-
 import android.annotation.UiThread;
 import android.annotation.UserIdInt;
 import android.annotation.WorkerThread;
@@ -2060,6 +2059,11 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         session.mIme.startInput(startInputToken, userData.mCurInputConnection,
                 userData.mCurEditorInfo, restarting, navButtonFlags,
                 userData.mCurImeBackCallbackReceiver);
+        // Calculating imeTargetStale can be done as a part of updateImeTargetWindow(), but it's
+        // only when optimizeImeInputTargetUpdate is enabled. For now, we perform separate calls.
+        final boolean imeTargetStale = Flags.forceHideForStaleWindow()
+                && focusedWindow != null
+                && mWindowManagerInternal.isImeInputTargetStaleForUpdate(focusedWindow);
         if (Flags.optimizeImeInputTargetUpdate()) {
             if (focusedWindow != null) {
                 mWindowManagerInternal.updateImeTargetWindow(focusedWindow);
@@ -2079,6 +2083,17 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             // need to enforce it, otherwise it would early return.
             final boolean imeBound = userData.mBindingController.getCurIme() != null;
             showCurrentInputInternal(focusedWindow, statsToken, imeBound /* forceShow */);
+        } else if (imeTargetStale) {
+            // TODO(b/429304155): come back to this and properly address the underlying issue.
+            // When attaching to a new input target that doesn't want the IME, we explicitly
+            // hide any currently showing IME. This prevents a stale IME surface from a previous
+            // target from remaining visible.
+            ProtoLog.d(IMMS_WITH_LOGCAT, "Attach new input but force hide");
+            // TODO(b/429304155): Use another ShowHideReason for this statsToken.
+            final var statsToken = createStatsTokenForFocusedClient(false /* show */,
+                    SoftInputShowHideReason.HIDE_SOFT_INPUT, userId);
+            hideCurrentInputLocked(focusedWindow, false /* updateTargetWindow */, statsToken,
+                    SoftInputShowHideReason.HIDE_SOFT_INPUT, userId);
         }
 
         final var curImeId = bindingController.getCurImeId();

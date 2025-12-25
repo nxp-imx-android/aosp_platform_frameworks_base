@@ -775,7 +775,6 @@ public final class ActiveServicesTest {
         r.appInfo.pccUid = 30001;
         r.appInfo.packageName = "com.android.pcc";
         final ServiceInfo si = new ServiceInfo();
-        si.applicationInfo = r.appInfo;
         si.flags = ServiceInfo.FLAG_RUN_IN_PCC_SANDBOX;
         setFieldValue(ServiceRecord.class, r, "serviceInfo", si);
         setFieldValue(ServiceRecord.class, r, "processName", "test");
@@ -1048,7 +1047,7 @@ public final class ActiveServicesTest {
         r.appInfo.uid = TEST_UID;
         setFieldValue(ServiceRecord.class, r, "userId", TEST_USERID);
         ProcessRecord processRecord = mock(ProcessRecord.class);
-        processRecord.mPid = TEST_PID;
+        when(processRecord.getPid()).thenReturn(TEST_PID);
         when(r.getHostProcess()).thenReturn(processRecord);
         return r;
     }

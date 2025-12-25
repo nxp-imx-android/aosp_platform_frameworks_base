@@ -453,16 +453,6 @@ flag {
 }
 
 flag {
-    name: "promote_existence_changed_state_to_parent"
-    namespace: "windowing_frontend"
-    description: "Always promote existenceChanged state to parent."
-    bug: "452214913"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "virtual_display_can_create_system_application_overlay"
     namespace: "windowing_frontend"
     description: "Virtual display owners can create system application overlays"

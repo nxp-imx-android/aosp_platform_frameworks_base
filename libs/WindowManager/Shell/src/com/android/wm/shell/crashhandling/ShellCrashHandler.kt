@@ -97,7 +97,11 @@ class ShellCrashHandler(
         for (task in shellTaskOrganizer.getRunningTasks()) {
             if (bubbleHelper.isAppBubbleTask(task)) {
                 val exitWct =
-                    BubbleUtils.getExitBubbleTransaction(task.token, /* captionInsetsOwner= */ null)
+                    BubbleUtils.getExitBubbleTransaction(
+                        bubbleHelper,
+                        task.token,
+                        /* captionInsetsOwner= */ null,
+                    )
                 wct.merge(exitWct, /* transfer= */ true)
             }
         }

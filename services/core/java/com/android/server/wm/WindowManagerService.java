@@ -9022,6 +9022,25 @@ public class WindowManagerService extends IWindowManager.Stub
         @Override
         public boolean shouldRestoreImeVisibility(IBinder imeTargetWindowToken) {
             return WindowManagerService.this.shouldRestoreImeVisibility(imeTargetWindowToken);
+        }
+
+        @Override
+        public boolean isImeInputTargetStaleForUpdate(@NonNull IBinder windowToken) {
+            synchronized (mGlobalLock) {
+                final InputTarget inputTarget = getInputTargetFromWindowTokenLocked(windowToken);
+                // The current IME target is not stale if the new window is already the target,
+                // or if there's no existing target to compare against.
+                if (inputTarget == null
+                        || inputTarget.getDisplayContent() == null
+                        || inputTarget.getDisplayContent().getImeInputTarget() == null
+                        || inputTarget.getDisplayContent().getImeInputTarget() == inputTarget) {
+                    return false;
+                }
+                final WindowState imeTargetWindow =
+                        inputTarget.getDisplayContent().getImeInputTarget().getWindowState();
+                return imeTargetWindow != null
+                        && (imeTargetWindow.mRemoved || imeTargetWindow.mDestroying);
+            }
        }
 
         @Override

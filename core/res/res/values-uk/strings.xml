@@ -160,6 +160,14 @@
     <string name="wfc_mode_wifi_preferred_summary" msgid="1035175836270943089">"Телефонувати через Wi-Fi"</string>
     <string name="wfc_mode_cellular_preferred_summary" msgid="4958965609212575619">"Телефонувати через мобільну мережу"</string>
     <string name="wfc_mode_wifi_only_summary" msgid="104951993894678665">"Лише Wi-Fi"</string>
+    <!-- no translation found for adaptive_low_frequency_less_than_one_minute (8869498183646028708) -->
+    <skip />
+    <!-- no translation found for adaptive_low_frequency_neg_less_than_one_minute (2590062535985417056) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_h_mm (6728141238066668781) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_mm (2405181895215514414) -->
+    <skip />
     <!-- no translation found for crossSimFormat_spn (9125246077491634262) -->
     <skip />
     <string name="crossSimFormat_spn_cross_sim_calling" msgid="5620807020002879057">"<xliff:g id="SPN">%s</xliff:g>: резервний спосіб здійснення викликів"</string>
@@ -635,11 +643,11 @@
     <string name="permdesc_bluetooth" product="default" msgid="2779606714091276746">"Дозволяє програмі переглядати конфігурацію Bluetooth на телефоні, а також створювати та приймати з’єднання зі спареними пристроями."</string>
     <string name="permlab_bluetooth_scan" msgid="5402587142833124594">"знаходити пристрої з Bluetooth і створювати пару"</string>
     <string name="permdesc_bluetooth_scan" product="default" msgid="6540723536925289276">"Дозволяє додатку знаходити поблизу пристрої Bluetooth і створювати з ними пару"</string>
-    <string name="permlab_bluetooth_connect" msgid="6657463246355003528">"підключатися до пристроїв із Bluetooth, з якими є пара"</string>
+    <string name="permlab_bluetooth_connect" msgid="6657463246355003528">"підключатися до зв’язаних пристроїв із Bluetooth"</string>
     <string name="permdesc_bluetooth_connect" product="default" msgid="4546016548795544617">"Дозволяє додатку підключатися до пристроїв із Bluetooth, з якими створено пару"</string>
     <string name="permlab_bluetooth_advertise" msgid="2781147747928853177">"показувати рекламу на пристроях із Bluetooth поблизу"</string>
     <string name="permdesc_bluetooth_advertise" product="default" msgid="6085174451034210183">"Додаток зможе показувати рекламу на пристроях із Bluetooth поблизу"</string>
-    <string name="permlab_uwb_ranging" msgid="8141915781475770665">"визначення відстані між пристроями поблизу з надширокосмуговим зв’язком"</string>
+    <string name="permlab_uwb_ranging" msgid="8141915781475770665">"визначати відстань між пристроями поблизу з надширокосмуговим зв’язком"</string>
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"З цим дозволом додаток може визначати відстань між розташованими поблизу пристроями з надширокосмуговим зв’язком"</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"взаємодіяти з пристроями Wi‑Fi поблизу"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Додаток може виявляти пристрої Wi‑Fi поблизу, підключатися до них і визначати їх відносне розташування"</string>
@@ -1832,8 +1840,7 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"жест"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"швидкі налаштування"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"потрійний дотик"</string>
-    <!-- no translation found for accessibility_shortcut_label_top_row_key (1488840908672437180) -->
-    <skip />
+    <string name="accessibility_shortcut_label_top_row_key" msgid="1488840908672437180">"клавіша функцій доступності"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"Сервіс <xliff:g id="SERVICE_NAME">%s</xliff:g> вимкнено"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Змінити"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Готово"</string>

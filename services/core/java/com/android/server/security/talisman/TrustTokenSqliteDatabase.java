@@ -34,71 +34,71 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
-class TalismanSqliteDatabase extends TalismanDatabase {
-    private static final String TAG = "TalismanDatabase";
+class TrustTokenSqliteDatabase extends TrustTokenDatabase {
+    private static final String TAG = "TrustTokenDatabase";
     private static final Duration MINIMUM_VALID_DURATION = Duration.ofMinutes(15);
 
     private final OpenHelper mOpenHelper;
     private final Clock mClock;
 
-    static TalismanSqliteDatabase create(
+    static TrustTokenSqliteDatabase create(
             @NonNull Context context, @NonNull File databaseFile, @NonNull Clock clock) {
         OpenHelper helper = new OpenHelper(context, databaseFile);
         // Initialize the database if needed.
         helper.getWritableDatabase();
-        return new TalismanSqliteDatabase(helper, clock);
+        return new TrustTokenSqliteDatabase(helper, clock);
     }
 
     @Override
     @NonNull
-    TalismanSetWithKey getTalismanSet(@TalismanSet.Type int type)
-            throws TalismanExhaustedException {
+    TrustTokenSetWithKey getTrustTokenSet(@TrustTokenSet.Type int type)
+            throws TrustTokenExhaustedException {
         DatabaseHelper db = getWritableDatabase();
         return db.runInTransaction(
                 () -> {
-                    Pair<TalismanSetWithKey, Long> talismanAndRowId =
-                            db.getTalisman(
+                    Pair<TrustTokenSetWithKey, Long> tokenAndRowId =
+                            db.getTrustToken(
                                     type,
                                     Instant.ofEpochMilli(mClock.currentTimeMillis())
                                             .plus(MINIMUM_VALID_DURATION));
-                    if (talismanAndRowId == null) {
-                        throw new TalismanExhaustedException();
+                    if (tokenAndRowId == null) {
+                        throw new TrustTokenExhaustedException();
                     }
-                    db.deleteTalisman(talismanAndRowId.second);
-                    return talismanAndRowId.first;
+                    db.deleteTrustToken(tokenAndRowId.second);
+                    return tokenAndRowId.first;
                 });
     }
 
     @Override
-    void addTalismanSets(@NonNull List<TalismanSetWithKey> talismans) {
-        if (talismans.isEmpty()) {
+    void addTrustTokenSets(@NonNull List<TrustTokenSetWithKey> tokens) {
+        if (tokens.isEmpty()) {
             return;
         }
         DatabaseHelper db = getWritableDatabase();
         db.runInTransaction(
                 () -> {
-                    for (TalismanSetWithKey talisman : talismans) {
-                        db.insertTalisman(talisman);
+                    for (TrustTokenSetWithKey token : tokens) {
+                        db.insertTrustToken(token);
                     }
                 });
     }
 
-    private TalismanSqliteDatabase(OpenHelper helper, Clock clock) {
+    private TrustTokenSqliteDatabase(OpenHelper helper, Clock clock) {
         mOpenHelper = helper;
         mClock = clock;
     }
 
     private static class Schema {
-        private static class Talisman {
+        private static class TrustToken {
             private static String name() {
-                return "Talisman";
+                return "TrustToken";
             }
 
             private static final String ROWID = "rowid";
             private static final String PUBLIC_KEY = "publicKey";
             private static final String PRIVATE_KEY = "privateKey";
             private static final String TYPE = "type";
-            private static final String TALISMAN_SET = "talismanSet";
+            private static final String TOKEN_SET = "tokenSet";
             private static final String CREATED_AT = "createdAt";
             private static final String EXPIRE_AT = "expireAt";
         }
@@ -154,19 +154,19 @@ class TalismanSqliteDatabase extends TalismanDatabase {
                     });
         }
 
-        Pair<TalismanSetWithKey, Long> getTalisman(
-                @TalismanSet.Type int type, Instant expireAfter) {
+        Pair<TrustTokenSetWithKey, Long> getTrustToken(
+                @TrustTokenSet.Type int type, Instant expireAfter) {
             Cursor cursor =
                     mDatabase.query(
                             /* distinct */ false,
-                            /* table */ Schema.Talisman.name(),
+                            /* table */ Schema.TrustToken.name(),
                             /* columns */ new String[] {
-                                Schema.Talisman.ROWID,
-                                Schema.Talisman.PUBLIC_KEY,
-                                Schema.Talisman.PRIVATE_KEY,
-                                Schema.Talisman.TALISMAN_SET,
-                                Schema.Talisman.CREATED_AT,
-                                Schema.Talisman.EXPIRE_AT
+                                Schema.TrustToken.ROWID,
+                                Schema.TrustToken.PUBLIC_KEY,
+                                Schema.TrustToken.PRIVATE_KEY,
+                                Schema.TrustToken.TOKEN_SET,
+                                Schema.TrustToken.CREATED_AT,
+                                Schema.TrustToken.EXPIRE_AT
                             },
                             /* selection */ "type = ? AND expireAt > ?",
                             /* selectionArgs */ new String[] {
@@ -180,69 +180,69 @@ class TalismanSqliteDatabase extends TalismanDatabase {
                 if (!cursor.moveToNext()) {
                     return null;
                 }
-                long rowid = cursor.getLong(cursor.getColumnIndexOrThrow(Schema.Talisman.ROWID));
-                TalismanKey key =
-                        new TalismanKey(
+                long rowid = cursor.getLong(cursor.getColumnIndexOrThrow(Schema.TrustToken.ROWID));
+                TrustTokenKey key =
+                        new TrustTokenKey(
                                 cursor.getBlob(
-                                        cursor.getColumnIndexOrThrow(Schema.Talisman.PUBLIC_KEY)),
+                                        cursor.getColumnIndexOrThrow(Schema.TrustToken.PUBLIC_KEY)),
                                 cursor.getBlob(
-                                        cursor.getColumnIndexOrThrow(Schema.Talisman.PRIVATE_KEY)));
-                TalismanSet talisman =
-                        new TalismanSet.Builder()
+                                        cursor.getColumnIndexOrThrow(
+                                                Schema.TrustToken.PRIVATE_KEY)));
+                TrustTokenSet token =
+                        new TrustTokenSet.Builder()
                                 .setType(type)
                                 .setPublicKey(key.getPublicKey())
-                                .setTalismanSet(
+                                .setTokenSet(
                                         cursor.getBlob(
                                                 cursor.getColumnIndexOrThrow(
-                                                        Schema.Talisman.TALISMAN_SET)))
+                                                        Schema.TrustToken.TOKEN_SET)))
                                 .setCreatedAt(
                                         Instant.ofEpochMilli(
                                                 cursor.getLong(
                                                         cursor.getColumnIndexOrThrow(
-                                                                Schema.Talisman.CREATED_AT))))
+                                                                Schema.TrustToken.CREATED_AT))))
                                 .setExpireAt(
                                         Instant.ofEpochMilli(
                                                 cursor.getLong(
                                                         cursor.getColumnIndexOrThrow(
-                                                                Schema.Talisman.EXPIRE_AT))))
+                                                                Schema.TrustToken.EXPIRE_AT))))
                                 .build();
-                return new Pair(new TalismanSetWithKey(key, talisman), rowid);
+                return new Pair(new TrustTokenSetWithKey(key, token), rowid);
             } finally {
                 cursor.close();
             }
         }
 
-        void insertTalisman(TalismanSetWithKey talismanSetWithKey) {
-            TalismanKey key = talismanSetWithKey.getKey();
-            TalismanSet talisman = talismanSetWithKey.getTalismanSet();
+        void insertTrustToken(TrustTokenSetWithKey tokenSetWithKey) {
+            TrustTokenKey key = tokenSetWithKey.getKey();
+            TrustTokenSet token = tokenSetWithKey.getTokenSet();
             ContentValues values = new ContentValues();
-            values.put(Schema.Talisman.PUBLIC_KEY, key.getPublicKey());
-            values.put(Schema.Talisman.PRIVATE_KEY, key.getPrivateKey());
-            values.put(Schema.Talisman.TYPE, talisman.getType());
-            values.put(Schema.Talisman.TALISMAN_SET, talisman.getTalismanSet());
-            values.put(Schema.Talisman.CREATED_AT, talisman.getCreatedAt().toEpochMilli());
-            values.put(Schema.Talisman.EXPIRE_AT, talisman.getExpireAt().toEpochMilli());
+            values.put(Schema.TrustToken.PUBLIC_KEY, key.getPublicKey());
+            values.put(Schema.TrustToken.PRIVATE_KEY, key.getPrivateKey());
+            values.put(Schema.TrustToken.TYPE, token.getType());
+            values.put(Schema.TrustToken.TOKEN_SET, token.getTokenSet());
+            values.put(Schema.TrustToken.CREATED_AT, token.getCreatedAt().toEpochMilli());
+            values.put(Schema.TrustToken.EXPIRE_AT, token.getExpireAt().toEpochMilli());
             try {
                 mDatabase.insertWithOnConflict(
-                        Schema.Talisman.name(),
+                        Schema.TrustToken.name(),
                         /* nullColumnHack */ null,
                         values,
                         SQLiteDatabase.CONFLICT_ROLLBACK);
             } catch (SQLiteConstraintException e) {
-                throw new IllegalArgumentException(
-                        "Failed to insert talisman into Talisman table.");
+                throw new IllegalArgumentException("Failed to insert token into TrustToken table.");
             }
         }
 
-        void deleteTalisman(long rowid) {
+        void deleteTrustToken(long rowid) {
             long deletedRows =
                     mDatabase.delete(
-                            Schema.Talisman.name(),
-                            Schema.Talisman.ROWID + " = ?",
+                            Schema.TrustToken.name(),
+                            Schema.TrustToken.ROWID + " = ?",
                             new String[] {String.valueOf(rowid)});
             if (deletedRows != 1) {
                 throw new IllegalStateException(
-                        "failed to delete the talisman from the pending table");
+                        "failed to delete the trust token from the pending table");
             }
         }
     }
@@ -260,8 +260,8 @@ class TalismanSqliteDatabase extends TalismanDatabase {
                                     SQLiteDatabase.CREATE_IF_NECESSARY
                                             | SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING)
                             // Losing commits is not the end of the world, but
-                            // may result in using the same Talisman more than
-                            // once. Since talisman is not performance critical,
+                            // may result in using the same TrustToken more than
+                            // once. Since trust token is not performance critical,
                             // we use FULL for slightly better privacy.
                             .setJournalMode(SQLiteDatabase.SYNC_MODE_FULL)
                             .build());
@@ -269,14 +269,14 @@ class TalismanSqliteDatabase extends TalismanDatabase {
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-            Slog.i(TAG, "Creating Talisman database " + getDatabaseName());
+            Slog.i(TAG, "Creating TrustToken database " + getDatabaseName());
             db.execSQL(
                     """
-                    CREATE TABLE IF NOT EXISTS Talisman (
+                    CREATE TABLE IF NOT EXISTS TrustToken (
                           publicKey   BLOB     NOT NULL,
                           privateKey   BLOB     NOT NULL,
                           type        INTEGER  NOT NULL,
-                          talismanSet BLOB     NOT NULL,
+                          tokenSet    BLOB     NOT NULL,
                           createdAt   INTEGER  NOT NULL,
                           expireAt    INTEGER  NOT NULL,
                           PRIMARY KEY (type, expireAt, publicKey ASC),
@@ -300,7 +300,7 @@ class TalismanSqliteDatabase extends TalismanDatabase {
         }
 
         private void resetDatabase(SQLiteDatabase db) {
-            db.execSQL("DROP TABLE Talisman");
+            db.execSQL("DROP TABLE TrustToken");
         }
     }
 }

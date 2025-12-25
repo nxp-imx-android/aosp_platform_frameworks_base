@@ -16,71 +16,84 @@
 
 package com.android.server.security.talisman;
 
-import static android.security.talisman.TalismanManager.VERIFICATION_FAILURE_UNKNOWN;
+import static android.security.talisman.TrustTokenManager.VERIFICATION_FAILURE_UNKNOWN;
 
+import android.annotation.RequiresNoPermission;
 import android.content.Context;
-import android.security.talisman.ITalismanManager;
-import android.security.talisman.Talisman;
-import android.security.talisman.TalismanIdentitySet;
+import android.security.talisman.ITrustTokenManager;
+import android.security.talisman.TrustToken;
+import android.security.talisman.TrustTokenIdentitySet;
 import android.util.Slog;
+
 import com.android.server.SystemService;
+
 import java.util.Arrays;
 import java.util.List;
 
-/** A service that manages talismans. */
-public class TalismanManagerService extends SystemService {
-    private static final String TAG = "TalismanManagerService";
+/** A service that manages trust tokens. */
+public class TrustTokenManagerService extends SystemService {
+    private static final String TAG = "TrustTokenManagerService";
 
     private final Context mContext;
 
-    public TalismanManagerService(Context context) {
+    public TrustTokenManagerService(Context context) {
         super(context);
         mContext = context;
     }
 
     @Override
     public void onStart() {
-        Slog.i(TAG, "Starting TalismanManagerService");
+        Slog.i(TAG, "Starting TrustTokenManagerService");
         publishBinderService(Context.TALISMAN_SERVICE, mBinder);
     }
 
-    private final ITalismanManager.Stub mBinder =
-            new ITalismanManager.Stub() {
+    private final ITrustTokenManager.Stub mBinder =
+            new ITrustTokenManager.Stub() {
+                @RequiresNoPermission
                 @Override
-                public Talisman acquireVerifiedDeviceTalisman() {
+                public TrustToken acquireVerifiedDeviceToken() {
                     // TODO(b/418280383): Implement this method.
-                    Slog.w(TAG, "acquireVerifiedDeviceTalisman is not yet implemented.");
+                    // TODO(b/418280383): Protect with permissions
+                    Slog.w(TAG, "acquireVerifiedDeviceToken is not yet implemented.");
                     return null;
                 }
 
+                @RequiresNoPermission
                 @Override
-                public TalismanIdentitySet acquirePreparedIdentitySet() {
+                public TrustTokenIdentitySet acquirePreparedIdentitySet() {
                     // TODO(b/418280383): Implement this method.
+                    // TODO(b/418280383): Protect with permissions
                     Slog.w(TAG, "acquirePreparedIdentitySet is not yet implemented.");
                     return null;
                 }
 
+                @RequiresNoPermission
                 @Override
-                public int verifyTalismanAndChallenge(
-                        Talisman talisman, byte[] remoteResponse, byte[] expectedChallenge) {
+                public int verifyTrustTokenAndChallenge(
+                        TrustToken token, byte[] remoteResponse, byte[] expectedChallenge) {
                     // TODO(b/418280383): Implement this method.
-                    Slog.w(TAG, "verifyTalismanAndChallenge is not yet implemented.");
+                    // TODO(b/418280383): Protect with permissions
+                    Slog.w(TAG, "verifyTrustTokenAndChallenge is not yet implemented.");
                     return VERIFICATION_FAILURE_UNKNOWN;
                 }
 
+                @RequiresNoPermission
                 @Override
-                public int[] verifyIdentityTalismans(
-                        Talisman verifiedDeviceTalisman, Talisman[] identityTalismans) {
+                public int[] verifyIdentityTokens(
+                        TrustToken verifiedDeviceToken, TrustToken[] identityTokens) {
                     // TODO(b/418280383): Implement this method.
-                    Slog.w(TAG, "verifyIdentityTalismans is not yet implemented.");
-                    int[] results = new int[identityTalismans.length];
+                    // TODO(b/418280383): Protect with permissions
+                    Slog.w(TAG, "verifyIdentityTokens is not yet implemented.");
+                    int[] results = new int[identityTokens.length];
                     Arrays.fill(results, VERIFICATION_FAILURE_UNKNOWN);
                     return results;
                 }
 
+                @RequiresNoPermission
                 @Override
                 public void updatePreparedIdentities(List<String> identities) {
                     // TODO(b/418280383): Implement this method.
+                    // TODO(b/418280383): Protect with permissions
                     Slog.w(TAG, "updatePreparedIdentities is not yet implemented.");
                 }
             };

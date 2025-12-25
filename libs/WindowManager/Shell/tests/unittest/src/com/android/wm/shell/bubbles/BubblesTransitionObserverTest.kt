@@ -164,7 +164,7 @@ class BubblesTransitionObserverTest : ShellTestCase() {
 
     @Test
     fun testOnTransitionReady_noTaskInfoNoActivityInfo_skip() {
-        val info = createTaskTransition(TRANSIT_TO_FRONT, taskInfo = null) // Null task info
+        val info = createTaskTransition(TRANSIT_TO_FRONT) // Null task info
 
         transitionObserver.onTransitionReady(mock(), info, mock(), mock())
 
@@ -315,15 +315,20 @@ class BubblesTransitionObserverTest : ShellTestCase() {
             @TransitionType changeType: Int,
             taskId: Int,
             displayId: Int = DEFAULT_DISPLAY_ID,
-        ) = createTaskTransition(changeType, taskInfo = createTaskInfo(taskId), displayId)
+        ) = createTaskTransition(changeType, createTaskInfo(taskId), displayId)
 
         private fun createTaskTransition(
             @TransitionType changeType: Int,
-            taskInfo: ActivityManager.RunningTaskInfo?,
+            taskInfo: ActivityManager.RunningTaskInfo,
             displayId: Int = DEFAULT_DISPLAY_ID,
         ) = TransitionInfoBuilder(TRANSIT_OPEN, displayId = displayId)
             .addChange(changeType, taskInfo)
             .build()
+
+        private fun createTaskTransition(
+            @TransitionType changeType: Int,
+            displayId: Int = DEFAULT_DISPLAY_ID,
+        ) = TransitionInfoBuilder(TRANSIT_OPEN, displayId = displayId).addChange(changeType).build()
 
         private fun createActivityTransition(
             @TransitionType changeType: Int,

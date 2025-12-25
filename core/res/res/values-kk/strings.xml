@@ -158,6 +158,14 @@
     <string name="wfc_mode_wifi_preferred_summary" msgid="1035175836270943089">"Wi-Fi арқылы қоңырау шалу"</string>
     <string name="wfc_mode_cellular_preferred_summary" msgid="4958965609212575619">"Мобильдік желі арқылы қоңырау шалу"</string>
     <string name="wfc_mode_wifi_only_summary" msgid="104951993894678665">"Тек Wi-Fi"</string>
+    <!-- no translation found for adaptive_low_frequency_less_than_one_minute (8869498183646028708) -->
+    <skip />
+    <!-- no translation found for adaptive_low_frequency_neg_less_than_one_minute (2590062535985417056) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_h_mm (6728141238066668781) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_mm (2405181895215514414) -->
+    <skip />
     <!-- no translation found for crossSimFormat_spn (9125246077491634262) -->
     <skip />
     <string name="crossSimFormat_spn_cross_sim_calling" msgid="5620807020002879057">"<xliff:g id="SPN">%s</xliff:g> Қосалқы қоңырау шалу"</string>
@@ -635,14 +643,14 @@
     <string name="permdesc_bluetooth_scan" product="default" msgid="6540723536925289276">"Қолданбаға маңайдағы Bluetooth құрылғыларын анықтап, жұптауға рұқсат береді."</string>
     <string name="permlab_bluetooth_connect" msgid="6657463246355003528">"жұпталған Bluetooth құрылғыларына қосылу"</string>
     <string name="permdesc_bluetooth_connect" product="default" msgid="4546016548795544617">"Қолданбаға жұпталған Bluetooth құрылғыларына қосылуға рұқсат береді."</string>
-    <string name="permlab_bluetooth_advertise" msgid="2781147747928853177">"Жарнаманы маңайдағы Bluetooth құрылғыларына беру"</string>
+    <string name="permlab_bluetooth_advertise" msgid="2781147747928853177">"маңайдағы Bluetooth құрылғыларына жарнама жіберу"</string>
     <string name="permdesc_bluetooth_advertise" product="default" msgid="6085174451034210183">"Қолданба жарнаманы маңайдағы Bluetooth құрылғыларына бере алады."</string>
     <string name="permlab_uwb_ranging" msgid="8141915781475770665">"маңайдағы кең жолақты құрылғылардың бір-біріне қатысты орнын анықтау"</string>
     <string name="permdesc_uwb_ranging" msgid="2519723069604307055">"Қолданбаға маңайдағы кең жолақты құрылғылардың бір-біріне қатысты орнын анықтауға мүмкіндік береді."</string>
     <string name="permlab_nearby_wifi_devices" msgid="392774237063608500">"маңайдағы Wi-Fi құрылғыларымен байланысу"</string>
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Қолданба маңайдағы Wi‑Fi құрылғыларына жарнама беріп, оларға қосылып, шамамен орналасқан жерін анықтай алады."</string>
-    <string name="permlab_access_local_network" msgid="3420360767259066877">"жергілікті желілік құрылғыларға кіру"</string>
-    <string name="permdesc_access_local_network" msgid="6364679803386822638">"Қолданбаға жергілікті желілік құрылғыларға кіруге мүмкіндік береді"</string>
+    <string name="permlab_access_local_network" msgid="3420360767259066877">"жергілікті желідегі құрылғыларға кіру"</string>
+    <string name="permdesc_access_local_network" msgid="6364679803386822638">"Қолданбаға жергілікті желідегі құрылғыларға кіруге мүмкіндік береді."</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"кері байланыс интерфейсін пайдалану"</string>
     <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Қолданбаға кері байланыс интерфейсі арқылы басқа қолданбалармен әрекеттесуге рұқсат береді."</string>
     <string name="permlab_force_use_loopback_interface" msgid="1319727311706416481">"кері байланыс интерфейсін мәжбүрлеп пайдалану"</string>
@@ -1830,8 +1838,7 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"қимыл"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"жылдам параметрлер"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"үш рет түрту"</string>
-    <!-- no translation found for accessibility_shortcut_label_top_row_key (1488840908672437180) -->
-    <skip />
+    <string name="accessibility_shortcut_label_top_row_key" msgid="1488840908672437180">"арнайы мүмкіндіктер пернесі"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> қызметі өшірулі."</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Жылдам пәрмендерді өзгерту"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Дайын"</string>

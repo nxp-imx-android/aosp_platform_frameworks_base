@@ -36,6 +36,7 @@ import com.android.systemui.statusbar.notification.row.ui.viewmodel.Conversation
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.FacePile
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.SingleIcon
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.SingleLineViewModel
+import com.android.systemui.statusbar.notification.shared.Metric
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertIsNot
@@ -96,7 +97,7 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
         // Then: the inflated SingleLineViewModel should be as expected
         // conversationData: null, because it's not a conversation notification
         assertEquals(
-            SingleLineViewModel(CONTENT_TITLE, CONTENT_TEXT, null, null),
+            SingleLineViewModel(CONTENT_TITLE, CONTENT_TEXT, null, null, null),
             singleLineViewModel,
         )
     }
@@ -333,6 +334,26 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
         assertNotNull(singleLineViewModel.conversationData)
     }
 
+    @Test
+    fun createViewModelForMetricSingleLineView() {
+        // Given: a MetricStyle notification
+        val testMetric = Notification.Metric(Notification.Metric.FixedInt(1245), "Steps")
+        val notificationType = MetricNotification(testMetric)
+        val notification = getNotification(notificationType)
+
+        // When: inflate the SingleLineViewModel
+        val singleLineViewModel = notification.makeSingleLineViewModel(notificationType)
+
+        // Then: the inflated SingleLineViewModel should be as expected
+        assertEquals(CONTENT_TITLE, singleLineViewModel.titleText)
+        assertNull(singleLineViewModel.contentText)
+        assertNull(singleLineViewModel.conversationData)
+        assertNotNull(singleLineViewModel.metric)
+        assertEquals("Steps", singleLineViewModel.metric?.label)
+        assertTrue(singleLineViewModel.metric is Metric.Text)
+        assertEquals("1245", (singleLineViewModel.metric as Metric.Text).metricValue)
+    }
+
     sealed class NotificationType(val largeIcon: Icon? = null)
 
     class NonMessaging(largeIcon: Icon? = null) : NotificationType(largeIcon)
@@ -347,6 +368,8 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
         NotificationType(largeIcon)
 
     class GroupConversation(largeIcon: Icon? = null) : NotificationType(largeIcon)
+
+    class MetricNotification(val metric: Notification.Metric) : NotificationType()
 
     private fun getNotification(type: NotificationType): Notification {
         val notificationBuilder: Notification.Builder =
@@ -408,6 +431,11 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
                     .addMessage(LAST_MESSAGE, 0, lastSender)
                 notificationBuilder.setShortcutId(SHORTCUT_ID).setStyle(buildMessagingStyle).build()
             }
+            is MetricNotification -> {
+                val style = Notification.MetricStyle()
+                style.addMetric(type.metric)
+                notificationBuilder.setStyle(style).build()
+            }
         }
     }
 
@@ -442,9 +470,12 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
         // Mock the behavior of NotificationRowContentBinder.doInBackground
         val messagingStyle = builder.getMessagingStyle()
         val isConversation = type is OneToOneConversation || type is GroupConversation
+        val metricStyle = builder.style as? Notification.MetricStyle
+        val isMetric = type is MetricNotification
         return SingleLineViewInflater.inflateSingleLineViewModel(
             this,
             if (isConversation) messagingStyle else null,
+            if (isMetric) metricStyle else null, // Pass metricStyle
             builder,
             context,
             false,

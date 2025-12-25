@@ -34,6 +34,7 @@ import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.R
 import com.android.wm.shell.bubbles.Bubble
 import com.android.wm.shell.bubbles.BubbleExpandedViewManager
+import com.android.wm.shell.bubbles.BubbleHelper
 import com.android.wm.shell.bubbles.BubblePositioner
 import com.android.wm.shell.bubbles.BubbleTaskView
 import com.android.wm.shell.bubbles.FakeBubbleFactory
@@ -66,18 +67,24 @@ class BubbleBarExpandedViewTest {
 
     private val context = ApplicationProvider.getApplicationContext<Context>()
     private val windowManager = context.getSystemService(WindowManager::class.java)
+    private val bubbleHelper = mock<BubbleHelper>()
+    private val bubblePolicyHelper = mock<BubblePolicyHelper>()
+    private val expandedViewManager =
+        mock<BubbleExpandedViewManager> {
+            on { isShowingAsBubbleBar() } doReturn true
+            on { isStackExpanded() } doReturn true
+            on { getBubbleHelper() } doReturn bubbleHelper
+        }
 
     private lateinit var mainExecutor: TestShellExecutor
     private lateinit var bgExecutor: TestShellExecutor
 
-    private lateinit var expandedViewManager: BubbleExpandedViewManager
     private lateinit var positioner: BubblePositioner
     private lateinit var bubbleTaskView: BubbleTaskView
     private lateinit var bubble: Bubble
     private lateinit var bubbleTaskViewFactory: FakeBubbleTaskViewFactory
 
     private lateinit var bubbleExpandedView: BubbleBarExpandedView
-    private lateinit var bubblePolicyHelper: BubblePolicyHelper
 
     private val uiEventLoggerFake = UiEventLoggerFake()
 
@@ -100,17 +107,10 @@ class BubbleBarExpandedViewTest {
             )
         positioner.update(deviceConfig)
 
-        expandedViewManager =
-            mock<BubbleExpandedViewManager> {
-                on { isShowingAsBubbleBar() } doReturn true
-                on { isStackExpanded() } doReturn true
-            }
-
         bubbleTaskViewFactory = FakeBubbleTaskViewFactory(context, mainExecutor)
 
         bubble = FakeBubbleFactory.createChatBubble(context)
         bubbleTaskView = bubbleTaskViewFactory.create()
-        bubblePolicyHelper = mock<BubblePolicyHelper>()
 
         bubbleExpandedView =
             LayoutInflater.from(context)

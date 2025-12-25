@@ -33,35 +33,34 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 
 @RunWith(AndroidJUnit4.class)
-public final class TalismanMasterKeyTest {
+public final class TrustTokenMasterKeyTest {
     @Test
     public void generateMasterKey_success() throws Exception {
-        TalismanMasterKey.generateMasterKey("talisman-");
+        TrustTokenMasterKey.generateMasterKey("trust_token-");
     }
 
     @Test
-    public void generatePerTalismanKey_keyShouldBeEncrypted() throws Exception {
-        var masterKey = TalismanMasterKey.generateMasterKey("talisman-");
-        TalismanKey talismanKey = masterKey.generatePerTalismanKey();
+    public void generatePerTokenKey_keyShouldBeEncrypted() throws Exception {
+        var masterKey = TrustTokenMasterKey.generateMasterKey("trust_token-");
+        TrustTokenKey tokenKey = masterKey.generatePerTokenKey();
         // One should not be able to use the private key directly.
         var keyFactory = KeyFactory.getInstance("Ed25519");
         assertThrows(
                 InvalidKeySpecException.class,
                 () ->
                         keyFactory.generatePrivate(
-                                new PKCS8EncodedKeySpec(talismanKey.getPrivateKey())));
+                                new PKCS8EncodedKeySpec(tokenKey.getPrivateKey())));
     }
 
     @Test
     public void sign_success() throws Exception {
-        var masterKey = TalismanMasterKey.generateMasterKey("talisman-");
-        TalismanKey talismanKey = masterKey.generatePerTalismanKey();
-        byte[] message = "talisman".getBytes();
-        byte[] signature = masterKey.sign(talismanKey, message);
+        var masterKey = TrustTokenMasterKey.generateMasterKey("trust_token-");
+        TrustTokenKey tokenKey = masterKey.generatePerTokenKey();
+        byte[] message = "trust_token".getBytes();
+        byte[] signature = masterKey.sign(tokenKey, message);
         var keyFactory = KeyFactory.getInstance("Ed25519");
         var verifier = Signature.getInstance("Ed25519");
-        var publicKey =
-                keyFactory.generatePublic(new X509EncodedKeySpec(talismanKey.getPublicKey()));
+        var publicKey = keyFactory.generatePublic(new X509EncodedKeySpec(tokenKey.getPublicKey()));
         verifier.initVerify(publicKey);
         verifier.update(message);
         assertThat(verifier.verify(signature)).isTrue();
@@ -69,29 +68,29 @@ public final class TalismanMasterKeyTest {
 
     @Test
     public void sign_unmatched_key() throws Exception {
-        var masterKey = TalismanMasterKey.generateMasterKey("talisman-");
-        var talismanKey =
-                new TalismanKey(
-                        masterKey.generatePerTalismanKey().getPublicKey(),
-                        masterKey.generatePerTalismanKey().getPrivateKey());
-        byte[] message = "talisman".getBytes();
-        assertThrows(IllegalArgumentException.class, () -> masterKey.sign(talismanKey, message));
+        var masterKey = TrustTokenMasterKey.generateMasterKey("trust_token-");
+        var tokenKey =
+                new TrustTokenKey(
+                        masterKey.generatePerTokenKey().getPublicKey(),
+                        masterKey.generatePerTokenKey().getPrivateKey());
+        byte[] message = "trust_token".getBytes();
+        assertThrows(IllegalArgumentException.class, () -> masterKey.sign(tokenKey, message));
     }
 
     @Test
     public void sign_different_master_key() throws Exception {
-        var masterKey1 = TalismanMasterKey.generateMasterKey("talisman1-");
-        var masterKey2 = TalismanMasterKey.generateMasterKey("talisman2-");
-        TalismanKey talismanKey = masterKey1.generatePerTalismanKey();
-        byte[] message = "talisman".getBytes();
-        assertThrows(IllegalArgumentException.class, () -> masterKey2.sign(talismanKey, message));
+        var masterKey1 = TrustTokenMasterKey.generateMasterKey("trust_token1-");
+        var masterKey2 = TrustTokenMasterKey.generateMasterKey("trust_token2-");
+        TrustTokenKey tokenKey = masterKey1.generatePerTokenKey();
+        byte[] message = "trust_token".getBytes();
+        assertThrows(IllegalArgumentException.class, () -> masterKey2.sign(tokenKey, message));
     }
 
     @Test
     public void attest_success() throws Exception {
-        var masterKey = TalismanMasterKey.generateMasterKey("talisman-");
-        TalismanKey talismanKey = masterKey.generatePerTalismanKey();
-        TalismanBatchAttestation attestation = masterKey.attest(Arrays.asList(talismanKey));
+        var masterKey = TrustTokenMasterKey.generateMasterKey("trust_token-");
+        TrustTokenKey tokenKey = masterKey.generatePerTokenKey();
+        TrustTokenBatchAttestation attestation = masterKey.attest(Arrays.asList(tokenKey));
         assertThat(attestation.getBatchHash().length).isGreaterThan(0);
         assertThat(attestation.getSignature().length).isGreaterThan(0);
         assertThat(attestation.getCertificates().size()).isAtLeast(2);
@@ -106,11 +105,10 @@ public final class TalismanMasterKeyTest {
 
     @Test
     public void attest_key_not_owned() throws Exception {
-        var masterKey1 = TalismanMasterKey.generateMasterKey("talisman1-");
-        var masterKey2 = TalismanMasterKey.generateMasterKey("talisman2-");
-        TalismanKey talismanKey = masterKey1.generatePerTalismanKey();
+        var masterKey1 = TrustTokenMasterKey.generateMasterKey("trust_token1-");
+        var masterKey2 = TrustTokenMasterKey.generateMasterKey("trust_token2-");
+        TrustTokenKey tokenKey = masterKey1.generatePerTokenKey();
         assertThrows(
-                IllegalArgumentException.class,
-                () -> masterKey2.attest(Arrays.asList(talismanKey)));
+                IllegalArgumentException.class, () -> masterKey2.attest(Arrays.asList(tokenKey)));
     }
 }

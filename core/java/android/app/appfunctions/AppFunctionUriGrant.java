@@ -24,13 +24,13 @@ import static android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.app.appfunctions.flags.Flags;
 import android.app.appsearch.GenericDocument;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.permission.flags.Flags;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -64,7 +64,7 @@ import java.util.Objects;
  * @see android.content.Intent#FLAG_GRANT_PREFIX_URI_PERMISSION
  * @see android.content.Intent#FLAG_GRANT_PERSISTABLE_URI_PERMISSION
  */
-@FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+@FlaggedApi(Flags.FLAG_ENABLE_APP_FUNCTION_PERMISSION_V2)
 public final class AppFunctionUriGrant implements Parcelable {
     @NonNull
     public static final Creator<AppFunctionUriGrant> CREATOR =

@@ -19,16 +19,16 @@ package com.android.server.security.talisman;
 import java.util.Arrays;
 
 /**
- * Represents a key pair used for Talisman operations.
+ * Represents a key pair used for TrustToken operations.
  *
- * <p>The private key is wrapped. Do not use it directly. Use {@link TalismanMasterkey} to interact
- * with it instead.
+ * <p>The private key is wrapped. Do not use it directly. Use {@link TrustTokenMasterKey} to
+ * interact with it instead.
  */
-class TalismanKey {
+class TrustTokenKey {
     private final byte[] mPublicKey;
     private final byte[] mPrivateKey;
 
-    TalismanKey(byte[] publicKey, byte[] privateKey) {
+    TrustTokenKey(byte[] publicKey, byte[] privateKey) {
         mPublicKey = Arrays.copyOf(publicKey, publicKey.length);
         mPrivateKey = Arrays.copyOf(privateKey, privateKey.length);
     }
@@ -44,8 +44,8 @@ class TalismanKey {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof TalismanKey)) return false;
-        TalismanKey that = (TalismanKey) o;
+        if (!(o instanceof TrustTokenKey)) return false;
+        TrustTokenKey that = (TrustTokenKey) o;
         return Arrays.equals(mPublicKey, that.mPublicKey)
                 && Arrays.equals(mPrivateKey, that.mPrivateKey);
     }
@@ -59,7 +59,7 @@ class TalismanKey {
 
     @Override
     public String toString() {
-        return "TalismanKey["
+        return "TrustTokenKey["
                 + "publicKey="
                 + Arrays.toString(mPublicKey)
                 + ", "

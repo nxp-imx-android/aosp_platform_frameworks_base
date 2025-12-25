@@ -9319,7 +9319,7 @@
         </attr>
 
         <!-- Whether the dream is user selectable. Default to true.
-        @hide -->
+        @hide @SystemApi -->
         <attr name="userSelectable" format="boolean" />
     </declare-styleable>
 

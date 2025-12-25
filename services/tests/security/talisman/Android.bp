@@ -25,7 +25,7 @@ package {
 }
 
 java_defaults {
-    name: "talisman_tests_defaults",
+    name: "trust_token_tests_defaults",
     static_libs: [
         "androidx.annotation_annotation",
         "androidx.test.ext.junit",
@@ -42,15 +42,15 @@ java_defaults {
 }
 
 android_app {
-    name: "TalismanTestStub",
+    name: "TrustTokenTestStub",
     platform_apis: true,
     manifest: "configs/AndroidManifest.xml",
 }
 
 android_robolectric_test {
-    name: "TalismanTestsRobolectric",
-    defaults: ["talisman_tests_defaults"],
-    instrumentation_for: "TalismanTestStub",
+    name: "TrustTokenTestsRobolectric",
+    defaults: ["trust_token_tests_defaults"],
+    instrumentation_for: "TrustTokenTestStub",
     srcs: [
         "src/**/*.java",
     ],
@@ -66,8 +66,8 @@ android_robolectric_test {
 }
 
 android_test {
-    name: "TalismanTestsDevice",
-    defaults: ["talisman_tests_defaults"],
+    name: "TrustTokenTestsDevice",
+    defaults: ["trust_token_tests_defaults"],
     manifest: "configs/AndroidManifest.xml",
     test_config: "configs/AndroidTest.xml",
     srcs: [

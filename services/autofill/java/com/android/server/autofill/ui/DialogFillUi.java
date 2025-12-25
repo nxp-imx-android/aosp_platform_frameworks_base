@@ -373,6 +373,8 @@ final class DialogFillUi {
                 (adapter, view, position, id) -> {
                     if (Flags.expressiveFillDialog()) {
                         final int headerViewsCount = mListView.getHeaderViewsCount();
+                        // For the expressive fill dialog, ignore clicks on the header and adjust
+                        // position for the adapter.
                         if (position >= headerViewsCount) {
                             final ViewItem vi = mAdapter.getItem(position - headerViewsCount);
                             mCallback.onDatasetPicked(vi.dataset);
@@ -388,9 +390,16 @@ final class DialogFillUi {
         mListView.setOnItemClickListener(onItemClickListener);
 
         if (mAdapter.getCount() == 1) {
-            // just single item, set up continue button
+            // Just single item, set up continue button. For the expressive fill dialog, the
+            // position must account for the header view.
             setContinueButton(decor, (v) ->
-                    onItemClickListener.onItemClick(null, null, 0, 0));
+                    onItemClickListener.onItemClick(
+                            /* parent= */ null,
+                            /* view= */ null,
+                            /* position= */ Flags.expressiveFillDialog()
+                                    ? mListView.getHeaderViewsCount()
+                                    : 0,
+                            /* id= */ 0));
         }
 
         if (filterText == null) {

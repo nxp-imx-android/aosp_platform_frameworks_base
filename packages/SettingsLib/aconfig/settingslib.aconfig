@@ -202,16 +202,6 @@ flag {
 }
 
 flag {
-    name: "promote_audio_sharing_for_second_auto_connected_lea_device"
-    namespace: "cross_device_experiences"
-    description: "Show audio sharing promote notification or dialog when the second lea device is auto connected"
-    bug: "395786392"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "audio_stream_play_pause_by_modify_source"
     namespace: "cross_device_experiences"
     description: "Play pause the audio stream by modify source"

@@ -114,6 +114,7 @@ import android.window.ITaskFragmentOrganizer;
 import android.window.ITransitionPlayer;
 import android.window.StartingWindowInfo;
 import android.window.StartingWindowRemovalInfo;
+import android.window.TaskCreationParams;
 import android.window.TaskFragmentOrganizer;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
@@ -1949,10 +1950,16 @@ public class WindowTestsBase extends SystemServiceTestsBase {
             mDefaultTDA = display.getDefaultTaskDisplayArea();
             mDisplayId = display.mDisplayId;
             mService.mTaskOrganizerController.registerTaskOrganizer(this);
-            mPrimary = mService.mTaskOrganizerController.createRootTask(
-                    display, WINDOWING_MODE_MULTI_WINDOW, null);
-            mSecondary = mService.mTaskOrganizerController.createRootTask(
-                    display, WINDOWING_MODE_MULTI_WINDOW, null);
+            mPrimary = mService.mTaskOrganizerController.createTaskInner(
+                    new TaskCreationParams.Builder()
+                            .setDisplayId(mDisplayId)
+                            .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
+                            .build());
+            mSecondary = mService.mTaskOrganizerController.createTaskInner(
+                    new TaskCreationParams.Builder()
+                            .setDisplayId(mDisplayId)
+                            .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
+                            .build());
 
             mPrimary.setAdjacentTaskFragments(new TaskFragment.AdjacentSet(mPrimary, mSecondary));
             display.getDefaultTaskDisplayArea().setLaunchAdjacentFlagRootTask(mSecondary);
@@ -2025,8 +2032,11 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         }
 
         public Task createTask(Rect bounds) {
-            Task task = mService.mTaskOrganizerController.createRootTask(
-                    mDisplay, WINDOWING_MODE_FREEFORM, null);
+            Task task = mService.mTaskOrganizerController.createTaskInner(
+                    new TaskCreationParams.Builder()
+                            .setDisplayId(mDisplay.getDisplayId())
+                            .setWindowingMode(WINDOWING_MODE_FREEFORM)
+                            .build());
             task.setBounds(bounds);
             mTasks.add(task);
             spyOn(task);

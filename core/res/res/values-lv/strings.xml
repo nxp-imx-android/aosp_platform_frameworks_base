@@ -159,6 +159,14 @@
     <string name="wfc_mode_wifi_preferred_summary" msgid="1035175836270943089">"Zvani Wi-Fi tīklā"</string>
     <string name="wfc_mode_cellular_preferred_summary" msgid="4958965609212575619">"Zvani mobilajā tīklā"</string>
     <string name="wfc_mode_wifi_only_summary" msgid="104951993894678665">"Tikai Wi-Fi"</string>
+    <!-- no translation found for adaptive_low_frequency_less_than_one_minute (8869498183646028708) -->
+    <skip />
+    <!-- no translation found for adaptive_low_frequency_neg_less_than_one_minute (2590062535985417056) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_h_mm (6728141238066668781) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_mm (2405181895215514414) -->
+    <skip />
     <!-- no translation found for crossSimFormat_spn (9125246077491634262) -->
     <skip />
     <string name="crossSimFormat_spn_cross_sim_calling" msgid="5620807020002879057">"<xliff:g id="SPN">%s</xliff:g>: zvanu rezerves iespēja"</string>
@@ -1831,8 +1839,7 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"žests"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"ātrie iestatījumi"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"trīskāršais skāriens"</string>
-    <!-- no translation found for accessibility_shortcut_label_top_row_key (1488840908672437180) -->
-    <skip />
+    <string name="accessibility_shortcut_label_top_row_key" msgid="1488840908672437180">"pieejamības taustiņš"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"Pakalpojums <xliff:g id="SERVICE_NAME">%s</xliff:g> ir izslēgts."</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Rediģēt īsinājumtaustiņus"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Gatavs"</string>

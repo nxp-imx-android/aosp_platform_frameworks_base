@@ -19,6 +19,7 @@ package com.android.server.display;
 import static android.hardware.display.DisplayManagerInternal.DisplayPowerRequest.POLICY_DOZE;
 
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR;
+import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_CHARGING;
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_DEFAULT;
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_DOZE;
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_IDLE;
@@ -32,7 +33,10 @@ import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ParceledListSlice;
 import android.content.res.Resources;
 import android.database.ContentObserver;
@@ -48,6 +52,7 @@ import android.hardware.display.DisplayManagerInternal.DisplayPowerCallbacks;
 import android.hardware.display.DisplayManagerInternal.DisplayPowerRequest;
 import android.metrics.LogMaker;
 import android.net.Uri;
+import android.os.BatteryManager;
 import android.os.Handler;
 import android.os.HandlerExecutor;
 import android.os.IBinder;
@@ -302,6 +307,10 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
     // Tracker for brightness settings changes.
     private final SettingsObserver mSettingsObserver;
 
+    // Tracker for charging state changes
+    @VisibleForTesting
+    final ChargingStateReceiver mChargingStateReceiver;
+
     // The doze screen brightness.
     private float mScreenBrightnessDozeConfig;
 
@@ -525,6 +534,9 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
     // Whether wear bedtime mode is enabled in the settings.
     private boolean mIsWearBedtimeModeEnabled;
 
+    // Whether charging experience is enabled.
+    private boolean mIsWearChargingExperienceEnabled;
+
     /**
      * Creates the display power controller.
      */
@@ -588,6 +600,16 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         mContext.getContentResolver().registerContentObserver(
                 Settings.Global.getUriFor(Settings.Global.Wearable.BEDTIME_MODE),
                 false /*notifyForDescendants*/, mSettingsObserver, UserHandle.USER_ALL);
+        mIsWearChargingExperienceEnabled = Settings.Global.getInt(mContext.getContentResolver(),
+                Settings.Global.Wearable.WEAR_CHARGING_EXPERIENCE_ENABLED, /* def= */ 0) == 1;
+        mContext.getContentResolver().registerContentObserver(
+                Settings.Global.getUriFor(
+                    Settings.Global.Wearable.WEAR_CHARGING_EXPERIENCE_ENABLED),
+                    false /*notifyForDescendants*/, mSettingsObserver, UserHandle.USER_ALL);
+
+        mChargingStateReceiver = mInjector.getChargingStateReceiver(this);
+        mContext.registerReceiver(mChargingStateReceiver,
+                new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
 
         // DOZE AND DIM SETTINGS
         mScreenBrightnessDozeConfig = BrightnessUtils.clampAbsoluteBrightness(
@@ -976,6 +998,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
             mDisplayBrightnessController.stop();
 
             mContext.getContentResolver().unregisterContentObserver(mSettingsObserver);
+            mContext.unregisterReceiver(mChargingStateReceiver);
         }
     }
 
@@ -1101,6 +1124,15 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                             AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR, mDisplayWhiteBalanceController);
             if (bedtimeBrightnessMapper != null) {
                 brightnessMappers.put(AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR, bedtimeBrightnessMapper);
+            }
+        }
+
+        if (Flags.autoBrightnessModeCharging()) {
+            BrightnessMappingStrategy chargingBrightnessMapper =
+                    BrightnessMappingStrategy.create(context, mDisplayDeviceConfig,
+                            AUTO_BRIGHTNESS_MODE_CHARGING, mDisplayWhiteBalanceController);
+            if (chargingBrightnessMapper != null) {
+                brightnessMappers.put(AUTO_BRIGHTNESS_MODE_CHARGING, chargingBrightnessMapper);
             }
         }
 
@@ -1361,12 +1393,15 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         final boolean useDozeBrightness = mFlags.isNormalBrightnessForDozeParameterEnabled(mContext)
                 ? (!mPowerRequest.useNormalBrightnessForDoze && mPowerRequest.policy == POLICY_DOZE)
                         || Display.isDozeState(state) : Display.isDozeState(state);
+        final boolean shouldUseChargingMode =
+                mIsWearChargingExperienceEnabled && mChargingStateReceiver.isPlugged();
         DisplayBrightnessState displayBrightnessState =
                 mDisplayBrightnessController.updateBrightness(
                         mPowerRequest,
                         state,
                         mDisplayOffloadSession,
-                        mIsWearBedtimeModeEnabled);
+                        mIsWearBedtimeModeEnabled,
+                        shouldUseChargingMode);
         float brightnessState = displayBrightnessState.getBrightness();
         float rawBrightnessState = displayBrightnessState.getBrightness();
         mBrightnessReasonTemp.set(displayBrightnessState.getBrightnessReason());
@@ -3186,8 +3221,53 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                         Settings.Global.Wearable.BEDTIME_MODE, /* def= */ 0) == 1;
                 Slog.i(mTag, "Update for bedtime mode. Enable: " + mIsWearBedtimeModeEnabled);
                 sendUpdatePowerState();
+            } else if (uri.equals(
+                    Settings.Global.getUriFor(
+                            Settings.Global.Wearable.WEAR_CHARGING_EXPERIENCE_ENABLED))) {
+                mIsWearChargingExperienceEnabled =
+                        Settings.Global.getInt(mContext.getContentResolver(),
+                        Settings.Global.Wearable.WEAR_CHARGING_EXPERIENCE_ENABLED, 0) == 1;
+                Slog.i(mTag, "Update for charging experience. Enable: "
+                        + mIsWearChargingExperienceEnabled);
+                sendUpdatePowerState();
             } else {
                 handleSettingsChange();
+            }
+        }
+    }
+
+    @VisibleForTesting
+    final class ChargingStateReceiver extends BroadcastReceiver {
+        private static final String TAG = "ChargingStateReceiver";
+        private final boolean mIsTesting;
+        private boolean mIsPlugged = false;
+
+        ChargingStateReceiver(boolean isTesting) {
+            this.mIsTesting = isTesting;
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (!Flags.autoBrightnessModeCharging() || mIsTesting) {
+                return;
+            }
+
+            if (Intent.ACTION_BATTERY_CHANGED.equals(action)) {
+                int plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0);
+                setPlugged(plugged != 0);
+            }
+        }
+
+        public boolean isPlugged() {
+            return mIsPlugged;
+        }
+
+        public void setPlugged(boolean isPlugged) {
+            if (mIsPlugged != isPlugged) {
+                mIsPlugged = isPlugged;
+                Slog.i(mTag, "Plugged state update. Enable: " + mIsPlugged);
+                sendUpdatePowerState();
             }
         }
     }
@@ -3362,6 +3442,10 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
             return !ActivityManager.isLowRamDeviceStatic()
                     || (Flags.forceColorFade()
                     && context.getResources().getBoolean(R.bool.config_forceColorFade));
+        }
+
+        ChargingStateReceiver getChargingStateReceiver(DisplayPowerController dpc) {
+            return dpc.new ChargingStateReceiver(false);
         }
     }
 

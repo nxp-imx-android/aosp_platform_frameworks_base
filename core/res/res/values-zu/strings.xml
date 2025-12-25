@@ -158,6 +158,14 @@
     <string name="wfc_mode_wifi_preferred_summary" msgid="1035175836270943089">"Ikholi esebenza nge-Wi-Fi"</string>
     <string name="wfc_mode_cellular_preferred_summary" msgid="4958965609212575619">"Shaya ngenethiwekhi yeselula"</string>
     <string name="wfc_mode_wifi_only_summary" msgid="104951993894678665">"I-Wi-Fi kuphela"</string>
+    <!-- no translation found for adaptive_low_frequency_less_than_one_minute (8869498183646028708) -->
+    <skip />
+    <!-- no translation found for adaptive_low_frequency_neg_less_than_one_minute (2590062535985417056) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_h_mm (6728141238066668781) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_mm (2405181895215514414) -->
+    <skip />
     <!-- no translation found for crossSimFormat_spn (9125246077491634262) -->
     <skip />
     <string name="crossSimFormat_spn_cross_sim_calling" msgid="5620807020002879057">"<xliff:g id="SPN">%s</xliff:g> Ukushaya Ikholi Kwekhopi Yasenqolobaneni"</string>

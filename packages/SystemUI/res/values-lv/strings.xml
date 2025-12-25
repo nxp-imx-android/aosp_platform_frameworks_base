@@ -155,7 +155,8 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Videoklips ir saglabāts."</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Izdzēsts videoklips"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Atsaukt"</string>
-    <string name="screen_record_retake" msgid="3846643688365398450">"Uzņemt vēlreiz"</string>
+    <!-- no translation found for screen_record_take_another (8071412867905614800) -->
+    <skip />
     <string name="screen_record_edit" msgid="8733014191240769309">"Rediģēt"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Dzēst"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Vai dzēst šo ierakstu?"</string>
@@ -186,14 +187,10 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"Izveidot visa ekrāna ekrānuzņēmumu"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"Ierakstīt visu ekrānu"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"Ekrānuzņēmumu izveides iestatījumi"</string>
-    <!-- no translation found for screen_capture_post_recording_shelf_share_button_a11y (2907313384921655711) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_folder_button_a11y (4217075254383938093) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_delete_button_a11y (8519897681775354217) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (8342622016203434332) -->
-    <skip />
+    <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"Kopīgot ekrāna ierakstu"</string>
+    <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"Atvērt ekrāna ierakstu failu pārvaldniekā"</string>
+    <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"Dzēst ekrāna ierakstu"</string>
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"Atvērt ekrāna ierakstu video skatītājā"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Rādīt klikšķus un taustiņus"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"Ierīces audio"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofons"</string>
@@ -651,14 +648,11 @@
     <string name="communal_widget_picker_title" msgid="1953369090475731663">"Bloķēšanas ekrāna logrīki"</string>
     <string name="communal_widget_picker_description" msgid="6927728582371632782">"Jebkurš var skatīt logrīkus bloķēšanas ekrānā, pat ja ierīce ir bloķēta."</string>
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"noņemt logrīka atlasi"</string>
-    <!-- no translation found for accessibility_action_label_resize_widget (639756010934310745) -->
-    <skip />
+    <string name="accessibility_action_label_resize_widget" msgid="639756010934310745">"Mainīt logrīka lielumu"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"Samazināt augstumu"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"Palielināt augstumu"</string>
-    <!-- no translation found for accessibility_announcement_expand_widget (1123324821904704150) -->
-    <skip />
-    <!-- no translation found for accessibility_announcement_shrink_widget (2720176058287945622) -->
-    <skip />
+    <string name="accessibility_announcement_expand_widget" msgid="1123324821904704150">"Augstums ir izvērsts"</string>
+    <string name="accessibility_announcement_shrink_widget" msgid="2720176058287945622">"Augstums ir samazināts"</string>
     <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"Rādīt nākamo"</string>
     <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"Rādīt iepriekšējo"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"Bloķēšanas ekrāna logrīki"</string>
@@ -744,8 +738,7 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"Saņemot par daudz paziņojumu uzreiz, skaļums un brīdinājumi tiek automātiski samazināti līdz 2 min."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Izslēgt"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Atbloķējiet vecāku paziņojumu skatīšanai"</string>
-    <!-- no translation found for quick_settings_disclosure_parental_controls (9196246842317344981) -->
-    <skip />
+    <string name="quick_settings_disclosure_parental_controls" msgid="9196246842317344981">"Vecāku kontrole ir aktīva"</string>
     <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"Šo ierīci pārvalda viens no jūsu vecākiem."</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Noteikti ierīces iestatījumi ir aizsargāti ar PIN."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Šī ierīce pieder jūsu organizācijai, un jūsu organizācija var uzraudzīt tīkla datplūsmu."</string>
@@ -905,6 +898,8 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"Satelīts, vājš savienojums"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"Satelīts, labs savienojums"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Satelīts, ir pieejams savienojums"</string>
+    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
+    <skip />
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"Satelīta SOS"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Tikai ārkārtas izsaukumi vai SOS"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"Satelīta tīkli"</string>
@@ -1202,23 +1197,15 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Šī funkcija var nolasīt visu ekrānā esošo saturu un attēlot saturu citām lietotnēm."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Darbību skatīšana un veikšana"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Šī funkcija var izsekot jūsu mijiedarbību ar lietotni vai aparatūras sensoru un mijiedarboties ar lietotnēm jūsu vietā."</string>
-    <!-- no translation found for accessibility_key_gesture_select_to_speak_dialog_content (2241403419620826861) -->
-    <skip />
+    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ikona"</annotation>"+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g> ir īsinājumtaustiņš, ko var izmantot funkcijai <xliff:g id="ID_4">^4</xliff:g>. Tas ļauj jums pielāgot fontu un atstarpes, kā arī klausīties teksta nolasīšanu skaļi tieši savā ierīcē."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Nospiežot taustiņu kombināciju <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ikona"</annotation>"+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g>, tiek ieslēgta pieejamības funkcija <xliff:g id="ID_4">^4</xliff:g>. Tādējādi varat kontrolēt ierīci brīvroku režīmā."</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_title (4659318395231105188) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_content (7058726404278534674) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text (7095579813773247709) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_editor_dialog_title (7881631878787325869) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_done_button (5288975589451082156) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_picker_dialog_title (6067291073174568750) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_edit_button (1924449663239985111) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Pieejamības taustiņš"</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Lai sāktu izmantot pieejamības funkcijas, varat nospiest pieejamības taustiņu."</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Pievienot funkcijas"</string>
+    <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"Iestatīšana: <xliff:g id="ID_1">%1$s</xliff:g>"</string>
+    <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Gatavs"</string>
+    <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Funkcijas atlasīšana"</string>
+    <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Rediģēt"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Pieejamība"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Bloķēšanas ekrāns"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Notiek izslēgšana…"</string>
@@ -1539,6 +1526,8 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Elementa pievienošana ātrajiem iestatījumiem"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Mazs formāts"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Liels formāts"</string>
+    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
+    <skip />
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Lietotāja atlase"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# lietotne ir aktīva}zero{# lietotnes ir aktīvas}one{# lietotne ir aktīva}other{# lietotnes ir aktīvas}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Jauna informācija"</string>
@@ -1635,10 +1624,8 @@
     <string name="start_desktop_mode" msgid="5459815912537830841">"Datori"</string>
     <string name="start_mirroring" msgid="3611044878130481882">"Spoguļot"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Pievienots displejs"</string>
-    <!-- no translation found for connected_display_connection_text (6787771675124372815) -->
-    <skip />
-    <!-- no translation found for connected_display_removal_text (8270253839172935318) -->
-    <skip />
+    <string name="connected_display_connection_text" msgid="6787771675124372815">"Izveidots savienojums ar ārējo displeju"</string>
+    <string name="connected_display_removal_text" msgid="8270253839172935318">"Pārtraukts savienojums ar ārējo displeju"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"Mikrofons, kamera un atrašanās vieta"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Nesen izmantoja lietotnes"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Skatīt neseno piekļuvi"</string>

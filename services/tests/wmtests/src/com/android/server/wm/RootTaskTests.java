@@ -78,6 +78,7 @@ import android.content.pm.ActivityInfo;
 import android.os.Binder;
 import android.os.UserHandle;
 import android.platform.test.annotations.Presubmit;
+import android.window.TaskCreationParams;
 
 import androidx.test.filters.SmallTest;
 
@@ -335,8 +336,11 @@ public class RootTaskTests extends WindowTestsBase {
         final ActivityRecord homeActivity = new ActivityBuilder(mAtm)
                 .setTask(rootHomeTask)
                 .build();
-        final Task secondaryRootTask = mAtm.mTaskOrganizerController.createRootTask(
-                rootHomeTask.getDisplayContent(), WINDOWING_MODE_MULTI_WINDOW, null);
+        final Task secondaryRootTask = mAtm.mTaskOrganizerController.createTaskInner(
+                new TaskCreationParams.Builder()
+                        .setDisplayId(rootHomeTask.getDisplayContent().getDisplayId())
+                        .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
+                        .build());
 
         rootHomeTask.reparent(secondaryRootTask, POSITION_TOP);
         assertEquals(secondaryRootTask, rootHomeTask.getParent());

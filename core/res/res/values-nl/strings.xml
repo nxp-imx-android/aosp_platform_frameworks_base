@@ -158,6 +158,14 @@
     <string name="wfc_mode_wifi_preferred_summary" msgid="1035175836270943089">"Bellen via wifi"</string>
     <string name="wfc_mode_cellular_preferred_summary" msgid="4958965609212575619">"Bellen via mobiel netwerk"</string>
     <string name="wfc_mode_wifi_only_summary" msgid="104951993894678665">"Alleen wifi"</string>
+    <!-- no translation found for adaptive_low_frequency_less_than_one_minute (8869498183646028708) -->
+    <skip />
+    <!-- no translation found for adaptive_low_frequency_neg_less_than_one_minute (2590062535985417056) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_h_mm (6728141238066668781) -->
+    <skip />
+    <!-- no translation found for elapsed_time_low_frequency_short_format_mm (2405181895215514414) -->
+    <skip />
     <!-- no translation found for crossSimFormat_spn (9125246077491634262) -->
     <skip />
     <string name="crossSimFormat_spn_cross_sim_calling" msgid="5620807020002879057">"Reserveoptie voor bellen van <xliff:g id="SPN">%s</xliff:g>"</string>
@@ -1091,7 +1099,7 @@
     <string name="lockscreen_too_many_failed_password_attempts_dialog_message" msgid="3118353451602377380">"Je hebt je wachtwoord <xliff:g id="NUMBER_0">%1$d</xliff:g> keer onjuist getypt. \n\nProbeer het  opnieuw over <xliff:g id="NUMBER_1">%2$d</xliff:g> seconden."</string>
     <string name="lockscreen_too_many_failed_pin_attempts_dialog_message" msgid="2874278239714821984">"Je hebt je pincode <xliff:g id="NUMBER_0">%1$d</xliff:g> keer onjuist getypt. \n\nProbeer het opnieuw over <xliff:g id="NUMBER_1">%2$d</xliff:g> seconden."</string>
     <string name="lockscreen_failed_attempts_almost_glogin" product="tablet" msgid="3069635524964070596">"Je hebt je ontgrendelingspatroon <xliff:g id="NUMBER_0">%1$d</xliff:g> keer onjuist getekend. Na nog eens <xliff:g id="NUMBER_1">%2$d</xliff:g> mislukte pogingen wordt u gevraagd je tablet te ontgrendelen met je aanmeldingsgegevens voor Google.\n\n Probeer het over <xliff:g id="NUMBER_2">%3$d</xliff:g> seconden opnieuw."</string>
-    <string name="lockscreen_failed_attempts_almost_glogin" product="tv" msgid="6399092175942158529">"Je hebt je ontgrendelingspatroon <xliff:g id="NUMBER_0">%1$d</xliff:g> keer onjuist getekend. Na nog eens <xliff:g id="NUMBER_1">%2$d</xliff:g> mislukte pogingen word je gevraagd om je Android TV-apparaat te ontgrendelen met je Google-inloggegevens.\n\n Probeer het over <xliff:g id="NUMBER_2">%3$d</xliff:g> seconden opnieuw."</string>
+    <string name="lockscreen_failed_attempts_almost_glogin" product="tv" msgid="6399092175942158529">"Je hebt je ontgrendelingspatroon <xliff:g id="NUMBER_0">%1$d</xliff:g> keer onjuist getekend. Na nog eens <xliff:g id="NUMBER_1">%2$d</xliff:g> mislukte pogingen wordt je gevraagd om je Android TV-apparaat te ontgrendelen met je Google-inloggegevens.\n\n Probeer het over <xliff:g id="NUMBER_2">%3$d</xliff:g> seconden opnieuw."</string>
     <string name="lockscreen_failed_attempts_almost_glogin" product="default" msgid="5691623136957148335">"Je hebt je ontgrendelingspatroon <xliff:g id="NUMBER_0">%1$d</xliff:g> keer onjuist getekend. Na nog eens <xliff:g id="NUMBER_1">%2$d</xliff:g> mislukte pogingen wordt u gevraagd je telefoon te ontgrendelen met je aanmeldingsgegevens voor Google.\n\n Probeer het over <xliff:g id="NUMBER_2">%3$d</xliff:g> seconden opnieuw."</string>
     <string name="lockscreen_failed_attempts_almost_at_wipe" product="tablet" msgid="7914445759242151426">"Je hebt <xliff:g id="NUMBER_0">%1$d</xliff:g> keer geprobeerd de tablet op een onjuiste manier te ontgrendelen. Na nog eens <xliff:g id="NUMBER_1">%2$d</xliff:g> mislukte pogingen worden de fabrieksinstellingen hersteld op de tablet en gaan alle gebruikersgegevens verloren."</string>
     <string name="lockscreen_failed_attempts_almost_at_wipe" product="tv" msgid="4275591249631864248">"Je hebt <xliff:g id="NUMBER_0">%1$d</xliff:g> mislukte pogingen ondernomen om je Android TV-apparaat te ontgrendelen. Na nog eens <xliff:g id="NUMBER_1">%2$d</xliff:g> mislukte pogingen wordt je Android TV-apparaat teruggezet op de fabrieksinstellingen en gaan alle gebruikersgegevens verloren."</string>
@@ -1453,7 +1461,7 @@
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"Je tijdzone is gewijzigd"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"Je tijdzone is <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
     <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"Klokwijziging"</string>
-    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"De klokken zijn <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> vooruitgezet. Je bent nu in <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"De klok is <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> vooruitgezet. Je bent nu in <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
     <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"De klokken zijn <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> teruggezet. Je bent nu in <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"Tijd instellen"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"Datum instellen"</string>
@@ -1794,7 +1802,7 @@
     <string name="kg_failed_attempts_now_wiping" product="tv" msgid="5045460916106267585">"Je hebt <xliff:g id="NUMBER">%d</xliff:g> mislukte pogingen ondernomen om je Android TV-apparaat te ontgrendelen. Je Android TV-apparaat wordt nu teruggezet op de fabrieksinstellingen."</string>
     <string name="kg_failed_attempts_now_wiping" product="default" msgid="5043730590446071189">"Je hebt <xliff:g id="NUMBER">%d</xliff:g> keer geprobeerd de telefoon op een onjuiste manier te ontgrendelen. De fabrieksinstellingen worden nu hersteld op de telefoon."</string>
     <string name="kg_failed_attempts_almost_at_login" product="tablet" msgid="7086799295109717623">"Je hebt je ontgrendelingspatroon <xliff:g id="NUMBER_0">%1$d</xliff:g> keer onjuist getekend. Na nog eens <xliff:g id="NUMBER_1">%2$d</xliff:g> mislukte pogingen wordt u gevraagd je tablet te ontgrendelen via een e-mailaccount.\n\n Probeer het over <xliff:g id="NUMBER_2">%3$d</xliff:g> seconden opnieuw."</string>
-    <string name="kg_failed_attempts_almost_at_login" product="tv" msgid="4670840383567106114">"Je hebt je ontgrendelingspatroon <xliff:g id="NUMBER_0">%1$d</xliff:g> keer onjuist getekend. Na nog eens <xliff:g id="NUMBER_1">%2$d</xliff:g> mislukte pogingen word je gevraagd je Android TV-apparaat te ontgrendelen via een e-mailaccount.\n\n Probeer het over <xliff:g id="NUMBER_2">%3$d</xliff:g> seconden opnieuw."</string>
+    <string name="kg_failed_attempts_almost_at_login" product="tv" msgid="4670840383567106114">"Je hebt je ontgrendelingspatroon <xliff:g id="NUMBER_0">%1$d</xliff:g> keer onjuist getekend. Na nog eens <xliff:g id="NUMBER_1">%2$d</xliff:g> mislukte pogingen wordt je gevraagd je Android TV-apparaat te ontgrendelen via een e-mailaccount.\n\n Probeer het over <xliff:g id="NUMBER_2">%3$d</xliff:g> seconden opnieuw."</string>
     <string name="kg_failed_attempts_almost_at_login" product="default" msgid="5270861875006378092">"Je hebt je ontgrendelingspatroon <xliff:g id="NUMBER_0">%1$d</xliff:g> keer onjuist getekend. Na nog eens <xliff:g id="NUMBER_1">%2$d</xliff:g> mislukte pogingen wordt u gevraagd je telefoon te ontgrendelen via een e-mailaccount.\n\n Probeer het over <xliff:g id="NUMBER_2">%3$d</xliff:g> seconden opnieuw."</string>
     <string name="kg_text_message_separator" product="default" msgid="4503708889934976866">" — "</string>
     <string name="kg_reordering_delete_drop_target_text" msgid="2034358143731750914">"Verwijderen"</string>
@@ -1830,8 +1838,7 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"gebaar"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"snelle instellingen"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"3 keer tikken"</string>
-    <!-- no translation found for accessibility_shortcut_label_top_row_key (1488840908672437180) -->
-    <skip />
+    <string name="accessibility_shortcut_label_top_row_key" msgid="1488840908672437180">"toegankelijkheidstoets"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> is uitgezet"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Snelkoppelingen bewerken"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Klaar"</string>

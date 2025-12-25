@@ -155,7 +155,8 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"บันทึกวิดีโอแล้ว"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"ลบวิดีโอแล้ว"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"เลิกทำ"</string>
-    <string name="screen_record_retake" msgid="3846643688365398450">"ถ่ายใหม่"</string>
+    <!-- no translation found for screen_record_take_another (8071412867905614800) -->
+    <skip />
     <string name="screen_record_edit" msgid="8733014191240769309">"แก้ไข"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"ลบ"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"ลบการบันทึกนี้ใช่ไหม"</string>
@@ -186,14 +187,10 @@
     <string name="screen_capture_toolbar_fullscreen_button_screenshot_a11y" msgid="8699983355979869210">"ถ่ายภาพหน้าจอทั้งหน้า"</string>
     <string name="screen_capture_toolbar_fullscreen_button_record_a11y" msgid="852148867883959158">"บันทึกทั้งหน้าจอ"</string>
     <string name="screen_capture_toolbar_settings_button_a11y" msgid="8014446956996739704">"การตั้งค่าการจับภาพหน้าจอ"</string>
-    <!-- no translation found for screen_capture_post_recording_shelf_share_button_a11y (2907313384921655711) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_folder_button_a11y (4217075254383938093) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_delete_button_a11y (8519897681775354217) -->
-    <skip />
-    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (8342622016203434332) -->
-    <skip />
+    <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"แชร์การบันทึกหน้าจอ"</string>
+    <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"เปิดการบันทึกหน้าจอในโปรแกรมจัดการไฟล์"</string>
+    <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"ลบการบันทึกหน้าจอ"</string>
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="8342622016203434332">"เปิดการบันทึกหน้าจอในโปรแกรมดูวิดีโอ"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"แสดงการคลิกและแป้นพิมพ์"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"เสียงจากอุปกรณ์"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"ไมโครโฟน"</string>
@@ -651,14 +648,11 @@
     <string name="communal_widget_picker_title" msgid="1953369090475731663">"วิดเจ็ตในหน้าจอล็อก"</string>
     <string name="communal_widget_picker_description" msgid="6927728582371632782">"ทุกคนจะดูวิดเจ็ตที่อยู่ในหน้าจอล็อกของคุณได้ แม้ว่าอุปกรณ์จะล็อกอยู่ก็ตาม"</string>
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"ยกเลิกการเลือกวิดเจ็ต"</string>
-    <!-- no translation found for accessibility_action_label_resize_widget (639756010934310745) -->
-    <skip />
+    <string name="accessibility_action_label_resize_widget" msgid="639756010934310745">"ปรับขนาดวิดเจ็ต"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"ลดความสูง"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"เพิ่มความสูง"</string>
-    <!-- no translation found for accessibility_announcement_expand_widget (1123324821904704150) -->
-    <skip />
-    <!-- no translation found for accessibility_announcement_shrink_widget (2720176058287945622) -->
-    <skip />
+    <string name="accessibility_announcement_expand_widget" msgid="1123324821904704150">"ขยายความสูงแล้ว"</string>
+    <string name="accessibility_announcement_shrink_widget" msgid="2720176058287945622">"ลดความสูงแล้ว"</string>
     <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"แสดงมีเดียเพลเยอร์ถัดไป"</string>
     <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"แสดงมีเดียเพลเยอร์ก่อนหน้า"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"วิดเจ็ตในหน้าจอล็อก"</string>
@@ -744,8 +738,7 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"ระบบจะลดระดับเสียงและจำนวนการแจ้งเตือนของอุปกรณ์โดยอัตโนมัติสูงสุด 2 นาทีเมื่อคุณได้รับการแจ้งเตือนพร้อมกันมากเกินไป"</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"ปิด"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"ปลดล็อกเพื่อดูการแจ้งเตือนเก่า"</string>
-    <!-- no translation found for quick_settings_disclosure_parental_controls (9196246842317344981) -->
-    <skip />
+    <string name="quick_settings_disclosure_parental_controls" msgid="9196246842317344981">"ใช้การควบคุมโดยผู้ปกครองอยู่"</string>
     <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"อุปกรณ์นี้จัดการโดยผู้ปกครอง"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"การตั้งค่าอุปกรณ์บางอย่างได้รับการป้องกันด้วย PIN"</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"องค์กรของคุณเป็นเจ้าของอุปกรณ์นี้และอาจตรวจสอบการจราจรของข้อมูลในเครือข่าย"</string>
@@ -905,6 +898,8 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"ดาวเทียม, การเชื่อมต่อไม่ดี"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"ดาวเทียม, การเชื่อมต่อดี"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"ดาวเทียม, การเชื่อมต่อที่พร้อมใช้งาน"</string>
+    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
+    <skip />
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"SOS ดาวเทียม"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"โทรฉุกเฉินหรือ SOS เท่านั้น"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"เครือข่ายดาวเทียม"</string>
@@ -1202,23 +1197,15 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"การควบคุมนี้สามารถอ่านเนื้อหาทั้งหมดบนหน้าจอและแสดงเนื้อหาทับแอปอื่นๆ"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"ดูและดำเนินการ"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"การดำเนินการนี้สามารถติดตามการโต้ตอบของคุณกับแอปหรือกับเซ็นเซอร์ของฮาร์ดแวร์ได้ และจะโต้ตอบกับแอปต่างๆ แทนคุณ"</string>
-    <!-- no translation found for accessibility_key_gesture_select_to_speak_dialog_content (2241403419620826861) -->
-    <skip />
+    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861"><annotation id="action_key_icon">"ไอคอน"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> คือแป้นพิมพ์ลัดเพื่อใช้ <xliff:g id="ID_4">^4</xliff:g> ซึ่งจะช่วยให้คุณปรับแต่งแบบอักษรและระยะห่าง รวมถึงฟังการอ่านออกเสียงข้อความในอุปกรณ์โดยตรงได้"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"การกด"<annotation id="action_key_icon">"ไอคอน"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> จะเปิด <xliff:g id="ID_4">^4</xliff:g> ซึ่งเป็นฟีเจอร์การช่วยเหลือพิเศษ ซึ่งช่วยให้คุณควบคุมอุปกรณ์ได้โดยไม่ต้องสัมผัส"</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_title (4659318395231105188) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_content (7058726404278534674) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text (7095579813773247709) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_editor_dialog_title (7881631878787325869) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_done_button (5288975589451082156) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_picker_dialog_title (6067291073174568750) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_edit_button (1924449663239985111) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"ปุ่มการช่วยเหลือพิเศษ"</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"คุณสามารถกดปุ่มการช่วยเหลือพิเศษเพื่อเริ่มใช้ฟีเจอร์การช่วยเหลือพิเศษ"</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"เพิ่มฟีเจอร์"</string>
+    <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"ตั้งค่า <xliff:g id="ID_1">%1$s</xliff:g>"</string>
+    <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"เสร็จสิ้น"</string>
+    <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"เลือกฟีเจอร์"</string>
+    <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"แก้ไข"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"การช่วยเหลือพิเศษ"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"หน้าจอล็อก"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"กำลังปิด…"</string>
@@ -1539,6 +1526,8 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"เพิ่มการ์ดในการตั้งค่าด่วน"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"รูปแบบขนาดเล็ก"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"รูปแบบขนาดใหญ่"</string>
+    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
+    <skip />
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"เลือกผู้ใช้"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{ทำงานอยู่ # แอป}other{ทำงานอยู่ # แอป}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"ข้อมูลใหม่"</string>
@@ -1635,10 +1624,8 @@
     <string name="start_desktop_mode" msgid="5459815912537830841">"เดสก์ท็อป"</string>
     <string name="start_mirroring" msgid="3611044878130481882">"มิเรอร์"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"เชื่อมต่อจอแสดงผลแล้ว"</string>
-    <!-- no translation found for connected_display_connection_text (6787771675124372815) -->
-    <skip />
-    <!-- no translation found for connected_display_removal_text (8270253839172935318) -->
-    <skip />
+    <string name="connected_display_connection_text" msgid="6787771675124372815">"เชื่อมต่อจอแสดงผลภายนอกแล้ว"</string>
+    <string name="connected_display_removal_text" msgid="8270253839172935318">"ยกเลิกการเชื่อมต่อจอแสดงผลภายนอกแล้ว"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"ไมโครโฟน กล้อง และตำแหน่ง"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"การใช้แอปครั้งล่าสุด"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"ดูการเข้าถึงล่าสุด"</string>
