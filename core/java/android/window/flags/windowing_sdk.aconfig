@@ -87,6 +87,16 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
+    name: "improve_occlusion_calculation"
+    description: "Fix the occlusion calculation that doesn't take care of embedded TaskFragment"
+    bug: "471370182"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    namespace: "windowing_sdk"
     name: "allow_multi_window_non_resizable_activities"
     description: "Allows non-resizable activities to be launched into WINDOWING_MODE_MULTI_WINDOW."
     bug: "419379112"

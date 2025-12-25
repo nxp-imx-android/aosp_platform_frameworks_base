@@ -1492,7 +1492,7 @@ public class RootWindowContainerTests extends WindowTestsBase {
         final WindowContainerVisibilityHelper visibilityHelper = mAtm.mVisibilityHelper;
         spyOn(visibilityHelper);
         doReturn(true).when(visibilityHelper).isOpaque(
-                any(), any(), anyBoolean(), anyBoolean());
+                any(), any(), anyBoolean(), anyBoolean(), anyBoolean());
 
         final DisplayContent display = mRootWindowContainer.getDefaultDisplay();
         final ActivityRecord bottomR = createActivityRecord(display);
@@ -1513,7 +1513,7 @@ public class RootWindowContainerTests extends WindowTestsBase {
         final WindowContainerVisibilityHelper visibilityHelper = mAtm.mVisibilityHelper;
         spyOn(visibilityHelper);
         doReturn(true).when(visibilityHelper).isOpaque(
-                any(), any(), anyBoolean(), anyBoolean());
+                any(), any(), anyBoolean(), anyBoolean(), anyBoolean());
 
         final DisplayContent display = mRootWindowContainer.getDefaultDisplay();
         final ActivityRecord splitActivity0 = createActivityRecordWithParentTask(display,
@@ -1582,7 +1582,7 @@ public class RootWindowContainerTests extends WindowTestsBase {
         final WindowContainerVisibilityHelper visibilityHelper = mAtm.mVisibilityHelper;
         spyOn(visibilityHelper);
         doReturn(true).when(visibilityHelper).isOpaque(
-                any(), any(), anyBoolean(), anyBoolean());
+                any(), any(), anyBoolean(), anyBoolean(), anyBoolean());
 
         final DisplayContent display = mRootWindowContainer.getDefaultDisplay();
         resizeDisplay(display, 1000, 1000);
