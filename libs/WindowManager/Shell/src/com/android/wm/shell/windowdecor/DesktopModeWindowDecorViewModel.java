@@ -2297,7 +2297,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             windowDecoration,
                             displayController,
                             transactionFactory,
-                            desktopState);
+                            desktopState,
+                            interactionJankMonitor,
+                            handler);
 
             return new FixedAspectRatioTaskPositionerDecorator(windowDecoration,
                         taskPositioner);

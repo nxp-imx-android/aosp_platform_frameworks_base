@@ -117,7 +117,6 @@ import com.android.wm.shell.dagger.desktop.DesktopModule;
 import com.android.wm.shell.dagger.pinnedlayer.PinnedLayerModule;
 import com.android.wm.shell.dagger.pip.PipModule;
 import com.android.wm.shell.desktopmode.CloseDesktopTaskTransitionHandler;
-import com.android.wm.shell.desktopmode.multidesks.DesksController;
 import com.android.wm.shell.desktopmode.DesktopActivityOrientationChangeHandler;
 import com.android.wm.shell.desktopmode.DesktopBackNavTransitionObserver;
 import com.android.wm.shell.desktopmode.DesktopDisplayEventHandler;
@@ -170,6 +169,7 @@ import com.android.wm.shell.desktopmode.education.AppToWebEducationFilter;
 import com.android.wm.shell.desktopmode.education.data.AppHandleEducationDatastoreRepository;
 import com.android.wm.shell.desktopmode.education.data.AppToWebEducationDatastoreRepository;
 import com.android.wm.shell.desktopmode.multidesks.DeskSwitchTransitionHandler;
+import com.android.wm.shell.desktopmode.multidesks.DesksController;
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver;
 import com.android.wm.shell.desktopmode.multidesks.RootTaskDesksOrganizer;
@@ -497,7 +497,8 @@ public abstract class WMShellModule {
             WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier,
             Optional<DesktopModeWindowDecorViewModel> desktopModeWindowDecorViewModel,
             DesktopState desktopState,
-            DesktopConfig desktopConfig) {
+            DesktopConfig desktopConfig,
+            InteractionJankMonitor interactionJankMonitor) {
         if (desktopModeWindowDecorViewModel.isPresent()) {
             return desktopModeWindowDecorViewModel.get();
         }
@@ -517,7 +518,8 @@ public abstract class WMShellModule {
                 focusTransitionObserver,
                 windowDecorViewHostSupplier,
                 desktopState,
-                desktopConfig);
+                desktopConfig,
+                interactionJankMonitor);
     }
 
     @WMSingleton
