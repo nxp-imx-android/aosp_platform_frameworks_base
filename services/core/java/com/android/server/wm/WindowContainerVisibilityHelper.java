@@ -34,4 +34,14 @@ interface WindowContainerVisibilityHelper {
      */
     @TaskFragment.TaskFragmentVisibility
     int getTaskFragmentVisibility(@NonNull TaskFragment current, @Nullable ActivityRecord starting);
+
+    /**
+     * Whether this container or its children have content that fills it.
+     *
+     * Note: a container that fills its parent may not occlude its siblings, such as when it is
+     * translucent.
+     *
+     * @param current the {@link WindowContainer} to check.
+     */
+    boolean hasFillingContent(@NonNull WindowContainer current);
 }
