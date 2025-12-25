@@ -132,8 +132,7 @@ public final class DisplayBrightnessControllerTest {
         when(mDisplayBrightnessStrategySelector.selectStrategy(
                 any(StrategySelectionRequest.class))).thenReturn(displayBrightnessStrategy);
         mDisplayBrightnessController.updateBrightness(displayPowerRequest, targetDisplayState,
-                mOffloadSession, /* isBedtimeModeWearEnabled= */ false,
-                /* isChargingModeEnabled= */ false);
+                mOffloadSession, /* isBedtimeModeWearEnabled= */ false);
         verify(displayBrightnessStrategy).updateBrightness(
                 eq(new StrategyExecutionRequest(displayPowerRequest, DEFAULT_BRIGHTNESS,
                         /* userSetBrightnessChanged= */ false, /* isStylusBeingUsed */ false,
@@ -157,8 +156,7 @@ public final class DisplayBrightnessControllerTest {
                 brightness, minBrightness, maxBrightness);
 
         mDisplayBrightnessController.updateBrightness(displayPowerRequest, targetDisplayState,
-                mOffloadSession, /* isBedtimeModeWearEnabled= */ false,
-                /* isChargingModeEnabled= */ false);
+                mOffloadSession, /* isBedtimeModeWearEnabled= */ false);
 
         assertEquals(maxBrightness, mDisplayBrightnessController.getCurrentBrightness(), 0f);
         verify(displayBrightnessStrategy).updateBrightness(
