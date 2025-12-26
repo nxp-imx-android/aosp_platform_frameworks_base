@@ -19,10 +19,6 @@ package com.android.systemui.media.dialog;
 import static android.media.RoutingChangeInfo.ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER;
 import static android.permission.flags.Flags.FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED;
 
-import static com.android.systemui.media.dialog.MediaItem.MediaItemType.TYPE_DEVICE;
-import static com.android.systemui.media.dialog.MediaItem.MediaItemType.TYPE_DEVICE_GROUP;
-import static com.android.systemui.media.dialog.MediaItem.MediaItemType.TYPE_GROUP_DIVIDER;
-
 import static com.google.common.truth.Truth.assertThat;
 
 import static kotlinx.coroutines.flow.StateFlowKt.MutableStateFlow;
@@ -104,6 +100,9 @@ import com.android.systemui.SysuiTestCaseExtKt;
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.kosmos.Kosmos;
+import com.android.systemui.media.dialog.MediaItem.DeviceGroupMediaItem;
+import com.android.systemui.media.dialog.MediaItem.DeviceMediaItem;
+import com.android.systemui.media.dialog.MediaItem.GroupDividerMediaItem;
 import com.android.systemui.media.nearby.NearbyMediaDevicesManager;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.res.R;
@@ -538,10 +537,10 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
 
         List<MediaItem> items = mMediaSwitchingController.getMediaItemList();
-        assertThat(items.get(0).getTitle()).isEqualTo(
+        assertThat(((GroupDividerMediaItem) items.get(0)).getTitle()).isEqualTo(
                 mContext.getString(R.string.media_output_group_title_speakers_and_displays));
-        assertThat(items.get(1).getMediaDevice().get()).isEqualTo(mMediaDevice1);
-        assertThat(items.get(2).getMediaDevice().get()).isEqualTo(mMediaDevice2);
+        assertThat(((DeviceMediaItem) items.get(1)).getMediaDevice()).isEqualTo(mMediaDevice1);
+        assertThat(((DeviceMediaItem) items.get(2)).getMediaDevice()).isEqualTo(mMediaDevice2);
 
         mClock.advanceTime(1500); // < 2 seconds.
 
@@ -552,12 +551,12 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
         // The list is rearranged - The "Suggested" section added and the order got updated.
         items = mMediaSwitchingController.getMediaItemList();
-        assertThat(items.get(0).getTitle()).isEqualTo(
+        assertThat(((GroupDividerMediaItem) items.get(0)).getTitle()).isEqualTo(
                 mContext.getString(R.string.media_output_group_title_suggested));
-        assertThat(items.get(1).getMediaDevice().get()).isEqualTo(mMediaDevice2);
-        assertThat(items.get(2).getTitle()).isEqualTo(
+        assertThat(((DeviceMediaItem) items.get(1)).getMediaDevice()).isEqualTo(mMediaDevice2);
+        assertThat(((GroupDividerMediaItem) items.get(2)).getTitle()).isEqualTo(
                 mContext.getString(R.string.media_output_group_title_speakers_and_displays));
-        assertThat(items.get(3).getMediaDevice().get()).isEqualTo(mMediaDevice1);
+        assertThat(((DeviceMediaItem) items.get(3)).getMediaDevice()).isEqualTo(mMediaDevice1);
     }
 
     @Test
@@ -568,10 +567,10 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
 
         List<MediaItem> items = mMediaSwitchingController.getMediaItemList();
-        assertThat(items.get(0).getTitle()).isEqualTo(
+        assertThat(((GroupDividerMediaItem) items.get(0)).getTitle()).isEqualTo(
                 mContext.getString(R.string.media_output_group_title_speakers_and_displays));
-        assertThat(items.get(1).getMediaDevice().get()).isEqualTo(mMediaDevice1);
-        assertThat(items.get(2).getMediaDevice().get()).isEqualTo(mMediaDevice2);
+        assertThat(((DeviceMediaItem) items.get(1)).getMediaDevice()).isEqualTo(mMediaDevice1);
+        assertThat(((DeviceMediaItem) items.get(2)).getMediaDevice()).isEqualTo(mMediaDevice2);
 
         mClock.advanceTime(2100); // > 2 seconds.
 
@@ -582,10 +581,10 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
         // The list remains unchanged.
         items = mMediaSwitchingController.getMediaItemList();
-        assertThat(items.get(0).getTitle()).isEqualTo(
+        assertThat(((GroupDividerMediaItem) items.get(0)).getTitle()).isEqualTo(
                 mContext.getString(R.string.media_output_group_title_speakers_and_displays));
-        assertThat(items.get(1).getMediaDevice().get()).isEqualTo(mMediaDevice1);
-        assertThat(items.get(2).getMediaDevice().get()).isEqualTo(mMediaDevice2);
+        assertThat(((DeviceMediaItem) items.get(1)).getMediaDevice()).isEqualTo(mMediaDevice1);
+        assertThat(((DeviceMediaItem) items.get(2)).getMediaDevice()).isEqualTo(mMediaDevice2);
     }
 
     @Test
@@ -715,11 +714,11 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         final List<MediaItem> resultList = mMediaSwitchingController.getMediaItemList();
         final List<MediaDevice> devices = getMediaDevices(resultList);
 
-        assertThat(resultList.get(0).getMediaItemType()).isEqualTo(TYPE_DEVICE);
-        assertThat(resultList.get(0).getMediaDevice().get()).isEqualTo(mMediaDevice6);
+        assertThat(resultList.get(0)).isInstanceOf(DeviceMediaItem.class);
+        assertThat(((DeviceMediaItem) resultList.get(0)).getMediaDevice()).isEqualTo(mMediaDevice6);
 
-        assertThat(resultList.get(1).getMediaItemType()).isEqualTo(TYPE_DEVICE);
-        assertThat(resultList.get(1).getMediaDevice().get()).isEqualTo(mMediaDevice7);
+        assertThat(resultList.get(1)).isInstanceOf(DeviceMediaItem.class);
+        assertThat(((DeviceMediaItem) resultList.get(1)).getMediaDevice()).isEqualTo(mMediaDevice7);
 
         assertThat(resultList.size()).isEqualTo(2);
 
@@ -775,16 +774,16 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         final List<MediaItem> resultList = mMediaSwitchingController.getMediaItemList();
         final List<MediaDevice> devices = getMediaDevices(resultList);
 
-        assertThat(resultList.get(0).getMediaItemType()).isEqualTo(TYPE_GROUP_DIVIDER);
-        assertThat(resultList.get(0).hasTopSeparator()).isTrue();
-        assertThat(resultList.get(0).getTitle()).isEqualTo(
+        assertThat(resultList.get(0)).isInstanceOf(GroupDividerMediaItem.class);
+        assertThat(((GroupDividerMediaItem) resultList.get(0)).getHasTopSeparator()).isTrue();
+        assertThat(((GroupDividerMediaItem) resultList.get(0)).getTitle()).isEqualTo(
                 mContext.getString(R.string.media_output_group_title_speakers_and_displays));
 
-        assertThat(resultList.get(1).getMediaItemType()).isEqualTo(TYPE_DEVICE);
-        assertThat(resultList.get(1).getMediaDevice().get()).isEqualTo(mMediaDevice1);
+        assertThat(resultList.get(1)).isInstanceOf(DeviceMediaItem.class);
+        assertThat(((DeviceMediaItem) resultList.get(1)).getMediaDevice()).isEqualTo(mMediaDevice1);
 
-        assertThat(resultList.get(2).getMediaItemType()).isEqualTo(TYPE_DEVICE);
-        assertThat(resultList.get(2).getMediaDevice().get()).isEqualTo(mMediaDevice2);
+        assertThat(resultList.get(2)).isInstanceOf(DeviceMediaItem.class);
+        assertThat(((DeviceMediaItem) resultList.get(2)).getMediaDevice()).isEqualTo(mMediaDevice2);
 
         assertThat(resultList.size()).isEqualTo(3);
 
@@ -834,10 +833,10 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         final List<MediaDevice> devices = new ArrayList<>();
         int dividerSize = 0;
         for (MediaItem item : mMediaSwitchingController.getMediaItemList()) {
-            if (item.getMediaDevice().isPresent()) {
-                devices.add(item.getMediaDevice().get());
+            if (item instanceof DeviceMediaItem deviceMediaItem) {
+                devices.add(deviceMediaItem.getMediaDevice());
             }
-            if (item.getMediaItemType() == TYPE_GROUP_DIVIDER) {
+            if (item instanceof GroupDividerMediaItem) {
                 dividerSize++;
             }
         }
@@ -898,16 +897,16 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
         List<MediaItem> resultList = mMediaSwitchingController.getMediaItemList();
 
-        assertThat(resultList.get(0).getMediaItemType()).isEqualTo(TYPE_GROUP_DIVIDER);
-        assertThat(resultList.get(0).getTitle()).isEqualTo(
+        assertThat(resultList.get(0)).isInstanceOf(GroupDividerMediaItem.class);
+        assertThat(((GroupDividerMediaItem) resultList.get(0)).getTitle()).isEqualTo(
                 mContext.getString(R.string.media_output_group_title_connected_speakers));
-        assertThat(resultList.get(0).isExpandableDivider()).isTrue();
+        assertThat(((GroupDividerMediaItem) resultList.get(0)).isExpandable()).isTrue();
 
-        assertThat(resultList.get(1).getMediaItemType()).isEqualTo(TYPE_DEVICE);
-        assertThat(resultList.get(1).getMediaDevice().get()).isEqualTo(mMediaDevice1);
+        assertThat(resultList.get(1)).isInstanceOf(DeviceMediaItem.class);
+        assertThat(((DeviceMediaItem) resultList.get(1)).getMediaDevice()).isEqualTo(mMediaDevice1);
 
-        assertThat(resultList.get(2).getMediaItemType()).isEqualTo(TYPE_DEVICE);
-        assertThat(resultList.get(2).getMediaDevice().get()).isEqualTo(mMediaDevice2);
+        assertThat(resultList.get(2)).isInstanceOf(DeviceMediaItem.class);
+        assertThat(((DeviceMediaItem) resultList.get(2)).getMediaDevice()).isEqualTo(mMediaDevice2);
 
         assertThat(resultList.size()).isEqualTo(3);
     }
@@ -929,12 +928,12 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         mMediaSwitchingController.start(mCb);
         List<MediaItem> resultList = mMediaSwitchingController.getMediaItemList();
 
-        assertThat(resultList.get(0).getMediaItemType()).isEqualTo(TYPE_GROUP_DIVIDER);
-        assertThat(resultList.get(0).getTitle()).isEqualTo(
+        assertThat(resultList.get(0)).isInstanceOf(GroupDividerMediaItem.class);
+        assertThat(((GroupDividerMediaItem) resultList.get(0)).getTitle()).isEqualTo(
                 mContext.getString(R.string.media_output_group_title_connected_speakers));
-        assertThat(resultList.get(0).isExpandableDivider()).isTrue();
+        assertThat(((GroupDividerMediaItem) resultList.get(0)).isExpandable()).isTrue();
 
-        assertThat(resultList.get(1).getMediaItemType()).isEqualTo(TYPE_DEVICE_GROUP);
+        assertThat(resultList.get(1)).isInstanceOf(DeviceGroupMediaItem.class);
 
         assertThat(resultList.size()).isEqualTo(2);
     }
@@ -961,11 +960,11 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
         List<MediaItem> resultList = mMediaSwitchingController.getMediaItemList();
 
-        assertThat(resultList.get(0).getMediaItemType()).isEqualTo(TYPE_DEVICE);
-        assertThat(resultList.get(0).getMediaDevice().get()).isEqualTo(mMediaDevice1);
+        assertThat(resultList.get(0)).isInstanceOf(DeviceMediaItem.class);
+        assertThat(((DeviceMediaItem) resultList.get(0)).getMediaDevice()).isEqualTo(mMediaDevice1);
 
-        assertThat(resultList.get(1).getMediaItemType()).isEqualTo(TYPE_DEVICE);
-        assertThat(resultList.get(1).getMediaDevice().get()).isEqualTo(mMediaDevice2);
+        assertThat(resultList.get(1)).isInstanceOf(DeviceMediaItem.class);
+        assertThat(((DeviceMediaItem) resultList.get(1)).getMediaDevice()).isEqualTo(mMediaDevice2);
 
         assertThat(resultList.size()).isEqualTo(2);
     }
@@ -995,16 +994,16 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
         List<MediaItem> resultList = mMediaSwitchingController.getMediaItemList();
 
-        assertThat(resultList.get(0).getMediaItemType()).isEqualTo(TYPE_DEVICE);
-        assertThat(resultList.get(0).getMediaDevice().get()).isEqualTo(mMediaDevice1);
+        assertThat(resultList.get(0)).isInstanceOf(DeviceMediaItem.class);
+        assertThat(((DeviceMediaItem) resultList.get(0)).getMediaDevice()).isEqualTo(mMediaDevice1);
 
-        assertThat(resultList.get(1).getMediaItemType()).isEqualTo(TYPE_GROUP_DIVIDER);
-        assertThat(resultList.get(1).hasTopSeparator()).isTrue();
-        assertThat(resultList.get(1).getTitle()).isEqualTo(
+        assertThat(resultList.get(1)).isInstanceOf(GroupDividerMediaItem.class);
+        assertThat(((GroupDividerMediaItem) resultList.get(1)).getHasTopSeparator()).isTrue();
+        assertThat(((GroupDividerMediaItem) resultList.get(1)).getTitle()).isEqualTo(
                 mContext.getString(R.string.media_output_group_title_speakers_and_displays));
 
-        assertThat(resultList.get(2).getMediaItemType()).isEqualTo(TYPE_DEVICE);
-        assertThat(resultList.get(2).getMediaDevice().get()).isEqualTo(mMediaDevice2);
+        assertThat(resultList.get(2)).isInstanceOf(DeviceMediaItem.class);
+        assertThat(((DeviceMediaItem) resultList.get(2)).getMediaDevice()).isEqualTo(mMediaDevice2);
 
         assertThat(resultList.size()).isEqualTo(3);
     }
@@ -1740,8 +1739,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
 
         List<MediaItem> items = mMediaSwitchingController.getMediaItemList();
-        assertThat(items.get(0).getMediaDevice().get()).isEqualTo(mMediaDevice1);
-        assertThat(items.get(1).getMediaDevice().get()).isEqualTo(mMediaDevice2);
+        assertThat(((DeviceMediaItem) items.get(0)).getMediaDevice()).isEqualTo(mMediaDevice1);
+        assertThat(((DeviceMediaItem) items.get(1)).getMediaDevice()).isEqualTo(mMediaDevice2);
     }
 
     @Test
@@ -1750,11 +1749,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
         mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
 
-        List<MediaDevice> devices =
-                mMediaSwitchingController.getMediaItemList().stream()
-                        .filter(item -> item.getMediaDevice().isPresent())
-                        .map(item -> item.getMediaDevice().orElse(null))
-                        .collect(Collectors.toList());
+
+        List<MediaDevice> devices = getMediaDevices(mMediaSwitchingController.getMediaItemList());
         assertThat(devices)
                 .containsExactly(
                         mMediaDevice4,
@@ -2061,8 +2057,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
     private List<MediaDevice> getMediaDevices(List<MediaItem> mediaItemList) {
         return mediaItemList.stream()
-                .filter(item -> item.getMediaDevice().isPresent())
-                .map(item -> item.getMediaDevice().get())
+                .filter(item -> (item instanceof DeviceMediaItem))
+                .map(item -> ((DeviceMediaItem) item).getMediaDevice())
                 .collect(Collectors.toList());
     }
 

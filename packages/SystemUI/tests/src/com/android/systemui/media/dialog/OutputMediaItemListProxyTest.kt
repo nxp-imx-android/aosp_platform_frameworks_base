@@ -21,7 +21,6 @@ import androidx.test.filters.SmallTest
 import com.android.settingslib.media.MediaDevice
 import com.android.systemui.SysuiTestCase
 import com.google.common.truth.Truth.assertThat
-import java.util.stream.Collectors
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -255,8 +254,13 @@ class OutputMediaItemListProxyTest : SysuiTestCase() {
             .inOrder()
     }
 
-    private fun getMediaDevices(mediaItems: MutableList<MediaItem>): MutableList<MediaDevice?> {
-        return mediaItems.stream().map { it.mediaDevice.orElse(null) }.collect(Collectors.toList())
+    private fun getMediaDevices(mediaItems: MutableList<MediaItem>): List<MediaDevice?> {
+        return mediaItems.map {
+            when (it) {
+                is MediaItem.DeviceMediaItem -> it.mediaDevice
+                else -> null
+            }
+        }
     }
 
     companion object {

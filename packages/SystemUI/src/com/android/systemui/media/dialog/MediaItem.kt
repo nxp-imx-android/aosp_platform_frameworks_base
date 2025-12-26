@@ -14,145 +14,62 @@
  * limitations under the License.
  */
 
-package com.android.systemui.media.dialog;
+package com.android.systemui.media.dialog
 
-import android.annotation.IntDef;
-import android.annotation.NonNull;
-import android.annotation.Nullable;
-
-import com.android.settingslib.media.MediaDevice;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.util.Optional;
+import com.android.settingslib.media.MediaDevice
 
 /**
  * MediaItem represents an item in OutputSwitcher list (could be a MediaDevice, group divider or
  * connect new device item).
  */
-public class MediaItem {
-    private final Optional<MediaDevice> mMediaDeviceOptional;
-    private final String mTitle;
-    @MediaItemType
-    private final int mMediaItemType;
-    private final boolean mIsExpandableDivider;
-    private final boolean mHasTopSeparator;
+sealed class MediaItem {
 
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef({
-            MediaItemType.TYPE_DEVICE,
-            MediaItemType.TYPE_GROUP_DIVIDER,
-            MediaItemType.TYPE_DEVICE_GROUP
-    })
-    public @interface MediaItemType {
-        int TYPE_DEVICE = 0;
-        int TYPE_GROUP_DIVIDER = 1;
-        int TYPE_DEVICE_GROUP = 2;
+    companion object {
+        /** Returns a new {@link MediaItem} that represents a media device. */
+        @JvmStatic
+        fun createDeviceMediaItem(device: MediaDevice): MediaItem = DeviceMediaItem(device)
+
+        /** Returns a new {@link MediaItem} that controls the volume of the group session. */
+        @JvmStatic fun createDeviceGroupMediaItem(): MediaItem = DeviceGroupMediaItem
+
+        @JvmStatic
+        fun createGroupDividerMediaItem(title: String): MediaItem = GroupDividerMediaItem(title)
+
+        /**
+         * Returns a new group divider {@link MediaItem} with the specified title. This item needs
+         * to be rendered with a separator above it.
+         */
+        @JvmStatic
+        fun createGroupDividerWithSeparatorMediaItem(title: String): MediaItem =
+            GroupDividerMediaItem(title, hasTopSeparator = true)
+
+        /**
+         * Returns a new group divider {@link MediaItem} with the specified title. The item serves
+         * as a toggle for expanding/collapsing the group of devices.
+         */
+        @JvmStatic
+        fun createExpandableGroupDividerMediaItem(title: String): MediaItem =
+            GroupDividerMediaItem(title, isExpandable = true)
     }
 
-    /**
-     * Returns a new {@link MediaItemType#TYPE_DEVICE} {@link MediaItem} with its {@link
-     * #getMediaDevice() media device} set to {@code device} and its title set to {@code device}'s
-     * name.
-     */
-    public static MediaItem createDeviceMediaItem(@NonNull MediaDevice device) {
-        return new MediaItem(device, device.getName(), MediaItemType.TYPE_DEVICE);
-    }
-
-    /**
-     * Returns a new {@link MediaItemType#TYPE_DEVICE_GROUP} {@link MediaItem}. This items controls
-     * the volume of the group session.
-     */
-    public static MediaItem createDeviceGroupMediaItem() {
-        return new MediaItem(
-                /* device */ null,
-                /* title */ null,
-                /* type */ MediaItemType.TYPE_DEVICE_GROUP);
-    }
+    /** Represents a media device. */
+    data class DeviceMediaItem(val mediaDevice: MediaDevice) : MediaItem()
 
     /**
-     * Returns a new {@link MediaItemType#TYPE_GROUP_DIVIDER} {@link MediaItem} with the specified
-     * title and a {@code null} {@link #getMediaDevice() media device}.
+     * Represents a media device group. This can be either a Cast device group or a Bluetooth
+     * Personal Audio Sharing session.
      */
-    public static MediaItem createGroupDividerMediaItem(@Nullable String title) {
-        return new MediaItem(
-            /* device */ null,
-            title,
-            MediaItemType.TYPE_GROUP_DIVIDER);
-    }
+    data object DeviceGroupMediaItem : MediaItem()
 
-    /**
-     * Returns a new {@link MediaItemType#TYPE_GROUP_DIVIDER} {@link MediaItem} with the specified
-     * title and a {@code null} {@link #getMediaDevice() media device}. This item needs to be
-     * rendered with a separator above it.
-     */
-    public static MediaItem createGroupDividerWithSeparatorMediaItem(@Nullable String title) {
-        return new MediaItem(
-                /* device */ null,
-                title,
-                MediaItemType.TYPE_GROUP_DIVIDER,
-                /* isExpandableDivider */ false,
-                /* hasTopSeparator */ true);
-    }
-
-    /**
-     * Returns a new {@link MediaItemType#TYPE_GROUP_DIVIDER} {@link MediaItem} with the specified
-     * title and a {@code null} {@link #getMediaDevice() media device}. The item serves as a toggle
-     * for expanding/collapsing the group of devices.
-     */
-    public static MediaItem createExpandableGroupDividerMediaItem(@Nullable String title) {
-        return new MediaItem(
-                /* device */ null,
-                title,
-                MediaItemType.TYPE_GROUP_DIVIDER,
-                /* isExpandableDivider */ true,
-                /* hasTopSeparator */ false);
-    }
-
-    private MediaItem(
-            @Nullable MediaDevice device,
-            @Nullable String title,
-            @MediaItemType int type) {
-        this(device, title, type, /* isExpandableDivider */ false, /* hasTopSeparator */ false);
-    }
-
-    private MediaItem(
-            @Nullable MediaDevice device,
-            @Nullable String title,
-            @MediaItemType int type,
-            boolean isExpandableDivider,
-            boolean hasTopSeparator) {
-        this.mMediaDeviceOptional = Optional.ofNullable(device);
-        this.mTitle = title;
-        this.mMediaItemType = type;
-        this.mIsExpandableDivider = isExpandableDivider;
-        this.mHasTopSeparator = hasTopSeparator;
-    }
-
-    public Optional<MediaDevice> getMediaDevice() {
-        return mMediaDeviceOptional;
-    }
-
-    public String getTitle() {
-        return mTitle;
-    }
-
-    public boolean isMutingExpectedDevice() {
-        return mMediaDeviceOptional.isPresent()
-                && mMediaDeviceOptional.get().isMutingExpectedDevice();
-    }
-
-    public int getMediaItemType() {
-        return mMediaItemType;
-    }
-
-    /** Returns whether a group divider has a button that expands group device list */
-    public boolean isExpandableDivider() {
-        return mIsExpandableDivider;
-    }
-
-    /** Returns whether a group divider has a border at the top */
-    public boolean hasTopSeparator() {
-        return mHasTopSeparator;
-    }
+    /** Represents the section title in the Output Switcher list. */
+    data class GroupDividerMediaItem
+    @JvmOverloads
+    constructor(
+        /** Text of the title */
+        val title: String,
+        /** Whether a group divider has a button that expands group device list */
+        val isExpandable: Boolean = false,
+        /** Whether a group divider has a border at the top */
+        val hasTopSeparator: Boolean = false,
+    ) : MediaItem()
 }

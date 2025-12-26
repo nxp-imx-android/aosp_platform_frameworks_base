@@ -40,8 +40,8 @@ import com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEH
 import com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_NONE
 import com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_TRANSFER
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.media.dialog.MediaItem.MediaItemType
-import com.android.systemui.media.dialog.MediaItem.createDeviceMediaItem
+import com.android.systemui.media.dialog.MediaItem.Companion.createDeviceMediaItem
+import com.android.systemui.media.dialog.MediaItem.DeviceMediaItem
 import com.android.systemui.media.dialog.MediaOutputAdapter.MediaDeviceViewHolder
 import com.android.systemui.media.dialog.MediaOutputAdapter.MediaGroupDividerViewHolder
 import com.android.systemui.res.R
@@ -50,13 +50,10 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.any
-import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
-import org.mockito.kotlin.spy
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -127,7 +124,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
         updateAdapterWithDevices(listOf(mMediaDevice1, mMediaDevice2))
 
         assertThat(mMediaOutputAdapter.getItemId(0))
-            .isEqualTo(mMediaItems[0].mediaDevice.get().id.hashCode())
+            .isEqualTo((mMediaItems[0] as DeviceMediaItem).mediaDevice.id.hashCode())
     }
 
     @Test
@@ -143,7 +140,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
         initializeGroupSessionCollapsed()
 
         assertThat(mMediaOutputAdapter.getItemId(1))
-            .isEqualTo(MediaItemType.TYPE_DEVICE_GROUP.toLong())
+            .isEqualTo(MediaOutputAdapter.TYPE_DEVICE_GROUP.toLong())
     }
 
     @Test
@@ -251,7 +248,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
         val viewHolder =
             mMediaOutputAdapter.onCreateViewHolder(
                 LinearLayout(mContext),
-                MediaItemType.TYPE_DEVICE,
+                MediaOutputAdapter.TYPE_DEVICE,
             ) as MediaDeviceViewHolder
 
         var sliderChangeListener: Slider.OnChangeListener? = null
@@ -280,7 +277,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
         val viewHolder =
             mMediaOutputAdapter.onCreateViewHolder(
                 LinearLayout(mContext),
-                MediaItemType.TYPE_DEVICE,
+                MediaOutputAdapter.TYPE_DEVICE,
             ) as MediaDeviceViewHolder
 
         var sliderTouchListener: Slider.OnSliderTouchListener? = null
@@ -680,8 +677,8 @@ class MediaOutputAdapterTest : SysuiTestCase() {
 
         with(mMediaOutputAdapter) {
             assertThat(itemCount).isEqualTo(2)
-            assertThat(getItemViewType(0)).isEqualTo(MediaItemType.TYPE_GROUP_DIVIDER)
-            assertThat(getItemViewType(1)).isEqualTo(MediaItemType.TYPE_DEVICE_GROUP)
+            assertThat(getItemViewType(0)).isEqualTo(MediaOutputAdapter.TYPE_GROUP_DIVIDER)
+            assertThat(getItemViewType(1)).isEqualTo(MediaOutputAdapter.TYPE_DEVICE_GROUP)
         }
     }
 
@@ -702,7 +699,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
         val viewHolder =
             mMediaOutputAdapter.onCreateViewHolder(
                 LinearLayout(mContext),
-                MediaItemType.TYPE_DEVICE_GROUP,
+                MediaOutputAdapter.TYPE_DEVICE_GROUP,
             ) as MediaDeviceViewHolder
 
         var sliderChangeListener: Slider.OnChangeListener? = null
@@ -749,7 +746,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
         val groupDividerViewHolder =
             mMediaOutputAdapter.onCreateViewHolder(
                 LinearLayout(mContext),
-                MediaItemType.TYPE_GROUP_DIVIDER,
+                MediaOutputAdapter.TYPE_GROUP_DIVIDER,
             ) as MediaGroupDividerViewHolder
         mMediaOutputAdapter.onBindViewHolder(groupDividerViewHolder, 0)
 

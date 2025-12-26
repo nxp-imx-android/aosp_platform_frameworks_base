@@ -31,6 +31,7 @@ import com.android.settingslib.media.MediaDevice
 import com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_GO_TO_APP
 import com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_NONE
 import com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_TRANSFER
+import com.android.systemui.media.dialog.MediaItem.DeviceMediaItem
 import com.android.systemui.res.R
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -76,22 +77,14 @@ abstract class MediaOutputAdapterBase(protected val mController: MediaSwitchingC
 
     fun getCurrentActivePosition(): Int = mCurrentActivePosition
 
-    override fun getItemViewType(position: Int): Int {
-        if (position >= mMediaItemList.size) {
-            Log.d(TAG, "Incorrect position for item type: $position")
-            return MediaItem.MediaItemType.TYPE_GROUP_DIVIDER
-        }
-        return mMediaItemList[position].mediaItemType
-    }
-
     override fun getItemCount(): Int {
         return mMediaItemList.size
     }
 
     abstract inner class MediaDeviceViewHolderBase
     internal constructor(view: View, var mContext: Context) : RecyclerView.ViewHolder(view) {
-        fun renderItem(mediaItem: MediaItem, position: Int) {
-            val device = mediaItem.mediaDevice.get()
+        fun renderItem(mediaItem: DeviceMediaItem, position: Int) {
+            val device = mediaItem.mediaDevice
             val isMutingExpectedDeviceExist = mController.hasMutingExpectedDevice()
             val currentlyConnected = isCurrentlyConnected(device)
 
@@ -213,9 +206,7 @@ abstract class MediaOutputAdapterBase(protected val mController: MediaSwitchingC
         }
 
         private fun hasSelectableDevices(): Boolean {
-            return mMediaItemList.stream().anyMatch { item ->
-                item.mediaDevice.map { it.isSelectable() }.orElse(false)
-            }
+            return mMediaItemList.any { it is DeviceMediaItem && it.mediaDevice.isSelectable }
         }
 
         private fun getClickListenerBasedOnSelectionBehavior(
