@@ -87,7 +87,7 @@
     <string name="bluetooth_connecting" msgid="5871702668260192755">"Ühendamine ..."</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"Ühendatud <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"Sidumine ..."</string>
-    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"Ei saa siduda"</string>
+    <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"Ei saa siduda."</string>
     <string name="bluetooth_connection_failure" msgid="384203214661155324">"Ei saa ühendada"</string>
     <string name="bluetooth_connected_no_headset" msgid="2224101138659967604">"Ühendatud (telefoni pole)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_connected_no_a2dp" msgid="8566874395813947092">"Ühendatud (meediat pole)<xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
