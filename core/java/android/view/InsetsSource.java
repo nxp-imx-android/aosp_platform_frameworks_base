@@ -496,22 +496,52 @@ public class InsetsSource implements Parcelable {
     }
 
     /**
+     * Calculates the frame (in the display coordinate) from hostBounds if this source is attached
+     * to it. Otherwise, mFrame is applied.
+     *
+     * @param hostBounds the bounds of the container where the insets attached to.
+     * @param outFrame the frame of this source.
+     */
+    private void calculateFrame(@NonNull Rect hostBounds, @NonNull Rect outFrame) {
+        if (mAttachedInsets == null) {
+            outFrame.set(mFrame);
+            return;
+        }
+        outFrame.set(hostBounds);
+        if (mAttachedInsets.left > 0) {
+            outFrame.right = hostBounds.left + mAttachedInsets.left;
+        } else if (mAttachedInsets.right > 0) {
+            outFrame.left = hostBounds.right - mAttachedInsets.right;
+        } else if (mAttachedInsets.top > 0) {
+            outFrame.bottom = hostBounds.top + mAttachedInsets.top;
+        } else if (mAttachedInsets.bottom > 0) {
+            outFrame.top = hostBounds.bottom - mAttachedInsets.bottom;
+        } else {
+            outFrame.setEmpty();
+        }
+    }
+
+    /**
      * Calculates the bounding rects the source will cause to a client window.
      *
      * @return the bounding rects, or {@link #EMPTY_RECTS} when there are no bounding rects to
      * describe an inset (only possible when the insets itself is {@link Insets#NONE}.
      */
     @NonNull
-    public Rect[] calculateBoundingRects(@NonNull Rect relativeFrame, boolean ignoreVisibility) {
+    public Rect[] calculateBoundingRects(@NonNull Rect relativeFrame, @NonNull Rect hostBounds,
+            boolean ignoreVisibility) {
         if (!ignoreVisibility && !mVisible) {
             return EMPTY_RECTS;
         }
 
-        final Rect frame = getFrame();
+        // If this source is attached to the host bounds, the source frame is unknown before knowing
+        // the host bounds. Here calculates the frame.
+        calculateFrame(hostBounds, mTmpFrame);
+
         if (mBoundingRects == null) {
             // No bounding rects set, make a single bounding rect that covers the intersection of
             // the |frame| and the |relativeFrame|. Also make it relative to the window origin.
-            return mTmpFrame2.setIntersect(frame, relativeFrame)
+            return mTmpFrame2.setIntersect(mTmpFrame, relativeFrame)
                     ? new Rect[]{
                             new Rect(
                                     mTmpFrame2.left - relativeFrame.left,
@@ -523,39 +553,15 @@ public class InsetsSource implements Parcelable {
                     : EMPTY_RECTS;
         }
 
-        // Special treatment for captionBar inset type. During drag-resizing, the |frame| and
-        // |boundingRects| may not get updated as quickly as |relativeFrame|, so just assume the
-        // |frame| will always be either at the top or bottom of |relativeFrame|. This means some
-        // calculations to make |boundingRects| relative to |relativeFrame| can be skipped or
-        // simplified.
-        // TODO(b/254128050): remove special treatment.
-        if (getType() == WindowInsets.Type.captionBar()) {
-            final ArrayList<Rect> validBoundingRects = new ArrayList<>();
-            for (final Rect boundingRect : mBoundingRects) {
-                // Assume that the caption |frame| and |relativeFrame| perfectly align at the top
-                // or bottom, meaning that the provided |boundingRect|, which is relative to the
-                // |frame| either is already relative to |relativeFrame| (for top captionBar()), or
-                // just needs to be made relative to |relativeFrame| for bottom bars.
-                final int frameHeight = frame.height();
-                mTmpFrame2.set(boundingRect);
-                if (getId() == ID_IME_CAPTION_BAR) {
-                    mTmpFrame2.offset(0, relativeFrame.height() - frameHeight);
-                }
-                validBoundingRects.add(new Rect(mTmpFrame2));
-            }
-            return validBoundingRects.toArray(EMPTY_RECTS);
-        }
-
-        // Regular treatment for non-captionBar inset types.
         final ArrayList<Rect> validBoundingRects = new ArrayList<>();
         for (final Rect boundingRect : mBoundingRects) {
             // |boundingRect| was provided relative to |frame|. Make it absolute to be in the same
             // coordinate system as |frame|.
             final Rect absBoundingRect = new Rect(
-                    boundingRect.left + frame.left,
-                    boundingRect.top + frame.top,
-                    boundingRect.right + frame.left,
-                    boundingRect.bottom + frame.top
+                    boundingRect.left + mTmpFrame.left,
+                    boundingRect.top + mTmpFrame.top,
+                    boundingRect.right + mTmpFrame.left,
+                    boundingRect.bottom + mTmpFrame.top
             );
             // Now find the intersection of that |absBoundingRect| with |relativeFrame|. In other
             // words, whichever part of the bounding rect is inside the window frame.
