@@ -55,6 +55,7 @@ import android.window.WindowContainerTransaction;
 
 import androidx.annotation.Nullable;
 
+import com.android.internal.jank.InteractionJankMonitor;
 import com.android.wm.shell.R;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
@@ -127,6 +128,7 @@ public class CaptionWindowDecorViewModel implements WindowDecorViewModel, FocusT
 
     private final WindowDecorationWrapper.Factory mWindowDecorationWrapperFactory =
             new WindowDecorationWrapper.Factory();
+    private final InteractionJankMonitor mInteractionJankMonitor;
 
     public CaptionWindowDecorViewModel(
             Context context,
@@ -144,7 +146,8 @@ public class CaptionWindowDecorViewModel implements WindowDecorViewModel, FocusT
             FocusTransitionObserver focusTransitionObserver,
             WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier,
             DesktopState desktopState,
-            DesktopConfig desktopConfig) {
+            DesktopConfig desktopConfig,
+            InteractionJankMonitor interactionJankMonitor) {
         mContext = context;
         mMainExecutor = shellExecutor;
         mMainHandler = mainHandler;
@@ -161,6 +164,7 @@ public class CaptionWindowDecorViewModel implements WindowDecorViewModel, FocusT
         mInputManager = mContext.getSystemService(InputManager.class);
         mDesktopState = desktopState;
         mDesktopConfig = desktopConfig;
+        mInteractionJankMonitor = interactionJankMonitor;
 
         shellInit.addInitCallback(this::onInit, this);
     }
@@ -364,7 +368,7 @@ public class CaptionWindowDecorViewModel implements WindowDecorViewModel, FocusT
 
         final FluidResizeTaskPositioner taskPositioner =
                 new FluidResizeTaskPositioner(mTaskOrganizer, mTransitions, windowDecoration,
-                        mDisplayController, mDesktopState);
+                        mDisplayController, mDesktopState, mInteractionJankMonitor, mMainHandler);
         final CaptionTouchEventListener touchEventListener =
                 new CaptionTouchEventListener(taskInfo, taskPositioner);
         windowDecoration.setCaptionListeners(touchEventListener, touchEventListener,

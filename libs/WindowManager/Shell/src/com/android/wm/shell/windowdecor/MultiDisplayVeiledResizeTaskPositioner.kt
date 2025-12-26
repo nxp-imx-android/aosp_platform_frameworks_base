@@ -183,13 +183,10 @@ class MultiDisplayVeiledResizeTaskPositioner(
             )
         }
         repositionTaskBounds.set(taskBoundsAtDragStart)
-        val rotation = windowDecoration.taskInfo.configuration.windowConfiguration.displayRotation
-        if (stableBounds.isEmpty || this.rotation != rotation) {
-            this.rotation = rotation
-            displayController
-                .getDisplayLayout(windowDecoration.taskInfo.displayId)!!
-                .getStableBounds(stableBounds)
-        }
+        this.rotation = windowDecoration.taskInfo.configuration.windowConfiguration.displayRotation
+        displayController
+            .getDisplayLayout(windowDecoration.taskInfo.displayId)
+            ?.getStableBounds(stableBounds)
         return Rect(repositionTaskBounds)
     }
 
@@ -376,7 +373,6 @@ class MultiDisplayVeiledResizeTaskPositioner(
                 // won't be called.
                 resetVeilIfVisible()
             }
-            interactionJankMonitor.end(Cuj.CUJ_DESKTOP_MODE_RESIZE_WINDOW)
         } else {
             val startDisplayLayout = displayController.getDisplayLayout(startDisplayId)
             val currentDisplayLayout = displayController.getDisplayLayout(displayId)
@@ -413,10 +409,6 @@ class MultiDisplayVeiledResizeTaskPositioner(
                         currentDisplayLayout,
                     )
                 )
-
-                if (displayId != startDisplayId) {
-                    currentDisplayLayout.getStableBounds(stableBounds)
-                }
             }
 
             interactionJankMonitor.end(Cuj.CUJ_DESKTOP_MODE_DRAG_WINDOW)
@@ -497,7 +489,9 @@ class MultiDisplayVeiledResizeTaskPositioner(
         ctrlType = DragPositioningCallback.CTRL_TYPE_UNDEFINED
         finishCallback.onTransitionFinished(null /* wct */)
         isResizingOrAnimatingResize = false
-        interactionJankMonitor.end(Cuj.CUJ_DESKTOP_MODE_DRAG_WINDOW)
+        // This is only called when drag resize ends as the class is working as the transition
+        // handler of the drag resize end event only.
+        interactionJankMonitor.end(Cuj.CUJ_DESKTOP_MODE_RESIZE_WINDOW)
         return true
     }
 

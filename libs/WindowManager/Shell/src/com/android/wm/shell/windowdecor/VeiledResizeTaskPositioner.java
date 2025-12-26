@@ -187,7 +187,6 @@ public class VeiledResizeTaskPositioner implements TaskPositioner, Transitions.T
                 // won't be called.
                 resetVeilIfVisible();
             }
-            mInteractionJankMonitor.end(CUJ_DESKTOP_MODE_RESIZE_WINDOW);
         } else {
             DragPositioningCallbackUtility.updateTaskBounds(mRepositionTaskBounds,
                     mTaskBoundsAtDragStart, mRepositionStartPoint, x, y);
@@ -243,7 +242,9 @@ public class VeiledResizeTaskPositioner implements TaskPositioner, Transitions.T
         mCtrlType = CTRL_TYPE_UNDEFINED;
         finishCallback.onTransitionFinished(null);
         mIsResizingOrAnimatingResize = false;
-        mInteractionJankMonitor.end(CUJ_DESKTOP_MODE_DRAG_WINDOW);
+        // This is only called when drag resize ends as the class is working as the transition
+        // handler of the drag resize end event only.
+        mInteractionJankMonitor.end(CUJ_DESKTOP_MODE_RESIZE_WINDOW);
         return true;
     }
 

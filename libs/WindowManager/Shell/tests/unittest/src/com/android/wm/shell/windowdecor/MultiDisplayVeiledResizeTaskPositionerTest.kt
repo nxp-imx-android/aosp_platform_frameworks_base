@@ -27,7 +27,6 @@ import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableResources
 import android.view.Display
-import android.view.Surface.ROTATION_0
 import android.view.Surface.ROTATION_270
 import android.view.Surface.ROTATION_90
 import android.view.SurfaceControl
@@ -195,6 +194,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             INPUT_METHOD_TYPE_UNKNOWN,
         )
         verify(mockWindowDecoration, never()).showResizeVeil(STARTING_BOUNDS)
+        verify(spyDisplayLayout0).getStableBounds(any())
 
         taskPositioner.onDragPositioningEnd(
             DISPLAY_ID_0,
@@ -771,100 +771,6 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
                     }
                 }
             )
-    }
-
-    @Test
-    fun testDragResize_drag_updatesStableBoundsOnRotate() = runOnUiThread {
-        // Test landscape stable bounds
-        performDrag(
-            STARTING_BOUNDS.right.toFloat(),
-            STARTING_BOUNDS.bottom.toFloat(),
-            STARTING_BOUNDS.right.toFloat() + 2000,
-            STARTING_BOUNDS.bottom.toFloat() + 2000,
-            CTRL_TYPE_RIGHT or CTRL_TYPE_BOTTOM,
-        )
-        val rectAfterDrag = Rect(STARTING_BOUNDS)
-        rectAfterDrag.right += 2000
-        rectAfterDrag.bottom = STABLE_BOUNDS_LANDSCAPE.bottom
-        // First drag; we should fetch stable bounds.
-        verify(spyDisplayLayout0, times(1)).getStableBounds(any())
-        verify(mockTransitions)
-            .startTransition(
-                eq(TRANSIT_CHANGE),
-                argThat { wct ->
-                    return@argThat wct.changes.any { (token, change) ->
-                        token == taskBinder &&
-                            (change.windowSetMask and WindowConfiguration.WINDOW_CONFIG_BOUNDS) !=
-                                0 &&
-                            change.configuration.windowConfiguration.bounds == rectAfterDrag
-                    }
-                },
-                eq(taskPositioner),
-            )
-        // Drag back to starting bounds.
-        performDrag(
-            STARTING_BOUNDS.right.toFloat() + 2000,
-            STARTING_BOUNDS.bottom.toFloat(),
-            STARTING_BOUNDS.right.toFloat(),
-            STARTING_BOUNDS.bottom.toFloat(),
-            CTRL_TYPE_RIGHT or CTRL_TYPE_BOTTOM,
-        )
-
-        // Display did not rotate; we should use previous stable bounds
-        verify(spyDisplayLayout0, times(1)).getStableBounds(any())
-
-        // Rotate the screen to portrait
-        mockWindowDecoration.taskInfo.apply {
-            configuration.windowConfiguration.displayRotation = ROTATION_0
-        }
-        // Test portrait stable bounds
-        performDrag(
-            STARTING_BOUNDS.right.toFloat(),
-            STARTING_BOUNDS.bottom.toFloat(),
-            STARTING_BOUNDS.right.toFloat() + 2000,
-            STARTING_BOUNDS.bottom.toFloat() + 2000,
-            CTRL_TYPE_RIGHT or CTRL_TYPE_BOTTOM,
-        )
-        rectAfterDrag.right = STABLE_BOUNDS_PORTRAIT.right
-        rectAfterDrag.bottom = STARTING_BOUNDS.bottom + 2000
-
-        verify(mockTransitions)
-            .startTransition(
-                eq(TRANSIT_CHANGE),
-                argThat { wct ->
-                    return@argThat wct.changes.any { (token, change) ->
-                        token == taskBinder &&
-                            (change.windowSetMask and WindowConfiguration.WINDOW_CONFIG_BOUNDS) !=
-                                0 &&
-                            change.configuration.windowConfiguration.bounds == rectAfterDrag
-                    }
-                },
-                eq(taskPositioner),
-            )
-        // Display has rotated; we expect a new stable bounds.
-        verify(spyDisplayLayout0, times(2)).getStableBounds(any())
-    }
-
-    @Test
-    fun testDragResize_displayHasChanged_refetchStableBounds() = runOnUiThread {
-        // Start drag on display 0
-        taskPositioner.onDragPositioningStart(
-            CTRL_TYPE_UNDEFINED,
-            DISPLAY_ID_0,
-            STARTING_BOUNDS.left.toFloat(),
-            STARTING_BOUNDS.top.toFloat(),
-            INPUT_METHOD_TYPE_UNKNOWN,
-        )
-
-        // First drag; we should fetch stable bounds for display 0.
-        verify(spyDisplayLayout0, times(1)).getStableBounds(any())
-
-        // End drag on display 1
-        taskPositioner.onDragPositioningEnd(DISPLAY_ID_1, 200f, 800f)
-        mockWindowDecoration.taskInfo.apply { displayId = DISPLAY_ID_1 }
-
-        // Display has changed; we expect a new stable bounds for display 1.
-        verify(spyDisplayLayout1, times(1)).getStableBounds(any())
     }
 
     @Test
