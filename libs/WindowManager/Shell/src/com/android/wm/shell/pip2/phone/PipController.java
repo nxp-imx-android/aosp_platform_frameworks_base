@@ -326,11 +326,8 @@ public class PipController implements ConfigurationChangeListener,
                                 + "pipDisplayLayoutState#displayId=%s",
                         task.topActivity, wasVisible, task.displayId,
                         mPipDisplayLayoutState.getDisplayId());
-                boolean isPipLaunchingOnDifferentDisplay =
-                        DesktopExperienceFlags.ENABLE_CROSS_DISPLAYS_PIP_TASK_LAUNCH.isTrue()
-                                && task.displayId != mPipDisplayLayoutState.getDisplayId();
                 if (task.getWindowingMode() != WINDOWING_MODE_PINNED
-                        || isPipLaunchingOnDifferentDisplay) {
+                        || task.displayId != mPipDisplayLayoutState.getDisplayId()) {
                     return;
                 }
                 mPipScheduler.scheduleExitPipViaExpand(wasVisible,

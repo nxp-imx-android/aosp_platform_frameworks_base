@@ -21,12 +21,10 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 
-import static com.android.window.flags.Flags.FLAG_ENABLE_CROSS_DISPLAYS_PIP_TASK_LAUNCH;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_EXIT_PIP;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_EXIT_PIP_TO_SPLIT;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -44,7 +42,6 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.IBinder;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.FlagsParameterization;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -184,15 +181,6 @@ public class PipExpandHandlerTest {
     }
 
     @Test
-    @DisableFlags(FLAG_ENABLE_CROSS_DISPLAYS_PIP_TASK_LAUNCH)
-    public void handleRequest_crossDisplaysPipLaunchFlagDisabled_returnsNull() {
-        WindowContainerTransaction wct = mPipExpandHandler.handleRequest(
-                mMockTransitionToken, mMockRequestInfo);
-        assertNull(wct);
-    }
-
-    @Test
-    @EnableFlags(FLAG_ENABLE_CROSS_DISPLAYS_PIP_TASK_LAUNCH)
     public void handleRequest_opensPipOnAnotherDisplay_returnsWct() {
         final ActivityManager.RunningTaskInfo pipTaskInfo = createPipTaskInfo(
                 TASk_ID, WINDOWING_MODE_PINNED, new PictureInPictureParams.Builder().build());
@@ -211,7 +199,6 @@ public class PipExpandHandlerTest {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CROSS_DISPLAYS_PIP_TASK_LAUNCH)
     public void startAnimation_exitViaExpandOnDifferentDisplay_startExpandAnimation() {
         final ActivityManager.RunningTaskInfo pipTaskInfo = createPipTaskInfo(
                 TASk_ID, WINDOWING_MODE_PINNED, new PictureInPictureParams.Builder().build());
