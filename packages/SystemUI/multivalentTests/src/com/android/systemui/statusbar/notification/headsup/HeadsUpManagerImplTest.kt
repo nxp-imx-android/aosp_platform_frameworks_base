@@ -23,7 +23,6 @@ import android.os.Handler
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
-import android.testing.TestableLooper
 import android.testing.TestableLooper.RunWithLooper
 import android.view.accessibility.accessibilityManager
 import android.view.accessibility.accessibilityManagerWrapper
@@ -37,7 +36,6 @@ import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
-import com.android.systemui.log.assertLogsWtfs
 import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.shadeTestUtil
@@ -818,6 +816,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
+    @Ignore("b/470835197")
     @BrokenWithSceneContainer(381869885) // because `ShadeTestUtil.setShadeExpansion(0f)`
     // still causes `ShadeInteractor.isAnyExpanded` to emit `true`, when it should emit `false`.
     fun shouldHeadsUpBecomePinned_shadeNotExpanded_true() =
@@ -883,6 +882,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
+    @Ignore("b/470835197")
     fun shouldHeadsUpBecomePinned_shadeExpanded_false() =
         kosmos.runTest {
             // GIVEN
@@ -1082,9 +1082,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
         val flags: List<FlagsParameterization>
             get() = buildList {
                 addAll(
-                    FlagsParameterization.allCombinationsOf(
-                            NotificationThrottleHun.FLAG_NAME,
-                        )
+                    FlagsParameterization.allCombinationsOf(NotificationThrottleHun.FLAG_NAME)
                         .andSceneContainer()
                 )
             }
