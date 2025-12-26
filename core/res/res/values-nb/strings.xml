@@ -158,14 +158,10 @@
     <string name="wfc_mode_wifi_preferred_summary" msgid="1035175836270943089">"Ring via Wifi"</string>
     <string name="wfc_mode_cellular_preferred_summary" msgid="4958965609212575619">"Ring over mobilnettverk"</string>
     <string name="wfc_mode_wifi_only_summary" msgid="104951993894678665">"Bare wifi"</string>
-    <!-- no translation found for adaptive_low_frequency_less_than_one_minute (8869498183646028708) -->
-    <skip />
-    <!-- no translation found for adaptive_low_frequency_neg_less_than_one_minute (2590062535985417056) -->
-    <skip />
-    <!-- no translation found for elapsed_time_low_frequency_short_format_h_mm (6728141238066668781) -->
-    <skip />
-    <!-- no translation found for elapsed_time_low_frequency_short_format_mm (2405181895215514414) -->
-    <skip />
+    <string name="adaptive_low_frequency_less_than_one_minute" msgid="8869498183646028708">"~ %s"</string>
+    <string name="adaptive_low_frequency_neg_less_than_one_minute" msgid="2590062535985417056">"~ −%s"</string>
+    <string name="elapsed_time_low_frequency_short_format_h_mm" msgid="6728141238066668781">"%1$d:%2$02d:--"</string>
+    <string name="elapsed_time_low_frequency_short_format_mm" msgid="2405181895215514414">"%1$02d:--"</string>
     <!-- no translation found for crossSimFormat_spn (9125246077491634262) -->
     <skip />
     <string name="crossSimFormat_spn_cross_sim_calling" msgid="5620807020002879057">"<xliff:g id="SPN">%s</xliff:g>-reserve for anrop"</string>

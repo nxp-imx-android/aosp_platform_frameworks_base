@@ -158,14 +158,10 @@
     <string name="wfc_mode_wifi_preferred_summary" msgid="1035175836270943089">"‏تماس ازطریق Wi-Fi"</string>
     <string name="wfc_mode_cellular_preferred_summary" msgid="4958965609212575619">"تماس ازطریق شبکه تلفن همراه"</string>
     <string name="wfc_mode_wifi_only_summary" msgid="104951993894678665">"‏فقط Wi-Fi"</string>
-    <!-- no translation found for adaptive_low_frequency_less_than_one_minute (8869498183646028708) -->
-    <skip />
-    <!-- no translation found for adaptive_low_frequency_neg_less_than_one_minute (2590062535985417056) -->
-    <skip />
-    <!-- no translation found for elapsed_time_low_frequency_short_format_h_mm (6728141238066668781) -->
-    <skip />
-    <!-- no translation found for elapsed_time_low_frequency_short_format_mm (2405181895215514414) -->
-    <skip />
+    <string name="adaptive_low_frequency_less_than_one_minute" msgid="8869498183646028708">"‪~ %s"</string>
+    <string name="adaptive_low_frequency_neg_less_than_one_minute" msgid="2590062535985417056">"‪~ −%s"</string>
+    <string name="elapsed_time_low_frequency_short_format_h_mm" msgid="6728141238066668781">"‪%1$d:%2$02d:--"</string>
+    <string name="elapsed_time_low_frequency_short_format_mm" msgid="2405181895215514414">"‪%1$02d:--"</string>
     <!-- no translation found for crossSimFormat_spn (9125246077491634262) -->
     <skip />
     <string name="crossSimFormat_spn_cross_sim_calling" msgid="5620807020002879057">"<xliff:g id="SPN">%s</xliff:g> تماس پشتیبان"</string>
@@ -1460,7 +1456,7 @@
     <string name="carrier_app_notification_text" msgid="6567057546341958637">"برای تنظیم آن تک‌ضرب بزنید"</string>
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"منطقه زمانی‌تان تغییر کرد"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"درحال‌حاضر در <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> ‏(<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>) هستید"</string>
-    <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"تغییر دادن ساعت"</string>
+    <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"تغییر ساعت رسمی"</string>
     <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"ساعت‌ها <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> به‌جلو کشیده شدند. درحال‌حاضر در <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> ‏(<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>) هستید."</string>
     <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"ساعت‌ها <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> به‌عقب کشیده شدند. درحال‌حاضر در <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> ‏(<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>) هستید."</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"تنظیم زمان"</string>

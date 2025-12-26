@@ -159,14 +159,10 @@
     <string name="wfc_mode_wifi_preferred_summary" msgid="1035175836270943089">"‏שיחה בחיבור Wi-Fi"</string>
     <string name="wfc_mode_cellular_preferred_summary" msgid="4958965609212575619">"שיחה ברשת סלולרית"</string>
     <string name="wfc_mode_wifi_only_summary" msgid="104951993894678665">"‏Wi-Fi בלבד"</string>
-    <!-- no translation found for adaptive_low_frequency_less_than_one_minute (8869498183646028708) -->
-    <skip />
-    <!-- no translation found for adaptive_low_frequency_neg_less_than_one_minute (2590062535985417056) -->
-    <skip />
-    <!-- no translation found for elapsed_time_low_frequency_short_format_h_mm (6728141238066668781) -->
-    <skip />
-    <!-- no translation found for elapsed_time_low_frequency_short_format_mm (2405181895215514414) -->
-    <skip />
+    <string name="adaptive_low_frequency_less_than_one_minute" msgid="8869498183646028708">"~ %s"</string>
+    <string name="adaptive_low_frequency_neg_less_than_one_minute" msgid="2590062535985417056">"~ −%s"</string>
+    <string name="elapsed_time_low_frequency_short_format_h_mm" msgid="6728141238066668781">"%1$d:%2$02d:--"</string>
+    <string name="elapsed_time_low_frequency_short_format_mm" msgid="2405181895215514414">"%1$02d:--"</string>
     <!-- no translation found for crossSimFormat_spn (9125246077491634262) -->
     <skip />
     <string name="crossSimFormat_spn_cross_sim_calling" msgid="5620807020002879057">"אמצעי גיבוי להתקשרות באמצעות <xliff:g id="SPN">%s</xliff:g>"</string>
@@ -1462,7 +1458,7 @@
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"אזור הזמן שלך השתנה"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"אזור הזמן הנוכחי שלך הוא <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> ‏(<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
     <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"שינוי השעה בשעון"</string>
-    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"השעונים הוזזו קדימה ב<xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. אזור הזמן הנוכחי שלך הוא <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> ‏(<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"השעונים הוזזו קדימה ב-<xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. אזור הזמן הנוכחי שלך הוא <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> ‏(<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
     <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"השעונים הוזזו אחורה ב<xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. אזור הזמן הנוכחי שלך הוא <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> ‏(<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"הגדרת שעה"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"הגדרת תאריך"</string>
@@ -1839,8 +1835,7 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"תנועה"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"הגדרות מהירות"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"לחיצה מהירה 3 פעמים"</string>
-    <!-- no translation found for accessibility_shortcut_label_top_row_key (1488840908672437180) -->
-    <skip />
+    <string name="accessibility_shortcut_label_top_row_key" msgid="1488840908672437180">"מקש הנגישות"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"שירות <xliff:g id="SERVICE_NAME">%s</xliff:g> כבוי"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"עריכת קיצורי הדרך"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"סיום"</string>

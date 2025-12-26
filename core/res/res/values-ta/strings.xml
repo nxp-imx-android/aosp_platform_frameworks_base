@@ -158,14 +158,10 @@
     <string name="wfc_mode_wifi_preferred_summary" msgid="1035175836270943089">"வைஃபை மூலம் அழை"</string>
     <string name="wfc_mode_cellular_preferred_summary" msgid="4958965609212575619">"மொபைல் நெட்வொர்க் மூலமாக அழை"</string>
     <string name="wfc_mode_wifi_only_summary" msgid="104951993894678665">"வைஃபை மட்டும்"</string>
-    <!-- no translation found for adaptive_low_frequency_less_than_one_minute (8869498183646028708) -->
-    <skip />
-    <!-- no translation found for adaptive_low_frequency_neg_less_than_one_minute (2590062535985417056) -->
-    <skip />
-    <!-- no translation found for elapsed_time_low_frequency_short_format_h_mm (6728141238066668781) -->
-    <skip />
-    <!-- no translation found for elapsed_time_low_frequency_short_format_mm (2405181895215514414) -->
-    <skip />
+    <string name="adaptive_low_frequency_less_than_one_minute" msgid="8869498183646028708">"~ %s"</string>
+    <string name="adaptive_low_frequency_neg_less_than_one_minute" msgid="2590062535985417056">"~ −%s"</string>
+    <string name="elapsed_time_low_frequency_short_format_h_mm" msgid="6728141238066668781">"%1$d:%2$02d:--"</string>
+    <string name="elapsed_time_low_frequency_short_format_mm" msgid="2405181895215514414">"%1$02d:--"</string>
     <!-- no translation found for crossSimFormat_spn (9125246077491634262) -->
     <skip />
     <string name="crossSimFormat_spn_cross_sim_calling" msgid="5620807020002879057">"<xliff:g id="SPN">%s</xliff:g> காப்புப் பிரதி அழைப்பு"</string>
@@ -1461,7 +1457,7 @@
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"உங்கள் நேர மண்டலம் மாற்றப்பட்டது"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"நீங்கள் இப்போது இருப்பது: <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
     <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"கடிகார மாற்றம்"</string>
-    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"கடிகாரங்கள் <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>க்கு நகர்த்தப்பட்டன. நீங்கள் இப்போது இருப்பது: <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"கடிகாரங்கள் <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> முன்நகர்த்தப்பட்டன. நீங்கள் இப்போது இருப்பது: <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
     <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"கடிகாரங்கள் <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g> பின்னோக்கி நகர்த்தப்பட்டன. நீங்கள் இப்போது இருப்பது: <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"நேரத்தை அமை"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"தேதியை அமை"</string>
