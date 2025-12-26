@@ -129,3 +129,11 @@ flag {
     bug: "437391557"
     is_exported: true
 }
+
+flag {
+    name: "screen_capture_exclusion_flags"
+    namespace: "window_surfaces"
+    description: "Enable the capability of excluding windows in screen captures by checking the exclusion flags."
+    bug: "469847524"
+}
+
