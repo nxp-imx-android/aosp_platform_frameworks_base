@@ -155,8 +155,7 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ቪድዮ ተቀምጧል"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"ቪድዮ ተሰርዟል"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"ቀልብስ"</string>
-    <!-- no translation found for screen_record_take_another (8071412867905614800) -->
-    <skip />
+    <string name="screen_record_take_another" msgid="8071412867905614800">"ሌላ ይውሰዱ"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"አርትዕ"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"ሰርዝ"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"ይህ ቅጂ ይሰረዝ?"</string>
@@ -898,8 +897,7 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"ሳተላይት፣ ደካማ ግንኙነት"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"ሳተላይት፣ ጥሩ ግንኙነት"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"ሳተላይት፣ ግንኙነት አለ"</string>
-    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
-    <skip />
+    <string name="accessibility_status_bar_satellite_symbol" msgid="3840194796890095832">"ሳተላይት"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"ሳተላይት ኤስኦኤስ"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"የአደጋ ጥሪዎች ወይም ኤስኦኤስ ብቻ"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"የሳተላይት አውታረ መረቦች"</string>
@@ -938,6 +936,8 @@
     <string name="inline_done_button" msgid="6043094985588909584">"ተከናውኗል"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ተግብር"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"አጥፋ"</string>
+    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
+    <skip />
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"ስልክ"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"ጡባዊ"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"ላፕቶፕ"</string>
@@ -1526,8 +1526,7 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"ሰቅን ወደ ፈጣን ቅንብሮች ያክሉ"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"ትንሽ ቅርጸት"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"ትልቅ ቅርጸት"</string>
-    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
-    <skip />
+    <string name="qs_tile_satellite_label" msgid="2839625529776739941">"ሳት"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"ተጠቃሚን ይምረጡ"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# መተግበሪያ ገቢር ሆኗል}one{# መተግበሪያ ገቢር ሆኗል}other{# መተግበሪያዎች ገቢር ሆነዋል}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"አዲስ መረጃ"</string>

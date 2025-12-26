@@ -155,8 +155,7 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Бейне сақталды."</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Бейне жойылды."</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Қайтару"</string>
-    <!-- no translation found for screen_record_take_another (8071412867905614800) -->
-    <skip />
+    <string name="screen_record_take_another" msgid="8071412867905614800">"Басқасын түсіру"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Өзгерту"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Жою"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Бұл жазбаны жою қажет пе?"</string>
@@ -264,7 +263,7 @@
     <string name="biometric_dialog_tap_confirm_with_face_sfps" msgid="2499213248903257928">"Бетпен ашылды. Жалғастыру үшін түртіңіз."</string>
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Аутентификацияланған"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Аутентификациядан бас тарту"</string>
-    <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Қосымша опциялар"</string>
+    <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Басқа опциялар"</string>
     <string name="biometric_dialog_fallback_title" msgid="2337887849267443214">"Басқа жолмен растау"</string>
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Басқа жолмен растау"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Жеке басты тексеру функциясын реттеу"</string>
@@ -898,8 +897,7 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"Жерсерік, байланыс нашар."</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"Жерсерік, байланыс жақсы."</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Жерсерік, байланыс бар."</string>
-    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
-    <skip />
+    <string name="accessibility_status_bar_satellite_symbol" msgid="3840194796890095832">"Жерсерік"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"Satellite SOS"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Тек құтқару қызметіне қоңырау шалу немесе SOS сигналын жіберу"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"Жерсеріктік желілер"</string>
@@ -938,6 +936,8 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Дайын"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Қолдану"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Өшіру"</string>
+    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
+    <skip />
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"телефон"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"планшет"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"ноутбук"</string>
@@ -1526,8 +1526,7 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Жылдам параметрлерге қосу"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Шағын формат"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Үлкен формат"</string>
-    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
-    <skip />
+    <string name="qs_tile_satellite_label" msgid="2839625529776739941">"Жерсерік"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Пайдаланушыны таңдау"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# қолданба қосылып тұр.}other{# қолданба қосылып тұр.}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Жаңа ақпарат"</string>
