@@ -213,7 +213,7 @@ class CustomizationProviderTest : SysuiTestCase() {
             )
         underTest.previewManager =
             KeyguardRemotePreviewManager(
-                applicationScope = testScope.backgroundScope,
+                mainImmediateScope = testScope.backgroundScope,
                 previewFactory = previewFactory,
                 mainDispatcher = testDispatcher,
                 backgroundHandler = backgroundHandler,

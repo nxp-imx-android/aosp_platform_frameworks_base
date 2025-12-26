@@ -53,6 +53,7 @@ import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.dagger.qualifiers.MainImmediate
 import com.android.systemui.keyguard.shared.model.ClockSizeSetting
 import com.android.systemui.keyguard.ui.binder.KeyguardPreviewClockViewBinder
 import com.android.systemui.keyguard.ui.binder.KeyguardPreviewSmartspaceViewBinder
@@ -100,7 +101,7 @@ class KeyguardPreviewRenderer
 @AssistedInject
 constructor(
     @Application private val context: Context,
-    @Main private val mainDispatcher: CoroutineDispatcher,
+    @MainImmediate private val mainDispatcher: CoroutineDispatcher,
     @Main private val mainHandler: Handler,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
     @Assisted private val previewViewModel: KeyguardPreviewViewModel,
