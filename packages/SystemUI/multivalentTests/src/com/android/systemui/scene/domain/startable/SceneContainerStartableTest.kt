@@ -90,6 +90,7 @@ import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardOcclusionInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardServiceShowLockscreenInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardSurfaceBehindInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardWakeDirectlyToGoneInteractor
 import com.android.systemui.keyguard.domain.interactor.scenetransition.lockscreenSceneTransitionInteractor
 import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.keyguard.shared.model.DismissAction
@@ -1407,6 +1408,8 @@ class SceneContainerStartableTest : SysuiTestCase() {
     fun switchToGoneWhenDeviceStartsToWakeUp_authMethodNone_canIgnoreAuth() =
         kosmos.runTest {
             val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
+            val canWakeDirectlyToGone by
+                collectLastValue(keyguardWakeDirectlyToGoneInteractor.canWakeDirectlyToGone)
             prepareState(
                 initialSceneKey = Scenes.Lockscreen,
                 authenticationMethod = AuthenticationMethodModel.None,
@@ -1415,10 +1418,16 @@ class SceneContainerStartableTest : SysuiTestCase() {
             powerInteractor.setAsleepForTest()
             underTest.start()
             runCurrent()
+
             assertThat(currentSceneKey).isEqualTo(Scenes.Lockscreen)
 
             kosmos.keyguardRepository.setCanIgnoreAuthAndReturnToGone(true)
+            // Even when lockscreen is disabled, device must be unlocked to make sure locked SIM
+            // state is detected.
+            deviceEntryRepository.deviceUnlockStatus.value =
+                DeviceUnlockStatus(true, deviceUnlockSource = null)
             runCurrent()
+            assertThat(canWakeDirectlyToGone).isTrue()
 
             powerInteractor.setAwakeForTest()
             runCurrent()
@@ -1431,6 +1440,8 @@ class SceneContainerStartableTest : SysuiTestCase() {
     fun switchToGoneWhenDeviceStartsToWakeUpWhileTransitioningToLockscreenAndCanIgnoreAuth() =
         kosmos.runTest {
             val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
+            val canWakeDirectlyToGone by
+                collectLastValue(keyguardWakeDirectlyToGoneInteractor.canWakeDirectlyToGone)
             val transitionStateFlow =
                 prepareState(
                     initialSceneKey = Scenes.Shade,
@@ -1438,12 +1449,16 @@ class SceneContainerStartableTest : SysuiTestCase() {
                     isLockscreenEnabled = false,
                     startsAwake = false,
                 )
-
             underTest.start()
             runCurrent()
 
+            // Device unlock status is reset only when the lock screen timeout expires
+            deviceEntryRepository.deviceUnlockStatus.value =
+                DeviceUnlockStatus(true, deviceUnlockSource = null)
+            runCurrent()
             kosmos.keyguardRepository.setCanIgnoreAuthAndReturnToGone(true)
             runCurrent()
+            assertThat(canWakeDirectlyToGone).isTrue()
 
             transitionStateFlow.value =
                 ObservableTransitionState.Transition(
