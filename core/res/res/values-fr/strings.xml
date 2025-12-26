@@ -1462,7 +1462,7 @@
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"Votre fuseau horaire a changé"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"Vous êtes maintenant sur le fuseau horaire <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
     <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"Changement d\'heure"</string>
-    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"Les horloges ont été avancées de <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. Vous êtes maintenant sur le fuseau horaire <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"Les horloges ont été avancées de <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. Vous êtes maintenant sur le fuseau horaire suivant : <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
     <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"Les horloges ont été reculées de <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. Vous êtes maintenant sur le fuseau horaire <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"Définir l\'heure"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"Définir la date"</string>
