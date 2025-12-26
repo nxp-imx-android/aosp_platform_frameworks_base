@@ -44,6 +44,8 @@
     <string name="expand_handle" msgid="7282974448109280522">"Кнопка розгортання"</string>
     <string name="collapse_handle" msgid="6886637989442507451">"Кнопка згортання"</string>
     <string name="print_button" msgid="645164566271246268">"Друк"</string>
+    <!-- no translation found for setup_button (323390526074568450) -->
+    <skip />
     <string name="savetopdf_button" msgid="2976186791686924743">"Зберегти у форматі PDF"</string>
     <string name="print_options_expanded" msgid="6944679157471691859">"Параметри друку розгорнуто"</string>
     <string name="print_options_collapsed" msgid="7455930445670414332">"Параметри друку згорнуто"</string>
