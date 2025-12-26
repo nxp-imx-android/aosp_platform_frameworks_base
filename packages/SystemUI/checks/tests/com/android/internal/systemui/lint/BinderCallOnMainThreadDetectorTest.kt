@@ -802,6 +802,207 @@ src/test/pkg/TestClass.kt:24: Warning: Binder call on main thread [BinderCallOnM
     }
 
     @Test
+    fun binderCall_flowOnMainDispatcher_error() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+                    import android.media.projection.MediaProjectionManager
+                    import com.android.systemui.dagger.qualifiers.Main
+                    import kotlinx.coroutines.channels.awaitClose
+                    import kotlinx.coroutines.flow.callbackFlow
+                    import kotlinx.coroutines.flow.flowOn
+                    import kotlinx.coroutines.CoroutineDispatcher
+                    import com.android.systemui.dagger.qualifiers.Main
+
+                    class TestClass(
+                        @Main private val dispatcher: CoroutineDispatcher,
+                        private val mediaProjectionManager: MediaProjectionManager,
+                    ) {
+                        private val callbackFlow = callbackFlow {
+                            val callback =
+                                object : MediaProjectionManager.Callback() {
+                                    override fun onStart(info: MediaProjectionInfo?) {
+                                        PendingIntent.getBroadcast(context, it, intent, 0)
+                                    }
+                                    override fun onStop(info: MediaProjectionInfo?) {
+                                        PendingIntent.getBroadcast(context, it, intent, 0)
+                                    }
+                                }
+                                mediaProjectionManager.addCallback(callback)
+                                awaitClose { mediaProjectionManager.removeCallback(callback) }
+                         }
+                            .flowOn(dispatcher)
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expect(
+                """
+src/test/pkg/TestClass.kt:20: Warning: Binder call on main thread [BinderCallOnMainThread]
+                    PendingIntent.getBroadcast(context, it, intent, 0)
+                                  ~~~~~~~~~~~~
+src/test/pkg/TestClass.kt:23: Warning: Binder call on main thread [BinderCallOnMainThread]
+                    PendingIntent.getBroadcast(context, it, intent, 0)
+                                  ~~~~~~~~~~~~
+0 errors, 2 warnings
+                """
+            )
+    }
+
+    @Test
+    fun binderCall_flowOnBackgroundDispatcher_clean() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+                    import android.media.projection.MediaProjectionManager
+                    import kotlinx.coroutines.channels.awaitClose
+                    import kotlinx.coroutines.flow.callbackFlow
+                    import kotlinx.coroutines.flow.flowOn
+                    import kotlinx.coroutines.CoroutineDispatcher
+                    import com.android.systemui.dagger.qualifiers.Background
+
+                    class TestClass(
+                        @Background private val backgroundCoroutineDispatcher: CoroutineDispatcher,
+                        private val mediaProjectionManager: MediaProjectionManager,
+                    ) {
+                        private val callbackFlow = callbackFlow {
+                            val callback =
+                                object : MediaProjectionManager.Callback() {
+                                    override fun onStart(info: MediaProjectionInfo?) {
+                                        PendingIntent.getBroadcast(context, it, intent, 0)
+                                    }
+                                    override fun onStop(info: MediaProjectionInfo?) {
+                                        PendingIntent.getBroadcast(context, it, intent, 0)
+                                    }
+                                }
+                                mediaProjectionManager.addCallback(callback)
+                                awaitClose { mediaProjectionManager.removeCallback(callback) }
+                         }
+                            .flowOn(backgroundCoroutineDispatcher)
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expectClean()
+    }
+
+    @Test
+    fun binderCall_flowOnMainContext_error() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+                    import android.media.projection.MediaProjectionManager
+                    import kotlinx.coroutines.channels.awaitClose
+                    import kotlinx.coroutines.flow.callbackFlow
+                    import kotlinx.coroutines.flow.flowOn
+                    import kotlin.coroutines.CoroutineContext
+                    import com.android.systemui.dagger.qualifiers.Background
+
+                    class TestClass(
+                        @Main private val mainCoroutineContext: CoroutineContext,
+                        private val mediaProjectionManager: MediaProjectionManager,
+                    ) {
+                        private val callbackFlow = callbackFlow {
+                            val callback =
+                                object : MediaProjectionManager.Callback() {
+                                    override fun onStart(info: MediaProjectionInfo?) {
+                                        PendingIntent.getBroadcast(context, it, intent, 0)
+                                    }
+                                    override fun onStop(info: MediaProjectionInfo?) {
+                                        PendingIntent.getBroadcast(context, it, intent, 0)
+                                    }
+                                }
+                                mediaProjectionManager.addCallback(callback)
+                                awaitClose { mediaProjectionManager.removeCallback(callback) }
+                         }
+                            .flowOn(mainCoroutineContext)
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expect(
+                """
+src/test/pkg/TestClass.kt:19: Warning: Binder call on main thread [BinderCallOnMainThread]
+                    PendingIntent.getBroadcast(context, it, intent, 0)
+                                  ~~~~~~~~~~~~
+src/test/pkg/TestClass.kt:22: Warning: Binder call on main thread [BinderCallOnMainThread]
+                    PendingIntent.getBroadcast(context, it, intent, 0)
+                                  ~~~~~~~~~~~~
+0 errors, 2 warnings
+                """
+            )
+    }
+
+    @Test
+    fun binderCall_flowOnBackgroundContext_clean() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+                    import android.media.projection.MediaProjectionManager
+                    import kotlinx.coroutines.channels.awaitClose
+                    import kotlinx.coroutines.flow.callbackFlow
+                    import kotlinx.coroutines.flow.flowOn
+                    import kotlin.coroutines.CoroutineContext
+                    import com.android.systemui.dagger.qualifiers.Background
+
+                    class TestClass(
+                        @Background private val backgroundContext: CoroutineContext,
+                        private val mediaProjectionManager: MediaProjectionManager,
+                    ) {
+                        private val callbackFlow = callbackFlow {
+                            val callback =
+                                object : MediaProjectionManager.Callback() {
+                                    override fun onStart(info: MediaProjectionInfo?) {
+                                        PendingIntent.getBroadcast(context, it, intent, 0)
+                                    }
+                                    override fun onStop(info: MediaProjectionInfo?) {
+                                        PendingIntent.getBroadcast(context, it, intent, 0)
+                                    }
+                                }
+                                mediaProjectionManager.addCallback(callback)
+                                awaitClose { mediaProjectionManager.removeCallback(callback) }
+                         }
+                            .flowOn(backgroundContext)
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expectClean()
+    }
+
+    @Test
     fun queryIntentComponents_error() {
         lint()
             .files(
