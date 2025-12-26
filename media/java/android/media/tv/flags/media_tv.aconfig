@@ -168,6 +168,7 @@ flag {
 
 flag {
     name: "media_quality_fw_c"
+    is_exported: true
     namespace: "tv_os"
     description: "Continue efforts for standardizing PQ/AQ Interfaces for Media Quality Framework in Android 17"
     bug: "443329020"
