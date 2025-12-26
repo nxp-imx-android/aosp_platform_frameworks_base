@@ -51,6 +51,15 @@ class GraphNode {
         return mProc.isProcessRunning();
     }
 
+    boolean isCurAllowListed() {
+        final UidRecordInternal uidRec = mProc.getUidRecord();
+        return uidRec != null && uidRec.isCurAllowListed();
+    }
+
+    boolean isReceivingBroadcast() {
+        return mProc.getReceivers().isReceivingBroadcast();
+    }
+
     boolean hasActiveInstrumentation() {
         return mProc.hasActiveInstrumentation();
     }
@@ -61,6 +70,14 @@ class GraphNode {
 
     boolean hasNonShortForegroundServices() {
         return mProc.getServices().hasNonShortForegroundServices();
+    }
+
+    boolean hasForegroundActivities() {
+        return mProc.getHasForegroundActivities();
+    }
+
+    boolean hasExecutingServices() {
+        return mProc.getServices().hasExecutingServices();
     }
 
     int getNumberOfRunningServices() {

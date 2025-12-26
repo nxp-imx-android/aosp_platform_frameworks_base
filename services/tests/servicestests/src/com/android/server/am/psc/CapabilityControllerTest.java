@@ -18,6 +18,7 @@ package com.android.server.am.psc;
 
 import static android.app.ActivityManager.PROCESS_CAPABILITY_ALL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_BFSL;
+import static android.app.ActivityManager.PROCESS_CAPABILITY_CPU_TIME;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_CAMERA;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_LOCATION;
@@ -32,6 +33,7 @@ import static android.app.ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE;
 import static android.app.ActivityManager.PROCESS_STATE_IMPORTANT_FOREGROUND;
 import static android.app.ActivityManager.PROCESS_STATE_PERSISTENT;
 import static android.app.ActivityManager.PROCESS_STATE_PERSISTENT_UI;
+import static android.app.ActivityManager.PROCESS_STATE_SERVICE;
 import static android.app.ActivityManager.PROCESS_STATE_TOP;
 import static android.app.ActivityManager.PROCESS_STATE_UNKNOWN;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA;
@@ -304,6 +306,70 @@ public class CapabilityControllerTest {
         FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasNotSet(networkCapabilities);
     }
 
+    @Test
+    public void testEvaluateCpuTimePolicy_AllowListed_GrantsCpuTime() {
+        final TestNode node = new TestNode.Builder().withCurAllowListed(true).build();
+        final ProcessEdge edge = new ProcessEdge(node);
+
+        FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(PROCESS_CAPABILITY_CPU_TIME);
+    }
+
+    @Test
+    public void testEvaluateCpuTimePolicy_HasForegroundActivities_GrantsCpuTime() {
+        final TestNode node = new TestNode.Builder().withHasForegroundActivities(true).build();
+        final ProcessEdge edge = new ProcessEdge(node);
+
+        FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(PROCESS_CAPABILITY_CPU_TIME);
+    }
+
+    @Test
+    public void testEvaluateCpuTimePolicy_HasExecutingServices_GrantsCpuTime() {
+        final TestNode node = new TestNode.Builder().withHasExecutingServices(true).build();
+        final ProcessEdge edge = new ProcessEdge(node);
+
+        FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(PROCESS_CAPABILITY_CPU_TIME);
+    }
+
+    @Test
+    public void testEvaluateCpuTimePolicy_HasForegroundServices_GrantsCpuTime() {
+        final TestNode node = new TestNode.Builder().withHasForegroundServices(true).build();
+        final ProcessEdge edge = new ProcessEdge(node);
+
+        FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(PROCESS_CAPABILITY_CPU_TIME);
+    }
+
+    @Test
+    public void testEvaluateCpuTimePolicy_IsReceivingBroadcast_GrantsCpuTime() {
+        final TestNode node = new TestNode.Builder().withReceivingBroadcast(true).build();
+        final ProcessEdge edge = new ProcessEdge(node);
+
+        FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(PROCESS_CAPABILITY_CPU_TIME);
+    }
+
+    @Test
+    public void testEvaluateCpuTimePolicy_HasActiveInstrumentation_GrantsCpuTime() {
+        final TestNode node = new TestNode.Builder().withHasActiveInstrumentation(true).build();
+        final ProcessEdge edge = new ProcessEdge(node);
+
+        FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(PROCESS_CAPABILITY_CPU_TIME);
+    }
+
+    @Test
+    public void testEvaluateCpuTimePolicy_PolicyNotSatisfied_DoesNotGrantCpuTime() {
+        final TestServiceRecord service = new TestServiceRecord.Builder()
+                .withForegroundService(false)
+                .build();
+        final TestNode node = new TestNode.Builder()
+                .addService(service)
+                .withHasForegroundServices(false)
+                .withProcState(PROCESS_STATE_SERVICE)
+                .build();
+        final ProcessEdge edge = new ProcessEdge(node);
+
+        FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasNotSet(
+                PROCESS_CAPABILITY_CPU_TIME);
+    }
+
     private static class TestServiceRecord {
         final boolean mIsForegroundService;
         final boolean mIsFgsAllowedWiuForCapabilities;
@@ -350,14 +416,20 @@ public class CapabilityControllerTest {
         private final boolean mHasForegroundServices;
         private final boolean mHasNonShortForegroundServices;
         private final boolean mCachedCompatChangeCameraMicrophoneCapability;
+        private final boolean mIsCurAllowListed;
+        private final boolean mHasForegroundActivities;
+        private final boolean mHasExecutingServices;
+        private final boolean mIsReceivingBroadcast;
         private final int mMaxAdj;
         private final @ProcessState int mProcState;
         private final ArrayList<TestServiceRecord> mServices;
 
         private TestNode(boolean isProcessRunning, boolean hasActiveInstrumentation,
                 boolean hasForegroundServices, boolean hasNonShortForegroundServices,
-                boolean cachedCompatChangeCameraMicrophoneCapability,
-                int maxAdj, @ProcessState int procState, ArrayList<TestServiceRecord> services) {
+                boolean cachedCompatChangeCameraMicrophoneCapability, boolean isCurAllowListed,
+                boolean hasForegroundActivities, boolean hasExecutingServices,
+                boolean isReceivingBroadcast, int maxAdj, @ProcessState int procState,
+                ArrayList<TestServiceRecord> services) {
             super(mock(ProcessRecordInternal.class));
             mIsProcessRunning = isProcessRunning;
             mHasActiveInstrumentation = hasActiveInstrumentation;
@@ -365,6 +437,10 @@ public class CapabilityControllerTest {
             mHasNonShortForegroundServices = hasNonShortForegroundServices;
             mCachedCompatChangeCameraMicrophoneCapability =
                     cachedCompatChangeCameraMicrophoneCapability;
+            mIsCurAllowListed = isCurAllowListed;
+            mHasForegroundActivities = hasForegroundActivities;
+            mHasExecutingServices = hasExecutingServices;
+            mIsReceivingBroadcast = isReceivingBroadcast;
             mMaxAdj = maxAdj;
             mProcState = procState;
             mServices = services;
@@ -393,6 +469,26 @@ public class CapabilityControllerTest {
         @Override
         boolean getCachedCompatChangeCameraMicrophoneCapability() {
             return mCachedCompatChangeCameraMicrophoneCapability;
+        }
+
+        @Override
+        boolean isCurAllowListed() {
+            return mIsCurAllowListed;
+        }
+
+        @Override
+        boolean hasForegroundActivities() {
+            return mHasForegroundActivities;
+        }
+
+        @Override
+        boolean hasExecutingServices() {
+            return mHasExecutingServices;
+        }
+
+        @Override
+        boolean isReceivingBroadcast() {
+            return mIsReceivingBroadcast;
         }
 
         @Override
@@ -433,6 +529,10 @@ public class CapabilityControllerTest {
             private boolean mHasForegroundServices = false;
             private boolean mHasNonShortForegroundServices = false;
             private boolean mCachedCompatChangeCameraMicrophoneCapability = false;
+            private boolean mIsCurAllowListed = false;
+            private boolean mHasForegroundActivities = false;
+            private boolean mHasExecutingServices = false;
+            private boolean mIsReceivingBroadcast = false;
             private int mMaxAdj = UNKNOWN_ADJ;
             private @ProcessState int mProcState = PROCESS_STATE_UNKNOWN;
             private final ArrayList<TestServiceRecord> mServices = new ArrayList<>();
@@ -462,6 +562,26 @@ public class CapabilityControllerTest {
                 return this;
             }
 
+            Builder withCurAllowListed(boolean isCurAllowListed) {
+                mIsCurAllowListed = isCurAllowListed;
+                return this;
+            }
+
+            Builder withHasForegroundActivities(boolean hasForegroundActivities) {
+                mHasForegroundActivities = hasForegroundActivities;
+                return this;
+            }
+
+            Builder withHasExecutingServices(boolean hasExecutingServices) {
+                mHasExecutingServices = hasExecutingServices;
+                return this;
+            }
+
+            Builder withReceivingBroadcast(boolean isReceivingBroadcast) {
+                mIsReceivingBroadcast = isReceivingBroadcast;
+                return this;
+            }
+
             Builder withMaxAdj(int maxAdj) {
                 mMaxAdj = maxAdj;
                 return this;
@@ -480,8 +600,9 @@ public class CapabilityControllerTest {
             TestNode build() {
                 return new TestNode(mIsProcessRunning, mHasActiveInstrumentation,
                         mHasForegroundServices, mHasNonShortForegroundServices,
-                        mCachedCompatChangeCameraMicrophoneCapability, mMaxAdj, mProcState,
-                        mServices);
+                        mCachedCompatChangeCameraMicrophoneCapability, mIsCurAllowListed,
+                        mHasForegroundActivities, mHasExecutingServices, mIsReceivingBroadcast,
+                        mMaxAdj, mProcState, mServices);
             }
         }
     }

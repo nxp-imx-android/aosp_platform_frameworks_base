@@ -17,6 +17,7 @@ package com.android.server.am.psc;
 
 import static android.app.ActivityManager.PROCESS_CAPABILITY_ALL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_BFSL;
+import static android.app.ActivityManager.PROCESS_CAPABILITY_CPU_TIME;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_CAMERA;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_LOCATION;
@@ -64,7 +65,8 @@ class CapabilityController {
         //  already given by its preceding policies, the policy evaluation can be skipped.
         return evaluateMaxAdjPolicy(edge)
                 | evaluateForegroundServicePolicy(edge)
-                | evaluateProcStatePolicy(edge);
+                | evaluateProcStatePolicy(edge)
+                | evaluateCpuTimePolicy(edge);
     }
 
     /** Evaluates a filter based on the process's max oom score (maxAdj). */
@@ -183,6 +185,33 @@ class CapabilityController {
         return baseCapabilities | networkCapabilities;
     }
     // LINT.ThenChange(OomAdjuster.java:getDefaultCapability)
+
+    /** Evaluates process CPU time capability. */
+    // LINT.IfChange(evaluateCpuTimePolicy)
+    private static @ProcessCapability int evaluateCpuTimePolicy(@NonNull ProcessEdge edge) {
+        final GraphNode node = edge.getTarget();
+        // TODO(b/475333334): Add CPU time reasons for the conditions below.
+        if (node.isCurAllowListed()) {
+            return PROCESS_CAPABILITY_CPU_TIME;
+        }
+        if (node.hasForegroundActivities()) {
+            return PROCESS_CAPABILITY_CPU_TIME;
+        }
+        if (node.hasExecutingServices()) {
+            return PROCESS_CAPABILITY_CPU_TIME;
+        }
+        if (node.hasForegroundServices()) {
+            return PROCESS_CAPABILITY_CPU_TIME;
+        }
+        if (node.isReceivingBroadcast()) {
+            return PROCESS_CAPABILITY_CPU_TIME;
+        }
+        if (node.hasActiveInstrumentation()) {
+            return PROCESS_CAPABILITY_CPU_TIME;
+        }
+        return PROCESS_CAPABILITY_NONE;
+    }
+    // LINT.ThenChange(OomAdjuster.java:getCpuCapability)
 
     /** Performs a partial update from a list of edges. */
     void update(@NonNull ArrayList<GraphEdge> edges) {

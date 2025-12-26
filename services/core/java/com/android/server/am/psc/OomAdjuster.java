@@ -2041,6 +2041,7 @@ public abstract class OomAdjuster {
     }
     // LINT.ThenChange(CapabilityController.java:evaluateProcStatePolicy)
 
+    // LINT.IfChange(getCpuCapability)
     @CpuTimeReasons
     private static int getCpuTimeReasons(ProcessRecordInternal app,
             boolean hasForegroundActivities) {
@@ -2082,6 +2083,7 @@ public abstract class OomAdjuster {
         app.addCurCpuTimeReasons(reasons);
         return (reasons != CPU_TIME_REASON_NONE) ? PROCESS_CAPABILITY_CPU_TIME : 0;
     }
+    // LINT.ThenChange(CapabilityController.java:evaluateCpuTimePolicy)
 
     // Grant PROCESS_CAPABILITY_IMPLICIT_CPU_TIME to processes based on oom adj score.
     protected int getImplicitCpuCapability(ProcessRecordInternal app, int adj) {
