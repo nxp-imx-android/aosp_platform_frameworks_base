@@ -296,7 +296,7 @@ public class PersonalContextManagerService extends SystemService {
         try {
             final Set<ContextHintWithSignature> signedHints = new HashSet<>();
             for (ContextHint hint : hints) {
-                signedHints.add(signHint(hint, processId));
+                signedHints.add(signHint(hint, processId, renderToken));
             }
 
             RefinerWorkflow.start(
@@ -383,10 +383,12 @@ public class PersonalContextManagerService extends SystemService {
         }
     }
 
-    private ContextHintWithSignature signHint(ContextHint hint, int callingPid)
+    private ContextHintWithSignature signHint(
+            ContextHint hint, int callingPid, RenderToken renderToken)
             throws GeneralSecurityException {
         return new ContextHintWithSignature.Builder(hint, HINT_SIGNING_KEY)
                 .setOriginatingPackage(mActivityManager.getPackageNameByPid(callingPid))
+                .setRenderToken(renderToken)
                 .build();
     }
 
