@@ -555,8 +555,9 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static AppToWebDatastoreRepository provideAppToWebDatastoreRepository(
-            Context context) {
-        return new AppToWebDatastoreRepository(context);
+            Context context,
+            @ShellBackgroundThread CoroutineScope bgCoroutineScope) {
+        return new AppToWebDatastoreRepository(context, bgCoroutineScope);
     }
 
     @Provides
