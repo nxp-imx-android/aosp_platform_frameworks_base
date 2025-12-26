@@ -148,6 +148,17 @@ flag {
 }
 
 flag {
+    name: "buffer_stuffing_recovery_threshold"
+    namespace: "window_surfaces"
+    description: "Set a threshold to bound how much frame delay can be incurred during an animation"
+    bug: "395989945"
+    is_fixed_read_only: false
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_windowless_window_focus_navigation"
     namespace: "window_surfaces"
     description: "Enable focus navigation for between embedded and host windows"
