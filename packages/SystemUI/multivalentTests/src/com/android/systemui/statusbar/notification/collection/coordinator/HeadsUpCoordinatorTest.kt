@@ -104,7 +104,6 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
             remoteInputManager,
             mockNotificationActionClickManager,
             launchFullScreenIntentProvider,
-            mock(),
             statusBarNotificationChipsInteractor,
             statusBarChipsUiEventLogger,
             mock(),

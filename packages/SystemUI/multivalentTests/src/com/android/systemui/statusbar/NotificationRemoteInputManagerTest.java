@@ -50,7 +50,6 @@ import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.power.domain.interactor.PowerInteractor;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
-import com.android.systemui.statusbar.notification.NotifPipelineFlags;
 import com.android.systemui.statusbar.notification.RemoteInputControllerLogger;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
@@ -129,7 +128,6 @@ public class NotificationRemoteInputManagerTest extends SysuiTestCase {
         mActionClickLogger = spy(new ActionClickLogger(logcatLogBuffer()));
 
         mRemoteInputManager = new TestableNotificationRemoteInputManager(mContext,
-                mock(NotifPipelineFlags.class),
                 mLockscreenUserManager,
                 mSmartReplyController,
                 mVisibilityProvider,
@@ -254,7 +252,6 @@ public class NotificationRemoteInputManagerTest extends SysuiTestCase {
 
         TestableNotificationRemoteInputManager(
                 Context context,
-                NotifPipelineFlags notifPipelineFlags,
                 NotificationLockscreenUserManager lockscreenUserManager,
                 SmartReplyController smartReplyController,
                 NotificationVisibilityProvider visibilityProvider,
@@ -268,7 +265,6 @@ public class NotificationRemoteInputManagerTest extends SysuiTestCase {
                 ShadeInteractor shadeInteractor) {
             super(
                     context,
-                    notifPipelineFlags,
                     lockscreenUserManager,
                     smartReplyController,
                     visibilityProvider,

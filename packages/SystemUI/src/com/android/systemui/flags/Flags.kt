@@ -41,10 +41,6 @@ object Flags {
     @JvmField val NULL_FLAG = unreleasedFlag("null_flag")
 
     // 100 - notification
-    // TODO(b/254512751): Tracking Bug
-    val NOTIFICATION_PIPELINE_DEVELOPER_LOGGING =
-        unreleasedFlag("notification_pipeline_developer_logging")
-
     // TODO(b/254512732): Tracking Bug
     @JvmField val NSSL_DEBUG_LINES = unreleasedFlag("nssl_debug_lines")
 

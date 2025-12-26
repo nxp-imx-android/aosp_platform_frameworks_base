@@ -64,7 +64,6 @@ import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.log.LogAssertKt;
 import com.android.systemui.statusbar.NotificationInteractionTracker;
 import com.android.systemui.statusbar.RankingBuilder;
-import com.android.systemui.statusbar.notification.NotifPipelineFlags;
 import com.android.systemui.statusbar.notification.collection.ShadeListBuilder.OnRenderListListener;
 import com.android.systemui.statusbar.notification.collection.listbuilder.NotifSection;
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnBeforeFinalizeFilterListener;
@@ -114,9 +113,7 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     private final KosmosJavaAdapter mKosmos = new KosmosJavaAdapter(this);
     private ShadeListBuilder mListBuilder;
     private final FakeSystemClock mSystemClock = new FakeSystemClock();
-    private final NotifPipelineFlags mNotifPipelineFlags = mock(NotifPipelineFlags.class);
-    private final ShadeListBuilderLogger mLogger = new ShadeListBuilderLogger(
-            mNotifPipelineFlags, logcatLogBuffer());
+    private final ShadeListBuilderLogger mLogger = new ShadeListBuilderLogger(logcatLogBuffer());
     @Mock private DumpManager mDumpManager;
     @Mock private NotifCollection mNotifCollection;
     @Mock private NotificationInteractionTracker mInteractionTracker;
@@ -151,7 +148,6 @@ public class ShadeListBuilderTest extends SysuiTestCase {
         mListBuilder = new ShadeListBuilder(
                 mDumpManager,
                 mPipelineChoreographer,
-                mNotifPipelineFlags,
                 mInteractionTracker,
                 mLogger,
                 mSystemClock

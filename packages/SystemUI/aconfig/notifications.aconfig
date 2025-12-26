@@ -19,4 +19,11 @@ flag {
     bug: "444195986"
 }
 
+flag {
+    name: "notification_developer_logging"
+    namespace: "notifications"
+    description: "Enable developer logging for notifications."
+    bug: "254512751"
+}
+
 # go/keep-sorted end

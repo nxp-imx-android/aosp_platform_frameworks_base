@@ -25,7 +25,6 @@ import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.statusbar.NotificationRemoteInputManager
 import com.android.systemui.statusbar.chips.notification.domain.interactor.StatusBarNotificationChipsInteractor
 import com.android.systemui.statusbar.chips.uievents.StatusBarChipsUiEventLogger
-import com.android.systemui.statusbar.notification.NotifPipelineFlags
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.ListEntry
@@ -94,7 +93,6 @@ constructor(
     private val mRemoteInputManager: NotificationRemoteInputManager,
     private val notificationActionClickManager: NotificationActionClickManager,
     private val mLaunchFullScreenIntentProvider: LaunchFullScreenIntentProvider,
-    private val mFlags: NotifPipelineFlags,
     private val statusBarNotificationChipsInteractor: StatusBarNotificationChipsInteractor,
     private val statusBarChipsUiEventLogger: StatusBarChipsUiEventLogger,
     @IncomingHeader private val mIncomingHeaderController: NodeController,

@@ -82,7 +82,6 @@ import com.android.systemui.dump.DumpManager;
 import com.android.systemui.dump.LogBufferEulogizer;
 import com.android.systemui.statusbar.RankingBuilder;
 import com.android.systemui.statusbar.notification.BundleInteractionLogger;
-import com.android.systemui.statusbar.notification.NotifPipelineFlags;
 import com.android.systemui.statusbar.notification.collection.NoManSimulator.NotifEvent;
 import com.android.systemui.statusbar.notification.collection.NotifCollection.CancellationReason;
 import com.android.systemui.statusbar.notification.collection.coalescer.CoalescedEvent;
@@ -124,7 +123,6 @@ import java.util.Map;
 public class NotifCollectionTest extends SysuiTestCase {
 
     @Mock private IStatusBarService mStatusBarService;
-    @Mock private NotifPipelineFlags mNotifPipelineFlags;
     private final NotifCollectionLogger mLogger = spy(new NotifCollectionLogger(logcatLogBuffer()));
     @Mock private LogBufferEulogizer mEulogizer;
     @Mock private Handler mMainHandler;
@@ -172,7 +170,6 @@ public class NotifCollectionTest extends SysuiTestCase {
         mCollection = new NotifCollection(
                 mStatusBarService,
                 mClock,
-                mNotifPipelineFlags,
                 mLogger,
                 mMainHandler,
                 mBgExecutor,

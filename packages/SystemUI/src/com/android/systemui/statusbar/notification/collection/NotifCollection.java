@@ -77,7 +77,6 @@ import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.dump.LogBufferEulogizer;
 import com.android.systemui.statusbar.notification.BundleInteractionLogger;
-import com.android.systemui.statusbar.notification.NotifPipelineFlags;
 import com.android.systemui.statusbar.notification.collection.coalescer.CoalescedEvent;
 import com.android.systemui.statusbar.notification.collection.coalescer.GroupCoalescer;
 import com.android.systemui.statusbar.notification.collection.coalescer.GroupCoalescer.BatchableNotificationHandler;
@@ -153,7 +152,6 @@ import javax.inject.Inject;
 public class NotifCollection implements Dumpable, PipelineDumpable {
     private final IStatusBarService mStatusBarService;
     private final SystemClock mClock;
-    private final NotifPipelineFlags mNotifPipelineFlags;
     private final NotifCollectionLogger mLogger;
     private final Handler mMainHandler;
     private final Executor mBgExecutor;
@@ -191,7 +189,6 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
     public NotifCollection(
             IStatusBarService statusBarService,
             SystemClock clock,
-            NotifPipelineFlags notifPipelineFlags,
             NotifCollectionLogger logger,
             @Main Handler mainHandler,
             @Background Executor bgExecutor,
@@ -201,7 +198,6 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
             BundleInteractionLogger bundleLogger) {
         mStatusBarService = statusBarService;
         mClock = clock;
-        mNotifPipelineFlags = notifPipelineFlags;
         mLogger = logger;
         mMainHandler = mainHandler;
         mBgExecutor = bgExecutor;

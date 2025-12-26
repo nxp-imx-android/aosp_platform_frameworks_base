@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.notification.logging.dagger
 
 import com.android.app.tracing.TrackGroupUtils.trackGroup
+import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.LogBufferFactory
@@ -34,7 +35,6 @@ import com.android.systemui.log.dagger.UnseenNotificationLog
 import com.android.systemui.log.dagger.VisualStabilityLog
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.TableLogBufferFactory
-import com.android.systemui.statusbar.notification.NotifPipelineFlags
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationLog
 import com.android.systemui.util.Compile
 import dagger.Module
@@ -102,12 +102,9 @@ object NotificationsLogModule {
     @Provides
     @SysUISingleton
     @NotificationLog
-    fun provideNotificationsLogBuffer(
-        factory: LogBufferFactory,
-        notifPipelineFlags: NotifPipelineFlags,
-    ): LogBuffer {
+    fun provideNotificationsLogBuffer(factory: LogBufferFactory): LogBuffer {
         var maxSize = 1000
-        if (Compile.IS_DEBUG && notifPipelineFlags.isDevLoggingEnabled()) {
+        if (Flags.notificationDeveloperLogging()) {
             maxSize *= 10
         }
         return factory.create(
