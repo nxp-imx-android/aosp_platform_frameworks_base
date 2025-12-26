@@ -120,7 +120,8 @@ x@ # Invalid char, but this file should be ignored.
         RavenwoodEnablementChecker.overrideInstance(
                 RavenwoodEnablementChecker.RunMode.Normal, /* policyText= */ null,
                 /* overridingPattern= */ null,
-                /* ignoreLargeTests= */ false
+                /* ignoreLargeTests= */ false,
+                /* dumpTestsOnly= */ false
         );
         assertThat(RavenwoodEnablementChecker.getInstance().wouldRunDisabledTests()).isFalse();
     }
@@ -135,7 +136,8 @@ x@ # Invalid char, but this file should be ignored.
         RavenwoodEnablementChecker.overrideInstance(
                 RavenwoodEnablementChecker.RunMode.AlsoDisabledTests, /* policyText= */ null,
                 /* overridingPattern= */ null,
-                /* ignoreLargeTests= */ false
+                /* ignoreLargeTests= */ false,
+                /* dumpTestsOnly= */ false
         );
         assertThat(RavenwoodEnablementChecker.getInstance().wouldRunDisabledTests()).isTrue();
     }
@@ -150,7 +152,8 @@ x@ # Invalid char, but this file should be ignored.
         RavenwoodEnablementChecker.overrideInstance(
                 RunMode.DisabledOnly, /* policyText= */ null,
                 /* overridingPattern= */ null,
-                /* ignoreLargeTests= */ false
+                /* ignoreLargeTests= */ false,
+                /* dumpTestsOnly= */ false
             );
         assertThat(RavenwoodEnablementChecker.getInstance().wouldRunDisabledTests()).isTrue();
     }

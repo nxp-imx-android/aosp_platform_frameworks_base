@@ -111,6 +111,7 @@ public final class RavenwoodAppDriver {
      * Use more of the real ActivityThread code, and move it to ActivityThread.
      */
     private RavenwoodAppDriver() {
+        Log.i(TAG, "RavenwoodAppDriver initializing...");
         var env = RavenwoodEnvironment.getInstance();
 
         // This must happen on the main thread.
@@ -193,6 +194,8 @@ public final class RavenwoodAppDriver {
         }
 
         reset();
+
+        Log.i(TAG, "RavenwoodAppDriver initialized");
     }
 
     private void initializeCompatIds() {

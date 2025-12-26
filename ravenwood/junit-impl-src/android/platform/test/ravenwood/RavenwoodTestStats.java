@@ -42,7 +42,6 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -206,10 +205,10 @@ public class RavenwoodTestStats {
 
         // Get the current time
         LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
 
         var tmpdir = RavenwoodEnvironment.getInstance().getTempDir().getAbsolutePath();
-        File outputFile = new File(tmpdir, basename + now.format(fmt) + ".csv");
+        File outputFile = new File(tmpdir,
+                basename + now.format(RavenwoodUtils.LOG_FILE_TIMESTAMP_FORMATTER) + ".csv");
 
         try {
             mOutputWriter = new PrintWriter(outputFile);

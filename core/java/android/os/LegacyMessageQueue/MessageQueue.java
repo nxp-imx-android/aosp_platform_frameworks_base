@@ -24,6 +24,7 @@ import android.annotation.TestApi;
 import android.app.ActivityThread;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.ravenwood.annotation.RavenwoodRedirect;
 import android.util.Log;
 import android.util.Printer;
 import android.util.SparseArray;
@@ -494,6 +495,7 @@ public final class MessageQueue {
      */
     public void resetForTest() {
         ActivityThread.throwIfNotInstrumenting();
+        onResetForTestCalled();
         synchronized (this) {
             // This queue is already quitting, so we can't reset its state and continue using it.
             if (mQuitting) {
@@ -508,6 +510,10 @@ public final class MessageQueue {
             resetSyncBarrierTokens();
             nativeWake(mPtr);
         }
+    }
+
+    @RavenwoodRedirect
+    private static void onResetForTestCalled() {
     }
 
     private void removeAllFdRecords() {

@@ -1092,11 +1092,16 @@ public final class MessageQueue {
      */
     public void resetForTest() {
         ActivityThread.throwIfNotInstrumenting();
+        onResetForTestCalled();
         if (sUseDeliQueue) {
             resetDeliQueue();
         } else {
             resetLegacy();
         }
+    }
+
+    @RavenwoodRedirect
+    private static void onResetForTestCalled() {
     }
 
     private void resetDeliQueue() {

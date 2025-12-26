@@ -23,6 +23,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.EnabledOnRavenwood;
+import android.platform.test.ravenwood.EnablementTextPolicyParser.ParseException;
 import android.platform.test.ravenwood.RavenwoodEnablementChecker.PolicyChecker;
 import android.platform.test.ravenwood.RavenwoodEnablementChecker.RunPolicy;
 import android.util.Log;
@@ -216,21 +217,10 @@ public abstract class RavenwoodEnablementChecker {
         sInstance = new RavenwoodEnablementCheckerImpl(
                 getDefaultRunMode(),
                 getPolicyFiles(),
-                RavenwoodEnvironment.getInstance().getEnvVar("RAVENWOOD_FILTER_REGEX", null),
-                RavenwoodEnvironment.getInstance().getBoolEnvVar("RAVENWOOD_SKIP_LARGE_TESTS")
+                RavenwoodEnvironment.getInstance().getRunFilterRegex(),
+                RavenwoodEnvironment.getInstance().isSkippingLargeTests(),
+                RavenwoodEnvironment.getInstance().isDumpingTestsOnly()
         );
-    }
-
-    /**
-     * Force set a checker for testing.
-     */
-    @VisibleForTesting
-    public static void overrideInstance(
-            @NonNull RunMode runMode,
-            @Nullable String policyText,
-            @Nullable String overridingPattern
-    ) {
-        overrideInstance(runMode, policyText, overridingPattern, false);
     }
 
     @VisibleForTesting
@@ -238,7 +228,8 @@ public abstract class RavenwoodEnablementChecker {
             @NonNull RunMode runMode,
             @Nullable String policyText,
             @Nullable String overridingPattern,
-            boolean ignoreLargeTests
+            boolean ignoreLargeTests,
+            boolean dumpTestsOnly
     )  {
         try {
             var parser = new EnablementTextPolicyParser();
@@ -246,7 +237,9 @@ public abstract class RavenwoodEnablementChecker {
                 parser.parse("[in-memory]", policyText, ignoreLargeTests);
             }
             sInstance = new RavenwoodEnablementCheckerImpl(
-                    runMode, parser.getResult(), overridingPattern);
+                    runMode, parser.getResult(),
+                    dumpTestsOnly,
+                    overridingPattern);
         } catch (IOException e) {
             SneakyThrow.sneakyThrow(e); // IOException shouldn't happen, but just in case
         }
@@ -308,19 +301,26 @@ public abstract class RavenwoodEnablementChecker {
                 @NonNull RunMode runMode,
                 @NonNull String[] policyFiles,
                 @Nullable String overridingPattern,
-                boolean ignoreLargeTests
+                boolean ignoreLargeTests,
+                boolean dumpTestOnly
         ) {
             this(runMode,
                     EnablementTextPolicyParser.parsePolicyFiles(policyFiles, ignoreLargeTests),
+                    dumpTestOnly,
                     overridingPattern);
         }
 
         RavenwoodEnablementCheckerImpl(
                 @NonNull RunMode runMode,
                 @NonNull PolicyChecker subChecker,
+                boolean dumpTestOnly,
                 @Nullable String overridingPattern) {
             this.mRunMode = runMode;
             var chain = new PolicyCheckerChain();
+
+            if (dumpTestOnly) {
+                chain.add(new SkipAllMethodsPolicyChecker());
+            }
 
             var forceOverride = overridingPattern != null && overridingPattern.startsWith("!");
             if (forceOverride) {
@@ -416,6 +416,27 @@ class PolicyCheckerChain implements PolicyChecker {
 }
 
 /**
+ * Used for just logging all test methods without running them.
+ *
+ * For classes, it always returns {@link RunPolicy#Unspecified} to fall back to the following
+ * policies, but for methods, it'll always return "never".
+ */
+class SkipAllMethodsPolicyChecker implements PolicyChecker {
+    SkipAllMethodsPolicyChecker() {
+    }
+
+    @Override
+    public RunPolicy getClassPolicy(Class<?> testClass) {
+        return RunPolicy.Unspecified;
+    }
+
+    @Override
+    public RunPolicy getMethodPolicy(Description description) {
+        return RunPolicy.NeverRun;
+    }
+}
+
+/**
  * {@link PolicyChecker} based on annotations.
  */
 class AnnotationPolicyChecker implements PolicyChecker {
@@ -489,9 +510,17 @@ class PatternBasedChecker implements PolicyChecker {
     /**
      * Adda method policy.
      */
-    public void addMethodPolicy(String className, String methodName, RunPolicy policy) {
+    public void addMethodPolicy(String className,
+            String methodName,
+            RunPolicy policy,
+            String filename,
+            int line) {
         var classPolicy = mMethodPolicies.computeIfAbsent(className,
                 (k) -> new HashMap<>());
+        if (classPolicy.get(methodName) != null) {
+            throw new ParseException(
+                    "Method policy already defined for " + methodName, filename, line);
+        }
         classPolicy.put(methodName, policy);
 
         // When a class has any enabled methods, the class needs to be enabled too.
@@ -546,6 +575,15 @@ class PatternBasedChecker implements PolicyChecker {
         // Method name without [...].
         var methodName = sParamMatcher.matcher(description.getMethodName()).replaceFirst("");
 
+        // If the enclosing class has "never", disable all its methods, even if there's an "enable"
+        // method policy.
+        // This is to easily disable certain tests in a policy file, even if it already
+        // has enabled methods.
+        var classPolicy = getPureClassPolicy(description.getTestClass());
+        if (classPolicy == RunPolicy.NeverRun) {
+            return classPolicy;
+        }
+
         // Check if we have an exact policy.
         var methods = mMethodPolicies.get(className);
         if (methods != null) {
@@ -563,7 +601,7 @@ class PatternBasedChecker implements PolicyChecker {
         // to run it (assuming the class doesn't have "enable" policy set explicitly).
         //
         // So instead, we fallback to getPureClassPolicy(), which only uses mClassPolicies.
-        return getPureClassPolicy(description.getTestClass());
+        return classPolicy;
     }
 }
 
@@ -727,7 +765,7 @@ class EnablementTextPolicyParser {
                     throw new ParseException(
                             "Method policy cannot use wildcards: line='" + line + "'", filename, n);
                 }
-                mResult.addMethodPolicy(className, methodName, policy);
+                mResult.addMethodPolicy(className, methodName, policy, filename, n);
                 // Log.v(TAG, "method: " + className + "." + methodName + " -> " + policy);
             }
         }

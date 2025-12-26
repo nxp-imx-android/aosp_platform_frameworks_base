@@ -78,8 +78,9 @@ exclude_large_tests=0
 atest_opts=""
 list_options=""
 with_tools_tests=1
+target_args=()
 
-while getopts "sx:f:dtbLa:rDRhXcTtw" opt; do
+while getopts "sx:f:dtbLa:rDRhXcTtwPF:Im:" opt; do
 case "$opt" in
 # OPTIONS-START
     s) # Remove slow tests
@@ -134,6 +135,29 @@ case "$opt" in
     c) # Clean output -- don't show disabled tests in atest output
         run export RAVENWOOD_HIDE_DISABLED_TESTS=1
         ;;
+    P) # Dump tests only
+        run export RAVENWOOD_DUMP_TESTS_ONLY=1
+        ;;
+    F) # Set enable filter regex
+        run export RAVENWOOD_FILTER_REGEX="$OPTARG"
+        ;;
+    I) # Inpatient mode -- shorten "slow test" timeout (-II to shorten more)
+        if [[ "$RAVENWOOD_SLOW_TIMEOUT_SECONDS" == "" ]] ; then
+            # $RAVENWOOD_SLOW_TIMEOUT_SECONDS isn't set
+            run export RAVENWOOD_SLOW_TIMEOUT_SECONDS=4
+            run export RAVENWOOD_DIE_TIMEOUT_SECONDS=8
+        else
+            # $RAVENWOOD_SLOW_TIMEOUT_SECONDS is set, so assume it's -II.
+            run export RAVENWOOD_SLOW_TIMEOUT_SECONDS=2
+            run export RAVENWOOD_DIE_TIMEOUT_SECONDS=3
+        fi
+        ;;
+    m) # Specify target test mode
+        # It's the same thing as just putting target modules at the end
+        # (without -m), but it'll allow adding flags after test module
+        # names, which is sometimes handy.
+        target_args+=($OPTARG)
+        ;;
     h) # Show help
         show_help
         exit 0
@@ -146,9 +170,12 @@ esac
 done
 shift $(($OPTIND - 1))
 
+# Test start time. In the golden file test, we inject it via $RRT_START_TIME.
+start_time=${RRT_START_TIME:-$(date '+%Y%m%d-%H%M%S')}
+
 # The $target array contains all the tests we're actually going to execute.
 # If the rest of the arguments are available, just run these tests.
-targets=("$@")
+targets=("$@" "${target_args[@]}")
 
 # Collect all executable tests, which we'll set to $targets later if it's empty.
 all_tests=()
@@ -180,6 +207,10 @@ run export ROLLING_TF_SUBPROCESS_OUTPUT
 # The tests that'd break if executed with RAVENWOOD_HIDE_DISABLED_TESTS=1
 run export RAVENWOOD_HIDE_DISABLED_TESTS_RavenwoodCoreTest=0
 run export RAVENWOOD_HIDE_DISABLED_TESTS_RavenwoodBivalentTest=0
+
+# Set bugreport dir
+run export RAVENWOOD_BUGREPORT_DIR=/tmp/ravenwood-bugreports/$start_time
+mkdir -p $RAVENWOOD_BUGREPORT_DIR
 
 # Cat all the files in the argument with all the "#" comments removed.
 remove_comments() {
@@ -273,9 +304,11 @@ fi
 
 
 echo "RAVENWOOD_RUN_DISABLED_TESTS=$RAVENWOOD_RUN_DISABLED_TESTS"
-echo "RAVENWOOD_FORCE_FILTER_REGEX=$RAVENWOOD_FORCE_FILTER_REGEX"
+echo "RAVENWOOD_FILTER_REGEX=$RAVENWOOD_FILTER_REGEX"
 echo "RAVENWOOD_HIDE_DISABLED_TESTS=$RAVENWOOD_HIDE_DISABLED_TESTS"
 echo "RAVENWOOD_SKIP_LARGE_TESTS=$RAVENWOOD_SKIP_LARGE_TESTS"
+echo "RAVENWOOD_DUMP_TESTS_ONLY=$RAVENWOOD_DUMP_TESTS_ONLY"
+echo "RAVENWOOD_BUGREPORT_DIR=$RAVENWOOD_BUGREPORT_DIR"
 
 # =========================================================
 
@@ -311,4 +344,14 @@ for module in "${all_raven_tests[@]}" ; do
     done
 done
 
+set +e # Do not exit even if the atest command fails
 run $dry_run ${ATEST:-atest} --class-level-report $atest_opts "${targets[@]}" "${extra_args[@]}"
+rc=$?
+
+if [[ "$(ls -A $RAVENWOOD_BUGREPORT_DIR >&1 )" != "" ]] ; then
+    # If $RAVENWOOD_BUGREPORT_DIR contains any files, these are bugreports.
+    # Show all of them in full paths.
+    echo "Generated bugreports:"
+    find $RAVENWOOD_BUGREPORT_DIR -type f | sort
+fi
+

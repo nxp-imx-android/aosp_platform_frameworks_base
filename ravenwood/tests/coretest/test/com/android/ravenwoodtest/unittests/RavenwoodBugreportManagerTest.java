@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.internal.ravenwood;
+package com.android.ravenwoodtest.unittests;
 
-import static junit.framework.TestCase.assertEquals;
-
-import android.platform.test.ravenwood.RavenwoodRule;
-
-import androidx.test.ext.junit.runners.AndroidJUnit4;
+import android.platform.test.ravenwood.RavenwoodBugreportManager;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
-@RunWith(AndroidJUnit4.class)
-public class RavenwoodHelperBridgeTest {
+public class RavenwoodBugreportManagerTest {
     @Test
-    public void testIsRunningOnRavenwood() {
-        assertEquals(RavenwoodRule.isOnRavenwood(),
-                RavenwoodHelperBridge.getInstance().isRunningOnRavenwood());
+    public void testBugreport() {
+        // Make sure it's callable.
+        RavenwoodBugreportManager.doBugreport(
+                "NOT A BUG, JUST TESTING BUGREPORT",
+                Thread.currentThread(),
+                new Exception("Test exception"),
+                /* killself=*/ false);
+
+        // Ideally we should check result somehow.
     }
 }
