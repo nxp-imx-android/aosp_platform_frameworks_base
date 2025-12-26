@@ -50,11 +50,11 @@ import android.os.RemoteException;
 import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.FlagsParameterization;
 import android.service.dreams.IDreamManager;
 import android.service.notification.StatusBarNotification;
 import android.testing.TestableLooper;
 
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.internal.jank.InteractionJankMonitor;
@@ -68,6 +68,7 @@ import com.android.systemui.SysuiTestCase;
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.assist.AssistManager;
 import com.android.systemui.classifier.FalsingCollectorFake;
+import com.android.systemui.flags.SceneContainerFlagParameterizationKt;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.plugins.ActivityStarter.OnDismissAction;
@@ -75,6 +76,7 @@ import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.power.data.repository.FakePowerRepository;
 import com.android.systemui.power.domain.interactor.PowerInteractor;
 import com.android.systemui.power.domain.interactor.PowerInteractorFactory;
+import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.ShadeControllerImpl;
 import com.android.systemui.shade.data.repository.FakeShadeRepository;
@@ -116,15 +118,28 @@ import org.mockito.MockitoSession;
 import org.mockito.quality.Strictness;
 import org.mockito.stubbing.Answer;
 
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 @SmallTest
-@RunWith(AndroidJUnit4.class)
+@RunWith(ParameterizedAndroidJunit4.class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
+    @Parameters(name = "{0}")
+    public static List<FlagsParameterization> getParams() {
+        return SceneContainerFlagParameterizationKt.andSceneContainer(new ArrayList<>());
+    }
+
+    public StatusBarNotificationActivityStarterTest(FlagsParameterization flags) {
+        super();
+        mSetFlagsRule.setFlagsParameterization(flags);
+    }
+
     private final KosmosJavaAdapter mKosmos = new KosmosJavaAdapter(this);
     @Mock
     private AssistManager mAssistManager;
@@ -168,6 +183,8 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
     private UserTracker mUserTracker;
     @Mock
     private HeadsUpManager mHeadsUpManager;
+
+    private final FakeExecutor mMainExecutor = new FakeExecutor(new FakeSystemClock());
     private final FakeExecutor mUiBgExecutor = new FakeExecutor(new FakeSystemClock());
     private NotificationEntry mNotificationEntry;
     private ExpandableNotificationRow mNotificationRow;
@@ -234,6 +251,7 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
                         getContext(),
                         mContextInteractor,
                         mHandler,
+                        mMainExecutor,
                         mUiBgExecutor,
                         mKosmos.getTestScope(),
                         mVisibilityProvider,
@@ -253,6 +271,7 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
                         mock(LockPatternUtils.class),
                         mock(StatusBarRemoteInputCallback.class),
                         mActivityIntentHelper,
+                        mKosmos.getActivityIntentRepository(),
                         mock(MetricsLogger.class),
                         new StatusBarNotificationActivityStarterLogger(logcatLogBuffer()),
                         mOnUserInteractionCallback,
@@ -308,6 +327,10 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
         mUnderTest.onNotificationClicked(mNotificationEntry, mNotificationRow);
         // Run the collected runnables in fifo order, the way post() really does.
         while (!runnables.isEmpty()) runnables.remove(0).run();
+        if (SceneContainerFlag.isEnabled()) {
+            mMainExecutor.runAllReady();
+            while (!runnables.isEmpty()) runnables.remove(0).run();
+        }
 
         // Then
         verify(mShadeController, atLeastOnce()).collapseShade();
@@ -348,6 +371,10 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
         mUnderTest.onNotificationClicked(mNotificationEntry, mNotificationRow);
         // Run the collected runnables in fifo order, the way post() really does.
         while (!runnables.isEmpty()) runnables.remove(0).run();
+        if (SceneContainerFlag.isEnabled()) {
+            mMainExecutor.runAllReady();
+            while (!runnables.isEmpty()) runnables.remove(0).run();
+        }
 
         // Then
         verify(mShadeController, atLeastOnce()).collapseShade();
@@ -379,6 +406,9 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
         // When
         mUnderTest.onNotificationClicked(
                 mBubbleNotificationEntry, mBubbleNotificationRow);
+        if (SceneContainerFlag.isEnabled()) {
+            mMainExecutor.runAllReady();
+        }
 
         // Then
         verify(mBubblesManager).expandStackAndSelectBubble(eq(mBubbleNotificationEntry));
@@ -413,6 +443,9 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
         // When
         mUnderTest.onNotificationClicked(
                 mBubbleNotificationEntry, mBubbleNotificationRow);
+        if (SceneContainerFlag.isEnabled()) {
+            mMainExecutor.runAllReady();
+        }
 
         // Then
         verify(mBubblesManager).expandStackAndSelectBubble(eq(mBubbleNotificationEntry));
@@ -441,6 +474,9 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
         // When
         mUnderTest.onNotificationClicked(
                 mBubbleNotificationEntry, mBubbleNotificationRow);
+        if (SceneContainerFlag.isEnabled()) {
+            mMainExecutor.runAllReady();
+        }
 
         // Then
         verify(mBubblesManager).expandStackAndSelectBubble(mBubbleNotificationEntry);
@@ -469,6 +505,9 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
 
         // When
         mUnderTest.onNotificationBubbleIconClicked(mBubbleNotificationEntry);
+        if (SceneContainerFlag.isEnabled()) {
+            mMainExecutor.runAllReady();
+        }
 
         // Then
         verify(mBubblesManager).onUserChangedBubble(mBubbleNotificationEntry, false);
@@ -494,6 +533,9 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
 
         // When
         mUnderTest.onNotificationBubbleIconClicked(mNotificationEntry);
+        if (SceneContainerFlag.isEnabled()) {
+            mMainExecutor.runAllReady();
+        }
 
         // Then
         verify(mBubblesManager).onUserChangedBubble(mNotificationEntry, true);
