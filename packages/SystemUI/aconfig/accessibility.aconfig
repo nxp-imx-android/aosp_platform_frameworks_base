@@ -51,6 +51,13 @@ flag {
 }
 
 flag {
+    name: "hearing_device_status_notification"
+    namespace: "accessibility"
+    description: "Display a notification to show the status of a hearing device when it's connected"
+    bug: "467224908"
+}
+
+flag {
     name: "keyguard_interactor_for_floating_button"
     namespace: "accessibility"
     description: "Switches to using KeyguardInteractor for faster response time to changes"
