@@ -194,8 +194,7 @@ public final class DisplayBrightnessStrategySelectorTest {
                         new StrategySelectionRequest(displayPowerRequest, Display.STATE_DOZE,
                                 /* lastUserSetScreenBrightness= */ 0.1f,
                                 /* userSetBrightnessChanged= */ false, mDisplayOffloadSession,
-                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false,
-                                /* isChargingModeEnabled= */ false)),
+                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false)),
                 mDozeBrightnessModeStrategy);
     }
 
@@ -213,8 +212,7 @@ public final class DisplayBrightnessStrategySelectorTest {
                         new StrategySelectionRequest(displayPowerRequest, Display.STATE_ON,
                                 /* lastUserSetScreenBrightness= */ 0.1f,
                                 /* userSetBrightnessChanged= */ false, mDisplayOffloadSession,
-                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false,
-                                /* isChargingModeEnabled= */ false)),
+                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false)),
                 mDozeBrightnessModeStrategy);
     }
 
@@ -232,8 +230,7 @@ public final class DisplayBrightnessStrategySelectorTest {
                         new StrategySelectionRequest(displayPowerRequest, Display.STATE_ON,
                                 /* lastUserSetScreenBrightness= */ 0.1f,
                                 /* userSetBrightnessChanged= */ false, mDisplayOffloadSession,
-                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false,
-                                /* isChargingModeEnabled= */ false)),
+                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false)),
                 mDozeBrightnessModeStrategy);
     }
 
@@ -251,8 +248,7 @@ public final class DisplayBrightnessStrategySelectorTest {
                         new StrategySelectionRequest(displayPowerRequest, Display.STATE_DOZE,
                                 /* lastUserSetScreenBrightness= */ 0.1f,
                                 /* userSetBrightnessChanged= */ false, mDisplayOffloadSession,
-                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false,
-                                /* isChargingModeEnabled= */ false)),
+                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false)),
                 mDozeBrightnessModeStrategy);
     }
 
@@ -269,8 +265,7 @@ public final class DisplayBrightnessStrategySelectorTest {
                 new StrategySelectionRequest(displayPowerRequest, Display.STATE_DOZE,
                         /* lastUserSetScreenBrightness= */ 0.1f, /* userSetBrightnessChanged= */
                         false, mDisplayOffloadSession,
-                        STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false,
-                        /* isChargingModeEnabled= */ false)));
+                        STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false)));
     }
 
     @Test
@@ -285,8 +280,7 @@ public final class DisplayBrightnessStrategySelectorTest {
                         new StrategySelectionRequest(displayPowerRequest, Display.STATE_DOZE,
                                 /* lastUserSetScreenBrightness= */ 0.1f,
                                 /* userSetBrightnessChanged= */ false, mDisplayOffloadSession,
-                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false,
-                                /* isChargingModeEnabled= */ false)));
+                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false)));
     }
 
     @Test
@@ -300,8 +294,7 @@ public final class DisplayBrightnessStrategySelectorTest {
                         new StrategySelectionRequest(displayPowerRequest, Display.STATE_ON,
                                 /* lastUserSetScreenBrightness= */ 0.1f,
                                 /* userSetBrightnessChanged= */ false, mDisplayOffloadSession,
-                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false,
-                                /* isChargingModeEnabled= */ false)),
+                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false)),
                 mDozeBrightnessModeStrategy);
     }
 
@@ -313,8 +306,7 @@ public final class DisplayBrightnessStrategySelectorTest {
                         new StrategySelectionRequest(displayPowerRequest, Display.STATE_OFF,
                                 /* lastUserSetScreenBrightness= */ 0.1f,
                                 /* userSetBrightnessChanged= */ false, mDisplayOffloadSession,
-                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false,
-                                /* isChargingModeEnabled= */ false)),
+                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false)),
                 mScreenOffBrightnessModeStrategy);
     }
 
@@ -327,8 +319,7 @@ public final class DisplayBrightnessStrategySelectorTest {
         assertEquals(mDisplayBrightnessStrategySelector.selectStrategy(
                         new StrategySelectionRequest(displayPowerRequest, Display.STATE_ON,
                                 0.1f, false, mDisplayOffloadSession,
-                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false,
-                                /* isChargingModeEnabled= */ false)),
+                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false)),
                 mOverrideBrightnessStrategy);
     }
 
@@ -343,8 +334,7 @@ public final class DisplayBrightnessStrategySelectorTest {
                         new StrategySelectionRequest(displayPowerRequest, Display.STATE_ON,
                                 /* lastUserSetScreenBrightness= */ 0.1f,
                                 /* userSetBrightnessChanged= */ false, mDisplayOffloadSession,
-                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false,
-                                /* isChargingModeEnabled= */ false)),
+                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false)),
                 mOverrideBrightnessStrategy);
     }
 
@@ -359,8 +349,7 @@ public final class DisplayBrightnessStrategySelectorTest {
                         new StrategySelectionRequest(displayPowerRequest, Display.STATE_ON,
                                 /* lastUserSetScreenBrightness= */ 0.1f,
                                 /* userSetBrightnessChanged= */ false, mDisplayOffloadSession,
-                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false,
-                                /* isChargingModeEnabled= */ false)),
+                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false)),
                 mTemporaryBrightnessStrategy);
     }
 
@@ -376,8 +365,7 @@ public final class DisplayBrightnessStrategySelectorTest {
                         new StrategySelectionRequest(displayPowerRequest, Display.STATE_ON,
                                 /* lastUserSetScreenBrightness= */ 0.1f,
                                 /* userSetBrightnessChanged= */ false, mDisplayOffloadSession,
-                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false,
-                                /* isChargingModeEnabled= */ false)),
+                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false)),
                 mBoostBrightnessStrategy);
     }
 
@@ -393,8 +381,7 @@ public final class DisplayBrightnessStrategySelectorTest {
                         new StrategySelectionRequest(displayPowerRequest, Display.STATE_ON,
                                 /* lastUserSetScreenBrightness= */ 0.1f,
                                 /* userSetBrightnessChanged= */ false, mDisplayOffloadSession,
-                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false,
-                                /* isChargingModeEnabled= */ false)));
+                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false)));
     }
 
     @Test
@@ -406,8 +393,7 @@ public final class DisplayBrightnessStrategySelectorTest {
                         new StrategySelectionRequest(displayPowerRequest, Display.STATE_ON,
                                 /* lastUserSetScreenBrightness= */ 0.1f,
                                 /* userSetBrightnessChanged= */ false, mDisplayOffloadSession,
-                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false,
-                                /* isChargingModeEnabled= */ false)),
+                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false)),
                 mFollowerBrightnessStrategy);
     }
 
@@ -426,8 +412,7 @@ public final class DisplayBrightnessStrategySelectorTest {
                         new StrategySelectionRequest(displayPowerRequest, Display.STATE_ON,
                                 /* lastUserSetScreenBrightness= */ 0.1f,
                                 /* userSetBrightnessChanged= */ false, mDisplayOffloadSession,
-                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false,
-                                /* isChargingModeEnabled= */ false)));
+                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false)));
     }
 
     @Test
@@ -447,15 +432,13 @@ public final class DisplayBrightnessStrategySelectorTest {
                         new StrategySelectionRequest(displayPowerRequest, Display.STATE_ON,
                                 /* lastUserSetScreenBrightness= */ 0.1f,
                                 /* userSetBrightnessChanged= */ false, mDisplayOffloadSession,
-                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false,
-                                /* isChargingModeEnabled= */ false)),
+                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false)),
                 mAutomaticBrightnessStrategy);
         verify(mAutomaticBrightnessStrategy).setAutoBrightnessState(Display.STATE_ON,
                 /* allowAutoBrightnessWhileDozingConfig= */ false, BrightnessReason.REASON_UNKNOWN,
                 DisplayManagerInternal.DisplayPowerRequest.POLICY_BRIGHT,
                 /* useNormalBrightnessForDoze= */ false, /* lastUserSetScreenBrightness= */ 0.1f,
-                /* userSetBrightnessChanged= */ false, /* isBedtimeModeWearEnabled= */ false,
-                /* isChargingModeEnabled= */ false);
+                /* userSetBrightnessChanged= */ false, /* isBedtimeModeWearEnabled= */ false);
     }
 
     @Test
@@ -478,15 +461,13 @@ public final class DisplayBrightnessStrategySelectorTest {
                         new StrategySelectionRequest(displayPowerRequest, Display.STATE_DOZE,
                                 /* lastUserSetScreenBrightness= */ 0.1f,
                                 /* userSetBrightnessChanged= */ false, mDisplayOffloadSession,
-                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false,
-                                /* isChargingModeEnabled= */ false)),
+                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false)),
                 mAutomaticBrightnessStrategy);
         verify(mAutomaticBrightnessStrategy).setAutoBrightnessState(Display.STATE_DOZE,
                 true, BrightnessReason.REASON_UNKNOWN,
                 DisplayManagerInternal.DisplayPowerRequest.POLICY_DOZE,
                 /* useNormalBrightnessForDoze= */ false, /* lastUserSetScreenBrightness= */ 0.1f,
-                /* userSetBrightnessChanged= */ false, /* isBedtimeModeWearEnabled= */ false,
-                /* isChargingModeEnabled= */ false);
+                /* userSetBrightnessChanged= */ false, /* isBedtimeModeWearEnabled= */ false);
     }
 
     @Test
@@ -508,8 +489,7 @@ public final class DisplayBrightnessStrategySelectorTest {
                         new StrategySelectionRequest(displayPowerRequest, Display.STATE_ON,
                                 /* lastUserSetScreenBrightness= */ 0.1f,
                                 /* userSetBrightnessChanged= */ false, mDisplayOffloadSession,
-                                STYLUS_IS_BEING_USED, /* isBedtimeModeWearEnabled= */ false,
-                                /* isChargingModeEnabled= */ false)),
+                                STYLUS_IS_BEING_USED, /* isBedtimeModeWearEnabled= */ false)),
                 mAutomaticBrightnessStrategy);
     }
 
@@ -532,8 +512,7 @@ public final class DisplayBrightnessStrategySelectorTest {
                         new StrategySelectionRequest(displayPowerRequest, Display.STATE_ON,
                                 /* lastUserSetScreenBrightness= */ 0.1f,
                                 /* userSetBrightnessChanged= */ false, mDisplayOffloadSession,
-                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false,
-                                /* isChargingModeEnabled= */ false)));
+                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false)));
     }
 
     @Test
@@ -552,8 +531,7 @@ public final class DisplayBrightnessStrategySelectorTest {
                         new StrategySelectionRequest(displayPowerRequest, Display.STATE_ON,
                                 /* lastUserSetScreenBrightness= */ 0.1f,
                                 /* userSetBrightnessChanged= */ false, mDisplayOffloadSession,
-                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false,
-                                /* isChargingModeEnabled= */ false)),
+                                STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false)),
                 mFallbackBrightnessStrategy);
     }
 
@@ -569,8 +547,7 @@ public final class DisplayBrightnessStrategySelectorTest {
                 new StrategySelectionRequest(displayPowerRequest, Display.STATE_ON,
                         /* lastUserSetScreenBrightness= */ 0.1f,
                         /* userSetBrightnessChanged= */ false, mDisplayOffloadSession,
-                        STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false,
-                        /* isChargingModeEnabled= */ false));
+                        STYLUS_IS_NOT_BEING_USED, /* isBedtimeModeWearEnabled= */ false));
 
         StrategySelectionNotifyRequest strategySelectionNotifyRequest =
                 new StrategySelectionNotifyRequest(displayPowerRequest, Display.STATE_ON,
@@ -578,8 +555,7 @@ public final class DisplayBrightnessStrategySelectorTest {
                         /* userSetBrightnessChanged= */ false,
                         /* allowAutoBrightnessWhileDozingConfig= */ false,
                         /* isAutoBrightnessEnabled= */ false,
-                        /* isBedtimeModeWearEnabled= */ false,
-                        /* isChargingModeEnabled= */ false);
+                        /* isBedtimeModeWearEnabled= */ false);
 
         for (DisplayBrightnessStrategy displayBrightnessStrategy :
                 mDisplayBrightnessStrategySelector.mDisplayBrightnessStrategies) {
