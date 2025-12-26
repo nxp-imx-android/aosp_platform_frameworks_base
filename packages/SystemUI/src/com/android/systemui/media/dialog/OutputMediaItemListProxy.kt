@@ -135,20 +135,6 @@ class OutputMediaItemListProxy(private val mContext: Context) {
             updatedSpeakersAndDisplaysMediaItems.addAll(remainingMediaItems)
         }
 
-        if (!updatedSelectedMediaItems.isEmpty()) {
-            val selectedMediaItem = updatedSelectedMediaItems[0]
-            val mediaDeviceOptional = selectedMediaItem.mediaDevice
-            if (mediaDeviceOptional.isPresent) {
-                val updatedMediaItem =
-                    MediaItem.createDeviceMediaItem(
-                        mediaDeviceOptional.get(),
-                        /* isFirstDeviceInGroup= */ true,
-                    )
-                updatedSelectedMediaItems.removeAt(0)
-                updatedSelectedMediaItems.add(0, updatedMediaItem)
-            }
-        }
-
         mSelectedMediaItems.clear()
         mSelectedMediaItems.addAll(updatedSelectedMediaItems)
         mSuggestedMediaItems.clear()
