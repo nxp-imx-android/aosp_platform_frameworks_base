@@ -155,8 +155,7 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"動画を保存しました"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"動画を削除しました"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"元に戻す"</string>
-    <!-- no translation found for screen_record_take_another (8071412867905614800) -->
-    <skip />
+    <string name="screen_record_take_another" msgid="8071412867905614800">"もう一度撮影"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"編集"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"削除"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"この録画を削除しますか？"</string>
@@ -900,8 +899,7 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"衛生、接続不安定"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"衛生、接続状態良好"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"衛生、接続利用可能"</string>
-    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
-    <skip />
+    <string name="accessibility_status_bar_satellite_symbol" msgid="3840194796890095832">"衛星"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"衛星 SOS"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"緊急通報または SOS のみ"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"衛星ネットワーク"</string>
@@ -940,6 +938,8 @@
     <string name="inline_done_button" msgid="6043094985588909584">"完了"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"適用"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"OFF にする"</string>
+    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
+    <skip />
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"スマートフォン"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"タブレット"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"ノートパソコン"</string>
@@ -1528,8 +1528,7 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"クイック設定へのタイルの追加"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"小さい形式"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"大きい形式"</string>
-    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
-    <skip />
+    <string name="qs_tile_satellite_label" msgid="2839625529776739941">"衛星"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"ユーザーを選択"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# 個のアプリがアクティブです}other{# 個のアプリがアクティブです}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"最新情報"</string>

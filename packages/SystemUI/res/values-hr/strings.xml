@@ -155,8 +155,7 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Videozapis je spremljen"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Videozapis je izbrisan"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Poništi"</string>
-    <!-- no translation found for screen_record_take_another (8071412867905614800) -->
-    <skip />
+    <string name="screen_record_take_another" msgid="8071412867905614800">"Napravi još jednu snimku zaslona"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Uredi"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Izbriši"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Želite li izbrisati tu snimku?"</string>
@@ -938,6 +937,8 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Gotovo"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Primijeni"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Isključi"</string>
+    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
+    <skip />
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"telefon"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"tablet"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"prijenosno računalo"</string>
@@ -1197,23 +1198,15 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Može čitati sav sadržaj na zaslonu i prikazati sadržaj povrh drugih aplikacija."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Prikaz i izvršavanje radnji"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Može pratiti vaše interakcije s aplikacijama ili senzorom uređaja i stupati u interakciju s aplikacijama u vaše ime."</string>
-    <!-- no translation found for accessibility_key_gesture_select_to_speak_dialog_content (2241403419620826861) -->
-    <skip />
+    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861"><annotation id="action_key_icon">"Ikona"</annotation>" radnje <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> tipkovni je prečac za upotrebu značajke <xliff:g id="ID_4">^4</xliff:g>. To vam omogućuje da prilagodite font i razmake te da čujete tekst koji će se čitati naglas izravno na vašem uređaju."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Pritiskom na "<annotation id="action_key_icon">"ikonu"</annotation>" radnje <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> uključuje se značajka pristupačnosti <xliff:g id="ID_4">^4</xliff:g>. To vam omogućuje da upravljate uređajem bez upotrebe ruku."</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_title (4659318395231105188) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_content (7058726404278534674) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text (7095579813773247709) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_editor_dialog_title (7881631878787325869) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_done_button (5288975589451082156) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_picker_dialog_title (6067291073174568750) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_edit_button (1924449663239985111) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Tipka za pristupačnost"</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Možete pritisnuti tipku za pristupačnost da biste počeli upotrebljavati značajke pristupačnosti."</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Dodajte značajke"</string>
+    <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"Postavite <xliff:g id="ID_1">%1$s</xliff:g>"</string>
+    <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Gotovo"</string>
+    <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Odaberite značajku"</string>
+    <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Uredite"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Pristupačnost"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Zaključani zaslon"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Isključivanje…"</string>
