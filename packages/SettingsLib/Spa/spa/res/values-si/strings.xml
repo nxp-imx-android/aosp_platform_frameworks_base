@@ -19,8 +19,6 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="spa_unavailable" msgid="567282414168720681">"ලබා ගත නොහැක"</string>
     <string name="spa_learn_more" msgid="4863409275777394686">"තව දැන ගන්න"</string>
-    <!-- no translation found for spa_spinner_selected_item (8177204089902251864) -->
-    <skip />
-    <!-- no translation found for spa_action_button_disabled_item (6979877599230080447) -->
-    <skip />
+    <string name="spa_spinner_selected_item" msgid="8177204089902251864">"තෝරන ලදි"</string>
+    <string name="spa_action_button_disabled_item" msgid="6979877599230080447">"අබලයි"</string>
 </resources>
