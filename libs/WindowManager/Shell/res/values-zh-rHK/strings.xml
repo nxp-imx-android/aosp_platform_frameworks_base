@@ -178,5 +178,5 @@
     <string name="open_by_default_splash_dialog_browser_text" msgid="4439951040200685938">"在瀏覽器中開啟"</string>
     <string name="open_by_default_splash_dialog_app_text" msgid="2680408983754147907">"在應用程式內繼續"</string>
     <string name="open_by_default_splash_dialog_ask_me_later_text" msgid="2706872945449736432">"稍後再詢問我"</string>
-    <string name="package_update_text" msgid="196015273357188152">"更新中..."</string>
+    <string name="package_update_text" msgid="196015273357188152">"正在更新…"</string>
 </resources>
