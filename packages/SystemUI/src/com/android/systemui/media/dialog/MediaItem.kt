@@ -19,38 +19,10 @@ package com.android.systemui.media.dialog
 import com.android.settingslib.media.MediaDevice
 
 /**
- * MediaItem represents an item in OutputSwitcher list (could be a MediaDevice, group divider or
- * connect new device item).
+ * MediaItem represents an item in OutputSwitcher list (could be a MediaDevice, a device group, or a
+ * section title.).
  */
 sealed class MediaItem {
-
-    companion object {
-        /** Returns a new {@link MediaItem} that represents a media device. */
-        @JvmStatic
-        fun createDeviceMediaItem(device: MediaDevice): MediaItem = DeviceMediaItem(device)
-
-        /** Returns a new {@link MediaItem} that controls the volume of the group session. */
-        @JvmStatic fun createDeviceGroupMediaItem(): MediaItem = DeviceGroupMediaItem
-
-        @JvmStatic
-        fun createGroupDividerMediaItem(title: String): MediaItem = GroupDividerMediaItem(title)
-
-        /**
-         * Returns a new group divider {@link MediaItem} with the specified title. This item needs
-         * to be rendered with a separator above it.
-         */
-        @JvmStatic
-        fun createGroupDividerWithSeparatorMediaItem(title: String): MediaItem =
-            GroupDividerMediaItem(title, hasTopSeparator = true)
-
-        /**
-         * Returns a new group divider {@link MediaItem} with the specified title. The item serves
-         * as a toggle for expanding/collapsing the group of devices.
-         */
-        @JvmStatic
-        fun createExpandableGroupDividerMediaItem(title: String): MediaItem =
-            GroupDividerMediaItem(title, isExpandable = true)
-    }
 
     /** Represents a media device. */
     data class DeviceMediaItem(val mediaDevice: MediaDevice) : MediaItem()
@@ -63,6 +35,7 @@ sealed class MediaItem {
 
     /** Represents the section title in the Output Switcher list. */
     data class GroupDividerMediaItem
+    // TODO: b/448806213 - remove @JvmOverloads when MediaSwitchingController converted to Kotlin.
     @JvmOverloads
     constructor(
         /** Text of the title */
