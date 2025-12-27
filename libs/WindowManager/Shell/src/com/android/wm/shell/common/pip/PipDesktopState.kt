@@ -71,12 +71,9 @@ class PipDesktopState(
 
     /**
      * Returns whether dragging PiP in Connected Displays is enabled by checking the following:
-     * - Dragging PiP in Connected Displays flag is enabled
      * - PiP in Desktop Windowing is enabled
      */
-    fun isDraggingPipAcrossDisplaysEnabled(): Boolean =
-        DesktopExperienceFlags.ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS.isTrue &&
-            isDesktopWindowingPipEnabled()
+    fun isDraggingPipAcrossDisplaysEnabled(): Boolean = isDesktopWindowingPipEnabled()
 
     /** Returns whether the display with the PiP task is in freeform windowing mode. */
     private fun isDisplayInFreeform(): Boolean {
