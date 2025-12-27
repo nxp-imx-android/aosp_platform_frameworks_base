@@ -319,6 +319,38 @@ public class PersisterQueueTests {
     }
 
     @Test
+    public void testFlushNoWait_processesItemsWithoutDelayAndReturnsImmediately() throws Exception {
+        // Expect two items to be processed after flush. This must be set before creating the items
+        // so they capture the correct latch instance.
+        mFactory.setExpectedProcessedItemNumber(2);
+
+        // Add two items to the queue without flushing. They should be scheduled with a delay.
+        mTarget.addItem(mFactory.createItem(), false);
+        mTarget.addItem(mFactory.createItem(), false);
+
+        final long dispatchTime = SystemClock.uptimeMillis();
+        mTarget.flushNoWait();
+        final long returnTime = SystemClock.uptimeMillis();
+
+        // Verify that flushNoWait() returns immediately, without waiting for items to be processed.
+        assertWithMessage("flushNoWait() should return immediately.")
+                .that(returnTime - dispatchTime).isLessThan(TIMEOUT_ALLOWANCE);
+
+        // Wait for the items to be processed.
+        assertTrue("Target didn't process items after flushNoWait.",
+                mFactory.waitForAllExpectedItemsProcessed(TIMEOUT_ALLOWANCE));
+
+        // Verify that both items were processed.
+        assertEquals("flushNoWait should process all items in the queue.",
+                2, mFactory.getTotalProcessedItemCount());
+
+        final long processDuration = SystemClock.uptimeMillis() - dispatchTime;
+        // Verify that items were processed without the initial pre-task delay.
+        assertWithMessage("flushNoWait should trigger immediate processing. processDuration: "
+                + processDuration).that(processDuration).isLessThan(PRE_TASK_DELAY_MS);
+    }
+
+    @Test
     public void testShutdownFlushes() throws Exception {
         mFactory.setExpectedProcessedItemNumber(1);
         mListener.setExpectedOnPreProcessItemCallbackTimes(1);
