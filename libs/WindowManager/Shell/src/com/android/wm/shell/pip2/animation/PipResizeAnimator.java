@@ -35,7 +35,7 @@ import com.android.wm.shell.shared.animation.Interpolators;
 /**
  * Animator that handles any resize related animation for PIP.
  */
-public class PipResizeAnimator extends ValueAnimator {
+public class PipResizeAnimator extends PipAnimator {
     @NonNull
     private final Context mContext;
     @NonNull
@@ -44,10 +44,6 @@ public class PipResizeAnimator extends ValueAnimator {
     private SurfaceControl.Transaction mStartTx;
     @Nullable
     private SurfaceControl.Transaction mFinishTx;
-    @Nullable
-    private Runnable mAnimationStartCallback;
-    @Nullable
-    private Runnable mAnimationEndCallback;
     private RectEvaluator mRectEvaluator;
 
     // Bounds relative to which scaling/cropping must be done.
@@ -141,14 +137,6 @@ public class PipResizeAnimator extends ValueAnimator {
         addUpdateListener(mAnimatorUpdateListener);
         setEvaluator(mRectEvaluator);
         setDuration(duration);
-    }
-
-    public void setAnimationStartCallback(@NonNull Runnable runnable) {
-        mAnimationStartCallback = runnable;
-    }
-
-    public void setAnimationEndCallback(@NonNull Runnable runnable) {
-        mAnimationEndCallback = runnable;
     }
 
     /**

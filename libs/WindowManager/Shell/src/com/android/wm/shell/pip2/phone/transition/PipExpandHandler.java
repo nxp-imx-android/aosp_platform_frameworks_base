@@ -18,6 +18,7 @@ package com.android.wm.shell.pip2.phone.transition;
 
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
+import static android.view.Display.INVALID_DISPLAY;
 import static android.view.Surface.ROTATION_0;
 import static android.view.Surface.ROTATION_270;
 import static android.view.Surface.ROTATION_90;
@@ -54,6 +55,8 @@ import com.android.wm.shell.common.pip.PipDesktopState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.desktopmode.RunOnTransitStart;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
+import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
+import com.android.wm.shell.pip2.animation.PipAnimator;
 import com.android.wm.shell.pip2.animation.PipExpandAnimator;
 import com.android.wm.shell.pip2.phone.PipInteractionHandler;
 import com.android.wm.shell.pip2.phone.PipScheduler;
@@ -90,6 +93,7 @@ public class PipExpandHandler implements Transitions.TransitionHandler,
     @VisibleForTesting IBinder mExitViaExpandTransition;
 
     private PipExpandAnimatorSupplier mPipExpandAnimatorSupplier;
+    private PipExpandAlphaAnimatorSupplier mPipExpandAlphaAnimatorSupplier;
     private final @NonNull PipSurfaceTransactionHelper mSurfaceTransactionHelper;
 
     public PipExpandHandler(Context context,
@@ -116,6 +120,7 @@ public class PipExpandHandler implements Transitions.TransitionHandler,
         mDisplayController = displayController;
 
         mPipExpandAnimatorSupplier = PipExpandAnimator::new;
+        mPipExpandAlphaAnimatorSupplier = PipAlphaAnimator::new;
     }
 
     /** Called by [PipTransition#onDisplayIdChanged] when the display id changes. */
@@ -270,10 +275,25 @@ public class PipExpandHandler implements Transitions.TransitionHandler,
             // Update PiP target change in place to prepare for fixed rotation;
             handleExpandFixedRotation(pipChange, delta);
         }
-        PipExpandAnimator animator = mPipExpandAnimatorSupplier.get(mContext,
+        final boolean isDifferentDisplay = pipChange.getEndDisplayId() != INVALID_DISPLAY
+                && pipChange.getStartDisplayId() != pipChange.getEndDisplayId();
+        final PipAnimator animator = isDifferentDisplay ? mPipExpandAlphaAnimatorSupplier.get(
+                mContext,
+                mSurfaceTransactionHelper, pipLeash,
+                startTransaction, finishTransaction, PipAlphaAnimator.FADE_IN) :
+                mPipExpandAnimatorSupplier.get(mContext,
                 mSurfaceTransactionHelper, pipLeash,
                 startTransaction, finishTransaction, endBounds, startBounds, endBounds,
                 sourceRectHint, delta, mPipDesktopState.isPipInDesktopMode());
+        // For different displays, let's do alpha animation instead since trying to animate expand
+        // across displays is very jarring.
+        if (isDifferentDisplay) {
+            final Rect destinationBounds = pipChange.getEndAbsBounds();
+            startTransaction.setWindowCrop(pipLeash,
+                    destinationBounds.width(), destinationBounds.height());
+            startTransaction.setPosition(pipLeash, destinationBounds.left, destinationBounds.top);
+            finishTransaction.setPosition(pipLeash, destinationBounds.left, destinationBounds.top);
+        }
         animator.setAnimationStartCallback(() -> {
             mPipInteractionHandler.begin(pipLeash, PipInteractionHandler.INTERACTION_EXIT_PIP);
 
@@ -290,8 +310,8 @@ public class PipExpandHandler implements Transitions.TransitionHandler,
                 finishTransaction.setCrop(pipLeash, null);
             }
             if (parentBeforePip != null) {
-                setupMultiActivityAnimationFinalState(finishTransaction, finalPipChange, pipLeash,
-                        parentBeforePip);
+                setupMultiActivityAnimationFinalState(finishTransaction, finalPipChange,
+                        pipLeash, parentBeforePip);
             }
             finishTransition();
             mPipInteractionHandler.end();
@@ -514,5 +534,19 @@ public class PipExpandHandler implements Transitions.TransitionHandler,
     @VisibleForTesting
     void setPipExpandAnimatorSupplier(@NonNull PipExpandAnimatorSupplier supplier) {
         mPipExpandAnimatorSupplier = supplier;
+    }
+
+    interface PipExpandAlphaAnimatorSupplier {
+        PipAlphaAnimator get(Context context,
+                @NonNull PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
+                SurfaceControl leash,
+                SurfaceControl.Transaction startTransaction,
+                SurfaceControl.Transaction finishTransaction,
+                @PipAlphaAnimator.Fade int direction);
+    }
+
+    @VisibleForTesting
+    void setPipExpandAlphaAnimatorSupplier(@NonNull PipExpandAlphaAnimatorSupplier supplier) {
+        mPipExpandAlphaAnimatorSupplier = supplier;
     }
 }
