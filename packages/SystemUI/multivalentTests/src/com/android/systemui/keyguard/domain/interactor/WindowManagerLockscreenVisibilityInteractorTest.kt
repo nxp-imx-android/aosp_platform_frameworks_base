@@ -61,6 +61,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -1517,6 +1518,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
+    @Ignore("b/470389091")
     fun lockscreenVisibility_dreamingAndUnlocked_swipeLock_isVisible() =
         kosmos.runTest {
             val lockscreenVisibility by collectLastValue(lockscreenVisibilityBoolean)

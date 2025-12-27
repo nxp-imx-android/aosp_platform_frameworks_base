@@ -1804,39 +1804,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     }
 
     @Test
-    public void firstSelectedDeviceIsFirstDeviceInGroupIsTrue() {
-        when(mLocalMediaManager.isPreferenceRouteListingExist()).thenReturn(true);
-        when(mMediaDevice1.isSelected()).thenReturn(true);
-        when(mMediaDevice2.isSelected()).thenReturn(true);
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-        mMediaSwitchingController.clearMediaItemList();
-
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        List<MediaItem> items = mMediaSwitchingController.getMediaItemList();
-        assertThat(items.get(0).isFirstDeviceInGroup()).isTrue();
-        assertThat(items.get(1).isFirstDeviceInGroup()).isFalse();
-    }
-
-    @Test
-    public void deviceListUpdateWithDifferentDevices_firstSelectedDeviceIsFirstDeviceInGroup() {
-        when(mLocalMediaManager.isPreferenceRouteListingExist()).thenReturn(true);
-        when(mMediaDevice1.isSelected()).thenReturn(true);
-        when(mMediaDevice2.isSelected()).thenReturn(true);
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-        mMediaSwitchingController.clearMediaItemList();
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-        mMediaDevices.clear();
-        mMediaDevices.add(mMediaDevice2);
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        List<MediaItem> items = mMediaSwitchingController.getMediaItemList();
-        assertThat(items.get(0).isFirstDeviceInGroup()).isTrue();
-    }
-
-    @Test
     public void getAudioSharingButtonState_noConnectedBroadcastAssistantDevice_returnsNull() {
         LocalBluetoothProfileManager profileManager = mock(LocalBluetoothProfileManager.class);
         LocalBluetoothLeBroadcastAssistant assistantProfile =

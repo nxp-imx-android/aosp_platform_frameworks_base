@@ -22,6 +22,7 @@ import android.os.fakeExecutorHandler
 import android.service.dream.dreamManagerInterface
 import com.android.internal.logging.metricsLogger
 import com.android.internal.widget.lockPatternUtils
+import com.android.systemui.activity.data.repository.activityIntentRepository
 import com.android.systemui.activityIntentHelper
 import com.android.systemui.animation.activityTransitionAnimator
 import com.android.systemui.assist.assistManager
@@ -57,6 +58,7 @@ val Kosmos.statusBarNotificationActivityStarter by
             shadeDialogContextInteractor,
             fakeExecutorHandler,
             fakeExecutor,
+            fakeExecutor,
             testScope,
             notificationVisibilityProvider,
             mockHeadsUpManager,
@@ -75,6 +77,7 @@ val Kosmos.statusBarNotificationActivityStarter by
             lockPatternUtils,
             statusBarRemoteInputCallback,
             activityIntentHelper,
+            activityIntentRepository,
             metricsLogger,
             statusBarNotificationActivityStarterLogger,
             onUserInteractionCallback,

@@ -225,6 +225,13 @@ test_module_config {
 }
 
 test_module_config {
+    name: "FunctionalTestsDesktopMode-clientfullscreenrequest-FullscreenModeRequestFromDesktopAndBackTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.clientfullscreenrequest.FullscreenModeRequestFromDesktopAndBackTest"],
+}
+
+test_module_config {
     name: "FunctionalTestsDesktopMode-drag-DragAppWindowMultiWindowAndPipTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],

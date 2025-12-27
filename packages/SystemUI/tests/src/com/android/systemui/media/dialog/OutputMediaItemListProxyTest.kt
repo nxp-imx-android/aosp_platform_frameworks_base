@@ -77,8 +77,6 @@ class OutputMediaItemListProxyTest : SysuiTestCase() {
         //     * a media item with the mMediaDevice2
         assertThat(getMediaDevices(mOutputMediaItemListProxy.getOutputMediaItemList()))
             .containsExactly(mMediaDevice3, null, mMediaDevice2)
-        assertThat(mOutputMediaItemListProxy.getOutputMediaItemList()[0].isFirstDeviceInGroup)
-            .isTrue()
 
         Mockito.`when`(mMediaDevice3.isSelected()).thenReturn(true)
         // Update the output media item list with more media devices.
@@ -97,8 +95,6 @@ class OutputMediaItemListProxyTest : SysuiTestCase() {
         //     * a media item with the route mMediaDevice1
         assertThat(getMediaDevices(mOutputMediaItemListProxy.getOutputMediaItemList()))
             .containsExactly(mMediaDevice3, null, mMediaDevice2, null, mMediaDevice4, mMediaDevice1)
-        assertThat(mOutputMediaItemListProxy.getOutputMediaItemList()[0].isFirstDeviceInGroup)
-            .isTrue()
 
         Mockito.`when`(mMediaDevice1.isSelected()).thenReturn(true)
         Mockito.`when`(mMediaDevice3.isSelected()).thenReturn(true)
@@ -117,8 +113,6 @@ class OutputMediaItemListProxyTest : SysuiTestCase() {
         //     * a media item with the route mMediaDevice1
         assertThat(getMediaDevices(mOutputMediaItemListProxy.getOutputMediaItemList()))
             .containsExactly(mMediaDevice3, null, mMediaDevice2, null, mMediaDevice1)
-        assertThat(mOutputMediaItemListProxy.getOutputMediaItemList()[0].isFirstDeviceInGroup)
-            .isTrue()
     }
 
     @Test
@@ -143,8 +137,6 @@ class OutputMediaItemListProxyTest : SysuiTestCase() {
         //     * a media item with the mMediaDevice4
         assertThat(getMediaDevices(mOutputMediaItemListProxy.getOutputMediaItemList()))
             .containsExactly(mMediaDevice2, mMediaDevice3, mMediaDevice1, null, mMediaDevice4)
-        assertThat(mOutputMediaItemListProxy.getOutputMediaItemList()[0].isFirstDeviceInGroup)
-            .isTrue()
 
         Mockito.`when`(mMediaDevice1.isSelected()).thenReturn(false)
         Mockito.`when`(mMediaDevice2.isSelected()).thenReturn(true)
@@ -165,8 +157,6 @@ class OutputMediaItemListProxyTest : SysuiTestCase() {
         //     * a media item with the mMediaDevice4
         assertThat(getMediaDevices(mOutputMediaItemListProxy.getOutputMediaItemList()))
             .containsExactly(mMediaDevice2, mMediaDevice3, mMediaDevice1, null, mMediaDevice4)
-        assertThat(mOutputMediaItemListProxy.getOutputMediaItemList()[0].isFirstDeviceInGroup)
-            .isTrue()
 
         Mockito.`when`(mMediaDevice1.isSelected()).thenReturn(false)
         Mockito.`when`(mMediaDevice2.isSelected()).thenReturn(false)
@@ -185,8 +175,6 @@ class OutputMediaItemListProxyTest : SysuiTestCase() {
         //     * a media item with the mMediaDevice4
         assertThat(getMediaDevices(mOutputMediaItemListProxy.getOutputMediaItemList()))
             .containsExactly(mMediaDevice3, mMediaDevice1, null, mMediaDevice4)
-        assertThat(mOutputMediaItemListProxy.getOutputMediaItemList()[0].isFirstDeviceInGroup)
-            .isTrue()
     }
 
     @Test

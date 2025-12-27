@@ -23,6 +23,8 @@ import android.content.Context
 import android.content.applicationContext
 import android.os.fakeExecutorHandler
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.activity.data.repository.activityIntentRepository
+import com.android.systemui.activity.data.repository.fake
 import com.android.systemui.biometrics.data.repository.fingerprintPropertyRepository
 import com.android.systemui.bouncer.data.repository.bouncerRepository
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
@@ -154,6 +156,7 @@ class KosmosJavaAdapter() {
     val testScope by lazy { kosmos.testScope }
     val fakeExecutor by lazy { kosmos.fakeExecutor }
     val fakeExecutorHandler by lazy { kosmos.fakeExecutorHandler }
+    val activityIntentRepository by lazy { kosmos.activityIntentRepository.fake }
     val configurationController by lazy { kosmos.configurationController }
     val configurationRepository by lazy { kosmos.fakeConfigurationRepository }
     val configurationInteractor by lazy { kosmos.configurationInteractor }

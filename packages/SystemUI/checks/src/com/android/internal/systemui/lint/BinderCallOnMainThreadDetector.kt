@@ -111,12 +111,10 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
             }
         }
 
-        if (isInStateFlowOnBackground(node)) {
-            // This binder call is correctly in a state flow on the background.
+        if (isFlowOnBackground(node)) {
+            // This binder call is correctly in a flow on the background.
             return
         }
-
-        // TODO: b/469073407 - Don't warn for calls followed by `.flowOn(backgroundDispatcher)`.
 
         context.report(ISSUE, context.getNameLocation(node), message = "Binder call on main thread")
     }
@@ -140,11 +138,18 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
         return parent as UCallExpression?
     }
 
-    /** Returns true if the given [node] is contained within a `.stateIn(backgroundScope)` block. */
-    private fun isInStateFlowOnBackground(node: UCallExpression): Boolean {
+    /**
+     * Returns true if the given [node] is flowed on the background via `.stateIn(backgroundScope)`
+     * or `.flowOn(backgroundDispatcher)`.
+     */
+    private fun isFlowOnBackground(node: UCallExpression): Boolean {
         var containingDeclaration = node.getContainingDeclaration()
         while (containingDeclaration != null) {
-            if (containingDeclaration.text.contains(Regex("stateIn\\s*\\(\\s*(bg|background)"))) {
+            if (
+                containingDeclaration.text.contains(
+                    Regex("(stateIn|flowOn)\\s*\\(\\s*(bg|background)")
+                )
+            ) {
                 return true
             }
             containingDeclaration = containingDeclaration.getContainingDeclaration()
@@ -212,7 +217,10 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
                     Blocking IPC/binder calls must be done on a background thread to avoid heavy
                     computation on the main thread, because heavy computation on the main thread
                     can cause jank and frame drops. Switch work off the main thread using
-                    `withContext(backgroundDispatcher)` instead.
+                    `withContext(backgroundDispatcher)`, `flowOn(backgroundDispatcher)`, or
+                    `stateIn(backgroundScope)` instead.
+                    Note: If already using one of these methods, you may just need to update your
+                    context, dispatcher, or scope variable name to include `background`.
                 """,
                 moreInfo =
                     "http://go/sysui-perf-dev-guide#moving-long-operations-to-background-thread",
