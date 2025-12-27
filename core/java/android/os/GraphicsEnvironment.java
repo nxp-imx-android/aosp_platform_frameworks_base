@@ -17,6 +17,7 @@
 package android.os;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.GameManager;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
@@ -78,6 +79,7 @@ public class GraphicsEnvironment {
     private static final String PROPERTY_GFX_DRIVER_PRODUCTION = "ro.gfx.driver.0";
     private static final String PROPERTY_GFX_DRIVER_PRERELEASE = "ro.gfx.driver.1";
     private static final String PROPERTY_GFX_DRIVER_BUILD_TIME = "ro.gfx.driver_build_time";
+    private static final String PROPERTY_SOC_ET = "ro.soc.et";
 
     /// System properties related to EGL
     private static final String PROPERTY_RO_HARDWARE_EGL = "ro.hardware.egl";
@@ -89,6 +91,7 @@ public class GraphicsEnvironment {
             "com.android.graphics.developerdriver.enable";
     private static final String METADATA_INJECT_LAYERS_ENABLE =
             "com.android.graphics.injectLayers.enable";
+    private static final String METADATA_ANGLE_PREFER = "com.android.graphics.driver.prefer_angle";
 
     private static final String UPDATABLE_DRIVER_ALLOWLIST_ALL = "*";
     private static final String UPDATABLE_DRIVER_SPHAL_LIBRARIES_FILENAME = "sphal_libraries.txt";
@@ -560,6 +563,34 @@ public class GraphicsEnvironment {
                         Log.v(TAG, "config_angleForGamesEnabled not set");
                     }
                 }
+            }
+        }
+
+        if (applicationInfoWithMetaData.metaData != null
+                && applicationInfoWithMetaData.metaData.getBoolean(
+                METADATA_ANGLE_PREFER)) {
+            if (SystemProperties.getBoolean(PROPERTY_SOC_ET, false)) {
+                if (DEBUG) {
+                    Log.v(TAG, "Skip enabling ANGLE for essential tier device");
+                }
+            } else if (ActivityManager.isLowRamDeviceStatic()) {
+                if (DEBUG) {
+                    Log.v(TAG, "Skip enabling ANGLE for app " + packageName
+                            + " on low ram device");
+                }
+                // TODO(b/434014731): update to 202604 once we finished partner testing
+            } else if (SystemProperties.getInt("ro.vendor.api_level", 0) < 202504) {
+                if (DEBUG) {
+                    Log.v(TAG,
+                            "Skip enabling ANGLE for app " + packageName
+                                    + " on device where ro.vendor.api_level < 202604");
+                }
+            } else {
+                if (DEBUG) {
+                    Log.v(TAG, "Enable ANGLE for app " + packageName
+                            + " on app manifest opt-in");
+                }
+                return ANGLE_GL_DRIVER_CHOICE_ANGLE;
             }
         }
 
