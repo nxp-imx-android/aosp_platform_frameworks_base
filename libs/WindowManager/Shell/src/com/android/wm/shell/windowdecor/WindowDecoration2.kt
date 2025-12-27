@@ -311,12 +311,8 @@ abstract class WindowDecoration2<T>(
         releaseCaptionController(wct, t)
         t.apply()
         if (!wct.isEmpty) {
-            if (DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue) {
-                mainScope.launch {
-                    transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
-                }
-            } else {
-                taskOrganizer.applyTransaction(wct)
+            mainScope.launch {
+                transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
             }
         }
     }
@@ -564,12 +560,8 @@ abstract class WindowDecoration2<T>(
             val wct = windowContainerTransactionSupplier()
             releaseViews(wct)
             if (!wct.isEmpty) {
-                if (DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue) {
-                    mainScope.launch {
-                        transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
-                    }
-                } else {
-                    taskOrganizer.applyTransaction(wct)
+                mainScope.launch {
+                    transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
                 }
             }
             taskSurface.release()
