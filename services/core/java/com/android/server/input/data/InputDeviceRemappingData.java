@@ -16,7 +16,10 @@
 
 package com.android.server.input.data;
 
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.hardware.input.InputDeviceIdentifier;
+import android.util.ArrayMap;
 
 import java.util.Map;
 
@@ -28,4 +31,29 @@ import java.util.Map;
 public record InputDeviceRemappingData(InputDeviceIdentifier deviceIdentifier,
                                        Map<Integer, Integer> buttonRemappingMap,
                                        Map<Integer, Integer> axisRemappingMap) {
+    /**
+     * A copy constructor to create a deep copy of an {@link InputDeviceRemappingData} object.
+     *
+     * @param original The object to create a copy of.
+     */
+    public InputDeviceRemappingData(@NonNull InputDeviceRemappingData original) {
+        this(
+                new InputDeviceIdentifier(
+                        original.deviceIdentifier().getDescriptor(),
+                        original.deviceIdentifier().getVendorId(),
+                        original.deviceIdentifier().getProductId()
+                ),
+                deepCopy(original.buttonRemappingMap()),
+                deepCopy(original.axisRemappingMap()));
+    }
+
+    private static @Nullable ArrayMap<Integer, Integer> deepCopy(
+            @Nullable Map<Integer, Integer> original) {
+        if (original == null) {
+            return null;
+        }
+        ArrayMap<Integer, Integer> copy = new ArrayMap<>();
+        copy.putAll(original);
+        return copy;
+    }
 }

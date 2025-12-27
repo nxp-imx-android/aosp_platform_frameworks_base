@@ -47,6 +47,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -78,6 +79,11 @@ final class InputDeviceRemapper implements InputManager.InputDeviceListener {
      * A SparseArray where the index is the userId. Each entry is a map from InputDeviceIdentifier
      * to the remapping data.
      * i.e. [UserId, [InputDeviceIdentifier, InputDeviceRemappingData]].
+     *
+     * Getters must return a deep copy of the contained objects. While the data structure is
+     * protected by a lock, the returned objects are not. Making a copy is crucial to prevent
+     * concurrent modification issues and ensure thread safety. Static analysis tools aren't able
+     * to detect such mistakes.
      */
     @GuardedBy("mLock")
     private final SparseArray<Map<InputDeviceIdentifier, InputDeviceRemappingData>> mRemappingData =
@@ -189,7 +195,10 @@ final class InputDeviceRemapper implements InputManager.InputDeviceListener {
             if (data == null || data.buttonRemappingMap() == null) {
                 return Map.of();
             }
-            return data.buttonRemappingMap();
+            // Return a deep copy because we are about to release the lock.
+            ArrayMap<Integer, Integer> buttonRemappings = new ArrayMap<>();
+            buttonRemappings.putAll(data.buttonRemappingMap());
+            return buttonRemappings;
         }
     }
 
@@ -267,15 +276,24 @@ final class InputDeviceRemapper implements InputManager.InputDeviceListener {
             if (data == null || data.axisRemappingMap() == null) {
                 return Map.of();
             }
-            return data.axisRemappingMap();
+            // Return a deep copy because we are about to release the lock.
+            ArrayMap<Integer, Integer> axisRemappings = new ArrayMap<>();
+            axisRemappings.putAll(data.axisRemappingMap());
+            return axisRemappings;
         }
     }
 
     byte[] getInputDeviceRemappingBackupPayload(int userId) throws IOException {
         final List<InputDeviceRemappingData> userRemappingList;
         synchronized (mLock) {
-            userRemappingList = new ArrayList<>(mRemappingData.get(userId).values());
+            // Make a deep copy because we are about to release the lock.
+            final Collection<InputDeviceRemappingData> source = mRemappingData.get(userId).values();
+            userRemappingList = new ArrayList<>(source.size());
+            for (InputDeviceRemappingData item : source) {
+                userRemappingList.add(new InputDeviceRemappingData(item));
+            }
         }
+
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         synchronized (mInputDataStore) {
             mInputDataStore.writeData(byteArrayOutputStream, true, userRemappingList,
