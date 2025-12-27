@@ -752,7 +752,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
         return new SupervisionPolicyMigrator(
                         context,
                         mInjector.getUserManagerInternal(),
-                        context.getSystemService(RoleManager.class),
+                        mInjector,
                         context.getSystemService(DevicePolicyManager.class))
                 .upgrade(fromVersion, toVersion);
     }
