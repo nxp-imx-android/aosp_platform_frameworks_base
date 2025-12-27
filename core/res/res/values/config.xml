@@ -6256,6 +6256,9 @@
     <!-- The list of packages that will not use ANGLE as the GLES driver, overridden by RRO -->
     <string-array name="config_angleDenyList"></string-array>
 
+    <!-- Whether or not to enable ANGLE as default driver for all games, overridden by RRO -->
+    <bool name="config_angleForGamesEnabled">false</bool>
+
     <!-- The global list of packages that should not use ANGLE as the GLES driver, they should
          either not get modified or included in the device denylist above, and it's enforced by test
          com.android.angle.denylist.app.GtsAngleDenyListDriverTest-->
