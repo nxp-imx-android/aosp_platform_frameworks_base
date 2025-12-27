@@ -278,13 +278,6 @@ flag {
 }
 
 flag {
-    name: "enable_connected_displays_pip"
-    namespace: "lse_desktop_experience"
-    description: "Enables PiP features in connected displays."
-    bug: "362721131"
-}
-
-flag {
     name: "enable_connected_displays_wallpaper_presentations"
     namespace: "lse_desktop_experience"
     description: "Enables wallpaper presentations shown in connected displays."

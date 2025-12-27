@@ -930,9 +930,8 @@ public class PipTransition extends PipTransitionController implements
         mPipBoundsState.setBoundsStateForEntry(pipTask.topActivity, pipTask.topActivityInfo,
                 pipParams, mPipBoundsAlgorithm);
 
-        // If PiP is enabled on Connected Displays, update PipDisplayLayoutState to have the correct
-        // display info that PiP is entering in.
-        if (mPipDesktopState.isConnectedDisplaysPipEnabled()
+        // Update PipDisplayLayoutState to have the correct display info that PiP is entering in.
+        if (mPipDesktopState.isDesktopWindowingPipEnabled()
                 && pipTask.displayId != mPipDisplayLayoutState.getDisplayId()) {
             final DisplayLayout displayLayout = mDisplayController.getDisplayLayout(
                     pipTask.displayId);
