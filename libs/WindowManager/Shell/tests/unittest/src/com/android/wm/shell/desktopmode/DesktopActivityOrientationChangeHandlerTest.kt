@@ -89,6 +89,10 @@ import org.mockito.quality.Strictness
 @ExperimentalCoroutinesApi
 @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
 class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
+    companion object {
+        private const val FLOAT_TOLERANCE = 0.005f
+    }
+
     private val testExecutor: ShellExecutor = mock()
     private val shellTaskOrganizer: ShellTaskOrganizer = mock()
     private val transitions: Transitions = mock()
@@ -287,7 +291,11 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
         // Bounds is landscape.
         assertTrue(finalWidth > finalHeight)
         // Aspect ratio remains the same.
-        assertEquals(oldBounds.height() / oldBounds.width(), finalWidth / finalHeight)
+        assertEquals(
+            oldBounds.height().toFloat() / oldBounds.width(),
+            finalWidth.toFloat() / finalHeight,
+            FLOAT_TOLERANCE
+        )
         // Anchor point for resizing is at the center.
         assertEquals(oldBounds.centerX(), finalBounds.centerX())
     }
@@ -320,7 +328,58 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
         // Bounds is portrait.
         assertTrue(finalHeight > finalWidth)
         // Aspect ratio remains the same.
-        assertEquals(oldBounds.width() / oldBounds.height(), finalHeight / finalWidth)
+        assertEquals(
+            oldBounds.width().toFloat() / oldBounds.height(),
+            finalHeight.toFloat() / finalWidth,
+            FLOAT_TOLERANCE
+        )
+        // Anchor point for resizing is at the center.
+        assertEquals(oldBounds.centerX(), finalBounds.centerX())
+    }
+
+    @Test
+    fun handleActivityOrientationChange_withCaptionInsets_respectsContentAspectRatio() {
+        userRepositories.current.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
+        userRepositories.current.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
+        val captionHeight = 30
+        val oldBounds = Rect(0, 0, 200, 500)
+        val appBounds = Rect(0, captionHeight, 200, 500)
+        val task =
+            setUpFreeformTask(isResizeable = false, bounds = oldBounds, appBounds = appBounds)
+        val newTask =
+            setUpFreeformTask(
+                isResizeable = false,
+                orientation = SCREEN_ORIENTATION_LANDSCAPE,
+                bounds = oldBounds,
+                appBounds = appBounds
+            )
+        whenever(displayLayout.height()).thenReturn(800)
+        whenever(displayLayout.width()).thenReturn(2000)
+        whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
+            (i.arguments.first() as Rect).set(Rect(0, 0, 2000, 800))
+        }
+
+        handler.handleActivityOrientationChange(task, newTask)
+
+        val wct = getLatestResizeDesktopTaskWct()
+        val finalBounds = findBoundsChange(wct, newTask)
+        assertNotNull(finalBounds)
+        val finalWidth = finalBounds.width()
+        val finalHeight = finalBounds.height()
+        // Bounds is landscape.
+        assertTrue(finalWidth > finalHeight)
+
+        // Aspect ratio of the content should be preserved.
+        val oldContentHeight = oldBounds.height() - captionHeight
+        val oldContentAspectRatio = oldBounds.width().toFloat() / oldContentHeight.toFloat()
+
+        // Assume caption height is constant for the new bounds calculation.
+        val newContentHeight = finalHeight - captionHeight
+        val newContentAspectRatio = finalWidth.toFloat() / newContentHeight.toFloat()
+
+        // For portrait to landscape, the aspect ratio is inverted.
+        assertEquals(1 / oldContentAspectRatio, newContentAspectRatio, FLOAT_TOLERANCE)
+
         // Anchor point for resizing is at the center.
         assertEquals(oldBounds.centerX(), finalBounds.centerX())
     }
@@ -330,12 +389,14 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
         isResizeable: Boolean = true,
         orientation: Int = SCREEN_ORIENTATION_PORTRAIT,
         bounds: Rect? = Rect(0, 0, 200, 500),
+        appBounds: Rect? = null,
     ): RunningTaskInfo {
         val task = createFreeformTask(displayId, bounds)
         val activityInfo = ActivityInfo()
         activityInfo.screenOrientation = orientation
         task.topActivityInfo = activityInfo
         task.isResizeable = isResizeable
+        task.configuration.windowConfiguration.appBounds = appBounds
         whenever(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
         userRepositories.current.addTask(
             displayId,
