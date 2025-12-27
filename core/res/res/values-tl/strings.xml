@@ -158,14 +158,10 @@
     <string name="wfc_mode_wifi_preferred_summary" msgid="1035175836270943089">"Tumawag gamit ang Wi-Fi"</string>
     <string name="wfc_mode_cellular_preferred_summary" msgid="4958965609212575619">"Tumawag gamit ang mobile network"</string>
     <string name="wfc_mode_wifi_only_summary" msgid="104951993894678665">"Wi-Fi lang"</string>
-    <!-- no translation found for adaptive_low_frequency_less_than_one_minute (8869498183646028708) -->
-    <skip />
-    <!-- no translation found for adaptive_low_frequency_neg_less_than_one_minute (2590062535985417056) -->
-    <skip />
-    <!-- no translation found for elapsed_time_low_frequency_short_format_h_mm (6728141238066668781) -->
-    <skip />
-    <!-- no translation found for elapsed_time_low_frequency_short_format_mm (2405181895215514414) -->
-    <skip />
+    <string name="adaptive_low_frequency_less_than_one_minute" msgid="8869498183646028708">"~ %s"</string>
+    <string name="adaptive_low_frequency_neg_less_than_one_minute" msgid="2590062535985417056">"~ −%s"</string>
+    <string name="elapsed_time_low_frequency_short_format_h_mm" msgid="6728141238066668781">"%1$d:%2$02d:--"</string>
+    <string name="elapsed_time_low_frequency_short_format_mm" msgid="2405181895215514414">"%1$02d:--"</string>
     <!-- no translation found for crossSimFormat_spn (9125246077491634262) -->
     <skip />
     <string name="crossSimFormat_spn_cross_sim_calling" msgid="5620807020002879057">"<xliff:g id="SPN">%s</xliff:g> Backup na Pagtawag"</string>
@@ -984,7 +980,7 @@
     <string name="phoneTypeMobile" msgid="1178852541462086735">"Mobile"</string>
     <string name="phoneTypeWork" msgid="6604967163358864607">"Trabaho"</string>
     <string name="phoneTypeFaxWork" msgid="6757519896109439123">"Fax sa Trabaho"</string>
-    <string name="phoneTypeFaxHome" msgid="6678559953115904345">"Fax sa Tahanan"</string>
+    <string name="phoneTypeFaxHome" msgid="6678559953115904345">"Home Fax"</string>
     <string name="phoneTypePager" msgid="576402072263522767">"Pager"</string>
     <string name="phoneTypeOther" msgid="6918196243648754715">"Iba pa"</string>
     <string name="phoneTypeCallback" msgid="3455781500844157767">"Callback"</string>

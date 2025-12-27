@@ -232,7 +232,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
             updateItemBackground()
             updateTitle(
                 title =
-                    mController.sessionName
+                    mController.getSessionName()
                         ?: mContext.getString(R.string.media_output_dialog_group),
                 connectionState = CONNECTED,
                 colorTheme = colorTheme,
@@ -265,7 +265,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
         }
 
         private fun updateItemBackground() {
-            mItemLayout.setBackgroundColor(mController.colorScheme.getSurfaceContainer())
+            mItemLayout.setBackgroundColor(mController.getColorScheme().getSurfaceContainer())
         }
 
         private fun updateContentPadding(verticalPadding: Float) {
@@ -325,9 +325,9 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
                 // unnecessary when Flags.enableOutputSwitcherPersonalAudioSharing() is on.
                 isVolumeControlAllowed =
                     Flags.enableOutputSwitcherPersonalAudioSharing() ||
-                        mController.isVolumeControlEnabledForSession,
-                currentVolume = mController.sessionVolume,
-                maxVolume = mController.sessionVolumeMax,
+                        mController.isVolumeControlEnabledForSession(),
+                currentVolume = mController.getSessionVolume(),
+                maxVolume = mController.getSessionVolumeMax(),
                 colorTheme = colorTheme,
             )
         }
@@ -528,7 +528,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
 
             mDivider.visibility =
                 if (showDivider && connectionState == DISCONNECTED) VISIBLE else GONE
-            mDivider.setBackgroundColor(mController.colorScheme.getOutline())
+            mDivider.setBackgroundColor(mController.getColorScheme().getOutline())
         }
 
         private fun shouldShowGroupCheckbox(groupStatus: GroupStatus): Boolean {
@@ -616,14 +616,14 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
             hasTopSeparator: Boolean,
         ) {
             mTitleText.text = groupDividerTitle
-            mTitleText.setTextColor(mController.colorScheme.getPrimary())
+            mTitleText.setTextColor(mController.getColorScheme().getPrimary())
             if (hasTopSeparator) {
                 mTopSeparator.visibility = VISIBLE
-                mTopSeparator.setBackgroundColor(mController.colorScheme.getOutlineVariant())
+                mTopSeparator.setBackgroundColor(mController.getColorScheme().getOutlineVariant())
             } else {
                 mTopSeparator.visibility = GONE
             }
-            mItemLayout.setBackgroundColor(mController.colorScheme.getSurfaceContainer())
+            mItemLayout.setBackgroundColor(mController.getColorScheme().getSurfaceContainer())
             updateExpandButton(isExpandableDivider)
         }
 
@@ -632,7 +632,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
                 mExpandButton.visibility = GONE
                 return
             }
-            val isCollapsed = mController.isGroupListCollapsed
+            val isCollapsed = mController.isGroupListCollapsed()
             mExpandButtonIcon.setImageDrawable(
                 AppCompatResources.getDrawable(
                     mContext,
@@ -648,14 +648,14 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
             mExpandButton.visibility = VISIBLE
             mExpandButton.setOnClickListener { toggleGroupList() }
             mExpandButtonIcon.backgroundTintList =
-                ColorStateList.valueOf(mController.colorScheme.getOnSurface())
+                ColorStateList.valueOf(mController.getColorScheme().getOnSurface())
                     .withAlpha((255 * 0.1).toInt())
             mExpandButtonIcon.imageTintList =
-                ColorStateList.valueOf(mController.colorScheme.getOnSurface())
+                ColorStateList.valueOf(mController.getColorScheme().getOnSurface())
         }
 
         private fun toggleGroupList() {
-            mController.isGroupListCollapsed = !mController.isGroupListCollapsed
+            mController.setGroupListCollapsed(!mController.isGroupListCollapsed())
             updateItems()
         }
     }
@@ -664,9 +664,9 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
         isConnectedWithFixedVolume: Boolean = false,
         val contentAlpha: Float = DEVICE_ACTIVE_ALPHA,
     ) {
-        private val colorScheme: MediaOutputColorScheme = mController.colorScheme
+        private val colorScheme: MediaOutputColorScheme = mController.getColorScheme()
         private val isExpandedAudioTileDetailsFeatureEnabled: Boolean =
-            mController.isExpandedAudioTileDetailsFeatureEnabled
+            mController.isExpandedAudioTileDetailsFeatureEnabled()
 
         val titleColor =
             if (!isExpandedAudioTileDetailsFeatureEnabled && isConnectedWithFixedVolume) {

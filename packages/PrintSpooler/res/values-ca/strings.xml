@@ -44,6 +44,8 @@
     <string name="expand_handle" msgid="7282974448109280522">"Desplega l\'ansa"</string>
     <string name="collapse_handle" msgid="6886637989442507451">"Replega l\'ansa"</string>
     <string name="print_button" msgid="645164566271246268">"Imprimeix"</string>
+    <!-- no translation found for setup_button (323390526074568450) -->
+    <skip />
     <string name="savetopdf_button" msgid="2976186791686924743">"Desa en PDF"</string>
     <string name="print_options_expanded" msgid="6944679157471691859">"S\'han desplegat les opcions d\'impressió."</string>
     <string name="print_options_collapsed" msgid="7455930445670414332">"S\'han replegat les opcions d\'impressió."</string>

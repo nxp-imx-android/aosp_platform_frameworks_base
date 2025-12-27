@@ -62,7 +62,7 @@ abstract class MediaOutputAdapterBase(protected val mController: MediaSwitchingC
     }
 
     fun isCurrentlyConnected(device: MediaDevice): Boolean {
-        val currentConnectedMediaDevice = mController.currentConnectedMediaDevice
+        val currentConnectedMediaDevice = mController.getCurrentConnectedMediaDevice()
         return (currentConnectedMediaDevice != null &&
             TextUtils.equals(device.getId(), currentConnectedMediaDevice.getId())) ||
             (!mController.hasGroupPlayback() && device.isSelected())

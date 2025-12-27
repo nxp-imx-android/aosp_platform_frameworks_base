@@ -44,6 +44,7 @@ import static org.mockito.Mockito.verify;
 import android.Manifest;
 import android.app.IApplicationThread;
 import android.app.compat.CompatChanges;
+import android.app.privatecompute.flags.Flags;
 import android.app.usage.UsageStatsManagerInternal;
 import android.content.ComponentName;
 import android.content.Context;
@@ -55,6 +56,9 @@ import android.content.pm.PackageManagerInternal;
 import android.content.pm.ServiceInfo;
 import android.os.Process;
 import android.os.SystemClock;
+import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.service.ondeviceintelligence.OnDeviceSandboxedInferenceService;
 import android.service.voice.HotwordDetectionService;
 import android.service.voice.VisualQueryDetectionService;
@@ -71,6 +75,7 @@ import com.android.server.wm.ActivityTaskManagerService;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -84,6 +89,9 @@ import java.util.ArrayList;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public final class ActiveServicesTest {
+    @Rule
+    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
+
     private static final String PACKAGE_NAME_1 = "com.foo";
     private static final String PACKAGE_NAME_2 = "com.bar";
     private static final String SERVICE_NAME = "barService";
@@ -540,6 +548,7 @@ public final class ActiveServicesTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
     public void bringUpServiceLocked_pcc() throws Exception {
         prepareTestRescheduleServiceRestarts();
         mService.mPackageManagerInt = mock(PackageManagerInternal.class);
@@ -607,6 +616,7 @@ public final class ActiveServicesTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
     public void attachApplicationLocked_pcc() throws Exception {
         prepareTestRescheduleServiceRestarts();
         mService.mProcessStateController = mock(ProcessStateController.class);
@@ -775,6 +785,7 @@ public final class ActiveServicesTest {
         r.appInfo.pccUid = 30001;
         r.appInfo.packageName = "com.android.pcc";
         final ServiceInfo si = new ServiceInfo();
+        si.applicationInfo = r.appInfo;
         si.flags = ServiceInfo.FLAG_RUN_IN_PCC_SANDBOX;
         setFieldValue(ServiceRecord.class, r, "serviceInfo", si);
         setFieldValue(ServiceRecord.class, r, "processName", "test");

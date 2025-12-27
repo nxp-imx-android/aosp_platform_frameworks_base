@@ -50,13 +50,10 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.any
-import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
-import org.mockito.kotlin.spy
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -78,9 +75,9 @@ class MediaOutputAdapterTest : SysuiTestCase() {
         mMediaSwitchingController.stub {
             on { getMediaItemList() } doReturn mMediaItems
             on { hasAdjustVolumeUserRestriction() } doReturn false
-            on { isAnyDeviceTransferring } doReturn false
-            on { currentConnectedMediaDevice } doReturn mMediaDevice1
-            on { connectedSpeakersExpandableGroupDivider }
+            on { isAnyDeviceTransferring() } doReturn false
+            on { getCurrentConnectedMediaDevice() } doReturn mMediaDevice1
+            on { getConnectedSpeakersExpandableGroupDivider() }
                 .doReturn(
                     MediaItem.createExpandableGroupDividerMediaItem(
                         mContext.getString(R.string.media_output_group_title_connected_speakers)
@@ -189,7 +186,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
             on { isMutingExpectedDevice } doReturn true
             on { state } doReturn STATE_DISCONNECTED
         }
-        mMediaSwitchingController.stub { on { isCurrentConnectedDeviceRemote } doReturn false }
+        mMediaSwitchingController.stub { on { isCurrentConnectedDeviceRemote() } doReturn false }
         updateAdapterWithDevices(listOf(mMediaDevice1))
 
         createAndBindDeviceViewHolder(position = 0).apply {
@@ -209,7 +206,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
         }
         mMediaSwitchingController.stub {
             on { hasMutingExpectedDevice() } doReturn true
-            on { isCurrentConnectedDeviceRemote } doReturn false
+            on { isCurrentConnectedDeviceRemote() } doReturn false
         }
         updateAdapterWithDevices(listOf(mMediaDevice1))
 
@@ -323,8 +320,8 @@ class MediaOutputAdapterTest : SysuiTestCase() {
     @Test
     fun onBindViewHolder_inputDeviceWithOtherGroupDevices_hasNoGroupCheckbox() {
         mMediaSwitchingController.stub {
-            on { isGroupListCollapsed } doReturn false
-            on { isVolumeControlEnabledForSession } doReturn true
+            on { isGroupListCollapsed() } doReturn false
+            on { isVolumeControlEnabledForSession() } doReturn true
             on { hasGroupPlayback() } doReturn true
         }
         mMediaDevice1.stub {
@@ -363,8 +360,8 @@ class MediaOutputAdapterTest : SysuiTestCase() {
     @Test
     fun onBindViewHolder_bindDeselectableDevice_verifyView() {
         mMediaSwitchingController.stub {
-            on { isGroupListCollapsed } doReturn false
-            on { isVolumeControlEnabledForSession } doReturn true
+            on { isGroupListCollapsed() } doReturn false
+            on { isVolumeControlEnabledForSession() } doReturn true
             on { hasGroupPlayback() } doReturn true
         }
         mMediaDevice1.stub {
@@ -606,7 +603,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
             on { isDeselectable() } doReturn true
         }
         mMediaDevice2.stub { on { isSelectable() } doReturn true }
-        mMediaSwitchingController.stub { on { isCurrentConnectedDeviceRemote } doReturn true }
+        mMediaSwitchingController.stub { on { isCurrentConnectedDeviceRemote() } doReturn true }
         updateAdapterWithDevices(listOf(mMediaDevice1, mMediaDevice2))
 
         createAndBindDeviceViewHolder(position = 0).apply { mGroupButton.performClick() }
@@ -616,7 +613,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
     @Test
     fun onBindViewHolder_hasVolumeAdjustmentRestriction_verifySeekbarDisabled() {
         mMediaSwitchingController.stub {
-            on { isCurrentConnectedDeviceRemote } doReturn true
+            on { isCurrentConnectedDeviceRemote() } doReturn true
             on { hasAdjustVolumeUserRestriction() } doReturn true
         }
         mMediaDevice1.stub { on { state } doReturn STATE_CONNECTED }
@@ -668,8 +665,8 @@ class MediaOutputAdapterTest : SysuiTestCase() {
     @Test
     fun multipleSelectedDevices_listCollapsed_verifyItemTypes() {
         mMediaSwitchingController.stub {
-            on { isGroupListCollapsed } doReturn true
-            on { isVolumeControlEnabledForSession } doReturn true
+            on { isGroupListCollapsed() } doReturn true
+            on { isVolumeControlEnabledForSession() } doReturn true
         }
 
         mMediaItems.add(MediaItem.createGroupDividerMediaItem("Connected Speakers"))
@@ -688,7 +685,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     fun multipleSelectedDevices_listCollapsed_verifySessionControl() {
-        mMediaSwitchingController.stub { on { isVolumeControlEnabledForSession } doReturn true }
+        mMediaSwitchingController.stub { on { isVolumeControlEnabledForSession() } doReturn true }
         initializeGroupSessionCollapsed()
 
         createAndBindDeviceViewHolder(position = 1).apply {
@@ -720,7 +717,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
 
     @Test
     fun multipleSelectedDevices_listExpanded_verifyIndividualDevices() {
-        mMediaSwitchingController.stub { on { isVolumeControlEnabledForSession } doReturn true }
+        mMediaSwitchingController.stub { on { isVolumeControlEnabledForSession() } doReturn true }
         initializeGroupSessionExpanded()
 
         createAndBindDeviceViewHolder(position = 1).apply {
@@ -741,8 +738,8 @@ class MediaOutputAdapterTest : SysuiTestCase() {
     @Test
     fun multipleSelectedDevices_expandIconClicked_setGroupListCollapsed() {
         mMediaSwitchingController.stub {
-            on { isGroupListCollapsed } doReturn true
-            on { isVolumeControlEnabledForSession } doReturn true
+            on { isGroupListCollapsed() } doReturn true
+            on { isVolumeControlEnabledForSession() } doReturn true
         }
         initializeGroupSessionCollapsed()
 
@@ -787,7 +784,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
 
     private fun initializeGroupSessionCollapsed() {
         mMediaSwitchingController.stub {
-            on { isGroupListCollapsed } doReturn true
+            on { isGroupListCollapsed() } doReturn true
             on { hasGroupPlayback() } doReturn true
         }
 
@@ -804,7 +801,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
 
     private fun initializeGroupSessionExpanded() {
         mMediaSwitchingController.stub {
-            on { isGroupListCollapsed } doReturn false
+            on { isGroupListCollapsed() } doReturn false
             on { hasGroupPlayback() } doReturn true
         }
 

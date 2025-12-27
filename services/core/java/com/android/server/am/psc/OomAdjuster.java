@@ -17,7 +17,7 @@
 package com.android.server.am.psc;
 
 import static android.app.ActivityManager.PROCESS_CAPABILITY_ALL;
-import static android.app.ActivityManager.PROCESS_CAPABILITY_ALL_IMPLICIT;
+import static android.app.ActivityManager.PROCESS_CAPABILITY_INSTRUMENTATION_DEFAULTS;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_BFSL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_CPU_TIME;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL;
@@ -2019,14 +2019,15 @@ public abstract class OomAdjuster {
                 break;
             case PROCESS_STATE_BOUND_TOP:
                 if (app.hasActiveInstrumentation()) {
-                    baseCapabilities = PROCESS_CAPABILITY_BFSL | PROCESS_CAPABILITY_ALL_IMPLICIT;
+                    baseCapabilities = PROCESS_CAPABILITY_BFSL
+                            | PROCESS_CAPABILITY_INSTRUMENTATION_DEFAULTS;
                 } else {
                     baseCapabilities = PROCESS_CAPABILITY_BFSL;
                 }
                 break;
             case PROCESS_STATE_FOREGROUND_SERVICE:
                 if (app.hasActiveInstrumentation()) {
-                    baseCapabilities = PROCESS_CAPABILITY_ALL_IMPLICIT;
+                    baseCapabilities = PROCESS_CAPABILITY_INSTRUMENTATION_DEFAULTS;
                 } else {
                     // Capability from foreground service is conditional depending on
                     // foregroundServiceType in the manifest file and the

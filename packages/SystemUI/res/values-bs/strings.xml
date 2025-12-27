@@ -60,7 +60,7 @@
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Promijeni jezik"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"Zadrži trenutni jezik"</string>
     <string name="share_wifi_button_text" msgid="1285273973812029240">"Dijeli WiFi"</string>
-    <string name="add_network_button_text" msgid="4046392140897987570">"Dodaj mrežu"</string>
+    <string name="add_network_button_text" msgid="4046392140897987570">"Dodajte mrežu"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"Dozvoliti bežično otklanjanje grešaka na ovoj mreži?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"Naziv mreže (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nAdresa WiFi mreže (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
     <string name="wifi_debugging_always" msgid="2968383799517975155">"Uvijek dozvoli na ovoj mreži"</string>
@@ -155,8 +155,7 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Videozapis je sačuvan"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Videozapis je izbrisan"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Opozovi"</string>
-    <!-- no translation found for screen_record_take_another (8071412867905614800) -->
-    <skip />
+    <string name="screen_record_take_another" msgid="8071412867905614800">"Snimi drugo"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Uredite"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Izbriši"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Izbrisati ovaj snimak?"</string>
@@ -898,8 +897,7 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"Satelit, slaba veza"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"Satelit, dobra veza"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Satelit, veza je dostupna"</string>
-    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
-    <skip />
+    <string name="accessibility_status_bar_satellite_symbol" msgid="3840194796890095832">"Satelit"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"Hitna pomoć putem satelita"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Samo hitni pozivi ili pomoć"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"Satelitske mreže"</string>
@@ -938,6 +936,8 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Gotovo"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Primijeni"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Isključi"</string>
+    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
+    <skip />
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"telefon"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"tablet"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"laptop"</string>
@@ -1526,8 +1526,7 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Dodajte pločicu u Brze postavke"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Mali format"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Veliki format"</string>
-    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
-    <skip />
+    <string name="qs_tile_satellite_label" msgid="2839625529776739941">"SAT"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Odaberite korisnika"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# aplikacija je aktivna}one{# aplikacija je aktivna}few{# aplikacije su aktivne}other{# aplikacija je aktivno}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Nove informacije"</string>

@@ -155,8 +155,7 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Vídeo salvo"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Vídeo excluído"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Desfazer"</string>
-    <!-- no translation found for screen_record_take_another (8071412867905614800) -->
-    <skip />
+    <string name="screen_record_take_another" msgid="8071412867905614800">"Fazer outra"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Editar"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Excluir"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Excluir esta gravação?"</string>
@@ -938,6 +937,8 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Ok"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Aplicar"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Desativar"</string>
+    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
+    <skip />
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"celular"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"tablet"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"laptop"</string>

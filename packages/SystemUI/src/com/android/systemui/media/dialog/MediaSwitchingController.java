@@ -149,8 +149,7 @@ public class MediaSwitchingController
     private final MediaSession.Token mToken;
     @NonNull private final MediaSwitchingType mMediaSwitchingType;
     private final Executor mBackgroundExecutor;
-    @VisibleForTesting
-    boolean mIsRefreshing = false;
+    private boolean mIsRefreshing = false;
     @VisibleForTesting
     boolean mNeedRefresh = false;
     private MediaController mMediaController;

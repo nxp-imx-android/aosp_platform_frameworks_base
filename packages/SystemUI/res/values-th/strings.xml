@@ -155,8 +155,7 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"บันทึกวิดีโอแล้ว"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"ลบวิดีโอแล้ว"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"เลิกทำ"</string>
-    <!-- no translation found for screen_record_take_another (8071412867905614800) -->
-    <skip />
+    <string name="screen_record_take_another" msgid="8071412867905614800">"บันทึกอีกครั้ง"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"แก้ไข"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"ลบ"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"ลบการบันทึกนี้ใช่ไหม"</string>
@@ -898,8 +897,7 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"ดาวเทียม, การเชื่อมต่อไม่ดี"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"ดาวเทียม, การเชื่อมต่อดี"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"ดาวเทียม, การเชื่อมต่อที่พร้อมใช้งาน"</string>
-    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
-    <skip />
+    <string name="accessibility_status_bar_satellite_symbol" msgid="3840194796890095832">"ดาวเทียม"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"SOS ดาวเทียม"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"โทรฉุกเฉินหรือ SOS เท่านั้น"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"เครือข่ายดาวเทียม"</string>
@@ -938,6 +936,8 @@
     <string name="inline_done_button" msgid="6043094985588909584">"เสร็จสิ้น"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ใช้"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ปิดการแจ้งเตือน"</string>
+    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
+    <skip />
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"โทรศัพท์"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"แท็บเล็ต"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"แล็ปท็อป"</string>
@@ -1526,8 +1526,7 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"เพิ่มการ์ดในการตั้งค่าด่วน"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"รูปแบบขนาดเล็ก"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"รูปแบบขนาดใหญ่"</string>
-    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
-    <skip />
+    <string name="qs_tile_satellite_label" msgid="2839625529776739941">"SAT"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"เลือกผู้ใช้"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{ทำงานอยู่ # แอป}other{ทำงานอยู่ # แอป}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"ข้อมูลใหม่"</string>

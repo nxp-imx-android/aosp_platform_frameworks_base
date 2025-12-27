@@ -1013,7 +1013,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     public void onDeviceListUpdate_isRefreshing_updatesNeedRefreshToTrue() {
         mMediaSwitchingController.start(mCb);
         reset(mCb);
-        mMediaSwitchingController.mIsRefreshing = true;
+        mMediaSwitchingController.setRefreshing(true);
 
         mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
 
@@ -1024,7 +1024,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     public void advanced_onDeviceListUpdate_isRefreshing_updatesNeedRefreshToTrue() {
         mMediaSwitchingController.start(mCb);
         reset(mCb);
-        mMediaSwitchingController.mIsRefreshing = true;
+        mMediaSwitchingController.setRefreshing(true);
 
         mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
 

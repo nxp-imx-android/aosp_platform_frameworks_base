@@ -89,16 +89,11 @@ public enum DesktopExperienceFlags {
             android.app.Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER),
     ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG(Flags::enableConnectedDisplaysWindowDrag, true,
             Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG),
-    ENABLE_CROSS_DISPLAYS_PIP_TASK_LAUNCH(Flags::enableCrossDisplaysPipTaskLaunch, false,
-            Flags.FLAG_ENABLE_CROSS_DISPLAYS_PIP_TASK_LAUNCH),
     ENABLE_DEFAULT_DESK_WITHOUT_WARMUP_MIGRATION(Flags::defaultDeskWithoutWarmupMigration, false,
             Flags.FLAG_DEFAULT_DESK_WITHOUT_WARMUP_MIGRATION),
     ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH(
             com.android.server.display.feature.flags.Flags::enableDefaultDisplayInTopologySwitch,
             true, FLAG_ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH),
-    ENABLE_DENSITY_RESET_ON_CROSS_DISPLAYS_PIP_LAUNCH(
-            Flags::enableDensityResetOnCrossDisplaysPipLaunch, false,
-            Flags.FLAG_ENABLE_DENSITY_RESET_ON_CROSS_DISPLAYS_PIP_LAUNCH),
     ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX(
             Flags::enableDesktopFirstBasedDefaultToDesktopBugfix, true,
             Flags.FLAG_ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX),

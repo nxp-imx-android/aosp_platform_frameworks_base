@@ -155,8 +155,7 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ဗီဒီယို သိမ်းပြီးပြီ"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"ဗီဒီယို ဖျက်ထားသည်"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"နောက်ပြန်ရန်"</string>
-    <!-- no translation found for screen_record_take_another (8071412867905614800) -->
-    <skip />
+    <string name="screen_record_take_another" msgid="8071412867905614800">"နောက်တစ်ခုရိုက်ရန်"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"ပြင်ရန်"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"ဖျက်ရန်"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"ဤရိုက်ကူးမှုကို ဖျက်မလား"</string>
@@ -898,8 +897,7 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"ဂြိုဟ်တု၊ ချိတ်ဆက်မှု မကောင်းပါ"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"ဂြိုဟ်တု၊ ချိတ်ဆက်မှု ကောင်းသည်"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"ဂြိုဟ်တု၊ ချိတ်ဆက်မှု ရနိုင်သည်"</string>
-    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
-    <skip />
+    <string name="accessibility_status_bar_satellite_symbol" msgid="3840194796890095832">"ဂြိုဟ်တု"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"Satellite SOS"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"အရေးပေါ်ဖုန်းခေါ်ခြင်း (သို့) SOS သီးသန့်"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"ဂြိုဟ်တုကွန်ရက်များ"</string>
@@ -938,6 +936,8 @@
     <string name="inline_done_button" msgid="6043094985588909584">"ပြီးပြီ"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"အသုံးပြုရန်"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ပိတ်ရန်"</string>
+    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
+    <skip />
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"ဖုန်း"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"တက်ဘလက်"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"လက်ပ်တော့"</string>
@@ -1526,8 +1526,7 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"အမြန်ဆက်တင်၌ အကွက်ငယ်ထည့်ခြင်း"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"ဖော်မက်အသေး"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"ဖော်မက်အကြီး"</string>
-    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
-    <skip />
+    <string name="qs_tile_satellite_label" msgid="2839625529776739941">"SAT"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"အသုံးပြုသူ ရွေးခြင်း"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{အက်ပ် # ခု ပွင့်နေသည်}other{အက်ပ် # ခု ပွင့်နေသည်}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"အချက်အလက်သစ်"</string>

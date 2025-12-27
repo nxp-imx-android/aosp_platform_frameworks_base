@@ -316,26 +316,6 @@ flag {
 }
 
 flag {
-    name: "enable_cross_displays_pip_task_launch"
-    namespace: "lse_desktop_experience"
-    description: "Enables launching an app while it's in PiP on another display."
-    bug: "424569682"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "enable_density_reset_on_cross_displays_pip_launch"
-    namespace: "lse_desktop_experience"
-    description: "Enables resetting the app's density and other configs when launching an app while it's in PiP on another display."
-    bug: "431280403"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_desktop_app_handle_animation"
     namespace: "lse_desktop_experience"
     description: "Enables the animation that occurs when the app handle of a task in immersive mode is shown or hidden."
@@ -942,16 +922,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Add options to pin/unpin to taskbar to app context menus."
     bug: "375648361"
-}
-
-flag {
-    name: "enable_pip_ui_state_change_callback_for_connected_displays"
-    namespace: "lse_desktop_experience"
-    description: "Enables sending Picture-in-Picture UI state change callbacks to apps on non-default displays."
-    bug: "449857733"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {

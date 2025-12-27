@@ -162,14 +162,10 @@
     <string name="wfc_mode_wifi_preferred_summary" msgid="1035175836270943089">"‏الاتصال عبر Wi-Fi"</string>
     <string name="wfc_mode_cellular_preferred_summary" msgid="4958965609212575619">"الاتصال عبر شبكة الجوّال"</string>
     <string name="wfc_mode_wifi_only_summary" msgid="104951993894678665">"‏Wi-Fi فقط"</string>
-    <!-- no translation found for adaptive_low_frequency_less_than_one_minute (8869498183646028708) -->
-    <skip />
-    <!-- no translation found for adaptive_low_frequency_neg_less_than_one_minute (2590062535985417056) -->
-    <skip />
-    <!-- no translation found for elapsed_time_low_frequency_short_format_h_mm (6728141238066668781) -->
-    <skip />
-    <!-- no translation found for elapsed_time_low_frequency_short_format_mm (2405181895215514414) -->
-    <skip />
+    <string name="adaptive_low_frequency_less_than_one_minute" msgid="8869498183646028708">"‫~ %s"</string>
+    <string name="adaptive_low_frequency_neg_less_than_one_minute" msgid="2590062535985417056">"‫~ −%s"</string>
+    <string name="elapsed_time_low_frequency_short_format_h_mm" msgid="6728141238066668781">"‫%1$d:%2$02d:--"</string>
+    <string name="elapsed_time_low_frequency_short_format_mm" msgid="2405181895215514414">"‫%1$02d:--"</string>
     <!-- no translation found for crossSimFormat_spn (9125246077491634262) -->
     <skip />
     <string name="crossSimFormat_spn_cross_sim_calling" msgid="5620807020002879057">"<xliff:g id="SPN">%s</xliff:g> الاتصال الاحتياطي"</string>
@@ -1465,7 +1461,7 @@
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"تم تغيير منطقتك الزمنية"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"أنت الآن في <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)."</string>
     <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"تغيير التوقيت"</string>
-    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"تم تقديم الساعة بمقدار <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. أنت الآن في <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g>‏ (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"تم تقديم الوقت بمقدار <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>، وأصبح الآن على <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g>‏ (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
     <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"تم تأخير الساعة بمقدار <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. أنت الآن في <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g>‏ (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"ضبط الوقت"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"تعيين التاريخ"</string>
@@ -1502,7 +1498,7 @@
     <string name="console_running_notification_message" msgid="7892751888125174039">"الأداء متأثر. لإيقاف وحدة التحكّم، تحقّق من برنامج الإقلاع."</string>
     <string name="mte_override_notification_title" msgid="4731115381962792944">"‏الميزة التجريبية إضافة وضع علامات الذاكرة (MTE) مفعّلة"</string>
     <string name="mte_override_notification_message" msgid="2441170442725738942">"‏قد تؤثر إضافة وضع علامات الذاكرة (MTE) على الأداء والثبات. يمكنك إعادة تشغيل النظام لإيقاف هذه الإضافة. إذا كانت مفعّلة باستخدام arm64.memtag.bootctl، يمكنك ضبطها على \"بدون\" بشكل مُسبق."</string>
-    <string name="usb_contaminant_detected_title" msgid="4359048603069159678">"‏السوائل أو الشوائب في منفذ USB"</string>
+    <string name="usb_contaminant_detected_title" msgid="4359048603069159678">"‏هناك سوائل أو شوائب في منفذ USB"</string>
     <string name="usb_contaminant_detected_message" msgid="7346100585390795743">"‏تمّ إيقاف منفذ USB تلقائيًا. انقُر لمعرفة المزيد من المعلومات."</string>
     <string name="usb_contaminant_not_detected_title" msgid="2651167729563264053">"‏مسموح باستخدام منفذ USB"</string>
     <string name="usb_contaminant_not_detected_message" msgid="892863190942660462">"لم يَعُد الهاتف يكتشف سوائل أو شوائب."</string>

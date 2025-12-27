@@ -155,8 +155,7 @@
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video bylo uloženo"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Video bylo smazáno"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Vrátit zpět"</string>
-    <!-- no translation found for screen_record_take_another (8071412867905614800) -->
-    <skip />
+    <string name="screen_record_take_another" msgid="8071412867905614800">"Pořídit další"</string>
     <string name="screen_record_edit" msgid="8733014191240769309">"Upravit"</string>
     <string name="screen_record_delete" msgid="1023421937978254537">"Smazat"</string>
     <string name="screen_record_delete_dialog_title" msgid="5868561491974057044">"Smazat tuto nahrávku?"</string>
@@ -900,8 +899,7 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"Satelit, špatné připojení"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"Satelit, dobré připojení"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Satelit, připojení je k dispozici"</string>
-    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
-    <skip />
+    <string name="accessibility_status_bar_satellite_symbol" msgid="3840194796890095832">"Satelit"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"SOS přes satelit"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Pouze tísňové hovory nebo SOS"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"Satelitní sítě"</string>
@@ -940,6 +938,8 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Hotovo"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Použít"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Vypnout"</string>
+    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
+    <skip />
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"telefon"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"tablet"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"notebook"</string>
@@ -1199,23 +1199,15 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Může číst veškerý obsah obrazovky a zobrazovat obsah přes ostatní aplikace."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Čtení a provádění akcí"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Může sledovat vaše interakce s aplikací nebo hardwarovým senzorem a komunikovat s aplikacemi místo vás."</string>
-    <!-- no translation found for accessibility_key_gesture_select_to_speak_dialog_content (2241403419620826861) -->
-    <skip />
+    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ikona"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> je klávesová zkratka k použití funkce <xliff:g id="ID_4">^4</xliff:g>. Můžete si pomocí ní přizpůsobit písmo a mezery a nechat si přímo na zařízení text předčítat."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Stisknutím <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ikony"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> zapnete <xliff:g id="ID_4">^4</xliff:g>, funkci pro usnadnění přístupu Umožňuje ovládat zařízení handsfree."</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_title (4659318395231105188) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_content (7058726404278534674) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text (7095579813773247709) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_editor_dialog_title (7881631878787325869) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_done_button (5288975589451082156) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_picker_dialog_title (6067291073174568750) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcutchooser_edit_button (1924449663239985111) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Klávesa přístupnosti"</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Funkce pro usnadnění přístupu můžete spouštět stisknutím klávesy přístupnosti."</string>
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Přidat funkce"</string>
+    <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"Nastavení funkce <xliff:g id="ID_1">%1$s</xliff:g>"</string>
+    <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Hotovo"</string>
+    <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Vyberte funkci"</string>
+    <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Upravit"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Přístupnost"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Obrazovka uzamčení"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Vypínání…"</string>
@@ -1536,8 +1528,7 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Přidání dlaždice do Rychlého nastavení"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Malý formát"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Velký formát"</string>
-    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
-    <skip />
+    <string name="qs_tile_satellite_label" msgid="2839625529776739941">"SAT"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Zvolte uživatele"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# aplikace je aktivní}few{# aplikace jsou aktivní}many{# aplikace je aktivních}other{# aplikací je aktivních}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Nové informace"</string>
