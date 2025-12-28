@@ -51,6 +51,8 @@ import androidx.test.filters.SmallTest;
 
 import com.android.wm.shell.R;
 import com.android.wm.shell.ShellTestCase;
+import com.android.wm.shell.bubbles.BubbleTaskView;
+import com.android.wm.shell.bubbles.BubbleTaskViewFactory;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.shared.bubbles.BubbleInfo;
 
@@ -72,6 +74,10 @@ public class BubbleTest extends ShellTestCase {
     private NotificationListenerService.Ranking mRanking;
     @Mock
     private ShellExecutor mMainExecutor;
+    @Mock
+    private BubbleTaskView mBubbleTaskView;
+    @Mock
+    private BubbleTaskViewFactory mTaskViewFactory;
 
     private Bundle mExtras;
 
@@ -419,6 +425,29 @@ public class BubbleTest extends ShellTestCase {
         info.baseActivity = new ComponentName(mContext, BubblesTestActivity.class);
         Bubble b = Bubble.createTaskBubble(info, UserHandle.of(10), null);
         assertThat(b.isHasLauncherCategory()).isTrue();
+    }
+
+    @Test
+    public void testSetTaskShouldBeRemoved_withTaskView() {
+        Bubble bubble = createChatBubble(true /* useShortcut */);
+        when(mTaskViewFactory.create()).thenReturn(mBubbleTaskView);
+        bubble.getOrCreateBubbleTaskView(mTaskViewFactory);
+
+        bubble.setTaskShouldBeRemoved(true);
+
+        verify(mBubbleTaskView).setTaskShouldBeRemoved(true);
+
+        bubble.setTaskShouldBeRemoved(false);
+
+        verify(mBubbleTaskView).setTaskShouldBeRemoved(false);
+    }
+
+    @Test
+    public void testSetTaskShouldBeRemoved_nullTaskView() {
+        Bubble bubble = createChatBubble(true /* useShortcut */);
+
+        // Call the method, verify that it should not crash.
+        bubble.setTaskShouldBeRemoved(true);
     }
 
     private Bubble.FlyoutMessage createFlyoutMessage() {
