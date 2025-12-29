@@ -1004,15 +1004,13 @@ public class ApplicationsState {
                 Log.i(TAG, "Rebuilding...");
             }
             for (AppEntry entry : apps) {
-                if (android.multiuser.Flags.enablePrivateSpaceFeatures()) {
-                    UserHandle userHandle = UserHandle.of(UserHandle.getUserId(entry.info.uid));
-                    if (!profileHideInQuietModeStatus.containsKey(userHandle)) {
-                        profileHideInQuietModeStatus.put(
-                                userHandle, isHideInQuietEnabledForProfile(mUm, userHandle));
-                    }
-                    filter.refreshAppEntryOnRebuild(
-                            entry, profileHideInQuietModeStatus.get(userHandle));
+                UserHandle userHandle = UserHandle.of(UserHandle.getUserId(entry.info.uid));
+                if (!profileHideInQuietModeStatus.containsKey(userHandle)) {
+                    profileHideInQuietModeStatus.put(
+                            userHandle, isHideInQuietEnabledForProfile(mUm, userHandle));
                 }
+                filter.refreshAppEntryOnRebuild(
+                        entry, profileHideInQuietModeStatus.get(userHandle));
                 if (entry != null && (filter == null || filter.filterApp(entry))) {
                     synchronized (mEntriesMap) {
                         if (DEBUG_LOCKING) {
@@ -1726,9 +1724,7 @@ public class ApplicationsState {
         }
 
         public boolean isPrivateProfile() {
-            return android.os.Flags.allowPrivateProfile()
-                    && android.multiuser.Flags.enablePrivateSpaceFeatures()
-                    && UserManager.USER_TYPE_PROFILE_PRIVATE.equals(mProfileType);
+            return UserManager.USER_TYPE_PROFILE_PRIVATE.equals(mProfileType);
         }
 
         /**
@@ -1830,11 +1826,8 @@ public class ApplicationsState {
          * quiet mode is enabled, false otherwise.
          */
         private boolean shouldHideInQuietMode(@NonNull UserManager userManager, int uid) {
-            if (android.multiuser.Flags.enablePrivateSpaceFeatures()) {
-                UserHandle userHandle = UserHandle.of(UserHandle.getUserId(uid));
-                return isHideInQuietEnabledForProfile(userManager, userHandle);
-            }
-            return false;
+            UserHandle userHandle = UserHandle.of(UserHandle.getUserId(uid));
+            return isHideInQuietEnabledForProfile(userManager, userHandle);
         }
     }
 

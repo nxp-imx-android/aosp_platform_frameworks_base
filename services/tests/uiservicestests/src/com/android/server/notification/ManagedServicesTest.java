@@ -29,7 +29,6 @@ import static com.android.server.notification.Flags.FLAG_MANAGED_SERVICES_CONCUR
 import static com.android.server.notification.Flags.managedServicesConcurrentMultiuser;
 import static com.android.server.notification.ManagedServices.APPROVAL_BY_COMPONENT;
 import static com.android.server.notification.ManagedServices.APPROVAL_BY_PACKAGE;
-import static com.android.server.notification.NotificationManagerService.privateSpaceFlagsEnabled;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
@@ -2258,10 +2257,8 @@ public class ManagedServicesTest extends UiServiceTestCase {
         clone.userType = USER_TYPE_PROFILE_CLONE;
         users.add(clone);
         UserInfo privateProfile = new UserInfo(14, "14", UserInfo.FLAG_PROFILE);
-        if (privateSpaceFlagsEnabled()) {
-            privateProfile.userType = USER_TYPE_PROFILE_PRIVATE;
-            users.add(privateProfile);
-        }
+        privateProfile.userType = USER_TYPE_PROFILE_PRIVATE;
+        users.add(privateProfile);
         when(mUm.getProfiles(ActivityManager.getCurrentUser())).thenReturn(users);
         when(mUm.getProfileParent(anyInt())).thenReturn(new UserInfo(0, "primary", 0));
 
@@ -2271,9 +2268,7 @@ public class ManagedServicesTest extends UiServiceTestCase {
         assertFalse(profiles.isProfileUser(ActivityManager.getCurrentUser(), mContext));
         assertTrue(profiles.isProfileUser(12, mContext));
         assertTrue(profiles.isProfileUser(13, mContext));
-        if (privateSpaceFlagsEnabled()) {
-            assertTrue(profiles.isProfileUser(14, mContext));
-        }
+        assertTrue(profiles.isProfileUser(14, mContext));
     }
 
     @Test

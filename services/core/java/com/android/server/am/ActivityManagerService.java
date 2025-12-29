@@ -2310,17 +2310,13 @@ public class ActivityManagerService extends IActivityManager.Stub
         @Override
         public void onUserStopped(@NonNull TargetUser user) {
             mService.mBatteryStatsService.onCleanupUser(user.getUserIdentifier());
+            final UserManagerInternal umInternal =
+                    LocalServices.getService(UserManagerInternal.class);
+            UserInfo userInfo = umInternal.getUserInfo(user.getUserIdentifier());
 
-            if (android.os.Flags.allowPrivateProfile()
-                    && android.multiuser.Flags.enablePrivateSpaceFeatures()) {
-                final UserManagerInternal umInternal =
-                        LocalServices.getService(UserManagerInternal.class);
-                UserInfo userInfo = umInternal.getUserInfo(user.getUserIdentifier());
-
-                if (userInfo != null && userInfo.isPrivateProfile()) {
-                    synchronized (mService) {
-                        mService.mPrivateSpaceBootCompletedPackages.clear();
-                    }
+            if (userInfo != null && userInfo.isPrivateProfile()) {
+                synchronized (mService) {
+                    mService.mPrivateSpaceBootCompletedPackages.clear();
                 }
             }
         }

@@ -108,7 +108,6 @@ import static android.content.pm.PackageManager.MATCH_ANY_USER;
 import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_AWARE;
 import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_UNAWARE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static android.os.Flags.allowPrivateProfile;
 import static android.os.IServiceManager.DUMP_FLAG_PRIORITY_CRITICAL;
 import static android.os.IServiceManager.DUMP_FLAG_PRIORITY_NORMAL;
 import static android.os.PowerWhitelistManager.REASON_NOTIFICATION_SERVICE;
@@ -1095,10 +1094,7 @@ public class NotificationManagerService extends SystemService {
     }
 
     boolean isProfileUser(UserInfo userInfo) {
-        if (privateSpaceFlagsEnabled()) {
-            return userInfo.isProfile() && hasParent(userInfo);
-        }
-        return userInfo.isManagedProfile() || userInfo.isCloneProfile();
+        return userInfo.isProfile() && hasParent(userInfo);
     }
 
     boolean hasParent(UserInfo profile) {
@@ -1348,10 +1344,6 @@ public class NotificationManagerService extends SystemService {
         if (!IoThread.getHandler().hasCallbacks(mSavePolicyFile)) {
             IoThread.getHandler().postDelayed(mSavePolicyFile, 250);
         }
-    }
-
-    protected static boolean privateSpaceFlagsEnabled() {
-        return allowPrivateProfile() && android.multiuser.Flags.enablePrivateSpaceFeatures();
     }
 
     private final class SavePolicyFileRunnable implements Runnable {
@@ -2484,8 +2476,7 @@ public class NotificationManagerService extends SystemService {
                     mListeners.onUserStopped(userHandle);
                     mAssistants.onUserStopped(userHandle);
                 }
-            } else if (
-                    isProfileUnavailable(action)) {
+            } else if (action.equals(Intent.ACTION_PROFILE_UNAVAILABLE)) {
                 int userHandle = intent.getIntExtra(Intent.EXTRA_USER_HANDLE, -1);
                 if (userHandle >= 0) {
                     cancelAllNotificationsInt(MY_UID, MY_PID, null, null, 0, 0, userHandle,
@@ -2538,12 +2529,6 @@ public class NotificationManagerService extends SystemService {
                     mListeners.onUserUnlocked(userId);
                 }
             }
-        }
-
-        private boolean isProfileUnavailable(String action) {
-            return privateSpaceFlagsEnabled() ?
-                    action.equals(Intent.ACTION_PROFILE_UNAVAILABLE) :
-                    action.equals(Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE);
         }
     };
 
@@ -3086,9 +3071,7 @@ public class NotificationManagerService extends SystemService {
         filter.addAction(Intent.ACTION_USER_REMOVED);
         filter.addAction(Intent.ACTION_USER_UNLOCKED);
         filter.addAction(Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE);
-        if (privateSpaceFlagsEnabled()){
-            filter.addAction(Intent.ACTION_PROFILE_UNAVAILABLE);
-        }
+        filter.addAction(Intent.ACTION_PROFILE_UNAVAILABLE);
         getContext().registerReceiverAsUser(mIntentReceiver, UserHandle.ALL, filter, null, null);
 
         IntentFilter pkgFilter = new IntentFilter();

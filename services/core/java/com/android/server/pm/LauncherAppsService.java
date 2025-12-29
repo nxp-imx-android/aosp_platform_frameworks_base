@@ -571,7 +571,7 @@ public class LauncherAppsService extends SystemService {
         }
 
         private boolean canAccessHiddenProfile(int callingUid, int callingPid) {
-            if (!areHiddenApisChecksEnabled()) {
+            if (!Flags.enablePermissionToAccessHiddenProfiles()) {
                 return true;
             }
 
@@ -616,12 +616,6 @@ public class LauncherAppsService extends SystemService {
                     NAMESPACE_MULTIUSER,
                     FLAG_NON_SYSTEM_ACCESS_TO_HIDDEN_PROFILES,
                     /* defaultValue= */ true);
-        }
-
-        private boolean areHiddenApisChecksEnabled() {
-            return android.os.Flags.allowPrivateProfile()
-                    && Flags.enablePermissionToAccessHiddenProfiles()
-                    && Flags.enablePrivateSpaceFeatures();
         }
 
         @VisibleForTesting // We override it in unit tests
