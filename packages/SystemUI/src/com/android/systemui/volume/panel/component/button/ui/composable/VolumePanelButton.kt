@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -39,6 +40,8 @@ import com.android.compose.animation.Expandable
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.Icon
+import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileDetailsEntryWideCornerRadius
+import com.android.systemui.qs.ui.compose.borderOnFocus
 
 /** Button with a label below it */
 @Composable
@@ -58,7 +61,14 @@ fun VolumePanelButton(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Expandable(
-            modifier = Modifier.fillMaxWidth().height(56.dp).semantics(properties = semantics),
+            modifier =
+                Modifier.borderOnFocus(
+                        MaterialTheme.colorScheme.secondary,
+                        CornerSize(TileDetailsEntryWideCornerRadius),
+                    )
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .semantics(properties = semantics),
             color =
                 when {
                     !isEnabled -> MaterialTheme.colorScheme.surfaceContainerHighest
