@@ -527,8 +527,8 @@ public abstract class JobScheduler {
      * {@link PendingJobReason PendingJobReasons} mapped to a duration representing the total time
      * the job has been pending for that reason.
      * <p>
-     * Note that these durations can overlap, as a job may be pending for multiple reasons
-     * simultaneously.
+     * Note that the sum of these durations will often exceed the total duration the job was
+     * waiting, since a job could be pending due to multiple reasons simultaneously.
      * <p>
      * These pending job reasons represent either explicitly set constraints on the job or implicit
      * constraints imposed by the system due to various reasons.
@@ -536,8 +536,7 @@ public abstract class JobScheduler {
      * has been pending execution.
      * <p>
      * If the returned map is empty, it could indicate that the job was executed immediately and
-     * never had to wait for any constraints to be met or that there was an issue retrieving the
-     * stats from the system.
+     * never had to wait for any constraints to be met.
      * <p>
      * Note: The pending job reason stats are not persisted across device reboots. The stats are
      * also cleared when the job successfully completes or is canceled. Apps should query this
