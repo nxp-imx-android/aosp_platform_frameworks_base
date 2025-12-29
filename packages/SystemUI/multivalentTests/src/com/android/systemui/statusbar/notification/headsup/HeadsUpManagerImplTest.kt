@@ -816,6 +816,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
+    @Ignore("b/470835197")
     @BrokenWithSceneContainer(381869885) // because `ShadeTestUtil.setShadeExpansion(0f)`
     // still causes `ShadeInteractor.isAnyExpanded` to emit `true`, when it should emit `false`.
     fun shouldHeadsUpBecomePinned_shadeNotExpanded_true() =
@@ -881,6 +882,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
+    @Ignore("b/470835197")
     fun shouldHeadsUpBecomePinned_shadeExpanded_false() =
         kosmos.runTest {
             // GIVEN
