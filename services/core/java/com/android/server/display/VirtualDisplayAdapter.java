@@ -567,6 +567,9 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
                     sendDisplayDeviceEventLocked(this, DISPLAY_DEVICE_EVENT_CHANGED);
                 }
                 sendTraversalRequestLocked();
+                if (mSurface != null) {
+                    mSurface.release();
+                }
                 mSurface = surface;
                 mPendingChanges |= PENDING_SURFACE_CHANGE;
             }
