@@ -1044,6 +1044,31 @@ public class TaskLaunchParamsModifierTests extends
         assertTrue(mResult.mIsRelaunchFromHomeToReparent);
     }
 
+    @Test
+    public void testCalculate_preserveLeafTaskIfRelaunch_doesNotInheritFromSource() {
+        final TestDisplayContent fullscreenDisplay =
+                createNewDisplayContent(WINDOWING_MODE_FULLSCREEN);
+        // Source activity is a freeform desktop task.
+        final ActivityRecord source = createSourceActivity(fullscreenDisplay);
+        source.getTask().setWindowingMode(WINDOWING_MODE_FREEFORM);
+        // The task to be launched is a bubble task.
+        final Task bubbleTask = new TaskBuilder(mSupervisor)
+                .setTaskDisplayArea(fullscreenDisplay.getDefaultTaskDisplayArea())
+                .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
+                .build();
+        bubbleTask.getRootTask().mCreatedByOrganizer = true;
+        bubbleTask.getRootTask().mPreserveLeafTaskIfRelaunch = true;
+
+        assertEquals(RESULT_CONTINUE,
+                new CalculateRequestBuilder().setSource(source).setTask(bubbleTask).calculate());
+
+        if (com.android.window.flags.Flags.enablePreserveLeafTaskIfRelaunch()) {
+            assertEquals(WINDOWING_MODE_MULTI_WINDOW, mResult.mWindowingMode);
+        } else {
+            assertEquals(WINDOWING_MODE_FREEFORM, mResult.mWindowingMode);
+        }
+    }
+
     // ================================
     // Launching Bounds Related Tests
     // ===============================
