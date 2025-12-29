@@ -136,6 +136,8 @@ public class CachedAppOptimizer {
             "zram_writeback_wait_seconds";
     @VisibleForTesting static final String KEY_ZRAM_WRITEBACK_OOM_ADJ =
             "zram_writeback_oom_adj";
+    @VisibleForTesting static final String KEY_ZRAM_WRITEBACK_THRESHOLD_KB =
+            "zram_writeback_threshold_kb";
     @VisibleForTesting static final String KEY_COMPACT_THROTTLE_MIN_OOM_ADJ =
             "compact_throttle_min_oom_adj";
     @VisibleForTesting static final String KEY_COMPACT_THROTTLE_MAX_OOM_ADJ =
@@ -304,6 +306,7 @@ public class CachedAppOptimizer {
     @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_5 = 10 * 60 * 1000;
     @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_6 = 10 * 60 * 1000;
     @VisibleForTesting static final long DEFAULT_ZRAM_WRITEBACK_WAIT_SECONDS = 10 * 60;
+    @VisibleForTesting static final long DEFAULT_ZRAM_WRITEBACK_THRESHOLD_KB = 150 * 1024L;
     @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_MIN_OOM_ADJ = CACHED_APP_MIN_ADJ;
     @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_MAX_OOM_ADJ = CACHED_APP_MAX_ADJ;
     // The sampling rate to push app compaction events into statsd for upload.
@@ -412,8 +415,6 @@ public class CachedAppOptimizer {
     // Bitfield values for sync transactions received by frozen binder threads
     static final int TXNS_PENDING_WHILE_FROZEN = 4;
 
-    private static final long ZRAM_WRITEBACK_THRESHOLD_KB = 150 * 1024L;
-
     private static final String MMD_SERVICE_NAME = "mmd";
 
     /**
@@ -472,6 +473,8 @@ public class CachedAppOptimizer {
                                 updateZramWritebackWait();
                             } else if (KEY_ZRAM_WRITEBACK_OOM_ADJ.equals(name)) {
                                 updateZramWritebackOomAdj();
+                            } else if (KEY_ZRAM_WRITEBACK_THRESHOLD_KB.equals(name)) {
+                                updateZramWritebackThresholdKb();
                             }
                         }
                     }
@@ -546,6 +549,9 @@ public class CachedAppOptimizer {
     @GuardedBy("mPhenotypeFlagLock")
     @VisibleForTesting volatile long mZramWritebackWaitSeconds =
             DEFAULT_ZRAM_WRITEBACK_WAIT_SECONDS;
+    @GuardedBy("mPhenotypeFlagLock")
+    @VisibleForTesting volatile long mZramWritebackThresholdKb =
+            DEFAULT_ZRAM_WRITEBACK_THRESHOLD_KB;
     @GuardedBy("mPhenotypeFlagLock")
     @VisibleForTesting volatile int mZramWritebackOomAdj =
             OomAdjuster.DEFAULT_ZRAM_WRITEBACK_OOM_ADJ;
@@ -687,6 +693,7 @@ public class CachedAppOptimizer {
             updateMaxOomAdjThrottle();
             updateZramWritebackWait();
             updateZramWritebackOomAdj();
+            updateZramWritebackThresholdKb();
         }
     }
 
@@ -727,6 +734,7 @@ public class CachedAppOptimizer {
             pw.println("  " + KEY_COMPACT_THROTTLE_MAX_OOM_ADJ + "=" + mCompactThrottleMaxOomAdj);
             pw.println("  " + KEY_ZRAM_WRITEBACK_WAIT_SECONDS + "=" + mZramWritebackWaitSeconds);
             pw.println("  " + KEY_ZRAM_WRITEBACK_OOM_ADJ + "=" + mZramWritebackOomAdj);
+            pw.println("  " + KEY_ZRAM_WRITEBACK_THRESHOLD_KB + "=" + mZramWritebackThresholdKb);
             pw.println("  " + KEY_COMPACT_STATSD_SAMPLE_RATE + "=" + mCompactStatsdSampleRate);
             pw.println("  " + KEY_COMPACT_FULL_RSS_THROTTLE_KB + "="
                     + mFullAnonRssThrottleKb);
@@ -1168,6 +1176,15 @@ public class CachedAppOptimizer {
         mZramWritebackOomAdj = DeviceConfig.getInt(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
                 KEY_ZRAM_WRITEBACK_OOM_ADJ, OomAdjuster.DEFAULT_ZRAM_WRITEBACK_OOM_ADJ);
         mAm.mOomAdjuster.configureAdjForZramWriteback(mZramWritebackOomAdj);
+    }
+
+    @GuardedBy("mPhenotypeFlagLock")
+    private void updateZramWritebackThresholdKb() {
+        mZramWritebackThresholdKb = DeviceConfig.getLong(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
+                KEY_ZRAM_WRITEBACK_THRESHOLD_KB, DEFAULT_ZRAM_WRITEBACK_THRESHOLD_KB);
+        if (mZramWritebackThresholdKb <= 0) {
+            mZramWritebackThresholdKb = DEFAULT_ZRAM_WRITEBACK_THRESHOLD_KB;
+        }
     }
 
     @GuardedBy("mPhenotypeFlagLock")
@@ -1744,7 +1761,7 @@ public class CachedAppOptimizer {
         final long dmaBufMemKb =
                 mKernelAllocationStats.getDmabufSizeForProcessKb(pid);
         try {
-            if (zramUsedDeltaKb >= ZRAM_WRITEBACK_THRESHOLD_KB) {
+            if (zramUsedDeltaKb >= mZramWritebackThresholdKb) {
                 eventTypeToLog =
                         FrameworkStatsLog
                                 .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_RSS_SWAP_TOO_HIGH;
