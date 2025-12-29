@@ -1817,6 +1817,26 @@ public class TaskTests extends WindowTestsBase {
     }
 
     @Test
+    public void testSetPreserveLeafTaskIfRelaunch_organizedTask_setsFlag() {
+        final Task task = getTestTask();
+        task.mCreatedByOrganizer = true;
+        task.mTaskOrganizer = mock(ITaskOrganizer.class);
+
+        task.setPreserveLeafTaskIfRelaunch(true);
+        assertTrue(task.mPreserveLeafTaskIfRelaunch);
+
+        task.setPreserveLeafTaskIfRelaunch(false);
+        assertFalse(task.mPreserveLeafTaskIfRelaunch);
+    }
+
+    @Test
+    public void testSetPreserveLeafTaskIfRelaunch_nonOrganizedTask_doesNothing() {
+        final Task task = getTestTask();
+        task.setPreserveLeafTaskIfRelaunch(true);
+        assertFalse(task.mPreserveLeafTaskIfRelaunch);
+    }
+
+    @Test
     public void testSetReparentLeafTaskIfRelaunchFromHome_organizedTask_setsFlag() {
         final Task task = getTestTask();
         task.mCreatedByOrganizer = true;

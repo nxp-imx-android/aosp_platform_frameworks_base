@@ -2282,6 +2282,43 @@ public class WindowOrganizerTests extends WindowTestsBase {
     }
 
     @Test
+    public void testSetPreserveLeafTaskIfRelaunch() {
+        registerMockOrganizer();
+        final Task rootTask = mWm.mAtmService.mTaskOrganizerController.createTaskInner(
+                new TaskCreationParams.Builder()
+                        .setDisplayId(mDisplayContent.getDisplayId())
+                        .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
+                        .build());
+        final WindowContainerToken token = rootTask.mRemoteToken.toWindowContainerToken();
+
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.setPreserveLeafTaskIfRelaunch(token, true);
+        mWm.mAtmService.mWindowOrganizerController.applyTransaction(wct);
+        assertTrue(rootTask.mPreserveLeafTaskIfRelaunch);
+
+        wct.setPreserveLeafTaskIfRelaunch(token, false);
+        mWm.mAtmService.mWindowOrganizerController.applyTransaction(wct);
+        assertFalse(rootTask.mPreserveLeafTaskIfRelaunch);
+    }
+
+    @Test
+    public void testSetPreserveLeafTaskIfRelaunch_reparentLeafTaskEnabled_throwsException() {
+        registerMockOrganizer();
+        final Task rootTask = mWm.mAtmService.mTaskOrganizerController.createTaskInner(
+                new TaskCreationParams.Builder()
+                        .setDisplayId(mDisplayContent.getDisplayId())
+                        .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
+                        .build());
+        rootTask.setReparentLeafTaskIfRelaunch(true);
+        final WindowContainerToken token = rootTask.mRemoteToken.toWindowContainerToken();
+
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.setPreserveLeafTaskIfRelaunch(token, true);
+        assertThrows(IllegalArgumentException.class, () ->
+                mWm.mAtmService.mWindowOrganizerController.applyTransaction(wct));
+    }
+
+    @Test
     public void testSetReparentLeafTaskIfRelaunchFromHome() {
         registerMockOrganizer();
         final Task rootTask = mWm.mAtmService.mTaskOrganizerController.createTaskInner(

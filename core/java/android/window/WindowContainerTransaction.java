@@ -501,6 +501,46 @@ public final class WindowContainerTransaction implements Parcelable {
     }
 
     /**
+     * Sets the preserve leaf task if relaunch flag for this {@code windowContainer}.
+     *
+     * <p>When {@code preserveLeafTaskIfRelaunch} is set to {@code true}, the system will
+     * prefer the candidate task’s current organized root task as the launch root, even
+     * if the relaunch originates from another organizer-controlled root (for example,
+     * split-screen mode). This prevents the leaf task from being reparented into the source
+     * task’s root hierarchy.
+     *
+     * <p>Related relaunch controls:
+     * <ul>
+     *   <li>{@link #setReparentLeafTaskIfRelaunch}:
+     *   This flag conflicts with {@code setPreserveLeafTaskIfRelaunch}. Since one enforces
+     *   staying in the root and the other enforces leaving it, they cannot be enabled
+     *   simultaneously. {@link WindowOrganizer#applyTransaction} will throw an
+     *   {@link IllegalArgumentException} if you attempt to set both to {@code true}.</li>
+     *
+     *   <li>{@link #setReparentLeafTaskIfRelaunchFromHome}:
+     *   This flag can be used together with {@code setPreserveLeafTaskIfRelaunch}. It
+     *   specifically targets relaunches originating from the home task with assumption that home
+     *   is not in split-screen mode.</li>
+     * </ul>
+     *
+     * <p>This operation is only supported on organized root tasks.
+     *
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction setPreserveLeafTaskIfRelaunch(
+            @NonNull WindowContainerToken windowContainer, boolean preserveLeafTaskIfRelaunch) {
+        final HierarchyOp hierarchyOp =
+                new HierarchyOp.Builder(
+                        HierarchyOp.HIERARCHY_OP_TYPE_SET_PRESERVE_LEAF_TASK_IF_RELAUNCH)
+                        .setContainer(windowContainer.asBinder())
+                        .setPreserveLeafTaskIfRelaunch(preserveLeafTaskIfRelaunch)
+                        .build();
+        mHierarchyOps.add(hierarchyOp);
+        return this;
+    }
+
+    /**
      * Sets/removes the reparent leaf task flag for this {@code windowContainer}.
      * When this is set, the server side will try to reparent the leaf task to task display area
      * if there is an existing activity in history during the activity launch. This operation only
@@ -2220,6 +2260,7 @@ public final class WindowContainerTransaction implements Parcelable {
         public static final int HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH_FROM_HOME = 30;
         public static final int HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN =
                 31;
+        public static final int HIERARCHY_OP_TYPE_SET_PRESERVE_LEAF_TASK_IF_RELAUNCH = 32;
 
         @IntDef(prefix = {"HIERARCHY_OP_TYPE_"}, value = {
                 HIERARCHY_OP_TYPE_REPARENT,
@@ -2254,6 +2295,7 @@ public final class WindowContainerTransaction implements Parcelable {
                 HIERARCHY_OP_TYPE_CONTINUE_PACKAGE_UPDATE,
                 HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH_FROM_HOME,
                 HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN,
+                HIERARCHY_OP_TYPE_SET_PRESERVE_LEAF_TASK_IF_RELAUNCH,
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface HierarchyOpType {
@@ -2331,6 +2373,7 @@ public final class WindowContainerTransaction implements Parcelable {
 
         private boolean mAlwaysOnTop;
 
+        private boolean mPreserveLeafTaskIfRelaunch;
         private boolean mReparentLeafTaskIfRelaunch;
         private boolean mReparentLeafTaskIfRelaunchFromHome;
 
@@ -2546,6 +2589,7 @@ public final class WindowContainerTransaction implements Parcelable {
             mPendingIntent = copy.mPendingIntent;
             mShortcutInfo = copy.mShortcutInfo;
             mAlwaysOnTop = copy.mAlwaysOnTop;
+            mPreserveLeafTaskIfRelaunch = copy.mPreserveLeafTaskIfRelaunch;
             mReparentLeafTaskIfRelaunch = copy.mReparentLeafTaskIfRelaunch;
             mReparentLeafTaskIfRelaunchFromHome = copy.mReparentLeafTaskIfRelaunchFromHome;
             mIsTrimmableFromRecents = copy.mIsTrimmableFromRecents;
@@ -2581,6 +2625,7 @@ public final class WindowContainerTransaction implements Parcelable {
             mPendingIntent = in.readTypedObject(PendingIntent.CREATOR);
             mShortcutInfo = in.readTypedObject(ShortcutInfo.CREATOR);
             mAlwaysOnTop = in.readBoolean();
+            mPreserveLeafTaskIfRelaunch = in.readBoolean();
             mReparentLeafTaskIfRelaunch = in.readBoolean();
             mReparentLeafTaskIfRelaunchFromHome = in.readBoolean();
             mIsTrimmableFromRecents = in.readBoolean();
@@ -2663,6 +2708,10 @@ public final class WindowContainerTransaction implements Parcelable {
 
         public boolean isAlwaysOnTop() {
             return mAlwaysOnTop;
+        }
+
+        public boolean isPreserveLeafTaskIfRelaunch() {
+            return mPreserveLeafTaskIfRelaunch;
         }
 
         public boolean isReparentLeafTaskIfRelaunch() {
@@ -2784,6 +2833,8 @@ public final class WindowContainerTransaction implements Parcelable {
                 case HIERARCHY_OP_TYPE_CONTINUE_PACKAGE_UPDATE: return "setPackageUpdateHandled";
                 case HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN:
                     return "disallowOverrideWindowingModeForChildren";
+                case HIERARCHY_OP_TYPE_SET_PRESERVE_LEAF_TASK_IF_RELAUNCH:
+                    return "setPreserveLeafTaskIfRelaunch";
                 default: return "HOP(" + type + ")";
             }
         }
@@ -2860,6 +2911,11 @@ public final class WindowContainerTransaction implements Parcelable {
                     break;
                 case HIERARCHY_OP_TYPE_CLEAR_ADJACENT_ROOTS:
                     sb.append("container=").append(mContainer);
+                    break;
+                case HIERARCHY_OP_TYPE_SET_PRESERVE_LEAF_TASK_IF_RELAUNCH:
+                    sb.append("container= ").append(mContainer)
+                            .append(" preserveLeafTaskIfRelaunch= ")
+                            .append(mPreserveLeafTaskIfRelaunch);
                     break;
                 case HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH:
                     sb.append("container= ").append(mContainer)
@@ -2949,6 +3005,7 @@ public final class WindowContainerTransaction implements Parcelable {
             dest.writeTypedObject(mPendingIntent, flags);
             dest.writeTypedObject(mShortcutInfo, flags);
             dest.writeBoolean(mAlwaysOnTop);
+            dest.writeBoolean(mPreserveLeafTaskIfRelaunch);
             dest.writeBoolean(mReparentLeafTaskIfRelaunch);
             dest.writeBoolean(mReparentLeafTaskIfRelaunchFromHome);
             dest.writeBoolean(mIsTrimmableFromRecents);
@@ -3037,6 +3094,7 @@ public final class WindowContainerTransaction implements Parcelable {
 
             private boolean mAlwaysOnTop;
 
+            private boolean mPreserveLeafTaskIfRelaunch;
             private boolean mReparentLeafTaskIfRelaunch;
             private boolean mReparentLeafTaskIfRelaunchFromHome;
 
@@ -3144,6 +3202,11 @@ public final class WindowContainerTransaction implements Parcelable {
                 return this;
             }
 
+            Builder setPreserveLeafTaskIfRelaunch(boolean preserveLeafTaskIfRelaunch) {
+                mPreserveLeafTaskIfRelaunch = preserveLeafTaskIfRelaunch;
+                return this;
+            }
+
             Builder setReparentLeafTaskIfRelaunch(boolean reparentLeafTaskIfRelaunch) {
                 mReparentLeafTaskIfRelaunch = reparentLeafTaskIfRelaunch;
                 return this;
@@ -3242,6 +3305,7 @@ public final class WindowContainerTransaction implements Parcelable {
                 hierarchyOp.mShortcutInfo = mShortcutInfo;
                 hierarchyOp.mBounds = mBounds;
                 hierarchyOp.mIncludingParents = mIncludingParents;
+                hierarchyOp.mPreserveLeafTaskIfRelaunch = mPreserveLeafTaskIfRelaunch;
                 hierarchyOp.mReparentLeafTaskIfRelaunch = mReparentLeafTaskIfRelaunch;
                 hierarchyOp.mReparentLeafTaskIfRelaunchFromHome =
                         mReparentLeafTaskIfRelaunchFromHome;

@@ -93,6 +93,8 @@ class BubbleRootTask(
             taskInfo.token,
             true, /* disallowOverrideWindowingModeForChildren */
         )
+        // Preserve bubble leaf tasks if relaunched from different windowing mode.
+        wct.setPreserveLeafTaskIfRelaunch(taskInfo.token, true /* preserveLeafTaskIfRelaunch */)
         wct.setInterceptBackPressedOnTaskRoot(taskInfo.token, true /* interceptBackPressed */)
         wct.setTaskForceExcludedFromRecents(taskInfo.token, true /* forceExcluded */)
         wct.setDisablePip(taskInfo.token, true /* disablePip */)
