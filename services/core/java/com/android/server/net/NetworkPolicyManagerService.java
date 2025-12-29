@@ -2904,9 +2904,9 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
                         final int planId = readIntAttribute(in, ATTR_PLAN_ID,
                                 SubscriptionPlan.UNSPECIFIED_ID);
                         final String resetTime = readStringAttribute(in, ATTR_RESET_TIME);
-                        final int downlink = readIntAttribute(in, ATTR_DOWNLINK_KBPS,
+                        final long downlink = readLongAttribute(in, ATTR_DOWNLINK_KBPS,
                                 SubscriptionPlan.BITRATE_UNKNOWN);
-                        final int uplink = readIntAttribute(in, ATTR_UPLINK_KBPS,
+                        final long uplink = readLongAttribute(in, ATTR_UPLINK_KBPS,
                                 SubscriptionPlan.BITRATE_UNKNOWN);
                         final int subscriptionStatus = readIntAttribute(in,
                                 ATTR_SUBSCRIPTION_STATUS,
@@ -3196,12 +3196,12 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
                         }
                         if (plan.getStreamingAppMaxDownlinkKbps()
                                 != SubscriptionPlan.BITRATE_UNKNOWN) {
-                            writeIntAttribute(out, ATTR_DOWNLINK_KBPS,
+                            writeLongAttribute(out, ATTR_DOWNLINK_KBPS,
                                     plan.getStreamingAppMaxDownlinkKbps());
                         }
                         if (plan.getStreamingAppMaxUplinkKbps()
                                 != SubscriptionPlan.BITRATE_UNKNOWN) {
-                            writeIntAttribute(out, ATTR_UPLINK_KBPS,
+                            writeLongAttribute(out, ATTR_UPLINK_KBPS,
                                     plan.getStreamingAppMaxUplinkKbps());
                         }
                         if (plan.getSubscriptionStatus()
@@ -4156,8 +4156,8 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
                 mSubscriptionPlansOwner.put(subId, callingPackage);
 
                 if (com.android.internal.telephony.flags.Flags.subscriptionPlanEnhancement()) {
-                    int downlinkBandwidth = SubscriptionPlan.BITRATE_UNKNOWN;
-                    int uplinkBandwidth = SubscriptionPlan.BITRATE_UNKNOWN;
+                    long downlinkBandwidth = SubscriptionPlan.BITRATE_UNKNOWN;
+                    long uplinkBandwidth = SubscriptionPlan.BITRATE_UNKNOWN;
                     if (plans.length > 0) {
                         // For now we only support DL/UL bitrate from the master plan.
                         downlinkBandwidth = plans[0].getStreamingAppMaxDownlinkKbps();
