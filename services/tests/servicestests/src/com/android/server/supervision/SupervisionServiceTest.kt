@@ -44,6 +44,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.content.pm.ApplicationInfo
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PERMISSION_DENIED
 import android.content.pm.PackageManager.PERMISSION_GRANTED
@@ -54,6 +55,7 @@ import android.content.pm.UserInfo.FLAG_FOR_TESTING
 import android.content.pm.UserInfo.FLAG_FULL
 import android.content.pm.UserInfo.FLAG_MAIN
 import android.content.pm.UserInfo.FLAG_SYSTEM
+import android.content.res.Resources
 import android.net.Uri
 import android.os.Handler
 import android.os.IBinder
@@ -72,12 +74,15 @@ import android.provider.Settings
 import android.provider.Settings.Secure.BROWSER_CONTENT_FILTERS_ENABLED
 import android.provider.Settings.Secure.SEARCH_CONTENT_FILTERS_ENABLED
 import android.util.StatsEvent
+import android.util.Xml
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.android.internal.R
+import com.android.frameworks.servicestests.R as ServicestestsR
+import com.android.internal.R as R
 import com.android.internal.util.FrameworkStatsLog
 import com.android.server.LocalServices
 import com.android.server.ServiceThread
+import com.android.server.SystemService
 import com.android.server.SystemService.TargetUser
 import com.android.server.appbinding.AppBindingConstants
 import com.android.server.appbinding.AppBindingService
@@ -90,6 +95,12 @@ import com.android.server.supervision.SupervisionService.SETTINGS_PACKAGE_NAME
 import com.android.server.supervision.SupervisionUserData.PolicyData
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
+import java.io.DataOutputStream
+import java.io.File
+import java.io.FileDescriptor
+import java.io.PrintWriter
+import java.io.StringWriter
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.util.concurrent.Executor
 import java.util.function.Consumer
@@ -135,22 +146,26 @@ class SupervisionServiceTest {
     @Mock private lateinit var mockUserManagerInternal: UserManagerInternal
     @Mock private lateinit var mockAppBindingService: AppBindingService
     @Mock private lateinit var mockNotificationManager: NotificationManager
+    @Mock private lateinit var mockDpm: DevicePolicyManager
 
     private lateinit var context: SupervisionContextWrapper
     private lateinit var injector: TestInjector
     private lateinit var lifecycle: SupervisionService.Lifecycle
     private lateinit var service: SupervisionService
+    private lateinit var mResources: Resources
 
     @Before
     fun setUp() {
 
         PropertyInvalidatedCache.setTestMode(true)
+        mResources = InstrumentationRegistry.getInstrumentation().getContext().getResources()
         context =
             SupervisionContextWrapper(
                 InstrumentationRegistry.getInstrumentation().context,
                 mockKeyguardManager,
                 mockPackageManager,
                 mockNotificationManager,
+                mockDpm,
             )
 
         LocalServices.removeServiceForTest(DevicePolicyManagerInternal::class.java)
@@ -1252,8 +1267,7 @@ class SupervisionServiceTest {
     }
 
     private fun setAndVerifyPackageBlockedPolicy(packageUsageType: Int): PackageUsagePolicy {
-        val policy =
-            PackageUsagePolicy.Builder(PACKAGE_NAME, packageUsageType).build()
+        val policy = PackageUsagePolicy.Builder(PACKAGE_NAME, packageUsageType).build()
 
         service.setPolicy(USER_ID, policy)
         injector.awaitServiceThreadIdle()
@@ -1485,11 +1499,12 @@ class SupervisionServiceTest {
         whenever(mockUserManagerInternal.isHeadlessSystemUserMode()).thenReturn(false)
         val userInfos =
             mapOf(
-                USER_SYSTEM to (FLAG_SYSTEM or FLAG_MAIN or FLAG_FULL),
-                MIN_SECONDARY_USER_ID to (FLAG_FULL or FLAG_FOR_TESTING),
-            ).map { (userId, flags) ->
-                UserInfo(userId, "user$userId", USER_ICON, flags, USER_TYPE)
-            }
+                    USER_SYSTEM to (FLAG_SYSTEM or FLAG_MAIN or FLAG_FULL),
+                    MIN_SECONDARY_USER_ID to (FLAG_FULL or FLAG_FOR_TESTING),
+                )
+                .map { (userId, flags) ->
+                    UserInfo(userId, "user$userId", USER_ICON, flags, USER_TYPE)
+                }
         whenever(mockUserManagerInternal.getUsers(any<Boolean>())).thenReturn(userInfos)
     }
 
@@ -1669,8 +1684,141 @@ class SupervisionServiceTest {
         return Settings.Secure.getIntForUser(context.contentResolver, name, USER_ID)
     }
 
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
+    fun onBootCompleted_upgradeNeeded_performsUpgrade() {
+        // Setup settings file with old version
+        val settings = loadSupervisionSettings(ServicestestsR.xml.supervision_settings_v0, 0)
+
+        // Setup mocks
+        setupMocksForUpgrade()
+
+        // Trigger boot phase
+        triggerBootCompleted()
+
+        // Verify upgrade happened
+        verify(mockDpm)
+            .setApplicationHidden(
+                eq(ComponentName(ROLE_HOLDER_PACKAGE, "AdminReceiver")),
+                eq(HIDDEN_PACKAGE),
+                eq(false),
+            )
+        assertThat(settings.version).isEqualTo(SupervisionSettings.VERSION)
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
+    fun onBootCompleted_upgradeFails_doesNotUpdateVersion() {
+        // Setup settings file with old version
+        val settings = loadSupervisionSettings(ServicestestsR.xml.supervision_settings_v0, 0)
+
+        withLocalServiceRemoved(DevicePolicyManagerInternal::class.java) {
+            triggerBootCompleted()
+
+            // Verify upgrade did not happen and version is not updated
+            assertThat(settings.version).isEqualTo(0)
+        }
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
+    fun onBootCompleted_sameVersion_doesNotUpgrade() {
+        val settings =
+            loadSupervisionSettings(
+                ServicestestsR.xml.supervision_settings_v_current,
+                SupervisionSettings.VERSION,
+            )
+
+        // Trigger boot phase
+        triggerBootCompleted()
+
+        // Verify upgrade did not happen
+        verify(mockDpmInternal, never()).removePoliciesForAdmins(any(), any())
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
+    fun dump_includesVersionInfo() {
+        loadSupervisionSettings(ServicestestsR.xml.supervision_settings_dump, 5)
+
+        val dumpOutput = dumpSupervisionService()
+
+        assertThat(dumpOutput).contains("version: 5")
+        assertThat(dumpOutput).contains("previousVersion: 2")
+        assertThat(dumpOutput).contains("upgraded: true")
+    }
+
+    private fun dumpSupervisionService(): String {
+        val stringWriter = StringWriter()
+        val printWriter = PrintWriter(stringWriter)
+        // Check dump permission.
+        context.permissions[android.Manifest.permission.DUMP] = PERMISSION_GRANTED
+        service.dump(FileDescriptor(), printWriter, null)
+        printWriter.flush()
+        return stringWriter.toString()
+    }
+
+    private fun triggerBootCompleted() {
+        lifecycle.onBootPhase(SystemService.PHASE_BOOT_COMPLETED)
+        injector.awaitServiceThreadIdle()
+    }
+
+    private fun <T : Any> withLocalServiceRemoved(serviceClass: Class<T>, action: () -> Unit) {
+        val originalService: T? = LocalServices.getService(serviceClass)
+        LocalServices.removeServiceForTest(serviceClass)
+        try {
+            action()
+        } finally {
+            if (originalService != null) {
+                LocalServices.addService(serviceClass, originalService)
+            } else {
+                LocalServices.removeServiceForTest(serviceClass)
+            }
+        }
+    }
+
     private fun getPolicyData(policy: Policy): PolicyData? {
         return service.getUserDataLocked(USER_ID).policies[policy.policyKey]
+    }
+
+    private fun setupMocksForUpgrade() {
+        val userInfo = UserInfo(USER_ID, "testuser", 0)
+        whenever(mockUserManagerInternal.getUsers(any<UserFilter>())).thenReturn(listOf(userInfo))
+        val roleHolders = listOf(ROLE_HOLDER_PACKAGE)
+        injector.setRoleHoldersAsUser(
+            RoleManager.ROLE_SUPERVISION,
+            UserHandle.of(USER_ID),
+            roleHolders,
+        )
+        val admin = ComponentName(ROLE_HOLDER_PACKAGE, "AdminReceiver")
+        whenever(mockDpm.getActiveAdminsAsUser(USER_ID)).thenReturn(listOf(admin))
+        val packageInfo = PackageInfo()
+        packageInfo.packageName = HIDDEN_PACKAGE
+        whenever(mockPackageManager.getInstalledPackagesAsUser(any<Int>(), any<Int>()))
+            .thenReturn(listOf(packageInfo))
+        whenever(mockPackageManager.getApplicationHiddenSettingAsUser(eq(HIDDEN_PACKAGE), any()))
+            .thenReturn(true)
+        whenever(mockDpm.isApplicationHidden(admin, HIDDEN_PACKAGE)).thenReturn(true)
+    }
+
+    private fun loadSupervisionSettings(resId: Int, expectedVersion: Int): SupervisionSettings {
+        val tempDir = Files.createTempDirectory("tempSupervisionFolder").toFile()
+        val settingsFile = File(tempDir, "supervision_settings.xml")
+        settingsFile.outputStream().use { fileOutputStream ->
+            val dataOutputStream = DataOutputStream(fileOutputStream)
+            val xmlIn = mResources.getXml(resId)
+            val xmlOut = Xml.newBinarySerializer()
+
+            xmlOut.setOutput(dataOutputStream, StandardCharsets.UTF_8.name())
+            Xml.copy(xmlIn, xmlOut)
+            xmlOut.flush()
+        }
+
+        val settings = SupervisionSettings.getInstance()
+        settings.changeDirForTesting(tempDir)
+        settings.loadUserData()
+        assertThat(settings.version).isEqualTo(expectedVersion)
+        return settings
     }
 
     @Test
@@ -1705,6 +1853,8 @@ class SupervisionServiceTest {
         const val USER_ICON = "user_icon"
         const val USER_TYPE = "fake_user_type"
         const val PACKAGE_NAME = "com.example.supervisionapp"
+        const val ROLE_HOLDER_PACKAGE = "com.some.role.holder"
+        const val HIDDEN_PACKAGE = "com.some.hidden.app"
         val supervisionRoleHolders =
             mapOf(
                 RoleManager.ROLE_SYSTEM_SUPERVISION to "com.example.supervisionapp1",
@@ -1781,6 +1931,7 @@ private class SupervisionContextWrapper(
     val keyguardManager: KeyguardManager,
     val pkgManager: PackageManager,
     val notificationManager: NotificationManager,
+    val devicePolicyManager: DevicePolicyManager,
 ) : ContextWrapper(context) {
     val interceptors = mutableListOf<Pair<BroadcastReceiver, IntentFilter>>()
     val permissions = mutableMapOf<String, Int>()
@@ -1790,6 +1941,7 @@ private class SupervisionContextWrapper(
             when (name) {
                 Context.KEYGUARD_SERVICE -> keyguardManager
                 Context.NOTIFICATION_SERVICE -> notificationManager
+                Context.DEVICE_POLICY_SERVICE -> devicePolicyManager
                 else -> super.getSystemService(name)
             }
         return ret
