@@ -17,6 +17,8 @@ package com.android.systemui.media.dialog
 
 import android.content.Context
 import com.android.settingslib.media.MediaDevice
+import com.android.systemui.media.dialog.MediaItem.DeviceMediaItem
+import com.android.systemui.media.dialog.MediaItem.GroupDividerMediaItem
 import com.android.systemui.res.R
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.stream.Collectors
@@ -51,16 +53,17 @@ class OutputMediaItemListProxy(private val mContext: Context) {
         finalMediaItems.addAll(mSelectedMediaItems)
         if (!mSuggestedMediaItems.isEmpty()) {
             finalMediaItems.add(
-                MediaItem.createGroupDividerMediaItem(
-                    mContext.getString(R.string.media_output_group_title_suggested)
+                GroupDividerMediaItem(
+                    title = mContext.getString(R.string.media_output_group_title_suggested)
                 )
             )
             finalMediaItems.addAll(mSuggestedMediaItems)
         }
         if (!mSpeakersAndDisplaysMediaItems.isEmpty()) {
             finalMediaItems.add(
-                MediaItem.createGroupDividerMediaItem(
-                    mContext.getString(R.string.media_output_group_title_speakers_and_displays)
+                GroupDividerMediaItem(
+                    title =
+                        mContext.getString(R.string.media_output_group_title_speakers_and_displays)
                 )
             )
             finalMediaItems.addAll(mSpeakersAndDisplaysMediaItems)
@@ -150,10 +153,14 @@ class OutputMediaItemListProxy(private val mContext: Context) {
 
     /** Removes the media items with muting expected devices. */
     fun removeMutingExpectedDevices() {
-        mSelectedMediaItems.removeIf { it.isMutingExpectedDevice }
-        mSuggestedMediaItems.removeIf { it.isMutingExpectedDevice }
-        mSpeakersAndDisplaysMediaItems.removeIf { it.isMutingExpectedDevice }
-        mOutputMediaItemList.removeIf { it.isMutingExpectedDevice }
+        removeMutingExpectedDevicesFromList(mSelectedMediaItems)
+        removeMutingExpectedDevicesFromList(mSuggestedMediaItems)
+        removeMutingExpectedDevicesFromList(mSpeakersAndDisplaysMediaItems)
+        removeMutingExpectedDevicesFromList(mOutputMediaItemList)
+    }
+
+    private fun removeMutingExpectedDevicesFromList(list: MutableList<MediaItem>) {
+        list.removeIf { it is DeviceMediaItem && it.mediaDevice.isMutingExpectedDevice }
     }
 
     /** Clears the output media item list. */
@@ -181,7 +188,7 @@ class OutputMediaItemListProxy(private val mContext: Context) {
     ) {
         for (device in devices) {
             val deviceId = device.id
-            val mediaItem = MediaItem.createDeviceMediaItem(device)
+            val mediaItem = DeviceMediaItem(device)
             if (needToHandleMutingExpectedDevice && device.isMutingExpectedDevice) {
                 selectedMediaItems.add(0, mediaItem)
             } else if (
@@ -220,31 +227,17 @@ class OutputMediaItemListProxy(private val mContext: Context) {
      * Returns media items from the input list that are not associated with the given device IDs.
      */
     private fun getRemainingMediaItems(
-        mediaItems: MutableList<MediaItem>,
-        deviceIds: MutableSet<String>,
-    ): MutableList<MediaItem> {
-        val remainingMediaItems = mutableListOf<MediaItem>()
-        for (item in mediaItems) {
-            val mediaDeviceOptional = item.mediaDevice
-            if (mediaDeviceOptional.isPresent) {
-                val deviceId = mediaDeviceOptional.get().id
-                if (!deviceIds.contains(deviceId)) {
-                    remainingMediaItems.add(item)
-                }
-            }
+        mediaItems: List<MediaItem>,
+        deviceIds: Set<String>,
+    ): List<MediaItem> {
+        return mediaItems.filterIsInstance<DeviceMediaItem>().filter {
+            it.mediaDevice.id !in deviceIds
         }
-        return remainingMediaItems
     }
 
     /** Returns a list of media device IDs for the given list of media items. */
-    private fun getDeviceIds(mediaItems: MutableList<MediaItem>): MutableList<String> {
-        val deviceIds = mutableListOf<String>()
-        for (item in mediaItems) {
-            if (item.mediaDevice.isPresent) {
-                deviceIds.add(item.mediaDevice.get().id)
-            }
-        }
-        return deviceIds
+    private fun getDeviceIds(mediaItems: List<MediaItem>): List<String> {
+        return mediaItems.filterIsInstance<DeviceMediaItem>().map { it.mediaDevice.id }
     }
 
     companion object {
