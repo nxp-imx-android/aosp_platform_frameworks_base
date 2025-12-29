@@ -1171,7 +1171,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         if (!isAttached() || isForceHidden() || isForceTranslucent()) {
             return true;
         }
-        return !mTaskSupervisor.mOpaqueContainerHelper.isOpaque(
+        return !mAtmService.mVisibilityHelper.isOpaque(
                 this, starting, true /* ignoringKeyguard */, true /* ignoringInvisibleActivity */);
     }
 
@@ -1185,7 +1185,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             return true;
         }
         // Including finishing Activity if the TaskFragment is becoming invisible in the transition.
-        return !mTaskSupervisor.mOpaqueContainerHelper.isOpaque(this);
+        return !mAtmService.mVisibilityHelper.isOpaque(this);
     }
 
     /**
@@ -1196,7 +1196,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         if (!isAttached() || isForceHidden() || isForceTranslucent()) {
             return true;
         }
-        return !mTaskSupervisor.mOpaqueContainerHelper.isOpaque(this, /* starting */ null,
+        return !mAtmService.mVisibilityHelper.isOpaque(this, /* starting */ null,
                 false /* ignoringKeyguard */, true /* ignoringInvisibleActivity */);
     }
 

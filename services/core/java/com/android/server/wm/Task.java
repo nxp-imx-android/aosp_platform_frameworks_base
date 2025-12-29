@@ -6663,7 +6663,7 @@ class Task extends TaskFragment {
      *
      * @see #getVisibility(ActivityRecord)
      * @see #hasFillingContent()
-     * @see ActivityTaskSupervisor.OpaqueContainerHelper#isOpaque
+     * @see WindowContainerVisibilityHelper#isOpaque
      */
     boolean isForceOpaque() {
         return mIsForceOpaque && mCreatedByOrganizer
