@@ -18,14 +18,11 @@ package com.android.server.am;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 import android.content.Context;
 import android.content.IntentFilter;
-import android.content.pm.ApplicationInfo;
 import android.util.ArraySet;
 
 import androidx.test.filters.SmallTest;
@@ -67,8 +64,6 @@ public class BroadcastControllerTest {
         mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         mBroadcastController = new BroadcastController(mContext,
                 mAms, mBroadcastQueue);
-        doReturn(true).when(mPlatformCompat).isChangeEnabledInternalNoLogging(
-                eq(BroadcastFilter.RESTRICT_PRIORITY_VALUES), any(ApplicationInfo.class));
     }
 
     @Test
