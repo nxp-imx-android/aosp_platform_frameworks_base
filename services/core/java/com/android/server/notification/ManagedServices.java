@@ -31,6 +31,7 @@ import static com.android.server.notification.NotificationManagerService.private
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
@@ -445,6 +446,7 @@ abstract public class ManagedServices {
                 if (filter != null && !filter.matches(info.component)) continue;
                 pw.println("      " + info.component
                         + " (user " + info.userid + "): " + info.service
+                        + " (sc=" + info.getConnectionId() + ")"
                         + (info.isSystem ? " SYSTEM" : "")
                         + (info.isGuest(this) ? " GUEST" : ""));
             }
@@ -1266,6 +1268,18 @@ abstract public class ManagedServices {
         rebindServices(false, user);
     }
 
+    @Nullable
+    private ManagedServiceInfo getService(ComponentName cn, @UserIdInt int userId) {
+        synchronized (mMutex) {
+            for (ManagedServiceInfo info : mServices) {
+                if (Objects.equals(info.component, cn) && info.userid == userId) {
+                    return info;
+                }
+            }
+            return null;
+        }
+    }
+
     private ManagedServiceInfo getServiceFromTokenLocked(IInterface service) {
         if (service == null) {
             return null;
@@ -1832,16 +1846,6 @@ abstract public class ManagedServices {
     }
 
     @GuardedBy("mMutex")
-    private boolean isServiceBoundLocked(ManagedServiceInfo info) {
-        for (ManagedServiceInfo info2 : mServices) {
-            if (Objects.equals(info.component, info2.component) && info.userid == info2.userid) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @GuardedBy("mMutex")
     private void registerServiceLocked(final ComponentName name, final int userid) {
         registerServiceLocked(name, userid, false /* isSystem */);
     }
@@ -1921,9 +1925,13 @@ abstract public class ManagedServices {
                             }
                             binder.linkToDeath(info, 0);
 
-                            if (isServiceBoundLocked(info)) {
-                                Slog.wtfStack(TAG, "Duplicate binding " + info);
+                            ManagedServiceInfo previousBinding = getService(name, userid);
+                            if (previousBinding != null) {
+                                Slog.wtfStack(TAG,
+                                        "Duplicate binding! previous=" + previousBinding
+                                                + "; current=" + info);
                             }
+
                             added = mServices.add(info);
                         } catch (RemoteException e) {
                             Slog.e(TAG, "Failed to linkToDeath, already dead", e);
@@ -2219,10 +2227,19 @@ abstract public class ManagedServices {
                     .append(",userid=").append(userid)
                     .append(",isSystem=").append(isSystem)
                     .append(",targetSdkVersion=").append(targetSdkVersion)
-                    .append(",connection=").append(connection == null ? null : "<connection>")
+                    .append(",connection=").append(getConnectionId())
                     .append(",service=").append(service)
                     .append(",serviceAsBinder=").append(service != null ? service.asBinder() : null)
                     .append(']').toString();
+        }
+
+        /**
+         * Returns an id for the {@link #connection}, if present. Current implementation is just
+         * the hex string of the connection's hash code.
+         */
+        @Nullable
+        public String getConnectionId() {
+            return connection != null ? Integer.toHexString(connection.hashCode()) : null;
         }
 
         public void dumpDebug(ProtoOutputStream proto, long fieldId, ManagedServices host) {
