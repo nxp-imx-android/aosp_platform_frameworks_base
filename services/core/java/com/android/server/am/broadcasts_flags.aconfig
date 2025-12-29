@@ -18,13 +18,3 @@ flag {
     description: "Enables the mechanism to limit the number of pending enqueued broadcasts for each sender UID"
     bug: "452063905"
 }
-
-flag {
-    name: "read_device_config_constants"
-    namespace: "backstage_power"
-    description: "Use DeviceConfig to update the constants instead of reading from system property"
-    bug: "454039823"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
