@@ -278,6 +278,12 @@ private fun CardCarouselContent(
             // `animateScrollToItem`, so that scrolling can fully complete.
             if (userTappedIndex == null || carouselState.currentItem == userTappedIndex) {
                 viewModel.onCardSelected(carouselState.currentItem)
+
+                val areDeviceChipsVisible =
+                    presentationStyle !in
+                        listOf(MediaPresentationStyle.Thumbnail, MediaPresentationStyle.Compact)
+                viewModel.onCardVisible(carouselState.currentItem, areDeviceChipsVisible)
+
                 userTappedIndex = null
             }
         }
