@@ -18,6 +18,7 @@ package com.android.server.input;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.content.Context;
 import android.hardware.display.DisplayTopologyGraph;
 import android.hardware.display.DisplayViewport;
 import android.hardware.input.InputSensorInfo;
@@ -30,6 +31,9 @@ import android.view.InputChannel;
 import android.view.InputEvent;
 import android.view.PointerIcon;
 import android.view.VerifiedInputEvent;
+
+import com.android.server.attention.AttentionManagerService;
+import com.android.server.attention.InteractionProviderInternal;
 
 import java.util.List;
 
@@ -355,17 +359,22 @@ interface NativeInputManagerService {
     @Nullable
     String getPhysicalLocationPath(int deviceId);
 
+    void setInteractionProviderService(InteractionProviderInternal service);
+
     /** The native implementation of InputManagerService methods. */
     class NativeImpl implements NativeInputManagerService {
         /** Pointer to native input manager service object, used by native code. */
         @SuppressWarnings({"unused", "FieldCanBeLocal"})
         private final long mPtr;
 
-        NativeImpl(InputManagerService service, MessageQueue messageQueue) {
-            mPtr = init(service, messageQueue);
+        NativeImpl(InputManagerService service, MessageQueue messageQueue, Context context) {
+            mPtr = init(service, messageQueue,
+                    AttentionManagerService.isInteractionProviderServiceEnabled(context));
         }
 
-        private native long init(InputManagerService service, MessageQueue messageQueue);
+        private native long init(InputManagerService service,
+                MessageQueue messageQueue,
+                boolean createInteractionReporter);
 
         @Override
         public native void start();
@@ -694,5 +703,8 @@ interface NativeInputManagerService {
 
         @Override
         public native String getPhysicalLocationPath(int deviceId);
+
+        @Override
+        public native void setInteractionProviderService(InteractionProviderInternal service);
     }
 }
