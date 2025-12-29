@@ -67,6 +67,7 @@ import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_CONFIGURAT
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_TASKS;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS;
 import static com.android.internal.util.FrameworkStatsLog.INTENT_REDIRECT_BLOCKED;
+import static com.android.server.pm.GenericAllowlist.AllowlistStatus;
 import static com.android.server.pm.PackageArchiver.isArchivingEnabled;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_PERMISSIONS_REVIEW;
@@ -147,6 +148,7 @@ import com.android.server.am.ActivityManagerService.IntentCreatorToken;
 import com.android.server.am.PendingIntentRecord;
 import com.android.server.pm.InstantAppResolver;
 import com.android.server.pm.PackageArchiver;
+import com.android.server.pm.UserActivitiesAllowlist;
 import com.android.server.power.ShutdownCheckPoints;
 import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.uri.NeededUriGrants;
@@ -461,6 +463,15 @@ class ActivityStarter {
          * to adjust launch parameters for transitions originating from home.
          */
         boolean mLaunchOriginatedFromHome;
+
+        /**
+         * Indicates whether the activity was allowlisted for the user.
+         *
+         * <p>NOTE: It's only used for metrics purposes and it doesn't affect the start result -
+         * it's needed because the allowlist status is checked on {@code executeRequest(...)},
+         * and might need to be reported on {@code handleStartResult(...)} (when it was allowed).
+         */
+        @AllowlistStatus int userAllowlistStatus = UserActivitiesAllowlist.STATUS_UNKNOWN;
 
         /**
          * Ensure constructed request matches reset instance.
@@ -1580,7 +1591,7 @@ class ActivityStarter {
         mLastStartActivityResult = startActivityUnchecked(r, sourceRecord, voiceSession,
                 request.voiceInteractor, startFlags, checkedOptions,
                 inTask, inTaskFragment, balVerdict, intentGrants, realCallingUid,
-                transition, isIndependent);
+                transition, isIndependent, request.userAllowlistStatus);
 
         // Because the pending-intent usage in the waitAsyncStart hack "exits" ATMS into
         // AMS and re-enters, this can be nested.
@@ -1740,7 +1751,7 @@ class ActivityStarter {
             TaskFragment inTaskFragment,
             BalVerdict balVerdict,
             NeededUriGrants intentGrants, int realCallingUid, Transition transition,
-            boolean isIndependentLaunch) {
+            boolean isIndependentLaunch, @AllowlistStatus int allowlistStatus) {
         int result = START_CANCELED;
         final Task startedActivityRootTask;
 
@@ -1770,7 +1781,7 @@ class ActivityStarter {
             } finally {
                 Trace.traceEnd(Trace.TRACE_TAG_WINDOW_MANAGER);
                 startedActivityRootTask = handleStartResult(r, options, result, isIndependentLaunch,
-                        remoteTransition, transition);
+                        remoteTransition, transition, allowlistStatus);
             }
         } finally {
             mService.continueWindowLayout();
@@ -1796,7 +1807,8 @@ class ActivityStarter {
      */
     private @Nullable Task handleStartResult(@NonNull ActivityRecord started,
             ActivityOptions options, int result, boolean isIndependentLaunch,
-            RemoteTransition remoteTransition, Transition transition) {
+            RemoteTransition remoteTransition, Transition transition,
+            @AllowlistStatus int allowlistStatus) {
         final boolean userLeaving = mSupervisor.mUserLeaving;
         mSupervisor.mUserLeaving = false;
         final Task currentRootTask = started.getRootTask();
@@ -1959,7 +1971,7 @@ class ActivityStarter {
 
         // TODO(b/412177078): remove null check once hsuAllowlistActivities() is gone
         if (mUserHelper != null) {
-            mUserHelper.logActivityStarted(started, isStarted);
+            mUserHelper.logActivityStarted(started, isStarted, allowlistStatus);
         }
 
         return startedActivityRootTask;
