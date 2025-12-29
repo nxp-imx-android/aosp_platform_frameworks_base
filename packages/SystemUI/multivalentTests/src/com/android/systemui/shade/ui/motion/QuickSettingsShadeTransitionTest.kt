@@ -22,10 +22,10 @@ import android.platform.test.annotations.MotionTest
 import android.testing.TestableLooper.RunWithLooper
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.swipe
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import com.android.compose.snapshot.ObserveReadsRoot
 import com.android.compose.theme.PlatformTheme
@@ -43,6 +43,8 @@ import com.android.systemui.qs.ui.viewmodel.QuickSettingsShadeOverlayContentView
 import com.android.systemui.qs.ui.viewmodel.quickSettingsContainerViewModelFactory
 import com.android.systemui.qs.ui.viewmodel.quickSettingsShadeOverlayActionsViewModel
 import com.android.systemui.qs.ui.viewmodel.quickSettingsShadeOverlayContentViewModelFactory
+import com.android.systemui.runOnMainThreadAndWaitForIdleSync
+import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.sceneContainerTransitions
 import com.android.systemui.scene.sceneContainerViewModelFactory
 import com.android.systemui.scene.shared.model.Overlays
@@ -55,11 +57,13 @@ import com.android.systemui.scene.ui.view.sceneJankMonitorFactory
 import com.android.systemui.scene.ui.viewmodel.GoneUserActionsViewModel
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
+import com.android.systemui.shade.ui.composable.OverlayShadeMotionTestKeys
 import com.android.systemui.shade.ui.composable.WithStatusIconContext
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationsPlaceholderViewModelFactory
 import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
+import com.android.systemui.window.data.repository.fakeWindowRootViewBlurRepository
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import org.junit.Ignore
@@ -74,21 +78,30 @@ import platform.test.motion.compose.MotionControl
 import platform.test.motion.compose.feature
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
+import platform.test.motion.compose.values.MotionTestValueKey
+import platform.test.motion.golden.FeatureCapture
+import platform.test.motion.golden.TimeSeriesCaptureScope
+import platform.test.motion.golden.asDataPoint
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 import platform.test.screenshot.DeviceEmulationSpec
 import platform.test.screenshot.Displays.Phone
+import platform.test.screenshot.PathConfig
+import platform.test.screenshot.PathElementNoContext
 
 @Ignore("b/467228678")
-@RunWith(AndroidJUnit4::class)
+@RunWith(ParameterizedAndroidJunit4::class)
 @MotionTest
 @LargeTest
 @RunWithLooper
 @EnableSceneContainer
 @EnableFlags(Flags.FLAG_DUAL_SHADE)
-class QuickSettingsShadeTransitionTest : SysuiTestCase() {
+class QuickSettingsShadeTransitionTest(val deviceSpec: DeviceEmulationSpec) : SysuiTestCase() {
     private val kosmos = testKosmos()
+    private val deviceType = deviceSpec.display.name
 
-    private val deviceSpec = DeviceEmulationSpec(Phone)
-    @get:Rule val motionTestRule = createSysUiComposeMotionTestRule(kosmos, deviceSpec)
+    private val pathConfig = PathConfig(PathElementNoContext("deviceSpec", false) { deviceType })
+    @get:Rule val motionTestRule = createSysUiComposeMotionTestRule(kosmos, deviceSpec, pathConfig)
 
     private val quickSettingsShadeOverlayActionsViewModelFactory =
         object : QuickSettingsShadeOverlayActionsViewModel.Factory {
@@ -130,6 +143,50 @@ class QuickSettingsShadeTransitionTest : SysuiTestCase() {
     @Test
     @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
     @EnableSceneContainer
+    fun swipeUpOnQSShadeClosesQSShade() {
+        allowTestableLooperAsMainThread()
+        motionTestRule.runTest(60.seconds) {
+            kosmos.enableDualShade(wideLayout = false)
+            kosmos.usingMediaInComposeFragment = true
+            kosmos.populateQuickSettings(tileCount = 1)
+            kosmos.enableUsingDesktopStatusBar()
+            val motion =
+                recordMotion(
+                    content = { TestSceneContainer() },
+                    recordingSpec =
+                        ComposeRecordingSpec(
+                            MotionControl(
+                                delayRecording = {
+                                    runOnMainThreadAndWaitForIdleSync {
+                                        kosmos.sceneInteractor.instantlyShowOverlay(
+                                            Overlays.QuickSettingsShade,
+                                            "testing",
+                                        )
+                                    }
+
+                                    awaitFrames(1)
+                                }
+                            ) {
+                                performTouchInputAsync(onRoot()) {
+                                    swipe(
+                                        start = Offset(x = (centerX + right) / 2, y = centerY / 3),
+                                        end = Offset(x = (centerX + right) / 2, y = 0f),
+                                    )
+                                }
+                            }
+                        ) {
+                            // No values are captured as this test only verifies the final state
+                            // after the swipe gesture.
+                        },
+                )
+            assert(kosmos.sceneInteractor.currentScene.value == Scenes.Gone)
+        }
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
+    @EnableSceneContainer
+    @EnableFlags(Flags.FLAG_NOTIFICATION_SHADE_BLUR)
     fun goneSceneToQuickSettingsShadeOverlayTest() {
 
         motionTestRule.runTest(60.seconds) {
@@ -137,6 +194,7 @@ class QuickSettingsShadeTransitionTest : SysuiTestCase() {
             kosmos.usingMediaInComposeFragment = true
             kosmos.populateQuickSettings(tileCount = 7)
             kosmos.enableUsingDesktopStatusBar()
+            kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = true
             val motion =
                 recordMotion(
                     content = { TestSceneContainer() },
@@ -165,7 +223,47 @@ class QuickSettingsShadeTransitionTest : SysuiTestCase() {
                             )
                         },
                 )
-            assertThat(motion).timeSeriesMatchesGolden()
+            assertThat(motion).timeSeriesMatchesGolden("goneSceneToQuickSettingsShadeOverlayTest")
+        }
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
+    @EnableSceneContainer
+    @EnableFlags(Flags.FLAG_NOTIFICATION_SHADE_BLUR)
+    fun recordScrimAlpha_duringSwipeDownToQSShadeOverlay() {
+
+        motionTestRule.runTest(60.seconds) {
+            kosmos.enableDualShade(wideLayout = false)
+            kosmos.usingMediaInComposeFragment = true
+            kosmos.populateQuickSettings(tileCount = 7)
+            kosmos.enableUsingDesktopStatusBar()
+            kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = true
+            val motion =
+                recordMotion(
+                    content = { TestSceneContainer() },
+                    recordingSpec =
+                        ComposeRecordingSpec(
+                            MotionControl(
+                                delayRecording = {
+                                    awaitCondition { kosmos.transitionState.value.isIdle() }
+                                }
+                            ) {
+                                // perform swipe down gesture from top right half
+                                performTouchInputAsync(onRoot()) {
+                                    swipe(
+                                        start = Offset(x = (centerX + right) / 2, y = 0f),
+                                        end = Offset(x = (centerX + right) / 2, y = centerY / 2),
+                                        durationMillis = 500,
+                                    )
+                                }
+                            }
+                        ) {
+                            featureFloat(OverlayShadeMotionTestKeys.scrimAlpha)
+                        },
+                )
+            assertThat(motion)
+                .timeSeriesMatchesGolden("recordScrimAlpha_duringSwipeDownToQSShadeOverlay")
         }
     }
 
@@ -206,7 +304,8 @@ class QuickSettingsShadeTransitionTest : SysuiTestCase() {
                             )
                         },
                 )
-            assertThat(motion).timeSeriesMatchesGolden()
+            assertThat(motion)
+                .timeSeriesMatchesGolden("recordEditIconButtonPosition_duringSwipeDownToOpenQS")
         }
     }
 
@@ -235,5 +334,22 @@ class QuickSettingsShadeTransitionTest : SysuiTestCase() {
                 }
             }
         }
+    }
+
+    companion object {
+        private fun TimeSeriesCaptureScope<SemanticsNodeInteractionsProvider>.featureFloat(
+            motionTestValueKey: MotionTestValueKey<Float>
+        ) {
+            feature(
+                motionTestValueKey = motionTestValueKey,
+                capture =
+                    FeatureCapture(motionTestValueKey.semanticsPropertyKey.name) {
+                        it.asDataPoint()
+                    },
+                name = motionTestValueKey.semanticsPropertyKey.name,
+            )
+        }
+
+        @get:Parameters @JvmStatic val parameterValues = listOf(DeviceEmulationSpec(Phone))
     }
 }
