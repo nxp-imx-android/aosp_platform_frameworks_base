@@ -131,7 +131,7 @@ constructor(
             actionsCallback.provideActionButton(
                 ActionButtonAppearance(
                     AppCompatResources.getDrawable(context, R.drawable.ic_content_copy),
-                    null,
+                    context.resources.getString(R.string.screenshot_copy_label),
                     context.resources.getString(R.string.screenshot_copy_description),
                 ),
                 showDuringEntrance = true,
