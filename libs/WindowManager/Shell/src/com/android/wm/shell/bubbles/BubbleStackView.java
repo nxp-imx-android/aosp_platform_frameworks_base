@@ -2100,19 +2100,31 @@ public class BubbleStackView extends FrameLayout
             mBubbleData.setExpanded(true);
             return true;
         } else if (action == R.id.action_move_top_left) {
-            mStackAnimationController.springStackAfterFling(stackBounds.left, stackBounds.top);
+            moveStackToPosition(stackBounds.left, stackBounds.top);
             return true;
         } else if (action == R.id.action_move_top_right) {
-            mStackAnimationController.springStackAfterFling(stackBounds.right, stackBounds.top);
+            moveStackToPosition(stackBounds.right, stackBounds.top);
             return true;
         } else if (action == R.id.action_move_bottom_left) {
-            mStackAnimationController.springStackAfterFling(stackBounds.left, stackBounds.bottom);
+            moveStackToPosition(stackBounds.left, stackBounds.bottom);
             return true;
         } else if (action == R.id.action_move_bottom_right) {
-            mStackAnimationController.springStackAfterFling(stackBounds.right, stackBounds.bottom);
+            moveStackToPosition(stackBounds.right, stackBounds.bottom);
             return true;
         }
         return false;
+    }
+
+    /**
+     * Moves the bubble stack for accessibility. When expanded, the stack is moved instantly as the
+     * {@link StackAnimationController} is inactive and animation is not needed.
+     */
+    private void moveStackToPosition(float x, float y) {
+        if (isExpanded()) {
+            mStackAnimationController.setStackPosition(new PointF(x, y));
+        } else {
+            mStackAnimationController.springStackAfterFling(x, y);
+        }
     }
 
     /**
