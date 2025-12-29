@@ -658,7 +658,8 @@ public abstract class FileSystemProvider extends DocumentsProvider {
         return trashedDocId;
     }
 
-    protected final Cursor queryTrashDocuments(File parent, String[] projection)
+    protected final Cursor queryTrashDocuments(@NonNull File parent, @NonNull String volumeName,
+            @Nullable String[] projection)
             throws FileNotFoundException {
         String docId = getDocIdForFile(parent);
         String[] trashProjections = projection;
@@ -672,7 +673,7 @@ public abstract class FileSystemProvider extends DocumentsProvider {
         MatrixCursor result = new DirectoryCursor(trashProjections, docId, parent);
         includeTrashFiles(result, parent);
         // include MediaStore trashed files which are not in .trash-storage location
-        includeMediaStoreTrashFiles(result);
+        includeMediaStoreTrashFiles(result, volumeName);
 
         // Set notification URI for trash
         final Uri trashUri = buildTrashNotificationUri(docId);
@@ -739,15 +740,22 @@ public abstract class FileSystemProvider extends DocumentsProvider {
         }
     }
 
-    private void includeMediaStoreTrashFiles(MatrixCursor result)
+    private void includeMediaStoreTrashFiles(@NonNull MatrixCursor result,
+            @NonNull String volumeName)
             throws FileNotFoundException {
         final Uri uri = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL);
         final Bundle queryArgs = new Bundle();
         queryArgs.putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_ONLY);
-        queryArgs.putString(ContentResolver.QUERY_ARG_SQL_SELECTION,
-                MediaStore.MediaColumns.RELATIVE_PATH + " NOT LIKE ?");
-        queryArgs.putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS,
-                new String[]{DIRECTORY_TRASH_STORAGE + "/%"});
+
+        final String selection = MediaStore.MediaColumns.RELATIVE_PATH + " NOT LIKE ? AND "
+                + MediaStore.MediaColumns.VOLUME_NAME + " = ?";
+        final String[] selectionArgs = new String[]{
+                DIRECTORY_TRASH_STORAGE + "/%",
+                volumeName.toLowerCase(Locale.ROOT)
+        };
+
+        queryArgs.putString(ContentResolver.QUERY_ARG_SQL_SELECTION, selection);
+        queryArgs.putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs);
         String[] projection = new String[]{MediaStore.Files.FileColumns.DATA};
 
         try (Cursor cursor = getContext().getContentResolver().query(uri, projection,
