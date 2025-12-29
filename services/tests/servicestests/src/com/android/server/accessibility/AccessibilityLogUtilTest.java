@@ -21,8 +21,6 @@ import static org.junit.Assert.assertTrue;
 
 import android.app.Instrumentation;
 import android.os.SystemProperties;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.Log;
 
@@ -45,8 +43,6 @@ public class AccessibilityLogUtilTest {
 
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
-
-    private static final String DEBUG_LOG_FLAG = Flags.FLAG_ACCESSIBILITY_DEBUG_LOG_BASE_ON_PROP;
 
     private Instrumentation mInstrumentation;
 
@@ -73,18 +69,7 @@ public class AccessibilityLogUtilTest {
     }
 
     @Test
-    @DisableFlags(DEBUG_LOG_FLAG)
-    public void isDebugEnabled_flagDisabled_shouldReturnFalse() {
-        setLoggable(LOCAL_TAG, "DEBUG");
-        setLoggable(GLOBAL_TAG, "DEBUG");
-
-        assertFalse(AccessibilityLogUtil.isDebugEnabled(LOCAL_TAG));
-        assertFalse(AccessibilityLogUtil.isDebugEnabled(GLOBAL_TAG));
-    }
-
-    @Test
-    @EnableFlags(DEBUG_LOG_FLAG)
-    public void isDebugEnabled_flagEnabled_localTagDebuggable_shouldReturnTrue() {
+    public void isDebugEnabled_localTagDebuggable_shouldReturnTrue() {
         setLoggable(LOCAL_TAG, "DEBUG");
         setLoggable(GLOBAL_TAG, "INFO");
 
@@ -93,8 +78,7 @@ public class AccessibilityLogUtilTest {
     }
 
     @Test
-    @EnableFlags(DEBUG_LOG_FLAG)
-    public void isDebugEnabled_flagEnabled_globalTagDebuggable_shouldReturnTrue() {
+    public void isDebugEnabled_globalTagDebuggable_shouldReturnTrue() {
         setLoggable(LOCAL_TAG, "INFO");
         setLoggable(GLOBAL_TAG, "DEBUG");
 
@@ -103,8 +87,7 @@ public class AccessibilityLogUtilTest {
     }
 
     @Test
-    @EnableFlags(DEBUG_LOG_FLAG)
-    public void isDebugEnabled_flagEnabled_bothTagsDebuggable_shouldReturnTrue() {
+    public void isDebugEnabled_bothTagsDebuggable_shouldReturnTrue() {
         setLoggable(LOCAL_TAG, "DEBUG");
         setLoggable(GLOBAL_TAG, "DEBUG");
 
@@ -113,8 +96,7 @@ public class AccessibilityLogUtilTest {
     }
 
     @Test
-    @EnableFlags(DEBUG_LOG_FLAG)
-    public void isDebugEnabled_flagEnabled_neitherTagDebuggable_shouldReturnFalse() {
+    public void isDebugEnabled_neitherTagDebuggable_shouldReturnFalse() {
         setLoggable(LOCAL_TAG, "INFO");
         setLoggable(GLOBAL_TAG, "WARN");
 

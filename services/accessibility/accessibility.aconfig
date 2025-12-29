@@ -3,16 +3,6 @@ container: "system"
 
 # NOTE: Keep alphabetized to help limit merge conflicts from multiple simultaneous editors.
 flag {
-    name: "accessibility_debug_log_base_on_prop"
-    namespace: "accessibility"
-    description: "Enable/Disable debug log by setting property. Support per file LOG_TAG or all files by using TAG AccessibilityLogUtil"
-    bug: "438268325"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_autoclick_for_connected_displays"
     namespace: "accessibility"
     description: "Fix autoclick to work with connected displays."
