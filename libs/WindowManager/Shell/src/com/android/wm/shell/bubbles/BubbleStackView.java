@@ -2090,8 +2090,6 @@ public class BubbleStackView extends FrameLayout
         // R constants are not final so we cannot use switch-case here.
         if (action == AccessibilityNodeInfo.ACTION_DISMISS) {
             mBubbleData.dismissAll(Bubbles.DISMISS_ACCESSIBILITY_ACTION);
-            announceForAccessibility(
-                    getResources().getString(R.string.accessibility_bubble_dismissed));
             return true;
         } else if (action == AccessibilityNodeInfo.ACTION_COLLAPSE) {
             mBubbleData.setExpanded(false);
@@ -2734,7 +2732,6 @@ public class BubbleStackView extends FrameLayout
                         + "expand but we are collapsed");
             }
             notifyExpansionChanged(mExpandedBubble, mIsExpanded);
-            announceExpandForAccessibility(mExpandedBubble, mIsExpanded);
         };
 
         if (mPositioner.isImeVisible()) {
@@ -2765,34 +2762,6 @@ public class BubbleStackView extends FrameLayout
             mBubblesNavBarGestureTracker = new BubblesNavBarGestureTracker(mContext, mPositioner);
             mBubblesNavBarGestureTracker.start(mSwipeUpListener);
             setOnTouchListener(mContainerSwipeListener);
-        }
-    }
-
-    private void announceExpandForAccessibility(BubbleViewProvider bubble, boolean expanded) {
-        if (bubble instanceof Bubble) {
-            String contentDescription = getBubbleContentDescription((Bubble) bubble);
-            String message = getResources().getString(
-                    expanded
-                            ? R.string.bubble_accessibility_announce_expand
-                            : R.string.bubble_accessibility_announce_collapse, contentDescription);
-            announceForAccessibility(message);
-        }
-    }
-
-    @NonNull
-    private String getBubbleContentDescription(Bubble bubble) {
-        final String appName = bubble.getAppName();
-        final String title = bubble.getTitle() != null
-                ? bubble.getTitle()
-                : getResources().getString(R.string.notification_bubble_title);
-
-        if (appName == null || title.equals(appName)) {
-            // App bubble title equals the app name, so return only the title to avoid having
-            // content description like: `<app> from <app>`.
-            return title;
-        } else {
-            return getResources().getString(
-                    R.string.bubble_content_description_single, title, appName);
         }
     }
 
