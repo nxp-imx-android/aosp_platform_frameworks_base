@@ -16,8 +16,6 @@
 
 package com.android.server.accessibility;
 
-import static com.android.server.accessibility.Flags.accessibilityDebugLogBaseOnProp;
-
 import android.util.Log;
 
 /**
@@ -44,9 +42,6 @@ public final class AccessibilityLogUtil {
      * @return true if DEBUG level is loggable for either tag.
      */
     public static boolean isDebugEnabled(String localTag) {
-        if (!accessibilityDebugLogBaseOnProp()) {
-            return false;
-        }
         return Log.isLoggable(localTag, Log.DEBUG) || Log.isLoggable(TAG, Log.DEBUG);
     }
 
