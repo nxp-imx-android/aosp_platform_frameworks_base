@@ -30,3 +30,13 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "use_netstats_per_query_flags"
+    namespace: "backstage_power"
+    description: "Use NetworkStatsManager APIs with query flags"
+    bug: "453909242"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
