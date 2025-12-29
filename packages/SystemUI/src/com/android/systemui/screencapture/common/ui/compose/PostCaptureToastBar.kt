@@ -79,6 +79,6 @@ private fun defaultElevation(): CardElevation {
 private fun defaultColors(): IconButtonColors {
     return IconButtonDefaults.filledTonalIconButtonColors(
         containerColor = MaterialTheme.colorScheme.secondary,
-        contentColor = MaterialTheme.colorScheme.onSecondaryFixed,
+        contentColor = MaterialTheme.colorScheme.onSecondary,
     )
 }
