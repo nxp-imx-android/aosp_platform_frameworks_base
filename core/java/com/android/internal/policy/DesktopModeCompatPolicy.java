@@ -208,13 +208,16 @@ public class DesktopModeCompatPolicy {
 
     /** @see DesktopModeCompatUtils#shouldExcludeCaptionFromAppBounds */
     public boolean shouldExcludeCaptionFromAppBounds(@NonNull TaskInfo taskInfo) {
+        final AppCompatTaskInfo appCompatInfo = taskInfo.appCompatTaskInfo;
+        if (Flags.refactorCaptionSandboxingToCore()) {
+            return appCompatInfo != null && appCompatInfo.hasIsExcludeCaptionInsets();
+        }
         if (taskInfo.topActivityInfo != null) {
-            final AppCompatTaskInfo appCompatInfo = taskInfo.appCompatTaskInfo;
             return DesktopModeCompatUtils.shouldExcludeCaptionFromAppBounds(
                     taskInfo.topActivityInfo,
                     taskInfo.isResizeable,
                     appCompatInfo != null && appCompatInfo.hasOptOutEdgeToEdge(),
-                    appCompatInfo != null && appCompatInfo.hasOverrideExcludeCaptionInsetsAllowed()
+                    appCompatInfo != null && appCompatInfo.hasIsExcludeCaptionInsets()
             );
         }
         return false;

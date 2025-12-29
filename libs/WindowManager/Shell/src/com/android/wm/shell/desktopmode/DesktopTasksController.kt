@@ -5070,7 +5070,9 @@ class DesktopTasksController(
         val displayId = repository.getDisplayForDesk(deskId)
         val displayContext = displayController.getDisplayContext(displayId) ?: context
         val captionInsets =
-            if (desktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo)) {
+            if (Flags.refactorCaptionSandboxingToCore()) {
+                taskInfo.freeformCaptionInsets(displayLayout)
+            } else if (desktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo)) {
                 getDesktopViewAppHeaderHeightPx(displayContext)
             } else {
                 0
@@ -6445,13 +6447,12 @@ class DesktopTasksController(
                     return true
                 }
 
-                val prevCaptionInsets = taskInfo.freeformCaptionInsets
+                val prevDisplayLayout = displayController.getDisplayLayout(taskInfo.getDisplayId())
+                val prevCaptionInsets =
+                    prevDisplayLayout?.let { taskInfo.freeformCaptionInsets(prevDisplayLayout) }
+                        ?: 0
                 if (isCrossDisplayDrag) {
-                    val captionInsetsDp =
-                        displayController
-                            .getDisplayLayout(taskInfo.getDisplayId())
-                            ?.pxToDp(prevCaptionInsets)
-                            ?.toInt() ?: 0
+                    val captionInsetsDp = prevDisplayLayout?.pxToDp(prevCaptionInsets)?.toInt() ?: 0
                     val destDisplayLayout = displayController.getDisplayLayout(newDisplayId)
                     val captionInsets = destDisplayLayout?.dpToPx(captionInsetsDp)?.toInt() ?: 0
                     val constrainedBounds =
