@@ -383,7 +383,6 @@ constructor(
     }
 
     override suspend fun reportLockoutStarted(duration: Duration) {
-        lockPatternUtils.setLockoutAttemptDeadline(selectedUserId, duration.toJavaDuration())
         withContext(backgroundDispatcher) {
             lockPatternUtils.reportPasswordLockout(duration.toJavaDuration(), selectedUserId)
         }

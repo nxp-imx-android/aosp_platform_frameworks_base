@@ -1188,23 +1188,6 @@ public class LockPatternUtils {
     }
 
     /**
-     * Set and store the lockout deadline, meaning the user can't attempt their unlock pattern until
-     * the deadline has passed.
-     *
-     * @return the chosen deadline.
-     * @deprecated this function just returns the current lockout end time. Call-sites will be
-     * removed and replaced with {@link #getLockoutEndTime(int)} as needed.
-     */
-    @UnsupportedAppUsage
-    @Deprecated
-    public Duration setLockoutAttemptDeadline(int userId, Duration timeout) {
-        // TODO b/467741771 - remove this method and its callers
-        final Duration deadline = mTimeSinceBootSupplier.get().plus(timeout);
-        final Duration lockoutEndTime = getLockoutEndTime(userId);
-        return lockoutEndTime.compareTo(deadline) > 0 ? lockoutEndTime : deadline;
-    }
-
-    /**
      * @return The time since boot when the user is allowed to attempt primary auth, or {@link
      *     Duration#ZERO} if the user is currently allowed.
      */
