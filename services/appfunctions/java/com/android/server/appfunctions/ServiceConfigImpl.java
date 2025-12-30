@@ -17,6 +17,7 @@
 package com.android.server.appfunctions;
 
 import android.provider.DeviceConfig;
+import android.util.Range;
 
 /** Implementation of {@link ServiceConfig} */
 public class ServiceConfigImpl implements ServiceConfig {
@@ -24,11 +25,36 @@ public class ServiceConfigImpl implements ServiceConfig {
             "execute_app_function_cancellation_timeout_millis";
     static final long DEFAULT_EXECUTE_APP_FUNCTION_CANCELLATION_TIMEOUT_MS = 5000L;
 
+    static final String DEVICE_CONFIG_PROPERTY_SEARCH_APP_FUNCTION_PAGE_SIZE =
+            "search_app_function_page_size";
+    static final int DEFAULT_SEARCH_APP_FUNCTION_PAGE_SIZE = 100;
+    private static final Range<Integer> VALID_PAGE_SIZE_RANGE =
+            new Range<>(MIN_PAGE_SIZE, MAX_PAGE_SIZE);
+
     @Override
     public long getExecuteAppFunctionCancellationTimeoutMillis() {
         return DeviceConfig.getLong(
                 NAMESPACE_APP_FUNCTIONS,
                 DEVICE_CONFIG_PROPERTY_EXECUTION_CANCELLATION_TIMEOUT,
                 DEFAULT_EXECUTE_APP_FUNCTION_CANCELLATION_TIMEOUT_MS);
+    }
+
+    @Override
+    public int getSearchAppFunctionInternalPageSize() {
+        int testPageSize = ServiceConfig.sTestPageSize.get();
+        if (VALID_PAGE_SIZE_RANGE.contains(testPageSize)) {
+            return testPageSize;
+        }
+
+        int deviceConfigPageSize =
+                DeviceConfig.getInt(
+                        NAMESPACE_APP_FUNCTIONS,
+                        DEVICE_CONFIG_PROPERTY_SEARCH_APP_FUNCTION_PAGE_SIZE,
+                        DEFAULT_SEARCH_APP_FUNCTION_PAGE_SIZE);
+        if (VALID_PAGE_SIZE_RANGE.contains(deviceConfigPageSize)) {
+            return deviceConfigPageSize;
+        }
+
+        return DEFAULT_SEARCH_APP_FUNCTION_PAGE_SIZE;
     }
 }
