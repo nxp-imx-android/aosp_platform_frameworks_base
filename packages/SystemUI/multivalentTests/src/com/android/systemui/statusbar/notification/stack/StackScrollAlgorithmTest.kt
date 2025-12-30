@@ -679,6 +679,28 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
+    fun resetViewStates_hunInStack_hasElevation() {
+        // Given: the shade is open, QS is not open, and the content is scrolled such that the HUN
+        // overlaps some of it
+        fakeHunInShade(
+            headsUpTop = 100f,
+            stackScrollTop = -200f,
+            stackBottom = 4000f,
+            collapsedHeight = 100,
+            intrinsicHeight = 300,
+        )
+        ambientState.qsExpansionFraction = 0f
+        whenever(notificationRow.isAboveShelf).thenReturn(true)
+
+        // When
+        stackScrollAlgorithm.resetViewStates(ambientState, 0)
+
+        // Then: HUN Z translation is higher than the base Z
+        assertThat(notificationRow.viewState.zTranslation).isGreaterThan(baseZ)
+    }
+
+    @Test
+    @EnableSceneContainer
     fun updateZTranslationForHunInStack_fullOverlap_hunHasFullElevation() {
         // Given: the overlap equals to the top content padding
         val contentTop = 280f
