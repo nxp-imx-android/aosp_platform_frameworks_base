@@ -17,9 +17,11 @@
 
 #include <SkBitmap.h>
 #include <SkCanvas.h>
+#include <SkImage.h>
 #include <SkColorFilter.h>
-#include <SkImagePriv.h>
 #include <SkPaint.h>
+#include <SkPixmap.h>
+#include <SkSamplingOptions.h>
 
 #include "HardwareBitmapUploader.h"
 
@@ -42,7 +44,7 @@ sp<Gainmap> Gainmap::allocateHardwareGainmap(const sp<Gainmap>& srcGainmap) {
         const float alphaToOpaque[] = {0, 0, 0, 1, 0, 0, 0, 0, 1, 0,
                                        0, 0, 0, 1, 0, 0, 0, 0, 0, 255};
         paint.setColorFilter(SkColorFilters::Matrix(alphaToOpaque, SkColorFilters::Clamp::kNo));
-        canvas.drawImage(SkMakeImageFromRasterBitmap(skSrcBitmap, kNever_SkCopyPixelsMode), 0, 0,
+        canvas.drawImage(SkImages::RasterFromPixmap(skSrcBitmap.pixmap(), nullptr, nullptr), 0, 0,
                          SkSamplingOptions{}, &paint);
         skSrcBitmap = bitmap;
     }
