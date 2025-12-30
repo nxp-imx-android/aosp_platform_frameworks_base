@@ -36,6 +36,14 @@ interface WindowContainerVisibilityHelper {
     int getTaskFragmentVisibility(@NonNull TaskFragment current, @Nullable ActivityRecord starting);
 
     /**
+     * Whether the given {@link ActivityRecord} should be made visible.
+     *
+     * @param current the {@link ActivityRecord} to check visibility for.
+     * @param ignoringKeyguard if {@code true}, returns the result ignoring the keyguard state.
+     */
+    boolean shouldActivityBeVisible(@NonNull ActivityRecord current, boolean ignoringKeyguard);
+
+    /**
      * Whether this container or its children have content that fills it.
      *
      * Note: a container that fills its parent may not occlude its siblings, such as when it is
