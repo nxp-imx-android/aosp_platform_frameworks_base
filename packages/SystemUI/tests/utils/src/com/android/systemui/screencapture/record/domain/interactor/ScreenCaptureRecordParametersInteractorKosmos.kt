@@ -17,12 +17,14 @@
 package com.android.systemui.screencapture.record.domain.interactor
 
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.screencapture.record.data.repository.screenCaptureRecordParametersRepository
 import com.android.systemui.screenrecord.domain.interactor.screenRecordingServiceInteractor
 
 val Kosmos.screenCaptureRecordParametersInteractor by
     Kosmos.Fixture {
         ScreenCaptureRecordParametersInteractor(
+            coroutineScope = backgroundScope,
             serviceInteractor = screenRecordingServiceInteractor,
             repository = screenCaptureRecordParametersRepository,
         )

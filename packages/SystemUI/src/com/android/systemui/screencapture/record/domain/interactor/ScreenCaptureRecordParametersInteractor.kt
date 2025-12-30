@@ -16,25 +16,43 @@
 
 package com.android.systemui.screencapture.record.domain.interactor
 
+import com.android.systemui.screencapture.common.ScreenCapture
 import com.android.systemui.screencapture.common.ScreenCaptureScope
 import com.android.systemui.screencapture.record.data.repository.ScreenCaptureRecordParametersRepository
+import com.android.systemui.screencapture.record.shared.model.ScreenCaptureRecordParametersModel
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
+import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 @ScreenCaptureScope
 class ScreenCaptureRecordParametersInteractor
 @Inject
 constructor(
+    @ScreenCapture coroutineScope: CoroutineScope,
     private val serviceInteractor: ScreenRecordingServiceInteractor,
     private val repository: ScreenCaptureRecordParametersRepository,
 ) {
 
-    val parameters = repository.parameters
+    val parameters: StateFlow<ScreenCaptureRecordParametersModel> = repository.parameters
+    val canChangeAudioSource: StateFlow<Boolean> =
+        serviceInteractor.status
+            .map { it.canChangeAudioSource() }
+            .stateIn(
+                coroutineScope,
+                SharingStarted.Eagerly,
+                serviceInteractor.status.value.canChangeAudioSource(),
+            )
 
     fun setAudioSource(audioSource: ScreenRecordingAudioSource) {
-        serviceInteractor.updateAudioSource(audioSource)
-        repository.updateParameters { it.copy(audioSource = audioSource) }
+        if (canChangeAudioSource.value) {
+            repository.updateParameters { it.copy(audioSource = audioSource) }
+        }
     }
 
     fun setShouldShowTaps(shouldShowTaps: Boolean) {
@@ -60,3 +78,6 @@ private fun ScreenRecordingAudioSource.withEnabledMic(): ScreenRecordingAudioSou
         ScreenRecordingAudioSource.NONE -> ScreenRecordingAudioSource.MIC
         ScreenRecordingAudioSource.INTERNAL -> ScreenRecordingAudioSource.MIC_AND_INTERNAL
     }
+
+private fun ScreenRecordingStatus.canChangeAudioSource(): Boolean =
+    this is ScreenRecordingStatus.Stopped
