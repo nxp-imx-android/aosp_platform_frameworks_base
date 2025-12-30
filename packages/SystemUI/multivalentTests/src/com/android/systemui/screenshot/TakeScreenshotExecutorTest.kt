@@ -4,21 +4,15 @@ import android.content.ComponentName
 import android.graphics.Bitmap
 import android.hardware.display.DisplayManager
 import android.net.Uri
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.view.Display
 import android.view.Display.TYPE_EXTERNAL
 import android.view.Display.TYPE_INTERNAL
-import android.view.Display.TYPE_OVERLAY
-import android.view.Display.TYPE_VIRTUAL
-import android.view.Display.TYPE_WIFI
 import android.view.WindowManager
 import android.view.WindowManager.TAKE_SCREENSHOT_PROVIDED_IMAGE
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.internal.util.ScreenshotRequest
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.display.data.repository.FakeDisplayRepository
 import com.android.systemui.display.data.repository.display
@@ -26,7 +20,6 @@ import com.android.systemui.screenshot.proxy.ScreenshotProxy
 import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
-import java.lang.IllegalStateException
 import java.util.function.Consumer
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -36,9 +29,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.never
-import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
@@ -63,7 +54,6 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
     private val dispatcher = UnconfinedTestDispatcher()
     private val testScope = TestScope(dispatcher)
     private val eventLogger = UiEventLoggerFake()
-    private val headlessHandler = mock<HeadlessScreenshotHandler>()
 
     private val screenshotProxy =
         mock<ScreenshotProxy> {
@@ -73,13 +63,11 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
     private val screenshotExecutor =
         TakeScreenshotExecutorImpl(
             controllerFactory,
-            fakeDisplayRepository,
             displayManager,
             testScope,
             requestProcessor,
             eventLogger,
             notificationControllerFactory,
-            headlessHandler,
             screenshotProxy,
             dispatcher,
         )
@@ -92,185 +80,6 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
-    fun executeScreenshots_severalDisplays_callsControllerForEachOne() =
-        testScope.runTest {
-            val internalDisplay = display(TYPE_INTERNAL, id = 0)
-            val externalDisplay = display(TYPE_EXTERNAL, id = 1)
-            setDisplays(internalDisplay, externalDisplay)
-            val onSaved = { _: Uri? -> }
-            screenshotExecutor.executeScreenshots(createScreenshotRequest(), onSaved, callback)
-
-            verify(controllerFactory).create(eq(internalDisplay))
-            verify(controllerFactory, never()).create(eq(externalDisplay))
-
-            val capturer = argumentCaptor<ScreenshotData>()
-
-            verify(controller).handleScreenshot(capturer.capture(), any(), any())
-            assertThat(capturer.lastValue.displayId).isEqualTo(0)
-            // OnSaved callback should be different.
-            verify(headlessHandler).handleScreenshot(capturer.capture(), any(), any())
-            assertThat(capturer.lastValue.displayId).isEqualTo(1)
-
-            assertThat(eventLogger.numLogs()).isEqualTo(2)
-            assertThat(eventLogger.get(0).eventId)
-                .isEqualTo(ScreenshotEvent.SCREENSHOT_REQUESTED_KEY_OTHER.id)
-            assertThat(eventLogger.get(0).packageName).isEqualTo(topComponent.packageName)
-            assertThat(eventLogger.get(1).eventId)
-                .isEqualTo(ScreenshotEvent.SCREENSHOT_REQUESTED_KEY_OTHER.id)
-            assertThat(eventLogger.get(1).packageName).isEqualTo(topComponent.packageName)
-
-            screenshotExecutor.onDestroy()
-        }
-
-    @Test
-    @DisableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
-    fun executeScreenshots_providedImageType_callsOnlyDefaultDisplayController() =
-        testScope.runTest {
-            val internalDisplay = display(TYPE_INTERNAL, id = 0)
-            val externalDisplay = display(TYPE_EXTERNAL, id = 1)
-            setDisplays(internalDisplay, externalDisplay)
-            val onSaved = { _: Uri? -> }
-            screenshotExecutor.executeScreenshots(
-                createScreenshotRequest(TAKE_SCREENSHOT_PROVIDED_IMAGE),
-                onSaved,
-                callback,
-            )
-
-            verify(controllerFactory).create(eq(internalDisplay))
-            verify(controllerFactory, never()).create(eq(externalDisplay))
-
-            val capturer = argumentCaptor<ScreenshotData>()
-
-            verify(controller).handleScreenshot(capturer.capture(), any(), any())
-            assertThat(capturer.lastValue.displayId).isEqualTo(0)
-            // OnSaved callback should be different.
-            verify(headlessHandler, never()).handleScreenshot(any(), any(), any())
-
-            assertThat(eventLogger.numLogs()).isEqualTo(1)
-            assertThat(eventLogger.get(0).eventId)
-                .isEqualTo(ScreenshotEvent.SCREENSHOT_REQUESTED_KEY_OTHER.id)
-            assertThat(eventLogger.get(0).packageName).isEqualTo(topComponent.packageName)
-
-            screenshotExecutor.onDestroy()
-        }
-
-    @Test
-    @DisableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
-    fun executeScreenshots_onlyVirtualDisplays_noInteractionsWithControllers() =
-        testScope.runTest {
-            setDisplays(display(TYPE_VIRTUAL, id = 0), display(TYPE_VIRTUAL, id = 1))
-            val onSaved = { _: Uri? -> }
-            screenshotExecutor.executeScreenshots(createScreenshotRequest(), onSaved, callback)
-
-            verifyNoMoreInteractions(controllerFactory)
-            verify(headlessHandler, never()).handleScreenshot(any(), any(), any())
-            screenshotExecutor.onDestroy()
-        }
-
-    @Test
-    @DisableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
-    fun executeScreenshots_allowedTypes_allCaptured() =
-        testScope.runTest {
-            whenever(controllerFactory.create(any())).thenReturn(controller)
-
-            setDisplays(
-                display(TYPE_INTERNAL, id = 0),
-                display(TYPE_EXTERNAL, id = 1),
-                display(TYPE_OVERLAY, id = 2),
-                display(TYPE_WIFI, id = 3),
-            )
-            val onSaved = { _: Uri? -> }
-            screenshotExecutor.executeScreenshots(createScreenshotRequest(), onSaved, callback)
-
-            verify(controller, times(1)).handleScreenshot(any(), any(), any())
-            verify(headlessHandler, times(3)).handleScreenshot(any(), any(), any())
-            screenshotExecutor.onDestroy()
-        }
-
-    @Test
-    @DisableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
-    fun executeScreenshots_reportsOnFinishedOnlyWhenBothFinished() =
-        testScope.runTest {
-            setDisplays(display(TYPE_INTERNAL, id = 0), display(TYPE_EXTERNAL, id = 1))
-            val onSaved = { _: Uri? -> }
-            screenshotExecutor.executeScreenshots(createScreenshotRequest(), onSaved, callback)
-
-            val capturer0 = argumentCaptor<TakeScreenshotService.RequestCallback>()
-            val capturer1 = argumentCaptor<TakeScreenshotService.RequestCallback>()
-
-            verify(controller).handleScreenshot(any(), any(), capturer0.capture())
-            verify(headlessHandler).handleScreenshot(any(), any(), capturer1.capture())
-
-            verify(callback, never()).onFinish()
-            capturer0.lastValue.onFinish()
-
-            verify(callback, never()).onFinish()
-
-            capturer1.lastValue.onFinish()
-
-            verify(callback).onFinish()
-            screenshotExecutor.onDestroy()
-        }
-
-    @Test
-    @DisableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
-    fun executeScreenshots_oneFinishesOtherFails_reportFailsOnlyAtTheEnd() =
-        testScope.runTest {
-            setDisplays(display(TYPE_INTERNAL, id = 0), display(TYPE_EXTERNAL, id = 1))
-            val onSaved = { _: Uri? -> }
-            screenshotExecutor.executeScreenshots(createScreenshotRequest(), onSaved, callback)
-
-            val capturer0 = argumentCaptor<TakeScreenshotService.RequestCallback>()
-            val capturer1 = argumentCaptor<TakeScreenshotService.RequestCallback>()
-
-            verify(controller).handleScreenshot(any(), any(), capturer0.capture())
-            verify(headlessHandler).handleScreenshot(any(), any(), capturer1.capture())
-
-            verify(callback, never()).onFinish()
-
-            capturer0.lastValue.onFinish()
-
-            verify(callback, never()).onFinish()
-
-            capturer1.lastValue.reportError()
-
-            verify(callback, never()).onFinish()
-            verify(callback).reportError()
-
-            screenshotExecutor.onDestroy()
-        }
-
-    @Test
-    @DisableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
-    fun executeScreenshots_allDisplaysFail_reportsFail() =
-        testScope.runTest {
-            setDisplays(display(TYPE_INTERNAL, id = 0), display(TYPE_EXTERNAL, id = 1))
-            val onSaved = { _: Uri? -> }
-            screenshotExecutor.executeScreenshots(createScreenshotRequest(), onSaved, callback)
-
-            val capturer0 = argumentCaptor<TakeScreenshotService.RequestCallback>()
-            val capturer1 = argumentCaptor<TakeScreenshotService.RequestCallback>()
-
-            verify(controller).handleScreenshot(any(), any(), capturer0.capture())
-            verify(headlessHandler).handleScreenshot(any(), any(), capturer1.capture())
-
-            verify(callback, never()).onFinish()
-
-            capturer0.lastValue.reportError()
-
-            verify(callback, never()).onFinish()
-            verify(callback, never()).reportError()
-
-            capturer1.lastValue.reportError()
-
-            verify(callback, never()).onFinish()
-            verify(callback).reportError()
-            screenshotExecutor.onDestroy()
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
     fun executeScreenshots_fromOverview_honorsDisplay() =
         testScope.runTest {
             val displayId = 1
@@ -296,7 +105,6 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
     fun executeScreenshots_fromOverviewInvalidDisplay_usesDefault() =
         testScope.runTest {
             setDisplays(
@@ -323,7 +131,6 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
     fun executeScreenshots_fromScreenCaptureUI_honorsDisplayArgument() =
         testScope.runTest {
             val displayId = 1
@@ -344,7 +151,6 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
     fun executeScreenshots_fromScreenCaptureUI_withInvalidDisplay_usesDefaultDisplay() =
         testScope.runTest {
             setDisplays(
@@ -367,7 +173,6 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
     fun executeScreenshots_keyOther_usesFocusedDisplay() =
         testScope.runTest {
             val displayId = 1
@@ -393,7 +198,6 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
     fun executeScreenshots_keyOtherInvalidDisplay_usesDefault() =
         testScope.runTest {
             setDisplays(
@@ -494,42 +298,6 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
-    fun executeScreenshots_errorFromProcessor_logsScreenshotRequested() =
-        testScope.runTest {
-            setDisplays(display(TYPE_INTERNAL, id = 0), display(TYPE_EXTERNAL, id = 1))
-            val onSaved = { _: Uri? -> }
-            requestProcessor.shouldThrowException = true
-
-            screenshotExecutor.executeScreenshots(createScreenshotRequest(), onSaved, callback)
-
-            val screenshotRequested =
-                eventLogger.logs.filter {
-                    it.eventId == ScreenshotEvent.SCREENSHOT_REQUESTED_KEY_OTHER.id
-                }
-            assertThat(screenshotRequested).hasSize(2)
-            screenshotExecutor.onDestroy()
-        }
-
-    @Test
-    @DisableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
-    fun executeScreenshots_errorFromProcessor_logsUiError() =
-        testScope.runTest {
-            setDisplays(display(TYPE_INTERNAL, id = 0), display(TYPE_EXTERNAL, id = 1))
-            val onSaved = { _: Uri? -> }
-            requestProcessor.shouldThrowException = true
-
-            screenshotExecutor.executeScreenshots(createScreenshotRequest(), onSaved, callback)
-
-            val screenshotRequested =
-                eventLogger.logs.filter {
-                    it.eventId == ScreenshotEvent.SCREENSHOT_CAPTURE_FAILED.id
-                }
-            assertThat(screenshotRequested).hasSize(2)
-            screenshotExecutor.onDestroy()
-        }
-
-    @Test
     fun executeScreenshots_errorFromProcessorOnDefaultDisplay_showsErrorNotification() =
         testScope.runTest {
             setDisplays(display(TYPE_INTERNAL, id = 0), display(TYPE_EXTERNAL, id = 1))
@@ -556,28 +324,6 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
-    fun executeScreenshots_errorFromScreenshotController_multidisplay_reportsRequested() =
-        testScope.runTest {
-            setDisplays(display(TYPE_INTERNAL, id = 0), display(TYPE_EXTERNAL, id = 1))
-            val onSaved = { _: Uri? -> }
-            whenever(controller.handleScreenshot(any(), any(), any()))
-                .thenThrow(IllegalStateException::class.java)
-            whenever(headlessHandler.handleScreenshot(any(), any(), any()))
-                .thenThrow(IllegalStateException::class.java)
-
-            screenshotExecutor.executeScreenshots(createScreenshotRequest(), onSaved, callback)
-
-            val screenshotRequested =
-                eventLogger.logs.filter {
-                    it.eventId == ScreenshotEvent.SCREENSHOT_REQUESTED_KEY_OTHER.id
-                }
-            assertThat(screenshotRequested).hasSize(2)
-            screenshotExecutor.onDestroy()
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
     fun executeScreenshots_errorFromScreenshotController_reportsRequested() =
         testScope.runTest {
             setDisplays(display(TYPE_INTERNAL, id = 0), display(TYPE_EXTERNAL, id = 1))
@@ -596,28 +342,6 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
-    fun executeScreenshots_errorFromScreenshotController_multidisplay_reportsError() =
-        testScope.runTest {
-            setDisplays(display(TYPE_INTERNAL, id = 0), display(TYPE_EXTERNAL, id = 1))
-            val onSaved = { _: Uri? -> }
-            whenever(controller.handleScreenshot(any(), any(), any()))
-                .thenThrow(IllegalStateException::class.java)
-            whenever(headlessHandler.handleScreenshot(any(), any(), any()))
-                .thenThrow(IllegalStateException::class.java)
-
-            screenshotExecutor.executeScreenshots(createScreenshotRequest(), onSaved, callback)
-
-            val screenshotRequested =
-                eventLogger.logs.filter {
-                    it.eventId == ScreenshotEvent.SCREENSHOT_CAPTURE_FAILED.id
-                }
-            assertThat(screenshotRequested).hasSize(2)
-            screenshotExecutor.onDestroy()
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
     fun executeScreenshots_errorFromScreenshotController_reportsError() =
         testScope.runTest {
             setDisplays(display(TYPE_INTERNAL, id = 0), display(TYPE_EXTERNAL, id = 1))
@@ -636,25 +360,6 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
-    fun executeScreenshots_errorFromScreenshotController_multidisplay_showsErrorNotification() =
-        testScope.runTest {
-            setDisplays(display(TYPE_INTERNAL, id = 0), display(TYPE_EXTERNAL, id = 1))
-            val onSaved = { _: Uri? -> }
-            whenever(controller.handleScreenshot(any(), any(), any()))
-                .thenThrow(IllegalStateException::class.java)
-            whenever(headlessHandler.handleScreenshot(any(), any(), any()))
-                .thenThrow(IllegalStateException::class.java)
-
-            screenshotExecutor.executeScreenshots(createScreenshotRequest(), onSaved, callback)
-
-            verify(notificationsController0).notifyScreenshotError(any<Int>())
-            verify(notificationsController1).notifyScreenshotError(any<Int>())
-            screenshotExecutor.onDestroy()
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
     fun executeScreenshots_errorFromScreenshotController_showsErrorNotification() =
         testScope.runTest {
             setDisplays(display(TYPE_INTERNAL, id = 0), display(TYPE_EXTERNAL, id = 1))
@@ -688,7 +393,6 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
     fun executeScreenshots_consecutiveRequestsOnDifferentDisplays() =
         testScope.runTest {
             val secondaryDisplay = display(TYPE_EXTERNAL, id = 1)
