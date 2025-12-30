@@ -4803,4 +4803,15 @@
     <string name="av_blur">Blur</string>
     <!-- Title for live captions button [CHAR LIMIT=NONE] -->
     <string name="av_live_captions">Live Captions</string>
+
+    <!-- Notification title for hearing device battery [CHAR LIMIT=NONE] -->
+    <string name="accessibility_hearing_device_battery_level">Battery %s</string>
+    <!-- Notification message for hearing device battery left and right sides [CHAR LIMIT=NONE] -->
+    <string name="accessibility_hearing_device_left_right_battery_level">"L battery %1$s    R battery %2$s"</string>
+    <!-- Notification message for hearing device battery left side [CHAR LIMIT=NONE] -->
+    <string name="accessibility_hearing_device_left_battery_level">L battery %1$s</string>
+    <!-- Notification message for hearing device battery right side [CHAR LIMIT=NONE] -->
+    <string name="accessibility_hearing_device_right_battery_level">R battery %1$s</string>
+    <!-- Notification channel name for hearing device status [CHAR LIMIT=NONE] -->
+    <string name="accessibility_hearing_device_notification_channel_name">Hearing Device Status</string>
 </resources>
