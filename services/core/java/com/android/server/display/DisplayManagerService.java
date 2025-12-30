@@ -570,7 +570,7 @@ public final class DisplayManagerService extends SystemService {
 
     // Whether default display should be included in the display topology. Note that this should
     // only be used for the devices in projected mode.
-    private boolean mIncludeDefaultDisplayInTopology;
+    private boolean mIncludeDefaultDisplayInTopology = true;
     private final boolean mStableEdidsFlag;
 
     private final BroadcastReceiver mIdleModeReceiver = new BroadcastReceiver() {
@@ -931,11 +931,7 @@ public final class DisplayManagerService extends SystemService {
                 updateMirrorBuiltInDisplaySettingLocked(/*shouldSendDisplayChangeEvent=*/ false);
             }
 
-            if (mFlags.isDefaultDisplayInTopologySwitchEnabled()) {
-                mIncludeDefaultDisplayInTopology =
-                        mInjector.isDesktopModeSupportedOnInternalDisplay(mContext)
-                                || getIncludeDefaultDisplayInTopologySetting();
-            }
+            handleIncludeDefaultDisplayInTopologySettingChangeLocked();
             mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
             if (mUserManagerInternal != null) {
                 mUserManagerInternal.addUserLifecycleListener(
@@ -1311,12 +1307,8 @@ public final class DisplayManagerService extends SystemService {
             }
             if (Settings.Secure.getUriFor(INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY).equals(uri)) {
                 synchronized (mSyncRoot) {
-                    if (mFlags.isDefaultDisplayInTopologySwitchEnabled()
-                            && !mInjector.isDesktopModeSupportedOnInternalDisplay(mContext)) {
-                        handleIncludeDefaultDisplayInTopologySettingChangeLocked();
-                    }
+                    handleIncludeDefaultDisplayInTopologySettingChangeLocked();
                 }
-                return;
             }
         }
     }
@@ -1368,6 +1360,11 @@ public final class DisplayManagerService extends SystemService {
     }
 
     private void handleIncludeDefaultDisplayInTopologySettingChangeLocked() {
+        if (!mFlags.isDefaultDisplayInTopologySwitchEnabled()
+                || mInjector.isDesktopModeSupportedOnInternalDisplay(mContext)) {
+            return;
+        }
+
         final boolean includeDefaultDisplayInTopology = getIncludeDefaultDisplayInTopologySetting();
 
         if (mIncludeDefaultDisplayInTopology == includeDefaultDisplayInTopology) {
