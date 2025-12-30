@@ -26,10 +26,12 @@ import android.content.pm.PackageManager
 import android.content.pm.PackageManager.NameNotFoundException
 import android.net.Uri
 import android.os.UserHandle
+import android.provider.DocumentsContract
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.record.largescreen.data.repository.ParentUriRepository
 import com.android.systemui.screenshot.scroll.LongScreenshotActivity
 import java.util.function.Consumer
 import javax.inject.Inject
@@ -46,6 +48,7 @@ constructor(
     private val packageManager: PackageManager,
     @Application private val applicationScope: CoroutineScope,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
+    private val parentUriRepository: ParentUriRepository,
 ) {
     /** @return a chooser intent to share the given URI. */
     fun createShare(uri: Uri): Intent = createShare(uri, subject = null, text = null)
@@ -121,6 +124,22 @@ constructor(
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             .addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+    }
+
+    /**
+     * @return an optional ACTION_VIEW intent for the parent directory of the given MediaStore URI.
+     */
+    suspend fun createOpenInFiles(rawUri: Uri): Intent? {
+        val parentUri = parentUriRepository.getParentDirectoryUri(rawUri)
+        if (parentUri != null) {
+            return Intent(Intent.ACTION_VIEW)
+                .setDataAndType(parentUri, DocumentsContract.Document.MIME_TYPE_DIR)
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        } else {
+            return null
+        }
     }
 
     private suspend fun preferredEditor(): ComponentName? =

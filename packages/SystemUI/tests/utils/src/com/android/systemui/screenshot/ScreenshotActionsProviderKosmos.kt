@@ -17,6 +17,7 @@
 package com.android.systemui.screenshot
 
 import android.content.applicationContext
+import android.content.packageManager
 import com.android.internal.logging.uiEventLogger
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
@@ -42,6 +43,7 @@ val Kosmos.screenshotActionsProviderFactory by
                     request = request,
                     actionExecutor = actionExecutor,
                     actionsCallback = actionsCallback,
+                    packageManager = packageManager,
                 )
             }
         }

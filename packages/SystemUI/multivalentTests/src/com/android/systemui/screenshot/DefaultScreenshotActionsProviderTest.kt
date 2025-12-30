@@ -18,11 +18,14 @@ package com.android.systemui.screenshot
 
 import android.app.assist.AssistContent
 import android.content.Intent
+import android.content.packageManager
+import android.content.pm.ResolveInfo
 import android.net.Uri
 import android.os.Process
 import android.os.UserHandle
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.provider.DocumentsContract
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.internal.logging.uiEventLoggerFake
 import com.android.systemui.Flags as SysuiFlags
@@ -38,8 +41,10 @@ import java.util.UUID
 import kotlin.test.Test
 import org.junit.Before
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.doReturn
@@ -48,6 +53,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
@@ -122,8 +128,20 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
     @EnableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun shareAction_includesAssistContentUri() =
         kosmos.runTest {
-            actionsProvider = createActionsProvider()
+            fakeScreenCaptureDeviceStateRepository.setLargeScreen(true)
 
+            val resolveInfo = mock<ResolveInfo>()
+            whenever(
+                packageManager.resolveActivity(
+                    argThat { intent ->
+                        intent.action == Intent.ACTION_VIEW &&
+                            intent.type == DocumentsContract.Document.MIME_TYPE_DIR
+                    },
+                    anyInt(),
+                )
+            ) doReturn resolveInfo
+
+            actionsProvider = createActionsProvider()
             actionsProvider.setCompletedScreenshot(validResult)
 
             val uri = Uri.parse("http://www.android.com")
@@ -132,7 +150,7 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
             actionsProvider.onAssistContent(assistContent)
 
             val actionButtonCaptor = argumentCaptor<() -> Unit>()
-            verify(actionsCallback, times(2))
+            verify(actionsCallback, times(3))
                 .provideActionButton(any(), any(), actionButtonCaptor.capture())
             actionButtonCaptor.firstValue.invoke()
 
@@ -149,6 +167,45 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
                     Intent::class.java,
                 )
             assertThat(innerIntent?.getStringExtra(Intent.EXTRA_TEXT)).isEqualTo(uri.toString())
+        }
+
+    @Test
+    @EnableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    fun openInFilesAction_launchesIntent() =
+        kosmos.runTest {
+            fakeScreenCaptureDeviceStateRepository.setLargeScreen(true)
+
+            val resolveInfo = mock<ResolveInfo>()
+            whenever(
+                packageManager.resolveActivity(
+                    argThat { intent ->
+                        intent.action == Intent.ACTION_VIEW &&
+                            intent.type == DocumentsContract.Document.MIME_TYPE_DIR
+                    },
+                    anyInt(),
+                )
+            ) doReturn resolveInfo
+
+            actionsProvider = createActionsProvider()
+            actionsProvider.setCompletedScreenshot(validResult)
+
+            val actionButtonCaptor = argumentCaptor<() -> Unit>()
+            // Share, Copy, Open
+            verify(actionsCallback, times(3))
+                .provideActionButton(any(), any(), actionButtonCaptor.capture())
+            // Third button is Open
+            actionButtonCaptor.lastValue.invoke()
+
+            assertThat(uiEventLoggerFake.eventId(0))
+                .isEqualTo(ScreenshotEvent.SCREENSHOT_OPEN_TAPPED.id)
+            val intentCaptor = argumentCaptor<Intent>()
+            verify(actionExecutor)
+                .startSharedTransition(
+                    intentCaptor.capture(),
+                    eq(Process.myUserHandle()),
+                    eq(false),
+                )
+            assertThat(intentCaptor.firstValue.action).isEqualTo(Intent.ACTION_VIEW)
         }
 
     @Test

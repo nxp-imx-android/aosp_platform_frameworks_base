@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.record.largescreen.domain.interactor
+package com.android.systemui.screencapture.record.largescreen.data.repository
 
 import android.content.Context
 import android.net.Uri
@@ -27,13 +27,17 @@ import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.withContext
 
-/** Interactor responsible for deriving the parent directory URI from a MediaStore file URI. */
-class ParentUriInteractor
+interface ParentUriRepository {
+    suspend fun getParentDirectoryUri(mediaStoreUri: Uri): Uri?
+}
+
+/** Repository responsible for deriving the parent directory URI from a MediaStore file URI. */
+class ParentUriRepositoryImpl
 @Inject
 constructor(
     @Application private val context: Context,
     @Background private val backgroundContext: CoroutineContext,
-) {
+) : ParentUriRepository {
     /**
      * Gets the DocumentsProvider URI for the parent directory of the given MediaStore URI. This
      * method queries the MediaStore for the RELATIVE_PATH on a background thread.
@@ -43,7 +47,7 @@ constructor(
      * @return The DocumentsProvider URI for the parent directory, or null if it cannot be
      *   determined.
      */
-    suspend fun getParentDirectoryUri(mediaStoreUri: Uri): Uri? {
+    override suspend fun getParentDirectoryUri(mediaStoreUri: Uri): Uri? {
         return withContext(backgroundContext) {
             val projection = arrayOf(MediaStore.MediaColumns.RELATIVE_PATH)
             try {
@@ -76,7 +80,7 @@ constructor(
     }
 
     companion object {
-        private const val TAG = "ParentUriInteractor"
+        private const val TAG = "ParentUriRepository"
         private const val STORAGE_AUTHORITY: String = "com.android.externalstorage.documents"
     }
 }

@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.record.largescreen.domain.interactor
+package com.android.systemui.screencapture.record.largescreen.data.repository
 
-import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.backgroundCoroutineContext
+import com.android.systemui.screenshot.FakeParentUriRepository
 
-val Kosmos.parentUriInteractorKosmos: ParentUriInteractor by
-    Kosmos.Fixture {
-        ParentUriInteractor(
-            context = applicationContext,
-            backgroundContext = backgroundCoroutineContext,
-        )
-    }
+val Kosmos.fakeParentUriRepository by Kosmos.Fixture { FakeParentUriRepository() }
+
+val Kosmos.parentUriRepositoryKosmos: ParentUriRepository by
+    Kosmos.Fixture { fakeParentUriRepository }
