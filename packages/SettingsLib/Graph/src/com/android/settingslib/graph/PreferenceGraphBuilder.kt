@@ -654,14 +654,27 @@ fun <T> PersistentPreference<T>.evalWritePermit(
     context: Context,
     callingPid: Int,
     callingUid: Int,
-): Int? =
-    when {
-        sensitivityLevel == UNKNOWN_SENSITIVITY || sensitivityLevel == HIGH_SENSITIVITY ->
-            ReadWritePermit.DISALLOW
+): Int? {
+    // Build.IS_DEBUGGABLE is a hidden API and cannot be used here because this module
+    // is built against "system_current". We check Build.TYPE instead to identify
+    // debuggable builds (userdebug/eng).
+    val isDebuggable = Build.TYPE == "eng" || Build.TYPE == "userdebug"
+
+    return when {
+        // High sensitivity is strictly disallowed.
+        sensitivityLevel == HIGH_SENSITIVITY -> ReadWritePermit.DISALLOW
+
+        // Unknown sensitivity is disallowed, unless we are on a debuggable build.
+        sensitivityLevel == UNKNOWN_SENSITIVITY && !isDebuggable -> ReadWritePermit.DISALLOW
+
+        // If the app lacks the required permissions, require them.
         getWritePermissions(context)?.check(context, callingPid, callingUid) == false ->
             ReadWritePermit.REQUIRE_APP_PERMISSION
+
+        // Otherwise, delegate to the specific permit logic.
         else -> getWritePermit(context, callingPid, callingUid)
     }
+}
 
 private fun PreferenceMetadata.getTitleTextProto(context: Context, isRoot: Boolean): TextProto? {
     if (isRoot && this is PreferenceScreenMetadata) {
