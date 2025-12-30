@@ -106,7 +106,6 @@ public class MagnificationController implements MagnificationConnectionManager.C
     private final SparseArray<DisableMagnificationCallback>
             mMagnificationEndRunnableSparseArray = new SparseArray();
 
-    private final AlwaysOnMagnificationFeatureFlag mAlwaysOnMagnificationFeatureFlag;
     private final MagnificationScaleProvider mScaleProvider;
     private FullScreenMagnificationController mFullScreenMagnificationController;
     private MagnificationConnectionManager mMagnificationConnectionManager;
@@ -348,10 +347,6 @@ public class MagnificationController implements MagnificationConnectionManager.C
                 FEATURE_WINDOW_MAGNIFICATION);
         mScaleStepProvider = new DefaultMagnificationScaleStepProvider();
         mPanStepProvider = new DefaultMagnificationPanStepProvider(mContext);
-
-        mAlwaysOnMagnificationFeatureFlag = new AlwaysOnMagnificationFeatureFlag(context);
-        mAlwaysOnMagnificationFeatureFlag.addOnChangedListener(
-                mBackgroundExecutor, mAms::updateAlwaysOnMagnification);
     }
 
     @VisibleForTesting
@@ -1133,8 +1128,9 @@ public class MagnificationController implements MagnificationConnectionManager.C
         getFullScreenMagnificationController().setAlwaysOnMagnificationEnabled(enabled);
     }
 
-    public boolean isAlwaysOnMagnificationFeatureFlagEnabled() {
-        return mAlwaysOnMagnificationFeatureFlag.isFeatureFlagEnabled();
+    public boolean isAlwaysOnMagnificationConfigSupported() {
+        return mContext.getResources().getBoolean(
+                com.android.internal.R.bool.config_magnification_always_on_enabled);
     }
 
     private DisableMagnificationCallback getDisableMagnificationEndRunnableLocked(

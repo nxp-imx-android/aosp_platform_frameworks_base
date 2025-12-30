@@ -191,6 +191,7 @@ import com.android.internal.accessibility.AccessibilityShortcutController.ExtraD
 import com.android.internal.accessibility.AccessibilityShortcutController.FrameworkFeatureInfo;
 import com.android.internal.accessibility.AccessibilityShortcutController.LaunchableFrameworkFeatureInfo;
 import com.android.internal.accessibility.common.KeyGestureEventConstants;
+import com.android.internal.accessibility.common.MagnificationConstants;
 import com.android.internal.accessibility.common.ShortcutChooserDialogConstants;
 import com.android.internal.accessibility.common.ShortcutConstants;
 import com.android.internal.accessibility.common.ShortcutConstants.FloatingMenuSize;
@@ -6552,15 +6553,15 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
 
     @GuardedBy("mLock")
     boolean readAlwaysOnMagnificationLocked(AccessibilityUserState userState) {
-        int alwaysOnSettingsDefaultValue = mContext.getResources().getBoolean(
-                com.android.internal.R.bool.config_magnification_always_on_enabled) ? 1 : 0;
-        final boolean isSettingsAlwaysOnEnabled = Settings.Secure.getIntForUser(
+        final boolean isAlwaysOnConfigSupported = mMagnificationController
+                .isAlwaysOnMagnificationConfigSupported();
+        // Settings on by default
+        final boolean isAlwaysOnSettingsEnabled = Settings.Secure.getIntForUser(
                 mContext.getContentResolver(),
                 Settings.Secure.ACCESSIBILITY_MAGNIFICATION_ALWAYS_ON_ENABLED,
-                alwaysOnSettingsDefaultValue, userState.mUserId) == 1;
-        final boolean isAlwaysOnFeatureFlagEnabled = mMagnificationController
-                .isAlwaysOnMagnificationFeatureFlagEnabled();
-        final boolean isAlwaysOnEnabled = isAlwaysOnFeatureFlagEnabled && isSettingsAlwaysOnEnabled;
+                MagnificationConstants.ALWAYS_ON_SETTINGS_PREFERENCE_DEFAULT_ENABLED,
+                userState.mUserId) == AccessibilityUtils.State.ON;
+        final boolean isAlwaysOnEnabled = isAlwaysOnConfigSupported && isAlwaysOnSettingsEnabled;
         if (isAlwaysOnEnabled != userState.isAlwaysOnMagnificationEnabled()) {
             userState.setAlwaysOnMagnificationEnabled(isAlwaysOnEnabled);
             mMagnificationController.setAlwaysOnMagnificationEnabled(isAlwaysOnEnabled);
