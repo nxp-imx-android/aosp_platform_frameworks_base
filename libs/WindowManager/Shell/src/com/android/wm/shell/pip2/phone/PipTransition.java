@@ -277,15 +277,6 @@ public class PipTransition extends PipTransitionController implements
             mPipTransitionState.setState(PipTransitionState.SCHEDULED_ENTER_PIP);
             final WindowContainerTransaction wct = getEnterPipTransaction(transition,
                     request.getPipChange());
-
-            mDesktopPipTransitionController.ifPresent(
-                    desktopPipTransitionController ->
-                            desktopPipTransitionController.handlePipTransition(
-                                    wct,
-                                    transition,
-                                    request.getPipChange().getTaskInfo()
-                            )
-            );
             return wct;
         }
 

@@ -2243,15 +2243,6 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                 // automatically removed from the recents list.
                 rootTask.autoRemoveRecents = true;
 
-                // Reset the original task surface
-                // TODO (b/448208017): Investigate why this line isn't WAI in fullscreen case,
-                // and find a different workaround for freeform case when this is fixed.
-                if (!DesktopExperienceFlags
-                        .ENABLE_DESKTOP_WINDOWING_MULTI_ACTIVITY_PIP_KEEP_PARENT_OPEN
-                        .isTrue()) {
-                    task.resetSurfaceControlTransforms();
-                }
-
                 // The organized TaskFragment is becoming empty because this activity is reparented
                 // to a new PIP Task. In this case, we should notify the organizer about why the
                 // TaskFragment becomes empty.

@@ -114,9 +114,6 @@ public enum DesktopExperienceFlags {
     ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION(
             Flags::enableDesktopWindowingAppToWebEducationIntegration, true,
             Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION),
-    ENABLE_DESKTOP_WINDOWING_MULTI_ACTIVITY_PIP_KEEP_PARENT_OPEN(
-            Flags::enableDesktopWindowingMultiActivityPipKeepParentOpen, false,
-            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_ACTIVITY_PIP_KEEP_PARENT_OPEN),
     ENABLE_DESKTOP_WINDOWING_PIP(Flags::enableDesktopWindowingPip, true,
             Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP),
     ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT(
