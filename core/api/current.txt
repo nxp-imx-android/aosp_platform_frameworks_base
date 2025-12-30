@@ -39581,6 +39581,7 @@ package android.provider {
     field public static final String ACTION_VOICE_CONTROL_BATTERY_SAVER_MODE = "android.settings.VOICE_CONTROL_BATTERY_SAVER_MODE";
     field public static final String ACTION_VOICE_CONTROL_DO_NOT_DISTURB_MODE = "android.settings.VOICE_CONTROL_DO_NOT_DISTURB_MODE";
     field public static final String ACTION_VOICE_INPUT_SETTINGS = "android.settings.VOICE_INPUT_SETTINGS";
+    field @FlaggedApi("android.provider.expose_vpn_app_exclusion_settings") public static final String ACTION_VPN_APP_EXCLUSION_SETTINGS = "android.settings.VPN_APP_EXCLUSION_SETTINGS";
     field public static final String ACTION_VPN_SETTINGS = "android.settings.VPN_SETTINGS";
     field public static final String ACTION_VR_LISTENER_SETTINGS = "android.settings.VR_LISTENER_SETTINGS";
     field public static final String ACTION_WEBVIEW_SETTINGS = "android.settings.WEBVIEW_SETTINGS";

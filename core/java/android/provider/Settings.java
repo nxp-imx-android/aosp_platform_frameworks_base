@@ -817,17 +817,21 @@ public final class Settings {
             "android.settings.VPN_SETTINGS";
 
     /**
-     * Activity Action: Shows a settings screen to configure application exclusions for
-     * a platform VPN.
+     * Activity Action: Show a settings screen to configure application exclusions for the
+     * calling package's {@link android.net.VpnManager} VPN.
      * <p>
-     * When this action is used to start an Activity, the system displays a user
-     * interface allowing the user to select applications that are excluded from the VPN
-     * provisioned through {@link android.net.VpnManager} by the calling package.
+     * Invoking this Intent with {@link Activity#startActivity} displays a screen allowing
+     * the user to select applications that will be excluded from the calling package's
+     * {@link android.net.VpnManager} VPN. Exclusion changes will take effect immediately if the
+     * VPN is already running, or the next time the VPN is started.
+     * <p>
+     * The presence of this activity is not guaranteed on all devices; accordingly callers
+     * should verify {@link Intent#resolveActivity} prior to {@link Activity#startActivity}
+     * or catch {@link android.content.ActivityNotFoundException}.
      * <p>
      * Input: Nothing.
      * <p>
      * Output: Nothing.
-     * @hide
      */
     @FlaggedApi(Flags.FLAG_EXPOSE_VPN_APP_EXCLUSION_SETTINGS)
     @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
