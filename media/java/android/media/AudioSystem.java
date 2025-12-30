@@ -1479,11 +1479,13 @@ public class AudioSystem
     }
 
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static boolean isInputDevice(int deviceType) {
         return (deviceType & DEVICE_BIT_IN) == DEVICE_BIT_IN;
     }
 
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static boolean isBluetoothDevice(int deviceType) {
         return isBluetoothA2dpOutDevice(deviceType)
                 || isBluetoothScoDevice(deviceType)
@@ -1491,6 +1493,7 @@ public class AudioSystem
     }
 
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static boolean isBluetoothOutDevice(int deviceType) {
         return isBluetoothA2dpOutDevice(deviceType)
                 || isBluetoothScoOutDevice(deviceType)
@@ -1498,54 +1501,64 @@ public class AudioSystem
     }
 
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static boolean isBluetoothInDevice(int deviceType) {
         return isBluetoothScoInDevice(deviceType)
                 || isBluetoothLeInDevice(deviceType);
     }
 
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static boolean isBluetoothA2dpOutDevice(int deviceType) {
         return DEVICE_OUT_ALL_A2DP_SET.contains(deviceType);
     }
 
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static boolean isBluetoothScoOutDevice(int deviceType) {
         return DEVICE_OUT_ALL_SCO_SET.contains(deviceType);
     }
 
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static boolean isBluetoothScoInDevice(int deviceType) {
         return DEVICE_IN_ALL_SCO_SET.contains(deviceType);
     }
 
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static boolean isBluetoothScoDevice(int deviceType) {
         return isBluetoothScoOutDevice(deviceType)
                 || isBluetoothScoInDevice(deviceType);
     }
 
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static boolean isBluetoothLeOutDevice(int deviceType) {
         return DEVICE_OUT_ALL_BLE_SET.contains(deviceType);
     }
 
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static boolean isBluetoothLeInDevice(int deviceType) {
         return DEVICE_IN_ALL_BLE_SET.contains(deviceType);
     }
 
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static boolean isBluetoothLeDevice(int deviceType) {
         return isBluetoothLeOutDevice(deviceType)
                 || isBluetoothLeInDevice(deviceType);
     }
 
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static boolean isBluetoothLeOutUnicastDevice(int deviceType) {
         return DEVICE_OUT_ALL_BLE_UNICAST_SET.contains(deviceType);
     }
 
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static boolean isRemoteSubmixDevice(int deviceType) {
         return deviceType == DEVICE_IN_REMOTE_SUBMIX || deviceType == DEVICE_OUT_REMOTE_SUBMIX;
     }
@@ -1808,6 +1821,7 @@ public class AudioSystem
      * @param device a native device type, NOT an AudioDeviceInfo type
      * @return a string describing the device type
      */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static @NonNull String getDeviceName(int device) {
         if (isInputDevice(device)) {
             return getInputDeviceName(device);
