@@ -76,6 +76,7 @@ import android.app.IApplicationThread;
 import android.app.IHandoffTaskDataReceiver;
 import android.app.ITaskMoveAllowedListener;
 import android.app.PictureInPictureParams;
+import android.app.PictureInPictureUiState;
 import android.app.servertransaction.ClientTransactionItem;
 import android.app.servertransaction.EnterPipRequestedItem;
 import android.content.ComponentName;
@@ -2239,5 +2240,119 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
                 anyInt(), eq(DEFAULT_COMPONENT_PACKAGE_NAME), any(), any(), any(),
                 eq(callingActivityToken), any(), eq(DEFAULT_USER_ID), anyBoolean(), any(),
                 anyBoolean());
+    }
+
+    @Test
+    public void onPictureInPictureUiStateChanged_defaultDisplay_sendsToPinnedTask() {
+        // Spy on the client controller to verify the call.
+        spyOn(mAtm.mActivityClientController);
+
+        // Create a pinned task with an activity on the default display.
+        final Task pinnedTask = new TaskBuilder(mSupervisor)
+                .setWindowingMode(WINDOWING_MODE_PINNED)
+                .setCreateActivity(true)
+                .build();
+        final ActivityRecord pinnedActivity = pinnedTask.getTopMostActivity();
+        final PictureInPictureUiState pipState = new PictureInPictureUiState.Builder().build();
+
+        // Call the method under test for the default display.
+        mAtm.onPictureInPictureUiStateChanged(pipState, Display.DEFAULT_DISPLAY);
+
+        // Verify the state is dispatched to the correct activity.
+        verify(mAtm.mActivityClientController).onPictureInPictureUiStateChanged(
+                eq(pinnedActivity), eq(pipState));
+    }
+
+    @Test
+    public void onPictureInPictureUiStateChanged_defaultDisplay_sendsToStandardTaskIfNoPinned() {
+        // Spy on the client controller to verify the call.
+        spyOn(mAtm.mActivityClientController);
+
+        // Create a standard task with an activity on the default display.
+        final Task standardTask = new TaskBuilder(mSupervisor)
+                .setCreateActivity(true)
+                .build();
+        final ActivityRecord standardActivity = standardTask.getTopMostActivity();
+        final PictureInPictureUiState pipState = new PictureInPictureUiState.Builder().build();
+
+        // Ensure no pinned task exists on the default display.
+        assertNull(mDefaultDisplay.getDefaultTaskDisplayArea().getRootPinnedTask());
+
+        // Call the method under test for the default display.
+        mAtm.onPictureInPictureUiStateChanged(pipState, Display.DEFAULT_DISPLAY);
+
+        // Verify the state is dispatched to the correct activity.
+        verify(mAtm.mActivityClientController).onPictureInPictureUiStateChanged(
+                eq(standardActivity), eq(pipState));
+    }
+
+    @Test
+    public void onPictureInPictureUiStateChanged_secondaryDisplay_sendsToPinnedTask() {
+        // Spy on the client controller to verify the call.
+        spyOn(mAtm.mActivityClientController);
+
+        // Create a secondary display.
+        final DisplayContent secondaryDisplay = new TestDisplayContent.Builder(mAtm, 1000, 1500)
+                .build();
+
+        // Create a pinned task with an activity on the secondary display.
+        final Task pinnedTask = new TaskBuilder(mSupervisor)
+                .setWindowingMode(WINDOWING_MODE_PINNED)
+                .setCreateActivity(true)
+                .setDisplay(secondaryDisplay)
+                .build();
+        final ActivityRecord pinnedActivity = pinnedTask.getTopMostActivity();
+        final PictureInPictureUiState pipState = new PictureInPictureUiState.Builder().build();
+
+        // Call the method under test for the secondary display.
+        mAtm.onPictureInPictureUiStateChanged(pipState, secondaryDisplay.getDisplayId());
+
+        // Verify the state is dispatched to the correct activity.
+        verify(mAtm.mActivityClientController).onPictureInPictureUiStateChanged(
+                eq(pinnedActivity), eq(pipState));
+    }
+
+    @Test
+    public void onPictureInPictureUiStateChanged_secondaryDisplay_sendsToStandardTaskIfNoPinned() {
+        // Spy on the client controller to verify the call.
+        spyOn(mAtm.mActivityClientController);
+
+        // Create a secondary display.
+        final DisplayContent secondaryDisplay = new TestDisplayContent.Builder(mAtm, 1000, 1500)
+                .build();
+
+        // Create a standard task with an activity on the secondary display.
+        final Task standardTask = new TaskBuilder(mSupervisor)
+                .setCreateActivity(true)
+                .setDisplay(secondaryDisplay)
+                .build();
+        final ActivityRecord standardActivity = standardTask.getTopMostActivity();
+        final PictureInPictureUiState pipState = new PictureInPictureUiState.Builder().build();
+
+        // Ensure no pinned task exists on the secondary display.
+        assertNull(secondaryDisplay.getDefaultTaskDisplayArea().getRootPinnedTask());
+
+        // Call the method under test for the secondary display.
+        mAtm.onPictureInPictureUiStateChanged(pipState, secondaryDisplay.getDisplayId());
+
+        // Verify the state is dispatched to the correct activity.
+        verify(mAtm.mActivityClientController).onPictureInPictureUiStateChanged(
+                eq(standardActivity), eq(pipState));
+    }
+
+    @Test
+    public void onPictureInPictureUiStateChanged_invalidDisplay_doesNothing() {
+        // Spy on the client controller to verify no calls are made.
+        spyOn(mAtm.mActivityClientController);
+
+        final int invalidDisplayId = 999;
+        final PictureInPictureUiState pipState = new PictureInPictureUiState.Builder().build();
+
+        // Call the method under test with an invalid display ID.
+        mAtm.onPictureInPictureUiStateChanged(pipState, invalidDisplayId);
+
+        // Verify the controller is never called.
+        verify(mAtm.mActivityClientController, never()).onPictureInPictureUiStateChanged(any(),
+                any());
     }
 }
