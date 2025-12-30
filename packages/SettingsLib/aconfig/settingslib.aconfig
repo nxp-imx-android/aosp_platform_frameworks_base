@@ -274,3 +274,10 @@ flag {
   description: "Add 200% and 300% display density adjustments for external display"
   bug: "456530370"
 }
+
+flag {
+    name: "hearing_devices_granular_output_routing"
+    namespace: "accessibility"
+    description: "Enables separate routing controls for Notifications and Ringtones & Alarms"
+    bug: "417319636"
+}
