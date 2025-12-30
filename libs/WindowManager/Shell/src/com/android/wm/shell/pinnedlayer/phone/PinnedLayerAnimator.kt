@@ -24,6 +24,7 @@ import android.view.animation.Interpolator
 import android.window.TransitionInfo
 import com.android.wm.shell.shared.animation.Interpolators
 import com.android.wm.shell.transition.Transitions
+import kotlin.math.roundToInt
 
 /** Animator for pinned layer transitions. */
 class PinnedLayerAnimator {
@@ -32,6 +33,20 @@ class PinnedLayerAnimator {
         private const val PIN_ANIMATION_DURATION_MS = 300L
         private val PIN_ANIMATION_INTERPOLATOR: Interpolator = Interpolators.FAST_OUT_SLOW_IN
 
+        /**
+         * Creates an [Animator] that animates pinning operation according to the changed bounds.
+         *
+         * @param change a [TransitionInfo.Change] that caused pinning.
+         * @param startTransaction see [Transitions.TransitionHandler.startAnimation]
+         * @param finishTransaction see [Transitions.TransitionHandler.startAnimation]
+         * @param sctFactory a [SurfaceControl.Transaction] factory used create a transaction for
+         *   animation
+         * @param onAnimationStart an animation listener that is called when the animation starts.
+         *   This listener must call [SurfaceControl.Transaction.apply].
+         * @param onAnimationUpdate an animation listener that is called on animation updates. This
+         *   listener must call [SurfaceControl.Transaction.apply].
+         * @param onAnimationEnd an animation listener that is called when the animation ends.
+         */
         fun createPinAnimator(
             change: TransitionInfo.Change,
             startTransaction: SurfaceControl.Transaction,
@@ -40,7 +55,18 @@ class PinnedLayerAnimator {
             sctFactory: () -> SurfaceControl.Transaction = {
                 SurfaceControl.Transaction()
             }, // for testing
+            onAnimationStart: (Int, SurfaceControl.Transaction, Rect) -> Unit = { _, t, _ ->
+                t.apply()
+            },
+            onAnimationUpdate: (Int, SurfaceControl.Transaction, Rect) -> Unit = { _, t, _ ->
+                t.apply()
+            },
+            onAnimationEnd: (Int) -> Unit = {},
         ): Animator {
+            val task =
+                requireNotNull(change.taskInfo) {
+                    "The change=$change doesn't contain a task to animate."
+                }
             val animator =
                 ValueAnimator.ofFloat(0f, 1f).apply {
                     duration = PIN_ANIMATION_DURATION_MS
@@ -50,7 +76,7 @@ class PinnedLayerAnimator {
             val startBounds = Rect(change.startAbsBounds)
             val endBounds = Rect(change.endAbsBounds)
 
-            fun applyTxWithBounds(
+            fun addTxWithBounds(
                 tx: SurfaceControl.Transaction,
                 left: Float,
                 top: Float,
@@ -59,11 +85,10 @@ class PinnedLayerAnimator {
             ) {
                 tx.setPosition(change.leash, left, top)
                 tx.setWindowCrop(change.leash, width, height)
-                tx.apply()
             }
 
-            fun applyTxWithBounds(tx: SurfaceControl.Transaction, bounds: Rect) {
-                applyTxWithBounds(
+            fun addTxWithBounds(tx: SurfaceControl.Transaction, bounds: Rect) {
+                addTxWithBounds(
                     tx,
                     bounds.left.toFloat(),
                     bounds.top.toFloat(),
@@ -76,17 +101,21 @@ class PinnedLayerAnimator {
                 object : AnimatorListenerAdapter() {
                     override fun onAnimationStart(animation: Animator) {
                         super.onAnimationStart(animation)
-                        applyTxWithBounds(startTransaction, startBounds)
+                        addTxWithBounds(startTransaction, startBounds)
+                        onAnimationStart(task.taskId, startTransaction, startBounds)
                     }
 
                     override fun onAnimationEnd(animation: Animator) {
                         super.onAnimationEnd(animation)
-                        applyTxWithBounds(finishTransaction, endBounds)
+                        addTxWithBounds(finishTransaction, endBounds)
+                        onAnimationEnd(task.taskId)
                         finishCallback.onTransitionFinished(null)
                     }
                 }
             )
 
+            // TODO(b/399376001): Change to a RectEvaluator.
+            val updateRect = Rect()
             animator.addUpdateListener { animation ->
                 val transaction = sctFactory.invoke()
                 val progress = animation.animatedFraction
@@ -94,9 +123,16 @@ class PinnedLayerAnimator {
                 val e = endBounds
                 val left = s.left + (e.left - s.left) * progress
                 val top = s.top + (e.top - s.top) * progress
-                val width = s.width() + (e.width() - s.width()) * progress
-                val height = s.height() + (e.height() - s.height()) * progress
-                applyTxWithBounds(transaction, left, top, width.toInt(), height.toInt())
+                val right = s.right + (e.right - s.right) * progress
+                val bottom = s.bottom + (e.bottom - s.bottom) * progress
+                updateRect.set(
+                    left.roundToInt(),
+                    top.roundToInt(),
+                    right.roundToInt(),
+                    bottom.roundToInt(),
+                )
+                addTxWithBounds(transaction, updateRect)
+                onAnimationUpdate(task.taskId, transaction, updateRect)
             }
 
             return animator

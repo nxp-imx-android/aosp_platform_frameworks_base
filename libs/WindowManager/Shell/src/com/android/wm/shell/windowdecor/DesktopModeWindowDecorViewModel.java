@@ -129,6 +129,7 @@ import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter;
 import com.android.wm.shell.gamecontrols.GameControlsHelper;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController;
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerUiState;
 import com.android.wm.shell.recents.RecentsTransitionHandler;
 import com.android.wm.shell.recents.RecentsTransitionStateListener;
 import com.android.wm.shell.shared.FocusTransitionListener;
@@ -221,6 +222,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private final ShellDesktopState mShellDesktopState;
     private final DesktopConfig mDesktopConfig;
     private final @Nullable PinnedLayerController mPinnedLayerController;
+    private final @Nullable PinnedLayerUiState mPinnedLayerUiState;
     private boolean mTransitionDragActive;
 
     private SparseArray<EventReceiver> mEventReceiversByDisplay = new SparseArray<>();
@@ -331,7 +333,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             DesktopConfig desktopConfig,
             UserProfileContexts userProfileContexts,
             LockTaskChangeListener lockTaskChangeListener,
-            PinnedLayerController pinnedLayerController) {
+            PinnedLayerController pinnedLayerController,
+            PinnedLayerUiState pinnedLayerUiState) {
         this(
                 context,
                 shellExecutor,
@@ -386,7 +389,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 desktopConfig,
                 userProfileContexts,
                 lockTaskChangeListener,
-                pinnedLayerController);
+                pinnedLayerController,
+                pinnedLayerUiState);
     }
 
     @VisibleForTesting
@@ -444,7 +448,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             DesktopConfig desktopConfig,
             UserProfileContexts userProfileContexts,
             LockTaskChangeListener lockTaskChangeListener,
-            PinnedLayerController pinnedLayerController) {
+            PinnedLayerController pinnedLayerController,
+            PinnedLayerUiState pinnedLayerUiState) {
         mContext = context;
         mMainExecutor = shellExecutor;
         mMainHandler = mainHandler;
@@ -540,6 +545,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 });
         mLockTaskChangeListener = lockTaskChangeListener;
         mPinnedLayerController = pinnedLayerController;
+        mPinnedLayerUiState = pinnedLayerUiState;
         shellInit.addInitCallback(this::onInit, this);
     }
 
@@ -556,6 +562,11 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         if (mPinnedLayerController != null) {
             mPinnedLayerController.setOnTaskRepositionAnimationListener(
                     new DesktopModeOnTaskRepositionAnimationListener()
+            );
+        }
+        if (mPinnedLayerUiState != null) {
+            mPinnedLayerUiState.setOnTaskResizeAnimationListener(
+                    new DesktopModeOnTaskResizeAnimationListener()
             );
         }
         mRecentsTransitionHandler.addTransitionStateListener(

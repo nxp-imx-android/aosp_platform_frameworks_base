@@ -33,6 +33,7 @@ import com.android.wm.shell.pinnedlayer.phone.PinnedLayerFlags
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerPermissionObserver
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerPresentationController
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerUiState
 import com.android.wm.shell.pinnedlayer.phone.PinnedWindowRepositionAnimationHandler
 import com.android.wm.shell.shared.TransactionPool
 import com.android.wm.shell.shared.annotations.ShellMainThread
@@ -52,6 +53,7 @@ object PinnedLayerModule {
         shellInit: ShellInit,
         transitions: Transitions,
         pinnedLayerController: Optional<PinnedLayerController>,
+        pinnedLayerUiState: Optional<PinnedLayerUiState>,
         // observer is unused here, but required to inject to make sure it is created so it can
         // register itself as a listener.
         pinnedLayerPermissionObserver: Optional<PinnedLayerPermissionObserver>,
@@ -65,6 +67,7 @@ object PinnedLayerModule {
                     shellInit = shellInit,
                     transitions = transitions,
                     pinnedLayerController = pinnedLayerController.get(),
+                    pinnedLayerUiState = pinnedLayerUiState.get(),
                     normalLayerController = normalAppLayerController.get(),
                     desktopUserRepositories = desktopUserRepositories.orElse(null),
                     desktopTasksController = desktopTasksController.orElse(null),
@@ -104,6 +107,15 @@ object PinnedLayerModule {
                         multiDisplayDragMoveIndicatorController,
                 )
             )
+        }
+        return Optional.empty()
+    }
+
+    @WMSingleton
+    @Provides
+    fun providePinnedLayerUiState(): Optional<PinnedLayerUiState> {
+        if (PinnedLayerFlags.isPinnedLayerEnabled()) {
+            return Optional.of(PinnedLayerUiState())
         }
         return Optional.empty()
     }

@@ -111,6 +111,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
 
     private lateinit var desktopState: FakeDesktopState
     private lateinit var pinnedLayerController: PinnedLayerController
+    private lateinit var pinnedLayerUiState: PinnedLayerUiState
     private lateinit var pinnedLayerHandler: PinnedLayerHandler
 
     @Before
@@ -130,11 +131,13 @@ class PinnedLayerHandlerTests : ShellTestCase() {
                 transactionPool,
                 multiDisplayDragMoveIndicatorController,
             )
+        pinnedLayerUiState = PinnedLayerUiState()
         pinnedLayerHandler =
             PinnedLayerHandler(
                 shellInit,
                 transitions,
                 pinnedLayerController,
+                pinnedLayerUiState,
                 normalLayerController,
                 desktopUserRepositories,
                 desktopTasksController,
