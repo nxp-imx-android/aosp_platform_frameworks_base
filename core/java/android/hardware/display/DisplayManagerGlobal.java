@@ -175,7 +175,11 @@ public final class DisplayManagerGlobal {
     private final IDisplayManager mDm;
     private final @Nullable DisplayManagerInternal mDmInternal;
 
-    private DisplayManagerCallback mCallback;
+    // This field is volatile to allow reading it without acquiring mLock. Since getDisplayInfo is
+    // called frequently, avoiding lock acquisition on the read path improves performance.
+    // The happens-before guarantee of volatile ensures that once mCallback is set, all subsequent
+    // reads will see the updated value.
+    private volatile DisplayManagerCallback mCallback;
     private @InternalEventFlag long mRegisteredInternalEventFlag = 0;
     private final CopyOnWriteArrayList<DisplayListenerDelegate> mDisplayListeners =
             new CopyOnWriteArrayList<>();
@@ -314,9 +318,7 @@ public final class DisplayManagerGlobal {
             return null;
         }
 
-        synchronized (mLock) {
-            registerCallbackIfNeededLocked();
-        }
+        registerCallbackIfNeeded();
 
         if (DEBUG) {
             Log.d(TAG, "getDisplayInfo: displayId=" + displayId + ", info=" + info);
@@ -363,7 +365,7 @@ public final class DisplayManagerGlobal {
                             mShouldImplicitlyRegisterAdded = true;
                         }
                         // updateCallbackIfNeededLocked will enable caching now.
-                        registerCallbackIfNeededLocked();
+                        registerCallbackIfNeeded();
                         updateCallbackIfNeededLocked();
                     }
                     // If the cache is valid - there is no reason to make getDisplayIds binder call.
@@ -385,7 +387,7 @@ public final class DisplayManagerGlobal {
                             + " package=" + ActivityThread.currentPackageName());
                 }
                 int[] displayIds = mDm.getDisplayIds(includeDisabled);
-                registerCallbackIfNeededLocked();
+                registerCallbackIfNeeded();
                 return displayIds;
             }
         } catch (RemoteException ex) {
@@ -528,7 +530,7 @@ public final class DisplayManagerGlobal {
                 delegate = new DisplayListenerDelegate(listener, executor,
                         internalEventFlagsMask, packageName, isEventFilterExplicit);
                 mDisplayListeners.add(delegate);
-                registerCallbackIfNeededLocked();
+                registerCallbackIfNeeded();
             } else {
                 delegate = mDisplayListeners.get(index);
                 delegate.setEventsMask(internalEventFlagsMask);
@@ -680,10 +682,12 @@ public final class DisplayManagerGlobal {
         return null;
     }
 
-    private void registerCallbackIfNeededLocked() {
+    private void registerCallbackIfNeeded() {
         if (mCallback == null) {
             mCallback = new DisplayManagerCallback();
-            updateCallbackIfNeededLocked();
+            synchronized (mLock) {
+                updateCallbackIfNeededLocked();
+            }
         }
     }
 
@@ -822,7 +826,7 @@ public final class DisplayManagerGlobal {
     public void startWifiDisplayScan() {
         synchronized (mLock) {
             if (mWifiDisplayScanNestCount++ == 0) {
-                registerCallbackIfNeededLocked();
+                registerCallbackIfNeeded();
                 try {
                     mDm.startWifiDisplayScan();
                 } catch (RemoteException ex) {
@@ -1699,7 +1703,7 @@ public final class DisplayManagerGlobal {
             if (delegate == null) {
                 mTopologyListeners.add(new DisplayTopologyListenerDelegate(listener, executor,
                         packageName));
-                registerCallbackIfNeededLocked();
+                registerCallbackIfNeeded();
                 updateCallbackIfNeededLocked();
             }
         }
@@ -2177,7 +2181,7 @@ public final class DisplayManagerGlobal {
                 }
                 mShouldImplicitlyRegisterRrChanges = true;
             }
-            registerCallbackIfNeededLocked();
+            registerCallbackIfNeeded();
             updateCallbackIfNeededLocked();
             DisplayInfo display = getDisplayInfoInternal(Display.DEFAULT_DISPLAY);
             if (display != null) {
