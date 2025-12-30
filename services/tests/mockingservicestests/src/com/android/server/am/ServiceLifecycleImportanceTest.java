@@ -33,6 +33,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -166,6 +167,61 @@ public class ServiceLifecycleImportanceTest extends BaseServiceTest {
     }
 
     @Test
+    public void startService_alreadyCreated() throws Exception {
+        mAms.mInternal.setDeviceIdleAllowlist(new int[]{TEST_APP1_UID}, new int[]{TEST_APP1_UID});
+
+        final ApplicationThreadDeferred serviceThread = mock(ApplicationThreadDeferred.class);
+        final ProcessRecord proc = new TestProcessBuilder()
+                .setActivityManagerService(mAms)
+                .setPackageName(TEST_APP1_NAME)
+                .setPid(TEST_APP1_PID)
+                .setUid(TEST_APP1_UID)
+                .setAppThread(serviceThread)
+                .build();
+
+        // Start the service before starting again to it to get it in the already created state.
+        final Intent serviceIntent = createServiceIntent(TEST_APP1_NAME, TEST_SERVICE1_NAME,
+                TEST_APP1_UID);
+        createAndStartService(proc, serviceIntent, serviceThread);
+
+        ProcessStateValidator bgServiceValidator =
+                ProcessStateValidator.create(BACKGROUND_SERVICE_VALIDATOR_TEMPLATE).clamp();
+
+        // While in the executing state, the process can have the elevated importance.
+        ProcessStateValidator executingStateValidator = ProcessStateValidator.create(
+                BACKGROUND_SERVICE_VALIDATOR_TEMPLATE, EXECUTING_STATE_VALIDATOR_TEMPLATE).clamp();
+
+        ServiceLifecycleArgs serviceArgsArgs = new ServiceLifecycleArgs();
+        doAnswer((invocation) -> {
+            executingStateValidator.validate(proc);
+            // scheduleServiceArgs will be called while in the executing state.
+            serviceArgsArgs.token = invocation.getArgument(0);
+            return null;
+        }).when(serviceThread).scheduleServiceArgs(any(), any());
+
+        final Intent secondServiceIntent = createServiceIntent(TEST_APP1_NAME, TEST_SERVICE1_NAME,
+                TEST_APP1_UID);
+        mAms.startService(
+                proc.getThread(),       // caller
+                secondServiceIntent,    // service
+                null,                   // resolveType
+                false,                  // requireForeground
+                proc.getPackageName(),  // callingPackage
+                null,                   // callingFeatureId
+                USER_SYSTEM);           // userId
+
+        verify(serviceThread, never()).scheduleCreateService(any(), any(), any(), anyInt());
+        verify(serviceThread).scheduleServiceArgs(any(), any());
+        verify(serviceThread, never()).scheduleBindService(any(), any(), any(), anyBoolean(),
+                anyInt(),
+                anyLong());
+
+        mAms.serviceDoneExecuting(serviceArgsArgs.token, SERVICE_DONE_EXECUTING_START, 0, 0);
+
+        bgServiceValidator.validate(proc);
+    }
+
+    @Test
     public void bindService() throws Exception {
         final ProcessRecord clientProc = new TestProcessBuilder()
                 .setActivityManagerService(mAms)
@@ -238,11 +294,112 @@ public class ServiceLifecycleImportanceTest extends BaseServiceTest {
         mAms.serviceDoneExecuting(createServiceArgs.token, SERVICE_DONE_EXECUTING_ANON, 0, 0);
         mAms.publishService(bindServiceArgs.token, bindServiceArgs.bindToken, mock(IBinder.class));
 
-        // The service should now only be as importanct as it's binding allows it.
+        // The service should now only be as important as it's binding allows it.
         boundStateValidator.validate(serviceProc);
     }
 
-    // Set proc's importance state as if it was an FGS that has already been evaluated by PSC.
+    @Test
+    public void bindService_alreadyCreated() throws Exception {
+        mAms.mInternal.setDeviceIdleAllowlist(new int[]{TEST_APP2_UID}, new int[]{TEST_APP2_UID});
+
+        // Create a process to bind to and snoop on the App thread calls.
+        final ApplicationThreadDeferred serviceThread = mock(ApplicationThreadDeferred.class);
+        final ProcessRecord serviceProc = new TestProcessBuilder()
+                .setActivityManagerService(mAms)
+                .setPackageName(TEST_APP2_NAME)
+                .setPid(TEST_APP2_PID)
+                .setUid(TEST_APP2_UID)
+                .setAppThread(serviceThread)
+                .build();
+
+        // Start the service before binding to it to get it in the already created state.
+        final Intent serviceIntent = createServiceIntent(TEST_APP2_NAME, TEST_SERVICE2_NAME,
+                TEST_APP2_UID);
+        createAndStartService(serviceProc, serviceIntent, serviceThread);
+
+        // Start the actual test.
+        // Create a client foreground service process to bind to the existing service.
+        final ProcessRecord clientProc = new TestProcessBuilder()
+                .setActivityManagerService(mAms)
+                .setPackageName(TEST_APP1_NAME)
+                .setPid(TEST_APP1_PID)
+                .setUid(TEST_APP1_UID)
+                .build();
+
+        makeForegroundService(clientProc);
+
+        // While the process is bound by an FGS with BIND_IMPORTANT it should have the importance
+        // of an FGS.
+        ProcessStateValidator boundStateValidator =
+                ProcessStateValidator.create(FOREGROUND_SERVICE_VALIDATOR_TEMPLATE).clamp();
+
+        ServiceLifecycleArgs bindServiceArgs = new ServiceLifecycleArgs();
+        doAnswer((invocation) -> {
+            bindServiceArgs.token = invocation.getArgument(0);
+            bindServiceArgs.bindToken = invocation.getArgument(1);
+            // Service was already created, so will not be in the executing state.
+            boundStateValidator.validate(serviceProc);
+            return null;
+        }).when(serviceThread).scheduleBindService(any(), any(), any(), anyBoolean(), anyInt(),
+                anyLong());
+
+        // Bind to the service process from the client process.
+        final Intent secondServiceIntent = createServiceIntent(TEST_APP2_NAME, TEST_SERVICE2_NAME,
+                TEST_APP2_UID);
+        final IServiceConnection serviceConnection = mock(IServiceConnection.class);
+        mAms.bindService(
+                clientProc.getThread(),             // caller
+                null,                               // token
+                secondServiceIntent,                // service
+                null,                               // resolveType
+                serviceConnection,                  // connection
+                BIND_AUTO_CREATE | BIND_IMPORTANT,  // flags
+                clientProc.getPackageName(),        // callingPackage
+                USER_SYSTEM                         // userId
+        );
+
+        // Only the bind service event should have been triggered.
+        verify(serviceThread, never()).scheduleCreateService(any(), any(), any(), anyInt());
+        verify(serviceThread).scheduleBindService(any(), any(), any(), anyBoolean(), anyInt(),
+                anyLong());
+        verify(serviceThread, never()).scheduleServiceArgs(any(), any());
+
+        // Finish the bindService callback.
+        mAms.publishService(bindServiceArgs.token, bindServiceArgs.bindToken, mock(IBinder.class));
+
+        boundStateValidator.validate(serviceProc);
+    }
+
+    // Create and start a service and then finish executing the lifecycle events.
+    private void createAndStartService(ProcessRecord serviceProc,
+            Intent serviceIntent,
+            ApplicationThreadDeferred serviceThread) throws Exception {
+        ServiceLifecycleArgs createServiceArgs = new ServiceLifecycleArgs();
+        doAnswer((invocation) -> {
+            createServiceArgs.token = invocation.getArgument(0);
+            return null;
+        }).when(serviceThread).scheduleCreateService(any(), any(), any(), anyInt());
+
+        ServiceLifecycleArgs serviceArgsArgs = new ServiceLifecycleArgs();
+        doAnswer((invocation) -> {
+            serviceArgsArgs.token = invocation.getArgument(0);
+            return null;
+        }).when(serviceThread).scheduleServiceArgs(any(), any());
+
+        mAms.startService(
+                serviceProc.getThread(),        // caller
+                serviceIntent,                  // service
+                null,                           // resolveType
+                false,                          // requireForeground
+                serviceProc.getPackageName(),   // callingPackage
+                null,                           // callingFeatureId
+                USER_SYSTEM);                   // userId
+        mAms.serviceDoneExecuting(createServiceArgs.token, SERVICE_DONE_EXECUTING_ANON, 0, 0);
+        mAms.serviceDoneExecuting(serviceArgsArgs.token, SERVICE_DONE_EXECUTING_START, 0, 0);
+        clearInvocations(serviceThread);
+    }
+
+    /** Set proc's importance state as if it was an FGS that has already been evaluated by PSC. */
     private void makeForegroundService(ProcessRecord proc) {
         proc.setCurRawProcState(PROCESS_STATE_FOREGROUND_SERVICE);
         proc.setCurProcState(PROCESS_STATE_FOREGROUND_SERVICE);
