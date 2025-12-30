@@ -1166,6 +1166,7 @@ flag {
   namespace: "lse_desktop_experience"
   description: "Allow app developers to opt out from OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS"
   bug: "472448413"
+  is_exported: true
 }
 
 flag {

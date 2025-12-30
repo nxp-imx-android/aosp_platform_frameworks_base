@@ -970,6 +970,36 @@ public interface WindowManager extends ViewManager {
 
     /**
      * Application level {@link android.content.pm.PackageManager.Property PackageManager.Property}
+     * for an app to inform the system that it needs to be opted-out from the compatibility
+     * treatment that sandboxes the {@link android.content.res.Configuration } API when caption
+     * insets are force consumed.
+     *
+     * <p>The treatment can be enabled by device manufacturers for applications that don't handle
+     * consumption of {@link WindowInsets.Type#captionBar } insets which can lead to top or bottom
+     * UI elements being cropped. The treatment will sandbox
+     * {@link android.content.res.Configuration#screenHeightDp } to exclude caption insets.
+     *
+     * <p>Setting this property to {@code false} informs the system that the application
+     * must be opted-out from the exclude caption insets from app bounds treatment even if
+     * the device manufacturer has opted the app into the treatment.
+     *
+     * <p>Not setting this property at all, or setting this property to {@code true} has no effect.
+     *
+     * <p><b>Syntax:</b>
+     * <pre>
+     * &lt;application&gt;
+     *   &lt;property
+     *     android:name="android.window.PROPERTY_COMPAT_ALLOW_EXCLUDE_CAPTION_INSETS"
+     *     android:value="false"/&gt;
+     * &lt;/application&gt;
+     * </pre>
+     */
+    @FlaggedApi(Flags.FLAG_EXCLUDE_CAPTION_INSETS_OPT_OUT_API)
+    String PROPERTY_COMPAT_ALLOW_EXCLUDE_CAPTION_INSETS =
+            "android.window.PROPERTY_COMPAT_ALLOW_EXCLUDE_CAPTION_INSETS";
+
+    /**
+     * Application level {@link android.content.pm.PackageManager.Property PackageManager.Property}
      * for an app to inform the system that the application can be opted-in or opted-out from the
      * compatibility treatment that enables sending a fake focus event for unfocused resumed
      * split-screen activities. This is needed because some game engines wait to get focus before
