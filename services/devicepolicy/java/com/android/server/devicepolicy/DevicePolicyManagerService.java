@@ -3581,9 +3581,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 applyManagedSubscriptionsPolicyIfRequired();
                 break;
             case SystemService.PHASE_SYSTEM_SERVICES_READY:
-                synchronized (getLockObject()) {
-                    mDevicePolicyEngine.reapplyAllPoliciesOnBootLocked();
-                }
                 if (Flags.managementModePolicyMetrics()) {
                     registerStatsCallbacks();
                 }
@@ -3592,6 +3589,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 synchronized (getLockObject()) {
                     migrateToProfileOnOrganizationOwnedDeviceIfCompLocked();
                     applyProfileRestrictionsIfDeviceOwnerLocked();
+                    // Re-applying policies can trigger broadcasts, so we must wait until
+                    // PHASE_ACTIVITY_MANAGER_READY. We also do this before migrating policies
+                    // to avoid re-applying them twice.
+                    mDevicePolicyEngine.reapplyAllPoliciesOnBootLocked();
 
                     // TODO: Is this the right place to trigger the migration?
                     if (shouldMigrateV1ToDevicePolicyEngine()) {
