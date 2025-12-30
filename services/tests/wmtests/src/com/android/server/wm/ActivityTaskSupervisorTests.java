@@ -19,7 +19,6 @@ package com.android.server.wm;
 import static android.app.ActivityManager.START_DELIVERED_TO_TOP;
 import static android.app.ActivityManager.START_TASK_TO_FRONT;
 import static android.app.ITaskStackListener.FORCED_RESIZEABLE_REASON_SECONDARY_DISPLAY;
-import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
@@ -51,15 +50,12 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 
-import android.annotation.NonNull;
 import android.app.ActivityOptions;
 import android.app.TaskInfo;
 import android.app.WaitResult;
-import android.app.WindowConfiguration;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.graphics.Rect;
 import android.os.Binder;
 import android.os.ConditionVariable;
 import android.os.IBinder;
@@ -656,191 +652,11 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
     }
 
     @Test
-    public void testOpaque_leafTask_occludingActivity_isOpaque() {
-        final ActivityRecord activity = new ActivityBuilder(mAtm).setCreateTask(true).build();
-        activity.setOccludesParent(true);
-        final TaskFragment tf = activity.getTaskFragment();
-
-        assertThat(mSupervisor.mOpaqueContainerHelper.isOpaque(tf)).isTrue();
-    }
-
-    @Test
-    public void testOpaque_leafTask_nonOccludingActivity_isTranslucent() {
-        final ActivityRecord activity = new ActivityBuilder(mAtm).setCreateTask(true).build();
-        activity.setOccludesParent(false);
-        final TaskFragment tf = activity.getTaskFragment();
-
-        assertThat(mSupervisor.mOpaqueContainerHelper.isOpaque(tf)).isFalse();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    public void testOpaque_rootTask_translucentFillingChild_isTranslucent() {
-        final Task rootTask = new TaskBuilder(mSupervisor).setOnTop(true).build();
-        createChildTaskFragment(/* parent */ rootTask,
-                WINDOWING_MODE_FREEFORM, /* opaque */ false, /* filling */ true);
-
-        assertThat(mSupervisor.mOpaqueContainerHelper.isOpaque(rootTask)).isFalse();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    public void testOpaque_rootTask_opaqueAndNotFillingChild_isTranslucent() {
-        final Task rootTask = new TaskBuilder(mSupervisor).setOnTop(true).build();
-        createChildTaskFragment(/* parent */ rootTask,
-                WINDOWING_MODE_FREEFORM, /* opaque */ true, /* filling */ false);
-
-        assertThat(mSupervisor.mOpaqueContainerHelper.isOpaque(rootTask)).isFalse();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    public void testOpaque_rootTask_opaqueAndFillingChild_isOpaque() {
-        final Task rootTask = new TaskBuilder(mSupervisor).setOnTop(true).build();
-        createChildTaskFragment(/* parent */ rootTask,
-                WINDOWING_MODE_FREEFORM, /* opaque */ true, /* filling */ true);
-
-        assertThat(mSupervisor.mOpaqueContainerHelper.isOpaque(rootTask)).isTrue();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    public void testOpaque_rootTask_nonFillingOpaqueAdjacentChildren_isOpaque() {
-        final Task rootTask = new TaskBuilder(mSupervisor).setOnTop(true).build();
-        final TaskFragment tf1 = createChildTaskFragment(/* parent */ rootTask,
-                WINDOWING_MODE_MULTI_WINDOW, /* opaque */ true, /* filling */ false);
-        final TaskFragment tf2 = createChildTaskFragment(/* parent */ rootTask,
-                WINDOWING_MODE_MULTI_WINDOW, /* opaque */ true, /* filling */ false);
-        tf1.setAdjacentTaskFragments(new TaskFragment.AdjacentSet(tf1, tf2));
-
-        assertThat(mSupervisor.mOpaqueContainerHelper.isOpaque(rootTask)).isTrue();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    public void testOpaque_rootTask_nonFillingOpaqueAdjacentChildren_multipleAdjacent_isOpaque() {
-        final Task rootTask = new TaskBuilder(mSupervisor).setOnTop(true).build();
-        final TaskFragment tf1 = createChildTaskFragment(/* parent */ rootTask,
-                WINDOWING_MODE_MULTI_WINDOW, /* opaque */ true, /* filling */ false);
-        final TaskFragment tf2 = createChildTaskFragment(/* parent */ rootTask,
-                WINDOWING_MODE_MULTI_WINDOW, /* opaque */ true, /* filling */ false);
-        final TaskFragment tf3 = createChildTaskFragment(/* parent */ rootTask,
-                WINDOWING_MODE_MULTI_WINDOW, /* opaque */ true, /* filling */ false);
-        tf1.setAdjacentTaskFragments(new TaskFragment.AdjacentSet(tf1, tf2, tf3));
-
-        assertThat(mSupervisor.mOpaqueContainerHelper.isOpaque(rootTask)).isTrue();
-    }
-
-    @Test
-    public void testOpaque_nonLeafTaskFragmentWithDirectActivity_opaque() {
-        final ActivityRecord directChildActivity = new ActivityBuilder(mAtm).setCreateTask(true)
-                .build();
-        directChildActivity.setOccludesParent(true);
-        final Task nonLeafTask = directChildActivity.getTask();
-        final TaskFragment directChildFragment = new TaskFragment(mAtm, new Binder(),
-                true /* createdByOrganizer */, false /* isEmbedded */);
-        nonLeafTask.addChild(directChildFragment, 0);
-
-        assertThat(mSupervisor.mOpaqueContainerHelper.isOpaque(nonLeafTask)).isTrue();
-    }
-
-    @Test
-    public void testOpaque_nonLeafTaskFragmentWithDirectActivity_transparent() {
-        final ActivityRecord directChildActivity = new ActivityBuilder(mAtm).setCreateTask(true)
-                .build();
-        directChildActivity.setOccludesParent(false);
-        final Task nonLeafTask = directChildActivity.getTask();
-        final TaskFragment directChildFragment = new TaskFragment(mAtm, new Binder(),
-                true /* createdByOrganizer */, false /* isEmbedded */);
-        nonLeafTask.addChild(directChildFragment, 0);
-
-        assertThat(mSupervisor.mOpaqueContainerHelper.isOpaque(nonLeafTask)).isFalse();
-    }
-
-    @Test
-    public void testOpaque_leafTaskUpdated() {
-        final Task rootTask = new TaskBuilder(mSupervisor).setCreatedByOrganizer(true).build();
-        final TaskFragment opaqueTask = createChildTaskFragment(rootTask,
-                WINDOWING_MODE_FREEFORM, /* opaque */ true, /* filling */ true);
-        final Task childTask = new TaskBuilder(mSupervisor).setParentTask(rootTask).build();
-        final ActivityRecord directChildActivity = new ActivityBuilder(mAtm).setTask(childTask)
-                .build();
-
-        directChildActivity.setOccludesParent(false);
-
-        assertThat(mSupervisor.mOpaqueContainerHelper.isOpaque(childTask)).isFalse();
-        assertThat(mSupervisor.mOpaqueContainerHelper.isOpaque(opaqueTask)).isTrue();
-
-        directChildActivity.setOccludesParent(true);
-
-        assertThat(mSupervisor.mOpaqueContainerHelper.isOpaque(childTask)).isTrue();
-    }
-
-    @Test
-    public void testOpaque_forceOpaque() {
-        final Task forceOpaqueRootTask = new TaskBuilder(mSupervisor)
-                .setActivityType(ACTIVITY_TYPE_STANDARD)
-                .setWindowingMode(WINDOWING_MODE_FULLSCREEN)
-                .setCreatedByOrganizer(true)
-                .setForceOpaque(true)
-                .build();
-        final Rect leftBounds = new Rect();
-        final Rect rightBounds = new Rect();
-        forceOpaqueRootTask.getBounds().splitVertically(leftBounds, rightBounds);
-        final Task adjacentTask = new TaskBuilder(mSupervisor)
-                .setParentTask(forceOpaqueRootTask)
-                .setActivityType(ACTIVITY_TYPE_STANDARD)
-                .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
-                .setCreateActivity(true)
-                .build();
-        final Task adjacentEmptyTask = new TaskBuilder(mSupervisor)
-                .setParentTask(forceOpaqueRootTask)
-                .setActivityType(ACTIVITY_TYPE_STANDARD)
-                .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
-                .setCreateActivity(false)
-                .build();
-        adjacentTask.setBounds(leftBounds);
-        adjacentEmptyTask.setBounds(rightBounds);
-        adjacentTask.setAdjacentTaskFragments(
-                new TaskFragment.AdjacentSet(adjacentTask, adjacentEmptyTask)
-        );
-
-        assertThat(mSupervisor.mOpaqueContainerHelper.isOpaque(forceOpaqueRootTask)).isTrue();
-
-        final Task forceOpaqueTaskWithTranslucentActivity = new TaskBuilder(mSupervisor)
-                .setCreatedByOrganizer(true)
-                .setForceOpaque(true)
-                .setCreateActivity(true)
-                .build();
-        final ActivityRecord activity = forceOpaqueTaskWithTranslucentActivity.getTopMostActivity();
-        activity.setOccludesParent(false);
-
-        assertThat(
-                mSupervisor.mOpaqueContainerHelper.isOpaque(forceOpaqueTaskWithTranslucentActivity)
-        ).isTrue();
-    }
-
-
-    @NonNull
-    private TaskFragment createChildTaskFragment(@NonNull Task parent,
-            @WindowConfiguration.WindowingMode int windowingMode,
-            boolean opaque,
-            boolean filling) {
-        final ActivityRecord activity = new ActivityBuilder(mAtm)
-                .setCreateTask(true).setParentTask(parent).build();
-        activity.setOccludesParent(opaque);
-        final TaskFragment tf = activity.getTaskFragment();
-        tf.setWindowingMode(windowingMode);
-        tf.setBounds(filling ? new Rect() : new Rect(100, 100, 200, 200));
-        return tf;
-    }
-
-    @Test
     @RequiresFlagsDisabled(Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK)
     public void testTaskInfoHelper_fillAndReturnTop_flagDisabled_cookieAddedForOrganizedTask() {
         // Setup a task created by an organizer with an activity that has a launch cookie.
         final Task rootTask = new TaskBuilder(mSupervisor).setCreatedByOrganizer(true).build();
-        final TaskFragment childTask = createChildTaskFragment(rootTask,
+        final Task childTask = createLeafTaskWithActivity(rootTask,
                 WINDOWING_MODE_UNDEFINED, /* opaque */ true, /* filling */ true);
         final ActivityRecord activity = childTask.getTopMostActivity();
         final IBinder launchCookie = new Binder();
@@ -864,7 +680,7 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
     public void testTaskInfoHelper_fillAndReturnTop_flagEnabled_notByOrganizer_cookieAdded() {
         // Setup a task NOT created by an organizer with an activity that has a launch cookie.
         final Task rootTask = new TaskBuilder(mSupervisor).setCreatedByOrganizer(false).build();
-        final TaskFragment childTask = createChildTaskFragment(rootTask,
+        final Task childTask = createLeafTaskWithActivity(rootTask,
                 WINDOWING_MODE_UNDEFINED, /* opaque */ true, /* filling */ true);
         final ActivityRecord activity = childTask.getTopMostActivity();
         final IBinder launchCookie = new Binder();
@@ -888,7 +704,7 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
     public void testTaskInfoHelper_fillAndReturnTop_flagEnabled_byOrganizer_cookieNotAdded() {
         // Setup a task created by an organizer with an activity that has a launch cookie.
         final Task rootTask = new TaskBuilder(mSupervisor).setCreatedByOrganizer(true).build();
-        final TaskFragment childTask = createChildTaskFragment(rootTask,
+        final Task childTask = createLeafTaskWithActivity(rootTask,
                 WINDOWING_MODE_UNDEFINED, /* opaque */ true, /* filling */ true);
         final ActivityRecord activity = childTask.getTopMostActivity();
         final IBinder launchCookie = new Binder();
@@ -911,7 +727,7 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
     public void testTaskInfoHelper_fillAndReturnTop_noCookie_isEmpty() {
         // Setup a task with an activity that does not have a launch cookie.
         final Task rootTask = new TaskBuilder(mSupervisor).setCreatedByOrganizer(true).build();
-        final TaskFragment childTask = createChildTaskFragment(rootTask,
+        createLeafTaskWithActivity(rootTask,
                 WINDOWING_MODE_UNDEFINED, /* opaque */ true, /* filling */ true);
 
         final ActivityTaskSupervisor.TaskInfoHelper helper =

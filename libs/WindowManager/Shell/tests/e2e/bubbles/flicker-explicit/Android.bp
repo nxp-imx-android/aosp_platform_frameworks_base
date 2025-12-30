@@ -72,6 +72,7 @@ test_module_config {
         "com.android.wm.shell.flicker.bubbles.EnterBubbleViaOverflowMenuTest",
         "com.android.wm.shell.flicker.bubbles.EnterBubbleWithImeViaBubbleMenuTest",
         "com.android.wm.shell.flicker.bubbles.ExpandBubbleViaBubbleStackTest",
+        "com.android.wm.shell.flicker.bubbles.ExpandBubbleViaRelaunchFromSplitTest",
         "com.android.wm.shell.flicker.bubbles.ExpandBubbleViaRelaunchInDesktopTest",
         "com.android.wm.shell.flicker.bubbles.ExpandBubbleWithImeViaBubbleBarTest",
         "com.android.wm.shell.flicker.bubbles.ExpandTaskTrampolineBubbleAfterSecondLaunchTest",
@@ -89,7 +90,6 @@ test_module_config {
         "com.android.wm.shell.flicker.bubbles.RelaunchFullscreenToBubbleTrampolineTest",
         "com.android.wm.shell.flicker.bubbles.RelaunchSplitScreenToBubbleTest",
         "com.android.wm.shell.flicker.bubbles.RelaunchSplitScreenToBubbleTrampolineTest",
-        "com.android.wm.shell.flicker.bubbles.RelaunchBubbleIntoSplitScreenTest",
     ],
 }
 
@@ -234,6 +234,13 @@ test_module_config {
 }
 
 test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-ExpandBubbleViaRelaunchFromSplitTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.ExpandBubbleViaRelaunchFromSplitTest"],
+}
+
+test_module_config {
     name: "WMShellExplicitFlickerTestsBubbles-ExpandBubbleViaRelaunchInDesktopTest",
     base: "WMShellExplicitFlickerTestsBubbles",
     test_suites: ["device-tests"],
@@ -343,11 +350,4 @@ test_module_config {
     base: "WMShellExplicitFlickerTestsBubbles",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.bubbles.RelaunchSplitScreenToBubbleTrampolineTest"],
-}
-
-test_module_config {
-    name: "WMShellExplicitFlickerTestsBubbles-RelaunchBubbleIntoSplitScreenTest",
-    base: "WMShellExplicitFlickerTestsBubbles",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.flicker.bubbles.RelaunchBubbleIntoSplitScreenTest"],
 }

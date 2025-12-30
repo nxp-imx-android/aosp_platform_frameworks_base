@@ -27,8 +27,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.AndroidEmbeddedExternalSurface
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.TransformableState
-import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
@@ -142,19 +140,25 @@ constructor(
                 rememberViewModel("ScreenCaptureCameraTransformationViewModel") {
                     cameraTransformationViewModel.create()
                 }
-            val state: TransformableState =
-                rememberTransformableState { zoomChange, offsetChange, rotationChange ->
-                    with(transformationViewModel) {
-                        changeTransformation(
-                            offsetChange = offsetChange,
-                            zoomChange = zoomChange,
-                            rotationChange = rotationChange,
-                        )
-                        fillRegion(outTouchableRegion)
-                    }
-                }
+            LaunchedEffect(
+                transformationViewModel.offsetX,
+                transformationViewModel.offsetY,
+                transformationViewModel.rotation,
+                transformationViewModel.scale,
+            ) {
+                transformationViewModel.fillRegion(outTouchableRegion)
+            }
 
-            Box(contentAlignment = Alignment.BottomCenter, modifier = modifier.fillMaxSize()) {
+            Box(
+                contentAlignment = Alignment.BottomCenter,
+                modifier =
+                    modifier
+                        .fillMaxSize()
+                        .selfieTransformingModifier(
+                            viewModel = transformationViewModel,
+                            isEverywhere = true,
+                        ),
+            ) {
                 val surfaceAlpha by
                     animateFloatAsState(
                         targetValue = if (shouldShowCamera) 1f else 0f,
@@ -162,9 +166,14 @@ constructor(
                     )
                 AndroidEmbeddedExternalSurface(
                     surfaceSize = surfaceSize,
+                    isOpaque = false,
                     modifier =
                         Modifier.fillMaxWidth()
                             .aspectRatio(surfaceSize.height.toFloat() / surfaceSize.width)
+                            .selfieTransformingModifier(
+                                viewModel = transformationViewModel,
+                                isEverywhere = false,
+                            )
                             .onGloballyPositioned { layoutCoordinates ->
                                 transformationViewModel.bounds =
                                     layoutCoordinates.boundsInWindow(false)
@@ -180,30 +189,46 @@ constructor(
                                     rotationZ = rotation
                                 }
                             }
-                            .pointerInput(Unit) {
-                                awaitPointerEventScope {
-                                    while (true) {
-                                        with(awaitPointerEvent()) {
-                                            when {
-                                                type == PointerEventType.Press ->
-                                                    transformationViewModel
-                                                        .onTransformationStarted()
-                                                changes.fastAll { it.changedToUp() } ->
-                                                    transformationViewModel.onTransformationEnded()
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            .transformable(state)
                             .clickable { viewModel.onSurfaceClicked() },
                 ) {
                     onSurface { surface, width, height ->
                         viewModel.onSurfaceReady(surface = surface, width = width, height = height)
+                        surface.onChanged { newWidth, newHeight ->
+                            viewModel.onSurfaceReady(
+                                surface = surface,
+                                width = newWidth,
+                                height = newHeight,
+                            )
+                        }
                         surface.onDestroyed { viewModel.onSurfaceDestroyed() }
                     }
                 }
             }
+        }
+    }
+
+    private fun Modifier.selfieTransformingModifier(
+        viewModel: ScreenCaptureCameraTransformationViewModel,
+        isEverywhere: Boolean,
+    ): Modifier {
+        if (isEverywhere == viewModel.transformableByTouchAnywhere) {
+            return pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            with(awaitPointerEvent()) {
+                                when {
+                                    type == PointerEventType.Press ->
+                                        viewModel.onTransformationStarted()
+                                    changes.fastAll { it.changedToUp() } ->
+                                        viewModel.onTransformationEnded()
+                                }
+                            }
+                        }
+                    }
+                }
+                .transformable(viewModel.state)
+        } else {
+            return this
         }
     }
 
@@ -235,5 +260,10 @@ private fun ConditionalLaunchedEffect(condition: Boolean, action: suspend () -> 
 }
 
 private fun ScreenCaptureCameraTransformationViewModel.fillRegion(region: Region) {
-    region.setPath(transformedBounds.asAndroidPath(), bounds.toAndroidRectF().toRegion())
+    val boundsAsRegion = bounds.toAndroidRectF().toRegion()
+    if (transformableByTouchAnywhere) {
+        region.set(boundsAsRegion)
+    } else {
+        region.setPath(transformedBounds.asAndroidPath(), boundsAsRegion)
+    }
 }

@@ -1083,6 +1083,13 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
                 if (adjacentRootTask[0] != null) {
                     return adjacentRootTask[0];
                 }
+                // Use the candidate's root task instead of the source's if it needs to preserve
+                // leaf tasks during a relaunch (e.g., Bubbles).
+                final Task candidateRoot = candidateTask.getCreatedByOrganizerTask();
+                if (com.android.window.flags.Flags.enablePreserveLeafTaskIfRelaunch()
+                        && candidateRoot != null && candidateRoot.mPreserveLeafTaskIfRelaunch) {
+                    return candidateRoot;
+                }
                 return sourceTask.getCreatedByOrganizerTask();
             }
             if (com.android.window.flags.Flags.enableBubbleRootTask()) {

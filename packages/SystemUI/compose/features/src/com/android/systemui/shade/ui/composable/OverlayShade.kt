@@ -17,6 +17,7 @@
 package com.android.systemui.shade.ui.composable
 
 import android.annotation.SuppressLint
+import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -64,6 +65,8 @@ import com.android.systemui.shade.ui.composable.OverlayShade.Colors
 import com.android.systemui.shade.ui.composable.OverlayShade.Dimensions
 import com.android.systemui.shade.ui.composable.OverlayShade.rememberShadeExpansionMotion
 import kotlin.math.min
+import platform.test.motion.compose.values.MotionTestValueKey
+import platform.test.motion.compose.values.motionTestValues
 
 /** Renders a lightweight shade UI container, as an overlay. */
 @Composable
@@ -174,10 +177,20 @@ private fun ContentScope.Scrim(
         modifier =
             modifier
                 .element(OverlayShade.Elements.Scrim)
+                .motionTestValues {
+                    OverlayShade.Elements.Scrim.currentAlpha()?.let { alpha ->
+                        alpha exportAs OverlayShadeMotionTestKeys.scrimAlpha
+                    }
+                }
                 .fillMaxSize()
                 .thenIf(showBackgroundColor) { Modifier.background(scrimBackgroundColor) }
                 .clickable(onClick = onClicked, interactionSource = null, indication = null)
     )
+}
+
+@VisibleForTesting
+object OverlayShadeMotionTestKeys {
+    val scrimAlpha = MotionTestValueKey<Float>("scrim_alpha")
 }
 
 @Composable

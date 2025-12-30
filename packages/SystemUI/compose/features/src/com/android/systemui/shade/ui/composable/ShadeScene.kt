@@ -477,7 +477,10 @@ private fun ContentScope.SplitShade(
         modifier =
             modifier
                 .fillMaxSize()
-                .graphicsLayer { alpha = contentAlpha }
+                .graphicsLayer {
+                    alpha = contentAlpha
+                    compositingStrategy = CompositingStrategy.ModulateAlpha
+                }
                 .thenIf(brightnessMirrorShowing) { Modifier.gesturesDisabled() }
     ) {
         ShadePanelScrim(viewModel.isTransparencyEnabled)

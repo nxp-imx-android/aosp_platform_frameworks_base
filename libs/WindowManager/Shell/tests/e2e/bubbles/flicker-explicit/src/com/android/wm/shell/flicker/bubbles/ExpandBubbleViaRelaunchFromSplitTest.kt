@@ -21,30 +21,27 @@ import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
 import androidx.test.filters.RequiresDevice
 import com.android.server.wm.flicker.helpers.NewTasksAppHelper
-import com.android.wm.shell.Flags
+import com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK
+import com.android.window.flags.Flags.FLAG_ENABLE_PRESERVE_LEAF_TASK_IF_RELAUNCH
+import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.Utils.testSetupRule
-import com.android.wm.shell.flicker.bubbles.RelaunchBubbleIntoSplitScreenTest.Companion.bubbleApp
-import com.android.wm.shell.flicker.bubbles.testcase.BubbleExitTestCases
-import com.android.wm.shell.flicker.bubbles.testcase.SecondarySplitEnterTestCases
+import com.android.wm.shell.flicker.bubbles.testcase.AppReplacesPreviousAppTestCases
+import com.android.wm.shell.flicker.bubbles.testcase.ExpandBubbleTestCases
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaTouchOutside
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
-import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.withBubbleFullyDismissedAndGone
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.withBubbleExpanded
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import com.android.wm.shell.flicker.bubbles.utils.RunOncePerParameterRule
 import com.android.wm.shell.flicker.utils.SplitScreenUtils
 import com.android.wm.shell.flicker.utils.SplitScreenUtils.enterSplit
-import com.android.wm.shell.flicker.utils.SplitScreenUtils.withSplitScreenComplete
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.runners.MethodSorters
 
 /**
- * Test relaunching a bubble from a secondary split-screen app.
+ * Test relaunching a bubble from a primary split-screen app.
  *
- * This test verifies that the existing bubble is dismissed and its app task is moved into the
- * secondary split-screen pane.
- *
- * To run this test: `atest WMShellExplicitFlickerTestsBubbles:RelaunchBubbleIntoSplitScreenTest`
+ * To run this test: `atest WMShellExplicitFlickerTestsBubbles:ExpandBubbleViaRelaunchFromSplitTest`
  *
  * Pre-steps:
  * ```
@@ -54,27 +51,27 @@ import org.junit.runners.MethodSorters
  *
  * Actions:
  * ```
- * From [secondaryApp], relaunch the [bubbleApp].
+ * From [primaryApp], relaunch the [bubbleApp].
  * ```
  *
  * Verified tests:
  * - [BubbleFlickerTestBase]
- * - [BubbleExitTestCases]: Verifies the collapsed bubble is dismissed.
- * - [SecondarySplitEnterTestCases]: Verifies [bubbleApp] enters the secondary split.
+ * - [ExpandBubbleTestCases]: Verifies the collapsed [bubbleApp] expands.
  */
-@RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
+@RequiresFlagsEnabled(
+    FLAG_ENABLE_CREATE_ANY_BUBBLE,
+    FLAG_ENABLE_BUBBLE_ROOT_TASK,
+    FLAG_ENABLE_PRESERVE_LEAF_TASK_IF_RELAUNCH,
+)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-// TODO: b/432604687 - Rename to ExpandBubbleByRelaunchingFromSplit once the expected behavior is
-//  unblocked and the test logic is updated to verify it.
-class RelaunchBubbleIntoSplitScreenTest :
-    BubbleFlickerTestBase(), BubbleExitTestCases, SecondarySplitEnterTestCases {
+class ExpandBubbleViaRelaunchFromSplitTest : BubbleFlickerTestBase(), ExpandBubbleTestCases {
 
     companion object {
         private val bubbleApp = testApp
-        private val primaryApp = SplitScreenUtils.getPrimary(instrumentation)
-        private val secondaryApp = NewTasksAppHelper(instrumentation)
+        private val primaryApp = NewTasksAppHelper(instrumentation)
+        private val secondaryApp = SplitScreenUtils.getSecondary(instrumentation)
 
         private val recordTraceWithTransitionRule =
             RecordTraceWithTransitionRule(
@@ -88,14 +85,9 @@ class RelaunchBubbleIntoSplitScreenTest :
                 },
                 transition = {
                     // Relaunch bubble from secondary split.
-                    secondaryApp.openNewTaskWithRecycle(uiDevice, wmHelper) {
-                        // TODO: b/432604687 - Expected behavior is blocked by WM core reparent.
+                    primaryApp.openNewTaskWithRecycle(uiDevice, wmHelper) {
                         // Reopen the collapsed bubble.
-                        // withBubbleExpanded(bubbleApp)
-
-                        // Current behavior: Bubble task is converted into split.
-                        withBubbleFullyDismissedAndGone()
-                            .withSplitScreenComplete(primaryApp, secondaryApp = bubbleApp)
+                        withBubbleExpanded(bubbleApp)
                     }
                 },
                 tearDownAfterTransition = {
@@ -116,5 +108,15 @@ class RelaunchBubbleIntoSplitScreenTest :
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
 
-    override val previousSecondaryApp = secondaryApp
+    /**
+     * The [primaryApp] in split-screen that launches the bubble. Used by
+     * [AppReplacesPreviousAppTestCases] to verify that the bubble is opened on top of.
+     */
+    override val previousApp = primaryApp
+
+    /**
+     * The split-screen tasks remain visible behind the expanded bubble, so we should not assert
+     * that they become invisible.
+     */
+    override fun shouldAssertPreviousBecomesInvisible() = false
 }

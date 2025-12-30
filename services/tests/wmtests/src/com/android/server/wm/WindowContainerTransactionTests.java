@@ -474,6 +474,26 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
     }
 
     @Test
+    public void testSetPreserveLeafTaskIfRelaunch() {
+        final Task rootTask =
+                createTask(mDisplayContent, WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD);
+        rootTask.mCreatedByOrganizer = true;
+        rootTask.mTaskOrganizer = mock(ITaskOrganizer.class);
+        final WindowContainerToken token = rootTask.mRemoteToken.toWindowContainerToken();
+
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.setPreserveLeafTaskIfRelaunch(token, true);
+        applyTransaction(wct);
+
+        assertTrue(rootTask.mPreserveLeafTaskIfRelaunch);
+
+        wct.setPreserveLeafTaskIfRelaunch(token, false);
+        applyTransaction(wct);
+
+        assertFalse(rootTask.mPreserveLeafTaskIfRelaunch);
+    }
+
+    @Test
     public void testSetReparentLeafTaskIfRelaunchFromHome() {
         final Task rootTask =
                 createTask(mDisplayContent, WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD);

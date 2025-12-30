@@ -63,7 +63,12 @@ public class KeyguardServiceDelegate {
 
     private final Context mContext;
     private final Handler mHandler;
+
+    /** Last system-determined state sent to KeyguardService. */
     private final KeyguardState mKeyguardState = new KeyguardState();
+    /** Last keyguard-determined state reported back from KeyguardService. */
+    private final KeyguardReportedState mKeyguardReportedState = new KeyguardReportedState();
+
     private final KeyguardStateMonitor.StateCallback mCallback;
 
     /** Options for a deferred call to onScreenTurningOn. */
@@ -89,42 +94,60 @@ public class KeyguardServiceDelegate {
             };
 
     /**
-     * Cache of keyguard state reported from the system server to the KeyguardService.
+     * Data that is cached from the system server and pushed to KeyguardService.
      *
-     * When KeyguardService dies, some of the data will be reset in a call to
-     * {@link #reset()}.
+     * <p>When KeyguardService dies, this data is preserved and pushed to the new
+     * KeyguardService instance, in order to keep the keyguard state consistent.
      */
     private static final class KeyguardState {
+        public volatile boolean occluded;
+        public boolean dreaming;
+        public boolean systemIsReady;
+        public boolean enabled = true;
+        public int currentUser = UserHandle.USER_NULL;
+        public boolean bootCompleted;
+        public int screenState;
+        public int interactiveState;
+
         KeyguardState() {
             reset();
         }
 
-        boolean showing;
-        boolean inputRestricted;
-        volatile boolean occluded;
-        boolean secure;
-        boolean dreaming;
-        boolean systemIsReady;
-        boolean deviceHasKeyguard;
-        public boolean enabled;
-        public int offReason;
-        public int currentUser;
-        public boolean bootCompleted;
-        public int screenState;
-        public int interactiveState;
+        private void reset() {
+            occluded = false;
+        }
+    }
+
+    /**
+     * Data that is reported over Binder by KeyguardService and cached in the system server.
+     *
+     * @see KeyguardStateMonitor
+     */
+    private static final class KeyguardReportedState {
+        volatile boolean showing;
+        volatile boolean inputRestricted;
+        volatile boolean secure;
+        volatile boolean deviceHasKeyguard;
+
+        KeyguardReportedState() {
+            reset();
+        }
 
         private void reset() {
             // Assume keyguard is showing and secure until we know for sure. This is here in
             // the event something checks before the service is actually started.
             // KeyguardService itself should default to this state until the real state is known.
             showing = true;
-            occluded = false;
             secure = true;
             deviceHasKeyguard = true;
-            enabled = true;
-            currentUser = UserHandle.USER_NULL;
         }
-    };
+
+        private void disable() {
+            showing = false;
+            secure = false;
+            deviceHasKeyguard = false;
+        }
+    }
 
     public interface DrawnListener {
         void onDrawn();
@@ -182,14 +205,7 @@ public class KeyguardServiceDelegate {
         if (!context.bindServiceAsUser(intent, mKeyguardConnection,
                 Context.BIND_AUTO_CREATE, mHandler, UserHandle.SYSTEM)) {
             Log.v(TAG, "*** Keyguard: can't bind to " + keyguardComponent);
-            mKeyguardState.showing = false;
-            mKeyguardState.secure = false;
-            synchronized (mKeyguardState) {
-                // TODO: Fix synchronisation model in this class. The other state in this class
-                // is at least self-healing but a race condition here can lead to the scrim being
-                // stuck on keyguard-less devices.
-                mKeyguardState.deviceHasKeyguard = false;
-            }
+            mKeyguardReportedState.disable();
         } else {
             if (DEBUG) Log.v(TAG, "*** Keyguard started");
         }
@@ -206,9 +222,13 @@ public class KeyguardServiceDelegate {
         public void onServiceConnected(ComponentName name, IBinder service) {
             if (DEBUG) Log.v(TAG, "*** Keyguard connected (yay!)");
 
+            if (mKeyguardState.currentUser == UserHandle.USER_NULL) {
+                mKeyguardState.currentUser = ActivityManager.getCurrentUser();
+            }
+
             // Replay the previous KeyguardState for the new KeyguardService.
             mKeyguardStateMonitor = new KeyguardStateMonitor(
-                    mContext, mCallback, ActivityManager.getCurrentUser());
+                    mContext, mCallback, mKeyguardState.currentUser);
             mKeyguardService = IKeyguardService.Stub.asInterface(service);
             try {
                 mKeyguardService.addStateMonitorCallback(mKeyguardStateMonitor);
@@ -216,10 +236,7 @@ public class KeyguardServiceDelegate {
                 if (mKeyguardState.systemIsReady) {
                     // If the system is ready, it means keyguard crashed and restarted.
                     mKeyguardService.onSystemReady();
-                    if (mKeyguardState.currentUser != UserHandle.USER_NULL) {
-                        // There has been a user switch earlier
-                        mKeyguardService.setCurrentUser(mKeyguardState.currentUser);
-                    }
+                    mKeyguardService.setCurrentUser(mKeyguardState.currentUser);
                     // This is used to hide the scrim once keyguard displays.
                     if (mKeyguardState.interactiveState == INTERACTIVE_STATE_AWAKE
                             || mKeyguardState.interactiveState == INTERACTIVE_STATE_WAKING) {
@@ -269,10 +286,8 @@ public class KeyguardServiceDelegate {
             if (DEBUG) Log.v(TAG, "*** Keyguard disconnected (boo!)");
             mKeyguardService = null;
             mKeyguardStateMonitor = null;
-            // Remember the keyguard enabled state when the service is disconnected.
-            boolean wasEnabled = mKeyguardState.enabled;
             mKeyguardState.reset();
-            mKeyguardState.enabled = wasEnabled;
+            mKeyguardReportedState.reset();
             mHandler.post(() -> {
                 try {
                     ActivityTaskManager.getService().setLockScreenShown(true /* keyguardShowing */,
@@ -286,9 +301,9 @@ public class KeyguardServiceDelegate {
 
     public boolean isShowing() {
         if (mKeyguardStateMonitor != null) {
-            mKeyguardState.showing = mKeyguardStateMonitor.isShowing();
+            mKeyguardReportedState.showing = mKeyguardStateMonitor.isShowing();
         }
-        return mKeyguardState.showing;
+        return mKeyguardReportedState.showing;
     }
 
     public boolean isTrusted() {
@@ -299,14 +314,14 @@ public class KeyguardServiceDelegate {
     }
 
     public boolean hasKeyguard() {
-        return mKeyguardState.deviceHasKeyguard;
+        return mKeyguardReportedState.deviceHasKeyguard;
     }
 
     public boolean isInputRestricted() {
         if (mKeyguardStateMonitor != null) {
-            mKeyguardState.inputRestricted = mKeyguardStateMonitor.isInputRestricted();
+            mKeyguardReportedState.inputRestricted = mKeyguardStateMonitor.isInputRestricted();
         }
-        return mKeyguardState.inputRestricted;
+        return mKeyguardReportedState.inputRestricted;
     }
 
     public void verifyUnlock(final OnKeyguardExitResult onKeyguardExitResult) {
@@ -352,9 +367,9 @@ public class KeyguardServiceDelegate {
 
     public boolean isSecure(int userId) {
         if (mKeyguardStateMonitor != null) {
-            mKeyguardState.secure = mKeyguardStateMonitor.isSecure(userId);
+            mKeyguardReportedState.secure = mKeyguardStateMonitor.isSecure(userId);
         }
-        return mKeyguardState.secure;
+        return mKeyguardReportedState.secure;
     }
 
     public void onDreamingStarted() {
@@ -468,8 +483,6 @@ public class KeyguardServiceDelegate {
                 Slog.w(TAG, "Remote Exception", e);
             }
         }
-        mKeyguardState.offReason =
-                WindowManagerPolicyConstants.translateSleepReasonToOffReason(pmSleepReason);
         mKeyguardState.interactiveState = INTERACTIVE_STATE_GOING_TO_SLEEP;
     }
 
@@ -617,9 +630,9 @@ public class KeyguardServiceDelegate {
 
     public void dumpDebug(ProtoOutputStream proto, long fieldId) {
         final long token = proto.start(fieldId);
-        proto.write(SHOWING, mKeyguardState.showing);
+        proto.write(SHOWING, mKeyguardReportedState.showing);
         proto.write(OCCLUDED, mKeyguardState.occluded);
-        proto.write(SECURE, mKeyguardState.secure);
+        proto.write(SECURE, mKeyguardReportedState.secure);
         proto.write(SCREEN_STATE, mKeyguardState.screenState);
         proto.write(INTERACTIVE_STATE, mKeyguardState.interactiveState);
         proto.end(token);
@@ -628,16 +641,14 @@ public class KeyguardServiceDelegate {
     public void dump(String prefix, PrintWriter pw) {
         pw.println(prefix + TAG);
         prefix += "  ";
-        pw.println(prefix + "showing=" + mKeyguardState.showing);
-        pw.println(prefix + "inputRestricted=" + mKeyguardState.inputRestricted);
+        pw.println(prefix + "showing=" + mKeyguardReportedState.showing);
+        pw.println(prefix + "inputRestricted=" + mKeyguardReportedState.inputRestricted);
         pw.println(prefix + "occluded=" + mKeyguardState.occluded);
-        pw.println(prefix + "secure=" + mKeyguardState.secure);
+        pw.println(prefix + "secure=" + mKeyguardReportedState.secure);
         pw.println(prefix + "dreaming=" + mKeyguardState.dreaming);
         pw.println(prefix + "systemIsReady=" + mKeyguardState.systemIsReady);
-        pw.println(prefix + "deviceHasKeyguard=" + mKeyguardState.deviceHasKeyguard);
+        pw.println(prefix + "deviceHasKeyguard=" + mKeyguardReportedState.deviceHasKeyguard);
         pw.println(prefix + "enabled=" + mKeyguardState.enabled);
-        pw.println(prefix + "offReason=" +
-                WindowManagerPolicyConstants.offReasonToString(mKeyguardState.offReason));
         pw.println(prefix + "currentUser=" + mKeyguardState.currentUser);
         pw.println(prefix + "bootCompleted=" + mKeyguardState.bootCompleted);
         pw.println(prefix + "screenState=" + screenStateToString(mKeyguardState.screenState));
