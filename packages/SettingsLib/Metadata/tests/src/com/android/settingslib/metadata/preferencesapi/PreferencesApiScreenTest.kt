@@ -25,6 +25,7 @@ import com.android.settingslib.metadata.test.R
 import com.android.settingslib.metadata.preferencesapi.ExceptionMessagesFormatter.getExceptionMessageMultipleDefines
 import com.android.settingslib.metadata.preferencesapi.ExceptionMessagesFormatter.getExceptionMessageMultipleParametersDefined
 import com.android.settingslib.metadata.preferencesapi.ExceptionMessagesFormatter.getExceptionMessageWrongOrder
+import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreen.Companion.PARTIALLY_MIGRATED_PREFIX
 import com.android.settingslib.metadata.preferencesapi.category.Category
 import com.android.settingslib.metadata.preferencesapi.preconditions.Allowed
 import com.android.settingslib.metadata.preferencesapi.preconditions.Custom
@@ -1266,6 +1267,40 @@ class PreferencesApiScreenTest {
         }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageMultipleDefines("execute"))
+    }
+
+    @Test
+    fun createPreferencesApiScreen_withAlreadyPartiallyMigrated_keyStartsWithApi_succeeds() {
+        val preferenceKey = "ApiPreference"
+        val preferenceValue = false
+
+        val preferenceScreen = object : PreferencesApiScreen(
+            key = "api_screen_key",
+            topLevelSettingsCategory = Category.SYSTEM,
+            fragment = PreferenceFragment::class,
+            purpose = R.string.preference_screen_purpose,
+            alreadyPartiallyMigrated = PreferenceFragment::class
+        ) {}
+
+        assertThat(preferenceScreen.key.startsWith(PARTIALLY_MIGRATED_PREFIX)).isTrue()
+    }
+
+    @Test
+    fun createPreferencesApiScreen_withAlreadyPartiallyMigrated_keyDoesNotStartWithApi_fails() {
+        val preferenceKey = "ApiPreference"
+        val preferenceValue = false
+
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            object : PreferencesApiScreen(
+                key = "screen_key",
+                topLevelSettingsCategory = Category.SYSTEM,
+                fragment = PreferenceFragment::class,
+                purpose = R.string.preference_screen_purpose,
+                alreadyPartiallyMigrated = PreferenceFragment::class
+            ) {}
+        }
+
+        assertThat(exception.message).isEqualTo("The key 'screen_key' must start with 'api_' because it has an already migrated class.")
     }
 
     companion object {
