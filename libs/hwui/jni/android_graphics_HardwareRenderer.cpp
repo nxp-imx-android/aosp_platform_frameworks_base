@@ -27,8 +27,6 @@
 #include <SkImage.h>
 #ifdef __ANDROID__
 #include <SkImageAndroid.h>
-#else
-#include <SkImagePriv.h>
 #endif
 #include <SkPicture.h>
 #include <SkPixmap.h>
@@ -516,7 +514,7 @@ public:
 #ifdef __ANDROID__
             return SkImages::PinnableRasterFromBitmap(bm);
 #else
-            return SkMakeImageFromRasterBitmap(bm, kNever_SkCopyPixelsMode);
+            return SkImages::RasterFromBitmap(bm);
 #endif
         }
         return sk_ref_sp(img);
