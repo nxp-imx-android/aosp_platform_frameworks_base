@@ -103,6 +103,10 @@ public class VirtualDisplayAdapterTest {
     private Surface mSurfaceMock;
 
     @Mock
+    private Surface mSurfaceMock2;
+
+
+    @Mock
     private VirtualDisplayConfig mVirtualDisplayConfigMock;
 
     private TestHandler mHandler;
@@ -143,6 +147,43 @@ public class VirtualDisplayAdapterTest {
 
         result = mAdapter.releaseVirtualDisplayLocked(mMockBinder);
         assertNotNull(result);
+    }
+
+    @Test
+    public void testSetVirtualDisplaySurfaceLocked_releasesOldSurface() {
+        VirtualDisplayConfig config = new VirtualDisplayConfig.Builder("test", /* width= */ 1,
+                /* height= */ 1, /* densityDpi= */ 1).build();
+        when(mMockCallback.asBinder()).thenReturn(mMockBinder);
+
+        // Create a device with an initial surface
+        DisplayDevice device = mAdapter.createVirtualDisplayLocked(mMockCallback,
+                /* projection= */ null, /* ownerUid= */ 10, /* packageName= */ "testpackage",
+                /* uniqueId= */ "uniqueId", /* surface= */ mSurfaceMock, /* flags= */ 0, config);
+        assertNotNull(device);
+
+        // Set a new surface
+        mAdapter.setVirtualDisplaySurfaceLocked(mMockBinder, mSurfaceMock2);
+
+        verify(mSurfaceMock).release();
+        verify(mSurfaceMock2, org.mockito.Mockito.never()).release();
+    }
+
+    @Test
+    public void testSetVirtualDisplaySurfaceLocked_sameSurface_doesNotRelease() {
+        VirtualDisplayConfig config = new VirtualDisplayConfig.Builder("test", /* width= */ 1,
+                /* height= */ 1, /* densityDpi= */ 1).build();
+        when(mMockCallback.asBinder()).thenReturn(mMockBinder);
+
+        // Create a device with an initial surface
+        DisplayDevice device = mAdapter.createVirtualDisplayLocked(mMockCallback,
+                /* projection= */ null, /* ownerUid= */ 10, /* packageName= */ "testpackage",
+                /* uniqueId= */ "uniqueId", /* surface= */ mSurfaceMock, /* flags= */ 0, config);
+        assertNotNull(device);
+
+        // Set the same surface
+        mAdapter.setVirtualDisplaySurfaceLocked(mMockBinder, mSurfaceMock);
+
+        verify(mSurfaceMock, org.mockito.Mockito.never()).release();
     }
 
     @Test
