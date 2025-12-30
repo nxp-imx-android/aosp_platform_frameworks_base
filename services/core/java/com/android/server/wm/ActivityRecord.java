@@ -5663,20 +5663,11 @@ final class ActivityRecord extends WindowToken {
         final State prevState = mState;
         mState = state;
 
-        if (getTaskFragment() != null) {
-            getTaskFragment().onActivityStateChanged(this, state, reason);
+        final TaskFragment taskFragment = getTaskFragment();
+        if (taskFragment != null) {
+            taskFragment.onActivityStateChanged(this, state, reason);
         }
 
-        // The WindowManager interprets the app stopping signal as
-        // an indication that the Surface will eventually be destroyed.
-        // This however isn't necessarily true if we are going to sleep.
-        if (state == STOPPING && !isSleeping()) {
-            if (getParent() == null) {
-                Slog.w(TAG_WM, "Attempted to notify stopping on non-existing app token: "
-                        + token);
-                return;
-            }
-        }
         updateVisibleForServiceConnection();
         if (app != null) {
             mTaskSupervisor.onProcessActivityStateChanged(app, false /* forceBatch */);
