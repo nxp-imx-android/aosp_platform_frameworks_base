@@ -218,8 +218,6 @@ public abstract class BaseBroadcastQueueTest {
         doReturn(mAppStartInfoTracker).when(mProcessList).getAppStartInfoTracker();
 
         doReturn(true).when(mPlatformCompat).isChangeEnabledInternalNoLogging(
-                eq(BroadcastFilter.RESTRICT_PRIORITY_VALUES), any(ApplicationInfo.class));
-        doReturn(true).when(mPlatformCompat).isChangeEnabledInternalNoLogging(
                 eq(BroadcastRecord.LIMIT_PRIORITY_SCOPE), any(ApplicationInfo.class));
     }
 
