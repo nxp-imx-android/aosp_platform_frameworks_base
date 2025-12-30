@@ -1230,6 +1230,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
             taskInfo = task,
             isFromMoveActivityTaskToBack = false,
             isOptInOnBackInvoked = false,
+            hasOpaqueSibling = false,
         )
 
         verify(listener).invoke(task)
@@ -1248,6 +1249,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
             taskInfo = task,
             isFromMoveActivityTaskToBack = false,
             isOptInOnBackInvoked = true,
+            hasOpaqueSibling = false,
         )
 
         verify(listener, never()).invoke(any())
