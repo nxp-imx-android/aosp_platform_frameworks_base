@@ -88,10 +88,10 @@ class MediaOutputAdapterTest : SysuiTestCase() {
                         isExpandable = true,
                     )
                 )
-            on { sessionVolumeMax } doReturn TEST_MAX_VOLUME
-            on { sessionVolume } doReturn TEST_CURRENT_VOLUME
-            on { sessionName } doReturn TEST_SESSION_NAME
-            on { colorScheme } doReturn mock<MediaOutputColorScheme>()
+            on { getSessionVolumeMax() } doReturn TEST_MAX_VOLUME
+            on { getSessionVolume() } doReturn TEST_CURRENT_VOLUME
+            on { getSessionName() } doReturn TEST_SESSION_NAME
+            on { getColorScheme() } doReturn mock<MediaOutputColorScheme>()
         }
 
         mIconCompat.stub { on { toIcon(mContext) } doReturn mIcon }
