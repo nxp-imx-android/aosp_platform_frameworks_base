@@ -296,3 +296,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "disable_bubble_scrim_large_screens"
+    namespace: "multitasking"
+    description: "Disable the transparent scrim when a bubble is expanded on large screen devices."
+    bug: "463292965"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
