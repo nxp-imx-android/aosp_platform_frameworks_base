@@ -424,7 +424,7 @@ class ActivityClientController extends IActivityClientController.Stub {
                     return false;
                 }
                 final Task rootTask = task.getRootTask();
-                if (com.android.window.flags.Flags.fixBubbleBackGesture() && rootTask != null) {
+                if (rootTask != null) {
                     final ActivityRecord r = ActivityRecord.isInRootTaskLocked(token);
                     if (r != null && mService.mWindowOrganizerController.mTaskOrganizerController
                             .handleInterceptBackPressedOnTaskRoot(r,

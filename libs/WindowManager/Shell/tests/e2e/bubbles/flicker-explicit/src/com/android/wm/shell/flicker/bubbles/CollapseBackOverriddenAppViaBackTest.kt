@@ -56,10 +56,7 @@ import org.junit.runners.Parameterized.Parameters
  * - [BubbleFlickerTestBase]
  * - [CollapseBubbleAppTestCases]
  */
-@RequiresFlagsEnabled(
-    Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
-    com.android.window.flags.Flags.FLAG_FIX_BUBBLE_BACK_GESTURE,
-)
+@RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit

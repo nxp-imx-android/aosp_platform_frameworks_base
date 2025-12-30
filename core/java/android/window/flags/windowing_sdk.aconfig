@@ -87,16 +87,6 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
-    name: "fix_bubble_back_gesture"
-    description: "Fix no responsive back gesture on some Bubbled apps"
-    bug: "416330151"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "windowing_sdk"
     name: "allow_multi_window_non_resizable_activities"
     description: "Allows non-resizable activities to be launched into WINDOWING_MODE_MULTI_WINDOW."
     bug: "419379112"
