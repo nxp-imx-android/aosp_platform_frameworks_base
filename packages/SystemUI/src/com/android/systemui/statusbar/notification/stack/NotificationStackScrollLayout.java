@@ -799,7 +799,7 @@ public class NotificationStackScrollLayout
         int height = row.getActualHeight();
         float remoteInputOffset = row.getRemoteInputActionsContainerExpandedOffset();
         float contentMargin = getResources().getDimensionPixelSize(
-                com.android.internal.R.dimen.notification_content_margin);
+                com.android.internal.R.dimen.notification_2025_margin);
         return topPosition + height + remoteInputOffset + contentMargin;
     }
 

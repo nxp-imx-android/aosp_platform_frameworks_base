@@ -330,9 +330,6 @@
          screen configuration (and will grow accordingly for larger font sizes) -->
     <dimen name="notification_2025_content_margin_top">10sp</dimen>
 
-    <!-- height of the content margin that is applied at the end of the notification content -->
-    <dimen name="notification_content_margin">20dp</dimen>
-
     <!-- The height of the progress bar. -->
     <dimen name="notification_progress_bar_height">15dp</dimen>
 

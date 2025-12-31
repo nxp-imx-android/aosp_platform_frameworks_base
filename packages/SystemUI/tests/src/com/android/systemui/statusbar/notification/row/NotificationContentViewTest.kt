@@ -79,7 +79,6 @@ class NotificationContentViewTest : SysuiTestCase() {
     private val contractedHeight =
         px(com.android.systemui.res.R.dimen.min_notification_layout_height)
     private val expandedHeight = px(com.android.systemui.res.R.dimen.notification_max_height)
-    private val notificationContentMargin = px(R.dimen.notification_content_margin)
 
     @Before
     fun setup() {

@@ -204,7 +204,7 @@ public class NotificationChildrenContainer extends ViewGroup
         mHideDividersDuringExpand =
                 res.getBoolean(R.bool.config_hideDividersDuringExpand);
         mTranslationForHeader = res.getDimensionPixelOffset(
-                com.android.internal.R.dimen.notification_content_margin)
+                com.android.internal.R.dimen.notification_2025_margin)
                 - getCollapsedHeaderMargin();
         mHybridGroupManager.initDimens();
         mMinSingleLineHeight = getResources().getDimensionPixelSize(
