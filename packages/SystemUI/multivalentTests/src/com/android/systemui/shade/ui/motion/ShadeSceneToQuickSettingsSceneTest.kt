@@ -39,6 +39,7 @@ import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.motion.createSysUiComposeMotionTestRule
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
+import com.android.systemui.qs.shared.ui.QuickSettings.Elements
 import com.android.systemui.qs.ui.composable.QuickSettingsScene
 import com.android.systemui.qs.ui.viewmodel.quickSettingsSceneContentViewModelFactory
 import com.android.systemui.qs.ui.viewmodel.quickSettingsUserActionsViewModelFactory
@@ -153,7 +154,7 @@ class ShadeSceneToQuickSettingsSceneTest : SysuiTestCase() {
                             }
                         ) {
                             feature(
-                                hasTestTag(resIdToTestTag("quick_settings_panel")),
+                                hasTestTag(Elements.QuickSettingsContent.testTag),
                                 positionInRoot,
                                 "quick_settings_panel_position",
                                 useUnmergedTree = true,
@@ -287,6 +288,48 @@ class ShadeSceneToQuickSettingsSceneTest : SysuiTestCase() {
                                     .fetchSemanticsNodes()
                             val position = nodes.last().positionInRoot
                             feature("expanded_header_clock_position") { position.asDataPoint() }
+                        },
+                )
+            assertThat(motion).timeSeriesMatchesGolden()
+        }
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
+    fun swipeDownFromShadeToQSScene_recordingDayDatePosition() {
+        motionTestRule.runTest(60.seconds) {
+            kosmos.usingMediaInComposeFragment = true
+            kosmos.populateQuickSettings(tileCount = 10)
+            kosmos.enableSingleShade()
+            val motion =
+                recordMotion(
+                    content = { ShadeSceneToQSSceneContainer() },
+                    recordingSpec =
+                        ComposeRecordingSpec(
+                            MotionControl(
+                                delayRecording = {
+                                    awaitCondition {
+                                        kosmos.sceneInteractor.transitionState.value.isIdle()
+                                    }
+                                }
+                            ) {
+                                performTouchInputAsync(onRoot()) {
+                                    swipe(
+                                        start = Offset(x = centerX, y = top),
+                                        end = Offset(x = centerX, y = bottom),
+                                        durationMillis = 500,
+                                    )
+                                }
+                                awaitCondition {
+                                    kosmos.sceneInteractor.transitionState.value.isIdle()
+                                }
+                            }
+                        ) {
+                            feature(
+                                hasTestTag(resIdToTestTag("expanded_shade_header_day_date")),
+                                positionInRoot,
+                                "expanded_shade_header_day_date_position",
+                            )
                         },
                 )
             assertThat(motion).timeSeriesMatchesGolden()

@@ -330,6 +330,7 @@ fun ContentScope.ExpandedShadeHeader(
                     longerDateText = viewModel.longerDateText,
                     shorterDateText = viewModel.shorterDateText,
                     textColor = textColor,
+                    modifier = Modifier.sysuiResTag("expanded_shade_header_day_date"),
                 )
                 ShadeHighlightChip {
                     val paddingEnd = with(LocalDensity.current) { 3.sp.toDp() }
