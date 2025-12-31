@@ -278,13 +278,6 @@ flag {
 }
 
 flag {
-    name: "enable_connected_displays_pip"
-    namespace: "lse_desktop_experience"
-    description: "Enables PiP features in connected displays."
-    bug: "362721131"
-}
-
-flag {
     name: "enable_connected_displays_wallpaper_presentations"
     namespace: "lse_desktop_experience"
     description: "Enables wallpaper presentations shown in connected displays."
@@ -681,13 +674,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables a switch to change the concequence of dragging a window to the top edge."
     bug: "372614715"
-}
-
-flag {
-    name: "enable_dragging_pip_across_displays"
-    namespace: "lse_desktop_experience"
-    description: "Enables dragging PiP across displays in extended mode."
-    bug: "383403514"
 }
 
 flag {

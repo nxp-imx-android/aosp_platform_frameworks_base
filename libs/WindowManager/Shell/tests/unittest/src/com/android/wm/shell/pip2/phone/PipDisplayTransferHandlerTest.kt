@@ -16,13 +16,11 @@
 package com.android.wm.shell.pip2.phone
 
 import android.app.ActivityManager
-import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper.RunWithLooper
 import android.window.DisplayAreaInfo
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
-import com.android.window.flags.Flags.FLAG_ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
@@ -84,7 +82,6 @@ import org.mockito.kotlin.never
 @SmallTest
 @RunWithLooper
 @RunWith(AndroidTestingRunner::class)
-@EnableFlags(FLAG_ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS)
 class PipDisplayTransferHandlerTest : ShellTestCase() {
     private val mockPipDisplayLayoutState = mock<PipDisplayLayoutState>()
     private val mockDesktopUserRepositories = mock<DesktopUserRepositories>()
