@@ -36,6 +36,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+// TODO(b/412176703): currently public because NMS uses a constant and the
+// UserNotificationsAllowlist class doesn't exist yet - once it does, make it package protected.
 /**
  * Base class responsible for managing generic allowlists.
  *
@@ -50,7 +52,7 @@ import java.util.stream.Stream;
  *
  * @param <E> type of the element being allowlisted.
  */
-abstract class GenericAllowlist<E> {
+public abstract class GenericAllowlist<E> {
 
     @VisibleForTesting
     static final boolean DEBUG = Log.isLoggable(GenericAllowlist.class.getSimpleName(), Log.DEBUG);
