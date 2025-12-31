@@ -720,6 +720,7 @@ package android.app {
   }
 
   @FlaggedApi("android.app.appfunctions.flags.enable_app_interaction_api") public final class AppInteractionContract implements android.provider.BaseColumns {
+    method @NonNull public static java.util.List<java.lang.String> getDeviceAssistancePackageNames(@NonNull android.content.Context);
     method @NonNull public static android.net.Uri getInteractionHistoryUriAsUser(@NonNull android.os.UserHandle);
     field public static final String COLUMN_ACCESS_TIME = "access_time";
     field public static final String COLUMN_AGENT_PACKAGE_NAME = "agent_package_name";

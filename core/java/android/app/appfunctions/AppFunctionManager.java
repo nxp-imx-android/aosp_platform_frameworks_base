@@ -53,10 +53,8 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 import android.permission.flags.Flags;
 import android.util.ArrayMap;
-import android.util.ArraySet;
 import android.util.Log;
 
-import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 
 import java.lang.annotation.Retention;
@@ -64,7 +62,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.Executor;
 
 /**
@@ -874,24 +871,6 @@ public final class AppFunctionManager {
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
-    }
-
-    /**
-     * Gets the configured list of package names that should be grouped as Device Settings.
-     *
-     * <p>The list here is a configuration, the returned packages are not necessarily installed. The
-     * package names here must refer to system apps.
-     *
-     * @hide
-     */
-    @TestApi
-    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
-    @NonNull
-    public Set<String> getDeviceSettingPackages() {
-        final String[] deviceSettingPackages =
-                mContext.getResources()
-                        .getStringArray(R.array.config_appFunctionDeviceSettingsPackages);
-        return new ArraySet<>(deviceSettingPackages);
     }
 
     /**

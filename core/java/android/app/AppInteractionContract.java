@@ -22,11 +22,15 @@ import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.app.appfunctions.flags.Flags;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.UserHandle;
 import android.provider.BaseColumns;
 
+import com.android.internal.R;
+
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -156,5 +160,24 @@ public final class AppInteractionContract implements BaseColumns {
                 .appendPath("user")
                 .appendPath(Integer.toString(user.getIdentifier()))
                 .build();
+    }
+
+    /**
+     * Gets the configured list of package names that should be grouped as Device assistance.
+     *
+     * <p>The return value is only the configured list of package names, so that they might not
+     * refer to actual installed system apps and the caller should perform its own validation
+     * instead of assuming so.
+     *
+     * @hide
+     */
+    @SystemApi
+    @NonNull
+    public static List<String> getDeviceAssistancePackageNames(@NonNull Context context) {
+        final String[] deviceSettingPackages =
+                Objects.requireNonNull(context)
+                        .getResources()
+                        .getStringArray(R.array.config_appInteractionDeviceAssistancePackages);
+        return List.of(deviceSettingPackages);
     }
 }

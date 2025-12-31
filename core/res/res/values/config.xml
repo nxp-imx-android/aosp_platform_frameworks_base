@@ -7844,10 +7844,10 @@
          and displaying other apps separately. -->
     <bool name="config_resolverActivityFilterLastUsed">true</bool>
 
-    <!--For App Function, this configuration lists package names grouped as "Device Settings".
-        Packages in this list share the same App Function access settings. In the UI, they are
-        presented as a single "Device Settings" item rather than individually. -->
-    <string-array name="config_appFunctionDeviceSettingsPackages" translatable="false">
+    <!--For App Interaction, this configuration lists package names grouped as "Device assistance".
+        Packages in this list share the same App Interaction history settings. In the UI, they are
+        presented as a single "Device assistance" item rather than individually. -->
+    <string-array name="config_appInteractionDeviceAssistancePackages" translatable="false">
     </string-array>
 
     <!-- Defines the default allowlist of package names for preloaded agents authorized to use App

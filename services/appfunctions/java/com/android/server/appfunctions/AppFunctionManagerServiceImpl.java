@@ -153,8 +153,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
     private final IBinder mPermissionOwner;
 
-    private final DeviceSettingHelper mDeviceSettingHelper;
-
     private final MultiUserDynamicAppFunctionRegistry mDynamicAppFunctionRegistry;
 
     private final Object mAgentAllowlistLock = new Object();
@@ -224,7 +222,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 appFunctionAccessServiceInterface,
                 uriGrantsManager,
                 uriGrantsManagerInternal,
-                new DeviceSettingHelperImpl(context),
                 agentAllowlistStorage,
                 dynamicAppFunctionRegistry,
                 backgroundExecutor,
@@ -244,7 +241,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             AppFunctionAccessServiceInterface appFunctionAccessServiceInterface,
             IUriGrantsManager uriGrantsManager,
             UriGrantsManagerInternal uriGrantsManagerInternal,
-            DeviceSettingHelper deviceSettingHelper,
             AppFunctionAgentAllowlistStorage agentAllowlistStorage,
             MultiUserDynamicAppFunctionRegistry dynamicAppFunctionRegistry,
             Executor backgroundExecutor,
@@ -264,7 +260,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         mPermissionOwner =
                 Objects.requireNonNull(
                         mUriGrantsManagerInternal.newUriPermissionOwner("appfunctions"));
-        mDeviceSettingHelper = Objects.requireNonNull(deviceSettingHelper);
         mAgentAllowlistStorage = Objects.requireNonNull(agentAllowlistStorage);
         mDynamicAppFunctionRegistry = Objects.requireNonNull(dynamicAppFunctionRegistry);
         mBackgroundExecutor = Objects.requireNonNull(backgroundExecutor);
@@ -747,10 +742,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (!accessCheckFlagsEnabled()) {
             return 0;
         }
-        final String targetPermissionOwner =
-                mDeviceSettingHelper.getPermissionOwnerPackage(targetPackageName);
         return mAppFunctionAccessService.getAccessFlags(
-                agentPackageName, agentUserId, targetPermissionOwner, targetUserId);
+                agentPackageName, agentUserId, targetPackageName, targetUserId);
     }
 
     @Override
@@ -765,15 +758,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (!accessCheckFlagsEnabled()) {
             return false;
         }
-        final String targetPermissionOwner =
-                mDeviceSettingHelper.getPermissionOwnerPackage(targetPackageName);
         return mAppFunctionAccessService.updateAccessFlags(
-                agentPackageName,
-                agentUserId,
-                targetPermissionOwner,
-                targetUserId,
-                flagMask,
-                flags);
+                agentPackageName, agentUserId, targetPackageName, targetUserId, flagMask, flags);
     }
 
     @Override
@@ -815,9 +801,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (!accessCheckFlagsEnabled()) {
             return;
         }
-        final String targetPermissionOwner =
-                mDeviceSettingHelper.getPermissionOwnerPackage(targetPackageName);
-        mAppFunctionAccessService.revokeSelfAccess(targetPermissionOwner);
+        mAppFunctionAccessService.revokeSelfAccess(targetPackageName);
     }
 
     @Override
@@ -827,10 +811,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (!accessCheckFlagsEnabled()) {
             return ACCESS_REQUEST_STATE_UNREQUESTABLE;
         }
-        final String targetPermissionOwner =
-                mDeviceSettingHelper.getPermissionOwnerPackage(targetPackageName);
         return mAppFunctionAccessService.getAccessRequestState(
-                agentPackageName, agentUserId, targetPermissionOwner, targetUserId);
+                agentPackageName, agentUserId, targetPackageName, targetUserId);
     }
 
     @Override
@@ -852,8 +834,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         final int validTargetSize = validTargets.size();
         for (int i = 0; i < validTargetSize; i++) {
             final String target = validTargets.get(i);
-            final String permissionOwner = mDeviceSettingHelper.getPermissionOwnerPackage(target);
-            validPermissionOwnerTargets.add(permissionOwner);
+            validPermissionOwnerTargets.add(target);
         }
 
         return List.copyOf(validPermissionOwnerTargets);
@@ -1017,10 +998,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     @NonNull
     public Intent createRequestAccessIntent(@NonNull String targetPackageName) {
         Objects.requireNonNull(targetPackageName);
-        final String permissionOwner =
-                mDeviceSettingHelper.getPermissionOwnerPackage(targetPackageName);
         Intent intent = new Intent(ACTION_REQUEST_APP_FUNCTION_ACCESS);
-        intent.putExtra(Intent.EXTRA_PACKAGE_NAME, permissionOwner);
+        intent.putExtra(Intent.EXTRA_PACKAGE_NAME, targetPackageName);
         intent.setPackage(mContext.getPackageManager().getPermissionControllerPackageName());
         return intent;
     }
