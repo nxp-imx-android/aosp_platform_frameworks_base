@@ -65,6 +65,20 @@ public class InsetsSourceTest {
     }
 
     @Test
+    public void testScale() {
+        mSource.setFrame(0, 1, 2, 3);
+        mSource.setVisibleFrame(new Rect(4, 5, 6, 7));
+        mSource.setBoundingRects(new Rect[]{new Rect(8, 9, 10, 11), new Rect(12, 13, 14, 15)});
+        mSource.setAttachedInsets(Insets.of(16, 17, 18, 19));
+        mSource.scale(2f);
+        assertEquals(new Rect(0, 2, 4, 6), mSource.getFrame());
+        assertEquals(new Rect(8, 10, 12, 14), mSource.getVisibleFrame());
+        assertEquals(new Rect(16, 18, 20, 22), mSource.getBoundingRects()[0]);
+        assertEquals(new Rect(24, 26, 28, 30), mSource.getBoundingRects()[1]);
+        assertEquals(Insets.of(32, 34, 36, 38), mSource.getAttachedInsets());
+    }
+
+    @Test
     public void testCalculateInsetsTop() {
         mSource.setFrame(new Rect(0, 0, 500, 100));
         Insets insets = mSource.calculateInsets(new Rect(0, 0, 500, 500), null /* hostBounds */,

@@ -212,6 +212,21 @@ public class InsetsSource implements Parcelable {
         mAttachedInsets = other.mAttachedInsets;
     }
 
+    public void scale(float scale) {
+        mFrame.scale(scale);
+        if (mVisibleFrame != null) {
+            mVisibleFrame.scale(scale);
+        }
+        if (mBoundingRects != null) {
+            for (Rect r : mBoundingRects) {
+                r.scale(scale);
+            }
+        }
+        if (mAttachedInsets != null) {
+            mAttachedInsets = Insets.scale(mAttachedInsets, scale);
+        }
+    }
+
     @NonNull
     public InsetsSource setFrame(int left, int top, int right, int bottom) {
         mFrame.set(left, top, right, bottom);

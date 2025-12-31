@@ -636,12 +636,7 @@ public class InsetsState implements Parcelable {
         mPrivacyIndicatorBounds = mPrivacyIndicatorBounds.scale(scale);
         mDisplayShape = mDisplayShape.setScale(scale);
         for (int i = mSources.size() - 1; i >= 0; i--) {
-            final InsetsSource source = mSources.valueAt(i);
-            source.getFrame().scale(scale);
-            final Rect visibleFrame = source.getVisibleFrame();
-            if (visibleFrame != null) {
-                visibleFrame.scale(scale);
-            }
+            mSources.valueAt(i).scale(scale);
         }
     }
 
