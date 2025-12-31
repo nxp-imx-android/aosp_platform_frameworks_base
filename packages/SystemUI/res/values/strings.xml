@@ -247,8 +247,10 @@
         your organization</string>
     <!-- Notification text displayed when screenshots are blocked by an IT admin. [CHAR LIMIT=100] -->
     <string name="screenshot_blocked_by_admin">Taking screenshots is blocked by your IT admin</string>
+    <!-- Label for UI element which allows copying the screenshot to clipboard [CHAR LIMIT=NONE] -->
+    <string name="screenshot_copy_label">Copy</string>
     <!-- Content description indicating that tapping the element will allow copying the screenshot to clipboard [CHAR LIMIT=NONE] -->
-    <string name="screenshot_copy_description">Copy screenshot to clipboard</string>
+    <string name="screenshot_copy_description">Copy screenshot to clipboard button</string>
     <!-- Label for UI element which allows editing the screenshot [CHAR LIMIT=30] -->
     <string name="screenshot_edit_label">Edit</string>
     <!-- Content description indicating that tapping the element will allow editing the screenshot [CHAR LIMIT=NONE] -->
