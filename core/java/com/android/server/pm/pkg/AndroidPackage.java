@@ -1569,6 +1569,14 @@ public interface AndroidPackage {
     boolean hasPccComponents();
 
     /**
+     * Returns the process that the backup agent will run in.
+     * @see R.styleable#AndroidManifestApplication_backupAgentProcess
+     * @hide
+     */
+    @ApplicationInfo.BackupAgentProcess
+    int getBackupAgentProcess();
+
+    /**
      * Returns the complete policy declaring which other components this application is
      * allowed to associate with, as parsed from the manifest.
      *

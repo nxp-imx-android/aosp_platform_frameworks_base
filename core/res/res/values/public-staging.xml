@@ -141,6 +141,8 @@
     <public name="shortLabel"/>
     <!-- @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT) -->
     <public name="privateComputeCore"/>
+    <!-- @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT) -->
+    <public name="backupAgentProcess"/>
   </staging-public-group>
 
   <staging-public-group type="id" first-id="0x01a10000">

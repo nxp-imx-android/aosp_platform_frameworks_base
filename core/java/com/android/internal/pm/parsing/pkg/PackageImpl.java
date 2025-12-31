@@ -327,6 +327,8 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
     @Nullable
     @DataClass.ParcelWith(ForInternedString.class)
     private String backupAgentName;
+    @ApplicationInfo.BackupAgentProcess private int mBackupAgentProcess =
+            ApplicationInfo.BACKUP_AGENT_PROCESS_MAIN;
     private int banner;
     private int category = ApplicationInfo.CATEGORY_UNDEFINED;
     @Nullable
@@ -913,6 +915,12 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
     @Override
     public String getBackupAgentName() {
         return backupAgentName;
+    }
+
+    @ApplicationInfo.BackupAgentProcess
+    @Override
+    public int getBackupAgentProcess() {
+        return mBackupAgentProcess;
     }
 
     @Override
@@ -1967,6 +1975,13 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
     }
 
     @Override
+    public PackageImpl setBackupAgentProcess(
+            @ApplicationInfo.BackupAgentProcess int backupAgentProcess) {
+        this.mBackupAgentProcess = backupAgentProcess;
+        return this;
+    }
+
+    @Override
     public PackageImpl setBackupInForeground(boolean value) {
         return setBoolean(Booleans.BACKUP_IN_FOREGROUND, value);
     }
@@ -2657,6 +2672,7 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         // separate these.
         appInfo.appComponentFactory = appComponentFactory;
         appInfo.backupAgentName = backupAgentName;
+        appInfo.backupAgentProcess = mBackupAgentProcess;
         appInfo.banner = banner;
         appInfo.category = category;
         appInfo.classLoaderName = classLoaderName;
@@ -3280,6 +3296,7 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         sForInternedStringSet.parcel(this.queriesProviders, dest, flags);
         dest.writeString(this.appComponentFactory);
         dest.writeString(this.backupAgentName);
+        dest.writeInt(this.mBackupAgentProcess);
         dest.writeInt(this.banner);
         dest.writeInt(this.category);
         dest.writeString(this.classLoaderName);
@@ -3483,6 +3500,7 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         this.queriesProviders = sForInternedStringSet.unparcel(in);
         this.appComponentFactory = in.readString();
         this.backupAgentName = in.readString();
+        this.mBackupAgentProcess = in.readInt();
         this.banner = in.readInt();
         this.category = in.readInt();
         this.classLoaderName = in.readString();

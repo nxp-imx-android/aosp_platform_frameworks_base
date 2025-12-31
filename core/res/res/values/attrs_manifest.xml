@@ -1316,6 +1316,17 @@
          music via a service in the startForeground() state). -->
     <attr name="backupInForeground" format="boolean" />
 
+    <!-- Specifies the process that the backup agent will run in.
+         @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT) -->
+    <attr name="backupAgentProcess">
+        <!-- Specifies that the backup agent should run in the default main process of
+             the application that runs under the regular uid of the application. -->
+        <enum name="main" value="0" />
+        <!-- Specifies that the backup agent should run in the private compute core process
+             of the application -->
+        <enum name="privateComputeCore" value="1" />
+    </attr>
+
     <!-- The default install location defined by an application. -->
     <attr name="installLocation">
         <!-- Let the system decide ideal install location -->
@@ -2193,6 +2204,7 @@
         <attr name="restoreNeedsApplication" />
         <attr name="restoreAnyVersion" />
         <attr name="backupInForeground" />
+        <attr name="backupAgentProcess" />
         <!-- Request that your application's processes be created with
              a large Dalvik heap.  This applies to <em>all</em> processes
              created for the application.  It only applies to the first
