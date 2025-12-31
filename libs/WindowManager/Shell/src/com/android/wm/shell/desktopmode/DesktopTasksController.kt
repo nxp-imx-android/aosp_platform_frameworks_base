@@ -4303,6 +4303,7 @@ class DesktopTasksController(
                 },
             requestType = requestType,
             enterReason = EnterReason.TASK_LAUNCH,
+            forceBringTaskToFront = true,
         )
     }
 
@@ -4469,8 +4470,15 @@ class DesktopTasksController(
             "handleFreeformTaskPlacement decided to place task in desktop mode but the target" +
                 " desk ID is null."
         }
-        if (sourceDeskId != targetDeskId) {
-            desksOrganizer.moveTaskToDesk(wct, targetDeskId, task)
+
+        when {
+            // Moving to a new or different desk
+            sourceDeskId != targetDeskId -> desksOrganizer.moveTaskToDesk(wct, targetDeskId, task)
+            // Already in target desk, but minimized. Expand it.
+            repository.isMinimizedTask(task.taskId) ->
+                desksOrganizer.unminimizeTask(wct, targetDeskId, task)
+            // Already expanded in target desk, move it to front if needed.
+            bringTaskToFront -> desksOrganizer.reorderTaskToFront(wct, targetDeskId, task)
         }
 
         if (!anyDeskActive) {
