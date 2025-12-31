@@ -17,3 +17,10 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "enable_context_menu_look_up"
+  namespace: "text"
+  description: "Enables the 'Look Up' action in context menus."
+  bug: "472178600"
+}
