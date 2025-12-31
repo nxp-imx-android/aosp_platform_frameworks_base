@@ -271,6 +271,13 @@ public abstract class ActivityTaskManagerInternal implements ActiveUids.Observer
             @Nullable IBinder resultTo, @Nullable Bundle options, int userId);
 
     /**
+     * Start activity {@code intent} with updating the given configuration to global configuration.
+     */
+    public abstract int startActivityWithConfig(@NonNull String callingPackage,
+            @NonNull String callingFeatureId, @NonNull Intent intent,
+            @NonNull Configuration config, int userId);
+
+    /**
      * Called after virtual display Id is updated by
      * {@link com.android.server.vr.Vr2dDisplay} with a specific
      * {@code vr2dDisplayId}.

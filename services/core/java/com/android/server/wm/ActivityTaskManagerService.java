@@ -1666,32 +1666,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     }
 
     @Override
-    public final int startActivityWithConfig(IApplicationThread caller, String callingPackage,
-            String callingFeatureId, Intent intent, String resolvedType, IBinder resultTo,
-            String resultWho, int requestCode, int startFlags, Configuration config,
-            Bundle bOptions, int userId) {
-        assertPackageMatchesCallingUid(callingPackage);
-        enforceNotIsolatedCaller("startActivityWithConfig");
-        final int callingPid = Binder.getCallingPid();
-        final int callingUid = Binder.getCallingUid();
-        userId = handleIncomingUser(callingPid, callingUid, userId, "startActivityWithConfig");
-        // TODO: Switch to user app stacks here.
-        return getActivityStartController().obtainStarter(intent, "startActivityWithConfig")
-                .setCaller(caller)
-                .setCallingPackage(callingPackage)
-                .setCallingFeatureId(callingFeatureId)
-                .setResolvedType(resolvedType)
-                .setResultTo(resultTo)
-                .setResultWho(resultWho)
-                .setRequestCode(requestCode)
-                .setStartFlags(startFlags)
-                .setGlobalConfiguration(config)
-                .setActivityOptions(bOptions, callingPid, callingUid)
-                .setUserId(userId)
-                .execute();
-    }
-
-    @Override
     public final int startActivityAsCaller(IApplicationThread caller, String callingPackage,
             Intent intent, String resolvedType, IBinder resultTo, String resultWho, int requestCode,
             int startFlags, ProfilerInfo profilerInfo, Bundle bOptions,
@@ -7030,6 +7004,23 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                     .setUserId(userId)
                     .setAllowBalExemptionForSystemProcess(true)
                     .setFreezeScreen(true)
+                    .execute();
+        }
+
+        @Override
+        public int startActivityWithConfig(@NonNull String callingPackage,
+                @NonNull String callingFeatureId, @NonNull Intent intent,
+                @NonNull Configuration config, @CannotBeSpecialUser @UserIdInt int userId) {
+            assertPackageMatchesCallingUid(callingPackage);
+            enforceNotIsolatedCaller("startActivityWithConfig");
+            final int callingPid = Binder.getCallingPid();
+            final int callingUid = Binder.getCallingUid();
+            userId = handleIncomingUser(callingPid, callingUid, userId, "startActivityWithConfig");
+            return getActivityStartController().obtainStarter(intent, "startActivityWithConfig")
+                    .setCallingPackage(callingPackage)
+                    .setCallingFeatureId(callingFeatureId)
+                    .setGlobalConfiguration(config)
+                    .setUserId(userId)
                     .execute();
         }
 
