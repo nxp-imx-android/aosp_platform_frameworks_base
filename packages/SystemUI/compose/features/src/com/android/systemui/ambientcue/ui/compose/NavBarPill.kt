@@ -246,11 +246,16 @@ fun NavBarPill(
             modifier =
                 Modifier.graphicsLayer {
                         alpha = enterProgress * expansionAlpha
-                        scaleY = enterProgress
+                        // b/470164522 - scale is not working as expected.
+                        // When the pill is collapsed, sometimes the scale is 0. In this case, the
+                        // touch event may report a "Offset(Infinity, Infinity)", which will block
+                        // all the downstream events. This is a short term fix to make sure the
+                        // scale is always greater than 0.
+                        scaleY = enterProgress.coerceAtLeast(0.001f)
                         scaleX =
                             if (expandedSize.width != 0) {
                                 val initialScale = collapsedWidthPx / expandedSize.width
-                                lerp(initialScale, 1f, enterProgress)
+                                lerp(initialScale, 1f, enterProgress).coerceAtLeast(0.001f)
                             } else {
                                 1f
                             }
