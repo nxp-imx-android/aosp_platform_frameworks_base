@@ -22,7 +22,9 @@ import android.testing.TestableLooper.RunWithLooper
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.swipe
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -37,6 +39,8 @@ import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.motion.createSysUiComposeMotionTestRule
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
+import com.android.systemui.qs.panels.ui.compose.infinitegrid.TileMotionTestKeys
+import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.sceneContainerTransitions
 import com.android.systemui.scene.sceneContainerViewModelFactory
 import com.android.systemui.scene.session.shared.SessionStorage
@@ -50,6 +54,7 @@ import com.android.systemui.scene.ui.composable.SceneContainer
 import com.android.systemui.scene.ui.view.sceneJankMonitorFactory
 import com.android.systemui.scene.ui.viewmodel.GoneUserActionsViewModel
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
+import com.android.systemui.shade.ui.composable.ShadeHeaderMotionTestKeys
 import com.android.systemui.shade.ui.composable.ShadeScene
 import com.android.systemui.shade.ui.composable.WithStatusIconContext
 import com.android.systemui.shade.ui.viewmodel.shadeSceneContentViewModelFactory
@@ -58,17 +63,24 @@ import com.android.systemui.statusbar.notification.stack.ui.view.notificationScr
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationsPlaceholderViewModelFactory
 import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
+import com.android.systemui.window.data.repository.fakeWindowRootViewBlurRepository
 import kotlin.time.Duration.Companion.seconds
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import platform.test.motion.compose.ComposeFeatureCaptures.height
 import platform.test.motion.compose.ComposeFeatureCaptures.size
 import platform.test.motion.compose.ComposeRecordingSpec
 import platform.test.motion.compose.MotionControl
 import platform.test.motion.compose.feature
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
+import platform.test.motion.compose.values.MotionTestValueKey
+import platform.test.motion.golden.DataPoint
+import platform.test.motion.golden.FeatureCapture
+import platform.test.motion.golden.TimeSeriesCaptureScope
+import platform.test.motion.golden.asDataPoint
 import platform.test.screenshot.DeviceEmulationSpec
 import platform.test.screenshot.Displays.Phone
 
@@ -157,6 +169,120 @@ class GoneSceneToQuickQuickSettingsSceneTest : SysuiTestCase() {
         }
     }
 
+    @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
+    fun swipeDownFromGoneSceneToQQS_recordingQQSTilesSquishiness() {
+        motionTestRule.runTest(60.seconds) {
+            kosmos.usingMediaInComposeFragment = true
+            kosmos.populateQuickSettings(tileCount = 7)
+            kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = true
+
+            val motion =
+                recordMotion(
+                    content = { GoneToShadeSceneContainer() },
+                    recordingSpec =
+                        ComposeRecordingSpec(
+                            MotionControl(
+                                delayRecording = {
+                                    awaitCondition {
+                                        kosmos.sceneInteractor.transitionState.value.isIdle()
+                                    }
+                                }
+                            ) {
+                                performTouchInputAsync(onRoot()) {
+                                    swipe(
+                                        start = Offset(x = centerX / 2, y = 0f),
+                                        end = Offset(x = centerX / 2, y = bottom),
+                                        durationMillis = 500,
+                                    )
+                                }
+                            }
+                        ) {
+                            featureFloat(TileMotionTestKeys.Squishness)
+                        },
+                )
+            assertThat(motion).timeSeriesMatchesGolden()
+        }
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
+    fun swipeDownFromGoneSceneToQQS_recordingQQSTilesHeight() {
+        motionTestRule.runTest(60.seconds) {
+            kosmos.usingMediaInComposeFragment = true
+            kosmos.populateQuickSettings(tileCount = 7)
+            kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = true
+
+            val motion =
+                recordMotion(
+                    content = { GoneToShadeSceneContainer() },
+                    recordingSpec =
+                        ComposeRecordingSpec(
+                            MotionControl(
+                                delayRecording = {
+                                    awaitCondition {
+                                        kosmos.sceneInteractor.transitionState.value.isIdle()
+                                    }
+                                }
+                            ) {
+                                performTouchInputAsync(onRoot()) {
+                                    swipe(
+                                        start = Offset(x = centerX / 2, y = 0f),
+                                        end = Offset(x = centerX / 2, y = bottom),
+                                        durationMillis = 500,
+                                    )
+                                }
+                            }
+                        ) {
+                            val height =
+                                motionTestRule.toolkit.composeContentTestRule
+                                    .onAllNodesWithTag(resIdToTestTag("tile_expandable"), true)[0]
+                                    .fetchSemanticsNode()
+                                    .size
+                                    .height
+                            feature("qs_tile_height") { height.asDataPoint() }
+                        },
+                )
+            assertThat(motion).timeSeriesMatchesGolden()
+        }
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
+    fun swipeDownFromGoneSceneToQQS_recordingShadeHeaderClockAlpha() {
+        motionTestRule.runTest(60.seconds) {
+            kosmos.usingMediaInComposeFragment = true
+            kosmos.populateQuickSettings(tileCount = 7)
+            kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = true
+
+            val motion =
+                recordMotion(
+                    content = { GoneToShadeSceneContainer() },
+                    recordingSpec =
+                        ComposeRecordingSpec(
+                            MotionControl(
+                                delayRecording = {
+                                    awaitCondition {
+                                        kosmos.sceneInteractor.transitionState.value.isIdle()
+                                    }
+                                }
+                            ) {
+                                performTouchInputAsync(onRoot()) {
+                                    swipe(
+                                        start = Offset(x = centerX / 2, y = 0f),
+                                        end = Offset(x = centerX / 2, y = bottom),
+                                        durationMillis = 500,
+                                    )
+                                }
+                            }
+                        ) {
+                            featureFloat(ShadeHeaderMotionTestKeys.Alpha)
+                        },
+                )
+            assertThat(motion).timeSeriesMatchesGolden()
+        }
+    }
+
     @Composable
     private fun GoneToShadeSceneContainer() {
         PlatformTheme {
@@ -180,6 +306,21 @@ class GoneSceneToQuickQuickSettingsSceneTest : SysuiTestCase() {
                     )
                 }
             }
+        }
+    }
+
+    private companion object {
+        fun TimeSeriesCaptureScope<SemanticsNodeInteractionsProvider>.featureFloat(
+            motionTestValueKey: MotionTestValueKey<Float>
+        ) {
+            feature(
+                motionTestValueKey = motionTestValueKey,
+                capture =
+                    FeatureCapture(motionTestValueKey.semanticsPropertyKey.name) {
+                        it.asDataPoint()
+                    },
+                name = motionTestValueKey.semanticsPropertyKey.name,
+            )
         }
     }
 }

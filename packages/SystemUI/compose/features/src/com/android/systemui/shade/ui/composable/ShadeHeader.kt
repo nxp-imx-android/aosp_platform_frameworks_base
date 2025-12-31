@@ -23,6 +23,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.annotation.ColorInt
+import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
@@ -123,6 +124,8 @@ import com.android.systemui.util.kotlin.toDp
 import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
+import platform.test.motion.compose.values.MotionTestValueKey
+import platform.test.motion.compose.values.motionTestValues
 
 object ShadeHeader {
     object Elements {
@@ -536,6 +539,11 @@ private fun CutoutAwareShadeHeader(
     }
 }
 
+@VisibleForTesting
+object ShadeHeaderMotionTestKeys {
+    val Alpha = MotionTestValueKey<Float>("alpha")
+}
+
 @Composable
 private fun ContentScope.Clock(
     modifier: Modifier = Modifier,
@@ -545,7 +553,15 @@ private fun ContentScope.Clock(
 ) {
     val layoutDirection = LocalLayoutDirection.current
 
-    ElementWithValues(key = ShadeHeader.Elements.Clock, modifier = modifier) {
+    ElementWithValues(
+        key = ShadeHeader.Elements.Clock,
+        modifier =
+            modifier.motionTestValues {
+                ShadeHeader.Elements.Clock.currentAlpha()?.let { alpha ->
+                    alpha exportAs ShadeHeaderMotionTestKeys.Alpha
+                }
+            },
+    ) {
         val animatedScale by animateElementFloatAsState(scale, ClockScale, canOverflow = false)
 
         content {
