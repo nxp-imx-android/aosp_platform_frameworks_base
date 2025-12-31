@@ -237,6 +237,7 @@ import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.SystemServiceManager;
 import com.android.server.health.HealthServiceWrapper;
+import com.android.server.net.Flags;
 import com.android.server.notification.NotificationManagerService;
 import com.android.server.pinner.PinnerService;
 import com.android.server.pinner.PinnerService.PinnedFileStats;
@@ -1715,22 +1716,26 @@ public class StatsPullAtomService extends SystemService {
     private NetworkStats getUidNetworkStatsSnapshotForTemplateLocked(
             @NonNull NetworkTemplate template, boolean includeTags, long startTime, long endTime) {
         final long elapsedMillisSinceBoot = SystemClock.elapsedRealtime();
+
         // Rate-limit force-polling for all NetworkStats queries
         if (elapsedMillisSinceBoot - mLastNetworkStatsPollTime >= NETSTATS_POLL_RATE_LIMIT_MS) {
             mLastNetworkStatsPollTime = elapsedMillisSinceBoot;
             getNetworkStatsManager().forceUpdate();
         }
 
-        final android.app.usage.NetworkStats queryNonTaggedStats =
-                getNetworkStatsManager().querySummary(template, startTime, endTime);
+        // Use 0 for flags to avoid redundant polling, as forceUpdate() is already called above.
+        final android.app.usage.NetworkStats queryNonTaggedStats = Flags.useNetstatsPerQueryFlags()
+                ? getNetworkStatsManager().querySummary(template, startTime, endTime, 0)
+                : getNetworkStatsManager().querySummary(template, startTime, endTime);
 
         final NetworkStats nonTaggedStats =
                 fromPublicNetworkStats(queryNonTaggedStats);
         queryNonTaggedStats.close();
         if (!includeTags) return nonTaggedStats;
 
-        final android.app.usage.NetworkStats queryTaggedStats =
-                getNetworkStatsManager().queryTaggedSummary(template, startTime, endTime);
+        final android.app.usage.NetworkStats queryTaggedStats = Flags.useNetstatsPerQueryFlags()
+                ? getNetworkStatsManager().queryTaggedSummary(template, startTime, endTime, 0)
+                : getNetworkStatsManager().queryTaggedSummary(template, startTime, endTime);
         final NetworkStats taggedStats =
                 fromPublicNetworkStats(queryTaggedStats);
         queryTaggedStats.close();
