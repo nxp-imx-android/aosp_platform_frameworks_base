@@ -357,7 +357,9 @@ constructor(
         traceSection("DefaultWindowDecoration#relayout") {
             taskInfo.capturedLink?.let {
                 appToWebRepository.setCapturedLink(
-                    taskInfo.taskId, it, taskInfo.capturedLinkTimestamp
+                    taskInfo.taskId,
+                    it,
+                    taskInfo.capturedLinkTimestamp,
                 )
             }
 
@@ -397,10 +399,7 @@ constructor(
             // After this line, [WindowDecoration2.taskInfo] is up-to-date and should be
             // used instead of the taskInfo passed to the relayout method.
             if (!wct.isEmpty) {
-                if (
-                    DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue &&
-                        relayoutParams.shouldSetAppBounds
-                ) {
+                if (relayoutParams.shouldSetAppBounds) {
                     // When expanding from PiP to freeform, we need to start a Transition for
                     // applying
                     // the inset changes so that PiP receives the insets for the final bounds. This

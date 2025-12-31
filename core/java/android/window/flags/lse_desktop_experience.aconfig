@@ -588,13 +588,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_windowing_pip"
-    namespace: "lse_desktop_experience"
-    description: "Enables PiP features in desktop mode."
-    bug: "350475854"
-}
-
-flag {
     name: "enable_desktop_windowing_scvh_cache_bug_fix"
     namespace: "lse_desktop_experience"
     description: "Enables a SurfaceControlViewHost cache for window decorations"
