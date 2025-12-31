@@ -190,6 +190,11 @@ class AppCompatController {
         return mRecreateOnConfigChangePolicy;
     }
 
+    @NonNull
+    AppCompatSandboxOverrides getSandboxOverrides() {
+        return mAppCompatOverrides.getSandboxOverrides();
+    }
+
     void dump(@NonNull PrintWriter pw, @NonNull String prefix) {
         getTransparentPolicy().dump(pw, prefix);
         getLetterboxPolicy().dump(pw, prefix);

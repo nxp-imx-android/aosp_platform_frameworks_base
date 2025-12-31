@@ -45,9 +45,9 @@ import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModelTestsBase.Companion.HOME_LAUNCHER_PACKAGE_NAME
 import libcore.junit.util.compat.CoreCompatChangeRule.DisableCompatChanges
 import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges
+import org.junit.After
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
-import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -449,11 +449,26 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
 
     @Test
     @DisableCompatChanges(ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED)
-    @EnableCompatChanges(ActivityInfo.OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS)
     fun testShouldExcludeCaptionFromAppBounds_resizeable_overridden_true() {
-        assertTrue(desktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(
-            setUpFreeformTask().apply { isResizeable = true })
-        )
+        val taskInfo = setUpFreeformTask().apply { isResizeable = true }
+        taskInfo.appCompatTaskInfo.setOverrideExcludeCaptionInsetsAllowed(true)
+        assertTrue(desktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo))
+    }
+
+    @Test
+    @EnableCompatChanges(ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED)
+    fun testShouldExcludeCaptionFromAppBounds_resizeable_sdk35_overridden_notOptOut_true() {
+        val taskInfo = setUpFreeformTask().apply { isResizeable = true }
+        taskInfo.appCompatTaskInfo.setOverrideExcludeCaptionInsetsAllowed(true)
+        assertTrue(desktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo))
+    }
+
+    @Test
+    @EnableCompatChanges(ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED)
+    fun testShouldExcludeCaptionFromAppBounds_resizeable_sdk35_overridden_optOut_false() {
+        val taskInfo = setUpFreeformTask().apply { isResizeable = true }
+        taskInfo.appCompatTaskInfo.setOverrideExcludeCaptionInsetsAllowed(false)
+        assertFalse(desktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo))
     }
 
     @Test

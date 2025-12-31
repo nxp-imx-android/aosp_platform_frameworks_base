@@ -241,6 +241,8 @@ final class AppCompatUtils {
         appCompatTaskInfo.setHasMinAspectRatioOverride(top.mAppCompatController
                 .getDesktopAspectRatioPolicy().hasMinAspectRatioOverride(task));
         appCompatTaskInfo.setOptOutEdgeToEdge(top.mOptOutEdgeToEdge);
+        appCompatTaskInfo.setOverrideExcludeCaptionInsetsAllowed(top.mAppCompatController
+                .getSandboxOverrides().isOverrideExcludeCaptionInsetsAllowed());
     }
 
     /**

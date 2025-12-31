@@ -24,6 +24,7 @@ import static android.os.UserManager.isHeadlessSystemUserMode;
 import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.AppCompatTaskInfo;
 import android.app.TaskInfo;
 import android.app.WindowConfiguration;
 import android.content.ComponentName;
@@ -208,11 +209,12 @@ public class DesktopModeCompatPolicy {
     /** @see DesktopModeCompatUtils#shouldExcludeCaptionFromAppBounds */
     public boolean shouldExcludeCaptionFromAppBounds(@NonNull TaskInfo taskInfo) {
         if (taskInfo.topActivityInfo != null) {
+            final AppCompatTaskInfo appCompatInfo = taskInfo.appCompatTaskInfo;
             return DesktopModeCompatUtils.shouldExcludeCaptionFromAppBounds(
                     taskInfo.topActivityInfo,
                     taskInfo.isResizeable,
-                    taskInfo.appCompatTaskInfo != null
-                            && taskInfo.appCompatTaskInfo.hasOptOutEdgeToEdge()
+                    appCompatInfo != null && appCompatInfo.hasOptOutEdgeToEdge(),
+                    appCompatInfo != null && appCompatInfo.hasOverrideExcludeCaptionInsetsAllowed()
             );
         }
         return false;
