@@ -24,6 +24,8 @@ import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.dagger.WMShellBaseModule
 import com.android.wm.shell.dagger.WMSingleton
+import com.android.wm.shell.desktopmode.DesktopTasksController
+import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.NormalAppLayerController
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
@@ -54,6 +56,8 @@ object PinnedLayerModule {
         // register itself as a listener.
         pinnedLayerPermissionObserver: Optional<PinnedLayerPermissionObserver>,
         normalAppLayerController: Optional<NormalAppLayerController>,
+        desktopTasksController: Optional<DesktopTasksController>,
+        desktopUserRepositories: Optional<DesktopUserRepositories>,
     ): Optional<PinnedLayerHandler> {
         if (PinnedLayerFlags.isPinnedLayerEnabled()) {
             return Optional.of(
@@ -62,6 +66,8 @@ object PinnedLayerModule {
                     transitions = transitions,
                     pinnedLayerController = pinnedLayerController.get(),
                     normalLayerController = normalAppLayerController.get(),
+                    desktopUserRepositories = desktopUserRepositories.orElse(null),
+                    desktopTasksController = desktopTasksController.orElse(null),
                 )
             )
         }

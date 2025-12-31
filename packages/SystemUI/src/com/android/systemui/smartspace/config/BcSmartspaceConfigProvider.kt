@@ -22,8 +22,6 @@ import com.android.systemui.plugins.BcSmartspaceConfigPlugin
 
 class BcSmartspaceConfigProvider(private val featureFlags: FeatureFlags) :
     BcSmartspaceConfigPlugin {
-    override val isDefaultDateWeatherDisabled: Boolean
-        get() = true
 
     override val isViewPager2Enabled: Boolean
         get() = smartspaceViewpager2()

@@ -742,7 +742,8 @@ constructor(
                 ),
                 label,
             )
-        transitionRegister.register(filter, remoteTransition, includeTakeover = isLongLived)
+            .setFilter(filter)
+        transitionRegister.register(remoteTransition, includeTakeover = isLongLived)
         return remoteTransition
     }
 
@@ -870,8 +871,9 @@ constructor(
                 RemoteAnimationRunnerCompat.wrap(returnRunner),
                 "${launchController.transitionCookie}_returnTransition",
             )
+            .setFilter(filter)
 
-        transitionRegister?.register(filter, transition, includeTakeover = false)
+        transitionRegister?.register(transition, includeTakeover = false)
         cleanUpRunnable = Runnable { transitionRegister?.unregister(transition) }
     }
 
@@ -2714,15 +2716,14 @@ constructor(
 
         /** Register [remoteTransition] with WM Shell using the given [filter]. */
         internal fun register(
-            filter: TransitionFilter,
             remoteTransition: RemoteTransition,
             includeTakeover: Boolean,
         ) {
-            shellTransitions?.registerRemote(filter, remoteTransition)
-            iShellTransitions?.registerRemote(filter, remoteTransition)
+            shellTransitions?.registerRemote(remoteTransition)
+            iShellTransitions?.registerRemote(remoteTransition)
             if (includeTakeover) {
-                shellTransitions?.registerRemoteForTakeover(filter, remoteTransition)
-                iShellTransitions?.registerRemoteForTakeover(filter, remoteTransition)
+                shellTransitions?.registerRemoteForTakeover(remoteTransition)
+                iShellTransitions?.registerRemoteForTakeover(remoteTransition)
             }
         }
 

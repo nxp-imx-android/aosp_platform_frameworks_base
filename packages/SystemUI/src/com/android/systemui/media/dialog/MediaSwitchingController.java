@@ -24,8 +24,6 @@ import static android.media.RoutingSessionInfo.RELEASE_TYPE_SHARING;
 import static android.permission.flags.Flags.accessLocalNetworkPermissionEnabled;
 import static android.provider.Settings.ACTION_BLUETOOTH_SETTINGS;
 
-import static com.android.systemui.media.dialog.MediaItem.MediaItemType.TYPE_GROUP_DIVIDER;
-
 import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.WallpaperColors;
@@ -82,6 +80,8 @@ import com.android.settingslib.volume.data.repository.AudioSharingRepository;
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.dagger.qualifiers.Background;
+import com.android.systemui.media.dialog.MediaItem.DeviceGroupMediaItem;
+import com.android.systemui.media.dialog.MediaItem.GroupDividerMediaItem;
 import com.android.systemui.media.nearby.NearbyMediaDevicesManager;
 import com.android.systemui.monet.ColorScheme;
 import com.android.systemui.plugins.ActivityStarter;
@@ -433,7 +433,8 @@ public class MediaSwitchingController
      */
     public boolean hasMutingExpectedDevice() {
         return mOutputMediaItemListProxy.getOutputMediaItemList().stream().anyMatch(
-                MediaItem::isMutingExpectedDevice);
+                item -> item instanceof MediaItem.DeviceMediaItem deviceItem
+                        && deviceItem.getMediaDevice().isMutingExpectedDevice());
     }
 
     /**
@@ -696,8 +697,9 @@ public class MediaSwitchingController
 
     private void buildInputMediaItems(List<MediaDevice> devices) {
         synchronized (mInputMediaDevicesLock) {
-            List<MediaItem> updatedInputMediaItems =
-                    devices.stream().map(MediaItem::createDeviceMediaItem).toList();
+            List<MediaItem.DeviceMediaItem> updatedInputMediaItems =
+                    devices.stream().map(
+                            MediaItem.DeviceMediaItem::new).toList();
             mInputMediaItemList.clear();
             mInputMediaItemList.addAll(updatedInputMediaItems);
         }
@@ -705,8 +707,10 @@ public class MediaSwitchingController
 
     @NonNull
     MediaItem getConnectedSpeakersExpandableGroupDivider() {
-        return MediaItem.createExpandableGroupDividerMediaItem(
-                mContext.getString(R.string.media_output_group_title_connected_speakers));
+        return new GroupDividerMediaItem(
+                /* title= */
+                mContext.getString(R.string.media_output_group_title_connected_speakers),
+                /* isExpandable= */ true);
     }
 
     boolean hasGroupPlayback() {
@@ -715,8 +719,8 @@ public class MediaSwitchingController
 
     List<MediaItem> getSelectedDeviceItems() {
         return mOutputMediaItemListProxy.getOutputMediaItemList().stream()
-                .filter(item -> item.getMediaDevice().map(MediaDevice::isSelected).orElse(
-                        false)).toList();
+                .filter(item -> item instanceof MediaItem.DeviceMediaItem deviceItem
+                        && deviceItem.getMediaDevice().isSelected()).toList();
     }
 
     boolean hasConnectDeviceButton() {
@@ -768,9 +772,12 @@ public class MediaSwitchingController
     private void addSeparatorForTheFirstGroupDivider(List<MediaItem> outputList) {
         for (int i = 0; i < outputList.size(); i++) {
             MediaItem item = outputList.get(i);
-            if (item.getMediaItemType() == TYPE_GROUP_DIVIDER) {
-                outputList.set(i,
-                        MediaItem.createGroupDividerWithSeparatorMediaItem(item.getTitle()));
+            if (item instanceof GroupDividerMediaItem groupDividerMediaItem) {
+                // TODO: b/448806213 - use `.copy(hasTopSeparator = true)`.
+                outputList.set(i, new GroupDividerMediaItem(
+                        /* title= */ groupDividerMediaItem.getTitle(),
+                        /* isExpandable= */ false,
+                        /* hasTopSeparator= */ true));
                 break;
             }
         }
@@ -786,7 +793,8 @@ public class MediaSwitchingController
         if (Boolean.TRUE.equals(mGroupSelectedItems) && hasGroupPlayback()) {
             outputList.removeAll(selectedDevices);
             if (isGroupListCollapsed()) {
-                outputList.addFirst(MediaItem.createDeviceGroupMediaItem());
+                // TODO: b/448806213 - remove `INSTANCE`
+                outputList.addFirst(DeviceGroupMediaItem.INSTANCE);
             } else {
                 outputList.addAll(0, selectedDevices);
             }
@@ -796,15 +804,13 @@ public class MediaSwitchingController
 
     private void addInputDevices(List<MediaItem> mediaItems) {
         mediaItems.add(
-                MediaItem.createGroupDividerMediaItem(
-                        mContext.getString(R.string.media_input_group_title)));
+                new GroupDividerMediaItem(mContext.getString(R.string.media_input_group_title)));
         mediaItems.addAll(mInputMediaItemList);
     }
 
     private void addOutputDevices(List<MediaItem> mediaItems) {
         mediaItems.add(
-                MediaItem.createGroupDividerMediaItem(
-                        mContext.getString(R.string.media_output_group_title)));
+                new GroupDividerMediaItem(mContext.getString(R.string.media_output_group_title)));
         mediaItems.addAll(getOutputDeviceList());
     }
 
@@ -933,8 +939,8 @@ public class MediaSwitchingController
     public boolean isAnyDeviceTransferring() {
         synchronized (mMediaDevicesLock) {
             for (MediaItem mediaItem : mOutputMediaItemListProxy.getOutputMediaItemList()) {
-                if (mediaItem.getMediaDevice().isPresent()
-                        && mediaItem.getMediaDevice().get().getState()
+                if (mediaItem instanceof MediaItem.DeviceMediaItem deviceItem
+                        && deviceItem.getMediaDevice().getState()
                         == LocalMediaManager.MediaDeviceState.STATE_CONNECTING) {
                     return true;
                 }

@@ -40,17 +40,17 @@ import java.util.Set;
 class SupervisionPolicyMigrator {
     private final Context mContext;
     private final UserManagerInternal mUserManagerInternal;
-    private final RoleManager mRoleManager;
+    private final SupervisionService.Injector mInjector;
     private final DevicePolicyManager mDpm;
 
     SupervisionPolicyMigrator(
             Context context,
             @NonNull UserManagerInternal userManagerInternal,
-            @NonNull RoleManager roleManager,
+            @NonNull SupervisionService.Injector injector,
             @NonNull DevicePolicyManager dpm) {
         mContext = context;
         mUserManagerInternal = userManagerInternal;
-        mRoleManager = roleManager;
+        mInjector = injector;
         mDpm = dpm;
     }
 
@@ -78,10 +78,10 @@ class SupervisionPolicyMigrator {
             int userId = user.id;
             // Get holders for both supervision roles
             List<String> supervisionRoleHolders =
-                    mRoleManager.getRoleHoldersAsUser(
+                    mInjector.getRoleHoldersAsUser(
                             RoleManager.ROLE_SUPERVISION, UserHandle.of(userId));
             List<String> systemSupervisionRoleHolders =
-                    mRoleManager.getRoleHoldersAsUser(
+                    mInjector.getRoleHoldersAsUser(
                             RoleManager.ROLE_SYSTEM_SUPERVISION, UserHandle.of(userId));
 
             // Combine them into a single list/set

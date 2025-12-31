@@ -403,29 +403,17 @@ public class BroadcastConstants {
 
     private static boolean getDeviceConfigBoolean(@NonNull Properties properties,
             @NonNull String key, boolean def) {
-        if (!Flags.readDeviceConfigConstants()) {
-            return SystemProperties.getBoolean(propertyOverrideFor(key),
-                    SystemProperties.getBoolean(propertyFor(key), def));
-        }
         return SystemProperties.getBoolean(propertyOverrideFor(key),
                 properties.getBoolean(key, SystemProperties.getBoolean(propertyFor(key), def)));
     }
 
     private int getDeviceConfigInt(@NonNull Properties properties, @NonNull String key, int def) {
-        if (!Flags.readDeviceConfigConstants()) {
-            return SystemProperties.getInt(propertyOverrideFor(key),
-                    SystemProperties.getInt(propertyFor(key), def));
-        }
         return SystemProperties.getInt(propertyOverrideFor(key),
                 properties.getInt(key, SystemProperties.getInt(propertyFor(key), def)));
     }
 
     private long getDeviceConfigLong(@NonNull Properties properties,
             @NonNull String key, long def) {
-        if (!Flags.readDeviceConfigConstants()) {
-            return SystemProperties.getLong(propertyOverrideFor(key),
-                    SystemProperties.getLong(propertyFor(key), def));
-        }
         return SystemProperties.getLong(propertyOverrideFor(key),
                 properties.getLong(key, SystemProperties.getLong(propertyFor(key), def)));
     }

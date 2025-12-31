@@ -16,14 +16,43 @@
 
 package com.android.server.appfunctions;
 
+import android.annotation.IntRange;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
 /** This interface is used to expose configs to the AppFunctionManagerService. */
 public interface ServiceConfig {
     // TODO(b/357551503): Obtain namespace from DeviceConfig.
     String NAMESPACE_APP_FUNCTIONS = "appfunctions";
 
     /**
+     * The test page size that would be used by {@link
+     * ServiceConfig#getSearchAppFunctionInternalPageSize} when provided.
+     */
+    AtomicInteger sTestPageSize = new AtomicInteger(0);
+
+    /**
+     * The minimum page size that would be returned by {@link
+     * ServiceConfig#getSearchAppFunctionInternalPageSize}.
+     */
+    int MIN_PAGE_SIZE = 1;
+
+    /**
+     * The maximum page size that would be returned by {@link
+     * ServiceConfig#getSearchAppFunctionInternalPageSize}.
+     */
+    int MAX_PAGE_SIZE = 10_000;
+
+    /**
      * Returns the timeout for which the system server waits for the app function service to
      * successfully cancel the execution of an app function before forcefully unbinding the service.
      */
     long getExecuteAppFunctionCancellationTimeoutMillis();
+
+    /**
+     * Returns the internal page size used when fetching a page from the system server via {@link
+     * android.app.appfunctions.IAppFunctionSearchResults#getNextPage}.
+     */
+    @IntRange(from = MIN_PAGE_SIZE, to = MAX_PAGE_SIZE)
+    int getSearchAppFunctionInternalPageSize();
 }

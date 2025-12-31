@@ -3405,10 +3405,10 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             return false;
         }
 
+        /** Gets a copy of the adjacent {@link TaskFragment}s. */
         @NonNull
-        AdjacentVisibilityHelper getVisibilityHelper(
-                @NonNull Predicate<TaskFragment> occludingCallback) {
-            return new AdjacentVisibilityHelper(mAdjacentSet, occludingCallback);
+        ArraySet<TaskFragment> getTaskFragments() {
+            return new ArraySet<>(mAdjacentSet);
         }
 
         int size() {
@@ -3439,95 +3439,6 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             }
             sb.append("}");
             return sb.toString();
-        }
-    }
-
-    /**
-     * The helper class to calculate the visibility of the adjacent TaskFragments.
-     * </p>
-     * For a complex case as below, the adjacent TaskFragments contain a translucent TaskFragment.
-     * In that case, the TaskFragment B should be visible, but Task#1 should not be visible if
-     * TaskFragment B occludes the whole area of the translucent TaskFragment C.
-     * Task#2
-     *    - TaskFragment C (adjacent to A, translucent)
-     *    - TaskFragment B
-     *    - TaskFragment A (adjacent to C)
-     * Task#1
-     * </p>
-     * The visibility calculation should be done by processing the TaskFragments from top to
-     * bottom, by calling {@link #process(TaskFragment)}.
-     */
-    static class AdjacentVisibilityHelper {
-        final ArraySet<TaskFragment> mUnprocessedAdjacentTaskFragments;
-        final ArraySet<TaskFragment> mTranslucentTaskFragments = new ArraySet<>();
-        final Predicate<TaskFragment> mOccludingCallback;
-
-        AdjacentVisibilityHelper(@NonNull ArraySet<TaskFragment> adjacentTaskFragments,
-                @NonNull Predicate<TaskFragment> occludingCallback) {
-            mUnprocessedAdjacentTaskFragments = new ArraySet<>(adjacentTaskFragments);
-            mOccludingCallback = occludingCallback;
-        }
-
-        /**
-         * Process the given TaskFragment. The TaskFragment should be one of the adjacent
-         * TaskFragments or the TaskFragments in between the adjacent TFs.
-         */
-        public void process(@NonNull TaskFragment taskFragment) {
-            if (mUnprocessedAdjacentTaskFragments.contains(taskFragment)) {
-                mUnprocessedAdjacentTaskFragments.remove(taskFragment);
-            }
-
-            if (mOccludingCallback.test(taskFragment)) {
-                // Remove the translucent TaskFragments if it can be fully occluded by this
-                // TaskFragment.
-                mTranslucentTaskFragments.removeIf(
-                        t -> taskFragment.getBounds().contains(t.getBounds()));
-            } else {
-                mTranslucentTaskFragments.add(taskFragment);
-            }
-        }
-
-        /**
-         * Returns {@code true} if the process is done, i.e. the adjacent TaskFragments are all
-         * processed.
-         */
-        public boolean isAllAdjacentTaskFragmentProcessed() {
-            return mUnprocessedAdjacentTaskFragments.isEmpty();
-        }
-
-        /**
-         * Returns {@code true} if the given TaskFragment is one of the adjacent TaskFragment
-         * that's not yet processed.
-         */
-        public boolean isUnprocessedAdjacentTaskFragment(TaskFragment tf) {
-            return mUnprocessedAdjacentTaskFragments.contains(tf);
-        }
-
-        /**
-         * Returns {@code true} if the adjacent TaskFragments (and the TaskFragments in between)
-         * can occlude parent container. Must be called after all adjacent TFs are processed.
-         */
-        public boolean occludesParent() {
-            return mTranslucentTaskFragments.isEmpty();
-        }
-
-        /**
-         * Return {@code true} if the given TaskFragment is behind any of the translucent
-         * TaskFragments
-         */
-        public boolean isBehindTranslucentTaskFragment(@NonNull TaskFragment tf) {
-            if (mUnprocessedAdjacentTaskFragments.contains(tf)) {
-                return false;
-            }
-
-            final Rect bounds = tf.getBounds();
-            for (int i = mTranslucentTaskFragments.size() - 1; i >= 0; i--) {
-                final TaskFragment taskFragment = mTranslucentTaskFragments.valueAt(i);
-                if (bounds.intersect(taskFragment.getBounds())) {
-                    return true;
-                }
-            }
-            return false;
         }
     }
 }

@@ -48,8 +48,12 @@ import com.android.window.flags.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ExitReason
+import com.android.wm.shell.desktopmode.DesktopTasksController
+import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.NormalAppLayerController
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.shared.TransactionPool
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellInit
@@ -70,6 +74,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
@@ -100,6 +105,9 @@ class PinnedLayerHandlerTests : ShellTestCase() {
     @Mock
     private lateinit var multiDisplayDragMoveIndicatorController:
         MultiDisplayDragMoveIndicatorController
+    @Mock private lateinit var desktopUserRepositories: DesktopUserRepositories
+    @Mock private lateinit var desktopTasksController: DesktopTasksController
+    @Mock private lateinit var desktopRepository: DesktopRepository
 
     private lateinit var desktopState: FakeDesktopState
     private lateinit var pinnedLayerController: PinnedLayerController
@@ -123,8 +131,29 @@ class PinnedLayerHandlerTests : ShellTestCase() {
                 multiDisplayDragMoveIndicatorController,
             )
         pinnedLayerHandler =
-            PinnedLayerHandler(shellInit, transitions, pinnedLayerController, normalLayerController)
+            PinnedLayerHandler(
+                shellInit,
+                transitions,
+                pinnedLayerController,
+                normalLayerController,
+                desktopUserRepositories,
+                desktopTasksController,
+            )
         whenever(presentationController.isTaskSupportedForPinning(any())).thenReturn(true)
+        whenever(desktopUserRepositories.getProfile(USER_ID_0)).thenReturn(desktopRepository)
+
+        // Setup default display with a desk containing one desktop window that'll be pinned.
+        whenever(
+                desktopRepository.isOnlyVisibleNonClosingTaskInDesk(
+                    TASK_ID_0,
+                    DESK_ID_0,
+                    DISPLAY_ID_0,
+                )
+            )
+            .thenReturn(true)
+        whenever(desktopRepository.getActiveDeskId(DISPLAY_ID_0)).thenReturn(DESK_ID_0)
+        whenever(desktopRepository.getDefaultDeskId(DISPLAY_ID_0)).thenReturn(DESK_ID_0)
+        whenever(desktopRepository.getDeskIdForTask(TASK_ID_0)).thenReturn(DESK_ID_0)
     }
 
     @Test
@@ -302,6 +331,93 @@ class PinnedLayerHandlerTests : ShellTestCase() {
         assertTrue(pinnedLayerController.isPinned(TASK_ID_0))
         assertTrue(pinnedLayerController.isPinned(TASK_ID_1))
         assertEquals(TASK_ID_1, pinnedLayerController.currentPinnedTask?.taskId)
+    }
+
+    @Test
+    fun handlePinRequest_theWindowIsTheLastDesktopWindow_cleanDesktopState() {
+        val transition1 = mock<IBinder>()
+        val callback1 = mock<IRemoteCallback>()
+        val requestInfo1 =
+            setupWindowingLayerTransition(
+                WINDOWING_LAYER_PINNED,
+                callback1,
+                triggerTaskId = TASK_ID_0,
+            )
+        val transitionInfo1 = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
+
+        pinnedLayerHandler.handleRequest(transition1, requestInfo1)
+        pinnedLayerController.onTransitionReady(
+            transition1,
+            transitionInfo1,
+            startTransaction,
+            finishTransaction,
+        )
+
+        verifyCallbackResult(callback1, RESULT_APPROVED)
+        assertTrue(pinnedLayerController.isPinned(TASK_ID_0))
+        assertEquals(TASK_ID_0, pinnedLayerController.currentPinnedTask?.taskId)
+        verify(desktopTasksController)
+            .performDesktopExitCleanUp(
+                any(),
+                eq(DESK_ID_0),
+                eq(DISPLAY_ID_0),
+                eq(USER_ID_0),
+                eq(true),
+                eq(TASK_ID_0),
+                eq(false),
+                eq(true),
+                eq(false),
+                eq(false),
+                eq(ExitReason.TASK_MOVED_FROM_DESK),
+            )
+    }
+
+    @Test
+    fun handlePinRequest_theWindowIsNotTheLastDesktopWindow_doNotCleanDesktopState() {
+        whenever(
+                desktopRepository.isOnlyVisibleNonClosingTaskInDesk(
+                    TASK_ID_0,
+                    DESK_ID_0,
+                    DISPLAY_ID_0,
+                )
+            )
+            .thenReturn(false)
+
+        val transition1 = mock<IBinder>()
+        val callback1 = mock<IRemoteCallback>()
+        val requestInfo1 =
+            setupWindowingLayerTransition(
+                WINDOWING_LAYER_PINNED,
+                callback1,
+                triggerTaskId = TASK_ID_0,
+            )
+        val transitionInfo1 = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
+
+        pinnedLayerHandler.handleRequest(transition1, requestInfo1)
+        pinnedLayerController.onTransitionReady(
+            transition1,
+            transitionInfo1,
+            startTransaction,
+            finishTransaction,
+        )
+
+        verifyCallbackResult(callback1, RESULT_APPROVED)
+        assertTrue(pinnedLayerController.isPinned(TASK_ID_0))
+        assertEquals(TASK_ID_0, pinnedLayerController.currentPinnedTask?.taskId)
+        verify(desktopTasksController, never())
+            .performDesktopExitCleanUp(
+                any(),
+                eq(DESK_ID_0),
+                eq(DISPLAY_ID_0),
+                eq(USER_ID_0),
+                eq(true),
+                eq(TASK_ID_0),
+                eq(false),
+                eq(true),
+                eq(false),
+                eq(false),
+                eq(ExitReason.TASK_MOVED_FROM_DESK),
+            )
     }
 
     @Test
@@ -769,6 +885,8 @@ class PinnedLayerHandlerTests : ShellTestCase() {
             RunningTaskInfo().apply {
                 token = triggerTaskToken
                 taskId = triggerTaskId
+                displayId = DISPLAY_ID_0
+                userId = USER_ID_0
             }
         return TransitionRequestInfo(
             type,
@@ -818,5 +936,8 @@ class PinnedLayerHandlerTests : ShellTestCase() {
     private companion object {
         private const val TASK_ID_0 = 0
         private const val TASK_ID_1 = 1
+        private const val DESK_ID_0 = 0
+        private const val DISPLAY_ID_0 = 0
+        private const val USER_ID_0 = 0
     }
 }

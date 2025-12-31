@@ -564,7 +564,7 @@ public class ShellTransitionTests extends ShellTestCase {
                 new TransitionFilter.Requirement[]{new TransitionFilter.Requirement()};
         filter.mRequirements[0].mModes = new int[]{TRANSIT_OPEN, TRANSIT_TO_FRONT};
 
-        transitions.registerRemote(filter, new RemoteTransition(testRemote, "Test"));
+        transitions.registerRemote(new RemoteTransition(testRemote, "Test").setFilter(filter));
         mMainExecutor.flushAll();
 
         IBinder transitToken = new Binder();
@@ -632,9 +632,9 @@ public class ShellTransitionTests extends ShellTestCase {
                 new TransitionFilter.Requirement[]{new TransitionFilter.Requirement()};
         filter.mRequirements[0].mModes = new int[]{TRANSIT_OPEN, TRANSIT_TO_FRONT};
 
-        transitions.registerRemote(filter, new RemoteTransition(testRemote, "Test"));
+        transitions.registerRemote(new RemoteTransition(testRemote, "Test").setFilter(filter));
         transitions.registerRemoteForTakeover(
-                filter, new RemoteTransition(testTakeoverRemote, "Test"));
+                new RemoteTransition(testTakeoverRemote, "Test").setFilter(filter));
         mMainExecutor.flushAll();
 
         // Takeover should happen when the flag is enabled.

@@ -16,13 +16,11 @@
 
 package com.android.systemui.screenrecord.service
 
-import android.app.ActivityOptions
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.Display
 
 /**
  * This [BroadcastReceiver] serves as a bridge when System UI needs to start an activity exposing
@@ -52,24 +50,9 @@ class ActivityStartingReceiver : BroadcastReceiver() {
         const val EXTRA_INTENT = "extra_intent"
         const val EXTRA_OPTIONS_BUNDLE = "extra_options_bundle"
 
-        fun wrapIntent(context: Context, intent: Intent, displayId: Int): Intent {
-            return Intent(context, ActivityStartingReceiver::class.java).apply {
-                putExtra(EXTRA_INTENT, intent)
-
-                val options = ActivityOptions.makeBasic()
-                if (displayId != Display.INVALID_DISPLAY) {
-                    try {
-                        options.launchDisplayId = displayId
-                        if (Log.isLoggable(TAG, Log.DEBUG)) {
-                            Log.d(TAG, "Set launchDisplayId to $displayId in wrapIntent")
-                        }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Failed to set launchDisplayId: $e", e)
-                    }
-                }
-
-                putExtra(EXTRA_OPTIONS_BUNDLE, options.toBundle())
-            }
-        }
+        fun wrapIntent(context: Context, intent: Intent, optionsBundle: Bundle?): Intent =
+            Intent(context, ActivityStartingReceiver::class.java)
+                .putExtra(EXTRA_INTENT, intent)
+                .putExtra(EXTRA_OPTIONS_BUNDLE, optionsBundle)
     }
 }

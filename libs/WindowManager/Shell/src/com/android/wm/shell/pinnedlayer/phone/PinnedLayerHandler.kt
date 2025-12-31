@@ -28,6 +28,9 @@ import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.TransitionRequestInfo.WindowingLayerChange
 import android.window.WindowContainerTransaction
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ExitReason
+import com.android.wm.shell.desktopmode.DesktopTasksController
+import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.NormalAppLayerController
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController.UnpinStrategy
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerLogs.logV
@@ -45,6 +48,8 @@ class PinnedLayerHandler(
     private val transitions: Transitions,
     private val pinnedLayerController: PinnedLayerController,
     private val normalLayerController: NormalAppLayerController,
+    private val desktopUserRepositories: DesktopUserRepositories?,
+    private val desktopTasksController: DesktopTasksController?,
 ) : Transitions.TransitionHandler {
 
     init {
@@ -97,6 +102,8 @@ class PinnedLayerHandler(
                 }
                 return null
             }
+
+            cleanUpDesktopIfNeeded(transition, triggerTask, pinWct)
             wct.merge(pinWct, /* transfer= */ true)
         }
 
@@ -136,6 +143,57 @@ class PinnedLayerHandler(
         }
 
         return wct
+    }
+
+    private fun cleanUpDesktopIfNeeded(
+        transition: IBinder,
+        taskInfo: TaskInfo,
+        wct: WindowContainerTransaction,
+    ) {
+        if (desktopUserRepositories == null || desktopTasksController == null) {
+            logV("cleanUpDesktopIfNeeded: desktop mode is not supported, skipping.")
+            return
+        }
+
+        val repository = desktopUserRepositories.getProfile(taskInfo.userId)
+        val deskId = repository.getDeskIdForTask(taskInfo.taskId)
+        val activeDesk = repository.getActiveDeskId(taskInfo.displayId)
+        if (deskId == null || deskId != activeDesk) {
+            logV(
+                "cleanUpDesktopIfNeeded: task=%d is not in the active desk=%d, " +
+                    "but in the desk=%d, skipping.",
+                taskInfo.taskId,
+                activeDesk,
+                deskId,
+            )
+            return
+        }
+
+        val isLastTask =
+            repository.isOnlyVisibleNonClosingTaskInDesk(
+                taskInfo.taskId,
+                deskId,
+                taskInfo.displayId,
+            )
+        if (!isLastTask) {
+            logV(
+                "cleanUpDesktopIfNeeded: task with id=%s is not the last one, skipping.",
+                taskInfo.taskId,
+            )
+            return
+        }
+
+        val runOnTransitionStart =
+            desktopTasksController.performDesktopExitCleanUp(
+                wct = wct,
+                deskId = deskId,
+                displayId = taskInfo.displayId,
+                userId = taskInfo.userId,
+                willExitDesktop = true,
+                removingLastTaskId = taskInfo.taskId,
+                exitReason = ExitReason.TASK_MOVED_FROM_DESK,
+            )
+        runOnTransitionStart?.invoke(transition)
     }
 
     private fun moveToAnotherLayerIfNeeded(
@@ -196,7 +254,7 @@ class PinnedLayerHandler(
         finishCallback: Transitions.TransitionFinishCallback,
     ): Boolean {
         // TODO(b/449681882): Do not rely on transitions, introduce separate animations state.
-        val transitions = pinnedLayerController.getActiveTransitions(transition) ?: return false
+        val transitions = pinnedLayerController.getActiveTransitions(transition)
 
         val pinChange =
             transitions

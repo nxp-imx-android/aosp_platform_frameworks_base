@@ -67,7 +67,7 @@ fun PostCaptureToastBar(
 
 @Composable
 private fun defaultCardColors(): CardColors {
-    return CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+    return CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceBright)
 }
 
 @Composable
@@ -79,6 +79,6 @@ private fun defaultElevation(): CardElevation {
 private fun defaultColors(): IconButtonColors {
     return IconButtonDefaults.filledTonalIconButtonColors(
         containerColor = MaterialTheme.colorScheme.secondary,
-        contentColor = MaterialTheme.colorScheme.onSecondaryFixed,
+        contentColor = MaterialTheme.colorScheme.onSecondary,
     )
 }

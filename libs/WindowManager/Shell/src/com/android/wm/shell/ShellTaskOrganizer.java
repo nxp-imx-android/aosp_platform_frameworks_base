@@ -125,9 +125,11 @@ public class ShellTaskOrganizer extends TaskOrganizer {
          *                                     Activity#moveTaskToBack(), {@code false} if this is
          *                                     from back button press.
          * @param isOptInOnBackInvoked {@code true} if the app opts in enableOnBackInvokedCallback.
+         * @param hasOpaqueSibling Whether the task has an opaque sibling
          */
         default void onBackPressedOnTaskRoot(RunningTaskInfo taskInfo,
-                boolean isFromMoveActivityTaskToBack, boolean isOptInOnBackInvoked) {}
+                boolean isFromMoveActivityTaskToBack, boolean isOptInOnBackInvoked,
+                boolean hasOpaqueSibling) {}
         /** Whether this task listener supports compat UI. */
         default boolean supportCompatUI() {
             // All TaskListeners should support compat UI except PIP and StageCoordinator.
@@ -899,15 +901,17 @@ public class ShellTaskOrganizer extends TaskOrganizer {
 
     @Override
     public void onBackPressedOnTaskRoot(RunningTaskInfo taskInfo,
-            boolean isFromMoveActivityTaskToBack, boolean isOptInOnBackInvoked) {
+            boolean isFromMoveActivityTaskToBack, boolean isOptInOnBackInvoked,
+            boolean hasOpaqueSibling) {
         synchronized (mLock) {
             ProtoLog.v(WM_SHELL_TASK_ORG, "Task root back pressed taskId=%d "
-                    + "isFromMoveActivityTaskToBack=%b isOptInOnBackInvoked=%b",
-                    taskInfo.taskId, isFromMoveActivityTaskToBack, isOptInOnBackInvoked);
+                    + "isFromMoveActivityTaskToBack=%b isOptInOnBackInvoked=%b hasOpaqueSibling=%b",
+                    taskInfo.taskId, isFromMoveActivityTaskToBack, isOptInOnBackInvoked,
+                    hasOpaqueSibling);
             final TaskListener listener = getTaskListener(taskInfo);
             if (listener != null) {
                 listener.onBackPressedOnTaskRoot(taskInfo, isFromMoveActivityTaskToBack,
-                        isOptInOnBackInvoked);
+                        isOptInOnBackInvoked, hasOpaqueSibling);
             }
         }
     }

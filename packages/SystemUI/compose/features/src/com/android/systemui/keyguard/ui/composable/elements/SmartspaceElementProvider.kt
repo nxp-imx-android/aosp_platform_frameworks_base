@@ -19,14 +19,23 @@ package com.android.systemui.keyguard.ui.composable.elements
 import android.content.Context
 import android.view.View
 import android.widget.LinearLayout
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
@@ -44,6 +53,7 @@ import com.android.systemui.keyguard.KeyguardUnlockAnimationController
 import com.android.systemui.keyguard.ui.composable.elements.LockscreenUpperRegionElementProvider.Companion.LayoutType
 import com.android.systemui.keyguard.ui.composable.elements.LockscreenUpperRegionElementProvider.Companion.getLayoutType
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardSmartspaceViewModel
+import com.android.systemui.plugins.BcSmartspaceDataPlugin.SmartspaceTargetListener
 import com.android.systemui.plugins.keyguard.ui.composable.elements.BaseLockscreenElement.ElementSource
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Smartspace
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
@@ -182,7 +192,6 @@ constructor(
             }
 
             val clockPadding = dimensionResource(clocksR.dimen.clock_padding_start)
-
             // In wide-layouts limit the maximum width of the card to be half the screen width
             val shadeMode by keyguardSmartspaceViewModel.shadeMode.collectAsStateWithLifecycle()
             val widthMod =
@@ -194,27 +203,50 @@ constructor(
                     }
                 }
 
-            LookaheadAndroidView(
-                factory = { ctx ->
-                    keyguardUnlockAnimationController.lockscreenSmartspace = view
-                    view
-                },
-                onRelease = { view ->
-                    if (keyguardUnlockAnimationController.lockscreenSmartspace == view) {
-                        keyguardUnlockAnimationController.lockscreenSmartspace = null
-                    }
-                },
-                modifier =
-                    Modifier.then(widthMod)
-                        .padding(
-                            // Note: smartspace adds 16dp of start padding internally
-                            start = clockPadding - 16.dp,
-                            end = clockPadding,
-                            bottom = dimensionResource(R.dimen.keyguard_status_view_bottom_margin),
-                        )
-                        .burnInAware(isClock = false)
-                        .nonAuthUI(),
-            )
+            var hasTargets by remember { mutableStateOf(false) }
+            // Using DisposableEffect here ties the lifetime of the smartspace listener to the
+            // lifecycle of the composable function. This listener will be removed and cleaned up
+            // when the composable leaves scope. Listening directly in this way provides a signal
+            // to smartspace to keep the session connected, even when the view is detached.
+            DisposableEffect(Unit) {
+                val listener = SmartspaceTargetListener { targets ->
+                    hasTargets = targets.count() > 0
+                }
+                smartspaceController.addListener(listener)
+                onDispose { smartspaceController.removeListener(listener) }
+            }
+
+            val isDozing by keyguardSmartspaceViewModel.isDozing.collectAsStateWithLifecycle()
+            val hasMediaTarget = smartspaceController.mediaTarget != null && isDozing
+
+            AnimatedVisibility(
+                visible = hasTargets || hasMediaTarget,
+                enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
+                exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Top),
+            ) {
+                LookaheadAndroidView(
+                    factory = { ctx ->
+                        keyguardUnlockAnimationController.lockscreenSmartspace = view
+                        view
+                    },
+                    onRelease = { view ->
+                        if (keyguardUnlockAnimationController.lockscreenSmartspace == view) {
+                            keyguardUnlockAnimationController.lockscreenSmartspace = null
+                        }
+                    },
+                    modifier =
+                        Modifier.then(widthMod)
+                            .padding(
+                                // Note: smartspace adds 16dp of start padding internally
+                                start = clockPadding - 16.dp,
+                                end = clockPadding,
+                                bottom =
+                                    dimensionResource(R.dimen.keyguard_status_view_bottom_margin),
+                            )
+                            .burnInAware(isClock = false)
+                            .nonAuthUI(),
+                )
+            }
         }
     }
 

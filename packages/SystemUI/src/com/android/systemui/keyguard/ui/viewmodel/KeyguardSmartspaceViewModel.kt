@@ -20,6 +20,7 @@ import android.content.Context
 import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardSmartspaceInteractor
 import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
@@ -42,6 +43,7 @@ constructor(
     keyguardClockViewModel: KeyguardClockViewModel,
     smartspaceInteractor: KeyguardSmartspaceInteractor,
     shadeModeInteractor: ShadeModeInteractor,
+    keyguardInteractor: KeyguardInteractor,
 ) {
     /** Whether the smartspace section is available in the build. */
     val isSmartspaceEnabled: Boolean = smartspaceController.isEnabled
@@ -100,6 +102,8 @@ constructor(
     ): Boolean {
         return (!clockIncludesCustomWeatherDisplay || !isLargeClockVisible) && isWeatherEnabled
     }
+
+    val isDozing: StateFlow<Boolean> = keyguardInteractor.isDozing
 
     /* trigger clock and smartspace constraints change when smartspace appears */
     val bcSmartspaceVisibility: StateFlow<Int> = smartspaceInteractor.bcSmartspaceVisibility

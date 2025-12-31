@@ -184,7 +184,8 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
             }
             try {
                 mTaskOrganizer.onBackPressedOnTaskRoot(task.getTaskInfo(),
-                        isFromMoveActivityTaskToBack, isOptInOnBackInvoked);
+                        isFromMoveActivityTaskToBack, isOptInOnBackInvoked,
+                        task.hasOpaqueSibling());
             } catch (Exception e) {
                 Slog.e(TAG, "Exception sending onBackPressedOnTaskRoot callback", e);
             }

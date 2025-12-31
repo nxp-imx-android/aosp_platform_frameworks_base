@@ -142,12 +142,11 @@ public class AccessibilityEventTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_PREVENT_A11Y_EVENT_NULL_RECORD)
-    public void testAppendRecord_nullRecord_flagEnabled() throws Exception {
+    public void testAppendRecord_nullRecord() throws Exception {
         AccessibilityEvent event = new AccessibilityEvent();
         event.appendRecord(null);
 
-        // mRecords should not be initialized for a null record when the flag is on.
+        // A null record should not be appended.
         assertEquals(0, event.getRecordCount());
 
         // Verify with an existing list

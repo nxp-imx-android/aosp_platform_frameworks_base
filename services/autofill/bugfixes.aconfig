@@ -50,13 +50,6 @@ flag {
 }
 
 flag {
-  name: "remote_fill_service_use_weak_reference"
-  namespace: "autofill"
-  description: "Use weak reference to address binder leak problem"
-  bug: "307972253"
-}
-
-flag {
   name: "add_last_focused_id_to_client_state"
   namespace: "autofill"
   description: "Include the current view id into the FillEventHistory events as part of ClientState"
@@ -106,17 +99,6 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
-
-flag {
-  name: "add_accessibility_title_for_augmented_autofill_dropdown"
-  namespace: "autofill"
-  description: "Add accessibility title for augmented autofill dropdown"
-  bug: "375284244"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
 
 flag {
   name: "disable_fill_dialog_on_automotive_multi_window"

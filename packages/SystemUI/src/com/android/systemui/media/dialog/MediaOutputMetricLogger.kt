@@ -35,6 +35,7 @@ import com.android.settingslib.media.MediaDevice.SUGGESTION_PROVIDER_DEVICE_SUGG
 import com.android.settingslib.media.MediaDevice.SUGGESTION_PROVIDER_DEVICE_SUGGESTION_OTHER
 import com.android.settingslib.media.MediaDevice.SUGGESTION_PROVIDER_RLP
 import com.android.settingslib.media.MediaDevice.SUGGESTION_PROVIDER_UNSPECIFIED
+import com.android.systemui.media.dialog.MediaItem.DeviceMediaItem
 import com.android.systemui.shared.system.SysUiStatsLog
 
 /** Metric logger for media output features. */
@@ -220,16 +221,19 @@ class MediaOutputMetricLogger(private val mContext: Context, private val mPackag
         mWiredDeviceCount = 0
         mAppliedDeviceCountWithinRemoteGroup = 0
 
-        for (mediaItem in deviceItemList) {
-            if (mediaItem.mediaDevice.isPresent && mediaItem.mediaDevice.get().isConnected()) {
-                when (mediaItem.mediaDevice.get().deviceType) {
-                    TYPE_3POINT5_MM_AUDIO_DEVICE,
-                    TYPE_USB_C_AUDIO_DEVICE -> mWiredDeviceCount++
-                    TYPE_BLUETOOTH_DEVICE -> mConnectedBluetoothDeviceCount++
-                    TYPE_CAST_DEVICE,
-                    TYPE_CAST_GROUP_DEVICE -> mRemoteDeviceCount++
-                    else -> {}
-                }
+        val connectedDeviceItems =
+            deviceItemList.filterIsInstance<DeviceMediaItem>().filter {
+                it.mediaDevice.isConnected()
+            }
+
+        for (mediaItem in connectedDeviceItems) {
+            when (mediaItem.mediaDevice.deviceType) {
+                TYPE_3POINT5_MM_AUDIO_DEVICE,
+                TYPE_USB_C_AUDIO_DEVICE -> mWiredDeviceCount++
+                TYPE_BLUETOOTH_DEVICE -> mConnectedBluetoothDeviceCount++
+                TYPE_CAST_DEVICE,
+                TYPE_CAST_GROUP_DEVICE -> mRemoteDeviceCount++
+                else -> {}
             }
         }
 

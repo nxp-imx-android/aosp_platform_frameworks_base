@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.record.domain.interactor
 
+import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -23,6 +24,8 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.screencapture.record.data.repository.screenCaptureRecordParametersRepository
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
+import com.android.systemui.screenrecord.domain.interactor.screenRecordingServiceInteractor
+import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.map
@@ -38,7 +41,7 @@ class ScreenCaptureRecordParametersInteractorTest : SysuiTestCase() {
     private val underTest by lazy { kosmos.screenCaptureRecordParametersInteractor }
 
     @Test
-    fun testChangingAudioSource() =
+    fun changingAudioSource() =
         kosmos.runTest {
             val newAudioSource = ScreenRecordingAudioSource.MIC_AND_INTERNAL
             val audioSource by collectLastValue(underTest.parameters.map { it.audioSource })
@@ -50,7 +53,27 @@ class ScreenCaptureRecordParametersInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun testChangingShouldShowTaps() =
+    fun changingAudioSource_recordingIsOngoing_doesntChange() =
+        kosmos.runTest {
+            screenRecordingServiceInteractor.startRecording(
+                ScreenRecordingParameters(
+                    captureTarget = null,
+                    displayId = Display.DEFAULT_DISPLAY,
+                    audioSource = ScreenRecordingAudioSource.NONE,
+                    shouldShowTaps = false,
+                )
+            )
+            val newAudioSource = ScreenRecordingAudioSource.MIC_AND_INTERNAL
+            val audioSource by collectLastValue(underTest.parameters.map { it.audioSource })
+            assertThat(audioSource).isNotEqualTo(newAudioSource)
+
+            underTest.setAudioSource(newAudioSource)
+
+            assertThat(audioSource).isNotEqualTo(newAudioSource)
+        }
+
+    @Test
+    fun changingShouldShowTaps() =
         kosmos.runTest {
             val newShouldShowTaps = true
             val shouldShowTaps by collectLastValue(underTest.parameters.map { it.shouldShowTaps })
@@ -62,7 +85,7 @@ class ScreenCaptureRecordParametersInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun testChangingShouldShowFrontCamera() =
+    fun changingShouldShowFrontCamera() =
         kosmos.runTest {
             val newShouldShowFrontCamera = true
             val shouldShowFrontCamera by

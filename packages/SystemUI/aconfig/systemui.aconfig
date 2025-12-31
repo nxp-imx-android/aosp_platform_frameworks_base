@@ -1938,14 +1938,6 @@ flag {
 }
 
 flag {
-    name: "use_aad_prox_sensor_if_present"
-    namespace: "systemui"
-    description: "Use AAD proximity sensor if flag is enabled and sensor is present"
-    bug: "402534470"
-    is_fixed_read_only: true
-}
-
-flag {
   name: "use_android_ui_dispatcher"
   namespace: "systemui"
   description: "Use compose's AndroidUiDispatcher as default"

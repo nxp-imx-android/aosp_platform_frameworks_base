@@ -18,7 +18,6 @@ package com.android.systemui.screenrecord.domain.interactor
 
 import android.media.projection.StopReason
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.screenrecord.data.repository.ScreenRecordingServiceRepository
 import com.android.systemui.screenrecord.shared.model.ScreenRecording
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
@@ -53,11 +52,6 @@ constructor(private val repository: ScreenRecordingServiceRepository) {
 
     fun stopRecording(@StopReason reason: Int) {
         repository.stopRecording(reason)
-    }
-
-    /** Updates shouldShowTaps if there is an ongoing recording */
-    fun updateAudioSource(audioSource: ScreenRecordingAudioSource) {
-        repository.updateParameters { copy(audioSource = audioSource) }
     }
 
     /** Updates shouldShowTaps if there is an ongoing recording */

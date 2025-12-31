@@ -72,6 +72,24 @@ public final class TransitionFilter implements Parcelable {
     public TransitionFilter() {
     }
 
+    /**
+     * Copy constructor for TransitionFilter. Performs a deep copy of the filter and its
+     * requirements.
+     */
+    public TransitionFilter(@NonNull TransitionFilter other) {
+        if (other.mTypeSet != null) {
+            mTypeSet = other.mTypeSet.clone();
+        }
+        mFlags = other.mFlags;
+        mNotFlags = other.mNotFlags;
+        if (other.mRequirements != null) {
+            mRequirements = new Requirement[other.mRequirements.length];
+            for (int i = 0; i < other.mRequirements.length; ++i) {
+                mRequirements[i] = new Requirement(other.mRequirements[i]);
+            }
+        }
+    }
+
     private TransitionFilter(Parcel in) {
         mTypeSet = in.createIntArray();
         mFlags = in.readInt();
@@ -194,6 +212,29 @@ public final class TransitionFilter implements Parcelable {
         public boolean mIsCrossDisplayMove = false;
 
         public Requirement() {
+        }
+
+        /**
+         * Copy constructor for Requirement. Performs a deep copy of the requirement's fields.
+         */
+        public Requirement(@NonNull Requirement other) {
+            mActivityType = other.mActivityType;
+            mMustBeIndependent = other.mMustBeIndependent;
+            mNot = other.mNot;
+            if (other.mModes != null) {
+                mModes = other.mModes.clone();
+            }
+            mFlags = other.mFlags;
+            mMustBeTask = other.mMustBeTask;
+            mOrder = other.mOrder;
+            // ComponentName and Boolean are immutable.
+            // IBinder is a reference, so shallow copy is fine.
+            mTopActivity = other.mTopActivity;
+            mLaunchCookie = other.mLaunchCookie;
+            mCustomAnimation = other.mCustomAnimation;
+            mTaskFragmentToken = other.mTaskFragmentToken;
+            mWindowingMode = other.mWindowingMode;
+            mIsCrossDisplayMove = other.mIsCrossDisplayMove;
         }
 
         private Requirement(Parcel in) {

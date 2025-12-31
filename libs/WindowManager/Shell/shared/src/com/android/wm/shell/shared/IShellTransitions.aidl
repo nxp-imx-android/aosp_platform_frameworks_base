@@ -32,8 +32,7 @@ interface IShellTransitions {
      * Registers a remote transition handler for all operations excluding takeovers (see
      * registerRemoteForTakeover()).
      */
-    oneway void registerRemote(in TransitionFilter filter,
-            in RemoteTransition remoteTransition) = 1;
+    oneway void registerRemote(in RemoteTransition remoteTransition) = 1;
 
     /**
      * Unregisters a remote transition handler for all operations.
@@ -58,8 +57,7 @@ interface IShellTransitions {
     /**
      * Registers a remote transition for takeover operations only.
      */
-    oneway void registerRemoteForTakeover(in TransitionFilter filter,
-            in RemoteTransition remoteTransition) = 6;
+    oneway void registerRemoteForTakeover(in RemoteTransition remoteTransition) = 6;
 
     /**
      * Set listener that will receive callbacks about transitions involving focus switch.

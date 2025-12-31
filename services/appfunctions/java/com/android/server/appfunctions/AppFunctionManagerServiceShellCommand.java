@@ -176,8 +176,8 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
             pw.println("  set-additional-allowlisted-agents <PACKAGE_NAME_1> <PACKAGE_NAME_2> ...");
             pw.println(
                     "    Sets the agents that are allowlisted, in addition to the device allowlist."
-                        + " Value is a space-separated list of package names. Will override any"
-                        + " agents set by previous calls to this command.");
+                            + " Value is a space-separated list of package names. Will override any"
+                            + " agents set by previous calls to this command.");
             pw.println("  clear-additional-allowlisted-agents");
             pw.println("    Clears any agents set by set-additional-allowlisted-agents");
         }
@@ -227,6 +227,16 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                         return -1;
                     }
                     return clearAdditionalAgents();
+                case "set-test-page-size":
+                    if (!android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
+                        return -1;
+                    }
+                    return setTestPageSize();
+                case "reset-test-page-size":
+                    if (!android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
+                        return -1;
+                    }
+                    return resetTestPageSize();
                 default:
                     return handleDefaultCommands(cmd);
             }
@@ -665,6 +675,38 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
 
         final List<String> validTargets = mService.getValidTargets(userId);
         pw.println("Valid targets: " + validTargets.toString());
+        return 0;
+    }
+
+    private int setTestPageSize() {
+        final PrintWriter pw = getOutPrintWriter();
+        int pageSize = -1;
+
+        String opt;
+        while ((opt = getNextOption()) != null) {
+            if (opt.equals("--page-size")) {
+                try {
+                    pageSize = Integer.parseInt(getNextArgRequired());
+                } catch (Exception e) {
+                    pw.println("Fail to parse page-size");
+                    return -1;
+                }
+            } else {
+                pw.println("Unknown option: " + opt);
+                return -1;
+            }
+        }
+
+        if (pageSize <= 0) {
+            pw.println("Invalid page size of " + pageSize);
+        }
+        ServiceConfig.sTestPageSize.set(pageSize);
+        pw.println("Set test page size to " + pageSize);
+        return 0;
+    }
+
+    private int resetTestPageSize() {
+        ServiceConfig.sTestPageSize.set(0);
         return 0;
     }
 

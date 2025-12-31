@@ -220,7 +220,7 @@ import java.util.function.Consumer;
  *
  * <p id="deviceadmin">A <b>Device Administrator</b> is an app which is able to enforce device
  * policies that it has declared in its device admin XML file. An app can prompt the user to give it
- * device administator privileges using the {@link #ACTION_ADD_DEVICE_ADMIN} action.
+ * device administrator privileges using the {@link #ACTION_ADD_DEVICE_ADMIN} action.
  *
  * <p>For more information about Device Administration, read the
  * <a href="{@docRoot}guide/topics/admin/device-admin.html">Device Administration</a>
@@ -4659,7 +4659,7 @@ public class DevicePolicyManager {
     }
 
     /**
-     * Acknoledges that the new managed user disclaimer was viewed by the (human) user
+     * Acknowledges that the new managed user disclaimer was viewed by the (human) user
      * so that {@link #ACTION_SHOW_NEW_USER_DISCLAIMER broadcast} is not sent again the next time
      * this user is switched to.
      *
@@ -6257,7 +6257,7 @@ public class DevicePolicyManager {
      * <p>
      * This method can be called on the {@link DevicePolicyManager} instance returned by
      * {@link #getParentProfileInstance(ComponentName)} in order to retrieve the number of failed
-     * password attemts for the parent user.
+     * password attempts for the parent user.
      * <p>
      * The calling device admin must have requested {@link DeviceAdminInfo#USES_POLICY_WATCH_LOGIN}
      * to be able to call this method; if it has not, a security exception will be thrown.
@@ -8537,7 +8537,7 @@ public class DevicePolicyManager {
      * {@link #uninstallCaCert}, {@link #uninstallAllUserCaCerts} and {@link #installKeyPair}.
      * <p>
      * Delegated certificate installer is a per-user state. The delegated access is persistent until
-     * it is later cleared by calling this method with a null value or uninstallling the certificate
+     * it is later cleared by calling this method with a null value or uninstalling the certificate
      * installer.
      * <p>
      * <b>Note:</b>Starting from {@link android.os.Build.VERSION_CODES#N}, if the caller
@@ -11670,7 +11670,7 @@ public class DevicePolicyManager {
      * {@code null} means all accessibility services are allowed.
      *
      * @param admin Which {@link DeviceAdminReceiver} this request is associated with.
-     * @return List of accessiblity service package names.
+     * @return List of accessibility service package names.
      * @throws SecurityException if {@code admin} is not a device or profile owner.
      */
     public @Nullable List<String> getPermittedAccessibilityServices(@NonNull ComponentName admin) {
@@ -11717,7 +11717,7 @@ public class DevicePolicyManager {
      * owners that apply to this user. It will also include any system accessibility services.
      *
      * @param userId which user to check for.
-     * @return List of accessiblity service package names.
+     * @return List of accessibility service package names.
      * @hide
      */
      @SystemApi
@@ -15551,7 +15551,7 @@ public class DevicePolicyManager {
 
     /**
      * Set the {@link UserProvisioningState} for the supplied user. The supplied user has to be
-     * manged, otherwise it will throw an {@link IllegalStateException}.
+     * managed, otherwise it will throw an {@link IllegalStateException}.
      *
      * <p> For managed users/profiles/devices, only the following state changes are allowed:
      * <ul>
@@ -17510,7 +17510,7 @@ public class DevicePolicyManager {
      * @param admin Which {@link DeviceAdminReceiver} this request is associated with
      * @param timeoutMillis Maximum time the profile is allowed to be off in milliseconds or 0 if
      *        not limited. The minimum non-zero value corresponds to 72 hours. If an admin sets a
-     *        smaller non-zero vaulue, 72 hours will be set instead.
+     *        smaller non-zero value, 72 hours will be set instead.
      * @throws IllegalStateException if the profile owner doesn't have an activity that handles
      *        {@link #ACTION_CHECK_POLICY_COMPLIANCE}
      * @see #setPersonalAppsSuspended

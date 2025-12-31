@@ -1237,7 +1237,7 @@ public final class AccessibilityEvent extends AccessibilityRecord implements Par
     /**
      * Appends an {@link AccessibilityRecord} to the end of event records.
      *
-     * @param record The record to append.
+     * @param record The record to append. A null record is ignored.
      *
      * @throws IllegalStateException If called from an AccessibilityService.
      */
@@ -1246,10 +1246,8 @@ public final class AccessibilityEvent extends AccessibilityRecord implements Par
         if (mRecords == null) {
             mRecords = new ArrayList<AccessibilityRecord>();
         }
-        if (Flags.preventA11yEventNullRecord()) {
-            if (record == null) {
-                return;
-            }
+        if (record == null) {
+            return;
         }
         mRecords.add(record);
     }

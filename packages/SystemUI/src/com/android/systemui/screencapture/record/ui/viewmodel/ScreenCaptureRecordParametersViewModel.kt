@@ -36,23 +36,36 @@ constructor(
     private val interactor: ScreenCaptureRecordParametersInteractor,
     screenRecordCameraInteractor: ScreenRecordCameraInteractor,
     screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
-    private val recordDetailsTargetInteractor: RecordDetailsTargetInteractor,
+    recordDetailsTargetInteractor: RecordDetailsTargetInteractor,
 ) : HydratedActivatable() {
 
     val audioSource: ScreenRecordingAudioSource? by
         interactor.parameters
             .map { it.audioSource }
-            .hydratedStateOf("ScreenCaptureAudioSourceViewModel#audioSource", null)
+            .hydratedStateOf(
+                "ScreenCaptureAudioSourceViewModel#audioSource",
+                interactor.parameters.value.audioSource,
+            )
+    val canChangeAudioSource: Boolean by
+        interactor.canChangeAudioSource.hydratedStateOf(
+            "ScreenCaptureAudioSourceViewModel#canChangeAudioSource"
+        )
 
     val shouldShowTaps: Boolean? by
         interactor.parameters
             .map { it.shouldShowTaps }
-            .hydratedStateOf("ScreenCaptureAudioSourceViewModel#shouldShowTaps", null)
+            .hydratedStateOf(
+                "ScreenCaptureAudioSourceViewModel#shouldShowTaps",
+                interactor.parameters.value.shouldShowTaps,
+            )
 
     val shouldShowFrontCamera: Boolean? by
         interactor.parameters
             .map { it.shouldShowFrontCamera }
-            .hydratedStateOf("ScreenCaptureAudioSourceViewModel#shouldShowFrontCamera", null)
+            .hydratedStateOf(
+                "ScreenCaptureAudioSourceViewModel#shouldShowFrontCamera",
+                interactor.parameters.value.shouldShowFrontCamera,
+            )
 
     var shouldRecordDevice: Boolean
         get() =
