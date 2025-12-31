@@ -115,6 +115,14 @@ abstract class PreferencesApiScreen(
     override val purpose: Int,
     val alreadyPartiallyMigrated: KClass<*>? = null,
 ) : PreferenceScreenMetadata, ProvidesParametersNonStatically {
+    init {
+        if (alreadyPartiallyMigrated != null) {
+            require(key.startsWith(PARTIALLY_MIGRATED_PREFIX)) {
+                "The key '$key' must start with '$PARTIALLY_MIGRATED_PREFIX' because it has an already migrated class."
+            }
+        }
+    }
+
     override fun fragmentClass(): Class<out Fragment>? = fragment.java
 
     override fun isFlagEnabled(context: Context): Boolean =
@@ -352,5 +360,9 @@ abstract class PreferencesApiScreen(
         }
 
         screenPreconditions = PreconditionsConfig(description, lambda)
+    }
+
+    companion object {
+        const val PARTIALLY_MIGRATED_PREFIX = "api_"
     }
 }
