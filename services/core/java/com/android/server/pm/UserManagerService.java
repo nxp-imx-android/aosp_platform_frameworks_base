@@ -9083,16 +9083,6 @@ public class UserManagerService extends IUserManager.Stub {
         }
 
         @Override
-        public void logLaunchedHsuActivity(ComponentName activity) {
-            mNonComplianceLogger.logLaunchedHsuActivity(activity);
-        }
-
-        @Override
-        public void logBlockedHsuActivity(ComponentName activity) {
-            mNonComplianceLogger.logBlockedHsuActivity(activity);
-        }
-
-        @Override
         public void logActivityLaunchStatus(ComponentName activity, @UserIdInt int userId,
                 @AllowlistStatus int status) {
             // TODO(b/414326600): proper implementation once metrics is designed
@@ -9107,11 +9097,6 @@ public class UserManagerService extends IUserManager.Stub {
             } else {
                 mNonComplianceLogger.logBlockedHsuActivity(activity);
             }
-        }
-
-        @Override
-        public void logShownHsuNotification(StatusBarNotification sbn) {
-            mNonComplianceLogger.logShownHsuNotification(sbn);
         }
 
         @Override

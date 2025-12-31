@@ -244,72 +244,7 @@ public abstract class GenericAllowlist<E> {
      * {@link #isAllowed(int)} instead.
      */
     public final boolean isAllowed(E element) {
-        /* TODO(b/412177078): should simply call:
-
         return isAllowed(getAllowlistStatus(element));
-
-        But it will be changed in a separate CL just in case it breaks stuff...
-        */
-        Objects.requireNonNull(element, "element cannot be null");
-        String normalizedName = toNormalizedName(element);
-
-        if (mMode == ALLOWLIST_MODE_DISABLED || mMode == ALLOWLIST_MODE_INVALID) {
-            if (DEBUG) {
-                Slogf.d(mTag, "isAllowed(%s): returning true because mode is (%d) %s",
-                        normalizedName, mMode, allowlistModeToString(mMode));
-            }
-            return true;
-        }
-
-        // Checks the temporary list first...
-        CopyOnWriteArrayList<String> temporaryList = mTemporaryAllowlist;
-        if (temporaryList != null) {
-            if (temporaryList.isEmpty()) {
-                if (DEBUG) {
-                    Slogf.d(mTag, "isAllowed(%s): returning true because temporary "
-                            + "allowlist overrides permanent allowlist and is empty, so any "
-                            + "%s is allowed", normalizedName, mSingularName);
-                }
-                return true;
-            }
-            if (DEBUG) {
-                Slogf.d(mTag, "isAllowed(%s): checking temporary list (%s)",
-                        normalizedName, temporaryList);
-            }
-            boolean allowed = temporaryList.contains(normalizedName);
-            return checkModeAndLog(normalizedName, allowed);
-        }
-
-        // ...then the permanent one.
-        if (mPermanentAllowlist.length == 0) {
-            if (DEBUG) {
-                Slogf.d(mTag, "isAllowed(%s): returning true because permanent allowlist"
-                        + "is empty, so any %s is allowed", normalizedName, mSingularName);
-            }
-            return true;
-        }
-        if (DEBUG) {
-            Slogf.d(mTag, "isAllowed(%s): checking permanent list (%s)", normalizedName,
-                    Arrays.toString(mPermanentAllowlist));
-        }
-        boolean allowed = ArrayUtils.contains(mPermanentAllowlist, normalizedName);
-        return checkModeAndLog(normalizedName, allowed);
-    }
-
-    // TODO(b/412177078): remove once isAllowed() calls getAllowlistStatus()
-    private boolean checkModeAndLog(String normalizedName, boolean allowed) {
-        if (allowed) {
-            if (DEBUG) {
-                Slogf.d(mTag, "isAllowed(%s): returning true", normalizedName);
-            }
-            return true;
-        }
-        if (mMode == ALLOWLIST_MODE_LOG_ONLY) {
-            Slogf.w(mTag, ALLOWED_BY_LOG_ONLY_MESSAGE_TEMPLATE, normalizedName,
-                    allowlistModeToString(mMode));
-            return true;
-        }
-        return false;
     }
 
     /**
