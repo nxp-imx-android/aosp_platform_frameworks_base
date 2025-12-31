@@ -26,7 +26,7 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <unistd.h>
+#include <sys/uio.h>
 #include <utils/Trace.h>
 
 #include <atomic>
@@ -214,7 +214,17 @@ void PipelineCacheStore::runThread() {
                 continue;
             }
 
-            auto written = write(fd.get(), storeRequest.data.data(), storeRequest.data.size());
+            const SkData& key = *storeRequest.key;
+            const SkData& data = *storeRequest.data;
+            auto keySize = static_cast<key_size_t>(key.size());
+
+            iovec ioVector[] = {
+                    {.iov_base = &keySize, .iov_len = sizeof(keySize)},
+                    {.iov_base = const_cast<void*>(key.data()), .iov_len = key.size()},
+                    {.iov_base = const_cast<void*>(data.data()), .iov_len = data.size()},
+            };
+
+            auto written = writev(fd.get(), ioVector, sizeof(ioVector) / sizeof(iovec));
             if (written == -1) {
                 ALOGE("PipelineCacheStore::runThread: could not write to pipeline cache file "
                       "(errno = %d)",
@@ -229,13 +239,14 @@ void PipelineCacheStore::runThread() {
     }
 }
 
-void PipelineCacheStore::store(std::string path, std::vector<uint8_t> data) {
+void PipelineCacheStore::store(std::string path, sk_sp<SkData> key, sk_sp<SkData> data) {
     ATRACE_NAME("PipelineCacheStore::store (lock mutex and notify condition)");
 
     {
         std::lock_guard<std::mutex> lock(mMutex);
         mStoreRequest = StoreRequest{
                 .path = std::move(path),
+                .key = std::move(key),
                 .data = std::move(data),
         };
     }
@@ -250,7 +261,6 @@ size_t PipelineCacheStore::getLastSizeBytes() const {
 PipelineCache::PipelineCache(std::string storePath, useconds_t writeThrottleInterval)
         : mStorePath(std::move(storePath))
         , mPipelineCacheStore(writeThrottleInterval)
-        , mHasCache(false)
         , mKey(SkData::MakeEmpty())
         , mData(nullptr) {
     PipelineCacheData cache;
@@ -262,7 +272,6 @@ PipelineCache::PipelineCache(std::string storePath, useconds_t writeThrottleInte
         return;
     }
 
-    mHasCache = true;
     mKey = cache.key;
     mData = cache.data;
 }
@@ -274,27 +283,7 @@ sk_sp<SkData> PipelineCache::tryLoad(const SkData& key) {
         return nullptr;
     }
 
-    if (!mHasCache) {
-        return nullptr;
-    }
-
-    if (mData == nullptr) {
-        ALOGW("PipelineCache::tryLoad: multiple data loads, incurring a load cost on the critical "
-              "path");
-
-        PipelineCacheData cache;
-        auto result = PipelineCacheData::load(mStorePath, cache);
-        if (result.outcome != PipelineCacheData::LoadResult::Success) {
-            logLoadWarning(
-                    result,
-                    "PipelineCache::tryLoad: could not load cache key (cache will be dropped)");
-            return nullptr;
-        }
-
-        return std::move(cache.data);
-    }
-
-    return std::move(mData);
+    return mData;
 }
 
 bool PipelineCache::canStore(const SkString& description) const {
@@ -305,21 +294,9 @@ void PipelineCache::store(const SkData& key, const SkData& data) {
     ATRACE_NAME("PipelineCache::store");
 
     mKey = SkData::MakeWithCopy(key.data(), key.size());
+    mData = SkData::MakeWithCopy(data.data(), data.size());
 
-    auto dataSize = sizeof(key_size_t) + key.size() + data.size();
-    std::vector<uint8_t> pendingData(dataSize);
-    auto ptr = pendingData.data();
-
-    auto keySize = static_cast<key_size_t>(key.size());
-    memcpy(ptr, &keySize, sizeof(key_size_t));
-    ptr += sizeof(key_size_t);
-
-    memcpy(ptr, key.data(), key.size());
-    ptr += key.size();
-
-    memcpy(ptr, data.data(), data.size());
-
-    mPipelineCacheStore.store(mStorePath, std::move(pendingData));
+    mPipelineCacheStore.store(mStorePath, mKey, mData);
 }
 
 size_t PipelineCache::getLastSizeBytes() const {
