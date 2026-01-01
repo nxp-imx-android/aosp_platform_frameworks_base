@@ -401,6 +401,16 @@ public final class PolicyDefinition<V> {
                     new IntegerPolicySerializer()
             );
 
+    static final PolicyDefinition<String> LOCKSCREEN_INFO =
+            new PolicyDefinition<>(
+                    new NoArgsPolicyKey(
+                            DevicePolicyIdentifiers.LOCKSCREEN_INFO_POLICY),
+                    new MostRecent<>(), // TODO(b/457343029): Replace with DPC priority.
+                    POLICY_FLAG_GLOBAL_ONLY_POLICY,
+                    PolicyEnforcerCallbacks::setLockScreenInfoPolicy,
+                    new StringPolicySerializer()
+            );
+
     private final PolicyKey mPolicyKey;
     private final ResolutionMechanism<V> mResolutionMechanism;
     private final int mPolicyFlags;

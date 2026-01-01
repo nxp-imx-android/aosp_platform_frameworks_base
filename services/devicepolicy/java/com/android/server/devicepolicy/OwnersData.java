@@ -106,6 +106,8 @@ class OwnersData {
             "permissionGrantStateMigrated";
     private static final String ATTR_COMMON_CRITERIA_MODE_MIGRATED =
             "commonCriteriaModeMigrated";
+    private static final String ATTR_LOCKSCREEN_INFO_MIGRATED =
+            "lockScreenInfoMigrated";
 
     private static final String ATTR_MIGRATED_POST_UPGRADE = "migratedPostUpgrade";
 
@@ -148,6 +150,7 @@ class OwnersData {
     boolean mSetKeyguardDisabledFeaturesMigrated = false;
     boolean mPermissionGrantStateMigrated = false;
     boolean mCommonCriteriaModeMigrated = false;
+    boolean mLockScreenInfoMigrated = false;
 
     boolean mPoliciesMigratedPostUpdate = false;
 
@@ -485,6 +488,10 @@ class OwnersData {
                 out.attributeBoolean(null, ATTR_COMMON_CRITERIA_MODE_MIGRATED,
                         mCommonCriteriaModeMigrated);
             }
+            if (Flags.lockscreenInfoCoexistence()) {
+                out.attributeBoolean(null, ATTR_LOCKSCREEN_INFO_MIGRATED,
+                        mLockScreenInfoMigrated);
+            }
             out.endTag(null, TAG_POLICY_ENGINE_MIGRATION);
 
         }
@@ -582,6 +589,10 @@ class OwnersData {
                             Flags.commonCriteriaModeCoexistence()
                                     && parser.getAttributeBoolean(null,
                                     ATTR_COMMON_CRITERIA_MODE_MIGRATED, false);
+                    mLockScreenInfoMigrated =
+                            Flags.lockscreenInfoCoexistence()
+                                    && parser.getAttributeBoolean(null,
+                                    ATTR_LOCKSCREEN_INFO_MIGRATED, false);
                     break;
                 default:
                     Slog.e(TAG, "Unexpected tag: " + tag);

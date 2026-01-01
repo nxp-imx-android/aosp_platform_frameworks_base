@@ -48,6 +48,7 @@ import static android.Manifest.permission.MANAGE_DEVICE_POLICY_KEYGUARD;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCALE;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCATION;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCK;
+import static android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCKSCREEN_INFO;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCK_CREDENTIALS;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCK_TASK;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_MANAGED_SUBSCRIPTIONS;
@@ -186,6 +187,10 @@ public class PermissionChecker implements IPermissionChecker {
             CROSS_USER_PERMISSIONS.put(MANAGE_DEVICE_POLICY_COMMON_CRITERIA_MODE,
                     MANAGE_DEVICE_POLICY_ACROSS_USERS);
         }
+        if (Flags.lockscreenInfoCoexistence()) {
+            CROSS_USER_PERMISSIONS.put(MANAGE_DEVICE_POLICY_LOCKSCREEN_INFO,
+                    MANAGE_DEVICE_POLICY_ACROSS_USERS);
+        }
         CROSS_USER_PERMISSIONS.put(MANAGE_DEVICE_POLICY_DEFAULT_SMS,
                 MANAGE_DEVICE_POLICY_ACROSS_USERS);
         CROSS_USER_PERMISSIONS.put(MANAGE_DEVICE_POLICY_INPUT_METHODS,
@@ -315,7 +320,7 @@ public class PermissionChecker implements IPermissionChecker {
             MANAGE_DEVICE_POLICY_USB_FILE_TRANSFER, MANAGE_DEVICE_POLICY_VPN,
             MANAGE_DEVICE_POLICY_WALLPAPER, MANAGE_DEVICE_POLICY_WIFI, MANAGE_DEVICE_POLICY_WINDOWS,
             MANAGE_DEVICE_POLICY_WIPE_DATA, SET_TIME, SET_TIME_ZONE,
-            MANAGE_DEVICE_POLICY_QUERY_SYSTEM_UPDATES);
+            MANAGE_DEVICE_POLICY_QUERY_SYSTEM_UPDATES, MANAGE_DEVICE_POLICY_LOCKSCREEN_INFO);
 
     private static final List<String> FINANCED_DEVICE_OWNER_PERMISSIONS = List.of(
             MANAGE_DEVICE_POLICY_ACROSS_USERS, MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL,
@@ -385,7 +390,8 @@ public class PermissionChecker implements IPermissionChecker {
             MANAGE_DEVICE_POLICY_SAFE_BOOT, MANAGE_DEVICE_POLICY_SECURITY_LOGGING,
             MANAGE_DEVICE_POLICY_SMS, MANAGE_DEVICE_POLICY_SYSTEM_UPDATES,
             MANAGE_DEVICE_POLICY_USB_DATA_SIGNALLING, MANAGE_DEVICE_POLICY_USB_FILE_TRANSFER,
-            MANAGE_DEVICE_POLICY_WIFI, SET_TIME, SET_TIME_ZONE);
+            MANAGE_DEVICE_POLICY_WIFI, SET_TIME, SET_TIME_ZONE,
+            MANAGE_DEVICE_POLICY_LOCKSCREEN_INFO);
 
     /**
      * All the additional permissions granted to a Profile Owner on user 0.
