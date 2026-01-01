@@ -954,16 +954,23 @@ public final class TimeZoneDetectorStrategyImpl
         ipw.println("mEnvironment.getDeviceTimeZoneConfidence()="
                 + mEnvironment.getDeviceTimeZoneConfidence());
 
-        ipw.println("Misc state:");
-        ipw.increaseIndent(); // level 2
-        ipw.println("mTelephonyTimeZoneFallbackEnabled="
-                + formatDebugString(mTelephonyTimeZoneFallbackEnabled));
-        ipw.decreaseIndent(); // level 2
+        if (!android.timezone.flags.Flags.enableFusedTimeZoneDetector()) {
+            ipw.println("Misc state:");
+            ipw.increaseIndent(); // level 2
+            ipw.println(
+                    "mTelephonyTimeZoneFallbackEnabled="
+                            + formatDebugString(mTelephonyTimeZoneFallbackEnabled));
+            ipw.decreaseIndent(); // level 2
+        }
 
         ipw.println("Time zone debug log:");
         ipw.increaseIndent(); // level 2
         mEnvironment.dumpDebugLog(ipw);
         ipw.decreaseIndent(); // level 2
+
+        if (android.timezone.flags.Flags.enableFusedTimeZoneDetector()) {
+            mFusedTimeZoneDetector.dump(ipw, args);
+        }
 
         ipw.println("Manual suggestion history:");
         ipw.increaseIndent(); // level 2
@@ -984,10 +991,6 @@ public final class TimeZoneDetectorStrategyImpl
         ipw.increaseIndent(); // level 2
         mChangeTracker.dump(ipw);
         ipw.decreaseIndent(); // level 2
-
-        if (android.timezone.flags.Flags.enableFusedTimeZoneDetector()) {
-            mFusedTimeZoneDetector.dump(ipw, args);
-        }
 
         if (ExperimentHelper.isTimeZoneOffsetChangeNotificationEnabled()) {
             ipw.println("Time zone offset change notifier:");

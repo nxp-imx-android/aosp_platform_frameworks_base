@@ -30,7 +30,6 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Pair
 import android.util.TypedValue
-import android.window.DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP
 import android.window.TaskSnapshot
 import android.window.TaskSnapshotManager
 import android.window.TransitionInfo
@@ -350,6 +349,5 @@ object PipUtils {
         pw.println("${innerPrefix1}isPip2ExperimentEnabled=${PipFlags.isPip2ExperimentEnabled}")
         pw.println("${innerPrefix2}enablePip2=${Flags.enablePip2()}")
         pw.println("${innerPrefix2}enablePip2OnTv=${Flags.enablePip2OnTv()}")
-        pw.println("${innerPrefix2}enableDwPip=${ENABLE_DESKTOP_WINDOWING_PIP.isTrue}")
     }
 }

@@ -216,11 +216,6 @@ public abstract class BaseBroadcastQueueTest {
         mSkipPolicy = createBroadcastSkipPolicy();
 
         doReturn(mAppStartInfoTracker).when(mProcessList).getAppStartInfoTracker();
-
-        doReturn(true).when(mPlatformCompat).isChangeEnabledInternalNoLogging(
-                eq(BroadcastFilter.RESTRICT_PRIORITY_VALUES), any(ApplicationInfo.class));
-        doReturn(true).when(mPlatformCompat).isChangeEnabledInternalNoLogging(
-                eq(BroadcastRecord.LIMIT_PRIORITY_SCOPE), any(ApplicationInfo.class));
     }
 
     public void tearDown() throws Exception {

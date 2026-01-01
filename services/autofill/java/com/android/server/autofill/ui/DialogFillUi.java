@@ -336,6 +336,11 @@ final class DialogFillUi {
                     if (sVerbose) Slog.v(TAG, "setting remote view for " + focusedViewId);
                     view = presentation.applyWithTheme(
                             mUserContext, null, interceptionHandler, mThemeId);
+                    if (Flags.expressiveFillDialog()) {
+                        // Switch access can identify the item as clickable only if the
+                        // OnClickListener is set.
+                        view.setOnClickListener(v -> mCallback.onDatasetPicked(dataset));
+                    }
                 } catch (RuntimeException e) {
                     Slog.e(TAG, "Error inflating remote views", e);
                     continue;
@@ -371,35 +376,33 @@ final class DialogFillUi {
     private void initialDatasetLayout(View decor, String filterText) {
         final AdapterView.OnItemClickListener onItemClickListener =
                 (adapter, view, position, id) -> {
-                    if (Flags.expressiveFillDialog()) {
-                        final int headerViewsCount = mListView.getHeaderViewsCount();
-                        // For the expressive fill dialog, ignore clicks on the header and adjust
-                        // position for the adapter.
-                        if (position >= headerViewsCount) {
-                            final ViewItem vi = mAdapter.getItem(position - headerViewsCount);
-                            mCallback.onDatasetPicked(vi.dataset);
-                        }
-                    } else {
-                        final ViewItem vi = mAdapter.getItem(position);
-                        mCallback.onDatasetPicked(vi.dataset);
-                    }
+                    final ViewItem vi = mAdapter.getItem(position);
+                    mCallback.onDatasetPicked(vi.dataset);
                 };
 
         mListView.setAdapter(mAdapter);
         mListView.setVisibility(View.VISIBLE);
-        mListView.setOnItemClickListener(onItemClickListener);
+        // For expressive fill dialog, the OnClickListener for each item is already set explicitly.
+        if (!Flags.expressiveFillDialog()) {
+            mListView.setOnItemClickListener(onItemClickListener);
+        }
 
         if (mAdapter.getCount() == 1) {
-            // Just single item, set up continue button. For the expressive fill dialog, the
-            // position must account for the header view.
-            setContinueButton(decor, (v) ->
+            // Just single item, set up continue button.
+            setContinueButton(decor, (v) -> {
+                // For expressive fill dialog, onItemClickListener is not involved, so trigger
+                // the callback directly.
+                if (Flags.expressiveFillDialog()) {
+                    final ViewItem viewItem = mAdapter.getItem(0);
+                    mCallback.onDatasetPicked(viewItem.dataset);
+                } else {
                     onItemClickListener.onItemClick(
                             /* parent= */ null,
                             /* view= */ null,
-                            /* position= */ Flags.expressiveFillDialog()
-                                    ? mListView.getHeaderViewsCount()
-                                    : 0,
-                            /* id= */ 0));
+                            /* position= */ 0,
+                            /* id= */ 0);
+                }
+            });
         }
 
         if (filterText == null) {

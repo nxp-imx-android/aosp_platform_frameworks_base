@@ -60,13 +60,11 @@ class PipDesktopState(
 
     /**
      * Returns whether PiP in Desktop Windowing is enabled by checking the following:
-     * - PiP in Desktop Windowing flag is enabled
      * - DesktopUserRepositories is present
      * - DragToDesktopTransitionHandler is present
      */
     fun isDesktopWindowingPipEnabled(): Boolean =
-        DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue &&
-            desktopUserRepositoriesOptional.isPresent &&
+        desktopUserRepositoriesOptional.isPresent &&
             dragToDesktopTransitionHandlerOptional.isPresent
 
     /**

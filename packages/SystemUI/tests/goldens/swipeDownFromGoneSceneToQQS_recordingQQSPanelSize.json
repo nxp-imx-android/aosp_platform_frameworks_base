@@ -36,6 +36,34 @@
     512,
     528,
     544,
+    560,
+    576,
+    592,
+    608,
+    624,
+    640,
+    656,
+    672,
+    688,
+    704,
+    720,
+    736,
+    752,
+    768,
+    784,
+    800,
+    816,
+    832,
+    848,
+    864,
+    880,
+    896,
+    912,
+    928,
+    944,
+    960,
+    976,
+    992,
     "after"
   ],
   "features": [
@@ -57,55 +85,27 @@
         },
         {
           "width": 1328,
-          "height": 230
+          "height": 244
         },
         {
           "width": 1328,
-          "height": 240
+          "height": 260
         },
         {
           "width": 1328,
-          "height": 240
+          "height": 276
         },
         {
           "width": 1328,
-          "height": 252
+          "height": 294
         },
         {
           "width": 1328,
-          "height": 262
+          "height": 310
         },
         {
           "width": 1328,
-          "height": 272
-        },
-        {
-          "width": 1328,
-          "height": 282
-        },
-        {
-          "width": 1328,
-          "height": 292
-        },
-        {
-          "width": 1328,
-          "height": 302
-        },
-        {
-          "width": 1328,
-          "height": 312
-        },
-        {
-          "width": 1328,
-          "height": 322
-        },
-        {
-          "width": 1328,
-          "height": 322
-        },
-        {
-          "width": 1328,
-          "height": 334
+          "height": 328
         },
         {
           "width": 1328,
@@ -113,19 +113,11 @@
         },
         {
           "width": 1328,
-          "height": 354
+          "height": 360
         },
         {
           "width": 1328,
-          "height": 364
-        },
-        {
-          "width": 1328,
-          "height": 374
-        },
-        {
-          "width": 1328,
-          "height": 384
+          "height": 378
         },
         {
           "width": 1328,
@@ -133,59 +125,207 @@
         },
         {
           "width": 1328,
-          "height": 404
+          "height": 410
         },
         {
           "width": 1328,
-          "height": 404
+          "height": 428
         },
         {
           "width": 1328,
-          "height": 416
+          "height": 444
         },
         {
           "width": 1328,
-          "height": 426
+          "height": 460
         },
         {
           "width": 1328,
-          "height": 436
+          "height": 478
         },
         {
           "width": 1328,
-          "height": 446
+          "height": 494
         },
         {
           "width": 1328,
-          "height": 456
+          "height": 510
         },
         {
           "width": 1328,
-          "height": 466
+          "height": 528
         },
         {
           "width": 1328,
-          "height": 476
+          "height": 528
         },
         {
           "width": 1328,
-          "height": 486
+          "height": 532
         },
         {
           "width": 1328,
-          "height": 486
+          "height": 532
         },
         {
           "width": 1328,
-          "height": 498
+          "height": 532
         },
         {
           "width": 1328,
-          "height": 508
+          "height": 532
         },
         {
           "width": 1328,
-          "height": 518
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
+        },
+        {
+          "width": 1328,
+          "height": 532
         },
         {
           "width": 1328,

@@ -116,10 +116,6 @@ interface IActivityTaskManager {
             in String callingFeatureId, in Intent intent, in String resolvedType,
             in IBinder resultTo, in String resultWho, int requestCode, int flags,
             in ProfilerInfo profilerInfo, in Bundle options, int userId);
-    int startActivityWithConfig(in IApplicationThread caller, in String callingPackage,
-            in String callingFeatureId, in Intent intent, in String resolvedType,
-            in IBinder resultTo, in String resultWho, int requestCode, int startFlags,
-            in Configuration newConfig, in Bundle options, int userId);
     int startVoiceActivity(in String callingPackage, in String callingFeatureId, int callingPid,
             int callingUid, in Intent intent, in String resolvedType,
             in IVoiceInteractionSession session, in IVoiceInteractor interactor, int flags,

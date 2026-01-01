@@ -26,7 +26,6 @@ import static com.android.server.am.BroadcastRecord.DELIVERY_DELIVERED;
 import static com.android.server.am.BroadcastRecord.DELIVERY_PENDING;
 import static com.android.server.am.BroadcastRecord.DELIVERY_SKIPPED;
 import static com.android.server.am.BroadcastRecord.DELIVERY_TIMEOUT;
-import static com.android.server.am.BroadcastRecord.LIMIT_PRIORITY_SCOPE;
 import static com.android.server.am.BroadcastRecord.UNSPECIFIED_QUEUE_INDEX;
 import static com.android.server.am.BroadcastRecord.calculateBlockedUntilBeyondCount;
 import static com.android.server.am.BroadcastRecord.calculateDeferUntilActive;
@@ -43,7 +42,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.spy;
@@ -67,7 +65,6 @@ import android.telephony.SubscriptionManager;
 
 import androidx.test.filters.SmallTest;
 
-import com.android.server.am.ActivityManagerService;
 import com.android.server.compat.PlatformCompat;
 
 import org.junit.Before;
@@ -124,9 +121,6 @@ public class BroadcastRecordTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-
-        doReturn(true).when(mPlatformCompat).isChangeEnabledInternalNoLogging(
-                eq(BroadcastRecord.LIMIT_PRIORITY_SCOPE), any(ApplicationInfo.class));
     }
 
     @Test
@@ -207,151 +201,6 @@ public class BroadcastRecordTest {
                         createResolveInfo(PACKAGE3, getAppId(3), 10),
                         createResolveInfo(PACKAGE3, getAppId(3), 0),
                         createResolveInfo(PACKAGE3, getAppId(3), 0)), false, mPlatformCompat));
-    }
-
-    @Test
-    public void testIsPrioritized_withDifferentPriorities_withFirstUidChangeIdDisabled() {
-        doReturn(false).when(mPlatformCompat).isChangeEnabledInternalNoLogging(
-                eq(BroadcastRecord.LIMIT_PRIORITY_SCOPE), argThat(appInfoEquals(getAppId(1))));
-
-        assertTrue(isPrioritized(List.of(
-                createResolveInfo(PACKAGE1, getAppId(1), 10),
-                createResolveInfo(PACKAGE2, getAppId(2), 0),
-                createResolveInfo(PACKAGE3, getAppId(3), -10))));
-        assertTrue(isPrioritized(List.of(
-                createResolveInfo(PACKAGE1, getAppId(1), 10),
-                createResolveInfo(PACKAGE2, getAppId(2), 0),
-                createResolveInfo(PACKAGE3, getAppId(3), 0))));
-
-        assertArrayEquals(new int[] {0, 1, 1},
-                calculateBlockedUntilBeyondCount(List.of(
-                        createResolveInfo(PACKAGE1, getAppId(1), 10),
-                        createResolveInfo(PACKAGE2, getAppId(2), 0),
-                        createResolveInfo(PACKAGE3, getAppId(3), -10)), false, mPlatformCompat));
-        assertArrayEquals(new int[] {0, 0, 1},
-                calculateBlockedUntilBeyondCount(List.of(
-                        createResolveInfo(PACKAGE1, getAppId(1), 10),
-                        createResolveInfo(PACKAGE2, getAppId(2), 10),
-                        createResolveInfo(PACKAGE3, getAppId(3), -10)), false, mPlatformCompat));
-        assertArrayEquals(new int[] {0, 0, 1, 1, 1},
-                calculateBlockedUntilBeyondCount(List.of(
-                        createResolveInfo(PACKAGE1, getAppId(1), 20),
-                        createResolveInfo(PACKAGE2, getAppId(2), 20),
-                        createResolveInfo(PACKAGE3, getAppId(3), 10),
-                        createResolveInfo(PACKAGE3, getAppId(3), 0),
-                        createResolveInfo(PACKAGE3, getAppId(3), 0)), false, mPlatformCompat));
-    }
-
-    @Test
-    public void testIsPrioritized_withDifferentPriorities_withLastUidChangeIdDisabled() {
-        doReturn(false).when(mPlatformCompat).isChangeEnabledInternalNoLogging(
-                eq(BroadcastRecord.LIMIT_PRIORITY_SCOPE), argThat(appInfoEquals(getAppId(3))));
-
-        assertTrue(isPrioritized(List.of(
-                createResolveInfo(PACKAGE1, getAppId(1), 10),
-                createResolveInfo(PACKAGE2, getAppId(2), 0),
-                createResolveInfo(PACKAGE3, getAppId(3), -10))));
-        assertTrue(isPrioritized(List.of(
-                createResolveInfo(PACKAGE1, getAppId(1), 10),
-                createResolveInfo(PACKAGE2, getAppId(2), 0),
-                createResolveInfo(PACKAGE3, getAppId(3), 0))));
-
-        assertArrayEquals(new int[] {0, 0, 2},
-                calculateBlockedUntilBeyondCount(List.of(
-                        createResolveInfo(PACKAGE1, getAppId(1), 10),
-                        createResolveInfo(PACKAGE2, getAppId(2), 0),
-                        createResolveInfo(PACKAGE3, getAppId(3), -10)), false, mPlatformCompat));
-        assertArrayEquals(new int[] {0, 1},
-                calculateBlockedUntilBeyondCount(List.of(
-                        createResolveInfo(PACKAGE1, getAppId(1), 10),
-                        createResolveInfo(PACKAGE3, getAppId(3), 0)), false, mPlatformCompat));
-        assertArrayEquals(new int[] {0, 0, 1},
-                calculateBlockedUntilBeyondCount(List.of(
-                        createResolveInfo(PACKAGE1, getAppId(1), 10),
-                        createResolveInfo(PACKAGE2, getAppId(2), 0),
-                        createResolveInfo(PACKAGE3, getAppId(3), 0)), false, mPlatformCompat));
-        assertArrayEquals(new int[] {0, 0, 2, 3, 3},
-                calculateBlockedUntilBeyondCount(List.of(
-                        createResolveInfo(PACKAGE1, getAppId(1), 20),
-                        createResolveInfo(PACKAGE2, getAppId(2), 20),
-                        createResolveInfo(PACKAGE3, getAppId(3), 10),
-                        createResolveInfo(PACKAGE3, getAppId(3), 0),
-                        createResolveInfo(PACKAGE3, getAppId(3), 0)), false, mPlatformCompat));
-    }
-
-    @Test
-    public void testIsPrioritized_withDifferentPriorities_withUidChangeIdDisabled() {
-        doReturn(false).when(mPlatformCompat).isChangeEnabledInternalNoLogging(
-                eq(BroadcastRecord.LIMIT_PRIORITY_SCOPE), argThat(appInfoEquals(getAppId(2))));
-
-        assertTrue(isPrioritized(List.of(
-                createResolveInfo(PACKAGE1, getAppId(1), 10),
-                createResolveInfo(PACKAGE2, getAppId(2), 0),
-                createResolveInfo(PACKAGE3, getAppId(3), -10))));
-        assertTrue(isPrioritized(List.of(
-                createResolveInfo(PACKAGE1, getAppId(1), 10),
-                createResolveInfo(PACKAGE2, getAppId(2), 0),
-                createResolveInfo(PACKAGE3, getAppId(3), 0))));
-
-        assertArrayEquals(new int[] {0, 1, 2},
-                calculateBlockedUntilBeyondCount(List.of(
-                        createResolveInfo(PACKAGE1, getAppId(1), 10),
-                        createResolveInfo(PACKAGE2, getAppId(2), 0),
-                        createResolveInfo(PACKAGE3, getAppId(3), -10)), false, mPlatformCompat));
-        assertArrayEquals(new int[] {0, 1, 0},
-                calculateBlockedUntilBeyondCount(List.of(
-                        createResolveInfo(PACKAGE1, getAppId(1), 10),
-                        createResolveInfo(PACKAGE2, getAppId(2), 0),
-                        createResolveInfo(PACKAGE3, getAppId(3), 0)), false, mPlatformCompat));
-        assertArrayEquals(new int[] {0, 0, 2, 2, 2},
-                calculateBlockedUntilBeyondCount(List.of(
-                        createResolveInfo(PACKAGE1, getAppId(1), 20),
-                        createResolveInfo(PACKAGE2, getAppId(2), 20),
-                        createResolveInfo(PACKAGE3, getAppId(3), 10),
-                        createResolveInfo(PACKAGE3, getAppId(3), 0),
-                        createResolveInfo(PACKAGE3, getAppId(4), 0)), false, mPlatformCompat));
-    }
-
-    @Test
-    public void testIsPrioritized_withDifferentPriorities_withMultipleUidChangeIdDisabled() {
-        doReturn(false).when(mPlatformCompat).isChangeEnabledInternalNoLogging(
-                eq(BroadcastRecord.LIMIT_PRIORITY_SCOPE), argThat(appInfoEquals(getAppId(1))));
-        doReturn(false).when(mPlatformCompat).isChangeEnabledInternalNoLogging(
-                eq(BroadcastRecord.LIMIT_PRIORITY_SCOPE), argThat(appInfoEquals(getAppId(2))));
-
-        assertTrue(isPrioritized(List.of(
-                createResolveInfo(PACKAGE1, getAppId(1), 10),
-                createResolveInfo(PACKAGE2, getAppId(2), 0),
-                createResolveInfo(PACKAGE3, getAppId(3), -10))));
-        assertTrue(isPrioritized(List.of(
-                createResolveInfo(PACKAGE1, getAppId(1), 10),
-                createResolveInfo(PACKAGE2, getAppId(2), 0),
-                createResolveInfo(PACKAGE3, getAppId(3), 0))));
-
-        assertArrayEquals(new int[] {0, 1, 2},
-                calculateBlockedUntilBeyondCount(List.of(
-                        createResolveInfo(PACKAGE1, getAppId(1), 10),
-                        createResolveInfo(PACKAGE2, getAppId(2), 0),
-                        createResolveInfo(PACKAGE3, getAppId(3), -10)), false, mPlatformCompat));
-        assertArrayEquals(new int[] {0, 1, 1},
-                calculateBlockedUntilBeyondCount(List.of(
-                        createResolveInfo(PACKAGE1, getAppId(1), 10),
-                        createResolveInfo(PACKAGE2, getAppId(2), 0),
-                        createResolveInfo(PACKAGE3, getAppId(3), 0)), false, mPlatformCompat));
-        assertArrayEquals(new int[] {0, 0, 2, 2, 2},
-                calculateBlockedUntilBeyondCount(List.of(
-                        createResolveInfo(PACKAGE1, getAppId(1), 20),
-                        createResolveInfo(PACKAGE2, getAppId(2), 20),
-                        createResolveInfo(PACKAGE3, getAppId(3), 10),
-                        createResolveInfo(PACKAGE3, getAppId(3), 0),
-                        createResolveInfo(PACKAGE3, getAppId(4), 0)), false, mPlatformCompat));
-        assertArrayEquals(new int[] {0, 0, 1, 1, 3},
-                calculateBlockedUntilBeyondCount(List.of(
-                        createResolveInfo(PACKAGE1, getAppId(1), 20),
-                        createResolveInfo(PACKAGE3, getAppId(3), 20),
-                        createResolveInfo(PACKAGE3, getAppId(3), 10),
-                        createResolveInfo(PACKAGE3, getAppId(3), 0),
-                        createResolveInfo(PACKAGE2, getAppId(2), 0)), false, mPlatformCompat));
     }
 
     @Test
@@ -470,77 +319,6 @@ public class BroadcastRecordTest {
         // we finish a receiver later in the first tranche
         r.setDeliveryState(2, DELIVERY_DELIVERED, TAG, UNSPECIFIED_QUEUE_INDEX);
         assertBlocked(r, false, false, false, false, false, false, false, false, false);
-        assertTerminalDeferredBeyond(r, 1, 6, 0);
-
-        // Completing that last item in first tranche means we now unblock the
-        // second tranche, and since it's entirely deferred, the third traunche
-        // is unblocked too
-        r.setDeliveryState(0, DELIVERY_DELIVERED, TAG, UNSPECIFIED_QUEUE_INDEX);
-        assertBlocked(r, false, false, false, false, false, false, false, false, false);
-        assertTerminalDeferredBeyond(r, 2, 6, 7);
-
-        // Moving a deferred item in an earlier tranche back to being pending
-        // doesn't change the fact that we've already moved beyond it
-        r.setDeliveryState(1, DELIVERY_PENDING, TAG, UNSPECIFIED_QUEUE_INDEX);
-        assertBlocked(r, false, false, false, false, false, false, false, false, false);
-        assertTerminalDeferredBeyond(r, 2, 5, 7);
-        r.setDeliveryState(1, DELIVERY_DELIVERED, TAG, UNSPECIFIED_QUEUE_INDEX);
-        assertBlocked(r, false, false, false, false, false, false, false, false, false);
-        assertTerminalDeferredBeyond(r, 3, 5, 7);
-
-        // Completing middle pending item is enough to fast-forward to end
-        r.setDeliveryState(7, DELIVERY_DELIVERED, TAG, UNSPECIFIED_QUEUE_INDEX);
-        assertBlocked(r, false, false, false, false, false, false, false, false, false);
-        assertTerminalDeferredBeyond(r, 4, 5, 9);
-
-        // Moving everyone else directly into a finished state updates all the
-        // terminal counters
-        r.setDeliveryState(3, DELIVERY_SKIPPED, TAG, UNSPECIFIED_QUEUE_INDEX);
-        r.setDeliveryState(4, DELIVERY_SKIPPED, TAG, UNSPECIFIED_QUEUE_INDEX);
-        r.setDeliveryState(5, DELIVERY_SKIPPED, TAG, UNSPECIFIED_QUEUE_INDEX);
-        r.setDeliveryState(6, DELIVERY_SKIPPED, TAG, UNSPECIFIED_QUEUE_INDEX);
-        r.setDeliveryState(8, DELIVERY_SKIPPED, TAG, UNSPECIFIED_QUEUE_INDEX);
-        assertBlocked(r, false, false, false, false, false, false, false, false, false);
-        assertTerminalDeferredBeyond(r, 9, 0, 9);
-    }
-
-    @Test
-    public void testSetDeliveryState_DeferUntilActive_changeIdDisabled() {
-        doReturn(false).when(mPlatformCompat).isChangeEnabledInternalNoLogging(
-                eq(BroadcastRecord.LIMIT_PRIORITY_SCOPE), argThat(appInfoEquals(getAppId(1))));
-        final BroadcastRecord r = createBroadcastRecord(
-                new Intent(Intent.ACTION_AIRPLANE_MODE_CHANGED), List.of(
-                        createResolveInfo(PACKAGE1, getAppId(1), 10),
-                        createResolveInfo(PACKAGE1, getAppId(1), 10),
-                        createResolveInfo(PACKAGE1, getAppId(1), 10),
-                        createResolveInfo(PACKAGE1, getAppId(1), 0),
-                        createResolveInfo(PACKAGE1, getAppId(1), 0),
-                        createResolveInfo(PACKAGE1, getAppId(1), 0),
-                        createResolveInfo(PACKAGE1, getAppId(1), -10),
-                        createResolveInfo(PACKAGE1, getAppId(1), -10),
-                        createResolveInfo(PACKAGE1, getAppId(1), -10)));
-        assertBlocked(r, false, false, false, true, true, true, true, true, true);
-        assertTerminalDeferredBeyond(r, 0, 0, 0);
-
-        r.setDeliveryState(0, DELIVERY_PENDING, TAG, UNSPECIFIED_QUEUE_INDEX);
-        r.setDeliveryState(1, DELIVERY_DEFERRED, TAG, UNSPECIFIED_QUEUE_INDEX);
-        r.setDeliveryState(2, DELIVERY_PENDING, TAG, UNSPECIFIED_QUEUE_INDEX);
-        r.setDeliveryState(3, DELIVERY_DEFERRED, TAG, UNSPECIFIED_QUEUE_INDEX);
-        r.setDeliveryState(4, DELIVERY_DEFERRED, TAG, UNSPECIFIED_QUEUE_INDEX);
-        r.setDeliveryState(5, DELIVERY_DEFERRED, TAG, UNSPECIFIED_QUEUE_INDEX);
-        r.setDeliveryState(6, DELIVERY_DEFERRED, TAG, UNSPECIFIED_QUEUE_INDEX);
-        r.setDeliveryState(7, DELIVERY_PENDING, TAG, UNSPECIFIED_QUEUE_INDEX);
-        r.setDeliveryState(8, DELIVERY_DEFERRED, TAG, UNSPECIFIED_QUEUE_INDEX);
-
-        // Verify deferred counts ratchet up, but we're not "beyond" the first
-        // still-pending receiver
-        assertBlocked(r, false, false, false, true, true, true, true, true, true);
-        assertTerminalDeferredBeyond(r, 0, 6, 0);
-
-        // We're still not "beyond" the first still-pending receiver, even when
-        // we finish a receiver later in the first tranche
-        r.setDeliveryState(2, DELIVERY_DELIVERED, TAG, UNSPECIFIED_QUEUE_INDEX);
-        assertBlocked(r, false, false, false, true, true, true, true, true, true);
         assertTerminalDeferredBeyond(r, 1, 6, 0);
 
         // Completing that last item in first tranche means we now unblock the
@@ -861,61 +639,6 @@ public class BroadcastRecordTest {
     }
 
     @Test
-    public void testCalculateChangeStateForReceivers() {
-        assertArrayEquals(new boolean[] {true, true, true}, calculateChangeState(
-                List.of(createResolveInfo(PACKAGE1, getAppId(1)),
-                        createResolveInfo(PACKAGE2, getAppId(2)),
-                        createResolveInfo(PACKAGE3, getAppId(3)))));
-        assertArrayEquals(new boolean[] {true, true, true, true}, calculateChangeState(
-                List.of(createResolveInfo(PACKAGE1, getAppId(1)),
-                        createResolveInfo(PACKAGE2, getAppId(2)),
-                        createResolveInfo(PACKAGE2, getAppId(2)),
-                        createResolveInfo(PACKAGE3, getAppId(3)))));
-
-        doReturn(false).when(mPlatformCompat).isChangeEnabledInternalNoLogging(
-                eq(BroadcastRecord.LIMIT_PRIORITY_SCOPE), argThat(appInfoEquals(getAppId(1))));
-        assertArrayEquals(new boolean[] {false, true, true}, calculateChangeState(
-                List.of(createResolveInfo(PACKAGE1, getAppId(1)),
-                        createResolveInfo(PACKAGE2, getAppId(2)),
-                        createResolveInfo(PACKAGE3, getAppId(3)))));
-        assertArrayEquals(new boolean[] {false, true, false, true}, calculateChangeState(
-                List.of(createResolveInfo(PACKAGE1, getAppId(1)),
-                        createResolveInfo(PACKAGE2, getAppId(2)),
-                        createResolveInfo(PACKAGE1, getAppId(1)),
-                        createResolveInfo(PACKAGE3, getAppId(3)))));
-
-        doReturn(false).when(mPlatformCompat).isChangeEnabledInternalNoLogging(
-                eq(BroadcastRecord.LIMIT_PRIORITY_SCOPE), argThat(appInfoEquals(getAppId(2))));
-        assertArrayEquals(new boolean[] {false, false, true}, calculateChangeState(
-                List.of(createResolveInfo(PACKAGE1, getAppId(1)),
-                        createResolveInfo(PACKAGE2, getAppId(2)),
-                        createResolveInfo(PACKAGE3, getAppId(3)))));
-        assertArrayEquals(new boolean[] {false, true, false, false, false, true},
-                calculateChangeState(
-                        List.of(createResolveInfo(PACKAGE1, getAppId(1)),
-                                createResolveInfo(PACKAGE3, getAppId(3)),
-                                createResolveInfo(PACKAGE2, getAppId(2)),
-                                createResolveInfo(PACKAGE2, getAppId(1)),
-                                createResolveInfo(PACKAGE2, getAppId(2)),
-                                createResolveInfo(PACKAGE3, getAppId(3)))));
-
-        doReturn(false).when(mPlatformCompat).isChangeEnabledInternalNoLogging(
-                eq(BroadcastRecord.LIMIT_PRIORITY_SCOPE), argThat(appInfoEquals(getAppId(3))));
-        assertArrayEquals(new boolean[] {false, false, false}, calculateChangeState(
-                List.of(createResolveInfo(PACKAGE1, getAppId(1)),
-                        createResolveInfo(PACKAGE2, getAppId(2)),
-                        createResolveInfo(PACKAGE3, getAppId(3)))));
-        assertArrayEquals(new boolean[] {false, false, false, false, false, false},
-                calculateChangeState(
-                        List.of(createResolveInfo(PACKAGE1, getAppId(1)),
-                                createResolveInfo(PACKAGE3, getAppId(3)),
-                                createResolveInfo(PACKAGE2, getAppId(2)),
-                                createResolveInfo(PACKAGE1, getAppId(1)),
-                                createResolveInfo(PACKAGE2, getAppId(2)),
-                                createResolveInfo(PACKAGE3, getAppId(3)))));
-    }
-
-    @Test
     public void testUpdateBroadcastProcessedEventRecord_withNewReceiver_newBroadcastProcessedEventRecordCreated() {
         final ResolveInfo receiver =
                 createResolveInfoWithProcessName(PACKAGE1, getAppId(1), PROCESS1);
@@ -1136,11 +859,6 @@ public class BroadcastRecordTest {
                 .isEqualTo(totalBroadcastFinishTimeMillis);
         assertThat(broadcastProcessedEventRecord.getMaxReceiverFinishTimeMillisForTest())
                 .isEqualTo(maxReceiverFinishTimeMillis);
-    }
-
-    private boolean[] calculateChangeState(List<Object> receivers) {
-        return BroadcastRecord.calculateChangeStateForReceivers(receivers,
-                LIMIT_PRIORITY_SCOPE, mPlatformCompat);
     }
 
     private static void cleanupDisabledPackageReceivers(BroadcastRecord record,

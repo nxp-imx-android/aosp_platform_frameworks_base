@@ -22,6 +22,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
@@ -88,8 +89,10 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -783,32 +786,43 @@ private fun StatusMessage(viewModel: BouncerMessageViewModel, modifier: Modifier
         onDispose {}
     }
 
-    Crossfade(
-        targetState = message,
-        label = "Bouncer message",
-        animationSpec = if (message?.isUpdateAnimated == true) tween() else snap(),
-        modifier = modifier.fillMaxWidth(),
-    ) { msg ->
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            msg?.let {
+    Column(modifier = modifier.fillMaxWidth()) {
+        message?.let { msg ->
+            val animationSpec: FiniteAnimationSpec<Float> =
+                if (message?.isUpdateAnimated == true) tween() else snap()
+
+            Crossfade(
+                targetState = msg.text,
+                label = "Bouncer primary message",
+                animationSpec = animationSpec,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
                 Text(
-                    text = it.text,
+                    text = it,
                     color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.titleLargeEmphasized,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center,
+                    modifier =
+                        Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite },
                 )
-                Spacer(modifier = Modifier.size(10.dp))
+            }
+            Spacer(modifier = Modifier.size(10.dp))
+            Crossfade(
+                targetState = msg.secondaryText,
+                label = "Bouncer secondary message",
+                animationSpec = animationSpec,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
                 Text(
-                    text = it.secondaryText ?: "",
+                    text = it ?: "",
                     color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.titleMediumEmphasized,
                     overflow = TextOverflow.Ellipsis,
                     maxLines = 2,
                     textAlign = TextAlign.Center,
+                    modifier =
+                        Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite },
                 )
             }
         }

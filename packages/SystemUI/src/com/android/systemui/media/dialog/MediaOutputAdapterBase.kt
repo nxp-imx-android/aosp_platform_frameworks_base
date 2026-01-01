@@ -243,7 +243,7 @@ abstract class MediaOutputAdapterBase(protected val mController: MediaSwitchingC
                 Log.d(TAG, "This device is already connected! : ${device.getName()}")
                 return
             }
-            mController.setTemporaryAllowListExceptionIfNeeded(device)
+            mController.setTemporaryAllowListExceptionIfNeeded()
             mCurrentActivePosition = -1
             mController.connectDevice(device)
             notifyDataSetChanged()

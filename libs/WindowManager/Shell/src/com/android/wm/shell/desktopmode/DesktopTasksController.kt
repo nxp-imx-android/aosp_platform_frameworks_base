@@ -1938,8 +1938,7 @@ class DesktopTasksController(
             }
         snapEventHandler.removeTaskIfTiled(displayId, taskId)
         val isMinimizingToPip =
-            DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue &&
-                (taskInfo.pictureInPictureParams?.isAutoEnterEnabled ?: false) &&
+            (taskInfo.pictureInPictureParams?.isAutoEnterEnabled ?: false) &&
                 isPipAllowedInAppOps(taskInfo)
         logD(
             "minimizeTask isMinimizingToPip=%b isAutoEnterEnabled=%b isPipAllowedInAppOps=%b",
@@ -6601,6 +6600,15 @@ class DesktopTasksController(
      */
     fun addDeskChangeListener(listener: DeskChangeListener, callbackExecutor: Executor) {
         userRepositories.current.addDeskChangeListener(listener, callbackExecutor)
+    }
+
+    /**
+     * Remove a listener to find out about desk changes.
+     *
+     * @param listener the listener to remove.
+     */
+    fun removeDeskChangeListener(listener: DeskChangeListener) {
+        userRepositories.current.removeDeskChangeListener(listener)
     }
 
     /**

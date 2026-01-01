@@ -20,15 +20,12 @@ import android.app.ActivityTaskManager
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.os.Binder
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.window.WindowContainerTransaction
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_TASK
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
-import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_ACTIVITY_PIP_KEEP_PARENT_OPEN
-import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP
 import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
@@ -58,7 +55,6 @@ import platform.test.runner.parameterized.Parameters
  */
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
-@EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PIP)
 class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTestCase() {
     private val mockShellTaskOrganizer = mock<ShellTaskOrganizer>()
     private val mockDesktopTasksController = mock<DesktopTasksController>()
@@ -312,28 +308,6 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
             )
         verify(mockDesktopTasksController)
             .addMoveToDeskTaskChanges(wct = wct, task = taskInfo, deskId = DESK_ID)
-    }
-
-    @DisableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_ACTIVITY_PIP_KEEP_PARENT_OPEN)
-    @Test
-    fun handlePipTransition_multiActivityPip_minimizeMultiActivityPipTask() {
-        taskInfo.numActivities = 2
-
-        controller.handlePipTransition(wct, transition, taskInfo)
-
-        verify(mockDesktopTasksController)
-            .minimizeMultiActivityPipTask(wct = wct, deskId = DESK_ID, task = taskInfo)
-    }
-
-    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_ACTIVITY_PIP_KEEP_PARENT_OPEN)
-    @Test
-    fun handlePipTransition_multiActivityPip_dontMinimizeMultiActivityPipTask() {
-        taskInfo.numActivities = 2
-
-        controller.handlePipTransition(wct, transition, taskInfo)
-
-        verify(mockDesktopTasksController, never())
-            .minimizeMultiActivityPipTask(wct = any(), deskId = anyOrNull(), task = any())
     }
 
     @Test

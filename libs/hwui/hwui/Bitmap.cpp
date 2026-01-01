@@ -54,7 +54,6 @@
 #include <SkHighContrastFilter.h>
 #include <SkImage.h>
 #include <SkImageAndroid.h>
-#include <SkImagePriv.h>
 #include <SkJpegEncoder.h>
 #include <SkJpegGainmapEncoder.h>
 #include <SkPixmap.h>
@@ -480,17 +479,18 @@ sk_sp<SkImage> Bitmap::makeImage() {
     sk_sp<SkImage> image = mImage;
     if (!image) {
         SkASSERT(!isHardware());
-        SkBitmap skiaBitmap;
-        skiaBitmap.setInfo(info(), rowBytes());
-        skiaBitmap.setPixelRef(sk_ref_sp(this), 0, 0);
         // Note we don't cache in this case, because the raster image holds a pointer to this Bitmap
         // internally and ~Bitmap won't be invoked.
         // TODO: refactor Bitmap to not derive from SkPixelRef, which would allow caching here.
 #ifdef __ANDROID__
+        SkBitmap skiaBitmap;
+        skiaBitmap.setInfo(info(), rowBytes());
+        skiaBitmap.setPixelRef(sk_ref_sp(this), 0, 0);
         // pinnable images are only supported with the Ganesh GPU backend compiled in.
         image = SkImages::PinnableRasterFromBitmap(skiaBitmap);
 #else
-        image = SkMakeImageFromRasterBitmap(skiaBitmap, kNever_SkCopyPixelsMode);
+        image = SkImages::RasterFromPixmap(SkPixmap(info(), pixels(), rowBytes()),
+                                           nullptr, nullptr);
 #endif
     }
     return image;

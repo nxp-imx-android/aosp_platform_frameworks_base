@@ -28,11 +28,9 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.UserHandle
 import android.os.UserManager
-import android.platform.test.annotations.EnableFlags
 import android.view.Window
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.clipboardoverlay.ClipboardListener.EXTRA_SUPPRESS_OVERLAY
 import com.android.systemui.user.data.repository.FakeUserRepository
@@ -82,7 +80,6 @@ class ActionExecutorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
     fun startSharedTransition_callsLaunchIntent() = runTest {
         actionExecutor = createActionExecutor()
         whenever(fakeContext.displayId).thenReturn(17)

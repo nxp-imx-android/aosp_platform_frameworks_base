@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.swipe
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -38,6 +39,7 @@ import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.motion.createSysUiComposeMotionTestRule
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
+import com.android.systemui.qs.shared.ui.QuickSettings.Elements
 import com.android.systemui.qs.ui.composable.QuickSettingsScene
 import com.android.systemui.qs.ui.viewmodel.quickSettingsSceneContentViewModelFactory
 import com.android.systemui.qs.ui.viewmodel.quickSettingsUserActionsViewModelFactory
@@ -61,7 +63,6 @@ import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificati
 import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Ignore
 import org.junit.Rule
@@ -70,6 +71,7 @@ import org.junit.runner.RunWith
 import platform.test.motion.compose.ComposeFeatureCaptures.positionInRoot
 import platform.test.motion.compose.ComposeRecordingSpec
 import platform.test.motion.compose.MotionControl
+import platform.test.motion.compose.asDataPoint
 import platform.test.motion.compose.feature
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
@@ -120,9 +122,6 @@ class ShadeSceneToQuickSettingsSceneTest : SysuiTestCase() {
             jankMonitor = kosmos.interactionJankMonitor,
         )
 
-    val transitionState =
-        MutableStateFlow<ObservableTransitionState>(ObservableTransitionState.Idle(Scenes.Shade))
-
     @Test
     @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
     fun swipeDownFromShadeToQSScene_recordingQSPanelPosition() {
@@ -132,7 +131,7 @@ class ShadeSceneToQuickSettingsSceneTest : SysuiTestCase() {
             kosmos.enableSingleShade()
             val motion =
                 recordMotion(
-                    content = { ShadeSceneToQSSceneContainer(transitionState = transitionState) },
+                    content = { ShadeSceneToQSSceneContainer() },
                     recordingSpec =
                         ComposeRecordingSpec(
                             MotionControl(
@@ -155,7 +154,7 @@ class ShadeSceneToQuickSettingsSceneTest : SysuiTestCase() {
                             }
                         ) {
                             feature(
-                                hasTestTag(resIdToTestTag("quick_settings_panel")),
+                                hasTestTag(Elements.QuickSettingsContent.testTag),
                                 positionInRoot,
                                 "quick_settings_panel_position",
                                 useUnmergedTree = true,
@@ -175,7 +174,7 @@ class ShadeSceneToQuickSettingsSceneTest : SysuiTestCase() {
             kosmos.enableSingleShade()
             val motion =
                 recordMotion(
-                    content = { ShadeSceneToQSSceneContainer(transitionState = transitionState) },
+                    content = { ShadeSceneToQSSceneContainer() },
                     recordingSpec =
                         ComposeRecordingSpec(
                             MotionControl(
@@ -218,7 +217,7 @@ class ShadeSceneToQuickSettingsSceneTest : SysuiTestCase() {
             kosmos.enableSingleShade()
             val motion =
                 recordMotion(
-                    content = { ShadeSceneToQSSceneContainer(transitionState = transitionState) },
+                    content = { ShadeSceneToQSSceneContainer() },
                     recordingSpec =
                         ComposeRecordingSpec(
                             MotionControl(
@@ -252,8 +251,98 @@ class ShadeSceneToQuickSettingsSceneTest : SysuiTestCase() {
         }
     }
 
+    @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
+    fun swipeDownFromShadeToQSScene_recordingExpandedHeaderClockPosition() {
+        motionTestRule.runTest(60.seconds) {
+            kosmos.usingMediaInComposeFragment = true
+            kosmos.populateQuickSettings(tileCount = 10)
+            kosmos.enableSingleShade()
+            val motion =
+                recordMotion(
+                    content = { ShadeSceneToQSSceneContainer() },
+                    recordingSpec =
+                        ComposeRecordingSpec(
+                            MotionControl(
+                                delayRecording = {
+                                    awaitCondition {
+                                        kosmos.sceneInteractor.transitionState.value.isIdle()
+                                    }
+                                }
+                            ) {
+                                performTouchInputAsync(onRoot()) {
+                                    swipe(
+                                        start = Offset(x = centerX, y = top),
+                                        end = Offset(x = centerX, y = bottom),
+                                        durationMillis = 500,
+                                    )
+                                }
+                                awaitCondition {
+                                    kosmos.sceneInteractor.transitionState.value.isIdle()
+                                }
+                            }
+                        ) {
+                            val nodes =
+                                motionTestRule.toolkit.composeContentTestRule
+                                    .onAllNodesWithTag(resIdToTestTag("expanded_header_clock"))
+                                    .fetchSemanticsNodes()
+                            val position = nodes.last().positionInRoot
+                            feature("expanded_header_clock_position") { position.asDataPoint() }
+                        },
+                )
+            assertThat(motion).timeSeriesMatchesGolden()
+        }
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
+    fun swipeDownFromShadeToQSScene_recordingDayDatePosition() {
+        motionTestRule.runTest(60.seconds) {
+            kosmos.usingMediaInComposeFragment = true
+            kosmos.populateQuickSettings(tileCount = 10)
+            kosmos.enableSingleShade()
+            val motion =
+                recordMotion(
+                    content = { ShadeSceneToQSSceneContainer() },
+                    recordingSpec =
+                        ComposeRecordingSpec(
+                            MotionControl(
+                                delayRecording = {
+                                    awaitCondition {
+                                        kosmos.sceneInteractor.transitionState.value.isIdle()
+                                    }
+                                }
+                            ) {
+                                performTouchInputAsync(onRoot()) {
+                                    swipe(
+                                        start = Offset(x = centerX, y = top),
+                                        end = Offset(x = centerX, y = bottom),
+                                        durationMillis = 500,
+                                    )
+                                }
+                                awaitCondition {
+                                    kosmos.sceneInteractor.transitionState.value.isIdle()
+                                }
+                            }
+                        ) {
+                            feature(
+                                hasTestTag(resIdToTestTag("expanded_shade_header_day_date")),
+                                positionInRoot,
+                                "expanded_shade_header_day_date_position",
+                            )
+                        },
+                )
+            assertThat(motion).timeSeriesMatchesGolden()
+        }
+    }
+
     @Composable
-    private fun ShadeSceneToQSSceneContainer(transitionState: Flow<ObservableTransitionState>?) {
+    private fun ShadeSceneToQSSceneContainer() {
+        val transitionState =
+            MutableStateFlow<ObservableTransitionState>(
+                ObservableTransitionState.Idle(Scenes.Shade)
+            )
+
         PlatformTheme {
             WithStatusIconContext(kosmos.tintedIconManagerFactory) {
                 val vm =

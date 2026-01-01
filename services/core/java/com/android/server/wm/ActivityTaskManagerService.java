@@ -80,7 +80,6 @@ import static android.view.WindowManager.TRANSIT_PIP;
 import static android.view.WindowManager.TRANSIT_START_LOCK_TASK_MODE;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.view.WindowManagerPolicyConstants.KEYGUARD_GOING_AWAY_FLAG_TO_LAUNCHER_CLEAR_SNAPSHOT;
-import static android.window.DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP;
 import static android.window.TransitionInfo.FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_CONFIGURATION;
@@ -1664,32 +1663,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 .setWaitResult(res)
                 .execute();
         return res;
-    }
-
-    @Override
-    public final int startActivityWithConfig(IApplicationThread caller, String callingPackage,
-            String callingFeatureId, Intent intent, String resolvedType, IBinder resultTo,
-            String resultWho, int requestCode, int startFlags, Configuration config,
-            Bundle bOptions, int userId) {
-        assertPackageMatchesCallingUid(callingPackage);
-        enforceNotIsolatedCaller("startActivityWithConfig");
-        final int callingPid = Binder.getCallingPid();
-        final int callingUid = Binder.getCallingUid();
-        userId = handleIncomingUser(callingPid, callingUid, userId, "startActivityWithConfig");
-        // TODO: Switch to user app stacks here.
-        return getActivityStartController().obtainStarter(intent, "startActivityWithConfig")
-                .setCaller(caller)
-                .setCallingPackage(callingPackage)
-                .setCallingFeatureId(callingFeatureId)
-                .setResolvedType(resolvedType)
-                .setResultTo(resultTo)
-                .setResultWho(resultWho)
-                .setRequestCode(requestCode)
-                .setStartFlags(startFlags)
-                .setGlobalConfiguration(config)
-                .setActivityOptions(bOptions, callingPid, callingUid)
-                .setUserId(userId)
-                .execute();
     }
 
     @Override
@@ -7034,6 +7007,23 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                     .execute();
         }
 
+        @Override
+        public int startActivityWithConfig(@NonNull String callingPackage,
+                @NonNull String callingFeatureId, @NonNull Intent intent,
+                @NonNull Configuration config, @CannotBeSpecialUser @UserIdInt int userId) {
+            assertPackageMatchesCallingUid(callingPackage);
+            enforceNotIsolatedCaller("startActivityWithConfig");
+            final int callingPid = Binder.getCallingPid();
+            final int callingUid = Binder.getCallingUid();
+            userId = handleIncomingUser(callingPid, callingUid, userId, "startActivityWithConfig");
+            return getActivityStartController().obtainStarter(intent, "startActivityWithConfig")
+                    .setCallingPackage(callingPackage)
+                    .setCallingFeatureId(callingFeatureId)
+                    .setGlobalConfiguration(config)
+                    .setUserId(userId)
+                    .execute();
+        }
+
         /**
          * Called after virtual display Id is updated by
          * {@link com.android.server.vr.Vr2dDisplay} with a specific
@@ -8527,17 +8517,14 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     /**
      * @return {@code true} if PiP2 implementation should be used.
      *
-     * Note: if PiP on Desktop Windowing is enabled, override the PiP2 gantry flag to be ON.
-     * Note: For form factors other than phone, such as TV, separate flag needs to be ON.
+     * Note: PiP2 is now enabled by default on all non-TV devices.
      */
     static boolean isPip2ExperimentEnabled() {
         if (sIsPip2ExperimentEnabled == null) {
             final FeatureInfo tvFeature = SystemConfig.getInstance().getAvailableFeatures().get(
                     FEATURE_LEANBACK);
             final boolean isTv = tvFeature != null && tvFeature.version >= 0;
-            final boolean shouldOverridePip2Flag = ENABLE_DESKTOP_WINDOWING_PIP.isTrue();
-            sIsPip2ExperimentEnabled = (Flags.enablePip2() || shouldOverridePip2Flag)
-                    && (!isTv || Flags.enablePip2OnTv());
+            sIsPip2ExperimentEnabled = Flags.enablePip2() && (!isTv || Flags.enablePip2OnTv());
         }
         return sIsPip2ExperimentEnabled;
     }

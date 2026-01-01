@@ -10,7 +10,6 @@
 #include "SkColorFilter.h"
 #include "SkGradientShader.h"
 #include "SkImage.h"
-#include "SkImagePriv.h"
 #include "SkMatrix.h"
 #include "SkPoint.h"
 #include "SkRefCnt.h"
@@ -93,8 +92,7 @@ static jlong BitmapShader_constructor(JNIEnv* env, jobject o, jlong matrixPtr, j
     }
 
     if (!image.get()) {
-        SkBitmap bitmap;
-        image = SkMakeImageFromRasterBitmap(bitmap, kNever_SkCopyPixelsMode);
+        return reinterpret_cast<jlong>(SkShaders::Empty().release());
     }
 
     sk_sp<SkShader> shader;

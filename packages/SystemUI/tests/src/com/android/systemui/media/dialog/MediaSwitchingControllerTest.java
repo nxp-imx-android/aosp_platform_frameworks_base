@@ -314,8 +314,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         when(sbn.getNotification()).thenReturn(mNotification);
         when(sbn.getPackageName()).thenReturn(mPackageName);
         mNotification.extras = bundle;
-        when(bundle.getParcelable(Notification.EXTRA_MEDIA_SESSION,
-                MediaSession.Token.class)).thenReturn(token);
+        when(bundle.getParcelable(Notification.EXTRA_MEDIA_SESSION)).thenReturn(token);
         when(token.getBinder()).thenReturn(binder);
 
         when(mExpandedAudioTileDetailsFeatureInteractor.isEnabled()).thenReturn(false);
@@ -456,7 +455,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
     @Test
     public void tryToLaunchMediaApplication_intentNotNull_startActivity() {
-        when(mDialogTransitionAnimator.createActivityTransitionController(any(View.class)))
+        when(mDialogTransitionAnimator.createActivityTransitionController(any(View.class), any()))
                 .thenReturn(mController);
         Intent intent = new Intent(mPackageName);
         doReturn(intent).when(mPackageManager).getLaunchIntentForPackage(mPackageName);
@@ -469,7 +468,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
     @Test
     public void tryToLaunchInAppRoutingIntent_componentNameNotNull_startActivity() {
-        when(mDialogTransitionAnimator.createActivityTransitionController(any(View.class)))
+        when(mDialogTransitionAnimator.createActivityTransitionController(any(View.class), any()))
                 .thenReturn(mController);
         mMediaSwitchingController.start(mCallback);
         when(mLocalMediaManager.getLinkedItemComponentName()).thenReturn(
@@ -1540,7 +1539,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         when(mMediaDevice2.getDeviceType()).thenReturn(
                 MediaDevice.MediaDeviceType.TYPE_BLUETOOTH_DEVICE);
 
-        mMediaSwitchingController.setTemporaryAllowListExceptionIfNeeded(mMediaDevice2);
+        mMediaSwitchingController.setTemporaryAllowListExceptionIfNeeded();
 
         verify(mPowerExemptionManager).addToTemporaryAllowList(anyString(), anyInt(), anyString(),
                 anyLong());
@@ -1572,7 +1571,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mAudioSharingRepository,
                         mExpandedAudioTileDetailsFeatureInteractor);
 
-        testMediaSwitchingController.setTemporaryAllowListExceptionIfNeeded(mMediaDevice2);
+        testMediaSwitchingController.setTemporaryAllowListExceptionIfNeeded();
 
         verify(mPowerExemptionManager, never()).addToTemporaryAllowList(anyString(), anyInt(),
                 anyString(),

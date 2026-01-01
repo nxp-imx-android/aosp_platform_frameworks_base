@@ -47,7 +47,6 @@ import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.view.WindowManager.TransitionFlags;
 import static android.view.WindowManager.TransitionType;
 import static android.view.WindowManager.transitTypeToString;
-import static android.window.DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP;
 import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION;
 import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS;
 import static android.window.DesktopExperienceFlags.ENABLE_INTERACTIVE_PICTURE_IN_PICTURE;
@@ -1374,9 +1373,8 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             return false;
         }
 
-        // If PiP on Desktop Windowing is enabled and the task is freeform, we disable entering PiP.
-        if (ENABLE_DESKTOP_WINDOWING_PIP.isTrue()
-                && ar.getTask().getWindowingMode() == WINDOWING_MODE_FREEFORM) {
+        // If the task is freeform, we disable entering PiP.
+        if (ar.getTask().getWindowingMode() == WINDOWING_MODE_FREEFORM) {
             return false;
         }
 

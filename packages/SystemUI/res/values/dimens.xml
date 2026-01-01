@@ -2272,6 +2272,7 @@
     <!-- Bouncer containerization on large screens end -->
 
     <!-- Lockscreen blur values -->
+    <dimen name="fingerprint_icon_blur_radius">15dp</dimen>
     <dimen name="notification_background_blur_radius">25dp</dimen>
     <!-- Lockscreen blur values end -->
 

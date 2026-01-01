@@ -42,13 +42,11 @@ import android.app.AppOpsManager;
 import android.app.BackgroundStartPrivileges;
 import android.app.BroadcastOptions;
 import android.app.BroadcastOptions.DeliveryGroupPolicy;
-import android.compat.annotation.ChangeId;
 import android.content.ComponentName;
 import android.content.IIntentReceiver;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.ResolveInfo;
 import android.os.Binder;
 import android.os.Bundle;
@@ -81,13 +79,6 @@ import java.util.function.BiFunction;
  * An active intent broadcast.
  */
 final class BroadcastRecord extends Binder {
-    /**
-     * Limit the scope of the priority values to the process level. This means that priority values
-     * will only influence the order of broadcast delivery within the same process.
-     */
-    @ChangeId
-    @VisibleForTesting
-    static final long LIMIT_PRIORITY_SCOPE = 371307720L;
 
     static final int UNSPECIFIED_QUEUE_INDEX = -1;
 
@@ -788,13 +779,10 @@ final class BroadcastRecord extends Binder {
      * Calculate the {@link #beyondCount} that each receiver should be
      * considered blocked until.
      * <p>
-     * For example, in an ordered broadcast, receiver {@code N} is blocked until
-     * receiver {@code N-1} reaches a terminal or deferred state. Similarly, in
-     * a prioritized broadcast, receiver {@code N} is blocked until all
-     * receivers of a higher priority reach a terminal or deferred state.
-     * <p>
-     * When there are no beyond count constraints, the blocked value for each
-     * receiver is {@code -1}.
+     * For an ordered broadcast, receiver {@code N} is blocked until
+     * receiver {@code N-1} reaches a terminal or deferred state. Non-ordered broadcasts
+     * have no such constraint and the {@code beyondCount} for each receiver is set to {@code -1}
+     * to allow for parallel delivery.
      */
     @VisibleForTesting
     static @NonNull int[] calculateBlockedUntilBeyondCount(
@@ -808,97 +796,13 @@ final class BroadcastRecord extends Binder {
                 blockedUntilBeyondCount[i] = i;
             }
         } else {
-            final boolean[] changeEnabled = calculateChangeStateForReceivers(
-                    receivers, LIMIT_PRIORITY_SCOPE, platformCompat);
-
-            // Priority of the previous tranche
-            int lastTranchePriority = 0;
-            // Priority of the current tranche
-            int currentTranchePriority = 0;
-            // Index of the last receiver in the previous tranche
-            int lastTranchePriorityIndex = -1;
-            // Index of the last receiver with change disabled in the previous tranche
-            int lastTrancheChangeDisabledIndex = -1;
-            // Index of the last receiver with change disabled in the current tranche
-            int currentTrancheChangeDisabledIndex = -1;
-
-            for (int i = 0; i < N; i++) {
-                final int thisPriority = getReceiverPriority(receivers.get(i));
-                if (i == 0) {
-                    currentTranchePriority = thisPriority;
-                    if (!changeEnabled[i]) {
-                        currentTrancheChangeDisabledIndex = i;
-                    }
-                    continue;
-                }
-
-                // Check if a new priority tranche has started
-                if (thisPriority != currentTranchePriority) {
-                    // Update tranche boundaries and reset the disabled index.
-                    if (currentTrancheChangeDisabledIndex != -1) {
-                        lastTrancheChangeDisabledIndex = currentTrancheChangeDisabledIndex;
-                    }
-                    lastTranchePriority = currentTranchePriority;
-                    lastTranchePriorityIndex = i - 1;
-                    currentTranchePriority = thisPriority;
-                    currentTrancheChangeDisabledIndex = -1;
-                }
-                if (!changeEnabled[i]) {
-                    currentTrancheChangeDisabledIndex = i;
-
-                    // Since the change is disabled, block the current receiver until the
-                    // last receiver in the previous tranche.
-                    blockedUntilBeyondCount[i] = lastTranchePriorityIndex + 1;
-                } else if (thisPriority != lastTranchePriority) {
-                    // If the changeId was disabled for an earlier receiver and the current
-                    // receiver has a different priority, block the current receiver
-                    // until that earlier receiver.
-                    if (lastTrancheChangeDisabledIndex != -1) {
-                        blockedUntilBeyondCount[i] = lastTrancheChangeDisabledIndex + 1;
-                    }
-                }
-            }
-            // If the entire list is in the same priority tranche or no receivers had
-            // changeId disabled, mark as -1 to indicate that none of them need to wait
-            if (N > 0 && (lastTranchePriorityIndex == -1
-                    || (lastTrancheChangeDisabledIndex == -1
-                            && currentTrancheChangeDisabledIndex == -1))) {
+            // Non-ordered broadcasts can be sent in parallel. Mark as -1 to indicate that
+            // none of them need to wait
+            if (N > 0) {
                 Arrays.fill(blockedUntilBeyondCount, -1);
             }
         }
         return blockedUntilBeyondCount;
-    }
-
-    @VisibleForTesting
-    static @NonNull boolean[] calculateChangeStateForReceivers(@NonNull List<Object> receivers,
-            long changeId, PlatformCompat platformCompat) {
-        // TODO: b/371307720 - Remove this method as we are already avoiding the packagemanager
-        // calls by checking the changeId state using ApplicationInfos.
-        final ArrayMap<String, Boolean> changeStates = new ArrayMap<>();
-        final int count = receivers.size();
-        final boolean[] changeStateForReceivers = new boolean[count];
-        for (int i = 0; i < count; ++i) {
-            final ApplicationInfo receiverAppInfo = getReceiverAppInfo(receivers.get(i));
-            final boolean isChangeEnabled;
-            final int idx = changeStates.indexOfKey(receiverAppInfo.packageName);
-            if (idx >= 0) {
-                isChangeEnabled = changeStates.valueAt(idx);
-            } else {
-                isChangeEnabled = platformCompat.isChangeEnabledInternalNoLogging(
-                        changeId, receiverAppInfo);
-                changeStates.put(receiverAppInfo.packageName, isChangeEnabled);
-            }
-            changeStateForReceivers[i] = isChangeEnabled;
-        }
-        return changeStateForReceivers;
-    }
-
-    static ApplicationInfo getReceiverAppInfo(@NonNull Object receiver) {
-        if (receiver instanceof BroadcastFilter) {
-            return ((BroadcastFilter) receiver).getApplicationInfo();
-        } else {
-            return ((ResolveInfo) receiver).activityInfo.applicationInfo;
-        }
     }
 
     static int getReceiverUid(@NonNull Object receiver) {

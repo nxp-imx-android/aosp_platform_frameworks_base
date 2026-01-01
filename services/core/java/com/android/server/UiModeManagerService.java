@@ -2411,19 +2411,14 @@ final class UiModeManagerService extends SystemService {
             // change.
             Intent homeIntent = buildHomeIntent(category);
             if (shouldStartDockApp(getContext(), homeIntent)) {
-                try {
-                    int result = ActivityTaskManager.getService().startActivityWithConfig(
-                            null, getContext().getBasePackageName(),
-                            getContext().getAttributionTag(), homeIntent, null, null, null, 0, 0,
-                            mConfiguration, null, UserHandle.USER_CURRENT);
-                    if (ActivityManager.isStartResultSuccessful(result)) {
-                        dockAppStarted = true;
-                    } else if (result != ActivityManager.START_INTENT_NOT_RESOLVED) {
-                        Slog.e(TAG, "Could not start dock app: " + homeIntent
-                                + ", startActivityWithConfig result " + result);
-                    }
-                } catch (RemoteException ex) {
-                    Slog.e(TAG, "Could not start dock app: " + homeIntent, ex);
+                final int result = mActivityTaskManager.startActivityWithConfig(
+                        getContext().getBasePackageName(), getContext().getAttributionTag(),
+                        homeIntent, mConfiguration, UserHandle.USER_CURRENT);
+                if (ActivityManager.isStartResultSuccessful(result)) {
+                    dockAppStarted = true;
+                } else if (result != ActivityManager.START_INTENT_NOT_RESOLVED) {
+                    Slog.e(TAG, "Could not start dock app: " + homeIntent
+                            + ", startActivityWithConfig result " + result);
                 }
             }
         }

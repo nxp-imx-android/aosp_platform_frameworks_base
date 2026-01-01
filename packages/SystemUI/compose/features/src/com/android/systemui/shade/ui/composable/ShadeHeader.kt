@@ -23,6 +23,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.annotation.ColorInt
+import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
@@ -123,6 +124,8 @@ import com.android.systemui.util.kotlin.toDp
 import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
+import platform.test.motion.compose.values.MotionTestValueKey
+import platform.test.motion.compose.values.motionTestValues
 
 object ShadeHeader {
     object Elements {
@@ -302,7 +305,12 @@ fun ContentScope.ExpandedShadeHeader(
                     .defaultMinSize(minHeight = ShadeHeader.Dimensions.ExpandedHeight),
         ) {
             Box(modifier = Modifier.fillMaxWidth()) {
-                Clock(onClick = viewModel::onClockClicked, scale = 2.57f, textColor = textColor)
+                Clock(
+                    onClick = viewModel::onClockClicked,
+                    scale = 2.57f,
+                    textColor = textColor,
+                    modifier = Modifier.sysuiResTag("expanded_header_clock"),
+                )
                 Box(
                     modifier =
                         Modifier.element(ShadeHeader.Elements.ShadeCarrierGroup).fillMaxWidth()
@@ -322,6 +330,7 @@ fun ContentScope.ExpandedShadeHeader(
                     longerDateText = viewModel.longerDateText,
                     shorterDateText = viewModel.shorterDateText,
                     textColor = textColor,
+                    modifier = Modifier.sysuiResTag("expanded_shade_header_day_date"),
                 )
                 ShadeHighlightChip {
                     val paddingEnd = with(LocalDensity.current) { 3.sp.toDp() }
@@ -536,6 +545,11 @@ private fun CutoutAwareShadeHeader(
     }
 }
 
+@VisibleForTesting
+object ShadeHeaderMotionTestKeys {
+    val Alpha = MotionTestValueKey<Float>("alpha")
+}
+
 @Composable
 private fun ContentScope.Clock(
     modifier: Modifier = Modifier,
@@ -545,7 +559,15 @@ private fun ContentScope.Clock(
 ) {
     val layoutDirection = LocalLayoutDirection.current
 
-    ElementWithValues(key = ShadeHeader.Elements.Clock, modifier = modifier) {
+    ElementWithValues(
+        key = ShadeHeader.Elements.Clock,
+        modifier =
+            modifier.motionTestValues {
+                ShadeHeader.Elements.Clock.currentAlpha()?.let { alpha ->
+                    alpha exportAs ShadeHeaderMotionTestKeys.Alpha
+                }
+            },
+    ) {
         val animatedScale by animateElementFloatAsState(scale, ClockScale, canOverflow = false)
 
         content {

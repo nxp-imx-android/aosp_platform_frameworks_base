@@ -21,7 +21,8 @@ and in ABTD, as well as how to analyze output artifacts.
    `appmemorytest_app_heap_size_bytes` are the metric results.
    `/tmp/atest_result/20251222_190845_6fbp6fde` will contain a Perfetto trace
    and a .hprof
-   ```
+
+```
 $ atest AppMemoryTestCases
 
 Atest results and logs directory: /tmp/atest_result/20251222_190845_6fbp6fde
@@ -36,7 +37,7 @@ arm64-v8a AppMemoryTestCases (1 Test)
         appmemorytest_app_heap_size_bytes: 563401
 
 ...
-   ```
+```
 
 Googlers can find more detailed steps at
 [go/smoldroid](http://go/smoldroid).
@@ -60,7 +61,7 @@ example, the SQL in `appmemorytest_binder_transactions.textproto` can be used
 to view the full set of binder transactions initiated by the test app during
 startup.
 
-```
+```sql
 INCLUDE PERFETTO MODULE android.binder;
 INCLUDE PERFETTO MODULE android.startup.startups;
 WITH

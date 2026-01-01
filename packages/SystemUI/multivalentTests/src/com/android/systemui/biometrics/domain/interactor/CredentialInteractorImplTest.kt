@@ -19,6 +19,7 @@ import com.android.systemui.biometrics.domain.model.BiometricPromptRequest
 import com.android.systemui.biometrics.promptInfo
 import com.android.systemui.biometrics.shared.model.BiometricUserInfo
 import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.res.R
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.mockito.whenever
@@ -158,8 +159,8 @@ class CredentialInteractorImplTest : SysuiTestCase() {
             .thenReturn(result)
         whenever(lockPatternUtils.verifyGatekeeperPasswordHandle(anyLong(), anyLong(), eq(USER_ID)))
             .thenReturn(result)
-        whenever(lockPatternUtils.setLockoutAttemptDeadline(anyInt(), any())).thenAnswer {
-            Duration.ofMillis(systemClock.elapsedRealtime()).plus(it.arguments[1] as Duration)
+        whenever(lockPatternUtils.getLockoutEndTime(anyInt())).thenAnswer {
+            Duration.ofMillis(systemClock.elapsedRealtime()).plus(result.timeout)
         }
 
         // wrap in an async block so the test can advance the clock if throttling credential
@@ -194,11 +195,16 @@ class CredentialInteractorImplTest : SysuiTestCase() {
                 // messages are in the throttled errors, so the final Error.error is empty
                 assertThat(failedResult.error).isEmpty()
                 assertThat(statusList).isNotEmpty()
-                assertThat(statusList.filterIsInstance(CredentialStatus.Fail.Throttled::class.java))
-                    .hasSize(statusList.size)
-
-                verify(lockPatternUtils)
-                    .setLockoutAttemptDeadline(eq(credentialOwner), eq(result.timeout))
+                val throttledStatuses =
+                    statusList.filterIsInstance(CredentialStatus.Fail.Throttled::class.java)
+                assertThat(throttledStatuses).hasSize(statusList.size)
+                assertThat(throttledStatuses.first().error)
+                    .isEqualTo(
+                        mContext.getString(
+                            R.string.biometric_dialog_credential_too_many_attempts,
+                            result.timeout.toSeconds(),
+                        )
+                    )
             } else { // failed
                 assertThat(failedResult.error)
                     .matches(Regex("(.*)try again(.*)", RegexOption.IGNORE_CASE).toPattern())

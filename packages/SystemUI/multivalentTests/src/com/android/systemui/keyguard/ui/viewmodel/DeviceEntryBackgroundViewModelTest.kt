@@ -16,10 +16,15 @@
 
 package com.android.systemui.keyguard.ui.viewmodel
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.settingslib.Utils.getColorAttrDefaultColor
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.biometrics.data.repository.fingerprintPropertyRepository
+import com.android.systemui.common.shared.colors.SurfaceEffectColors
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
@@ -73,6 +78,38 @@ class DeviceEntryBackgroundViewModelTest : SysuiTestCase() {
             runCurrent()
 
             assertThat(alpha).isEqualTo(0f)
+        }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_LOCKSCREEN_BLUR)
+    fun colorIsCorrect() =
+        testScope.runTest {
+            val color by collectLastValue(underTest.color)
+
+            assertThat(color).isEqualTo(0)
+        }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_LOCKSCREEN_BLUR)
+    fun useBackground_colorIsCorrect() =
+        testScope.runTest {
+            kosmos.fingerprintPropertyRepository.supportsUdfps()
+
+            val expected =
+                getColorAttrDefaultColor(mContext, com.android.internal.R.attr.colorSurface)
+            val color by collectLastValue(underTest.color)
+
+            assertThat(color).isEqualTo(expected)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_LOCKSCREEN_BLUR)
+    fun enableLockscreenBlur_colorIsCorrect() =
+        testScope.runTest {
+            val expected = SurfaceEffectColors.surfaceEffect1(mContext)
+            val color by collectLastValue(underTest.color)
+
+            assertThat(color).isEqualTo(expected)
         }
 
     private fun lockscreenToDozing(value: Float, state: TransitionState = RUNNING): TransitionStep {

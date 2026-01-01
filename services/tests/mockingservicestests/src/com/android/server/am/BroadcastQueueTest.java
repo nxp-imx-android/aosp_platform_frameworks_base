@@ -1683,57 +1683,6 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
     }
 
     /**
-     * Verify that when dispatching we respect tranches of priority.
-     */
-    @SuppressWarnings("DistinctVarargsChecker")
-    @Test
-    public void testPriority_changeIdDisabled() throws Exception {
-        final ProcessRecord callerApp = new ActiveProcBuilder(PACKAGE_RED).build();
-        final ProcessRecord receiverBlueApp = new ActiveProcBuilder(PACKAGE_BLUE).build();
-        final ProcessRecord receiverGreenApp = new ActiveProcBuilder(PACKAGE_GREEN).build();
-        final ProcessRecord receiverYellowApp = new ActiveProcBuilder(PACKAGE_YELLOW).build();
-
-        doReturn(false).when(mPlatformCompat).isChangeEnabledInternalNoLogging(
-                eq(BroadcastRecord.LIMIT_PRIORITY_SCOPE),
-                argThat(appInfoEquals(receiverBlueApp.uid)));
-
-        // Enqueue a normal broadcast that will go to several processes, and
-        // then enqueue a foreground broadcast that risks reordering
-        final Intent timezone = new Intent(Intent.ACTION_TIMEZONE_CHANGED);
-        final Intent airplane = new Intent(Intent.ACTION_AIRPLANE_MODE_CHANGED);
-        airplane.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
-        enqueueBroadcast(makeBroadcastRecord(timezone, callerApp,
-                List.of(makeRegisteredReceiver(receiverBlueApp, 10),
-                        makeRegisteredReceiver(receiverGreenApp, 10),
-                        makeManifestReceiver(PACKAGE_BLUE, CLASS_BLUE),
-                        makeManifestReceiver(PACKAGE_YELLOW, CLASS_YELLOW),
-                        makeRegisteredReceiver(receiverYellowApp, -10))));
-        enqueueBroadcast(makeBroadcastRecord(airplane, callerApp,
-                List.of(makeRegisteredReceiver(receiverBlueApp))));
-        waitForIdle();
-
-        // Ignore the final foreground broadcast
-        mScheduledBroadcasts.remove(makeScheduledBroadcast(receiverBlueApp, airplane));
-        assertEquals(5, mScheduledBroadcasts.size());
-
-        // We're only concerned about enforcing ordering between tranches;
-        // within a tranche we're okay with reordering
-        assertEquals(
-                Set.of(makeScheduledBroadcast(receiverBlueApp, timezone),
-                        makeScheduledBroadcast(receiverGreenApp, timezone)),
-                Set.of(mScheduledBroadcasts.remove(0),
-                        mScheduledBroadcasts.remove(0)));
-        assertEquals(
-                Set.of(makeScheduledBroadcast(receiverBlueApp, timezone),
-                        makeScheduledBroadcast(receiverYellowApp, timezone)),
-                Set.of(mScheduledBroadcasts.remove(0),
-                        mScheduledBroadcasts.remove(0)));
-        assertEquals(
-                Set.of(makeScheduledBroadcast(receiverYellowApp, timezone)),
-                Set.of(mScheduledBroadcasts.remove(0)));
-    }
-
-    /**
      * Verify prioritized receivers work as expected with deferrable broadcast - broadcast to
      * app in cached state should be deferred and the rest should be delivered as per the priority
      * order.
@@ -2510,36 +2459,6 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
         final IIntentReceiver resultTo = mock(IIntentReceiver.class);
         final BroadcastRecord prioritizedRecord = makeOrderedBroadcastRecord(timeTick, callerApp,
                 List.of(receiverBlue, receiverGreen), resultTo, null);
-
-        enqueueBroadcast(prioritizedRecord);
-
-        waitForIdle();
-        // Verify that uid foreground-ness does not impact that delivery of prioritized broadcast.
-        // That is, broadcast to receiverBlueApp gets scheduled before the one to receiverGreenApp.
-        assertThat(getReceiverScheduledTime(prioritizedRecord, receiverGreen))
-                .isGreaterThan(getReceiverScheduledTime(prioritizedRecord, receiverBlue));
-    }
-
-    @Test
-    public void testPrioritizedBroadcastDelivery_uidForeground_changeIdDisabled() throws Exception {
-        final ProcessRecord callerApp = new ActiveProcBuilder(PACKAGE_RED).build();
-        final ProcessRecord receiverBlueApp = new ActiveProcBuilder(PACKAGE_BLUE).build();
-        final ProcessRecord receiverGreenApp = new ActiveProcBuilder(PACKAGE_GREEN).build();
-
-        doReturn(false).when(mPlatformCompat).isChangeEnabledInternalNoLogging(
-                eq(BroadcastRecord.LIMIT_PRIORITY_SCOPE),
-                argThat(appInfoEquals(receiverBlueApp.uid)));
-
-        mUidObserver.onUidStateChanged(receiverGreenApp.info.uid,
-                ActivityManager.PROCESS_STATE_TOP, 0, ActivityManager.PROCESS_CAPABILITY_NONE);
-        waitForIdle();
-
-        final Intent timeTick = new Intent(Intent.ACTION_TIME_TICK);
-
-        final BroadcastFilter receiverBlue = makeRegisteredReceiver(receiverBlueApp, 10);
-        final BroadcastFilter receiverGreen = makeRegisteredReceiver(receiverGreenApp, 5);
-        final BroadcastRecord prioritizedRecord = makeBroadcastRecord(timeTick, callerApp,
-                List.of(receiverBlue, receiverGreen));
 
         enqueueBroadcast(prioritizedRecord);
 

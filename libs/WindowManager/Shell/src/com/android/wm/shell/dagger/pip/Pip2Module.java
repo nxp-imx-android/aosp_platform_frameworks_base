@@ -19,7 +19,6 @@ package com.android.wm.shell.dagger.pip;
 import android.annotation.NonNull;
 import android.content.Context;
 import android.os.Handler;
-import android.window.DesktopExperienceFlags;
 
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
@@ -309,8 +308,7 @@ public abstract class Pip2Module {
             Optional<DesktopUserRepositories> desktopUserRepositoriesOptional,
             PipDesktopState pipDesktopState, DesktopState desktopState
     ) {
-        if (desktopState.canEnterDesktopMode()
-                && DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue()) {
+        if (desktopState.canEnterDesktopMode()) {
             return Optional.of(
                     new DesktopPipTransitionController(shellTaskOrganizer,
                             desktopTasksControllerOptional.get(),
