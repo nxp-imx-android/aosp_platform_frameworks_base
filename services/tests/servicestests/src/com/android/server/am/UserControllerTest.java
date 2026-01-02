@@ -729,9 +729,6 @@ public class UserControllerTest {
     /** Test scheduling judgement of background users after a user-switch. */
     @Test
     public void testScheduleJudgementOfBackgroundUser_switch() {
-        mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER,
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER_BY_DEFAULT);
         assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
 
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
@@ -777,9 +774,6 @@ public class UserControllerTest {
     /** Test scheduling judgement of background users that were started in the background. */
     @Test
     public void testScheduleJudgementOfBackgroundUser_startInBackground() throws Exception {
-        mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER,
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER_BY_DEFAULT);
         assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
 
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
@@ -816,9 +810,6 @@ public class UserControllerTest {
     /** Test lack of scheduling judgement of background users if config has it disabled. */
     @Test
     public void testScheduleJudgementOfBackgroundUser_configOff() throws Exception {
-        mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER,
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER_BY_DEFAULT);
         assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
 
         // Disable default background scheduled judging via a value of -1.
@@ -835,9 +826,6 @@ public class UserControllerTest {
     /** Test no scheduling judgement for foreground profiles until they leave the foreground. */
     @Test
     public void testScheduleJudgementOfBackgroundUser_foregroundProfiles() throws Exception {
-        mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER,
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER_BY_DEFAULT);
         assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
 
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
@@ -893,9 +881,6 @@ public class UserControllerTest {
     /** Test schedule for judging a background user is cleared when the user is stopped. */
     @Test
     public void testScheduleJudgementOfBackgroundUser_cancelWhenStopUser() throws Exception {
-        mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER,
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER_BY_DEFAULT);
         assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
 
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
@@ -935,9 +920,6 @@ public class UserControllerTest {
     /** Test schedule for judging background user is not set if it only started temporarily. */
     @Test
     public void testScheduleJudgementOfBackgroundUser_skipIfTempStart() throws Exception {
-        mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER,
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER_BY_DEFAULT);
         assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
 
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
@@ -973,9 +955,6 @@ public class UserControllerTest {
     @Test
     public void testJudgeFateOfBackgroundUser_firstJudgementSchedulesFinalJudgement()
             throws Exception {
-        mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER,
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER_BY_DEFAULT);
         assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
 
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
@@ -1005,9 +984,6 @@ public class UserControllerTest {
 
     @Test
     public void testJudgeFateOfBackgroundUser_allTrialPhases() throws Exception {
-        mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER,
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER_BY_DEFAULT);
         assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
 
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
@@ -1025,9 +1001,6 @@ public class UserControllerTest {
 
     @Test
     public void testJudgeFateOfBackgroundUser_lmkNotIncreased() throws Exception {
-        mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER,
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER_BY_DEFAULT);
         assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
 
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
@@ -1067,9 +1040,6 @@ public class UserControllerTest {
 
     @Test
     public void testJudgeFateOfBackgroundUser_cancelledByStopUser() throws Exception {
-        mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER,
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER_BY_DEFAULT);
         assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
 
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
@@ -1092,9 +1062,6 @@ public class UserControllerTest {
 
     @Test
     public void testJudgeFateOfBackgroundUser_cancelledByForegroundStart() throws Exception {
-        mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER,
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER_BY_DEFAULT);
         assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
 
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
@@ -1118,9 +1085,6 @@ public class UserControllerTest {
     /** Test schedule for stopping background user is cleared when the user is stopped. */
     @Test
     public void testScheduleStopOfBackgroundUser_stopUser() throws Exception {
-        mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER,
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER_BY_DEFAULT);
         assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
 
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
@@ -1164,8 +1128,6 @@ public class UserControllerTest {
     /** Test scheduling stopping of background users via startUserInBackgroundTemporarily. */
     @Test
     public void testScheduleStopOfBackgroundUser_startInBackgroundTemporarily() throws Exception {
-        mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER);
         assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
 
         // startUserInBackgroundTemporarily should work regardless.
@@ -1189,8 +1151,6 @@ public class UserControllerTest {
     /** Test scheduling stopping of background users that were started multiples times in bg. */
     @Test
     public void testScheduleStopOfBackgroundUser_multipleSchedulesObeyLast() throws Exception {
-        mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER);
         assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
 
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
@@ -1226,9 +1186,6 @@ public class UserControllerTest {
     /** Test that startUserInBackgroundTemporarily has no effect if user already running forever. */
     @Test
     public void testScheduleStopOfBackgroundUser_startForeverThenStartTemp() throws Exception {
-        mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER,
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER_BY_DEFAULT);
         assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
 
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
@@ -1254,9 +1211,6 @@ public class UserControllerTest {
     /** Test that startUserInBackgroundTemporarily won't stop if subsequently started forever. */
     @Test
     public void testScheduleStopOfBackgroundUser_startTempThenStartForever() throws Exception {
-        mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER,
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER_BY_DEFAULT);
         assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
 
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
@@ -1280,9 +1234,6 @@ public class UserControllerTest {
     /** Test scheduling stopping of background users - reschedule if current user is a guest. */
     @Test
     public void testScheduleStopOfBackgroundUser_rescheduleWhenGuest() throws Exception {
-        mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER,
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER_BY_DEFAULT);
         assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
 
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
@@ -1337,9 +1288,6 @@ public class UserControllerTest {
     /** Test scheduling stopping of background users - reschedule if user with a scheduled alarm. */
     @Test
     public void testScheduleStopOfBackgroundUser_rescheduleIfAlarm() throws Exception {
-        mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER,
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER_BY_DEFAULT);
         assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
 
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
@@ -1377,9 +1325,6 @@ public class UserControllerTest {
     /** Test scheduling stopping of background users - reschedule if user is sounding audio. */
     @Test
     public void testScheduleStopOfBackgroundUser_rescheduleIfAudio() throws Exception {
-        mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER,
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER_BY_DEFAULT);
         assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
 
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
@@ -1408,10 +1353,6 @@ public class UserControllerTest {
     /** Test scheduling stopping of background users - reschedule if user has visible activity. */
     @Test
     public void testScheduleStopOfBackgroundUser_rescheduleIfVisibleActivity() throws Exception {
-        mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_RESCHEDULE_STOP_IF_VISIBLE_ACTIVITIES,
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER,
-                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER_BY_DEFAULT);
         assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
 
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
@@ -1612,7 +1553,6 @@ public class UserControllerTest {
     /** Tests that we stop excess users when starting a background user. */
     @Test
     public void testStoppingExcessRunningUsers_onBackgroundStart() throws Exception {
-        mSetFlagsRule.enableFlags(android.multiuser.Flags.FLAG_STOP_EXCESS_FOR_BACKGROUND_STARTS);
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 2, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
@@ -1634,7 +1574,6 @@ public class UserControllerTest {
     /** Tests that we stop excess users when starting a profile. */
     @Test
     public void testStoppingExcessRunningUsers_onProfileStart() throws Exception {
-        mSetFlagsRule.enableFlags(android.multiuser.Flags.FLAG_STOP_EXCESS_FOR_BACKGROUND_STARTS);
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 2, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
@@ -1656,7 +1595,6 @@ public class UserControllerTest {
     /** Tests that we stop excess users when starting a foreground user. */
     @Test
     public void testStoppingExcessRunningUsers_onForegroundStart() throws Exception {
-        mSetFlagsRule.enableFlags(android.multiuser.Flags.FLAG_STOP_EXCESS_FOR_BACKGROUND_STARTS);
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 2, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
@@ -1684,7 +1622,6 @@ public class UserControllerTest {
      */
     @Test
     public void testStoppingExcessRunningUsers_notOnTempBackgroundStart() throws Exception {
-        mSetFlagsRule.enableFlags(android.multiuser.Flags.FLAG_STOP_EXCESS_FOR_BACKGROUND_STARTS);
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 2, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
@@ -1709,7 +1646,6 @@ public class UserControllerTest {
      */
     @Test
     public void testStoppingExcessRunningUsers_doNotStopTheUserBeingStarted() throws Exception {
-        mSetFlagsRule.enableFlags(android.multiuser.Flags.FLAG_STOP_EXCESS_FOR_BACKGROUND_STARTS);
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 2, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
@@ -1744,7 +1680,6 @@ public class UserControllerTest {
      */
     @Test
     public void testStoppingExcessRunningUsers_currentProfilesCanExceed_manual() throws Exception {
-        mSetFlagsRule.enableFlags(android.multiuser.Flags.FLAG_STOP_EXCESS_FOR_BACKGROUND_STARTS);
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
@@ -1799,7 +1734,6 @@ public class UserControllerTest {
      */
     @Test
     public void testStoppingExcessRunningUsers_currentProfilesCanExceed_auto() throws Exception {
-        mSetFlagsRule.enableFlags(android.multiuser.Flags.FLAG_STOP_EXCESS_FOR_BACKGROUND_STARTS);
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
