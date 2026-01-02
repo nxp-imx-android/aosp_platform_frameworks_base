@@ -119,16 +119,6 @@ flag {
 }
 
 flag {
-  name: "skip_add_recents_to_sync_set"
-  namespace: "windowing_frontend"
-  description: "Reduce recents transition latency"
-  bug: "451795568"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "default_animator_single_transaction2"
   namespace: "windowing_frontend"
   description: "Reduce binder transaction to SF if there are multiple default animations"
