@@ -65,12 +65,15 @@ import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.node.DrawModifierNode
+import androidx.compose.ui.node.LayoutAwareModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
+import androidx.compose.ui.node.UnplacedAwareModifierNode
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Density
@@ -89,6 +92,8 @@ import com.android.systemui.Flags.expandableUseModifierImplementation
 import com.android.systemui.animation.ComposableControllerFactory
 import com.android.systemui.animation.Expandable
 import com.android.systemui.animation.TransitionAnimator
+import com.android.systemui.animation.TransitionAnimator.Companion.dynamicTargetResolutionEnabled
+import com.android.systemui.animation.TransitionSource
 import kotlin.math.max
 import kotlin.math.min
 
@@ -209,20 +214,23 @@ fun Expandable(
     defaultMinSize: Boolean = true,
     content: @Composable (Expandable) -> Unit,
 ) {
-    val controller = controller as ExpandableControllerImpl
 
-    val expandable =
-        expandable
-            ?: remember(controller.transitionSource) { Expandable(controller.transitionSource) }
+    val expandable = expandable ?: remember { Expandable(mutableSetOf()) }
 
-    if (controller.transitionControllerFactory != null) {
-        DisposableEffect(controller.transitionControllerFactory) {
+    // If dynamicTargetResolutionEnabled is false, manually register the source.
+    // Otherwise, the source is registered via the 'registerSource' Modifier on the Expandable.
+    if (!dynamicTargetResolutionEnabled()) {
+        expandable.addSource(controller.transitionSource)
+    }
+
+    controller.transitionControllerFactory?.let { factory ->
+        DisposableEffect(factory) {
             // Notify the transition controller factory that the expandable is now available, so it
             // can move forward with any pending requests.
-            controller.transitionControllerFactory.onCompose(expandable)
+            factory.onCompose(expandable)
             // Once this composable is gone, the transition controller factory must be notified so
             // it doesn't accepts requests providing stale content.
-            onDispose { controller.transitionControllerFactory.onDispose() }
+            onDispose { factory.onDispose() }
         }
     }
 
@@ -282,7 +290,9 @@ fun Expandable(
             // once at all times. We make this spacer exactly the same size as this Expandable when
             // it is visible.
             Spacer(
-                modifier.requiredSize(with(controller.density) { thisExpandableSize.toDpSize() })
+                modifier
+                    .registerSource(controller.transitionSource, expandable)
+                    .requiredSize(with(controller.density) { thisExpandableSize.toDpSize() })
             )
 
             // The content and its animated background in the overlay. We draw it only when we are
@@ -304,6 +314,7 @@ fun Expandable(
             Box(
                 modifier
                     .updateExpandableSize()
+                    .registerSource(controller.transitionSource, expandable)
                     .then(minInteractiveSizeModifier)
                     .drawWithContent { /* Don't draw anything when the dialog is shown. */ }
                     .onGloballyPositioned { controller.boundsInComposeViewRoot = it.boundsInRoot() }
@@ -315,6 +326,7 @@ fun Expandable(
             Box(
                 modifier
                     .updateExpandableSize()
+                    .registerSource(controller.transitionSource, expandable)
                     .then(minInteractiveSizeModifier)
                     .then(
                         clickModifier(
@@ -381,7 +393,6 @@ private fun Modifier.expandable(
     onClickLabel: String? = null,
     interactionSource: MutableInteractionSource? = null,
 ): Modifier {
-    val controller = controller as ExpandableControllerImpl
     val graphicsLayer = rememberGraphicsLayer()
 
     val isAnimating = controller.isAnimating
@@ -402,6 +413,7 @@ private fun Modifier.expandable(
                 )
                 .animatedBackground(controller.color, shape = controller.shape)
         }
+        .registerSource(controller.transitionSource, expandable)
         .onPlaced { coords ->
             // TODO(b/415570057): Remove this check.
             if (coords.isAttached) {
@@ -417,9 +429,72 @@ private fun Modifier.expandable(
         }
 }
 
+/**
+ * Registers a [TransitionSource] with its [Expandable] coordinator in a lifecycle-aware manner for
+ * Compose.
+ *
+ * This modifier is the way to link a Composable-based [TransitionSource] to its [Expandable]
+ * instance. It intelligently handles registration based on the [dynamicTargetResolution] feature
+ * flag
+ *
+ * @param transitionSource The [TransitionSource] instance associated with this Composable.
+ * @param expandable The long-lived [Expandable] coordinator this source belongs to.
+ * @return A [Modifier] that handles the lifecycle-aware registration.
+ */
+@Composable
+fun Modifier.registerSource(transitionSource: TransitionSource, expandable: Expandable): Modifier {
+    return if (dynamicTargetResolutionEnabled()) {
+        this.then(RegisterTransitionSource(transitionSource, expandable))
+    } else {
+        this
+    }
+}
+
+private data class RegisterTransitionSource(
+    val transitionSource: TransitionSource,
+    val expandable: Expandable,
+) : ModifierNodeElement<TransitionSourceNode>() {
+    override fun create(): TransitionSourceNode {
+        return TransitionSourceNode(transitionSource, expandable)
+    }
+
+    override fun update(node: TransitionSourceNode) {
+        node.transitionSource = transitionSource
+        node.expandable = expandable
+    }
+}
+
+/**
+ * The core [Modifier.Node] responsible for the lifecycle-aware registration of a
+ * [TransitionSource].
+ *
+ * This node observes the Composable's layout state via [LayoutAwareModifierNode] and
+ * [UnplacedAwareModifierNode]:
+ * - [onPlaced]: Called when the Composable is placed in the layout. It registers the
+ *   [transitionSource] with the [expandable] coordinator.
+ * - [onUnplaced]: Called when the Composable is removed from the layout. It unregisters the
+ *   [transitionSource], critically preventing memory leaks.
+ *
+ * @param transitionSource The [TransitionSource] instance to register.
+ * @param expandable The [Expandable] coordinator to register with.
+ */
+private class TransitionSourceNode(
+    var transitionSource: TransitionSource,
+    var expandable: Expandable,
+) : Modifier.Node(), LayoutAwareModifierNode, UnplacedAwareModifierNode {
+
+    override fun onPlaced(coordinates: LayoutCoordinates) {
+        expandable.addSource(transitionSource)
+    }
+
+    override fun onUnplaced() {
+        expandable.removeSource(transitionSource)
+    }
+}
+
 private data class DrawExpandableInOverlayElement(
     private val overlayComposeView: ComposeView,
-    private val controller: ExpandableControllerImpl,
+    private val controller: ExpandableController,
     private val contentGraphicsLayer: GraphicsLayer,
 ) : ModifierNodeElement<DrawExpandableInOverlayNode>() {
     override fun create(): DrawExpandableInOverlayNode {
@@ -433,7 +508,7 @@ private data class DrawExpandableInOverlayElement(
 
 private class DrawExpandableInOverlayNode(
     composeView: ComposeView,
-    controller: ExpandableControllerImpl,
+    controller: ExpandableController,
     private var contentGraphicsLayer: GraphicsLayer,
 ) : Modifier.Node(), DrawModifierNode {
     private var controller = controller
@@ -447,7 +522,7 @@ private class DrawExpandableInOverlayNode(
 
     fun update(
         composeView: ComposeView,
-        controller: ExpandableControllerImpl,
+        controller: ExpandableController,
         contentGraphicsLayer: GraphicsLayer,
     ) {
         this.controller = controller
@@ -506,7 +581,7 @@ private class DrawExpandableInOverlayNode(
 
 private fun clickModifier(
     expandable: Expandable,
-    controller: ExpandableControllerImpl,
+    controller: ExpandableController,
     onClick: ((Expandable) -> Unit)?,
     onClickLabel: String? = null,
     interactionSource: MutableInteractionSource?,
@@ -541,7 +616,7 @@ private fun AnimatedContentInOverlay(
     color: () -> Color,
     sizeInOriginalLayout: Size,
     overlay: ViewGroupOverlay,
-    controller: ExpandableControllerImpl,
+    controller: ExpandableController,
     content: @Composable (Expandable) -> Unit,
     composeViewRoot: View,
     onOverlayComposeViewChanged: (View?) -> Unit,
@@ -671,13 +746,8 @@ private fun getOverlayViewGroup(context: Context, overlay: ViewGroupOverlay): Vi
     return current as ViewGroup
 }
 
-private fun Modifier.border(controller: ExpandableControllerImpl): Modifier {
-    return if (controller.borderStroke != null) {
-        this.border(controller.borderStroke, controller.shape)
-    } else {
-        this
-    }
-}
+private fun Modifier.border(controller: ExpandableController): Modifier =
+    controller.borderStroke?.let { stroke -> this.border(stroke, controller.shape) } ?: this
 
 private fun ContentDrawScope.drawBackground(
     animatorState: TransitionAnimator.State,
