@@ -370,7 +370,7 @@
     <string name="screen_record_record_device_audio_label">Record device audio</string>
     <!-- Screen recording should record microphone setting [CHAR LIMIT=35] -->
     <string name="screen_record_record_microphone_label">Record microphone</string>
-    <!-- We show this warning to explain the recording mic or device audio can't be changed during the recording [CHAR LIMIT=35] -->
+    <!-- We show this warning to explain the recording mic or device audio can't be changed during the recording [CHAR LIMIT=100] -->
     <string name="screen_record_record_audio_during_recording_warning">Can\'t change audio settings while recording</string>
     <!-- Screen recording should show selfie camera [CHAR LIMIT=35] -->
     <string name="screen_record_should_show_camera_label">Show selfie camera</string>
