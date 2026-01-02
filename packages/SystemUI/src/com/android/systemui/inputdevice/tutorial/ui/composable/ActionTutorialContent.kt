@@ -134,9 +134,12 @@ fun ActionTutorialContent(
             }
         }
         val buttonAlpha by animateFloatAsState(if (actionState is Finished) 1f else 0f)
+        val padding = if (isCompactWindow) 24.dp else 48.dp
         DoneButton(
             onDoneButtonClicked = onDoneButtonClicked,
-            modifier = Modifier.padding(horizontal = 60.dp).graphicsLayer { alpha = buttonAlpha },
+            modifier =
+                Modifier.padding(start = padding, top = 0.dp, end = padding, bottom = 32.dp)
+                    .graphicsLayer { alpha = buttonAlpha },
             enabled = actionState is Finished,
             isNext = onAutoProceed != null,
         )
