@@ -28,7 +28,6 @@
 #include <SkFont.h>
 #include <SkGraphics.h>
 #include <SkImage.h>
-#include <SkImagePriv.h>
 #include <SkMatrix.h>
 #include <SkPaint.h>
 #include <SkPicture.h>
