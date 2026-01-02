@@ -9531,7 +9531,17 @@
         <p>Protection level: signature|preinstalled|knownSigner|role
     -->
     <permission android:name="android.permission.RECEIVE_SENSITIVE_NOTIFICATIONS"
+        android:featureFlag="com.android.internal.telephony.flags.redact_otp_sms_api"
         android:protectionLevel="signature|preinstalled|knownSigner|role" />
+
+    <!--
+        @FlaggedApi(com.android.internal.telephony.flags.Flags.FLAG_REDACT_OTP_SMS_API)
+        Old protection level of RECEIVE_SENSITIVE_NOTIFICATIONS
+        <p>Protection level: signature|role
+    -->
+    <permission android:name="android.permission.RECEIVE_SENSITIVE_NOTIFICATIONS"
+        android:featureFlag="!com.android.internal.telephony.flags.redact_otp_sms_api"
+        android:protectionLevel="signature|role" />
 
     <!-- @SystemApi
          @FlaggedApi("android.app.bic_client")
