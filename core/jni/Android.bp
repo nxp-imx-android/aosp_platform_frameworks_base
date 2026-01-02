@@ -336,6 +336,7 @@ cc_defaults_for_libandroid_runtime {
                 "libmediautils",
                 "libminikin",
                 "libz",
+                "aconfig_text_flags_c_lib",
                 "android.database.sqlite-aconfig-cc",
                 "android.media.audiopolicy-aconfig-cc",
                 "audioclient-types-aidl-cpp",

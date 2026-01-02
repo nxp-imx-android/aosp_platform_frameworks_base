@@ -278,3 +278,10 @@ flag {
     description: "Splits the 'Show passwords' setting into two new settings: one for touch inputs and one for physical inputs."
     bug: "417951523"
 }
+
+flag {
+  name: "lazy_hyphenator_init"
+  namespace: "text"
+  description: "Initialize hyphenator lazily"
+  bug: "473856914"
+}
