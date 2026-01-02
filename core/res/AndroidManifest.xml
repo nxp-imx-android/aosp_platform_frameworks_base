@@ -932,6 +932,20 @@
         android:protectionLevel="signature|privileged"
         android:featureFlag="android.content.flags.enable_system_contacts_picker" />
 
+    <!--Allows privileged applications to set the preference of individual activities to always
+        launch in fullscreen when in a new task via the activity property:
+        {@link android.window.PROPERTY_PREFER_FULLSCREEN_IN_NEW_TASK}.
+        <p>This permission is only granted to system apps.
+        <p>Protection level: signature|privileged
+        @SystemApi
+        @hide
+        @FlaggedApi(com.android.window.flags.Flags.FLAG_ENABLE_FULLSCREEN_IN_NEW_TASK_PREFERENCE)
+     -->
+    <permission
+        android:name="android.permission.PREFER_FULLSCREEN_IN_NEW_TASK"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="com.android.window.flags.enable_fullscreen_in_new_task_preference" />
+
     <!-- Allows an app to update the verification status of E2EE contact keys owned by other apps.
         <p>This permission is only granted to system apps.
         <p>Protection level: signature|privileged
