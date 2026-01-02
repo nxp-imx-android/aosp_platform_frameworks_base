@@ -150,7 +150,8 @@ CanvasContext::CanvasContext(RenderThread& thread, bool translucent, RenderNode*
         , mProfiler(mJankTracker.frames(), thread.timeLord().frameIntervalNanos())
         , mContentDrawBounds(0, 0, 0, 0)
         , mRenderPipeline(std::move(renderPipeline))
-        , mHintSessionWrapper(std::make_shared<HintSessionWrapper>(uiThreadId, renderThreadId)) {
+        , mHintSessionWrapper(std::make_shared<HintSessionWrapper>(uiThreadId, renderThreadId))
+        , mExpectedFrameCallbackDuration(-1) {
     mRenderThread.cacheManager().registerCanvasContext(this);
     mRenderThread.renderState().registerContextCallback(this);
     rootRenderNode->makeRoot();
@@ -997,6 +998,9 @@ void CanvasContext::onSurfaceStatsAvailable(void* context, int32_t surfaceContro
                 frameInfo->get(FrameInfoIndex::SwapBuffersCompleted));
         frameInfo->set(FrameInfoIndex::GpuCompleted) = std::max(
                 gpuCompleteTime, frameInfo->get(FrameInfoIndex::CommandSubmissionCompleted));
+        instance->mExpectedFrameCallbackDuration =
+                std::chrono::nanoseconds(frameInfo->get(FrameInfoIndex::FrameCompleted) -
+                                         frameInfo->get(FrameInfoIndex::SyncQueued));
         instance->mJankTracker.finishFrame(*frameInfo, instance->mFrameMetricsReporter, frameNumber,
                                            surfaceControlId);
     }
@@ -1009,6 +1013,17 @@ void CanvasContext::doFrame() {
     mIdleDuration =
             systemTime(SYSTEM_TIME_MONOTONIC) - mRenderThread.timeLord().computeFrameTimeNanos();
     prepareAndDraw(nullptr);
+}
+
+std::chrono::nanoseconds CanvasContext::getExpectedDuration() {
+    std::scoped_lock lock(mFrameInfoMutex);
+    if (mExpectedFrameCallbackDuration == std::chrono::nanoseconds(-1)) {
+        const TimeLord& timeLord = mRenderThread.timeLord();
+        return std::chrono::nanoseconds((timeLord.lastFrameDeadline() - timeLord.latestVsync()) /
+                                        2);
+    }
+
+    return mExpectedFrameCallbackDuration;
 }
 
 SkISize CanvasContext::getNextFrameSize() const {
