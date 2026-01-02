@@ -38,7 +38,7 @@ import java.util.Objects;
  * device is already added, with no way for the native code to detect any changes afterwards.
  */
 // To enable debug logs, run:
-// 'adb shell setprop log.tag.SysfsNodeMonitor DEBUG' (requires restart)
+// 'adb shell setprop log.tag.SysfsNodeMonitor DEBUG'
 final class SysfsNodeMonitor {
     private static final String TAG = SysfsNodeMonitor.class.getSimpleName();
 

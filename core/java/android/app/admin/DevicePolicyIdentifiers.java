@@ -240,6 +240,12 @@ public final class DevicePolicyIdentifiers {
     public static final String COMMON_CRITERIA_MODE_POLICY = "commonCriteriaMode";
 
     /**
+     * String identifier for {@link DevicePolicyManager#setDeviceOwnerLockScreenInfo}
+     */
+    @FlaggedApi(android.app.admin.flags.Flags.FLAG_LOCKSCREEN_INFO_COEXISTENCE)
+    public static final String LOCKSCREEN_INFO_POLICY = "lockScreenInfo";
+
+    /**
      * @hide
      */
     public static final String USER_RESTRICTION_PREFIX = "userRestriction_";

@@ -59,6 +59,7 @@ import android.view.IWindowManager;
 import com.android.internal.infra.AndroidFuture;
 import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.ArrayUtils;
+import com.android.internal.widget.LockPatternUtils;
 import com.android.server.LocalServices;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.utils.Slogf;
@@ -492,5 +493,21 @@ final class PolicyEnforcerCallbacks {
         }
 
         return AndroidFuture.completedFuture(true);
+    }
+
+    static CompletableFuture<Boolean> setLockScreenInfoPolicy(
+            @Nullable String info, @NonNull Context context, int userId,
+            @NonNull PolicyKey policyKey) {
+        if (!Flags.lockscreenInfoCoexistence()) {
+            Slogf.w(LOG_TAG, "Trying to enforce setLockScreenInfoPolicy while flag is off.");
+            return AndroidFuture.completedFuture(true);
+        }
+
+        return Binder.withCleanCallingIdentity(() -> {
+            Objects.requireNonNull(context);
+            LockPatternUtils lockPatternUtils = new LockPatternUtils(context);
+            lockPatternUtils.setDeviceOwnerInfo(info);
+            return AndroidFuture.completedFuture(true);
+        });
     }
 }

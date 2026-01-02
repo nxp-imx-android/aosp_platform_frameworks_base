@@ -720,6 +720,18 @@ class Owners {
         }
     }
 
+    void markLockScreenInfoMigrated() {
+        synchronized (mData) {
+            mData.mLockScreenInfoMigrated = true;
+            mData.writeDeviceOwner();
+        }
+    }
+
+    boolean isLockScreenInfoMigrated() {
+        synchronized (mData) {
+            return mData.mLockScreenInfoMigrated;
+        }
+    }
 
     @GuardedBy("mData")
     void pushToAppOpsLocked() {
