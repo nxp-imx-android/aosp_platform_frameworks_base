@@ -99,7 +99,7 @@ fun StatusBarPopup(
                 }
 
                 is QuickActionChipId.AvControlsIndicator -> {
-                    if (!Flags.desktopAvControlsPopup()) {
+                    if (Flags.desktopAvControlsPopup()) {
                         AvControlsChipPopup(avControlsPopupViewModelFactory)
                     }
                 }
