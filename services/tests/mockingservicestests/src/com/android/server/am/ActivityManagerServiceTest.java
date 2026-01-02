@@ -30,6 +30,8 @@ import static android.app.ActivityManager.PROCESS_STATE_TRANSIENT_BACKGROUND;
 import static android.app.ActivityManager.PROCESS_STATE_UNKNOWN;
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.Intent.FILL_IN_ACTION;
+import static android.content.pm.ApplicationInfo.BACKUP_AGENT_PROCESS_MAIN;
+import static android.content.pm.ApplicationInfo.BACKUP_AGENT_PROCESS_PCC;
 import static android.os.PowerExemptionManager.REASON_DENIED;
 import static android.os.UserHandle.USER_ALL;
 import static android.util.DebugUtils.valueToString;
@@ -1962,6 +1964,54 @@ public class ActivityManagerServiceTest {
                 false);
 
         assertThat(appRec.isInFullBackup()).isFalse();
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void bindPccBackupAgent_usesPccUid()
+            throws Exception {
+        ActivityManagerService spyAms = spy(mAms);
+        ApplicationInfo applicationInfo = new ApplicationInfo();
+        applicationInfo.packageName = TEST_PACKAGE;
+        applicationInfo.processName = TEST_PACKAGE;
+        applicationInfo.uid = TEST_UID;
+        applicationInfo.pccUid = PCC_UID_1;
+        applicationInfo.backupAgentProcess = BACKUP_AGENT_PROCESS_PCC;
+        doReturn(applicationInfo).when(mPackageManager).getApplicationInfo(eq(TEST_PACKAGE),
+                anyLong(), anyInt());
+        ProcessRecord appRec = new ProcessRecord(mAms, applicationInfo, TAG, PCC_UID_1);
+
+        doReturn(appRec).when(spyAms).getProcessRecordLocked(eq(TEST_PACKAGE), eq(PCC_UID_1));
+        spyAms.bindBackupAgent(TEST_PACKAGE, ApplicationThreadConstants.BACKUP_MODE_FULL,
+                UserHandle.USER_SYSTEM,
+                BackupAnnotations.BackupDestination.CLOUD, /* shouldUseRestrictedMode= */
+                true);
+
+        verify(spyAms).getProcessRecordLocked(eq(TEST_PACKAGE), eq(PCC_UID_1));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void bindMainBackupAgent_usesAppUid()
+            throws Exception {
+        ActivityManagerService spyAms = spy(mAms);
+        ApplicationInfo applicationInfo = new ApplicationInfo();
+        applicationInfo.packageName = TEST_PACKAGE;
+        applicationInfo.processName = TEST_PACKAGE;
+        applicationInfo.uid = TEST_UID;
+        applicationInfo.pccUid = PCC_UID_1;
+        applicationInfo.backupAgentProcess = BACKUP_AGENT_PROCESS_MAIN;
+        doReturn(applicationInfo).when(mPackageManager).getApplicationInfo(eq(TEST_PACKAGE),
+                anyLong(), anyInt());
+        ProcessRecord appRec = new ProcessRecord(mAms, applicationInfo, TAG, TEST_UID);
+
+        doReturn(appRec).when(spyAms).getProcessRecordLocked(eq(TEST_PACKAGE), eq(TEST_UID));
+        spyAms.bindBackupAgent(TEST_PACKAGE, ApplicationThreadConstants.BACKUP_MODE_FULL,
+                UserHandle.USER_SYSTEM,
+                BackupAnnotations.BackupDestination.CLOUD, /* shouldUseRestrictedMode= */
+                true);
+
+        verify(spyAms).getProcessRecordLocked(eq(TEST_PACKAGE), eq(TEST_UID));
     }
 
     @Test

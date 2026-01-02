@@ -16,6 +16,9 @@
 
 package com.android.server.backup.utils;
 
+import static android.app.backup.BackupAgent.FLAG_CLIENT_SIDE_ENCRYPTION_ENABLED;
+import static android.app.backup.BackupAgent.FLAG_DEVICE_TO_DEVICE_TRANSFER;
+
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -1067,6 +1070,27 @@ public class BackupEligibilityRulesTest {
         boolean isEligible = backupEligibilityRules.isAppEligibleForRestore(applicationInfo);
 
         assertThat(isEligible).isTrue();
+    }
+
+    @Test
+    public void pccBackupAgentAllowed_transportEncrypted_returnsTrue() {
+        assertThat(mBackupEligibilityRules
+                .pccBackupAgentAllowed(FLAG_CLIENT_SIDE_ENCRYPTION_ENABLED))
+                .isTrue();
+    }
+
+    @Test
+    public void pccBackupAgentAllowed_transportD2DTransfer_returnsTrue() {
+        assertThat(mBackupEligibilityRules
+                .pccBackupAgentAllowed(FLAG_DEVICE_TO_DEVICE_TRANSFER))
+                .isTrue();
+    }
+
+    @Test
+    public void pccBackupAgentAllowed_transportNotEncryptedAndNotD2DTransfer_returnsFalse() {
+        assertThat(mBackupEligibilityRules
+                .pccBackupAgentAllowed(0))
+                .isFalse();
     }
 
     private BackupEligibilityRules getBackupEligibilityRules(
