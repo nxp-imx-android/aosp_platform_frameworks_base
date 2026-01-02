@@ -1735,12 +1735,16 @@ public final class ViewRootImpl implements ViewParent,
                 final Rect displayCutoutSafe = mTempRect;
                 state.getDisplayCutoutSafe(displayCutoutSafe);
                 final WindowConfiguration winConfig = getCompatWindowConfiguration();
+                final Rect bounds = winConfig.getBounds();
                 mWindowLayout.computeFrames(mWindowAttributes, state,
-                        displayCutoutSafe, winConfig.getBounds(), winConfig.getWindowingMode(),
+                        displayCutoutSafe, bounds, winConfig.getWindowingMode(),
                         UNSPECIFIED_LENGTH, UNSPECIFIED_LENGTH,
                         mInsetsController.getRequestedVisibleTypes(), 1f /* compactScale */,
                         mTmpFrames);
                 setFrame(mTmpFrames.frame, true /* withinRelayout */);
+                if (com.android.window.flags.Flags.relativeInsets()) {
+                    mInsetsController.onBoundsChanged(bounds);
+                }
                 registerBackCallbackOnWindow();
                 if (DEBUG_LAYOUT) Log.v(mTag, "Added window " + mWindow);
                 if (res < WindowManagerGlobal.ADD_OKAY) {
