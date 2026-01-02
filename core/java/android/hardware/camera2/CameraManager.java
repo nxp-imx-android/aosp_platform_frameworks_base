@@ -160,7 +160,6 @@ public final class CameraManager {
 
     private static final String CAMERA_OPEN_CLOSE_LISTENER_PERMISSION =
             "android.permission.CAMERA_OPEN_CLOSE_LISTENER";
-    private final boolean mHasOpenCloseListenerPermission;
 
     private VirtualDeviceManager mVirtualDeviceManager;
 
@@ -209,9 +208,6 @@ public final class CameraManager {
     public CameraManager(Context context) {
         synchronized(mLock) {
             mContext = context;
-            mHasOpenCloseListenerPermission =
-                    mContext.checkSelfPermission(CAMERA_OPEN_CLOSE_LISTENER_PERMISSION) ==
-                    PackageManager.PERMISSION_GRANTED;
         }
     }
 
@@ -459,7 +455,8 @@ public final class CameraManager {
     public void registerAvailabilityCallback(@NonNull AvailabilityCallback callback,
             @Nullable Handler handler) {
         CameraManagerGlobal.get().registerAvailabilityCallback(callback,
-                CameraDeviceImpl.checkAndWrapHandler(handler), mHasOpenCloseListenerPermission,
+                CameraDeviceImpl.checkAndWrapHandler(handler),
+                hasOpenCloseListenerPermission(mContext),
                 mContext.getDeviceId(), getDevicePolicyFromContext(mContext));
     }
 
@@ -499,8 +496,13 @@ public final class CameraManager {
             throw new IllegalArgumentException("executor was null");
         }
         CameraManagerGlobal.get().registerAvailabilityCallback(callback, executor,
-                mHasOpenCloseListenerPermission, mContext.getDeviceId(),
+                hasOpenCloseListenerPermission(mContext), mContext.getDeviceId(),
                 getDevicePolicyFromContext(mContext));
+    }
+
+    private boolean hasOpenCloseListenerPermission(@NonNull Context context) {
+        return context.checkSelfPermission(CAMERA_OPEN_CLOSE_LISTENER_PERMISSION)
+                == PackageManager.PERMISSION_GRANTED;
     }
 
     /**
@@ -2364,15 +2366,39 @@ public final class CameraManager {
             }
         }
 
+        private void connectCameraServiceLocked() {
+            connectCameraServiceLocked(false /*resetListener*/);
+        }
+
         /**
          * Connect to the camera service if it's available, and set up listeners.
-         * If the service is already connected, do nothing.
+         *
+         * <p>If the service is already connected, do nothing if resetListener is false, reset self
+         * as the listener if resetListener is true.</p>
          *
          * <p>Sets mCameraService to a valid pointer or null if the connection does not succeed.</p>
          */
-        private void connectCameraServiceLocked() {
+
+        private void connectCameraServiceLocked(boolean resetListener) {
             // Only reconnect if necessary
-            if (mCameraService != null || sCameraServiceDisabled) return;
+            if (mCameraService != null) {
+                if (resetListener) {
+                    try {
+                        // Re-registering the listener forces the camera service to re-evaluate
+                        // permissions for onCameraOpened/onCameraClosed callbacks.
+                        mCameraService.removeListener(this);
+                        mCameraService.addListener(this);
+                    } catch (ServiceSpecificException e) {
+                        // Unexpected failure
+                        throw new IllegalStateException(
+                                "Failed to re-register a camera service listener", e);
+                    } catch (RemoteException e) {
+                        // Camera service is now down, leave mCameraService as null
+                    }
+                }
+                return;
+            }
+            if (sCameraServiceDisabled) return;
 
             Log.i(TAG, "Connecting to camera service");
 
@@ -3344,10 +3370,17 @@ public final class CameraManager {
         public void registerAvailabilityCallback(AvailabilityCallback callback, Executor executor,
                 boolean hasOpenCloseListenerPermission, int deviceId, int devicePolicy) {
             synchronized (mLock) {
-                // In practice, this permission doesn't change. So we don't need one flag for each
-                // callback object.
-                mHasOpenCloseListenerPermission = hasOpenCloseListenerPermission;
-                connectCameraServiceLocked();
+                // The CAMERA_OPEN_CLOSE_LISTENER permission can change dynamically for a process
+                // during testing (e.g. when adopting shell permissions). A listener reset is
+                // needed for the service to pick up the new permission state.
+                boolean listenerPermissionChanged = false;
+                if (hasOpenCloseListenerPermission != mHasOpenCloseListenerPermission) {
+                    if (Flags.resetListenerAfterAdoptShellPermission()) {
+                        listenerPermissionChanged = true;
+                    }
+                    mHasOpenCloseListenerPermission = hasOpenCloseListenerPermission;
+                }
+                connectCameraServiceLocked(listenerPermissionChanged);
 
                 callback.mDeviceId = deviceId;
                 callback.mDevicePolicy = devicePolicy;
