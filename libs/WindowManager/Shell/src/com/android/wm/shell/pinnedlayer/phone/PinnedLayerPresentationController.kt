@@ -60,8 +60,8 @@ class PinnedLayerPresentationController(
      * @param task The task for which to calculate the bounds.
      * @return A [Rect] with the calculated bounds, or an empty Rect if calculation is not possible.
      */
-    fun getPinEntryDestinationBounds(task: TaskInfo): Rect? {
-        val displayDetails = getDisplayDetails(task.displayId) ?: return null
+    fun getPinEntryDestinationBounds(task: TaskInfo, displayId: Int = task.displayId): Rect? {
+        val displayDetails = getDisplayDetails(displayId) ?: return null
 
         val taskBounds = task.configuration.windowConfiguration.getBounds()
         val clampedBounds = clampSizeToConstraints(taskBounds, displayDetails) ?: return null
@@ -69,8 +69,8 @@ class PinnedLayerPresentationController(
         // Calculate the bounds based on the final size, stable insets and padding.
         val displayLayout = displayDetails.layout
         val stableInsets = displayLayout.stableInsets()
-        val right = displayLayout.width() - stableInsets.right - entryBoundsPadding.toInt()
-        val bottom = displayLayout.height() - stableInsets.bottom - entryBoundsPadding.toInt()
+        val right = displayLayout.width() - stableInsets.right - entryBoundsPadding
+        val bottom = displayLayout.height() - stableInsets.bottom - entryBoundsPadding
         val left = right - clampedBounds.width()
         val top = bottom - clampedBounds.height()
         return Rect(left, top, right, bottom).also { ensureNotOffscreen(it, displayDetails) }

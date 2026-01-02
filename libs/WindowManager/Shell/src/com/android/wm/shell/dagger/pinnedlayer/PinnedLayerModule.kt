@@ -19,6 +19,7 @@ package com.android.wm.shell.dagger.pinnedlayer
 import android.content.Context
 import android.view.SurfaceControl
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
+import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
 import com.android.wm.shell.common.ShellExecutor
@@ -84,6 +85,7 @@ object PinnedLayerModule {
         shellInit: ShellInit,
         transitions: Transitions,
         displayController: DisplayController,
+        shellTaskOrganizer: ShellTaskOrganizer,
         desktopState: DesktopState,
         windowDragTransitionHandler: WindowDragTransitionHandler,
         windowRepositionAnimationHandler: PinnedWindowRepositionAnimationHandler,
@@ -97,6 +99,7 @@ object PinnedLayerModule {
                     shellInit = shellInit,
                     transitions = transitions,
                     taskDisplayAreaOrganizer = rootTaskDisplayAreaOrganizer,
+                    shellTaskOrganizer = shellTaskOrganizer,
                     presentationController =
                         PinnedLayerPresentationController(context, displayController, desktopState),
                     windowDragTransitionHandler = windowDragTransitionHandler,

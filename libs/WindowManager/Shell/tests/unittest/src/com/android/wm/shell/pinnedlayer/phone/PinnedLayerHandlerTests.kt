@@ -46,6 +46,7 @@ import androidx.test.filters.SmallTest
 import com.android.testing.wm.util.MockToken
 import com.android.window.flags.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
+import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ExitReason
@@ -70,11 +71,14 @@ import org.junit.Before
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
 import org.mockito.Mock
+import org.mockito.Mockito.anyInt
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
@@ -108,6 +112,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
     @Mock private lateinit var desktopUserRepositories: DesktopUserRepositories
     @Mock private lateinit var desktopTasksController: DesktopTasksController
     @Mock private lateinit var desktopRepository: DesktopRepository
+    @Mock private lateinit var shellTaskOrganizer: ShellTaskOrganizer
 
     private lateinit var desktopState: FakeDesktopState
     private lateinit var pinnedLayerController: PinnedLayerController
@@ -125,6 +130,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
                 transitions,
                 desktopState,
                 rootTaskDisplayAreaOrganizer,
+                shellTaskOrganizer,
                 presentationController,
                 windowDragTransitionHandler,
                 pinnedWindowRepositionAnimationHandler,
@@ -181,7 +187,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
 
         verifyCallbackResult(callback, RESULT_APPROVED)
         assertTrue(pinnedLayerController.isPinned(TASK_ID_0))
-        assertEquals(TASK_ID_0, pinnedLayerController.currentPinnedTask?.taskId)
+        assertEquals(TASK_ID_0, pinnedLayerController.getCurrentPinnedTask()?.taskId)
     }
 
     @Test
@@ -237,7 +243,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
         verifyCallbackResult(callback1, RESULT_APPROVED)
         verifyCallbackResult(callback2, RESULT_APPROVED)
         assertTrue(pinnedLayerController.isPinned(TASK_ID_0))
-        assertEquals(TASK_ID_0, pinnedLayerController.currentPinnedTask?.taskId)
+        assertEquals(TASK_ID_0, pinnedLayerController.getCurrentPinnedTask()?.taskId)
     }
 
     @Test
@@ -262,7 +268,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
 
         verifyNoInteractions(callback)
         assertTrue(pinnedLayerController.isNotPinned(TASK_ID_0))
-        assertNull(pinnedLayerController.currentPinnedTask)
+        assertNull(pinnedLayerController.getCurrentPinnedTask())
     }
 
     @Test
@@ -286,7 +292,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
         )
 
         assertTrue(pinnedLayerController.isNotPinned(TASK_ID_0))
-        assertNull(pinnedLayerController.currentPinnedTask)
+        assertNull(pinnedLayerController.getCurrentPinnedTask())
     }
 
     @Test
@@ -333,7 +339,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
         verifyCallbackResult(callback2, RESULT_APPROVED)
         assertTrue(pinnedLayerController.isPinned(TASK_ID_0))
         assertTrue(pinnedLayerController.isPinned(TASK_ID_1))
-        assertEquals(TASK_ID_1, pinnedLayerController.currentPinnedTask?.taskId)
+        assertEquals(TASK_ID_1, pinnedLayerController.getCurrentPinnedTask()?.taskId)
     }
 
     @Test
@@ -358,7 +364,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
 
         verifyCallbackResult(callback1, RESULT_APPROVED)
         assertTrue(pinnedLayerController.isPinned(TASK_ID_0))
-        assertEquals(TASK_ID_0, pinnedLayerController.currentPinnedTask?.taskId)
+        assertEquals(TASK_ID_0, pinnedLayerController.getCurrentPinnedTask()?.taskId)
         verify(desktopTasksController)
             .performDesktopExitCleanUp(
                 any(),
@@ -406,7 +412,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
 
         verifyCallbackResult(callback1, RESULT_APPROVED)
         assertTrue(pinnedLayerController.isPinned(TASK_ID_0))
-        assertEquals(TASK_ID_0, pinnedLayerController.currentPinnedTask?.taskId)
+        assertEquals(TASK_ID_0, pinnedLayerController.getCurrentPinnedTask()?.taskId)
         verify(desktopTasksController, never())
             .performDesktopExitCleanUp(
                 any(),
@@ -430,7 +436,8 @@ class PinnedLayerHandlerTests : ShellTestCase() {
         val requestInfo = setupWindowingLayerTransition(WINDOWING_LAYER_PINNED, callback)
         val transitionInfo = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
         val bounds = Rect(100, 100, 200, 200)
-        whenever(presentationController.getPinEntryDestinationBounds(any())).thenReturn(bounds)
+        whenever(presentationController.getPinEntryDestinationBounds(any(), anyInt()))
+            .thenReturn(bounds)
 
         val wct = pinnedLayerHandler.handleRequest(transition, requestInfo)
 
@@ -504,7 +511,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
 
         verifyCallbackResult(pinCallback, RESULT_APPROVED)
         assertTrue(pinnedLayerController.isPinned(TASK_ID_0))
-        assertNull(pinnedLayerController.currentPinnedTask)
+        assertNull(pinnedLayerController.getCurrentPinnedTask())
     }
 
     @Test
@@ -543,7 +550,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
 
         verifyCallbackResult(pinCallback, RESULT_APPROVED)
         assertTrue(pinnedLayerController.isNotPinned(TASK_ID_0))
-        assertNull(pinnedLayerController.currentPinnedTask)
+        assertNull(pinnedLayerController.getCurrentPinnedTask())
     }
 
     @Test
@@ -609,7 +616,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
 
         verifyCallbackResult(pinCallback, RESULT_APPROVED)
         assertTrue(pinnedLayerController.isPinned(TASK_ID_0))
-        assertEquals(TASK_ID_0, pinnedLayerController.currentPinnedTask?.taskId)
+        assertEquals(TASK_ID_0, pinnedLayerController.getCurrentPinnedTask()?.taskId)
     }
 
     @Test
@@ -720,7 +727,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
 
         verifyCallbackResult(pinCallback, RESULT_APPROVED)
         assertTrue(pinnedLayerController.isNotPinned(TASK_ID_0))
-        assertNull(pinnedLayerController.currentPinnedTask)
+        assertNull(pinnedLayerController.getCurrentPinnedTask())
     }
 
     @Test
@@ -870,12 +877,18 @@ class PinnedLayerHandlerTests : ShellTestCase() {
         triggerTaskToken: WindowContainerToken = MockToken.token(),
     ): TransitionRequestInfo {
         val windowingLayerChange = TransitionRequestInfo.WindowingLayerChange(layer, callback)
-        return sendTransitionRequest(
-            TRANSIT_CHANGE,
-            triggerTaskId,
-            triggerTaskToken = triggerTaskToken,
-            windowingLayerChange = windowingLayerChange,
-        )
+        val info =
+            sendTransitionRequest(
+                TRANSIT_CHANGE,
+                triggerTaskId,
+                triggerTaskToken = triggerTaskToken,
+                windowingLayerChange = windowingLayerChange,
+            )
+        val triggerTask = info.triggerTask
+        shellTaskOrganizer.stub {
+            on { getRunningTaskInfo(requireNotNull(triggerTask).taskId) } doReturn triggerTask
+        }
+        return info
     }
 
     private fun sendTransitionRequest(
@@ -891,6 +904,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
                 displayId = DISPLAY_ID_0
                 userId = USER_ID_0
             }
+        shellTaskOrganizer.stub { on { getRunningTaskInfo(triggerTaskId) } doReturn triggerTask }
         return TransitionRequestInfo(
             type,
             triggerTask,

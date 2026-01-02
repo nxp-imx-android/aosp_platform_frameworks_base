@@ -1310,14 +1310,15 @@ public abstract class WMShellModule {
             ShellInit shellInit, Transitions transitions,
             Optional<SplitScreenController> splitScreenOptional,
             Optional<DesktopTasksController> desktopTasksController,
-            Optional<FullscreenDisconnectHandler> fullscreenDisconnectHandler) {
+            Optional<FullscreenDisconnectHandler> fullscreenDisconnectHandler,
+            Optional<PinnedLayerController> pinnedLayerController) {
         if (!DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()) {
             return Optional.empty();
         } else {
             return Optional.of(
                     new DisplayDisconnectTransitionHandler(transitions, shellInit,
                             splitScreenOptional, desktopTasksController,
-                            fullscreenDisconnectHandler)
+                            fullscreenDisconnectHandler, pinnedLayerController)
             );
         }
     }
