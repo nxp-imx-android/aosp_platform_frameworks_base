@@ -41,7 +41,7 @@ import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.PageType
 /** Displays a popup containing the Audio, Video and Privacy controls. */
 @Composable
 fun AvControlsChipPopup(viewModelFactory: AvControlsPopupViewModel.Factory) {
-    check(Flags.desktopAvControlsPopup())
+    check(Flags.desktopAvControlsPopup()){ "Flag desktop_av_controls_popup is not enabled." }
 
     val viewModel: AvControlsPopupViewModel =
         rememberViewModel("AvControlsChipPopup.viewModel") { viewModelFactory.create() }
