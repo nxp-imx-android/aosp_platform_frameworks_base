@@ -218,21 +218,19 @@ private fun Modifier.selectionBorder(
 }
 
 /**
- * Draws a clickable badge in the top end corner of the parent composable.
+ * Draws a badge in the top end corner of the parent composable.
  *
  * The badge will fade in and fade out based on whether or not it's enabled.
  *
  * @param icon the [ImageVector] to display in the badge
  * @param contentDescription the content description for the icon
- * @param enabled Whether the badge should be visible and clickable
- * @param onClick the callback when the badge is clicked
+ * @param enabled Whether the badge should be visible
  */
 @Composable
 fun StaticTileBadge(
     icon: ImageVector,
     contentDescription: String?,
     enabled: Boolean,
-    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val offset = with(LocalDensity.current) { Offset(BadgeXOffset.toPx(), BadgeYOffset.toPx()) }
@@ -242,11 +240,7 @@ fun StaticTileBadge(
         offset = { offset },
         modifier = modifier,
     ) {
-        Box(
-            Modifier.fillMaxSize()
-                .graphicsLayer { this.alpha = alpha }
-                .thenIf(enabled) { Modifier.clickable(onClick = onClick) }
-        ) {
+        Box(Modifier.fillMaxSize().graphicsLayer { this.alpha = alpha }) {
             val size = with(LocalDensity.current) { BadgeIconSize.toDp() }
             val primaryColor = MaterialTheme.colorScheme.primary
             Icon(
