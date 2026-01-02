@@ -57,7 +57,6 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
 import com.android.server.accessibility.AccessibilityTraceManager;
-import com.android.server.accessibility.Flags;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
@@ -300,15 +299,8 @@ public class MagnificationConnectionManager implements
 
     @VisibleForTesting
     boolean requestConnection(boolean connect, int callingUserId) {
-        boolean isValidUser;
-
-        if (Flags.magnificationConnectionApprovesSystemUser()) {
-            isValidUser = callingUserId == USER_SYSTEM
-                    || !mUserManagerInternal.isVisibleBackgroundFullUser(callingUserId);
-        } else {
-            isValidUser = !mUserManagerInternal.isVisibleBackgroundFullUser(callingUserId);
-        }
-        if (!isValidUser) {
+        if (callingUserId != USER_SYSTEM
+                && mUserManagerInternal.isVisibleBackgroundFullUser(callingUserId)) {
             throw new SecurityException("Visible background user(u" + callingUserId
                     + " is not permitted to request magnification connection.");
         }
