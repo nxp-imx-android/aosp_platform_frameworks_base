@@ -53,10 +53,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.booleanResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MimeTypes
 import com.android.compose.PlatformOutlinedButton
 import com.android.compose.theme.PlatformTheme
+import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
@@ -236,10 +238,20 @@ private fun PostRecordButton(
         border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outlineVariant),
     ) {
         LoadingIcon(
-            icon = loadIcon(drawableLoaderViewModel, iconRes, contentDescription = null).value,
+            icon =
+                loadIcon(
+                        viewModel = drawableLoaderViewModel,
+                        resId = iconRes,
+                        contentDescription = ContentDescription.Resource(labelRes),
+                    )
+                    .value,
             modifier = Modifier.size(20.dp),
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(text = stringResource(labelRes), style = MaterialTheme.typography.labelLarge)
+        Text(
+            text = stringResource(labelRes),
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.clearAndSetSemantics {},
+        )
     }
 }
