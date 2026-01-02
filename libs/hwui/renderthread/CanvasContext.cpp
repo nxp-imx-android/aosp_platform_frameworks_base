@@ -1009,7 +1009,7 @@ void CanvasContext::onSurfaceStatsAvailable(void* context, int32_t surfaceContro
                 gpuCompleteTime, frameInfo->get(FrameInfoIndex::CommandSubmissionCompleted));
         instance->mExpectedFrameCallbackDuration =
                 std::chrono::nanoseconds(frameInfo->get(FrameInfoIndex::FrameCompleted) -
-                                         frameInfo->get(FrameInfoIndex::SyncQueued));
+                                         frameInfo->get(FrameInfoIndex::SyncStart));
         instance->mJankTracker.finishFrame(*frameInfo, instance->mFrameMetricsReporter, frameNumber,
                                            surfaceControlId);
     }
