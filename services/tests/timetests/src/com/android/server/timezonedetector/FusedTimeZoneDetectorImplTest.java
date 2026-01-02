@@ -363,7 +363,7 @@ public class FusedTimeZoneDetectorImplTest {
     }
 
     @Test
-    public void telephonyResolvesLocationDisagreement_onlyTelephonyOrigin() {
+    public void telephonyResolvesLocationDisagreement_onlyTelephonyOrigin() throws Exception {
         String initialTelephonyZoneId = "America/New_York";
         String locationZoneId = "Europe/London";
 
@@ -381,6 +381,9 @@ public class FusedTimeZoneDetectorImplTest {
 
         // A new telephony suggestion arrives that agrees with the pending location suggestion.
         // This should resolve the disagreement and update the time zone.
+        // Sleep to ensure the new telephony suggestion has a later timestamp than the location
+        // suggestion, which is asserted below.
+        Thread.sleep(1000);
         mScript.simulateTelephonySuggestion(
                         createTelephonySuggestion(
                                 locationZoneId, TELEPHONY_SCORE_HIGH, "234", "gb"))
@@ -403,7 +406,7 @@ public class FusedTimeZoneDetectorImplTest {
     }
 
     @Test
-    public void telephonyResolvesLocationDisagreement_AllOrigin() {
+    public void telephonyResolvesLocationDisagreement_AllOrigin() throws Exception {
         String initialTelephonyZoneId = "America/New_York";
         String locationZoneId = "Europe/London";
 
@@ -425,6 +428,9 @@ public class FusedTimeZoneDetectorImplTest {
 
         // A new telephony suggestion arrives that agrees with the pending location suggestion.
         // This should resolve the disagreement and update the time zone.
+        // Sleep to ensure the new telephony suggestion has a later timestamp than the location
+        // suggestion, which is asserted below.
+        Thread.sleep(1000);
         mScript.simulateTelephonySuggestion(
                         createTelephonySuggestion(
                                 locationZoneId, TELEPHONY_SCORE_HIGH, "234", "gb"))
