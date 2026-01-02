@@ -1733,7 +1733,7 @@ public class JobStatusTest {
         // Here 2 explicit constraints are following:
         //  1. JobScheduler.PENDING_JOB_REASON_CONSTRAINT_CHARGING
         //  2. JobScheduler.PENDING_JOB_REASON_CONSTRAINT_BATTERY_NOT_LOW
-        // and the 3 implecite constraint are following:
+        // and the 3 implicit constraint are following:
         //  1. JobScheduler.PENDING_JOB_REASON_DEVICE_STATE
         //  2. JobScheduler.PENDING_JOB_REASON_JOB_SCHEDULER_OPTIMIZATION
         //  3. JobScheduler.PENDING_JOB_REASON_QUOTA
@@ -1767,7 +1767,7 @@ public class JobStatusTest {
 
         // Here the only constraint is:
         //  1. JobScheduler.PENDING_JOB_REASON_CONSTRAINT_CHARGING
-        // and the 3 implecite constraint are following:
+        // and the 3 implicit constraint are following:
         //  1. JobScheduler.PENDING_JOB_REASON_DEVICE_STATE
         //  2. JobScheduler.PENDING_JOB_REASON_JOB_SCHEDULER_OPTIMIZATION
         //  3. JobScheduler.PENDING_JOB_REASON_QUOTA
@@ -1776,6 +1776,49 @@ public class JobStatusTest {
                 String.valueOf(JobScheduler.PENDING_JOB_REASON_CONSTRAINT_CHARGING));
         assertNotNull(chargingDuration);
         assertEquals(1000, chargingDuration.getDuration().toMillis());
+    }
+
+    @Test
+    public void testGetPendingJobReasonStats_correctlyAccumulates() {
+        final TestClock testClock = new TestClock();
+        JobSchedulerService.sElapsedRealtimeClock = testClock;
+
+        JobInfo jobInfo = new JobInfo.Builder(1234, TEST_JOB_COMPONENT)
+                .setRequiresCharging(true)
+                .build();
+        JobStatus jobStatus = createJobStatus(jobInfo);
+        jobStatus.enqueueTime = testClock.millis();
+
+        testClock.advanceTime(1000);
+        jobStatus.setChargingConstraintSatisfied(testClock.millis(), true);
+
+        Map<String, ParcelDuration> stats = jobStatus.getPendingJobReasonStats();
+        // Here the only constraint is:
+        //  1. JobScheduler.PENDING_JOB_REASON_CONSTRAINT_CHARGING
+        // and the 3 implicit constraint are following:
+        //  1. JobScheduler.PENDING_JOB_REASON_DEVICE_STATE
+        //  2. JobScheduler.PENDING_JOB_REASON_JOB_SCHEDULER_OPTIMIZATION
+        //  3. JobScheduler.PENDING_JOB_REASON_QUOTA
+        assertEquals(4, stats.size());
+        ParcelDuration chargingDuration = stats.get(
+                String.valueOf(JobScheduler.PENDING_JOB_REASON_CONSTRAINT_CHARGING));
+        assertNotNull(chargingDuration);
+        assertEquals(1000, chargingDuration.getDuration().toMillis());
+
+        // Unsatisfy the same constraint
+        testClock.advanceTime(1000); // now + 2000
+        jobStatus.setChargingConstraintSatisfied(testClock.millis(), false);
+
+        // Satisfy the same constraint again
+        testClock.advanceTime(1000); // now + 3000
+        jobStatus.setChargingConstraintSatisfied(testClock.millis(), true);
+
+        stats = jobStatus.getPendingJobReasonStats();
+        assertEquals(4, stats.size()); // no new constraints added
+        chargingDuration = stats.get(
+                String.valueOf(JobScheduler.PENDING_JOB_REASON_CONSTRAINT_CHARGING));
+        assertNotNull(chargingDuration);
+        assertEquals(2000, chargingDuration.getDuration().toMillis());
     }
 
     private static class TestClock extends Clock {
