@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.dump.dumpManager
-import com.android.systemui.flags.featureFlagsClassic
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.notifications.ui.notificationPlaceholderStateStorage
@@ -43,7 +42,6 @@ val Kosmos.notificationsPlaceholderViewModelFactory by Fixture {
                 shadeModeInteractor = shadeModeInteractor,
                 headsUpNotificationInteractor = headsUpNotificationInteractor,
                 remoteInputInteractor = remoteInputInteractor,
-                featureFlags = featureFlagsClassic,
                 dumpManager = dumpManager,
                 wallpaperFocalAreaInteractor = wallpaperFocalAreaInteractor,
             )

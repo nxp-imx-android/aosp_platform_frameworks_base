@@ -23,9 +23,8 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.Scale
+import com.android.systemui.Flags
 import com.android.systemui.dump.DumpManager
-import com.android.systemui.flags.FeatureFlagsClassic
-import com.android.systemui.flags.Flags
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.notifications.ui.NotificationPlaceholderStateStorage
@@ -72,7 +71,6 @@ constructor(
     shadeModeInteractor: ShadeModeInteractor,
     private val headsUpNotificationInteractor: HeadsUpNotificationInteractor,
     remoteInputInteractor: RemoteInputInteractor,
-    featureFlags: FeatureFlagsClassic,
     dumpManager: DumpManager,
     private val wallpaperFocalAreaInteractor: WallpaperFocalAreaInteractor,
 ) :
@@ -151,7 +149,7 @@ constructor(
         )
 
     /** DEBUG: whether the placeholder should be made slightly visible for positional debugging. */
-    val isVisualDebuggingEnabled: Boolean = featureFlags.isEnabled(Flags.NSSL_DEBUG_LINES)
+    val isVisualDebuggingEnabled: Boolean = Flags.notificationDebugDrawing()
 
     /** DEBUG: whether the debug logging should be output. */
     val isDebugLoggingEnabled: Boolean = SceneContainerFlag.isEnabled
