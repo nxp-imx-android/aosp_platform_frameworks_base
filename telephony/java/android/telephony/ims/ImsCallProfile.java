@@ -631,6 +631,15 @@ public final class ImsCallProfile implements Parcelable {
     private Set<RtpHeaderExtensionType> mAcceptedRtpHeaderExtensionTypes = new ArraySet<>();
 
     /**
+     * Boolean extra property set on an {@link ImsCallProfile} to indicate whether the device has
+     * entered low battery state while this call session is ongoing.
+     * @hide
+     */
+    @FlaggedApi(com.android.internal.telephony.flags.Flags.FLAG_ENABLE_VT_CALL_LOW_BATTERY_CONFIG)
+    @SystemApi
+    public static final String EXTRA_LOW_BATTERY = "android.telephony.ims.extra.LOW_BATTERY";
+
+    /**
      * Extras associated with this {@link ImsCallProfile}.
      * <p>
      * Valid data types include:

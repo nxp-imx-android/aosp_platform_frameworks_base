@@ -18988,6 +18988,7 @@ package android.telephony.ims {
     field @FlaggedApi("android.telecom.flags.is_using_unidirectional_video_service") public static final String EXTRA_IS_USING_UNIDIRECTIONAL_VIDEO_SERVICE = "android.telephony.ims.extra.IS_USING_UNIDIRECTIONAL_VIDEO_SERVICE";
     field @FlaggedApi("android.telecom.flags.is_using_video_ringback") public static final String EXTRA_IS_USING_VIDEO_RINGBACK = "android.telephony.ims.extra.IS_USING_VIDEO_RINGBACK";
     field public static final String EXTRA_LOCATION = "android.telephony.ims.extra.LOCATION";
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_vt_call_low_battery_config") public static final String EXTRA_LOW_BATTERY = "android.telephony.ims.extra.LOW_BATTERY";
     field public static final String EXTRA_OI = "oi";
     field public static final String EXTRA_OIR = "oir";
     field public static final String EXTRA_PICTURE_URL = "android.telephony.ims.extra.PICTURE_URL";
