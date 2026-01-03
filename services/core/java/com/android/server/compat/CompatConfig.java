@@ -602,7 +602,7 @@ final class CompatConfig {
      *
      * @return the number of changes that were toggled
      */
-    int enableTargetSdkChangesForPackage(String packageName, int targetSdkVersion) {
+    synchronized int enableTargetSdkChangesForPackage(String packageName, int targetSdkVersion) {
         long[] changes = getAllowedChangesSinceTargetSdkForPackage(packageName, targetSdkVersion);
         boolean shouldInvalidateCache = false;
         for (long changeId : changes) {
@@ -622,7 +622,7 @@ final class CompatConfig {
      *
      * @return the number of changes that were toggled
      */
-    int disableTargetSdkChangesForPackage(String packageName, int targetSdkVersion) {
+    synchronized int disableTargetSdkChangesForPackage(String packageName, int targetSdkVersion) {
         long[] changes = getAllowedChangesSinceTargetSdkForPackage(packageName, targetSdkVersion);
         boolean shouldInvalidateCache = false;
         for (long changeId : changes) {
@@ -875,7 +875,7 @@ final class CompatConfig {
     /**
      * Rechecks all the existing overrides for a package.
      */
-    void recheckOverrides(String packageName) {
+    synchronized void recheckOverrides(String packageName) {
         Long versionCode = getVersionCodeOrNull(packageName);
         boolean shouldInvalidateCache = false;
         for (CompatChange c : mChanges.values()) {
