@@ -44,9 +44,6 @@ object Flags {
     // TODO(b/254512732): Tracking Bug
     @JvmField val NSSL_DEBUG_LINES = unreleasedFlag("nssl_debug_lines")
 
-    // TODO(b/254512505): Tracking Bug
-    @JvmField val NSSL_DEBUG_REMOVE_ANIMATION = unreleasedFlag("nssl_debug_remove_animation")
-
     // TODO(b/254512624): Tracking Bug
     @JvmField
     val NOTIFICATION_DRAG_TO_CONTENTS =

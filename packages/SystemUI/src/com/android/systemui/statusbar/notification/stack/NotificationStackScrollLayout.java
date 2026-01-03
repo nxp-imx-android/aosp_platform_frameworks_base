@@ -682,7 +682,7 @@ public class NotificationStackScrollLayout
         Resources res = getResources();
         mFeatureFlags = Dependency.get(FeatureFlags.class);
         mDebugLines = mFeatureFlags.isEnabled(Flags.NSSL_DEBUG_LINES);
-        mDebugRemoveAnimation = mFeatureFlags.isEnabled(Flags.NSSL_DEBUG_REMOVE_ANIMATION);
+        mDebugRemoveAnimation = SPEW;
         mSectionsManager = Dependency.get(NotificationSectionsManager.class);
         mSectionsManager.initialize(this);
 
