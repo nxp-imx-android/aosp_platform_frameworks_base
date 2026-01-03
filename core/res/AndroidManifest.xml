@@ -9945,6 +9945,14 @@
         android:name="android.permission.BIND_MOTION_CUES_SERVICE"
         android:protectionLevel="signature|privileged"
         android:featureFlag="android.app.enable_motion_cues" />
+    <!-- Allows an application to control sim auto pin management.
+         <p>Protection level: signature
+         @FlaggedApi(android.security.Flags.FLAG_AUTO_SIM_PIN_MANAGEMENT)
+         @hide -->
+    <permission
+        android:name="android.permission.CONTROL_SIM_AUTO_PIN_MANAGEMENT"
+        android:protectionLevel="signature"
+        android:featureFlag="android.security.auto_sim_pin_management" />
 
     <!-- @FlaggedApi(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
             Must be required to read/write mode states from

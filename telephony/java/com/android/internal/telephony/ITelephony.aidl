@@ -3581,4 +3581,53 @@ interface ITelephony {
      @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
                                + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
      boolean isInCarrierRoamingNtnMode(int subId);
+
+    /**
+     * Returns the enrollment status of a sim identified by {@code subscriptionId} in the automatic
+     * PIN management feature.
+     *
+     * @param subscriptionId Subscription identifier of the SIM card.
+     * @return One of {@link android.telephony.TelephonyManager.SimPinEnrollmentStatus}.
+     */
+    int getSimAutoPinManagementEnrollmentStatus(in int subId);
+
+    /** Enrolls the SIM card identified by the subscription ID into automatic PIN management.
+     * With this feature, the platform will generate and set a PIN1 for the SIM card. The
+     * platform will automatically supply the PIN to the SIM card instead of prompting the user
+     * tho provide it.
+     *
+     * @param subscriptionId Subscription identifier of the SIM card.
+     * @param currentPin The current PIN1 value for the SIM card, needed in order to change the SIM
+     *                   PIN.
+     * @param resultReceiver {@code ResultReceiver} for the resultReceiver.
+     */
+     @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
+                       + "android.Manifest.permission.CONTROL_SIM_AUTO_PIN_MANAGEMENT)")
+    void enrollSimInAutoPinManagement(in int subId, in String currentPin, in ResultReceiver result);
+
+    /**
+     * Unenrolls the SIM card identified by the subscription ID from automatic PIN management.
+     * The PIN provided for {@link #mCurrentlyModifyingSimAutoPinManagementState} will be set as
+     * PIN1 for the SIM card and the requirement to supply a PIN for the SIM card will be turned
+     * off.
+     *
+     * @param subscriptionId  Subscription identifier of the SIM card.
+     * @param resultReceiver Receiver for the
+     * {@link android.telephony.TelephonyManager.SimPinUnenrollmentResult}.
+     */
+     @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
+                       + "android.Manifest.permission.CONTROL_SIM_AUTO_PIN_MANAGEMENT)")
+    void unenrollSimFromAutoPinManagement(in int subId, in ResultReceiver result);
+
+    /**
+     * Returns the platform-generated PIN for a SIM card identified by the subscription ID, if
+     * this SIM is enrolled in automatic PIN management.
+     * The device must be unlocked - the user recently authenticated - for the PIN to be read.
+     *
+     * @param subscriptionId  Subscription identifier of the SIM card.
+     * @param resultReceiver receiver for the PIN.
+     */
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
+                       + "android.Manifest.permission.CONTROL_SIM_AUTO_PIN_MANAGEMENT)")
+    void getAutoManagedPinForSim(in int subId, in ResultReceiver result);
 }

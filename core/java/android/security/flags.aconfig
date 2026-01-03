@@ -258,3 +258,13 @@ flag {
     bug: "458115629"
 }
 
+flag {
+    name: "auto_sim_pin_management"
+    namespace: "security"
+    description: "Enables automatic management of SIM PIN"
+    bug: "381850338"
+    is_exported: true
+    metadata {
+      purpose: PURPOSE_FEATURE
+    }
+}

@@ -943,4 +943,18 @@ public final class TelephonyPermissions {
     public static boolean isShell(int uid) {
         return UserHandle.isSameApp(uid, Process.SHELL_UID);
     }
+
+    /**
+     * Make sure either called from same process as self (phone) or IPC caller has the permission
+     * to control SIM PIN auto-management.
+     *
+     * @throws SecurityException if the caller does not have the required permission
+     */
+    @VisibleForTesting
+    @RequiresPermission(Manifest.permission.CONTROL_SIM_AUTO_PIN_MANAGEMENT)
+    public static void enforceControlSimAutoPinManagementPermission(Context context,
+            String message) {
+        context.enforceCallingOrSelfPermission(Manifest.permission.CONTROL_SIM_AUTO_PIN_MANAGEMENT,
+                message);
+    }
 }
