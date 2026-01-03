@@ -41,7 +41,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertThrows;
 import static org.testng.Assert.assertTrue;
 
 import static java.lang.Float.NaN;
@@ -56,9 +55,6 @@ import android.graphics.Region;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.SystemClock;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
-import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.test.mock.MockContentResolver;
 import android.view.InputDevice;
@@ -73,12 +69,10 @@ import androidx.test.filters.FlakyTest;
 import com.android.internal.util.test.FakeSettingsProvider;
 import com.android.server.LocalServices;
 import com.android.server.accessibility.AccessibilityTraceManager;
-import com.android.server.accessibility.Flags;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.statusbar.StatusBarManagerInternal;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -89,9 +83,6 @@ import org.mockito.invocation.InvocationOnMock;
  * Tests for WindowMagnificationManager.
  */
 public class MagnificationConnectionManagerTest {
-    @Rule
-    public SetFlagsRule mSetFlagsRule = new SetFlagsRule();
-
     private static final int CURRENT_USER_ID = USER_SYSTEM;
     private static final int SERVICE_ID = 1;
 
@@ -1046,17 +1037,6 @@ public class MagnificationConnectionManagerTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_MAGNIFICATION_CONNECTION_APPROVES_SYSTEM_USER)
-    public void requestConnection_systemUser_isVisibleBackgroundUser_throwsException() {
-
-        when(mMockUserManagerInternal.isVisibleBackgroundFullUser(
-                USER_SYSTEM)).thenReturn(true);
-
-        assertThrows(() -> mMagnificationConnectionManager.requestConnection(true, USER_SYSTEM));
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_MAGNIFICATION_CONNECTION_APPROVES_SYSTEM_USER)
     public void requestConnection_systemUser_isVisibleBackgroundUser_throwsNoException() {
         when(mMockUserManagerInternal.isVisibleBackgroundFullUser(
                 USER_SYSTEM)).thenReturn(true);

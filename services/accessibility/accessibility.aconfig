@@ -120,16 +120,6 @@ flag {
 }
 
 flag {
-    name: "magnification_connection_approves_system_user"
-    namespace: "accessibility"
-    description: "Adds special case to automatically approve the system user when requesting connection"
-    bug: "402109095"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "manager_lifecycle_user_change"
     namespace: "accessibility"
     description: "Use A11yManagerService's Lifecycle to change users, instead of listening for user changed events."

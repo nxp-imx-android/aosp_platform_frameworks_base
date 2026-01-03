@@ -62,6 +62,7 @@ import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.onLongClick
@@ -341,7 +342,12 @@ private fun PinPadButton(
                     interactionSource = interactionSource,
                     indication = indication,
                 )
-                .semantics(mergeDescendants = true) { role = Role.Button }
+                .semantics(mergeDescendants = true) {
+                    role = Role.Button
+                    if (!isEnabled) {
+                        disabled()
+                    }
+                }
                 .thenIf(elementId != null) { Modifier.sysuiResTag(elementId!!) },
     ) {
         content(contentColor::value)
