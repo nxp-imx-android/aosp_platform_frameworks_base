@@ -53,7 +53,6 @@ import org.mockito.junit.MockitoRule
  * Run with `atest SupervisionSettingsTest`.
  */
 @RunWith(AndroidJUnit4::class)
-@RequiresFlagsEnabled(Flags.FLAG_PERSISTENT_SUPERVISION_SETTINGS)
 class SupervisionSettingsTest {
     @get:Rule val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
     @get:Rule val mocks: MockitoRule = MockitoJUnit.rule()
