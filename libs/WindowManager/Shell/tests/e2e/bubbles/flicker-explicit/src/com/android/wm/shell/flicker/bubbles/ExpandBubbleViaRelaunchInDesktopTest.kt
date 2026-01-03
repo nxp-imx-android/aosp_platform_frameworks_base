@@ -24,7 +24,9 @@ import android.tools.NavBar.MODE_GESTURAL
 import android.view.Display.DEFAULT_DISPLAY
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.NewTasksAppHelper
-import com.android.wm.shell.Flags
+import com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK
+import com.android.window.flags.Flags.FLAG_ENABLE_PRESERVE_LEAF_TASK_IF_RELAUNCH
+import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.Utils.testSetupRule
 import com.android.wm.shell.flicker.bubbles.testcase.BubbleAppBecomesExpandedTestCases
 import com.android.wm.shell.flicker.bubbles.testcase.DesktopAppAlwaysVisibleTestCases
@@ -64,7 +66,11 @@ import org.junit.runners.MethodSorters
  * - [ExpandBubbleTestCases]: Verifies the bubble stack expands and [bubbleApp] becomes visible.
  * - [DesktopAppAlwaysVisibleTestCases]: Verifies [desktopApp] remains visible in desktop mode.
  */
-@RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
+@RequiresFlagsEnabled(
+    FLAG_ENABLE_CREATE_ANY_BUBBLE,
+    FLAG_ENABLE_BUBBLE_ROOT_TASK,
+    FLAG_ENABLE_PRESERVE_LEAF_TASK_IF_RELAUNCH,
+)
 @RequiresDesktopDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
@@ -132,4 +138,7 @@ class ExpandBubbleViaRelaunchInDesktopTest :
      * becomes the new top app during the bubble expansion transition.
      */
     override val previousApp = ExpandBubbleViaRelaunchInDesktopTestProperties.desktopApp
+
+    /** The [desktopApp] is visible behind the expanded bubble; skipping invisible assertion. */
+    override fun shouldAssertPreviousBecomesInvisible() = false
 }

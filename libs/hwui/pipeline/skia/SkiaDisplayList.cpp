@@ -16,7 +16,6 @@
 
 #include "SkiaDisplayList.h"
 
-#include <SkImagePriv.h>
 #include <SkPathOps.h>
 
 // clang-format off

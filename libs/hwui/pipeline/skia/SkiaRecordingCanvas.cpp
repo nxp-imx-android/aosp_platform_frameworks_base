@@ -20,7 +20,6 @@
 #include <SkData.h>
 #include <SkDrawable.h>
 #include <SkImage.h>
-#include <SkImagePriv.h>
 #include <SkMatrix.h>
 #include <SkPaint.h>
 #include <SkPoint.h>

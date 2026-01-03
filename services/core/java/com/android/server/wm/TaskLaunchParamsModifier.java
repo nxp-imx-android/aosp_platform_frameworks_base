@@ -454,6 +454,15 @@ class TaskLaunchParamsModifier extends DefaultLaunchParamsModifier {
             return false;
         }
 
+        // Skip inheriting if target root task preserves leaf task and windowing modes differ.
+        final Task targetRootTask =
+                targetTask != null ? targetTask.getCreatedByOrganizerTask() : null;
+        if (com.android.window.flags.Flags.enablePreserveLeafTaskIfRelaunch()
+                && targetRootTask != null && targetRootTask.mPreserveLeafTaskIfRelaunch
+                && targetRootTask.getWindowingMode() != sourceWindowingMode) {
+            return false;
+        }
+
         // Only inherit windowing mode if both source and target activities are on the same display.
         // Otherwise we may have unintended freeform windows showing up if an activity in freeform
         // window launches an activity on a fullscreen display by specifying display ID.
