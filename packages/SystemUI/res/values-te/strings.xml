@@ -91,7 +91,10 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"స్క్రీన్‌షాట్‌ను సేవ్ చేయడం సాధ్యపడలేదు"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"స్క్రీన్‌షాట్‌లు తీయడానికి యాప్ లేదా మీ సంస్థ అనుమతించలేదు"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"స్క్రీన్‌షాట్‌లు తీయడాన్ని మీ IT అడ్మిన్ బ్లాక్ చేశారు"</string>
-    <string name="screenshot_copy_description" msgid="2857172429942249976">"స్క్రీన్‌షాట్‌ను క్లిప్‌బోర్డ్‌కు కాపీ చేయండి"</string>
+    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
+    <skip />
+    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
+    <skip />
     <string name="screenshot_edit_label" msgid="8754981973544133050">"ఎడిట్ చేయండి"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"స్క్రీన్‌షాట్ బటన్‌ను ఎడిట్ చేయండి"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"షేర్ చేయండి"</string>
@@ -104,8 +107,8 @@
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"దిగువ సరిహద్దు <xliff:g id="PERCENT">%1$d</xliff:g> శాతం"</string>
     <string name="screenshot_left_boundary_pct" msgid="8502323556112287469">"ఎడమ వైపు సరిహద్దు <xliff:g id="PERCENT">%1$d</xliff:g> శాతం"</string>
     <string name="screenshot_right_boundary_pct" msgid="1201150713021779321">"కుడి వైపు సరిహద్దు <xliff:g id="PERCENT">%1$d</xliff:g> శాతం"</string>
-    <string name="screenshot_work_profile_notification" msgid="203041724052970693">"వర్క్ ప్రొఫైల్‌లోని <xliff:g id="APP">%1$s</xliff:g>‌లో సేవ్ చేయబడింది"</string>
-    <string name="screenshot_private_profile_notification" msgid="1704440899154243171">"ప్రైవేట్ ప్రొఫైల్‌లోని <xliff:g id="APP">%1$s</xliff:g>‌లో సేవ్ చేయబడింది"</string>
+    <string name="screenshot_work_profile_notification" msgid="203041724052970693">"వర్క్ ప్రొఫైల్‌లోని <xliff:g id="APP">%1$s</xliff:g>‌లో సేవ్ అయింది"</string>
+    <string name="screenshot_private_profile_notification" msgid="1704440899154243171">"ప్రైవేట్ ప్రొఫైల్‌లోని <xliff:g id="APP">%1$s</xliff:g>‌లో సేవ్ అయింది"</string>
     <string name="screenshot_default_files_app_name" msgid="8721579578575161912">"ఫైల్స్"</string>
     <string name="screenshot_detected_template" msgid="7940376642921719915">"<xliff:g id="APPNAME">%1$s</xliff:g>, ఈ స్క్రీన్‌షాట్‌ను గుర్తించింది."</string>
     <string name="screenshot_detected_multiple_template" msgid="7644827792093819241">"<xliff:g id="APPNAME">%1$s</xliff:g>, ఇతర ఓపెన్ యాప్‌లు ఈ స్క్రీన్‌షాట్‌ను గుర్తించాయి."</string>
@@ -149,6 +152,7 @@
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"సింగల్ యాప్ (ఎంచుకోవడానికి యాప్ తెరవండి)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"డివైజ్ ఆడియోను రికార్డ్ చేయండి"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"మైక్రోఫోన్‌తో రికార్డ్ చేయండి"</string>
+    <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"రికార్డింగ్ సమయంలో ఆడియో సెట్టింగ్‌లను మార్చడం సాధ్యపడదు"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"సెల్ఫీ కెమెరాను చూపండి"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"టచ్‌లను చూడండి"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"రికార్డ్ చేయడానికి యాప్‌ను ఎంచుకోండి"</string>
@@ -936,8 +940,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"పూర్తయింది"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"వర్తింపజేయండి"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ఆఫ్ చేయండి"</string>
-    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
-    <skip />
+    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"డివైజ్"</string>
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"ఫోన్"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"టాబ్లెట్"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"ల్యాప్‌టాప్"</string>

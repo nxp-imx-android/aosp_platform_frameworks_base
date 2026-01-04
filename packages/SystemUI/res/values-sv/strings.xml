@@ -91,7 +91,10 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"Det gick inte att spara skärmbilden"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Appen eller organisationen tillåter inte att du tar skärmbilder"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"Möjligheten att ta skärmbilder blockeras av IT-administratören"</string>
-    <string name="screenshot_copy_description" msgid="2857172429942249976">"Kopiera skärmbilden till urklipp"</string>
+    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
+    <skip />
+    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
+    <skip />
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Redigera"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"Knappen Redigera skärmbild"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Dela"</string>
@@ -149,6 +152,7 @@
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"En app (öppna en app för att välja)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Spela in ljud från enheten"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Spela in via mikrofon"</string>
+    <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"Kan inte ändra ljudinställningarna under inspelning"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Visa främre kameran"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Visa tryckningar"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Välj en app att spela in"</string>
@@ -430,7 +434,7 @@
     <string name="quick_settings_user_title" msgid="8673045967216204537">"Användare"</string>
     <string name="quick_settings_wifi_label" msgid="2879507532983487244">"Wifi"</string>
     <string name="quick_settings_internet_label" msgid="6603068555872455463">"Internet"</string>
-    <string name="quick_settings_networks_available" msgid="1875138606855420438">"Nätverk är tillgängliga"</string>
+    <string name="quick_settings_networks_available" msgid="1875138606855420438">"Tillgängliga nätverk"</string>
     <string name="quick_settings_networks_unavailable" msgid="1167847013337940082">"Inga nätverk är tillgängliga"</string>
     <string name="quick_settings_wifi_detail_empty_text" msgid="483130889414601732">"Det finns inga tillgängliga wifi-nätverk"</string>
     <string name="quick_settings_wifi_secondary_label_transient" msgid="7501659015509357887">"Aktiverar …"</string>
@@ -936,8 +940,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Klart"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Tillämpa"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Inaktivera"</string>
-    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
-    <skip />
+    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"enhet"</string>
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"telefon"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"surfplatta"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"laptop"</string>

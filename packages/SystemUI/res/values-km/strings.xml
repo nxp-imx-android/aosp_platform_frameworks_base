@@ -91,7 +91,10 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"មិនអាច​រក្សាទុករូបថត​អេក្រង់បានទេ"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"ការថត​រូបអេក្រង់​មិនត្រូវ​បាន​អនុញ្ញាត​ដោយ​កម្មវិធី​នេះ ឬ​ស្ថាប័ន​របស់អ្នក"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"ការថតអេក្រង់ត្រូវបានទប់ស្កាត់ដោយអ្នកគ្រប់គ្រង​ផ្នែកព័ត៌មានវិទ្យារបស់អ្នក"</string>
-    <string name="screenshot_copy_description" msgid="2857172429942249976">"ចម្លងរូបថតអេក្រង់ទៅឃ្លីបបត"</string>
+    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
+    <skip />
+    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
+    <skip />
     <string name="screenshot_edit_label" msgid="8754981973544133050">"កែ"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"ប៊ូតុងកែរូបថត​អេក្រង់"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"ចែករំលែក"</string>
@@ -149,6 +152,7 @@
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"កម្មវិធីទោល (បើកកម្មវិធី ដើម្បីរើស)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"ថតសំឡេងឧបករណ៍"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"ថតសំឡេង​ដោយ​ប្រើ​មីក្រូហ្វូន"</string>
+    <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"មិនអាចផ្លាស់ប្ដូរការកំណត់សំឡេងបានទេ ពេលកំពុងថត"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"បង្ហាញកាមេរ៉ាសែលហ្វី"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"បង្ហាញ​ការ​ចុច"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"ជ្រើសរើសកម្មវិធីដើម្បីថត"</string>
@@ -936,8 +940,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"រួចរាល់"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ប្រើ"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"បិទ"</string>
-    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
-    <skip />
+    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"ឧបករណ៍"</string>
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"ទូរសព្ទ"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"ថេប្លេត"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"កុំព្យូទ័រ​យួរ​ដៃ"</string>

@@ -91,7 +91,10 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಉಳಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"ಆ್ಯಪ್ ಅಥವಾ ಸಂಸ್ಥೆಯು ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ಗಳನ್ನು ತೆಗೆಯುವುದನ್ನು ಅನುಮತಿಸುವುದಿಲ್ಲ"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ಗಳನ್ನು ತೆಗೆದುಕೊಳ್ಳುವುದನ್ನು ನಿಮ್ಮ IT ನಿರ್ವಾಹಕರು ನಿರ್ಬಂಧಿಸಿದ್ದಾರೆ"</string>
-    <string name="screenshot_copy_description" msgid="2857172429942249976">"ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಅನ್ನು ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ಗೆ ಕಾಪಿ ಮಾಡಿ"</string>
+    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
+    <skip />
+    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
+    <skip />
     <string name="screenshot_edit_label" msgid="8754981973544133050">"ಎಡಿಟ್ ಮಾಡಿ"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಬಟನ್ ಅನ್ನು ಎಡಿಟ್ ಮಾಡಿ"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"ಹಂಚಿಕೊಳ್ಳಿ"</string>
@@ -149,6 +152,7 @@
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"ಒಂದೇ ಆ್ಯಪ್ (ಆರಿಸಲು ಆ್ಯಪ್ ತೆರೆಯಿರಿ)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"ಸಾಧನದ ಆಡಿಯೋವನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"ಮೈಕ್ರೊಫೋನ್‌ ಮೂಲಕ ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
+    <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"ರೆಕಾರ್ಡ್ ಮಾಡುವಾಗ ಆಡಿಯೋ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬದಲಾಯಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"ಸೆಲ್ಫೀ ಕ್ಯಾಮರಾ ತೋರಿಸಿ"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ಸ್ಪರ್ಶಗಳನ್ನು ತೋರಿಸಿ"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"ರೆಕಾರ್ಡ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ"</string>
@@ -936,8 +940,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"ಪೂರ್ಣಗೊಂಡಿದೆ"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ಅನ್ವಯಿಸಿ"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ಆಫ್ ಮಾಡಿ"</string>
-    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
-    <skip />
+    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"ಸಾಧನ"</string>
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"ಫೋನ್"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"ಟ್ಯಾಬ್ಲೆಟ್"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"ಲ್ಯಾಪ್‌ಟಾಪ್"</string>

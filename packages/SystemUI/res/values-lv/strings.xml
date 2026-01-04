@@ -91,7 +91,10 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"Nevar saglabāt ekrānuzņēmumu"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Lietotne vai jūsu organizācija neatļauj veikt ekrānuzņēmumus."</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"Jūsu IT administrators ir bloķējis ekrānuzņēmumu izveidi"</string>
-    <string name="screenshot_copy_description" msgid="2857172429942249976">"Kopēt ekrānuzņēmumu starpliktuvē"</string>
+    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
+    <skip />
+    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
+    <skip />
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Rediģēt"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"Poga “Rediģēt ekrānuzņēmumu”"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Kopīgot"</string>
@@ -149,6 +152,7 @@
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Viena lietotne (atveriet lietotni, lai izvēlētos)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Ierakstīt ierīces audio"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Ierakstīt mikrofona audio"</string>
+    <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"Ierakstīšanas laikā nevar mainīt audio iestatījumus"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Rādīt pašbilžu kameru"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Rādīt skārienus"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Izvēlieties lietotni ierakstīšanai"</string>
@@ -897,8 +901,7 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"Satelīts, vājš savienojums"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"Satelīts, labs savienojums"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Satelīts, ir pieejams savienojums"</string>
-    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
-    <skip />
+    <string name="accessibility_status_bar_satellite_symbol" msgid="3840194796890095832">"Satelīts"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"Satelīta SOS"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Tikai ārkārtas izsaukumi vai SOS"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"Satelīta tīkli"</string>
@@ -937,8 +940,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Gatavs"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Lietot"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Izslēgt"</string>
-    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
-    <skip />
+    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"ierīce"</string>
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"tālruņa"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"planšetdatora"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"klēpjdatora"</string>
@@ -1527,8 +1529,7 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Elementa pievienošana ātrajiem iestatījumiem"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Mazs formāts"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Liels formāts"</string>
-    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
-    <skip />
+    <string name="qs_tile_satellite_label" msgid="2839625529776739941">"SAT"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Lietotāja atlase"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# lietotne ir aktīva}zero{# lietotnes ir aktīvas}one{# lietotne ir aktīva}other{# lietotnes ir aktīvas}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Jauna informācija"</string>
