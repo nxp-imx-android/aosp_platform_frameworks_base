@@ -10,3 +10,10 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "pinner_list_remove_wear_apks"
+  namespace: "watch_software_performance"
+  description: "Remove ClockworkSystemUI and WearServicesGoogle apk from pinned list"
+  bug: "473545873"
+}
