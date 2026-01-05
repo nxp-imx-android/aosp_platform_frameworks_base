@@ -3650,7 +3650,6 @@ package android.companion {
     method @FlaggedApi("android.companion.trusted_devices") public void removeOnMessageReceivedListener(int, @NonNull java.util.function.BiConsumer<java.lang.Integer,byte[]>);
     method @FlaggedApi("android.companion.trusted_devices") public void sendMessage(int, @NonNull byte[], @NonNull int[]);
     field @FlaggedApi("android.companion.enable_data_sync") @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public static final int FLAG_UNIVERSAL_CLIPBOARD = 8; // 0x8
-    field @FlaggedApi("android.companion.enable_data_sync") @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public static final int FLAG_UNIVERSAL_MODES = 4; // 0x4
     field @FlaggedApi("android.companion.trusted_devices") @RequiresPermission(android.Manifest.permission.ACCESS_COMPANION_MESSAGE_PCC) public static final int MESSAGE_ONEWAY_PCC = 1132488551; // 0x43806767
   }
 
