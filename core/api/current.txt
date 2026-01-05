@@ -25113,10 +25113,14 @@ package android.media {
     field public static final String KEY_AAC_DRC_OUTPUT_LOUDNESS = "aac-drc-output-loudness";
     field public static final String KEY_AAC_DRC_TARGET_REFERENCE_LEVEL = "aac-target-ref-level";
     field public static final String KEY_AAC_ENCODED_TARGET_LEVEL = "aac-encoded-target-level";
+    field @FlaggedApi("android.media.codec.xhe_aac_encoder") public static final String KEY_AAC_LIVE_AUTOMATIC_LOUDNESS_MODE = "aac-live-automatic-loudness-mode";
+    field @FlaggedApi("android.media.codec.xhe_aac_encoder") public static final String KEY_AAC_LOUDNESS_DATA = "aac-loudness-data";
     field @Deprecated public static final String KEY_AAC_MAX_OUTPUT_CHANNEL_COUNT = "aac-max-output-channel_count";
     field public static final String KEY_AAC_PROFILE = "aac-profile";
+    field @FlaggedApi("android.media.codec.xhe_aac_encoder") public static final String KEY_AAC_RAP_INTERVALS = "aac-rap-intervals";
     field public static final String KEY_AAC_SBR_MODE = "aac-sbr-mode";
     field public static final String KEY_ALLOW_FRAME_DROP = "allow-frame-drop";
+    field @FlaggedApi("android.media.codec.xhe_aac_encoder") public static final String KEY_AUDIO_ENCODING_MODE = "audio-encoding-mode";
     field @FlaggedApi("android.media.codec.audio_mix_presentation_support") public static final String KEY_AUDIO_PRESENTATION_ID = "audio-presentation-id";
     field public static final String KEY_AUDIO_SESSION_ID = "audio-session-id";
     field public static final String KEY_BITRATE_MODE = "bitrate-mode";
@@ -25193,6 +25197,7 @@ package android.media {
     field @FlaggedApi("android.media.codec.in_process_sw_audio_codec") public static final String KEY_SECURITY_MODEL = "security-model";
     field public static final String KEY_SLICE_HEIGHT = "slice-height";
     field public static final String KEY_SLOW_MOTION_MARKERS = "slow-motion-markers";
+    field @FlaggedApi("android.media.codec.xhe_aac_encoder") public static final String KEY_STREAM_ID = "stream-id";
     field public static final String KEY_STRIDE = "stride";
     field public static final String KEY_TEMPORAL_LAYERING = "ts-schema";
     field @FlaggedApi("android.media.codec.temporal_layer_encoding") public static final String KEY_TEMPORAL_LAYER_ID = "temporal-layer-id";
