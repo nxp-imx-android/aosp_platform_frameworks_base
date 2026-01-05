@@ -300,7 +300,8 @@ public class DisplayBrightnessStrategySelector {
                 strategySelectionRequest.getDisplayPowerRequest().useNormalBrightnessForDoze,
                 strategySelectionRequest.getLastUserSetScreenBrightness(),
                 strategySelectionRequest.isUserSetBrightnessChanged(),
-                strategySelectionRequest.isWearBedtimeModeEnabled());
+                strategySelectionRequest.isWearBedtimeModeEnabled(),
+                strategySelectionRequest.isChargingModeEnabled());
         return !strategySelectionRequest.isStylusBeingUsed()
                 && mAutomaticBrightnessStrategy.isAutoBrightnessValid();
     }
@@ -316,7 +317,8 @@ public class DisplayBrightnessStrategySelector {
                 strategySelectionRequest.isUserSetBrightnessChanged(),
                 mAllowAutoBrightnessWhileDozing,
                 getAutomaticBrightnessStrategy().shouldUseAutoBrightness(),
-                strategySelectionRequest.isWearBedtimeModeEnabled());
+                strategySelectionRequest.isWearBedtimeModeEnabled(),
+                strategySelectionRequest.isChargingModeEnabled());
     }
 
     private void postProcess(StrategySelectionNotifyRequest strategySelectionNotifyRequest) {
