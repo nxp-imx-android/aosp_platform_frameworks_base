@@ -42,6 +42,8 @@ import android.view.Surface
  *   surface has been moved off-screen (while a drag indicator is shown instead).
  * @param dragResizeEndTransition The binder token for the transition that is started when a
  *   drag-resize operation completes, used to track the post-drag animation.
+ * @param hasFirstMoveEventConsumed A flag indicating whether the one-time actions for the initial
+ *   move event (e.g., updating taskbar rounding) have been consumed for this drag session.
  */
 data class DragSession(
     val windowDecoration: WindowDecorationWrapper,
@@ -54,4 +56,5 @@ data class DragSession(
     var isResizingOrAnimatingResize: Boolean = false,
     var hasMovedTaskSurfaceOffScreen: Boolean = false,
     var dragResizeEndTransition: IBinder? = null,
+    var hasFirstMoveEventConsumed: Boolean = false,
 )
