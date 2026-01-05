@@ -169,6 +169,7 @@ android_library {
         "androidx.datastore_datastore",
         "androidx.dynamicanimation_dynamicanimation",
         "androidx.recyclerview_recyclerview",
+        "androidx.tracing_tracing",
         "com_android_launcher3_flags_lib",
         "com_android_wm_shell_flags_lib",
         "PlatformAnimationLib",
