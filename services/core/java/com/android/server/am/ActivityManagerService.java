@@ -2722,8 +2722,8 @@ public class ActivityManagerService extends IActivityManager.Stub
     /**
      * Return a new limiter from the controller.
      */
-    MemoryLimiter.Limiter newMemoryLimiter() {
-        return mMemoryLimiter.newLimiter();
+    MemoryLimiter.Limiter newMemoryLimiter(@Nullable String pkg) {
+        return mMemoryLimiter.newLimiter(pkg);
     }
 
     /**

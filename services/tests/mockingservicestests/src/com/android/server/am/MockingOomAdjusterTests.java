@@ -102,6 +102,7 @@ import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
@@ -346,7 +347,7 @@ public class MockingOomAdjusterTests {
                 mActivityStateHandlerThread.getLooper());
         mService.mAtmInternal = spy(mService.mActivityTaskManager.getAtmInternal());
         // Ensure clients can get a valid memory limiter.  The limiter will do nothing.
-        when(mService.newMemoryLimiter()).thenReturn(mMemoryLimiter.newLimiter());
+        when(mService.newMemoryLimiter(anyString())).thenReturn(mMemoryLimiter.newLimiter(""));
     }
 
     @SuppressWarnings("GuardedBy")
