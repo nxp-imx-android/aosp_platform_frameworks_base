@@ -63,8 +63,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_DEFER_RESUME_FOCUS_IN_NON_FOCUSED_WINDOW),
     DIMMING_WALLPAPER_FOR_MAXIMIZED_AND_TILED(Flags::dimmingWallpaperForMaximizedAndTiled, true,
             Flags.FLAG_DIMMING_WALLPAPER_FOR_MAXIMIZED_AND_TILED),
-    DISPLAY_TOPOLOGY(com.android.server.display.feature.flags.Flags::displayTopology, true,
-            com.android.server.display.feature.flags.Flags.FLAG_DISPLAY_TOPOLOGY),
     ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS(
             Flags::enableAddWindowDecorationToAllTasks, false,
             Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS),

@@ -41,10 +41,6 @@ public class DisplayManagerFlags {
     // 'adb shell setprop persist.log.tag.DisplayManagerFlags DEBUG && adb reboot'
     private static final boolean DEBUG = DebugUtils.isDebuggable(TAG);
 
-    private final FlagState mDisplayTopology = new FlagState(
-            Flags.FLAG_DISPLAY_TOPOLOGY,
-            DesktopExperienceFlags.DISPLAY_TOPOLOGY::isTrue);
-
     private final FlagState mDisplayTopologyApi = new FlagState(
             Flags.FLAG_DISPLAY_TOPOLOGY_API,
             Flags::displayTopologyApi);
@@ -191,11 +187,6 @@ public class DisplayManagerFlags {
     /** Returns whether power throttling clamper is enabled on not. */
     public boolean isPowerThrottlingClamperEnabled() {
         return mPowerThrottlingClamperFlagState.isEnabled();
-    }
-
-
-    public boolean isDisplayTopologyEnabled() {
-        return mDisplayTopology.isEnabled();
     }
 
     public boolean isSyncedResolutionSwitchEnabled() {
@@ -366,7 +357,6 @@ public class DisplayManagerFlags {
     public void dump(PrintWriter pw) {
         pw.println("DisplayManagerFlags:");
         pw.println("--------------------");
-        pw.println(" " + mDisplayTopology);
         pw.println(" " + mDisplayTopologyApi);
         pw.println(" " + mPowerThrottlingClamperFlagState);
         pw.println(" " + mSyncedResolutionSwitch);

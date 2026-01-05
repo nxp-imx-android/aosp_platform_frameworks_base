@@ -511,7 +511,6 @@ public class DisplayManagerGlobalTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_DISPLAY_TOPOLOGY)
     public void testTopologyListenerIsCalled_WhenTopologyUpdateOccurs() throws RemoteException {
         mDisplayManagerGlobal.registerTopologyListener(mExecutor, mTopologyListener,
                 /* packageName= */ null);
