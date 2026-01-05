@@ -438,7 +438,7 @@ public class Instrumentation {
             IWindowManager.Stub.asInterface(
                     ServiceManager.getService("window")).setInTouchModeOnAllDisplays(inTouch);
         } catch (RemoteException e) {
-            // Shouldn't happen!
+            e.rethrowFromSystemServer();
         }
     }
 
