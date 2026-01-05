@@ -106,7 +106,7 @@ public final class LutProperties {
 
     /* use in the native code */
     private LutProperties(@Dimension int dimension, int size, @SamplingKey int[] samplingKeys) {
-        if (dimension != ONE_DIMENSION || dimension != THREE_DIMENSION) {
+        if (dimension != ONE_DIMENSION && dimension != THREE_DIMENSION) {
             throw new IllegalArgumentException("The dimension is either 1 or 3!");
         }
         mDimension = dimension;
