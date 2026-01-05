@@ -453,7 +453,6 @@ public class HeadsUpManagerImpl
      */
     @Override
     public void releaseAllImmediately(String reason) {
-        mLogger.logReleaseAllImmediately(reason);
         // A copy is necessary here as we are changing the underlying map.  This would cause
         // undefined behavior if we iterated over the key set directly.
         ArraySet<String> keysToRemove = new ArraySet<>(mHeadsUpEntryMap.keySet());
@@ -463,10 +462,10 @@ public class HeadsUpManagerImpl
         List<String> waitingKeysToRemove = mAvalancheController.getWaitingKeys();
 
         for (String key : keysToRemove) {
-            removeEntry(key, "releaseAllImmediately (keysToRemove)");
+            removeEntry(key, reason + " (keysToRemove)");
         }
         for (String key : waitingKeysToRemove) {
-            removeEntry(key, "releaseAllImmediately (waitingKeysToRemove)");
+            removeEntry(key, reason + " (waitingKeysToRemove)");
         }
     }
 
@@ -632,7 +631,6 @@ public class HeadsUpManagerImpl
         } else {
             isWaiting = false;
         }
-        mLogger.logRemoveEntryRequest(key, reason, isWaiting);
         HeadsUpEntry finalHeadsUpEntry = headsUpEntry;
         Runnable runnable = () -> {
             mLogger.logRemoveEntry(key, reason, isWaiting);
@@ -1739,7 +1737,6 @@ public class HeadsUpManagerImpl
                 }
             };
             if (mEntry != null && isHeadsUpEntry(mEntry.getKey())) {
-                mLogger.logAutoRemoveCancelRequest(this.mEntry, reason);
                 mAvalancheController.update(this, cancellationRunnable,
                         reason + " cancelAutoRemovalCallbacks");
             } else {
@@ -1754,7 +1751,6 @@ public class HeadsUpManagerImpl
                 Log.wtf(TAG, "#scheduleAutoRemovalCallback with null mEntry; returning early");
                 return;
             }
-            mLogger.logAutoRemoveRequest(mEntry, reason);
             Runnable runnable = () -> {
                 long delayMs = finishTimeCalculator.updateAndGetTimeRemaining();
 
