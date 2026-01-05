@@ -92,7 +92,6 @@ import com.android.app.displaylib.PerDisplayRepository;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.colorextraction.ColorExtractor;
 import com.android.internal.logging.MetricsLogger;
-import com.android.internal.logging.UiEvent;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.logging.UiEventLoggerImpl;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
@@ -135,6 +134,7 @@ import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.fragments.ExtensionFragmentListener;
 import com.android.systemui.fragments.FragmentHostManager;
 import com.android.systemui.fragments.FragmentService;
+import com.android.systemui.keyguard.KeyguardUiEvent;
 import com.android.systemui.keyguard.KeyguardUnlockAnimationController;
 import com.android.systemui.keyguard.KeyguardViewMediator;
 import com.android.systemui.keyguard.ScreenLifecycle;
@@ -454,44 +454,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
     // ensure quick settings is disabled until the current user makes it through the setup wizard
     @VisibleForTesting
     protected boolean mUserSetup = false;
-
-    @VisibleForTesting
-    public enum StatusBarUiEvent implements UiEventLogger.UiEventEnum {
-        @UiEvent(doc = "Secured lockscreen is opened.")
-        LOCKSCREEN_OPEN_SECURE(405),
-
-        @UiEvent(doc = "Lockscreen without security is opened.")
-        LOCKSCREEN_OPEN_INSECURE(406),
-
-        @UiEvent(doc = "Secured lockscreen is closed.")
-        LOCKSCREEN_CLOSE_SECURE(407),
-
-        @UiEvent(doc = "Lockscreen without security is closed.")
-        LOCKSCREEN_CLOSE_INSECURE(408),
-
-        @UiEvent(doc = "Secured bouncer is opened.")
-        BOUNCER_OPEN_SECURE(409),
-
-        @UiEvent(doc = "Bouncer without security is opened.")
-        BOUNCER_OPEN_INSECURE(410),
-
-        @UiEvent(doc = "Secured bouncer is closed.")
-        BOUNCER_CLOSE_SECURE(411),
-
-        @UiEvent(doc = "Bouncer without security is closed.")
-        BOUNCER_CLOSE_INSECURE(412);
-
-        private final int mId;
-
-        StatusBarUiEvent(int id) {
-            mId = id;
-        }
-
-        @Override
-        public int getId() {
-            return mId;
-        }
-    }
 
     private final DelayableExecutor mMainExecutor;
 
@@ -1944,16 +1906,18 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                     unlocked ? 1 : 0);
             mLastLoggedStateFingerprint = stateFingerprint;
 
-            StringBuilder uiEventValueBuilder = new StringBuilder();
-            uiEventValueBuilder.append(isBouncerShowing ? "BOUNCER" : "LOCKSCREEN");
-            uiEventValueBuilder.append(isShowing ? "_OPEN" : "_CLOSE");
-            uiEventValueBuilder.append(isSecure ? "_SECURE" : "_INSECURE");
-            sUiEventLogger.logWithInstanceId(
-                    StatusBarUiEvent.valueOf(uiEventValueBuilder.toString()),
-                    0,
-                    null,
-                    mSessionTracker.getSessionId(SESSION_KEYGUARD)
-            );
+            if (!SceneContainerFlag.isEnabled()) {
+                StringBuilder uiEventValueBuilder = new StringBuilder();
+                uiEventValueBuilder.append(isBouncerShowing ? "BOUNCER" : "LOCKSCREEN");
+                uiEventValueBuilder.append(isShowing ? "_OPEN" : "_CLOSE");
+                uiEventValueBuilder.append(isSecure ? "_SECURE" : "_INSECURE");
+                sUiEventLogger.logWithInstanceId(
+                        KeyguardUiEvent.valueOf(uiEventValueBuilder.toString()),
+                        0,
+                        null,
+                        mSessionTracker.getSessionId(SESSION_KEYGUARD)
+                );
+            }
         }
     }
 

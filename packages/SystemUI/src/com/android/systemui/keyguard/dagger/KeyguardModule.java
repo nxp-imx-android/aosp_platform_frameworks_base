@@ -33,6 +33,7 @@ import com.android.keyguard.ViewMediatorCallback;
 import com.android.keyguard.dagger.KeyguardDisplayModule;
 import com.android.keyguard.dagger.KeyguardQsUserSwitchComponent;
 import com.android.keyguard.dagger.KeyguardStatusBarViewComponent;
+import com.android.keyguard.logging.KeyguardLoggerStartable;
 import com.android.keyguard.mediator.ScreenOnCoordinator;
 import com.android.systemui.CoreStartable;
 import com.android.systemui.Flags;
@@ -287,4 +288,10 @@ public interface KeyguardModule {
     @IntoMap
     @ClassKey(SideFpsProgressBarViewBinder.class)
     CoreStartable bindSideFpsProgressBarViewBinder(SideFpsProgressBarViewBinder impl);
+
+    /***/
+    @Binds
+    @IntoMap
+    @ClassKey(KeyguardLoggerStartable.class)
+    CoreStartable keyguardLoggerStartable(KeyguardLoggerStartable impl);
 }
