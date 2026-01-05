@@ -161,6 +161,7 @@ public class RequestComputerControlAccessFragment extends DialogFragment {
     private void onDenied(View v) {
         if (increaseDenialCount() >= MAX_DENIALS) {
             setComputerControlOp(AppOpsManager.MODE_IGNORED);
+            resetDenialCount();
         }
         if (getDialog() != null) {
             getDialog().cancel();
