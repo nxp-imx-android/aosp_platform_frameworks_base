@@ -6237,6 +6237,10 @@
   <java-symbol type="string" name="satellite_messaging_location_disabled_notification_title" />
   <java-symbol type="string" name="satellite_messaging_location_disabled_notification_summary" />
   <java-symbol type="string" name="satellite_indicator" />
+  <java-symbol type="string" name="satellite_upsell_notification_title" />
+  <java-symbol type="string" name="satellite_upsell_notification_summary" />
+  <java-symbol type="string" name="satellite_upsell_notification_learn_more" />
+  <java-symbol type="string" name="satellite_upsell_notification_suppress" />
 
   <!-- DisplayManager configs. -->
   <java-symbol type="bool" name="config_evenDimmerEnabled" />

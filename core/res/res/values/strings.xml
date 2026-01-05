@@ -7173,6 +7173,14 @@
     <string name="satellite_messaging_location_disabled_notification_summary">To check if satellite messaging is available in this country or region, turn on location settings</string>
     <!-- The satellite indicator to be shown on the status bar, settings, quick settings, and landing pages. [CHAR LIMIT=5] -->
     <string name="satellite_indicator">SAT</string>
+    <!-- Satellite Upsell Notification title. TODO (b/473657577) : Update with finalized string. -->
+    <string name="satellite_upsell_notification_title" translatable="false">Satellite Upsell Notification (Draft)</string>
+    <!-- Satellite Upsell Notification summary. [CHAR LIMIT=NONE] TODO (b/473657577) : Update with finalized string. -->
+    <string name="satellite_upsell_notification_summary" translatable="false">Content briefly explains the benefit of satellite service. (Draft)</string>
+    <!-- Satellite Upsell Notification learn more.TODO (b/473657577) : Update with finalized string. -->
+    <string name="satellite_upsell_notification_learn_more" translatable="false">Learn more (Draft)</string>
+    <!-- Satellite Upsell Notification don't show again. TODO (b/473657577) : Update with finalized string. -->
+    <string name="satellite_upsell_notification_suppress" translatable="false">Don\'t show again (Draft)</string>
 
     <!-- Fingerprint dangling notification title -->
     <string name="fingerprint_dangling_notification_title">Set up Fingerprint Unlock again</string>
