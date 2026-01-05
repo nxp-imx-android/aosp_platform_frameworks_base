@@ -91,7 +91,10 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"Imeshindwa kuhifadhi picha ya skrini"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Programu au shirika lako halikuruhusu kupiga picha za skrini"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"Kupiga picha za skrini kumezuiwa na Msimamizi wako wa TEHAMA"</string>
-    <string name="screenshot_copy_description" msgid="2857172429942249976">"Nakili picha ya skrini kwenye ubao wa kunakili"</string>
+    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
+    <skip />
+    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
+    <skip />
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Badilisha"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"Kitufe cha kuhariri picha ya skrini"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Tuma"</string>
@@ -149,6 +152,7 @@
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Programu moja (Fungua programu ili uchague)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Rekodi sauti ya kifaa"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Rekodi maikrofoni"</string>
+    <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"Huwezi kubadilisha mipangilio ya sauti unaporekodi"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Onyesha kamera ya selfi"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Onyesha miguso"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Chagua programu ili urekodi skrini"</string>
@@ -936,8 +940,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Nimemaliza"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Tumia"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Zima"</string>
-    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
-    <skip />
+    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"kifaa"</string>
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"simu"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"kishikwambi"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"kompyuta ya kupakata"</string>
@@ -1501,7 +1504,7 @@
     <string name="ongoing_notification_extra_content_description" msgid="2098752668861351265">"Inaendelea"</string>
     <string name="status_bar_chip_custom_a11y_action_expand_notification" msgid="3937742348749607401">"panua arifa"</string>
     <string name="status_bar_chip_custom_a11y_action_collapse_notification" msgid="8413156834916891757">"kunja arifa"</string>
-    <string name="mobile_data_settings_title" msgid="3955246641380064901">"Data ya mtandao wa simu"</string>
+    <string name="mobile_data_settings_title" msgid="3955246641380064901">"Data ya simu"</string>
     <string name="mobile_data_connection_active" msgid="944490013299018227">"Imeunganishwa"</string>
     <string name="mobile_data_temp_connection_active" msgid="4590222725908806824">"Imeunganishwa kwa muda"</string>
     <string name="mobile_data_poor_connection" msgid="819617772268371434">"Muunganisho duni"</string>

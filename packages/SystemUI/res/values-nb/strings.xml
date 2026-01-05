@@ -91,7 +91,10 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"Kan ikke lagre skjermbildet"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Appen eller organisasjonen din tillater ikke at du tar skjermbilder"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"Funksjonen for å ta skjermbilder er blokkert av IT-administratoren din"</string>
-    <string name="screenshot_copy_description" msgid="2857172429942249976">"Kopier skjermbildet til utklippstavlen"</string>
+    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
+    <skip />
+    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
+    <skip />
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Rediger"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"Knapp for å redigere skjermbildet"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Del"</string>
@@ -149,6 +152,7 @@
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Enkeltapp (åpne en app for å velge)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Ta opp enhetslyd"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Ta opp med mikrofonen"</string>
+    <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"Kan ikke endre lydinnstilling under opptak"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Vis selfiekameraet"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Vis berøringer"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Velg en app å ta opp"</string>
@@ -883,7 +887,7 @@
     <string name="wallet_secondary_label_device_locked" msgid="5175862019125370506">"Lås opp for å bruke"</string>
     <string name="wallet_error_generic" msgid="257704570182963611">"Det oppsto et problem med henting av kortene. Prøv på nytt senere"</string>
     <string name="wallet_lockscreen_settings_label" msgid="3539105300870383570">"Innstillinger for låseskjermen"</string>
-    <string name="qr_code_scanner_title" msgid="1938155688725760702">"QR-kodeskanner"</string>
+    <string name="qr_code_scanner_title" msgid="1938155688725760702">"QR-kode­skanner"</string>
     <string name="qr_code_scanner_updating_secondary_label" msgid="8344598017007876352">"Oppdaterer"</string>
     <string name="status_bar_work" msgid="5238641949837091056">"Work-profil"</string>
     <string name="status_bar_airplane" msgid="4848702508684541009">"Flymodus"</string>
@@ -936,8 +940,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Ferdig"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Bruk"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Slå av"</string>
-    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
-    <skip />
+    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"enhet"</string>
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"telefon"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"nettbrett"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"bærbar datamaskin"</string>
@@ -1594,7 +1597,7 @@
     <string name="stylus_battery_low_percentage" msgid="2564243323894629626">"Batteri i pekepennen: <xliff:g id="PERCENTAGE">%s</xliff:g>"</string>
     <string name="stylus_battery_low_subtitle" msgid="3583843128908823273">"Koble pekepennen til en lader"</string>
     <string name="stylus_battery_low" msgid="7134370101603167096">"Det er lite batteri i pekepennen"</string>
-    <string name="video_camera" msgid="7654002575156149298">"Videokamera"</string>
+    <string name="video_camera" msgid="7654002575156149298">"Video­kamera"</string>
     <string name="call_from_work_profile_title" msgid="5418253516453177114">"Kan ikke ringe fra personlige apper"</string>
     <string name="call_from_work_profile_text" msgid="2856337395968118274">"Organisasjonen din tillater bare at du ringer fra jobbapper"</string>
     <string name="call_from_work_profile_action" msgid="2937701298133010724">"Bytt til jobbprofilen"</string>

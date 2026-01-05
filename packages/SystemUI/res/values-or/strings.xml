@@ -91,7 +91,10 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"ସ୍କ୍ରିନସଟକୁ ସେଭ୍ କରାଯାଇପାରିବ ନାହିଁ"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"ଆପ୍‍ କିମ୍ବା ସଂସ୍ଥା ଦ୍ୱାରା ସ୍କ୍ରୀନଶଟ୍‍ ନେବାକୁ ଅନୁମତି ଦିଆଯାଇ ନାହିଁ"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"ସ୍କ୍ରିନସଟଗୁଡ଼ିକ ନେବା ଆପଣଙ୍କ IT ଆଡମିନଙ୍କ ଦ୍ୱାରା ବ୍ଲକ କରାଯାଇଛି"</string>
-    <string name="screenshot_copy_description" msgid="2857172429942249976">"କ୍ଲିପବୋର୍ଡକୁ ସ୍କ୍ରିନସଟ କପି କରନ୍ତୁ"</string>
+    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
+    <skip />
+    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
+    <skip />
     <string name="screenshot_edit_label" msgid="8754981973544133050">"ଏଡିଟ କରନ୍ତୁ"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"ସ୍କ୍ରିନସଟକୁ ଏଡିଟ କରନ୍ତୁ ବଟନ"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"ସେୟାର କରନ୍ତୁ"</string>
@@ -149,6 +152,7 @@
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"ସିଙ୍ଗଲ ଆପ (ବାଛିବାକୁ ଏକ ଆପ ଖୋଲନ୍ତୁ)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"ଡିଭାଇସ ଅଡିଓ ରେକର୍ଡ କରନ୍ତୁ"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"ମାଇକ୍ରୋଫୋନ ରେକର୍ଡ କରନ୍ତୁ"</string>
+    <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"ରେକର୍ଡ କରିବା ସମୟରେ ଅଡିଓ ସେଟିଂସକୁ ପରିବର୍ତ୍ତନ କରାଯାଇପାରିବ ନାହିଁ"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"ସେଲ୍ଫି କେମେରା ଦେଖାନ୍ତୁ"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ଟଚଗୁଡ଼ିକ ଦେଖାନ୍ତୁ"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"ରେକର୍ଡ କରିବାକୁ ଏକ ଆପ ବାଛନ୍ତୁ"</string>
@@ -936,8 +940,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"ହୋଇଗଲା"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ଲାଗୁ କରନ୍ତୁ"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ବନ୍ଦ କରନ୍ତୁ"</string>
-    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
-    <skip />
+    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"ଡିଭାଇସ"</string>
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"ଫୋନ"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"ଟାବଲେଟ"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"ଲାପଟପ"</string>
@@ -1273,7 +1276,7 @@
     <string name="slice_permission_deny" msgid="6870256451658176895">"ଅଗ୍ରାହ୍ୟ କରନ୍ତୁ"</string>
     <string name="auto_saver_title" msgid="6873691178754086596">"ବ୍ୟାଟେରୀ ସେଭର୍‌ ଅନ୍‌ ହେବାର ସମୟ ସେଟ୍‌ କରିବାକୁ ଟାପ୍‌ କରନ୍ତୁ"</string>
     <string name="auto_saver_text" msgid="3214960308353838764">"ବ୍ୟାଟେରୀ ସରିବାକୁ ଥିବା ସମୟରେ ଚାଲୁ କରନ୍ତୁ"</string>
-    <string name="no_auto_saver_action" msgid="7467924389609773835">"ନାହିଁ, ଥାଉ"</string>
+    <string name="no_auto_saver_action" msgid="7467924389609773835">"ନା, ଧନ୍ୟବାଦ"</string>
     <string name="ongoing_privacy_dialog_a11y_title" msgid="2205794093673327974">"ବ୍ୟବହାର ହେଉଛି"</string>
     <string name="ongoing_privacy_chip_content_multiple_apps" msgid="4994455315457996796">"<xliff:g id="TYPES_LIST">%s</xliff:g>କୁ ବ୍ୟବହାର କରାଯାଉଛି।"</string>
     <string name="ongoing_privacy_dialog_separator" msgid="1866222499727706187">", "</string>

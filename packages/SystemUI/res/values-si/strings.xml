@@ -91,7 +91,10 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"තිර රුව සුරැකීමට නොහැකිය"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"තිර රූ ගැනීමට යෙදුම හෝ ඔබගේ සංවිධානය ඉඩ නොදේ"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"තිර රූ ගැනීම ඔබගේ IT පරිපාලක විසින් අවහිර කර ඇත"</string>
-    <string name="screenshot_copy_description" msgid="2857172429942249976">"තිර රුව පසුරු පුවරුවට පිටපත් කරන්න"</string>
+    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
+    <skip />
+    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
+    <skip />
     <string name="screenshot_edit_label" msgid="8754981973544133050">"සංස්කරණය කරන්න"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"තිර රුව සංස්කරණය කිරීමේ බොත්තම"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"බෙදා ගන්න"</string>
@@ -149,6 +152,7 @@
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"තනි යෙදුම (තේරීමට යෙදුමක් විවෘත කරන්න)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"උපාංග ශ්‍රව්‍ය පටිගත කරන්න"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"මයික්‍රෆෝනය පටිගත කරන්න"</string>
+    <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"පටිගත කිරීමේ දී ශ්‍රව්‍ය සැකසීම් වෙනස් කළ නොහැක"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"සෙල්ෆි කැමරාව පෙන්වන්න"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ස්පර්ශ පෙන්වන්න"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"පටිගත කිරීමට යෙදුමක් තෝරා ගන්න"</string>
@@ -936,8 +940,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"නිමයි"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"යොදන්න"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ක්‍රියාවිරහිත කරන්න"</string>
-    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
-    <skip />
+    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"උපාංගය"</string>
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"දුරකථනය"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"ටැබ්ලටය"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"ලැප්ටොප්"</string>
