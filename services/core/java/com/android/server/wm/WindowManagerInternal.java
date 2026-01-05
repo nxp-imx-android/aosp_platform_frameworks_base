@@ -18,6 +18,7 @@ package com.android.server.wm;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
+import android.annotation.CallbackExecutor;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -61,6 +62,8 @@ import java.lang.annotation.Retention;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 /**
  * Window manager local system service interface.
@@ -1306,4 +1309,50 @@ public abstract class WindowManagerInternal {
      */
     @Nullable
     public abstract DisplayMirror createMirrorForDisplayContent(int displayId);
+
+    /**
+     * Request all window clients on the given display to disable their HardwareRenderer
+     * drawing output.
+     *
+     * <p>HardwareRenderer output is enabled by default on all displays. This API can be used to
+     * toggle client rendering on or off at will to attempt to control the output frames produced
+     * by client windows for screenshot-only based rendering. Note that this API does not fully
+     * prohibit clients from submitting frames to the composer, as frames may still be produced when
+     * hardware rendering is not being used or if the client is not using the standard rendering
+     * pipeline.
+     *
+     * <p>This API is designed to be controlled by a single source and callers should not use this
+     * unless they are the designated owner.
+     *
+     * @return true if the request was successfully propagated, false otherwise.
+     * @see #requestHardwareRendererOutputEnabled(int, long, Consumer, Executor)
+     */
+    public abstract boolean requestHardwareRendererOutputDisabled(int displayId);
+
+    /**
+     * Requests all window clients on the given display to re-enable their HardwareRenderer
+     * drawing output.
+     *
+     * <p>This method reverses the effects of {@link #requestHardwareRendererOutputDisabled(int)}.
+     * It signals to client windows that they should resume submitting frames via the
+     * HardwareRenderer, and has the side-effect of causing all affected windows to be redrawn.
+     *
+     * <p>This operation is synchronized. It will wait for the visible windows to produce a new
+     * frame before invoking the callback. This ensures that when the callback is received with
+     * {@code true}, the windows have resumed drawing and their new state is committed.
+     *
+     * <p>This API is designed to be controlled by a single source and callers should not use this
+     * unless they are the designated owner.
+     *
+     * @param displayId The ID of the display to enable output on.
+     * @param timeoutMs The maximum time to wait in milliseconds before the callback is invoked.
+     * @param callback  The callback to execute, with a {@code true} parameter when all windows
+     * have successfully committed a new frame, {@code false} when the timeout occurs.
+     * @param executor  The executor on which to run the callback.
+     * @return {@code true} if the request was successfully propagated and synchronization started,
+     * {@code false} otherwise.
+     * @see #requestHardwareRendererOutputDisabled(int)
+     */
+    public abstract boolean requestHardwareRendererOutputEnabled(int displayId,
+            long timeoutMs, Consumer<Boolean> callback, @CallbackExecutor Executor executor);
 }

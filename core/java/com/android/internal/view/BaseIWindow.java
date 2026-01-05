@@ -142,4 +142,8 @@ public class BaseIWindow extends IWindow.Stub {
     public void dumpWindow(ParcelFileDescriptor pfd) {
 
     }
+
+    @Override
+    public void requestHardwareRendererOutputDisabled(boolean disabled) {
+    }
 }
