@@ -168,6 +168,7 @@ import com.android.wm.shell.shared.TransactionPool
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.annotations.ShellDesktopThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
+import com.android.wm.shell.shared.annotations.ShellMainThreadImmediate
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog
 import com.android.wm.shell.shared.desktopmode.DesktopConfig
@@ -249,6 +250,7 @@ class DesktopTasksController(
     private val multiInstanceHelper: MultiInstanceHelper,
     @ShellMainThread private val mainExecutor: ShellExecutor,
     @ShellMainThread private val mainScope: CoroutineScope,
+    @ShellMainThreadImmediate private val mainScopeImmediate: CoroutineScope,
     @ShellDesktopThread private val desktopExecutor: ShellExecutor,
     private val desktopTasksLimiter: Optional<DesktopTasksLimiter>,
     private val recentTasksController: RecentTasksController?,
@@ -1215,32 +1217,36 @@ class DesktopTasksController(
             preservedDisplay.displayId,
             userId,
         )
-        // TODO: b/365873835 - Utilize DesktopTask data class once it is
-        //  implemented in DesktopRepository.
-        // TODO: b/469492330 - Gather this data inside the coroutine.
-        val repository = userRepositories.getProfile(userId)
-        val preservedTaskIdsByDeskId =
-            repository.getPreservedTasksByDeskIdInZOrder(preservedDisplay)
-        val boundsByTaskId = repository.getPreservedTaskBounds(preservedDisplay)
-        val activeDeskId = preservedDisplay.activeDeskId
-        val wct = WindowContainerTransaction()
-        val runOnTransitStartList = mutableListOf<RunOnTransitStart>()
-        val tilingReconnectHandler =
-            TilingDisplayReconnectEventHandler(repository, snapEventHandler, transitions, displayId)
-        // Exclude tasks from restore on projected devices.
-        val excludedTasks =
-            if (desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)) {
-                listOf()
-            } else {
-                getExcludedFromProjectedRestoreTasks(DEFAULT_DISPLAY, userId).map { task ->
-                    task.taskId
+        mainScopeImmediate.launch {
+            // TODO: b/365873835 - Utilize DesktopTask data class once it is
+            //  implemented in DesktopRepository.
+            val repository = userRepositories.getProfile(userId)
+            val preservedTaskIdsByDeskId =
+                repository.getPreservedTasksByDeskIdInZOrder(preservedDisplay)
+            val boundsByTaskId = repository.getPreservedTaskBounds(preservedDisplay)
+            val activeDeskId = preservedDisplay.activeDeskId
+            val wct = WindowContainerTransaction()
+            val runOnTransitStartList = mutableListOf<RunOnTransitStart>()
+            val tilingReconnectHandler =
+                TilingDisplayReconnectEventHandler(
+                    repository,
+                    snapEventHandler,
+                    transitions,
+                    displayId,
+                )
+            // Exclude tasks from restore on projected devices.
+            val excludedTasks =
+                if (desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)) {
+                    listOf()
+                } else {
+                    getExcludedFromProjectedRestoreTasks(DEFAULT_DISPLAY, userId).map { task ->
+                        task.taskId
+                    }
                 }
-            }
-        // Preserve focus state on reconnect, regardless if focused task is restored or not.
-        val globallyFocusedTask =
-            shellTaskOrganizer.getRunningTaskInfo(focusTransitionObserver.globallyFocusedTaskId)
-        var focusedTaskRestoredToInactiveDesk = false
-        mainScope.launch {
+            // Preserve focus state on reconnect, regardless if focused task is restored or not.
+            val globallyFocusedTask =
+                shellTaskOrganizer.getRunningTaskInfo(focusTransitionObserver.globallyFocusedTaskId)
+            var focusedTaskRestoredToInactiveDesk = false
             preservedTaskIdsByDeskId.forEach { (preservedDeskId, preservedTaskIds) ->
                 val newDeskId =
                     createDeskSuspending(

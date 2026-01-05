@@ -349,6 +349,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     private val shellExecutor = TestShellExecutor()
     private val bgExecutor = TestShellExecutor()
     private val testScope = TestScope()
+    private val testScopeImmediate = TestScope()
 
     // Mock running tasks are registered here so we can get the list from mock shell task organizer
     private val runningTasks = mutableListOf<RunningTaskInfo>()
@@ -555,6 +556,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             multiInstanceHelper,
             shellExecutor,
             testScope.backgroundScope,
+            testScopeImmediate.backgroundScope,
             bgExecutor,
             Optional.of(desktopTasksLimiter),
             recentTasksController,
@@ -10512,6 +10514,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 userId = taskRepository.userId,
             )
             runCurrent()
+            testScopeImmediate.runCurrent()
 
             verify(transitions).startTransition(anyInt(), wctCaptor.capture(), anyOrNull())
             val wct = wctCaptor.firstValue
@@ -10594,6 +10597,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 userId = taskRepository.userId,
             )
             runCurrent()
+            testScopeImmediate.runCurrent()
 
             verify(transitions).startTransition(anyInt(), wctCaptor.capture(), anyOrNull())
             verify(desksTransitionsObserver)
@@ -10664,6 +10668,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 userId = taskRepository.userId,
             )
             runCurrent()
+            testScopeImmediate.runCurrent()
 
             verify(transitions).startTransition(anyInt(), wctCaptor.capture(), anyOrNull())
             val wct = wctCaptor.firstValue
@@ -10723,6 +10728,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 userId = taskRepository.userId,
             )
             runCurrent()
+            testScopeImmediate.runCurrent()
 
             verify(transitions).startTransition(anyInt(), wctCaptor.capture(), anyOrNull())
             val wct = wctCaptor.firstValue
@@ -10781,6 +10787,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 userId = taskRepository.userId,
             )
             runCurrent()
+            testScopeImmediate.runCurrent()
 
             verify(transitions).startTransition(anyInt(), wctCaptor.capture(), anyOrNull())
             val wct = wctCaptor.firstValue
