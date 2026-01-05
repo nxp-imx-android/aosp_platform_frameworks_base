@@ -27,7 +27,11 @@ import android.hardware.vibrator.IVibrator;
 import android.os.Parcel;
 import android.os.VibrationEffect;
 import android.os.VibratorInfo;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -35,6 +39,9 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class StepSegmentTest {
     private static final float TOLERANCE = 1e-2f;
+
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Test
     public void testCreation() {
@@ -96,7 +103,23 @@ public class StepSegmentTest {
     }
 
     @Test
-    public void testScale_fullAmplitude() {
+    @DisableFlags(Flags.FLAG_HAPTICS_SCALE_V2_ENABLED)
+    public void testScale_withLegacyScaling_fullAmplitude() {
+        StepSegment initial = new StepSegment(1f, 0, 0);
+
+        assertEquals(1f, initial.scale(1).getAmplitude(), TOLERANCE);
+        assertEquals(0.34f, initial.scale(0.5f).getAmplitude(), TOLERANCE);
+        // The original value was not scaled up, so this only scales it down.
+        assertEquals(1f, initial.scale(1.5f).getAmplitude(), TOLERANCE);
+        assertEquals(0.53f, initial.scale(1.5f).scale(2 / 3f).getAmplitude(), TOLERANCE);
+        // Does not restore to the exact original value because scale up is a bit offset.
+        assertEquals(0.71f, initial.scale(0.8f).getAmplitude(), TOLERANCE);
+        assertEquals(0.84f, initial.scale(0.8f).scale(1.25f).getAmplitude(), TOLERANCE);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HAPTICS_SCALE_V2_ENABLED)
+    public void testScale_withScalingV2_fullAmplitude() {
         StepSegment initial = new StepSegment(1f, 0, 0);
 
         assertEquals(1f, initial.scale(1).getAmplitude(), TOLERANCE);
@@ -110,7 +133,23 @@ public class StepSegmentTest {
     }
 
     @Test
-    public void testScale_halfAmplitude() {
+    @DisableFlags(Flags.FLAG_HAPTICS_SCALE_V2_ENABLED)
+    public void testScale_withLegacyScaling_halfAmplitude() {
+        StepSegment initial = new StepSegment(0.5f, 0, 0);
+
+        assertEquals(0.5f, initial.scale(1).getAmplitude(), TOLERANCE);
+        assertEquals(0.17f, initial.scale(0.5f).getAmplitude(), TOLERANCE);
+        // The original value was not scaled up, so this only scales it down.
+        assertEquals(0.86f, initial.scale(1.5f).getAmplitude(), TOLERANCE);
+        assertEquals(0.47f, initial.scale(1.5f).scale(2 / 3f).getAmplitude(), TOLERANCE);
+        // Does not restore to the exact original value because scale up is a bit offset.
+        assertEquals(0.35f, initial.scale(0.8f).getAmplitude(), TOLERANCE);
+        assertEquals(0.5f, initial.scale(0.8f).scale(1.25f).getAmplitude(), TOLERANCE);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HAPTICS_SCALE_V2_ENABLED)
+    public void testScale_withScalingV2_halfAmplitude() {
         StepSegment initial = new StepSegment(0.5f, 0, 0);
 
         assertEquals(0.5f, initial.scale(1).getAmplitude(), TOLERANCE);
@@ -144,34 +183,34 @@ public class StepSegmentTest {
     }
 
     @Test
-    public void testApplyAdaptiveScale_fullAmplitude() {
+    public void testScaleLinearly_fullAmplitude() {
         StepSegment initial = new StepSegment(1f, 0, 0);
 
-        assertEquals(1f, initial.applyAdaptiveScale(1).getAmplitude(), TOLERANCE);
-        assertEquals(0.5f, initial.applyAdaptiveScale(0.5f).getAmplitude(), TOLERANCE);
-        assertEquals(1f, initial.applyAdaptiveScale(1.5f).getAmplitude(), TOLERANCE);
-        assertEquals(0.8f, initial.applyAdaptiveScale(0.8f).getAmplitude(), TOLERANCE);
-        // Restores back to the exact original value.
-        assertEquals(1f, initial.applyAdaptiveScale(0.8f).applyAdaptiveScale(1.25f).getAmplitude(),
+        assertEquals(1f, initial.scaleLinearly(1).getAmplitude(), TOLERANCE);
+        assertEquals(0.5f, initial.scaleLinearly(0.5f).getAmplitude(), TOLERANCE);
+        assertEquals(1f, initial.scaleLinearly(1.5f).getAmplitude(), TOLERANCE);
+        assertEquals(0.8f, initial.scaleLinearly(0.8f).getAmplitude(), TOLERANCE);
+        // Restores back to the exact original value since this is a linear scaling.
+        assertEquals(1f, initial.scaleLinearly(0.8f).scaleLinearly(1.25f).getAmplitude(),
                 TOLERANCE);
 
         initial = new StepSegment(0, 0, 0);
 
-        assertEquals(0f, initial.applyAdaptiveScale(1).getAmplitude(), TOLERANCE);
-        assertEquals(0f, initial.applyAdaptiveScale(0.5f).getAmplitude(), TOLERANCE);
-        assertEquals(0f, initial.applyAdaptiveScale(1.5f).getAmplitude(), TOLERANCE);
+        assertEquals(0f, initial.scaleLinearly(1).getAmplitude(), TOLERANCE);
+        assertEquals(0f, initial.scaleLinearly(0.5f).getAmplitude(), TOLERANCE);
+        assertEquals(0f, initial.scaleLinearly(1.5f).getAmplitude(), TOLERANCE);
     }
 
     @Test
-    public void testApplyAdaptiveScale_defaultAmplitude() {
+    public void testScaleLinearly_defaultAmplitude() {
         StepSegment initial = new StepSegment(VibrationEffect.DEFAULT_AMPLITUDE, 0, 0);
 
-        assertEquals(VibrationEffect.DEFAULT_AMPLITUDE,
-                initial.applyAdaptiveScale(1).getAmplitude(), TOLERANCE);
-        assertEquals(VibrationEffect.DEFAULT_AMPLITUDE,
-                initial.applyAdaptiveScale(0.5f).getAmplitude(), TOLERANCE);
-        assertEquals(VibrationEffect.DEFAULT_AMPLITUDE,
-                initial.applyAdaptiveScale(1.5f).getAmplitude(), TOLERANCE);
+        assertEquals(VibrationEffect.DEFAULT_AMPLITUDE, initial.scaleLinearly(1).getAmplitude(),
+                TOLERANCE);
+        assertEquals(VibrationEffect.DEFAULT_AMPLITUDE, initial.scaleLinearly(0.5f).getAmplitude(),
+                TOLERANCE);
+        assertEquals(VibrationEffect.DEFAULT_AMPLITUDE, initial.scaleLinearly(1.5f).getAmplitude(),
+                TOLERANCE);
     }
 
     @Test

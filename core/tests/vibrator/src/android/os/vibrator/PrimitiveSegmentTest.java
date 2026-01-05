@@ -27,7 +27,11 @@ import android.hardware.vibrator.IVibrator;
 import android.os.Parcel;
 import android.os.VibrationEffect;
 import android.os.VibratorInfo;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -35,6 +39,9 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class PrimitiveSegmentTest {
     private static final float TOLERANCE = 1e-2f;
+
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Test
     public void testCreation() {
@@ -89,7 +96,24 @@ public class PrimitiveSegmentTest {
     }
 
     @Test
-    public void testScale_fullPrimitiveScaleValue() {
+    @DisableFlags(Flags.FLAG_HAPTICS_SCALE_V2_ENABLED)
+    public void testScale_withLegacyScaling_fullPrimitiveScaleValue() {
+        PrimitiveSegment initial = new PrimitiveSegment(
+                VibrationEffect.Composition.PRIMITIVE_CLICK, 1, 0);
+
+        assertEquals(1f, initial.scale(1).getScale(), TOLERANCE);
+        assertEquals(0.34f, initial.scale(0.5f).getScale(), TOLERANCE);
+        // The original value was not scaled up, so this only scales it down.
+        assertEquals(1f, initial.scale(1.5f).getScale(), TOLERANCE);
+        assertEquals(0.53f, initial.scale(1.5f).scale(2 / 3f).getScale(), TOLERANCE);
+        // Does not restore to the exact original value because scale up is a bit offset.
+        assertEquals(0.71f, initial.scale(0.8f).getScale(), TOLERANCE);
+        assertEquals(0.84f, initial.scale(0.8f).scale(1.25f).getScale(), TOLERANCE);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HAPTICS_SCALE_V2_ENABLED)
+    public void testScale_withScalingV2_fullPrimitiveScaleValue() {
         PrimitiveSegment initial = new PrimitiveSegment(
                 VibrationEffect.Composition.PRIMITIVE_CLICK, 1, 0);
 
@@ -104,7 +128,24 @@ public class PrimitiveSegmentTest {
     }
 
     @Test
-    public void testScale_halfPrimitiveScaleValue() {
+    @DisableFlags(Flags.FLAG_HAPTICS_SCALE_V2_ENABLED)
+    public void testScale_withLegacyScaling_halfPrimitiveScaleValue() {
+        PrimitiveSegment initial = new PrimitiveSegment(
+                VibrationEffect.Composition.PRIMITIVE_CLICK, 0.5f, 0);
+
+        assertEquals(0.5f, initial.scale(1).getScale(), TOLERANCE);
+        assertEquals(0.17f, initial.scale(0.5f).getScale(), TOLERANCE);
+        // The original value was not scaled up, so this only scales it down.
+        assertEquals(0.86f, initial.scale(1.5f).getScale(), TOLERANCE);
+        assertEquals(0.47f, initial.scale(1.5f).scale(2 / 3f).getScale(), TOLERANCE);
+        // Does not restore to the exact original value because scale up is a bit offset.
+        assertEquals(0.35f, initial.scale(0.8f).getScale(), TOLERANCE);
+        assertEquals(0.5f, initial.scale(0.8f).scale(1.25f).getScale(), TOLERANCE);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HAPTICS_SCALE_V2_ENABLED)
+    public void testScale_withScalingV2_halfPrimitiveScaleValue() {
         PrimitiveSegment initial = new PrimitiveSegment(
                 VibrationEffect.Composition.PRIMITIVE_CLICK, 0.5f, 0);
 
@@ -131,27 +172,24 @@ public class PrimitiveSegmentTest {
     }
 
     @Test
-    public void testApplyAdaptiveScale() {
+    public void testScaleLinearly() {
         PrimitiveSegment initial = new PrimitiveSegment(
                 VibrationEffect.Composition.PRIMITIVE_CLICK, 1, 0);
 
-        assertEquals(1f, initial.applyAdaptiveScale(1).getScale(), TOLERANCE);
-        assertEquals(0.5f, initial.applyAdaptiveScale(0.5f).getScale(), TOLERANCE);
-        assertEquals(1f, initial.applyAdaptiveScale(1.5f).getScale(), TOLERANCE);
-        assertEquals(0.8f, initial.applyAdaptiveScale(0.8f).getScale(), TOLERANCE);
-        // Restores back to the exact original value.
-        assertEquals(1f, initial.applyAdaptiveScale(0.8f).applyAdaptiveScale(1.25f).getScale(),
-                TOLERANCE);
+        assertEquals(1f, initial.scaleLinearly(1).getScale(), TOLERANCE);
+        assertEquals(0.5f, initial.scaleLinearly(0.5f).getScale(), TOLERANCE);
+        assertEquals(1f, initial.scaleLinearly(1.5f).getScale(), TOLERANCE);
+        assertEquals(0.8f, initial.scaleLinearly(0.8f).getScale(), TOLERANCE);
+        // Restores back to the exact original value since this is a linear scaling.
+        assertEquals(1f, initial.scaleLinearly(0.8f).scaleLinearly(1.25f).getScale(), TOLERANCE);
 
         initial = new PrimitiveSegment(VibrationEffect.Composition.PRIMITIVE_CLICK, 0, 0);
 
-        assertEquals(0f, initial.applyAdaptiveScale(1).getScale(), TOLERANCE);
-        assertEquals(0f, initial.applyAdaptiveScale(0.5f).getScale(), TOLERANCE);
-        assertEquals(0f, initial.applyAdaptiveScale(1.5f).getScale(), TOLERANCE);
-        assertEquals(0f, initial.applyAdaptiveScale(1.5f).applyAdaptiveScale(2 / 3f).getScale(),
-                TOLERANCE);
-        assertEquals(0f, initial.applyAdaptiveScale(0.8f).applyAdaptiveScale(1.25f).getScale(),
-                TOLERANCE);
+        assertEquals(0f, initial.scaleLinearly(1).getScale(), TOLERANCE);
+        assertEquals(0f, initial.scaleLinearly(0.5f).getScale(), TOLERANCE);
+        assertEquals(0f, initial.scaleLinearly(1.5f).getScale(), TOLERANCE);
+        assertEquals(0f, initial.scaleLinearly(1.5f).scaleLinearly(2 / 3f).getScale(), TOLERANCE);
+        assertEquals(0f, initial.scaleLinearly(0.8f).scaleLinearly(1.25f).getScale(), TOLERANCE);
     }
 
     @Test

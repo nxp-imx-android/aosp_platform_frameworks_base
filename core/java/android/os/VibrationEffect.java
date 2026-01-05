@@ -70,6 +70,8 @@ public abstract class VibrationEffect implements Parcelable {
     private static final int PARCEL_TOKEN_COMPOSED = 1;
     private static final int PARCEL_TOKEN_VENDOR_EFFECT = 2;
 
+    // Stevens' coefficient to scale the perceived vibration intensity.
+    private static final float SCALE_GAMMA = 0.65f;
     // If a vibration is playing for longer than 1s, it's probably not haptic feedback
     private static final long MAX_HAPTIC_FEEDBACK_DURATION = 1000;
     // If a vibration is playing more than 3 constants, it's probably not haptic feedback
@@ -637,6 +639,19 @@ public abstract class VibrationEffect implements Parcelable {
     public abstract VibrationEffect scale(float scaleFactor);
 
     /**
+     * Performs a linear scaling on the effect intensity with the given factor.
+     *
+     * @param scaleFactor scale factor to be applied to the intensity. Values within [0,1) will
+     *                    scale down the intensity, values larger than 1 will scale up
+     * @return this if there is no scaling to be done, or a copy of this effect with scaled
+     *         vibration intensity otherwise
+     *
+     * @hide
+     */
+    @NonNull
+    public abstract VibrationEffect scaleLinearly(float scaleFactor);
+
+    /**
      * Applies given scale factor as adaptive scale.
      *
      * @param scaleFactor scale factor to be applied to the intensity. Values within [0,1) will
@@ -686,14 +701,53 @@ public abstract class VibrationEffect implements Parcelable {
      * @hide
      */
     public static float scale(float intensity, float scaleFactor) {
-        if (scaleFactor < 0 || Float.compare(scaleFactor, 1f) == 0) {
-            return intensity;
+        if (Flags.hapticsScaleV2Enabled()) {
+            if (Float.compare(scaleFactor, 1) <= 0 || Float.compare(intensity, 0) == 0) {
+                // Scaling down or scaling zero intensity is straightforward.
+                return scaleFactor * intensity;
+            }
+            // Using S * x / (1 + (S - 1) * x^2) as the scale up function to converge to 1.0.
+            return (scaleFactor * intensity) / (1 + (scaleFactor - 1) * intensity * intensity);
         }
-        // Using S * x / (1 + (S - 1) * x^2) as the scale up function to converge to 1.0.
-        float scaledIntensity = (scaleFactor <= 1 || Float.compare(intensity, 0f) == 0)
-                ? scaleFactor * intensity
-                : (scaleFactor * intensity) / (1 + (scaleFactor - 1) * intensity * intensity);
-        return MathUtils.constrain(scaledIntensity, 0f, 1f);
+
+        // Applying gamma correction to the scale factor, which is the same as encoding the input
+        // value, scaling it, then decoding the scaled value.
+        float scale = MathUtils.pow(scaleFactor, 1f / SCALE_GAMMA);
+
+        if (scaleFactor <= 1) {
+            // Scale down is simply a gamma corrected application of scaleFactor to the intensity.
+            // Scale up requires a different curve to ensure the intensity will not become > 1.
+            return intensity * scale;
+        }
+
+        // Apply the scale factor a few more times to make the ramp curve closer to the raw scale.
+        float extraScale = MathUtils.pow(scaleFactor, 4f - scaleFactor);
+        float x = intensity * scale * extraScale;
+        float maxX = scale * extraScale; // scaled x for intensity == 1
+
+        float expX = MathUtils.exp(x);
+        float expMaxX = MathUtils.exp(maxX);
+
+        // Using f = tanh as the scale up function so the max value will converge.
+        // a = 1/f(maxX), used to scale f so that a*f(maxX) = 1 (the value will converge to 1).
+        float a = (expMaxX + 1f) / (expMaxX - 1f);
+        float fx = (expX - 1f) / (expX + 1f);
+
+        return MathUtils.constrain(a * fx, 0f, 1f);
+    }
+
+    /**
+     * Performs a linear scaling on the given vibration intensity by the given factor.
+     *
+     * @param intensity relative intensity of the effect, must be between 0 and 1.
+     * @param scaleFactor scale factor to be applied to the intensity. Values within [0,1) will
+     *                    scale down the intensity, values larger than 1 will scale up.
+     * @return the scaled intensity which will be values within [0, 1].
+     *
+     * @hide
+     */
+    public static float scaleLinearly(float intensity, float scaleFactor) {
+        return MathUtils.constrain(intensity * scaleFactor, 0f, 1f);
     }
 
     /**
@@ -966,8 +1020,15 @@ public abstract class VibrationEffect implements Parcelable {
         /** @hide */
         @NonNull
         @Override
+        public Composed scaleLinearly(float scaleFactor) {
+            return applyToSegments(VibrationEffectSegment::scaleLinearly, scaleFactor);
+        }
+
+        /** @hide */
+        @NonNull
+        @Override
         public Composed applyAdaptiveScale(float scaleFactor) {
-            return applyToSegments(VibrationEffectSegment::applyAdaptiveScale, scaleFactor);
+            return applyToSegments(VibrationEffectSegment::scaleLinearly, scaleFactor);
         }
 
         /** @hide */
@@ -1223,6 +1284,13 @@ public abstract class VibrationEffect implements Parcelable {
                     mAdaptiveScale);
             updated.validate();
             return updated;
+        }
+
+        /** @hide */
+        @NonNull
+        @Override
+        public VibrationEffect scaleLinearly(float scaleFactor) {
+            return scale(scaleFactor);
         }
 
         /** @hide */

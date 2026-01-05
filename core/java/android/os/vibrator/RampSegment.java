@@ -21,7 +21,6 @@ import android.annotation.TestApi;
 import android.os.Parcel;
 import android.os.VibrationEffect;
 import android.os.VibratorInfo;
-import android.util.MathUtils;
 
 import com.android.internal.util.Preconditions;
 
@@ -161,9 +160,9 @@ public final class RampSegment extends VibrationEffectSegment {
     /** @hide */
     @NonNull
     @Override
-    public RampSegment applyAdaptiveScale(float scaleFactor) {
-        float newStartAmplitude = MathUtils.constrain(mStartAmplitude * scaleFactor, 0f, 1f);
-        float newEndAmplitude = MathUtils.constrain(mEndAmplitude * scaleFactor, 0f, 1f);
+    public RampSegment scaleLinearly(float scaleFactor) {
+        float newStartAmplitude = VibrationEffect.scaleLinearly(mStartAmplitude, scaleFactor);
+        float newEndAmplitude = VibrationEffect.scaleLinearly(mEndAmplitude, scaleFactor);
         if (Float.compare(mStartAmplitude, newStartAmplitude) == 0
                 && Float.compare(mEndAmplitude, newEndAmplitude) == 0) {
             return this;
