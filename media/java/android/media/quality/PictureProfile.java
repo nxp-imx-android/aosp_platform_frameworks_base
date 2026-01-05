@@ -32,6 +32,9 @@ import androidx.annotation.RequiresPermission;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Profile for picture quality.
@@ -50,6 +53,8 @@ public final class PictureProfile implements Parcelable {
     @NonNull
     private final PersistableBundle mParams;
     private final PictureProfileHandle mHandle;
+    @NonNull
+    private final Map<String, PersistableBundle> mStreamStatusVariants;
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
@@ -254,6 +259,19 @@ public final class PictureProfile implements Parcelable {
         mParams = in.readPersistableBundle();
         mHandle = in.readParcelable(PictureProfileHandle.class.getClassLoader(),
                 PictureProfileHandle.class);
+        if (in.dataAvail() > 0) {
+            int variantSize = in.readInt();
+            Map<String, PersistableBundle> variants = new HashMap<>(variantSize);
+            for (int i = 0; i < variantSize; i++) {
+                String key = in.readString();
+                PersistableBundle val = in.readPersistableBundle();
+                variants.put(key, val);
+            }
+            mStreamStatusVariants = Collections.unmodifiableMap(variants);
+        } else {
+            // Legacy case: Initialize to empty to satisfy @NonNull final contract
+            mStreamStatusVariants = Collections.emptyMap();
+        }
     }
 
     @Override
@@ -265,6 +283,11 @@ public final class PictureProfile implements Parcelable {
         dest.writeString(mPackageName);
         dest.writePersistableBundle(mParams);
         dest.writeParcelable(mHandle, flags);
+        dest.writeInt(mStreamStatusVariants.size());
+        for (Map.Entry<String, PersistableBundle> entry : mStreamStatusVariants.entrySet()) {
+            dest.writeString(entry.getKey());
+            dest.writePersistableBundle(entry.getValue());
+        }
     }
 
     @Override
@@ -306,6 +329,32 @@ public final class PictureProfile implements Parcelable {
         this.mPackageName = packageName;
         this.mParams = params;
         this.mHandle = handle;
+        // Initialize the final field to empty default
+        this.mStreamStatusVariants = Collections.emptyMap();
+    }
+
+    /**
+     * Internal constructor used by Builder with variants support.
+     * @hide
+     */
+    public PictureProfile(
+            @Nullable String id,
+            int type,
+            @NonNull String name,
+            @Nullable String inputId,
+            @NonNull String packageName,
+            @NonNull PersistableBundle params,
+            @NonNull PictureProfileHandle handle,
+            @NonNull Map<String, PersistableBundle> streamStatusVariants) {
+        this.mId = id;
+        this.mType = type;
+        this.mName = name;
+        this.mInputId = inputId;
+        this.mPackageName = packageName;
+        this.mParams = params;
+        this.mHandle = handle;
+        // Defensive copy and unmodifiable
+        this.mStreamStatusVariants = Map.copyOf(streamStatusVariants);
     }
 
     /**
@@ -389,6 +438,19 @@ public final class PictureProfile implements Parcelable {
     }
 
     /**
+     * Gets the stream status variant parameters.
+     * <p>Returns a map where the key is the stream status.
+     * {@link MediaQualityContract#STREAM_STATUS_HDR10}
+     * and the value is the parameter bundle associated with that status.
+     * @return A map of status variants. Returns empty map if no variants are defined.
+     */
+    @NonNull
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public Map<String, PersistableBundle> getStreamStatusVariants() {
+        return mStreamStatusVariants;
+    }
+
+    /**
      * Add a string parameter
      * Used by system only.
      * @hide
@@ -409,7 +471,8 @@ public final class PictureProfile implements Parcelable {
                 orig.mInputId,
                 orig.mPackageName,
                 new PersistableBundle(orig.mParams),
-                orig.mHandle);
+                orig.mHandle,
+                orig.mStreamStatusVariants);
     }
 
     /**
@@ -437,6 +500,8 @@ public final class PictureProfile implements Parcelable {
         @NonNull
         private PersistableBundle mParams;
         private PictureProfileHandle mHandle;
+        @NonNull
+        private Map<String, PersistableBundle> mStreamStatusVariants = new HashMap<>();
 
         /**
          * Creates a new Builder.
@@ -456,6 +521,7 @@ public final class PictureProfile implements Parcelable {
             mInputId = p.getInputId();
             mParams = p.getParameters();
             mHandle = p.getHandle();
+            mStreamStatusVariants = new HashMap<>(p.getStreamStatusVariants());
         }
 
         /**
@@ -533,6 +599,24 @@ public final class PictureProfile implements Parcelable {
         }
 
         /**
+         * Adds a stream status variant parameter set.
+         * * <p>Use this to define overrides for specific stream statuses (e.g., HDR10).
+         * These parameters will be applied by the HAL when the specific stream status is detected.
+         *
+         * @param status The stream status string
+         *               (e.g., {@link MediaQualityContract#STREAM_STATUS_HDR10}).
+         * @param params The parameters to apply for this status.
+         */
+        @NonNull
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+        public Builder addStreamStatusVariant(
+                @NonNull @MediaQualityContract.StreamStatusValue String status,
+                @NonNull PersistableBundle params) {
+            mStreamStatusVariants.put(status, new PersistableBundle(params));
+            return this;
+        }
+
+        /**
          * Builds the instance.
          */
         @NonNull
@@ -545,7 +629,8 @@ public final class PictureProfile implements Parcelable {
                     mInputId,
                     mPackageName,
                     mParams,
-                    mHandle);
+                    mHandle,
+                    mStreamStatusVariants);
             return o;
         }
     }

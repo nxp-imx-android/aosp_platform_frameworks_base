@@ -28576,6 +28576,7 @@ package android.media.quality {
     method @NonNull public android.os.PersistableBundle getParameters();
     method @Nullable public String getProfileId();
     method public int getProfileType();
+    method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @NonNull public java.util.Map<java.lang.String,android.os.PersistableBundle> getStreamStatusVariants();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.media.quality.PictureProfile> CREATOR;
     field public static final int ERROR_DUPLICATE = 2; // 0x2
@@ -28590,6 +28591,7 @@ package android.media.quality {
   public static final class PictureProfile.Builder {
     ctor public PictureProfile.Builder(@NonNull String);
     ctor public PictureProfile.Builder(@NonNull android.media.quality.PictureProfile);
+    method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @NonNull public android.media.quality.PictureProfile.Builder addStreamStatusVariant(@NonNull String, @NonNull android.os.PersistableBundle);
     method @NonNull public android.media.quality.PictureProfile build();
     method @NonNull public android.media.quality.PictureProfile.Builder setParameters(@NonNull android.os.PersistableBundle);
   }
