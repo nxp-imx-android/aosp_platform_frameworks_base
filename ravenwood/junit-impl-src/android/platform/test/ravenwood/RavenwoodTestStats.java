@@ -65,9 +65,9 @@ import java.util.regex.Pattern;
 public class RavenwoodTestStats {
     private static final String TAG = RavenwoodInternalUtils.TAG;
     private static final String HEADER =
-            "Type,Label,Module,Class,Method,RawMethodName,AtestTarget,Reason,Annotations,"
-            + "Source,Line,Passed,Failed,Skipped,DurationMillis";
-    private static final String FORMAT = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%d,%d,%d,%d,%f\n";
+            "Type,Label,Module,Class,Method,Package,RawClass,RawMethodName,AtestTarget,Reason,"
+            + "Annotations,Source,Line,Passed,Failed,Skipped,DurationMillis";
+    private static final String FORMAT = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%d,%d,%d,%d,%f\n";
 
     private static RavenwoodTestStats sInstance;
 
@@ -365,6 +365,8 @@ public class RavenwoodTestStats {
                     buildClassLabel(testClass, passed, failed, skipped),
                     mTestModuleName, className,
                     "-", // method name
+                    escape(getPackageName(className)),
+                    escape(getClassName(className)),
                     "-", // raw method name
                     escape(buildAtestTarget(testClass, null)),
                     "-", // reason.
@@ -390,7 +392,10 @@ public class RavenwoodTestStats {
                 // Method label: "P"assed, "F"ailed, "S"kipped, "D"isabled
                 buildMethodLabel(outcome),
                 mTestModuleName, className,
-                escape(method), escape(rawMethodName),
+                escape(method),
+                escape(getPackageName(className)),
+                escape(getClassName(className)),
+                escape(rawMethodName),
                 escape(buildAtestTarget(testClass, method)),
                 escape(outcome.reason()),
                 escape(getAnnotations(outcome.testDescription)),
@@ -399,6 +404,24 @@ public class RavenwoodTestStats {
                 outcome.passedCount(), outcome.failedCount(), outcome.skippedCount(),
                 outcome.duration.toMillis() / 1000f);
         mOutputWriter.flush();
+    }
+
+    private static String getPackageName(String className) {
+        var pos = className.lastIndexOf('.');
+        if (pos < 0) {
+            return "";
+        } else {
+            return className.substring(0, pos);
+        }
+    }
+
+    private static String getClassName(String className) {
+        var pos = className.lastIndexOf('.');
+        if (pos < 0) {
+            return className;
+        } else {
+            return className.substring(pos + 1);
+        }
     }
 
     /** Generate a label for a method row. */
