@@ -480,6 +480,7 @@ class Task extends TaskFragment {
      * When set, the leaf task should be kept in the current root task if the relaunch originates
      * from other source task.
      */
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
     boolean mPreserveLeafTaskIfRelaunch;
 
     /**
@@ -6445,6 +6446,28 @@ class Task extends TaskFragment {
         if (isOrganized()) {
             mAtmService.mTaskOrganizerController.onTaskInfoChanged(this, force);
         }
+    }
+
+    /**
+     * Returns the root task of this task if leaf preservation is enabled.
+     *
+     * <p>This method evaluates the root task of this task instance. If that root task exists and
+     * has {@code mPreserveLeafTaskIfRelaunch} set to true, it is returned. This allows
+     * the caller to prioritize the existing root structure over the source's, preventing leaf tasks
+     * from being unexpectedly reparented during a relaunch.
+     *
+     * @return the root task if it exists and leaf preservation is enabled; {@code null} otherwise.
+     */
+    @Nullable
+    Task getPreservedRootTaskIfEnabled() {
+        if (!com.android.window.flags.Flags.enablePreserveLeafTaskIfRelaunch()) {
+            return null;
+        }
+        final Task rootTask = getCreatedByOrganizerTask();
+        if (rootTask != null && rootTask.mPreserveLeafTaskIfRelaunch) {
+            return rootTask;
+        }
+        return null;
     }
 
     void setPreserveLeafTaskIfRelaunch(boolean preserveLeafTaskIfRelaunch) {

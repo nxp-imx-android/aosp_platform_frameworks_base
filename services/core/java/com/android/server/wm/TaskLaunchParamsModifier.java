@@ -456,10 +456,8 @@ class TaskLaunchParamsModifier extends DefaultLaunchParamsModifier {
 
         // Skip inheriting if target root task preserves leaf task and windowing modes differ.
         final Task targetRootTask =
-                targetTask != null ? targetTask.getCreatedByOrganizerTask() : null;
-        if (com.android.window.flags.Flags.enablePreserveLeafTaskIfRelaunch()
-                && targetRootTask != null && targetRootTask.mPreserveLeafTaskIfRelaunch
-                && targetRootTask.getWindowingMode() != sourceWindowingMode) {
+                targetTask != null ? targetTask.getPreservedRootTaskIfEnabled() : null;
+        if (targetRootTask != null && targetRootTask.getWindowingMode() != sourceWindowingMode) {
             return false;
         }
 
