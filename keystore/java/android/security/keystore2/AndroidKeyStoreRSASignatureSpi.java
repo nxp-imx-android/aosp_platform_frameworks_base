@@ -193,6 +193,7 @@ abstract class AndroidKeyStoreRSASignatureSpi extends AndroidKeyStoreSignatureSp
 
     @Override
     protected final void addAlgorithmSpecificParametersToBegin(
+            @NonNull AndroidKeyStoreKey key,
             @NonNull List<KeyParameter> parameters) {
         parameters.add(KeyStore2ParameterUtils.makeEnum(
                 KeymasterDefs.KM_TAG_ALGORITHM, KeymasterDefs.KM_ALGORITHM_RSA
