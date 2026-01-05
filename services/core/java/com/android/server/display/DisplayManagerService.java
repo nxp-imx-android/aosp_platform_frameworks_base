@@ -2970,7 +2970,8 @@ public final class DisplayManagerService extends SystemService {
                         + "be greater than 0 when setting the global user preferred display mode.");
             }
             DisplayDevice displayDevice = getDeviceForDisplayLocked(displayId);
-            if (displayDevice == null) {
+            // Allow a null displayDevice for INVALID_DISPLAY as it has no logical display mapping
+            if (displayDevice == null && displayId != Display.INVALID_DISPLAY) {
                 return;
             }
             if (!mFlags.isModeSwitchWithoutSavingEnabled()) {

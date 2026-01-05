@@ -3841,6 +3841,40 @@ public class DisplayManagerServiceTest {
     }
 
     @Test
+    public void testSetGlobalUserPreferredDisplayMode() throws Exception {
+        mPermissionEnforcer.grant(MODIFY_USER_PREFERRED_DISPLAY_MODE);
+        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
+
+        Display.Mode[] modes = new Display.Mode[2];
+        modes[0] = new Display.Mode(/*id=*/1, /*width=*/100, /*height=*/200, /*rr=*/60);
+        modes[1] = new Display.Mode(/*id=*/2, /*width=*/200, /*height=*/400, /*rr=*/30);
+
+        // Set up two fake displays
+        FakeDisplayDevice displayDevice1 = createFakeDisplayDevice(
+                mDisplayManager, modes, Display.TYPE_EXTERNAL, "testDevice1");
+        FakeDisplayDevice displayDevice2 = createFakeDisplayDevice(
+                mDisplayManager, modes, Display.TYPE_EXTERNAL, "testDevice2");
+        flushHandlers();
+
+        mDisplayManager.onBootPhase(SystemService.PHASE_BOOT_COMPLETED);
+
+        DisplayManagerService.BinderService bs = mDisplayManager.new BinderService();
+
+        // Set the global user preferred display mode by using INVALID_DISPLAY
+        bs.setUserPreferredDisplayMode(Display.INVALID_DISPLAY, modes[1], true);
+
+        // Verify that the user preferred mode was set on both displays
+        assertEquals("Failed to set testDevice1 user preferred display mode", modes[1],
+                displayDevice1.getUserPreferredDisplayModeLocked());
+        assertEquals("Failed to set testDevice2 user preferred display mode", modes[1],
+                displayDevice2.getUserPreferredDisplayModeLocked());
+
+        // Verify that getting the global user preferred mode returns the mode we just set
+        Display.Mode globalMode = bs.getUserPreferredDisplayMode(Display.INVALID_DISPLAY);
+        assertEquals(modes[1], globalMode);
+    }
+
+    @Test
     public void testResolutionGetsRestored() throws Exception {
         mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
 
