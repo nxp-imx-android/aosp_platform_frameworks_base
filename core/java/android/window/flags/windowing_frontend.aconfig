@@ -423,16 +423,6 @@ flag {
 }
 
 flag {
-    name: "predictive_back_quick_double_back_swipes"
-    namespace: "windowing_frontend"
-    description: "Allow quick double predictive back system animations"
-    bug: "455759359"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "sleep_wake_transitions"
     namespace: "windowing_frontend"
     description: "Make the rest of sleep/wake situations into transitions."

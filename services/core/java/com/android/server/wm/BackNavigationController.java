@@ -179,13 +179,8 @@ class BackNavigationController {
         synchronized (wmService.mGlobalLock) {
             if (isMonitoringFinishTransition()) {
                 Slog.w(TAG, "Previous animation hasn't finish, status: " + mAnimationHandler);
-                if (com.android.window.flags.Flags.predictiveBackQuickDoubleBackSwipes()) {
-                    infoBuilder.setType(BackNavigationInfo.TYPE_IN_TRANSITION);
-                    return infoBuilder.build();
-                } else {
-                    // Don't start any animation for it.
-                    return null;
-                }
+                infoBuilder.setType(BackNavigationInfo.TYPE_IN_TRANSITION);
+                return infoBuilder.build();
             }
 
             // In projected mode, main device remains unchanged when connected to external display.

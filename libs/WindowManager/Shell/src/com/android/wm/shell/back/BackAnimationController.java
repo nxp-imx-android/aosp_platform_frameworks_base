@@ -29,7 +29,6 @@ import static android.window.TransitionInfo.FLAG_MOVED_TO_TOP;
 import static android.window.TransitionInfo.FLAG_SHOW_WALLPAPER;
 
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_PREDICTIVE_BACK_HOME;
-import static com.android.window.flags.Flags.predictiveBackQuickDoubleBackSwipes;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BACK_PREVIEW;
 
 import android.animation.ValueAnimator;
@@ -663,16 +662,10 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
 
     private void startBackNavigation(@NonNull BackTouchTracker touchTracker) {
         if (touchTracker != mCurrentTracker) {
-            if (predictiveBackQuickDoubleBackSwipes()) {
-                // Another back transition is still ongoing. Let's schedule the transition idle
-                // runner to wait for it to finish.
-                scheduleTransitionIdleRunner();
-                return;
-            } else {
-                // Only start the back navigation if no other gesture is being processed. Otherwise,
-                // the back navigation will fall back to legacy back event injection.
-                return;
-            }
+            // Another back transition is still ongoing. Let's schedule the transition idle
+            // runner to wait for it to finish.
+            scheduleTransitionIdleRunner();
+            return;
         }
         try {
             startLatencyTracking();
@@ -1121,9 +1114,6 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
         mActiveCallback = null;
         mApps = null;
         mOnBackStartDispatched = false;
-        if (!predictiveBackQuickDoubleBackSwipes()) {
-            mThresholdCrossed = false;
-        }
         mPointersPilfered = false;
         mBackAnimationTriggered = false;
         mShellBackAnimationRegistry.resetDefaultCrossActivity();
