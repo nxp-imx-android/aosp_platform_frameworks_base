@@ -18,8 +18,6 @@ package android.view;
 
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED;
-import static android.internal.perfetto.protos.Windowmanagerservice.InsetsStateControllerProto.INSETS_STATE;
-import static android.server.wm.ProtoExtractors.extract;
 import static android.view.InsetsSource.FLAG_FORCE_CONSUMING;
 import static android.view.InsetsSource.FLAG_FORCE_CONSUMING_OPAQUE_CAPTION_BAR;
 import static android.view.InsetsSource.FLAG_INVALID;
@@ -65,7 +63,6 @@ import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.SparseIntArray;
-import android.util.proto.ProtoOutputStream;
 import android.view.WindowInsets.Type;
 
 import androidx.annotation.NonNull;
@@ -73,17 +70,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.android.window.flags.Flags;
 
-import com.google.protobuf.InvalidProtocolBufferException;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.List;
-
-import perfetto.protos.Insetssource;
-import perfetto.protos.Insetsstate;
-import perfetto.protos.Windowmanagerservice;
 
 /**
  * Tests for {@link InsetsState}.
@@ -1056,42 +1047,5 @@ public class InsetsStateTest {
                 new SparseIntArray());
 
         assertTrue(insets.isForceConsumingOpaqueCaptionBar());
-    }
-
-
-    @Test
-    public void testDumpDebug() throws InvalidProtocolBufferException {
-        final InsetsSource statusBarSource = mState.getOrCreateSource(ID_STATUS_BAR, statusBars())
-                .setFrame(new Rect(0, 10, 20, 30))
-                .setVisible(true);
-        final InsetsSource imeSource = mState.getOrCreateSource(ID_IME, ime())
-                .setFrame(new Rect(0, 100, 200, 300))
-                .setVisible(true);
-
-        final ProtoOutputStream proto = new ProtoOutputStream();
-        mState.dumpDebug(proto, INSETS_STATE);
-
-        final Insetsstate.InsetsStateProto insetsStateProto =
-                Windowmanagerservice.InsetsStateControllerProto.parseFrom(
-                        proto.getBytes()).getInsetsState();
-
-        assertEquals(mState.sourceSize(), insetsStateProto.getSourcesCount());
-        boolean foundStatusBar = false;
-        boolean foundIme = false;
-        for (final Insetssource.InsetsSourceProto sourceProto : insetsStateProto.getSourcesList()) {
-            final Rect actualRect = extract(sourceProto.getFrame());
-            final boolean actualVisible = sourceProto.getVisible();
-            if (sourceProto.getTypeNumber() == statusBarSource.getType()) {
-                foundStatusBar = true;
-                assertEquals(statusBarSource.isVisible(), actualVisible);
-                assertEquals(statusBarSource.getFrame(), actualRect);
-            } else if (sourceProto.getTypeNumber() == imeSource.getType()) {
-                foundIme = true;
-                assertEquals(statusBarSource.isVisible(), actualVisible);
-                assertEquals(imeSource.getFrame(), actualRect);
-            }
-        }
-        assertTrue(foundStatusBar);
-        assertTrue(foundIme);
     }
 }

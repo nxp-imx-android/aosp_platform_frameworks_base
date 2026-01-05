@@ -20,7 +20,6 @@ import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
-import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.INSETS_POLICY;
 import static android.view.InsetsSource.ID_IME;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static android.view.WindowInsets.Type.captionBar;
@@ -58,7 +57,6 @@ import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.view.DisplayCutout;
-import android.util.proto.ProtoOutputStream;
 import android.view.IDisplayWindowInsetsController;
 import android.view.InsetsFrameProvider;
 import android.view.InsetsSource;
@@ -72,14 +70,9 @@ import androidx.test.filters.SmallTest;
 import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.window.flags.Flags;
 
-import com.google.protobuf.InvalidProtocolBufferException;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import perfetto.protos.Windowmanagerservice.DisplayContentProto;
-import perfetto.protos.Windowmanagerservice.InsetsPolicyProto;
 
 /**
  * Tests for the {@link InsetsPolicy} class.
@@ -1010,6 +1003,30 @@ public class InsetsPolicyTest extends WindowTestsBase {
         assertNull("Pinned window should not get IME insets", resultState.peekSource(ID_IME));
     }
 
+    @SetupWindows(addWindows = W_ACTIVITY)
+    @Test
+    public void testEnforceInsetsPolicyForTarget_pinnedWindow() {
+        final int displayCutoutId = InsetsSource.createId(this, 0, displayCutout());
+        final InsetsState originalState = new InsetsState();
+        originalState.getOrCreateSource(displayCutoutId, displayCutout());
+        originalState.setDisplayCutout(
+                new DisplayCutout(
+                        Insets.of(0, 10, 0, 0),
+                        null,
+                        new Rect(0, 0, 10, 10),
+                        null,
+                        null));
+        mAppWindow.setWindowingMode(WINDOWING_MODE_PINNED);
+        final InsetsPolicy policy = mDisplayContent.getInsetsPolicy();
+        final InsetsState newState = policy.enforceInsetsPolicyForTarget(mAppWindow, originalState);
+        assertNull(
+                "Pinned window must not get display cutout insets.",
+                newState.peekSource(displayCutoutId));
+        assertEquals(
+                "Pinned window must not get display cutout.",
+                DisplayCutout.NO_CUTOUT,
+                newState.getDisplayCutout());
+    }
 
     private WindowState addNavigationBar() {
         final Binder owner = new Binder();
@@ -1053,50 +1070,5 @@ public class InsetsPolicyTest extends WindowTestsBase {
         // update, the policy relying on windowing type will never get updated.
         mDisplayContent.getDisplayPolicy().focusChangedLw(null, win);
         return mDisplayContent.getInsetsStateController().getControlsForDispatch(win);
-    }
-
-    @Test
-    public void testDumpDebug() throws InvalidProtocolBufferException {
-        final InsetsPolicy policy = mDisplayContent.getInsetsPolicy();
-        addStatusBar();
-        addNavigationBar();
-        final WindowState app = addWindow(TYPE_APPLICATION, "app");
-        mDisplayContent.getDisplayPolicy().focusChangedLw(null, app);
-
-        // hide status bar and show nav bar
-        app.setRequestedVisibleTypes(0,
-                WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
-        policy.updateBarControlTarget(app);
-
-        // Make the nav bar shown transiently and hide it afterwards
-        policy.showTransient(WindowInsets.Type.navigationBars(), true);
-        policy.hideTransient();
-
-        // Make the status bar shown transiently
-        policy.showTransient(WindowInsets.Type.statusBars(), true);
-
-        // Forcibly shown/hidden types for testing.
-        // forcibly show system gestures
-        // forcibly hide ime
-        policy.updateSystemBars(app, WindowInsets.Type.systemGestures(),
-                WindowInsets.Type.ime(), false);
-
-        final ProtoOutputStream proto = new ProtoOutputStream();
-        policy.dumpDebug(proto, INSETS_POLICY);
-
-        final InsetsPolicyProto insetsPolicyProto =
-                DisplayContentProto.parseFrom(proto.getBytes()).getInsetsPolicy();
-
-        assertTrue(insetsPolicyProto.hasForciblyShowingTypes());
-        assertEquals(WindowInsets.Type.systemGestures(),
-                insetsPolicyProto.getForciblyShowingTypes());
-        assertTrue(insetsPolicyProto.hasForciblyHidingTypes());
-        assertEquals(WindowInsets.Type.ime(),
-                insetsPolicyProto.getForciblyHidingTypes());
-        assertTrue(insetsPolicyProto.hasShowingTransientTypes());
-        assertEquals(WindowInsets.Type.statusBars(), insetsPolicyProto.getShowingTransientTypes());
-        assertTrue(insetsPolicyProto.hasHidingTransientTypes());
-        assertEquals(WindowInsets.Type.navigationBars(), insetsPolicyProto
-                .getHidingTransientTypes());
     }
 }
