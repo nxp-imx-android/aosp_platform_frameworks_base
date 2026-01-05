@@ -62,10 +62,10 @@ android_ravenwood_test {
     name: "AudioServiceTestsRavenwood",
 
     srcs: [
-        "src/com/android/server/audio/audio/ActivityDebouncerTest.java",
-        "src/com/android/server/audio/audio/AudioServerPermissionProviderTest.java",
-        "src/com/android/server/audio/audio/MediaFocusControlTest.java",
-        "src/com/android/server/audio/audio/ServiceHolderTest.java",
+        "src/com/android/server/audio/ActivityDebouncerTest.java",
+        "src/com/android/server/audio/AudioServerPermissionProviderTest.java",
+        "src/com/android/server/audio/MediaFocusControlTest.java",
+        "src/com/android/server/audio/ServiceHolderTest.java",
     ],
 
     static_libs: shared_deps + [
