@@ -1915,9 +1915,7 @@ public class TransitionTests extends WindowTestsBase {
         // No need to wait for the activity in transient hide task.
         assertEquals(WindowContainer.SYNC_STATE_NONE, app.mSyncState);
         // The recents transition can play without waiting for the redraw to complete.
-        if (com.android.window.flags.Flags.skipAddRecentsToSyncSet()) {
-            assertEquals(WindowContainer.SYNC_STATE_NONE, recent.mSyncState);
-        }
+        assertEquals(WindowContainer.SYNC_STATE_NONE, recent.mSyncState);
     }
 
     @Test
