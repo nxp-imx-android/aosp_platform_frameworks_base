@@ -13602,10 +13602,11 @@ package android.security.advancedprotection {
 
   public final class AdvancedProtectionFeature implements android.os.Parcelable {
     ctor @Deprecated @FlaggedApi("android.security.aapm_api_v2") public AdvancedProtectionFeature(int);
-    ctor @FlaggedApi("android.security.aapm_api_v2") public AdvancedProtectionFeature(int, int);
+    ctor @FlaggedApi("android.security.aapm_api_v2") public AdvancedProtectionFeature(int, boolean, int);
     method public int describeContents();
     method public int getId();
     method @FlaggedApi("android.security.aapm_api_v2") public int getProvisioningMode();
+    method @FlaggedApi("android.security.aapm_api_v2") public boolean isEnabled();
     method @FlaggedApi("android.security.aapm_api_v2") public boolean isProvisioned();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.security.advancedprotection.AdvancedProtectionFeature> CREATOR;
