@@ -36,6 +36,7 @@ import android.util.SparseArray;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.Keep;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.os.SomeArgs;
 import com.android.internal.os.TimeoutRecord;
 import com.android.internal.util.RingBuffer;
 
@@ -110,6 +111,11 @@ public class AnrTimer<V> implements AutoCloseable {
      */
     private static final long TRACE_TAG = Trace.TRACE_TAG_ACTIVITY_MANAGER;
 
+    // Constants for ANR warning
+    public static final String ANR_ID = "ANR_ID";
+    public static final String UID = "UID";
+    public static final String ELAPSED_TIME_MS = "ELAPSED_TIME_MS";
+
     /**
      * Fetch the Linux pid from the object. The returned value may be zero to indicate that there
      * is no valid pid available.
@@ -163,8 +169,17 @@ public class AnrTimer<V> implements AutoCloseable {
      */
     private static final int TOKEN_LONG_METHOD_TRACING = 0x4d54;
 
+    /** Token for ANR warning notification. This value is an arbitrary unique identifier. */
+    public static final int TOKEN_ANR_WARNING = 0x4157;
+
     /** Minimum duration to trace long methods */
     private static final int MIN_LMT_DURATION_MS = 1000;
+
+    /**
+     * Default value when message id is not set for ANR Warning which implies ANR warning handling
+     * is skipped.
+     */
+    private static final int ANR_WARNING_MESSAGE_ID_UNSET = -1;
 
     /**
      * This class provides build-style arguments to an AnrTimer constructor.  This simplifies the
@@ -191,11 +206,18 @@ public class AnrTimer<V> implements AutoCloseable {
         private static final SplitPoint sLongMethodTracingPoint =
                 new SplitPoint(50, TOKEN_LONG_METHOD_TRACING);
 
+        /** Split point for ANR warning at 50% elapsed time. */
+        private static final SplitPoint sAnrWarning50PercentPoint =
+                new SplitPoint(50, TOKEN_ANR_WARNING);
+
         /** The Injector (used only for testing). */
         private Injector mInjector = AnrTimer.sDefaultInjector;
 
         /** Grant timer extensions when the system is heavily loaded. */
         private boolean mExtend = false;
+
+        /** Id used for ANR warning to send the message back. Default value */
+        private int mAnrWarningMessageId = ANR_WARNING_MESSAGE_ID_UNSET;
 
         /**
          * All split points, each specifying a percent threshold and an associated token.
@@ -247,6 +269,20 @@ public class AnrTimer<V> implements AutoCloseable {
             }
             return this;
 
+        }
+
+        public Args anrWarning(boolean enabled) {
+            if (enabled) {
+                mSplitPoints.add(sAnrWarning50PercentPoint);
+            } else {
+                mSplitPoints.remove(sAnrWarning50PercentPoint);
+            }
+            return this;
+        }
+
+        public Args anrWarningMessageId(int id) {
+            mAnrWarningMessageId = id;
+            return this;
         }
 
         /**
@@ -893,6 +929,9 @@ public class AnrTimer<V> implements AutoCloseable {
             LongMethodTracer.trigger(pid,
                     (int) Math.max(MIN_LMT_DURATION_MS, elapsedMs * 1.5));
             return;
+        } else if (token == TOKEN_ANR_WARNING) {
+            handleAnrWarningNotification(timerId, elapsedMs);
+            return;
         }
 
         // The token is not requesting long method tracing.  The event is forwarded to the message
@@ -953,6 +992,42 @@ public class AnrTimer<V> implements AutoCloseable {
     protected void finalize() throws Throwable {
         close();
         super.finalize();
+    }
+
+    /**
+     * Handles an ANR warning callback from the native timer.
+     *
+     * <p>This method is called from {@link #notifyEarly} when the native AnrTimer service reaches a
+     * pre-defined warning threshold for a running timer. It takes the raw ANR metadata from the
+     * native callback, look up the object associated with the timer and package all the information
+     * into a {@link Message}.
+     *
+     * <p>The message is then sent to the registered {@link #mHandler} for ANR warning.
+     *
+     * @param timerId The unique ID of the timer that fired.
+     * @param elapsedTimeMs The time that has elapsed since the timer started in milliseconds.
+     */
+    private void handleAnrWarningNotification(int timerId, long elapsedTimeMs) {
+        V timerArg;
+
+        // If ANR warning message id is not set, do early return.
+        if (mArgs.mAnrWarningMessageId == ANR_WARNING_MESSAGE_ID_UNSET) {
+            return;
+        }
+        synchronized (mLock) {
+            // Look up the object associated with this timer. If timer is canceled after the ANR
+            // warning callback, this can be null and do early return.
+            timerArg = mTimerArgMap.get(timerId);
+            if (timerArg == null) {
+                return;
+            }
+        }
+
+        final SomeArgs args = SomeArgs.obtain();
+        args.arg1 = timerArg;
+        args.argi1 = timerId;
+        args.argl1 = elapsedTimeMs;
+        mHandler.obtainMessage(mArgs.mAnrWarningMessageId, args).sendToTarget();
     }
 
     /**

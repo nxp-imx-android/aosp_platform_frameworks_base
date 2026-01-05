@@ -27,6 +27,7 @@ import android.app.GrantedUriPermission;
 import android.app.IApplicationStartInfoCompleteListener;
 import android.app.IApplicationThread;
 import android.app.IActivityController;
+import android.app.IAnrWarningCallback;
 import android.app.IAppTask;
 import android.app.IForegroundServiceObserver;
 import android.app.IInstrumentationWatcher;
@@ -80,7 +81,6 @@ import android.view.RemoteAnimationAdapter;
 import com.android.internal.app.IVoiceInteractor;
 import com.android.internal.os.IResultReceiver;
 import com.android.internal.policy.IKeyguardDismissCallback;
-
 import java.util.List;
 
 /**
@@ -1056,4 +1056,14 @@ interface IActivityManager {
      */
     oneway void reportOptimizationInfo(in IBinder app, in String compilerFilter,
             in String compilationReason);
+
+    /**
+     * Registers a listener to notify about the potential ANR.
+     */
+    void registerAnrWarningListener(in IAnrWarningCallback callback);
+
+    /**
+     * Unregisters the listener previously registered for ANR warning.
+     */
+    void unregisterAnrWarningListener(in IAnrWarningCallback callback);
 }

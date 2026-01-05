@@ -38,3 +38,11 @@ flag {
     description: "Include the ANR info object in the ApplicationExitInfo which contains anr id, anr type, user perceptible, timeout "
     bug: "459886343"
 }
+
+flag {
+    name: "enable_anr_warning_callback"
+    namespace: "system_performance"
+    is_exported: true
+    description: "Enables a callback that warns an application when it is at risk of an ANR."
+    bug: "459887078"
+}
