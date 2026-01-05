@@ -88,3 +88,36 @@ test_module_config {
         "org.junit.Ignore",
     ],
 }
+
+android_library {
+    name: "SystemUI_test_fixtures",
+
+    use_resource_processor: true,
+    manifest: "AndroidManifest-base.xml",
+
+    srcs: [
+        ":SystemUI-tests-utils",
+    ],
+
+    libs: [
+        "SystemUI-application",
+
+        "android.test.mock.stubs.system",
+        "androidx.compose.ui_ui-test-junit4",
+        "androidx.core_core-animation-testing",
+        "flag-junit-base",
+        "flag-junit",
+        "mockito-kotlin-nodeps",
+        "mockito-target-extended-minus-junit4",
+        "ravenwood-junit",
+        "SystemUICustomizationTestUtils",
+        "testables",
+        "truth",
+    ],
+
+    plugins: [
+        // TODO (b/473565514): Remove all usages of dagger from test fixtures so we can
+        // skip annotation processing
+        "dagger2-compiler",
+    ],
+}
