@@ -178,3 +178,10 @@ flag {
     is_exported: true
     bug: "425418052"
 }
+
+flag {
+    name: "atomic_traversal_barrier"
+    namespace: "system_performance"
+    description: "Control whether traversal sync barriers are stored in atomics."
+    bug: "464275874"
+}
