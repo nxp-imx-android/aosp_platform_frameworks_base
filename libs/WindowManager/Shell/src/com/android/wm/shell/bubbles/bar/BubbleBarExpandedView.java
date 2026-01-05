@@ -523,6 +523,27 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
         mMenuViewController.updateMenu(bubble);
     }
 
+    /** Handle locale changes.*/
+    public void updateLocale() {
+        if (mOverflowView != null) {
+            mOverflowView.updateLocale();
+        }
+    }
+
+    /** Handle font size changes.*/
+    public void updateFontSize() {
+        if (mOverflowView != null) {
+            mOverflowView.updateFontSize();
+        }
+    }
+
+    /** Handle theme changes.*/
+    public void updateTheme() {
+        if (mOverflowView != null) {
+            mOverflowView.updateTheme();
+        }
+    }
+
     /** The task id of the activity shown in the task view, if it exists. */
     public int getTaskId() {
         return mBubbleTaskViewListener != null

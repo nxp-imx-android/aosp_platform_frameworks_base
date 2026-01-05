@@ -306,6 +306,9 @@ public class BubbleController implements ConfigurationChangeListener,
     /** Saved locale, used to detect local changes in {@link #onConfigurationChanged}. */
     private Locale mLocale = null;
 
+    /** Saved night mode, used to detect night mode changes in {@link #onConfigurationChanged}. */
+    private Boolean mIsNightMode = null;
+
     /** Saved direction, used to detect layout direction changes @link #onConfigChanged}. */
     private int mLayoutDirection = View.LAYOUT_DIRECTION_UNDEFINED;
 
@@ -1376,34 +1379,46 @@ public class BubbleController implements ConfigurationChangeListener,
         if (mLayerView != null) {
             mLayerView.update(deviceConfig);
         }
-        if (mStackView != null && newConfig != null) {
-            if (newConfig.densityDpi != mDensityDpi
-                    || !newConfig.windowConfiguration.getBounds().equals(mScreenBounds)) {
-                mDensityDpi = newConfig.densityDpi;
-                mScreenBounds.set(newConfig.windowConfiguration.getBounds());
-                mBubbleData.onMaxBubblesChanged();
-                mBubbleIconFactory = new BubbleIconFactory(mContext,
-                        mContext.getResources().getDimensionPixelSize(R.dimen.bubble_size),
-                        mContext.getResources().getDimensionPixelSize(R.dimen.bubble_badge_size),
-                        mContext.getResources().getColor(
-                                com.android.launcher3.icons.R.color.important_conversation),
-                        mContext.getResources().getDimensionPixelSize(
-                                com.android.internal.R.dimen.importance_ring_stroke_width));
-                mStackView.onDisplaySizeChanged();
-            }
-            if (newConfig.fontScale != mFontScale) {
-                mFontScale = newConfig.fontScale;
+        if (newConfig == null) {
+            return;
+        }
+        BubbleOverflow bubbleOverflow = mBubbleData.getOverflow();
+        if (mStackView != null
+                && (newConfig.densityDpi != mDensityDpi
+                || !newConfig.windowConfiguration.getBounds().equals(mScreenBounds))) {
+            mDensityDpi = newConfig.densityDpi;
+            mScreenBounds.set(newConfig.windowConfiguration.getBounds());
+            mBubbleData.onMaxBubblesChanged();
+            mBubbleIconFactory = new BubbleIconFactory(mContext,
+                    mContext.getResources().getDimensionPixelSize(R.dimen.bubble_size),
+                    mContext.getResources().getDimensionPixelSize(R.dimen.bubble_badge_size),
+                    mContext.getResources().getColor(
+                            com.android.launcher3.icons.R.color.important_conversation),
+                    mContext.getResources().getDimensionPixelSize(
+                            com.android.internal.R.dimen.importance_ring_stroke_width));
+            mStackView.onDisplaySizeChanged();
+        }
+        if (newConfig.fontScale != mFontScale) {
+            mFontScale = newConfig.fontScale;
+            if (mStackView != null) {
                 mStackView.updateFontScale();
             }
-            if (newConfig.getLayoutDirection() != mLayoutDirection) {
-                mLayoutDirection = newConfig.getLayoutDirection();
-                mStackView.onLayoutDirectionChanged(mLayoutDirection);
-            }
-            Locale newLocale = newConfig.locale;
-            if (newLocale != null && !newLocale.equals(mLocale)) {
-                mLocale = newLocale;
-                mStackView.updateLocale();
-            }
+            bubbleOverflow.updateFontSize();
+        }
+        if (mStackView != null && newConfig.getLayoutDirection() != mLayoutDirection) {
+            mLayoutDirection = newConfig.getLayoutDirection();
+            mStackView.onLayoutDirectionChanged(mLayoutDirection);
+        }
+        Locale newLocale = newConfig.locale;
+        if (newLocale != null && !newLocale.equals(mLocale)) {
+            mLocale = newLocale;
+            bubbleOverflow.updateLocale();
+        }
+        final int mode = newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        final boolean isNightMode = (mode == Configuration.UI_MODE_NIGHT_YES);
+        if (mIsNightMode == null || mIsNightMode != isNightMode) {
+            mIsNightMode = isNightMode;
+            bubbleOverflow.updateTheme();
         }
     }
 
