@@ -22,6 +22,7 @@ import android.content.Context
 import android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR_SUB_PANEL
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.jank.InteractionJankMonitor
+import com.android.internal.logging.UiEventLogger
 import com.android.settingslib.users.UserCreatingDialog
 import com.android.systemui.CoreStartable
 import com.android.systemui.animation.DialogCuj
@@ -30,6 +31,9 @@ import com.android.systemui.classifier.FalsingCollector
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepository
+import com.android.systemui.plugins.ActivityStarter
+import com.android.systemui.plugins.FalsingManager
+import com.android.systemui.qs.tiles.UserDetailView
 import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor
 import com.android.systemui.user.UserSwitchFullscreenDialog
 import com.android.systemui.user.domain.interactor.UserSwitcherInteractor
@@ -37,6 +41,7 @@ import com.android.systemui.user.domain.model.ShowDialogRequestModel
 import com.android.systemui.user.ui.viewmodel.UserSwitcherViewModel
 import dagger.Lazy
 import javax.inject.Inject
+import javax.inject.Provider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.filterNotNull
 
@@ -46,15 +51,18 @@ class UserSwitcherDialogCoordinator
 @Inject
 constructor(
     @Application private val applicationScope: Lazy<CoroutineScope>,
+    private val falsingManager: Lazy<FalsingManager>,
     private val dialogTransitionAnimator: Lazy<DialogTransitionAnimator>,
     private val interactor: Lazy<UserSwitcherInteractor>,
+    private val userDetailAdapterProvider: Provider<UserDetailView.Adapter>,
+    private val eventLogger: Lazy<UiEventLogger>,
+    private val activityStarter: Lazy<ActivityStarter>,
     private val falsingCollector: Lazy<FalsingCollector>,
     private val userSwitcherViewModel: Lazy<UserSwitcherViewModel>,
     private val shadeDialogContextInteractor: Lazy<ShadeDialogContextInteractor>,
     private val displayPropertiesRepository: Lazy<DisplayWindowPropertiesRepository>,
     private val addUserDialogDelegateFactory: AddUserDialogDelegate.Factory,
     private val exitGuestDialogDelegateFactory: ExitGuestDialogDelegate.Factory,
-    private val userSwitchDialogDelegate: UserSwitchDialogDelegate,
 ) : CoreStartable {
 
     private var currentDialog: Dialog? = null
@@ -110,7 +118,14 @@ constructor(
                             )
                         is ShowDialogRequestModel.ShowUserSwitcherDialog ->
                             Pair(
-                                userSwitchDialogDelegate.createDialog(),
+                                UserSwitchDialogDelegate(
+                                    context = context,
+                                    adapter = userDetailAdapterProvider.get(),
+                                    uiEventLogger = eventLogger.get(),
+                                    falsingManager = falsingManager.get(),
+                                    activityStarter = activityStarter.get(),
+                                    dialogTransitionAnimator = dialogTransitionAnimator.get(),
+                                ),
                                 DialogCuj(
                                     InteractionJankMonitor.CUJ_USER_DIALOG_OPEN,
                                     INTERACTION_JANK_EXIT_GUEST_MODE_TAG,
