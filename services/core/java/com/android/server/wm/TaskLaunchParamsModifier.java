@@ -504,7 +504,7 @@ class TaskLaunchParamsModifier extends DefaultLaunchParamsModifier {
 
         if (windowLayout.hasSpecifiedSize()) {
             LaunchParamsUtil.calculateLayoutBounds(stableBounds, windowLayout, inOutBounds,
-                    /* desiredBounds */ null);
+                    /* desiredBounds */ null, displayArea.mDisplayContent.getDisplayMetrics());
         } else if (inOutBounds.isEmpty()) {
             getTaskBounds(root, displayArea, windowLayout, WINDOWING_MODE_FREEFORM,
                     /* hasInitialBounds */ false, inOutBounds);

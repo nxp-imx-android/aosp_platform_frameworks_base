@@ -106,7 +106,8 @@ public final class DesktopModeBoundsCalculator {
             final int horizontalGravity = layout.gravity & Gravity.HORIZONTAL_GRAVITY_MASK;
             if (layout.hasSpecifiedSize()) {
                 calculateLayoutBounds(stableBounds, layout, outParams.mBounds,
-                        calculateIdealSize(stableBounds, DESKTOP_MODE_INITIAL_BOUNDS_SCALE));
+                        calculateIdealSize(stableBounds, DESKTOP_MODE_INITIAL_BOUNDS_SCALE),
+                        displayContent.getDisplayMetrics());
                 applyLayoutGravity(verticalGravity, horizontalGravity, outParams.mBounds,
                         stableBounds);
                 logger.accept("layout specifies sizes, inheriting size and applying gravity");
