@@ -734,15 +734,15 @@ constructor(
             )
         val remoteTransition =
             RemoteTransition(
-                createOriginTransition(
-                    createController = { controllerFactory.createController(isLaunch) },
-                    scope,
-                    isDialogLaunch = isDialogLaunch,
-                    cleanUp = cleanUp,
-                ),
-                label,
-            )
-            .setFilter(filter)
+                    createOriginTransition(
+                        createController = { controllerFactory.createController(isLaunch) },
+                        scope,
+                        isDialogLaunch = isDialogLaunch,
+                        cleanUp = cleanUp,
+                    ),
+                    label,
+                )
+                .setFilter(filter)
         transitionRegister.register(remoteTransition, includeTakeover = isLongLived)
         return remoteTransition
     }
@@ -868,10 +868,10 @@ constructor(
             }
         val transition =
             RemoteTransition(
-                RemoteAnimationRunnerCompat.wrap(returnRunner),
-                "${launchController.transitionCookie}_returnTransition",
-            )
-            .setFilter(filter)
+                    RemoteAnimationRunnerCompat.wrap(returnRunner),
+                    "${launchController.transitionCookie}_returnTransition",
+                )
+                .setFilter(filter)
 
         transitionRegister?.register(transition, includeTakeover = false)
         cleanUpRunnable = Runnable { transitionRegister?.unregister(transition) }
@@ -2002,7 +2002,11 @@ constructor(
         ) {
             impl.onAnimationStart(
                 resolveAnimatedSurface = { resolveAnimatedSurface(apps) },
-                onAnimationFinished = { callback?.invoke() },
+                onAnimationFinished = { t ->
+                    callback?.invoke()
+                    t?.apply()
+                    t?.close()
+                },
             )
         }
 
@@ -2715,10 +2719,7 @@ constructor(
         }
 
         /** Register [remoteTransition] with WM Shell using the given [filter]. */
-        internal fun register(
-            remoteTransition: RemoteTransition,
-            includeTakeover: Boolean,
-        ) {
+        internal fun register(remoteTransition: RemoteTransition, includeTakeover: Boolean) {
             shellTransitions?.registerRemote(remoteTransition)
             iShellTransitions?.registerRemote(remoteTransition)
             if (includeTakeover) {
