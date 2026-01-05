@@ -288,6 +288,8 @@ public class AutomatedPackagesRepositoryTest {
         assertThat(intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME)).isEqualTo(PACKAGE1);
         assertThat(intent.getStringExtra(ComputerControlSession.EXTRA_AUTOMATING_PACKAGE_NAME))
                 .isEqualTo(DEVICE_OWNER);
+        assertThat(intent.getFlags()).isEqualTo(
+                Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
         ResultReceiver resultReceiver =
                 intent.getParcelableExtra(Intent.EXTRA_RESULT_RECEIVER, ResultReceiver.class);
 
