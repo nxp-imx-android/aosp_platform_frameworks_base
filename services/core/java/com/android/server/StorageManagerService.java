@@ -2151,18 +2151,18 @@ class StorageManagerService extends IStorageManager.Stub
 
         ProviderInfo provider = getProviderInfo(MediaStore.AUTHORITY);
         if (provider != null) {
-            mMediaStoreAuthorityAppId = UserHandle.getAppId(provider.applicationInfo.uid);
+            mMediaStoreAuthorityAppId = UserHandle.getAppId(provider.getUid());
             sMediaStoreAuthorityProcessName = provider.applicationInfo.processName;
         }
 
         provider = getProviderInfo(Downloads.Impl.AUTHORITY);
         if (provider != null) {
-            mDownloadsAuthorityAppId = UserHandle.getAppId(provider.applicationInfo.uid);
+            mDownloadsAuthorityAppId = UserHandle.getAppId(provider.getUid());
         }
 
         provider = getProviderInfo(DocumentsContract.EXTERNAL_STORAGE_PROVIDER_AUTHORITY);
         if (provider != null) {
-            mExternalStorageAuthorityAppId = UserHandle.getAppId(provider.applicationInfo.uid);
+            mExternalStorageAuthorityAppId = UserHandle.getAppId(provider.getUid());
         }
     }
 

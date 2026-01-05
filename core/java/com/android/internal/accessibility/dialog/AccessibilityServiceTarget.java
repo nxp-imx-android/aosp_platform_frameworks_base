@@ -44,7 +44,7 @@ public class AccessibilityServiceTarget extends AccessibilityTarget {
                 isShortcutContained(context, shortcutType,
                         serviceInfo.getComponentName().flattenToString()),
                 serviceInfo.getComponentName().flattenToString(),
-                serviceInfo.getResolveInfo().serviceInfo.applicationInfo.uid,
+                serviceInfo.getResolveInfo().serviceInfo.getUid(),
                 serviceInfo.getResolveInfo().loadLabel(context.getPackageManager()),
                 serviceInfo.getResolveInfo().loadIcon(context.getPackageManager()),
                 convertToKey(shortcutType));

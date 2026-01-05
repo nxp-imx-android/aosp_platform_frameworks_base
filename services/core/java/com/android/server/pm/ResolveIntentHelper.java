@@ -234,7 +234,7 @@ final class ResolveIntentHelper {
                         ri.activityInfo.applicationInfo);
                 if (userId != 0) {
                     ri.activityInfo.applicationInfo.uid = UserHandle.getUid(userId,
-                            UserHandle.getAppId(ri.activityInfo.applicationInfo.uid));
+                            UserHandle.getAppId(ri.activityInfo.getUid()));
                 }
                 // Make sure that the resolver is displayable in car mode
                 if (ri.activityInfo.metaData == null) ri.activityInfo.metaData = new Bundle();

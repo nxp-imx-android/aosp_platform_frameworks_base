@@ -242,7 +242,7 @@ public class ResolverListController {
                     .getResolveInfoAt(0).activityInfo;
             int granted = ActivityManager.checkComponentPermission(
                     ai.permission, mLaunchedFromUid,
-                    ai.applicationInfo.uid, ai.exported);
+                    ai.getUid(), ai.exported);
 
             if (granted != PackageManager.PERMISSION_GRANTED
                     || isComponentFiltered(ai.getComponentName())) {

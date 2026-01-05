@@ -1319,7 +1319,7 @@ public class VoiceInteractionManagerService extends SystemService {
 
             int visUid = -1;
             if (mImpl.mInfo != null) {
-                visUid = mImpl.mInfo.getServiceInfo().applicationInfo.uid;
+                visUid = mImpl.mInfo.getServiceInfo().getUid();
             }
 
             final boolean isCallerCurrentVoiceInteractionService =
@@ -1493,7 +1493,7 @@ public class VoiceInteractionManagerService extends SystemService {
                     final ActivityInfo activityInfo = intent.resolveActivityInfo(
                             mContext.getPackageManager(), PackageManager.MATCH_ALL);
                     if (activityInfo != null) {
-                        final int activityUid = activityInfo.applicationInfo.uid;
+                        final int activityUid = activityInfo.getUid();
                         mImpl.grantImplicitAccessLocked(activityUid, intent);
                     } else {
                         Slog.w(TAG, "Cannot find ActivityInfo in startVoiceActivity.");

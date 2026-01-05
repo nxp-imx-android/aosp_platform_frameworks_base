@@ -213,7 +213,7 @@ final class UserHelper {
      */
     static @UserIdInt int getUserId(@Nullable ActivityInfo aInfo) {
         return aInfo != null && aInfo.applicationInfo != null
-                ? UserHandle.getUserId(aInfo.applicationInfo.uid)
+                ? UserHandle.getUserId(aInfo.getUid())
                 : USER_SYSTEM;
     }
 

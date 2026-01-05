@@ -17012,7 +17012,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
     ActivityInfo getActivityInfoForUser(ActivityInfo aInfo, int userId) {
         if (aInfo == null
-                || (userId < 1 && aInfo.applicationInfo.uid < UserHandle.PER_USER_RANGE)) {
+                || (userId < 1 && aInfo.getUid() < UserHandle.PER_USER_RANGE)) {
             return aInfo;
         }
 
