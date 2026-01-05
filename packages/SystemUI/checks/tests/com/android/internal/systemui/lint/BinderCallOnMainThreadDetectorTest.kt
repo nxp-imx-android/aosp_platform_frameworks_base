@@ -222,6 +222,103 @@ src/test/pkg/TestClass.kt:12: Warning: Binder call on main thread [BinderCallOnM
     }
 
     @Test
+    fun binderCall_withMainExecutor_error() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+
+                    import java.util.concurrent.Executor
+                    import com.android.systemui.dagger.qualifiers.Main
+
+                    class TestClass(@Main private val mainExecutor: Executor) {
+                        fun doSomething() {
+                            mainExecutor.execute {
+                                val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                            }
+                        }
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expect(
+                """
+src/test/pkg/TestClass.kt:11: Warning: Binder call on main thread [BinderCallOnMainThread]
+            val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                                              ~~~~~~~~~~~~
+0 errors, 1 warnings
+                """
+            )
+    }
+
+    @Test
+    fun binderCall_withBackgroundExecutor_clean() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+
+                    import java.util.concurrent.Executor
+                    import com.android.systemui.dagger.qualifiers.Background
+
+                    class TestClass(@Background private val backgroundExecutor: Executor) {
+                        fun doSomething() {
+                            backgroundExecutor.execute {
+                                val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                            }
+                        }
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expectClean()
+    }
+
+    @Test
+    fun binderCall_withUiBackgroundExecutor_clean() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import android.app.PendingIntent
+
+                    import java.util.concurrent.Executor
+                    import com.android.systemui.dagger.qualifiers.UiBackground
+
+                    class TestClass(@UiBackground private val uiBgExecutor: Executor) {
+                        fun doSomething() {
+                            uiBgExecutor.execute {
+                                val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0)
+                            }
+                        }
+                    }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expectClean()
+    }
+
+    @Test
     fun binderCall_inMethodAnnotatedWithWorkerThread_clean() {
         lint()
             .files(
@@ -1096,6 +1193,39 @@ src/test/pkg/TestClass.kt:7: Warning: Binder call on main thread [BinderCallOnMa
             )
     }
 
+    @Test
+    fun statusBarServiceDisableForUser_error() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                        package test.pkg
+
+                        import android.os.IBinder
+                        import com.android.internal.statusbar.IStatusBarService
+
+                        class TestClass {
+                            fun disable(service: IStatusBarService, token: IBinder) {
+                                service.disableForUser(0, token, "package", 0)
+                            }
+                        }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expect(
+                """
+src/test/pkg/TestClass.kt:8: Warning: Binder call on main thread [BinderCallOnMainThread]
+        service.disableForUser(0, token, "package", 0)
+                ~~~~~~~~~~~~~~
+0 errors, 1 warnings
+                """
+            )
+    }
+
     companion object {
         private val launchTracedStub =
             kotlin(
@@ -1116,6 +1246,7 @@ src/test/pkg/TestClass.kt:7: Warning: Binder call on main thread [BinderCallOnMa
                 MainThreadCoroutineScopeDetectorTest.applicationQualifierStub,
                 MainThreadCoroutineScopeDetectorTest.mainQualifierStub,
                 MainThreadCoroutineScopeDetectorTest.backgroundQualifierStub,
+                MainThreadCoroutineScopeDetectorTest.uiBackgroundQualifierStub,
             )
     }
 }

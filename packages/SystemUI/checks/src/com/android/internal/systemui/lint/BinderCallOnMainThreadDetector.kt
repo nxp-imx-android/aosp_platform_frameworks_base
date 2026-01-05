@@ -47,6 +47,7 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
             "android.app.PendingIntent#queryIntentComponents",
             "android.media.projection.MediaProjectionManager#stopActiveProjection",
             "android.media.session.MediaController#unregisterCallback",
+            "com.android.internal.statusbar.IStatusBarService#disableForUser",
             // go/keep-sorted end
         )
 
@@ -133,7 +134,7 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
         val containingBlock = findContainingBlock(node)
         if (containingBlock != null) {
             if (
-                containingBlock.isLaunchedOnBackgroundScope() ||
+                containingBlock.isLaunchedOnBackground() ||
                     containingBlock.isStartedWithBackgroundParameter()
             ) {
                 // This binder call is correctly inside a block that explicitly runs in the
@@ -189,18 +190,19 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
     }
 
     /**
-     * Returns true if the call expression is received by the backgroundScope. Matches expressions
-     * like `bgScope.launch {}` or `backgroundScope.launch {}`.
+     * Returns true if the call expression is received by a background worker. Matches expressions
+     * like `bgScope.launch {}`, `backgroundExecutor.execute {}`, and `uiBgExecutor.execute {}`.
      */
-    private fun UCallExpression.isLaunchedOnBackgroundScope(): Boolean {
-        // For extension functions like CoroutineScope.launch, the CoroutineScope is the receiver.
+    private fun UCallExpression.isLaunchedOnBackground(): Boolean {
+        // For both member-defined functions like `Executor.execute` AND extension functions like
+        // `CoroutineScope.launch`, the `Executor`/`CoroutineScope` is the receiver.
         val receiverIdentifier: String? =
             when (val receiver = this.receiver) {
                 is USimpleNameReferenceExpression -> receiver.identifier
                 is UParenthesizedExpression -> receiver.expression.asRenderString()
                 else -> null
             }
-        return receiverIdentifier?.isBackgroundScopeIdentifier() == true
+        return receiverIdentifier?.isBackgroundIdentifier() == true
     }
 
     /**
@@ -226,15 +228,11 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
             parameter.identifier.isBackgroundIdentifier()
     }
 
-    /** Returns true if this string identifies a background context or background dispatcher. */
+    /** Returns true if this string identifies a background worker of any sort. */
     private fun String.isBackgroundIdentifier(): Boolean {
-        return this.matches(Regex(".*(bg|background|Bg|Background)(Context|Dispatcher)"))
-    }
-
-    /** Returns true if this string identifies a background scope. */
-    private fun String.isBackgroundScopeIdentifier(): Boolean {
-        return endsWith("bgScope", ignoreCase = true) ||
-            endsWith("backgroundScope", ignoreCase = true)
+        return this.matches(
+            Regex(".*(bg|background|Bg|Background)(Context|Dispatcher|Executor|Scope)")
+        )
     }
 
     companion object {

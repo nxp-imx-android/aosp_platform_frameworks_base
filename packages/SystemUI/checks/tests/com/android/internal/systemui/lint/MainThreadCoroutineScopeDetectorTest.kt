@@ -16,6 +16,7 @@
 
 package com.android.internal.systemui.lint
 
+import com.android.tools.lint.checks.infrastructure.TestFile
 import com.android.tools.lint.checks.infrastructure.TestFiles
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Issue
@@ -196,7 +197,7 @@ class MainThreadCoroutineScopeDetectorTest : SystemUILintDetectorTest() {
     }
 
     companion object {
-        val backgroundQualifierStub =
+        val backgroundQualifierStub: TestFile =
             TestFiles.kotlin(
                     """
                     package com.android.systemui.dagger.qualifiers
@@ -206,7 +207,17 @@ class MainThreadCoroutineScopeDetectorTest : SystemUILintDetectorTest() {
                 )
                 .indented()
 
-        val applicationQualifierStub =
+        val uiBackgroundQualifierStub: TestFile =
+            TestFiles.kotlin(
+                    """
+                    package com.android.systemui.dagger.qualifiers
+
+                    @Qualifier @MustBeDocumented @Retention(AnnotationRetention.RUNTIME) annotation class UiBackground
+                """
+                )
+                .indented()
+
+        val applicationQualifierStub: TestFile =
             TestFiles.kotlin(
                     """
                     package com.android.systemui.dagger.qualifiers
@@ -216,7 +227,7 @@ class MainThreadCoroutineScopeDetectorTest : SystemUILintDetectorTest() {
                 )
                 .indented()
 
-        val mainQualifierStub =
+        val mainQualifierStub: TestFile =
             TestFiles.kotlin(
                     """
                     package com.android.systemui.dagger.qualifiers

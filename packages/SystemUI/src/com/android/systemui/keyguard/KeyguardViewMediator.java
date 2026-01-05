@@ -3979,6 +3979,11 @@ public class KeyguardViewMediator implements CoreStartable,
         }
     }
 
+    // Lint suppression explanation: When bouncerUiRevamp flag is enabled,
+    // StatusBarService#disableForUser is correctly run on a background executor. When that flag is
+    // removed, this suppression can also be removed because the background executor usage will be
+    // obvious to the linter.
+    @SuppressLint("BinderCallOnMainThread")
     private void statusBarServiceDisableForUser(int flags, String loggingContext) {
         Runnable runnable = () -> {
             try {
@@ -3990,6 +3995,7 @@ public class KeyguardViewMediator implements CoreStartable,
             }
         };
         if (com.android.systemui.Flags.bouncerUiRevamp()) {
+            // TODO: b/370555003 - Remove the @SuppressLint annotation when flag is removed.
             mUiBgExecutor.execute(runnable);
         } else {
             runnable.run();
