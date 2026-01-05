@@ -340,6 +340,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(android.app.Flags.FLAG_API_METRIC_STYLE)
     fun bindMetricSingleLineView_noTitle() {
         // GIVEN: a row with MetricStyle notification with Text metric
         val metric = Metric(Metric.FixedInt(1245), "Steps")
@@ -387,6 +388,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(android.app.Flags.FLAG_API_METRIC_STYLE)
     fun bindMetricSingleLineView_withText() {
         // GIVEN: a row with MetricStyle notification with Text metric
         val metric = Metric(Metric.FixedInt(1245), "Steps")
@@ -433,6 +435,7 @@ class SingleLineViewBinderTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(android.app.Flags.FLAG_API_METRIC_STYLE)
     fun bindMetricSingleLineView_withTimeDifference() {
         // GIVEN: a row with MetricStyle notification with TimeDifference metric
         val metric =

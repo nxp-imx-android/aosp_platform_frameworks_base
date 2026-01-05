@@ -26,6 +26,7 @@ import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.Icon
+import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import androidx.core.graphics.drawable.toBitmap
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -335,6 +336,7 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(android.app.Flags.FLAG_API_METRIC_STYLE)
     fun createViewModelForMetricSingleLineView() {
         // Given: a MetricStyle notification
         val testMetric = Notification.Metric(Notification.Metric.FixedInt(1245), "Steps")
