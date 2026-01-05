@@ -36,14 +36,9 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.shared.TransitionUtil;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
-import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.taskview.TaskViewTaskController;
 import com.android.wm.shell.taskview.TaskViewTransitions;
 import com.android.wm.shell.transition.Transitions;
-
-import dagger.Lazy;
-
-import java.util.Optional;
 
 /**
  * Observer used to identify tasks that are opening or moving to front. If a bubble activity is
@@ -57,16 +52,13 @@ public class BubblesTransitionObserver implements Transitions.TransitionObserver
     private final BubbleData mBubbleData;
     @NonNull
     private final TaskViewTransitions mTaskViewTransitions;
-    private final Lazy<Optional<SplitScreenController>> mSplitScreenController;
 
     public BubblesTransitionObserver(@NonNull BubbleController controller,
             @NonNull BubbleData bubbleData,
-            @NonNull TaskViewTransitions taskViewTransitions,
-            Lazy<Optional<SplitScreenController>> splitScreenController) {
+            @NonNull TaskViewTransitions taskViewTransitions) {
         mBubbleController = controller;
         mBubbleData = bubbleData;
         mTaskViewTransitions = taskViewTransitions;
-        mSplitScreenController = splitScreenController;
     }
 
     @Override

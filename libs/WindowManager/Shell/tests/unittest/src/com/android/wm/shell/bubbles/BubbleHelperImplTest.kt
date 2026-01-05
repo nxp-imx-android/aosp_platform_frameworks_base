@@ -31,10 +31,8 @@ import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.bubbles.BubbleRootTaskTest.Companion.prepareRootTaskForTest
-import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.sysui.ShellInit
 import com.google.common.truth.Truth.assertThat
-import java.util.Optional
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.any
@@ -52,7 +50,6 @@ class BubbleHelperImplTest : ShellTestCase() {
 
     private val shellInit = mock<ShellInit>()
     private val taskOrganizer = mock<ShellTaskOrganizer>()
-    private val splitScreenController = mock<SplitScreenController>()
 
     private lateinit var bubbleRootTask: BubbleRootTask
     private lateinit var bubbleHelper: BubbleHelper
@@ -60,11 +57,7 @@ class BubbleHelperImplTest : ShellTestCase() {
     @Before
     fun setUp() {
         bubbleRootTask = BubbleRootTask(mContext, shellInit, taskOrganizer)
-        bubbleHelper =
-            BubbleHelperImpl(
-                bubbleRootTask = bubbleRootTask,
-                splitScreenController = { Optional.of(splitScreenController) },
-            )
+        bubbleHelper = BubbleHelperImpl(bubbleRootTask = bubbleRootTask)
     }
 
     @Test
@@ -79,9 +72,7 @@ class BubbleHelperImplTest : ShellTestCase() {
     @Test
     fun getAppBubbleVisibilityBarrierToken() {
         val token = MockToken.token()
-        taskOrganizer.stub {
-            on { createTask(any(), any()) } doReturn token
-        }
+        taskOrganizer.stub { on { createTask(any(), any()) } doReturn token }
         bubbleRootTask.prepareRootTaskForTest(bubbleRootTaskId = 123)
 
         assertThat(bubbleHelper.getAppBubbleVisibilityBarrierToken()).isEqualTo(token)
@@ -123,7 +114,6 @@ class BubbleHelperImplTest : ShellTestCase() {
     @Test
     fun isAppBubble_taskIsSplitting_returnsFalse() {
         val sideStageRootTask = 5
-        splitScreenController.stub { on { isTaskRootOrStageRoot(sideStageRootTask) } doReturn true }
         val taskInfo =
             ActivityManager.RunningTaskInfo().apply {
                 // Task is running in split-screen mode.

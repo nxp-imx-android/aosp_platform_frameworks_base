@@ -25,9 +25,6 @@ import com.android.wm.shell.bubbles.util.DefaultBubblePolicyHelper
 import com.android.wm.shell.common.TaskStackListenerCallback
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog
-import com.android.wm.shell.splitscreen.SplitScreenController
-import dagger.Lazy
-import java.util.Optional
 
 /**
  * Listens for task stack changes to manage associated bubble interactions.
@@ -43,7 +40,6 @@ import java.util.Optional
 class BubbleTaskStackListener(
     private val bubbleHelper: BubbleHelper,
     private val bubbleData: BubbleData,
-    private val splitScreenController: Lazy<Optional<SplitScreenController>>,
 ) : TaskStackListenerCallback {
 
     override fun onActivityRestartAttempt(

@@ -33,10 +33,8 @@ import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyExitBubbleTransaction
-import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.taskview.TaskView
 import com.android.wm.shell.taskview.TaskViewTaskController
-import java.util.Optional
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -70,9 +68,7 @@ class BubbleTaskStackListenerTest {
     private val bubble = mock<Bubble> { on { taskView } doReturn mockTaskView }
     private val bubbleHelper = mock<BubbleHelper>()
     private val bubbleData = mock<BubbleData>()
-    private val splitScreenController = mock<SplitScreenController>()
-    private val bubbleTaskStackListener =
-        BubbleTaskStackListener(bubbleHelper, bubbleData, { Optional.of(splitScreenController) })
+    private val bubbleTaskStackListener = BubbleTaskStackListener(bubbleHelper, bubbleData)
     private val bubbleTaskId = 123
     private val bubbleTaskToken: WindowContainerToken = MockToken.token()
     private val task =
@@ -171,8 +167,6 @@ class BubbleTaskStackListenerTest {
     fun onActivityRestartAttempt_inStackAppBubbleToSplit_doesNothing() {
         task.parentTaskId = 456
         bubbleData.stub { on { getBubbleInStackWithTaskId(bubbleTaskId) } doReturn bubble }
-
-        splitScreenController.stub { on { isTaskRootOrStageRoot(456) } doReturn true }
 
         val taskViewTaskController = bubble.taskView.controller
         val taskOrganizer = taskViewTaskController.taskOrganizer
