@@ -1426,4 +1426,26 @@ public class AutomaticBrightnessControllerTest {
         assertEquals(normalizedBrightness,
                 mController.getAutomaticScreenBrightness(/* brightnessEvent= */ null), EPSILON);
     }
+
+    @Test
+    public void testIgnoreNaNLuxValues() throws Exception {
+        ArgumentCaptor<SensorEventListener> listenerCaptor =
+                ArgumentCaptor.forClass(SensorEventListener.class);
+        verify(mSensorManager).registerListener(listenerCaptor.capture(), eq(mLightSensor),
+                eq(INITIAL_LIGHT_SENSOR_RATE * 1000), any(Handler.class));
+        SensorEventListener listener = listenerCaptor.getValue();
+
+        // Initial valid lux value
+        float initialLux = 100.0f;
+        listener.onSensorChanged(createSensorEvent(mLightSensor, initialLux,
+                (mClock.now() + ANDROID_SLEEP_TIME) * NANO_SECONDS_MULTIPLIER));
+        assertEquals(initialLux, mController.getAmbientLux(), EPSILON);
+
+        // Send a NaN lux value
+        listener.onSensorChanged(createSensorEvent(mLightSensor, Float.NaN,
+                (mClock.now() + ANDROID_SLEEP_TIME + 100) * NANO_SECONDS_MULTIPLIER));
+
+        // Verify that the ambient lux has not changed
+        assertEquals(initialLux, mController.getAmbientLux(), EPSILON);
+    }
 }
