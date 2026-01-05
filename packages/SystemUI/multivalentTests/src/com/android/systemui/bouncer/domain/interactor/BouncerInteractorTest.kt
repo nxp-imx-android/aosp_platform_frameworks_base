@@ -179,9 +179,9 @@ class BouncerInteractorTest : SysuiTestCase() {
                     )
                 )
                 .isEqualTo(AuthenticationResult.SUCCEEDED)
-            assertThat(uiEventLoggerFake[1].eventId)
+            assertThat(uiEventLoggerFake[2].eventId)
                 .isEqualTo(BouncerUiEvent.BOUNCER_PASSWORD_SUCCESS.id)
-            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(2)
+            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(4)
         }
 
     @Test
@@ -236,9 +236,9 @@ class BouncerInteractorTest : SysuiTestCase() {
             // Correct input.
             assertThat(underTest.authenticate("password".toList()))
                 .isEqualTo(AuthenticationResult.SUCCEEDED)
-            assertThat(uiEventLoggerFake[1].eventId)
+            assertThat(uiEventLoggerFake[2].eventId)
                 .isEqualTo(BouncerUiEvent.BOUNCER_PASSWORD_SUCCESS.id)
-            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(2)
+            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(4)
         }
 
     @Test
@@ -276,9 +276,9 @@ class BouncerInteractorTest : SysuiTestCase() {
             // Correct input.
             assertThat(underTest.authenticate(FakeAuthenticationRepository.DEFAULT_PATTERN))
                 .isEqualTo(AuthenticationResult.SUCCEEDED)
-            assertThat(uiEventLoggerFake[1].eventId)
+            assertThat(uiEventLoggerFake[2].eventId)
                 .isEqualTo(BouncerUiEvent.BOUNCER_PASSWORD_SUCCESS.id)
-            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(2)
+            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(4)
         }
 
     @Test

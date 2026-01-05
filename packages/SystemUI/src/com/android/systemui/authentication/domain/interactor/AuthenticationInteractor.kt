@@ -234,6 +234,7 @@ constructor(
 
         if (authenticationResult.isSuccessful) {
             repository.reportAuthenticationAttempt(AuthenticationResult.SUCCEEDED)
+            // TODO: beverlyt
             _onAuthenticationResult.emit(true)
 
             // Force a garbage collection in an attempt to erase any credentials left in memory.
