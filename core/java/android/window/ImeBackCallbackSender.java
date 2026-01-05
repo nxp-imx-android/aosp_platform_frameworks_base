@@ -23,8 +23,6 @@ import static android.window.ImeBackCallbackProxy.RESULT_KEY_CALLBACK;
 import static android.window.ImeBackCallbackProxy.RESULT_KEY_ID;
 import static android.window.ImeBackCallbackProxy.RESULT_KEY_PRIORITY;
 
-import static com.android.window.flags.Flags.imeBackCallbackLeakPrevention;
-
 import android.annotation.NonNull;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
@@ -110,7 +108,7 @@ public class ImeBackCallbackSender implements OnBackInvokedDispatcher {
      */
     @SuppressLint("WrongConstant")
     public void setSkipDefaultCallbackRegistration(boolean skip) {
-        if (!imeBackCallbackLeakPrevention() || !backDispositionControlsBackInterception()) {
+        if (!backDispositionControlsBackInterception()) {
             return;
         }
         if (skip == mSkipDefaultCallbackRegistration) return;
@@ -128,10 +126,6 @@ public class ImeBackCallbackSender implements OnBackInvokedDispatcher {
     public void registerOnBackInvokedCallback(
             @OnBackInvokedDispatcher.Priority int priority,
             @NonNull OnBackInvokedCallback callback) {
-        if (!imeBackCallbackLeakPrevention()) {
-            registerOnBackInvokedCallbackAtTarget(priority, callback);
-            return;
-        }
         if (priority == PRIORITY_SYSTEM || callback instanceof CompatOnBackInvokedCallback) {
             if (!mSkipDefaultCallbackRegistration) {
                 registerOnBackInvokedCallbackAtTarget(priority, callback);
@@ -173,10 +167,6 @@ public class ImeBackCallbackSender implements OnBackInvokedDispatcher {
 
     @Override
     public void unregisterOnBackInvokedCallback(@NonNull OnBackInvokedCallback callback) {
-        if (!imeBackCallbackLeakPrevention()) {
-            unregisterOnBackInvokedCallbackAtTarget(callback);
-            return;
-        }
         if (callback == mSystemCallback) {
             // Unregister all non-system callbacks first.
             for (Pair<Integer, OnBackInvokedCallback> nonSystemCallback : mNonSystemCallbacks) {
