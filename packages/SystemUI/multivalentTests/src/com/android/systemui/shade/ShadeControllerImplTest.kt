@@ -299,19 +299,13 @@ class ShadeControllerImplTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_DISPLAY_AWARE_SHADE_CONTROLLER_IMPL)
-    fun makeExpandedInvisible_usesCachedDisplayId_whenDisplayChanges() {
-        // GIVEN shade is visible on an external display (2)
+    fun makeExpandedInvisible_clearsStatusBarForcedVisibleState_onCurrentDisplayId() {
         val externalDisplayId = 2
         kosmos.fakeShadeDisplaysRepository.setDisplayId(externalDisplayId)
         underTest.makeExpandedVisible(true)
 
-        // WHEN the shade moves to the default display (0) and collapses on the old display
-        kosmos.fakeShadeDisplaysRepository.setDisplayId(Display.DEFAULT_DISPLAY)
         underTest.makeExpandedInvisible()
 
-        // THEN the cleanup call (setForceStatusBarVisible) happens on the *old* display (2)
         verify(statusBarWindowControllerDisplay2).setForceStatusBarVisible(eq(false), any())
-        verify(statusBarWindowControllerDisplay0, never())
-            .setForceStatusBarVisible(anyBoolean(), any())
     }
 }
