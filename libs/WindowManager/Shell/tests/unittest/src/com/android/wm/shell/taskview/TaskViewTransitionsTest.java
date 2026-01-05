@@ -53,13 +53,13 @@ import android.window.TransitionInfo;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
+import androidx.annotation.Nullable;
 import androidx.test.filters.SmallTest;
 
 import com.android.testing.wm.util.MockToken;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.bubbles.BubbleHelper;
-import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.transition.Transitions;
 
@@ -102,9 +102,8 @@ public class TaskViewTransitionsTest extends ShellTestCase {
     @Mock
     ShellTaskOrganizer mOrganizer;
     @Mock
-    SyncTransactionQueue mSyncQueue;
-    @Mock
     BubbleHelper mBubbleHelper;
+    private final FakeTaskViewRootTask mTaskViewRootTask = new FakeTaskViewRootTask();
 
     Executor mExecutor = Runnable::run;
 
@@ -125,7 +124,7 @@ public class TaskViewTransitionsTest extends ShellTestCase {
         mTaskViewRepository = new TaskViewRepository();
         when(mOrganizer.getExecutor()).thenReturn(mExecutor);
         mTaskViewTransitions = spy(new TaskViewTransitions(mTransitions, mTaskViewRepository,
-                mOrganizer, mSyncQueue, Optional.of(mBubbleHelper)));
+                mOrganizer, Optional.of(mBubbleHelper), Optional.of(mTaskViewRootTask)));
         mTaskViewTaskController = createMockTaskController(mTaskInfo);
         mTaskViewTransitions.registerTaskView(mTaskViewTaskController);
     }
@@ -586,7 +585,7 @@ public class TaskViewTransitionsTest extends ShellTestCase {
         verify(wct).setBounds(eq(taskToken), eq(bounds));
 
         clearInvocations(wct);
-        mTaskViewTransitions.setTaskViewRootTaskInfo(rootTaskInfo);
+        mTaskViewRootTask.rootTaskInfo = rootTaskInfo;
         taskInfo.parentTaskId = rootTaskInfo.taskId;
         mTaskViewTransitions.updateTaskViewTaskBounds(wct, taskInfo, bounds);
         verify(wct).setBounds(eq(rootTaskToken), eq(bounds));
@@ -712,5 +711,16 @@ public class TaskViewTransitionsTest extends ShellTestCase {
         appBubble.token = new MockToken().token();
         appBubble.isAppBubble = true;
         return appBubble;
+    }
+
+    private static class FakeTaskViewRootTask implements TaskViewRootTask {
+
+        public ActivityManager.RunningTaskInfo rootTaskInfo;
+
+        @Nullable
+        @Override
+        public ActivityManager.RunningTaskInfo getRootTaskInfo() {
+            return rootTaskInfo;
+        }
     }
 }

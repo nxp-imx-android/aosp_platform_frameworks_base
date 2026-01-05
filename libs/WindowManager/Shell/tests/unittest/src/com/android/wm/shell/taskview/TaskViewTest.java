@@ -178,7 +178,7 @@ public class TaskViewTest extends ShellTestCase {
         }).when(mSyncQueue).runInSync(any());
 
         mTaskViewTransitions = spy(new TaskViewTransitions(mTransitions, mTaskViewRepository,
-                mOrganizer, mSyncQueue, Optional.of(mBubbleHelper)));
+                mOrganizer, Optional.of(mBubbleHelper), /* taskViewRootTask= */ Optional.empty()));
         mTaskViewTaskController = new TaskViewTaskController(mContext, mOrganizer,
                 mTaskViewTransitions, mSyncQueue);
         mTaskView = new TaskView(mContext, mTaskViewTransitions, mTaskViewTaskController);

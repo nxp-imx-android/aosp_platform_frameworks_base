@@ -66,7 +66,6 @@ import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.bubbles.BubbleHelper;
 import com.android.wm.shell.common.ShellExecutor;
-import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.transition.TransitionDispatchState;
 import com.android.wm.shell.transition.Transitions;
@@ -171,8 +170,8 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
         mTaskInfo.taskDescription = mock(ActivityManager.TaskDescription.class);
 
         mTaskViewTransitions = new TaskViewTransitions(mTransitions, mTaskViewRepository,
-                mock(ShellTaskOrganizer.class), mock(SyncTransactionQueue.class),
-                Optional.of(mBubbleHelper));
+                mock(ShellTaskOrganizer.class), Optional.of(mBubbleHelper),
+                /* taskViewRootTask= */ Optional.empty());
         mTaskViewTransitions.registerTaskView(mTaskViewTaskController);
         when(mTaskViewTaskController.getTaskInfo()).thenReturn(mTaskInfo);
         when(mTaskViewTaskController.getPendingInfo()).thenReturn(mTaskInfo);

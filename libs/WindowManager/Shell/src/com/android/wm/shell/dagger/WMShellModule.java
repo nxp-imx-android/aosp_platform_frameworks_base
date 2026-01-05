@@ -207,6 +207,7 @@ import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.taskview.TaskViewRepository;
+import com.android.wm.shell.taskview.TaskViewRootTask;
 import com.android.wm.shell.taskview.TaskViewTransitions;
 import com.android.wm.shell.transition.DefaultMixedHandler;
 import com.android.wm.shell.transition.FocusTransitionObserver;
@@ -332,14 +333,14 @@ public abstract class WMShellModule {
     @Provides
     @Bubbles
     static TaskViewTransitions provideBubblesTaskViewTransitions(
-            @NonNull TaskViewTransitions taskViewTransitions,
             @NonNull Transitions transitions,
             @NonNull TaskViewRepository repository,
             @NonNull ShellTaskOrganizer organizer,
-            SyncTransactionQueue syncQueue,
-            Optional<BubbleHelper> bubbleHelper
+            Optional<BubbleHelper> bubbleHelper,
+            @Bubbles Optional<TaskViewRootTask> taskViewRootTask
     ) {
-        return new TaskViewTransitions(transitions, repository, organizer, syncQueue, bubbleHelper);
+        return new TaskViewTransitions(transitions, repository, organizer, bubbleHelper,
+                taskViewRootTask);
     }
 
     @WMSingleton
@@ -370,24 +371,16 @@ public abstract class WMShellModule {
     @Binds
     abstract BubbleUserResolver bindUserResolver(UserManagerBubbleUserResolver impl);
 
-    @WMSingleton
     @Provides
-    static BubbleRootTask provideBubbleRootTask(
-            Context context,
-            ShellInit shellInit,
-            ShellTaskOrganizer taskOrganizer,
-            @Bubbles TaskViewTransitions taskViewTransitions) {
-        return new BubbleRootTask(context, shellInit, taskOrganizer, taskViewTransitions);
+    @Bubbles
+    static Optional<TaskViewRootTask> provideBubblesTaskViewRootTask(
+            BubbleRootTask bubbleRootTask) {
+        return Optional.of(bubbleRootTask);
     }
 
     @WMSingleton
-    @Provides
-    static BubbleHelper provideBubbleHelper(
-            Lazy<BubbleRootTask> bubbleRootTask,
-            Lazy<Optional<SplitScreenController>> splitScreenController) {
-        // Use Lazy to prevent circular dependencies
-        return new BubbleHelperImpl(bubbleRootTask, splitScreenController);
-    }
+    @Binds
+    abstract BubbleHelper provideBubbleHelper(BubbleHelperImpl impl);
 
     // Note: Handler needed for LauncherApps.register
     @WMSingleton

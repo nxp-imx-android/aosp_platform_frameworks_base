@@ -29,17 +29,20 @@ import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.splitscreen.SplitScreenController
 import dagger.Lazy
 import java.util.Optional
+import javax.inject.Inject
 
 /** Helper class to query Bubble info from other components. */
-class BubbleHelperImpl(
-    private val bubbleRootTask: Lazy<BubbleRootTask>,
+class BubbleHelperImpl
+@Inject
+constructor(
+    private val bubbleRootTask: BubbleRootTask,
     private val splitScreenController: Lazy<Optional<SplitScreenController>>,
 ) : BubbleHelper {
     override fun getAppBubbleRootTaskToken(): WindowContainerToken? =
-        bubbleRootTask.get().windowContainerToken
+        bubbleRootTask.windowContainerToken
 
     override fun isAppBubbleRootTask(taskId: Int): Boolean =
-        bubbleRootTask.get().taskId == taskId && taskId != INVALID_TASK_ID
+        bubbleRootTask.taskId == taskId && taskId != INVALID_TASK_ID
 
     override fun isAppBubbleRootTask(taskInfo: ActivityManager.RunningTaskInfo): Boolean =
         isAppBubbleRootTask(taskInfo.taskId)
