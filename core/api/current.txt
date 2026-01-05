@@ -10777,8 +10777,10 @@ package android.companion {
     method @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void stopObservingDevicePresence(@NonNull android.companion.ObservingDevicePresenceRequest);
     field public static final String EXTRA_ASSOCIATION = "android.companion.extra.ASSOCIATION";
     field @Deprecated public static final String EXTRA_DEVICE = "android.companion.extra.DEVICE";
+    field @FlaggedApi("android.companion.enable_data_sync") public static final int FLAG_AIRPLANE_MODE = 16; // 0x10
     field public static final int FLAG_CALL_METADATA = 1; // 0x1
     field @FlaggedApi("android.companion.task_continuity") public static final int FLAG_TASK_CONTINUITY = 2; // 0x2
+    field @FlaggedApi("android.companion.enable_data_sync") public static final int FLAG_UNIVERSAL_MODES = 4; // 0x4
     field public static final int RESULT_CANCELED = 0; // 0x0
     field public static final int RESULT_DISCOVERY_TIMEOUT = 2; // 0x2
     field public static final int RESULT_INTERNAL_ERROR = 3; // 0x3

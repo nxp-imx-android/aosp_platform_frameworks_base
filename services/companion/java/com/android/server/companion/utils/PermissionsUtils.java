@@ -74,6 +74,7 @@ import static android.companion.CompanionDeviceManager.FLAG_CALL_METADATA;
 import static android.companion.CompanionDeviceManager.FLAG_TASK_CONTINUITY;
 import static android.companion.CompanionDeviceManager.FLAG_UNIVERSAL_MODES;
 import static android.companion.CompanionDeviceManager.FLAG_UNIVERSAL_CLIPBOARD;
+import static android.companion.CompanionDeviceManager.FLAG_AIRPLANE_MODE;
 import static android.companion.AssociationRequest.PERMISSION_GROUP_NEARBY;
 import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_PCC;
 import static android.companion.CompanionResources.PERMISSION_ADD_MIRROR_DISPLAY;
@@ -190,8 +191,9 @@ public final class PermissionsUtils {
         final Map<Integer, String> map = new ArrayMap<>();
         map.put(FLAG_CALL_METADATA, null);
         map.put(FLAG_TASK_CONTINUITY, null);
-        map.put(FLAG_UNIVERSAL_MODES, Manifest.permission.REQUEST_COMPANION_SELF_MANAGED);
+        map.put(FLAG_UNIVERSAL_MODES, null);
         map.put(FLAG_UNIVERSAL_CLIPBOARD, Manifest.permission.REQUEST_COMPANION_SELF_MANAGED);
+        map.put(FLAG_AIRPLANE_MODE, null);
 
         SYSTEM_DATA_SYNC_FLAG_TO_PERMISSION = unmodifiableMap(map);
     }
