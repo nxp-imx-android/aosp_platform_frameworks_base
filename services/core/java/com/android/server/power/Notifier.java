@@ -325,29 +325,6 @@ public class Notifier {
                 WakelockEventType.ACQUIRE);
         notifyWakeLockListener(callback, tag, true, ownerUid, ownerPid, flags, workSource,
                 packageName, historyTag);
-        if (!mFlags.improveWakelockLatency()) {
-            final int monitorType = getBatteryStatsWakeLockMonitorType(flags);
-            if (monitorType >= 0) {
-                try {
-                    final boolean unimportantForLogging = ownerUid == Process.SYSTEM_UID
-                            && (flags & PowerManager.UNIMPORTANT_FOR_LOGGING) != 0;
-                    if (workSource != null) {
-                        mBatteryStats.noteStartWakelockFromSource(workSource, ownerPid, tag,
-                                historyTag, monitorType, unimportantForLogging);
-                    } else {
-                        mBatteryStats.noteStartWakelock(ownerUid, ownerPid, tag, historyTag,
-                                monitorType, unimportantForLogging);
-                        // XXX need to deal with disabled operations.
-                        mAppOps.startOpNoThrow(AppOpsManager.OP_WAKE_LOCK, ownerUid, packageName,
-                                false, null, null);
-                    }
-                } catch (RemoteException ex) {
-                    // Ignore
-                }
-            }
-            getWakeLockLog(flags).onWakeLockAcquired(tag,
-                    getUidForWakeLockLog(ownerUid, workSource), flags, /*eventTime=*/ -1);
-        }
         mWakefulnessSessionObserver.onWakeLockAcquired(flags);
     }
 
@@ -481,25 +458,6 @@ public class Notifier {
                 WakelockEventType.RELEASE);
         notifyWakeLockListener(callback, tag, false, ownerUid, ownerPid, flags, workSource,
                 packageName, historyTag);
-        if (!mFlags.improveWakelockLatency()) {
-            final int monitorType = getBatteryStatsWakeLockMonitorType(flags);
-            if (monitorType >= 0) {
-                try {
-                    if (workSource != null) {
-                        mBatteryStats.noteStopWakelockFromSource(workSource, ownerPid, tag,
-                                historyTag, monitorType);
-                    } else {
-                        mBatteryStats.noteStopWakelock(ownerUid, ownerPid, tag,
-                                historyTag, monitorType);
-                        mAppOps.finishOp(AppOpsManager.OP_WAKE_LOCK, ownerUid, packageName, null);
-                    }
-                } catch (RemoteException ex) {
-                    // Ignore
-                }
-            }
-            getWakeLockLog(flags).onWakeLockReleased(tag,
-                    getUidForWakeLockLog(ownerUid, workSource), /*eventTime=*/ -1);
-        }
         mWakefulnessSessionObserver.onWakeLockReleased(flags, releaseReason);
     }
 
@@ -1227,14 +1185,12 @@ public class Notifier {
             String historyTag) {
         long currentTime = mInjector.currentTimeMillis();
         mHandler.post(() -> {
-            if (mFlags.improveWakelockLatency()) {
-                if (isEnabled) {
-                    notifyWakelockAcquisition(tag, ownerUid, ownerPid, flags,
-                            workSource, packageName, historyTag, currentTime);
-                } else {
-                    notifyWakelockRelease(tag, ownerUid, ownerPid, flags,
-                            workSource, packageName, historyTag, currentTime);
-                }
+            if (isEnabled) {
+                notifyWakelockAcquisition(tag, ownerUid, ownerPid, flags,
+                        workSource, packageName, historyTag, currentTime);
+            } else {
+                notifyWakelockRelease(tag, ownerUid, ownerPid, flags,
+                        workSource, packageName, historyTag, currentTime);
             }
 
             if (callback != null) {
@@ -1302,22 +1258,16 @@ public class Notifier {
             String historyTag, int monitorType, WorkSource newWorkSource, int newOwnerPid,
             String newTag, String newHistoryTag, int newMonitorType, boolean unimportantForLogging)
             throws RemoteException {
-        if (!mFlags.improveWakelockLatency()) {
-            mBatteryStats.noteChangeWakelockFromSource(workSource, ownerPid, tag,
-                    historyTag, monitorType, newWorkSource, newOwnerPid, newTag,
-                    newHistoryTag, newMonitorType, unimportantForLogging);
-        } else {
-            mHandler.post(() -> {
-                try {
-                    mBatteryStats.noteChangeWakelockFromSource(workSource, ownerPid, tag,
-                            historyTag, monitorType, newWorkSource, newOwnerPid, newTag,
-                            newHistoryTag, newMonitorType, unimportantForLogging);
-                } catch (RemoteException e) {
-                    Slog.e(TAG, "Failed to notify the wakelock changing from source via "
-                            + "Notifier." + e.getLocalizedMessage());
-                }
-            });
-        }
+        mHandler.post(() -> {
+            try {
+                mBatteryStats.noteChangeWakelockFromSource(workSource, ownerPid, tag,
+                        historyTag, monitorType, newWorkSource, newOwnerPid, newTag,
+                        newHistoryTag, newMonitorType, unimportantForLogging);
+            } catch (RemoteException e) {
+                Slog.e(TAG, "Failed to notify the wakelock changing from source via "
+                        + "Notifier." + e.getLocalizedMessage());
+            }
+        });
     }
 
     /**
