@@ -24,7 +24,6 @@ import android.app.smartspace.SmartspaceManager
 import android.app.smartspace.SmartspaceSession
 import android.app.smartspace.SmartspaceTarget
 import android.app.smartspace.SmartspaceTargetEvent
-import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.database.ContentObserver
@@ -97,7 +96,6 @@ constructor(
     private val systemClock: SystemClock,
     private val secureSettings: SecureSettings,
     private val userTracker: UserTracker,
-    private val contentResolver: ContentResolver,
     private val sysuiColorExtractor: SysuiColorExtractor,
     @ShadeDisplayAware private val configurationController: ConfigurationController,
     private val statusBarStateController: StatusBarStateController,
