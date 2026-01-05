@@ -1082,7 +1082,7 @@
     <string name="lockscreen_transport_next_description" msgid="2931509904881099919">"آهنگ بعدی"</string>
     <string name="lockscreen_transport_pause_description" msgid="6705284702135372494">"مکث"</string>
     <string name="lockscreen_transport_play_description" msgid="106868788691652733">"پخش"</string>
-    <string name="lockscreen_transport_stop_description" msgid="1449552232598355348">"متوقف کردن"</string>
+    <string name="lockscreen_transport_stop_description" msgid="1449552232598355348">"ایست"</string>
     <string name="lockscreen_transport_rew_description" msgid="7680106856221622779">"عقب بردن"</string>
     <string name="lockscreen_transport_ffw_description" msgid="4763794746640196772">"جلو بردن سریع"</string>
     <string name="emergency_calls_only" msgid="3057351206678279851">"فقط تماس‌های اضطراری"</string>
@@ -1144,7 +1144,7 @@
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"قفل پین سیم‌کارت باز شد."</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"‏قفل Puk سیم‌کارت باز شد."</string>
     <string name="keyguard_accessibility_password_unlock" msgid="6130186108581153265">"باز کردن قفل با گذرواژه."</string>
-    <string name="keyguard_accessibility_secure_lock_device_biometric_unlock" msgid="1884638289137214044">"باز کردن قفل بیومتریک برای دستگاه قفل ایمن."</string>
+    <string name="keyguard_accessibility_secure_lock_device_biometric_unlock" msgid="1884638289137214044">"باز کردن قفل بیومتریک برای دستگاه قفل امن."</string>
     <string name="keyguard_accessibility_pattern_area" msgid="1419570880512350689">"ناحیه الگو."</string>
     <string name="keyguard_accessibility_slide_area" msgid="4331399051142520176">"ناحیه کشیدن انگشت روی صفحه."</string>
     <string name="password_keyboard_label_symbol_key" msgid="2716255580853511949">"?123"</string>
@@ -1440,7 +1440,7 @@
     <string name="sms_short_code_confirm_deny" msgid="1356917469323768230">"لغو"</string>
     <string name="sms_short_code_remember_choice" msgid="1374526438647744862">"این انتخاب را به خاطر بسپار"</string>
     <string name="sms_short_code_remember_undo_instruction" msgid="2620984439143080410">"‏می‌توانید بعداً آن را در تنظیمات &gt; برنامه‌ها تغییر دهید"</string>
-    <string name="sms_short_code_confirm_always_allow" msgid="2223014893129755950">"همیشه مجاز است"</string>
+    <string name="sms_short_code_confirm_always_allow" msgid="2223014893129755950">"همیشه اجازه داشتن"</string>
     <string name="sms_short_code_confirm_never_allow" msgid="2688828813521652079">"همیشه غیرمجاز"</string>
     <string name="sim_removed_title" msgid="1349026474932481037">"سیم‌کارت برداشته شد"</string>
     <string name="sim_removed_message" msgid="8469588437451533845">"تاوقتی‌که با سیم‌کارت معتبر بازراه‌اندازی نکنید، شبکه تلفن همراه دردسترس نخواهد بود."</string>
@@ -2015,7 +2015,7 @@
     <string name="confirm_battery_saver" msgid="5247976246208245754">"تأیید"</string>
     <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"«بهینه‌سازی باتری» «زمینه تیره» را روشن می‌کند و فعالیت‌های پس‌زمینه، برخی‌از جلوه‌های بصری، ویژگی‌های خاص، و برخی‌از اتصال‌های شبکه را محدود یا خاموش می‌کند."</string>
     <string name="battery_saver_description" msgid="2820475140307374570">"«بهینه‌سازی باتری» «زمینه تیره» را روشن می‌کند و فعالیت‌های پس‌زمینه، برخی‌از جلوه‌های بصری، ویژگی‌های خاص، و برخی‌از اتصال‌های شبکه را محدود یا خاموش می‌کند."</string>
-    <string name="data_saver_description" msgid="4995164271550590517">"برای کمک به کاهش مصرف داده، «صرفه‌جویی داده» از ارسال و دریافت داده در پس‌زمینه در بعضی برنامه‌ها جلوگیری می‌کند. برنامه‌ای که درحال‌حاضر استفاده می‌کنید می‌تواند به داده‌ها دسترسی داشته باشد اما دفعات دسترسی آن محدود است. این می‌تواند به این معنی باشد که، برای مثال، تصاویر تازمانی‌که روی آن‌ها ضربه نزنید نشان داده نمی‌شوند."</string>
+    <string name="data_saver_description" msgid="4995164271550590517">"برای کمک به کاهش مصرف داده، «صرفه‌جویی داده» از ارسال و دریافت داده در پس‌زمینه در بعضی برنامه‌ها جلوگیری می‌کند. برنامه‌ای که درحال‌حاضر استفاده می‌کنید می‌تواند به داده‌ها دسترسی داشته باشد اما دفعات دسترسی آن محدود است. این می‌تواند به این معنی باشد که، برای مثال، تصاویر تازمانی‌که روی آن‌ها تک‌ضرب نزنید نشان داده نمی‌شوند."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"«صرفه‌جویی داده» روشن شود؟"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"روشن کردن"</string>
     <string name="zen_mode_duration_minutes_summary" msgid="4555514757230849789">"{count,plural, =1{به‌مدت یک دقیقه (تا {formattedTime})}one{به‌مدت # دقیقه (تا {formattedTime})}other{به‌مدت # دقیقه (تا {formattedTime})}}"</string>

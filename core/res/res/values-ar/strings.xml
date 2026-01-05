@@ -781,7 +781,7 @@
     <string name="face_acquired_too_right" msgid="6245286514593540859">"يُرجى تحريك الهاتف لجهة اليسار"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"يُرجى تحريك الهاتف لجهة اليمين"</string>
     <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"يُرجى النظر إلى الكاميرا مباشرةً"</string>
-    <string name="face_acquired_not_detected" msgid="1057966913397548150">"ارفع هاتفك إلى مستوى العينَين لأنّه تتعذّر رؤية وجهك"</string>
+    <string name="face_acquired_not_detected" msgid="1057966913397548150">"ارفع هاتفك إلى مستوى عينَيك لأنّ وجهك لا يظهر"</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"حركة أكثر من اللازم. يُرجى حمل الهاتف بثبات."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"يُرجى إعادة تسجيل وجهك."</string>
     <string name="face_acquired_too_different" msgid="4505278456634706967">"يتعذّر التعرّف على الوجه. يُرجى إعادة المحاولة."</string>
@@ -2019,7 +2019,7 @@
     <string name="confirm_battery_saver" msgid="5247976246208245754">"حسنًا"</string>
     <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"يؤدي استخدام ميزة \"توفير شحن البطارية\" إلى تفعيل \"المظهر الداكن\" والحد من أو إيقاف الأنشطة في الخلفية وبعض التأثيرات المرئية وميزات معيّنة وبعض اتصالات الشبكات."</string>
     <string name="battery_saver_description" msgid="2820475140307374570">"يؤدي استخدام ميزة \"توفير شحن البطارية\" إلى تفعيل \"المظهر الداكن\" والحد من أو إيقاف الأنشطة في الخلفية وبعض التأثيرات المرئية وميزات معيّنة وبعض اتصالات الشبكات."</string>
-    <string name="data_saver_description" msgid="4995164271550590517">"للمساعدة في خفض استخدام البيانات، تمنع ميزة \"توفير البيانات\" بعض التطبيقات من إرسال البيانات وتلقّيها في الخلفية. يمكن للتطبيقات المتاحة لديك الآن استخدام البيانات، ولكن بمعدّل أقل. وهذا يعني أن الصور مثلاً لن تظهر حتى تنقر عليها."</string>
+    <string name="data_saver_description" msgid="4995164271550590517">"للمساعدة في خفض استخدام البيانات، تمنع ميزة \"توفير البيانات\" بعض التطبيقات من إرسال البيانات وتلقّيها في الخلفية. بإمكان أي تطبيق تستخدمه حاليًا استهلاك البيانات، ولكن بمعدّل أقل. وقد يعني ذلك مثلاً أنّ الصور لن تظهر حتى تنقر عليها."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"تفعيل ميزة \"توفير البيانات\"؟"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"تفعيل"</string>
     <string name="zen_mode_duration_minutes_summary" msgid="4555514757230849789">"{count,plural, =1{لمدة دقيقة واحدة (حتى {formattedTime})}zero{لمدة # دقيقة (حتى {formattedTime})}two{لمدة دقيقتين (حتى {formattedTime})}few{لمدة # دقائق (حتى {formattedTime})}many{لمدة # دقيقة (حتى {formattedTime})}other{لمدة # دقيقة (حتى {formattedTime})}}"</string>

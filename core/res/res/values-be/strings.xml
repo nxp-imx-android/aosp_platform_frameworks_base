@@ -1459,7 +1459,7 @@
     <string name="time_zone_change_notification_title" msgid="5232503069219193218">"Ваш часавы пояс зменены"</string>
     <string name="time_zone_change_notification_body" msgid="6135793674904665585">"Ваш часавы пояс: <xliff:g id="TIME_ZONE_DISPLAY_NAME">%1$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET">%2$s</xliff:g>)"</string>
     <string name="time_zone_offset_change_notification_title" msgid="8232305835199459588">"Перавод гадзінніка"</string>
-    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"Гадзіннікі пераведзены наперад на <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. Ваш часавы пояс: <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
+    <string name="time_zone_offset_change_notification_body_forward" msgid="1299493962341887576">"Гадзіннікі пераведзены наперад на: <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. Ваш часавы пояс: <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
     <string name="time_zone_offset_change_notification_body_backward" msgid="6643532078142642118">"Гадзіннікі пераведзены назад на <xliff:g id="TIME_ZONE_OFFSET_DURATION">%1$s</xliff:g>. Ваш часавы пояс: <xliff:g id="TIME_ZONE_DISPLAY_NAME">%2$s</xliff:g> (<xliff:g id="TIME_ZONE_OFFSET_0">%3$s</xliff:g>)."</string>
     <string name="time_picker_dialog_title" msgid="9053376764985220821">"Задаць час"</string>
     <string name="date_picker_dialog_title" msgid="5030520449243071926">"Задаць дату"</string>
