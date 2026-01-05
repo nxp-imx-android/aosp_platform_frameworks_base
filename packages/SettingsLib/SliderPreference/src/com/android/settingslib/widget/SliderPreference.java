@@ -121,6 +121,9 @@ public class SliderPreference extends Preference {
             mTrackingTouch = false;
             if ((int) slider.getValue() != mSliderValue) {
                 syncValueInternal(slider);
+
+                // After slider is dragged, also update start and end buttons
+                notifyChanged();
             }
             if (mExtraTouchListener != null) {
                 mExtraTouchListener.onStopTrackingTouch(slider);
