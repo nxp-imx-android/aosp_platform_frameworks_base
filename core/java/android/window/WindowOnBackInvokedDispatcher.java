@@ -18,8 +18,6 @@ package android.window;
 
 import static android.window.SystemOverrideOnBackInvokedCallback.OVERRIDE_UNDEFINED;
 
-import static com.android.window.flags.Flags.multipleSystemNavigationObserverCallbacks;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.Activity;
@@ -116,8 +114,6 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
             mOnBackInvokedCallbacks = new TreeMap<>();
 
     @VisibleForTesting
-    public OnBackInvokedCallback mSystemNavigationObserverCallback = null;
-    @VisibleForTesting
     public Set<OnBackInvokedCallback> mSystemNavigationObserverCallbacks = new HashSet<>();
 
     private Checker mChecker;
@@ -197,11 +193,7 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
                 }
                 removeCallbackInternal(callback);
             }
-            if (multipleSystemNavigationObserverCallbacks()) {
-                mSystemNavigationObserverCallbacks.add(callback);
-            } else {
-                mSystemNavigationObserverCallback = callback;
-            }
+            mSystemNavigationObserverCallbacks.add(callback);
         }
     }
 
@@ -247,21 +239,11 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
                 Integer prevPriority = mAllCallbacks.get(callback);
                 mOnBackInvokedCallbacks.get(prevPriority).remove(callback);
             }
-            if (multipleSystemNavigationObserverCallbacks()) {
-                if (mSystemNavigationObserverCallbacks.contains(callback)) {
-                    mSystemNavigationObserverCallbacks.remove(callback);
-                    if (DEBUG) {
-                        Log.i(TAG, "Callback already registered (as system-navigation-observer "
-                                + "callback). Removing and re-adding it.");
-                    }
-                }
-            } else {
-                if (mSystemNavigationObserverCallback == callback) {
-                    mSystemNavigationObserverCallback = null;
-                    if (DEBUG) {
-                        Log.i(TAG, "Callback already registered (as system-navigation-observer "
-                                + "callback). Removing and re-adding it.");
-                    }
+            if (mSystemNavigationObserverCallbacks.contains(callback)) {
+                mSystemNavigationObserverCallbacks.remove(callback);
+                if (DEBUG) {
+                    Log.i(TAG, "Callback already registered (as system-navigation-observer "
+                            + "callback). Removing and re-adding it.");
                 }
             }
 
@@ -283,16 +265,9 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
                 mImeBackCallbackSender.unregisterOnBackInvokedCallback(callback);
                 return;
             }
-            if (multipleSystemNavigationObserverCallbacks()) {
-                if (mSystemNavigationObserverCallbacks.contains(callback)) {
-                    mSystemNavigationObserverCallbacks.remove(callback);
-                    return;
-                }
-            } else {
-                if (mSystemNavigationObserverCallback == callback) {
-                    mSystemNavigationObserverCallback = null;
-                    return;
-                }
+            if (mSystemNavigationObserverCallbacks.contains(callback)) {
+                mSystemNavigationObserverCallbacks.remove(callback);
+                return;
             }
             if (callback instanceof ImeBackCallbackProxy.DefaultImeOnBackAnimationCallback) {
                 callback = mImeBackAnimationController;
@@ -393,7 +368,6 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
             mHandler.post(mProgressAnimator::reset);
             mAllCallbacks.clear();
             mOnBackInvokedCallbacks.clear();
-            mSystemNavigationObserverCallback = null;
             mSystemNavigationObserverCallbacks.clear();
         }
     }
@@ -473,19 +447,13 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
      * @param action The action to execute for each callback.
      */
     private void forEachObserverCallback(Consumer<OnBackInvokedCallback> action) {
-        if (multipleSystemNavigationObserverCallbacks()) {
-            if (mSystemNavigationObserverCallbacks.isEmpty()) return;
-            Set<OnBackInvokedCallback> observerCallbacks;
-            synchronized (mLock) {
-                observerCallbacks = new HashSet<>(mSystemNavigationObserverCallbacks);
-            }
-            for (OnBackInvokedCallback observerCallback : observerCallbacks) {
-                action.accept(observerCallback);
-            }
-        } else {
-            if (mSystemNavigationObserverCallback != null) {
-                action.accept(mSystemNavigationObserverCallback);
-            }
+        if (mSystemNavigationObserverCallbacks.isEmpty()) return;
+        Set<OnBackInvokedCallback> observerCallbacks;
+        synchronized (mLock) {
+            observerCallbacks = new HashSet<>(mSystemNavigationObserverCallbacks);
+        }
+        for (OnBackInvokedCallback observerCallback : observerCallbacks) {
+            action.accept(observerCallback);
         }
     }
 
