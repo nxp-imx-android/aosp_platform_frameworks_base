@@ -109,10 +109,10 @@ public class PrebakedSegmentTest {
     }
 
     @Test
-    public void testApplyAdaptiveScale_ignoresAndReturnsSameEffect() {
+    public void testScaleLinearly_ignoresAndReturnsSameEffect() {
         PrebakedSegment prebaked = new PrebakedSegment(
                 VibrationEffect.EFFECT_CLICK, true, VibrationEffect.EFFECT_STRENGTH_MEDIUM);
-        assertSame(prebaked, prebaked.applyAdaptiveScale(0.5f));
+        assertSame(prebaked, prebaked.scaleLinearly(0.5f));
     }
 
     @Test

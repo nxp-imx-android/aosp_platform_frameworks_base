@@ -171,7 +171,7 @@ public final class PrebakedSegment extends VibrationEffectSegment {
     /** @hide */
     @NonNull
     @Override
-    public PrebakedSegment applyAdaptiveScale(float scaleFactor) {
+    public PrebakedSegment scaleLinearly(float scaleFactor) {
         // Prebaked effect strength cannot be scaled with this method.
         return this;
     }

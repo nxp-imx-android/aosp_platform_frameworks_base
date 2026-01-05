@@ -23,7 +23,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.VibrationEffect;
 import android.os.VibratorInfo;
-import android.util.MathUtils;
 
 import com.android.internal.util.Preconditions;
 
@@ -136,8 +135,8 @@ public final class PrimitiveSegment extends VibrationEffectSegment {
     /** @hide */
     @NonNull
     @Override
-    public PrimitiveSegment applyAdaptiveScale(float scaleFactor) {
-        float newScale = MathUtils.constrain(mScale * scaleFactor, 0f, 1f);
+    public PrimitiveSegment scaleLinearly(float scaleFactor) {
+        float newScale = VibrationEffect.scaleLinearly(mScale, scaleFactor);
         if (Float.compare(mScale, newScale) == 0) {
             return this;
         }
