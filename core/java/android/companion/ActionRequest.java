@@ -174,8 +174,7 @@ public final class ActionRequest implements Parcelable {
     }
 
     /**
-     * A builder for creating {@link ActionRequest} instances for system only.
-     * @hide
+     * A builder for creating {@link ActionRequest}.
      */
     public static final class Builder {
         private final @RequestAction int mAction;
@@ -183,8 +182,7 @@ public final class ActionRequest implements Parcelable {
 
         /**
          * @param action The action to request.
-         * @param operation The operation to perform, either {@link #OP_ACTIVATE} or
-         *                  {@link #OP_DEACTIVATE}.
+         * @param operation The operation to perform.
          */
         public Builder(@RequestAction int action, @Operation int operation) {
             this.mAction = action;
