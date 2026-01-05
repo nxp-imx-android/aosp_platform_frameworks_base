@@ -10623,6 +10623,11 @@ package android.companion {
     field public static final int REQUEST_TRANSPORT = 2; // 0x2
   }
 
+  public static final class ActionRequest.Builder {
+    ctor public ActionRequest.Builder(int, int);
+    method @NonNull public android.companion.ActionRequest build();
+  }
+
   @FlaggedApi("android.companion.enable_data_sync") public final class ActionResult implements android.os.Parcelable {
     method public int describeContents();
     method public int getAction();
