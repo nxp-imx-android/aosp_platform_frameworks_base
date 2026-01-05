@@ -112,6 +112,7 @@ public final class ContactsPickerSessionContract {
      * MIME types:
      *
      * <ul>
+     *  <li>{@link ContactsContract.CommonDataKinds.StructuredName#CONTENT_ITEM_TYPE}</li>
      *  <li>{@link ContactsContract.CommonDataKinds.Email#CONTENT_ITEM_TYPE}</li>
      *  <li>{@link ContactsContract.CommonDataKinds.Phone#CONTENT_ITEM_TYPE}</li>
      *  <li>{@link ContactsContract.CommonDataKinds.StructuredPostal#CONTENT_ITEM_TYPE}</li>
