@@ -47,6 +47,9 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
             "android.media.projection.MediaProjectionManager#stopActiveProjection",
         )
 
+    // A list of constructors that should be considered binder calls.
+    private val constructorBinderCalls = listOf("android.media.session.MediaController")
+
     private data class BinderCall(
         /** Package location of binder call, like "android.app". */
         val packageName: String,
@@ -78,6 +81,18 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
         // Use `toSet` first so that we don't visit the same method multiple times.
         parsedBinderCalls.map { it.methodName }.toSet().toList()
 
+    override fun getApplicableConstructorTypes() = constructorBinderCalls
+
+    override fun visitConstructor(
+        context: JavaContext,
+        node: UCallExpression,
+        constructor: PsiMethod,
+    ) {
+        // #visitConstructor should only be invoked if the constructor is in our binder call list,
+        // so we can assume it's a binder call and immediately visit it.
+        visitBinderCall(context, node)
+    }
+
     override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
         val methodName = method.name
         val packageName = context.evaluator.getPackage(method)?.qualifiedName
@@ -93,6 +108,14 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
             return
         }
 
+        visitBinderCall(context, node)
+    }
+
+    /**
+     * Visits a call that is definitely in our list of binder calls to check if it's invoked on the
+     * background or not.
+     */
+    private fun visitBinderCall(context: JavaContext, node: UCallExpression) {
         if (node.containingMethodOrClassHasWorkerThreadAnnotation(context)) {
             // This binder call is inside a method or class marked `@WorkerThread`, and that
             // annotation enforces that the method will only be invoked on the background thread.

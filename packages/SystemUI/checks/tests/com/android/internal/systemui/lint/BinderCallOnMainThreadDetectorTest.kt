@@ -1032,6 +1032,38 @@ src/test/pkg/test.kt:6: Warning: Binder call on main thread [BinderCallOnMainThr
             )
     }
 
+    @Test
+    fun mediaControllerConstructor_error() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                        package test.pkg
+
+                        import android.media.session.MediaController
+
+                        class TestClass {
+                            fun onCreate(context: Context, token: MediaSession.Token) {
+                                val controller = MediaController(context, token)
+                            }
+                        }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expect(
+                """
+src/test/pkg/TestClass.kt:7: Warning: Binder call on main thread [BinderCallOnMainThread]
+        val controller = MediaController(context, token)
+                         ~~~~~~~~~~~~~~~
+0 errors, 1 warnings
+                """
+            )
+    }
+
     companion object {
         private val launchTracedStub =
             kotlin(
