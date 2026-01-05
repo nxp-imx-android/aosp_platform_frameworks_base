@@ -106,7 +106,6 @@ import android.os.UserHandle;
 import android.service.voice.VoiceInteractionManagerInternal;
 import android.util.Slog;
 import android.view.RemoteAnimationDefinition;
-import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.SizeConfigurationBuckets;
 import android.window.TransitionInfo;
@@ -423,16 +422,13 @@ class ActivityClientController extends IActivityClientController.Stub {
                     // Not root activity.
                     return false;
                 }
-                final Task rootTask = task.getRootTask();
-                if (rootTask != null) {
-                    final ActivityRecord r = ActivityRecord.isInRootTaskLocked(token);
-                    if (r != null && mService.mWindowOrganizerController.mTaskOrganizerController
-                            .handleInterceptBackPressedOnTaskRoot(r,
-                                    /* isFromMoveActivityTaskToBack= */ true)) {
-                        // For AOT Task, it can't be moved to back. In this case, treat it as on
-                        // back press on root if Shell is intercepting.
-                        return true;
-                    }
+                final ActivityRecord r = ActivityRecord.isInRootTaskLocked(token);
+                if (r != null && mService.mWindowOrganizerController.mTaskOrganizerController
+                        .handleInterceptBackPressedOnTaskRoot(r,
+                                /* isFromBackPress= */ false)) {
+                    // For AOT Task, it can't be moved to back. In this case, treat it as on
+                    // back press on root if Shell is intercepting.
+                    return true;
                 }
                 return moveActivityTaskToBackInner(task);
             }
@@ -443,7 +439,7 @@ class ActivityClientController extends IActivityClientController.Stub {
 
     private boolean moveActivityTaskToBackInner(@NonNull Task task) {
         final Task rootTask = task.getRootTask();
-        return rootTask != null && rootTask.moveTaskToBack(task);
+        return rootTask.moveTaskToBack(task);
     }
 
     @Override
@@ -1962,7 +1958,7 @@ class ActivityClientController extends IActivityClientController.Stub {
                         true /*setToBottomIfNone*/);
                 if (r == root && mService.mWindowOrganizerController.mTaskOrganizerController
                         .handleInterceptBackPressedOnTaskRoot(r,
-                                /* isFromMoveActivityTaskToBack= */ false)) {
+                                /* isFromBackPress= */ true)) {
                     // This task is handled by a task organizer that has requested the back
                     // pressed callback.
                     return;

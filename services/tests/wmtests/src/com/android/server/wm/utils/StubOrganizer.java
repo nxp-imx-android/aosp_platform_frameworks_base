@@ -64,8 +64,8 @@ public class StubOrganizer extends ITaskOrganizer.Stub {
     }
 
     @Override
-    public void onBackPressedOnTaskRoot(@NonNull ActivityManager.RunningTaskInfo taskInfo,
-            boolean isFromMoveActivityTaskToBack, boolean isOptInOnBackInvoked,
+    public void onBackOnTaskRoot(@NonNull ActivityManager.RunningTaskInfo taskInfo,
+            boolean isFromBackPress, boolean isOptInOnBackInvoked,
             boolean hasOpaqueSibling) {}
 
     @Override

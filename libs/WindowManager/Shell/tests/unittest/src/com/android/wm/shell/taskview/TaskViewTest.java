@@ -352,7 +352,7 @@ public class TaskViewTest extends ShellTestCase {
     public void testOnBackPressedOnTaskRoot() {
         prepareOpenAnimation(true /* newTask */);
 
-        mTaskViewTaskController.onBackPressedOnTaskRoot(mTaskInfo, false, false, false);
+        mTaskViewTaskController.onBackOnTaskRoot(mTaskInfo, true, false, false);
 
         verify(mViewListener).onBackPressedOnTaskRoot(eq(mTaskInfo.taskId));
     }
