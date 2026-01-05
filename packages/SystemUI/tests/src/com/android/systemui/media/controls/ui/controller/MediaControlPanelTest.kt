@@ -64,6 +64,7 @@ import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.BroadcastSender
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
+import com.android.systemui.communal.widgets.CommunalTransitionAnimatorController
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.media.controls.MediaTestUtils
 import com.android.systemui.media.controls.domain.pipeline.MediaDataManager
@@ -213,6 +214,9 @@ public class MediaControlPanelTest : SysuiTestCase() {
     @Mock private lateinit var lockscreenUserManager: NotificationLockscreenUserManager
 
     @Mock private lateinit var communalSceneInteractor: CommunalSceneInteractor
+    @Mock
+    private lateinit var communalAnimationControllerFactory:
+        CommunalTransitionAnimatorController.Factory
 
     @Mock private lateinit var globalSettings: GlobalSettings
 
@@ -265,6 +269,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
                     communalSceneInteractor,
                     lockscreenUserManager,
                     globalSettings,
+                    communalAnimationControllerFactory,
                 ) {
                 override fun loadAnimator(
                     animId: Int,

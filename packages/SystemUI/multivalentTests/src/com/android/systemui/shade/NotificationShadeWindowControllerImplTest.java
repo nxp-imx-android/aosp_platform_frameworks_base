@@ -17,12 +17,13 @@
 package com.android.systemui.shade;
 
 import static android.service.dreams.Flags.FLAG_DREAMS_V2;
-import static com.android.window.flags.Flags.FLAG_ENSURE_WALLPAPER_DRAWN_ON_DISPLAY_SWITCH;
 import static android.view.WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 import static android.view.WindowManager.LayoutParams.FLAG_SECURE;
 import static android.view.WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER;
 import static android.view.WindowManager.LayoutParams.INPUT_FEATURE_SENSITIVE_FOR_PRIVACY;
+
+import static com.android.window.flags.Flags.FLAG_ENSURE_WALLPAPER_DRAWN_ON_DISPLAY_SWITCH;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -175,7 +176,7 @@ public class NotificationShadeWindowControllerImplTest extends SysuiTestCase {
                 () -> mSelectedUserInteractor,
                 mUserTracker,
                 mKosmos.getNotificationShadeWindowModel(),
-                mKosmos::getCommunalInteractor,
+                mKosmos::getCommunalSceneInteractor,
                 mKosmos.getShadeLayoutParams(),
                 mKosmos.getTopUiController(),
                 mKosmos.getKeyguardSurfaceBehindInteractor(),

@@ -181,6 +181,7 @@ public class MediaControlPanel {
 
     private final SeekBarViewModel mSeekBarViewModel;
     private final CommunalSceneInteractor mCommunalSceneInteractor;
+    private final CommunalTransitionAnimatorController.Factory mCommunalAnimationControllerFactory;
     private SeekBarObserver mSeekBarObserver;
     protected final Executor mBackgroundExecutor;
     private final DelayableExecutor mMainExecutor;
@@ -286,7 +287,8 @@ public class MediaControlPanel {
             ActivityIntentHelper activityIntentHelper,
             CommunalSceneInteractor communalSceneInteractor,
             NotificationLockscreenUserManager lockscreenUserManager,
-            GlobalSettings globalSettings
+            GlobalSettings globalSettings,
+            CommunalTransitionAnimatorController.Factory communalAnimationControllerFactory
     ) {
         mContext = context;
         mBackgroundExecutor = backgroundExecutor;
@@ -304,6 +306,7 @@ public class MediaControlPanel {
         mActivityIntentHelper = activityIntentHelper;
         mLockscreenUserManager = lockscreenUserManager;
         mCommunalSceneInteractor = communalSceneInteractor;
+        mCommunalAnimationControllerFactory = communalAnimationControllerFactory;
 
         mSeekBarViewModel.setLogSeek(() -> {
             if (mPackageName != null && mInstanceId != null) {
@@ -1389,8 +1392,7 @@ public class MediaControlPanel {
                 && mMediaViewController.getCurrentEndLocation()
                 == MediaHierarchyManager.LOCATION_COMMUNAL_HUB) {
             mCommunalSceneInteractor.setIsLaunchingWidget(true);
-            return new CommunalTransitionAnimatorController(controller,
-                    mCommunalSceneInteractor);
+            return mCommunalAnimationControllerFactory.create(controller);
         }
         return controller;
     }

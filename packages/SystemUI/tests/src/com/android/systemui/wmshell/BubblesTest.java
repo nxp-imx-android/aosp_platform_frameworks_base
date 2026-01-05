@@ -450,7 +450,7 @@ public class BubblesTest extends SysuiTestCase {
                 () -> mSelectedUserInteractor,
                 mUserTracker,
                 mNotificationShadeWindowModel,
-                mKosmos::getCommunalInteractor,
+                mKosmos::getCommunalSceneInteractor,
                 mKosmos.getShadeLayoutParams(),
                 mKosmos.getTopUiController(),
                 mKosmos.getKeyguardSurfaceBehindInteractor(),
