@@ -1064,6 +1064,38 @@ src/test/pkg/TestClass.kt:7: Warning: Binder call on main thread [BinderCallOnMa
             )
     }
 
+    @Test
+    fun mediaControllerUnregisterCallback_error() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                        package test.pkg
+
+                        import android.media.session.MediaController
+
+                        class TestClass {
+                            fun unregister(controller: MediaController, callback: MediaController.Callback) {
+                                controller.unregisterCallback(callback)
+                            }
+                        }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expect(
+                """
+src/test/pkg/TestClass.kt:7: Warning: Binder call on main thread [BinderCallOnMainThread]
+        controller.unregisterCallback(callback)
+                   ~~~~~~~~~~~~~~~~~~
+0 errors, 1 warnings
+                """
+            )
+    }
+
     companion object {
         private val launchTracedStub =
             kotlin(

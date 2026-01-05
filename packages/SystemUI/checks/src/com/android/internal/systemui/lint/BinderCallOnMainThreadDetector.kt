@@ -42,13 +42,21 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
     // TODO: b/469073407 - Add more binder calls.
     private val binderCalls =
         listOf(
+            // go/keep-sorted start
             "android.app.PendingIntent#getBroadcast",
             "android.app.PendingIntent#queryIntentComponents",
             "android.media.projection.MediaProjectionManager#stopActiveProjection",
+            "android.media.session.MediaController#unregisterCallback",
+            // go/keep-sorted end
         )
 
     // A list of constructors that should be considered binder calls.
-    private val constructorBinderCalls = listOf("android.media.session.MediaController")
+    private val constructorBinderCalls =
+        listOf(
+            // go/keep-sorted start
+            "android.media.session.MediaController"
+            // go/keep-sorted end
+        )
 
     private data class BinderCall(
         /** Package location of binder call, like "android.app". */
