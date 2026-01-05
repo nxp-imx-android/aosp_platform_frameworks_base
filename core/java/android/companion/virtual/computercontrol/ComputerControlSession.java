@@ -818,6 +818,8 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     }
 
     private void onImageAvailable() {
+        mAccessibilityProxy.onImageAvailable();
+
         synchronized (mImageReaderLock) {
             if (mImageReader == null) {
                 return;

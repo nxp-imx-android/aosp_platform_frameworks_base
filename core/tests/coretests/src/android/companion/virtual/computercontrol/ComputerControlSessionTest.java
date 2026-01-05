@@ -298,6 +298,41 @@ public class ComputerControlSessionTest {
     }
 
     @Test
+    public void setStabilityListener_waitsForFirstFrame() throws Exception {
+        verify(mMockSession).initialize(any(), mSurfaceCaptor.capture());
+        Surface surface = mSurfaceCaptor.getValue();
+        assertThat(surface).isNotNull();
+
+        mSession.setStabilityListener(Duration.ofMillis(0), mExecutor, mMockStabilityListener);
+        // Tap to reset the idle state.
+        mSession.tap(0, 0);
+
+        // Verify listener is NOT called initially
+        verify(mMockStabilityListener, Mockito.after(200).never()).onSessionStable();
+
+        drawFrame(surface);
+
+        verify(mMockStabilityListener, Mockito.timeout(5000)).onSessionStable();
+    }
+
+    @Test
+    public void setStabilityListener_frameAlreadyAvailable_firesImmediately() throws Exception {
+        verify(mMockSession).initialize(any(), mSurfaceCaptor.capture());
+        Surface surface = mSurfaceCaptor.getValue();
+        assertThat(surface).isNotNull();
+
+        drawFrame(surface);
+        // Wait for frame to be processed.
+        SystemClock.sleep(100);
+
+        mSession.setStabilityListener(Duration.ofMillis(0), mExecutor, mMockStabilityListener);
+        // Tap to reset the idle state.
+        mSession.tap(0, 0);
+
+        verify(mMockStabilityListener, Mockito.timeout(5000)).onSessionStable();
+    }
+
+    @Test
     public void requestScreenshot_notActive_fails() throws RemoteException {
         var callback = Mockito.mock(ScreenshotCallback.class);
         mSession.requestScreenshot(mExecutor, callback, null);
