@@ -100,27 +100,30 @@ public final class RRectBlurRegion extends BlurRegion {
      *
      * @param offsetX horizontal offset to apply to the region's coordinates
      * @param offsetY vertical offset to apply to the region's coordinates
+     * @param scaleX horizontal scale to apply to the region's coordinates
+     * @param scaleY vertical scale to apply to the region's coordinates
      * @return float array containing the region parameters
      * @hide
      */
     @Override
     @NonNull
-    public float[] toFloatArray(int offsetX, int offsetY) {
+    public float[] toFloatArray(int offsetX, int offsetY, float scaleX, float scaleY) {
         final float[] floatArray = new float[14];
-        floatArray[0] = getBlurRadius();
+        // Scale blur radius by the average of x and y scales to approximate the effect.
+        floatArray[0] = getBlurRadius() * (scaleX + scaleY) / 2.0f;
         floatArray[1] = getAlpha();
-        floatArray[2] = mLeft + offsetX;
-        floatArray[3] = mTop + offsetY;
-        floatArray[4] = mRight + offsetX;
-        floatArray[5] = mBottom + offsetY;
-        floatArray[6] = mCornerRadius[0];
-        floatArray[7] = mCornerRadius[1];
-        floatArray[8] = mCornerRadius[2];
-        floatArray[9] = mCornerRadius[3];
-        floatArray[10] = mCornerRadius[4];
-        floatArray[11] = mCornerRadius[5];
-        floatArray[12] = mCornerRadius[6];
-        floatArray[13] = mCornerRadius[7];
+        floatArray[2] = mLeft * scaleX + offsetX;
+        floatArray[3] = mTop * scaleY + offsetY;
+        floatArray[4] = mRight * scaleX + offsetX;
+        floatArray[5] = mBottom * scaleY + offsetY;
+        floatArray[6] = mCornerRadius[0] * scaleX;
+        floatArray[7] = mCornerRadius[1] * scaleY;
+        floatArray[8] = mCornerRadius[2] * scaleX;
+        floatArray[9] = mCornerRadius[3] * scaleY;
+        floatArray[10] = mCornerRadius[4] * scaleX;
+        floatArray[11] = mCornerRadius[5] * scaleY;
+        floatArray[12] = mCornerRadius[6] * scaleX;
+        floatArray[13] = mCornerRadius[7] * scaleY;
         return floatArray;
     }
 
