@@ -89,17 +89,6 @@ class LetterboxControllerStrategyTest : ShellTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS)
-    fun `NO rounded corners support when flag is disabled`() {
-        runTestScenario { r ->
-            r.configureRoundedCornerRadius(true)
-            r.configureLetterboxMode(r.SIMPLE_TEST_EVENT.copy(isTranslucent = true))
-            r.checkShouldRoundedCorners(expected = false)
-        }
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS)
     fun `NO rounded corners support when radius is 0`() {
         runTestScenario { r ->
             r.configureRoundedCornerRadius(false)
@@ -109,7 +98,6 @@ class LetterboxControllerStrategyTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS)
     fun `NO rounded corners support when activity is opaque`() {
         runTestScenario { r ->
             r.configureRoundedCornerRadius(true)
@@ -119,10 +107,7 @@ class LetterboxControllerStrategyTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS,
-        Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS_ON_TRANSPARENT,
-    )
+    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS_ON_TRANSPARENT)
     fun `Rounded corners support when activity is transparent and radius is not 0`() {
         runTestScenario { r ->
             // Transparent activity and rounded corners enabled but not present already.
@@ -152,13 +137,7 @@ class LetterboxControllerStrategyTest : ShellTestCase() {
         }
     }
 
-    /*
-                   && event.isTranslucent && !event.mainWindowHasRoundedCorners
-               && letterboxConfiguration.isLetterboxActivityCornersRounded()
-    */
-
     @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS)
     @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS_ON_TRANSPARENT)
     fun `Rounded corners when activity is transparent and radius is not 0 for transparent`() {
         runTestScenario { r ->

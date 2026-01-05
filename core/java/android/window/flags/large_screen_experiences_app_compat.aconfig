@@ -81,16 +81,6 @@ flag {
 }
 
 flag {
-  name: "app_compat_refactoring_rounded_corners"
-  namespace: "large_screen_experiences_app_compat"
-  description: "Whether the rounded corners refactoring for letterboxing in shell is enabled./n"
-  bug: "375124280"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "app_compat_refactoring_rounded_corners_on_transparent"
   namespace: "large_screen_experiences_app_compat"
   description: "Enables rounded corners only for fully transparent activities."

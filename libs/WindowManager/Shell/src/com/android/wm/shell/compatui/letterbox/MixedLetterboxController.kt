@@ -73,32 +73,28 @@ constructor(
         } else {
             inputController.destroyLetterboxSurface(key, transaction)
         }
-        if (Flags.appCompatRefactoringRoundedCorners()) {
-            if (Flags.appCompatRefactoringRoundedCornersOnTransparent()) {
-                if (controllerStrategy.shouldSupportShellRoundedCorners()) {
-                    roundedCornersController.createLetterboxSurface(
-                        key,
-                        transaction,
-                        parentLeash,
-                        token,
-                    )
-                } else {
-                    roundedCornersController.destroyLetterboxSurface(key, transaction)
-                }
+        if (Flags.appCompatRefactoringRoundedCornersOnTransparent()) {
+            if (controllerStrategy.shouldSupportShellRoundedCorners()) {
+                roundedCornersController.createLetterboxSurface(
+                    key,
+                    transaction,
+                    parentLeash,
+                    token,
+                )
             } else {
-                if (letterboxConfiguration.isLetterboxActivityCornersRounded()) {
-                    roundedCornersController.createLetterboxSurface(
-                        key,
-                        transaction,
-                        parentLeash,
-                        token,
-                    )
-                } else {
-                    roundedCornersController.destroyLetterboxSurface(key, transaction)
-                }
+                roundedCornersController.destroyLetterboxSurface(key, transaction)
             }
         } else {
-            roundedCornersController.destroyLetterboxSurface(key, transaction)
+            if (letterboxConfiguration.isLetterboxActivityCornersRounded()) {
+                roundedCornersController.createLetterboxSurface(
+                    key,
+                    transaction,
+                    parentLeash,
+                    token,
+                )
+            } else {
+                roundedCornersController.destroyLetterboxSurface(key, transaction)
+            }
         }
     }
 }
