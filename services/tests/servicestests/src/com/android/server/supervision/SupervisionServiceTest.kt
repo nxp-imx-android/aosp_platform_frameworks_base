@@ -753,7 +753,6 @@ class SupervisionServiceTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_PERSISTENT_SUPERVISION_SETTINGS)
     fun setSupervisionRecoveryInfo() {
         addDefaultAndTestUsers()
         assertThat(service.supervisionRecoveryInfo).isNull()
@@ -776,7 +775,6 @@ class SupervisionServiceTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_PERSISTENT_SUPERVISION_SETTINGS)
     fun setSupervisionRecoveryInfo_supervisionEnabled_restrictsFactoryReset() {
         addDefaultAndTestUsers()
         setSupervisionEnabledForUser(USER_ID, true)
@@ -792,7 +790,6 @@ class SupervisionServiceTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_PERSISTENT_SUPERVISION_SETTINGS)
     fun setSupervisionRecoveryInfo_toNull_supervisionEnabled_unrestrictsFactoryReset() {
         addDefaultAndTestUsers()
         setSupervisionEnabledForUser(USER_ID, true)
@@ -811,7 +808,6 @@ class SupervisionServiceTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_PERSISTENT_SUPERVISION_SETTINGS)
     fun setSupervisionRecoveryInfo_supervisionEnabled_hasSupervisionRoleHolders_doesNotRestrictFactoryReset() {
         addDefaultAndTestUsers()
         injector.setRoleHoldersAsUser(
