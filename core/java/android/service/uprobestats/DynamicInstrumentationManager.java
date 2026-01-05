@@ -20,6 +20,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
+import android.annotation.TestApi;
 import android.content.ComponentName;
 import android.content.Context;
 import android.util.Slog;
@@ -40,6 +41,7 @@ import com.android.internal.annotations.GuardedBy;
  * @hide
  */
 @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
+@TestApi
 @FlaggedApi(android.security.Flags.FLAG_DYNAMIC_INSTRUMENTATION_API)
 @SystemService(Context.DYNAMIC_INSTRUMENTATION_SERVICE)
 public final class DynamicInstrumentationManager {
@@ -72,6 +74,7 @@ public final class DynamicInstrumentationManager {
      * @hide
      */
     @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
+    @TestApi
     @FlaggedApi(android.security.Flags.FLAG_DYNAMIC_INSTRUMENTATION_API)
     @Nullable
     public ComponentName getDynamicInstrumentationEventConsumer() {
@@ -97,6 +100,7 @@ public final class DynamicInstrumentationManager {
      * @hide
      */
     @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
+    @TestApi
     @FlaggedApi(android.security.Flags.FLAG_DYNAMIC_INSTRUMENTATION_API)
     public void setDynamicInstrumentationEventConsumer(@Nullable ComponentName componentName) {
         synchronized (sLock) {
