@@ -21,7 +21,6 @@ import android.os.Build
 import android.text.TextUtils
 import android.util.Log
 import androidx.annotation.VisibleForTesting
-import com.android.wm.shell.Flags
 import com.android.wm.shell.shared.bubbles.logging.BubbleEventHistoryLogger.Companion.MAX_EVENTS_DEBUG
 import java.io.PrintWriter
 import java.util.Locale
@@ -89,7 +88,6 @@ class BubbleEventHistoryLogger(
         eventData: String? = null,
         timestamp: Long = System.currentTimeMillis(),
     ) {
-        if (!Flags.enableBubbleEventHistoryLogs()) return
         if (recentEvents.size >= maxLogEvents) {
             recentEvents.removeAt(0)
         }
@@ -120,7 +118,6 @@ class BubbleEventHistoryLogger(
      * beginning of each line.
      */
     fun dump(pw: PrintWriter, prefix: String = "") {
-        if (!Flags.enableBubbleEventHistoryLogs()) return
         val recentEventsCopy = synchronized(this) { ArrayList(recentEvents) }
         pw.println("${prefix}Bubbles events history:")
         recentEventsCopy.forEach { event ->
