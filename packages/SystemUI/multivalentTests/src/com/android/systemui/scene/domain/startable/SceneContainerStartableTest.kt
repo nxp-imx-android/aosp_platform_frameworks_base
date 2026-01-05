@@ -346,8 +346,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             assertThat(isVisible).isTrue()
         }
 
-    // Edge case when resuming SetupWizard for a user that has already set an authentication
-    // factor.
+    // Edge case when resuming SetupWizard for a user that has already set an authentication factor.
     @Test
     fun hydrateVisibility_deviceNotProvisionedAndLocked() =
         kosmos.runTest {
@@ -782,7 +781,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             underTest.start()
             runCurrent()
 
-            // run all pending dismiss succeeded/cancelled calls from setup:
+            // Run all pending dismiss succeeded/cancelled calls from setup:
             fakeExecutor.runAllReady()
 
             val dismissCallback: IKeyguardDismissCallback = mock()
@@ -1640,7 +1639,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             // Verify that the startable changed the scene to Lockscreen because the device locked
             // following the sleep.
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            // Make the transition state match the current state
+            // Make the transition state match the current state.
             transitionStateFlow.value = ObservableTransitionState.Idle(Scenes.Lockscreen)
             // Wake up the device again before continuing with the test.
             powerInteractor.setAwakeForTest()
@@ -2743,7 +2742,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             underTest.start()
             runCurrent()
 
-            // run all pending dismiss succeeded/cancelled calls from setup:
+            // Run all pending dismiss succeeded/cancelled calls from setup:
             fakeExecutor.runAllReady()
 
             val dismissCallback: IKeyguardDismissCallback = mock()
@@ -2779,8 +2778,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             assertThat(isLockscreenEnabled).isTrue()
 
             // Starting a transition to Lockscreen should refresh the value, causing the pending
-            // value
-            // to propagate to the real flow:
+            // value to propagate to the real flow:
             transitionState.value =
                 ObservableTransitionState.Transition(
                     fromScene = Scenes.Gone,
@@ -2802,8 +2800,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             assertThat(isLockscreenEnabled).isFalse()
 
             // Starting another transition to Lockscreen should refresh the value, causing the
-            // pending
-            // value to propagate to the real flow:
+            // pending value to propagate to the real flow:
             transitionState.value =
                 ObservableTransitionState.Transition(
                     fromScene = Scenes.Gone,
@@ -2818,7 +2815,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
-    fun replacesLockscreenSceneOnBackStack_whenUnlockdViaAlternateBouncer_fromShade() =
+    fun replacesLockscreenSceneOnBackStack_whenUnlockedViaAlternateBouncer_fromShade() =
         kosmos.runTest {
             enableSingleShade()
             val transitionState =
@@ -3308,7 +3305,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             assertThat(currentSceneKey).isEqualTo(Scenes.Lockscreen)
             assertThat(currentOverlays).contains(Overlays.Bouncer)
 
-            // Face auth confirm button clicked, pending -> confirmed auth animation played
+            // Face auth confirm button clicked, pending -> confirmed auth animation played.
             kosmos.secureLockDeviceInteractor.onReadyToDismissBiometricAuth()
             runCurrent()
 
