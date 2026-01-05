@@ -110,6 +110,7 @@ import android.util.SparseBooleanArray;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.WorkerThread;
 
 import com.android.compose.animation.scene.ObservableTransitionState;
 import com.android.internal.annotations.VisibleForTesting;
@@ -691,7 +692,9 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
      * Note that this method will filter out any subscription which is PROFILE_CLASS_PROVISIONING
      * and REMOTE SIMs. REMOTE SIMs use an invalid slot index (-1).
      */
-    public List<SubscriptionInfo> getSubscriptionInfo(boolean forceReload) {
+    @VisibleForTesting
+    @WorkerThread
+    List<SubscriptionInfo> getSubscriptionInfo(boolean forceReload) {
         List<SubscriptionInfo> sil = mSubscriptionInfo;
         if (sil == null || forceReload) {
             mSubscriptionInfo = mSubscriptionManager.getCompleteActiveSubscriptionInfoList()
