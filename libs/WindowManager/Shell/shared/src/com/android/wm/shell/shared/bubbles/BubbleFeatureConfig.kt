@@ -16,14 +16,12 @@
 
 package com.android.wm.shell.shared.bubbles
 
-import android.app.ActivityManager
-import android.content.Context
-
 /** Some features of bubbles aren't available on all devices. This allows easy querying. */
-class BubbleFeatureConfig(private val context: Context) {
+interface BubbleFeatureConfig {
 
-    fun areAppBubblesSupported(): Boolean {
-        val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        return BubbleFlagHelper.enableCreateAnyBubble() && !am.isLowRamDevice
-    }
+    /** Returns {@code true} if app bubbles are supported. */
+    fun areAppBubblesSupported(): Boolean
+
+    /** Returns {@code true} if the scrim can be shown. */
+    fun isScrimEnabled(displayId: Int): Boolean
 }

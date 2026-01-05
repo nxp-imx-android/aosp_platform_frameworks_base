@@ -95,6 +95,7 @@ import com.android.wm.shell.draganddrop.DragAndDropController
 import com.android.wm.shell.shared.TransactionPool
 import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import com.android.wm.shell.shared.bubbles.DeviceConfig
+import com.android.wm.shell.shared.bubbles.FakeBubbleFeatureConfig
 import com.android.wm.shell.shared.bubbles.logging.EntryPoint
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.sysui.ShellCommandHandler
@@ -1310,6 +1311,7 @@ class BubbleControllerTest {
                 sessionTracker,
                 bubbleViewInfoTaskFactory,
                 bubbleHelper,
+                FakeBubbleFeatureConfig(),
             )
         bubbleController.setInflateSynchronously(true)
         bubbleController.onInit()

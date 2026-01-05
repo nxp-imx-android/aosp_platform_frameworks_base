@@ -82,6 +82,7 @@ import com.android.wm.shell.shared.bubbles.DragZone
 import com.android.wm.shell.shared.bubbles.DragZoneFactory
 import com.android.wm.shell.shared.bubbles.DragZoneFactory.SplitScreenModeChecker.SplitScreenMode
 import com.android.wm.shell.shared.bubbles.DraggedObject
+import com.android.wm.shell.shared.bubbles.FakeBubbleFeatureConfig
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
@@ -112,6 +113,7 @@ class BubbleBarLayerViewTest {
 
     private val context = ApplicationProvider.getApplicationContext<Context>()
     private val bubbleHelper = mock<BubbleHelper>()
+    private lateinit var bubbleFeatureConfig: FakeBubbleFeatureConfig
 
     private lateinit var bubbleBarLayerView: BubbleBarLayerView
     private lateinit var uiEventLoggerFake: UiEventLoggerFake
@@ -135,6 +137,8 @@ class BubbleBarLayerViewTest {
 
         uiEventLoggerFake = UiEventLoggerFake()
         bubbleLogger = BubbleLogger(uiEventLoggerFake)
+
+        bubbleFeatureConfig = FakeBubbleFeatureConfig()
 
         val instanceIdSequence = InstanceIdSequence(/* instanceIdMax= */ 10)
         sessionTracker = BubbleSessionTrackerImpl(instanceIdSequence, bubbleLogger)
@@ -208,7 +212,14 @@ class BubbleBarLayerViewTest {
         mainExecutor.flushAll()
 
         bubbleBarLayerView =
-            BubbleBarLayerView(context, bubbleController, bubbleData, bubbleLogger, mainExecutor)
+            BubbleBarLayerView(
+                context,
+                bubbleController,
+                bubbleData,
+                bubbleFeatureConfig,
+                bubbleLogger,
+                mainExecutor,
+            )
 
         expandedViewManager =
             FakeBubbleExpandedViewManager(bubbleHelper, bubbleBar = true, expanded = true)
@@ -287,6 +298,7 @@ class BubbleBarLayerViewTest {
             sessionTracker,
             bubbleViewInfoTaskFactory,
             bubbleHelper,
+            bubbleFeatureConfig,
         )
     }
 
@@ -643,26 +655,39 @@ class BubbleBarLayerViewTest {
         assertThat(bubbleBarLayerView.children.count { it is BubbleBarExpandedView }).isEqualTo(1)
     }
 
+    /** Tests scenario where desktop mode is disabled on this display, so the scrim is shown. */
     @Test
     fun showAndCollapse_updatesScrimAlpha() {
+        bubbleFeatureConfig.isScrimEnabled = true
+        validateScrimAlpha_showAndCollapse(0F, BUBBLE_BAR_EXPANDED_SCRIM_ALPHA)
+    }
+
+    /** Tests scenario where desktop mode is enabled on this display, so the scrim isn't shown. */
+    @Test
+    fun showAndCollapse_desktopSupported_hasNoScrim() {
+        bubbleFeatureConfig.isScrimEnabled = false
+        validateScrimAlpha_showAndCollapse(0F, 0F)
+    }
+
+    fun validateScrimAlpha_showAndCollapse(collapsedAlpha: Float, expandedAlpha: Float) {
         val bubble = createBubble("first")
         // Scrim is the first child added.
         val scrimView = bubbleBarLayerView.getChildAt(0)
-        assertThat(scrimView.alpha).isEqualTo(0f)
+        assertThat(scrimView.alpha).isEqualTo(collapsedAlpha)
 
         // Show expanded view
         getInstrumentation().runOnMainSync { bubbleBarLayerView.showExpandedView(bubble) }
         waitForExpandedViewAnimation()
 
         // Verify scrim is visible with the correct alpha
-        assertThat(scrimView.alpha).isEqualTo(BUBBLE_BAR_EXPANDED_SCRIM_ALPHA)
+        assertThat(scrimView.alpha).isEqualTo(expandedAlpha)
 
         // Collapse the view
         getInstrumentation().runOnMainSync { bubbleBarLayerView.collapse() }
         waitForCollapseViewAnimation()
 
         // Verify scrim is hidden
-        assertThat(scrimView.alpha).isEqualTo(0f)
+        assertThat(scrimView.alpha).isEqualTo(collapsedAlpha)
     }
 
     @Test

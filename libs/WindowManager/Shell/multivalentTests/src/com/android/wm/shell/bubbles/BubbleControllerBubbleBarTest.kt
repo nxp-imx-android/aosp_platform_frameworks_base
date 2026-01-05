@@ -59,6 +59,7 @@ import com.android.wm.shell.shared.TransactionPool
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation
 import com.android.wm.shell.shared.bubbles.BubbleBarUpdate
 import com.android.wm.shell.shared.bubbles.DeviceConfig
+import com.android.wm.shell.shared.bubbles.FakeBubbleFeatureConfig
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
@@ -588,6 +589,7 @@ class BubbleControllerBubbleBarTest {
             sessionTracker,
             bubbleViewInfoTaskFactory,
             mock<BubbleHelper>(),
+            FakeBubbleFeatureConfig(),
         )
     }
 
