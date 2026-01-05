@@ -2086,8 +2086,6 @@ class Task extends TaskFragment {
         forAllActivities(f);
         f.recycle();
         taskDescription.setResizeMode(mResizeMode);
-        // TODO(b/438420596): Add runtime density resolution support to
-        //  {@Link TaskDescription#getMinWidth} and {@Link TaskDescription#getMinHeight}.
         taskDescription.setMinWidth(getMinWidth());
         taskDescription.setMinHeight(getMinHeight());
         setTaskDescription(taskDescription);
@@ -2196,6 +2194,7 @@ class Task extends TaskFragment {
         }
 
         final int prevWinMode = getWindowingMode();
+        final int prevDensityDpi = getConfiguration().densityDpi;
         mTmpPrevBounds.set(getBounds());
         final boolean wasInMultiWindowMode = inMultiWindowMode();
         final boolean wasInPictureInPicture = inPinnedWindowingMode();
@@ -2260,6 +2259,13 @@ class Task extends TaskFragment {
         // the latest task-info thus the task-info won't have changed.
         if (!taskOrgChanged) {
             dispatchTaskInfoChangedIfNeeded(false /* force */);
+        }
+
+        // TaskDescription's minWidth/minHeight are derived from density-dependent values,
+        // so they must be updated when density changes.
+        if (Flags.runtimeDensityResolutionForWindowLayout()
+                && getConfiguration().densityDpi != prevDensityDpi) {
+            updateTaskDescription();
         }
     }
 
