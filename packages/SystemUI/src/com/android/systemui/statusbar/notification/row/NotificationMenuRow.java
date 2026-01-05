@@ -280,7 +280,7 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
                 ? mParent.getEntryAdapter().isBundled()
                 : mParent.getEntryLegacy().isBundled();
         if (android.app.Flags.bridgedNotifications()
-                && sbn.getNotification().getBridgedNotificationMetadata() != null) {
+                && sbn != null && sbn.getNotification().getBridgedNotificationMetadata() != null) {
             mInfoItem = createBridgedNotificationItem(mContext);
         } else if (personNotifType == PeopleNotificationIdentifier.TYPE_PERSON) {
             mInfoItem = createPartialConversationItem(mContext);
