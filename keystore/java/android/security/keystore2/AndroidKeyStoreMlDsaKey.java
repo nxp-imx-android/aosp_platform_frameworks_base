@@ -24,7 +24,7 @@ package android.security.keystore2;
  *
  * @hide
  */
-interface AndroidKeyStoreMlDsaKey {
+public interface AndroidKeyStoreMlDsaKey {
     /**
      * Returns the Java Security Standard Algorithm Name for the ML-DSA parameter set (e.g.
      * "ML-DSA-65") associated with this key. The family name ("ML-DSA") must not be returned.
