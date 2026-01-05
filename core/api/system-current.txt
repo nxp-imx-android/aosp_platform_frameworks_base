@@ -3833,7 +3833,7 @@ package android.companion.datatransfer.continuity {
 
 package android.companion.virtual {
 
-  @FlaggedApi("android.companion.virtualdevice.flags.activity_control_api") public final class ActivityPolicyExemption implements android.os.Parcelable {
+  public final class ActivityPolicyExemption implements android.os.Parcelable {
     method public int describeContents();
     method @Nullable public android.content.ComponentName getComponentName();
     method public int getDisplayId();
@@ -3842,7 +3842,7 @@ package android.companion.virtual {
     field @NonNull public static final android.os.Parcelable.Creator<android.companion.virtual.ActivityPolicyExemption> CREATOR;
   }
 
-  @FlaggedApi("android.companion.virtualdevice.flags.activity_control_api") public static final class ActivityPolicyExemption.Builder {
+  public static final class ActivityPolicyExemption.Builder {
     ctor public ActivityPolicyExemption.Builder();
     method @NonNull public android.companion.virtual.ActivityPolicyExemption build();
     method @NonNull public android.companion.virtual.ActivityPolicyExemption.Builder setComponentName(@NonNull android.content.ComponentName);
@@ -3895,10 +3895,10 @@ package android.companion.virtual {
   }
 
   public static interface VirtualDeviceManager.ActivityListener {
-    method @FlaggedApi("android.companion.virtualdevice.flags.activity_control_api") public default void onActivityLaunchBlocked(int, @NonNull android.content.ComponentName, @NonNull android.os.UserHandle, @Nullable android.content.IntentSender);
+    method public default void onActivityLaunchBlocked(int, @NonNull android.content.ComponentName, @NonNull android.os.UserHandle, @Nullable android.content.IntentSender);
     method public void onDisplayEmpty(int);
-    method @FlaggedApi("android.companion.virtualdevice.flags.activity_control_api") public default void onSecureWindowHidden(int);
-    method @FlaggedApi("android.companion.virtualdevice.flags.activity_control_api") public default void onSecureWindowShown(int, @NonNull android.content.ComponentName, @NonNull android.os.UserHandle);
+    method public default void onSecureWindowHidden(int);
+    method public default void onSecureWindowShown(int, @NonNull android.content.ComponentName, @NonNull android.os.UserHandle);
     method @Deprecated public void onTopActivityChanged(int, @NonNull android.content.ComponentName);
     method public default void onTopActivityChanged(int, @NonNull android.content.ComponentName, int);
   }
@@ -3914,7 +3914,7 @@ package android.companion.virtual {
   public static class VirtualDeviceManager.VirtualDevice implements java.lang.AutoCloseable {
     method public void addActivityListener(@NonNull java.util.concurrent.Executor, @NonNull android.companion.virtual.VirtualDeviceManager.ActivityListener);
     method public void addActivityPolicyExemption(@NonNull android.content.ComponentName);
-    method @FlaggedApi("android.companion.virtualdevice.flags.activity_control_api") public void addActivityPolicyExemption(@NonNull android.companion.virtual.ActivityPolicyExemption);
+    method public void addActivityPolicyExemption(@NonNull android.companion.virtual.ActivityPolicyExemption);
     method public void addSoundEffectListener(@NonNull java.util.concurrent.Executor, @NonNull android.companion.virtual.VirtualDeviceManager.SoundEffectListener);
     method public void close();
     method @NonNull public android.content.Context createContext();
@@ -3940,10 +3940,10 @@ package android.companion.virtual {
     method public void registerIntentInterceptor(@NonNull android.content.IntentFilter, @NonNull java.util.concurrent.Executor, @NonNull android.companion.virtual.VirtualDeviceManager.IntentInterceptorCallback);
     method public void removeActivityListener(@NonNull android.companion.virtual.VirtualDeviceManager.ActivityListener);
     method public void removeActivityPolicyExemption(@NonNull android.content.ComponentName);
-    method @FlaggedApi("android.companion.virtualdevice.flags.activity_control_api") public void removeActivityPolicyExemption(@NonNull android.companion.virtual.ActivityPolicyExemption);
+    method public void removeActivityPolicyExemption(@NonNull android.companion.virtual.ActivityPolicyExemption);
     method public void removeSoundEffectListener(@NonNull android.companion.virtual.VirtualDeviceManager.SoundEffectListener);
     method public void setDevicePolicy(int, int);
-    method @FlaggedApi("android.companion.virtualdevice.flags.activity_control_api") public void setDevicePolicy(int, int, int);
+    method public void setDevicePolicy(int, int, int);
     method public void setDisplayImePolicy(int, int);
     method @FlaggedApi("android.companion.virtualdevice.flags.device_aware_touch_mode") public void setDisplayInTouchMode(int, boolean);
     method @FlaggedApi("android.companion.virtualdevice.flags.device_aware_ui_mode") public void setDisplayUiMode(int, int);
@@ -3984,7 +3984,7 @@ package android.companion.virtual {
     field @Deprecated public static final int NAVIGATION_POLICY_DEFAULT_BLOCKED = 1; // 0x1
     field public static final int POLICY_TYPE_ACTIVITY = 3; // 0x3
     field public static final int POLICY_TYPE_AUDIO = 1; // 0x1
-    field @FlaggedApi("android.companion.virtualdevice.flags.activity_control_api") public static final int POLICY_TYPE_BLOCKED_ACTIVITY = 6; // 0x6
+    field public static final int POLICY_TYPE_BLOCKED_ACTIVITY = 6; // 0x6
     field public static final int POLICY_TYPE_CAMERA = 5; // 0x5
     field public static final int POLICY_TYPE_CLIPBOARD = 4; // 0x4
     field @FlaggedApi("android.companion.virtualdevice.flags.default_device_camera_access_policy") public static final int POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS = 7; // 0x7
