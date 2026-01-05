@@ -21,7 +21,6 @@ import android.os.ExternalVibrationScale;
 import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
-import android.os.vibrator.Flags;
 import android.os.vibrator.PrebakedSegment;
 import android.os.vibrator.VibrationConfig;
 import android.util.IndentingPrintWriter;
@@ -36,7 +35,7 @@ import java.util.Locale;
 final class VibrationScaler {
     private static final String TAG = "VibrationScaler";
 
-    // TODO(b/345186129): remove this once we finish migrating to scale factor and clean up flags.
+    // TODO(b/360314386): remove this once we finish migrating to scale factor.
     // Scale levels. Each level, except MUTE, is defined as the delta between the current setting
     // and the default intensity for that type of vibration (i.e. current - default).
     // It's important that we apply the scaling on the delta between the two so
@@ -50,13 +49,6 @@ final class VibrationScaler {
     static final float ADAPTIVE_SCALE_NONE = 1f;
     static final float SCALE_FACTOR_NONE = 1f;
 
-    // TODO(b/345186129): remove this once we finish migrating to scale factor and clean up flags.
-    // Scale factors for each level.
-    private static final float SCALE_FACTOR_VERY_LOW = 0.6f;
-    private static final float SCALE_FACTOR_LOW = 0.8f;
-    private static final float SCALE_FACTOR_HIGH = 1.2f;
-    private static final float SCALE_FACTOR_VERY_HIGH = 1.4f;
-
     private final VibrationConfig mVibrationConfig;
     private final VibrationSettings mVibrationSettings;
     private final SparseArray<Float> mAdaptiveHapticsScales = new SparseArray<>();
@@ -64,11 +56,6 @@ final class VibrationScaler {
     VibrationScaler(VibrationConfig config, VibrationSettings settings) {
         mVibrationConfig = config;
         mVibrationSettings = settings;
-    }
-
-    /** Return static configurations used by this scaler. */
-    public VibrationConfig getVibrationConfig() {
-        return mVibrationConfig;
     }
 
     /**
@@ -108,7 +95,6 @@ final class VibrationScaler {
         int currentIntensity = mVibrationSettings.getCurrentIntensity(usageHint);
         if (currentIntensity == Vibrator.VIBRATION_INTENSITY_OFF) {
             // Bypassing user settings, or it has changed between checking and scaling. Use default.
-            // TODO(b/345186129): return zero here once scale levels removed and flags cleaned up.
             return SCALE_FACTOR_NONE;
         }
         float defaultScale = scaleLevelToScaleFactor(getScaleLevel(usageHint));
@@ -142,16 +128,6 @@ final class VibrationScaler {
         int newEffectStrength = getEffectStrength(usageHint);
         float scaleFactor = getScaleFactor(usageHint, /* isExternalVibration= */ false);
         float adaptiveScale = getAdaptiveHapticsScale(usageHint);
-
-        // TODO(b/345186129): remove this once finish migrating to scale factor and clean up flags.
-        if (!Flags.hapticsScaleV2Enabled() && mVibrationConfig.hasVibrationScaleFactors()) {
-            // If scale V2 is not enabled then make sure we apply config linearly.
-            return effect.resolve(mVibrationConfig.getDefaultVibrationAmplitude())
-                    .applyEffectStrength(newEffectStrength)
-                    .scaleLinearly(scaleFactor)
-                    .applyAdaptiveScale(adaptiveScale);
-        }
-
         return effect.resolve(mVibrationConfig.getDefaultVibrationAmplitude())
                 .applyEffectStrength(newEffectStrength)
                 .scale(scaleFactor)
@@ -262,7 +238,7 @@ final class VibrationScaler {
         for (int level = SCALE_VERY_LOW; level <= SCALE_VERY_HIGH; level++) {
             scaleLevelsStr.append(scaleLevelToString(level))
                     .append("=").append(scaleLevelToScaleFactor(level));
-            if (level < SCALE_FACTOR_VERY_HIGH) {
+            if (level < SCALE_VERY_LOW) {
                 scaleLevelsStr.append(", ");
             }
         }
@@ -299,33 +275,22 @@ final class VibrationScaler {
 
     /** Mapping of ExternalVibrationScale.ScaleLevel.SCALE_* values to scale factor. */
     private float scaleLevelToScaleFactor(int level) {
-        if (Flags.hapticsScaleV2Enabled()) {
-            if (level == SCALE_NONE || level < SCALE_VERY_LOW || level > SCALE_VERY_HIGH) {
-                // Scale set to none or to a bad value, use default factor for no scaling.
-                return SCALE_FACTOR_NONE;
-            }
-            float scaleLevelGain = mVibrationConfig.getDefaultVibrationScaleLevelGain();
-            float scaleFactor = (float) Math.pow(scaleLevelGain, level);
-            if (scaleFactor <= 0) {
-                // Something about our scaling has gone wrong, so just play with no scaling.
-                Slog.wtf(TAG,
-                        String.format(Locale.ROOT, "Error in scaling calculations, ended up with"
-                                        + " invalid scale factor %.2f for scale level %s and"
-                                        + " default level gain of %.2f",
-                                scaleFactor, scaleLevelToString(level), scaleLevelGain));
-                scaleFactor = SCALE_FACTOR_NONE;
-            }
-            return scaleFactor;
-        }
-
-        return switch (level) {
-            case SCALE_VERY_LOW -> SCALE_FACTOR_VERY_LOW;
-            case SCALE_LOW -> SCALE_FACTOR_LOW;
-            case SCALE_HIGH -> SCALE_FACTOR_HIGH;
-            case SCALE_VERY_HIGH -> SCALE_FACTOR_VERY_HIGH;
+        if (level == SCALE_NONE || level < SCALE_VERY_LOW || level > SCALE_VERY_HIGH) {
             // Scale set to none or to a bad value, use default factor for no scaling.
-            default -> SCALE_FACTOR_NONE;
-        };
+            return SCALE_FACTOR_NONE;
+        }
+        float scaleLevelGain = mVibrationConfig.getDefaultVibrationScaleLevelGain();
+        float scaleFactor = (float) Math.pow(scaleLevelGain, level);
+        if (scaleFactor <= 0) {
+            // Something about our scaling has gone wrong, so just play with no scaling.
+            Slog.wtf(TAG,
+                    String.format(Locale.ROOT, "Error in scaling calculations, ended up with"
+                                    + " invalid scale factor %.2f for scale level %s and"
+                                    + " default level gain of %.2f",
+                            scaleFactor, scaleLevelToString(level), scaleLevelGain));
+            scaleFactor = SCALE_FACTOR_NONE;
+        }
+        return scaleFactor;
     }
 
     static String scaleLevelToString(int scaleLevel) {
