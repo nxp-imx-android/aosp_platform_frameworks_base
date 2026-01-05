@@ -35,21 +35,25 @@ class GeneratedTypeContext(val context: Context)
  * which can be used by clients to better understand the value.
  *
  * For example, if the value represents the UUID of an app, then the description should be the
- * the app package name or the app name.
+ * app package name or the app name.
  *
  * @param T The underlying data type of the value.
- * @property description A human-readable description of this specific value.
  * @property value The actual value.
+ * @property description A human-readable description of this specific value.
  */
 data class GeneratedValue<T>(
-    val description: String,
     val value: T,
+    val description: String,
 )
 
 class GeneratedType<T: Any>(
     @field:StringRes val description: Int,
     val lambda: GeneratedTypeContext.() -> Collection<GeneratedValue<T>>
-) : ApiType<GeneratedValue<T>>
+) : FiniteOptionsType<T> {
+    override fun getOptions(context: Context) = lambda(GeneratedTypeContext(context)).map{
+        it.value to it.description
+    }
+}
 
 
 typealias GeneratedParameterType = GeneratedType<String>

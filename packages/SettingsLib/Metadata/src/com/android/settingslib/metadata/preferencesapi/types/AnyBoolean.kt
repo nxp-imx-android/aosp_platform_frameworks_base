@@ -16,5 +16,10 @@
 
 package com.android.settingslib.metadata.preferencesapi.types
 
+import android.content.Context
+
 /** A boolean value. */
-object AnyBoolean : ApiType<Boolean>
+object AnyBoolean : FiniteOptionsType<Boolean>
+{
+    override fun getOptions(context: Context) = listOf(false to "False", true to "True")
+}
