@@ -17,7 +17,7 @@ import com.android.systemui.statusbar.phone.SystemUIDialog
  * Extracted from the old UserSwitchDialogController. This is the dialog version of the full-screen
  * user switcher. See config_enableFullscreenUserSwitcher
  */
-class UserSwitchDialogDelegate(
+class UserSwitchDialog(
     context: Context,
     adapter: UserDetailView.Adapter,
     uiEventLogger: UiEventLogger,

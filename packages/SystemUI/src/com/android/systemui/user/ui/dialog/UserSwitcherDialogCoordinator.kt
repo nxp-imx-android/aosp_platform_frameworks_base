@@ -118,7 +118,7 @@ constructor(
                             )
                         is ShowDialogRequestModel.ShowUserSwitcherDialog ->
                             Pair(
-                                UserSwitchDialogDelegate(
+                                UserSwitchDialog(
                                     context = context,
                                     adapter = userDetailAdapterProvider.get(),
                                     uiEventLogger = eventLogger.get(),
