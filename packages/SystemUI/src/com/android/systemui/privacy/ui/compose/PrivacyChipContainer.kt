@@ -16,7 +16,6 @@
 
 package com.android.systemui.privacy.ui.compose
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -37,8 +36,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.android.compose.animation.Expandable
+import com.android.compose.animation.rememberExpandableController
 import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.compose.theme.PlatformTheme
+import com.android.systemui.animation.Expandable
 import com.android.systemui.privacy.PrivacyType
 import com.android.systemui.privacy.ui.compose.PrivacyChipContainer.Colors
 import com.android.systemui.privacy.ui.compose.PrivacyChipContainer.Dimensions.compressedPadding
@@ -62,6 +64,8 @@ fun PrivacyChipContainer(
     modifier: Modifier = Modifier,
     /** Whether to use smaller padding */
     compressedPaddings: Boolean = false,
+    /** Expandable to use for click animation. */
+    expandable: Expandable = remember { Expandable() },
 ) {
     if (privacyTypes.isEmpty()) {
         return
@@ -73,35 +77,42 @@ fun PrivacyChipContainer(
             }
         val hasLocation =
             remember(privacyTypes) { privacyTypes.contains(PrivacyType.TYPE_LOCATION) }
-        Row(
-            modifier =
-                modifier
-                    .background(Colors.container, shape = CircleShape)
-                    .padding(if (compressedPaddings) compressedPadding else regularPadding),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = spacedBy(interItemSpacing),
+        Expandable(
+            controller =
+                rememberExpandableController(color = Colors.container, shape = CircleShape),
+            expandable = expandable,
+            defaultMinSize = false,
+            useModifierBasedImplementation = true,
+            modifier = modifier,
         ) {
-            if (showPrivacyText) {
-                key("privacy-text") {
-                    Text(
-                        text = stringResource(R.string.privacy_chip_container_leading_title),
-                        color = Colors.chevronAndText,
-                        style = MaterialTheme.typography.labelMediumEmphasized,
-                        modifier = Modifier.padding(horizontal = privacyTextExtraPadding),
+            Row(
+                modifier =
+                    Modifier.padding(if (compressedPaddings) compressedPadding else regularPadding),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = spacedBy(interItemSpacing),
+            ) {
+                if (showPrivacyText) {
+                    key("privacy-text") {
+                        Text(
+                            text = stringResource(R.string.privacy_chip_container_leading_title),
+                            color = Colors.chevronAndText,
+                            style = MaterialTheme.typography.labelMediumEmphasized,
+                            modifier = Modifier.padding(horizontal = privacyTextExtraPadding),
+                        )
+                    }
+                }
+                key("nonLocation") { NonLocationPrivacyChip(nonLocation) }
+                if (hasLocation) {
+                    key("location") { LocationPrivacyChip() }
+                }
+                key("chevron") {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_chevron_end_round_filed),
+                        contentDescription = null,
+                        tint = Colors.chevronAndText,
+                        modifier = Modifier.size(iconSize),
                     )
                 }
-            }
-            key("nonLocation") { NonLocationPrivacyChip(nonLocation) }
-            if (hasLocation) {
-                key("location") { LocationPrivacyChip() }
-            }
-            key("chevron") {
-                Icon(
-                    painter = painterResource(R.drawable.ic_chevron_end_round_filed),
-                    contentDescription = null,
-                    tint = Colors.chevronAndText,
-                    modifier = Modifier.size(iconSize),
-                )
             }
         }
     }

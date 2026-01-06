@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
+import com.android.systemui.animation.Expandable
 import com.android.systemui.animation.view.LaunchableFrameLayout
 import com.android.systemui.privacy.AbstractOngoingPrivacyChip
 import com.android.systemui.privacy.PrivacyChipContentDescriptionGenerator
@@ -43,6 +44,8 @@ constructor(
     private var privacyTypes by mutableStateOf(emptySet<PrivacyType>())
 
     private val contentDescriptionGenerator = PrivacyChipContentDescriptionGenerator(this.context)
+
+    override val expandable = Expandable()
 
     var showPrivacyText by mutableStateOf(false)
 
@@ -64,7 +67,13 @@ constructor(
 
     private val chipComposableView =
         ComposeView(context).apply {
-            setContent { PrivacyChipContainer(privacyTypes, showPrivacyText = showPrivacyText) }
+            setContent {
+                PrivacyChipContainer(
+                    privacyTypes,
+                    showPrivacyText = showPrivacyText,
+                    expandable = expandable,
+                )
+            }
         }
 
     private val launchableView = LaunchableFrameLayout(context)
