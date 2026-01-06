@@ -958,4 +958,30 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
             assertThat(launchRootTask).isEqualTo(sourceRoot);
         }
     }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK)
+    public void getLaunchRootTask_launchFromDifferentDisplay_checksDisplayArea() {
+        final Task rootTask = createTask(
+                mDisplayContent, WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD);
+        rootTask.mCreatedByOrganizer = true;
+        final Task sourceTask = createTaskInRootTask(rootTask, 0 /* userId */);
+        final TaskDisplayArea taskDisplayArea = rootTask.getDisplayArea();
+
+        // Create a secondary display.
+        final DisplayContent secondDisplay = createNewDisplay();
+        final TaskDisplayArea secondTaskDisplayArea = secondDisplay.getDefaultTaskDisplayArea();
+
+        // Verify that launching from a different display returns null.
+        Task actualRootTask = secondTaskDisplayArea.getLaunchRootTask(
+                WINDOWING_MODE_UNDEFINED, ACTIVITY_TYPE_STANDARD, null /* options */,
+                sourceTask /* sourceTask */, 0 /* launchFlags */);
+        assertNull(actualRootTask);
+
+        // Verify that launching from the same display returns the root task.
+        actualRootTask = taskDisplayArea.getLaunchRootTask(
+                WINDOWING_MODE_UNDEFINED, ACTIVITY_TYPE_STANDARD, null /* options */,
+                sourceTask /* sourceTask */, 0 /* launchFlags */);
+        assertSame(rootTask, actualRootTask);
+    }
 }
