@@ -122,14 +122,3 @@ flag {
     description: "This flag enables the new intent category CATEGORY_APPROVED_DOCUMENT_HANDLER."
     bug: "440464827"
 }
-
-#OWNER=pdxt
-flag {
-    name: "enable_redacted_value_for_readable"
-    namespace: "app_compat"
-    description: "Allows returning a redacted value from Readable annotation"
-    bug: "440232200"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
