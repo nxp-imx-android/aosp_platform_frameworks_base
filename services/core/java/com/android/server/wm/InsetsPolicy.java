@@ -21,16 +21,6 @@ import static android.app.StatusBarManager.WINDOW_STATE_SHOWING;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
-import static android.internal.perfetto.protos.Windowmanagerservice.InsetsPolicyProto.FAKE_NAV_CONTROL_TARGET;
-import static android.internal.perfetto.protos.Windowmanagerservice.InsetsPolicyProto.FAKE_STATUS_CONTROL_TARGET;
-import static android.internal.perfetto.protos.Windowmanagerservice.InsetsPolicyProto.FORCIBLY_HIDING_TYPES;
-import static android.internal.perfetto.protos.Windowmanagerservice.InsetsPolicyProto.FORCIBLY_SHOWING_TYPES;
-import static android.internal.perfetto.protos.Windowmanagerservice.InsetsPolicyProto.HIDING_TRANSIENT_NAV_CONTROL_TARGET;
-import static android.internal.perfetto.protos.Windowmanagerservice.InsetsPolicyProto.HIDING_TRANSIENT_STATUS_CONTROL_TARGET;
-import static android.internal.perfetto.protos.Windowmanagerservice.InsetsPolicyProto.HIDING_TRANSIENT_TYPES;
-import static android.internal.perfetto.protos.Windowmanagerservice.InsetsPolicyProto.NAV_STATE;
-import static android.internal.perfetto.protos.Windowmanagerservice.InsetsPolicyProto.SHOWING_TRANSIENT_TYPES;
-import static android.internal.perfetto.protos.Windowmanagerservice.InsetsPolicyProto.STATUS_STATE;
 import static android.view.InsetsSource.ID_IME;
 import static android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
@@ -48,7 +38,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.util.SparseArray;
 import android.view.DisplayCutout;
-import android.util.proto.ProtoOutputStream;
 import android.view.InsetsController;
 import android.view.InsetsFrameProvider;
 import android.view.InsetsSource;
@@ -464,6 +453,9 @@ class InsetsPolicy {
             }
             final InsetsState newState = new InsetsState();
             newState.set(state, types);
+            if ((types & WindowInsets.Type.displayCutout()) == 0) {
+                newState.setDisplayCutout(DisplayCutout.NO_CUTOUT);
+            }
             state = newState;
         }
 
@@ -913,46 +905,6 @@ class InsetsPolicy {
             pw.println(prefix + "mHidingTransientNavControlTarget="
                     + mHidingTransientNavControlTarget);
         }
-    }
-
-    /**
-     * Write to a protocol buffer output stream.
-     * Protocol buffer message definition at {@link InsetsPolicyProto}
-     *
-     * @param proto Stream to write the InsetsPolicy object to.
-     * @param fieldId Field Id of the InsetsPolicy as defined in the parent message.
-     */
-    public void dumpDebug(@NonNull ProtoOutputStream proto, long fieldId) {
-        final long token = proto.start(fieldId);
-        proto.write(STATUS_STATE, mStatusBar.mState);
-        proto.write(NAV_STATE, mNavBar.mState);
-        if (mShowingTransientTypes != 0) {
-            proto.write(SHOWING_TRANSIENT_TYPES, mShowingTransientTypes);
-        }
-        if (mHidingTransientTypes != 0) {
-            proto.write(HIDING_TRANSIENT_TYPES, mHidingTransientTypes);
-        }
-        if (mForciblyShowingTypes != 0) {
-            proto.write(FORCIBLY_SHOWING_TYPES, mForciblyShowingTypes);
-        }
-        if (mForciblyHidingTypes != 0) {
-            proto.write(FORCIBLY_HIDING_TYPES, mForciblyHidingTypes);
-        }
-        if (mFakeStatusControlTarget != null) {
-            mFakeStatusControlTarget.dumpDebug(proto, FAKE_STATUS_CONTROL_TARGET);
-        }
-        if (mFakeNavControlTarget != null) {
-            mFakeNavControlTarget.dumpDebug(proto, FAKE_NAV_CONTROL_TARGET);
-        }
-        if (mHidingTransientStatusControlTarget != null) {
-            mHidingTransientStatusControlTarget.dumpDebug(proto,
-                    HIDING_TRANSIENT_STATUS_CONTROL_TARGET);
-        }
-        if (mHidingTransientNavControlTarget != null) {
-            mHidingTransientNavControlTarget.dumpDebug(proto,
-                    HIDING_TRANSIENT_NAV_CONTROL_TARGET);
-        }
-        proto.end(token);
     }
 
     private final class BarWindow {
