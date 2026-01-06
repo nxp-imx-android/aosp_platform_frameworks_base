@@ -48,6 +48,7 @@
 #include <mutex>
 #include <string>
 
+#include <com_android_base_core_jni_flags.h>
 #include "android_os_Parcel.h"
 #include "core_jni_helpers.h"
 
@@ -62,6 +63,7 @@
 #endif
 
 using namespace android;
+using namespace com::android::base::core::jni::flags;
 
 // ----------------------------------------------------------------------------
 
@@ -167,6 +169,8 @@ static std::atomic<uint32_t> gNumLocalRefsDeleted(0);
 // Number of GlobalRefs held by JavaDeathRecipients.
 static std::atomic<uint32_t> gNumDeathRefsCreated(0);
 static std::atomic<uint32_t> gNumDeathRefsDeleted(0);
+// Number of GlobalRefs held by JavaFrozenStateChangeCallbacks.
+static std::atomic<uint32_t> gNumFrozenStateRefsCreated(0);
 
 // We collected after creating this many refs.
 static std::atomic<uint32_t> gCollectedAtRefs(0);
@@ -179,6 +183,9 @@ static void gcIfManyNewRefs(JNIEnv* env)
 {
     uint32_t totalRefs = gNumLocalRefsCreated.load(std::memory_order_relaxed)
             + gNumDeathRefsCreated.load(std::memory_order_relaxed);
+    if (force_gc_after_many_frozen_state_callbacks()) {
+        totalRefs += gNumFrozenStateRefsCreated.load(std::memory_order_relaxed);
+    }
     uint32_t collectedAtRefs = gCollectedAtRefs.load(std::memory_order_relaxed);
     // A bound on the number of threads that can have incremented gNum...RefsCreated before the
     // following check is executed. Effectively a bound on #threads. Almost any value will do.
@@ -829,7 +836,12 @@ class JavaFrozenStateChangeCallback : public JavaRecipient<IBinder::FrozenStateC
 public:
     JavaFrozenStateChangeCallback(JNIEnv* env, jobject recipient /*a.k.a callback*/,
                                   const sp<RecipientList<IBinder::FrozenStateChangeCallback>>& list)
-          : JavaRecipient(env, recipient, list, /*useWeakReference=*/true) {}
+          : JavaRecipient(env, recipient, list, /*useWeakReference=*/true) {
+        if (force_gc_after_many_frozen_state_callbacks()) {
+            gNumFrozenStateRefsCreated.fetch_add(1, std::memory_order_relaxed);
+            gcIfManyNewRefs(env);
+        }
+    }
 
     virtual ~JavaFrozenStateChangeCallback() {}
 
@@ -1427,7 +1439,11 @@ static void android_os_BinderInternal_setMaxThreads(JNIEnv* env,
 static void android_os_BinderInternal_handleGc(JNIEnv* env, jobject clazz)
 {
     ALOGV("Gc has executed, updating Refs count at GC");
-    gCollectedAtRefs = gNumLocalRefsCreated + gNumDeathRefsCreated;
+    if (force_gc_after_many_frozen_state_callbacks()) {
+        gCollectedAtRefs = gNumLocalRefsCreated + gNumDeathRefsCreated + gNumFrozenStateRefsCreated;
+    } else {
+        gCollectedAtRefs = gNumLocalRefsCreated + gNumDeathRefsCreated;
+    }
 }
 
 static void android_os_BinderInternal_proxyLimitCallback(int uid)
