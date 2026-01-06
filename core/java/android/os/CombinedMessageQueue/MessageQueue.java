@@ -164,6 +164,10 @@ public final class MessageQueue {
         setSkipEpollWaitForZeroTimeout(mPtr);
     }
 
+    Thread getLooperThread() {
+        return mLooperThread;
+    }
+
     static boolean getUseConcurrent() {
         if (!sUseConcurrentInitialized) {
             // We may race and compute the underlying value more than once.
@@ -1295,10 +1299,15 @@ public final class MessageQueue {
     @TestApi
     public int postSyncBarrier() {
         if (sUseConcurrent) {
-            return postSyncBarrierConcurrent();
+            return onSyncBarrierPosted(postSyncBarrierConcurrent());
         } else {
-            return postSyncBarrierLegacy();
+            return onSyncBarrierPosted(postSyncBarrierLegacy());
         }
+    }
+
+    @RavenwoodRedirect
+    private int onSyncBarrierPosted(int token) {
+        return token;
     }
 
     private int postSyncBarrier(long when) {
@@ -1437,7 +1446,11 @@ public final class MessageQueue {
         } else {
             removeSyncBarrierLegacy(token);
         }
+        onSyncBarrierRemoved(token);
+    }
 
+    @RavenwoodRedirect
+    private void onSyncBarrierRemoved(int token) {
     }
 
     private boolean enqueueMessageConcurrent(Message msg, long when) {

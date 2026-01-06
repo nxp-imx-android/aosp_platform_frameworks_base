@@ -142,7 +142,8 @@ public final class RavenwoodMessageTracker {
                 "RAVENWOOD_SHOW_PENDING_MESSAGE_MAX", 10);
 
         synchronized (mLock) {
-            MessageQueue_ravenwood.dumpSyncBarriers(out);
+            MessageQueue_ravenwood.dumpAllSyncBarriers(out);
+
             var size = mMessagePosters.size();
             if (size == 0) {
                 out.println("No pending messages");
