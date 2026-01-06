@@ -20,6 +20,7 @@ import static android.service.personalcontext.hint.ContextHintTestUtils.assertPa
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.content.ComponentName;
 import android.graphics.Rect;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -39,12 +40,17 @@ public class UserInputHintTest {
                         .setFieldType(UserInputText.FIELD_TYPE_SEARCH_BOX)
                         .setUserInputTextSource(UserInputText.USER_INPUT_TEXT_SOURCE_TYPED)
                         .build();
-        final UserInputHint hint = new UserInputHint.Builder(userInputText).build();
+        final ComponentName componentName = new ComponentName("packageName", "activityName");
+        final UserInputHint hint =
+                new UserInputHint.Builder(userInputText)
+                        .setSourceAppActivityComponentName(componentName)
+                        .build();
 
         final UserInputHint outputHint = (UserInputHint) assertParcelUnparcel(hint);
 
         assertThat(outputHint).isNotNull();
         final UserInputText outputUserInputText = outputHint.getUserInputText();
         assertThat(outputUserInputText).isEqualTo(userInputText);
+        assertThat(outputHint.getSourceAppActivityComponentName()).isEqualTo(componentName);
     }
 }
