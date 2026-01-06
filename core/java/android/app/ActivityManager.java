@@ -5920,7 +5920,7 @@ public class ActivityManager {
      *
      * @param mcc The new MCC.
      * @param mnc The new MNC.
-     * @throws RemoteException; IllegalArgumentException if mcc or mnc is null;
+     * @throws IllegalArgumentException if mcc or mnc is null;
      * @return Returns {@code true} if the configuration was updated successfully;
      *         {@code false} otherwise.
      * @hide
