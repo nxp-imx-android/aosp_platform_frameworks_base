@@ -12045,7 +12045,18 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             }
         val activityInfo = ActivityInfo()
         activityInfo.screenOrientation = screenOrientation
-        activityInfo.windowLayout = ActivityInfo.WindowLayout(0, 0F, 0, 0F, gravity, 0, 0)
+        activityInfo.windowLayout =
+            ActivityInfo.WindowLayout(
+                -1 /* complexWidth */,
+                -1f /* widthFraction */,
+                -1 /* complexHeight */,
+                -1f /* heightFraction */,
+                gravity,
+                -1 /* complexMinWidth */,
+                -1 /* complexMinHeight */,
+                null, /* windowLayoutAffinity */
+                null, /* displayMetrics */
+            )
         activityInfo.applicationInfo = ApplicationInfo()
         with(task) {
             topActivityInfo = activityInfo
