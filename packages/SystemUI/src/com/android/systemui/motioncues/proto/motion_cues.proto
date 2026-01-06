@@ -30,8 +30,8 @@ message MotionCueState {
   int32 bubble_shape_res_id = 3;
   int32 horizontal_spacing_dp = 4;
   int32 vertical_spacing_dp = 5;
-  int32 margin_size = 6;
-  int32 radius = 7;
+  int32 margin_size_dp = 6;
+  int32 radius_dp = 7;
   repeated MotionBubble motion_bubbles = 8;
   string client_package_name = 9;
 }
