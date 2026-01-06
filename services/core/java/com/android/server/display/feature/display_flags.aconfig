@@ -353,13 +353,6 @@ flag {
 }
 
 flag {
-    name: "display_listener_snapshot"
-    namespace: "display_manager"
-    description: "Feature flag for the API to request snapshot of display ids"
-    bug: "445140099"
-}
-
-flag {
     name: "display_ids_cache"
     namespace: "display_manager"
     description: "Feature flag for cache of display ids in DisplayManagerGlobal"

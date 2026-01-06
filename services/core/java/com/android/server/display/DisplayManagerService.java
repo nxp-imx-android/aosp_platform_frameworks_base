@@ -4774,7 +4774,7 @@ public final class DisplayManagerService extends SystemService {
         private void sendSnapshotEventIfNeededLocked(
                 @InternalEventFlag long oldFlagsMask,
                 @InternalEventFlag long newFlagsMask) {
-            if (!Flags.displayListenerSnapshot() && !Flags.displayIdsCache()) {
+            if (!Flags.displayIdsCache()) {
                 return;
             }
 
@@ -4912,7 +4912,7 @@ public final class DisplayManagerService extends SystemService {
 
             // Access check, except for removed and disconnected events where the process is not
             // present on the display any more.
-            if ((Flags.displayListenerSnapshot() || Flags.displayIdsCache())
+            if (Flags.displayIdsCache()
                     && (eventMask & DisplayManagerGlobal.EVENT_DISPLAY_REMOVED) == 0
                     && (eventMask & DisplayManagerGlobal.EVENT_DISPLAY_DISCONNECTED) == 0
                     && getDisplayInfoInternal(displayId, mUid) == null) {
