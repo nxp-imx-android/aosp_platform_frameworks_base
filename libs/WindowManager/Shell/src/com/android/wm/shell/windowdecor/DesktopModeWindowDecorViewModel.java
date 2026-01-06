@@ -117,9 +117,9 @@ import com.android.wm.shell.desktopmode.DesktopModeUtils;
 import com.android.wm.shell.desktopmode.DesktopModeVisualIndicator;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.desktopmode.DesktopTasksController.SnapPosition;
-import com.android.wm.shell.desktopmode.DesktopTasksLimiter;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.ShellDesktopState;
+import com.android.wm.shell.desktopmode.SnapController;
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository;
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction;
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeUtilsKt;
@@ -213,7 +213,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private final InteractionJankMonitor mInteractionJankMonitor;
     private final MultiInstanceHelper mMultiInstanceHelper;
     private final WindowDecorCaptionRepository mWindowDecorCaptionRepository;
-    private final Optional<DesktopTasksLimiter> mDesktopTasksLimiter;
     private final AppHandleEducationController mAppHandleEducationController;
     private final CaptionVisibilityHelper mCaptionVisibilityHelper;
     private final AppHeaderViewHolder.Factory mAppHeaderViewHolderFactory;
@@ -317,7 +316,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             AssistContentRequester assistContentRequester,
             @NonNull WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier,
             MultiInstanceHelper multiInstanceHelper,
-            Optional<DesktopTasksLimiter> desktopTasksLimiter,
             AppHandleEducationController appHandleEducationController,
             CaptionVisibilityHelper captionVisibilityHelper,
             WindowDecorCaptionRepository windowDecorCaptionRepository,
@@ -340,7 +338,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             PinnedLayerUiState pinnedLayerUiState,
             FluidTaskResizer fluidTaskResizer,
             VeiledTaskResizer veiledTaskResizer,
-            MultiDisplayTaskMover multiDisplayTaskMover) {
+            MultiDisplayTaskMover multiDisplayTaskMover,
+            SnapController snapController) {
         this(
                 context,
                 shellExecutor,
@@ -375,7 +374,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 rootTaskDisplayAreaOrganizer,
                 new SparseArray<>(),
                 interactionJankMonitor,
-                desktopTasksLimiter,
                 appHandleEducationController,
                 captionVisibilityHelper,
                 windowDecorCaptionRepository,
@@ -399,7 +397,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 pinnedLayerUiState,
                 fluidTaskResizer,
                 veiledTaskResizer,
-                multiDisplayTaskMover);
+                multiDisplayTaskMover,
+                snapController);
     }
 
     @VisibleForTesting
@@ -437,7 +436,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             SparseArray<WindowDecorationWrapper> decorationByTaskId,
             InteractionJankMonitor interactionJankMonitor,
-            Optional<DesktopTasksLimiter> desktopTasksLimiter,
             AppHandleEducationController appHandleEducationController,
             CaptionVisibilityHelper captionVisibilityHelper,
             WindowDecorCaptionRepository windowDecorCaptionRepository,
@@ -461,7 +459,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             PinnedLayerUiState pinnedLayerUiState,
             FluidTaskResizer fluidTaskResizer,
             VeiledTaskResizer veiledTaskResizer,
-            MultiDisplayTaskMover multiDisplayTaskMover) {
+            MultiDisplayTaskMover multiDisplayTaskMover,
+            SnapController snapController) {
         mContext = context;
         mMainExecutor = shellExecutor;
         mMainHandler = mainHandler;
@@ -496,7 +495,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mSysUIPackageName = mContext.getResources().getString(
                 com.android.internal.R.string.config_systemUi);
         mInteractionJankMonitor = interactionJankMonitor;
-        mDesktopTasksLimiter = desktopTasksLimiter;
         mAppHandleEducationController = appHandleEducationController;
         mCaptionVisibilityHelper = captionVisibilityHelper;
         mWindowDecorCaptionRepository = windowDecorCaptionRepository;
@@ -540,7 +538,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mRecentsTransitionHandler = recentsTransitionHandler;
         mDesktopModeCompatPolicy = desktopModeCompatPolicy;
         mDesktopTilingDecorViewModel = desktopTilingDecorViewModel;
-        mDesktopTasksController.setSnapEventHandler(this);
+        // TODO(b/467367552): Remove handling dependency in Dagger.
+        snapController.start(this);
         mMultiDisplayDragMoveIndicatorController = multiDisplayDragMoveIndicatorController;
         mLatencyTracker = LatencyTracker.getInstance(mContext);
         mDesksOrganizer = desksOrganizer;

@@ -71,6 +71,7 @@ import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopTasksLimiter
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.FakeShellDesktopState
+import com.android.wm.shell.desktopmode.SnapController
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository
 import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.education.AppHandleEducationController
@@ -205,6 +206,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     protected lateinit var desktopModeWindowDecorViewModel: DesktopModeWindowDecorViewModel
     protected lateinit var desktopModeCompatPolicy: DesktopModeCompatPolicy
     protected lateinit var captionVisibilityHelper: CaptionVisibilityHelper
+    protected lateinit var snapController: SnapController
 
     @Before
     fun earlySetUp() {
@@ -216,6 +218,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     fun setUpCommon() {
         spyContext = spy(mContext)
         spyContext.setMockPackageManager(packageManager)
+        snapController = SnapController()
         doNothing().`when`(spyContext).startActivity(any())
         doNothing().`when`(mockWindowDecoration).a11yAnnounceNewFocusedWindow()
         shellInit = ShellInit(testShellExecutor)
@@ -274,7 +277,6 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
                 mockRootTaskDisplayAreaOrganizer,
                 windowDecorByTaskIdSpy,
                 mockInteractionJankMonitor,
-                Optional.of(mockTasksLimiter),
                 mockAppHandleEducationController,
                 captionVisibilityHelper,
                 mockCaptionHandleRepository,
@@ -299,6 +301,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
                 mockFluidTaskResizer,
                 mockVeiledTaskResizer,
                 mockMultiDisplayTaskMover,
+                snapController,
             )
         desktopModeWindowDecorViewModel.setSplitScreenController(mockSplitScreenController)
         desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(

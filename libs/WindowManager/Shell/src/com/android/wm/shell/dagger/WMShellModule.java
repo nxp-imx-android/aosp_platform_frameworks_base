@@ -147,6 +147,7 @@ import com.android.wm.shell.desktopmode.OverviewToDesktopTransitionObserver;
 import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator;
 import com.android.wm.shell.desktopmode.ShellDesktopState;
 import com.android.wm.shell.desktopmode.ShellDesktopStateImpl;
+import com.android.wm.shell.desktopmode.SnapController;
 import com.android.wm.shell.desktopmode.SpringDragToDesktopTransitionHandler;
 import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.VisualIndicatorUpdateScheduler;
@@ -1068,7 +1069,8 @@ public abstract class WMShellModule {
             LauncherApps launcherApps,
             TransitionStateHolder transitionStateHolder,
             DesksController desksController,
-            Optional<DesktopTasksTransitionObserver> desktopTasksTransitionObserver) {
+            Optional<DesktopTasksTransitionObserver> desktopTasksTransitionObserver,
+            SnapController snapController) {
         return new DesktopTasksController(
                 context,
                 shellInit,
@@ -1127,7 +1129,8 @@ public abstract class WMShellModule {
                 launcherApps,
                 transitionStateHolder,
                 desksController,
-                desktopTasksTransitionObserver.get());
+                desktopTasksTransitionObserver.get(),
+                snapController);
     }
 
     @WMSingleton
@@ -1231,6 +1234,7 @@ public abstract class WMShellModule {
             DesksOrganizer desksOrganizer,
             DesktopConfig desktopConfig,
             DesktopState desktopState,
+            SnapController snapController,
             Optional<DesktopMixedTransitionHandler> desktopMixedTransitionHandler) {
         if (!desktopState.canEnterDesktopMode()) {
             return Optional.empty();
@@ -1243,6 +1247,7 @@ public abstract class WMShellModule {
                         shellTaskOrganizer,
                         desksOrganizer,
                         desktopMixedTransitionHandler.get(),
+                        snapController,
                         maxTaskLimit <= 0 ? null : maxTaskLimit));
     }
 
@@ -1441,7 +1446,6 @@ public abstract class WMShellModule {
             AssistContentRequester assistContentRequester,
             WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier,
             MultiInstanceHelper multiInstanceHelper,
-            Optional<DesktopTasksLimiter> desktopTasksLimiter,
             AppHandleEducationController appHandleEducationController,
             CaptionVisibilityHelper captionVisibilityHelper,
             WindowDecorCaptionRepository windowDecorCaptionRepository,
@@ -1464,7 +1468,8 @@ public abstract class WMShellModule {
             Optional<PinnedLayerUiState> pinnedLayerUiState,
             FluidTaskResizer fluidTaskResizer,
             VeiledTaskResizer veiledTaskResizer,
-            MultiDisplayTaskMover multiDisplayTaskMover
+            MultiDisplayTaskMover multiDisplayTaskMover,
+            SnapController snapController
     ) {
         if (!shelldesktopState.canEnterDesktopModeOrShowAppHandle()) {
             return Optional.empty();
@@ -1477,7 +1482,7 @@ public abstract class WMShellModule {
                 desktopImmersiveController.get(),
                 rootTaskDisplayAreaOrganizer, interactionJankMonitor, genericLinksParser,
                 appToWebRepository, assistContentRequester, windowDecorViewHostSupplier,
-                multiInstanceHelper, desktopTasksLimiter, appHandleEducationController,
+                multiInstanceHelper, appHandleEducationController,
                 captionVisibilityHelper, windowDecorCaptionRepository,
                 activityOrientationChangeHandler, focusTransitionObserver, desktopModeEventLogger,
                 desktopModeUiEventLogger, taskResourceLoader, recentsTransitionHandler,
@@ -1486,7 +1491,7 @@ public abstract class WMShellModule {
                 desksOrganizer, shelldesktopState, desktopConfig, userProfileContexts,
                 lockTaskChangeListener, pinnedLayerController.orElse(null),
                 pinnedLayerUiState.orElse(null), fluidTaskResizer, veiledTaskResizer,
-                multiDisplayTaskMover));
+                multiDisplayTaskMover, snapController));
     }
 
     @WMSingleton
