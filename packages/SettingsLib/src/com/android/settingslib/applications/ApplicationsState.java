@@ -307,8 +307,7 @@ public class ApplicationsState {
                 @SuppressWarnings("unchecked")
                 ParceledListSlice<ApplicationInfo> list =
                         mIpm.getInstalledApplications(
-                                user.isAdmin() ? mAdminRetrieveFlags : mRetrieveFlags,
-                                user.id);
+                                getFlagsForApplicationInfo(user.id), user.id);
                 mApplications.addAll(list.getList());
             } catch (Exception e) {
                 Log.e(TAG, "Error during doResumeIfNeededLocked", e);
@@ -641,9 +640,8 @@ public class ApplicationsState {
                     if (DEBUG_LOCKING) Log.v(TAG, "addPackage release lock: already exists");
                     return;
                 }
-                ApplicationInfo info = mIpm.getApplicationInfo(pkgName,
-                        mUm.isUserAdmin(userId) ? mAdminRetrieveFlags : mRetrieveFlags,
-                        userId);
+                ApplicationInfo info = mIpm.getApplicationInfo(
+                        pkgName, getFlagsForApplicationInfo(userId), userId);
                 if (info == null) {
                     return;
                 }
@@ -809,6 +807,14 @@ public class ApplicationsState {
             return Formatter.formatFileSize(mContext, size);
         }
         return null;
+    }
+
+    private int getFlagsForApplicationInfo(int userId) {
+        if (android.multiuser.Flags.dontShowOtherUsersAppsToAdmin()) {
+            return mRetrieveFlags;
+        } else {
+            return mUm.isUserAdmin(userId) ? mAdminRetrieveFlags : mRetrieveFlags;
+        }
     }
 
     private static boolean isAppIconCacheEnabled(Context context) {
