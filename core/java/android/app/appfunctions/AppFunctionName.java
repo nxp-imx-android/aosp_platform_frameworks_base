@@ -66,6 +66,25 @@ public final class AppFunctionName implements Parcelable {
         mFunctionId = requireNonNull(in.readString8());
     }
 
+    /**
+     * Creates an {@link AppFunctionName} from the given qualified function id.
+     *
+     * @throws IllegalArgumentException if given qualified function id has an incorrect format.
+     * @hide
+     */
+    @NonNull
+    public static AppFunctionName fromQualifiedId(@NonNull String qualifiedFunctionId)
+            throws IllegalArgumentException {
+        requireNonNull(qualifiedFunctionId);
+        int separatorIndex = qualifiedFunctionId.indexOf('/');
+        if (separatorIndex == -1 || separatorIndex == qualifiedFunctionId.length() - 1) {
+            throw new IllegalArgumentException("Incorrect app function id format.");
+        }
+        return new AppFunctionName(
+                qualifiedFunctionId.substring(0, separatorIndex),
+                qualifiedFunctionId.substring(separatorIndex + 1));
+    }
+
     /** The package name of the Android app which contains the app function. */
     @NonNull
     public String getPackageName() {

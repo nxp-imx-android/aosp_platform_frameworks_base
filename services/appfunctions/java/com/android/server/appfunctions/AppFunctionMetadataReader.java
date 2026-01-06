@@ -58,7 +58,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 /** Manages app functions search requests. */
-public final class AppFunctionMetadataReader {
+public class AppFunctionMetadataReader {
     private static final String TAG = AppFunctionMetadataReader.class.getSimpleName();
 
     private static final SearchSpec RUNTIME_SEARCH_SPEC =

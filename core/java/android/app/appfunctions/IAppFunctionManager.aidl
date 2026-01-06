@@ -22,6 +22,7 @@ import android.app.appfunctions.IAppFunctionEnabledCallback;
 import android.app.appfunctions.IExecuteAppFunctionCallback;
 import android.app.appfunctions.IOnAppFunctionAccessChangeListener;
 import android.app.appfunctions.IAppFunctionExecutor;
+import android.app.appfunctions.IObserveAppFunctionChangesCallback;
 import android.app.appfunctions.ISearchAppFunctionsCallback;
 import android.os.ICancellationSignal;
 import android.os.UserHandle;
@@ -58,6 +59,12 @@ interface IAppFunctionManager {
     void searchAppFunctions(
         in AppFunctionAidlSearchSpec aidlSearchSpec,
         in ISearchAppFunctionsCallback callback
+    );
+
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = android.Manifest.permission.EXECUTE_APP_FUNCTIONS, conditional = true)")
+    void registerAppFunctionObserverCallback(
+        in AppFunctionAidlSearchSpec aidlSearchSpec,
+        in IObserveAppFunctionChangesCallback callback
     );
 
     /**
