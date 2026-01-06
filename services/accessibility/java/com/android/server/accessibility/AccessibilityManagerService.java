@@ -1016,11 +1016,11 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             setNonA11yToolNotificationToMatchSafetyCenter();
         }
 
-        if (android.security.Flags.extendAapmToA11yServices()) {
-            if (phase == SystemService.PHASE_BOOT_COMPLETED) {
+        if (phase == SystemService.PHASE_BOOT_COMPLETED) {
+            mDevicePolicyManager = mContext.getSystemService(DevicePolicyManager.class);
+            if (android.security.Flags.extendAapmToA11yServices()) {
                 mAdvancedProtectionManager =
                         mContext.getSystemService(AdvancedProtectionManager.class);
-                mDevicePolicyManager = mContext.getSystemService(DevicePolicyManager.class);
                 if (mAdvancedProtectionManager != null) {
                     mAdvancedProtectionManager.registerAdvancedProtectionCallback(
                             new HandlerExecutor(BackgroundThread.getHandler()),
@@ -1307,6 +1307,50 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 safetyCenterReceiver, UserHandle.ALL, safetyCenterFilter, null, mMainHandler,
                 Context.RECEIVER_EXPORTED);
         mRegisteredBroadcaseReveivers.add(safetyCenterReceiver);
+
+        final IntentFilter dpmFilter = new IntentFilter();
+        dpmFilter.addAction(DevicePolicyManager.ACTION_DEVICE_POLICY_MANAGER_STATE_CHANGED);
+        final BroadcastReceiver dpmReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                final int currentUserId;
+                synchronized (mLock) {
+                    currentUserId = mCurrentUserId;
+                }
+                scheduleUpdatePermittedServices(currentUserId);
+            }
+        };
+        // This receiver is required to keep the mPermittedAccessibilityServices cache in sync
+        // with all Device Policy changes. While mAdvancedProtectionManager callback handles
+        // APM toggles, other admins (e.g. Enterprise) can also change permitted services,
+        // which triggers this broadcast but not the APM callback.
+        mContext.registerReceiverAsUser(
+                dpmReceiver, UserHandle.ALL, dpmFilter, null, mMainHandler,
+                Context.RECEIVER_EXPORTED);
+        mRegisteredBroadcaseReveivers.add(dpmReceiver);
+    }
+
+    @Nullable
+    private Set<String> getPermittedAccessibilityServices(int userId) {
+        if (mDevicePolicyManager == null) {
+            return null;
+        }
+        final List<String> permittedList = Binder.withCleanCallingIdentity(() ->
+                mDevicePolicyManager.getPermittedAccessibilityServices(userId));
+        return permittedList != null ? new HashSet<>(permittedList) : null;
+    }
+
+    private void scheduleUpdatePermittedServices(int userId) {
+        mMainHandler.post(() -> {
+            final Set<String> permittedServices = getPermittedAccessibilityServices(userId);
+            synchronized (mLock) {
+                final AccessibilityUserState userState = getUserStateLocked(userId);
+                userState.setPermittedAccessibilityServicesLocked(permittedServices);
+                if (userId == mCurrentUserId) {
+                    onUserStateChangedLocked(userState);
+                }
+            }
+        });
     }
 
     /**
@@ -1319,7 +1363,15 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             // if this happen, we need to check the timing when registering the call back to APM
             return;
         }
-        if (!apmOn) {
+        if (apmOn) {
+            mDevicePolicyManager.addUserRestrictionGlobally(ADVANCED_PROTECTION_SYSTEM_ENTITY,
+                    UserManager.DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICE);
+            if (DEBUG) {
+                Slog.v(LOG_TAG,
+                        "Added user restriction: UserManager"
+                                + ".DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICE_GLOBALLY");
+            }
+        } else {
             mDevicePolicyManager.clearUserRestrictionGlobally(ADVANCED_PROTECTION_SYSTEM_ENTITY,
                     UserManager.DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICE);
             if (DEBUG) {
@@ -1327,19 +1379,12 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                         "Cleared user restriction: UserManager"
                                 + ".DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICE_GLOBALLY");
             }
-            return;
         }
-        mDevicePolicyManager.addUserRestrictionGlobally(ADVANCED_PROTECTION_SYSTEM_ENTITY,
-                UserManager.DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICE);
-        if (DEBUG) {
-            Slog.v(LOG_TAG,
-                    "Added user restriction: UserManager"
-                            + ".DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICE_GLOBALLY");
-        }
-
+        final int currentUserId;
         synchronized (mLock) {
-            onUserStateChangedLocked(getUserStateLocked(mCurrentUserId));
+            currentUserId = mCurrentUserId;
         }
+        scheduleUpdatePermittedServices(currentUserId);
     }
 
     /**
@@ -2399,6 +2444,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         // parse outside of a lock, but after verifying userId
         parsedAccessibilityServiceInfos = parseAccessibilityServiceInfos(userId);
         parsedAccessibilityShortcutInfos = parseAccessibilityShortcutInfos(userId);
+        final Set<String> permittedServices = getPermittedAccessibilityServices(userId);
         Set<ComponentName> validA11yTileServices = AccessibilityTileUtils.getValidA11yTileServices(
                 mContext,
                 LocalServices.getService(PackageManagerInternal.class),
@@ -2422,6 +2468,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             // The user changed.
             mCurrentUserId = userId;
             AccessibilityUserState userState = getCurrentUserStateLocked();
+            userState.setPermittedAccessibilityServicesLocked(permittedServices);
 
             readConfigurationForUserStateLocked(userState,
                     parsedAccessibilityServiceInfos, parsedAccessibilityShortcutInfos,
@@ -4172,7 +4219,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 name -> !userState.isShortcutTargetInstalledLocked(name));
         if (android.security.Flags.extendAapmToA11yServices()) {
             currentTargets.removeIf(
-                    name -> !userState.isShortcutTargetPermittedLocked(name, mCurrentUserId));
+                    name -> !userState.isShortcutTargetPermittedLocked(name));
         }
         if (shortcutType == QUICK_SETTINGS) {
             // Add the target if the a11y service is enabled and the tile exist in QS panel
@@ -7026,6 +7073,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                             parsedAccessibilityShortcutInfos,
                             userId
                     );
+            mManagerService.scheduleUpdatePermittedServices(userId);
             synchronized (mManagerService.getLock()) {
                 // Only the profile parent can install accessibility services.
                 // Therefore we ignore packages from linked profiles.
@@ -7071,6 +7119,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                             parsedAccessibilityShortcutInfos,
                             userId
                     );
+            mManagerService.scheduleUpdatePermittedServices(userId);
             synchronized (mManagerService.getLock()) {
                 if (userId != mManagerService.getCurrentUserIdLocked()) {
                     return;
@@ -7110,8 +7159,9 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                         "packageName=" + packageName + ";uid=" + uid);
             }
 
+            final int userId = getChangingUserId();
+            mManagerService.scheduleUpdatePermittedServices(userId);
             synchronized (mManagerService.getLock()) {
-                final int userId = getChangingUserId();
                 // Only the profile parent can install accessibility services.
                 // Therefore we ignore packages from linked profiles.
                 if (userId != mManagerService.getCurrentUserIdLocked()) {
