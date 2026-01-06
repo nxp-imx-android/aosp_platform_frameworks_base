@@ -14,6 +14,7 @@
 
 package com.android.systemui.statusbar.policy;
 
+import static android.app.Flags.FLAG_ENABLE_ACTION_ATTRIBUTION;
 import static android.app.Flags.FLAG_NOTIFICATION_ANIMATED_ACTION_CONTENT_DESCRIPTION;
 import static android.view.View.MeasureSpec;
 
@@ -45,6 +46,8 @@ import android.testing.TestableLooper;
 import android.text.Annotation;
 import android.text.Spannable;
 import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -1666,5 +1669,43 @@ public class SmartReplyViewTest extends SysuiTestCase {
 
         assertEquals(contentDescription, actionButtons.get(0).getContentDescription().toString());
         assertNull(actionButtons.get(1).getContentDescription());
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_ACTION_ATTRIBUTION)
+    public void testInflateActionButton_attributionForAction() {
+        String contentDescription = "content description";
+        String title = "normal title";
+        String attr = "attr";
+        List<Notification.Action> actions = List.of(
+                createAnimatedAction(title, contentDescription),
+                createAction(title)
+        );
+        actions.getFirst().title = addAnnotationToChoice(title, true, attr);
+        SmartReplyView.SmartActions smartActions = new SmartReplyView.SmartActions(actions, true);
+        List<Button> actionButtons = IntStream.range(0, smartActions.actions.size())
+                .mapToObj(idx -> mSmartActionInflater.inflateActionButton(
+                        mView,
+                        mEntry,
+                        smartActions,
+                        idx,
+                        smartActions.actions.get(idx),
+                        true /* delayOnClickListener */,
+                        getContext()))
+                .toList();
+
+        CharSequence actionText1 = actionButtons.get(0).getText();
+        CharSequence actionText2 = actionButtons.get(1).getText();
+        // Verify the button text content.
+        assertEquals(title + " " + attr, actionText1.toString());
+        assertEquals(title, actionText2);
+        // Verify the color span is correctly applied.
+        ForegroundColorSpan[] spans = ((Spanned) actionText1).getSpans(
+                0, actionText1.length(), ForegroundColorSpan.class
+        );
+        int start = ((Spanned) actionText1).getSpanStart(spans[0]);
+        int end = ((Spanned) actionText1).getSpanEnd(spans[0]);
+        assertEquals(start, title.length());
+        assertEquals(end, actionText1.toString().length());
     }
 }

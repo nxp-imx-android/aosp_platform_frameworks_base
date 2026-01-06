@@ -120,6 +120,13 @@ flag {
   bug: "467758845"
 }
 
+flag {
+  name: "enable_action_attribution"
+  namespace: "ailabs"
+  description: "This flag enables the attribution in notification action."
+  bug: "466466234"
+}
+
 # Start: exported flags that cannot be removed
 
 flag {
