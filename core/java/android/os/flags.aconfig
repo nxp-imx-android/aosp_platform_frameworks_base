@@ -510,13 +510,6 @@ flag {
 
 flag {
      namespace: "system_performance"
-     name: "perfetto_sdk_tracing_v2"
-     description: "Tracing using Perfetto SDK API."
-     bug: "303199244"
-}
-
-flag {
-     namespace: "system_performance"
      name: "perfetto_sdk_tracing_v3"
      description: "Tracing using Perfetto SDK API from the 'dev.perfetto.sdk' package."
      bug: "303199244"

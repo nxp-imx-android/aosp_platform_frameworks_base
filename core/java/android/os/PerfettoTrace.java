@@ -52,17 +52,9 @@ public final class PerfettoTrace {
     private static final int PERFETTO_TE_TYPE_INSTANT = 3;
     private static final int PERFETTO_TE_TYPE_COUNTER = 4;
 
-    private static final boolean IS_FLAG_ENABLED = isFlagEnabled();
-
-    @RavenwoodIgnore // Flag always false on Ravenwood
-    private static boolean isFlagEnabled() {
-        return android.os.Flags.perfettoSdkTracingV2();
-    }
-
     // To simplify migration to the newer API we use this flag both when invoke trace methods and
     // in this class to chose what API to initialize.
-    public static final boolean IS_USE_SDK_TRACING_API_V3 =
-            IS_FLAG_ENABLED && isPerfettoSdkTracingV3();
+    public static final boolean IS_USE_SDK_TRACING_API_V3 = isPerfettoSdkTracingV3();
 
 
     @RavenwoodIgnore // Flag always false on Ravenwood
@@ -276,7 +268,7 @@ public final class PerfettoTrace {
          */
         @android.ravenwood.annotation.RavenwoodReplace
         public boolean isEnabled() {
-            return IS_FLAG_ENABLED && native_is_enabled(mPtr);
+            return native_is_enabled(mPtr);
         }
 
         public boolean isEnabled$ravenwood() {
@@ -452,9 +444,6 @@ public final class PerfettoTrace {
      * Returns the process track uuid that can be used as a parent track uuid.
      */
     public static long getProcessTrackUuid() {
-        if (!IS_FLAG_ENABLED) {
-            return 0;
-        }
         return native_get_process_track_uuid();
     }
 
@@ -462,9 +451,6 @@ public final class PerfettoTrace {
      * Given a thread tid, returns the thread track uuid that can be used as a parent track uuid.
      */
     public static long getThreadTrackUuid(long tid) {
-        if (!IS_FLAG_ENABLED) {
-            return 0;
-        }
         return native_get_thread_track_uuid(tid);
     }
 
@@ -472,9 +458,6 @@ public final class PerfettoTrace {
      * Activates a trigger by name {@code triggerName} with expiry in {@code ttlMs}.
      */
     public static void activateTrigger(String triggerName, int ttlMs) {
-        if (!IS_FLAG_ENABLED) {
-            return;
-        }
         native_activate_trigger(triggerName, ttlMs);
     }
 
