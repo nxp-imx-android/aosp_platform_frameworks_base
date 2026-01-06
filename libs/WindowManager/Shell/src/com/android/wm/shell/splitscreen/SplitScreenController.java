@@ -304,6 +304,10 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
         return mImpl;
     }
 
+    public boolean isSplitScreenReady() {
+        return mStageCoordinator != null;
+    }
+
     private ExternalInterfaceBinder createExternalInterface() {
         return new ISplitScreenImpl(this);
     }
