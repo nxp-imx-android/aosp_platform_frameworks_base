@@ -1131,6 +1131,14 @@ flag {
 }
 
 flag {
+  name: "exclude_caption_insets_opt_out_api"
+  namespace: "lse_desktop_experience"
+  description: "Allow app developers to opt out from OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS"
+  bug: "472448413"
+  is_exported: true
+}
+
+flag {
   name: "exclude_desk_roots_from_desktop_tasks"
   namespace: "lse_desktop_experience"
   description: "Do not include desk root tasks in freeform/desktop tasks"
