@@ -16,9 +16,9 @@
 
 package com.android.systemui.brightness
 
-import com.android.systemui.brightness.data.repository.impl.BrightnessDataModule
-import com.android.systemui.brightness.domain.interactor.impl.BrightnessDomainModule
-import com.android.systemui.brightness.shared.impl.BrightnessSharedModule
+import com.android.systemui.brightness.data.repository.BrightnessDataModule
+import com.android.systemui.brightness.domain.interactor.BrightnessDomainModule
+import com.android.systemui.brightness.shared.BrightnessSharedModule
 import dagger.Module
 
 @Module(

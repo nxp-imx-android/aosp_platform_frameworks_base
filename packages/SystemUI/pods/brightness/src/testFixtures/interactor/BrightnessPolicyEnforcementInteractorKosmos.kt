@@ -17,7 +17,6 @@
 package com.android.systemui.brightness.domain.interactor
 
 import com.android.systemui.brightness.data.repository.brightnessPolicyRepository
-import com.android.systemui.brightness.domain.interactor.impl.BrightnessPolicyEnforcementInteractorImpl
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.plugins.activityStarter
 

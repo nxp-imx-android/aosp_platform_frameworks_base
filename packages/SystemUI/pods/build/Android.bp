@@ -119,5 +119,10 @@ java_defaults {
         extra_check_modules: ["SystemUILintChecker"],
         warning_checks: ["MissingApacheLicenseDetector"],
     },
+    kotlincflags: [
+        // Annotations on constructor fields apply to both the param and class field.
+        // See https://youtrack.jetbrains.com/issue/KT-73255
+        "-Xannotation-default-target=param-property",
+    ],
     defaults_visibility: ["//visibility:private"],
 }

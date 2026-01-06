@@ -23,9 +23,11 @@ java_library {
     defaults: ["sysui_api"],
 
     static_libs: [
-        "com.android.systemui.brightness.shared-api",
-        "com.android.systemui.brightness.data-api",
-        "com.android.systemui.brightness.domain-api",
+        "androidx.annotation_annotation",
+        "kotlinx_coroutines",
+        "com.android.systemui.util.kotlin",
+        "com.android.systemui.util.policy-api",
+        "SettingsLibDisplayUtils",
     ],
 }
 
@@ -34,10 +36,13 @@ java_library {
     defaults: ["sysui_main"],
 
     static_libs: [
+        "androidx.annotation_annotation",
         "com.android.systemui.brightness_api",
-        "com.android.systemui.brightness.shared-impl",
-        "com.android.systemui.brightness.data-impl",
-        "com.android.systemui.brightness.domain-impl",
+        "com.android.systemui.user.data-api",
+        "com.android.systemui.util.kotlin",
+        "com.android.systemui.util.policy-api",
+        "kotlinx_coroutines",
+        "SystemUISharedLib",
     ],
 }
 
