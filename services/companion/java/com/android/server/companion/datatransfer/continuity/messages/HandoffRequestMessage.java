@@ -26,27 +26,29 @@ import java.util.Objects;
 /** Deserialized version of the HandoffRequestMessage proto. */
 public record HandoffRequestMessage(int taskId) implements TaskContinuityMessage {
 
-    public static final ProtoReader<HandoffRequestMessage> READER =
-            new ProtoReader<HandoffRequestMessage>() {
-                @Override
-                public HandoffRequestMessage read(@NonNull ProtoInputStream pis)
-                        throws IOException {
-                    Objects.requireNonNull(pis);
+    public static class Builder extends Proto.Builder<HandoffRequestMessage> {
+        private int taskId = 0;
 
-                    int taskId = 0;
-                    while (pis.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
-                        switch (pis.getFieldNumber()) {
-                            case (int) android.companion.HandoffRequestMessage.TASK_ID:
-                                taskId =
-                                        pis.readInt(
-                                                android.companion.HandoffRequestMessage.TASK_ID);
-                                break;
-                        }
-                    }
+        @NonNull
+        public Builder setTaskId(int taskId) {
+            this.taskId = taskId;
+            return this;
+        }
 
-                    return new HandoffRequestMessage(taskId);
-                }
-            };
+        @Override
+        protected void processField(@NonNull ProtoInputStream pis, int fieldNumber)
+                throws IOException {
+            switch (fieldNumber) {
+                case (int) android.companion.HandoffRequestMessage.TASK_ID ->
+                        setTaskId(pis.readInt(android.companion.HandoffRequestMessage.TASK_ID));
+            }
+        }
+
+        @Override
+        public HandoffRequestMessage build() {
+            return new HandoffRequestMessage(taskId);
+        }
+    }
 
     @Override
     public long getFieldNumber() {

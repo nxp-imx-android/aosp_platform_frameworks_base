@@ -27,10 +27,9 @@ import org.junit.Test;
 @Presubmit
 public class HandoffActivityDataMessageTest extends ProtoTest<HandoffActivityDataMessage> {
 
-    @Test
-    public void testHandoffActivityDataMessage_noData_returnsEmpty() throws Exception {
-        verifyDefaultValue(
-                HandoffActivityDataMessage.READER, new HandoffActivityDataMessage(null, List.of()));
+    @Override
+    protected HandoffActivityDataMessage.Builder newBuilder() {
+        return new HandoffActivityDataMessage.Builder();
     }
 
     @Test
@@ -38,7 +37,6 @@ public class HandoffActivityDataMessageTest extends ProtoTest<HandoffActivityDat
         PersistableBundle extras = new PersistableBundle();
         extras.putString("key", "value");
         verifyRoundTrip(
-                HandoffActivityDataMessage.READER,
                 new HandoffActivityDataMessage(
                         new HandoffActivityData.Builder(
                                         new ComponentName(
@@ -52,7 +50,6 @@ public class HandoffActivityDataMessageTest extends ProtoTest<HandoffActivityDat
     @Test
     public void testHandoffActivityDataMessage_onlyFallbackUri_serializes() throws Exception {
         verifyRoundTrip(
-                HandoffActivityDataMessage.READER,
                 new HandoffActivityDataMessage(
                         HandoffActivityData.createWebHandoff(
                                 Uri.parse("http://example.com/fallback")),
@@ -61,8 +58,6 @@ public class HandoffActivityDataMessageTest extends ProtoTest<HandoffActivityDat
 
     @Test
     public void testHandoffActivityDataMessage_emptyData_serializes() throws Exception {
-        verifyRoundTrip(
-                HandoffActivityDataMessage.READER,
-                new HandoffActivityDataMessage(null, List.of()));
+        verifyRoundTrip(new HandoffActivityDataMessage(null, List.of()));
     }
 }

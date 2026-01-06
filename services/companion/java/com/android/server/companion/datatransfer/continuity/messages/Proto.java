@@ -17,6 +17,7 @@
 package com.android.server.companion.datatransfer.continuity.messages;
 
 import android.annotation.NonNull;
+import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
 import java.io.IOException;
 import java.util.Objects;
@@ -46,5 +47,39 @@ public interface Proto {
         long token = Objects.requireNonNull(pos).start(fieldNumber);
         Objects.requireNonNull(proto).write(pos);
         pos.end(token);
+    }
+
+    public abstract class Builder<T extends Proto> {
+
+        public Builder<T> readFromField(@NonNull ProtoInputStream pis, long fieldNumber)
+                throws IOException {
+            Objects.requireNonNull(pis);
+            long token = pis.start(fieldNumber);
+            readFromStream(pis);
+            pis.end(token);
+            return this;
+        }
+
+        public Builder<T> readFromStream(@NonNull ProtoInputStream pis) throws IOException {
+            Objects.requireNonNull(pis);
+            while (pis.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
+                processField(pis, pis.getFieldNumber());
+            }
+
+            return this;
+        }
+
+        /**
+         * Processes the current field in the {@link ProtoInputStream}. The field number is provided
+         * for convenience.
+         *
+         * @param pis the {@link ProtoInputStream} to read from
+         * @param fieldNumber the field number of the proto message
+         * @throws IOException if an error occurs while reading
+         */
+        protected abstract void processField(@NonNull ProtoInputStream pis, int fieldNumber)
+                throws IOException;
+
+        public abstract T build();
     }
 }

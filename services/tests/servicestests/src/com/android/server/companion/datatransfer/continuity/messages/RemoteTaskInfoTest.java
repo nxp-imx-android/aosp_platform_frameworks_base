@@ -22,17 +22,14 @@ import org.junit.Test;
 @Presubmit
 public class RemoteTaskInfoTest extends ProtoTest<RemoteTaskInfo> {
 
-    @Test
-    public void testReadFromProto_noData_returnsDefault() throws Exception {
-        verifyDefaultValue(
-                RemoteTaskInfo.READER,
-                new RemoteTaskInfo(0, "", false, 0, new HandoffOptions(false, false)));
+    @Override
+    protected RemoteTaskInfo.Builder newBuilder() {
+        return new RemoteTaskInfo.Builder();
     }
 
     @Test
     public void testWriteAndRead_roundTrip_works() throws Exception {
-        RemoteTaskInfo remoteTaskInfo =
-                new RemoteTaskInfo(1, "package_name", true, 100L, new HandoffOptions(true, true));
-        verifyRoundTrip(RemoteTaskInfo.READER, remoteTaskInfo);
+        verifyRoundTrip(
+                new RemoteTaskInfo(1, "package_name", true, 100L, new HandoffOptions(true, true)));
     }
 }

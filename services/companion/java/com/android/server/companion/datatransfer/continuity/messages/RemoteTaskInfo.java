@@ -17,7 +17,6 @@
 package com.android.server.companion.datatransfer.continuity.messages;
 
 import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
 import java.io.IOException;
@@ -46,53 +45,68 @@ public record RemoteTaskInfo(
         Proto.writeField(pos, android.companion.RemoteTaskInfo.HANDOFF_OPTIONS, handoffOptions());
     }
 
-    @NonNull
-    public static final ProtoReader<RemoteTaskInfo> READER =
-            new ProtoReader<RemoteTaskInfo>() {
-                @Override
-                @Nullable
-                public RemoteTaskInfo read(@NonNull ProtoInputStream pis) throws IOException {
-                    Objects.requireNonNull(pis);
+    public static final class Builder extends Proto.Builder<RemoteTaskInfo> {
+        private int mId = 0;
+        private String mPackageName = "";
+        private boolean mIsInForeground = false;
+        private long mLastUsedTimeMillis = 0;
+        private HandoffOptions mHandoffOptions = new HandoffOptions(false, false);
 
-                    int id = 0;
-                    String packageName = "";
-                    long lastUsedTimeMillis = 0;
-                    boolean isInForeground = false;
-                    HandoffOptions handoffOptions = new HandoffOptions(false, false);
-                    while (pis.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
-                        switch (pis.getFieldNumber()) {
-                            case (int) android.companion.RemoteTaskInfo.ID:
-                                id = pis.readInt(android.companion.RemoteTaskInfo.ID);
+        public Builder setId(int id) {
+            mId = id;
+            return this;
+        }
 
-                                break;
-                            case (int) android.companion.RemoteTaskInfo.PACKAGE_NAME:
-                                packageName =
-                                        pis.readString(
-                                                android.companion.RemoteTaskInfo.PACKAGE_NAME);
+        public Builder setPackageName(@NonNull String packageName) {
+            mPackageName = Objects.requireNonNull(packageName);
+            return this;
+        }
 
-                                break;
-                            case (int) android.companion.RemoteTaskInfo.LAST_USED_TIME_MILLIS:
-                                lastUsedTimeMillis =
-                                        pis.readLong(
-                                                android.companion.RemoteTaskInfo
-                                                        .LAST_USED_TIME_MILLIS);
-                                break;
-                            case (int) android.companion.RemoteTaskInfo.HANDOFF_OPTIONS:
-                                handoffOptions =
-                                        HandoffOptions.READER.read(
+        public Builder setIsInForeground(boolean isInForeground) {
+            mIsInForeground = isInForeground;
+            return this;
+        }
+
+        public Builder setLastUsedTimeMillis(long lastUsedTimeMillis) {
+            mLastUsedTimeMillis = lastUsedTimeMillis;
+            return this;
+        }
+
+        public Builder setHandoffOptions(@NonNull HandoffOptions handoffOptions) {
+            mHandoffOptions = Objects.requireNonNull(handoffOptions);
+            return this;
+        }
+
+        @Override
+        protected void processField(@NonNull ProtoInputStream pis, int fieldNumber)
+                throws IOException {
+            switch (fieldNumber) {
+                case (int) android.companion.RemoteTaskInfo.ID ->
+                        setId(pis.readInt(android.companion.RemoteTaskInfo.ID));
+                case (int) android.companion.RemoteTaskInfo.PACKAGE_NAME ->
+                        setPackageName(
+                                pis.readString(android.companion.RemoteTaskInfo.PACKAGE_NAME));
+                case (int) android.companion.RemoteTaskInfo.LAST_USED_TIME_MILLIS ->
+                        setLastUsedTimeMillis(
+                                pis.readLong(
+                                        android.companion.RemoteTaskInfo.LAST_USED_TIME_MILLIS));
+                case (int) android.companion.RemoteTaskInfo.HANDOFF_OPTIONS ->
+                        setHandoffOptions(
+                                new HandoffOptions.Builder()
+                                        .readFromField(
                                                 pis,
-                                                android.companion.RemoteTaskInfo.HANDOFF_OPTIONS);
-                                break;
-                            case (int) android.companion.RemoteTaskInfo.IS_IN_FOREGROUND:
-                                isInForeground =
-                                        pis.readBoolean(
-                                                android.companion.RemoteTaskInfo.IS_IN_FOREGROUND);
-                                break;
-                        }
-                    }
+                                                android.companion.RemoteTaskInfo.HANDOFF_OPTIONS)
+                                        .build());
+                case (int) android.companion.RemoteTaskInfo.IS_IN_FOREGROUND ->
+                        setIsInForeground(
+                                pis.readBoolean(android.companion.RemoteTaskInfo.IS_IN_FOREGROUND));
+            }
+        }
 
-                    return new RemoteTaskInfo(
-                            id, packageName, isInForeground, lastUsedTimeMillis, handoffOptions);
-                }
-            };
+        @Override
+        public RemoteTaskInfo build() {
+            return new RemoteTaskInfo(
+                    mId, mPackageName, mIsInForeground, mLastUsedTimeMillis, mHandoffOptions);
+        }
+    }
 }

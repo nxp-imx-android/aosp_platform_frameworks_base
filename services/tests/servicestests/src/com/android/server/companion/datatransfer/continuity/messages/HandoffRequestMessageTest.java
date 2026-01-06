@@ -24,15 +24,14 @@ import org.junit.Test;
 @Presubmit
 public class HandoffRequestMessageTest extends ProtoTest<HandoffRequestMessage> {
 
-    @Test
-    public void testHandoffRequestMessage_fromProtoStream_setsToDefaultValues() throws Exception {
-        verifyDefaultValue(HandoffRequestMessage.READER, new HandoffRequestMessage(0));
+    @Override
+    protected HandoffRequestMessage.Builder newBuilder() {
+        return new HandoffRequestMessage.Builder();
     }
 
     @Test
     public void testWriteAndRead_roundTrip_works() throws Exception {
-        HandoffRequestMessage handoffRequestMessage = new HandoffRequestMessage(1);
-        verifyRoundTrip(HandoffRequestMessage.READER, handoffRequestMessage);
+        verifyRoundTrip(new HandoffRequestMessage(1));
     }
 
     @Test

@@ -21,24 +21,26 @@ import static com.google.common.truth.Truth.assertThat;
 import android.testing.AndroidTestingRunner;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(AndroidTestingRunner.class)
 public abstract class ProtoTest<T extends Proto> {
 
-    protected void verifyDefaultValue(ProtoReader<T> reader, T value) throws Exception {
-        ProtoInputStream pis = new ProtoInputStream(new byte[0]);
-        T result = reader.read(pis);
-        assertThat(result).isEqualTo(value);
+    protected abstract Proto.Builder<T> newBuilder();
+
+    @Test
+    public void testDefaultValue_roundTrip_works() throws Exception {
+        verifyRoundTrip(newBuilder().build());
     }
 
-    protected void verifyRoundTrip(ProtoReader<T> reader, T value) throws Exception {
+    protected void verifyRoundTrip(T value) throws Exception {
         ProtoOutputStream pos = new ProtoOutputStream();
         value.write(pos);
         pos.flush();
 
         ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
-        T result = reader.read(pis);
+        T result = newBuilder().readFromStream(pis).build();
 
         assertThat(result).isEqualTo(value);
     }

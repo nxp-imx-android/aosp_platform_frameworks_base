@@ -40,7 +40,7 @@ public record HandoffActivityDataMessage(
         Objects.requireNonNull(packageSignatureDigests);
     }
 
-    public static class Builder {
+    public static class Builder extends Proto.Builder<HandoffActivityDataMessage> {
         private ComponentName componentName = null;
         private Uri fallbackUri = null;
         private PersistableBundle extras = null;
@@ -70,7 +70,45 @@ public record HandoffActivityDataMessage(
             return this;
         }
 
-        @NonNull
+        @Override
+        protected void processField(@NonNull ProtoInputStream pis, int fieldNumber)
+                throws IOException {
+            switch (fieldNumber) {
+                case (int) android.companion.HandoffActivityDataMessage.COMPONENT_NAME -> {
+                    String flattenedComponentName =
+                            pis.readString(
+                                    android.companion.HandoffActivityDataMessage.COMPONENT_NAME);
+                    if (flattenedComponentName != null) {
+                        setComponentName(ComponentName.unflattenFromString(flattenedComponentName));
+                    }
+                }
+                case (int) android.companion.HandoffActivityDataMessage.FALLBACK_URI -> {
+                    String flattenedFallbackUri =
+                            pis.readString(
+                                    android.companion.HandoffActivityDataMessage.FALLBACK_URI);
+                    if (flattenedFallbackUri != null) {
+                        setFallbackUri(Uri.parse(flattenedFallbackUri));
+                    }
+                }
+                case (int) android.companion.HandoffActivityDataMessage.EXTRAS -> {
+                    byte[] rawExtras =
+                            pis.readBytes(android.companion.HandoffActivityDataMessage.EXTRAS);
+                    if (rawExtras != null) {
+                        setExtras(
+                                PersistableBundle.readFromStream(
+                                        new ByteArrayInputStream(rawExtras)));
+                    }
+                }
+                case (int) android.companion.HandoffActivityDataMessage.SIGNATURE_DIGESTS -> {
+                    addPackageSignatureDigest(
+                            pis.readBytes(
+                                    android.companion.HandoffActivityDataMessage
+                                            .SIGNATURE_DIGESTS));
+                }
+            }
+        }
+
+        @Override
         public HandoffActivityDataMessage build() {
             HandoffActivityData activityData = null;
             if (componentName != null) {
@@ -121,67 +159,6 @@ public record HandoffActivityDataMessage(
                     signatureDigest);
         }
     }
-
-    public static final ProtoReader<HandoffActivityDataMessage> READER =
-            new ProtoReader<HandoffActivityDataMessage>() {
-                @Override
-                @Nullable
-                public HandoffActivityDataMessage read(@NonNull ProtoInputStream pis)
-                        throws IOException {
-                    Objects.requireNonNull(pis);
-
-                    Builder builder = new HandoffActivityDataMessage.Builder();
-                    while (pis.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
-                        switch (pis.getFieldNumber()) {
-                            case (int)
-                                            android.companion.HandoffActivityDataMessage
-                                                    .COMPONENT_NAME -> {
-                                String flattenedComponentName =
-                                        pis.readString(
-                                                android.companion.HandoffActivityDataMessage
-                                                        .COMPONENT_NAME);
-                                if (flattenedComponentName != null) {
-                                    builder.setComponentName(
-                                            ComponentName.unflattenFromString(
-                                                    flattenedComponentName));
-                                }
-                            }
-                            case (int)
-                                            android.companion.HandoffActivityDataMessage
-                                                    .FALLBACK_URI -> {
-                                String flattenedFallbackUri =
-                                        pis.readString(
-                                                android.companion.HandoffActivityDataMessage
-                                                        .FALLBACK_URI);
-                                if (flattenedFallbackUri != null) {
-                                    builder.setFallbackUri(Uri.parse(flattenedFallbackUri));
-                                }
-                            }
-                            case (int) android.companion.HandoffActivityDataMessage.EXTRAS -> {
-                                byte[] rawExtras =
-                                        pis.readBytes(
-                                                android.companion.HandoffActivityDataMessage
-                                                        .EXTRAS);
-                                if (rawExtras != null) {
-                                    builder.setExtras(
-                                            PersistableBundle.readFromStream(
-                                                    new ByteArrayInputStream(rawExtras)));
-                                }
-                            }
-                            case (int)
-                                            android.companion.HandoffActivityDataMessage
-                                                    .SIGNATURE_DIGESTS -> {
-                                builder.addPackageSignatureDigest(
-                                        pis.readBytes(
-                                                android.companion.HandoffActivityDataMessage
-                                                        .SIGNATURE_DIGESTS));
-                            }
-                        }
-                    }
-
-                    return builder.build();
-                }
-            };
 
     @Override
     public int hashCode() {

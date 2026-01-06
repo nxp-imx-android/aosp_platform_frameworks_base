@@ -37,38 +37,55 @@ public record HandoffRequestResultMessage(
         Objects.requireNonNull(activities);
     }
 
-    @NonNull
-    public static HandoffRequestResultMessage readFromProto(@NonNull ProtoInputStream pis)
-            throws IOException {
+    public static class Builder extends Proto.Builder<HandoffRequestResultMessage> {
+        private int taskId = 0;
+        private int statusCode = 0;
+        private List<HandoffActivityDataMessage> activities = new ArrayList<>();
 
-        Objects.requireNonNull(pis);
+        @NonNull
+        public Builder setTaskId(int taskId) {
+            this.taskId = taskId;
+            return this;
+        }
 
-        int statusCode = 0;
-        int taskId = 0;
-        List<HandoffActivityDataMessage> activities = new ArrayList<>();
+        @NonNull
+        public Builder setStatusCode(int statusCode) {
+            this.statusCode = statusCode;
+            return this;
+        }
 
-        while (pis.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
-            switch (pis.getFieldNumber()) {
-                case (int) android.companion.HandoffRequestResultMessage.STATUS_CODE:
-                    statusCode =
-                            pis.readInt(android.companion.HandoffRequestResultMessage.STATUS_CODE);
+        @NonNull
+        public Builder addActivity(@NonNull HandoffActivityDataMessage activity) {
+            this.activities.add(Objects.requireNonNull(activity));
+            return this;
+        }
 
-                    break;
-                case (int) android.companion.HandoffRequestResultMessage.TASK_ID:
-                    taskId = pis.readInt(android.companion.HandoffRequestResultMessage.TASK_ID);
-                    break;
-                case (int) android.companion.HandoffRequestResultMessage.ACTIVITIES:
-                    HandoffActivityDataMessage handoffActivityData =
-                            HandoffActivityDataMessage.READER.read(
-                                    pis, android.companion.HandoffRequestResultMessage.ACTIVITIES);
-                    if (handoffActivityData != null) {
-                        activities.add(handoffActivityData);
-                    }
-                    break;
+        @Override
+        protected void processField(@NonNull ProtoInputStream pis, int fieldNumber)
+                throws IOException {
+            switch (fieldNumber) {
+                case (int) android.companion.HandoffRequestResultMessage.STATUS_CODE ->
+                        setStatusCode(
+                                pis.readInt(
+                                        android.companion.HandoffRequestResultMessage.STATUS_CODE));
+                case (int) android.companion.HandoffRequestResultMessage.TASK_ID ->
+                        setTaskId(
+                                pis.readInt(android.companion.HandoffRequestResultMessage.TASK_ID));
+                case (int) android.companion.HandoffRequestResultMessage.ACTIVITIES ->
+                        addActivity(
+                                new HandoffActivityDataMessage.Builder()
+                                        .readFromField(
+                                                pis,
+                                                android.companion.HandoffRequestResultMessage
+                                                        .ACTIVITIES)
+                                        .build());
             }
         }
 
-        return new HandoffRequestResultMessage(taskId, statusCode, activities);
+        @Override
+        public HandoffRequestResultMessage build() {
+            return new HandoffRequestResultMessage(taskId, statusCode, activities);
+        }
     }
 
     @Override

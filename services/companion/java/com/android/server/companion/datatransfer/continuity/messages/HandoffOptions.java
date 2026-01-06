@@ -39,30 +39,39 @@ public record HandoffOptions(boolean isHandoffEnabled, boolean requirePackageIns
                 requirePackageInstalled());
     }
 
-    public static final ProtoReader<HandoffOptions> READER =
-            new ProtoReader<HandoffOptions>() {
-                @Override
-                public HandoffOptions read(@NonNull ProtoInputStream pis) throws IOException {
-                    Objects.requireNonNull(pis);
-                    boolean isHandoffEnabled = false;
-                    boolean requirePackageInstalled = false;
-                    while (pis.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
-                        switch (pis.getFieldNumber()) {
-                            case (int) android.companion.HandoffOptions.IS_HANDOFF_ENABLED:
-                                isHandoffEnabled =
-                                        pis.readBoolean(
-                                                android.companion.HandoffOptions
-                                                        .IS_HANDOFF_ENABLED);
-                                break;
-                            case (int) android.companion.HandoffOptions.REQUIRE_PACKAGE_INSTALLED:
-                                requirePackageInstalled =
-                                        pis.readBoolean(
-                                                android.companion.HandoffOptions
-                                                        .REQUIRE_PACKAGE_INSTALLED);
-                                break;
-                        }
-                    }
-                    return new HandoffOptions(isHandoffEnabled, requirePackageInstalled);
-                }
-            };
+    public static class Builder extends Proto.Builder<HandoffOptions> {
+        private boolean mIsHandoffEnabled = false;
+        private boolean mRequirePackageInstalled = false;
+
+        public Builder setHandoffEnabled(boolean isHandoffEnabled) {
+            mIsHandoffEnabled = isHandoffEnabled;
+            return this;
+        }
+
+        public Builder setRequirePackageInstalled(boolean requirePackageInstalled) {
+            mRequirePackageInstalled = requirePackageInstalled;
+            return this;
+        }
+
+        @Override
+        protected void processField(@NonNull ProtoInputStream pis, int fieldNumber)
+                throws IOException {
+            switch (fieldNumber) {
+                case (int) android.companion.HandoffOptions.IS_HANDOFF_ENABLED ->
+                        setHandoffEnabled(
+                                pis.readBoolean(
+                                        android.companion.HandoffOptions.IS_HANDOFF_ENABLED));
+                case (int) android.companion.HandoffOptions.REQUIRE_PACKAGE_INSTALLED ->
+                        setRequirePackageInstalled(
+                                pis.readBoolean(
+                                        android.companion.HandoffOptions
+                                                .REQUIRE_PACKAGE_INSTALLED));
+            }
+        }
+
+        @Override
+        public HandoffOptions build() {
+            return new HandoffOptions(mIsHandoffEnabled, mRequirePackageInstalled);
+        }
+    }
 }

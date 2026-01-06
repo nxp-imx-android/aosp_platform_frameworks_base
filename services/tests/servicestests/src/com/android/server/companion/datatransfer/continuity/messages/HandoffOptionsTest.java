@@ -22,14 +22,13 @@ import org.junit.Test;
 @Presubmit
 public class HandoffOptionsTest extends ProtoTest<HandoffOptions> {
 
-    @Test
-    public void testHandoffOptions_fromProtoStream_setsToDefaultValues() throws Exception {
-        verifyDefaultValue(HandoffOptions.READER, new HandoffOptions(false, false));
+    @Override
+    protected HandoffOptions.Builder newBuilder() {
+        return new HandoffOptions.Builder();
     }
 
     @Test
     public void testWriteAndRead_roundTrip_works() throws Exception {
-        HandoffOptions handoffOptions = new HandoffOptions(true, true);
-        verifyRoundTrip(HandoffOptions.READER, handoffOptions);
+        verifyRoundTrip(new HandoffOptions(true, true));
     }
 }

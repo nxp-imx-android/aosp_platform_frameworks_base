@@ -16,35 +16,33 @@
 
 package com.android.server.companion.datatransfer.continuity.messages;
 
-import static com.google.common.truth.Truth.assertThat;
-
 import android.app.HandoffActivityData;
 import android.content.ComponentName;
 import android.net.Uri;
 import android.os.PersistableBundle;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
-import android.util.proto.ProtoInputStream;
-import android.util.proto.ProtoOutputStream;
-import java.io.IOException;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
-public class HandoffRequestResultMessageTest {
+public class HandoffRequestResultMessageTest extends ProtoTest<HandoffRequestResultMessage> {
+
+    @Override
+    protected Proto.Builder<HandoffRequestResultMessage> newBuilder() {
+        return new HandoffRequestResultMessage.Builder();
+    }
 
     @Test
-    public void testRoundTripSerialization_works() throws IOException {
-        int expectedTaskId = 1;
-        int expectedStatusCode = 1;
+    public void testRoundTripSerialization_works() throws Exception {
         PersistableBundle extras = new PersistableBundle();
         extras.putString("key", "value");
-        HandoffRequestResultMessage expected =
+        verifyRoundTrip(
                 new HandoffRequestResultMessage(
-                        expectedTaskId,
-                        expectedStatusCode,
+                        1,
+                        1,
                         List.of(
                                 new HandoffActivityDataMessage(
                                         new HandoffActivityData.Builder(
@@ -55,19 +53,6 @@ public class HandoffRequestResultMessageTest {
                                                         Uri.parse("http://example.com/fallback"))
                                                 .setExtras(extras)
                                                 .build(),
-                                        List.of(new byte[] {1, 2, 3, 4}))));
-
-        final ProtoOutputStream pos = new ProtoOutputStream();
-        expected.write(pos);
-        pos.flush();
-        final ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
-        final HandoffRequestResultMessage actual = HandoffRequestResultMessage.readFromProto(pis);
-
-        assertThat(actual.taskId()).isEqualTo(expected.taskId());
-        assertThat(actual.statusCode()).isEqualTo(expected.statusCode());
-        assertThat(actual.activities()).hasSize(expected.activities().size());
-        for (int i = 0; i < expected.activities().size(); i++) {
-            assertThat(actual.activities().get(i)).isEqualTo(expected.activities().get(i));
-        }
+                                        List.of(new byte[] {1, 2, 3, 4})))));
     }
 }

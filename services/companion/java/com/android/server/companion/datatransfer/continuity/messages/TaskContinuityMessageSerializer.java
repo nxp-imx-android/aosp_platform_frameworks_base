@@ -35,24 +35,24 @@ public final class TaskContinuityMessageSerializer {
             throw new IOException("No fields found in TaskContinuityMessage");
         }
 
-        TaskContinuityMessage message = null;
         int fieldNumber = pis.getFieldNumber();
-        final long dataToken = pis.start(fieldNumber);
-        switch (fieldNumber) {
-            case (int) android.companion.TaskContinuityMessage.TASK_STACK_BROADCAST:
-                message = TaskStackBroadcastMessage.readFromProto(pis);
-                break;
-            case (int) android.companion.TaskContinuityMessage.HANDOFF_REQUEST:
-                message =
-                        HandoffRequestMessage.READER.read(
-                                pis, android.companion.TaskContinuityMessage.HANDOFF_REQUEST);
-                break;
-            case (int) android.companion.TaskContinuityMessage.HANDOFF_REQUEST_RESULT:
-                message = HandoffRequestResultMessage.readFromProto(pis);
-                break;
-        }
+        TaskContinuityMessage message =
+                switch (fieldNumber) {
+                    case (int) android.companion.TaskContinuityMessage.TASK_STACK_BROADCAST ->
+                            new TaskStackBroadcastMessage.Builder()
+                                    .readFromField(pis, fieldNumber)
+                                    .build();
+                    case (int) android.companion.TaskContinuityMessage.HANDOFF_REQUEST ->
+                            new HandoffRequestMessage.Builder()
+                                    .readFromField(pis, fieldNumber)
+                                    .build();
+                    case (int) android.companion.TaskContinuityMessage.HANDOFF_REQUEST_RESULT ->
+                            new HandoffRequestResultMessage.Builder()
+                                    .readFromField(pis, fieldNumber)
+                                    .build();
+                    default -> null;
+                };
 
-        pis.end(dataToken);
         if (message == null) {
             throw new IOException("Serialization did not find a field for message");
         }
