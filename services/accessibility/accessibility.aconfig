@@ -86,6 +86,16 @@ flag {
 }
 
 flag {
+    name: "enable_magnification_viewport_prioritization"
+    namespace: "accessibility"
+    description: "Whether to prioritize Magnification viewport movements in response to cursor and focus events"
+    bug: "432525516"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_mouse_key_enhancement"
     namespace: "accessibility"
     description: "Whether user can change mouse key acceleration, speed and use numeric keypad."

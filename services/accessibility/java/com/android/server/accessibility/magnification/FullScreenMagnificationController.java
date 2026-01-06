@@ -57,6 +57,7 @@ import android.widget.Scroller;
 
 import com.android.internal.R;
 import com.android.internal.accessibility.common.MagnificationConstants;
+import com.android.internal.accessibility.util.AccessibilityUtils;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.function.pooled.PooledLambda;
@@ -71,6 +72,7 @@ import com.android.server.wm.WindowManagerInternal;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
 /**
@@ -116,6 +118,8 @@ public class FullScreenMagnificationController implements
     private boolean mMagnificationFollowTypingEnabled = true;
     // Whether the following keyboard focus feature for magnification is enabled.
     private boolean mMagnificationFollowKeyboardEnabled = false;
+    private final MagnificationSystemClock mSystemClock;
+    private final AtomicLong mLastCursorMovedViewportTime = new AtomicLong(0);
     // Whether the always on magnification feature is enabled.
     private boolean mAlwaysOnMagnificationEnabled = false;
     private final DisplayManagerInternal mDisplayManagerInternal;
@@ -1138,7 +1142,8 @@ public class FullScreenMagnificationController implements
                 backgroundExecutor,
                 () -> new Scroller(context),
                 TimeAnimator::new,
-                magnificationConnectionStateSupplier);
+                magnificationConnectionStateSupplier,
+                new MagnificationSystemClock());
     }
 
     /** Constructor for tests */
@@ -1153,6 +1158,32 @@ public class FullScreenMagnificationController implements
             Supplier<Scroller> scrollerSupplier,
             Supplier<TimeAnimator> timeAnimatorSupplier,
             @NonNull Supplier<Boolean> magnificationConnectionStateSupplier) {
+        this(
+                ctx,
+                lock,
+                magnificationInfoChangedCallback,
+                scaleProvider,
+                thumbnailSupplier,
+                backgroundExecutor,
+                scrollerSupplier,
+                timeAnimatorSupplier,
+                magnificationConnectionStateSupplier,
+                new MagnificationSystemClock());
+    }
+
+    /** Constructor for tests */
+    @VisibleForTesting
+    public FullScreenMagnificationController(
+            @NonNull ControllerContext ctx,
+            @NonNull Object lock,
+            @NonNull MagnificationInfoChangedCallback magnificationInfoChangedCallback,
+            @NonNull MagnificationScaleProvider scaleProvider,
+            Supplier<MagnificationThumbnail> thumbnailSupplier,
+            @NonNull Executor backgroundExecutor,
+            Supplier<Scroller> scrollerSupplier,
+            Supplier<TimeAnimator> timeAnimatorSupplier,
+            @NonNull Supplier<Boolean> magnificationConnectionStateSupplier,
+            MagnificationSystemClock systemClock) {
         mControllerCtx = ctx;
         mLock = lock;
         mScrollerSupplier = scrollerSupplier;
@@ -1180,6 +1211,7 @@ public class FullScreenMagnificationController implements
                 return null;
             };
         }
+        mSystemClock = systemClock;
     }
 
     private void onMagnificationThumbnailFeatureFlagChanged() {
@@ -1251,9 +1283,23 @@ public class FullScreenMagnificationController implements
         }
     }
 
+    /**
+     * Track when cursor movement has moved the magnification region.
+     */
+    public void onCursorMoveViewport() {
+        mLastCursorMovedViewportTime.set(mSystemClock.uptimeMillis());
+    }
+
     @Override
     public void onRectangleOnScreenRequested(int displayId, int left, int top, int right,
             int bottom, int source) {
+        // Ignore focus updates immediately after the cursor moved the viewport to prevent
+        // the magnified region from jumping around.
+        if (mSystemClock.uptimeMillis() - mLastCursorMovedViewportTime.get()
+                < AccessibilityUtils
+                .MAGNIFICATION_IGNORE_FOCUS_UPDATES_AFTER_CURSOR_MOVE_TIMEOUT_MS) {
+            return;
+        }
         synchronized (mLock) {
             if (!shouldFollow(source)) {
                 return;
@@ -1419,7 +1465,7 @@ public class FullScreenMagnificationController implements
 
     /**
      * Gets the full screen magnification data needed by
-     * {@link #FullScreenMagnificationPointerMotionEventFilter}.
+     * {@link FullScreenMagnificationPointerMotionEventFilter}.
      *
      * @param displayId The logical display id.
      * @param outMagnificationData The magnification data to populate.
