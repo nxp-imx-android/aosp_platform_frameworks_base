@@ -400,7 +400,12 @@ open class DesktopFullscreenRequestHandler(
             requireNotNull(info.changes.firstOrNull { c -> c.taskInfo?.taskId == taskId }) {
                 "The task moving to fullscreen must exist in the transition"
             }
-        DesktopToFullscreenTaskAnimator(context, transactionSupplier, displayController)
+        DesktopToFullscreenTaskAnimator(
+                context,
+                transactionSupplier,
+                displayController,
+                onTaskResizeAnimationListener,
+            )
             .animate(
                 change = change,
                 startTransaction = startTransaction,
