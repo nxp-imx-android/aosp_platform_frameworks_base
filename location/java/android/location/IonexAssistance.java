@@ -552,12 +552,25 @@ public final class IonexAssistance implements Parcelable {
 
     /** Represents a Total Electron Content (TEC) map at a specific moment in time. */
     public static final class TecMapSnapshot implements Parcelable {
+        /**
+         * Represents a non-available TEC value in the TEC map. This value is stored in the {@code
+         * char[]} arrays.
+         *
+         * <p>The value 9999 is defined by the IONEX specification for non-available data.
+         */
+        public static final char UNAVAILABLE_TEC = 9999;
+
         /** The epoch of the TEC map, in seconds since the Unix epoch (UTC) */
         private final long mEpochTimeSeconds;
 
         /**
-         * A flattened representation of a 2D geographical map of Total Electron Content values
-         * (TECU), where <strong>1 TECU = 10¹⁶ electrons/m²</strong>.
+         * A flattened representation of a 2D geographical map of Total Electron Content values.
+         *
+         * <p>The values in this array are stored as 16-bit unsigned integers (char) with a
+         * <strong>unit of 0.1 TECU</strong> (Total Electron Content Unit). To obtain the value in
+         * TECU, divide the stored value by 10.
+         *
+         * <p>1 TECU = 10¹⁶ electrons/m².
          *
          * <p>The ionospheric delay, in meters, of a signal propagating from the zenith is given by
          * the following formula:
@@ -585,7 +598,7 @@ public final class IonexAssistance implements Parcelable {
          * <p>The total number of values in the list must be equal to: <br>
          * {@code latitudeAxis.numPoints * longitudeAxis.numPoints}
          *
-         * <p>Non-available TEC values are represented as {@link java.lang.Float#NaN}.
+         * <p>Non-available TEC values are represented as {@link #UNAVAILABLE_TEC}.
          *
          * <h3>Index Calculation</h3>
          *
@@ -597,15 +610,15 @@ public final class IonexAssistance implements Parcelable {
          * longitude_deg = longitudeAxis.startDeg + (i % n) * longitudeAxis.deltaDeg;
          * </pre>
          */
-        @NonNull private final float[] mTecMap;
+        @NonNull private final char[] mTecMap;
 
         /**
-         * An optional flattened 2D list of TEC Root-Mean-Square (RMS) error values in TECU. Values
-         * are formatted exactly in the same way as TEC values.
+         * An optional flattened 2D list of TEC Root-Mean-Square (RMS) error values in 0.1 TECU.
+         * Values are formatted exactly in the same way as TEC values.
          *
-         * <p>If not available, this list will be empty.
+         * <p>If RMS data is not available, this array will be empty.
          */
-        @NonNull private final float[] mRmsMap;
+        @NonNull private final char[] mRmsMap;
 
         private TecMapSnapshot(Builder builder) {
             Preconditions.checkArgument(
@@ -624,23 +637,23 @@ public final class IonexAssistance implements Parcelable {
         }
 
         /**
-         * Returns the flattened array of values in Total Electron Content units (TECU).
+         * Returns the flattened array of values in 0.1 Total Electron Content units (TECU).
          *
          * <p>See {@link TecMapSnapshot#mTecMap} for details on data organization and
          * interpretation.
          */
         @NonNull
-        public float[] getTecMap() {
+        public char[] getTecMap() {
             return mTecMap;
         }
 
         /**
-         * Returns the array of TEC Root-Mean-Square (RMS) error values in TECU.
+         * Returns the array of TEC Root-Mean-Square (RMS) error values in 0.1 TECU.
          *
-         * <p>If not available, this list will be empty.
+         * <p>If RMS data is not available, this array will be empty.
          */
         @NonNull
-        public float[] getRmsMap() {
+        public char[] getRmsMap() {
             return mRmsMap;
         }
 
@@ -651,8 +664,8 @@ public final class IonexAssistance implements Parcelable {
                     public TecMapSnapshot createFromParcel(Parcel in) {
                         return new Builder()
                                 .setEpochTimeSeconds(in.readLong())
-                                .setTecMap(in.createFloatArray())
-                                .setRmsMap(in.createFloatArray())
+                                .setTecMap(in.createCharArray())
+                                .setRmsMap(in.createCharArray())
                                 .build();
                     }
 
@@ -670,8 +683,8 @@ public final class IonexAssistance implements Parcelable {
         @Override
         public void writeToParcel(@NonNull Parcel parcel, int flags) {
             parcel.writeLong(mEpochTimeSeconds);
-            parcel.writeFloatArray(mTecMap);
-            parcel.writeFloatArray(mRmsMap);
+            parcel.writeCharArray(mTecMap);
+            parcel.writeCharArray(mRmsMap);
         }
 
         @Override
@@ -688,8 +701,8 @@ public final class IonexAssistance implements Parcelable {
         /** Builder for {@link TecMapSnapshot}. */
         public static final class Builder {
             private long mEpochTimeSeconds;
-            private float[] mTecMap;
-            private float[] mRmsMap = new float[0];
+            private char[] mTecMap;
+            private char[] mRmsMap = new char[0];
 
             /** Sets the epoch of the TEC map, in seconds since the Unix epoch (UTC). */
             @NonNull
@@ -701,16 +714,18 @@ public final class IonexAssistance implements Parcelable {
 
             /**
              * Sets the flattened representation of a 2D geographical map of Total Electron Content
-             * values (TECU). where <strong>1 TECU = 10¹⁶ electrons/m²</strong>.
+             * values.
+             *
+             * <p>The values in this array are stored as 16-bit unsigned integers (char) with a
+             * <strong>unit of 0.1 TECU</strong> (Total Electron Content Unit). To obtain the value
+             * in TECU, divide the stored value by 10.
+             *
+             * <p>1 TECU = 10¹⁶ electrons/m².
              *
              * <p>The ionospheric delay, in meters, of a signal propagating from the zenith is given
              * by the following formula:
              *
-             * <pre>
-             * Delay = (40.3 / f²) * (VTEC * 10¹⁶)
-             * </pre>
-             *
-             * Where:
+             * <p>Where:
              *
              * <ul>
              *   <li><i>f</i> is the signal frequency in Hz.
@@ -729,7 +744,7 @@ public final class IonexAssistance implements Parcelable {
              * <p>The total number of values in the list must be equal to: <br>
              * {@code latitudeAxis.numPoints * longitudeAxis.numPoints}
              *
-             * <p>Non-available TEC values are represented as {@link java.lang.Float#NaN}.
+             * <p>Non-available TEC values are represented as {@link #UNAVAILABLE_TEC}.
              *
              * <h3>Index Calculation</h3>
              *
@@ -742,17 +757,17 @@ public final class IonexAssistance implements Parcelable {
              * </pre>
              */
             @NonNull
-            public Builder setTecMap(@NonNull float[] tecMap) {
+            public Builder setTecMap(@NonNull char[] tecMap) {
                 mTecMap = tecMap;
                 return this;
             }
 
             /**
-             * Sets the optional, flattened array of TEC Root-Mean-Square (RMS) error values in
+             * Sets the optional, flattened array of TEC Root-Mean-Square (RMS) error values in 0.1
              * TECU.
              */
             @NonNull
-            public Builder setRmsMap(@NonNull float[] rmsMap) {
+            public Builder setRmsMap(@NonNull char[] rmsMap) {
                 mRmsMap = rmsMap;
                 return this;
             }
