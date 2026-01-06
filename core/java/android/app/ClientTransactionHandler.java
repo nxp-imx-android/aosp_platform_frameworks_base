@@ -160,14 +160,35 @@ public abstract class ClientTransactionHandler {
      /** Report that activity was refreshed to server. */
     public abstract void reportRefresh(@NonNull ActivityClientRecord r);
 
-    /** Set pending activity configuration in case it will be updated by other transaction item. */
+    /**
+     * Set pending activity configuration in case it will be updated by other transaction item.
+     * This shouldn't be called once com.android.window.flags.improve_fluid_resizing_performance
+     * is enabled.
+     * @deprecated Use
+     * {@link #updatePendingActivityConfiguration(IBinder, Configuration, ActivityWindowInfo, int)}
+     * instead.
+     */
+    @Deprecated
     public abstract void updatePendingActivityConfiguration(@NonNull IBinder token,
             @NonNull Configuration overrideConfig);
 
-    /** Deliver activity (override) configuration change. */
+    /** Set pending activity configuration in case it will be updated by other transaction item. */
+    public abstract void updatePendingActivityConfiguration(@NonNull IBinder token,
+            @NonNull Configuration overrideConfig, ActivityWindowInfo info, int displayId);
+
+    /**
+     * Deliver activity (override) configuration change.
+     * This shouldn't be called once com.android.window.flags.improve_fluid_resizing_performance
+     * is enabled.
+     * @deprecated Use {@link #handleActivityConfigurationChanged(ActivityClientRecord)} instead.
+     */
+    @Deprecated
     public abstract void handleActivityConfigurationChanged(@NonNull ActivityClientRecord r,
             @NonNull Configuration overrideConfig, int displayId,
             @NonNull ActivityWindowInfo activityWindowInfo);
+
+    /** Handle activity (override) configuration change. */
+    public abstract void handleActivityConfigurationChanged(@NonNull ActivityClientRecord r);
 
     /** Deliver {@link android.window.WindowContextInfo} change. */
     public abstract void handleWindowContextInfoChanged(@NonNull IBinder clientToken,

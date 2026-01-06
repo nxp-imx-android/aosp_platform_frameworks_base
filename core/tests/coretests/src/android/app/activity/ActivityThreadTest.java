@@ -32,6 +32,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.clearInvocations;
@@ -672,6 +674,91 @@ public class ActivityThreadTest {
         // BASE_SEQ + 4. Configurations scheduled in between should be dropped.
         assertEquals(numOfConfig + 2, activity.mNumOfConfigChanges);
         assertEquals(ORIENTATION_PORTRAIT, activity.mConfig.orientation);
+    }
+
+    @Test
+    public void testHandleActivityConfigurationChanged_AppliesNewestConfigurationDirectly()
+            throws Exception {
+        assumeTrue(com.android.window.flags.Flags.improveFluidResizingPerformance());
+
+        final TestActivity activity = mActivityTestRule.launchActivity(new Intent());
+        final ActivityThread activityThread = activity.getActivityThread();
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            final Configuration config = new Configuration();
+            config.seq = BASE_SEQ;
+            config.densityDpi = 1000;
+
+            activityThread.handleActivityConfigurationChanged(getActivityClientRecord(activity),
+                    config, INVALID_DISPLAY, new ActivityWindowInfo());
+        });
+
+        final CountDownLatch transactionsScheduled = new CountDownLatch(1);
+        final CountDownLatch firstTransactionHandled = new CountDownLatch(1);
+        final CountDownLatch secondTransactionReady = new CountDownLatch(1);
+
+        // This blocks the handler thread until all the config transactions are scheduled. It is to
+        // make sure the message of BASE_SEQ + 1 is not handled too early before it can access the
+        // newest configuration (BASE_SEQ + 2).
+        activityThread.getHandler().post(() -> {
+            try {
+                if (!transactionsScheduled.await(TIMEOUT_SEC, TimeUnit.SECONDS)) {
+                    fail("Transactions must be scheduled in time.");
+                }
+            } catch (InterruptedException e) {
+                throw new IllegalStateException(e);
+            }
+        });
+
+        final IApplicationThread appThread = activityThread.getApplicationThread();
+        final int numOfConfig = activity.mNumOfConfigChanges;
+
+        // The first transaction.
+        Configuration config = new Configuration();
+        config.seq = BASE_SEQ + 1;
+        config.densityDpi = 1100;
+        appThread.scheduleTransaction(newActivityConfigTransaction(activity, config));
+
+        // This blocks the message of BASE_SEQ + 2 because the test needs to make sure if the
+        // message of BASE_SEQ + 1 is able to apply the newest configuration (BASE_SEQ + 2) alone.
+        activityThread.getHandler().post(() -> {
+            firstTransactionHandled.countDown();
+            try {
+                if (!secondTransactionReady.await(TIMEOUT_SEC, TimeUnit.SECONDS)) {
+                    fail("The tests of the first transaction must be done in time.");
+                }
+            } catch (InterruptedException e) {
+                throw new IllegalStateException(e);
+            }
+        });
+
+        // The second transaction.
+        config = new Configuration();
+        config.seq = BASE_SEQ + 2;
+        config.densityDpi = 1200;
+        appThread.scheduleTransaction(newActivityConfigTransaction(activity, config));
+
+        transactionsScheduled.countDown();
+
+        try {
+            if (!firstTransactionHandled.await(TIMEOUT_SEC, TimeUnit.SECONDS)) {
+                fail("The first transaction must be handled.");
+            }
+        } catch (InterruptedException e) {
+            throw new IllegalStateException(e);
+        }
+
+        // Makes sure the first transaction applies the newest configuration.
+        assertEquals(numOfConfig + 1, activity.mNumOfConfigChanges);
+        assertEquals(BASE_SEQ + 2, activity.mConfig.seq);
+        assertEquals(1200, activity.mConfig.densityDpi);
+
+        secondTransactionReady.countDown();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+
+        // Makes sure the second transaction wouldn't trigger configuration change again.
+        assertEquals(numOfConfig + 1, activity.mNumOfConfigChanges);
+        assertEquals(BASE_SEQ + 2, activity.mConfig.seq);
+        assertEquals(1200, activity.mConfig.densityDpi);
     }
 
     @Test
