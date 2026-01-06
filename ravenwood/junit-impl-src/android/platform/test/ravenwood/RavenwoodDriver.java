@@ -197,6 +197,9 @@ public class RavenwoodDriver {
         Log.i(TAG, "TempDir=" + RavenwoodEnvironment.getInstance().getTempDir());
         Log.i(TAG, "ArtifactsDir=" + RavenwoodEnvironment.getInstance().getArtifactsDir());
 
+        // Disable the built-in HostRuntime
+        System.setProperty("use_base_native_hostruntime", "false");
+
         // Make sure libravenwood_runtime is loaded.
         System.load(RavenwoodInternalUtils.getJniLibraryPath(RAVENWOOD_NATIVE_RUNTIME_NAME));
 

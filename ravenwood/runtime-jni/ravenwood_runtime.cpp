@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
+#include <android-base/properties.h>
+#include <android_runtime/AndroidRuntime.h>
+#include <utils/misc.h>
+#include <unicode/utypes.h>
+#include <nativehelper/ScopedUtfChars.h>
+
 #include <fcntl.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <unistd.h>
-#include <utils/misc.h>
-#include <unicode/utypes.h>
 
 #include <string>
 
@@ -86,7 +90,7 @@ static jobject makeStructStat(JNIEnv* env, const struct stat64& sb) {
 }
 
 static jobject doStat(JNIEnv* env, jstring javaPath, bool isLstat) {
-    ScopedRealUtf8Chars path(env, javaPath);
+    ScopedUtfChars path(env, javaPath);
     if (path.c_str() == NULL) {
         return NULL;
     }
@@ -155,7 +159,7 @@ static jobject Linux_stat(JNIEnv* env, jobject, jstring javaPath) {
 }
 
 static jint Linux_open(JNIEnv* env, jobject, jstring javaPath, jint flags, jint mode) {
-    ScopedRealUtf8Chars path(env, javaPath);
+    ScopedUtfChars path(env, javaPath);
     if (path.c_str() == NULL) {
         return -1;
     }
@@ -164,11 +168,11 @@ static jint Linux_open(JNIEnv* env, jobject, jstring javaPath, jint flags, jint 
 
 static void Linux_setenv(JNIEnv* env, jobject, jstring javaName, jstring javaValue,
         jboolean overwrite) {
-    ScopedRealUtf8Chars name(env, javaName);
+    ScopedUtfChars name(env, javaName);
     if (name.c_str() == NULL) {
         jniThrowNullPointerException(env);
     }
-    ScopedRealUtf8Chars value(env, javaValue);
+    ScopedUtfChars value(env, javaValue);
     if (value.c_str() == NULL) {
         jniThrowNullPointerException(env);
     }
@@ -184,15 +188,37 @@ static jint Linux_gettid(JNIEnv* env, jobject) {
     return syscall(__NR_gettid);
 }
 
-static jstring getIcuDataName(JNIEnv* env, jclass clazz) {
-    return env->NewStringUTF(U_ICUDATA_NAME);
+// ---- Initialization ----
+
+class RavenwoodRuntime : public android::AndroidRuntime {
+public:
+    RavenwoodRuntime() : AndroidRuntime(nullptr, 0) {}
+
+    void onStarted() override {
+        android::AndroidRuntime::onStarted();
+    }
+};
+
+static void initFrameworkNativeCode(JNIEnv* env, jclass, jstring javaRuntimePath) {
+    using namespace android;
+
+    ScopedUtfChars runtimePath(env, javaRuntimePath);
+
+    auto icuPath = std::string(runtimePath.c_str()) + "ravenwood-data/" U_ICUDATA_NAME ".dat";
+    base::SetProperty("ro.icu.data.path", icuPath.c_str());
+
+    Vector<String8> args;
+    RavenwoodRuntime runtime;
+
+    runtime.onVmCreated(env);
+    runtime.start("RavenwoodRuntime", args, false);
 }
 
 // ---- Registration ----
 
 extern void register_android_system_OsConstants(JNIEnv* env);
 
-static const JNINativeMethod sMethods[] =
+static const JNINativeMethod sNativeMethods[] =
 {
     { "applyFreeFunction", "(JJ)V", (void*)nApplyFreeFunction },
     { "nFcntlInt", "(III)I", (void*)nFcntlInt },
@@ -206,7 +232,11 @@ static const JNINativeMethod sMethods[] =
     { "setenv", "(Ljava/lang/String;Ljava/lang/String;Z)V", (void*)Linux_setenv },
     { "getpid", "()I", (void*)Linux_getpid },
     { "gettid", "()I", (void*)Linux_gettid },
-    { "getIcuDataName", "()Ljava/lang/String;", (void*)getIcuDataName },
+};
+
+static const JNINativeMethod sLoaderMethods[] =
+{
+    { "initFrameworkNativeCode", "(Ljava/lang/String;)V", (void*)initFrameworkNativeCode },
 };
 
 extern "C" jint JNI_OnLoad(JavaVM* vm, void* /* reserved */) {
@@ -216,10 +246,12 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* /* reserved */) {
     g_StructStat = FindGlobalClassOrDie(env, "android/system/StructStat");
     g_StructTimespecClass = FindGlobalClassOrDie(env, "android/system/StructTimespec");
 
-    jint res = jniRegisterNativeMethods(env, kRuntimeNative, sMethods, NELEM(sMethods));
-    if (res < 0) {
-        return res;
-    }
+    jint res = jniRegisterNativeMethods(env, kRuntimeNative,
+                                        sNativeMethods,
+                                        NELEM(sNativeMethods));
+    LOG_ALWAYS_FATAL_IF(res < 0, "Unable to register %s", kRuntimeNative);
+    res = jniRegisterNativeMethods(env, kNativeLoader, sLoaderMethods, NELEM(sLoaderMethods));
+    LOG_ALWAYS_FATAL_IF(res < 0, "Unable to register %s", kNativeLoader);
 
     register_android_system_OsConstants(env);
 
