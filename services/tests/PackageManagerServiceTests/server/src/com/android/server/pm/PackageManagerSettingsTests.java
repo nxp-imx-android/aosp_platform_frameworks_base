@@ -625,9 +625,43 @@ public class PackageManagerSettingsTests {
     }
 
     @Test
+    public void testReadWritePackageRestrictions_pccInodes() {
+        final Settings settingsUnderTest = makeSettings();
+        final PackageSetting ps1 = createPackageSetting(PACKAGE_NAME_1);
+
+        final long testPccCeInode = 5555L;
+        final long testPccDeInode = 9999L;
+
+        ps1.modifyUserState(0).setPccCeDataInode(testPccCeInode);
+        ps1.modifyUserState(0).setPccDeDataInode(testPccDeInode);
+        settingsUnderTest.mPackages.put(PACKAGE_NAME_1, ps1);
+
+        settingsUnderTest.writePackageRestrictionsLPr(0, /*sync=*/true);
+
+        // Clear and re-create settings to force re-read
+        Settings settingsRead = makeSettings();
+        settingsRead.mPackages.put(PACKAGE_NAME_1, createPackageSetting(PACKAGE_NAME_1));
+        settingsRead.readPackageRestrictionsLPr(0, mOrigFirstInstallTimes);
+
+        final PackageUserStateInternal readPus1 = settingsRead.mPackages.get(PACKAGE_NAME_1)
+                .readUserState(0);
+        assertThat(readPus1.getPccCeDataInode(), is(testPccCeInode));
+        assertThat(readPus1.getPccDeDataInode(), is(testPccDeInode));
+    }
+
+    @Test
     public void testPackageRestrictionsSuspendedDefault() {
         final PackageSetting defaultSetting = createPackageSetting(PACKAGE_NAME_1);
         assertThat(defaultSetting.getUserStateOrDefault(0).isSuspended(), is(false));
+    }
+
+    @Test
+    public void testPackageRestrictionsPccInodesDefault() {
+        final PackageSetting defaultSetting = createPackageSetting(PACKAGE_NAME_1);
+        PackageUserStateInternal userState = defaultSetting.getUserStateOrDefault(0);
+
+        assertThat(userState.getPccCeDataInode(), is(0L));
+        assertThat(userState.getPccDeDataInode(), is(0L));
     }
 
     @Test
@@ -1629,7 +1663,8 @@ public class PackageManagerSettingsTests {
                 .setPrimaryCpuAbi("x86_64")
                 .setSecondaryCpuAbi("x86")
                 .setLongVersionCode(INITIAL_VERSION_CODE);
-        origPkgSetting01.setUserState(0, 100, 100, 1, true, false, false, false, 0, null, false,
+        origPkgSetting01.setUserState(0, 100, 100, 101,
+                102, 1, true, false, false, false, 0, null, false,
                 false, "lastDisabledCaller", new ArraySet<>(new String[]{"enabledComponent1"}),
                 new ArraySet<>(new String[]{"disabledComponent1"}), 0, 0, "harmfulAppWarning",
                 "splashScreenTheme", 1000L, PackageManager.USER_MIN_ASPECT_RATIO_UNSET, null,
@@ -2476,6 +2511,9 @@ public class PackageManagerSettingsTests {
                 ? userState.getAllOverlayPaths().equals(oldUserState.getAllOverlayPaths())
                 : oldUserState.getOverlayPaths() == null)
                 && userState.getCeDataInode() == oldUserState.getCeDataInode()
+                && userState.getDeDataInode() == oldUserState.getDeDataInode()
+                && userState.getPccCeDataInode() == oldUserState.getPccCeDataInode()
+                && userState.getPccDeDataInode() == oldUserState.getPccDeDataInode()
                 && userState.getDistractionFlags() == oldUserState.getDistractionFlags()
                 && userState.getFirstInstallTimeMillis() == oldUserState.getFirstInstallTimeMillis()
                 && userState.getEnabledState() == oldUserState.getEnabledState()

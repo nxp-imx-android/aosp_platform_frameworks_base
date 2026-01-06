@@ -261,15 +261,28 @@ public class AppDataHelper {
 
             final long ceDataInode = createAppDataResult.ceDataInode;
             final long deDataInode = createAppDataResult.deDataInode;
+            final long pccCeDataInode = createAppDataResult.pccCeDataInode;
+            final long pccDeDataInode = createAppDataResult.pccDeDataInode;
 
-            if ((flags & StorageManager.FLAG_STORAGE_CE) != 0 && ceDataInode != -1) {
+            if ((flags & StorageManager.FLAG_STORAGE_CE) != 0) {
                 synchronized (mPm.mLock) {
-                    ps.setCeDataInode(ceDataInode, userId);
+                    if (ceDataInode != -1) {
+                        ps.setCeDataInode(ceDataInode, userId);
+                    }
+                    if (pccCeDataInode != -1) {
+                        ps.setPccCeDataInode(pccCeDataInode, userId);
+                    }
                 }
             }
-            if ((flags & StorageManager.FLAG_STORAGE_DE) != 0 && deDataInode != -1) {
+
+            if ((flags & StorageManager.FLAG_STORAGE_DE) != 0) {
                 synchronized (mPm.mLock) {
-                    ps.setDeDataInode(deDataInode, userId);
+                    if (deDataInode != -1) {
+                        ps.setDeDataInode(deDataInode, userId);
+                    }
+                    if (pccDeDataInode != -1) {
+                        ps.setPccDeDataInode(pccDeDataInode, userId);
+                    }
                 }
             }
 

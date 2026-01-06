@@ -93,6 +93,20 @@ public interface PackageUserState {
     long getDeDataInode();
 
     /**
+     * Credential encrypted /data partition PCC directory inode.
+     *
+     * @hide
+     */
+    long getPccCeDataInode();
+
+    /**
+     * Device encrypted /data partition PCC directory inode.
+     *
+     * @hide
+     */
+    long getPccDeDataInode();
+
+    /**
      * Fully qualified class names of components explicitly disabled.
      *
      * @hide
