@@ -77,7 +77,6 @@ import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Rect;
-import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
@@ -299,16 +298,10 @@ public class RootWindowContainerTests extends WindowTestsBase {
         assertEquals(1, task1.mLayerRank);
         assertEquals(2, task2.mLayerRank);
 
-        // The rank should be updated to invisible when device went to sleep.
+        // The rank should be updated to invisible when all activities in the task become invisible.
         activity1.setVisibleRequested(false);
-        activity2.setVisibleRequested(false);
-        doReturn(true).when(mAtm).isSleepingOrShuttingDownLocked();
-        doReturn(true).when(mRootWindowContainer).putTasksToSleep(anyBoolean());
-        mSupervisor.mGoingToSleepWakeLock = mock(PowerManager.WakeLock.class);
-        doReturn(false).when(mSupervisor.mGoingToSleepWakeLock).isHeld();
-        mAtm.mTaskSupervisor.finishEnteringSleep();
         assertEquals(Task.LAYER_RANK_INVISIBLE, task1.mLayerRank);
-        assertEquals(Task.LAYER_RANK_INVISIBLE, task2.mLayerRank);
+        assertFalse(activity1.app.hasActivityInVisibleTask());
     }
 
     @Test
