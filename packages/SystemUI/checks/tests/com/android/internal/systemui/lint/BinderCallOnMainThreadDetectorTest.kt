@@ -1201,6 +1201,36 @@ src/test/pkg/test.kt:6: Warning: Binder call on main thread [BinderCallOnMainThr
     }
 
     @Test
+    fun packageManagerGetApplicationInfo_error() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                        package test.pkg
+
+                        import android.content.pm.PackageManager
+
+                        fun doSomething(packageManager: PackageManager) {
+                            val info = packageManager.getApplicationInfo("package", 0)
+                        }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expect(
+                """
+src/test/pkg/test.kt:6: Warning: Binder call on main thread [BinderCallOnMainThread]
+    val info = packageManager.getApplicationInfo("package", 0)
+                              ~~~~~~~~~~~~~~~~~~
+0 errors, 1 warnings
+                """
+            )
+    }
+
+    @Test
     fun mediaControllerConstructor_error() {
         lint()
             .files(
@@ -1227,6 +1257,38 @@ src/test/pkg/test.kt:6: Warning: Binder call on main thread [BinderCallOnMainThr
 src/test/pkg/TestClass.kt:7: Warning: Binder call on main thread [BinderCallOnMainThread]
         val controller = MediaController(context, token)
                          ~~~~~~~~~~~~~~~
+0 errors, 1 warnings
+                """
+            )
+    }
+
+    @Test
+    fun mediaControllerRegisterCallback_error() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                        package test.pkg
+
+                        import android.media.session.MediaController
+
+                        class TestClass {
+                            fun unregister(controller: MediaController, callback: MediaController.Callback) {
+                                controller.registerCallback(callback)
+                            }
+                        }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expect(
+                """
+src/test/pkg/TestClass.kt:7: Warning: Binder call on main thread [BinderCallOnMainThread]
+        controller.registerCallback(callback)
+                   ~~~~~~~~~~~~~~~~
 0 errors, 1 warnings
                 """
             )
