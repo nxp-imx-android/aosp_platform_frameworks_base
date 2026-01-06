@@ -128,17 +128,19 @@ class PinnedLayerHandler(
             isSwitchingToAnotherLayer,
         )
         if (isClosePinnedRequest || isSwitchingToAnotherLayer) {
-            val targetUnpinType = resolveTargetUnpinType(request)
-            wct.merge(
-                pinnedLayerController.unpinTask(transition, triggerTask, targetUnpinType),
-                true,
-            )
-
+            // Reparenting must happen first because WCT operations order matters, otherwise AoT
+            // is not cleared.
             moveToAnotherLayerIfNeeded(
                 transition,
                 triggerTask,
                 windowingLayerChange,
                 wct,
+            )
+
+            val targetUnpinType = resolveTargetUnpinType(request)
+            wct.merge(
+                pinnedLayerController.unpinTask(transition, triggerTask, targetUnpinType),
+                true,
             )
         }
 

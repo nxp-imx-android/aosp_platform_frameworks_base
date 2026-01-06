@@ -122,6 +122,12 @@ class PinnedLayerController(
         if (!isPinningSupported(task)) {
             return null
         }
+        logV(
+            "pinTask: Added pending pin transition=%s taskId=%d, callback=%s",
+            transition,
+            task.taskId,
+            remoteCallback,
+        )
         return WindowContainerTransaction().apply {
             val transitions = activeTransitions.getOrPut(transition) { mutableSetOf() }
             transitions += ActiveTransition.Pin(task, remoteCallback)
@@ -148,6 +154,12 @@ class PinnedLayerController(
         task: TaskInfo,
         unpinStrategy: UnpinStrategy,
     ): WindowContainerTransaction {
+        logV(
+            "unpinTask: Added pending unpin transition=%s taskId=%d, unpinStrategy=%s",
+            transition,
+            task.taskId,
+            unpinStrategy,
+        )
         val transitions = activeTransitions.getOrPut(transition) { mutableSetOf() }
         transitions += ActiveTransition.Unpin(task)
 
@@ -171,6 +183,7 @@ class PinnedLayerController(
             return false
         }
 
+        logV("closeTask: starting unpin transition task=%s", task)
         val wct = WindowContainerTransaction()
         wct.removeTask(task.token)
         val transition = transitions.startTransition(TRANSIT_CLOSE, wct, /* handler= */ null)
@@ -255,6 +268,7 @@ class PinnedLayerController(
             return
         }
 
+        logV("requestFocus: starting focus transition task=%s", task)
         val wct = WindowContainerTransaction()
         wct.reorder(task.token, /* onTop= */ true, /* includingParents= */ true)
         transitions.startTransition(TRANSIT_CHANGE, wct, null)
@@ -379,6 +393,7 @@ class PinnedLayerController(
         // separately.
         val transitions = activeTransitions[transition] ?: return
         transitions.forEach { transition ->
+            logV("onTransitionReady: Pin layer transition ready: %s", transition)
             when (transition) {
                 is ActiveTransition.Pin -> {
                     pin(transition.taskInfo)
