@@ -91,7 +91,10 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"無法儲存螢幕截圖"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"應用程式或你的機構不允許擷取螢幕畫面"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"你的 IT 管理員已禁止擷取螢幕截圖"</string>
-    <string name="screenshot_copy_description" msgid="2857172429942249976">"將螢幕截圖複製到剪貼簿"</string>
+    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
+    <skip />
+    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
+    <skip />
     <string name="screenshot_edit_label" msgid="8754981973544133050">"編輯"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"編輯螢幕截圖按鈕"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"分享"</string>
@@ -149,6 +152,7 @@
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"單一應用程式 (開啟應用程式以選擇)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"裝置音訊錄音"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"麥克風錄音"</string>
+    <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"錄影時無法變更音訊設定"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"顯示自拍鏡頭"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"顯示觸控回應"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"選擇要錄影的應用程式"</string>
@@ -936,8 +940,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"完成"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"套用"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"停用通知功能"</string>
-    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
-    <skip />
+    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"裝置"</string>
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"手機"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"平板電腦"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"手提電腦"</string>

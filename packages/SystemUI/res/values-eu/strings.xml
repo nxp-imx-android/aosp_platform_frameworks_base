@@ -91,7 +91,10 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"Ezin da gorde pantaila-argazkia"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Aplikazioak edo erakundeak ez du onartzen pantaila-argazkiak ateratzea"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"IKT saileko administratzaileak blokeatu egin dizu pantaila-argazkiak ateratzeko aukera"</string>
-    <string name="screenshot_copy_description" msgid="2857172429942249976">"Kopiatu pantaila-argazkia arbelean"</string>
+    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
+    <skip />
+    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
+    <skip />
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Editatu"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"Pantaila-argazkia editatzeko botoia"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Partekatu"</string>
@@ -149,6 +152,7 @@
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Aplikazio bakarra (ireki bat aukeratzeko)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Grabatu gailuko audioa"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Grabatu mikrofono bidezko audioa"</string>
+    <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"Ezin dira aldatu audio-ezarpenak grabatu bitartean"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Erakutsi aurreko kamera"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Erakutsi ukitutakoa"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Aukeratu grabatzeko aplikazio bat"</string>
@@ -897,8 +901,7 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"Satelitea, konexio ahula"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"Satelitea, konexio ona"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Satelitea, konexioa erabilgarri"</string>
-    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
-    <skip />
+    <string name="accessibility_status_bar_satellite_symbol" msgid="3840194796890095832">"Satelitea"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"Satelite bidezko SOS komunikazioa"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Larrialdi-deiak edo SOS komunikazioa soilik"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"Satelite bidezko sareak"</string>
@@ -937,8 +940,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Eginda"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Aplikatu"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Desaktibatu"</string>
-    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
-    <skip />
+    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"gailua"</string>
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"telefonoa"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"tableta"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"ordenagailu eramangarria"</string>
@@ -1527,8 +1529,7 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Gehitu lauza Ezarpen bizkorrak menuan"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Formatu txikia"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Formatu handia"</string>
-    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
-    <skip />
+    <string name="qs_tile_satellite_label" msgid="2839625529776739941">"SAT"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Hautatu erabiltzaile bat"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# aplikazio aktibo dago}other{# aplikazio aktibo daude}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Informazio berria"</string>

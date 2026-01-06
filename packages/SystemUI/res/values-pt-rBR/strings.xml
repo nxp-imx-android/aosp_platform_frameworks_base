@@ -91,7 +91,10 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"Não foi possível salvar a captura de tela"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"O app ou a organização não permitem capturas de tela"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"As capturas de tela foram bloqueadas pelo administrador de TI"</string>
-    <string name="screenshot_copy_description" msgid="2857172429942249976">"Copiar captura de tela para a área de transferência"</string>
+    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
+    <skip />
+    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
+    <skip />
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Editar"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"Botão \"Editar captura de tela\""</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Compartilhar"</string>
@@ -149,6 +152,7 @@
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Apenas um app (abra o escolhido)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Gravar áudio do dispositivo"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Gravar microfone"</string>
+    <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"Não é possível mudar as configurações de áudio durante a gravação"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Mostrar câmera de selfie"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Mostrar toques"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Escolha um app para gravar"</string>
@@ -897,8 +901,7 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"Satélite, conexão ruim"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"Satélite, conexão boa"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Satélite, conexão disponível"</string>
-    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
-    <skip />
+    <string name="accessibility_status_bar_satellite_symbol" msgid="3840194796890095832">"Satélite"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"SOS via satélite"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Apenas chamadas de emergência ou SOS"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"Redes de satélite"</string>
@@ -937,8 +940,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Ok"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Aplicar"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Desativar"</string>
-    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
-    <skip />
+    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"dispositivo"</string>
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"celular"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"tablet"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"laptop"</string>
@@ -1527,8 +1529,7 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Adicionar bloco às Configurações Rápidas"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Formato pequeno"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Formato grande"</string>
-    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
-    <skip />
+    <string name="qs_tile_satellite_label" msgid="2839625529776739941">"SATÉLITE"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Selecionar usuário"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# app está ativo}one{# apps está ativo}many{# de apps estão ativos}other{# apps estão ativos}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Nova informação"</string>

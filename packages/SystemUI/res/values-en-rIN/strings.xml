@@ -91,7 +91,10 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"Can\'t save screenshot"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Taking screenshots isn\'t allowed by the app or your organisation"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"Taking screenshots is blocked by your IT admin"</string>
-    <string name="screenshot_copy_description" msgid="2857172429942249976">"Copy screenshot to clipboard"</string>
+    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
+    <skip />
+    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
+    <skip />
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Edit"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"Edit screenshot button"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Share"</string>
@@ -149,6 +152,7 @@
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Single app (open an app to choose)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Record device audio"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Record microphone"</string>
+    <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"Can\'t change audio settings while recording"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Show selfie camera"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Show touches"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Choose an app to record"</string>
@@ -936,8 +940,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Done"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Apply"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Turn off"</string>
-    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
-    <skip />
+    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"device"</string>
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"phone"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"tablet"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"laptop"</string>
@@ -1703,7 +1706,7 @@
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Go back"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Swipe left or right using three fingers on your touchpad"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"Nice!"</string>
-    <string name="touchpad_back_gesture_success_body" msgid="2324724953720741719">"You completed the go back gesture."</string>
+    <string name="touchpad_back_gesture_success_body" msgid="2324724953720741719">"You completed the go-back gesture."</string>
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"To go back using your touchpad, swipe left or right using three fingers"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Go home"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Swipe up with three fingers on your touchpad"</string>

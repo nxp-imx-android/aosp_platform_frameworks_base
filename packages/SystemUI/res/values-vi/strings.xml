@@ -91,7 +91,10 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"Không thể lưu ảnh chụp màn hình"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Ứng dụng hoặc tổ chức của bạn không cho phép chụp ảnh màn hình"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"Quản trị viên CNTT chặn tính năng chụp ảnh màn hình"</string>
-    <string name="screenshot_copy_description" msgid="2857172429942249976">"Sao chép ảnh chụp màn hình vào bảng nhớ tạm"</string>
+    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
+    <skip />
+    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
+    <skip />
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Chỉnh sửa"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"Nút Chỉnh sửa ảnh chụp màn hình"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Chia sẻ"</string>
@@ -149,6 +152,7 @@
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Một ứng dụng (Mở ứng dụng để chọn)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Ghi âm thanh trên thiết bị"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Ghi âm"</string>
+    <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"Không thể thay đổi chế độ cài đặt âm thanh trong khi ghi âm"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Hiện camera trước"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Hiện số lần chạm"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Chọn một ứng dụng để ghi"</string>
@@ -936,8 +940,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Xong"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Áp dụng"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Tắt"</string>
-    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
-    <skip />
+    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"thiết bị"</string>
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"điện thoại"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"máy tính bảng"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"máy tính xách tay"</string>
@@ -1314,7 +1317,7 @@
     <string name="magnification_close_settings_click_label" msgid="4642477260651704517">"Đóng bảng cài đặt tính năng phóng to"</string>
     <string name="magnification_exit_edit_mode_click_label" msgid="1664818325144887117">"Thoát chế độ chỉnh sửa"</string>
     <string name="magnification_drag_corner_to_resize" msgid="1249766311052418130">"Kéo góc để thay đổi kích thước"</string>
-    <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"Cho phép cuộn chéo"</string>
+    <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"Cho phép di chuyển theo đường chéo"</string>
     <string name="accessibility_magnify_typing" msgid="4450037184548427852">"Di chuyển theo khi nhập"</string>
     <string name="accessibility_magnify_keyboard" msgid="3083531635742744841">"Phóng to bàn phím"</string>
     <string name="accessibility_resize" msgid="5733759136600611551">"Đổi kích thước"</string>

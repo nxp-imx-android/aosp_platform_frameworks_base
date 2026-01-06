@@ -405,5 +405,8 @@ public class SystemWindows {
         public void dumpWindow(ParcelFileDescriptor pfd) {
 
         }
+
+        @Override
+        public void requestHardwareRendererOutputDisabled(boolean disabled) {}
     }
 }

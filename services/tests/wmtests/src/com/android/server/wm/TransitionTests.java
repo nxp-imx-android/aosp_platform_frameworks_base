@@ -1852,10 +1852,17 @@ public class TransitionTests extends WindowTestsBase {
         // to complete pause.
         assertEquals(recent, taskRecent.getResumedActivity());
         assertFalse(taskRecent.startPausing(false /* uiSleeping */, appB /* resuming */, "test"));
-        // ActivityRecord#makeInvisible will add the invisible recent to the stopping list.
-        // So when the transition finished, the recent can still be notified to pause and stop.
+        // When the transition finished, the recent can still be notified to pause and stop.
+        controller.flushRunningTransitions();
         mDisplayContent.ensureActivitiesVisible(null /* starting */, true /* notifyClients */);
-        assertTrue(mSupervisor.mStoppingActivities.contains(recent));
+        if (com.android.window.flags.Flags.pauseInvisibleActivity()) {
+            // The invisible recent is immediately paused
+            assertEquals(null, taskRecent.getResumedActivity());
+            assertEquals(ActivityRecord.State.PAUSING, recent.getState());
+        } else {
+            // ActivityRecord#makeInvisible will add the invisible recent to the stopping list.
+            assertTrue(mSupervisor.mStoppingActivities.contains(recent));
+        }
     }
 
     @Test
@@ -1908,9 +1915,7 @@ public class TransitionTests extends WindowTestsBase {
         // No need to wait for the activity in transient hide task.
         assertEquals(WindowContainer.SYNC_STATE_NONE, app.mSyncState);
         // The recents transition can play without waiting for the redraw to complete.
-        if (com.android.window.flags.Flags.skipAddRecentsToSyncSet()) {
-            assertEquals(WindowContainer.SYNC_STATE_NONE, recent.mSyncState);
-        }
+        assertEquals(WindowContainer.SYNC_STATE_NONE, recent.mSyncState);
     }
 
     @Test

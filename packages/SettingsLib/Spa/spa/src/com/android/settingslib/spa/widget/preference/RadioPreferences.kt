@@ -17,6 +17,7 @@
 package com.android.settingslib.spa.widget.preference
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,7 +28,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.runtime.Composable
@@ -36,7 +36,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
@@ -96,8 +95,8 @@ fun Radio2(
                     else SettingsDimension.itemDividerHeight
                 )
         )
-        if (option.icon != null) {
-            RadioPreferenceIcon(option.icon)
+        option.icon?.let { icon ->
+            RadioPreferenceIcon(icon = icon)
             Spacer(
                 modifier =
                     Modifier.width(
@@ -118,13 +117,13 @@ fun Radio2(
 }
 
 @Composable
-private fun RadioPreferenceIcon(imageVector: ImageVector) {
-    Icon(
-        imageVector = imageVector,
-        contentDescription = null,
+private fun RadioPreferenceIcon(icon: @Composable () -> Unit) {
+    Box(
         modifier = Modifier.size(SettingsDimension.itemIconContainerSizeSmall),
-        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
+        contentAlignment = Alignment.Center,
+    ) {
+        icon()
+    }
 }
 
 @Preview

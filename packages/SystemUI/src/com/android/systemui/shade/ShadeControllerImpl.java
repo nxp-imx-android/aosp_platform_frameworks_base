@@ -19,7 +19,6 @@ package com.android.systemui.shade;
 import android.content.ComponentCallbacks2;
 import android.os.Looper;
 import android.util.Log;
-import android.view.Display;
 import android.view.MotionEvent;
 import android.view.ViewTreeObserver;
 import android.view.WindowManagerGlobal;
@@ -78,8 +77,6 @@ public final class ShadeControllerImpl extends BaseShadeControllerImpl {
 
     private boolean mExpandedVisible;
     private boolean mLockscreenOrShadeVisible;
-    private int mLastVisibleDisplayId = Display.DEFAULT_DISPLAY;
-
     private ShadeVisibilityListener mShadeVisibilityListener;
 
     @Inject
@@ -297,7 +294,6 @@ public final class ShadeControllerImpl extends BaseShadeControllerImpl {
         }
 
         mExpandedVisible = true;
-        mLastVisibleDisplayId = getDisplayId();
 
         // Expand the window to encompass the full screen in anticipation of the drag.
         // It's only possible to do atomically because the status bar is at the top of the screen!
@@ -324,12 +320,8 @@ public final class ShadeControllerImpl extends BaseShadeControllerImpl {
 
         // Update the visibility of notification shade and status bar window.
         mNotificationShadeWindowController.setPanelVisible(false);
-        // We use the display ID where the shade was last visible for cleanup.
-        // This is crucial for multi-display scenarios, as the current display ID (from
-        // getDisplayId()) might already reflect the *new* display the shade is moving to, while the
-        // cleanup needs to happen on the *old* display it's leaving.
         StatusBarWindowController statusBarWindowController =
-                mStatusBarWindowControllerStore.forDisplay(mLastVisibleDisplayId);
+                mStatusBarWindowControllerStore.forDisplay(getDisplayId());
         if (statusBarWindowController != null) {
             statusBarWindowController.setForceStatusBarVisible(
                     /* forceStatusBarVisible= */ false,

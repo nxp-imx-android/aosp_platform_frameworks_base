@@ -91,7 +91,10 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"Nije moguće spremiti snimku zaslona"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Aplikacija ili vaša organizacija ne dopuštaju snimanje zaslona"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"Izradu snimki zaslona blokirao je IT administrator"</string>
-    <string name="screenshot_copy_description" msgid="2857172429942249976">"Kopirajte snimku zaslona u međuspremnik"</string>
+    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
+    <skip />
+    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
+    <skip />
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Uredi"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"Gumb za uređivanje snimke zaslona"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Podijelite"</string>
@@ -149,6 +152,7 @@
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Jedna aplikacija (otvorite za odabir)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Snimanje zvuka uređaja"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Snimanje mikrofona"</string>
+    <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"Nije moguće mijenjati postavke zvuka tijekom snimanja"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Prikaži selfie kameru"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Prikaži dodire"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Odaberite aplikaciju za snimanje"</string>
@@ -897,8 +901,7 @@
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"Satelit, slaba veza"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"Satelit, dobra veza"</string>
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Satelit, veza je dostupna"</string>
-    <!-- no translation found for accessibility_status_bar_satellite_symbol (3840194796890095832) -->
-    <skip />
+    <string name="accessibility_status_bar_satellite_symbol" msgid="3840194796890095832">"Satelit"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"SOS putem satelita"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Samo hitni pozivi ili SOS"</string>
     <string name="satellite_network_title_text" msgid="1483004114819442028">"Satelitske mreže"</string>
@@ -937,8 +940,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Gotovo"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Primijeni"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Isključi"</string>
-    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
-    <skip />
+    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"uređaj"</string>
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"telefon"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"tablet"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"prijenosno računalo"</string>
@@ -1527,8 +1529,7 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Dodajte pločicu u Brze postavke"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Mali format"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Veliki format"</string>
-    <!-- no translation found for qs_tile_satellite_label (2839625529776739941) -->
-    <skip />
+    <string name="qs_tile_satellite_label" msgid="2839625529776739941">"SAT"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Odaberite korisnika"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# aplikacija je aktivna}one{# aplikacija je aktivna}few{# aplikacije su aktivne}other{# aplikacija je aktivno}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Nove informacije"</string>

@@ -46,6 +46,7 @@ import android.annotation.Nullable;
 import android.app.ActivityOptions;
 import android.app.KeyguardManager;
 import android.app.TaskInfo;
+import android.app.admin.DevicePolicyIdentifiers;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.content.ComponentName;
 import android.content.Context;
@@ -361,8 +362,18 @@ class ActivityStartInterceptor {
         if (devicePolicyManager == null) {
             return false;
         }
-        mIntent = devicePolicyManager.createShowAdminSupportIntent(mUserId, true);
-        mIntent.putExtra(EXTRA_RESTRICTION, POLICY_SUSPEND_PACKAGES);
+        if (android.app.admin.flags.Flags.policyTransparencyRefactorEnabled()) {
+            Intent adminSupportIntent = devicePolicyManager.createShowAdminSupportIntentForPolicy(
+                    mUserId, DevicePolicyIdentifiers.PACKAGES_SUSPENDED_POLICY);
+            if (adminSupportIntent == null) {
+                return false;
+            }
+            mIntent = adminSupportIntent;
+        } else {
+            mIntent = devicePolicyManager.createShowAdminSupportIntent(mUserId, true);
+            mIntent.putExtra(EXTRA_RESTRICTION, POLICY_SUSPEND_PACKAGES);
+        }
+
 
         mCallingPid = mRealCallingPid;
         mCallingUid = mRealCallingUid;

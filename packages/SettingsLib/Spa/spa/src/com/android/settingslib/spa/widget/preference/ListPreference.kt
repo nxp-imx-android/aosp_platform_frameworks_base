@@ -36,7 +36,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import com.android.settingslib.spa.framework.theme.SettingsDimension
 import com.android.settingslib.spa.widget.dialog.SettingsDialog
@@ -47,7 +46,7 @@ data class ListPreferenceOption(
     val id: Int,
     val text: String,
     val summary: String = String(),
-    val icon: ImageVector? = null
+    val icon: (@Composable () -> Unit)? = null,
 )
 
 /**

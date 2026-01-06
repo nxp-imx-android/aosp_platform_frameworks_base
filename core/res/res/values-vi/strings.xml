@@ -2337,7 +2337,7 @@
     <string name="accessibility_autoclick_scroll_left" msgid="7469540382570551732">"Di chuyển sang trái"</string>
     <string name="accessibility_autoclick_scroll_right" msgid="8395851755038161912">"Di chuyển sang phải"</string>
     <string name="accessibility_autoclick_scroll_exit" msgid="8766731873098339511">"Thoát khỏi chế độ di chuyển"</string>
-    <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"Cuộn bảng điều khiển"</string>
+    <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"Bảng điều khiển cuộn"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"Đã đưa <xliff:g id="PACKAGE_NAME">%1$s</xliff:g> vào bộ chứa BỊ HẠN CHẾ"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>
     <string name="conversation_single_line_image_placeholder" msgid="6983271082911936900">"đã gửi hình ảnh"</string>

@@ -2376,19 +2376,16 @@ class ActivityStarter {
                 final int launchingFromDisplayId =
                         mSourceRecord != null ? mSourceRecord.getDisplayId() : DEFAULT_DISPLAY;
                 final boolean isResultExpected = r.resultTo != null;
-                Supplier<IntentSender> intentSender = null;
-                if (android.companion.virtualdevice.flags.Flags.activityControlApi()) {
-                    intentSender = () -> {
-                        IIntentSender target = mService.getIntentSenderLocked(
-                                ActivityManager.INTENT_SENDER_ACTIVITY, mRequest.callingPackage,
-                                mRequest.callingFeatureId, mCallingUid, r.mUserId,
-                                /* token= */ null, /* resultCode= */ null, /* requestCode= */ 0,
-                                new Intent[]{ mIntent }, new String[]{ r.resolvedType },
-                                FLAG_CANCEL_CURRENT | FLAG_ONE_SHOT,
-                                mOptions == null ? null : mOptions.toBundle());
-                        return new IntentSender(target);
-                    };
-                }
+                final Supplier<IntentSender> intentSender = () -> {
+                    IIntentSender target = mService.getIntentSenderLocked(
+                            ActivityManager.INTENT_SENDER_ACTIVITY, mRequest.callingPackage,
+                            mRequest.callingFeatureId, mCallingUid, r.mUserId,
+                            /* token= */ null, /* resultCode= */ null, /* requestCode= */ 0,
+                            new Intent[]{ mIntent }, new String[]{ r.resolvedType },
+                            FLAG_CANCEL_CURRENT | FLAG_ONE_SHOT,
+                            mOptions == null ? null : mOptions.toBundle());
+                    return new IntentSender(target);
+                };
                 if (!displayContent.mDwpcHelper
                         .canActivityBeLaunched(r.info, r.intent, targetWindowingMode,
                                 launchingFromDisplayId, newTask, isResultExpected, intentSender)) {

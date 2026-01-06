@@ -77,12 +77,10 @@ constructor(
                 letterboxTaskInfoRepository.delete(taskInfo.taskId)
             }
         }
-        if (Flags.appCompatRefactoringRoundedCorners()) {
-            letterboxTaskInfoRepository.update(
-                key = taskInfo.taskId,
-                updateItem = { item -> item.copy(configuration = taskInfo.configuration) },
-            )
-        }
+        letterboxTaskInfoRepository.update(
+            key = taskInfo.taskId,
+            updateItem = { item -> item.copy(configuration = taskInfo.configuration) },
+        )
     }
 
     override fun onTaskVanished(taskInfo: RunningTaskInfo) {

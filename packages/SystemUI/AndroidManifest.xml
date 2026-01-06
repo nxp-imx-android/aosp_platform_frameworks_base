@@ -869,6 +869,7 @@
 
         <service
             android:name=".keyguard.KeyguardService"
+            android:permission="android.permission.CONTROL_KEYGUARD"
             android:exported="true" />
 
         <service

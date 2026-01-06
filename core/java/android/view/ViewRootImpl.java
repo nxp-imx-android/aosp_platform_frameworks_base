@@ -1336,6 +1336,10 @@ public final class ViewRootImpl implements ViewParent,
 
     private final boolean mIsSubscribeGranularDisplayEventsEnabled;
 
+    // Whether the output of the HardwareRenderer associated with this window should be disabled
+    // using the HardwareRenderer#setRendererDrawingEnabled() API.
+    private boolean mIsHardwareRendererOutputDisabled = false;
+
     public ViewRootImpl(Context context, Display display) {
         this(context, display, WindowManagerGlobal.getWindowSession(), new WindowLayout());
     }
@@ -1735,12 +1739,16 @@ public final class ViewRootImpl implements ViewParent,
                 final Rect displayCutoutSafe = mTempRect;
                 state.getDisplayCutoutSafe(displayCutoutSafe);
                 final WindowConfiguration winConfig = getCompatWindowConfiguration();
+                final Rect bounds = winConfig.getBounds();
                 mWindowLayout.computeFrames(mWindowAttributes, state,
-                        displayCutoutSafe, winConfig.getBounds(), winConfig.getWindowingMode(),
+                        displayCutoutSafe, bounds, winConfig.getWindowingMode(),
                         UNSPECIFIED_LENGTH, UNSPECIFIED_LENGTH,
                         mInsetsController.getRequestedVisibleTypes(), 1f /* compactScale */,
                         mTmpFrames);
                 setFrame(mTmpFrames.frame, true /* withinRelayout */);
+                if (com.android.window.flags.Flags.relativeInsets()) {
+                    mInsetsController.onBoundsChanged(bounds);
+                }
                 registerBackCallbackOnWindow();
                 if (DEBUG_LAYOUT) Log.v(mTag, "Added window " + mWindow);
                 if (res < WindowManagerGlobal.ADD_OKAY) {
@@ -2109,6 +2117,9 @@ public final class ViewRootImpl implements ViewParent,
                 final ThreadedRenderer renderer = ThreadedRenderer.create(mContext, translucent,
                         attrs.getTitle().toString(), mIpcRenderingEnabled);
                 mAttachInfo.mThreadedRenderer = renderer;
+                if (mIsHardwareRendererOutputDisabled) {
+                    renderer.setRendererDrawingEnabled(false);
+                }
                 renderer.setSurfaceControl(mSurfaceControl, mBlastBufferQueue);
                 updateColorModeIfNeeded(attrs.getColorMode(), attrs.getDesiredHdrHeadroom());
                 mHdrRenderState.forceUpdateHdrSdrRatio();
@@ -7032,6 +7043,7 @@ public final class ViewRootImpl implements ViewParent,
     private static final int MSG_FRAME_RATE_SETTING = 42;
     private static final int MSG_SURFACE_REPLACED_TIMEOUT = 43;
     private static final int MSG_INITIAL_TOUCH_BOOST_TIMEOUT = 44;
+    private static final int MSG_REQUEST_HARDWARE_RENDERER_OUTPUT_DISABLED = 45;
 
     final class ViewRootHandler extends Handler {
         @Override
@@ -7107,6 +7119,8 @@ public final class ViewRootImpl implements ViewParent,
                     return "MSG_SURFACE_REPLACED_TIMEOUT";
                 case MSG_INITIAL_TOUCH_BOOST_TIMEOUT:
                     return "MSG_INITIAL_TOUCH_BOOST_TIMEOUT";
+                case MSG_REQUEST_HARDWARE_RENDERER_OUTPUT_DISABLED:
+                    return "MSG_REQUEST_HARDWARE_RENDERER_OUTPUT_DISABLED";
             }
             return super.getMessageName(message);
         }
@@ -7417,6 +7431,21 @@ public final class ViewRootImpl implements ViewParent,
                 case MSG_SURFACE_REPLACED_TIMEOUT:
                     mSurfaceReplaced = false;
                     break;
+                case MSG_REQUEST_HARDWARE_RENDERER_OUTPUT_DISABLED: {
+                    final boolean disabled = msg.arg1 != 0;
+                    if (disabled && mIsHardwareRendererOutputDisabled) {
+                        break;
+                    }
+                    mIsHardwareRendererOutputDisabled = disabled;
+                    if (mAttachInfo.mThreadedRenderer != null) {
+                        mAttachInfo.mThreadedRenderer.setRendererDrawingEnabled(!disabled);
+                        if (!disabled) {
+                            invalidate();
+                            mAttachInfo.mThreadedRenderer.invalidateRoot();
+                        }
+                    }
+                    break;
+                }
             }
         }
     }
@@ -12399,6 +12428,15 @@ public final class ViewRootImpl implements ViewParent,
                     StrictMode.setThreadPolicy(oldPolicy);
                 }
             });
+        }
+
+        @Override
+        public void requestHardwareRendererOutputDisabled(boolean disabled) {
+            final ViewRootImpl viewAncestor = mViewAncestor.get();
+            if (viewAncestor != null) {
+                viewAncestor.mHandler.obtainMessage(MSG_REQUEST_HARDWARE_RENDERER_OUTPUT_DISABLED,
+                        /* arg1 */ disabled ? 1 : 0, /* arg2 */ 0).sendToTarget();
+            }
         }
     }
 

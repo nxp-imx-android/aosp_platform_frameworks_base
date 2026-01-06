@@ -91,7 +91,10 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"无法保存屏幕截图"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"此应用或您所在的组织不允许截屏"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"您的 IT 管理员已禁止截取屏幕截图"</string>
-    <string name="screenshot_copy_description" msgid="2857172429942249976">"将屏幕截图复制到剪贴板"</string>
+    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
+    <skip />
+    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
+    <skip />
     <string name="screenshot_edit_label" msgid="8754981973544133050">"编辑"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"“修改屏幕截图”按钮"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"分享"</string>
@@ -149,6 +152,7 @@
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"单个应用（打开应用即可选择）"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"录制设备音频"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"录制麦克风音频"</string>
+    <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"录制时无法更改音频设置"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"显示自拍摄像头"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"显示触摸操作"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"选择要录制的应用"</string>
@@ -373,7 +377,7 @@
     <string name="accessibility_camera_and_microphone_in_use" msgid="1250516397875447442">"摄像头和麦克风正在使用中"</string>
     <string name="data_usage_disabled_dialog_mobile_title" msgid="2286843518689837719">"已暂停使用移动数据网络"</string>
     <string name="data_usage_disabled_dialog_title" msgid="9131615296036724838">"数据网络已暂停使用"</string>
-    <string name="data_usage_disabled_dialog" msgid="7933201635215099780">"您的数据流量消耗已达到所设置的上限，因此已停用移动数据网络。\n\n如果您要继续使用移动数据网络，则可能需要支付相应的流量费用。"</string>
+    <string name="data_usage_disabled_dialog" msgid="7933201635215099780">"您的流量用量已达到设置的上限，因此系统已停用移动数据网络。\n\n如果您继续使用移动数据网络，则可能需要支付相应的流量使用费用。"</string>
     <string name="data_usage_disabled_dialog_enable" msgid="2796648546086408937">"恢复"</string>
     <string name="accessibility_location_active" msgid="2845747916764660369">"应用发出了有效位置信息请求"</string>
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"传感器已关闭"</string>
@@ -936,8 +940,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"完成"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"应用"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"关闭通知功能"</string>
-    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
-    <skip />
+    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"设备"</string>
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"手机"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"平板电脑"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"笔记本电脑"</string>

@@ -621,7 +621,7 @@
     <string name="media_transfer_this_device_name_tv" msgid="8508713779441163887">"TV ini"</string>
     <string name="media_transfer_dock_speaker_device_name" msgid="2856219597113881950">"Pembesar suara dok"</string>
     <string name="media_transfer_external_device_name" msgid="2588672258721846418">"Peranti Luar"</string>
-    <string name="media_transfer_default_device_name" msgid="4315604017399871828">"Peranti yang disambungkan"</string>
+    <string name="media_transfer_default_device_name" msgid="4315604017399871828">"Peranti tersambung"</string>
     <string name="media_transfer_this_phone" msgid="7194341457812151531">"Telefon ini"</string>
     <string name="media_transfer_digital_line_name" msgid="312091711951124301">"S/PDIF"</string>
     <string name="media_transfer_analog_line_name" msgid="1841163866716302104">"Analog"</string>

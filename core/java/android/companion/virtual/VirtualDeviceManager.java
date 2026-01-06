@@ -981,7 +981,6 @@ public final class VirtualDeviceManager {
          * @see #removeActivityPolicyExemption(ActivityPolicyExemption)
          * @see #setDevicePolicy
          */
-        @FlaggedApi(Flags.FLAG_ACTIVITY_CONTROL_API)
         public void addActivityPolicyExemption(@NonNull ActivityPolicyExemption exemption) {
             mVirtualDeviceInternal.addActivityPolicyExemption(Objects.requireNonNull(exemption));
         }
@@ -996,7 +995,6 @@ public final class VirtualDeviceManager {
          * @see #addActivityPolicyExemption(ActivityPolicyExemption)
          * @see #setDevicePolicy
          */
-        @FlaggedApi(Flags.FLAG_ACTIVITY_CONTROL_API)
         public void removeActivityPolicyExemption(@NonNull ActivityPolicyExemption exemption) {
             mVirtualDeviceInternal.removeActivityPolicyExemption(Objects.requireNonNull(exemption));
         }
@@ -1018,7 +1016,6 @@ public final class VirtualDeviceManager {
          * @see VirtualDeviceParams#POLICY_TYPE_RECENTS
          * @see VirtualDeviceParams#POLICY_TYPE_ACTIVITY
          */
-        @FlaggedApi(Flags.FLAG_ACTIVITY_CONTROL_API)
         public void setDevicePolicy(
                 @VirtualDeviceParams.DynamicDisplayPolicyType int policyType,
                 @VirtualDeviceParams.DevicePolicy int devicePolicy,
@@ -1457,7 +1454,6 @@ public final class VirtualDeviceManager {
          * @see VirtualDeviceParams#POLICY_TYPE_ACTIVITY
          * @see VirtualDevice#addActivityPolicyExemption(ActivityPolicyExemption)
          */
-        @FlaggedApi(Flags.FLAG_ACTIVITY_CONTROL_API)
         default void onActivityLaunchBlocked(int displayId, @NonNull ComponentName componentName,
                 @NonNull UserHandle user, @Nullable IntentSender intentSender) {}
 
@@ -1473,7 +1469,6 @@ public final class VirtualDeviceManager {
          * @see Display#FLAG_SECURE
          * @see WindowManager.LayoutParams#FLAG_SECURE
          */
-        @FlaggedApi(Flags.FLAG_ACTIVITY_CONTROL_API)
         default void onSecureWindowShown(int displayId, @NonNull ComponentName componentName,
                 @NonNull UserHandle user) {}
 
@@ -1489,7 +1484,6 @@ public final class VirtualDeviceManager {
          * @see Display#FLAG_SECURE
          * @see WindowManager.LayoutParams#FLAG_SECURE
          */
-        @FlaggedApi(Flags.FLAG_ACTIVITY_CONTROL_API)
         default void onSecureWindowHidden(int displayId) {}
 
         /**

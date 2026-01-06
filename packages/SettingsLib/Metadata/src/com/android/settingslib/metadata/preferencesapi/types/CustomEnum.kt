@@ -16,10 +16,11 @@
 
 package com.android.settingslib.metadata.preferencesapi.types
 
+import android.content.Context
 import kotlin.reflect.KClass
 
 /** An entry from the enum. */
-class CustomEnum<T, E>(enumClass: KClass<E>) : ApiType<E> where E : Enum<E>, E : EnumApi<T> {
+class CustomEnum<T, E>(enumClass: KClass<E>) : FiniteOptionsType<E> where E : Enum<E>, E : EnumApi<T> {
 
     @Suppress("UNCHECKED_CAST")
     private val entries: Array<E> = enumClass.java.enumConstants ?: (emptyArray<Any>() as Array<E>)
@@ -31,6 +32,10 @@ class CustomEnum<T, E>(enumClass: KClass<E>) : ApiType<E> where E : Enum<E>, E :
 
     /** Returns all entries. */
     fun getEntries(): List<E> = entries.toList()
+
+    override fun getOptions(context: Context) = entries.map {
+        it to context.getString(it.purpose)
+    }.toList()
 }
 
 /**

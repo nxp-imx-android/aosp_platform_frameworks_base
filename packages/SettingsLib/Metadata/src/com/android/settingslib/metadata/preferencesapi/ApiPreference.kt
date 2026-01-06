@@ -253,6 +253,10 @@ abstract class ApiPreference<V : Any>(val isFlagEnabled: Boolean) : PersistentPr
 
     /** Set block with logic for changing a preference's value. */
     abstract val set: SetConfig<V>?
+
+    /** The type of this preference. This defines both the raw type (e.g. String, Int) and also
+     * which options are acceptable, both programmatically and in a human-readable way. */
+    abstract val type: ApiType<V>
 }
 
 @DslMarker
@@ -526,6 +530,7 @@ class ApiPreferenceConfigBuilder<V : Any>(
         override val preconditions: PreconditionsConfig? = preconditionsConfig
         override val get: GetConfig<V> = getConfig ?: error("'get' block is required")
         override val set: SetConfig<V>? = setConfig
+        override val type: ApiType<V> = this@ApiPreferenceConfigBuilder.type
         override val valueType: Class<V> = this@ApiPreferenceConfigBuilder.valueType
         override val key: String = this@ApiPreferenceConfigBuilder.key
         override val purpose: Int = this@ApiPreferenceConfigBuilder.purpose

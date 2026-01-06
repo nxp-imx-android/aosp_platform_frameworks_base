@@ -82,6 +82,20 @@ import java.util.concurrent.Executor;
  * these data classes into {@link ExecuteAppFunctionRequest#getParameters()} and {@link
  * ExecuteAppFunctionResponse#getResultDocument()}.
  *
+ * <h3>Declaring App Functions</h3>
+ *
+ * <p>App functions can be declared in two ways in your {@code AndroidManifest.xml}:
+ * <ul>
+ *     <li><b>Application-level (for dynamic registration):</b> Declare these functions using a
+ *         {@code <property>} tag within the {@code <application>} element. These functions
+ *         <strong>must</strong> be registered at runtime using
+ *         {@link AppFunctionManager#registerAppFunction} API to become executable.
+ *
+ *     <li><b>Service-level (for service binding):</b> Declare these functions within a
+ *         {@code <service>} definition that extends {@link AppFunctionService}. The system
+ *         automatically handles these functions by binding to the service for execution.
+ * </ul>
+ *
  * <h3>Discovering App Functions</h3>
  *
  * <p>When there is a package change or the device starts up, the metadata of available functions is
@@ -543,10 +557,20 @@ public final class AppFunctionManager {
     /**
      * Registers an {@link AppFunction}.
      *
-     * <p>Use this method to provide a runtime implementation for an app function. This is intended
-     * for functions that are declared in an XML resource file for system discovery, but that do not
-     * specify a {@code <service>} to handle their execution. This allows for lightweight,
-     * in-process function handling while the app is running.
+     * <p>Use this method to provide a runtime implementation for an app function that is
+     * declared at the application level in your manifest's XML resources. This approach is
+     * designed for lightweight, in-process handling of function calls and requires the app to be
+     * running to execute.
+     *
+     * <h3>Function Execution</h3>
+     *
+     * <p>While the function is registered, a call to {@link AppFunctionManager#executeAppFunction}
+     * with the app's package name and the provided {@code functionId} in the request will be routed
+     * to the {@link AppFunction} implementation provided here. The implementation will be invoked
+     * on the provided {@link Executor}.
+     *
+     * <p>If an application-level function is called but no implementation is currently
+     * registered, the execution will fail with {@link AppFunctionException#ERROR_DISABLED}.
      *
      * <h3>Lifecycle management</h3>
      *
@@ -561,16 +585,15 @@ public final class AppFunctionManager {
      * typically done within a component's lifecycle, such as in {@link
      * android.app.Activity#onStop()}.
      *
-     * <p>Only one {@link AppFunction} can be registered for a given {@code functionId} per app.
-     * Attempting to register a second implementation for the same ID without first unregistering
-     * the original will throw an {@link IllegalStateException}.
+     * <h3>Error Handling</h3>
      *
-     * <h3>Function Execution</h3>
+     * <p>Only one implementation can be registered for a given {@code functionId} at a time.
+     * Attempting to register a new implementation without unregistering the existing one
+     * will throw an {@link IllegalStateException}.
      *
-     * <p>While the function is registered, a call to {@link AppFunctionManager#executeAppFunction}
-     * with the app's package name and the provided {@code functionId} in the request will be routed
-     * to the {@link AppFunction} implementation provided here. The implementation will be invoked
-     * on the provided {@link Executor}.
+     * <p>The {@code functionId} must correspond to an app function declared in your app's
+     * application-level XML resources. If the ID is not found, this method will throw an
+     * {@link IllegalArgumentException}.
      *
      * @param functionId The unique identifier for the function, which must match an entry in the
      *     app's XML resource declarations.
@@ -580,6 +603,8 @@ public final class AppFunctionManager {
      * @return A {@link AppFunctionRegistration} object that can be used to unregister the function.
      * @throws IllegalStateException if a function with the same {@code functionId} is already
      *     registered by this app.
+     * @throws IllegalArgumentException if the provided {@code functionId} is not declared
+     *     in the app's application-level XML resources.
      */
     @NonNull
     @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)

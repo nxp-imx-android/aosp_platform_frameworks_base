@@ -91,7 +91,10 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"Nem lehetséges a képernyőkép mentése"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Az alkalmazás vagy az Ön szervezete nem engedélyezi képernyőkép készítését"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"A képernyőkép készítésének lehetőségét a rendszergazda letiltotta"</string>
-    <string name="screenshot_copy_description" msgid="2857172429942249976">"Képernyőkép másolása a vágólapra"</string>
+    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
+    <skip />
+    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
+    <skip />
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Szerkesztés"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"Képernyőkép szerkesztése gomb"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Megosztás"</string>
@@ -149,6 +152,7 @@
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Egyetlen app (a választáshoz nyisson meg egy appot)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Eszköz hangjának rögzítése"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Mikrofon általi hangrögzítés"</string>
+    <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"Felvétel közben nem módosíthatók a hangbeállítások"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Szelfikamera megjelenítése"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Érintések megjelenítése"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Válassza ki a felvenni kívánt alkalmazást"</string>
@@ -936,8 +940,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Kész"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Alkalmaz"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Kikapcsolás"</string>
-    <!-- no translation found for bridged_device_type_unknown (8435318668271946936) -->
-    <skip />
+    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"eszköz"</string>
     <string name="bridged_device_type_phone" msgid="7971199513068521770">"telefon"</string>
     <string name="bridged_device_type_tablet" msgid="7403330807933649592">"táblagép"</string>
     <string name="bridged_device_type_laptop" msgid="8027976360936787349">"laptop"</string>

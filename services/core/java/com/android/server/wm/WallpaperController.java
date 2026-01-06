@@ -151,8 +151,7 @@ class WallpaperController {
             }
         }
 
-        if (com.android.window.flags.Flags.skipAddRecentsToSyncSet() && ar != null
-                && ar.mTransitionController.isLaunchingRecents(ar) && w.hasWallpaper()) {
+        if (ar != null && ar.mTransitionController.isLaunchingRecents(ar) && w.hasWallpaper()) {
             // Recents transition can start before its window is drawn (w.isOnScreen() is false).
             mFindResults.setWallpaperTarget(w);
             return true;

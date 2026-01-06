@@ -41,7 +41,8 @@ interface IAdvancedProtectionService {
             in @nullable int[] featuresToDeprovision);
     @EnforcePermission("MANAGE_ADVANCED_PROTECTION_MODE")
     void registerAdvancedProtectionFeatureCallback(
-            IAdvancedProtectionFeatureCallback callback);
+            in int[] featureIds,
+            in IAdvancedProtectionFeatureCallback callback);
     @EnforcePermission("MANAGE_ADVANCED_PROTECTION_MODE")
     void unregisterAdvancedProtectionFeatureCallback(
             IAdvancedProtectionFeatureCallback callback);
