@@ -199,4 +199,9 @@
 
     <!-- Whether to actively prompt user to use web rather than apps. -->
     <bool name="config_appToWebActivePrompting">false</bool>
+
+    <!-- Parameters for launching game controls -->
+    <string name="config_gameControlsSystemFeature" translatable="false"/>
+    <string name="config_gameControlsIntentReceiverPackage" translatable="false"/>
+    <string name="config_gameControlsIntentAction" translatable="false"/>
 </resources>

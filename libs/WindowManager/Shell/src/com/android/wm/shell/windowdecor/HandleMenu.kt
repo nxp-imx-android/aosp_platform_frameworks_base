@@ -55,6 +55,7 @@ import com.android.wm.shell.R
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.DESKTOP_WINDOWING_APP_TO_WEB_OPEN_IN_APP
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.DESKTOP_WINDOWING_APP_TO_WEB_OPEN_IN_BROWSER
+import com.android.wm.shell.gamecontrols.GameControlsHelper
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.shared.bubbles.ContextUtils.isRtl
@@ -102,6 +103,7 @@ private constructor(
     private val shouldShowNewWindowButton: Boolean,
     private val shouldShowManageWindowsButton: Boolean,
     private val shouldShowChangeAspectRatioButton: Boolean,
+    private val shouldShowGameControlsButton: Boolean,
     private val shouldShowDesktopModeButton: Boolean,
     private val shouldShowRestartButton: Boolean,
     private val isBrowserApp: Boolean,
@@ -142,9 +144,6 @@ private constructor(
 
     private val shouldShowBrowserPill: Boolean
         get() = openInAppOrBrowserIntent != null
-
-    private val shouldShowGameControlsButton: Boolean
-        get() = DesktopExperienceFlags.ENABLE_GAME_CONTROLS_ENTRY_IN_HANDLE_MENU.isTrue
 
     private val shouldShowMoreActionsPill: Boolean
         get() =
@@ -689,7 +688,7 @@ private constructor(
                     windowDecorationActions.onChangeAspectRatio(taskInfo)
                 }
                 R.id.game_controls_button -> {
-                    // TODO: tkachenkoo - Implement game controls button listener.
+                    windowDecorationActions.onLaunchGameControls(taskInfo)
                 }
                 R.id.handle_menu_restart_button -> {
                     windowDecorationActions.onRestart(taskInfo.taskId)
@@ -916,6 +915,12 @@ private constructor(
                 taskInfo.windowingMode == WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 
         /**
+         * Returns whether the game controls button should be shown for the task.
+         */
+        fun shouldShowGameControlsButton(context: Context, taskInfo: RunningTaskInfo): Boolean =
+            GameControlsHelper.shouldShowGameControlsButton(context, taskInfo)
+
+        /**
          * Returns whether the restart button should be shown for the task. It usually means that
          * the task has moved to a different display.
          */
@@ -942,6 +947,7 @@ private constructor(
             shouldShowNewWindowButton: Boolean,
             shouldShowManageWindowsButton: Boolean,
             shouldShowChangeAspectRatioButton: Boolean,
+            shouldShowGameControlsButton: Boolean,
             shouldShowDesktopModeButton: Boolean,
             shouldShowRestartButton: Boolean,
             isBrowserApp: Boolean,
@@ -978,6 +984,7 @@ private constructor(
                 shouldShowNewWindowButton,
                 shouldShowManageWindowsButton,
                 shouldShowChangeAspectRatioButton,
+                shouldShowGameControlsButton,
                 shouldShowDesktopModeButton,
                 shouldShowRestartButton,
                 isBrowserApp,
@@ -1008,6 +1015,7 @@ private constructor(
             shouldShowNewWindowButton: Boolean,
             shouldShowManageWindowsButton: Boolean,
             shouldShowChangeAspectRatioButton: Boolean,
+            shouldShowGameControlsButton: Boolean,
             shouldShowDesktopModeButton: Boolean,
             shouldShowRestartButton: Boolean,
             isBrowserApp: Boolean,
@@ -1044,6 +1052,7 @@ private constructor(
                 shouldShowNewWindowButton,
                 shouldShowManageWindowsButton,
                 shouldShowChangeAspectRatioButton,
+                shouldShowGameControlsButton,
                 shouldShowDesktopModeButton,
                 shouldShowRestartButton,
                 isBrowserApp,

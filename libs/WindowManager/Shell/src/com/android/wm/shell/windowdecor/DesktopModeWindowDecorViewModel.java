@@ -128,6 +128,7 @@ import com.android.wm.shell.desktopmode.data.DesktopRepository;
 import com.android.wm.shell.desktopmode.education.AppHandleEducationController;
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter;
+import com.android.wm.shell.gamecontrols.GameControlsHelper;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController;
 import com.android.wm.shell.recents.RecentsTransitionHandler;
 import com.android.wm.shell.recents.RecentsTransitionStateListener;
@@ -2233,6 +2234,11 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         @Override
         public void onChangeAspectRatio(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
             CompatUIController.launchUserAspectRatioSettingsNoAnimation(mContext, taskInfo);
+        }
+
+        @Override
+        public void onLaunchGameControls(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
+            GameControlsHelper.onLaunchGameControls(mContext, taskInfo);
         }
 
         @Override

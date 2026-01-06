@@ -67,6 +67,7 @@ import com.android.wm.shell.windowdecor.DefaultMaximizeMenuFactory
 import com.android.wm.shell.windowdecor.DesktopHeaderManageWindowsMenu
 import com.android.wm.shell.windowdecor.HandleMenu
 import com.android.wm.shell.windowdecor.HandleMenu.Companion.shouldShowChangeAspectRatioButton
+import com.android.wm.shell.windowdecor.HandleMenu.Companion.shouldShowGameControlsButton
 import com.android.wm.shell.windowdecor.HandleMenu.Companion.shouldShowRestartButton
 import com.android.wm.shell.windowdecor.HandleMenu.HandleMenuFactory
 import com.android.wm.shell.windowdecor.HandleMenuController
@@ -524,6 +525,7 @@ class AppHeaderController(
             multiInstanceHelper.supportsMultiInstanceSplit(taskInfo.baseActivity, taskInfo.userId)
         val shouldShowManageWindowsButton = supportsMultiInstance && minimumInstancesFound
         val shouldShowChangeAspectRatioButton = shouldShowChangeAspectRatioButton(taskInfo)
+        val shouldShowGameControlsButton = shouldShowGameControlsButton(decorWindowContext, taskInfo)
         val shouldShowRestartButton = shouldShowRestartButton(taskInfo)
         viewHolder.onHandleMenuOpened()
         handleMenu =
@@ -545,6 +547,7 @@ class AppHeaderController(
                     shouldShowNewWindowButton = supportsMultiInstance,
                     shouldShowManageWindowsButton = shouldShowManageWindowsButton,
                     shouldShowChangeAspectRatioButton = shouldShowChangeAspectRatioButton,
+                    shouldShowGameControlsButton = shouldShowGameControlsButton,
                     shouldShowDesktopModeButton =
                         desktopState.isDesktopModeSupportedOnDisplay(display),
                     shouldShowRestartButton = shouldShowRestartButton,

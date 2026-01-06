@@ -325,8 +325,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 Display.DEFAULT_DISPLAY);
         when(mMockHandleMenuFactory.create(any(), any(), any(), any(), any(), any(), anyInt(),
                 any(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(),
-                anyBoolean(), anyBoolean(), any(), any(), any(), anyInt(), anyInt(), anyInt(),
-                anyInt()))
+                anyBoolean(), anyBoolean(), anyBoolean(), any(), any(), any(), anyInt(), anyInt(),
+                anyInt(), anyInt()))
                 .thenReturn(mMockHandleMenu);
         when(mMockMultiInstanceHelper.supportsMultiInstanceSplit(any(), anyInt()))
                 .thenReturn(false);
@@ -1830,7 +1830,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     private void verifyHandleMenuCreated(@Nullable Uri uri) {
         verify(mMockHandleMenuFactory).create(any(), any(), any(), any(), any(), any(), anyInt(),
                 any(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(),
-                anyBoolean(), anyBoolean(), argThat(intent ->
+                anyBoolean(), anyBoolean(), anyBoolean(), argThat(intent ->
                         (uri == null && intent == null) || intent.getData().equals(uri)),
                 any(), any(), anyInt(), anyInt(), anyInt(), anyInt());
     }

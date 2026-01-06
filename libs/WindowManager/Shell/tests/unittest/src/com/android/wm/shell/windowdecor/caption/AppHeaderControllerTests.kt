@@ -188,6 +188,7 @@ class AppHeaderControllerTests : ShellTestCase() {
                 shouldShowNewWindowButton = anyBoolean(),
                 shouldShowManageWindowsButton = anyBoolean(),
                 shouldShowChangeAspectRatioButton = anyBoolean(),
+                shouldShowGameControlsButton = anyBoolean(),
                 shouldShowDesktopModeButton = anyBoolean(),
                 shouldShowRestartButton = anyBoolean(),
                 isBrowserApp = anyBoolean(),
