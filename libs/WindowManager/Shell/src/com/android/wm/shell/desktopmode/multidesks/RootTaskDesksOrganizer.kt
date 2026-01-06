@@ -538,9 +538,9 @@ class RootTaskDesksOrganizer(
         updateLaunchAdjacentController()
     }
 
-    override fun onBackPressedOnTaskRoot(
+    override fun onBackOnTaskRoot(
         taskInfo: RunningTaskInfo,
-        isFromMoveActivityTaskToBack: Boolean,
+        isFromBackPress: Boolean,
         isOptInOnBackInvoked: Boolean,
         hasOpaqueSibling: Boolean,
     ) {

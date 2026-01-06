@@ -121,14 +121,14 @@ public class ShellTaskOrganizer extends TaskOrganizer {
          * organized, there will be no callback.
          *
          * @param taskInfo The RunningTaskInfo for the Task which received back event.
-         * @param isFromMoveActivityTaskToBack {@code true} if this is from an app calling
-         *                                     Activity#moveTaskToBack(), {@code false} if this is
-         *                                     from back button press.
+         * @param isFromBackPress {@code true} if this is from back button press,
+         *                                     {@code false} if this is from an app calling
+         *                                     Activity#moveTaskToBack().
          * @param isOptInOnBackInvoked {@code true} if the app opts in enableOnBackInvokedCallback.
          * @param hasOpaqueSibling Whether the task has an opaque sibling
          */
-        default void onBackPressedOnTaskRoot(RunningTaskInfo taskInfo,
-                boolean isFromMoveActivityTaskToBack, boolean isOptInOnBackInvoked,
+        default void onBackOnTaskRoot(RunningTaskInfo taskInfo,
+                boolean isFromBackPress, boolean isOptInOnBackInvoked,
                 boolean hasOpaqueSibling) {}
         /** Whether this task listener supports compat UI. */
         default boolean supportCompatUI() {
@@ -900,17 +900,17 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     }
 
     @Override
-    public void onBackPressedOnTaskRoot(RunningTaskInfo taskInfo,
-            boolean isFromMoveActivityTaskToBack, boolean isOptInOnBackInvoked,
+    public void onBackOnTaskRoot(RunningTaskInfo taskInfo,
+            boolean isFromBackPress, boolean isOptInOnBackInvoked,
             boolean hasOpaqueSibling) {
         synchronized (mLock) {
             ProtoLog.v(WM_SHELL_TASK_ORG, "Task root back pressed taskId=%d "
-                    + "isFromMoveActivityTaskToBack=%b isOptInOnBackInvoked=%b hasOpaqueSibling=%b",
-                    taskInfo.taskId, isFromMoveActivityTaskToBack, isOptInOnBackInvoked,
+                    + "isFromBackPress=%b isOptInOnBackInvoked=%b hasOpaqueSibling=%b",
+                    taskInfo.taskId, isFromBackPress, isOptInOnBackInvoked,
                     hasOpaqueSibling);
             final TaskListener listener = getTaskListener(taskInfo);
             if (listener != null) {
-                listener.onBackPressedOnTaskRoot(taskInfo, isFromMoveActivityTaskToBack,
+                listener.onBackOnTaskRoot(taskInfo, isFromBackPress,
                         isOptInOnBackInvoked, hasOpaqueSibling);
             }
         }

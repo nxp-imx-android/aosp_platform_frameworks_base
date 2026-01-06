@@ -170,7 +170,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
             }
         }
 
-        private void onBackPressedOnTaskRoot(Task task, boolean isFromMoveActivityTaskToBack,
+        private void onBackOnTaskRoot(Task task, boolean isFromBackPress,
                 boolean isOptInOnBackInvoked) {
             ProtoLog.v(WM_DEBUG_WINDOW_ORGANIZER, "Task back pressed on root taskId=%d",
                     task.mTaskId);
@@ -183,9 +183,8 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                 return;
             }
             try {
-                mTaskOrganizer.onBackPressedOnTaskRoot(task.getTaskInfo(),
-                        isFromMoveActivityTaskToBack, isOptInOnBackInvoked,
-                        task.hasOpaqueSibling());
+                mTaskOrganizer.onBackOnTaskRoot(task.getTaskInfo(), isFromBackPress,
+                        isOptInOnBackInvoked, task.hasOpaqueSibling());
             } catch (Exception e) {
                 Slog.e(TAG, "Exception sending onBackPressedOnTaskRoot callback", e);
             }
@@ -299,18 +298,18 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                     dispatchTaskInfoChanged(event.mTask, event.mForce);
                     break;
                 case PendingTaskEvent.EVENT_ROOT_BACK_PRESSED_BACK_INVOKED_OPT_IN:
-                    mOrganizerState.mOrganizer.onBackPressedOnTaskRoot(task,
-                            /* isFromMoveActivityTaskToBack= */ false,
+                    mOrganizerState.mOrganizer.onBackOnTaskRoot(task,
+                            /* isFromBackPress= */ true,
                             /* isOptInOnBackInvoked= */ true);
                     break;
                 case PendingTaskEvent.EVENT_ROOT_BACK_PRESSED_BACK_INVOKED_OPT_OUT:
-                    mOrganizerState.mOrganizer.onBackPressedOnTaskRoot(task,
-                            /* isFromMoveActivityTaskToBack= */ false,
+                    mOrganizerState.mOrganizer.onBackOnTaskRoot(task,
+                            /* isFromBackPress= */ true,
                             /* isOptInOnBackInvoked= */ false);
                     break;
                 case PendingTaskEvent.EVENT_MOVE_TASK_TO_BACK:
-                    mOrganizerState.mOrganizer.onBackPressedOnTaskRoot(task,
-                            /* isFromMoveActivityTaskToBack= */ true,
+                    mOrganizerState.mOrganizer.onBackOnTaskRoot(task,
+                            /* isFromBackPress= */ false,
                             /* isOptInOnBackInvoked= */ false);
                     break;
             }
@@ -1288,7 +1287,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
     }
 
     public boolean handleInterceptBackPressedOnTaskRoot(ActivityRecord r,
-            boolean isFromMoveActivityTaskToBack) {
+            boolean isFromBackPress) {
         // Intercept are set on the root task
         if (!shouldInterceptBackPressedOnRootTask(r.getRootTask())) {
             return false;
@@ -1320,7 +1319,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
             return false;
         }
 
-        final int eventType = isFromMoveActivityTaskToBack
+        final int eventType = !isFromBackPress
                 ? PendingTaskEvent.EVENT_MOVE_TASK_TO_BACK
                 : (r.mOptInOnBackInvoked
                         ? PendingTaskEvent.EVENT_ROOT_BACK_PRESSED_BACK_INVOKED_OPT_IN

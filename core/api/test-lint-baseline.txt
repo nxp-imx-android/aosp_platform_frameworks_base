@@ -2393,10 +2393,10 @@ UnflaggedApi: android.window.TaskOrganizer#deleteTask(android.window.WindowConta
     New API must be flagged with @FlaggedApi: method android.window.TaskOrganizer.deleteTask(android.window.WindowContainerToken)
 UnflaggedApi: android.window.TaskOrganizer#getImeLayeringTarget(int):
     New API must be flagged with @FlaggedApi: method android.window.TaskOrganizer.getImeLayeringTarget(int)
-UnflaggedApi: android.window.TaskOrganizer#onBackPressedOnTaskRoot(android.app.ActivityManager.RunningTaskInfo, boolean, boolean):
-    New API must be flagged with @FlaggedApi: method android.window.TaskOrganizer.onBackPressedOnTaskRoot(android.app.ActivityManager.RunningTaskInfo,boolean,boolean)
-UnflaggedApi: android.window.TaskOrganizer#onBackPressedOnTaskRoot(android.app.ActivityManager.RunningTaskInfo, boolean, boolean, boolean):
-    New API must be flagged with @FlaggedApi: method android.window.TaskOrganizer.onBackPressedOnTaskRoot(android.app.ActivityManager.RunningTaskInfo,boolean,boolean,boolean)
+UnflaggedApi: android.window.TaskOrganizer#onBackOnTaskRoot(android.app.ActivityManager.RunningTaskInfo, boolean, boolean):
+    New API must be flagged with @FlaggedApi: method android.window.TaskOrganizer.onBackOnTaskRoot(android.app.ActivityManager.RunningTaskInfo,boolean,boolean)
+UnflaggedApi: android.window.TaskOrganizer#onBackOnTaskRoot(android.app.ActivityManager.RunningTaskInfo, boolean, boolean, boolean):
+    New API must be flagged with @FlaggedApi: method android.window.TaskOrganizer.onBackOnTaskRoot(android.app.ActivityManager.RunningTaskInfo,boolean,boolean,boolean)
 UnflaggedApi: android.window.WindowInfosListenerForTest.WindowInfo#displayId:
     New API must be flagged with @FlaggedApi: field android.window.WindowInfosListenerForTest.WindowInfo.displayId
 UnflaggedApi: android.window.WindowInfosListenerForTest.WindowInfo#isVisible:

@@ -1568,7 +1568,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
                 new IRequestFinishCallback.Default());
         // Ensure events dispatch to organizer.
         mWm.mAtmService.mTaskOrganizerController.dispatchPendingEvents();
-        verify(organizer, never()).onBackPressedOnTaskRoot(any(), anyBoolean(), anyBoolean(),
+        verify(organizer, never()).onBackOnTaskRoot(any(), anyBoolean(), anyBoolean(),
                 anyBoolean());
 
         // Enable intercepting back
@@ -1580,7 +1580,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
                 new IRequestFinishCallback.Default());
         // Ensure events dispatch to organizer.
         mWm.mAtmService.mTaskOrganizerController.dispatchPendingEvents();
-        verify(organizer, times(1)).onBackPressedOnTaskRoot(any(), anyBoolean(), anyBoolean(),
+        verify(organizer, times(1)).onBackOnTaskRoot(any(), anyBoolean(), anyBoolean(),
                 anyBoolean());
 
         // Disable intercepting back
@@ -1592,7 +1592,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
                 new IRequestFinishCallback.Default());
         // Ensure events dispatch to organizer.
         mWm.mAtmService.mTaskOrganizerController.dispatchPendingEvents();
-        verify(organizer, times(1)).onBackPressedOnTaskRoot(any(), anyBoolean(), anyBoolean(),
+        verify(organizer, times(1)).onBackOnTaskRoot(any(), anyBoolean(), anyBoolean(),
                 anyBoolean());
     }
 
@@ -1612,7 +1612,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
                 new IRequestFinishCallback.Default());
         // Ensure events dispatch to organizer.
         mWm.mAtmService.mTaskOrganizerController.dispatchPendingEvents();
-        verify(organizer, never()).onBackPressedOnTaskRoot(any(), anyBoolean(), anyBoolean(),
+        verify(organizer, never()).onBackOnTaskRoot(any(), anyBoolean(), anyBoolean(),
                 anyBoolean());
 
         // Enable intercepting back
@@ -1624,7 +1624,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
                 new IRequestFinishCallback.Default());
         // Ensure events dispatch to organizer.
         mWm.mAtmService.mTaskOrganizerController.dispatchPendingEvents();
-        verify(organizer, never()).onBackPressedOnTaskRoot(any(), anyBoolean(), anyBoolean(),
+        verify(organizer, never()).onBackOnTaskRoot(any(), anyBoolean(), anyBoolean(),
                 anyBoolean());
     }
 

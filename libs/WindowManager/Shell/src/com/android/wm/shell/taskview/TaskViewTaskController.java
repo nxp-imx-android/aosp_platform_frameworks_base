@@ -306,8 +306,8 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
     }
 
     @Override
-    public void onBackPressedOnTaskRoot(ActivityManager.RunningTaskInfo taskInfo,
-            boolean isFromMoveActivityTaskToBack, boolean isOptInOnBackInvoked,
+    public void onBackOnTaskRoot(ActivityManager.RunningTaskInfo taskInfo,
+            boolean isFromBackPress, boolean isOptInOnBackInvoked,
             boolean hasOpaqueSibling) {
         if (mTaskToken == null || !mTaskToken.equals(taskInfo.token)) {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.onBackPressedOnTaskRoot(): "
