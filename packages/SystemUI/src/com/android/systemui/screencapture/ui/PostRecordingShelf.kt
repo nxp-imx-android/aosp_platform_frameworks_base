@@ -58,7 +58,6 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.android.compose.modifiers.padding
 import com.android.systemui.common.shared.model.ContentDescription
@@ -71,7 +70,8 @@ import com.android.systemui.screencapture.common.ui.compose.PostCaptureToastBar
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.record.smallscreen.ui.PostRecordSnackbarDialogs
-import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.PostRecordingViewModel
+import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.PostRecordingActionsViewModel
+import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.PostRecordingImmediateVideoViewModel
 import com.android.systemui.statusbar.phone.EdgeToEdgeDialogDelegate
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.SystemUIDialog.DIALOG_WINDOW_TYPE
@@ -92,7 +92,8 @@ constructor(
     @Application private val context: Context,
     @Assisted private val display: Display,
     private val dialogFactory: SystemUIDialogFactory,
-    private val viewModelFactory: PostRecordingViewModel.Factory,
+    private val actionsViewModelFactory: PostRecordingActionsViewModel.Factory,
+    private val videoViewModelFactory: PostRecordingImmediateVideoViewModel.Factory,
     private val postRecordSnackbarDialogs: PostRecordSnackbarDialogs,
 ) {
     private val visibleState = MutableTransitionState(false)
@@ -147,14 +148,16 @@ constructor(
         }
 
         val coroutineScope = rememberCoroutineScope()
-        val postRecordingViewModel =
+        val actionsViewModel =
             rememberViewModel("PostRecordingShelf#viewModel") {
-                viewModelFactory.create(uri, display.displayId)
+                actionsViewModelFactory.create(uri, display.displayId)
             }
-        val parentUri = postRecordingViewModel.parentUri
+        val videoViewModel =
+            rememberViewModel("PostRecordingShelf#viewModel") { videoViewModelFactory.create(uri) }
+        val parentUri = actionsViewModel.parentUri
         val shareIcon =
             loadIcon(
-                    viewModel = postRecordingViewModel,
+                    viewModel = actionsViewModel,
                     resId = R.drawable.ic_screenshot_share,
                     contentDescription =
                         ContentDescription.Loaded(
@@ -166,7 +169,7 @@ constructor(
                 .value
         val folderIcon =
             loadIcon(
-                    viewModel = postRecordingViewModel,
+                    viewModel = actionsViewModel,
                     resId = R.drawable.ic_screen_capture_folder,
                     contentDescription =
                         ContentDescription.Loaded(
@@ -178,7 +181,7 @@ constructor(
                 .value
         val deleteIcon =
             loadIcon(
-                    viewModel = postRecordingViewModel,
+                    viewModel = actionsViewModel,
                     resId = R.drawable.ic_screenshot_delete,
                     contentDescription =
                         ContentDescription.Loaded(
@@ -195,7 +198,7 @@ constructor(
                         ActionButtonGroupItem(
                             icon = shareIcon,
                             onClick = {
-                                postRecordingViewModel.share()
+                                actionsViewModel.share()
                                 hide()
                             },
                         )
@@ -207,7 +210,7 @@ constructor(
                                 icon = folderIcon,
                                 onClick = {
                                     coroutineScope.launch {
-                                        postRecordingViewModel.openInFolder()
+                                        actionsViewModel.openInFolder()
                                         hide()
                                     }
                                 },
@@ -225,13 +228,13 @@ constructor(
                                         postRecordingConfirmDeletion(
                                             dialogFactory,
                                             context,
-                                            postRecordingViewModel,
+                                            actionsViewModel,
                                             display,
                                         )
                                     ) {
                                         hide()
                                         postRecordSnackbarDialogs.showVideoDeleted(
-                                            postRecordingViewModel.videoUri,
+                                            videoViewModel.recording.uri,
                                             display,
                                         )
                                     }
@@ -250,21 +253,15 @@ constructor(
             AnimatedVisibility(
                 visibleState = visibleState,
                 enter =
-                    fadeIn(animationSpec = spring<Float>()) +
-                        slideInHorizontally(
-                            animationSpec = spring<IntOffset>(),
-                            initialOffsetX = { -it },
-                        ),
+                    fadeIn(animationSpec = spring()) +
+                        slideInHorizontally(animationSpec = spring(), initialOffsetX = { -it }),
                 exit =
-                    fadeOut(animationSpec = spring<Float>()) +
-                        slideOutHorizontally(
-                            animationSpec = spring<IntOffset>(),
-                            targetOffsetX = { -it },
-                        ),
+                    fadeOut(animationSpec = spring()) +
+                        slideOutHorizontally(animationSpec = spring(), targetOffsetX = { -it }),
             ) {
                 Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.Start) {
                     PostRecordingThumbnail(
-                        viewmodel = postRecordingViewModel,
+                        viewmodel = actionsViewModel,
                         preview = thumbnail?.bitmap?.asImageBitmap(),
                         modifier =
                             Modifier.clip(RoundedCornerShape(16.dp))
@@ -272,7 +269,7 @@ constructor(
                                 .width(200.dp)
                                 .height(128.dp)
                                 .clickable {
-                                    postRecordingViewModel.view()
+                                    actionsViewModel.view()
                                     hide()
                                 },
                     )
