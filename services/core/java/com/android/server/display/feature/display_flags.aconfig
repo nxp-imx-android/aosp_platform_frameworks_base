@@ -384,16 +384,6 @@ flag {
 }
 
 flag {
-    name: "native_rr_callbacks_outside_lock"
-    namespace: "display_manager"
-    description: "Makes the native refresh rate changed callbacks outside the lock"
-    bug: "342607960"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "get_display_info_outside_lock"
     namespace: "display_manager"
     description: "Makes DisplayManagerGlobal call DisplayManagerService.getDisplayInfo() outside the lock"
