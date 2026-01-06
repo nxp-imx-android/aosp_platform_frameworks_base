@@ -23,6 +23,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
 
 import java.util.Objects;
 
@@ -83,6 +84,15 @@ public final class AppFunctionName implements Parcelable {
         return new AppFunctionName(
                 qualifiedFunctionId.substring(0, separatorIndex),
                 qualifiedFunctionId.substring(separatorIndex + 1));
+    }
+
+    /**
+     * Gets the qualified id of {@link AppFunctionName}.
+     *
+     * @hide
+     */
+    public String getQualifiedId() {
+        return TextUtils.formatSimple("%s/%s", mPackageName, mFunctionId);
     }
 
     /** The package name of the Android app which contains the app function. */

@@ -15,12 +15,7 @@
  */
 package android.app.appfunctions;
 
-import static android.app.appfunctions.AppFunctionManager.APP_FUNCTION_STATE_DEFAULT;
-import static android.app.appfunctions.AppFunctionManager.APP_FUNCTION_STATE_ENABLED;
-import static android.app.appfunctions.AppFunctionRuntimeMetadata.PROPERTY_ENABLED;
 import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS;
-
-import static java.util.Objects.requireNonNull;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
@@ -181,37 +176,6 @@ public final class AppFunctionMetadata implements AbstractAppFunctionMetadata, P
     }
 
     /**
-     * Creates a new instance of AppFunctionMetadata using the given function and package metadata.
-     *
-     * @throws IllegalArgumentException if the provided {@link GenericDocument}s are not in the
-     *     right format.
-     * @hide
-     */
-    public static AppFunctionMetadata create(
-            @NonNull GenericDocument appFunctionStaticMetadataDocument,
-            @NonNull GenericDocument appFunctionRuntimeMetadataDocument,
-            @NonNull AppFunctionPackageMetadata appFunctionPackageMetadata) {
-        requireNonNull(appFunctionStaticMetadataDocument);
-        requireNonNull(appFunctionRuntimeMetadataDocument);
-        requireNonNull(appFunctionPackageMetadata);
-        String qualifiedFunctionId = requireNonNull(appFunctionStaticMetadataDocument.getId());
-        AppFunctionName appFunctionName =
-                new AppFunctionName(
-                        appFunctionPackageMetadata.getPackageName(),
-                        qualifiedFunctionId.substring(qualifiedFunctionId.indexOf('/') + 1));
-        AppFunctionSchemaMetadata schemaMetadata =
-                getAppFunctionSchemaMetadataOrNull(appFunctionStaticMetadataDocument);
-        boolean isEnabled =
-                isEnabled(appFunctionStaticMetadataDocument, appFunctionRuntimeMetadataDocument);
-        return new AppFunctionMetadata(
-                appFunctionName,
-                schemaMetadata,
-                appFunctionPackageMetadata,
-                appFunctionStaticMetadataDocument,
-                isEnabled);
-    }
-
-    /**
      * Returns the qualified name of the app function.
      *
      * <p>The {@link AppFunctionName} is composed of the app's package name and the function's ID.
@@ -324,13 +288,42 @@ public final class AppFunctionMetadata implements AbstractAppFunctionMetadata, P
         return new AppFunctionSchemaMetadata(category, name, version);
     }
 
-    private static boolean isEnabled(
-            @NonNull GenericDocument appFunctionStaticMetadataDocument,
-            @NonNull GenericDocument appFunctionRuntimeMetadataDocument) {
-        long enabled = appFunctionRuntimeMetadataDocument.getPropertyLong(PROPERTY_ENABLED);
-        if (enabled != APP_FUNCTION_STATE_DEFAULT) {
-            return enabled == APP_FUNCTION_STATE_ENABLED;
+    /** @hide */
+    public static final class Builder {
+        private final GenericDocument mStaticDocument;
+        private final AppFunctionPackageMetadata mPackageMetadata;
+
+        private boolean mIsEnabled;
+
+        /** The builder to create {@link AppFunctionMetadata}. */
+        public Builder(
+                @NonNull GenericDocument staticDocument,
+                @NonNull AppFunctionPackageMetadata packageMetadata) {
+            mStaticDocument = Objects.requireNonNull(staticDocument);
+            mPackageMetadata = Objects.requireNonNull(packageMetadata);
         }
-        return appFunctionStaticMetadataDocument.getPropertyBoolean(PROPERTY_ENABLED_BY_DEFAULT);
+
+        /** Sets the enabled state of the given {@link AppFunctionMetadata}. */
+        public Builder setEnabled(boolean isEnabled) {
+            mIsEnabled = isEnabled;
+            return this;
+        }
+
+        /**
+         * Builds {@link AppFunctionPackageMetadata}.
+         *
+         * @throws IllegalArgumentException If unable to build metadata from the provided arguments.
+         */
+        public AppFunctionMetadata build() throws IllegalArgumentException {
+            Objects.requireNonNull(mStaticDocument);
+            Objects.requireNonNull(mPackageMetadata);
+
+            AppFunctionName appFunctionName =
+                    AppFunctionName.fromQualifiedId(mStaticDocument.getId());
+            AppFunctionSchemaMetadata schemaMetadata =
+                    getAppFunctionSchemaMetadataOrNull(mStaticDocument);
+            return new AppFunctionMetadata(
+                    appFunctionName, schemaMetadata, mPackageMetadata, mStaticDocument, mIsEnabled);
+        }
     }
 }

@@ -41,6 +41,7 @@ import android.app.appfunctions.AppFunctionException;
 import android.app.appfunctions.AppFunctionManager;
 import android.app.appfunctions.AppFunctionManagerHelper;
 import android.app.appfunctions.AppFunctionManagerHelper.AppFunctionNotFoundException;
+import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.AppFunctionRuntimeMetadata;
 import android.app.appfunctions.AppFunctionSearchSpec;
 import android.app.appfunctions.AppFunctionStaticMetadataHelper;
@@ -121,6 +122,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.WeakHashMap;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 
@@ -492,8 +494,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                                     .getTargetPackageName(),
                                             getAppSearchManagerAsUser(
                                                     requestInternal.getUserHandle()),
-                                            requestInternal.getUserHandle(),
-                                            THREAD_POOL_EXECUTOR)
+                                            THREAD_POOL_EXECUTOR,
+                                            requestInternal.getUserHandle().getIdentifier())
                                     .thenApply(
                                             isEnabled -> {
                                                 if (!isEnabled) {
@@ -681,7 +683,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                 mAppFunctionMetadataReader.searchAppFunctions(
                                         futureGlobalSearchSession,
                                         filteredSearchSpec,
-                                        THREAD_POOL_EXECUTOR);
+                                        THREAD_POOL_EXECUTOR,
+                                        aidlSearchSpec.getTargetUserId());
                         try {
                             searchAppFunctionsCallback.onSuccess(results);
                         } catch (RemoteException e) {
@@ -743,26 +746,18 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 targetUser, filteredSearchSpec, observeAppFunctionsCallback);
     }
 
-    private AndroidFuture<Boolean> isAppFunctionEnabled(
+    private CompletableFuture<Boolean> isAppFunctionEnabled(
             @NonNull String functionIdentifier,
             @NonNull String targetPackage,
             @NonNull AppSearchManager appSearchManager,
-            @NonNull UserHandle targetUserHandle,
-            @NonNull Executor executor) {
-        AndroidFuture<Boolean> future = new AndroidFuture<>();
-
-        // TODO(b/467317154): Take into account AppFunctionService availability for static
-        //  app functions
-        if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()
-                && mAppFunctionMetadataReader.isDynamicFunction(
-                        targetPackage, functionIdentifier, targetUserHandle)
-                && !mDynamicAppFunctionRegistry.isAppFunctionRegistered(
-                        targetPackage, functionIdentifier, targetUserHandle)) {
-            // Dynamic app function without registered implementation.
-            future.complete(false);
-            return future;
+            @NonNull Executor executor,
+            int userId) {
+        if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
+            return isAppFunctionEnabled2(
+                    functionIdentifier, targetPackage, appSearchManager, userId);
         }
 
+        AndroidFuture<Boolean> future = new AndroidFuture<>();
         AppFunctionManagerHelper.isAppFunctionEnabled(
                 functionIdentifier,
                 targetPackage,
@@ -780,6 +775,24 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                     }
                 });
         return future;
+    }
+
+    private CompletableFuture<Boolean> isAppFunctionEnabled2(
+            @NonNull String functionIdentifier,
+            @NonNull String targetPackage,
+            @NonNull AppSearchManager appSearchManager,
+            int userId) {
+        FutureGlobalSearchSession futureSession =
+                new FutureGlobalSearchSession(appSearchManager, Runnable::run);
+        return mAppFunctionMetadataReader
+                .isAppFunctionEnabled(
+                        futureSession,
+                        new AppFunctionName(targetPackage, functionIdentifier),
+                        userId)
+                .whenComplete(
+                        (isEnabled, exception) -> {
+                            futureSession.close();
+                        });
     }
 
     @Override

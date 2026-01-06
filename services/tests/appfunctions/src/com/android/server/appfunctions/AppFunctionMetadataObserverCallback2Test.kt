@@ -43,9 +43,9 @@ import org.mockito.kotlin.whenever
 class AppFunctionMetadataObserverCallback2Test {
     @get:Rule val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
-    val mockMetadataSyncAdapter = mock<MetadataSyncAdapter>()
-    val appFunctionMetadataReader = mock<AppFunctionMetadataReader>()
-    val userHandle = mock<UserHandle>()
+    private val mockMetadataSyncAdapter = mock<MetadataSyncAdapter>()
+    private val appFunctionMetadataReader = mock<AppFunctionMetadataReader>()
+    private val userHandle = mock<UserHandle>()
 
     @Before
     fun setup() {
