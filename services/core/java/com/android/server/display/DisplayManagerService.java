@@ -1160,11 +1160,6 @@ public final class DisplayManagerService extends SystemService {
             }
 
             final BrightnessPair brightnessPair = mDisplayBrightnesses.valueAt(index);
-            if (!Flags.fixSetDisplayStateAfterDeviceChange() && mDisplayStates.valueAt(index)
-                    == state && brightnessPair.brightness == brightnessState
-                    && brightnessPair.sdrBrightness == sdrBrightnessState) {
-                return; // No change.
-            }
 
             if (Trace.isTagEnabled(Trace.TRACE_TAG_POWER)) {
                 traceMessage = Display.stateToString(state)
