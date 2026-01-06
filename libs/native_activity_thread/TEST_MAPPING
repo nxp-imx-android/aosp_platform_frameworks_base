@@ -1,0 +1,12 @@
+{
+  "postsubmit": [
+    {
+      "name": "CtsNativeServiceTest"
+    }
+  ],
+  "presubmit": [
+    {
+      "name": "CtsNativeServiceTest"
+    }
+  ]
+}
