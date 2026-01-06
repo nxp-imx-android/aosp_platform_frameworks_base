@@ -22,6 +22,9 @@ import android.util.proto.ProtoInputStream;
 
 import dalvik.annotation.optimization.CriticalNative;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Templated base class meant to be derived by embedders to create a custom data
  * source.
@@ -38,6 +41,15 @@ public abstract class DataSource<DataSourceInstanceType extends DataSourceInstan
     protected final long mNativeObj;
 
     public final String name;
+
+    protected final Set<Integer> mRunningInstances = new HashSet<>();
+
+    @NonNull
+    protected final Set<TracingInstanceStartCallback> mOnStartCallbacks = new HashSet<>();
+    @NonNull
+    protected final Set<TracingInstanceFlushCallback> mOnFlushCallbacks = new HashSet<>();
+    @NonNull
+    protected final Set<TracingInstanceStopCallback> mOnStopCallbacks = new HashSet<>();
 
     /**
      * A function implemented by each datasource to create a new data source instance.
@@ -153,6 +165,54 @@ public abstract class DataSource<DataSourceInstanceType extends DataSourceInstan
     }
 
     /**
+     * Register a callback to be executed when a tracing instance starts.
+     * @param callback The callback to be executed when a tracing instance starts.
+     */
+    public void registerOnStartCallback(TracingInstanceStartCallback callback) {
+        mOnStartCallbacks.add(callback);
+    }
+
+    /**
+     * Register a callback to be executed when a tracing instance flushes.
+     * @param callback The callback to be executed when a tracing instance flushes.
+     */
+    public void registerOnFlushCallback(TracingInstanceFlushCallback callback) {
+        mOnFlushCallbacks.add(callback);
+    }
+
+    /**
+     * Register a callback to be executed when a tracing instance stops.
+     * @param callback The callback to be executed when a tracing instance stops.
+     */
+    public void registerOnStopCallback(TracingInstanceStopCallback callback) {
+        mOnStopCallbacks.add(callback);
+    }
+
+    /**
+     * Unregister a callback to not execute it when a tracing instance starts.
+     * @param callback The callback to unregister.
+     */
+    public void unregisterOnStartCallback(TracingInstanceStartCallback callback) {
+        mOnStartCallbacks.remove(callback);
+    }
+
+    /**
+     * Unregister a callback to not execute it when a tracing instance flushes.
+     * @param callback The callback to unregister.
+     */
+    public void unregisterOnFlushCallback(TracingInstanceFlushCallback callback) {
+        mOnFlushCallbacks.remove(callback);
+    }
+
+    /**
+     * Unregister a callback to not execute it when a tracing instance stops.
+     * @param callback The callback to unregister.
+     */
+    public void unregisterOnStopCallback(TracingInstanceStopCallback callback) {
+        mOnStopCallbacks.remove(callback);
+    }
+
+    /**
      * Unlock the datasource at the specified index.
      * @param instanceIndex The index of the datasource to unlock.
      */
@@ -198,6 +258,34 @@ public abstract class DataSource<DataSourceInstanceType extends DataSourceInstan
      */
     protected void stopDoneDataSourceInstance(int instanceIndex) {
         nativeStopDonePerfettoInstanceLocked(mNativeObj, instanceIndex);
+    }
+
+    @FunctionalInterface
+    public interface TracingInstanceStartCallback {
+        /**
+         * Execute the tracing instance's onStart callback.
+         * @param instanceIdx The index of the tracing instance we are executing the callback
+         *                    for.
+         */
+        void onTracingInstanceStart(int instanceIdx);
+    }
+
+    @FunctionalInterface
+    public interface TracingInstanceFlushCallback {
+        /**
+         * Execute the tracing instance's onFlush callback.
+         */
+        void onTracingFlush();
+    }
+
+    @FunctionalInterface
+    public interface TracingInstanceStopCallback {
+        /**
+         * Execute the tracing instance's onStop callback.
+         * @param instanceIdx The index of the tracing instance we are executing the callback
+         *                    for.
+         */
+        void onTracingInstanceStop(int instanceIdx);
     }
 
     private static native void nativeRegisterDataSource(long dataSourcePtr,

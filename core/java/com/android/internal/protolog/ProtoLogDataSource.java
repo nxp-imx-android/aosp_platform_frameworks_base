@@ -25,6 +25,7 @@ import static android.internal.perfetto.protos.ProtologConfig.ProtoLogGroup.COLL
 import static android.internal.perfetto.protos.ProtologConfig.ProtoLogGroup.GROUP_NAME;
 import static android.internal.perfetto.protos.ProtologConfig.ProtoLogGroup.LOG_FROM;
 
+import android.annotation.CallSuper;
 import android.annotation.NonNull;
 import android.internal.perfetto.protos.DataSourceConfigOuterClass.DataSourceConfig;
 import android.internal.perfetto.protos.ProtologCommon;
@@ -40,6 +41,8 @@ import android.util.proto.ProtoInputStream;
 import android.util.proto.WireTypeMismatchException;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.protolog.ProtoLogDataSource.Instance.ProtoLogTracingInstanceStartCallback;
+import com.android.internal.protolog.ProtoLogDataSource.Instance.ProtoLogTracingInstanceStopCallback;
 import com.android.internal.protolog.common.LogLevel;
 
 import java.io.IOException;
@@ -58,11 +61,9 @@ public class ProtoLogDataSource extends DataSource<ProtoLogDataSource.Instance,
     private final Map<Integer, ProtoLogConfig> mRunningInstances = new TreeMap<>();
 
     @NonNull
-    private final Set<Instance.TracingInstanceStartCallback> mOnStartCallbacks = new HashSet<>();
+    private final Set<ProtoLogTracingInstanceStartCallback> mOnStartCallbacks = new HashSet<>();
     @NonNull
-    private final Set<Instance.TracingFlushCallback> mOnFlushCallbacks = new HashSet<>();
-    @NonNull
-    private final Set<Instance.TracingInstanceStopCallback> mOnStopCallbacks = new HashSet<>();
+    private final Set<ProtoLogTracingInstanceStopCallback> mOnStopCallbacks = new HashSet<>();
 
     public ProtoLogDataSource() {
         this(DATASOURCE_NAME);
@@ -103,7 +104,7 @@ public class ProtoLogDataSource extends DataSource<ProtoLogDataSource.Instance,
 
         return new Instance(
                 this, instanceIndex, config, this::executeOnStartCallbacks,
-                this::executeOnFlushCallbacks, this::executeOnStopCallbacks);
+                this::executeOnStopCallbacks);
     }
 
     @Override
@@ -132,7 +133,7 @@ public class ProtoLogDataSource extends DataSource<ProtoLogDataSource.Instance,
      * @param onStartCallback The callback to call on starting a tracing instance.
      */
     public synchronized void registerOnStartCallback(
-            Instance.TracingInstanceStartCallback onStartCallback) {
+            ProtoLogTracingInstanceStartCallback onStartCallback) {
         mOnStartCallbacks.add(onStartCallback);
 
         mRunningInstances.forEach((index, config) -> {
@@ -141,18 +142,10 @@ public class ProtoLogDataSource extends DataSource<ProtoLogDataSource.Instance,
     }
 
     /**
-     * Register an onFlush callback that will be called when a tracing instance is about to flush.
-     * @param onFlushCallback The callback to call on flushing a tracing instance
-     */
-    public void registerOnFlushCallback(Instance.TracingFlushCallback onFlushCallback) {
-        mOnFlushCallbacks.add(onFlushCallback);
-    }
-
-    /**
      * Register an onStop callback that will be called when a tracing instance is being stopped.
      * @param onStopCallback The callback to call on stopping a tracing instance.
      */
-    public void registerOnStopCallback(Instance.TracingInstanceStopCallback onStopCallback) {
+    public void registerOnStopCallback(ProtoLogTracingInstanceStopCallback onStopCallback) {
         mOnStopCallbacks.add(onStopCallback);
     }
 
@@ -160,23 +153,16 @@ public class ProtoLogDataSource extends DataSource<ProtoLogDataSource.Instance,
      * Unregister an onStart callback.
      * @param onStartCallback The callback object to unregister.
      */
-    public void unregisterOnStartCallback(Instance.TracingInstanceStartCallback onStartCallback) {
+    public void unregisterOnStartCallback(
+            ProtoLogTracingInstanceStartCallback onStartCallback) {
         mOnStartCallbacks.remove(onStartCallback);
-    }
-
-    /**
-     * Unregister an onFlush callback.
-     * @param onFlushCallback The callback object to unregister.
-     */
-    public void unregisterOnFlushCallback(Instance.TracingFlushCallback onFlushCallback) {
-        mOnFlushCallbacks.remove(onFlushCallback);
     }
 
     /**
      * Unregister an onStop callback.
      * @param onStopCallback The callback object to unregister.
      */
-    public void unregisterOnStopCallback(Instance.TracingInstanceStopCallback onStopCallback) {
+    public void unregisterOnStopCallback(ProtoLogTracingInstanceStopCallback onStopCallback) {
         mOnStopCallbacks.remove(onStopCallback);
     }
 
@@ -185,12 +171,6 @@ public class ProtoLogDataSource extends DataSource<ProtoLogDataSource.Instance,
 
         for (var onStart : mOnStartCallbacks) {
             onStart.onTracingInstanceStart(instanceIdx, config);
-        }
-    }
-
-    private void executeOnFlushCallbacks() {
-        for (var onFlush : mOnFlushCallbacks) {
-            onFlush.onTracingFlush();
         }
     }
 
@@ -383,7 +363,7 @@ public class ProtoLogDataSource extends DataSource<ProtoLogDataSource.Instance,
     public static class Instance extends DataSourceInstance {
 
         @FunctionalInterface
-        public interface TracingInstanceStartCallback {
+        public interface ProtoLogTracingInstanceStartCallback {
             /**
              * Execute the tracing instance's onStart callback.
              * @param instanceIdx The index of the tracing instance we are executing the callback
@@ -395,15 +375,7 @@ public class ProtoLogDataSource extends DataSource<ProtoLogDataSource.Instance,
         }
 
         @FunctionalInterface
-        public interface TracingFlushCallback {
-            /**
-             * Execute the tracing instance's onFlush callback.
-             */
-            void onTracingFlush();
-        }
-
-        @FunctionalInterface
-        public interface TracingInstanceStopCallback {
+        public interface ProtoLogTracingInstanceStopCallback {
             /**
              * Execute the tracing instance's onStop callback.
              * @param instanceIdx The index of the tracing instance we are executing the callback
@@ -416,11 +388,9 @@ public class ProtoLogDataSource extends DataSource<ProtoLogDataSource.Instance,
 
 
         @NonNull
-        private final TracingInstanceStartCallback mOnStart;
+        private final ProtoLogTracingInstanceStartCallback mOnStart;
         @NonNull
-        private final TracingFlushCallback mOnFlush;
-        @NonNull
-        private final TracingInstanceStopCallback mOnStop;
+        private final ProtoLogTracingInstanceStopCallback mOnStop;
         @NonNull
         private final ProtoLogConfig mConfig;
         private final int mInstanceIndex;
@@ -429,30 +399,33 @@ public class ProtoLogDataSource extends DataSource<ProtoLogDataSource.Instance,
                 @NonNull DataSource<Instance, TlsState, IncrementalState> dataSource,
                 int instanceIdx,
                 @NonNull ProtoLogConfig config,
-                @NonNull TracingInstanceStartCallback onStart,
-                @NonNull TracingFlushCallback onFlush,
-                @NonNull TracingInstanceStopCallback onStop
+                @NonNull ProtoLogTracingInstanceStartCallback onStart,
+                @NonNull ProtoLogTracingInstanceStopCallback onStop
         ) {
             super(dataSource, instanceIdx);
             this.mInstanceIndex = instanceIdx;
             this.mOnStart = onStart;
-            this.mOnFlush = onFlush;
             this.mOnStop = onStop;
             this.mConfig = config;
         }
 
+        @CallSuper
         @Override
         public void onStart(StartCallbackArguments args) {
+            super.onStart(args);
             this.mOnStart.onTracingInstanceStart(this.mInstanceIndex, this.mConfig);
         }
 
+        @CallSuper
         @Override
         public void onFlush(FlushCallbackArguments args) {
-            this.mOnFlush.onTracingFlush();
+            super.onFlush(args);
         }
 
+        @CallSuper
         @Override
         public void onStop(StopCallbackArguments args) {
+            super.onStop(args);
             this.mOnStop.onTracingInstanceStop(this.mInstanceIndex, this.mConfig);
         }
     }
