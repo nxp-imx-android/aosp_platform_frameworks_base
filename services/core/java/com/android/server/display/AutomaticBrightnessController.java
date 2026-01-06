@@ -1425,6 +1425,10 @@ public class AutomaticBrightnessController {
                 // The time received from the sensor is in nano seconds, hence changing it to ms
                 final long time = TimeUnit.NANOSECONDS.toMillis(event.timestamp);
                 final float lux = event.values[0];
+                if (Float.isNaN(lux)) {
+                    Slog.e(TAG, "Light sensor reported NaN lux value, ignoring.");
+                    return;
+                }
                 handleLightSensorEvent(time, lux);
             }
         }
