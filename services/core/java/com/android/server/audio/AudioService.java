@@ -1316,7 +1316,11 @@ public class AudioService extends IAudioService.Stub
     private final Object mSupportedSystemUsagesLock = new Object();
     @GuardedBy("mSupportedSystemUsagesLock")
     private @AttributeSystemUsage int[] mSupportedSystemUsages =
-            new int[]{AudioAttributes.USAGE_CALL_ASSISTANT};
+            new int[] {
+                AudioAttributes.USAGE_CALL_ASSISTANT,
+                AudioAttributes.USAGE_NOTIFICATION_VIBRATION,
+                AudioAttributes.USAGE_RINGTONE_VIBRATION
+            };
 
     // Tracks the API/shell override of hardening enforcement used for debugging
     // When this is set to true, enforcement is on regardless of flag state and any specific
