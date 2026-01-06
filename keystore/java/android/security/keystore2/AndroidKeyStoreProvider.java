@@ -214,7 +214,7 @@ public class AndroidKeyStoreProvider extends Provider {
      * @param metadata The key metadata which includes the public key material, a reference to the
      *                 stored private key material, the key characteristics.
      * @param iSecurityLevel A binder interface that allows using the private key.
-     * @param algorithm Must indicate EC or RSA.
+     * @param algorithm Must indicate EC, RSA, or ML-DSA.
      * @return AndroidKeyStorePublicKey
      * @throws UnrecoverableKeyException
      * @hide
@@ -262,6 +262,11 @@ public class AndroidKeyStoreProvider extends Provider {
         } else if (X25519_ALIAS.equalsIgnoreCase(jcaKeyAlgorithm)) {
             return new AndroidKeyStoreXDHPublicKey(descriptor, metadata, X25519_ALIAS,
                     iSecurityLevel, publicKey.getEncoded());
+        } else if (KeyProperties.KEY_ALGORITHM_ML_DSA.equalsIgnoreCase(jcaKeyAlgorithm)
+                || KeyProperties.KEY_ALGORITHM_ML_DSA_65.equalsIgnoreCase(jcaKeyAlgorithm)
+                || KeyProperties.KEY_ALGORITHM_ML_DSA_87.equalsIgnoreCase(jcaKeyAlgorithm)) {
+            return new AndroidKeyStoreMlDsaPublicKey(
+                    descriptor, metadata, iSecurityLevel, parsedX509Certificate);
         } else {
             throw new ProviderException("Unsupported Android Keystore public key algorithm: "
                     + jcaKeyAlgorithm);
@@ -455,8 +460,11 @@ public class AndroidKeyStoreProvider extends Provider {
                 keymasterAlgorithm == KeymasterDefs.KM_ALGORITHM_3DES) {
             return makeAndroidKeyStoreSecretKeyFromKeyEntryResponse(descriptor, response,
                     keymasterAlgorithm, keymasterDigest);
-        } else if (keymasterAlgorithm == KeymasterDefs.KM_ALGORITHM_RSA ||
-                keymasterAlgorithm == KeymasterDefs.KM_ALGORITHM_EC) {
+        } else if (keymasterAlgorithm == KeymasterDefs.KM_ALGORITHM_RSA
+                || keymasterAlgorithm == KeymasterDefs.KM_ALGORITHM_EC
+                || keymasterAlgorithm == KeyProperties.KM_ALGORITHM_ML_DSA) {
+            // TODO(b/462036047): Replace KeyProperties.KM_ALGORITHM_ML_DSA with
+            // KeymasterDefs.KM_ALGORITHM_ML_DSA when KeyMint V5 is frozen.
             return makeAndroidKeyStorePublicKeyFromKeyEntryResponse(descriptor, response.metadata,
                     new KeyStoreSecurityLevel(response.iSecurityLevel),
                     keymasterAlgorithm);

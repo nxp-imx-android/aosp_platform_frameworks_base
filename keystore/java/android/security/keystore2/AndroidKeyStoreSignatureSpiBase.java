@@ -42,7 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Base class for {@link SignatureSpi} implementations of Android KeyStore backed ciphers.
+ * Base class for {@link SignatureSpi} implementations backed by Android Keystore.
  *
  * @hide
  */
@@ -79,7 +79,7 @@ abstract class AndroidKeyStoreSignatureSpiBase extends SignatureSpi
     private Exception mCachedException;
 
     /**
-     * This signature object is used for public key operations, i.e, signatrue verification.
+     * This signature object is used for public key operations, i.e. signature verification.
      * The Android Keystore backend does not perform public key operations and defers to the
      * Highest priority provider.
      */
@@ -97,7 +97,7 @@ abstract class AndroidKeyStoreSignatureSpiBase extends SignatureSpi
     }
 
     @Override
-    protected final void engineInitSign(PrivateKey key) throws InvalidKeyException {
+    protected void engineInitSign(PrivateKey key) throws InvalidKeyException {
         engineInitSign(key, null);
     }
 
@@ -130,7 +130,7 @@ abstract class AndroidKeyStoreSignatureSpiBase extends SignatureSpi
     }
 
     @Override
-    protected final void engineInitVerify(PublicKey publicKey) throws InvalidKeyException {
+    protected void engineInitVerify(PublicKey publicKey) throws InvalidKeyException {
         resetAll();
 
         try {
@@ -203,7 +203,7 @@ abstract class AndroidKeyStoreSignatureSpiBase extends SignatureSpi
         }
 
         List<KeyParameter> parameters = new ArrayList<>();
-        addAlgorithmSpecificParametersToBegin(parameters);
+        addAlgorithmSpecificParametersToBegin(mKey, parameters);
 
         int purpose = mSigning ? KeymasterDefs.KM_PURPOSE_SIGN : KeymasterDefs.KM_PURPOSE_VERIFY;
 
@@ -375,11 +375,13 @@ abstract class AndroidKeyStoreSignatureSpiBase extends SignatureSpi
     }
 
     /**
-     * Invoked to add algorithm-specific parameters for the KeyStore's {@code begin} operation.
+     * Adds algorithm-specific parameters for the KeyStore's {@code begin} operation.
      *
+     * @param key the key to be used for the signature operation.
      * @param parameters keystore/keymaster arguments to be populated with algorithm-specific
      *        parameters.
      */
     protected abstract void addAlgorithmSpecificParametersToBegin(
+            @NonNull AndroidKeyStoreKey key,
             @NonNull List<KeyParameter> parameters);
 }

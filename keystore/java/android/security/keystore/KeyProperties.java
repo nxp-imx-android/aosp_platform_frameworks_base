@@ -293,6 +293,9 @@ public abstract class KeyProperties {
                     return KEY_ALGORITHM_EC;
                 case KeymasterDefs.KM_ALGORITHM_RSA:
                     return KEY_ALGORITHM_RSA;
+                // TODO(b/462036047): Replace with KeymasterDefs constant when KeyMint V5 is frozen.
+                case KM_ALGORITHM_ML_DSA:
+                    return KEY_ALGORITHM_ML_DSA;
                 default:
                     throw new IllegalArgumentException(
                             "Unsupported key algorithm: " + keymasterAlgorithm);
