@@ -169,6 +169,11 @@ public class PackageInfoCommonUtils {
                         info.requestedPermissionsFlags[index] |=
                                 PackageInfo.REQUESTED_PERMISSION_NEVER_FOR_LOCATION;
                     }
+                    if ((usesPermission.getUsesPermissionFlags()
+                                    & ParsedUsesPermission.FLAG_ONLY_FOR_LOCATION_BUTTON) != 0) {
+                        info.requestedPermissionsFlags[index] |=
+                                PackageInfo.REQUESTED_PERMISSION_ONLY_FOR_LOCATION_BUTTON;
+                    }
                     if (pkg.getImplicitPermissions().contains(info.requestedPermissions[index])) {
                         info.requestedPermissionsFlags[index] |=
                                 PackageInfo.REQUESTED_PERMISSION_IMPLICIT;
