@@ -98,7 +98,6 @@ import com.android.systemui.statusbar.notification.collection.notifcollection.No
 import com.android.systemui.statusbar.notification.collection.notifcollection.UpdateSource;
 import com.android.systemui.statusbar.notification.collection.provider.NotificationDismissibilityProvider;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.util.concurrency.FakeExecutor;
 import com.android.systemui.util.time.FakeSystemClock;
 
@@ -1815,13 +1814,7 @@ public class NotifCollectionTest extends SysuiTestCase {
     }
 
     private static EntryWithDismissStats entryWithDefaultStats(NotificationEntry entry) {
-        if (NotificationBundleUi.isEnabled()) {
-            return new EntryWithDismissStats(
-                    null, defaultStats(entry), entry.getKey(), entry.hashCode());
-        } else {
-            return new EntryWithDismissStats(
-                    entry, defaultStats(entry), entry.getKey(), entry.hashCode());
-        }
+        return new EntryWithDismissStats(defaultStats(entry), entry.getKey(), entry.hashCode());
     }
 
     private CollectionEvent postNotif(NotificationEntryBuilder builder) {

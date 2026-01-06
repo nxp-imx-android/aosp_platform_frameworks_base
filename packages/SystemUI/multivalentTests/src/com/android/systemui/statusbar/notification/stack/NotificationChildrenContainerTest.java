@@ -39,7 +39,6 @@ import com.android.systemui.statusbar.notification.collection.BundleSpec;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModel;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -98,7 +97,6 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testGetMaxAllowedVisibleChildren_bundle_userSwipingToExpandRow() {
         ComposeView headerView = new ComposeView(mContext);
         mBundle.setBundleHeaderView(headerView);
@@ -135,7 +133,6 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testGetMaxAllowedVisibleChildren_bundle_likeCollapsed() {
         ComposeView headerView = new ComposeView(mContext);
         // This will initialize the bundle's children container
@@ -149,7 +146,6 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
 
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testGetMaxAllowedVisibleChildren_bundle_expandedChildren() {
         ComposeView headerView = new ComposeView(mContext);
         mBundle.setBundleHeaderView(headerView);
@@ -163,7 +159,6 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testExpandedClipRect_bundle_expandedChildren_requiresExtraClipping() {
         ComposeView headerView = new ComposeView(mContext);
         mBundle.setBundleHeaderView(headerView);
@@ -177,7 +172,6 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testExpandedClipRect_bundle_notExpandedChildren_doesNotRequireExtraClipping() {
         ComposeView headerView = new ComposeView(mContext);
         mBundle.setBundleHeaderView(headerView);

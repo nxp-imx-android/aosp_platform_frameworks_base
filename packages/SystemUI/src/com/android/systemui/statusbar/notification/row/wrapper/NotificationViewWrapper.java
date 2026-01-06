@@ -45,7 +45,6 @@ import com.android.systemui.statusbar.TransformableView;
 import com.android.systemui.statusbar.notification.NotificationFadeAware;
 import com.android.systemui.statusbar.notification.TransformState;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 /**
  * Wraps the actual notification content view; used to implement behaviors which are different for
@@ -83,10 +82,7 @@ public abstract class NotificationViewWrapper implements TransformableView {
                 return new NotificationMetricTemplateViewWrapper(ctx, v, row);
             }
 
-            if (NotificationBundleUi.isEnabled()
-                    ? row.getEntryAdapter().getSbn().getNotification().isStyle(
-                    Notification.DecoratedCustomViewStyle.class)
-                    : row.getEntryLegacy().getSbn().getNotification().isStyle(
+            if (row.getEntryAdapter().getSbn().getNotification().isStyle(
                     Notification.DecoratedCustomViewStyle.class)) {
                 return new NotificationDecoratedCustomViewWrapper(ctx, v, row);
             }
@@ -140,9 +136,7 @@ public abstract class NotificationViewWrapper implements TransformableView {
         }
 
         // Apps targeting Q should fix their dark mode bugs.
-        int targetSdk = NotificationBundleUi.isEnabled()
-                ? mRow.getEntryAdapter().getTargetSdk()
-                : mRow.getEntryLegacy().targetSdk;
+        int targetSdk = mRow.getEntryAdapter().getTargetSdk();
         if (targetSdk >= Build.VERSION_CODES.Q) {
             return false;
         }

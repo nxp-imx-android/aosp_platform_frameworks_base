@@ -75,7 +75,6 @@ import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor;
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController;
 import com.android.systemui.util.kotlin.JavaAdapter;
@@ -287,12 +286,8 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
     protected boolean bindGuts(final ExpandableNotificationRow row,
             NotificationMenuRowPlugin.MenuItem item) {
 
-        StatusBarNotification sbn = NotificationBundleUi.isEnabled()
-                ? row.getEntryAdapter().getSbn()
-                : row.getEntryLegacy().getSbn();
-        NotificationListenerService.Ranking ranking  = NotificationBundleUi.isEnabled()
-                ? row.getEntryAdapter().getRanking()
-                : row.getEntryLegacy().getRanking();
+        StatusBarNotification sbn = row.getEntryAdapter().getSbn();
+        NotificationListenerService.Ranking ranking  = row.getEntryAdapter().getRanking();
 
         if ((sbn == null || ranking == null) && !row.isBundle()) {
             // only valid for notification rows
@@ -314,18 +309,10 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 mNotificationGutsExposed = null;
             }
             if (mGutsListener != null) {
-                if (NotificationBundleUi.isEnabled()) {
-                    mGutsListener.onGutsClose(row.getEntryAdapter());
-                    row.updateBubbleButton();
-                } else {
-                    mGutsListener.onGutsClose(row.getEntryLegacy());
-                }
+                mGutsListener.onGutsClose(row.getEntryAdapter());
+                row.updateBubbleButton();
             }
-            if(NotificationBundleUi.isEnabled()) {
-                row.getEntryAdapter().setInlineControlsShown(false);
-            } else {
-                mHeadsUpManager.setGutsShown(row.getEntryLegacy(), false);
-            }
+            row.getEntryAdapter().setInlineControlsShown(false);
         });
 
         Object gutsContent = item.getGutsContent();
@@ -436,20 +423,15 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 packageName,
                 ranking,
                 sbn,
-                NotificationBundleUi.isEnabled() ? null : row.getEntryLegacy(),
-                NotificationBundleUi.isEnabled() ? row.getEntryAdapter() : null,
+                row.getEntryAdapter(),
                 onSettingsClick,
                 null,
                 onNasFeedbackClick,
                 mUiEventLogger,
                 mDeviceProvisionedController.isDeviceProvisioned(),
-                NotificationBundleUi.isEnabled()
-                        ? !row.getEntryAdapter().isBlockable()
-                        : row.getIsNonblockable(),
+                !row.getEntryAdapter().isBlockable(),
                 row.canViewBeDismissed(),
-                NotificationBundleUi.isEnabled()
-                        ? row.getEntryAdapter().isHighPriority()
-                        : mHighPriorityProvider.isHighPriority(row.getEntryLegacy()),
+                row.getEntryAdapter().isHighPriority(),
                 mMetricsLogger,
                 row.getDismissButtonOnClickListener());
     }
@@ -510,20 +492,15 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 packageName,
                 ranking,
                 sbn,
-                NotificationBundleUi.isEnabled() ? null : row.getEntryLegacy(),
-                NotificationBundleUi.isEnabled() ? row.getEntryAdapter() : null,
+                row.getEntryAdapter(),
                 onSettingsClick,
                 onAppSettingsClick,
                 onNasFeedbackClick,
                 mUiEventLogger,
                 mDeviceProvisionedController.isDeviceProvisioned(),
-                NotificationBundleUi.isEnabled()
-                        ? !row.getEntryAdapter().isBlockable()
-                        : row.getIsNonblockable(),
+                !row.getEntryAdapter().isBlockable(),
                 row.canViewBeDismissed(),
-                NotificationBundleUi.isEnabled()
-                        ? row.getEntryAdapter().isHighPriority()
-                        : mHighPriorityProvider.isHighPriority(row.getEntryLegacy()),
+                row.getEntryAdapter().isHighPriority(),
                 mMetricsLogger,
                 row.getDismissButtonOnClickListener());
     }
@@ -570,9 +547,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 onSettingsClick,
                 onNasFeedbackClick,
                 mDeviceProvisionedController.isDeviceProvisioned(),
-                NotificationBundleUi.isEnabled()
-                        ? !row.getEntryAdapter().isBlockable()
-                        : row.getIsNonblockable());
+                !row.getEntryAdapter().isBlockable());
     }
 
     /**
@@ -625,8 +600,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 mNotificationManager,
                 mOnUserInteractionCallback,
                 packageName,
-                NotificationBundleUi.isEnabled() ? null : row.getEntryLegacy(),
-                NotificationBundleUi.isEnabled() ? row.getEntryAdapter() : null,
+                row.getEntryAdapter(),
                 ranking,
                 sbn,
                 onSettingsClick,
@@ -803,21 +777,13 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                     row::onGutsOpened);
 
             if (mGutsListener != null) {
-                if (NotificationBundleUi.isEnabled()) {
-                    mGutsListener.onGutsOpen(row.getEntryAdapter(), guts);
-                } else {
-                    mGutsListener.onGutsOpen(row.getEntryLegacy(), guts);
-                }
+                mGutsListener.onGutsOpen(row.getEntryAdapter(), guts);
             }
 
             row.closeRemoteInput();
             mListContainer.onHeightChanged(row, true /* needsAnimation */,
                     "NGM.openGutsInternal");
-            if (NotificationBundleUi.isEnabled()) {
-                row.getEntryAdapter().setInlineControlsShown(true);
-            } else {
-                mHeadsUpManager.setGutsShown(row.getEntryLegacy(), true);
-            }
+            row.getEntryAdapter().setInlineControlsShown(true);
         };
         guts.post(mOpenRunnable);
         return true;

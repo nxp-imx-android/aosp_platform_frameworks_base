@@ -74,7 +74,6 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.plugga
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.Pluggable;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CollectionReadyForBuildListener;
 import com.android.systemui.statusbar.notification.shared.NmContextualDisplay;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt;
 import com.android.systemui.util.Assert;
 import com.android.systemui.util.NamedListenerSet;
@@ -468,11 +467,9 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
         pruneIncompleteGroups(mNotifList);
 
         // Step 3.5: Bundle notifications according to classification
-        if (NotificationBundleUi.isEnabled()) {
-            bundleNotifs(mNotifList, mNewNotifList);
-            applyNewNotifList();
-            debugList("after bundling");
-        }
+        bundleNotifs(mNotifList, mNewNotifList);
+        applyNewNotifList();
+        debugList("after bundling");
 
         // Step 4: Group transforming
         // Move some notifs out of their groups and up to top-level (mostly used for heads-upping)
@@ -1688,12 +1685,8 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
         entry.getAttachState().setExcludingFilter(filter);
         if (filter != null) {
             // notification is removed from the list, so we reset its initialization time
-            if (NotificationBundleUi.isEnabled()) {
-                if (entry.getRow() != null) {
-                    entry.getRow().resetInitializationTime();
-                }
-            } else {
-                entry.resetInitializationTime();
+            if (entry.getRow() != null) {
+                entry.getRow().resetInitializationTime();
             }
         }
         return filter != null;

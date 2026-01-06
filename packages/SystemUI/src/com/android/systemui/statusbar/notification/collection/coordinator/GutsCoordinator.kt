@@ -34,7 +34,6 @@ import com.android.systemui.statusbar.notification.collection.render.NotifGutsVi
 import com.android.systemui.statusbar.notification.collection.render.NotifGutsViewManager
 import com.android.systemui.statusbar.notification.row.NotificationGuts
 import com.android.systemui.statusbar.notification.row.NotificationGutsManager
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.util.asIndenting
 import com.android.systemui.util.printCollection
 import com.android.systemui.util.printSection
@@ -122,25 +121,7 @@ constructor(
 
     private val mGutsListener: NotifGutsViewListener =
         object : NotifGutsViewListener {
-            override fun onGutsOpen(entry: NotificationEntry, guts: NotificationGuts) {
-                NotificationBundleUi.assertInLegacyMode()
-                logger.logGutsOpened(entry.key, guts)
-                if (guts.isLeavebehind) {
-                    // leave-behind guts should not extend the lifetime of the notification
-                    closeGutsAndEndLifetimeExtension(entry)
-                } else {
-                    notifsWithOpenGuts.add(entry.key)
-                }
-            }
-
-            override fun onGutsClose(entry: NotificationEntry) {
-                NotificationBundleUi.assertInLegacyMode()
-                logger.logGutsClosed(entry.key)
-                closeGutsAndEndLifetimeExtension(entry)
-            }
-
             override fun onGutsOpen(entryAdapter: EntryAdapter, guts: NotificationGuts) {
-                NotificationBundleUi.isUnexpectedlyInLegacyMode()
                 logger.logGutsOpened(entryAdapter.key, guts)
                 if (guts.isLeavebehind) {
                     // leave-behind guts should not extend the lifetime of the notification
@@ -151,7 +132,6 @@ constructor(
             }
 
             override fun onGutsClose(entryAdapter: EntryAdapter) {
-                NotificationBundleUi.isUnexpectedlyInLegacyMode()
                 logger.logGutsClosed(entryAdapter.key)
                 closeGutsAndEndLifetimeExtension(entryAdapter)
             }

@@ -16,8 +16,6 @@
 package com.android.systemui.statusbar.notification.collection.coordinator
 
 import android.os.Handler
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -35,7 +33,6 @@ import com.android.systemui.statusbar.notification.collection.render.NotifGutsVi
 import com.android.systemui.statusbar.notification.row.NotificationGuts
 import com.android.systemui.statusbar.notification.row.NotificationGuts.GutsContent
 import com.android.systemui.statusbar.notification.row.entryAdapterFactory
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.withArgCaptor
 import com.google.common.truth.Truth.assertThat
@@ -91,7 +88,6 @@ class GutsCoordinatorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSimpleLifetimeExtension() {
         assertThat(notifLifetimeExtender.maybeExtendLifetime(entry1, 0)).isFalse()
         notifGutsViewListener.onGutsOpen(entryAdapter1, notificationGuts)
@@ -102,7 +98,6 @@ class GutsCoordinatorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testDoubleOpenLifetimeExtension() {
         assertThat(notifLifetimeExtender.maybeExtendLifetime(entry1, 0)).isFalse()
         notifGutsViewListener.onGutsOpen(entryAdapter1, notificationGuts)
@@ -115,7 +110,6 @@ class GutsCoordinatorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testTwoEntryLifetimeExtension() {
         assertThat(notifLifetimeExtender.maybeExtendLifetime(entry1, 0)).isFalse()
         assertThat(notifLifetimeExtender.maybeExtendLifetime(entry2, 0)).isFalse()
@@ -130,51 +124,6 @@ class GutsCoordinatorTest : SysuiTestCase() {
         assertThat(notifLifetimeExtender.maybeExtendLifetime(entry1, 0)).isFalse()
         assertThat(notifLifetimeExtender.maybeExtendLifetime(entry2, 0)).isTrue()
         notifGutsViewListener.onGutsClose(entryAdapter2)
-        verify(lifetimeExtenderCallback).onEndLifetimeExtension(notifLifetimeExtender, entry2)
-        assertThat(notifLifetimeExtender.maybeExtendLifetime(entry1, 0)).isFalse()
-        assertThat(notifLifetimeExtender.maybeExtendLifetime(entry2, 0)).isFalse()
-    }
-
-    @Test
-    @DisableFlags(NotificationBundleUi.FLAG_NAME)
-    fun testSimpleLifetimeExtension_entry() {
-        assertThat(notifLifetimeExtender.maybeExtendLifetime(entry1, 0)).isFalse()
-        notifGutsViewListener.onGutsOpen(entry1, notificationGuts)
-        assertThat(notifLifetimeExtender.maybeExtendLifetime(entry1, 0)).isTrue()
-        notifGutsViewListener.onGutsClose(entry1)
-        verify(lifetimeExtenderCallback).onEndLifetimeExtension(notifLifetimeExtender, entry1)
-        assertThat(notifLifetimeExtender.maybeExtendLifetime(entry1, 0)).isFalse()
-    }
-
-    @Test
-    @DisableFlags(NotificationBundleUi.FLAG_NAME)
-    fun testDoubleOpenLifetimeExtension_entry() {
-        assertThat(notifLifetimeExtender.maybeExtendLifetime(entry1, 0)).isFalse()
-        notifGutsViewListener.onGutsOpen(entry1, notificationGuts)
-        assertThat(notifLifetimeExtender.maybeExtendLifetime(entry1, 0)).isTrue()
-        notifGutsViewListener.onGutsOpen(entry1, notificationGuts)
-        assertThat(notifLifetimeExtender.maybeExtendLifetime(entry1, 0)).isTrue()
-        notifGutsViewListener.onGutsClose(entry1)
-        verify(lifetimeExtenderCallback).onEndLifetimeExtension(notifLifetimeExtender, entry1)
-        assertThat(notifLifetimeExtender.maybeExtendLifetime(entry1, 0)).isFalse()
-    }
-
-    @Test
-    @DisableFlags(NotificationBundleUi.FLAG_NAME)
-    fun testTwoEntryLifetimeExtension_entry() {
-        assertThat(notifLifetimeExtender.maybeExtendLifetime(entry1, 0)).isFalse()
-        assertThat(notifLifetimeExtender.maybeExtendLifetime(entry2, 0)).isFalse()
-        notifGutsViewListener.onGutsOpen(entry1, notificationGuts)
-        assertThat(notifLifetimeExtender.maybeExtendLifetime(entry1, 0)).isTrue()
-        assertThat(notifLifetimeExtender.maybeExtendLifetime(entry2, 0)).isFalse()
-        notifGutsViewListener.onGutsOpen(entry2, notificationGuts)
-        assertThat(notifLifetimeExtender.maybeExtendLifetime(entry1, 0)).isTrue()
-        assertThat(notifLifetimeExtender.maybeExtendLifetime(entry2, 0)).isTrue()
-        notifGutsViewListener.onGutsClose(entry1)
-        verify(lifetimeExtenderCallback).onEndLifetimeExtension(notifLifetimeExtender, entry1)
-        assertThat(notifLifetimeExtender.maybeExtendLifetime(entry1, 0)).isFalse()
-        assertThat(notifLifetimeExtender.maybeExtendLifetime(entry2, 0)).isTrue()
-        notifGutsViewListener.onGutsClose(entry2)
         verify(lifetimeExtenderCallback).onEndLifetimeExtension(notifLifetimeExtender, entry2)
         assertThat(notifLifetimeExtender.maybeExtendLifetime(entry1, 0)).isFalse()
         assertThat(notifLifetimeExtender.maybeExtendLifetime(entry2, 0)).isFalse()

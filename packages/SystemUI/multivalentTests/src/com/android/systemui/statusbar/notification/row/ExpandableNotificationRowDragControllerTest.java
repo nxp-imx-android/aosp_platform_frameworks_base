@@ -45,7 +45,6 @@ import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus;
 import com.android.systemui.statusbar.notification.logging.NotificationPanelLogger;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -90,13 +89,7 @@ public class ExpandableNotificationRowDragControllerTest extends SysuiTestCase {
         mRow.doDragCallback(0, 0);
         verify(controller).startDragAndDrop(mRow);
         verify(mKosmos.getMockHeadsUpManager(), times(1)).releaseAllImmediately(anyString());
-        if (NotificationBundleUi.isEnabled()) {
-            verify(mNotificationPanelLogger, times(1))
-                    .logNotificationDrag(any(EntryAdapter.class));
-        } else {
-            verify(mNotificationPanelLogger, times(1))
-                    .logNotificationDrag(any(NotificationEntry.class));
-        }
+        verify(mNotificationPanelLogger, times(1)).logNotificationDrag(any(EntryAdapter.class));
     }
 
     @Test
@@ -108,13 +101,7 @@ public class ExpandableNotificationRowDragControllerTest extends SysuiTestCase {
         verify(controller).startDragAndDrop(mRow);
         verify(mShadeController).animateCollapseShade(eq(0), eq(true),
                 eq(false), anyFloat());
-        if (NotificationBundleUi.isEnabled()) {
-            verify(mNotificationPanelLogger, times(1))
-                    .logNotificationDrag(any(EntryAdapter.class));
-        } else {
-            verify(mNotificationPanelLogger, times(1))
-                    .logNotificationDrag(any(NotificationEntry.class));
-        }
+        verify(mNotificationPanelLogger, times(1)).logNotificationDrag(any(EntryAdapter.class));
     }
 
     @Test
@@ -130,13 +117,7 @@ public class ExpandableNotificationRowDragControllerTest extends SysuiTestCase {
 
         // Verify that we never start the actual drag since there is no content
         verify(mRow, never()).startDragAndDrop(any(), any(), any(), anyInt());
-        if (NotificationBundleUi.isEnabled()) {
-            verify(mNotificationPanelLogger, never())
-                    .logNotificationDrag(any(EntryAdapter.class));
-        } else {
-            verify(mNotificationPanelLogger, never())
-                    .logNotificationDrag(any(NotificationEntry.class));
-        }
+        verify(mNotificationPanelLogger, never()).logNotificationDrag(any(EntryAdapter.class));
     }
 
     @Test

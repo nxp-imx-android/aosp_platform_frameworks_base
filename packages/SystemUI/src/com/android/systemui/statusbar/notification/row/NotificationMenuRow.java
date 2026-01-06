@@ -51,7 +51,6 @@ import com.android.systemui.statusbar.AlphaOptimizedImageView;
 import com.android.systemui.statusbar.notification.NotificationActivityStarter;
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
 import com.android.systemui.statusbar.notification.row.NotificationGuts.GutsContent;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout;
 
 import kotlin.Unit;
@@ -267,18 +266,9 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
             // Only show snooze for non-foreground notifications, and if the setting is on
             mSnoozeItem = createSnoozeItem(mContext);
         }
-        int personNotifType = NotificationBundleUi.isEnabled()
-                ? mParent.getEntryAdapter().getPeopleNotificationType()
-                : mPeopleNotificationIdentifier.getPeopleNotificationType(mParent.getEntryLegacy());
-        StatusBarNotification sbn = NotificationBundleUi.isEnabled()
-                ? mParent.getEntryAdapter().getSbn()
-                : mParent.getEntryLegacy().getSbn();
-        NotificationListenerService.Ranking ranking = NotificationBundleUi.isEnabled()
-                ? mParent.getEntryAdapter().getRanking()
-                : mParent.getEntryLegacy().getRanking();
-        boolean isBundled = NotificationBundleUi.isEnabled()
-                ? mParent.getEntryAdapter().isBundled()
-                : mParent.getEntryLegacy().isBundled();
+        int personNotifType = mParent.getEntryAdapter().getPeopleNotificationType();
+        StatusBarNotification sbn = mParent.getEntryAdapter().getSbn();
+        boolean isBundled = mParent.getEntryAdapter().isBundled();
         if (android.app.Flags.bridgedNotifications()
                 && sbn != null && sbn.getNotification().getBridgedNotificationMetadata() != null) {
             mInfoItem = createBridgedNotificationItem(mContext);
@@ -288,7 +278,7 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
             mInfoItem = createConversationItem(mContext);
         } else if (sbn != null && sbn.getNotification().isPromotedOngoing()) {
             mInfoItem = createPromotedItem(mContext);
-        } else if (NotificationBundleUi.isEnabled() && isBundled) {
+        } else if (isBundled) {
             mInfoItem = createBundledInfoItem(mContext);
         } else if (mParent.isBundle()) {
             mInfoItem = createBundleHeaderInfoItem();
@@ -300,9 +290,7 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
             mRightMenuItems.add(mSnoozeItem);
         }
         mRightMenuItems.add(mInfoItem);
-        boolean isPromotedOngoing = NotificationBundleUi.isEnabled()
-                ? mParent.getEntryAdapter().isPromotedOngoing()
-                : mParent.getEntryLegacy().isPromotedOngoing();
+        boolean isPromotedOngoing = mParent.getEntryAdapter().isPromotedOngoing();
         if (Flags.permissionHelperInlineUiRichOngoing() && isPromotedOngoing) {
             mRightMenuItems.add(createDemoteItem(mContext));
         }

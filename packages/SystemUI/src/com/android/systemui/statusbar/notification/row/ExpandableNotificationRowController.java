@@ -61,7 +61,6 @@ import com.android.systemui.statusbar.notification.collection.render.NotifViewCo
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
 import com.android.systemui.statusbar.notification.row.dagger.NotificationRowScope;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainerLogger;
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer;
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationRowStatsLogger;
@@ -134,14 +133,11 @@ public class ExpandableNotificationRowController implements NotifViewController 
                 @Override
                 public void onSettingChanged(Uri setting, int userId, String value) {
                     if (BUBBLES_SETTING_URI.equals(setting)) {
-                        if (NotificationBundleUi.isEnabled()
-                                && mView.getEntryAdapter().getSbn() == null) {
+                        if (mView.getEntryAdapter().getSbn() == null) {
                             // only valid for notification rows
                             return;
                         }
-                        final int viewUserId = NotificationBundleUi.isEnabled()
-                            ? mView.getEntryAdapter().getSbn().getUserId()
-                            : mView.getEntryLegacy().getSbn().getUserId();
+                        final int viewUserId = mView.getEntryAdapter().getSbn().getUserId();
                         if (viewUserId == UserHandle.USER_ALL || viewUserId == userId) {
                             mView.getPrivateLayout().setBubblesEnabledForUser(
                                     BUBBLES_SETTING_ENABLED_VALUE.equals(value));
@@ -371,7 +367,6 @@ public class ExpandableNotificationRowController implements NotifViewController 
         mActivatableNotificationViewController.init();
         mView.initialize(
                 mEntryAdapterFactory.create(entry),
-                entry,
                 mRemoteInputViewSubcomponentFactory,
                 loadsGutsAppName(mContext, entry),
                 entry.getKey(),
@@ -425,13 +420,8 @@ public class ExpandableNotificationRowController implements NotifViewController 
         mView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
             public void onViewAttachedToWindow(View v) {
-                if (NotificationBundleUi.isEnabled()) {
-                    mView.setInitializationTime(mClock.elapsedRealtime());
-                    if (mView.getEntryAdapter().getSbn() != null) {
-                        mSettingsController.addCallback(BUBBLES_SETTING_URI, mSettingsListener);
-                    }
-                } else {
-                    mView.getEntryLegacy().setInitializationTime(mClock.elapsedRealtime());
+                mView.setInitializationTime(mClock.elapsedRealtime());
+                if (mView.getEntryAdapter().getSbn() != null) {
                     mSettingsController.addCallback(BUBBLES_SETTING_URI, mSettingsListener);
                 }
                 mPluginManager.addPluginListener(mView,
@@ -470,9 +460,7 @@ public class ExpandableNotificationRowController implements NotifViewController 
     @Override
     @NonNull
     public String getNodeLabel() {
-        return NotificationBundleUi.isEnabled()
-                ? mView.getLoggingKey()
-                : logKey(mView.getEntryLegacy());
+        return mView.getLoggingKey();
     }
 
     @Override

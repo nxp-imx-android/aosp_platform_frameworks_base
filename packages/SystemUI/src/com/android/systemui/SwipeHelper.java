@@ -52,7 +52,6 @@ import com.android.systemui.plugins.FalsingManager;
 import com.android.systemui.plugins.statusbar.NotificationMenuRowPlugin;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.wm.shell.animation.FlingAnimationUtils;
 import com.android.wm.shell.shared.animation.PhysicsAnimator;
 import com.android.wm.shell.shared.animation.PhysicsAnimator.SpringConfig;
@@ -367,8 +366,7 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
                             : mPagingTouchSlop;
                     if (Math.abs(delta) > pagingTouchSlop
                             && Math.abs(delta) > Math.abs(deltaPerpendicular)) {
-                        if (NotificationBundleUi.isEnabled()
-                                && mTouchedView instanceof ExpandableNotificationRow row) {
+                        if (mTouchedView instanceof ExpandableNotificationRow row) {
                             mTouchedView = mCallback.getSwipeTarget(row);
                         }
                         if (mCallback.canChildBeDragged(mTouchedView)) {
@@ -922,17 +920,7 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
         if (mFeatureFlags.isEnabled(Flags.NOTIFICATION_DRAG_TO_CONTENTS)) {
             if (v instanceof ExpandableNotificationRow) {
                 ExpandableNotificationRow enr = (ExpandableNotificationRow) v;
-                if (NotificationBundleUi.isEnabled()) {
-                    return enr.getEntryAdapter().canDragAndDrop();
-                } else {
-                    boolean canBubble = enr.getEntryLegacy().canBubble();
-                    Notification notif = enr.getEntryLegacy().getSbn().getNotification();
-                    PendingIntent dragIntent = notif.contentIntent != null ? notif.contentIntent
-                            : notif.fullScreenIntent;
-                    if (dragIntent != null && dragIntent.isActivity() && !canBubble) {
-                        return true;
-                    }
-                }
+                return enr.getEntryAdapter().canDragAndDrop();
             }
         }
         return false;

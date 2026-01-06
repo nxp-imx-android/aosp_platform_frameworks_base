@@ -52,7 +52,6 @@ import com.android.systemui.statusbar.notification.SourceType;
 import com.android.systemui.statusbar.notification.row.ActivatableNotificationView;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism;
 import com.android.systemui.statusbar.notification.shelf.NotificationShelfBackgroundView;
 import com.android.systemui.statusbar.notification.shelf.NotificationShelfIconContainer;
@@ -695,9 +694,7 @@ public class NotificationShelf extends ActivatableNotificationView {
             // if the shelf is clipped, lets make sure we also clip the icon
             maxTop = Math.max(maxTop, getTranslationY() + clipTopAmount);
         }
-        StatusBarIconView icon = NotificationBundleUi.isEnabled()
-                ? row.getEntryAdapter().getIcons().getShelfIcon()
-                : row.getEntryLegacy().getIcons().getShelfIcon();
+        StatusBarIconView icon = row.getEntryAdapter().getIcons().getShelfIcon();
         float shelfIconPosition = getTranslationY() + icon.getTop() + icon.getTranslationY();
         if (shelfIconPosition < maxTop && !mAmbientState.isFullyHidden()) {
             int top = (int) (maxTop - shelfIconPosition);
@@ -709,9 +706,7 @@ public class NotificationShelf extends ActivatableNotificationView {
     }
 
     private void updateContinuousClipping(final ExpandableNotificationRow row) {
-        StatusBarIconView icon = NotificationBundleUi.isEnabled()
-                ? row.getEntryAdapter().getIcons().getShelfIcon()
-                : row.getEntryLegacy().getIcons().getShelfIcon();
+        StatusBarIconView icon = row.getEntryAdapter().getIcons().getShelfIcon();
         if (icon == null) {
             // TODO(b/399736937) remove this when adding bundle icon implementation
             return;

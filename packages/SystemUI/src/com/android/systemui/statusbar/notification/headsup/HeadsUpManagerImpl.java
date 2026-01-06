@@ -54,7 +54,6 @@ import com.android.systemui.statusbar.notification.data.repository.HeadsUpReposi
 import com.android.systemui.statusbar.notification.data.repository.HeadsUpRowRepository;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.shared.AvalancheReplaceHunWhenCritical;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun;
 import com.android.systemui.statusbar.phone.ExpandHeadsUpOnInlineReply;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
@@ -330,9 +329,6 @@ public class HeadsUpManagerImpl
             // Add new entry and begin managing it
             mHeadsUpEntryMap.put(entry.getKey(), headsUpEntry);
             onEntryAdded(headsUpEntry, requestedPinnedStatus);
-            if (!NotificationBundleUi.isEnabled()) {
-                entry.setIsHeadsUpEntry(true);
-            }
 
             updateNotificationInternal(entry.getKey(), requestedPinnedStatus);
             entry.setInterruption();
@@ -874,17 +870,8 @@ public class HeadsUpManagerImpl
         } else {
             ExpandableNotificationRow topRow = topEntry.getRow();
             if (topEntry.rowIsChildInGroup()) {
-                if (NotificationBundleUi.isEnabled()) {
-                    if (topRow.getNotificationParent() != null) {
-                        topRow = topRow.getNotificationParent();
-                    }
-                } else {
-                    final NotificationEntry groupSummary =
-                            mGroupMembershipManager.getGroupSummary(topEntry);
-                    if (groupSummary != null) {
-                        topEntry = groupSummary;
-                        topRow = topEntry.getRow();
-                    }
+                if (topRow.getNotificationParent() != null) {
+                    topRow = topRow.getNotificationParent();
                 }
             }
 
@@ -1109,22 +1096,8 @@ public class HeadsUpManagerImpl
     @Override
     public void setExpanded(@NonNull String entryKey, @NonNull ExpandableNotificationRow row,
             boolean expanded) {
-        NotificationBundleUi.unsafeAssertInNewMode();
         HeadsUpEntry headsUpEntry = getHeadsUpEntry(entryKey);
         if (headsUpEntry != null && row.getPinnedStatus().isPinned()) {
-            headsUpEntry.setExpanded(expanded);
-        }
-    }
-
-    /**
-     * Set an entry to be expanded and therefore stick in the heads up area if it's pinned
-     * until it's collapsed again.
-     */
-    @Override
-    public void setExpanded(@NonNull NotificationEntry entry, boolean expanded) {
-        NotificationBundleUi.assertInLegacyMode();
-        HeadsUpEntry headsUpEntry = getHeadsUpEntry(entry.getKey());
-        if (headsUpEntry != null && entry.isRowPinned()) {
             headsUpEntry.setExpanded(expanded);
         }
     }

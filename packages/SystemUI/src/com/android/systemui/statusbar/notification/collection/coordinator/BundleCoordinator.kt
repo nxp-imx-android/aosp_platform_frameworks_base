@@ -17,10 +17,6 @@
 package com.android.systemui.statusbar.notification.collection.coordinator
 
 import android.app.INotificationManager
-import android.app.NotificationChannel.NEWS_ID
-import android.app.NotificationChannel.PROMOTIONS_ID
-import android.app.NotificationChannel.RECS_ID
-import android.app.NotificationChannel.SOCIAL_MEDIA_ID
 import android.app.NotificationManager.ACTION_DYNAMIC_BUNDLE_MODIFIED
 import android.app.NotificationManager.DYNAMIC_BUNDLE_MODIFICATION_TYPE_ADDED
 import android.app.NotificationManager.DYNAMIC_BUNDLE_MODIFICATION_TYPE_REMOVED
@@ -55,20 +51,9 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.OnBefo
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.Invalidator
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifBundler
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifFilter
-import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifSectioner
 import com.android.systemui.statusbar.notification.collection.render.BundleBarn
-import com.android.systemui.statusbar.notification.collection.render.NodeController
-import com.android.systemui.statusbar.notification.dagger.NewsHeader
-import com.android.systemui.statusbar.notification.dagger.PromoHeader
-import com.android.systemui.statusbar.notification.dagger.RecsHeader
-import com.android.systemui.statusbar.notification.dagger.SocialHeader
 import com.android.systemui.statusbar.notification.row.data.model.AppData
 import com.android.systemui.statusbar.notification.shared.NmContextualDisplay
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
-import com.android.systemui.statusbar.notification.stack.BUCKET_NEWS
-import com.android.systemui.statusbar.notification.stack.BUCKET_PROMO
-import com.android.systemui.statusbar.notification.stack.BUCKET_RECS
-import com.android.systemui.statusbar.notification.stack.BUCKET_SOCIAL
 import com.android.systemui.util.time.SystemClock
 import java.util.concurrent.Executor
 import javax.inject.Inject
@@ -80,10 +65,6 @@ import kotlinx.coroutines.launch
 class BundleCoordinator
 @Inject
 constructor(
-    @NewsHeader private val newsHeaderController: NodeController,
-    @SocialHeader private val socialHeaderController: NodeController,
-    @RecsHeader private val recsHeaderController: NodeController,
-    @PromoHeader private val promoHeaderController: NodeController,
     private val bundleBarn: BundleBarn,
     private val systemClock: SystemClock,
     @Application private val coroutineScope: CoroutineScope,
@@ -94,50 +75,6 @@ constructor(
     private val userTracker: UserTracker,
     private val broadcastDispatcher: BroadcastDispatcher,
 ) : Coordinator {
-
-    val newsSectioner =
-        object : NotifSectioner("News", BUCKET_NEWS) {
-            override fun isInSection(entry: PipelineEntry): Boolean {
-                return entry.asListEntry()?.representativeEntry?.channel?.id == NEWS_ID
-            }
-
-            override fun getHeaderNodeController(): NodeController {
-                return newsHeaderController
-            }
-        }
-
-    val socialSectioner =
-        object : NotifSectioner("Social", BUCKET_SOCIAL) {
-            override fun isInSection(entry: PipelineEntry): Boolean {
-                return entry.asListEntry()?.representativeEntry?.channel?.id == SOCIAL_MEDIA_ID
-            }
-
-            override fun getHeaderNodeController(): NodeController {
-                return socialHeaderController
-            }
-        }
-
-    val recsSectioner =
-        object : NotifSectioner("Recommendations", BUCKET_RECS) {
-            override fun isInSection(entry: PipelineEntry): Boolean {
-                return entry.asListEntry()?.representativeEntry?.channel?.id == RECS_ID
-            }
-
-            override fun getHeaderNodeController(): NodeController {
-                return recsHeaderController
-            }
-        }
-
-    val promoSectioner =
-        object : NotifSectioner("Promotions", BUCKET_PROMO) {
-            override fun isInSection(entry: PipelineEntry): Boolean {
-                return entry.asListEntry()?.representativeEntry?.channel?.id == PROMOTIONS_ID
-            }
-
-            override fun getHeaderNodeController(): NodeController {
-                return promoHeaderController
-            }
-        }
 
     val bundler =
         object : NotifBundler("NotifBundler") {
@@ -374,15 +311,13 @@ constructor(
     }
 
     override fun attach(pipeline: NotifPipeline) {
-        if (NotificationBundleUi.isEnabled) {
-            pipeline.setNotifBundler(bundler)
-            pipeline.addOnBeforeFinalizeFilterListener(this::inflateAllBundleEntries)
-            pipeline.addOnBeforeFinalizeFilterListener(bundleCountUpdater)
-            pipeline.addFinalizeFilter(bundleFilter)
-            pipeline.addOnBeforeRenderListListener(bundleMembershipUpdater)
-            pipeline.addOnBeforeRenderListListener(bundleAppDataUpdater)
-            bindOnboardingAffordanceInvalidator(pipeline)
-        }
+        pipeline.setNotifBundler(bundler)
+        pipeline.addOnBeforeFinalizeFilterListener(this::inflateAllBundleEntries)
+        pipeline.addOnBeforeFinalizeFilterListener(bundleCountUpdater)
+        pipeline.addFinalizeFilter(bundleFilter)
+        pipeline.addOnBeforeRenderListListener(bundleMembershipUpdater)
+        pipeline.addOnBeforeRenderListListener(bundleAppDataUpdater)
+        bindOnboardingAffordanceInvalidator(pipeline)
     }
 
     private fun bindOnboardingAffordanceInvalidator(pipeline: NotifPipeline) {

@@ -56,7 +56,6 @@ import com.android.systemui.statusbar.notification.logKey
 import com.android.systemui.statusbar.notification.row.NotificationActionClickManager
 import com.android.systemui.statusbar.notification.shared.GroupHunAnimationFix
 import com.android.systemui.statusbar.notification.shared.LaunchNewFsiOnUpdate
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.stack.BUCKET_HEADS_UP
 import com.android.systemui.util.concurrency.DelayableExecutor
 import com.android.systemui.util.time.SystemClock
@@ -119,11 +118,7 @@ constructor(
         pipeline.addOnBeforeFinalizeFilterListener(::onBeforeFinalizeFilter)
         pipeline.addPromoter(mNotifPromoter)
         pipeline.addNotificationLifetimeExtender(mLifetimeExtender)
-        if (NotificationBundleUi.isEnabled) {
-            notificationActionClickManager.addActionClickListener(mActionPressListener)
-        } else {
-            mRemoteInputManager.addActionPressListener(mActionPressListener)
-        }
+        notificationActionClickManager.addActionClickListener(mActionPressListener)
 
         applicationScope.launch {
             statusBarNotificationChipsInteractor.promotedNotificationChipTapEvent.collect {

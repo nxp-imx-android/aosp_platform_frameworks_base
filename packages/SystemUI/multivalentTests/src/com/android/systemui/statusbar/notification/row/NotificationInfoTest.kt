@@ -69,7 +69,6 @@ import com.android.systemui.statusbar.notification.row.icon.AppIconProvider
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider
 import com.android.systemui.statusbar.notification.row.icon.mockAppIconProvider
 import com.android.systemui.statusbar.notification.row.icon.mockNotificationIconStyleProvider
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.testKosmos
 import com.android.telecom.telecomManager
 import com.google.common.truth.Truth.assertThat
@@ -693,12 +692,8 @@ class NotificationInfoTest : SysuiTestCase() {
         underTest.findViewById<View>(R.id.done).performClick()
         underTest.handleCloseControls(true, false)
 
-        if (NotificationBundleUi.isEnabled) {
-            verify(kosmos.mockVisualStabilityCoordinator)
-                .temporarilyAllowSectionChanges(eq(entry), any())
-        } else {
-            verify(onUserInteractionCallback).onImportanceChanged(entry)
-        }
+        verify(kosmos.mockVisualStabilityCoordinator)
+            .temporarilyAllowSectionChanges(eq(entry), any())
 
         assertThat(underTest.shouldBeSavedOnClose()).isFalse()
     }
@@ -889,7 +884,6 @@ class NotificationInfoTest : SysuiTestCase() {
             pkg,
             entry.ranking,
             entry.sbn,
-            entry,
             entryAdapter,
             onSettingsClick,
             onAppSettingsClick,

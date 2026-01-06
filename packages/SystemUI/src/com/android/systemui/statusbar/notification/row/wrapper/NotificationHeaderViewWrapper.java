@@ -51,7 +51,6 @@ import com.android.systemui.statusbar.notification.RoundableState;
 import com.android.systemui.statusbar.notification.TransformState;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.shared.NotificationAddXOnHoverToDismiss;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.shared.NotificationXButtonClipFix;
 
 import java.util.Stack;
@@ -204,9 +203,7 @@ public class NotificationHeaderViewWrapper extends NotificationViewWrapper imple
     @Override
     public void onContentUpdated(ExpandableNotificationRow row) {
         super.onContentUpdated(row);
-        mIsLowPriority = NotificationBundleUi.isEnabled()
-                ? row.getEntryAdapter().isAmbient()
-                : row.getEntryLegacy().isAmbient();
+        mIsLowPriority = row.getEntryAdapter().isAmbient();
         mTransformLowPriorityTitle = !row.isChildInGroup() && !row.isSummaryWithChildren();
         ArraySet<View> previousViews = mTransformationHelper.getAllTransformingViews();
 
@@ -215,9 +212,7 @@ public class NotificationHeaderViewWrapper extends NotificationViewWrapper imple
         updateTransformedTypes();
         addRemainingTransformTypes();
         updateCropToPaddingForImageViews();
-        Notification n = NotificationBundleUi.isEnabled()
-                ? row.getEntryAdapter().getSbn().getNotification()
-                : row.getEntryLegacy().getSbn().getNotification();
+        Notification n = row.getEntryAdapter().getSbn().getNotification();
         mIcon.setTag(ImageTransformState.ICON_TAG, n.getSmallIcon());
 
         // We need to reset all views that are no longer transforming in case a view was previously

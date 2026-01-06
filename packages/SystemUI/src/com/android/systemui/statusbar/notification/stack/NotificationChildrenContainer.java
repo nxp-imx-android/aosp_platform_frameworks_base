@@ -60,7 +60,6 @@ import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeader
 import com.android.systemui.statusbar.notification.row.wrapper.BundleHeaderViewWrapper;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationHeaderViewWrapper;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -450,7 +449,6 @@ public class NotificationChildrenContainer extends ViewGroup
     }
 
     public void setBundleHeaderView(@NonNull ComposeView view) {
-        if (NotificationBundleUi.isUnexpectedlyInLegacyMode()) return;
         initBundleDimens();
         mBundleHeaderView = view;
         addView(mBundleHeaderView);
@@ -468,7 +466,6 @@ public class NotificationChildrenContainer extends ViewGroup
 
     private void initBundleDimens() {
         Resources res = getResources();
-        NotificationBundleUi.unsafeAssertInNewMode();
         mCollapsedHeaderMargin = getHeaderHeight();
         mAdditionalExpandedHeaderMargin = 0;
         mCollapsedBottomPadding = 0;
@@ -561,9 +558,7 @@ public class NotificationChildrenContainer extends ViewGroup
     @VisibleForTesting
     void recreateLowPriorityHeader(Notification.Builder builder) {
         RemoteViews header;
-        StatusBarNotification notification = NotificationBundleUi.isEnabled()
-                ? mContainingNotification.getEntryAdapter().getSbn()
-                : mContainingNotification.getEntryLegacy().getSbn();
+        StatusBarNotification notification = mContainingNotification.getEntryAdapter().getSbn();
         if (notification == null) {
             return;
         }
@@ -796,9 +791,7 @@ public class NotificationChildrenContainer extends ViewGroup
         mExpandedClipRect.clear();
         for (int i = 0; i < childCount; i++) {
             ExpandableNotificationRow child = mAttachedChildren.get(i);
-            if (NotificationBundleUi.isEnabled()) {
-                child.updateChildrenStates();
-            }
+            child.updateChildrenStates();
             if (!firstChild) {
                 if (expandingToExpandedGroup) {
                     yPosition += NotificationUtils.interpolate(mChildPadding, mDividerHeight,
@@ -992,8 +985,7 @@ public class NotificationChildrenContainer extends ViewGroup
         if (isBundle()) {
             return NUMBER_OF_CHILDREN_BUNDLE_COLLAPSED;
         } else {
-            if (NotificationBundleUi.isEnabled()
-                    && getContainingNotification().getEntryAdapter().isBundled()) {
+            if (getContainingNotification().getEntryAdapter().isBundled()) {
                 return NUMBER_OF_CHILDREN_WHEN_COLLAPSED_BUNDLED;
             }
             return NUMBER_OF_CHILDREN_WHEN_COLLAPSED;
@@ -1246,11 +1238,7 @@ public class NotificationChildrenContainer extends ViewGroup
                     slidingChild.getTopOverlap());
             float bottom = childTop + slidingChild.getActualHeight();
             if (y >= top && y <= bottom) {
-                if (NotificationBundleUi.isEnabled()) {
-                    return slidingChild.getViewAtPosition(y - top);
-                } else {
-                    return slidingChild;
-                }
+                return slidingChild.getViewAtPosition(y - top);
             }
         }
         return null;

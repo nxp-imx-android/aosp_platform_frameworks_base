@@ -219,10 +219,7 @@ class OriginalUnseenKeyguardCoordinatorTest(flags: FlagsParameterization) : Sysu
         runKeyguardCoordinatorTest {
             val fakeEntry =
                 NotificationEntryBuilder().build().apply {
-                    row =
-                        mock<ExpandableNotificationRow>().apply {
-                            whenever(isMediaRow).thenReturn(true)
-                        }
+                    row = mock<ExpandableNotificationRow>()
                     sbn =
                         SbnBuilder()
                             .setNotification(

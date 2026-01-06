@@ -28,7 +28,6 @@ import com.android.systemui.statusbar.notification.people.PeopleNotificationIden
 import com.android.systemui.statusbar.notification.row.data.repository.TEST_BUNDLE_SPEC
 import com.android.systemui.statusbar.notification.row.entryAdapterFactory
 import com.android.systemui.statusbar.notification.shared.NmContextualDisplay
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.stack.BUCKET_DYNAMIC_BUNDLE
 import com.android.systemui.statusbar.notification.stack.BUCKET_NEWS
 import com.android.systemui.statusbar.notification.stack.BUCKET_SILENT
@@ -42,7 +41,6 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper
-@EnableFlags(NotificationBundleUi.FLAG_NAME)
 class BundleEntryAdapterTest : SysuiTestCase() {
     private lateinit var entry: BundleEntry
 

@@ -30,11 +30,9 @@ import com.android.systemui.statusbar.LockscreenShadeTransitionController
 import com.android.systemui.statusbar.StatusBarState
 import com.android.systemui.statusbar.SysuiStatusBarStateController
 import com.android.systemui.statusbar.notification.collection.EntryAdapter
-import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.domain.interactor.SeenNotificationsInteractor
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.policy.ResourcesSplitShadeStateController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.any
@@ -462,17 +460,11 @@ class NotificationStackSizeCalculatorTest : SysuiTestCase() {
     ): ExpandableNotificationRow {
         val row = mock(ExpandableNotificationRow::class.java)
         val sbn = mock(StatusBarNotification::class.java)
-        if (NotificationBundleUi.isEnabled) {
-            val entryAdapter = mock(EntryAdapter::class.java)
-            whenever(entryAdapter.canPeek()).thenReturn(isSticky)
-            whenever(row.entryAdapter).thenReturn(entryAdapter)
-            whenever(entryAdapter.sbn).thenReturn(sbn)
-        } else {
-            val entry = mock(NotificationEntry::class.java)
-            whenever(entry.isStickyAndNotDemoted).thenReturn(isSticky)
-            whenever(row.entryLegacy).thenReturn(entry)
-            whenever(entry.sbn).thenReturn(sbn)
-        }
+        val entryAdapter = mock(EntryAdapter::class.java)
+        whenever(entryAdapter.canPeek()).thenReturn(isSticky)
+        whenever(row.entryAdapter).thenReturn(entryAdapter)
+        whenever(entryAdapter.sbn).thenReturn(sbn)
+
         whenever(row.isRemoved).thenReturn(isRemoved)
         whenever(row.visibility).thenReturn(visibility)
         whenever(row.getMinHeight(any())).thenReturn(height.toInt())

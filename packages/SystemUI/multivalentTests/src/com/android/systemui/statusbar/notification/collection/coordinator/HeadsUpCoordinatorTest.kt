@@ -61,7 +61,6 @@ import com.android.systemui.statusbar.notification.interruption.VisualInterrupti
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProvider
 import com.android.systemui.statusbar.notification.row.mockNotificationActionClickManager
 import com.android.systemui.statusbar.notification.shared.LaunchNewFsiOnUpdate
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.testKosmos
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.mockito.withArgCaptor
@@ -195,15 +194,9 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
             onHeadsUpChangedListener = withArgCaptor {
                 verify(headsUpManager).addListener(capture())
             }
-            actionPressListener =
-                if (NotificationBundleUi.isEnabled) {
-                    withArgCaptor {
-                        verify(kosmos.mockNotificationActionClickManager)
-                            .addActionClickListener(capture())
-                    }
-                } else {
-                    withArgCaptor { verify(remoteInputManager).addActionPressListener(capture()) }
-                }
+            actionPressListener = withArgCaptor {
+                verify(kosmos.mockNotificationActionClickManager).addActionClickListener(capture())
+            }
             given(headsUpManager.allEntries).willAnswer { huns.stream() }
             given(headsUpManager.isHeadsUpEntry(anyString())).willAnswer { invocation ->
                 val key = invocation.getArgument<String>(0)
