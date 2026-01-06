@@ -528,11 +528,8 @@ class UserController implements Handler.Callback {
             mUserSwitchUiEnabled = userSwitchUiEnabled;
             mMaxRunningUsers = maxRunningUsers;
             mDelayUserDataLocking = delayUserDataLocking;
-            if (android.multiuser.Flags.scheduleStopOfBackgroundUserByDefault()) {
-                // If flag is off, the default value of -1 applies, disabling the feature.
-                mBackgroundUserConsideredDispensableTimeSecs
-                        = backgroundUserConsideredDispensableTimeSecs;
-            }
+            mBackgroundUserConsideredDispensableTimeSecs
+                    = backgroundUserConsideredDispensableTimeSecs;
             if (android.multiuser.Flags.credentialCapture()) {
                 // If flag is off, the default value of false applies, disabling the feature.
                 mSkipKeyguardWhenSwitchingToUnlockedUsers =
@@ -1317,9 +1314,7 @@ class UserController implements Handler.Callback {
         if (!stopProfileRegardlessOfParent) {
             final int parentId = mUserProfileGroupIds.get(userId, UserInfo.NO_PROFILE_GROUP_ID);
             if (parentId != UserInfo.NO_PROFILE_GROUP_ID && parentId != userId) {
-                if ((!android.multiuser.Flags.stopExcessForBackgroundStarts()
-                        && UserHandle.USER_SYSTEM == parentId)
-                        || isCurrentUserLU(parentId)) {
+                if (isCurrentUserLU(parentId)) {
                     return USER_OP_ERROR_RELATED_USERS_CANNOT_STOP;
                 }
             }
@@ -1909,29 +1904,16 @@ class UserController implements Handler.Callback {
                 profilesToStart.add(user);
             }
         }
-        if (android.multiuser.Flags.stopExcessForBackgroundStarts()) {
-            final int profilesToStartSize = profilesToStart.size();
-            for (int i = 0; i < profilesToStartSize; ++i) {
-                // NOTE: this method is setting the profiles of the current user - which is always
-                // assigned to the default display
-                startUser(profilesToStart.get(i).id, USER_START_MODE_BACKGROUND_VISIBLE);
-            }
-            final int maxRunningUsers = getMaxRunningUsers();
-            if (profilesToStartSize >= maxRunningUsers) {
-                Slogf.w(TAG, "User %d has more profiles to start (%d) than MAX_RUNNING_USERS would"
-                        + " allow (%d)", currentUserId, profilesToStartSize, maxRunningUsers);
-            }
-        } else {
-            final int profilesToStartSize = profilesToStart.size();
-            int i = 0;
-            for (; i < profilesToStartSize && i < (getMaxRunningUsers() - 1); ++i) {
-                // NOTE: this method is setting the profiles of the current user - which is always
-                // assigned to the default display
-                startUser(profilesToStart.get(i).id, USER_START_MODE_BACKGROUND_VISIBLE);
-            }
-            if (i < profilesToStartSize) {
-                Slogf.w(TAG, "More profiles than MAX_RUNNING_USERS");
-            }
+        final int profilesToStartSize = profilesToStart.size();
+        for (int i = 0; i < profilesToStartSize; ++i) {
+            // NOTE: this method is setting the profiles of the current user - which is always
+            // assigned to the default display
+            startUser(profilesToStart.get(i).id, USER_START_MODE_BACKGROUND_VISIBLE);
+        }
+        final int maxRunningUsers = getMaxRunningUsers();
+        if (profilesToStartSize >= maxRunningUsers) {
+            Slogf.w(TAG, "User %d has more profiles to start (%d) than MAX_RUNNING_USERS would"
+                    + " allow (%d)", currentUserId, profilesToStartSize, maxRunningUsers);
         }
     }
 
@@ -2344,39 +2326,21 @@ class UserController implements Handler.Callback {
             t.traceEnd();
         }
 
-        if (android.multiuser.Flags.scheduleStopOfBackgroundUserByDefault()) {
-            if (userStartMode != USER_START_MODE_BACKGROUND || isCurrentProfile(userId)) {
-                // User isn't (or is no longer) a background user. Clear any prior plans to stop it.
-                clearAnyPlansForStoppingBackgroundUser(userId);
+        if (userStartMode != USER_START_MODE_BACKGROUND || isCurrentProfile(userId)) {
+            // User isn't (or is no longer) a background user. Clear any prior plans to stop it.
+            clearAnyPlansForStoppingBackgroundUser(userId);
+        } else {
+            // User is a background user. If it's supposed to only run temporarily, schedule it
+            // for stopping; otherwise, schedule it for eventual background user judgement.
+            if (autoStopUserInSecs > 0 && (needStart || isUserScheduledForStopping(userId))) {
+                // Request is for a temp start and user wasn't already bg-running-in-perpetuity.
+                scheduleStopOfBackgroundUser(userId, autoStopUserInSecs);
             } else {
-                // User is a background user. If it's supposed to only run temporarily, schedule it
-                // for stopping; otherwise, schedule it for eventual background user judgement.
-                if (autoStopUserInSecs > 0 && (needStart || isUserScheduledForStopping(userId))) {
-                    // Request is for a temp start and user wasn't already bg-running-in-perpetuity.
-                    scheduleStopOfBackgroundUser(userId, autoStopUserInSecs);
-                } else {
-                    // This wasn't designated a temporary background run. So clear any previous
-                    // scheduled stops, and initiate a new inactivity trial.
-                    mHandler.removeEqualMessages(SCHEDULE_STOP_BACKGROUND_USER_MSG,
-                            Integer.valueOf(userId));
-                    initiateJudgeFateOfBackgroundUser(userId);
-                }
-            }
-        } else if (android.multiuser.Flags.scheduleStopOfBackgroundUser()) {
-            if (userStartMode == USER_START_MODE_BACKGROUND && !isCurrentProfile(userId) &&
-                    autoStopUserInSecs > 0) {
-                if (!needStart
-                        && !mHandler.hasEqualMessages(SCHEDULE_STOP_BACKGROUND_USER_MSG,
-                                Integer.valueOf(userId))) {
-                    Slogf.d(TAG, "Not scheduling background user stop: user %d is already running"
-                            + " in background in perpetuity, so keep it that way", userId);
-                } else {
-                    scheduleStopOfBackgroundUser(userId, autoStopUserInSecs);
-                }
-            } else {
-                // This start shouldn't be scheduled for stopping. Clear existing scheduled stops.
+                // This wasn't designated a temporary background run. So clear any previous
+                // scheduled stops, and initiate a new inactivity trial.
                 mHandler.removeEqualMessages(SCHEDULE_STOP_BACKGROUND_USER_MSG,
                         Integer.valueOf(userId));
+                initiateJudgeFateOfBackgroundUser(userId);
             }
         }
 
@@ -2418,13 +2382,11 @@ class UserController implements Handler.Callback {
             t.traceBegin("finishUserBoot");
             finishUserBoot(uss);
             t.traceEnd();
-            if (android.multiuser.Flags.stopExcessForBackgroundStarts()) {
-                // We're willing to let this background start exceed maxRunningUsers if it's
-                // just an explicitly temporary thing, but otherwise, trim the excess.
-                final boolean shouldStopExcessRunningUsers = autoStopUserInSecs <= 0;
-                if (shouldStopExcessRunningUsers) {
-                    mHandler.post(() -> stopExcessRunningUsers(userId));
-                }
+            // We're willing to let this background start exceed maxRunningUsers if it's
+            // just an explicitly temporary thing, but otherwise, trim the excess.
+            final boolean shouldStopExcessRunningUsers = autoStopUserInSecs <= 0;
+            if (shouldStopExcessRunningUsers) {
+                mHandler.post(() -> stopExcessRunningUsers(userId));
             }
         }
 
@@ -2765,9 +2727,6 @@ class UserController implements Handler.Callback {
      * scheduled stopping, if the need arises.
      */
     private boolean isBackgroundUserEligibleForAutomaticStopping(@UserIdInt int userId) {
-        if (!android.multiuser.Flags.scheduleStopOfBackgroundUser()) {
-            return false;
-        }
         if (UserManager.isVisibleBackgroundUsersEnabled()) {
             // Feature is not enabled on this device. Consider enabling it after testing it.
             return false;
@@ -2914,16 +2873,11 @@ class UserController implements Handler.Callback {
      * for the given user.
      */
     private void clearAnyPlansForStoppingBackgroundUser(@UserIdInt Integer userIdInteger) {
-        if (android.multiuser.Flags.scheduleStopOfBackgroundUser()) {
-            mHandler.removeEqualMessages(SCHEDULE_STOP_BACKGROUND_USER_MSG, userIdInteger);
-        }
+        mHandler.removeEqualMessages(SCHEDULE_STOP_BACKGROUND_USER_MSG, userIdInteger);
         ceaseJudgeFateOfBackgroundUser(userIdInteger);
     }
 
     private void ceaseJudgeFateOfBackgroundUser(@UserIdInt Integer userIdInteger) {
-        if (!android.multiuser.Flags.scheduleStopOfBackgroundUserByDefault()) {
-            return;
-        }
         final UserAndLmkThreshold userAndAnyLmk = new UserAndLmkThreshold(userIdInteger, 0);
         mHandler.removeEqualMessages(SCHEDULE_JUDGE_FATE_OF_BACKGROUND_USER_MSG, userAndAnyLmk);
     }
@@ -2956,9 +2910,6 @@ class UserController implements Handler.Callback {
      * scheduled stop is what matters.
      */
     private boolean scheduleStopOfBackgroundUser(@UserIdInt int userId, int delayUptimeSecs) {
-        if (!android.multiuser.Flags.scheduleStopOfBackgroundUser()) {
-            return false;
-        }
         if (delayUptimeSecs <= 0) {
             return false;
         }
@@ -3046,9 +2997,6 @@ class UserController implements Handler.Callback {
     private boolean avoidStoppingUserRightNow(
             @UserIdInt int userId, ArraySet<Integer> visibleActivityUsers) {
 
-        if (!android.multiuser.Flags.scheduleStopOfBackgroundUser()) {
-            return false;
-        }
         final int[] usersThatWouldStop;
         synchronized (mLock) {
             usersThatWouldStop = getUsersToStopLU(userId);
@@ -4843,9 +4791,6 @@ class UserController implements Handler.Callback {
          * {@link android.content.pm.ActivityInfo#FLAG_SHOW_FOR_ALL_USERS}.
          */
         ArraySet<Integer> getVisibleActivityUsers() {
-            if (!android.multiuser.Flags.rescheduleStopIfVisibleActivities()) {
-                return new ArraySet<>();
-            }
             ActivityTaskManagerInternal atmi
                     = LocalServices.getService(ActivityTaskManagerInternal.class);
             final ArraySet<Integer> visibleActivityUsers = new ArraySet<>();

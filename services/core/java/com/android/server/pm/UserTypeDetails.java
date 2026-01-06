@@ -393,15 +393,6 @@ public final class UserTypeDetails {
         return mActivitiesAllowlist;
     }
 
-    /** Value that indicates that there is no limit to the number of users allowed. */
-    public static int getLegacyUnlimitedNumberOfUsersValue() {
-        if (android.multiuser.Flags.decoupleMaxUsersFromProfiles()) {
-            throw new UnsupportedOperationException("No such thing as unlimited users anymore.");
-        }
-        // Making this a function rather than constant just to make it easier to flag-and-remove.
-        return -1;
-    }
-
     /** Dumps details of the UserTypeDetails. Do not parse this. */
     public void dump(PrintWriter pw, String prefix) {
         pw.print(prefix); pw.print("mName: "); pw.println(mName);
@@ -439,8 +430,7 @@ public final class UserTypeDetails {
         // UserTypeDetails properties and their default values.
         private String mName; // This MUST be explicitly set.
         private int mBaseType; // This MUST be explicitly set.
-        private int mMaxAllowed = android.multiuser.Flags.decoupleMaxUsersFromProfiles() ?
-                0 : getLegacyUnlimitedNumberOfUsersValue();
+        private int mMaxAllowed = 0; // This must be overridden in order to actually enable.
         private int mMaxAllowedPerParent = 0;
         private int mDefaultUserInfoPropertyFlags = 0;
         private @Nullable Bundle mDefaultRestrictions = null;
@@ -607,11 +597,10 @@ public final class UserTypeDetails {
             Preconditions.checkArgument(hasValidPropertyFlags(),
                     "UserTypeDetails %s has invalid flags: %s", mName,
                             Integer.toHexString(mDefaultUserInfoPropertyFlags));
-            Preconditions.checkArgument(!android.multiuser.Flags.decoupleMaxUsersFromProfiles()
-                            || mMaxAllowed >= 0,
+            Preconditions.checkArgument(mMaxAllowed >= 0,
                     "UserTypeDetails %s has negative maxAllowed: %d", mName, mMaxAllowed);
             checkSystemAndMainUserPreconditions();
-            if (android.multiuser.Flags.decoupleMaxUsersFromProfiles() && isProfile()) {
+            if (isProfile()) {
                 Preconditions.checkArgument(mMaxAllowedPerParent >= 0,
                         "UserTypeDetails %s has negative mMaxAllowedPerParent: %d",
                         mName, mMaxAllowedPerParent);
