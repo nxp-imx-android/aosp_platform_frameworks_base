@@ -21,6 +21,7 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.Slog;
 
+import com.android.internal.annotations.Keep;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.SystemServerClassLoaderFactory;
 import com.android.server.display.DisplayDeviceConfig;
@@ -114,6 +115,7 @@ public class PluginManager {
     /**
      * Interface to bundle dependencies for the PluginProvider
      */
+    @Keep
     public interface PluginProviderDependencies {
         /**
          * Provides map of DisplayDeviceConfigs for each unique display id
