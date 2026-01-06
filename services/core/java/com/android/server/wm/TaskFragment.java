@@ -857,7 +857,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         if (task == null || taskFragBounds.equals(task.getBounds())) {
             return false;
         }
-        final Point minDimensions = activity.getMinDimensions();
+        final Point minDimensions = activity.getMinDimensions(getDisplayContent());
         if (minDimensions == null) {
             return false;
         }
@@ -2834,7 +2834,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             if (a.finishing) {
                 return;
             }
-            final Point minDimensions = a.getMinDimensions();
+            final Point minDimensions = a.getMinDimensions(getDisplayContent());
             if (minDimensions == null) {
                 return;
             }

@@ -3266,9 +3266,18 @@ final class ActivityRecord extends WindowToken {
         }
 
         final ActivityInfo.WindowLayout windowLayout = info.windowLayout;
-        return windowLayout == null
-                || tda.supportsActivityMinWidthHeightMultiWindow(windowLayout.minWidth,
-                windowLayout.minHeight, info);
+        if (windowLayout == null) {
+            return true;
+        }
+        if (!Flags.runtimeDensityResolutionForWindowLayout()) {
+            return tda.supportsActivityMinWidthHeightMultiWindow(windowLayout.minWidth,
+                    windowLayout.minHeight, info);
+        }
+        final DisplayContent displayContent = tda.getDisplayContent();
+        return displayContent == null
+                || tda.supportsActivityMinWidthHeightMultiWindow(
+                        windowLayout.getMinWidth(displayContent.getDisplayMetrics()),
+                        windowLayout.getMinHeight(displayContent.getDisplayMetrics()), info);
     }
 
     /**
@@ -9445,12 +9454,19 @@ final class ActivityRecord extends WindowToken {
     }
 
     @Nullable
-    Point getMinDimensions() {
+    Point getMinDimensions(@Nullable DisplayContent displayContent) {
         final ActivityInfo.WindowLayout windowLayout = info.windowLayout;
         if (windowLayout == null) {
             return null;
         }
-        return new Point(windowLayout.minWidth, windowLayout.minHeight);
+        if (!Flags.runtimeDensityResolutionForWindowLayout()) {
+            return new Point(windowLayout.minWidth, windowLayout.minHeight);
+        }
+        if (displayContent == null) {
+            return null;
+        }
+        return new Point(windowLayout.getMinWidth(displayContent.getDisplayMetrics()),
+                windowLayout.getMinHeight(displayContent.getDisplayMetrics()));
     }
 
     /**

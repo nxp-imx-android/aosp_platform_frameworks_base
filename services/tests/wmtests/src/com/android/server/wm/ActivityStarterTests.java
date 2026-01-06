@@ -105,8 +105,8 @@ import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.service.voice.IVoiceInteractionSession;
 import android.util.Pair;
 import android.util.Size;
+import android.util.TypedValue;
 import android.view.Display;
-import android.view.Gravity;
 import android.view.RemoteAnimationAdapter;
 import android.window.TaskFragmentOrganizerToken;
 
@@ -339,7 +339,7 @@ public final class ActivityStarterTests extends ActivityStarterTestBase {
         final Rect launchBounds = new Rect(0, 0, 20, 30);
 
         final WindowLayout windowLayout =
-                new WindowLayout(10, .5f, 20, 1.0f, Gravity.NO_GRAVITY, 1, 1);
+                createWindowLayoutWithMinSize(1, 2, null, TypedValue.COMPLEX_UNIT_PX);
 
         info.windowLayout = windowLayout;
         info.applicationInfo = new ApplicationInfo();
@@ -1659,8 +1659,9 @@ public final class ActivityStarterTests extends ActivityStarterTestBase {
     @Test
     public void testCanEmbedActivity() {
         final Size minDimensions = new Size(1000, 1000);
-        final WindowLayout windowLayout = new WindowLayout(0, 0, 0, 0, 0,
-                minDimensions.getWidth(), minDimensions.getHeight());
+        final WindowLayout windowLayout = createWindowLayoutWithMinSize(minDimensions.getWidth(),
+                minDimensions.getHeight(), mContext.getResources().getDisplayMetrics(),
+                TypedValue.COMPLEX_UNIT_PX);
         final ActivityRecord starting = new ActivityBuilder(mAtm)
                 .setUid(UNIMPORTANT_UID)
                 .setWindowLayout(windowLayout)

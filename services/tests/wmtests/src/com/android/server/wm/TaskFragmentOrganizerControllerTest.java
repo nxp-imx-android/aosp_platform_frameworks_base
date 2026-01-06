@@ -83,7 +83,6 @@ import android.annotation.NonNull;
 import android.app.IApplicationThread;
 import android.content.ComponentName;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Rect;
@@ -94,6 +93,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.util.TypedValue;
 import android.view.RemoteAnimationDefinition;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
@@ -1651,8 +1651,9 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
         final Task task = createTask(mDisplayContent);
         final ActivityRecord activity = createActivityRecord(task);
         // Make minWidth/minHeight exceeds the TaskFragment bounds.
-        activity.info.windowLayout = new ActivityInfo.WindowLayout(
-                0, 0, 0, 0, 0, mTaskFragBounds.width() + 10, mTaskFragBounds.height() + 10);
+        activity.info.windowLayout = createWindowLayoutWithMinSize(
+                mTaskFragBounds.width() + 10, mTaskFragBounds.height() + 10,
+                mContext.getResources().getDisplayMetrics(), TypedValue.COMPLEX_UNIT_PX);
         mTaskFragment = new TaskFragmentBuilder(mAtm)
                 .setParentTask(task)
                 .setFragmentToken(mFragmentToken)
@@ -1685,8 +1686,9 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
                 .build();
         final ActivityRecord activity = mTaskFragment.getTopMostActivity();
         // Make minWidth/minHeight exceeds the TaskFragment bounds.
-        activity.info.windowLayout = new ActivityInfo.WindowLayout(
-                0, 0, 0, 0, 0, mTaskFragBounds.width() + 10, mTaskFragBounds.height() + 10);
+        activity.info.windowLayout = createWindowLayoutWithMinSize(
+                mTaskFragBounds.width() + 10, mTaskFragBounds.height() + 10,
+                mContext.getResources().getDisplayMetrics(), TypedValue.COMPLEX_UNIT_PX);
         mWindowOrganizerController.mLaunchTaskFragments.put(mFragmentToken, mTaskFragment);
         clearInvocations(mAtm.mRootWindowContainer);
 
