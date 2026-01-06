@@ -110,7 +110,6 @@ import static android.view.WindowManagerPolicyConstants.TYPE_LAYER_MULTIPLIER;
 import static android.view.displayhash.DisplayHashResultCallback.DISPLAY_HASH_ERROR_MISSING_WINDOW;
 import static android.view.displayhash.DisplayHashResultCallback.DISPLAY_HASH_ERROR_NOT_VISIBLE_ON_SCREEN;
 import static android.view.flags.Flags.sensitiveContentAppProtection;
-import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS;
 import static android.window.DesktopExperienceFlags.ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS;
 import static android.window.ScreenCapture.ScreenCaptureParams.CAPTURE_MODE_REQUIRE_OPTIMIZED;
 import static android.window.ScreenCapture.ScreenCaptureParams.PROTECTED_CONTENT_POLICY_THROW_EXCEPTION;
@@ -3660,19 +3659,17 @@ public class WindowManagerService extends IWindowManager.Stub
                 final ActionChain chain = mAtmService.mChainTracker.startTransit("dispToTop");
                 Transition transition = null;
                 boolean transitionNewlyCreated = false;
-                if (ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue()) {
-                    transition = mAtmService.getTransitionController().requestTransitionIfNeeded(
-                                    TRANSIT_TO_FRONT, 0 /* flags */, null /* trigger */,
-                                    displayContent, chain);
-                    if (transition != null) {
-                        transitionNewlyCreated = true;
-                    } else {
-                        transition =
-                                mAtmService.getTransitionController().getCollectingTransition();
-                    }
-                    if (transition != null) {
-                        transition.recordTaskOrder(displayContent);
-                    }
+                transition = mAtmService.getTransitionController().requestTransitionIfNeeded(
+                                TRANSIT_TO_FRONT, 0 /* flags */, null /* trigger */,
+                                displayContent, chain);
+                if (transition != null) {
+                    transitionNewlyCreated = true;
+                } else {
+                    transition =
+                        mAtmService.getTransitionController().getCollectingTransition();
+                }
+                if (transition != null) {
+                    transition.recordTaskOrder(displayContent);
                 }
                 // Nothing prevented us from moving the display to the top. Let's do it!
                 displayContent.getParent().positionChildAt(WindowContainer.POSITION_TOP,

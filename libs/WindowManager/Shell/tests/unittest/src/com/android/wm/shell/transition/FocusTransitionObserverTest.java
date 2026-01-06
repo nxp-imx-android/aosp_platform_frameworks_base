@@ -41,7 +41,6 @@ import static org.mockito.Mockito.when;
 import android.app.ActivityManager.RunningTaskInfo;
 import android.os.RemoteException;
 import android.platform.test.annotations.EnableFlags;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.view.SurfaceControl;
 import android.window.TransitionInfo;
 import android.window.TransitionInfo.TransitionMode;
@@ -72,7 +71,6 @@ import java.util.List;
  */
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-@RequiresFlagsEnabled(Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS)
 public class FocusTransitionObserverTest extends ShellTestCase {
 
     static final int SECONDARY_DISPLAY_ID = 1;

@@ -41,8 +41,7 @@ public interface FocusTransitionListener {
     /** Returns if all related flags are enabled related to migration from TaskInfo#isFocused to
      * FocusTransitionObserver */
     static boolean isDisplayLocalIsFocusedMigrationEnabled() {
-        return DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue()
-                && DesktopExperienceFlags.ENABLE_INTERACTIVE_PICTURE_IN_PICTURE.isTrue()
+        return DesktopExperienceFlags.ENABLE_INTERACTIVE_PICTURE_IN_PICTURE.isTrue()
                 && Flags.enableFocusTransitionObserverCleanup();
     }
 }

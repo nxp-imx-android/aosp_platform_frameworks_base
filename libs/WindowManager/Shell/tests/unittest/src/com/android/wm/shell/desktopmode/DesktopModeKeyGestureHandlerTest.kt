@@ -38,7 +38,6 @@ import com.android.dx.mockito.inline.extended.StaticMockitoSession
 import com.android.testing.wm.util.MockToken
 import com.android.window.flags.Flags.FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE
-import com.android.window.flags.Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
@@ -185,7 +184,6 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS)
     fun keyGestureMoveToNextDisplay_shouldMoveToNextDisplay() {
         // Set up two display ids
         whenever(rootTaskDisplayAreaOrganizer.displayIds)
@@ -219,7 +217,6 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS)
     fun keyGestureMoveToNextDisplay_fullscreenTaskOnDefaultDisplay_shouldMoveToNextDisplay() {
         // Set up two display ids
         whenever(rootTaskDisplayAreaOrganizer.displayIds)

@@ -16,7 +16,6 @@
 
 package com.android.wm.shell.scenarios
 
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.traces.ConditionsFactory
 import android.tools.traces.parsers.WindowManagerStateHelper
@@ -40,7 +39,6 @@ import platform.test.desktop.SimulatedConnectedDisplayTestRule
 /** Base scenario test to test if the window moved to next display via keyboard keeps the focus. */
 @Ignore("Test Base Class")
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
-@EnableFlags(Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS)
 abstract class MoveToNextDisplayAndFocus() : TestScenarioBase() {
     private val wmHelper = WindowManagerStateHelper(getInstrumentation())
     private val device = UiDevice.getInstance(getInstrumentation())

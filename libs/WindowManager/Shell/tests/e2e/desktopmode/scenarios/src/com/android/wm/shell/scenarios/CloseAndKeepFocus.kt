@@ -16,7 +16,6 @@
 
 package com.android.wm.shell.scenarios
 
-import android.platform.test.annotations.EnableFlags
 import android.tools.traces.ConditionsFactory
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.view.Display.DEFAULT_DISPLAY
@@ -28,7 +27,6 @@ import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.KeyEventHelper
 import com.android.server.wm.flicker.helpers.MailAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
-import com.android.window.flags.Flags
 import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
@@ -41,7 +39,6 @@ import platform.test.desktop.SimulatedConnectedDisplayTestRule
  * window is closed.
  */
 @Ignore("Test Base Class")
-@EnableFlags(Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS)
 abstract class CloseAndKeepFocus() : TestScenarioBase() {
     private val wmHelper = WindowManagerStateHelper(getInstrumentation())
     private val device = UiDevice.getInstance(getInstrumentation())
