@@ -43,6 +43,7 @@ import android.view.accessibility.AccessibilityManager;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
+import com.android.compose.animation.scene.SceneKey;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.settingslib.bluetooth.HearingAidDeviceManager;
@@ -54,6 +55,8 @@ import com.android.systemui.accessibility.AccessibilityButtonTargetsObserver;
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor;
 import com.android.systemui.keyguard.shared.model.KeyguardState;
 import com.android.systemui.navigationbar.NavigationModeController;
+import com.android.systemui.scene.domain.interactor.SceneInteractor;
+import com.android.systemui.scene.shared.model.Scenes;
 import com.android.systemui.settings.FakeDisplayTracker;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.util.settings.SecureSettings;
@@ -104,6 +107,9 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
     private KeyguardTransitionInteractor mKeyguardInteractor;
     private final MutableStateFlow<KeyguardState> mKeyguardStateFlow =
             MutableStateFlow(KeyguardState.GONE);
+    @Mock
+    private SceneInteractor mSceneInteractor;
+    private final MutableStateFlow<SceneKey> mSceneFlow = MutableStateFlow(Scenes.Gone);
     @Mock
     private SecureSettings mSecureSettings;
     @Mock
@@ -281,6 +287,7 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
 
     @Test
     @EnableFlags(Flags.FLAG_KEYGUARD_INTERACTOR_FOR_FLOATING_BUTTON)
+    @DisableFlags(Flags.FLAG_SCENE_CONTAINER)
     public void onKeyguardState_gone_showFloatingMenu() {
         enableAccessibilityFloatingMenuConfig();
         mController = setUpController();
@@ -291,7 +298,19 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableFlags({Flags.FLAG_KEYGUARD_INTERACTOR_FOR_FLOATING_BUTTON, Flags.FLAG_SCENE_CONTAINER})
+    public void onScene_gone_showFloatingMenu() {
+        enableAccessibilityFloatingMenuConfig();
+        mController = setUpController();
+
+        mController.mSceneConsumer.accept(Scenes.Gone);
+
+        assertThat(mController.mFloatingMenu).isNotNull();
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_KEYGUARD_INTERACTOR_FOR_FLOATING_BUTTON)
+    @DisableFlags(Flags.FLAG_SCENE_CONTAINER)
     public void onKeyguardState_bouncer_showFloatingMenu() {
         enableAccessibilityFloatingMenuConfig();
         mController = setUpController();
@@ -303,6 +322,7 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
 
     @Test
     @EnableFlags(Flags.FLAG_KEYGUARD_INTERACTOR_FOR_FLOATING_BUTTON)
+    @DisableFlags(Flags.FLAG_SCENE_CONTAINER)
     public void onKeyguardState_lockScreen_hideFloatingMenu() {
         enableAccessibilityFloatingMenuConfig();
         mController = setUpController();
@@ -313,7 +333,19 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableFlags({Flags.FLAG_KEYGUARD_INTERACTOR_FOR_FLOATING_BUTTON, Flags.FLAG_SCENE_CONTAINER})
+    public void onScene_lockScreen_hideFloatingMenu() {
+        enableAccessibilityFloatingMenuConfig();
+        mController = setUpController();
+
+        mController.mSceneConsumer.accept(Scenes.Lockscreen);
+
+        assertThat(mController.mFloatingMenu).isNull();
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_KEYGUARD_INTERACTOR_FOR_FLOATING_BUTTON)
+    @DisableFlags(Flags.FLAG_SCENE_CONTAINER)
     public void onKeyguardState_AOD_hideFloatingMenu() {
         enableAccessibilityFloatingMenuConfig();
         mController = setUpController();
@@ -324,13 +356,40 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableFlags({Flags.FLAG_KEYGUARD_INTERACTOR_FOR_FLOATING_BUTTON, Flags.FLAG_SCENE_CONTAINER})
+    public void onScene_dream_hideFloatingMenu() {
+        enableAccessibilityFloatingMenuConfig();
+        mController = setUpController();
+
+        mController.mSceneConsumer.accept(Scenes.Dream);
+
+        assertThat(mController.mFloatingMenu).isNull();
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_KEYGUARD_INTERACTOR_FOR_FLOATING_BUTTON)
-    public void onUserSwitch_hideFloatingMenu() {
+    @DisableFlags(Flags.FLAG_SCENE_CONTAINER)
+    public void onUserSwitch_old_hideFloatingMenu() {
         enableAccessibilityFloatingMenuConfig();
         mController = setUpController();
         captureUserTrackerCallback();
 
         mController.mKeyguardStateConsumer.accept(KeyguardState.GONE);
+
+        mUserTrackerCallback.onBeforeUserSwitching(0);
+        // User switching should hide the menu
+
+        assertThat(mController.mFloatingMenu).isNull();
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_KEYGUARD_INTERACTOR_FOR_FLOATING_BUTTON, Flags.FLAG_SCENE_CONTAINER})
+    public void onUserSwitch_hideFloatingMenu() {
+        enableAccessibilityFloatingMenuConfig();
+        mController = setUpController();
+        captureUserTrackerCallback();
+
+        mController.mSceneConsumer.accept(Scenes.Gone);
 
         mUserTrackerCallback.onBeforeUserSwitching(0);
         // User switching should hide the menu
@@ -458,6 +517,7 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
 
     @Test
     @EnableFlags(Flags.FLAG_KEYGUARD_INTERACTOR_FOR_FLOATING_BUTTON)
+    @DisableFlags(Flags.FLAG_SCENE_CONTAINER)
     public void onUserInitializationComplete_keyguardNotVisible_destroysOldWidget() {
         enableAccessibilityFloatingMenuConfig();
         mController = setUpController();
@@ -480,13 +540,15 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
         final FakeDisplayTracker displayTracker = new FakeDisplayTracker(mContext);
         mKeyguardUpdateMonitor = Dependency.get(KeyguardUpdateMonitor.class);
         when(mKeyguardInteractor.getCurrentKeyguardState()).thenReturn(mKeyguardStateFlow);
+        when(mSceneInteractor.getCurrentScene()).thenReturn(mSceneFlow);
         final AccessibilityFloatingMenuController controller =
                 new AccessibilityFloatingMenuController(mContextWrapper, windowManager,
                         displayManager, mAccessibilityManager, mTargetsObserver, mModeObserver,
                         mHearingAidDeviceManager, mKeyguardUpdateMonitor, mSecureSettings,
                         displayTracker, mNavigationModeController,
                         new Handler(mTestableLooper.getLooper()),
-                        /*CoroutineScope= */ null , mKeyguardInteractor, mUserTracker);
+                        /*coroutineScope= */ null ,
+                        mKeyguardInteractor, mSceneInteractor, mUserTracker);
         controller.init();
 
         return controller;
