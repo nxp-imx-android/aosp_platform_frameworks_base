@@ -3446,7 +3446,13 @@ class Task extends TaskFragment {
         info.isTopActivityNoDisplay = top != null && top.isNoDisplay();
         info.isSleeping = shouldSleepActivities();
         info.isTopActivityTransparent = top != null && !top.fillsParent();
-        info.isActivityStackTransparent = !topTask.forAllActivities(r -> (r.occludesParent()));
+        if (Flags.improveOcclusionCalculation()) {
+            info.isActivityStackTransparent = !mAtmService.mVisibilityHelper.isOpaque(topTask,
+                    null /* starting */, true /* ignoringKeyguard */,
+                    false /* ignoringInvisibleActivity */, true /* ignoringFinishing */);
+        } else {
+            info.isActivityStackTransparent = !topTask.forAllActivities(r -> (r.occludesParent()));
+        }
         info.lastNonFullscreenBounds = topTask.mLastNonFullscreenBounds;
         info.leafTaskBoundsFromOptions = mLeafTaskBoundsFromOptions;
         final WindowState windowState = top != null
@@ -7247,7 +7253,11 @@ class Task extends TaskFragment {
             if (child == this) {
                 continue;
             }
-            if (mAtmService.mVisibilityHelper.isOpaque(child)) {
+            if (mAtmService.mVisibilityHelper.isOpaque(child, null /* starting */,
+                    true /* ignoringKeyguard */, false /* ignoringInvisibleActivity */,
+                    true /* ignoringFinishing */)) {
+                // Also calculate siblings that are currently invisible (behind current), but not
+                // include finishing.
                 return true;
             }
         }
