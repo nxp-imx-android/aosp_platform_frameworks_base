@@ -49,11 +49,6 @@ public class PowerManagerFlags {
             Flags::perDisplayWakeByTouch
     );
 
-    private final FlagState mPolicyReasonInDisplayPowerRequest = new FlagState(
-            Flags.FLAG_POLICY_REASON_IN_DISPLAY_POWER_REQUEST,
-            Flags::policyReasonInDisplayPowerRequest
-    );
-
     private final FlagState mLockOnUnplug =
             new FlagState(Flags.FLAG_LOCK_ON_UNPLUG,
                     Flags::lockOnUnplug);
@@ -99,13 +94,6 @@ public class PowerManagerFlags {
      */
     public boolean isPerDisplayWakeByTouchEnabled() {
         return mPerDisplayWakeByTouch.isEnabled();
-    }
-
-    /**
-     * @return Whether the wakefulness reason is populated in DisplayPowerRequest.
-     */
-    public boolean isPolicyReasonInDisplayPowerRequestEnabled() {
-        return mPolicyReasonInDisplayPowerRequest.isEnabled();
     }
 
     /**

@@ -126,7 +126,6 @@ public class PowerGroupTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        when(mFeatureFlags.isPolicyReasonInDisplayPowerRequestEnabled()).thenReturn(true);
         mPowerGroup = new PowerGroup(GROUP_ID, mWakefulnessCallbackMock, mNotifier,
                 mDisplayManagerInternal, WAKEFULNESS_AWAKE, /* ready= */ true,
                 /* supportsSandman= */ true, TIMESTAMP_CREATE, mFeatureFlags,
@@ -379,57 +378,6 @@ public class PowerGroupTest {
         assertThat(displayPowerRequest.lowPowerMode).isEqualTo(batterySaverEnabled);
         assertThat(displayPowerRequest.screenLowPowerBrightnessFactor).isWithin(PRECISION).of(
                 brightnessFactor);
-    }
-
-    @Test
-    public void testWakefulnessReasonInDisplayPowerRequestDisabled_wakefulnessReasonNotPopulated() {
-        when(mFeatureFlags.isPolicyReasonInDisplayPowerRequestEnabled()).thenReturn(false);
-        mPowerGroup.dozeLocked(TIMESTAMP1, UID, GO_TO_SLEEP_REASON_APPLICATION);
-        mPowerGroup.wakeUpLocked(TIMESTAMP2, WAKE_REASON_WAKE_MOTION, "details", UID,
-                /* opPackageName= */ null, /* opUid= */ 0, LATENCY_TRACKER);
-
-        mPowerGroup.updateLocked(/* screenBrightnessOverride= */ BRIGHTNESS,
-                /* overrideTag= */ "my/tag",
-                /* useProximitySensor= */ false,
-                /* boostScreenBrightness= */ false,
-                /* dozeScreenStateOverride= */ Display.STATE_ON,
-                /* dozeScreenStateReason= */ Display.STATE_REASON_DEFAULT_POLICY,
-                /* dozeScreenBrightness= */ BRIGHTNESS_DOZE,
-                /* useNormalBrightnessForDoze= */ false,
-                /* overrideDrawWakeLock= */ false,
-                new PowerSaveState.Builder().build(),
-                /* quiescent= */ false,
-                /* dozeAfterScreenOff= */ false,
-                /* bootCompleted= */ true,
-                /* screenBrightnessBoostInProgress= */ false,
-                /* waitForNegativeProximity= */ false,
-                /* brightWhenDozing= */ false,
-                /* allAdjacentGroupsAreNonInteractive= */ false);
-        DisplayManagerInternal.DisplayPowerRequest displayPowerRequest =
-                mPowerGroup.mDisplayPowerRequest;
-        assertThat(displayPowerRequest.policyReason).isEqualTo(STATE_REASON_DEFAULT_POLICY);
-
-        mPowerGroup.wakeUpLocked(TIMESTAMP2, WAKE_REASON_PLUGGED_IN, "details", UID,
-                /* opPackageName= */ null, /* opUid= */ 0, LATENCY_TRACKER);
-        mPowerGroup.updateLocked(/* screenBrightnessOverride= */ BRIGHTNESS,
-                /* overrideTag= */ "my/tag",
-                /* useProximitySensor= */ false,
-                /* boostScreenBrightness= */ false,
-                /* dozeScreenStateOverride= */ Display.STATE_ON,
-                /* dozeScreenStateReason= */ Display.STATE_REASON_DEFAULT_POLICY,
-                /* dozeScreenBrightness= */ BRIGHTNESS_DOZE,
-                /* useNormalBrightnessForDoze= */ false,
-                /* overrideDrawWakeLock= */ false,
-                new PowerSaveState.Builder().build(),
-                /* quiescent= */ false,
-                /* dozeAfterScreenOff= */ false,
-                /* bootCompleted= */ true,
-                /* screenBrightnessBoostInProgress= */ false,
-                /* waitForNegativeProximity= */ false,
-                /* brightWhenDozing= */ false,
-                /* allAdjacentGroupsAreNonInteractive= */ false);
-        displayPowerRequest = mPowerGroup.mDisplayPowerRequest;
-        assertThat(displayPowerRequest.policyReason).isEqualTo(STATE_REASON_DEFAULT_POLICY);
     }
 
     @Test

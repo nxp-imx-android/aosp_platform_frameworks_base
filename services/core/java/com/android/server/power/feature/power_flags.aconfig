@@ -58,14 +58,6 @@ flag {
 }
 
 flag {
-    name: "policy_reason_in_display_power_request"
-    namespace: "wear_frameworks"
-    description: "Whether the policy reason is populted in DisplayPowerRequest."
-    bug: "364349703"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "disable_frozen_process_wakelocks"
     namespace: "power"
     description: "Feature flag to disable/enable wakelocks of a process when it is frozen/unfrozen"
