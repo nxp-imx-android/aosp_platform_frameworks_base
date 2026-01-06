@@ -64,7 +64,11 @@ import org.junit.runners.Parameterized.Parameters
  * - [previousApp] becomes invisible, and then becomes visible.
  * - [testApp] becomes visible, and then becomes invisible.
  */
-@RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
+@RequiresFlagsEnabled(
+    Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
+    com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK,
+    com.android.window.flags.Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT,
+)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
