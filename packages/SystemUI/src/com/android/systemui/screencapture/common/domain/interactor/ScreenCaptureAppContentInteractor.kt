@@ -16,15 +16,45 @@
 
 package com.android.systemui.screencapture.common.domain.interactor
 
+import android.media.projection.IAppContentProjectionCallback
 import com.android.systemui.screencapture.common.ScreenCapture
 import com.android.systemui.screencapture.common.ScreenCaptureUiScope
 import com.android.systemui.screencapture.common.data.repository.ScreenCaptureAppContentRepository
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureAppContent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
+import java.lang.ref.WeakReference
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+
+/** The app content available to be shared for a single package. */
+data class SingleAppContent(
+    /** The list of the app content that can be shared. */
+    val contents: List<ScreenCaptureAppContent>,
+    /**
+     * The projection callback that can start the session. This is a [WeakReference] because the
+     * callback is a Binder object tied to a service connection. Using a weak reference prevents
+     * consumers of this data class from accidentally causing a memory leak by holding a strong
+     * reference to the Binder proxy after the connection has been torn down.
+     */
+    val projectionCallback: WeakReference<IAppContentProjectionCallback>,
+)
+
+/**
+ * Contains a list of [ScreenCaptureAppContent] across multiple packages and a map of
+ * [IAppContentProjectionCallback] keyed by package name.
+ */
+data class MultiAppContent(
+    /** The list of all the app content that can be shared. */
+    val contents: List<ScreenCaptureAppContent>,
+    /**
+     * A map from package name to the corresponding projection callback. Each callback is a
+     * [WeakReference] for the same reason outlined in [SingleAppContent]: to prevent memory leaks
+     * by allowing the Binder proxy for each service connection to be garbage collected.
+     */
+    val projectionCallbacks: Map<String, WeakReference<IAppContentProjectionCallback>>,
+)
 
 /** Interactor for fetching app content info. */
 @ScreenCaptureUiScope
@@ -43,7 +73,7 @@ constructor(
         packageName: String,
         thumbnailWidthPx: Int,
         thumbnailHeightPx: Int,
-    ): Flow<Result<List<ScreenCaptureAppContent>>> =
+    ): Flow<Result<SingleAppContent>> =
         repository
             .appContentsFor(
                 packageName = packageName,
@@ -51,12 +81,14 @@ constructor(
                 thumbnailWidthPx = thumbnailWidthPx,
                 thumbnailHeightPx = thumbnailHeightPx,
             )
-            .map { appContent ->
-                if (appContent.isFailure) {
-                    Result.failure(appContent.exceptionOrNull()!!)
-                } else {
-                    Result.success(
-                        appContent.getOrNull()!!.map { ScreenCaptureAppContent(packageName, it) }
+            .map { result ->
+                result.map { appContentResult ->
+                    SingleAppContent(
+                        contents =
+                            appContentResult.contents.map {
+                                ScreenCaptureAppContent(packageName, it)
+                            },
+                        projectionCallback = appContentResult.projectionCallback,
                     )
                 }
             }
@@ -71,16 +103,29 @@ constructor(
         packageNames: List<String>,
         thumbnailWidthPx: Int,
         thumbnailHeightPx: Int,
-    ): Flow<List<ScreenCaptureAppContent>> =
+    ): Flow<MultiAppContent> =
         combine(
-            packageNames.distinct().map {
+            packageNames.distinct().map { packageName ->
                 appContentsFor(
-                    packageName = it,
-                    thumbnailWidthPx = thumbnailWidthPx,
-                    thumbnailHeightPx = thumbnailHeightPx,
-                )
+                        packageName = packageName,
+                        thumbnailWidthPx = thumbnailWidthPx,
+                        thumbnailHeightPx = thumbnailHeightPx,
+                    )
+                    .map { result -> packageName to result }
             }
-        ) { appContents ->
-            appContents.mapNotNull { it.getOrNull() }.flatMap { it }
+        ) { results ->
+            val contents = mutableListOf<ScreenCaptureAppContent>()
+            val callbacks = mutableMapOf<String, WeakReference<IAppContentProjectionCallback>>()
+            results.forEach { (packageName, result) ->
+                result.onSuccess { singleResult ->
+                    // Check if the [WeakReference] still holds a valid object. It might be null if
+                    // the underlying IAppContentProjectionCallback has been garbage collected.
+                    if (singleResult.projectionCallback.get() != null) {
+                        contents.addAll(singleResult.contents)
+                        callbacks[packageName] = singleResult.projectionCallback
+                    }
+                }
+            }
+            MultiAppContent(contents = contents, projectionCallbacks = callbacks)
         }
 }

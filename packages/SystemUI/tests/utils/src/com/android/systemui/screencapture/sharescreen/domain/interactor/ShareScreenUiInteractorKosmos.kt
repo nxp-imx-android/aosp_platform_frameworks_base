@@ -24,9 +24,13 @@ import org.mockito.kotlin.mock
 
 val Kosmos.mockAsyncActivityLauncher: AsyncActivityLauncher by Fixture { mock() }
 
+val Kosmos.fakeMediaProjectionServiceHelperWrapper:
+    FakeMediaProjectionServiceHelperWrapper by Fixture { FakeMediaProjectionServiceHelperWrapper() }
+
 val Kosmos.shareScreenUiInteractor: ShareScreenUiInteractor by Fixture {
     ShareScreenUiInteractor(
         recentTaskInteractor = screenCaptureRecentTaskInteractor,
         asyncActivityLauncher = mockAsyncActivityLauncher,
+        mediaProjectionHelper = fakeMediaProjectionServiceHelperWrapper,
     )
 }
