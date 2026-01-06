@@ -182,6 +182,22 @@ public class GenericWindowPolicyControllerTest {
     }
 
     @Test
+    public void userAllowlisted_launchIsNotBlocked() {
+        final UserHandle allowedUser = UserHandle.of(10);
+        final int appUid = UserHandle.getUid(allowedUser.getIdentifier(), /* appId= */ 12345);
+        GenericWindowPolicyController gwpc =
+                createGwpcWithAllowedUsers(Collections.singleton(allowedUser));
+
+        ActivityInfo activityInfo = getActivityInfo(
+                NONBLOCKED_APP_PACKAGE_NAME,
+                NONBLOCKED_APP_PACKAGE_NAME,
+                /* displayOnRemoteDevices */ true,
+                /* targetDisplayCategory */ null,
+                appUid);
+        assertActivityCanBeLaunched(gwpc, activityInfo);
+    }
+
+    @Test
     public void openNonBlockedAppOnVirtualDisplay_isNotBlocked() {
         GenericWindowPolicyController gwpc = createGwpc();
         ActivityInfo activityInfo = getActivityInfo(
@@ -1004,6 +1020,25 @@ public class GenericWindowPolicyControllerTest {
         var gwpc = new GenericWindowPolicyController(
                 AttributionSource.myAttributionSource(),
                 /* allowedUsers= */ new ArraySet<>(),
+                /* activityLaunchAllowedByDefault= */ true,
+                /* activityPolicyExemptions= */ new ArraySet<>(),
+                /* activityPolicyPackageExemptions= */ new ArraySet<>(),
+                /* crossTaskNavigationAllowedByDefault= */ true,
+                /* crossTaskNavigationExemptions= */ new ArraySet<>(),
+                /* activityListener= */ mActivityListener,
+                /* displayCategories= */ new ArraySet<>(),
+                /* showTasksInHostDeviceRecents= */ true,
+                /* customHomeComponent= */ null,
+                /* localDeviceOnly */ false);
+        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
+        return gwpc;
+    }
+
+    private GenericWindowPolicyController createGwpcWithAllowedUsers(
+            Set<UserHandle> allowedUsers) {
+        var gwpc = new GenericWindowPolicyController(
+                AttributionSource.myAttributionSource(),
+                new ArraySet<>(allowedUsers),
                 /* activityLaunchAllowedByDefault= */ true,
                 /* activityPolicyExemptions= */ new ArraySet<>(),
                 /* activityPolicyPackageExemptions= */ new ArraySet<>(),
