@@ -25,6 +25,7 @@
 #include <string>
 
 #include "PipelineCache.h"
+#include "PipelineCacheStats.h"
 
 namespace android {
 namespace uirenderer {
@@ -36,11 +37,6 @@ class PersistentGraphicsCache : public GrContextOptions::PersistentCache {
     static constexpr useconds_t kDefaultWriteThrottleInterval = 4 * 1000 * 1000;
 
 public:
-    struct PipelineCacheStats {
-        bool inUse = false;
-        size_t sizeBytes = 0;
-    };
-
     static PersistentGraphicsCache& get();
 
     void initPipelineCache(std::string path,
