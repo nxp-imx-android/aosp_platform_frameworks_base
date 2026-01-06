@@ -25,11 +25,7 @@
 #include <SkColorSpace.h>
 #include <SkData.h>
 #include <SkImage.h>
-#ifdef __ANDROID__
 #include <SkImageAndroid.h>
-#else
-#include <SkImagePriv.h>
-#endif
 #include <SkPicture.h>
 #include <SkPixmap.h>
 #include <SkSerialProcs.h>
@@ -586,7 +582,7 @@ public:
 #ifdef __ANDROID__
             return SkImages::PinnableRasterFromBitmap(bm);
 #else
-            return SkMakeImageFromRasterBitmap(bm, kNever_SkCopyPixelsMode);
+            return SkImages::RasterFromBitmapNoCopy(bm);
 #endif
         }
         return sk_ref_sp(img);
