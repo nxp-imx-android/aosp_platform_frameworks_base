@@ -295,7 +295,8 @@ class DesktopTasksTransitionObserver(
 
                     val displayLayout =
                         displayController.getDisplayLayout(taskInfo.displayId) ?: return@forEachLoop
-                    val packageName = taskInfo.baseActivity?.packageName ?: return@forEachLoop
+                    val packageName =
+                        taskInfo.componentNameForRememberedBounds?.packageName ?: return@forEachLoop
                     val stableBounds =
                         Rect().apply { displayLayout.getStableBoundsForDesktopMode(this) }
                     val bounds = taskInfo.configuration.windowConfiguration.bounds

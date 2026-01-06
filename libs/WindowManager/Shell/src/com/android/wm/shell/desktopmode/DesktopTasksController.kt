@@ -4302,7 +4302,7 @@ class DesktopTasksController(
                 displayController.getDisplayLayout(task.displayId)?.let { displayLayout ->
                     calculateRememberedBounds(
                         userRepositories.getProfile(task.userId),
-                        task.baseActivity,
+                        task.componentNameForRememberedBounds,
                         displayLayout,
                         task,
                     )
@@ -5063,7 +5063,12 @@ class DesktopTasksController(
                 0
             }
         val rememberedBounds =
-            calculateRememberedBounds(repository, taskInfo.baseActivity, displayLayout, taskInfo)
+            calculateRememberedBounds(
+                repository,
+                taskInfo.componentNameForRememberedBounds,
+                displayLayout,
+                taskInfo,
+            )
         val bounds =
             rememberedBounds
                 ?: calculateInitialBounds(displayLayout, taskInfo, captionInsets = captionInsets)
