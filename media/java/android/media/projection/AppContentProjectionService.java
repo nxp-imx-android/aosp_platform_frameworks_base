@@ -92,10 +92,18 @@ public abstract class AppContentProjectionService extends Service {
 
         @Override
         @EnforcePermission(allOf = {"MANAGE_MEDIA_PROJECTION"})
-        public void onContentRequest(RemoteCallback newContentConsumer, int width, int height) {
+        public void onContentRequest(RemoteCallback newContentConsumer, int thumbnailWidth,
+                int thumbnailHeight, int iconWidth, int iconHeight) {
             onContentRequest_enforcePermission();
+            Size thumbnailSize = new Size(thumbnailWidth, thumbnailHeight);
+            Size iconSize = new Size(iconWidth, iconHeight);
             AppContentProjectionService.this.onContentRequest(
-                    new AppContentRequest(new Size(width, height), mediaProjectionAppContents -> {
+                    new AppContentRequest(thumbnailSize,
+                            iconSize, mediaProjectionAppContents -> {
+                        for (int i = 0; i < mediaProjectionAppContents.length; i++) {
+                            mediaProjectionAppContents[i].optimizeResources(thumbnailSize,
+                                    iconSize);
+                        }
                         Bundle bundle = new Bundle();
                         bundle.putParcelableArray(EXTRA_APP_CONTENT,
                                 mediaProjectionAppContents);

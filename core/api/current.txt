@@ -28134,6 +28134,7 @@ package android.media.projection {
   }
 
   @FlaggedApi("com.android.media.projection.flags.app_content_sharing") public final class AppContentRequest {
+    method @NonNull public android.util.Size getIconSize();
     method @NonNull public android.util.Size getThumbnailSize();
     method public void provideContent(@NonNull java.util.List<android.media.projection.MediaProjectionAppContent>);
   }
