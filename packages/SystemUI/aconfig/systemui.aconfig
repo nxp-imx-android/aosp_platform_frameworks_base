@@ -1854,6 +1854,14 @@ flag {
 }
 
 flag {
+    name: "status_icons_in_compose_refresh"
+    namespace: "systemui"
+    description: "Build time flag for status icons in compose refresh"
+    bug: "391605373"
+    is_fixed_read_only: true
+}
+
+flag {
     name: "stl_user_action_gesture"
     namespace: "systemui"
     description: "Enables internal support for the UserActionGesture interface in STL"

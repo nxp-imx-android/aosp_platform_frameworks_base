@@ -66,7 +66,7 @@ constructor(@Assisted context: Context, interactor: AudioVolumeInteractor) :
     private fun Boolean.toUiState(): Icon? =
         if (this) {
             Icon.Resource(
-                resId = R.drawable.ic_volume_ringer_vibrate,
+                resId = R.drawable.stat_sys_ringer_vibrate,
                 contentDescription =
                     ContentDescription.Resource(R.string.accessibility_ringer_vibrate),
             )

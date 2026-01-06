@@ -18,8 +18,7 @@ package com.android.systemui.statusbar.systemstatusicons.ui.compose
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -29,7 +28,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.lifecycle.rememberViewModel
@@ -51,10 +52,14 @@ fun SystemStatusIcons(
     val viewModel =
         rememberViewModel(traceName = "SystemStatusIcons") { viewModelFactory.create(context) }
 
+    val density = LocalDensity.current
+    // TODO(414653733): The icon size should always be the same as the battery.
+    val iconHeightDp = with(density) { 13.sp.toDp() }
+
     CompositionLocalProvider(LocalContentColor provides tint) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
             modifier = modifier.sysuiResTag("statusIcons"),
         ) {
             viewModel.iconViewModels
@@ -64,13 +69,14 @@ fun SystemStatusIcons(
                     when (iconViewModel) {
                         is SystemStatusIconViewModel.Default ->
                             iconViewModel.icon?.let {
-                                Icon(icon = it, modifier = Modifier.size(20.dp).padding(1.dp))
+                                Icon(icon = it, modifier = Modifier.height(iconHeightDp))
                             }
 
                         is SystemStatusIconViewModel.MobileIcons -> {
                             MobileIcons(
                                 iconViewModel.mobileIconsViewModel,
                                 iconViewModel.stackedMobileIconViewModel,
+                                modifier = Modifier.height(iconHeightDp),
                             )
                         }
                     }
