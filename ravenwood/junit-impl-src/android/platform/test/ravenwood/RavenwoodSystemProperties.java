@@ -26,9 +26,11 @@ import com.android.ravenwood.common.RavenwoodInternalUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -65,17 +67,25 @@ public class RavenwoodSystemProperties {
 
     static Map<String, String> readProperties(String propFile) {
         // Use an ordered map just for cleaner dump log.
-        final Map<String, String> ret = new LinkedHashMap<>();
         try {
-            Files.readAllLines(Path.of(propFile)).stream()
-                    .map(String::trim)
-                    .filter(s -> !s.startsWith("#"))
-                    .map(s -> s.split("\\s*=\\s*", 2))
-                    .filter(a -> a.length == 2 && a[1].length() > 0)
-                    .forEach(a -> ret.put(a[0], a[1]));
+            return readProperties(Files.readAllLines(Path.of(propFile)));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static Map<String, String> readProperties(List<String> propLines) {
+        if (propLines == null || propLines.isEmpty()) {
+            return new HashMap<>();
+        }
+        // Use an ordered map just for cleaner dump log.
+        final Map<String, String> ret = new LinkedHashMap<>();
+        propLines.stream()
+                .map(String::trim)
+                .filter(s -> !s.startsWith("#"))
+                .map(s -> s.split("\\s*=\\s*", 2))
+                .filter(a -> a.length == 2 && a[1].length() > 0)
+                .forEach(a -> ret.put(a[0], a[1]));
         return ret;
     }
 
@@ -152,6 +162,17 @@ public class RavenwoodSystemProperties {
             Log.i(TAG, key + "=" + origValue);
             sDefaultValues.put(key, origValue);
         });
+
+        Log.i(TAG, "Env override properties:");
+        var envOverride = RavenwoodEnvironment.getInstance().getArrayEnvVar(
+                "RAVENWOOD_SYSPROP_OVERRIDE");
+        var envProps = readProperties(Arrays.asList(envOverride));
+
+        envProps.forEach((key, origValue) -> {
+            Log.i(TAG, key + "=" + origValue);
+            sDefaultValues.put(key, origValue);
+        });
+
         Log.i(TAG, "Done reading properties");
 
         if (RAVENWOOD_VERBOSE_LOGGING) {

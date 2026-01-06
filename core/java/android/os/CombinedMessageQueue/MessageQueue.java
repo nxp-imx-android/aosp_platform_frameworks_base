@@ -1150,11 +1150,16 @@ public final class MessageQueue {
      */
     public void resetForTest() {
         ActivityThread.throwIfNotInstrumenting();
+        onResetForTestCalled();
         if (sUseConcurrent) {
             resetConcurrent();
         } else {
             resetLegacy();
         }
+    }
+
+    @RavenwoodRedirect
+    private static void onResetForTestCalled() {
     }
 
     private void resetConcurrent() {

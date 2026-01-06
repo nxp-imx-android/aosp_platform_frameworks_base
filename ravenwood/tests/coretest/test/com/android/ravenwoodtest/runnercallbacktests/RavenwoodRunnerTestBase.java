@@ -82,6 +82,7 @@ public abstract class RavenwoodRunnerTestBase {
         String enablementPolicy() default "";
         String overridingRegex() default "";
         boolean ignoreLargeTests() default false;
+        boolean dumpTestsOnly() default false;
     }
 
     private static final AtomicReference<Throwable> sError = new AtomicReference<>();
@@ -97,7 +98,7 @@ public abstract class RavenwoodRunnerTestBase {
     /**
      * Take a multiline string, strip all of them, remove empty lines, and return it.
      */
-    private static String stripMultiLines(String resultString) {
+    public static String stripMultiLines(String resultString) {
         var list = new ArrayList<String>();
         for (var line : resultString.split("\n")) {
             var s = line.strip();
@@ -157,7 +158,8 @@ public abstract class RavenwoodRunnerTestBase {
                 expected.runMode(),
                 expected.enablementPolicy(),
                 expected.overridingRegex(),
-                expected.ignoreLargeTests());
+                expected.ignoreLargeTests(),
+                expected.dumpTestsOnly());
 
         sError.set(null);
 

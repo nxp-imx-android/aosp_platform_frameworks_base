@@ -15,8 +15,6 @@
  */
 package android.platform.test.ravenwood;
 
-import static android.platform.test.ravenwood.RavenwoodDriver.sRawStdErr;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.Handler;
@@ -25,22 +23,24 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
+import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.ravenwood.OpenJdkWorkaround;
 import com.android.ravenwood.common.RavenwoodInternalUtils;
 import com.android.ravenwood.common.SneakyThrow;
+import com.android.ravenwood.common.StackTrace;
 
 import org.junit.AssumptionViolatedException;
 import org.junit.runner.Description;
 
 import java.io.PrintStream;
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 public class RavenwoodErrorHandler {
     private static final String TAG = RavenwoodInternalUtils.TAG;
@@ -67,6 +67,9 @@ public class RavenwoodErrorHandler {
 
     volatile static Description sCurrentDescription;
 
+    @GuardedBy("sWarnings")
+    private static final ArrayList<StackTrace> sWarnings = new ArrayList<>();
+
     // Several callbacks regarding test lifecycle
 
     static void init() {
@@ -74,8 +77,7 @@ public class RavenwoodErrorHandler {
 
         // `pkill -USR1 -f tradefed-isolation.jar` will trigger a full thread dumps
         OpenJdkWorkaround.registerSignalHandler("USR1", () -> {
-            sRawStdErr.println("-----SIGUSR1 HANDLER-----");
-            RavenwoodErrorHandler.doBugreport(null, null, false);
+            RavenwoodBugreportManager.doBugreport("-----SIGUSR1 HANDLER-----", null, null, false);
         });
     }
 
@@ -87,7 +89,6 @@ public class RavenwoodErrorHandler {
 
     static void enterTestRunner() {
         // Reset the main thread to clear pending messages in the queue
-        Looper.getMainLooper().getQueue().resetForTest();
         clearPendingRecoverableUncaughtException();
         // Wait until the main thread is idle to be 100% sure the queue is empty
         try {
@@ -111,33 +112,14 @@ public class RavenwoodErrorHandler {
 
     static void exitTestMethod(Description description) {
         cancelTimeout();
-        RavenwoodMessageTracker.getInstance().logPendingMessages();
+        RavenwoodMessageTracker.getInstance().dumpPendingMessages(
+                RavenwoodLogManager.getLogcatOut(Log.VERBOSE),
+                "Test finished.");
         maybeThrowPendingRecoverableUncaughtExceptionAndClear();
         maybeThrowUnrecoverableUncaughtException();
     }
 
     // Setup timeout to detect slow tests
-
-    /**
-     * When enabled, attempt to dump all thread stacks just before we hit the
-     * overall Tradefed timeout, to aid in debugging deadlocks.
-     *
-     * Note, this timeout will _not_ stop the test, as there isn't really a clean way to do it.
-     * It'll merely print stacktraces.
-     */
-    private static final boolean ENABLE_TIMEOUT_STACKS =
-            !"0".equals(System.getenv("RAVENWOOD_ENABLE_TIMEOUT_STACKS"));
-
-    private static final int DEFAULT_TIMEOUT_SECONDS = 10;
-    private static final int TIMEOUT_MILLIS = getTimeoutSeconds() * 1000;
-
-    private static int getTimeoutSeconds() {
-        var e = System.getenv("RAVENWOOD_TIMEOUT_SECONDS");
-        if (e == null || e.isEmpty()) {
-            return DEFAULT_TIMEOUT_SECONDS;
-        }
-        return Integer.parseInt(e);
-    }
 
     private static final ScheduledExecutorService sTimeoutExecutor =
             Executors.newScheduledThreadPool(1, (Runnable r) -> {
@@ -147,29 +129,52 @@ public class RavenwoodErrorHandler {
                 return t;
             });
 
-    private static volatile ScheduledFuture<?> sPendingTimeout;
+    private static volatile ScheduledFuture<?> sPendingSlowTimeout;
+    private static volatile ScheduledFuture<?> sPendingKillTimeout;
 
     /**
      * Prints the stack trace from all threads.
      */
-    private static void onTestTimedOut() {
-        sRawStdErr.println("********* SLOW TEST DETECTED ********");
-        dumpStacks(null, null);
+    private static void onTestSlowTimedOut() {
+        RavenwoodBugreportManager.doBugreport(
+                "********* SLOW TEST DETECTED ********", null, null, false);
+    }
+
+    /**
+     */
+    private static void onDieTimedOut() {
+        RavenwoodBugreportManager.doBugreport(
+                "********* TEST TIMED OUT, KILLING SELF ********", null, null, true);
     }
 
     private static void scheduleTimeout() {
-        if (!ENABLE_TIMEOUT_STACKS) return;
         cancelTimeout();
-        sPendingTimeout = sTimeoutExecutor.schedule(
-                RavenwoodErrorHandler::onTestTimedOut,
-                TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+        var env = RavenwoodEnvironment.getInstance();
+        if (env.getSlowTestTimeoutSeconds() > 0) {
+            sPendingSlowTimeout = sTimeoutExecutor.schedule(
+                    RavenwoodErrorHandler::onTestSlowTimedOut,
+                    env.getSlowTestTimeoutSeconds(),
+                    TimeUnit.SECONDS);
+        }
+        if (env.getDieTimeoutSeconds() > 0) {
+            sPendingKillTimeout = sTimeoutExecutor.schedule(
+                    RavenwoodErrorHandler::onDieTimedOut,
+                    env.getDieTimeoutSeconds(),
+                    TimeUnit.SECONDS);
+        }
     }
 
     private static void cancelTimeout() {
-        var pt = sPendingTimeout;
-        if (pt != null) {
-            pt.cancel(false);
-            sPendingTimeout = null;
+        safeCancel(sPendingKillTimeout);
+        safeCancel(sPendingSlowTimeout);
+
+        sPendingKillTimeout = null;
+        sPendingSlowTimeout = null;
+    }
+
+    private static void safeCancel(Future<?> f) {
+        if (f != null) {
+            f.cancel(false);
         }
     }
 
@@ -207,14 +212,16 @@ public class RavenwoodErrorHandler {
     static class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
         @Override
         public void uncaughtException(Thread thread, Throwable inner) {
-            Log.w(TAG, "Uncaught exception detected on thread " + Thread.currentThread(), inner);
+            var msg = "Uncaught exception detected on thread " + Thread.currentThread();
+            Log.w(TAG, msg, inner);
             var isRecoverable = isThrowableRecoverable(inner);
             if (isRecoverable) {
                 setPendingRecoverableUncaughtException(inner);
             } else {
                 setPendingUnrecoverableUncaughtException(thread, inner);
             }
-            doBugreport(thread, inner, !isRecoverable && DIE_ON_UNCAUGHT_EXCEPTION);
+            RavenwoodBugreportManager.doBugreport(
+                    msg, thread, inner, !isRecoverable && DIE_ON_UNCAUGHT_EXCEPTION);
         }
     }
 
@@ -224,7 +231,13 @@ public class RavenwoodErrorHandler {
     public static void onBeforeEnqueue(@NonNull Message msg) {
         // Check for pending exception, and throw it if any.
         // We don't want to enqueue any more messages if a pending exception exists.
-        maybeThrowPendingRecoverableUncaughtExceptionNoClear();
+        try {
+            maybeThrowPendingRecoverableUncaughtExceptionNoClear();
+        } catch (Throwable th) {
+            onWarningDetected("onBeforeEnqueue: Exception pending. Discarding message "
+                    + RavenwoodMessageTracker.messageToString(msg));
+            throw th;
+        }
 
         // Track the msg poster in case an exception is thrown later during msg dispatch.
         RavenwoodMessageTracker.getInstance().trackMessage(msg);
@@ -236,14 +249,18 @@ public class RavenwoodErrorHandler {
     public static void dispatchMessage(Handler handler, Message msg) {
         // If there's already an exception caught and pending, don't run any more messages.
         if (hasPendingRecoverableUncaughtException()) {
+            onWarningDetected("dispatchMessage: Exception pending. Discarding message "
+                    + RavenwoodMessageTracker.messageToString(msg));
             return;
         }
+        RavenwoodMessageTracker.getInstance().onDispatchStarted(msg);
         try {
             handler.dispatchMessageImpl(msg);
         } catch (Throwable th) {
+            RavenwoodMessageTracker.getInstance().onDispatchFinished(msg);
             var desc = String.format("Detected %s on looper thread %s", th.getClass().getName(),
                     Thread.currentThread());
-            sRawStdErr.println(desc);
+            Log.w(TAG, desc);
 
             if (RavenwoodEnablementChecker.getInstance().wouldRunDisabledTests()) {
                 // Once a MessageQueue has an unhandled exception, the entire MessageQueue may be
@@ -344,70 +361,38 @@ public class RavenwoodErrorHandler {
         return sPendingRecoverableUncaughtException.get();
     }
 
-    // Dump all thread stack traces
+    // TODO: This should be owned by something else.
+    static Description getCurrentDescription() {
+        return sCurrentDescription;
+    }
 
-    private static final Object sDumpStackLock = new Object();
-
-    /**
-     * Prints the stack trace from all threads.
-     */
-    private static void dumpStacks(
-            @Nullable Thread exceptionThread, @Nullable Throwable throwable) {
-        synchronized (sDumpStackLock) {
-            final PrintStream out = sRawStdErr;
-            out.println("-----BEGIN ALL THREAD STACKS-----");
-
-            var desc = sCurrentDescription;
-            if (desc != null) {
-                out.format("Running test: %s:%s#%s\n",
-                        RavenwoodEnvironment.getInstance().getTestModuleName(),
-                        desc.getClassName(), desc.getMethodName());
+    public static void dumpWarnings(PrintStream out) {
+        synchronized (sWarnings) {
+            var count = sWarnings.size();
+            if (count == 0) {
+                out.println("No warnings detected.");
+                return;
             }
-
-            var stacks = Thread.getAllStackTraces();
-            var threads = stacks.keySet().stream().sorted(
-                    Comparator.comparingLong(Thread::threadId)).collect(Collectors.toList());
-
-            // Put the test and the main thread at the top.
-            var testThread = RavenwoodAwareTestRunner.sTestThread;
-            var mainThread = Looper.getMainLooper().getThread();
-            if (mainThread != null) {
-                threads.remove(mainThread);
-                threads.addFirst(mainThread);
+            out.println(count + " warning(s) detected!");
+            var i = 0;
+            for (var w : sWarnings) {
+                out.println("Warning #" + i + ":");
+                i++;
+                w.printStackTrace(out);
             }
-            threads.remove(testThread);
-            threads.addFirst(testThread);
-            // Put the exception thread at the top.
-            // Also inject the stacktrace from the exception.
-            if (exceptionThread != null) {
-                threads.remove(exceptionThread);
-                threads.add(0, exceptionThread);
-                stacks.put(exceptionThread, throwable.getStackTrace());
-            }
-            for (var th : threads) {
-                out.println();
-
-                out.print("Thread");
-                if (th == exceptionThread) {
-                    out.print(" [** EXCEPTION THREAD **]");
-                }
-                out.print(": " + th.getName() + " / " + th);
-                out.println();
-
-                for (StackTraceElement e :  stacks.get(th)) {
-                    out.println("\tat " + e);
-                }
-            }
-            out.println("-----END ALL THREAD STACKS-----");
         }
     }
 
-    static void doBugreport(
-            @Nullable Thread exceptionThread, @Nullable Throwable throwable, boolean killSelf) {
-        // TODO: Print more information
-        dumpStacks(exceptionThread, throwable);
-        if (killSelf) {
-            System.exit(13);
+    /**
+     * Call it when something that shouldn't happen happaened. We log it throughout the whole
+     * process and dump them at the end of each class. We never clear it, so once a warning
+     * happens, it'll be repeatedly reported at the end of each subsequent test.
+     */
+    public static void onWarningDetected(@NonNull String message) {
+        var st = RavenwoodImplUtils.getStackTrace(message, RavenwoodErrorHandler.class, true);
+        synchronized (sWarnings) {
+            Log.w(TAG, "Warning detected! " + message, st);
+            sWarnings.add(st);
         }
     }
 }

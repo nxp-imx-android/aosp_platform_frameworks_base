@@ -17,10 +17,14 @@ package android.os;
 
 import android.annotation.NonNull;
 import android.platform.test.ravenwood.RavenwoodErrorHandler;
+import android.platform.test.ravenwood.RavenwoodMessageTracker;
+import android.util.Log;
 
 import java.util.ArrayList;
 
 public class Handler_ravenwood {
+    private static final String TAG = "Handler_ravenwood";
+
     private Handler_ravenwood() {
     }
 
@@ -47,6 +51,7 @@ public class Handler_ravenwood {
      * WARNING: THIS IS VERY HACKY, but it works good enough for Ravenwood.
      */
     public static void clearMessageQueue(MessageQueue queue) {
+        RavenwoodErrorHandler.onWarningDetected("Force clearing message!");
         // Extract all messages immediately and dispatch them all.
         // We do this because other threads may be waiting on a specific message to be dispatched.
         // Because new messages may be enqueued during the dispatch, we collect the entire list
@@ -58,8 +63,12 @@ public class Handler_ravenwood {
         }
         pendingList.forEach(msg -> {
             try {
+                Log.w(TAG, "clearMessageQueue: force running message: "
+                        + RavenwoodMessageTracker.messageToString(msg));
                 msg.getTarget().dispatchMessageImpl(msg);
             } catch (Throwable ignored) {
+                Log.w(TAG, "clearMessageQueue: exception thrown while force running message",
+                        ignored);
             }
         });
         // New messages may be queued, clear all of them.
@@ -72,6 +81,7 @@ public class Handler_ravenwood {
             queue.removeSyncBarrier(token);
             // Try to remove the previous sync barrier.
             try {
+                Log.w(TAG, "clearMessageQueue: Trying to remove sync barrier: " + (token - 1));
                 queue.removeSyncBarrier(token - 1);
             } catch (Throwable ignored) {
             }

@@ -16,9 +16,14 @@
 package android.os;
 
 import android.platform.test.ravenwood.RavenwoodEnvironment;
+import android.platform.test.ravenwood.RavenwoodErrorHandler;
+
+import java.io.PrintStream;
 
 /**
  * Redirection target class from {@link MessageQueue}.
+ *
+ * TODO: Keep track of all sync barriers
  */
 public class MessageQueue_ravenwood {
     private MessageQueue_ravenwood() {
@@ -52,6 +57,14 @@ public class MessageQueue_ravenwood {
         // Use "ravenwood.prop" to explicitly enable/disable for a specific test.
         return SystemProperties.getBoolean(
                 "ravenwood.android.os.MessageQueue.useDeliQueue", def);
+    }
+
+    static void onResetForTestCalled() {
+        RavenwoodErrorHandler.onWarningDetected("MessageQueue.resetForTest() called!");
+    }
+
+    public static void dumpSyncBarriers(PrintStream out) {
+        // TODO: Implement it
     }
 }
 
