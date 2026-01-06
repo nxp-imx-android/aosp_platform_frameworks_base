@@ -354,7 +354,11 @@ constructor(
      */
     private val isShadeWindowOnThisDisplay =
         if (ShadeWindowGoesAround.isEnabled) {
-            shadeDisplaysInteractor.get().displayId.map { shadeDisplayId ->
+            // Use pendingDisplayId to know where the shade is *going* to be.
+            // This allows us to hide/show the status bar immediately when the user interacts,
+            // rather than waiting for the window movement animation to finish (which can take
+            // hundreds of ms).
+            shadeDisplaysInteractor.get().pendingDisplayId.map { shadeDisplayId ->
                 thisDisplayId == shadeDisplayId
             }
         } else {
@@ -364,9 +368,13 @@ constructor(
 
     private val isShadeVisibleOnAnyDisplay =
         if (SceneContainerFlag.isEnabled) {
-            sceneInteractor.currentOverlays.map { currentOverlays ->
-                (Overlays.NotificationsShade in currentOverlays ||
-                    Overlays.QuickSettingsShade in currentOverlays)
+            combine(sceneInteractor.currentScene, sceneInteractor.currentOverlays) {
+                currentScene,
+                currentOverlays ->
+                currentScene == Scenes.Shade ||
+                    currentScene == Scenes.QuickSettings ||
+                    Overlays.NotificationsShade in currentOverlays ||
+                    Overlays.QuickSettingsShade in currentOverlays
             }
         } else {
             isShadeExpandedEnough
@@ -401,14 +409,23 @@ constructor(
                 occlusionInteractor.isKeyguardOccluded,
                 isShadeWindowOnThisDisplay,
             ) { currentScene, isShadeVisibleOnAnyDisplay, isOccluded, isShadeWindowOnThisDisplay ->
+                // The `isShadeVisibleOnAnyDisplay` flow is derived from `currentScene`, so it may
+                // be stale when `currentScene` changes (diamond problem).
+                // We check `currentScene` directly here to avoid a frame where the status bar
+                // disappears on the main display when the shade opens on an external display.
+                val isShadeVisible =
+                    isShadeVisibleOnAnyDisplay ||
+                        currentScene == Scenes.Shade ||
+                        currentScene == Scenes.QuickSettings
+
                 if (isOccluded) {
                     true
                 } else if (isShadeWindowOnThisDisplay) {
-                    currentScene == Scenes.Gone && !isShadeVisibleOnAnyDisplay
+                    currentScene == Scenes.Gone && !isShadeVisible
                 } else {
                     // When the shade is visible on another display,
                     // allow the home status bar on the current display.
-                    currentScene == Scenes.Gone || isShadeVisibleOnAnyDisplay
+                    currentScene == Scenes.Gone || isShadeVisible
                 }
             }
             .distinctUntilChanged()
