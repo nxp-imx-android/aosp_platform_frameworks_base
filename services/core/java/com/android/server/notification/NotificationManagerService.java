@@ -11117,10 +11117,14 @@ public class NotificationManagerService extends SystemService {
                 toastCount++;
             }
         }
-        try {
-            mAm.setProcessImportant(mForegroundToken, pid, toastCount > 0, "toast");
-        } catch (RemoteException e) {
-            // Shouldn't happen.
+        if (com.android.server.am.Flags.simplifyToastImportance()) {
+            mAmi.setIsToastActive(pid, toastCount > 0);
+        } else {
+            try {
+                mAm.setProcessImportant(mForegroundToken, pid, toastCount > 0, "toast");
+            } catch (RemoteException e) {
+                // Shouldn't happen.
+            }
         }
     }
 

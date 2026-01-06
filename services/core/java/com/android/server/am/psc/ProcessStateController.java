@@ -709,13 +709,17 @@ public class ProcessStateController {
     }
 
     /**
-     * Note that the process is showing a toast.
+     * Forces a process to be considered important, e.g. while showing toasts.
+     *
+     * @param forcingToImportant A token representing the source and reason. Null to remove forcing.
+     * @return {@code true} if the token has changed.
      */
     @GuardedBy("mLock")
-    public void setForcingToImportant(@NonNull ProcessRecordInternal proc,
+    public boolean setForcingToImportant(@NonNull ProcessRecordInternal proc,
             @Nullable Object forcingToImportant) {
-        if (proc.getForcingToImportant() == forcingToImportant) return;
+        if (proc.getForcingToImportant() == forcingToImportant) return false;
         proc.setForcingToImportant(forcingToImportant);
+        return true;
     }
 
     /**

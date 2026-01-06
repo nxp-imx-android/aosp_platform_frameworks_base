@@ -10799,7 +10799,11 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         boolean wasEnqueued = enqueueToast(testPackage, new TestableToastCallback());
         assertEquals(1, mService.mToastQueue.size());
         assertThat(wasEnqueued).isTrue();
-        verify(mAm).setProcessImportant(any(), anyInt(), eq(true), any());
+        if (com.android.server.am.Flags.simplifyToastImportance()) {
+            verify(mAmi).setIsToastActive(anyInt(), eq(true));
+        } else {
+            verify(mAm).setProcessImportant(any(), anyInt(), eq(true), any());
+        }
     }
 
     @Test
@@ -10823,7 +10827,11 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         boolean wasEnqueued = enqueueTextToast(testPackage, "Text");
         assertEquals(1, mService.mToastQueue.size());
         assertThat(wasEnqueued).isTrue();
-        verify(mAm).setProcessImportant(any(), anyInt(), eq(false), any());
+        if (com.android.server.am.Flags.simplifyToastImportance()) {
+            verify(mAmi).setIsToastActive(anyInt(), eq(false));
+        } else {
+            verify(mAm).setProcessImportant(any(), anyInt(), eq(false), any());
+        }
     }
 
     @Test
@@ -10847,7 +10855,11 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         boolean wasEnqueued = enqueueTextToast(testPackage, "Text");
         assertEquals(1, mService.mToastQueue.size());
         assertThat(wasEnqueued).isTrue();
-        verify(mAm).setProcessImportant(any(), anyInt(), eq(false), any());
+        if (com.android.server.am.Flags.simplifyToastImportance()) {
+            verify(mAmi).setIsToastActive(anyInt(), eq(false));
+        } else {
+            verify(mAm).setProcessImportant(any(), anyInt(), eq(false), any());
+        }
     }
 
     @Test
