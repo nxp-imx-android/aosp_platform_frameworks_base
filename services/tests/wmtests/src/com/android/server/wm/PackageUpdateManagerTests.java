@@ -20,12 +20,11 @@ import static com.android.window.flags.Flags.FLAG_ENABLE_APP_RESTART_AFTER_UPDAT
 
 import static com.google.common.truth.Truth.assertThat;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
+import android.content.ComponentName;
+import android.content.Intent;
 import android.os.PersistableBundle;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
@@ -42,6 +41,7 @@ import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Unit tests for {@link PackageUpdateManager}.
@@ -56,6 +56,10 @@ public class PackageUpdateManagerTests extends WindowTestsBase {
 
     private static final String PKG_1 = "com.test.app1";
     private static final String PKG_2 = "com.test.app2";
+    private static final String AFFINITY_1 = "affinity1";
+    private static final String AFFINITY_2 = "affinity2";
+    private static final ComponentName COMPONENT_1 = new ComponentName(PKG_1, "TestActivity1");
+    private static final ComponentName COMPONENT_2 = new ComponentName(PKG_1, "TestActivity2");
 
     private PackageUpdateManager mManager;
     private PersistableBundle mBundle1;
@@ -77,88 +81,88 @@ public class PackageUpdateManagerTests extends WindowTestsBase {
     @Test
     @EnableFlags(FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
     public void testAddAndGetPersistentTask_success() {
-        final Task task = setUpTask(PKG_1);
+        final Task task = setUpTask(PKG_1, AFFINITY_1, COMPONENT_1);
 
         mManager.addPersistentTaskForPackage(PKG_1, task.mTaskId, mBundle1);
 
         PersistableBundle result = mManager.getPersistentStateForTask(task);
-        assertNotNull(result);
-        assertEquals(mBundle1, result);
+        assertThat(result).isNotNull();
+        assertThat(result).isEqualTo(mBundle1);
     }
 
     @Test
     @EnableFlags(FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
     public void testGetPersistentTask_stateIsRemovedAfterGet() {
-        final Task task = setUpTask(PKG_1);
+        final Task task = setUpTask(PKG_1, AFFINITY_1, COMPONENT_1);
 
         mManager.addPersistentTaskForPackage(PKG_1, task.mTaskId, mBundle1);
 
         // First get should succeed
         PersistableBundle result1 = mManager.getPersistentStateForTask(task);
-        assertNotNull(result1);
+        assertThat(result1).isNotNull();
 
         // Second get for the *same task* should fail, as it's been removed
         PersistableBundle result2 = mManager.getPersistentStateForTask(task);
-        assertNull(result2);
+        assertThat(result2).isNull();
     }
 
     @Test
     @EnableFlags(FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
     public void testGetPersistentTask_packageNotFound() {
-        final Task task = setUpTask(PKG_1);
-        final Task taskNotAdded = setUpTask(PKG_2);
+        final Task task = setUpTask(PKG_1, AFFINITY_1, COMPONENT_1);
+        final Task taskNotAdded = setUpTask(PKG_2, AFFINITY_1, COMPONENT_1);
         mManager.addPersistentTaskForPackage(PKG_1, task.mTaskId, mBundle1);
 
         PersistableBundle result = mManager.getPersistentStateForTask(taskNotAdded);
 
-        assertNull(result);
+        assertThat(result).isNull();
     }
 
     @Test
     @EnableFlags(FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
     public void testAddAndGet_MultipleTasksSamePackage() {
-        final Task task1 = setUpTask(PKG_1);
-        final Task task2 = setUpTask(PKG_1);
+        final Task task1 = setUpTask(PKG_1, AFFINITY_1, COMPONENT_1);
+        final Task task2 = setUpTask(PKG_1, AFFINITY_2, COMPONENT_2);
         mManager.addPersistentTaskForPackage(PKG_1, task1.mTaskId, mBundle1);
         mManager.addPersistentTaskForPackage(PKG_1, task2.mTaskId, mBundle2);
 
         // Get state for the first task
         PersistableBundle result1 = mManager.getPersistentStateForTask(task1);
-        assertNotNull(result1);
-        assertEquals(mBundle1, result1);
+        assertThat(result1).isNotNull();
+        assertThat(result1).isEqualTo(mBundle1);
 
         // Get state for the second task
         PersistableBundle result2 = mManager.getPersistentStateForTask(task2);
-        assertNotNull(result2);
-        assertEquals(mBundle2, result2);
+        assertThat(result2).isNotNull();
+        assertThat(result2).isEqualTo(mBundle2);
     }
 
     @Test
     @EnableFlags(FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
     public void testAddAndGet_MultiplePackages() {
-        final Task task1 = setUpTask(PKG_1);
-        final Task task2 = setUpTask(PKG_2);
+        final Task task1 = setUpTask(PKG_1, AFFINITY_1, COMPONENT_1);
+        final Task task2 = setUpTask(PKG_2, AFFINITY_1, COMPONENT_1);
         mManager.addPersistentTaskForPackage(PKG_1, task1.mTaskId, mBundle1);
         mManager.addPersistentTaskForPackage(PKG_2, task2.mTaskId, mBundle2);
 
         PersistableBundle result1 = mManager.getPersistentStateForTask(task1);
         PersistableBundle result2 = mManager.getPersistentStateForTask(task2);
 
-        assertNotNull(result1);
-        assertEquals(mBundle1, result1);
-        assertNotNull(result2);
-        assertEquals(mBundle2, result2);
+        assertThat(result1).isNotNull();
+        assertThat(result1).isEqualTo(mBundle1);
+        assertThat(result2).isNotNull();
+        assertThat(result2).isEqualTo(mBundle2);
     }
 
     @Test
     @DisableFlags(FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
     public void testMethods_WhenFlagIsDisabled() {
-        final Task task1 = setUpTask(PKG_1);
+        final Task task1 = setUpTask(PKG_1, AFFINITY_1, COMPONENT_1);
         mManager.addPersistentTaskForPackage(PKG_1, task1.mTaskId, mBundle1);
 
         PersistableBundle result = mManager.getPersistentStateForTask(task1);
 
-        assertNull(result);
+        assertThat(result).isNull();
     }
 
     @Test
@@ -166,8 +170,8 @@ public class PackageUpdateManagerTests extends WindowTestsBase {
     public void testOnPackageUpdateFinished_notifiesController() {
         PackageUpdateOrganizer o = new PackageUpdateOrganizer();
         mWm.mAtmService.mTaskOrganizerController.registerTaskOrganizer(o);
-        final Task task1 = setUpTask(PKG_1);
-        final Task task2 = setUpTask(PKG_1);
+        final Task task1 = setUpTask(PKG_1, AFFINITY_1, COMPONENT_1);
+        final Task task2 = setUpTask(PKG_1, AFFINITY_2, COMPONENT_2);
         ArraySet<Task> tasks = new ArraySet<>();
         tasks.add(task1);
         tasks.add(task2);
@@ -178,21 +182,95 @@ public class PackageUpdateManagerTests extends WindowTestsBase {
         assertThat(o.mUpdatedTaskIds).containsExactly(task1.mTaskId, task2.mTaskId);
     }
 
+    @Test
+    @EnableFlags(FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
+    public void testOnRecentTaskRemoved_removesPersistentState() {
+        final Task task1 = setUpTask(PKG_1, AFFINITY_1, COMPONENT_1);
+        final Task task2 = setUpTask(PKG_1, AFFINITY_2, COMPONENT_2);
+        mManager.addPersistentTaskForPackage(PKG_1, task1.mTaskId, mBundle1);
+        mManager.addPersistentTaskForPackage(PKG_1, task2.mTaskId, mBundle2);
+
+        // Remove the first task
+        mManager.onRecentTaskRemoved(task1, false, false, null);
+
+        // Verify the state for the first task is removed, but the second still exists
+        assertThat(mManager.getPersistentStateForTask(task1)).isNull();
+        assertThat(mManager.getPersistentStateForTask(task2)).isEqualTo(mBundle2);
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
+    public void testOnRecentTaskRemoved_movesStateToReplacingTask() {
+        final Task task = setUpTask(PKG_1, AFFINITY_1, COMPONENT_1);
+        final Task replacingTask = setUpTask(PKG_1, AFFINITY_1, COMPONENT_1);
+        mManager.addPersistentTaskForPackage(PKG_1, task.mTaskId, mBundle1);
+
+        // Remove the original task and provide a replacement
+        mManager.onRecentTaskRemoved(task, false, false, replacingTask);
+
+        // Verify the state is moved to the replacing task
+        assertThat(mManager.getPersistentStateForTask(task)).isNull();
+        assertThat(mManager.getPersistentStateForTask(replacingTask)).isEqualTo(mBundle1);
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
+    public void testOnRecentTaskRemoved_doesNotMoveStateForDifferentPackage() {
+        final Task task = setUpTask(PKG_1, AFFINITY_1, COMPONENT_1);
+        final Task replacingTask = setUpTask(PKG_2, AFFINITY_1, COMPONENT_1); // Different pkg
+        mManager.addPersistentTaskForPackage(PKG_1, task.mTaskId, mBundle1);
+
+        // Remove the original task and provide a replacement from a different package
+        mManager.onRecentTaskRemoved(task, false, false, replacingTask);
+
+        // Verify the state is not moved to the replacing task
+        assertThat(mManager.getPersistentStateForTask(task)).isNull();
+        assertThat(mManager.getPersistentStateForTask(replacingTask)).isNull();
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
+    public void testOnRecentTaskRemoved_doesNotMoveStateForDifferentAffinity() {
+        final Task task = setUpTask(PKG_1, AFFINITY_1, COMPONENT_1);
+        final Task replacingTask = setUpTask(PKG_1, AFFINITY_2, COMPONENT_1); // Different affinity
+        mManager.addPersistentTaskForPackage(PKG_1, task.mTaskId, mBundle1);
+
+        mManager.onRecentTaskRemoved(task, false, false, replacingTask);
+
+        assertThat(mManager.getPersistentStateForTask(task)).isNull();
+        assertThat(mManager.getPersistentStateForTask(replacingTask)).isNull();
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
+    public void testOnRecentTaskRemoved_doesNotMoveStateForDifferentIntent() {
+        final Task task = setUpTask(PKG_1, AFFINITY_1, COMPONENT_1);
+        final Task replacingTask = setUpTask(PKG_1, AFFINITY_1, COMPONENT_2); // Different intent
+        mManager.addPersistentTaskForPackage(PKG_1, task.mTaskId, mBundle1);
+
+        mManager.onRecentTaskRemoved(task, false, false, replacingTask);
+
+        assertThat(mManager.getPersistentStateForTask(task)).isNull();
+        assertThat(mManager.getPersistentStateForTask(replacingTask)).isNull();
+    }
+
     static class PackageUpdateOrganizer extends StubOrganizer {
         List<Integer> mUpdatedTaskIds = new ArrayList<>();
 
         @Override
         public void onPackageUpdateFinished(
                 List<ActivityManager.RunningTaskInfo> updatedTasks) {
-            for (int i = 0; i < updatedTasks.size(); i++) {
-                mUpdatedTaskIds.add(updatedTasks.get(i).taskId);
-            }
+            mUpdatedTaskIds = updatedTasks.stream().map(
+                    it -> it.taskId).collect(Collectors.toList());
         }
     }
 
-    private Task setUpTask(String pkg) {
+    private Task setUpTask(String pkg, String affinity, ComponentName component) {
         final Task rootTask = createTask(mDisplayContent);
         when(rootTask.getBasePackageName()).thenReturn(pkg);
+        rootTask.affinity = affinity;
+        rootTask.intent = new Intent();
+        rootTask.intent.setComponent(component);
         return rootTask;
     }
 }

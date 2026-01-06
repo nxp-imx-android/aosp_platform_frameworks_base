@@ -37,11 +37,21 @@ import java.util.Map;
  *
  * <p>This class stores the persistent state from a task's root activity *before* a package
  * update. This state is then retrieved when the task is relaunched *after* the update,
- * allowing the task to be restored.
+ * allowing the task to be restored. If the task is not relaunched after an update, task was not
+ * visible when the update finished, then the state is still stored until the task is launched for
+ * the next time.
  *
- * <p>State is stored on a per-task basis, mapped by package name.
+ * <p> State is stored on a per-task basis, mapped by package name.
+ *
+ * <p>Bundles are also managed based on the lifecycle of recent tasks:
+ * <ul>
+ *     <li>When a task is removed from recents (e.g., due to being trimmed or explicitly removed),
+ *     the associated bundle is removed.</li>
+ *     <li>If a task is removed because it's being replaced by a new task, the bundle is
+ *     transferred to the new task.</li>
+ * </ul>
  */
-class PackageUpdateManager extends PackageMonitor {
+class PackageUpdateManager extends PackageMonitor implements RecentTasks.Callbacks {
     private final ActivityTaskManagerService mService;
 
     /**
@@ -70,6 +80,7 @@ class PackageUpdateManager extends PackageMonitor {
             return;
         }
         register(mService.mContext, UserHandle.ALL, BackgroundThread.getHandler());
+        mService.getRecentTasks().registerCallback(this);
     }
 
     /**
@@ -174,5 +185,55 @@ class PackageUpdateManager extends PackageMonitor {
                 mService.mTaskOrganizerController.onPackageUpdateFinished(updatedTasks);
             }
         }
+    }
+
+    @Override
+    public void onRecentTaskAdded(Task task) {}
+
+    @Override
+    public void onRecentTaskRemoved(Task task, boolean wasTrimmed, boolean killProcess,
+            Task replacingTask) {
+        if (!Flags.enableAppRestartAfterUpdate()) {
+            return;
+        }
+        ProtoLog.d(WM_DEBUG_PACKAGE_UPDATE, "onRecentTaskRemoved Removing task: %d", task.mTaskId);
+        final String pkg = task.getBasePackageName();
+        final Map<Integer, PersistableBundle> tasks = mUpdatingPackageToPersistentTasks.get(
+                pkg);
+
+        if (tasks == null) {
+            ProtoLog.d(WM_DEBUG_PACKAGE_UPDATE, "Couldn't find a persistent state for task= %d",
+                    task.mTaskId);
+            return;
+        }
+        PersistableBundle bundle = tasks.remove(task.mTaskId);
+
+        // If a task is removed due to it being replaced by a new task, keep the same bundle for the
+        // new task.
+        if (shouldTransferBundle(task, replacingTask)) {
+            ProtoLog.d(WM_DEBUG_PACKAGE_UPDATE, "Moving bundle for task %d to task %d",
+                    task.mTaskId, replacingTask.mTaskId);
+            tasks.put(replacingTask.mTaskId, bundle);
+        }
+
+        if (tasks.isEmpty()) {
+            mUpdatingPackageToPersistentTasks.remove(pkg);
+        }
+    }
+
+    private boolean shouldTransferBundle(Task task, Task replacingTask) {
+        if (replacingTask == null) {
+            return false;
+        }
+        boolean hasSameBasePackage = task.getBasePackageName().equals(
+                replacingTask.getBasePackageName());
+        boolean hasSameAffinity = task.affinity != null & task.affinity.equals(
+                replacingTask.affinity);
+        boolean hasSameIntent = task.intent != null && replacingTask.intent != null
+                && task.intent.getComponent().equals(replacingTask.intent.getComponent());
+        ProtoLog.d(WM_DEBUG_PACKAGE_UPDATE,
+                "hasSameBasePackage: %b, hasSameAffinity: %b, hasSameIntent: %b",
+                hasSameBasePackage, hasSameAffinity, hasSameIntent);
+        return hasSameBasePackage && hasSameAffinity && hasSameIntent;
     }
 }

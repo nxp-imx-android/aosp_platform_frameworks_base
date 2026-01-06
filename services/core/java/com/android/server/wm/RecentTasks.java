@@ -151,8 +151,16 @@ class RecentTasks {
 
         /**
          * Called when a task is removed from the recent tasks list.
+         *
+         * @param task The task that was removed.
+         * @param wasTrimmed True if the task was removed due to trimming the recents list.
+         * @param killProcess True if the process associated with the task should be killed.
+         * @param replacingTask The task that is being added to recents, which caused this task to
+         *                      be removed, or {@code null} if the removal was not due to adding
+         *                      another task.
          */
-        void onRecentTaskRemoved(Task task, boolean wasTrimmed, boolean killProcess);
+        void onRecentTaskRemoved(Task task, boolean wasTrimmed, boolean killProcess,
+                @Nullable Task replacingTask);
     }
 
     /**
@@ -513,18 +521,26 @@ class RecentTasks {
         mTaskNotificationController.notifyTaskListUpdated();
     }
 
+    /**
+     * @param task The task that was removed.
+     * @param wasTrimmed True if the task was removed due to trimming the recents list.
+     * @param killProcess True if the process associated with the task should be killed.
+     * @param replacingTask The task that is being added to recents, which caused this task to
+     *                      be removed, or {@code null} if the removal was not due to adding
+     *                      another task.
+     */
     private void notifyTaskRemoved(Task task, boolean wasTrimmed, boolean killProcess,
-            boolean removedForAddTask) {
+            @Nullable Task replacingTask) {
         for (int i = 0; i < mCallbacks.size(); i++) {
-            mCallbacks.get(i).onRecentTaskRemoved(task, wasTrimmed, killProcess);
+            mCallbacks.get(i).onRecentTaskRemoved(task, wasTrimmed, killProcess, replacingTask);
         }
         mTaskNotificationController.notifyTaskListUpdated();
-        if (removedForAddTask) {
+        if (replacingTask != null) {
             mTaskNotificationController.notifyRecentTaskRemovedForAddTask(task.mTaskId);
         }
     }
     private void notifyTaskRemoved(Task task, boolean wasTrimmed, boolean killProcess) {
-        notifyTaskRemoved(task, wasTrimmed, killProcess, false /* removedForAddTask */);
+        notifyTaskRemoved(task, wasTrimmed, killProcess, null /* replacingTask */);
     }
 
     /**
@@ -1688,7 +1704,7 @@ class RecentTasks {
                 mHiddenTasks.add(0, removedTask);
             }
             notifyTaskRemoved(removedTask, false /* wasTrimmed */, false /* killProcess */,
-                    true /* removedForAddTask */);
+                    task /* replacingTask */);
             if (DEBUG_RECENTS_TRIM_TASKS) {
                 Slog.d(TAG, "Trimming task=" + removedTask
                         + " for addition of task=" + task);
