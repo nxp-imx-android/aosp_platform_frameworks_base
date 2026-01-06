@@ -28,6 +28,7 @@ import android.service.personalcontext.Flags;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWrapper;
+import android.service.personalcontext.hint.HintFilter;
 import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.util.Log;
 

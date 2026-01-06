@@ -43911,6 +43911,7 @@ package android.service.personalcontext.hint {
     method @NonNull public android.service.personalcontext.hint.BundleHint.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.hint.BundleHint build();
     method @NonNull public android.service.personalcontext.hint.BundleHint.Builder setDataBundle(@NonNull android.os.Bundle);
+    method @NonNull public android.service.personalcontext.hint.BundleHint.Builder setHintTypeName(@Nullable String);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class CallHint extends android.service.personalcontext.hint.ContextHint {
@@ -43980,6 +43981,7 @@ package android.service.personalcontext.hint {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextHint {
     method @NonNull public final java.util.UUID getHintId();
+    method @NonNull public String getHintTypeName();
     method @NonNull public final java.util.Set<android.service.personalcontext.Token> getTokens();
   }
 
@@ -44180,10 +44182,12 @@ package android.service.personalcontext.insight {
     method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.insight.BundleInsight build();
     method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder setDataBundle(@NonNull android.os.Bundle);
+    method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder setInsightTypeName(@Nullable String);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextInsight {
     method @NonNull public final java.util.UUID getInsightId();
+    method @NonNull public String getInsightTypeName();
     method @NonNull public java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature> getOriginHints();
     method @NonNull public java.util.Set<android.service.personalcontext.Token> getTokens();
     method public void reportEvent(@NonNull android.content.Context, int, @NonNull android.service.personalcontext.RenderToken, @Nullable android.os.Bundle);

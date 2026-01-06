@@ -30,6 +30,7 @@ import android.service.personalcontext.Flags;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.service.personalcontext.insight.InsightFilter;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -128,7 +129,7 @@ public abstract class InsightRendererService extends Service {
      * @return a filter that restricts the {@link ContextInsight}s this renderer will receive
      */
     @NonNull
-    public abstract RendererFilter onInitializeFilter();
+    public abstract InsightFilter onInitializeFilter();
 
     /**
      * This method will be called when the given {@link ContextInsight} needs to be rendered.

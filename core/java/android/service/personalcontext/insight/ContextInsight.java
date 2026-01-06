@@ -158,6 +158,15 @@ public abstract class ContextInsight {
     public abstract int getInsightType();
 
     /**
+     * Gets the type name of the insight. For {@link BundleInsight} this is the type name that was
+     * provided in the builder. For all other insights it is the canonical class name.
+     */
+    @NonNull
+    public String getInsightTypeName() {
+        return getClass().getCanonicalName();
+    }
+
+    /**
      * Accepts a visitor.
      *
      * @param visitor The visitor to accept.

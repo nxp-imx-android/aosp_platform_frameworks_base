@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.service.personalcontext.refiner;
+package android.service.personalcontext.hint;
 
 /** @hide */
 parcelable HintFilter;

@@ -3542,6 +3542,10 @@ package android.service.personalcontext.hint {
     method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature.Builder setOriginatingPackage(@Nullable String);
   }
 
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class HintFilter implements android.os.Parcelable {
+    method @NonNull public java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature> getInterestedHintClusters(@NonNull java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature>, @NonNull java.util.Set<java.util.UUID>);
+  }
+
 }
 
 package android.service.personalcontext.insight {
@@ -3549,14 +3553,6 @@ package android.service.personalcontext.insight {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextInsight {
     method @NonNull public static android.service.personalcontext.insight.ContextInsight createInsightFromBundle(@Nullable android.os.Bundle);
     method @NonNull public android.os.Bundle toBundle();
-  }
-
-}
-
-package android.service.personalcontext.refiner {
-
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class HintFilter implements android.os.Parcelable {
-    method @NonNull public java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature> getInterestedHintClusters(@NonNull java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature>, @NonNull java.util.Set<java.util.UUID>);
   }
 
 }

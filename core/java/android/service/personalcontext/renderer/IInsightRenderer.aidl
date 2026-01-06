@@ -19,7 +19,6 @@ package android.service.personalcontext.renderer;
 import android.os.ParcelUuid;
 import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.service.personalcontext.renderer.IGetFilterCallback;
-import android.service.personalcontext.renderer.RendererFilter;
 import android.service.personalcontext.RenderToken;
 
 /** @hide */

@@ -131,6 +131,7 @@ public abstract class ContextHint {
     private static final String KEY_HINT_ID = "key_hint_id";
     private static final String KEY_HINT_TOKENS = "key_hint_tokens";
     private static final String KEY_HINT_DATA = "key_hint_data";
+    private static final String KEY_HINT_TYPE_NAME = "key_hint_type_name";
 
     /** Unique identifier for this hint. */
     private final UUID mId;
@@ -154,6 +155,15 @@ public abstract class ContextHint {
      */
     @HintType
     public abstract int getHintType();
+
+    /**
+     * Gets the type name of the hint. For {@link BundleHint} this is the type name that was
+     * provided in the builder. For all other hints it is the canonical class name.
+     */
+    @NonNull
+    public String getHintTypeName() {
+        return getClass().getCanonicalName();
+    }
 
     /** Returns the unique ID of this hint. */
     public final @NonNull UUID getHintId() {
@@ -194,7 +204,13 @@ public abstract class ContextHint {
         b.putString(KEY_HINT_ID, mId.toString());
         b.putParcelableArrayList(KEY_HINT_TOKENS, new ArrayList<>(mTokens));
         b.putBundle(KEY_HINT_DATA, toBundleImpl());
+        b.putString(KEY_HINT_TYPE_NAME, getHintTypeName());
         return b;
+    }
+
+    /** @hide */
+    public static String peekAtHintTypeName(Bundle bundle) {
+        return bundle.getString(KEY_HINT_TYPE_NAME);
     }
 
     @Override
