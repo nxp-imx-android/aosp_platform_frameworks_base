@@ -254,6 +254,28 @@ ondeviceintelligence_module_java_defaults {
     },
 }
 
+// Conditionally add anomaly detector stubs library
+soong_config_module_type {
+    name: "anomaly_detector_java_defaults",
+    module_type: "java_defaults",
+    config_namespace: "ANDROID",
+    bool_variables: [
+        "release_anomaly_detector",
+    ],
+    properties: [
+        "libs",
+    ],
+}
+
+anomaly_detector_java_defaults {
+    name: "services_anomaly_detector_stubs_conditionally",
+    soong_config_variables: {
+        release_anomaly_detector: {
+            libs: ["service-anomaly-detector.stubs.system_server"],
+        },
+    },
+}
+
 soong_config_module_type {
     name: "system_java_library",
     module_type: "java_library",
@@ -303,6 +325,7 @@ java_library {
     defaults: [
         "services_crashrecovery_stubs_conditionally",
         "ondeviceintelligence_conditionally",
+        "services_anomaly_detector_stubs_conditionally",
     ],
 
     exclude_kotlinc_generated_files: true,
@@ -342,7 +365,6 @@ java_library {
         "services.searchui",
         "services.selectiontoolbar",
         "services.serial",
-        "services.signal-collectors",
         "services.smartspace",
         "services.soundtrigger",
         "services.supervision",
@@ -357,7 +379,10 @@ java_library {
         "service-blobstore",
         "service-jobscheduler",
         "android.hidl.base-V1.0-java",
-    ] + select(release_flag("RELEASE_LIBBINDER_BINDER_OBSERVER"), {
+    ] + select(release_flag("RELEASE_ANOMALY_DETECTOR"), {
+        true: ["services.signal-collectors"],
+        default: [],
+    }) + select(release_flag("RELEASE_LIBBINDER_BINDER_OBSERVER"), {
         true: ["binder_observer_config_enabled"],
         default: ["binder_observer_config_disabled"],
     }),
@@ -366,7 +391,6 @@ java_library {
         "android.hidl.manager-V1.0-java",
         "framework-tethering.stubs.module_lib",
         "keepanno-annotations",
-        "service-anomaly-detector.stubs.system_server",
         "service-art.stubs.system_server",
         "service-permission.stubs.system_server",
         "service-rkp.stubs.system_server",
