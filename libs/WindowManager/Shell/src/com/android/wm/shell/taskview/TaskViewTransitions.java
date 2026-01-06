@@ -27,7 +27,6 @@ import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.window.flags.Flags.enableHandlersDebuggingMode;
 import static com.android.wm.shell.bubbles.util.BubbleUtils.getExitBubbleTransaction;
-import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 import static com.android.wm.shell.transition.TransitionDispatchState.CAPTURED_CHANGE_IN_WRONG_TRANSITION;
 import static com.android.wm.shell.transition.TransitionDispatchState.CAPTURED_UNRELATED_CHANGE;
@@ -1136,10 +1135,6 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
             updateBounds(taskView, boundsOnScreen, startTransaction, finishTransaction, taskInfo,
                     leash, wct);
         } else {
-            // Note: This shouldn't happen, but when this happens on Bubble with root Task approach,
-            // it will move the leaf Task to TDA, which leaves the Bubble in a broken state.
-            ProtoLog.e(WM_SHELL_BUBBLES,
-                    "Transitions.prepareOpenAnimation(): open TaskView's surface was not created");
             // The surface has already been destroyed before the task has appeared,
             // so go ahead and hide the task entirely
             wct.setHidden(taskInfo.token, true /* hidden */);
