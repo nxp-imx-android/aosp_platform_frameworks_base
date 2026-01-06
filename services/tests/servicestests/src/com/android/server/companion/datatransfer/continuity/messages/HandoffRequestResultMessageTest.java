@@ -39,10 +39,23 @@ public class HandoffRequestResultMessageTest {
     public void testRoundTripSerialization_works() throws IOException {
         int expectedTaskId = 1;
         int expectedStatusCode = 1;
-        HandoffActivityData expectedHandoffActivityData = createDummyHandoffActivityData();
+        PersistableBundle extras = new PersistableBundle();
+        extras.putString("key", "value");
         HandoffRequestResultMessage expected =
                 new HandoffRequestResultMessage(
-                        expectedTaskId, expectedStatusCode, List.of(expectedHandoffActivityData));
+                        expectedTaskId,
+                        expectedStatusCode,
+                        List.of(
+                                new HandoffActivityDataMessage(
+                                        new HandoffActivityData.Builder(
+                                                        new ComponentName(
+                                                                "com.example.app",
+                                                                "com.example.app.Activity"))
+                                                .setFallbackUri(
+                                                        Uri.parse("http://example.com/fallback"))
+                                                .setExtras(extras)
+                                                .build(),
+                                        List.of(new byte[] {1, 2, 3, 4}))));
 
         final ProtoOutputStream pos = new ProtoOutputStream();
         expected.writeToProto(pos);
@@ -54,38 +67,7 @@ public class HandoffRequestResultMessageTest {
         assertThat(actual.statusCode()).isEqualTo(expected.statusCode());
         assertThat(actual.activities()).hasSize(expected.activities().size());
         for (int i = 0; i < expected.activities().size(); i++) {
-            assertHandoffActivityDataEquals(
-                    expected.activities().get(i), actual.activities().get(i));
-        }
-    }
-
-    private HandoffActivityData createDummyHandoffActivityData() {
-        ComponentName componentName =
-                new ComponentName("com.example.app", "com.example.app.Activity");
-        Uri fallbackUri = Uri.parse("http://example.com/fallback");
-        PersistableBundle extras = new PersistableBundle();
-        extras.putString("key", "value");
-
-        return new HandoffActivityData.Builder(componentName)
-                .setFallbackUri(fallbackUri)
-                .setExtras(extras)
-                .build();
-    }
-
-    private void assertHandoffActivityDataEquals(
-            HandoffActivityData expected, HandoffActivityData actual) {
-
-        assertThat(actual.getComponentName()).isEqualTo(expected.getComponentName());
-        assertThat(actual.getFallbackUri()).isEqualTo(expected.getFallbackUri());
-        if (expected.getExtras() != null) {
-            assertThat(actual.getExtras()).isNotNull();
-            assertThat(actual.getExtras().size()).isEqualTo(expected.getExtras().size());
-            for (String key : expected.getExtras().keySet()) {
-                assertThat(actual.getExtras().getString(key))
-                        .isEqualTo(expected.getExtras().getString(key));
-            }
-        } else {
-            assertThat(actual.getExtras()).isNull();
+            assertThat(actual.activities().get(i)).isEqualTo(expected.activities().get(i));
         }
     }
 }

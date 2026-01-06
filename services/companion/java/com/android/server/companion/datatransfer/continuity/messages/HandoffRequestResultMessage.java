@@ -17,7 +17,6 @@
 package com.android.server.companion.datatransfer.continuity.messages;
 
 import android.annotation.NonNull;
-import android.app.HandoffActivityData;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
 import com.android.internal.util.FrameworkStatsLog;
@@ -31,7 +30,7 @@ import java.util.Objects;
  * of activities for handoff.
  */
 public record HandoffRequestResultMessage(
-        int taskId, int statusCode, @NonNull List<HandoffActivityData> activities)
+        int taskId, int statusCode, @NonNull List<HandoffActivityDataMessage> activities)
         implements TaskContinuityMessage {
 
     public HandoffRequestResultMessage {
@@ -46,7 +45,7 @@ public record HandoffRequestResultMessage(
 
         int statusCode = 0;
         int taskId = 0;
-        List<HandoffActivityData> activities = new ArrayList<>();
+        List<HandoffActivityDataMessage> activities = new ArrayList<>();
 
         while (pis.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
             switch (pis.getFieldNumber()) {
@@ -59,8 +58,8 @@ public record HandoffRequestResultMessage(
                     taskId = pis.readInt(android.companion.HandoffRequestResultMessage.TASK_ID);
                     break;
                 case (int) android.companion.HandoffRequestResultMessage.ACTIVITIES:
-                    HandoffActivityData handoffActivityData =
-                            HandoffActivityDataSerializer.INSTANCE.read(
+                    HandoffActivityDataMessage handoffActivityData =
+                            HandoffActivityDataMessage.CREATOR.read(
                                     pis, android.companion.HandoffRequestResultMessage.ACTIVITIES);
                     if (handoffActivityData != null) {
                         activities.add(handoffActivityData);
@@ -84,8 +83,8 @@ public record HandoffRequestResultMessage(
         pos.write(android.companion.HandoffRequestResultMessage.STATUS_CODE, statusCode);
         pos.write(android.companion.HandoffRequestResultMessage.TASK_ID, taskId);
 
-        for (android.app.HandoffActivityData activity : activities) {
-            HandoffActivityDataSerializer.INSTANCE.write(
+        for (HandoffActivityDataMessage activity : activities) {
+            HandoffActivityDataMessage.CREATOR.write(
                     pos, android.companion.HandoffRequestResultMessage.ACTIVITIES, activity);
         }
     }

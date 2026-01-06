@@ -16,10 +16,10 @@
 
 package com.android.server.companion.datatransfer.continuity.handoff;
 
-import android.app.ActivityManager;
-import android.app.ActivityOptions;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.ActivityManager;
+import android.app.ActivityOptions;
 import android.app.HandoffActivityData;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -29,13 +29,14 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.UserHandle;
 import android.util.Slog;
-
+import com.android.server.companion.datatransfer.continuity.messages.HandoffActivityDataMessage;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 final class HandoffActivityStarter {
 
-    private static final String TAG = "HandoffActivityStarter";
+    private static final String TAG = HandoffActivityStarter.class.getSimpleName();
 
     /**
      * Starts the activities specified by {@code handoffActivityData}.
@@ -46,10 +47,19 @@ final class HandoffActivityStarter {
      *     otherwise.
      */
     public static boolean start(
-            @NonNull Context context, @NonNull List<HandoffActivityData> handoffActivityData) {
+            @NonNull Context context,
+            @NonNull List<HandoffActivityDataMessage> handoffActivityDataMessages) {
 
         Objects.requireNonNull(context);
-        Objects.requireNonNull(handoffActivityData);
+
+        List<HandoffActivityData> handoffActivityData = new ArrayList<>();
+        for (HandoffActivityDataMessage handoffActivityDataMessage :
+                Objects.requireNonNull(handoffActivityDataMessages)) {
+            if (handoffActivityDataMessage != null
+                    && handoffActivityDataMessage.activity() != null) {
+                handoffActivityData.add(handoffActivityDataMessage.activity());
+            }
+        }
 
         if (handoffActivityData.isEmpty()) {
             Slog.w(TAG, "No activities to start.");
@@ -98,7 +108,7 @@ final class HandoffActivityStarter {
                 Slog.w(
                         TAG,
                         "Failed to create intent for activity, falling back to launch top"
-                            + " activity.");
+                                + " activity.");
                 return startIntents(context, new Intent[] {topActivityIntent});
             }
         }
@@ -112,8 +122,6 @@ final class HandoffActivityStarter {
     }
 
     private static boolean startWebFallback(@NonNull Context context, @Nullable Uri fallbackUri) {
-        Objects.requireNonNull(context);
-
         if (fallbackUri == null) {
             Slog.w(TAG, "No fallback URI specified.");
             return false;
@@ -124,18 +132,20 @@ final class HandoffActivityStarter {
         // Add a flag to allow this URI to be handled by a non-browser app.
         intent.addFlags(Intent.FLAG_ACTIVITY_REQUIRE_NON_BROWSER);
         intent.addCategory(Intent.CATEGORY_BROWSABLE);
-        return startIntents(context, new Intent[] {intent});
+        return startIntents(Objects.requireNonNull(context), new Intent[] {intent});
     }
 
     private static boolean startIntents(@NonNull Context context, @NonNull Intent[] intents) {
-        Objects.requireNonNull(context);
         Objects.requireNonNull(intents);
 
         intents[intents.length - 1].addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try {
             int result =
-                    context.startActivitiesAsUser(
-                            intents, ActivityOptions.makeBasic().toBundle(), UserHandle.CURRENT);
+                    Objects.requireNonNull(context)
+                            .startActivitiesAsUser(
+                                    intents,
+                                    ActivityOptions.makeBasic().toBundle(),
+                                    UserHandle.CURRENT);
             Slog.i(TAG, "Launched activities: " + result);
             return result == ActivityManager.START_SUCCESS;
         } catch (ActivityNotFoundException e) {
@@ -148,11 +158,10 @@ final class HandoffActivityStarter {
     private static Intent createIntent(
             @NonNull Context context, @NonNull HandoffActivityData handoffActivityData) {
 
-        Objects.requireNonNull(context);
         Objects.requireNonNull(handoffActivityData);
 
         // Check if the package is installed on this device.
-        PackageManager packageManager = context.getPackageManager();
+        PackageManager packageManager = Objects.requireNonNull(context).getPackageManager();
         try {
             packageManager.getActivityInfo(
                     handoffActivityData.getComponentName(), PackageManager.MATCH_DEFAULT_ONLY);
