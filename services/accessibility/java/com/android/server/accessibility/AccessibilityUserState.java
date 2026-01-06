@@ -166,7 +166,10 @@ public class AccessibilityUserState {
     // Whether the following typing focus feature for magnification is enabled.
     private boolean mMagnificationFollowTypingEnabled = true;
     // Whether the following keyboard focus feature for magnification is enabled.
-    private boolean mMagnificationFollowKeyboardEnabled = false;
+    // Default to true if magnification viewport prioritization is enabled to prevent viewport
+    // jitter. False otherwise.
+    private boolean mMagnificationFollowKeyboardEnabled =
+            Flags.enableMagnificationViewportPrioritization();
     // Whether the always on magnification feature is enabled.
     private boolean mAlwaysOnMagnificationEnabled = false;
 
@@ -266,7 +269,7 @@ public class AccessibilityUserState {
         mMagnificationCursorFollowingMode =
                 Settings.Secure.ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CONTINUOUS;
         mMagnificationFollowTypingEnabled = true;
-        mMagnificationFollowKeyboardEnabled = false;
+        mMagnificationFollowKeyboardEnabled = Flags.enableMagnificationViewportPrioritization();
         mAlwaysOnMagnificationEnabled = false;
     }
 
