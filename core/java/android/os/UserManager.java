@@ -3508,7 +3508,6 @@ public class UserManager {
             Manifest.permission.QUERY_USERS})
     @UserHandleAware
     public boolean canAddPrivateProfile() {
-        if (!android.multiuser.Flags.enablePrivateSpaceFeatures()) return false;
         if (android.multiuser.Flags.blockPrivateSpaceCreation()) {
             if (android.multiuser.Flags.consistentMaxUsers()) {
                 return canAddMoreProfilesToUser(USER_TYPE_PROFILE_PRIVATE, mUserId)
