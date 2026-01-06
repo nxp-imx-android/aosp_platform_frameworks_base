@@ -28205,6 +28205,7 @@ package android.media.projection {
 
   @FlaggedApi("com.android.media.projection.flags.app_content_sharing") public final class MediaProjectionAppContent implements android.os.Parcelable {
     method public int describeContents();
+    method @Nullable public android.graphics.drawable.Icon getIcon();
     method public int getId();
     method @Nullable public android.graphics.Bitmap getThumbnail();
     method @NonNull public CharSequence getTitle();
@@ -28215,6 +28216,7 @@ package android.media.projection {
   public static final class MediaProjectionAppContent.Builder {
     ctor public MediaProjectionAppContent.Builder(int);
     method @NonNull public android.media.projection.MediaProjectionAppContent build();
+    method @NonNull public android.media.projection.MediaProjectionAppContent.Builder setIcon(@NonNull android.graphics.drawable.Icon);
     method @NonNull public android.media.projection.MediaProjectionAppContent.Builder setThumbnail(@NonNull android.graphics.Bitmap);
     method @NonNull public android.media.projection.MediaProjectionAppContent.Builder setTitle(@NonNull CharSequence);
   }
