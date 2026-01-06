@@ -15,20 +15,28 @@
  */
 package com.android.ravenwoodtest.unittests;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import android.platform.test.ravenwood.RavenwoodBugreportManager;
 
 import org.junit.Test;
 
 public class RavenwoodBugreportManagerTest {
     @Test
-    public void testBugreport() {
-        // Make sure it's callable.
+    public void testBugreport() throws Exception {
+        RavenwoodBugreportManager.resetLastBugreportFile();
+
+        var title = "NOT A BUG, JUST TESTING BUGREPORT";
         RavenwoodBugreportManager.doBugreport(
-                "NOT A BUG, JUST TESTING BUGREPORT",
+                title,
                 Thread.currentThread(),
                 new Exception("Test exception"),
                 /* killself=*/ false);
 
-        // Ideally we should check result somehow.
+        var bugreport = RavenwoodBugreportManager.readLastBugreportFile();
+
+        // Make sure some basic contents are included.
+        assertThat(bugreport).contains("Description: " + title);
+        assertThat(bugreport).contains("= BUGREPORT END =");
     }
 }

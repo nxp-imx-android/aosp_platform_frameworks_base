@@ -15,6 +15,8 @@
  */
 package android.platform.test.ravenwood;
 
+import static org.junit.Assert.assertNotNull;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.RavenwoodActivityDriver;
@@ -22,6 +24,7 @@ import android.os.Looper;
 import android.util.Log;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.ravenwood.common.RavenwoodInternalUtils;
 
 import java.io.File;
@@ -29,6 +32,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -37,6 +41,7 @@ import java.util.stream.Collectors;
 
 public class RavenwoodBugreportManager {
     private static final String TAG = RavenwoodDriver.TAG;
+    private static final String TAG_BUGREPORT = "Ravenwood-bugreport";
 
     private RavenwoodBugreportManager() {
     }
@@ -116,6 +121,21 @@ public class RavenwoodBugreportManager {
         }
     }
 
+    private static volatile File sLastBugreportFile;
+
+    @VisibleForTesting
+    public static void resetLastBugreportFile() {
+        sLastBugreportFile = null;
+    }
+
+    @VisibleForTesting
+    public static String readLastBugreportFile() throws IOException {
+        var file = sLastBugreportFile;
+        assertNotNull("sLastBugreportFile", file);
+
+        return Files.readString(file.toPath());
+    }
+
     /**
      * Create a bugreport file in a given directory.
      * @param forUser if true, we store the filename in {@link #sBugreportFiles} and
@@ -142,6 +162,7 @@ public class RavenwoodBugreportManager {
             if (forUser) {
                 synchronized (sBugreportFiles) {
                     sBugreportFiles.add(outputFile);
+                    sLastBugreportFile = outputFile;
                 }
             }
 
@@ -156,31 +177,36 @@ public class RavenwoodBugreportManager {
 
     public static void doBugreport(@NonNull String message,
             @Nullable Thread exceptionThread, @Nullable Throwable throwable, boolean killSelf) {
-        var outs = new ArrayList<OutputStream>();
-        outs.add(RavenwoodLogManager.getLogcatOut(Log.ERROR));
+        var logactOut = RavenwoodLogManager.getLogcatOut(TAG_BUGREPORT, Log.ERROR);
+        try {
+            var outs = new ArrayList<OutputStream>();
+            outs.add(logactOut);
 
-        // When we take a bugreport, we create two files.
-        // 1. As a test artifact. This will be saved by the test infra, but the file will be
-        //    removed, so the user can't see it.
-        // 2. In $RAVENWOOD_BUGREPORT_DIR, or the temp directory if not set.
-        //    This one won't be removed, so the user can see it,
-        //    so we print the filename in the log.
-        var ad = RavenwoodEnvironment.getInstance().getArtifactsDir();
-        var td = RavenwoodEnvironment.getInstance().getBugreportDir();
+            // When we take a bugreport, we create two files.
+            // 1. As a test artifact. This will be saved by the test infra, but the file will be
+            //    removed, so the user can't see it.
+            // 2. In $RAVENWOOD_BUGREPORT_DIR, or the temp directory if not set.
+            //    This one won't be removed, so the user can see it,
+            //    so we print the filename in the log.
+            var ad = RavenwoodEnvironment.getInstance().getArtifactsDir();
+            var td = RavenwoodEnvironment.getInstance().getBugreportDir();
 
-        var now = LocalDateTime.now();
+            var now = LocalDateTime.now();
 
-        try (var file1 = createBugreportFile(ad, now, false)) {
-            try (var file2 = createBugreportFile(td, now, true)) {
-                outs.add(file1);
-                outs.add(file2);
-                var st = RavenwoodInternalUtils.createForkingOutputStream(outs);
+            try (var file1 = createBugreportFile(ad, now, false)) {
+                try (var file2 = createBugreportFile(td, now, true)) {
+                    outs.add(file1);
+                    outs.add(file2);
+                    var st = RavenwoodInternalUtils.createForkingOutputStream(outs);
 
-                doBugreportInner(new PrintStream(st, true),
-                        message, exceptionThread, throwable, killSelf);
+                    doBugreportInner(new PrintStream(st, true),
+                            message, exceptionThread, throwable, killSelf);
+                }
+            } catch (IOException e) {
+                // This is from close(), so just ignore.
             }
-        } catch (IOException e) {
-            // This is from close(), so just ignore.
+        } finally {
+            logactOut.flushCompletely();
         }
     }
 
@@ -190,6 +216,7 @@ public class RavenwoodBugreportManager {
             @Nullable Thread exceptionThread,
             @Nullable Throwable throwable,
             boolean killSelf) {
+        out.print("Description: ");
         out.println(message);
 
         out.println("\n===== BUGREPORT START =====");
@@ -205,11 +232,13 @@ public class RavenwoodBugreportManager {
         RavenwoodErrorHandler.dumpWarnings(out);
 
         out.println("\n===== BUGREPORT END =====");
+        out.flush();
 
         if (killSelf) {
             // Before killing self, let's print all generated bugreports.
             dumpBugreportFiles();
             out.println("\n***** KILLING SELF *****");
+            out.flush();
             System.exit(13);
         }
     }
