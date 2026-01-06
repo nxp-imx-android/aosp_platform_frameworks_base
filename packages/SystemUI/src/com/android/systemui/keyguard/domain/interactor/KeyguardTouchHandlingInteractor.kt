@@ -151,6 +151,22 @@ constructor(
                 initialValue = false,
             )
 
+    /**
+     * Whether the lockscreen touch handling view should consume drags so that tap gestures won't
+     * trigger when touches exceed a touch slop. We don't want drags/swipes to count as tap-to-wake
+     * events when the device is asleep to prevent falsing. This is important during "Fake AOD"
+     * (initial transition to AOD is DisplayState.ON before the screen state DOZE) because touches
+     * are still sent to views. Once the display state becomes DisplayState.DOZE, no touches are
+     * directly sent to views anymore and SysUI relies on low-powered wake gestures it manually
+     * registers for (see DozeService).
+     */
+    val consumeDrags: StateFlow<Boolean> =
+        powerInteractor.isAsleep.stateIn(
+            scope = scope,
+            started = SharingStarted.WhileSubscribed(),
+            initialValue = powerInteractor.detailedWakefulness.value.isAsleep(),
+        )
+
     /* Cache value of `isAnyPointerDeviceConnected` so it can
      * be easily checked. */
     private val _isAnyPointerDeviceConnected =
@@ -242,18 +258,9 @@ constructor(
         _shouldOpenSettings.value = false
     }
 
-    /** Notifies that anything in the lockscreen scene has been clicked at position [x], [y]. */
-    fun onSceneClick(x: Float, y: Float) {
-        if (SceneContainerFlag.isEnabled) {
-            pulsingGestureListener.onSingleTapUp(x, y)
-        }
-    }
-
     /** Notifies that the lockscreen has been clicked at position [x], [y]. */
     fun onClick(x: Float, y: Float) {
-        if (!SceneContainerFlag.isEnabled) {
-            pulsingGestureListener.onSingleTapUp(x, y)
-        }
+        pulsingGestureListener.onSingleTapUp(x, y)
         if (faceAuthInteractor.canFaceAuthRun()) {
             faceAuthInteractor.onNotificationPanelClicked()
         } else if (_isAnyPointerDeviceConnected.value) {
