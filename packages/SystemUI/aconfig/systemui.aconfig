@@ -1931,13 +1931,6 @@ flag {
 }
 
 flag {
-    name: "volume_redesign"
-    namespace: "systemui"
-    description: "Enables Volume visuals update"
-    bug: "368308908"
-}
-
-flag {
     name: "wakefulness_for_animations"
     namespace: "systemui"
     description: "Changes the signal used for animation wakefulness on keyguard"
