@@ -2938,9 +2938,6 @@ public final class DisplayManagerService extends SystemService {
     }
 
     void resetUserPreferredDisplayModeInternal(int displayId) {
-        if (!mFlags.isModeSwitchWithoutSavingEnabled()) {
-            return;
-        }
         synchronized (mSyncRoot) {
             Display.Mode mode;
             if (displayId == Display.INVALID_DISPLAY) {
@@ -2977,9 +2974,6 @@ public final class DisplayManagerService extends SystemService {
             DisplayDevice displayDevice = getDeviceForDisplayLocked(displayId);
             if (displayDevice == null) {
                 return;
-            }
-            if (!mFlags.isModeSwitchWithoutSavingEnabled()) {
-                storeMode = true;
             }
             if (storeMode) {
                 storeModeLocked(displayId, mode);

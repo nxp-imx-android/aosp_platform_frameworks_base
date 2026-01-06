@@ -3785,7 +3785,6 @@ public class DisplayManagerServiceTest {
     @Test
     public void testResolutionChangeDoesNotGetBackedUp() throws Exception {
         mPermissionEnforcer.grant(MODIFY_USER_PREFERRED_DISPLAY_MODE);
-        when(mMockFlags.isModeSwitchWithoutSavingEnabled()).thenReturn(true);
         mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
 
         Display.Mode[] modes = new Display.Mode[2];
@@ -3816,7 +3815,6 @@ public class DisplayManagerServiceTest {
     @Test
     public void testResolutionRestFromSettings() throws Exception {
         mPermissionEnforcer.grant(MODIFY_USER_PREFERRED_DISPLAY_MODE);
-        when(mMockFlags.isModeSwitchWithoutSavingEnabled()).thenReturn(true);
         mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
 
         Display.Mode[] modes = new Display.Mode[2];

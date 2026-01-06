@@ -290,14 +290,6 @@ flag {
 }
 
 flag {
-    name: "mode_switch_without_saving"
-    namespace: "display_manager"
-    description: "New hidden API allowing to switch mode without persisting"
-    bug: "253296253"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "ensure_color_fade_when_turning_on"
     namespace: "biometrics_integration"
     description: "Ensure color fade when turing on screen"

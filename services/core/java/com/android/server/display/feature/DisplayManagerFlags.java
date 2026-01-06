@@ -163,11 +163,6 @@ public class DisplayManagerFlags {
             Flags.FLAG_ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH,
             DesktopExperienceFlags.ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH::isTrue
     );
-
-    private final FlagState mModeSwitchWithoutSaving = new FlagState(
-            Flags.FLAG_MODE_SWITCH_WITHOUT_SAVING,
-            Flags::modeSwitchWithoutSaving
-    );
     private final FlagState mEnsureColorFadeWhenTurningOn = new FlagState(
             Flags.FLAG_ENSURE_COLOR_FADE_WHEN_TURNING_ON,
             Flags::ensureColorFadeWhenTurningOn
@@ -336,10 +331,6 @@ public class DisplayManagerFlags {
         return mEnableDefaultDisplayInTopologySwitch.isEnabled();
     }
 
-    public boolean isModeSwitchWithoutSavingEnabled() {
-        return mModeSwitchWithoutSaving.isEnabled();
-    }
-
     /**
      * @return {@code true} if the flag for ensure color fad when turning screen on is enabled
      */
@@ -391,7 +382,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mDelayImplicitRrRegistrationUntilRrAccessed);
         pw.println(" " + mHdrBrightnessSetting);
         pw.println(" " + mEnableDefaultDisplayInTopologySwitch);
-        pw.println(" " + mModeSwitchWithoutSaving);
         pw.println(" " + mEnsureColorFadeWhenTurningOn);
         pw.println(" " + mIsLoggingForDisplayEventsEnabled);
         pw.println(" " + mIsMinmodeCapBrightnessEnabled);
