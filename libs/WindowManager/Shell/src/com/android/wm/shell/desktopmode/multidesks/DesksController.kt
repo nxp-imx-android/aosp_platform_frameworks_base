@@ -16,10 +16,20 @@
 
 package com.android.wm.shell.desktopmode.multidesks
 
+import android.os.UserHandle
+import android.os.UserManager
+import android.view.Display.INVALID_DISPLAY
+import android.window.DesktopExperienceFlags
+import com.android.internal.protolog.ProtoLog
+import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterReason
+import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
+import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellController
+import kotlin.coroutines.suspendCoroutine
 
 /** Encapsulate all the logic related to Desks. */
 class DesksController(
@@ -27,7 +37,18 @@ class DesksController(
     private val userRepositories: DesktopUserRepositories,
     private val desktopConfig: DesktopConfig,
     private val desktopState: DesktopState,
+    private val displayController: DisplayController,
+    private val desksOrganizer: DesksOrganizer,
 ) {
+
+    // Temporal reference back to the DesktopTasksController to allow an incremental moving of the
+    // code. it'll be eventually removed.
+    // TODO(b/467367552): Remove temporal dependency to DesktopTasksController.
+    private lateinit var backDependency: DesktopTasksController
+
+    fun setBackDependency(backDep: DesktopTasksController) {
+        backDependency = backDep
+    }
 
     /** Returns whether the given display has an active desk. */
     @JvmOverloads
@@ -64,5 +85,114 @@ class DesksController(
             return false
         }
         return true
+    }
+
+    /**
+     * Adds a new desk to the given display for the given user and invokes [onResult] once the desk
+     * is created, but not necessarily activated.
+     */
+    fun createDesk(
+        displayId: Int,
+        userId: Int = shellController.currentUserId,
+        enforceDeskLimit: Boolean = true,
+        activateDesk: Boolean = false,
+        enterReason: EnterReason = EnterReason.UNKNOWN_ENTER,
+        onResult: ((Int) -> Unit) = {},
+    ) {
+        logV(
+            "createDesk displayId=%d, userId=%d enforceDeskLimit=%b",
+            displayId,
+            userId,
+            enforceDeskLimit,
+        )
+        if (!canCreateDeskInDisplay(displayId, userId)) {
+            logW("createDesk new desk cannot be created, ignoring request")
+            return
+        }
+        val repository = userRepositories.getProfile(userId)
+        createDeskRoot(displayId, userId) { deskId ->
+            if (deskId == null) {
+                logW("Failed to add desk in displayId=%d for userId=%d", displayId, userId)
+            } else {
+                repository.addDesk(
+                    displayId = displayId,
+                    deskId = deskId,
+                    uniqueDisplayId = displayController.getDisplayUniqueId(displayId),
+                )
+                onResult(deskId)
+                if (activateDesk) {
+                    backDependency.activateDesk(
+                        deskId = deskId,
+                        userId = userId,
+                        enterReason = enterReason,
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Creates a desk root for the specified display and user, suspending the current coroutine
+     * until the operation completes.
+     *
+     * This function acts as a suspending adapter for the callback-based [createDeskRoot] method. It
+     * pauses execution until the callback is triggered and resumes with the result.
+     *
+     * @param displayId The ID of the display where the desk root should be created.
+     * @param userId The ID of the user associated with the desk root.
+     * @return The unique identifier (ID) of the created desk root, or `null` if the operation
+     *   returned a null result.
+     */
+    // TODO(b/467367552): Consider implementing a DesksController wrapper for suspend enhancement.
+    suspend fun createDeskRootSuspending(displayId: Int, userId: Int): Int? =
+        suspendCoroutine { cont ->
+            createDeskRoot(displayId, userId) { deskId -> cont.resumeWith(Result.success(deskId)) }
+        }
+
+    private fun createDeskRoot(displayId: Int, userId: Int, onResult: (Int?) -> Unit) {
+        if (displayId == INVALID_DISPLAY) {
+            logW("createDesk attempt with invalid displayId", displayId)
+            onResult(null)
+            return
+        }
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            // In single-desk, the desk reuses the display id.
+            logD("createDesk reusing displayId=%d for single-desk", displayId)
+            onResult(displayId)
+            return
+        }
+        if (UserManager.isHeadlessSystemUserMode() && UserHandle.USER_SYSTEM == userId) {
+            logW("createDesk ignoring attempt for system user")
+            onResult(null)
+            return
+        }
+        desksOrganizer.createDesk(displayId, userId) { deskId ->
+            logD(
+                "createDesk obtained deskId=%d for displayId=%d and userId=%d",
+                deskId,
+                displayId,
+                userId,
+            )
+            onResult(deskId)
+        }
+    }
+
+    // TODO(b/324417794): Inline where used.
+    private fun logV(msg: String, vararg arguments: Any?) {
+        ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    // TODO(b/324417794): Inline where used.
+    private fun logD(msg: String, vararg arguments: Any?) {
+        ProtoLog.d(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    // TODO(b/324417794): Inline where used.
+    private fun logW(msg: String, vararg arguments: Any?) {
+        ProtoLog.w(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    companion object {
+        private const val TAG = "DesksController"
     }
 }

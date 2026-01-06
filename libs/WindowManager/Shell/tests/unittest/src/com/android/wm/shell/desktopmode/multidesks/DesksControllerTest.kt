@@ -16,11 +16,16 @@
 
 package com.android.wm.shell.desktopmode.multidesks
 
+import android.os.UserHandle
+import android.os.UserManager
 import android.testing.AndroidTestingRunner
 import android.view.Display.DEFAULT_DISPLAY
+import android.view.Display.INVALID_DISPLAY
 import androidx.test.filters.SmallTest
+import com.android.dx.mockito.inline.extended.ExtendedMockito.never
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
+import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
@@ -29,9 +34,13 @@ import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.TestScope
+import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito.verify
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
@@ -45,6 +54,8 @@ import org.mockito.kotlin.whenever
 class DesksControllerTest : ShellTestCase() {
 
     private val mockShellController = mock<ShellController>()
+    private val mockDisplayController = mock<DisplayController>()
+    private val mockDesksOrganizer = mock<DesksOrganizer>()
     private lateinit var desktopState: FakeDesktopState
     private lateinit var desktopConfig: FakeDesktopConfig
     private lateinit var desktopUserRepositories: DesktopUserRepositories
@@ -78,6 +89,8 @@ class DesksControllerTest : ShellTestCase() {
                 desktopUserRepositories,
                 desktopConfig,
                 desktopState,
+                mockDisplayController,
+                mockDesksOrganizer,
             )
     }
 
@@ -146,6 +159,38 @@ class DesksControllerTest : ShellTestCase() {
             )
 
         assertThat(canCreate).isTrue()
+    }
+
+    @Test
+    fun testCreateDesk() {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
+        val currentDeskCount = repository.getNumberOfDesks(DEFAULT_DISPLAY)
+        whenever(mockDesksOrganizer.createDesk(eq(DEFAULT_DISPLAY), any(), any())).thenAnswer {
+            invocation ->
+            (invocation.arguments[2] as DesksOrganizer.OnCreateCallback).onCreated(deskId = 5)
+        }
+
+        controller.createDesk(DEFAULT_DISPLAY, repository.userId)
+
+        assertThat(repository.getNumberOfDesks(DEFAULT_DISPLAY)).isEqualTo(currentDeskCount + 1)
+    }
+
+    @Test
+    fun testCreateDesk_invalidDisplay_dropsRequest() {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
+        controller.createDesk(INVALID_DISPLAY)
+
+        verify(mockDesksOrganizer, never()).createDesk(any(), any(), any())
+    }
+
+    @Test
+    fun testCreateDesk_systemUser_dropsRequest() {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
+        assumeTrue(UserManager.isHeadlessSystemUserMode())
+
+        controller.createDesk(DEFAULT_DISPLAY, UserHandle.USER_SYSTEM)
+
+        verify(mockDesksOrganizer, never()).createDesk(any(), any(), any())
     }
 
     private companion object {
