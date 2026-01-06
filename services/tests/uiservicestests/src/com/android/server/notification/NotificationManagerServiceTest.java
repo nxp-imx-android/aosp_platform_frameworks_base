@@ -519,6 +519,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     private BitmapOffloadInternal mBitmapOffloader;
     @Mock
     private PersonalContextManagerInternal mPersonalContextManagerInternal;
+    @Mock
+    private BackupRestoreEventLogger mBrLogger;
 
     private final ArrayList<WakeLock> mAcquiredWakeLocks = new ArrayList<>();
     private final TestPostNotificationTrackerFactory mPostNotificationTrackerFactory =
@@ -7917,7 +7919,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.readPolicyXml(
                 new BufferedInputStream(new ByteArrayInputStream(policyXml.getBytes())),
                 true,
-                10, null);
+                10, mBrLogger);
         verify(mListeners, never()).readXml(any(), any(), eq(true), eq(10));
         verify(mConditionProviders, never()).readXml(any(), any(), eq(true), eq(10));
         verify(mAssistants, never()).readXml(any(), any(), eq(true), eq(10));
@@ -7944,7 +7946,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.readPolicyXml(
                 new BufferedInputStream(new ByteArrayInputStream(policyXml.getBytes())),
                 true,
-                10, null);
+                10, mBrLogger);
         verify(mListeners, never()).readXml(any(), any(), eq(true), eq(10));
         verify(mConditionProviders, never()).readXml(any(), any(), eq(true), eq(10));
         verify(mAssistants, never()).readXml(any(), any(), eq(true), eq(10));
@@ -7971,7 +7973,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.readPolicyXml(
                 new BufferedInputStream(new ByteArrayInputStream(policyXml.getBytes())),
                 true,
-                10, null);
+                10, mBrLogger);
         verify(mListeners, never()).readXml(any(), any(), eq(true), eq(10));
         verify(mConditionProviders, never()).readXml(any(), any(), eq(true), eq(10));
         verify(mAssistants, never()).readXml(any(), any(), eq(true), eq(10));
@@ -7998,7 +8000,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.readPolicyXml(
                 new BufferedInputStream(new ByteArrayInputStream(policyXml.getBytes())),
                 true,
-                10, null);
+                10, mBrLogger);
         verify(mListeners, times(1)).readXml(any(), any(), eq(true), eq(10));
         verify(mConditionProviders, times(1)).readXml(any(), any(), eq(true), eq(10));
         verify(mAssistants, times(1)).readXml(any(), any(), eq(true), eq(10));
@@ -8007,8 +8009,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     @Test
     @EnableFlags(android.app.Flags.FLAG_BACKUP_RESTORE_LOGGING)
     public void testReadPolicyXml_backupRestoreLogging() throws Exception {
-        BackupRestoreEventLogger logger = mock(BackupRestoreEventLogger.class);
-
         if (ActivityManager.getCurrentUser() != UserHandle.USER_SYSTEM) {
             // By default, the ZenModeHelper only has a configuration for the system user.
             // If the current user is not the system user, the user must be updated.
@@ -8023,19 +8023,19 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
         serializer.startDocument(null, true);
-        mService.writePolicyXml(baos, true, ActivityManager.getCurrentUser(), logger);
+        mService.writePolicyXml(baos, true, ActivityManager.getCurrentUser(), mBrLogger);
         serializer.flush();
 
         mService.readPolicyXml(
                 new BufferedInputStream(new ByteArrayInputStream(baos.toByteArray())),
-                true, ActivityManager.getCurrentUser(), logger);
+                true, ActivityManager.getCurrentUser(), mBrLogger);
 
-        verify(logger).logItemsBackedUp(DATA_TYPE_ZEN_CONFIG, 1);
-        verify(logger, never())
+        verify(mBrLogger).logItemsBackedUp(DATA_TYPE_ZEN_CONFIG, 1);
+        verify(mBrLogger, never())
                 .logItemsBackupFailed(eq(DATA_TYPE_ZEN_CONFIG), anyInt(), anyString());
 
-        verify(logger).logItemsRestored(DATA_TYPE_ZEN_CONFIG, 1);
-        verify(logger, never())
+        verify(mBrLogger).logItemsRestored(DATA_TYPE_ZEN_CONFIG, 1);
+        verify(mBrLogger, never())
                 .logItemsRestoreFailed(eq(DATA_TYPE_ZEN_CONFIG), anyInt(), anyString());
     }
 
