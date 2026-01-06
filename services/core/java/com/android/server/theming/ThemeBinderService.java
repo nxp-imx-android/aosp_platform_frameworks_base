@@ -87,17 +87,35 @@ public class ThemeBinderService extends IThemeManager.Stub {
     @EnforcePermission(android.Manifest.permission.UPDATE_THEME_SETTINGS)
     public boolean updateThemeSettings(@NonNull ThemeSettings newSettings) {
         updateThemeSettings_enforcePermission();
-        return mLocalService.updateThemeSettings(getCallingUserId(), newSettings);
+        final int userId = getCallingUserId();
+        final long identity = Binder.clearCallingIdentity();
+        try {
+            return mLocalService.updateThemeSettings(userId, newSettings);
+        } finally {
+            Binder.restoreCallingIdentity(identity);
+        }
     }
 
     @Override
     public ThemeSettings getThemeSettings() {
-        return mLocalService.getThemeSettings(getCallingUserId());
+        final int userId = getCallingUserId();
+        final long identity = Binder.clearCallingIdentity();
+        try {
+            return mLocalService.getThemeSettings(userId);
+        } finally {
+            Binder.restoreCallingIdentity(identity);
+        }
     }
 
     @Override
     public ThemeSettings getThemeSettingsOrDefault() {
-        return mLocalService.getThemeSettingsOrDefault(getCallingUserId());
+        final int userId = getCallingUserId();
+        final long identity = Binder.clearCallingIdentity();
+        try {
+            return mLocalService.getThemeSettingsOrDefault(userId);
+        } finally {
+            Binder.restoreCallingIdentity(identity);
+        }
     }
 
     private int getCallingUserId() {
