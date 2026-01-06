@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.notification.row
 
-import com.android.systemui.Flags
 import com.android.systemui.statusbar.data.repository.StatusBarModeRepositoryStore
 import com.android.systemui.statusbar.notification.shared.HeadlinePrototypes
 import javax.inject.Inject
@@ -40,12 +39,8 @@ constructor(private val statusBarModeRepositoryStore: StatusBarModeRepositorySto
 
     private fun isInImmersiveMode(displayId: Int): Boolean {
         val statusBarModePerDisplayRepository =
-            if (Flags.headsUpStyleProviderDisplayAware()) {
-                statusBarModeRepositoryStore.forDisplay(displayId)
-                    ?: statusBarModeRepositoryStore.defaultDisplay
-            } else {
-                statusBarModeRepositoryStore.defaultDisplay
-            }
+            statusBarModeRepositoryStore.forDisplay(displayId)
+                ?: statusBarModeRepositoryStore.defaultDisplay
         return statusBarModePerDisplayRepository.isInFullscreenMode.value
     }
 }
