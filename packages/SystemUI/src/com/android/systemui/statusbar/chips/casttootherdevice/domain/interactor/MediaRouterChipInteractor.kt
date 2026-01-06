@@ -18,7 +18,7 @@ package com.android.systemui.statusbar.chips.casttootherdevice.domain.interactor
 
 import android.media.projection.StopReason
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.LogLevel
 import com.android.systemui.mediarouter.data.repository.MediaRouterRepository
@@ -41,14 +41,14 @@ import kotlinx.coroutines.flow.stateIn
 class MediaRouterChipInteractor
 @Inject
 constructor(
-    @Application private val scope: CoroutineScope,
+    @Background private val backgroundScope: CoroutineScope,
     private val mediaRouterRepository: MediaRouterRepository,
     @StatusBarChipsLog private val logger: LogBuffer,
 ) {
     private val activeCastDevice: StateFlow<CastDevice?> =
         mediaRouterRepository.castDevices
             .map { allDevices -> allDevices.firstOrNull { it.isCasting } }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), null)
+            .stateIn(backgroundScope, SharingStarted.WhileSubscribed(), null)
 
     /** The current casting state, according to MediaRouter APIs. */
     val mediaRouterCastingState: StateFlow<MediaRouterCastModel> =
@@ -62,7 +62,11 @@ constructor(
                     MediaRouterCastModel.DoingNothing
                 }
             }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), MediaRouterCastModel.DoingNothing)
+            .stateIn(
+                backgroundScope,
+                SharingStarted.WhileSubscribed(),
+                MediaRouterCastModel.DoingNothing,
+            )
 
     /** Stops the currently active MediaRouter cast. */
     fun stopCasting() {

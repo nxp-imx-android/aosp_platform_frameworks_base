@@ -134,6 +134,13 @@ flag {
 }
 
 flag {
+    name: "cast_controller_media_router_in_bg"
+    namespace: "systemui"
+    description: "Moves MediaRouter Binder operations onto background thread."
+    bug: "466293987"
+}
+
+flag {
     name: "check_desktop_mode_for_spacial_model_app_pushback"
     namespace: "systemui"
     description: "Checks desktop mode for disabling spacial model as opposed to just checking if the screen is large"

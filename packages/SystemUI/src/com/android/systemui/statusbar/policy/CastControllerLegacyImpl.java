@@ -45,7 +45,7 @@ import javax.inject.Inject;
 
 /** Platform implementation of the cast controller. **/
 @SysUISingleton
-public class CastControllerImpl implements CastController {
+public class CastControllerLegacyImpl implements CastController {
     private static final String TAG = "CastController";
 
     private final Context mContext;
@@ -64,7 +64,7 @@ public class CastControllerImpl implements CastController {
     private MediaProjectionInfo mProjection;
 
     @Inject
-    public CastControllerImpl(
+    public CastControllerLegacyImpl(
             Context context,
             PackageManager packageManager,
             DumpManager dumpManager,
