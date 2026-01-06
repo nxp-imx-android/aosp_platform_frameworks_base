@@ -42,9 +42,20 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
     // TODO: b/469073407 - Add more binder calls.
     private val binderCalls =
         listOf(
+            // go/keep-sorted start
             "android.app.PendingIntent#getBroadcast",
             "android.app.PendingIntent#queryIntentComponents",
             "android.media.projection.MediaProjectionManager#stopActiveProjection",
+            "android.media.session.MediaController#unregisterCallback",
+            // go/keep-sorted end
+        )
+
+    // A list of constructors that should be considered binder calls.
+    private val constructorBinderCalls =
+        listOf(
+            // go/keep-sorted start
+            "android.media.session.MediaController"
+            // go/keep-sorted end
         )
 
     private data class BinderCall(
@@ -78,6 +89,18 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
         // Use `toSet` first so that we don't visit the same method multiple times.
         parsedBinderCalls.map { it.methodName }.toSet().toList()
 
+    override fun getApplicableConstructorTypes() = constructorBinderCalls
+
+    override fun visitConstructor(
+        context: JavaContext,
+        node: UCallExpression,
+        constructor: PsiMethod,
+    ) {
+        // #visitConstructor should only be invoked if the constructor is in our binder call list,
+        // so we can assume it's a binder call and immediately visit it.
+        visitBinderCall(context, node)
+    }
+
     override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
         val methodName = method.name
         val packageName = context.evaluator.getPackage(method)?.qualifiedName
@@ -93,6 +116,14 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
             return
         }
 
+        visitBinderCall(context, node)
+    }
+
+    /**
+     * Visits a call that is definitely in our list of binder calls to check if it's invoked on the
+     * background or not.
+     */
+    private fun visitBinderCall(context: JavaContext, node: UCallExpression) {
         if (node.containingMethodOrClassHasWorkerThreadAnnotation(context)) {
             // This binder call is inside a method or class marked `@WorkerThread`, and that
             // annotation enforces that the method will only be invoked on the background thread.
