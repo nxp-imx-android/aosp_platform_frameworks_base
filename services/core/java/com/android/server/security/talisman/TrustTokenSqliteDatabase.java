@@ -24,12 +24,14 @@ import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.security.talisman.TrustConfiguration;
 import android.util.Pair;
 import android.util.Slog;
 
 import com.android.internal.os.Clock;
 
 import java.io.File;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -83,6 +85,23 @@ class TrustTokenSqliteDatabase extends TrustTokenDatabase {
                 });
     }
 
+    @Override
+    @NonNull
+    TrustConfiguration getTrustConfiguration() throws TrustConfigurationUnavailableException {
+        DatabaseHelper db = getWritableDatabase();
+        TrustConfiguration config = db.getTrustConfiguration();
+        if (config == null) {
+            throw new TrustConfigurationUnavailableException();
+        }
+        return config;
+    }
+
+    @Override
+    void updateTrustConfiguration(@NonNull TrustConfiguration configuration) {
+        DatabaseHelper db = getWritableDatabase();
+        db.updateTrustConfiguration(configuration);
+    }
+
     private TrustTokenSqliteDatabase(OpenHelper helper, Clock clock) {
         mOpenHelper = helper;
         mClock = clock;
@@ -102,7 +121,18 @@ class TrustTokenSqliteDatabase extends TrustTokenDatabase {
             private static final String CREATED_AT = "createdAt";
             private static final String EXPIRE_AT = "expireAt";
         }
+
+        private static class Metadata {
+            private static String name() {
+                return "Metadata";
+            }
+
+            private static final String NAME = "name";
+            private static final String VALUE = "value";
+        }
     }
+
+    private static final String TRUST_CONFIGURATION = "trust_configuration";
 
     private DatabaseHelper getWritableDatabase() {
         return new DatabaseHelper(mOpenHelper.getWritableDatabase());
@@ -245,6 +275,45 @@ class TrustTokenSqliteDatabase extends TrustTokenDatabase {
                         "failed to delete the trust token from the pending table");
             }
         }
+
+        TrustConfiguration getTrustConfiguration() {
+            Cursor cursor =
+                    mDatabase.query(
+                            /* distinct= */ false,
+                            /* table= */ Schema.Metadata.name(),
+                            /* columns= */ new String[] {Schema.Metadata.VALUE},
+                            /* selection= */ Schema.Metadata.NAME + " = ?",
+                            /* selectionArgs */ new String[] {TRUST_CONFIGURATION},
+                            /* groupBy= */ null,
+                            /* having= */ null,
+                            /* orderBy= */ null,
+                            /* limit= */ "1");
+            try {
+                if (!cursor.moveToNext()) {
+                    return null;
+                }
+                byte[] configBlob =
+                        cursor.getBlob(cursor.getColumnIndexOrThrow(Schema.Metadata.VALUE));
+                try {
+                    return TrustConfiguration.deserialize(configBlob);
+                } catch (IOException e) {
+                    throw new IllegalStateException("failed to deserialize TrustConfiguration", e);
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+
+        void updateTrustConfiguration(TrustConfiguration configuration) {
+            ContentValues values = new ContentValues();
+            values.put(Schema.Metadata.NAME, TRUST_CONFIGURATION);
+            try {
+                values.put(Schema.Metadata.VALUE, configuration.serialize());
+            } catch (IOException e) {
+                throw new IllegalArgumentException("failed to serialize TrustConfiguration", e);
+            }
+            mDatabase.replaceOrThrow(Schema.Metadata.name(), /* nullColumnHack= */ null, values);
+        }
     }
 
     private static class OpenHelper extends SQLiteOpenHelper {
@@ -274,13 +343,20 @@ class TrustTokenSqliteDatabase extends TrustTokenDatabase {
                     """
                     CREATE TABLE IF NOT EXISTS TrustToken (
                           publicKey   BLOB     NOT NULL,
-                          privateKey   BLOB     NOT NULL,
+                          privateKey  BLOB     NOT NULL,
                           type        INTEGER  NOT NULL,
                           tokenSet    BLOB     NOT NULL,
                           createdAt   INTEGER  NOT NULL,
                           expireAt    INTEGER  NOT NULL,
                           PRIMARY KEY (type, expireAt, publicKey ASC),
                           UNIQUE (publicKey)
+                    );
+                    """);
+            db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS Metadata (
+                          name        STRING   PRIMARY KEY,
+                          value       BLOB     NOT NULL
                     );
                     """);
         }
@@ -301,6 +377,7 @@ class TrustTokenSqliteDatabase extends TrustTokenDatabase {
 
         private void resetDatabase(SQLiteDatabase db) {
             db.execSQL("DROP TABLE TrustToken");
+            db.execSQL("DROP TABLE Metadata");
         }
     }
 }
