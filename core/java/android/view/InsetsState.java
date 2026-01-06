@@ -383,7 +383,8 @@ public class InsetsState implements Parcelable {
             @Nullable @InternalInsetsSide SparseIntArray idSideMap,
             @Nullable boolean[] typeVisibilityMap, Rect[][] typeBoundingRectsMap) {
         final Insets insets = source.calculateInsets(relativeFrame, hostBounds, ignoreVisibility);
-        final Rect[] boundingRects = source.calculateBoundingRects(relativeFrame, ignoreVisibility);
+        final Rect[] boundingRects = source.calculateBoundingRects(relativeFrame, hostBounds,
+                ignoreVisibility);
 
         final int type = source.getType();
         processSourceAsPublicType(source, typeInsetsMap, idSideMap, typeVisibilityMap,
