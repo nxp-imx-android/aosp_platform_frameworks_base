@@ -22,6 +22,7 @@ import static com.android.keyguard.NumPadAnimatableKt.DISABLED_FOREGROUND_ALPHA;
 import static com.android.systemui.bouncer.shared.constants.KeyguardBouncerConstants.ColorId.NUM_PAD_BACKGROUND;
 
 import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
@@ -32,6 +33,7 @@ import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.view.ContextThemeWrapper;
+import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.StyleRes;
@@ -67,6 +69,8 @@ class NumPadAnimator {
     private float mEndRadius;
     private int mHeight;
     private int mWidth;
+    private final HardwareLayerResetListener mHardwareLayerResetListener =
+            new HardwareLayerResetListener();
 
     NumPadAnimator(Context context, final Drawable drawable,
             @StyleRes int style, Drawable buttonImage, NumPadAnimatable animatable) {
@@ -123,12 +127,16 @@ class NumPadAnimator {
     public void enable() {
         mEnableAnimator.cancel();
         mDisableAnimator.cancel();
+
+        mHardwareLayerResetListener.onBeforeAnimation();
         mEnableAnimator.start();
     }
 
     public void disable() {
         mEnableAnimator.cancel();
         mDisableAnimator.cancel();
+
+        mHardwareLayerResetListener.onBeforeAnimation();
         mDisableAnimator.start();
     }
 
@@ -274,11 +282,17 @@ class NumPadAnimator {
 
         mEnableAnimator = ValueAnimator.ofFloat(0f, 1f);
         mEnableAnimator.setInterpolator(Animation.enableInterpolator);
-        mEnableAnimator.addUpdateListener(this::setEnabledAlpha);
+        if (lockscreenTimeoutDeactivatePinPad()) {
+            mEnableAnimator.addUpdateListener(this::setEnabledAlpha);
+            mEnableAnimator.addListener(mHardwareLayerResetListener);
+        }
 
         mDisableAnimator = ValueAnimator.ofFloat(1f, 0f);
         mDisableAnimator.setInterpolator(Animation.disableInterpolator);
-        mDisableAnimator.addUpdateListener(this::setEnabledAlpha);
+        if (lockscreenTimeoutDeactivatePinPad()) {
+            mDisableAnimator.addUpdateListener(this::setEnabledAlpha);
+            mDisableAnimator.addListener(mHardwareLayerResetListener);
+        }
     }
 
     private void setEnabledAlpha(ValueAnimator animator) {
@@ -286,6 +300,33 @@ class NumPadAnimator {
         float fgAlpha = progress + DISABLED_FOREGROUND_ALPHA * (1 - progress);
         float bgAlpha = progress + DISABLED_BACKGROUND_ALPHA * (1 - progress);
         mAnimatable.setAlpha(fgAlpha, bgAlpha);
+    }
+
+    /**
+     * Handles setting the hardware layer type when animating the digit text view. This improves
+     * efficiency of alpha animation.
+     */
+    private final class HardwareLayerResetListener extends AnimatorListenerAdapter {
+        void onBeforeAnimation() {
+            if (mDigitTextView != null
+                    && mDigitTextView.getLayerType() != View.LAYER_TYPE_HARDWARE) {
+                mDigitTextView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+            }
+        }
+
+        @Override
+        public void onAnimationEnd(Animator animation) {
+            if (mDigitTextView != null && mDigitTextView.getLayerType() != View.LAYER_TYPE_NONE) {
+                mDigitTextView.setLayerType(View.LAYER_TYPE_NONE, null);
+            }
+        }
+
+        @Override
+        public void onAnimationCancel(Animator animation) {
+            if (mDigitTextView != null && mDigitTextView.getLayerType() != View.LAYER_TYPE_NONE) {
+                mDigitTextView.setLayerType(View.LAYER_TYPE_NONE, null);
+            }
+        }
     }
 }
 
