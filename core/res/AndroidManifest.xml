@@ -2623,12 +2623,13 @@
         android:protectionLevel="signature|role|verifier" />
 
     <!-- Permission granted to apps holding the {@link android.app.role.RoleManager#ROLE_HOME} role
-         that allows them to enable app lock. App Lock is a feature that allows users to require
-         authentication before opening apps.
-         <p>Protection level: internal|role
+         that allows them to enable app lock. This is also granted to the recents component, which
+         is typically the system launcher, to ensure a consistent user experience. App Lock is a
+         feature that allows users to require authentication before opening apps.
+         <p>Protection level: internal|role|recents
          @FlaggedApi(android.security.Flags.FLAG_APP_LOCK_APIS) -->
     <permission android:name="android.permission.LOCK_APPS"
-        android:protectionLevel="internal|role"
+        android:protectionLevel="internal|role|recents"
         android:featureFlag="android.security.app_lock_apis" />
 
     <!-- @SystemApi
