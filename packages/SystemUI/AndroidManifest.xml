@@ -663,6 +663,15 @@
             android:excludeFromRecents="true">
         </activity>
 
+        <!-- started from UsbDeviceSettingsManager -->
+        <activity android:name=".usb.UsbAuthorizationActivity"
+            android:exported="true"
+            android:permission="android.permission.MANAGE_USB"
+            android:theme="@style/Theme.SystemUI.Dialog.Alert"
+            android:finishOnCloseSystemDialogs="true"
+            android:excludeFromRecents="true">
+        </activity>
+
         <!-- started from SensoryPrivacyService -->
         <activity android:name=".sensorprivacy.SensorUseStartedActivity"
                   android:exported="true"
