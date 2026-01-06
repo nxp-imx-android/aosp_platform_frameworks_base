@@ -216,17 +216,6 @@ flag {
 }
 
 flag {
-  name: "thread_safe_key_generation"
-  namespace: "hardware_backed_security"
-  description: "Retry key generation requests when the key generation thread is busy"
-  bug: "445922389"
-  is_fixed_read_only: true
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "app_lock_apis"
     namespace: "security"
     description: "Flag to enable access to the App Lock APIs in PackageManager"
