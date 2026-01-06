@@ -26,7 +26,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -41,6 +43,8 @@ import com.android.compose.animation.Expandable
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileDetailsEntryTightCornerRadius
+import com.android.systemui.qs.ui.compose.borderOnFocus
 import com.android.systemui.res.R
 import com.android.systemui.volume.panel.component.mediainput.ui.viewmodel.MediaInputViewModel
 import com.android.systemui.volume.panel.component.mediastream.ui.composable.MediaStreamStyle
@@ -67,13 +71,20 @@ constructor(private val viewModelFactory: MediaInputViewModel.Factory) :
 
         Expandable(
             modifier =
-                Modifier.fillMaxWidth().height(56.dp).semantics {
-                    liveRegion = LiveRegionMode.Polite
-                    this.onClick(label = clickLabel) {
-                        viewModel.onBarClick(null)
-                        true
-                    }
-                },
+                modifier
+                    .borderOnFocus(
+                        MaterialTheme.colorScheme.secondary,
+                        CornerSize(TileDetailsEntryTightCornerRadius),
+                    )
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .semantics {
+                        liveRegion = LiveRegionMode.Polite
+                        this.onClick(label = clickLabel) {
+                            viewModel.onBarClick(null)
+                            true
+                        }
+                    },
             color = style.backgroundColor,
             shape = RoundedCornerShape(12.dp),
             useModifierBasedImplementation = true,

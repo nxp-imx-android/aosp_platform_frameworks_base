@@ -40,7 +40,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -61,6 +63,8 @@ import com.android.systemui.Flags
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.toColor
 import com.android.systemui.compose.modifiers.sysuiResTag
+import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileDetailsEntryTightCornerRadius
+import com.android.systemui.qs.ui.compose.borderOnFocus
 import com.android.systemui.res.R
 import com.android.systemui.volume.panel.component.mediaoutput.ui.viewmodel.ConnectedDeviceViewModel
 import com.android.systemui.volume.panel.component.mediaoutput.ui.viewmodel.DeviceIconViewModel
@@ -91,7 +95,12 @@ class MediaOutputComponent @Inject constructor(private val viewModel: MediaOutpu
 
         Expandable(
             modifier =
-                Modifier.fillMaxWidth()
+                modifier
+                    .borderOnFocus(
+                        MaterialTheme.colorScheme.secondary,
+                        CornerSize(TileDetailsEntryTightCornerRadius),
+                    )
+                    .fillMaxWidth()
                     .height(if (Flags.volumeRedesign()) 56.dp else 80.dp)
                     .semantics {
                         liveRegion = LiveRegionMode.Polite
