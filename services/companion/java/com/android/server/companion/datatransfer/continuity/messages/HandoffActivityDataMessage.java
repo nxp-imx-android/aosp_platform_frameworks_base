@@ -33,7 +33,8 @@ import java.util.List;
 import java.util.Objects;
 
 public record HandoffActivityDataMessage(
-        @Nullable HandoffActivityData activity, @NonNull List<byte[]> packageSignatureDigests) {
+        @Nullable HandoffActivityData activity, @NonNull List<byte[]> packageSignatureDigests)
+        implements Proto {
 
     public HandoffActivityDataMessage {
         Objects.requireNonNull(packageSignatureDigests);
@@ -86,8 +87,43 @@ public record HandoffActivityDataMessage(
         }
     }
 
-    public static final ProtoCreator<HandoffActivityDataMessage> CREATOR =
-            new ProtoCreator<HandoffActivityDataMessage>() {
+    @Override
+    public void write(@NonNull ProtoOutputStream protoOutputStream) throws IOException {
+        Objects.requireNonNull(protoOutputStream);
+        if (activity != null) {
+            ComponentName componentName = activity.getComponentName();
+            if (componentName != null) {
+                protoOutputStream.writeString(
+                        android.companion.HandoffActivityDataMessage.COMPONENT_NAME,
+                        componentName.flattenToString());
+            }
+
+            Uri fallbackUri = activity.getFallbackUri();
+            if (fallbackUri != null) {
+                protoOutputStream.writeString(
+                        android.companion.HandoffActivityDataMessage.FALLBACK_URI,
+                        fallbackUri.toString());
+            }
+
+            PersistableBundle extras = activity.getExtras();
+            if (extras != null) {
+                ByteArrayOutputStream extrasStream = new ByteArrayOutputStream();
+                extras.writeToStream(extrasStream);
+                protoOutputStream.write(
+                        android.companion.HandoffActivityDataMessage.EXTRAS,
+                        extrasStream.toByteArray());
+            }
+        }
+
+        for (byte[] signatureDigest : packageSignatureDigests()) {
+            protoOutputStream.write(
+                    android.companion.HandoffActivityDataMessage.SIGNATURE_DIGESTS,
+                    signatureDigest);
+        }
+    }
+
+    public static final ProtoReader<HandoffActivityDataMessage> READER =
+            new ProtoReader<HandoffActivityDataMessage>() {
                 @Override
                 @Nullable
                 public HandoffActivityDataMessage read(@NonNull ProtoInputStream pis)
@@ -144,48 +180,6 @@ public record HandoffActivityDataMessage(
                     }
 
                     return builder.build();
-                }
-
-                public void write(
-                        @NonNull ProtoOutputStream protoOutputStream,
-                        @Nullable HandoffActivityDataMessage value)
-                        throws IOException {
-                    Objects.requireNonNull(protoOutputStream);
-                    if (value == null) {
-                        return;
-                    }
-
-                    HandoffActivityData activity = value.activity();
-                    if (activity != null) {
-                        ComponentName componentName = activity.getComponentName();
-                        if (componentName != null) {
-                            protoOutputStream.writeString(
-                                    android.companion.HandoffActivityDataMessage.COMPONENT_NAME,
-                                    componentName.flattenToString());
-                        }
-
-                        Uri fallbackUri = activity.getFallbackUri();
-                        if (fallbackUri != null) {
-                            protoOutputStream.writeString(
-                                    android.companion.HandoffActivityDataMessage.FALLBACK_URI,
-                                    fallbackUri.toString());
-                        }
-
-                        PersistableBundle extras = activity.getExtras();
-                        if (extras != null) {
-                            ByteArrayOutputStream extrasStream = new ByteArrayOutputStream();
-                            extras.writeToStream(extrasStream);
-                            protoOutputStream.write(
-                                    android.companion.HandoffActivityDataMessage.EXTRAS,
-                                    extrasStream.toByteArray());
-                        }
-                    }
-
-                    for (byte[] signatureDigest : value.packageSignatureDigests()) {
-                        protoOutputStream.write(
-                                android.companion.HandoffActivityDataMessage.SIGNATURE_DIGESTS,
-                                signatureDigest);
-                    }
                 }
             };
 

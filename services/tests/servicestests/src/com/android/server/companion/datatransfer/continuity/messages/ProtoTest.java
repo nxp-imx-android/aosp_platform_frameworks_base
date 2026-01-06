@@ -17,25 +17,28 @@
 package com.android.server.companion.datatransfer.continuity.messages;
 
 import static com.google.common.truth.Truth.assertThat;
+
+import android.testing.AndroidTestingRunner;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
-import android.util.proto.ProtoParseException;
+import org.junit.runner.RunWith;
 
-public class ProtoCreatorTest<T> {
+@RunWith(AndroidTestingRunner.class)
+public abstract class ProtoTest<T extends Proto> {
 
-    protected void verifyDefaultValue(ProtoCreator<T> creator, T value) throws Exception {
+    protected void verifyDefaultValue(ProtoReader<T> reader, T value) throws Exception {
         ProtoInputStream pis = new ProtoInputStream(new byte[0]);
-        T result = creator.read(pis);
+        T result = reader.read(pis);
         assertThat(result).isEqualTo(value);
     }
 
-    protected void verifyRoundTrip(ProtoCreator<T> creator, T value) throws Exception {
+    protected void verifyRoundTrip(ProtoReader<T> reader, T value) throws Exception {
         ProtoOutputStream pos = new ProtoOutputStream();
-        creator.write(pos, value);
+        value.write(pos);
         pos.flush();
 
         ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
-        T result = creator.read(pis);
+        T result = reader.read(pis);
 
         assertThat(result).isEqualTo(value);
     }

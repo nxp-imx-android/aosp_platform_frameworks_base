@@ -17,18 +17,15 @@
 package com.android.server.companion.datatransfer.continuity.messages;
 
 import android.platform.test.annotations.Presubmit;
-import android.testing.AndroidTestingRunner;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 @Presubmit
-@RunWith(AndroidTestingRunner.class)
-public class RemoteTaskInfoTest extends ProtoCreatorTest<RemoteTaskInfo> {
+public class RemoteTaskInfoTest extends ProtoTest<RemoteTaskInfo> {
 
     @Test
     public void testReadFromProto_noData_returnsDefault() throws Exception {
         verifyDefaultValue(
-                RemoteTaskInfo.CREATOR,
+                RemoteTaskInfo.READER,
                 new RemoteTaskInfo(0, "", false, 0, new HandoffOptions(false, false)));
     }
 
@@ -36,6 +33,6 @@ public class RemoteTaskInfoTest extends ProtoCreatorTest<RemoteTaskInfo> {
     public void testWriteAndRead_roundTrip_works() throws Exception {
         RemoteTaskInfo remoteTaskInfo =
                 new RemoteTaskInfo(1, "package_name", true, 100L, new HandoffOptions(true, true));
-        verifyRoundTrip(RemoteTaskInfo.CREATOR, remoteTaskInfo);
+        verifyRoundTrip(RemoteTaskInfo.READER, remoteTaskInfo);
     }
 }

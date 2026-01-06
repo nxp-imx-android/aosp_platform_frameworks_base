@@ -17,22 +17,19 @@
 package com.android.server.companion.datatransfer.continuity.messages;
 
 import android.platform.test.annotations.Presubmit;
-import android.testing.AndroidTestingRunner;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 @Presubmit
-@RunWith(AndroidTestingRunner.class)
-public class HandoffOptionsTest extends ProtoCreatorTest<HandoffOptions> {
+public class HandoffOptionsTest extends ProtoTest<HandoffOptions> {
 
     @Test
     public void testHandoffOptions_fromProtoStream_setsToDefaultValues() throws Exception {
-        verifyDefaultValue(HandoffOptions.CREATOR, new HandoffOptions(false, false));
+        verifyDefaultValue(HandoffOptions.READER, new HandoffOptions(false, false));
     }
 
     @Test
     public void testWriteAndRead_roundTrip_works() throws Exception {
         HandoffOptions handoffOptions = new HandoffOptions(true, true);
-        verifyRoundTrip(HandoffOptions.CREATOR, handoffOptions);
+        verifyRoundTrip(HandoffOptions.READER, handoffOptions);
     }
 }

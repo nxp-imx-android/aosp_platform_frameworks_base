@@ -27,10 +27,20 @@ import java.util.Objects;
  *
  * <p>This class is used to serialize and deserialize the handoff options from the proto.
  */
-public record HandoffOptions(boolean isHandoffEnabled, boolean requirePackageInstalled) {
+public record HandoffOptions(boolean isHandoffEnabled, boolean requirePackageInstalled)
+        implements Proto {
 
-    public static final ProtoCreator<HandoffOptions> CREATOR =
-            new ProtoCreator<HandoffOptions>() {
+    @Override
+    public void write(@NonNull ProtoOutputStream pos) throws IOException {
+        Objects.requireNonNull(pos)
+                .writeBool(android.companion.HandoffOptions.IS_HANDOFF_ENABLED, isHandoffEnabled());
+        pos.writeBool(
+                android.companion.HandoffOptions.REQUIRE_PACKAGE_INSTALLED,
+                requirePackageInstalled());
+    }
+
+    public static final ProtoReader<HandoffOptions> READER =
+            new ProtoReader<HandoffOptions>() {
                 @Override
                 public HandoffOptions read(@NonNull ProtoInputStream pis) throws IOException {
                     Objects.requireNonNull(pis);
@@ -53,22 +63,6 @@ public record HandoffOptions(boolean isHandoffEnabled, boolean requirePackageIns
                         }
                     }
                     return new HandoffOptions(isHandoffEnabled, requirePackageInstalled);
-                }
-
-                @Override
-                public void write(@NonNull ProtoOutputStream pos, HandoffOptions value)
-                        throws IOException {
-                    Objects.requireNonNull(pos);
-                    if (value == null) {
-                        return;
-                    }
-
-                    pos.writeBool(
-                            android.companion.HandoffOptions.IS_HANDOFF_ENABLED,
-                            value.isHandoffEnabled());
-                    pos.writeBool(
-                            android.companion.HandoffOptions.REQUIRE_PACKAGE_INSTALLED,
-                            value.requirePackageInstalled());
                 }
             };
 }

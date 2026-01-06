@@ -62,7 +62,7 @@ public class TaskStackBroadcastMessageTest {
 
     private void verifyRoundTrip(TaskStackBroadcastMessage expected) throws IOException {
         final ProtoOutputStream pos = new ProtoOutputStream();
-        expected.writeToProto(pos);
+        expected.write(pos);
         pos.flush();
 
         assertThat(pos.getBytes()).isNotEmpty();

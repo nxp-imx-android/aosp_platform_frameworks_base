@@ -21,20 +21,16 @@ import android.content.ComponentName;
 import android.net.Uri;
 import android.os.PersistableBundle;
 import android.platform.test.annotations.Presubmit;
-import android.testing.AndroidTestingRunner;
 import java.util.List;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 @Presubmit
-@RunWith(AndroidTestingRunner.class)
-public class HandoffActivityDataMessageTest extends ProtoCreatorTest<HandoffActivityDataMessage> {
+public class HandoffActivityDataMessageTest extends ProtoTest<HandoffActivityDataMessage> {
 
     @Test
     public void testHandoffActivityDataMessage_noData_returnsEmpty() throws Exception {
         verifyDefaultValue(
-                HandoffActivityDataMessage.CREATOR,
-                new HandoffActivityDataMessage(null, List.of()));
+                HandoffActivityDataMessage.READER, new HandoffActivityDataMessage(null, List.of()));
     }
 
     @Test
@@ -42,7 +38,7 @@ public class HandoffActivityDataMessageTest extends ProtoCreatorTest<HandoffActi
         PersistableBundle extras = new PersistableBundle();
         extras.putString("key", "value");
         verifyRoundTrip(
-                HandoffActivityDataMessage.CREATOR,
+                HandoffActivityDataMessage.READER,
                 new HandoffActivityDataMessage(
                         new HandoffActivityData.Builder(
                                         new ComponentName(
@@ -56,7 +52,7 @@ public class HandoffActivityDataMessageTest extends ProtoCreatorTest<HandoffActi
     @Test
     public void testHandoffActivityDataMessage_onlyFallbackUri_serializes() throws Exception {
         verifyRoundTrip(
-                HandoffActivityDataMessage.CREATOR,
+                HandoffActivityDataMessage.READER,
                 new HandoffActivityDataMessage(
                         HandoffActivityData.createWebHandoff(
                                 Uri.parse("http://example.com/fallback")),
@@ -66,7 +62,7 @@ public class HandoffActivityDataMessageTest extends ProtoCreatorTest<HandoffActi
     @Test
     public void testHandoffActivityDataMessage_emptyData_serializes() throws Exception {
         verifyRoundTrip(
-                HandoffActivityDataMessage.CREATOR,
+                HandoffActivityDataMessage.READER,
                 new HandoffActivityDataMessage(null, List.of()));
     }
 }

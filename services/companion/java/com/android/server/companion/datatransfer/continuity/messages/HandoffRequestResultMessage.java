@@ -59,7 +59,7 @@ public record HandoffRequestResultMessage(
                     break;
                 case (int) android.companion.HandoffRequestResultMessage.ACTIVITIES:
                     HandoffActivityDataMessage handoffActivityData =
-                            HandoffActivityDataMessage.CREATOR.read(
+                            HandoffActivityDataMessage.READER.read(
                                     pis, android.companion.HandoffRequestResultMessage.ACTIVITIES);
                     if (handoffActivityData != null) {
                         activities.add(handoffActivityData);
@@ -77,14 +77,14 @@ public record HandoffRequestResultMessage(
     }
 
     @Override
-    public void writeToProto(@NonNull ProtoOutputStream pos) throws IOException {
+    public void write(@NonNull ProtoOutputStream pos) throws IOException {
         Objects.requireNonNull(pos);
 
         pos.write(android.companion.HandoffRequestResultMessage.STATUS_CODE, statusCode);
         pos.write(android.companion.HandoffRequestResultMessage.TASK_ID, taskId);
 
         for (HandoffActivityDataMessage activity : activities) {
-            HandoffActivityDataMessage.CREATOR.write(
+            Proto.writeField(
                     pos, android.companion.HandoffRequestResultMessage.ACTIVITIES, activity);
         }
     }

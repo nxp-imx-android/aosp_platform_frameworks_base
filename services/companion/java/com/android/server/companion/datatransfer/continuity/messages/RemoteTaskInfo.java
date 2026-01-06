@@ -28,18 +28,27 @@ public record RemoteTaskInfo(
         @NonNull String packageName,
         boolean isInForeground,
         long lastUsedTimeMillis,
-        @NonNull HandoffOptions handoffOptions) {
-
-    private static final String TAG = RemoteTaskInfo.class.getSimpleName();
+        @NonNull HandoffOptions handoffOptions)
+        implements Proto {
 
     public RemoteTaskInfo {
         Objects.requireNonNull(packageName);
         Objects.requireNonNull(handoffOptions);
     }
 
+    @Override
+    public void write(@NonNull ProtoOutputStream pos) throws IOException {
+        Objects.requireNonNull(pos).writeInt32(android.companion.RemoteTaskInfo.ID, id());
+        pos.writeString(android.companion.RemoteTaskInfo.PACKAGE_NAME, packageName());
+        pos.writeBool(android.companion.RemoteTaskInfo.IS_IN_FOREGROUND, isInForeground());
+        pos.writeInt64(
+                android.companion.RemoteTaskInfo.LAST_USED_TIME_MILLIS, lastUsedTimeMillis());
+        Proto.writeField(pos, android.companion.RemoteTaskInfo.HANDOFF_OPTIONS, handoffOptions());
+    }
+
     @NonNull
-    public static final ProtoCreator<RemoteTaskInfo> CREATOR =
-            new ProtoCreator<RemoteTaskInfo>() {
+    public static final ProtoReader<RemoteTaskInfo> READER =
+            new ProtoReader<RemoteTaskInfo>() {
                 @Override
                 @Nullable
                 public RemoteTaskInfo read(@NonNull ProtoInputStream pis) throws IOException {
@@ -70,7 +79,7 @@ public record RemoteTaskInfo(
                                 break;
                             case (int) android.companion.RemoteTaskInfo.HANDOFF_OPTIONS:
                                 handoffOptions =
-                                        HandoffOptions.CREATOR.read(
+                                        HandoffOptions.READER.read(
                                                 pis,
                                                 android.companion.RemoteTaskInfo.HANDOFF_OPTIONS);
                                 break;
@@ -84,29 +93,6 @@ public record RemoteTaskInfo(
 
                     return new RemoteTaskInfo(
                             id, packageName, isInForeground, lastUsedTimeMillis, handoffOptions);
-                }
-
-                @Override
-                public void write(@NonNull ProtoOutputStream pos, @Nullable RemoteTaskInfo value)
-                        throws IOException {
-                    Objects.requireNonNull(pos);
-                    if (value == null) {
-                        return;
-                    }
-
-                    pos.writeInt32(android.companion.RemoteTaskInfo.ID, value.id());
-                    pos.writeString(
-                            android.companion.RemoteTaskInfo.PACKAGE_NAME, value.packageName());
-                    pos.writeBool(
-                            android.companion.RemoteTaskInfo.IS_IN_FOREGROUND,
-                            value.isInForeground());
-                    pos.writeInt64(
-                            android.companion.RemoteTaskInfo.LAST_USED_TIME_MILLIS,
-                            value.lastUsedTimeMillis());
-                    HandoffOptions.CREATOR.write(
-                            pos,
-                            android.companion.RemoteTaskInfo.HANDOFF_OPTIONS,
-                            value.handoffOptions());
                 }
             };
 }

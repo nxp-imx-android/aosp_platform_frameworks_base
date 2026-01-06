@@ -44,7 +44,7 @@ public final class TaskContinuityMessageSerializer {
                 break;
             case (int) android.companion.TaskContinuityMessage.HANDOFF_REQUEST:
                 message =
-                        HandoffRequestMessage.CREATOR.read(
+                        HandoffRequestMessage.READER.read(
                                 pis, android.companion.TaskContinuityMessage.HANDOFF_REQUEST);
                 break;
             case (int) android.companion.TaskContinuityMessage.HANDOFF_REQUEST_RESULT:
@@ -62,12 +62,8 @@ public final class TaskContinuityMessageSerializer {
 
     @NonNull
     public static byte[] serialize(@NonNull TaskContinuityMessage message) throws IOException {
-        Objects.requireNonNull(message);
-
         ProtoOutputStream pos = new ProtoOutputStream();
-        long dataToken = pos.start(message.getFieldNumber());
-        message.writeToProto(pos);
-        pos.end(dataToken);
+        Proto.writeField(pos, message.getFieldNumber(), Objects.requireNonNull(message));
         return pos.getBytes();
     }
 }

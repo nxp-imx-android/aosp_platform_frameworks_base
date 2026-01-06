@@ -53,7 +53,7 @@ public record TaskStackBroadcastMessage(@NonNull List<RemoteTaskInfo> remoteTask
                     break;
                 case (int) android.companion.TaskStackBroadcastMessage.REMOTE_TASKS:
                     RemoteTaskInfo remoteTaskInfo =
-                            RemoteTaskInfo.CREATOR.read(
+                            RemoteTaskInfo.READER.read(
                                     pis, android.companion.TaskStackBroadcastMessage.REMOTE_TASKS);
                     if (remoteTaskInfo != null) {
                         remoteTasks.add(remoteTaskInfo);
@@ -82,14 +82,13 @@ public record TaskStackBroadcastMessage(@NonNull List<RemoteTaskInfo> remoteTask
 
     /** Writes this object to a proto output stream. */
     @Override
-    public void writeToProto(@NonNull ProtoOutputStream pos) throws IOException {
-        Objects.requireNonNull(pos);
-
+    public void write(@NonNull ProtoOutputStream pos) throws IOException {
         if (remoteTasks().isEmpty()) {
-            pos.writeBool(android.companion.TaskStackBroadcastMessage.IS_STACK_EMPTY, true);
+            Objects.requireNonNull(pos)
+                    .writeBool(android.companion.TaskStackBroadcastMessage.IS_STACK_EMPTY, true);
         } else {
             for (RemoteTaskInfo remoteTaskInfo : remoteTasks()) {
-                RemoteTaskInfo.CREATOR.write(
+                Proto.writeField(
                         pos,
                         android.companion.TaskStackBroadcastMessage.REMOTE_TASKS,
                         remoteTaskInfo);

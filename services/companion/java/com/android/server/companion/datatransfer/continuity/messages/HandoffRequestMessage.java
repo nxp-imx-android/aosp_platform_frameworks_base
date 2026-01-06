@@ -17,7 +17,6 @@
 package com.android.server.companion.datatransfer.continuity.messages;
 
 import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
 import com.android.internal.util.FrameworkStatsLog;
@@ -27,8 +26,8 @@ import java.util.Objects;
 /** Deserialized version of the HandoffRequestMessage proto. */
 public record HandoffRequestMessage(int taskId) implements TaskContinuityMessage {
 
-    public static final ProtoCreator<HandoffRequestMessage> CREATOR =
-            new ProtoCreator<HandoffRequestMessage>() {
+    public static final ProtoReader<HandoffRequestMessage> READER =
+            new ProtoReader<HandoffRequestMessage>() {
                 @Override
                 public HandoffRequestMessage read(@NonNull ProtoInputStream pis)
                         throws IOException {
@@ -47,18 +46,6 @@ public record HandoffRequestMessage(int taskId) implements TaskContinuityMessage
 
                     return new HandoffRequestMessage(taskId);
                 }
-
-                @Override
-                public void write(
-                        @NonNull ProtoOutputStream pos, @Nullable HandoffRequestMessage value)
-                        throws IOException {
-                    if (value == null) {
-                        return;
-                    }
-
-                    Objects.requireNonNull(pos)
-                            .write(android.companion.HandoffRequestMessage.TASK_ID, value.taskId());
-                }
             };
 
     @Override
@@ -67,8 +54,9 @@ public record HandoffRequestMessage(int taskId) implements TaskContinuityMessage
     }
 
     @Override
-    public void writeToProto(@NonNull ProtoOutputStream pos) throws IOException {
-        HandoffRequestMessage.CREATOR.write(Objects.requireNonNull(pos), this);
+    public void write(@NonNull ProtoOutputStream pos) throws IOException {
+        Objects.requireNonNull(pos)
+                .write(android.companion.HandoffRequestMessage.TASK_ID, taskId());
     }
 
     @Override

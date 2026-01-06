@@ -19,15 +19,11 @@ package com.android.server.companion.datatransfer.continuity.messages;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.util.proto.ProtoInputStream;
-import android.util.proto.ProtoOutputStream;
 import java.io.IOException;
 import java.util.Objects;
 
-/**
- * Base class for creating protos, including both reading and writing from proto input and output
- * streams.
- */
-public abstract class ProtoCreator<T> {
+/** Base class for reading protos. */
+public abstract class ProtoReader<T extends Proto> {
 
     /**
      * Reads a proto from a proto input stream, assuming this is a nested field of the proto.
@@ -46,26 +42,6 @@ public abstract class ProtoCreator<T> {
     }
 
     /**
-     * Writes a proto to a proto output stream, assuming this is a nested field of the proto.
-     *
-     * @param pos The proto output stream to write to.
-     * @param fieldNumber The field number of the proto.
-     * @param value The proto to write.
-     * @throws IOException If there is an error writing the proto.
-     */
-    public void write(ProtoOutputStream pos, long fieldNumber, @Nullable T value)
-            throws IOException {
-        Objects.requireNonNull(pos);
-        if (value == null) {
-            return;
-        }
-
-        long token = pos.start(fieldNumber);
-        write(pos, value);
-        pos.end(token);
-    }
-
-    /**
      * Reads a proto from a proto input stream, assuming this is the root field of the proto.
      *
      * @param pis The proto input stream to read from.
@@ -74,14 +50,4 @@ public abstract class ProtoCreator<T> {
      */
     @Nullable
     public abstract T read(@NonNull ProtoInputStream pis) throws IOException;
-
-    /**
-     * Writes a proto to a proto output stream, assuming this is the root field of the proto.
-     *
-     * @param pos The proto output stream to write to.
-     * @param value The proto to write.
-     * @throws IOException If there is an error writing the proto.
-     */
-    public abstract void write(@NonNull ProtoOutputStream pos, @Nullable T value)
-            throws IOException;
 }

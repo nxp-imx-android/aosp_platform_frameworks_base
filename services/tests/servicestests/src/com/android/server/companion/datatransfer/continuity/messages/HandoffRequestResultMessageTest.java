@@ -58,7 +58,7 @@ public class HandoffRequestResultMessageTest {
                                         List.of(new byte[] {1, 2, 3, 4}))));
 
         final ProtoOutputStream pos = new ProtoOutputStream();
-        expected.writeToProto(pos);
+        expected.write(pos);
         pos.flush();
         final ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
         final HandoffRequestResultMessage actual = HandoffRequestResultMessage.readFromProto(pis);
