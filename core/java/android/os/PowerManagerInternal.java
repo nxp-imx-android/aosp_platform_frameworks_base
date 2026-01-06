@@ -305,11 +305,28 @@ public abstract class PowerManagerInternal {
     public abstract boolean isDefaultGroupAdjacent(int groupId);
 
     /**
-     * Used to notify the power manager that wakelocks should be disabled.
+     * Used to notify the power manager that wakelocks should be enabled / disabled.
      *
      * @param force {@code true} to activate force disable wakelocks, {@code false} to turn it off.
      */
     public abstract void setForceDisableWakelocks(boolean force);
+
+    /**
+     * Used to notify the power manager that wakelocks should be enabled / disabled.
+     *
+     * @param force {@code true} to activate force disable wakelocks, {@code false} to turn it off.
+     * @param displayIds wakelocks corresponding to the power groups of each of these display ids
+     *                   will be acted upon.
+     */
+    public abstract void setForceDisableWakelocksByDisplay(boolean force, IntArray displayIds);
+
+    /**
+     * Used to notify the power manager that wakelocks should be enabled / disabled.
+     *
+     * @param force {@code true} to activate force disable wakelocks, {@code false} to turn it off.
+     * @param groupIds wakelocks corresponding to these power groups will be acted upon.
+     */
+    public abstract void setForceDisableWakelocksByPowerGroup(boolean force, IntArray groupIds);
 
     /**
      * Used to put certain power groups specifically to sleep.
