@@ -17,65 +17,175 @@
 package com.android.server.companion.datatransfer.continuity.messages;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.HandoffActivityData;
+import android.content.ComponentName;
+import android.net.Uri;
+import android.os.PersistableBundle;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 public record HandoffActivityDataMessage(
-        @NonNull HandoffActivityData activity, @NonNull byte[][] packageSignatureDigests) {
+        @Nullable HandoffActivityData activity, @NonNull List<byte[]> packageSignatureDigests)
+        implements Proto {
 
     public HandoffActivityDataMessage {
-        Objects.requireNonNull(activity);
         Objects.requireNonNull(packageSignatureDigests);
     }
 
-    public static HandoffActivityDataMessage fromProto(@NonNull ProtoInputStream protoInputStream)
-            throws IOException {
-        Objects.requireNonNull(protoInputStream);
+    public static class Builder extends Proto.Builder<HandoffActivityDataMessage> {
+        private ComponentName componentName = null;
+        private Uri fallbackUri = null;
+        private PersistableBundle extras = null;
+        private List<byte[]> packageSignatureDigests = new ArrayList<>();
 
-        HandoffActivityData activityData = null;
-        List<byte[]> packageSignatureDigests = new ArrayList<>();
-        while (protoInputStream.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
-            switch (protoInputStream.getFieldNumber()) {
-                case (int) android.companion.HandoffActivityDataMessage.ACTIVITY:
-                    activityData =
-                            HandoffActivityDataSerializer.INSTANCE.read(
-                                    protoInputStream,
-                                    android.companion.HandoffActivityDataMessage.ACTIVITY);
-                    break;
-                case (int) android.companion.HandoffActivityDataMessage.SIGNATURE_DIGESTS:
-                    packageSignatureDigests.add(
-                            protoInputStream.readBytes(
+        @NonNull
+        public Builder setComponentName(@Nullable ComponentName componentName) {
+            this.componentName = componentName;
+            return this;
+        }
+
+        @NonNull
+        public Builder setFallbackUri(@Nullable Uri fallbackUri) {
+            this.fallbackUri = fallbackUri;
+            return this;
+        }
+
+        @NonNull
+        public Builder setExtras(@Nullable PersistableBundle extras) {
+            this.extras = extras;
+            return this;
+        }
+
+        @NonNull
+        public Builder addPackageSignatureDigest(@NonNull byte[] packageSignatureDigest) {
+            this.packageSignatureDigests.add(Objects.requireNonNull(packageSignatureDigest));
+            return this;
+        }
+
+        @Override
+        protected void processField(@NonNull ProtoInputStream pis, int fieldNumber)
+                throws IOException {
+            switch (fieldNumber) {
+                case (int) android.companion.HandoffActivityDataMessage.COMPONENT_NAME -> {
+                    String flattenedComponentName =
+                            pis.readString(
+                                    android.companion.HandoffActivityDataMessage.COMPONENT_NAME);
+                    if (flattenedComponentName != null) {
+                        setComponentName(ComponentName.unflattenFromString(flattenedComponentName));
+                    }
+                }
+                case (int) android.companion.HandoffActivityDataMessage.FALLBACK_URI -> {
+                    String flattenedFallbackUri =
+                            pis.readString(
+                                    android.companion.HandoffActivityDataMessage.FALLBACK_URI);
+                    if (flattenedFallbackUri != null) {
+                        setFallbackUri(Uri.parse(flattenedFallbackUri));
+                    }
+                }
+                case (int) android.companion.HandoffActivityDataMessage.EXTRAS -> {
+                    byte[] rawExtras =
+                            pis.readBytes(android.companion.HandoffActivityDataMessage.EXTRAS);
+                    if (rawExtras != null) {
+                        setExtras(
+                                PersistableBundle.readFromStream(
+                                        new ByteArrayInputStream(rawExtras)));
+                    }
+                }
+                case (int) android.companion.HandoffActivityDataMessage.SIGNATURE_DIGESTS -> {
+                    addPackageSignatureDigest(
+                            pis.readBytes(
                                     android.companion.HandoffActivityDataMessage
                                             .SIGNATURE_DIGESTS));
-                    break;
+                }
             }
         }
 
-        if (activityData == null) {
-            throw new IOException(
-                    "HandoffActivityDataMessage is missing HandoffActivityData field");
-        }
+        @Override
+        public HandoffActivityDataMessage build() {
+            HandoffActivityData activityData = null;
+            if (componentName != null) {
+                activityData =
+                        new HandoffActivityData.Builder(componentName)
+                                .setFallbackUri(fallbackUri)
+                                .setExtras(extras)
+                                .build();
+            } else if (fallbackUri != null) {
+                activityData = HandoffActivityData.createWebHandoff(fallbackUri);
+            }
 
-        return new HandoffActivityDataMessage(
-                activityData, packageSignatureDigests.toArray(new byte[0][]));
+            return new HandoffActivityDataMessage(activityData, packageSignatureDigests);
+        }
     }
 
-    public void writeToProto(@NonNull ProtoOutputStream protoOutputStream) throws IOException {
+    @Override
+    public void write(@NonNull ProtoOutputStream protoOutputStream) throws IOException {
         Objects.requireNonNull(protoOutputStream);
-        HandoffActivityDataSerializer.INSTANCE.write(
-                protoOutputStream,
-                android.companion.HandoffActivityDataMessage.ACTIVITY,
-                activity());
+        if (activity != null) {
+            ComponentName componentName = activity.getComponentName();
+            if (componentName != null) {
+                protoOutputStream.writeString(
+                        android.companion.HandoffActivityDataMessage.COMPONENT_NAME,
+                        componentName.flattenToString());
+            }
+
+            Uri fallbackUri = activity.getFallbackUri();
+            if (fallbackUri != null) {
+                protoOutputStream.writeString(
+                        android.companion.HandoffActivityDataMessage.FALLBACK_URI,
+                        fallbackUri.toString());
+            }
+
+            PersistableBundle extras = activity.getExtras();
+            if (extras != null) {
+                ByteArrayOutputStream extrasStream = new ByteArrayOutputStream();
+                extras.writeToStream(extrasStream);
+                protoOutputStream.write(
+                        android.companion.HandoffActivityDataMessage.EXTRAS,
+                        extrasStream.toByteArray());
+            }
+        }
 
         for (byte[] signatureDigest : packageSignatureDigests()) {
             protoOutputStream.write(
                     android.companion.HandoffActivityDataMessage.SIGNATURE_DIGESTS,
                     signatureDigest);
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(activity, packageSignatureDigests);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof HandoffActivityDataMessage)) {
+            return false;
+        }
+        HandoffActivityDataMessage other = (HandoffActivityDataMessage) o;
+        if (!Objects.equals(activity, other.activity)) {
+            return false;
+        }
+
+        if (other.packageSignatureDigests.size() != packageSignatureDigests.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < other.packageSignatureDigests.size(); i++) {
+            if (!Arrays.equals(
+                    other.packageSignatureDigests.get(i), packageSignatureDigests.get(i))) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

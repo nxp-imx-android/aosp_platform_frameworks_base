@@ -26,45 +26,30 @@ import static android.companion.datatransfer.continuity.TaskContinuityManager.HA
 import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_TASK_NOT_FOUND;
 import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_TIMEOUT;
 import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_SUCCESS;
-
-import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.AdditionalMatchers.aryEq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.mock;
-import static org.mockito.AdditionalMatchers.aryEq;
 
 import android.app.HandoffActivityData;
 import android.content.ComponentName;
-import android.os.IBinder;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
-
-import androidx.test.platform.app.InstrumentationRegistry;
-
+import com.android.server.LocalServices;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
+import com.android.server.companion.datatransfer.continuity.messages.HandoffActivityDataMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
 import com.android.server.wm.ActivityTaskManagerInternal;
-import com.android.server.LocalServices;
-
+import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Rule;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
@@ -111,7 +96,9 @@ public class InboundHandoffRequestHandlerTest {
 
         HandoffRequestResultMessage expectedMessage =
                 new HandoffRequestResultMessage(
-                        taskId, HANDOFF_REQUEST_RESULT_SUCCESS, List.of(handoffActivityData));
+                        taskId,
+                        HANDOFF_REQUEST_RESULT_SUCCESS,
+                        List.of(new HandoffActivityDataMessage(handoffActivityData, List.of())));
         verify(mMockTaskContinuityMessenger)
                 .sendMessage(aryEq(new int[] {associationId}), eq(expectedMessage));
     }
@@ -141,7 +128,9 @@ public class InboundHandoffRequestHandlerTest {
 
         HandoffRequestResultMessage expectedMessage =
                 new HandoffRequestResultMessage(
-                        taskId, HANDOFF_REQUEST_RESULT_SUCCESS, List.of(handoffActivityData));
+                        taskId,
+                        HANDOFF_REQUEST_RESULT_SUCCESS,
+                        List.of(new HandoffActivityDataMessage(handoffActivityData, List.of())));
         verify(mMockTaskContinuityMessenger)
                 .sendMessage(
                         aryEq(new int[] {firstAssociationId, secondAssociationId}),

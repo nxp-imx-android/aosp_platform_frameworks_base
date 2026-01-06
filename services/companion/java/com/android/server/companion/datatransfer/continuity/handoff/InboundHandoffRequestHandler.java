@@ -17,32 +17,23 @@
 package com.android.server.companion.datatransfer.continuity.handoff;
 
 import static android.app.HandoffFailureCode.HANDOFF_FAILURE_TIMEOUT;
-import static android.app.HandoffFailureCode.HANDOFF_FAILURE_UNSUPPORTED_DEVICE;
-import static android.app.HandoffFailureCode.HANDOFF_FAILURE_UNSUPPORTED_TASK;
 import static android.app.HandoffFailureCode.HANDOFF_FAILURE_UNKNOWN_TASK;
-import static android.app.HandoffFailureCode.HANDOFF_FAILURE_INTERNAL_ERROR;
-import static android.app.HandoffFailureCode.HANDOFF_FAILURE_TIMEOUT;
-import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_SUCCESS;
-import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_TIMEOUT;
-import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_TASK_NOT_FOUND;
 import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK;
+import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_TASK_NOT_FOUND;
+import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_TIMEOUT;
+import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_SUCCESS;
 
 import android.annotation.NonNull;
 import android.app.HandoffActivityData;
 import android.app.IHandoffTaskDataReceiver;
-import android.content.Context;
 import android.os.Binder;
 import android.util.Slog;
-
 import com.android.server.LocalServices;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
+import com.android.server.companion.datatransfer.continuity.messages.HandoffActivityDataMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
-import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
-import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageSerializer;
 import com.android.server.wm.ActivityTaskManagerInternal;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,30 +46,33 @@ import java.util.Objects;
  */
 public class InboundHandoffRequestHandler extends IHandoffTaskDataReceiver.Stub {
 
-    private static final String TAG = "InboundHandoffRequestHandler";
+    private static final String TAG = InboundHandoffRequestHandler.class.getSimpleName();
 
     // Map of task id to list of association ids that have a pending handoff request for that task.
     private final Map<Integer, List<Integer>> mPendingHandoffRequests = new HashMap<>();
     private final TaskContinuityMessenger mTaskContinuityMessenger;
     private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
 
-    public InboundHandoffRequestHandler(
-            @NonNull TaskContinuityMessenger taskContinuityMessenger) {
-        Objects.requireNonNull(taskContinuityMessenger);
-
+    public InboundHandoffRequestHandler(@NonNull TaskContinuityMessenger taskContinuityMessenger) {
         mActivityTaskManagerInternal = LocalServices.getService(ActivityTaskManagerInternal.class);
-        mTaskContinuityMessenger = taskContinuityMessenger;
+        mTaskContinuityMessenger = Objects.requireNonNull(taskContinuityMessenger);
     }
 
     @Override
     public void onHandoffTaskDataRequestSucceeded(
-            int taskId, List<HandoffActivityData> handoffActivityData) {
+            int taskId, List<HandoffActivityData> handoffActivityDataList) {
         final long ident = Binder.clearCallingIdentity();
         try {
             Slog.v(TAG, "onHandoffTaskDataRequestSucceeded for " + taskId);
+            List<HandoffActivityDataMessage> handoffActivityDataMessages = new ArrayList<>();
+            for (HandoffActivityData handoffActivityData : handoffActivityDataList) {
+                handoffActivityDataMessages.add(
+                        new HandoffActivityDataMessage(handoffActivityData, List.of()));
+            }
+
             finishRequest(
                     new HandoffRequestResultMessage(
-                            taskId, HANDOFF_REQUEST_RESULT_SUCCESS, handoffActivityData));
+                            taskId, HANDOFF_REQUEST_RESULT_SUCCESS, handoffActivityDataMessages));
         } finally {
             Binder.restoreCallingIdentity(ident);
         }

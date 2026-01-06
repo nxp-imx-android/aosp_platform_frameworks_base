@@ -17,7 +17,6 @@
 package com.android.server.companion.datatransfer.continuity.messages;
 
 import android.annotation.NonNull;
-import android.app.HandoffActivityData;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
 import com.android.internal.util.FrameworkStatsLog;
@@ -31,45 +30,62 @@ import java.util.Objects;
  * of activities for handoff.
  */
 public record HandoffRequestResultMessage(
-        int taskId, int statusCode, @NonNull List<HandoffActivityData> activities)
+        int taskId, int statusCode, @NonNull List<HandoffActivityDataMessage> activities)
         implements TaskContinuityMessage {
 
     public HandoffRequestResultMessage {
         Objects.requireNonNull(activities);
     }
 
-    @NonNull
-    public static HandoffRequestResultMessage readFromProto(@NonNull ProtoInputStream pis)
-            throws IOException {
+    public static class Builder extends Proto.Builder<HandoffRequestResultMessage> {
+        private int taskId = 0;
+        private int statusCode = 0;
+        private List<HandoffActivityDataMessage> activities = new ArrayList<>();
 
-        Objects.requireNonNull(pis);
+        @NonNull
+        public Builder setTaskId(int taskId) {
+            this.taskId = taskId;
+            return this;
+        }
 
-        int statusCode = 0;
-        int taskId = 0;
-        List<HandoffActivityData> activities = new ArrayList<>();
+        @NonNull
+        public Builder setStatusCode(int statusCode) {
+            this.statusCode = statusCode;
+            return this;
+        }
 
-        while (pis.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
-            switch (pis.getFieldNumber()) {
-                case (int) android.companion.HandoffRequestResultMessage.STATUS_CODE:
-                    statusCode =
-                            pis.readInt(android.companion.HandoffRequestResultMessage.STATUS_CODE);
+        @NonNull
+        public Builder addActivity(@NonNull HandoffActivityDataMessage activity) {
+            this.activities.add(Objects.requireNonNull(activity));
+            return this;
+        }
 
-                    break;
-                case (int) android.companion.HandoffRequestResultMessage.TASK_ID:
-                    taskId = pis.readInt(android.companion.HandoffRequestResultMessage.TASK_ID);
-                    break;
-                case (int) android.companion.HandoffRequestResultMessage.ACTIVITIES:
-                    HandoffActivityData handoffActivityData =
-                            HandoffActivityDataSerializer.INSTANCE.read(
-                                    pis, android.companion.HandoffRequestResultMessage.ACTIVITIES);
-                    if (handoffActivityData != null) {
-                        activities.add(handoffActivityData);
-                    }
-                    break;
+        @Override
+        protected void processField(@NonNull ProtoInputStream pis, int fieldNumber)
+                throws IOException {
+            switch (fieldNumber) {
+                case (int) android.companion.HandoffRequestResultMessage.STATUS_CODE ->
+                        setStatusCode(
+                                pis.readInt(
+                                        android.companion.HandoffRequestResultMessage.STATUS_CODE));
+                case (int) android.companion.HandoffRequestResultMessage.TASK_ID ->
+                        setTaskId(
+                                pis.readInt(android.companion.HandoffRequestResultMessage.TASK_ID));
+                case (int) android.companion.HandoffRequestResultMessage.ACTIVITIES ->
+                        addActivity(
+                                new HandoffActivityDataMessage.Builder()
+                                        .readFromField(
+                                                pis,
+                                                android.companion.HandoffRequestResultMessage
+                                                        .ACTIVITIES)
+                                        .build());
             }
         }
 
-        return new HandoffRequestResultMessage(taskId, statusCode, activities);
+        @Override
+        public HandoffRequestResultMessage build() {
+            return new HandoffRequestResultMessage(taskId, statusCode, activities);
+        }
     }
 
     @Override
@@ -78,14 +94,14 @@ public record HandoffRequestResultMessage(
     }
 
     @Override
-    public void writeToProto(@NonNull ProtoOutputStream pos) throws IOException {
+    public void write(@NonNull ProtoOutputStream pos) throws IOException {
         Objects.requireNonNull(pos);
 
         pos.write(android.companion.HandoffRequestResultMessage.STATUS_CODE, statusCode);
         pos.write(android.companion.HandoffRequestResultMessage.TASK_ID, taskId);
 
-        for (android.app.HandoffActivityData activity : activities) {
-            HandoffActivityDataSerializer.INSTANCE.write(
+        for (HandoffActivityDataMessage activity : activities) {
+            Proto.writeField(
                     pos, android.companion.HandoffRequestResultMessage.ACTIVITIES, activity);
         }
     }

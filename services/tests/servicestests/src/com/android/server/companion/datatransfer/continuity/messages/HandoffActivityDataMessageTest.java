@@ -16,54 +16,48 @@
 
 package com.android.server.companion.datatransfer.continuity.messages;
 
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertEquals;
-
 import android.app.HandoffActivityData;
 import android.content.ComponentName;
 import android.net.Uri;
 import android.os.PersistableBundle;
 import android.platform.test.annotations.Presubmit;
-import android.testing.AndroidTestingRunner;
-import android.util.proto.ProtoInputStream;
-import android.util.proto.ProtoOutputStream;
-import java.io.IOException;
+import java.util.List;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 @Presubmit
-@RunWith(AndroidTestingRunner.class)
-public class HandoffActivityDataMessageTest {
-    @Test
-    public void testHandoffActivityDataMessage_roundtrips_works() throws Exception {
-        ComponentName componentName =
-                new ComponentName("com.example.app", "com.example.app.Activity");
-        Uri fallbackUri = Uri.parse("http://example.com/fallback");
-        PersistableBundle extras = new PersistableBundle();
-        extras.putString("key", "value");
+public class HandoffActivityDataMessageTest extends ProtoTest<HandoffActivityDataMessage> {
 
-        HandoffActivityData activityData =
-                new HandoffActivityData.Builder(componentName)
-                        .setFallbackUri(fallbackUri)
-                        .setExtras(extras)
-                        .build();
-        byte[][] expectedDigests = new byte[][] {new byte[] {1, 2, 3, 4}};
-        HandoffActivityDataMessage expected =
-                new HandoffActivityDataMessage(activityData, expectedDigests);
-
-        ProtoOutputStream pos = new ProtoOutputStream();
-        expected.writeToProto(pos);
-        pos.flush();
-
-        ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
-        HandoffActivityDataMessage actual = HandoffActivityDataMessage.fromProto(pis);
-
-        assertEquals(expected.activity(), actual.activity());
+    @Override
+    protected HandoffActivityDataMessage.Builder newBuilder() {
+        return new HandoffActivityDataMessage.Builder();
     }
 
     @Test
-    public void testHandoffActivityDataMessage_emptyData_throws() throws Exception {
-        ProtoInputStream pis = new ProtoInputStream(new byte[] {});
-        assertThrows(IOException.class, () -> HandoffActivityDataMessage.fromProto(pis));
+    public void testHandoffActivityDataMessage_fullMessage_serializes() throws Exception {
+        PersistableBundle extras = new PersistableBundle();
+        extras.putString("key", "value");
+        verifyRoundTrip(
+                new HandoffActivityDataMessage(
+                        new HandoffActivityData.Builder(
+                                        new ComponentName(
+                                                "com.example.app", "com.example.app.Activity"))
+                                .setFallbackUri(Uri.parse("http://example.com/fallback"))
+                                .setExtras(extras)
+                                .build(),
+                        List.of(new byte[] {1, 2, 3, 4})));
+    }
+
+    @Test
+    public void testHandoffActivityDataMessage_onlyFallbackUri_serializes() throws Exception {
+        verifyRoundTrip(
+                new HandoffActivityDataMessage(
+                        HandoffActivityData.createWebHandoff(
+                                Uri.parse("http://example.com/fallback")),
+                        List.of()));
+    }
+
+    @Test
+    public void testHandoffActivityDataMessage_emptyData_serializes() throws Exception {
+        verifyRoundTrip(new HandoffActivityDataMessage(null, List.of()));
     }
 }

@@ -17,30 +17,21 @@
 package com.android.server.companion.datatransfer.continuity.handoff;
 
 import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_DEVICE_NOT_FOUND;
-import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK;
-import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_SUCCESS;
-import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR;
 import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_HANDOFF_DISABLED;
+import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR;
+import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_SUCCESS;
 
+import android.annotation.NonNull;
+import android.companion.datatransfer.continuity.IHandoffRequestCallback;
+import android.content.Context;
+import android.util.Slog;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
-import com.android.server.companion.datatransfer.continuity.handoff.HandoffActivityStarter;
-import com.android.server.companion.datatransfer.continuity.handoff.HandoffRequestCallbackHolder;
 import com.android.server.companion.datatransfer.continuity.tasks.TaskSyncController;
-
-import android.annotation.NonNull;
-import android.app.HandoffActivityData;
-import android.content.Context;
-import android.companion.datatransfer.continuity.IHandoffRequestCallback;
-import android.os.Bundle;
-import android.os.RemoteException;
-import android.util.Slog;
-import android.os.UserHandle;
-
-import java.util.Set;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Controller for outbound handoff requests.
@@ -50,7 +41,7 @@ import java.util.Objects;
  */
 public class OutboundHandoffRequestHandler {
 
-    private static final String TAG = "OutboundHandoffRequestHandler";
+    private static final String TAG = OutboundHandoffRequestHandler.class.getSimpleName();
 
     private record PendingHandoffRequest(int associationId, int taskId) {}
 
@@ -66,13 +57,9 @@ public class OutboundHandoffRequestHandler {
             @NonNull TaskContinuityMessenger taskContinuityMessenger,
             @NonNull TaskSyncController taskSyncController) {
 
-        Objects.requireNonNull(context);
-        Objects.requireNonNull(taskContinuityMessenger);
-        Objects.requireNonNull(taskSyncController);
-
-        mContext = context;
-        mTaskContinuityMessenger = taskContinuityMessenger;
-        mTaskSyncController = taskSyncController;
+        mContext = Objects.requireNonNull(context);
+        mTaskContinuityMessenger = Objects.requireNonNull(taskContinuityMessenger);
+        mTaskSyncController = Objects.requireNonNull(taskSyncController);
     }
 
     public void requestHandoff(int associationId, int taskId, IHandoffRequestCallback callback) {

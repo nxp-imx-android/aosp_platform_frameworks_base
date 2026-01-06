@@ -18,19 +18,14 @@ package com.android.server.companion.datatransfer.continuity.handoff;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
-import android.app.ActivityOptions;
 import android.app.HandoffActivityData;
-import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -38,22 +33,18 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.PersistableBundle;
-import android.os.UserHandle;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
-
-import com.android.server.companion.datatransfer.continuity.handoff.HandoffActivityStarter;
-
+import com.android.server.companion.datatransfer.continuity.messages.HandoffActivityDataMessage;
+import java.util.List;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import java.util.List;
-import java.util.UUID;
 
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
@@ -80,7 +71,7 @@ public class HandoffActivityStarterTest {
     @Test
     public void start_singleActivity_startsSuccessfully() throws Exception {
         // Create a HandoffActivityData mapped to an installed package.
-        HandoffActivityData activityData = createTestHandoffActivity(true, false);
+        HandoffActivityDataMessage activityData = createTestHandoffActivity(true, false);
 
         // Start the activity.
         boolean result = HandoffActivityStarter.start(mMockContext, List.of(activityData));
@@ -94,7 +85,7 @@ public class HandoffActivityStarterTest {
     @Test
     public void start_multipleActivities_startsSuccessfully() throws Exception {
         // Create test HandoffActivityData mapped to the installed packages.
-        List<HandoffActivityData> handoffActivityData =
+        List<HandoffActivityDataMessage> handoffActivityData =
                 List.of(
                         createTestHandoffActivity(true, false),
                         createTestHandoffActivity(true, false));
@@ -115,7 +106,7 @@ public class HandoffActivityStarterTest {
     public void start_nonTopActivityNotInstalled_onlyStartsTopActivity() throws Exception {
         // Create test HandoffActivityData. The top activity is installed, but the second activity
         // is not.
-        List<HandoffActivityData> handoffActivityData =
+        List<HandoffActivityDataMessage> handoffActivityData =
                 List.of(
                         createTestHandoffActivity(false, false),
                         createTestHandoffActivity(true, false));
@@ -136,7 +127,7 @@ public class HandoffActivityStarterTest {
     public void start_topActivityNotInstalled_fallsBackToWeb() throws Exception {
         // Create a list of test HandoffActivityData. The top activity is not installed, but has
         // a fallback URI.
-        List<HandoffActivityData> handoffActivityData =
+        List<HandoffActivityDataMessage> handoffActivityData =
                 List.of(
                         createTestHandoffActivity(true, false),
                         createTestHandoffActivity(false, true));
@@ -146,14 +137,15 @@ public class HandoffActivityStarterTest {
         // Verify only one launch attempt was made, and it is for the fallback URI.
         assertThat(result).isTrue();
         List<Intent[]> attempts = getActivityStartAttempts(1);
-        verifyActivityStartAttempted(attempts.get(0), handoffActivityData.get(1).getFallbackUri());
+        verifyActivityStartAttempted(
+                attempts.get(0), handoffActivityData.get(1).activity().getFallbackUri());
     }
 
     @Test
     public void start_topActivityNotInstalledAndNoFallbackURI_returnsFalse() throws Exception {
         // Create test HandoffActivityData. The top activity is not installed, and has no fallback
         // URI.
-        List<HandoffActivityData> handoffActivityData =
+        List<HandoffActivityDataMessage> handoffActivityData =
                 List.of(
                         createTestHandoffActivity(true, false),
                         createTestHandoffActivity(false, false));
@@ -169,7 +161,7 @@ public class HandoffActivityStarterTest {
     public void start_startActivityFailsForAllActivities_reattemptsWithTopActivity()
             throws Exception {
 
-        List<HandoffActivityData> handoffActivityData =
+        List<HandoffActivityDataMessage> handoffActivityData =
                 List.of(
                         createTestHandoffActivity(true, false),
                         createTestHandoffActivity(true, false));
@@ -190,7 +182,7 @@ public class HandoffActivityStarterTest {
 
     @Test
     public void start_startActivityFailsForBothActivities_fallsBackToWeb() throws Exception {
-        List<HandoffActivityData> handoffActivityData =
+        List<HandoffActivityDataMessage> handoffActivityData =
                 List.of(
                         createTestHandoffActivity(true, false),
                         createTestHandoffActivity(true, true));
@@ -210,13 +202,14 @@ public class HandoffActivityStarterTest {
         List<Intent[]> attempts = getActivityStartAttempts(3);
         verifyActivityStartAttempted(attempts.get(0), handoffActivityData);
         verifyActivityStartAttempted(attempts.get(1), List.of(handoffActivityData.get(1)));
-        verifyActivityStartAttempted(attempts.get(2), handoffActivityData.get(1).getFallbackUri());
+        verifyActivityStartAttempted(
+                attempts.get(2), handoffActivityData.get(1).activity().getFallbackUri());
     }
 
     @Test
     public void start_noActivityCanLaunchAndNoFallbackURI_returnsFalse() throws Exception {
 
-        List<HandoffActivityData> handoffActivityData =
+        List<HandoffActivityDataMessage> handoffActivityData =
                 List.of(
                         createTestHandoffActivity(true, false),
                         createTestHandoffActivity(true, false));
@@ -242,15 +235,17 @@ public class HandoffActivityStarterTest {
     }
 
     private static void verifyActivityStartAttempted(
-            Intent[] actual, List<HandoffActivityData> expected) {
+            Intent[] actual, List<HandoffActivityDataMessage> expected) {
 
         assertThat(actual).hasLength(expected.size());
         for (int i = 0; i < actual.length; i++) {
-            assertThat(actual[i].getComponent()).isEqualTo(expected.get(i).getComponentName());
-            assertThat(actual[i].getExtras().size()).isEqualTo(expected.get(i).getExtras().size());
+            assertThat(actual[i].getComponent())
+                    .isEqualTo(expected.get(i).activity().getComponentName());
+            assertThat(actual[i].getExtras().size())
+                    .isEqualTo(expected.get(i).activity().getExtras().size());
             for (String key : actual[i].getExtras().keySet()) {
                 assertThat(actual[i].getExtras().getString(key))
-                        .isEqualTo(expected.get(i).getExtras().getString(key));
+                        .isEqualTo(expected.get(i).activity().getExtras().getString(key));
             }
         }
     }
@@ -262,8 +257,8 @@ public class HandoffActivityStarterTest {
         return intentArrayCaptor.getAllValues();
     }
 
-    private HandoffActivityData createTestHandoffActivity(boolean installed, boolean hasFallbackUri)
-            throws Exception {
+    private HandoffActivityDataMessage createTestHandoffActivity(
+            boolean installed, boolean hasFallbackUri) throws Exception {
 
         String packageName = "com.example." + UUID.randomUUID().toString();
         ComponentName componentName = new ComponentName(packageName, packageName + ".Activity");
@@ -283,6 +278,6 @@ public class HandoffActivityStarterTest {
         if (hasFallbackUri) {
             builder.setFallbackUri(Uri.parse("https://www.example.com"));
         }
-        return builder.build();
+        return new HandoffActivityDataMessage(builder.build(), List.of());
     }
 }
