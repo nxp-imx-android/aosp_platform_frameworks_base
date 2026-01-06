@@ -31,6 +31,9 @@ import com.android.systemui.keyguard.shared.model.TransitionModeOnCanceled
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAsleepForTest
+import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
+import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.scene.data.repository.sceneContainerRepository
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
@@ -1504,6 +1507,101 @@ class LockscreenSceneTransitionInteractorTest : SysuiTestCase() {
                 to = KeyguardState.AOD,
                 state = TransitionState.FINISHED,
                 progress = 1f,
+            )
+        }
+
+    @Test
+    fun transitionFromLsToShade_interruptedByAod_goesToSleepAndFinishesInAod() =
+        testScope.runTest {
+            val currentStep by collectLastValue(kosmos.realKeyguardTransitionRepository.transitions)
+            sceneTransitions.value =
+                ObservableTransitionState.Transition(
+                    Scenes.Lockscreen,
+                    Scenes.Shade,
+                    flowOf(Scenes.Shade),
+                    progress,
+                    false,
+                    flowOf(false),
+                )
+            progress.value = 0.4f
+            assertTransition(
+                step = currentStep!!,
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.RUNNING,
+                progress = 0.4f,
+            )
+
+            underTest.setNextLockscreenTargetState(KeyguardState.AOD)
+            kosmos.powerInteractor.setAsleepForTest()
+            sceneTransitions.value =
+                ObservableTransitionState.Transition(
+                    Scenes.Lockscreen,
+                    Scenes.Shade,
+                    flowOf(Scenes.Lockscreen),
+                    progress,
+                    false,
+                    flowOf(false),
+                )
+            runCurrent()
+
+            sceneTransitions.value = ObservableTransitionState.Idle(Scenes.Lockscreen)
+            runCurrent()
+
+            assertTransition(
+                step = currentStep!!,
+                from = KeyguardState.UNDEFINED,
+                to = KeyguardState.AOD,
+                state = TransitionState.FINISHED,
+            )
+        }
+
+    @Test
+    fun transitionFromLsToShade_interruptedByAod_interruptedAgainByWake_finishesInLs() =
+        testScope.runTest {
+            val currentStep by collectLastValue(kosmos.realKeyguardTransitionRepository.transitions)
+            sceneTransitions.value =
+                ObservableTransitionState.Transition(
+                    Scenes.Lockscreen,
+                    Scenes.Shade,
+                    flowOf(Scenes.Shade),
+                    progress,
+                    false,
+                    flowOf(false),
+                )
+            progress.value = 0.4f
+            assertTransition(
+                step = currentStep!!,
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                state = TransitionState.RUNNING,
+                progress = 0.4f,
+            )
+
+            underTest.setNextLockscreenTargetState(KeyguardState.AOD)
+            kosmos.powerInteractor.setAsleepForTest()
+            sceneTransitions.value =
+                ObservableTransitionState.Transition(
+                    Scenes.Lockscreen,
+                    Scenes.Shade,
+                    flowOf(Scenes.Lockscreen),
+                    progress,
+                    false,
+                    flowOf(false),
+                )
+            runCurrent()
+
+            // The original, canceled Lockscreen -> Shade transition is just going to run backwards
+            // and then end, even though we've meanwhile turned the screen off and back on.
+            kosmos.powerInteractor.setAwakeForTest()
+            sceneTransitions.value = ObservableTransitionState.Idle(Scenes.Lockscreen)
+            runCurrent()
+
+            assertTransition(
+                step = currentStep!!,
+                from = KeyguardState.UNDEFINED,
+                to = KeyguardState.LOCKSCREEN,
+                state = TransitionState.FINISHED,
             )
         }
 
