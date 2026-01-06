@@ -269,6 +269,7 @@ class BubblesTransitionObserverTest : ShellTestCase() {
             wctCaptor.firstValue,
             taskInfo.token.asBinder(), /* captionInsetsOwner */
             null,
+            false,
         )
     }
 

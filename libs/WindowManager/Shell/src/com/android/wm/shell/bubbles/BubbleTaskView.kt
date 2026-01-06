@@ -21,8 +21,8 @@ import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.content.ComponentName
 import androidx.annotation.VisibleForTesting
 import com.android.wm.shell.Flags
+import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleMovedToAnotherRootTask
 import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToFullscreen
-import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToSplit
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.taskview.TaskView
@@ -138,7 +138,8 @@ constructor(
                         bubbleController.bubbleHelper.isAppBubbleTask(t)
                 ) {
                     if (
-                        task.isBubbleToFullscreen() || task.isBubbleToSplit(splitScreenController)
+                        task.isBubbleToFullscreen() ||
+                            task.isBubbleMovedToAnotherRootTask(bubbleController.bubbleHelper)
                     ) {
                         taskView.unregisterTask()
                     } else if (!isCreated) {
@@ -160,7 +161,10 @@ constructor(
                     taskView.unregisterTask()
                 }
             }
-        } else if (task.isBubbleToFullscreen() || task.isBubbleToSplit(splitScreenController)) {
+        } else if (
+            task.isBubbleToFullscreen() ||
+                task.isBubbleMovedToAnotherRootTask(bubbleController.bubbleHelper)
+        ) {
             taskView.unregisterTask()
         } else {
             taskView.removeTask()

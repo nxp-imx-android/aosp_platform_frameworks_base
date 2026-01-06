@@ -19,7 +19,7 @@ package com.android.wm.shell.bubbles;
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 
 import static com.android.wm.shell.bubbles.util.BubbleUtils.getExitBubbleTransaction;
-import static com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToSplit;
+import static com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleMovedToAnotherRootTask;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 
 import android.app.ActivityManager;
@@ -76,7 +76,7 @@ public class BubblesTransitionObserver implements Transitions.TransitionObserver
         collapseBubbleIfNeeded(info);
         if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
             if (TransitionUtil.isOpeningType(info.getType()) && mBubbleData.hasBubbles()) {
-                removeBubbleIfLaunchingToSplit(info);
+                removeBubbleIfLaunchingToAnotherRootTask(info);
             }
         }
     }
@@ -165,22 +165,27 @@ public class BubblesTransitionObserver implements Transitions.TransitionObserver
         return false;
     }
 
-    private void removeBubbleIfLaunchingToSplit(@NonNull TransitionInfo info) {
-        if (mSplitScreenController.get().isEmpty()) return;
+    private void removeBubbleIfLaunchingToAnotherRootTask(@NonNull TransitionInfo info) {
         for (final TransitionInfo.Change change : info.getChanges()) {
             final ActivityManager.RunningTaskInfo taskInfo = change.getTaskInfo();
             if (taskInfo == null) continue;
             final Bubble bubble = mBubbleData.getBubbleInStackWithTaskId(taskInfo.taskId);
             if (bubble == null) continue;
-            if (!isBubbleToSplit(taskInfo, mSplitScreenController)) continue;
-            // There is a bubble task that is moving to split screen
+            if (!isBubbleMovedToAnotherRootTask(taskInfo, mBubbleController.getBubbleHelper())) {
+                continue;
+            }
+            // There is a bubble task that is moving to split screen or desktop
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubblesTransitionObserver.onTransitionReady(): "
-                    + "removing bubble for task launching into split taskId=%d", taskInfo.taskId);
+                            + "removing bubble for task launching into split/desktop taskId=%d",
+                    taskInfo.taskId);
             final TaskViewTaskController controller = bubble.getTaskView().getController();
             final ShellTaskOrganizer taskOrganizer = controller.getTaskOrganizer();
+            // Don't change the bounds here, the split-screen or desktop controller will handle
+            // setting the bounds for the task.
             final WindowContainerTransaction wct = getExitBubbleTransaction(
                     mBubbleController.getBubbleHelper(), taskInfo.token,
-                    bubble.getTaskView().getCaptionInsetsOwner(), false /* reparentToTda */);
+                    bubble.getTaskView().getCaptionInsetsOwner(), false /* resetBounds */,
+                    false /* reparentToTda */);
 
             // Notify the task removal, but block all TaskViewTransitions during removal so we can
             // clear them without triggering

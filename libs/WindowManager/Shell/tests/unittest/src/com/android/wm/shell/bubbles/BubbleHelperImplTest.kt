@@ -17,6 +17,7 @@
 package com.android.wm.shell.bubbles
 
 import android.app.ActivityManager
+import android.app.ActivityTaskManager
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
@@ -127,7 +128,10 @@ class BubbleHelperImplTest : ShellTestCase() {
     @DisableFlags(FLAG_ENABLE_BUBBLE_ROOT_TASK)
     @Test
     fun isAppBubble_isAppBubbleNotSplitting_returnsTrue() {
-        val taskInfo = ActivityManager.RunningTaskInfo().apply { isAppBubble = true }
+        val taskInfo = ActivityManager.RunningTaskInfo().apply {
+            isAppBubble = true
+            parentTaskId = ActivityTaskManager.INVALID_TASK_ID
+        }
 
         assertThat(bubbleHelper.isAppBubbleTask(taskInfo)).isTrue()
     }

@@ -159,7 +159,7 @@ public class TaskViewTransitionsTest extends ShellTestCase {
         assertThat(pending).isNotNull();
         final WindowContainerTransaction wct = pending.mWct;
         assertThat(wct).isNotNull();
-        verifyExitBubbleTransaction(wct, mToken.asBinder(), captionInsetsOwner);
+        verifyExitBubbleTransaction(wct, mToken.asBinder(), captionInsetsOwner, true);
     }
 
     @Test

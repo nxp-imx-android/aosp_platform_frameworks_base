@@ -41,7 +41,9 @@ class FakeBubbleTaskViewFactory(
                 on { surfaceControl } doReturn taskLeash
             }
         val taskInfo = mock<ActivityManager.RunningTaskInfo>()
-        val bubbleController = mock<BubbleController>()
+        val bubbleHelper = mock<BubbleHelper>()
+        val bubbleController =
+            mock<BubbleController>() { on { getBubbleHelper() } doReturn bubbleHelper }
         whenever(taskViewTaskController.taskInfo).thenReturn(taskInfo)
         return BubbleTaskView(taskView, mainExecutor, bubbleController)
     }
