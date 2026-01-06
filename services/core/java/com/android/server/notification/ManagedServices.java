@@ -27,7 +27,6 @@ import static android.service.notification.NotificationListenerService.META_DATA
 
 import static com.android.server.notification.Flags.FLAG_MANAGED_SERVICES_CONCURRENT_MULTIUSER;
 import static com.android.server.notification.Flags.managedServicesConcurrentMultiuser;
-import static com.android.server.notification.NotificationManagerService.privateSpaceFlagsEnabled;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
@@ -2422,10 +2421,7 @@ abstract public class ManagedServices {
                 if (user == null) {
                     return false;
                 }
-                if (privateSpaceFlagsEnabled()) {
-                    return user.isProfile() && hasParent(user, context);
-                }
-                return user.isManagedProfile() || user.isCloneProfile();
+                return user.isProfile() && hasParent(user, context);
             }
         }
 

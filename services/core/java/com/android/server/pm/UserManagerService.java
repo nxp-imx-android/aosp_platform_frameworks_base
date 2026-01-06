@@ -673,17 +673,15 @@ public class UserManagerService extends IUserManager.Stub {
 
         @Override
         public void onChange(boolean selfChange, Uri uri) {
-            if (isAutoLockForPrivateSpaceEnabled()) {
-                final String path = uri.getLastPathSegment();
-                if (TextUtils.equals(path, Settings.Secure.PRIVATE_SPACE_AUTO_LOCK)) {
-                    int autoLockPreference =
-                            Settings.Secure.getIntForUser(mContext.getContentResolver(),
-                                    Settings.Secure.PRIVATE_SPACE_AUTO_LOCK,
-                                    Settings.Secure.PRIVATE_SPACE_AUTO_LOCK_AFTER_DEVICE_RESTART,
-                                    getMainUserIdUnchecked());
-                    Slog.i(LOG_TAG, "Auto-lock settings changed to " + autoLockPreference);
-                    setOrUpdateAutoLockPreferenceForPrivateProfile(autoLockPreference);
-                }
+            final String path = uri.getLastPathSegment();
+            if (TextUtils.equals(path, Settings.Secure.PRIVATE_SPACE_AUTO_LOCK)) {
+                int autoLockPreference =
+                        Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                                Settings.Secure.PRIVATE_SPACE_AUTO_LOCK,
+                                Settings.Secure.PRIVATE_SPACE_AUTO_LOCK_AFTER_DEVICE_RESTART,
+                                getMainUserIdUnchecked());
+                Slog.i(LOG_TAG, "Auto-lock settings changed to " + autoLockPreference);
+                setOrUpdateAutoLockPreferenceForPrivateProfile(autoLockPreference);
             }
         }
     }
@@ -710,15 +708,13 @@ public class UserManagerService extends IUserManager.Stub {
     private final BroadcastReceiver mDeviceInactivityBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (isAutoLockForPrivateSpaceEnabled()) {
-                if (ACTION_SCREEN_OFF.equals(intent.getAction())) {
-                    maybeScheduleAlarmToAutoLockPrivateSpace();
-                } else if (ACTION_SCREEN_ON.equals(intent.getAction())) {
-                    Slog.d(LOG_TAG, "SCREEN_ON broadcast received, "
-                            + "removing pending alarms to auto-lock private space");
-                    // Remove any pending alarm since the device is interactive again
-                    cancelPendingAutoLockAlarms();
-                }
+            if (ACTION_SCREEN_OFF.equals(intent.getAction())) {
+                maybeScheduleAlarmToAutoLockPrivateSpace();
+            } else if (ACTION_SCREEN_ON.equals(intent.getAction())) {
+                Slog.d(LOG_TAG, "SCREEN_ON broadcast received, "
+                        + "removing pending alarms to auto-lock private space");
+                // Remove any pending alarm since the device is interactive again
+                cancelPendingAutoLockAlarms();
             }
         }
     };
@@ -874,16 +870,14 @@ public class UserManagerService extends IUserManager.Stub {
 
     @VisibleForTesting
     void tryAutoLockingPrivateSpaceOnKeyguardChanged(boolean isKeyguardLocked) {
-        if (isAutoLockForPrivateSpaceEnabled()) {
-            int autoLockPreference = Settings.Secure.getIntForUser(mContext.getContentResolver(),
-                    Settings.Secure.PRIVATE_SPACE_AUTO_LOCK,
-                    Settings.Secure.PRIVATE_SPACE_AUTO_LOCK_AFTER_DEVICE_RESTART,
-                    getMainUserIdUnchecked());
-            boolean isAutoLockOnDeviceLockSelected =
-                    autoLockPreference == Settings.Secure.PRIVATE_SPACE_AUTO_LOCK_ON_DEVICE_LOCK;
-            if (isKeyguardLocked && isAutoLockOnDeviceLockSelected) {
-                autoLockPrivateSpace();
-            }
+        int autoLockPreference = Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                Settings.Secure.PRIVATE_SPACE_AUTO_LOCK,
+                Settings.Secure.PRIVATE_SPACE_AUTO_LOCK_AFTER_DEVICE_RESTART,
+                getMainUserIdUnchecked());
+        boolean isAutoLockOnDeviceLockSelected =
+                autoLockPreference == Settings.Secure.PRIVATE_SPACE_AUTO_LOCK_ON_DEVICE_LOCK;
+        if (isKeyguardLocked && isAutoLockOnDeviceLockSelected) {
+            autoLockPrivateSpace();
         }
     }
 
@@ -1246,24 +1240,22 @@ public class UserManagerService extends IUserManager.Stub {
                 new IntentFilter(Intent.ACTION_CONFIGURATION_CHANGED),
                 null, mHandler);
 
-        if (isAutoLockForPrivateSpaceEnabled()) {
 
-            int mainUserId = getMainUserIdUnchecked();
-            if (mainUserId != UserHandle.USER_NULL) {
-                mContext.getContentResolver().registerContentObserverAsUser(
-                        Settings.Secure.getUriFor(
-                                Settings.Secure.PRIVATE_SPACE_AUTO_LOCK), false,
-                        mPrivateSpaceAutoLockSettingsObserver, UserHandle.of(mainUserId));
+        int mainUserId = getMainUserIdUnchecked();
+        if (mainUserId != UserHandle.USER_NULL) {
+            mContext.getContentResolver().registerContentObserverAsUser(
+                    Settings.Secure.getUriFor(
+                            Settings.Secure.PRIVATE_SPACE_AUTO_LOCK), false,
+                    mPrivateSpaceAutoLockSettingsObserver, UserHandle.of(mainUserId));
 
-                setOrUpdateAutoLockPreferenceForPrivateProfile(
-                        Settings.Secure.getIntForUser(mContext.getContentResolver(),
-                                Settings.Secure.PRIVATE_SPACE_AUTO_LOCK,
-                                Settings.Secure.PRIVATE_SPACE_AUTO_LOCK_AFTER_DEVICE_RESTART,
-                                mainUserId));
-            }
+            setOrUpdateAutoLockPreferenceForPrivateProfile(
+                    Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                            Settings.Secure.PRIVATE_SPACE_AUTO_LOCK,
+                            Settings.Secure.PRIVATE_SPACE_AUTO_LOCK_AFTER_DEVICE_RESTART,
+                            mainUserId));
         }
 
-        if (isAutoLockingPrivateSpaceOnRestartsEnabled()) {
+        if (android.multiuser.Flags.enablePrivateSpaceAutolockOnRestarts()) {
             autoLockPrivateSpace();
         }
 
@@ -1272,17 +1264,6 @@ public class UserManagerService extends IUserManager.Stub {
         if (UserManagerInternal.shouldShowNotificationForBackgroundUserSounds()) {
             new BackgroundUserSoundNotifier(mContext);
         }
-    }
-
-    private static boolean isAutoLockForPrivateSpaceEnabled() {
-        return android.os.Flags.allowPrivateProfile()
-                && android.multiuser.Flags.enablePrivateSpaceFeatures();
-    }
-
-    private boolean isAutoLockingPrivateSpaceOnRestartsEnabled() {
-        return android.os.Flags.allowPrivateProfile()
-                && android.multiuser.Flags.enablePrivateSpaceAutolockOnRestarts()
-                && android.multiuser.Flags.enablePrivateSpaceFeatures();
     }
 
     private Resources getContextResources() {
@@ -1974,12 +1955,8 @@ public class UserManagerService extends IUserManager.Stub {
     }
 
     private boolean isProfileHidden(int userId) {
-        if (android.os.Flags.allowPrivateProfile()
-                && android.multiuser.Flags.enablePrivateSpaceFeatures()) {
-            return getUserPropertiesInternal(userId).getProfileApiVisibility()
-                    == UserProperties.PROFILE_API_VISIBILITY_HIDDEN;
-        }
-        return false;
+        return getUserPropertiesInternal(userId).getProfileApiVisibility()
+                == UserProperties.PROFILE_API_VISIBILITY_HIDDEN;
     }
 
     @Override
@@ -2200,35 +2177,32 @@ public class UserManagerService extends IUserManager.Stub {
                 setQuietModeEnabled(userId, true /* enableQuietMode */, target, callingPackage);
                 return true;
             }
-            if (android.os.Flags.allowPrivateProfile()
-                    && android.multiuser.Flags.enablePrivateSpaceFeatures()) {
-                final UserProperties userProperties = getUserPropertiesInternal(userId);
-                if (userProperties != null
-                        && userProperties.isAuthAlwaysRequiredToDisableQuietMode()) {
-                    if (onlyIfCredentialNotRequired) {
-                        return false;
-                    }
+            final UserProperties userProperties = getUserPropertiesInternal(userId);
+            if (userProperties != null
+                    && userProperties.isAuthAlwaysRequiredToDisableQuietMode()) {
+                if (onlyIfCredentialNotRequired) {
+                    return false;
+                }
 
-                    final KeyguardManager km = mContext.getSystemService(KeyguardManager.class);
-                    int parentUserId = getProfileParentId(userId);
-                    if (km != null && km.isDeviceSecure(parentUserId)) {
-                        showConfirmCredentialToDisableQuietMode(userId, target, callingPackage);
-                        return false;
-                    } else if (km != null && !km.isDeviceSecure(parentUserId)
-                            && Settings.Secure.getIntForUser(mContext.getContentResolver(),
-                                Settings.Secure.USER_SETUP_COMPLETE, 0, userId) == 1) {
-                        final Intent setScreenLockPromptIntent =
-                                    SetScreenLockDialogContract.createUserSpecificDialogIntent(
-                                            SetScreenLockDialogContract
-                                                    .LAUNCH_REASON_DISABLE_QUIET_MODE,
-                                            userId);
-                        mContext.startActivityAsUser(
-                                setScreenLockPromptIntent, UserHandle.of(parentUserId));
-                        return false;
-                    } else {
-                        Slog.w(LOG_TAG, "Allowing profile unlock even when device credentials "
-                                + "are not set for user " + userId);
-                    }
+                final KeyguardManager km = mContext.getSystemService(KeyguardManager.class);
+                int parentUserId = getProfileParentId(userId);
+                if (km != null && km.isDeviceSecure(parentUserId)) {
+                    showConfirmCredentialToDisableQuietMode(userId, target, callingPackage);
+                    return false;
+                } else if (km != null && !km.isDeviceSecure(parentUserId)
+                        && Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                            Settings.Secure.USER_SETUP_COMPLETE, 0, userId) == 1) {
+                    final Intent setScreenLockPromptIntent =
+                                SetScreenLockDialogContract.createUserSpecificDialogIntent(
+                                        SetScreenLockDialogContract
+                                                .LAUNCH_REASON_DISABLE_QUIET_MODE,
+                                        userId);
+                    mContext.startActivityAsUser(
+                            setScreenLockPromptIntent, UserHandle.of(parentUserId));
+                    return false;
+                } else {
+                    Slog.w(LOG_TAG, "Allowing profile unlock even when device credentials "
+                            + "are not set for user " + userId);
                 }
             }
             final boolean hasUnifiedChallenge =
@@ -2354,11 +2328,8 @@ public class UserManagerService extends IUserManager.Stub {
         logQuietModeEnabled(userId, enableQuietMode, callingPackage);
 
         // Broadcast generic intents for all profiles
-        if (android.os.Flags.allowPrivateProfile()
-                && android.multiuser.Flags.enablePrivateSpaceFeatures()) {
-            broadcastProfileAvailabilityChanges(profile, parent.getUserHandle(),
-                    enableQuietMode, false);
-        }
+        broadcastProfileAvailabilityChanges(profile, parent.getUserHandle(),
+                enableQuietMode, false);
         // Broadcast Managed profile availability intents too for managed profiles.
         if (profile.isManagedProfile()){
             broadcastProfileAvailabilityChanges(profile, parent.getUserHandle(),
@@ -2367,9 +2338,7 @@ public class UserManagerService extends IUserManager.Stub {
     }
 
     private void stopUserForQuietMode(int userId) throws RemoteException {
-        if (android.os.Flags.allowPrivateProfile()
-                && android.multiuser.Flags.enableBiometricsToUnlockPrivateSpace()
-                && android.multiuser.Flags.enablePrivateSpaceFeatures()) {
+        if (android.multiuser.Flags.enableBiometricsToUnlockPrivateSpace()) {
             // Allow delayed locking since some profile types want to be able to unlock again via
             // biometrics.
             ActivityManager.getService().stopUserWithDelayedLocking(userId, null);
@@ -2472,8 +2441,7 @@ public class UserManagerService extends IUserManager.Stub {
         unlockIntent.putExtra(Intent.EXTRA_INTENT, pendingIntent.getIntentSender());
         unlockIntent.setFlags(FLAG_ACTIVITY_NEW_TASK | FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
 
-        if (Flags.enablePrivateSpaceFeatures()
-                && getUserInfo(userId).isPrivateProfile()) {
+        if (getUserInfo(userId).isPrivateProfile()) {
             unlockIntent.putExtra(CUSTOM_BIOMETRIC_PROMPT_LOGO_RES_ID_KEY,
                     com.android.internal.R.drawable.stat_sys_private_profile_status);
             unlockIntent.putExtra(CUSTOM_BIOMETRIC_PROMPT_LOGO_DESCRIPTION_KEY,

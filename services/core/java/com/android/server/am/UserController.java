@@ -1771,18 +1771,12 @@ class UserController implements Handler.Callback {
      * either due to a global device configuration or an individual user's property.
      */
     private boolean canDelayDataLockingForUser(@UserIdInt int userIdToLock) {
-        if (allowBiometricUnlockForPrivateProfile()) {
+        if (android.multiuser.Flags.enableBiometricsToUnlockPrivateSpace()) {
             final UserProperties userProperties = getUserProperties(userIdToLock);
             return (mDelayUserDataLocking || (userProperties != null
                     && userProperties.getAllowStoppingUserWithDelayedLocking()));
         }
         return mDelayUserDataLocking;
-    }
-
-    private boolean allowBiometricUnlockForPrivateProfile() {
-        return android.os.Flags.allowPrivateProfile()
-                && android.multiuser.Flags.enableBiometricsToUnlockPrivateSpace()
-                && android.multiuser.Flags.enablePrivateSpaceFeatures();
     }
 
     /**
