@@ -69,7 +69,6 @@ import com.android.systemui.statusbar.NotificationEntryHelper.modifyRanking
 import com.android.systemui.statusbar.StatusBarState.KEYGUARD
 import com.android.systemui.statusbar.StatusBarState.SHADE
 import com.android.systemui.statusbar.StatusBarState.SHADE_LOCKED
-import com.android.systemui.statusbar.notification.NotifPipelineFlags
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager
@@ -122,7 +121,6 @@ abstract class VisualInterruptionDecisionProviderTestBase : SysuiTestCase() {
     protected val batteryController = FakeBatteryController(leakCheck)
     protected val deviceProvisionedController = FakeDeviceProvisionedController()
     protected val eventLog = FakeEventLog()
-    protected val flags: NotifPipelineFlags = mock()
     protected val globalSettings =
         kosmos.fakeGlobalSettings.also { it.putInt(HEADS_UP_NOTIFICATIONS_ENABLED, HEADS_UP_ON) }
     protected val headsUpManager: HeadsUpManager = mock()

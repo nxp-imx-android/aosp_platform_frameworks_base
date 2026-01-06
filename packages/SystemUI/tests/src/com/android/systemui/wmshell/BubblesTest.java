@@ -128,7 +128,6 @@ import com.android.systemui.statusbar.NotificationEntryHelper;
 import com.android.systemui.statusbar.NotificationLockscreenUserManager;
 import com.android.systemui.statusbar.RankingBuilder;
 import com.android.systemui.statusbar.SysuiStatusBarStateController;
-import com.android.systemui.statusbar.notification.NotifPipelineFlags;
 import com.android.systemui.statusbar.notification.collection.GroupEntry;
 import com.android.systemui.statusbar.notification.collection.GroupEntryBuilder;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
@@ -357,8 +356,6 @@ public class BubblesTest extends SysuiTestCase {
     private SelectedUserInteractor mSelectedUserInteractor;
     @Mock
     private UserTracker mUserTracker;
-    @Mock
-    private NotifPipelineFlags mNotifPipelineFlags;
     @Mock
     private Icon mNotesBubbleIcon;
     @Mock
@@ -594,7 +591,6 @@ public class BubblesTest extends SysuiTestCase {
                 mNotifPipeline,
                 mSysUiState,
                 mFeatureFlags,
-                mNotifPipelineFlags,
                 syncExecutor,
                 syncExecutor);
         mBubblesManager.addNotifCallback(mNotifCallback);
