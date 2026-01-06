@@ -57,6 +57,7 @@ class ComponentSystemUIDialog(
     dialogTransitionAnimator: DialogTransitionAnimator,
     blurInteractor: WindowRootViewBlurInteractor,
     delegate: DialogDelegate<SystemUIDialog>,
+    isTransient: Boolean,
 ) :
     SystemUIDialog(
         context,
@@ -67,7 +68,8 @@ class ComponentSystemUIDialog(
         dialogTransitionAnimator,
         blurInteractor,
         delegate,
-        true, /* shouldAcsdDismissDialog */
+        /* shouldAcsdDismissDialog= */ true,
+        /* isTransient= */ isTransient,
     ),
     LifecycleOwner,
     SavedStateRegistryOwner,
