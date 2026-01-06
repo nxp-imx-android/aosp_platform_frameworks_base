@@ -5539,7 +5539,8 @@ public final class ActiveServices {
         final boolean skipOomAdj = (serviceBindingOomAdjPolicy
                 & SERVICE_BIND_OOMADJ_POLICY_SKIP_OOM_UPDATE_ON_BIND) != 0;
         if ((!b.requested || rebind) && b.apps.size() > 0) {
-            try {
+            try (SyncBatchSession batch = mAm.mProcessStateController.startServiceBatchSession(
+                    OOM_ADJ_REASON_BIND_SERVICE)) {
                 final boolean skipTimeout = skipOomAdj;
                 bumpServiceExecutingLocked(r, execInFg, "bind",
                         skipOomAdj ? OOM_ADJ_REASON_NONE : OOM_ADJ_REASON_BIND_SERVICE,
@@ -5547,6 +5548,11 @@ public final class ActiveServices {
                 if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
                     Trace.instant(Trace.TRACE_TAG_ACTIVITY_MANAGER, "requestServiceBinding="
                             + b.intent.getIntent() + ". bindSeq=" + mBindServiceSeqCounter);
+                }
+                if (batch != null && !skipOomAdj) {
+                    // Must trigger the update before the scheduleBindService IPC is sent out, so
+                    // that the process is in correct state before it tries to do anything.
+                    batch.triggerUpdate(OOM_ADJ_REASON_BIND_SERVICE);
                 }
                 r.getHostProcess().getThread().scheduleBindService(r, b, b.intent.getIntent(),
                         rebind, r.getHostProcess().getReportedProcState(),
@@ -6438,6 +6444,11 @@ public final class ActiveServices {
                 mAm.mBatteryStatsService.noteServiceStartLaunch(uid, packageName, serviceName);
                 mAm.notifyPackageUse(r.serviceInfo.packageName,
                         PackageManager.NOTIFY_PACKAGE_USE_SERVICE);
+                if (batch != null) {
+                    // Must trigger the update before the scheduleCreateService IPC is sent out, so
+                    // that the process is in correct state before it tries to do anything.
+                    batch.triggerUpdate(OOM_ADJ_REASON_BIND_SERVICE);
+                }
                 thread.scheduleCreateService(r, r.serviceInfo,
                         null /* compatInfo (unused but need to keep method signature) */,
                         app.getReportedProcState());
@@ -6514,7 +6525,7 @@ public final class ActiveServices {
         if (N == 0) {
             return;
         }
-        try (var unused = mAm.mProcessStateController.startServiceBatchSession(
+        try (SyncBatchSession batch = mAm.mProcessStateController.startServiceBatchSession(
                 OOM_ADJ_REASON_START_SERVICE)) {
             ArrayList<ServiceStartArgs> args = new ArrayList<>();
 
@@ -6578,6 +6589,12 @@ public final class ActiveServices {
                     mAm.updateOomAdjPendingTargetsLocked(OOM_ADJ_REASON_START_SERVICE);
                 }
             }
+            if (batch != null) {
+                // Must trigger the update before the scheduleServiceArgs IPC is sent out, so
+                // that the process is in correct state before it tries to do anything.
+                batch.triggerUpdate(OOM_ADJ_REASON_START_SERVICE);
+            }
+
             ParceledListSlice<ServiceStartArgs> slice = new ParceledListSlice<>(args);
             slice.setInlineCountLimit(4);
             Exception caughtException = null;
