@@ -16,8 +16,6 @@
 
 package com.android.server.locksettings;
 
-import static com.android.internal.widget.LockscreenCredential.createPassword;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -29,7 +27,6 @@ import androidx.test.filters.SmallTest;
 
 import com.android.internal.widget.LockscreenCredential;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,7 +42,7 @@ import java.util.stream.Stream;
 @SmallTest
 @Presubmit
 @RunWith(ParameterizedAndroidJunit4.class)
-public class ChildProfileLockMigrationTests extends BaseLockSettingsServiceTests {
+public class ChildProfileLockMigrationTests extends BaseChildProfileLockMigrationTests {
 
     private record Scenario(
             boolean migrationEnabled,
@@ -66,8 +63,6 @@ public class ChildProfileLockMigrationTests extends BaseLockSettingsServiceTests
                     expectedToHaveSpProtectorPasswordAfter);
         }
     }
-
-    private static final LockscreenCredential UNIFIED_PASSWORD = createPassword("unified");
 
     /** Provides the list of scenarios to test. */
     @Parameters(name = "scenario={0}")
@@ -105,12 +100,6 @@ public class ChildProfileLockMigrationTests extends BaseLockSettingsServiceTests
     @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Parameter public Scenario scenario;
-
-    @Before
-    public void setUp() {
-        mService.initializeSyntheticPassword(PRIMARY_USER_ID);
-        mService.initializeSyntheticPassword(MANAGED_PROFILE_USER_ID);
-    }
 
     @Test
     public void testMigrateChildProfileLock() throws Exception {
@@ -163,34 +152,5 @@ public class ChildProfileLockMigrationTests extends BaseLockSettingsServiceTests
                         "%s, failed assertion on expectedToHaveSpProtectorPasswordAfter", scenario),
                 expectedToHaveSpProtectorPasswordAfter,
                 hasSpProtectorPassword(MANAGED_PROFILE_USER_ID));
-    }
-
-    private void setUpChildProfileLockFileIfNeeded(
-            boolean hasChildProfileLockBefore, LockscreenCredential unifiedProfilePassword) {
-        if (!hasChildProfileLockBefore) {
-            mStorage.removeChildProfileLock(MANAGED_PROFILE_USER_ID);
-        } else {
-            if (!mStorage.hasChildProfileLock(MANAGED_PROFILE_USER_ID)) {
-                mService.tieProfilePasswordToParent(
-                        MANAGED_PROFILE_USER_ID, PRIMARY_USER_ID, unifiedProfilePassword);
-            }
-        }
-    }
-
-    private void setUpSpProtectorPasswordIfNeeded(
-            boolean hasSpProtectorPasswordBefore, LockscreenCredential unifiedProfilePassword) {
-        if (hasSpProtectorPasswordBefore) {
-            mSpManager.tieProtectorToParent(
-                    mGateKeeperService,
-                    MANAGED_PROFILE_USER_ID,
-                    mService.getCurrentLskfBasedProtectorId(MANAGED_PROFILE_USER_ID),
-                    PRIMARY_USER_ID,
-                    unifiedProfilePassword);
-        }
-    }
-
-    private boolean hasSpProtectorPassword(int profileUserId) {
-        return mSpManager.hasProfilePassword(
-                profileUserId, mService.getCurrentLskfBasedProtectorId(profileUserId));
     }
 }
