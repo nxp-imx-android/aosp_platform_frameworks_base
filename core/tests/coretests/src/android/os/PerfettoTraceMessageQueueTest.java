@@ -74,7 +74,6 @@ import java.util.concurrent.TimeUnit;
  */
 @RunWith(ParameterizedAndroidJunit4.class)
 @DisabledOnRavenwood(blockedBy = PerfettoTrace.class)
-@RequiresFlagsEnabled(android.os.Flags.FLAG_PERFETTO_SDK_TRACING_V2)
 public class PerfettoTraceMessageQueueTest {
     private static final boolean PERFETTO_V3_FLAG_WHEN_STARTED =
             android.os.Flags.perfettoSdkTracingV3();

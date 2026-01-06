@@ -52,7 +52,6 @@ import java.util.Set;
 @RunWith(AndroidJUnit4.class)
 @DisabledOnRavenwood(blockedBy = PerfettoTrace.class)
 @RequiresFlagsEnabled({
-    android.os.Flags.FLAG_PERFETTO_SDK_TRACING_V2,
     android.os.Flags.FLAG_PERFETTO_SDK_TRACING_V3
 })
 public class PerfettoTraceV3InitializationTest {
