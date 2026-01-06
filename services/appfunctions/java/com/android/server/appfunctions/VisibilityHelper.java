@@ -19,6 +19,7 @@ package com.android.server.appfunctions;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.appfunctions.AppFunctionAidlSearchSpec;
+import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.AppFunctionSearchSpec;
 
 /** Helper for handling AppFunction visibility. */
@@ -33,4 +34,19 @@ public interface VisibilityHelper {
     @Nullable
     AppFunctionSearchSpec applyVisiblePackageFilter(
             @NonNull AppFunctionAidlSearchSpec aidlSearchSpec, int callingUid, int callingPid);
+
+    /**
+     * Checks if {@code appFunctionName} is visible from {@code callingPackage}.
+     *
+     * @param appFunctionName The target {@link AppFunctionName}.
+     * @param callingPackage The calling package name.
+     * @param callingUid The calling uid.
+     * @param callingPid The calling pid.
+     * @return True if visible. False otherwise.
+     */
+    boolean isAppFunctionVisible(
+            @NonNull AppFunctionName appFunctionName,
+            @NonNull String callingPackage,
+            int callingUid,
+            int callingPid);
 }

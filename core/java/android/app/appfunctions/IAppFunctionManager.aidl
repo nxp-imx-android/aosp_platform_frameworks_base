@@ -18,7 +18,8 @@ package android.app.appfunctions;
 
 import android.app.appfunctions.AppFunctionAidlSearchSpec;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
-import android.app.appfunctions.IAppFunctionEnabledCallback;
+import android.app.appfunctions.IIsAppFunctionEnabledCallback;
+import android.app.appfunctions.ISetAppFunctionEnabledCallback;
 import android.app.appfunctions.IExecuteAppFunctionCallback;
 import android.app.appfunctions.IOnAppFunctionAccessChangeListener;
 import android.app.appfunctions.IAppFunctionExecutor;
@@ -67,6 +68,15 @@ interface IAppFunctionManager {
         in IObserveAppFunctionChangesCallback callback
     );
 
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = android.Manifest.permission.EXECUTE_APP_FUNCTIONS, conditional = true)")
+    void isAppFunctionEnabled(
+        in String callingPackage,
+        in String targetPackage,
+        in String functionIdentifier,
+        in UserHandle userHandle,
+        in IIsAppFunctionEnabledCallback callback
+    );
+
     /**
     * Sets an AppFunction's enabled state provided by {@link AppFunctionService} through the system.
     */
@@ -75,7 +85,7 @@ interface IAppFunctionManager {
         in String functionIdentifier,
         in UserHandle userHandle,
         int enabledState,
-        in IAppFunctionEnabledCallback callback
+        in ISetAppFunctionEnabledCallback callback
     );
 
     int getAccessRequestState(

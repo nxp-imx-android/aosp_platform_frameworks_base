@@ -48,7 +48,6 @@ import android.app.appfunctions.AppFunctionStaticMetadataHelper;
 import android.app.appfunctions.AppFunctionUriGrant;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
 import android.app.appfunctions.ExecuteAppFunctionResponse;
-import android.app.appfunctions.IAppFunctionEnabledCallback;
 import android.app.appfunctions.IAppFunctionExecutor;
 import android.app.appfunctions.IAppFunctionManager;
 import android.app.appfunctions.IAppFunctionSearchResultCallback;
@@ -56,9 +55,11 @@ import android.app.appfunctions.IAppFunctionSearchResults;
 import android.app.appfunctions.IAppFunctionService;
 import android.app.appfunctions.ICancellationCallback;
 import android.app.appfunctions.IExecuteAppFunctionCallback;
+import android.app.appfunctions.IIsAppFunctionEnabledCallback;
 import android.app.appfunctions.IObserveAppFunctionChangesCallback;
 import android.app.appfunctions.IOnAppFunctionAccessChangeListener;
 import android.app.appfunctions.ISearchAppFunctionsCallback;
+import android.app.appfunctions.ISetAppFunctionEnabledCallback;
 import android.app.appfunctions.SafeOneTimeExecuteAppFunctionCallback;
 import android.app.appsearch.AppSearchBatchResult;
 import android.app.appsearch.AppSearchManager;
@@ -485,7 +486,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                                 "Caller does not have permission to execute the"
                                                         + " appfunction"));
                             }
-                            return isAppFunctionEnabled(
+                            return isAppFunctionEnabledInternal(
                                             requestInternal
                                                     .getClientRequest()
                                                     .getFunctionIdentifier(),
@@ -746,14 +747,100 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 targetUser, filteredSearchSpec, observeAppFunctionsCallback);
     }
 
-    private CompletableFuture<Boolean> isAppFunctionEnabled(
+    @Override
+    public void isAppFunctionEnabled(
+            @NonNull String callingPackage,
+            @NonNull String targetPackage,
+            @NonNull String functionIdentifier,
+            @NonNull UserHandle userHandle,
+            @NonNull IIsAppFunctionEnabledCallback callback)
+            throws RemoteException {
+        Objects.requireNonNull(callingPackage);
+        Objects.requireNonNull(targetPackage);
+        Objects.requireNonNull(functionIdentifier);
+        Objects.requireNonNull(userHandle);
+        Objects.requireNonNull(callback);
+
+        final int callingUid = Binder.getCallingUid();
+        final int callingPid = Binder.getCallingPid();
+
+        try {
+            // The calling package name will be used to determine the visible packages.
+            mCallerValidator.validateCallingPackage(callingPackage);
+            mCallerValidator.verifyUserInteraction(
+                    /* targetUserId= */ userHandle.getIdentifier(),
+                    /* callingUid= */ callingUid,
+                    /* callingPid= */ callingPid,
+                    /* callingPackageName= */ callingPackage);
+        } catch (SecurityException e) {
+            try {
+                callback.onError(new ParcelableException(e));
+            } catch (RemoteException ex) {
+                Slog.e(TAG, "Failed to execute callback#onError.", e);
+            }
+            return;
+        }
+
+        if (!mVisibilityHelper.isAppFunctionVisible(
+                new AppFunctionName(targetPackage, functionIdentifier),
+                callingPackage,
+                callingUid,
+                callingPid)) {
+            try {
+                callback.onError(
+                        new ParcelableException(
+                                new AppFunctionNotFoundException("App Function not found")));
+            } catch (RemoteException re) {
+                Slog.e(TAG, "Failed to execute callback#onError.", re);
+            }
+            return;
+        }
+
+        UserHandle targetUser = UserHandle.of(userHandle.getIdentifier());
+        AppSearchManager perUserAppSearchManager = getAppSearchManagerAsUser(targetUser);
+        if (perUserAppSearchManager == null) {
+            throw new IllegalStateException(
+                    "AppSearchManager not found for user:" + targetUser.getIdentifier());
+        }
+
+        final long token = Binder.clearCallingIdentity();
+        try {
+            isAppFunctionEnabledInternal(
+                            functionIdentifier,
+                            targetPackage,
+                            perUserAppSearchManager,
+                            THREAD_POOL_EXECUTOR,
+                            targetUser.getIdentifier())
+                    .thenAccept(
+                            isEnabled -> {
+                                try {
+                                    callback.onSuccess(isEnabled);
+                                } catch (RemoteException re) {
+                                    Slog.e(TAG, "Failed to execute callback#onSuccess.", re);
+                                }
+                            })
+                    .exceptionally(
+                            exception -> {
+                                try {
+                                    callback.onError(new ParcelableException(exception.getCause()));
+                                } catch (RemoteException re) {
+                                    Slog.e(TAG, "Failed to execute callback#onError.", re);
+                                }
+                                return null;
+                            });
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
+    }
+
+    private CompletableFuture<Boolean> isAppFunctionEnabledInternal(
             @NonNull String functionIdentifier,
             @NonNull String targetPackage,
             @NonNull AppSearchManager appSearchManager,
             @NonNull Executor executor,
             int userId) {
         if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
-            return isAppFunctionEnabled2(
+            return isAppFunctionEnabledInternal2(
                     functionIdentifier, targetPackage, appSearchManager, userId);
         }
 
@@ -777,7 +864,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         return future;
     }
 
-    private CompletableFuture<Boolean> isAppFunctionEnabled2(
+    private CompletableFuture<Boolean> isAppFunctionEnabledInternal2(
             @NonNull String functionIdentifier,
             @NonNull String targetPackage,
             @NonNull AppSearchManager appSearchManager,
@@ -801,7 +888,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @NonNull String functionIdentifier,
             @NonNull UserHandle userHandle,
             @AppFunctionManager.EnabledState int enabledState,
-            @NonNull IAppFunctionEnabledCallback callback) {
+            @NonNull ISetAppFunctionEnabledCallback callback) {
         try {
             // Skip validation for shell to allow changing enabled state via shell.
             if (Binder.getCallingUid() != Process.SHELL_UID) {
@@ -1166,7 +1253,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     }
 
     private static void reportException(
-            @NonNull IAppFunctionEnabledCallback callback, @NonNull Exception exception) {
+            @NonNull ISetAppFunctionEnabledCallback callback, @NonNull Exception exception) {
         try {
             callback.onError(new ParcelableException(exception));
         } catch (RemoteException e) {
