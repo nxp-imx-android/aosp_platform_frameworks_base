@@ -20,8 +20,6 @@ import static android.view.inputmethod.Flags.FLAG_BACK_DISPOSITION_CONTROLS_BACK
 import static android.window.ImeBackCallbackProxy.RESULT_CODE_REGISTER;
 import static android.window.ImeBackCallbackProxy.RESULT_CODE_UNREGISTER;
 
-import static com.android.window.flags.Flags.FLAG_IME_BACK_CALLBACK_LEAK_PREVENTION;
-
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -54,8 +52,7 @@ import org.mockito.ArgumentCaptor;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper
-@RequiresFlagsEnabled({FLAG_IME_BACK_CALLBACK_LEAK_PREVENTION,
-        FLAG_BACK_DISPOSITION_CONTROLS_BACK_INTERCEPTION})
+@RequiresFlagsEnabled(FLAG_BACK_DISPOSITION_CONTROLS_BACK_INTERCEPTION)
 public class ImeBackCallbackSenderTest {
 
     private ImeBackCallbackSender mImeBackCallbackSender;
