@@ -3627,6 +3627,12 @@ class Task extends TaskFragment {
     protected boolean onChildVisibleRequestedChanged(@Nullable WindowContainer child) {
         if (!super.onChildVisibleRequestedChanged(child)) return false;
         sendTaskFragmentParentInfoChangedIfNeeded();
+        if (mLayerRank != Task.LAYER_RANK_INVISIBLE && !mRootWindowContainer.mTaskLayersChanged
+                && !isVisibleRequested()) {
+            // ActivityRecord#setVisibleRequested will invoke onProcessActivityStateChanged
+            // to update the change to WindowProcessController#mActivityStateFlags.
+            mLayerRank = Task.LAYER_RANK_INVISIBLE;
+        }
         return true;
     }
 
