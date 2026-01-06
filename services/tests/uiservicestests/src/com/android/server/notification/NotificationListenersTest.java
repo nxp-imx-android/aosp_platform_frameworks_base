@@ -16,6 +16,8 @@
 package com.android.server.notification;
 
 import static android.Manifest.permission.RECEIVE_SENSITIVE_NOTIFICATIONS;
+import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_NLS_RESTRICTED;
+import static android.app.backup.NotificationLoggingConstants.ERROR_XML_PARSING;
 import static android.content.Context.BIND_ALLOW_FREEZE;
 import static android.content.Context.BIND_SIMULATE_ALLOW_FREEZE;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_RESIZEABLE;
@@ -75,6 +77,7 @@ import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Person;
+import android.app.backup.BackupRestoreEventLogger;
 import android.companion.AssociationInfo;
 import android.companion.ICompanionDeviceManager;
 import android.content.ComponentName;
@@ -154,6 +157,8 @@ public class NotificationListenersTest extends UiServiceTestCase {
     private AppLockInternal mAppLockInternal;
     @Mock
     private Resources mResources;
+    @Mock
+    private BackupRestoreEventLogger mLogger;
 
     // mNm is going to be a spy, so it must use doReturn.when, not when.thenReturn, as
     // when.thenReturn will result in the real method being called
@@ -226,9 +231,33 @@ public class NotificationListenersTest extends UiServiceTestCase {
         parser.setInput(new BufferedInputStream(
                 new ByteArrayInputStream(xml.getBytes())), null);
         parser.nextTag();
-        mListeners.readExtraTag(TAG_REQUESTED_LISTENERS, parser);
+        mListeners.readExtraTag(TAG_REQUESTED_LISTENERS, parser, null);
 
         validateListenersFromXml();
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_BACKUP_RESTORE_LOGGING)
+    public void testReadExtraTag_restore() throws Exception {
+        String xml = "<" + TAG_REQUESTED_LISTENERS + ">"
+                + "<listener component=\"" + mCn1.flattenToString() + "\" user=\"0\">"
+                + "<allowed types=\"7\" />"
+                + "</listener>"
+                + "<listener component=\"" + mCn2.flattenToString() + "\" user=\"10\">"
+                + "<allowed types=\"4\" />"
+                + "<disallowed pkg=\"pkg1\" uid=\"243\"/>"
+                + "</listener>"
+                + "</" + TAG_REQUESTED_LISTENERS + ">";
+
+        TypedXmlPullParser parser = Xml.newFastPullParser();
+        parser.setInput(new BufferedInputStream(
+                new ByteArrayInputStream(xml.getBytes())), null);
+        parser.nextTag();
+        mListeners.readExtraTag(TAG_REQUESTED_LISTENERS, parser, mLogger);
+
+        validateListenersFromXml();
+        verify(mLogger).logItemsRestored(DATA_TYPE_NLS_RESTRICTED, 2);
+        verify(mLogger).logItemsRestoreFailed(DATA_TYPE_NLS_RESTRICTED, 0, ERROR_XML_PARSING);
     }
 
     @Test
@@ -288,7 +317,7 @@ public class NotificationListenersTest extends UiServiceTestCase {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
         serializer.startDocument(null, true);
-        mListeners.writeExtraXmlTags(serializer);
+        mListeners.writeExtraXmlTags(serializer, null);
         serializer.endDocument();
         serializer.flush();
 
@@ -296,10 +325,39 @@ public class NotificationListenersTest extends UiServiceTestCase {
         parser.setInput(new BufferedInputStream(
                 new ByteArrayInputStream(baos.toByteArray())), null);
         parser.nextTag();
-        mListeners.readExtraTag("req_listeners", parser);
+        mListeners.readExtraTag("req_listeners", parser, null);
 
         validateListenersFromXml();
     }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_BACKUP_RESTORE_LOGGING)
+    public void testWriteExtraTag_backup() throws Exception {
+        NotificationListenerFilter nlf = new NotificationListenerFilter(7, new ArraySet<>());
+        VersionedPackage a1 = new VersionedPackage("pkg1", 243);
+        NotificationListenerFilter nlf2 =
+                new NotificationListenerFilter(4, new ArraySet<>(new VersionedPackage[]{a1}));
+        mListeners.setNotificationListenerFilter(Pair.create(mCn1, 0), nlf);
+        mListeners.setNotificationListenerFilter(Pair.create(mCn2, 10), nlf2);
+
+        TypedXmlSerializer serializer = Xml.newFastSerializer();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
+        serializer.startDocument(null, true);
+        mListeners.writeExtraXmlTags(serializer, mLogger);
+        serializer.endDocument();
+        serializer.flush();
+
+        TypedXmlPullParser parser = Xml.newFastPullParser();
+        parser.setInput(new BufferedInputStream(
+                new ByteArrayInputStream(baos.toByteArray())), null);
+        parser.nextTag();
+        mListeners.readExtraTag("req_listeners", parser, null);
+
+        validateListenersFromXml();
+        verify(mLogger).logItemsBackedUp(DATA_TYPE_NLS_RESTRICTED, 2);
+    }
+
 
     private void validateListenersFromXml() {
         assertThat(mListeners.getNotificationListenerFilter(Pair.create(mCn1, 0)).getTypes())

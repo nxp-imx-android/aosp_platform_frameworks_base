@@ -16,6 +16,8 @@
 
 package com.android.server.notification;
 
+import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_MANAGED_SERVICE_PRIMARY_APPROVED;
+import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_MANAGED_SERVICE_SECONDARY_APPROVED;
 import static android.content.Context.BIND_ALLOW_WHITELIST_MANAGEMENT;
 import static android.content.Context.BIND_AUTO_CREATE;
 import static android.content.Context.BIND_FOREGROUND_SERVICE;
@@ -37,6 +39,7 @@ import android.app.ActivityOptions;
 import android.app.IBinderSession;
 import android.app.PendingIntent;
 import android.app.admin.DevicePolicyManager;
+import android.app.backup.BackupRestoreEventLogger;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -575,7 +578,8 @@ abstract public class ManagedServices {
         }
     }
 
-    public void writeXml(TypedXmlSerializer out, boolean forBackup, int userId) throws IOException {
+    public void writeXml(TypedXmlSerializer out, boolean forBackup, int userId,
+            @Nullable BackupRestoreEventLogger logger) throws IOException {
         out.startTag(null, getConfig().xmlTag);
 
         out.attributeInt(null, ATT_VERSION, Integer.parseInt(DB_VERSION));
@@ -585,6 +589,9 @@ abstract public class ManagedServices {
         if (forBackup) {
             trimApprovedListsAccordingToInstalledServices(userId);
         }
+
+        int primaryCount = 0;
+        int secondaryCount = 0;
 
         synchronized (mApproved) {
             final int N = mApproved.size();
@@ -628,16 +635,25 @@ abstract public class ManagedServices {
                                             approvedUserId);
                                 }
                             }
-
+                            if (isPrimary) {
+                                primaryCount += approved.size();
+                            } else {
+                                secondaryCount += approved.size();
+                            }
                         }
                     }
                 }
             }
         }
 
-        writeExtraXmlTags(out);
+        writeExtraXmlTags(out, logger);
 
         out.endTag(null, getConfig().xmlTag);
+
+        if (logger != null) {
+            logger.logItemsBackedUp(DATA_TYPE_MANAGED_SERVICE_PRIMARY_APPROVED, primaryCount);
+            logger.logItemsBackedUp(DATA_TYPE_MANAGED_SERVICE_SECONDARY_APPROVED, secondaryCount);
+        }
     }
 
     /**
@@ -655,12 +671,14 @@ abstract public class ManagedServices {
     /**
      * Writes extra xml tags within the parent tag specified in {@link Config#xmlTag}.
      */
-    protected void writeExtraXmlTags(TypedXmlSerializer out) throws IOException {}
+    protected void writeExtraXmlTags(TypedXmlSerializer out,
+            @Nullable BackupRestoreEventLogger logger) throws IOException {}
 
     /**
      * This is called to process tags other than {@link #TAG_MANAGED_SERVICES}.
      */
-    protected void readExtraTag(String tag, TypedXmlPullParser parser)
+    protected void readExtraTag(String tag, TypedXmlPullParser parser,
+            @Nullable BackupRestoreEventLogger logger)
             throws IOException, XmlPullParserException {}
 
     protected final void migrateToXml() {
@@ -706,13 +724,18 @@ abstract public class ManagedServices {
             TypedXmlPullParser parser,
             TriPredicate<String, Integer, String> allowedManagedServicePackages,
             boolean forRestore,
-            int userId)
+            int userId,
+            @Nullable BackupRestoreEventLogger logger)
             throws XmlPullParserException, IOException {
         // read grants
         int type;
         String version = XmlUtils.readStringAttribute(parser, ATT_VERSION);
         boolean needUpgradeUserset = false;
         readDefaults(parser);
+
+        int primaryCount = 0;
+        int secondaryCount = 0;
+
         while ((type = parser.next()) != XmlPullParser.END_DOCUMENT) {
             String tag = parser.getName();
             if (type == XmlPullParser.END_TAG
@@ -782,14 +805,19 @@ abstract public class ManagedServices {
                                 getPackageName(approved), resolvedUserId, getRequiredPermission())
                                 || approved.isEmpty()) {
                             if (mUm.getUserInfo(resolvedUserId) != null) {
-                                addApprovedList(approved, resolvedUserId, isPrimary,
-                                        userSetComponent);
+                                int addedCount = addApprovedList(approved, resolvedUserId,
+                                        isPrimary, userSetComponent);
+                                if (isPrimary) {
+                                    primaryCount += addedCount;
+                                } else {
+                                    secondaryCount += addedCount;
+                                }
                             }
                             mUseXml = true;
                         }
                     }
                 } else {
-                    readExtraTag(tag, parser);
+                    readExtraTag(tag, parser, logger);
                 }
             }
         }
@@ -802,6 +830,11 @@ abstract public class ManagedServices {
         }
         if (needUpgradeUserset) {
             upgradeUserSet();
+        }
+
+        if (logger != null) {
+            logger.logItemsRestored(DATA_TYPE_MANAGED_SERVICE_PRIMARY_APPROVED, primaryCount);
+            logger.logItemsRestored(DATA_TYPE_MANAGED_SERVICE_SECONDARY_APPROVED, secondaryCount);
         }
 
         rebindServices(false, USER_ALL);
@@ -847,11 +880,12 @@ abstract public class ManagedServices {
 
     protected abstract String getRequiredPermission();
 
-    protected void addApprovedList(String approved, int userId, boolean isPrimary) {
-        addApprovedList(approved, userId, isPrimary, approved);
+    protected int addApprovedList(String approved, int userId, boolean isPrimary) {
+        return addApprovedList(approved, userId, isPrimary, approved);
     }
 
-    protected void addApprovedList(String approved, int userId, boolean isPrimary, String userSet) {
+    protected int addApprovedList(String approved, int userId, boolean isPrimary, String userSet) {
+        int added = 0;
         if (TextUtils.isEmpty(approved)) {
             approved = "";
         }
@@ -881,6 +915,7 @@ abstract public class ManagedServices {
                 String approvedItem = getApprovedValue(pkgOrComponent);
                 if (approvedItem != null) {
                     approvedList.add(approvedItem);
+                    added++;
                 }
                 int uid = getUidForPackageOrComponent(pkgOrComponent, userId);
                 if (uid != Process.INVALID_UID) {
@@ -901,6 +936,7 @@ abstract public class ManagedServices {
                 }
             }
         }
+        return added;
     }
 
     protected void denyPregrantedAppUserSet(int userId, boolean isPrimary) {
