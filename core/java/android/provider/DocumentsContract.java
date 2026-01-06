@@ -766,6 +766,7 @@ public final class DocumentsContract {
          * @see #FLAG_SUPPORTS_CREATE
          * @see #FLAG_SUPPORTS_RECENTS
          * @see #FLAG_SUPPORTS_SEARCH
+         * @see #FLAG_SUPPORTS_QUERY_TRASH
          * @see #FLAG_LIMITED_FUNCTIONALITY_WHEN_OFFLINE
          */
         public static final String COLUMN_FLAGS = "flags";
@@ -1022,7 +1023,7 @@ public final class DocumentsContract {
          * @see Document#COLUMN_MIME_TYPE
          */
         @FlaggedApi(Flags.FLAG_ENABLE_SYNC_STATE)
-        public static final int FLAG_LIMITED_FUNCTIONALITY_WHEN_OFFLINE = 1 << 20;
+        public static final int FLAG_LIMITED_FUNCTIONALITY_WHEN_OFFLINE = 1 << 21;
     }
 
     /**
