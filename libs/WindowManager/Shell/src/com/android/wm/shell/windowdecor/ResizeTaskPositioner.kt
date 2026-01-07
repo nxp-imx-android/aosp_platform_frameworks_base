@@ -27,6 +27,7 @@ import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
 import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_BOTTOM
 import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_LEFT
@@ -45,6 +46,7 @@ import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_TOP
  * @param taskResizer The [TaskResizer] implementation to use for drag-resize operations.
  * @param transitions The [Transitions] controller for handling window transitions.
  * @param handler The handler for the main shell thread.
+ * @param desktopTasksController The controller for desktop mode windowing logic and transitions.
  */
 class ResizeTaskPositioner(
     private val windowDecoration: WindowDecorationWrapper,
@@ -53,6 +55,7 @@ class ResizeTaskPositioner(
     private val taskResizer: TaskResizer,
     private val transitions: Transitions,
     private val handler: Handler,
+    private val desktopTasksController: DesktopTasksController,
 ) : TaskPositioner, Transitions.TransitionHandler {
     private var dragSession: DragSession? = null
     private val isResizing: Boolean
@@ -81,6 +84,7 @@ class ResizeTaskPositioner(
                     repositionTaskBounds = Rect(taskBounds),
                     repositionStartPoint = PointF(x, y),
                     rotation = rotation,
+                    hasFirstMoveEventConsumed = false, // Initialize to false for a new drag session
                 )
                 .also { dragSession = it }
 
@@ -101,6 +105,18 @@ class ResizeTaskPositioner(
             taskResizer.onResizeUpdate(session, x, y)
         } else {
             taskMover.onMoveUpdate(session, displayId, x, y)
+        }
+
+        if (!session.hasFirstMoveEventConsumed) {
+            // Update taskbar rounding once the drag/resize has registered a move event - in case
+            // the moved task is no longer maximized. Only call this once per resize/drag so we
+            // don't call into Launcher with each drag/resize frame to try to update the taskbar.
+            desktopTasksController.updateTaskbarRoundingOnTaskResize(
+                displayId,
+                windowDecoration.taskInfo.taskId,
+                Rect(session.repositionTaskBounds),
+            )
+            session.hasFirstMoveEventConsumed = true
         }
 
         return Rect(session.repositionTaskBounds)

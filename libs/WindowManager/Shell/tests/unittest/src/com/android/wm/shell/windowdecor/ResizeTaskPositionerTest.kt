@@ -30,13 +30,16 @@ import androidx.test.internal.runner.junit4.statement.UiThreadStatement.runOnUiT
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
+import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.transition.Transitions
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
+import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
@@ -57,6 +60,7 @@ class ResizeTaskPositionerTest : ShellTestCase() {
     private val mockTransitionBinder = mock<IBinder>()
     private val mockWindowContainerTransaction = mock<WindowContainerTransaction>()
     private val mockWindowDecoration = mock<WindowDecorationWrapper>()
+    private val mockDesktopTasksController = mock<DesktopTasksController>()
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private lateinit var taskPositioner: ResizeTaskPositioner
@@ -86,6 +90,7 @@ class ResizeTaskPositionerTest : ShellTestCase() {
                 mockTaskResizer,
                 mockTransitions,
                 mainHandler,
+                mockDesktopTasksController,
             )
     }
 
@@ -100,12 +105,18 @@ class ResizeTaskPositionerTest : ShellTestCase() {
             DragPositioningCallback.INPUT_METHOD_TYPE_UNKNOWN,
         )
 
-        // Move
+        // First Move
         taskPositioner.onDragPositioningMove(0, 200f, 200f)
         verify(mockTaskResizer).onResizeUpdate(any(), eq(200f), eq(200f))
+        verify(mockDesktopTasksController).updateTaskbarRoundingOnTaskResize(any(), any(), any())
+
+        // Second move, expecting no taskbar rounding update.
+        clearInvocations(mockDesktopTasksController)
+        taskPositioner.onDragPositioningMove(0, 210f, 210f)
+        verify(mockDesktopTasksController, never())
+            .updateTaskbarRoundingOnTaskResize(any(), any(), any())
 
         // End
-
         taskPositioner.onDragPositioningEnd(0, 50f, 50f)
         verify(mockTaskResizer).onResizeEnd(any(), eq(50f), eq(50f))
 
@@ -133,9 +144,16 @@ class ResizeTaskPositionerTest : ShellTestCase() {
             DragPositioningCallback.INPUT_METHOD_TYPE_UNKNOWN,
         )
 
-        // Move
+        // First Move
         taskPositioner.onDragPositioningMove(1, 200f, 200f)
         verify(mockTaskMover).onMoveUpdate(any(), eq(1), eq(200f), eq(200f))
+        verify(mockDesktopTasksController).updateTaskbarRoundingOnTaskResize(any(), any(), any())
+
+        // Second move, expecting no taskbar rounding update.
+        clearInvocations(mockDesktopTasksController)
+        taskPositioner.onDragPositioningMove(1, 210f, 210f)
+        verify(mockDesktopTasksController, never())
+            .updateTaskbarRoundingOnTaskResize(any(), any(), any())
 
         // End
         taskPositioner.onDragPositioningEnd(2, 50f, 50f)
