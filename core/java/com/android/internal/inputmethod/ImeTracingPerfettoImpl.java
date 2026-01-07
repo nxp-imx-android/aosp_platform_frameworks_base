@@ -16,6 +16,7 @@
 
 package com.android.internal.inputmethod;
 
+import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 import static android.tracing.perfetto.DataSourceParams.PERFETTO_DS_BUFFER_EXHAUSTED_POLICY_STALL_AND_DROP;
 
 import android.annotation.NonNull;
@@ -113,7 +114,7 @@ final class ImeTracingPerfettoImpl extends ImeTracing {
         }
 
         try {
-            Trace.beginSection("inputmethod_service_dump");
+            Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "inputmethod_service_dump");
             mDataSource.trace((ctx) -> {
                 final ProtoOutputStream os = ctx.newTracePacket();
                 os.write(TracePacket.TIMESTAMP, SystemClock.elapsedRealtimeNanos());
@@ -128,7 +129,7 @@ final class ImeTracingPerfettoImpl extends ImeTracing {
             });
         } finally {
             mIsServiceDumpInProgress.set(false);
-            Trace.endSection();
+            Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
         }
     }
 
@@ -143,7 +144,7 @@ final class ImeTracingPerfettoImpl extends ImeTracing {
         }
 
         try {
-            Trace.beginSection("inputmethod_manager_service_dump");
+            Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "inputmethod_manager_service_dump");
             mDataSource.trace((ctx) -> {
                 final ProtoOutputStream os = ctx.newTracePacket();
                 os.write(TracePacket.TIMESTAMP, SystemClock.elapsedRealtimeNanos());
@@ -158,7 +159,7 @@ final class ImeTracingPerfettoImpl extends ImeTracing {
             });
         } finally {
             mIsManagerServiceDumpInProgress.set(false);
-            Trace.endSection();
+            Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
         }
     }
 
