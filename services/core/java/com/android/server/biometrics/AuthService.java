@@ -50,6 +50,7 @@ import android.hardware.biometrics.ITestSession;
 import android.hardware.biometrics.ITestSessionCallback;
 import android.hardware.biometrics.IdentityCheckStatus;
 import android.hardware.biometrics.PromptInfo;
+import android.hardware.biometrics.RedactedBiometricSensorStrengthInternal;
 import android.hardware.biometrics.SensorLocationInternal;
 import android.hardware.biometrics.SensorPropertiesInternal;
 import android.hardware.face.FaceSensorConfigurations;
@@ -224,6 +225,14 @@ public class AuthService extends SystemService {
         public BiometricHandlerProvider getBiometricHandlerProvider() {
             return BiometricHandlerProvider.getInstance();
         }
+
+        /**
+         * Allows control over the behavior of {@link Utils#isForeground} in tests.
+         */
+        @VisibleForTesting
+        public boolean isForeground(int uid, int pid) {
+            return Utils.isForeground(uid, pid);
+        }
     }
 
     private final class AuthServiceImpl extends IAuthService.Stub {
@@ -313,7 +322,7 @@ public class AuthService extends SystemService {
                 return -1;
             }
 
-            if (!Utils.isForeground(callingUid, callingPid)) {
+            if (!mInjector.isForeground(callingUid, callingPid)) {
                 authenticateFastFail("Caller is not foreground: " + opPackageName, receiver);
                 return -1;
             }
@@ -450,6 +459,78 @@ public class AuthService extends SystemService {
                 checkInternalPermission();
             }
 
+            return getEnrollmentStatusListInternal(opPackageName, userId);
+        }
+
+        /**
+         * Returns a list of biometric sensor strengths for the available modalities.
+         *
+         * <p>This method is the service-side implementation for
+         * {@link BiometricManager#getBiometricSensorStrengths}. It requires the caller to be in
+         * the foreground and have the {@link android.Manifest.permission#USE_BIOMETRIC} and
+         * {@link android.Manifest.permission#USE_BIOMETRIC_INTERNAL} permissions.
+         *
+         * <p>Note:  Biometric sensor strengths below Class-3
+         * ({@link BiometricManager.Authenticators#BIOMETRIC_STRONG}) are obscured and
+         * returned as {@link BiometricManager.Authenticators#AUTHENTICATOR_STRENGTH_UNKNOWN}.
+         */
+        @Override
+        public List<RedactedBiometricSensorStrengthInternal> getBiometricSensorStrengths(
+                String opPackageName) throws RemoteException {
+            // Check the `USE_BIOMETRIC` permission at runtime.
+            checkPermission();
+
+            // Check the `USE_BIOMETRIC_INTERNAL` permission at runtime.
+            // TODO(b/454275027): Replace USE_BIOMETRIC_INTERNAL with a new role-gated permission.
+            checkInternalPermission();
+
+            // Conduct a foreground check.
+            final int callingUid = Binder.getCallingUid();
+            final int callingPid = Binder.getCallingPid();
+            if (!mInjector.isForeground(callingUid, callingPid)) {
+                throw new SecurityException("Caller is not in the foreground.");
+            }
+
+            // Retrieve biometric information.
+            final int userId = UserHandle.getCallingUserId();
+            List<BiometricEnrollmentStatusInternal> enrollmentStatusList =
+                    getEnrollmentStatusListInternal(opPackageName, userId);
+            List<RedactedBiometricSensorStrengthInternal> biometricSensorStrengths =
+                    new ArrayList<>(enrollmentStatusList.size());
+            for (BiometricEnrollmentStatusInternal enrollmentStatus : enrollmentStatusList) {
+                // LINT.IfChange(sensor_strength_switch)
+
+                // TODO(b/454275027): Biometric sensor strengths below Class-3 are obscured here;
+                //  only those above and including Class-3 are returned. This needs to be updated
+                //  if there are changes to biometric sensor strength classes above and including
+                //  Class-3. For example, if Class-4 is released in the future, please add a new
+                //  case to the `switch` statement here that returns the constant value for
+                //  Class-4 sensor strength.
+                int strength = switch (enrollmentStatus.getStatus().getStrength()) {
+                    // Class-3 sensor strength.
+                    case Authenticators.BIOMETRIC_STRONG -> Authenticators.BIOMETRIC_STRONG;
+                    // Unknown or obscured sensor strengths.
+                    default -> Authenticators.AUTHENTICATOR_STRENGTH_UNKNOWN;
+                };
+
+                // LINT.ThenChange()
+
+                // `RedactedBiometricSensorStrengthInternal` is created because AIDL does not
+                // support directly returning `Map<Integer, Integer>`.
+                biometricSensorStrengths.add(
+                        new RedactedBiometricSensorStrengthInternal(enrollmentStatus.getModality(),
+                                strength));
+            }
+
+            return biometricSensorStrengths;
+        }
+
+        /**
+         * Internal helper to retrieve the enrollment status and raw sensor strength for all
+         * supported biometric modalities.
+         */
+        private List<BiometricEnrollmentStatusInternal> getEnrollmentStatusListInternal(
+                String opPackageName, int userId) throws RemoteException {
             final long identity = Binder.clearCallingIdentity();
             try {
                 final List<BiometricEnrollmentStatusInternal> enrollmentStatusList =
@@ -469,10 +550,10 @@ public class AuthService extends SystemService {
                                 new BiometricEnrollmentStatusInternal(
                                         BiometricManager.TYPE_FINGERPRINT, status));
                     } else {
-                        Slog.e(TAG, "No fingerprint sensors");
+                        Slog.e(TAG, "No fingerprint sensors.");
                     }
                 } else {
-                    Slog.e(TAG, "No fingerprint sensors");
+                    Slog.e(TAG, "No fingerprint sensors.");
                 }
 
                 final IFaceService faceService = mInjector.getFaceService();
@@ -491,10 +572,10 @@ public class AuthService extends SystemService {
                                 new BiometricEnrollmentStatusInternal(
                                         BiometricManager.TYPE_FACE, status));
                     } else {
-                        Slog.e(TAG, "No face sensors");
+                        Slog.e(TAG, "No face sensors.");
                     }
                 } else {
-                    Slog.e(TAG, "No face sensors");
+                    Slog.e(TAG, "No face sensors.");
                 }
 
                 return enrollmentStatusList;
