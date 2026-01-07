@@ -17,6 +17,7 @@
 package com.android.systemui.keyguard.ui.composable
 
 import android.view.View
+import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
@@ -53,6 +54,8 @@ import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenEl
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import kotlin.math.min
 import kotlinx.coroutines.flow.first
+import platform.test.motion.compose.values.MotionTestValueKey
+import platform.test.motion.compose.values.motionTestValues
 
 /**
  * Renders the content of the lockscreen.
@@ -153,13 +156,23 @@ class LockscreenContent(
         with(lockscreenElements) {
             LockscreenElement(
                 LockscreenElementKeys.Root,
-                modifier.sysuiResTag("keyguard_root_view").graphicsLayer {
-                    alpha = min(viewModel.alpha, contentAlphaAnimatable.value)
-                },
+                modifier
+                    .sysuiResTag("keyguard_root_view")
+                    .graphicsLayer { alpha = min(viewModel.alpha, contentAlphaAnimatable.value) }
+                    .motionTestValues {
+                        LockscreenElementKeys.Root.currentAlpha()?.let { alpha ->
+                            alpha exportAs LockscreenContentMotionTestKeys.Alpha
+                        }
+                    },
                 LockscreenElementContext(nonAuthUI = { nonAuthUI(viewModel) }),
             )
         }
         LockscreenFrontScrim(lockscreenFrontScrimViewModel)
+    }
+
+    @VisibleForTesting
+    object LockscreenContentMotionTestKeys {
+        val Alpha = MotionTestValueKey<Float>("contentAlpha")
     }
 }
 
