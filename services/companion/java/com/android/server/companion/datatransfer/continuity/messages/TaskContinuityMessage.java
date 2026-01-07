@@ -49,14 +49,16 @@ public record TaskContinuityMessage(
     public int getTypeForMetrics() {
         if (taskStackBroadcastMessage() != null) {
             return FrameworkStatsLog
-                    .TASK_CONTINUITY_MESSAGE_SENT__MESSAGE_TYPE__TASK_STACK_BROADCAST;
+                    .TASK_CONTINUITY_MESSAGE_SENT__MESSAGE_TYPE__TASK_CONTINUITY_MESSAGE_TYPE_TASK_STACK_BROADCAST;
         } else if (handoffRequestMessage() != null) {
-            return FrameworkStatsLog.TASK_CONTINUITY_MESSAGE_SENT__MESSAGE_TYPE__HANDOFF_REQUEST;
+            return FrameworkStatsLog
+                    .TASK_CONTINUITY_MESSAGE_SENT__MESSAGE_TYPE__TASK_CONTINUITY_MESSAGE_TYPE_HANDOFF_REQUEST;
         } else if (handoffRequestResultMessage() != null) {
             return FrameworkStatsLog
-                    .TASK_CONTINUITY_MESSAGE_SENT__MESSAGE_TYPE__HANDOFF_REQUEST_RESULT;
+                    .TASK_CONTINUITY_MESSAGE_SENT__MESSAGE_TYPE__TASK_CONTINUITY_MESSAGE_TYPE_HANDOFF_REQUEST_RESULT;
         } else {
-            return FrameworkStatsLog.TASK_CONTINUITY_MESSAGE_SENT__MESSAGE_TYPE__UNKNOWN;
+            return FrameworkStatsLog
+                    .TASK_CONTINUITY_MESSAGE_SENT__MESSAGE_TYPE__TASK_CONTINUITY_MESSAGE_TYPE_UNKNOWN;
         }
     }
 

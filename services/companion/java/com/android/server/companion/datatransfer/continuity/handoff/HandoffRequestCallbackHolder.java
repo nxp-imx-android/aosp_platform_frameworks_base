@@ -35,7 +35,7 @@ import java.util.Objects;
 
 class HandoffRequestCallbackHolder {
 
-    private static final String TAG = "HandoffRequestCallbackHolder";
+    private static final String TAG = HandoffRequestCallbackHolder.class.getSimpleName();
 
     @GuardedBy("mCallbacks")
     private final RemoteCallbackList<IHandoffRequestCallback> mCallbacks =
@@ -143,17 +143,20 @@ class HandoffRequestCallbackHolder {
             int statusCodeForMetrics =
                     switch (statusCode) {
                         case HANDOFF_REQUEST_RESULT_SUCCESS ->
-                                FrameworkStatsLog.HANDOFF_REQUEST_FINISHED__STATUS_CODE__SUCCESS;
+                                FrameworkStatsLog
+                                        .HANDOFF_REQUEST_FINISHED__STATUS_CODE__STATUS_CODE_SUCCESS;
                         case HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK ->
                                 FrameworkStatsLog
-                                        .HANDOFF_REQUEST_FINISHED__STATUS_CODE__FAILURE_NO_DATA_PROVIDED_BY_TASK;
+                                        .HANDOFF_REQUEST_FINISHED__STATUS_CODE__STATUS_CODE_FAILURE_NO_DATA_PROVIDED_BY_TASK;
                         case HANDOFF_REQUEST_RESULT_FAILURE_TASK_NOT_FOUND ->
                                 FrameworkStatsLog
-                                        .HANDOFF_REQUEST_FINISHED__STATUS_CODE__FAILURE_TASK_NOT_FOUND;
+                                        .HANDOFF_REQUEST_FINISHED__STATUS_CODE__STATUS_CODE_FAILURE_TASK_NOT_FOUND;
                         case HANDOFF_REQUEST_RESULT_FAILURE_TIMEOUT ->
                                 FrameworkStatsLog
-                                        .HANDOFF_REQUEST_FINISHED__STATUS_CODE__FAILURE_TIMEOUT;
-                        default -> FrameworkStatsLog.HANDOFF_REQUEST_FINISHED__STATUS_CODE__UNKNOWN;
+                                        .HANDOFF_REQUEST_FINISHED__STATUS_CODE__STATUS_CODE_FAILURE_TIMEOUT;
+                        default ->
+                                FrameworkStatsLog
+                                        .HANDOFF_REQUEST_FINISHED__STATUS_CODE__STATUS_CODE_UNKNOWN;
                     };
 
             FrameworkStatsLog.write(

@@ -163,7 +163,7 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
                     message.getTypeForMetrics(),
                     associationIds.length,
                     FrameworkStatsLog
-                            .TASK_CONTINUITY_MESSAGE_SENT__RESULT__FAILURE_MESSAGE_SERIALIZATION_FAILED);
+                            .TASK_CONTINUITY_MESSAGE_SENT__RESULT__TASK_CONTINUITY_MESSAGE_SENT_RESULT_FAILURE_MESSAGE_SERIALIZATION_FAILED);
             return SendMessageResult.FAILURE_MESSAGE_SERIALIZATION_FAILED;
         }
 
@@ -175,7 +175,7 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
                         message.getTypeForMetrics(),
                         associationIds.length,
                         FrameworkStatsLog
-                                .TASK_CONTINUITY_MESSAGE_SENT__RESULT__FAILURE_ASSOCIATION_NOT_FOUND);
+                                .TASK_CONTINUITY_MESSAGE_SENT__RESULT__TASK_CONTINUITY_MESSAGE_SENT_RESULT_FAILURE_ASSOCIATION_NOT_FOUND);
                 return SendMessageResult.FAILURE_ASSOCIATION_NOT_FOUND;
             }
         }
@@ -190,7 +190,8 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
                     FrameworkStatsLog.TASK_CONTINUITY_MESSAGE_SENT,
                     message.getTypeForMetrics(),
                     associationIds.length,
-                    FrameworkStatsLog.TASK_CONTINUITY_MESSAGE_SENT__RESULT__SUCCESS);
+                    FrameworkStatsLog
+                            .TASK_CONTINUITY_MESSAGE_SENT__RESULT__TASK_CONTINUITY_MESSAGE_SENT_RESULT_SUCCESS);
             return SendMessageResult.SUCCESS;
         } catch (Exception e) {
             Slog.e(TAG, "Failed to send message to associations", e);
@@ -198,7 +199,8 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
                     FrameworkStatsLog.TASK_CONTINUITY_MESSAGE_SENT,
                     message.getTypeForMetrics(),
                     associationIds.length,
-                    FrameworkStatsLog.TASK_CONTINUITY_MESSAGE_SENT__RESULT__FAILURE_INTERNAL_ERROR);
+                    FrameworkStatsLog
+                            .TASK_CONTINUITY_MESSAGE_SENT__RESULT__TASK_CONTINUITY_MESSAGE_SENT_RESULT_FAILURE_INTERNAL_ERROR);
             return SendMessageResult.FAILURE_INTERNAL_ERROR;
         }
     }
