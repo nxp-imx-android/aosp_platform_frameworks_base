@@ -19,7 +19,6 @@ package com.android.wm.shell.scenarios
 import android.app.Instrumentation
 import android.tools.Rotation
 import android.tools.traces.parsers.WindowManagerStateHelper
-import android.window.DesktopModeFlags
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.android.launcher3.tapl.LauncherInstrumentation
@@ -28,7 +27,6 @@ import com.android.server.wm.flicker.helpers.KeyEventHelper
 import com.android.server.wm.flicker.helpers.NonResizeableAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import org.junit.After
-import org.junit.Assume
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test

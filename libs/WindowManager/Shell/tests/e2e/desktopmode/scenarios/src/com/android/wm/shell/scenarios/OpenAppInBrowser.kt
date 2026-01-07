@@ -56,7 +56,7 @@ abstract class OpenAppInBrowser(val rotation: Rotation = Rotation.ROTATION_0) :
 
     @Test
     open fun triggerInDesktopMode() {
-        mailApp.enterDesktopMode(wmHelper,device)
+        mailApp.enterDesktopMode(wmHelper, device)
         mailApp.clickOpenAppInBrowserButton(wmHelper, device, isDesktop = true)
         wmHelper
             .StateSyncBuilder()

@@ -26,4 +26,5 @@ import org.junit.runners.BlockJUnit4ClassRunner
 @RunWith(BlockJUnit4ClassRunner::class)
 @Postsubmit
 @ScreenRecordRule.ScreenRecord
-class SwitchBetweenDesktopAndFullScreenViaOverviewTest : SwitchBetweenDesktopAndFullScreenViaOverview()
+class SwitchBetweenDesktopAndFullScreenViaOverviewTest :
+    SwitchBetweenDesktopAndFullScreenViaOverview()

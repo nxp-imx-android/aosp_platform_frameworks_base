@@ -36,8 +36,8 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * A test that places a task into split screen and then requests fullscreen mode enter and
- * exit through the Activity API.
+ * A test that places a task into split screen and then requests fullscreen mode enter and exit
+ * through the Activity API.
  */
 @Ignore("Base Test Class")
 @EnableFlags(Flags.FLAG_DELEGATE_REQUEST_FULLSCREEN_HANDLING_TO_SHELL)
@@ -60,8 +60,14 @@ constructor(val rotation: Rotation = Rotation.ROTATION_0) {
         tapl.setEnableRotation(true)
         tapl.setExpectedRotation(rotation.value)
 
-        SplitScreenUtils.enterSplit(wmHelper, tapl, device, primaryApp, fullscreenRequestApp,
-            rotation)
+        SplitScreenUtils.enterSplit(
+            wmHelper,
+            tapl,
+            device,
+            primaryApp,
+            fullscreenRequestApp,
+            rotation,
+        )
     }
 
     @Test

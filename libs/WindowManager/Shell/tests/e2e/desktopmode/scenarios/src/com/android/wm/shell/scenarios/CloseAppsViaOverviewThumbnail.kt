@@ -23,17 +23,17 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
+import com.android.server.wm.flicker.helpers.ImeAppHelper
 import com.android.server.wm.flicker.helpers.MailAppHelper
 import com.android.server.wm.flicker.helpers.NonResizeableAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
-import com.android.server.wm.flicker.helpers.ImeAppHelper
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 
 @Ignore("Base Test Class")
-abstract class CloseAppsViaOverviewThumbnail(val rotation: Rotation = Rotation.ROTATION_0)
-    : TestScenarioBase(rotation) {
+abstract class CloseAppsViaOverviewThumbnail(val rotation: Rotation = Rotation.ROTATION_0) :
+    TestScenarioBase(rotation) {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
@@ -42,10 +42,10 @@ abstract class CloseAppsViaOverviewThumbnail(val rotation: Rotation = Rotation.R
     private val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
     val desktopApps: List<DesktopModeAppHelper> =
         listOf(
-            MailAppHelper(instrumentation),
-            ImeAppHelper(instrumentation),
-            NonResizeableAppHelper(instrumentation),
-        )
+                MailAppHelper(instrumentation),
+                ImeAppHelper(instrumentation),
+                NonResizeableAppHelper(instrumentation),
+            )
             .map { DesktopModeAppHelper(it) }
 
     @Before
@@ -64,9 +64,6 @@ abstract class CloseAppsViaOverviewThumbnail(val rotation: Rotation = Rotation.R
         }
         // Close the last task from overview thumbnail
         currentDesk.tapCloseDesktopThumbnailView(testApp.packageName)
-        wmHelper
-            .StateSyncBuilder()
-            .withHomeActivityVisible()
-            .waitForAndVerify()
+        wmHelper.StateSyncBuilder().withHomeActivityVisible().waitForAndVerify()
     }
 }

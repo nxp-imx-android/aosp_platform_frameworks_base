@@ -52,7 +52,7 @@ abstract class ExitImmersiveToDesktopWithKeyboardShortcut(
 
     @Test
     open fun exitImmersive() {
-        immersiveApp.exitImmersiveToDesktopWithKeyboard(wmHelper,immersiveApp)
+        immersiveApp.exitImmersiveToDesktopWithKeyboard(wmHelper, immersiveApp)
     }
 
     @After

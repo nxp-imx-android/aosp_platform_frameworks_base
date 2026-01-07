@@ -70,7 +70,7 @@ class ClosePipWithDismissButtonTest {
         testApp.launchViaIntent(wmHelper)
         pipApp.launchViaIntent(
             wmHelper,
-            stringExtras = mapOf(ActivityOptions.Pip.EXTRA_ENTER_PIP to "true")
+            stringExtras = mapOf(ActivityOptions.Pip.EXTRA_ENTER_PIP to "true"),
         )
     }
 
@@ -87,20 +87,24 @@ class ClosePipWithDismissButtonTest {
         val pipApp: PipAppHelper = PipAppHelper(instrumentation)
         private val pipAppComponentTemplate = ComponentTemplate("PIP_APP") { _ -> pipApp }
 
-        private val PIP_REMOVE_CUJ_EXTRACTOR = TaggedScenarioExtractorBuilder()
-            .setTargetTag(CujType.CUJ_PIP_TRANSITION)
-            .setAdditionalCujFilter {
-                it.tag == "REMOVE_PIP"
-            }.build()
+        private val PIP_REMOVE_CUJ_EXTRACTOR =
+            TaggedScenarioExtractorBuilder()
+                .setTargetTag(CujType.CUJ_PIP_TRANSITION)
+                .setAdditionalCujFilter { it.tag == "REMOVE_PIP" }
+                .build()
 
-        private val PIP_REMOVE_CUJ_CONFIG = FlickerConfigEntry(
-            scenarioId = ScenarioId("PIP_REMOVE_WITH_DISMISS_BUTTON"),
-            extractor = PIP_REMOVE_CUJ_EXTRACTOR,
-            assertions = AssertionTemplates.COMMON_ASSERTIONS + mapOf(
-                AppWindowBecomesInvisible(pipAppComponentTemplate) to AssertionInvocationGroup.BLOCKING
-            ),
-            enabled = true
-        )
+        private val PIP_REMOVE_CUJ_CONFIG =
+            FlickerConfigEntry(
+                scenarioId = ScenarioId("PIP_REMOVE_WITH_DISMISS_BUTTON"),
+                extractor = PIP_REMOVE_CUJ_EXTRACTOR,
+                assertions =
+                    AssertionTemplates.COMMON_ASSERTIONS +
+                        mapOf(
+                            AppWindowBecomesInvisible(pipAppComponentTemplate) to
+                                AssertionInvocationGroup.BLOCKING
+                        ),
+                enabled = true,
+            )
 
         @JvmStatic
         @FlickerConfigProvider
