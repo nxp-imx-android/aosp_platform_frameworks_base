@@ -20,7 +20,9 @@ import android.content.Context
 import android.security.Flags.lockscreenLargerTimeoutTimeUnits
 import android.security.Flags.secureLockDevice
 import android.util.PluralsMessageFormatter
+import android.view.accessibility.AccessibilityManager.FLAG_CONTENT_TEXT
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.systemui.accessibility.domain.interactor.AccessibilityInteractor
 import com.android.systemui.authentication.domain.interactor.AuthenticationInteractor
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.biometrics.shared.model.BiometricModalities
@@ -82,6 +84,7 @@ constructor(
     private val deviceUnlockedInteractor: DeviceUnlockedInteractor,
     private val deviceEntryBiometricsAllowedInteractor: DeviceEntryBiometricsAllowedInteractor,
     private val secureLockDeviceInteractor: SecureLockDeviceInteractor,
+    private val a11yInteractor: AccessibilityInteractor,
 ) : ExclusiveActivatable() {
     /**
      * A message shown when the user has attempted the wrong credential too many times and now must
@@ -97,6 +100,14 @@ constructor(
 
     /** The user-facing message to show in the bouncer. */
     val message: MutableStateFlow<MessageViewModel?> = MutableStateFlow(defaultMessage())
+
+    /**
+     * The duration of the message shown on the bouncer. The [DEFAULT_MESSAGE_DURATION] is
+     * overridden if the user has configured extra timeout in their accessibility controls.
+     */
+    private val messageDuration by lazy {
+        a11yInteractor.getRecommendedTimeout(DEFAULT_MESSAGE_DURATION, FLAG_CONTENT_TEXT)
+    }
 
     override suspend fun onActivated(): Nothing {
         if (!SceneContainerFlag.isEnabled) {
@@ -278,7 +289,7 @@ constructor(
                 ) {
                     lockoutMessage.value = message.value
                 }
-                delay(MESSAGE_DURATION)
+                delay(messageDuration)
                 // Prevents secure lock device face lockout message from being cleared in
                 // defaultBouncerMessageInitializer by DeviceEntryRestrictionReason update until
                 // resetToDefault emits
@@ -345,7 +356,7 @@ constructor(
                 ) {
                     lockoutMessage.value = message.value
                 }
-                delay(MESSAGE_DURATION)
+                delay(messageDuration)
                 if (
                     secureLockDevice() &&
                         isSecureLockDeviceEnabled &&
@@ -403,7 +414,7 @@ constructor(
                                 )
                                 .toMessage()
                         )
-                        delay(MESSAGE_DURATION)
+                        delay(messageDuration)
                         resetToDefault.emit(Unit)
                     }
             }
@@ -524,7 +535,7 @@ constructor(
     }
 
     companion object {
-        private val MESSAGE_DURATION = 2.seconds
+        val DEFAULT_MESSAGE_DURATION = 2.seconds
     }
 }
 
