@@ -27,6 +27,8 @@ import android.window.DesktopExperienceFlags
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
+import com.android.internal.jank.Cuj
+import com.android.internal.jank.InteractionJankMonitor
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ResizeTrigger
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.getInputMethodType
@@ -37,6 +39,7 @@ import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_BOTTOM
 import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_LEFT
 import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_RIGHT
 import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_TOP
+import java.util.concurrent.TimeUnit
 
 /**
  * Orchestrator class for handling task drag-resizing and drag-moving operations.
@@ -62,6 +65,7 @@ class ResizeTaskPositioner(
     private val handler: Handler,
     private val desktopTasksController: DesktopTasksController,
     private val desktopUserRepositories: DesktopUserRepositories,
+    private val interactionJankMonitor: InteractionJankMonitor,
 ) : TaskPositioner, Transitions.TransitionHandler {
     // The TaskPositioner interface requires the add and remove DragEventListener methods,
     // making this the central manager of the listener list.
@@ -129,6 +133,10 @@ class ResizeTaskPositioner(
 
         if (isResizing) {
             taskResizer.onResizeStart(newDragSession)
+            // Capture CUJ for re-sizing window in DW mode.
+            interactionJankMonitor.begin(
+                createLongTimeoutJankConfigBuilder(Cuj.CUJ_DESKTOP_MODE_RESIZE_WINDOW)
+            )
         }
 
         return Rect(newDragSession.repositionTaskBounds)
@@ -159,6 +167,13 @@ class ResizeTaskPositioner(
                 Rect(session.repositionTaskBounds),
             )
             session.hasFirstMoveEventConsumed = true
+
+            if (!isResizing) {
+                // Begin window drag CUJ instrumentation only when drag position moves.
+                interactionJankMonitor.begin(
+                    createLongTimeoutJankConfigBuilder(Cuj.CUJ_DESKTOP_MODE_DRAG_WINDOW)
+                )
+            }
         }
 
         return Rect(session.repositionTaskBounds)
@@ -241,6 +256,7 @@ class ResizeTaskPositioner(
         }
 
         finishCallback.onTransitionFinished(null)
+        interactionJankMonitor.end(Cuj.CUJ_DESKTOP_MODE_RESIZE_WINDOW)
         return true
     }
 
@@ -266,5 +282,22 @@ class ResizeTaskPositioner(
                 dragSession = null
             }
         }
+    }
+
+    private fun createLongTimeoutJankConfigBuilder(
+        @com.android.internal.jank.Cuj.CujType cujType: Int
+    ) =
+        InteractionJankMonitor.Configuration.Builder.withSurface(
+                cujType,
+                windowDecoration.decorWindowContext,
+                windowDecoration.taskSurface,
+                handler,
+            )
+            .setTimeout(LONG_CUJ_TIMEOUT_MS)
+
+    companion object {
+        // Timeout used for resize and drag CUJs, this is longer than the default timeout to avoid
+        // timing out in the middle of a resize or drag action.
+        private val LONG_CUJ_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(/* duration= */ 10L)
     }
 }

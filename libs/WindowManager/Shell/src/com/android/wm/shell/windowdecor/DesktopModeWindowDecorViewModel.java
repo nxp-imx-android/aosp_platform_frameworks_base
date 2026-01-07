@@ -2333,7 +2333,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             transitions,
                             handler,
                             desktopTasksController,
-                            desktopUserRepositories)
+                            desktopUserRepositories,
+                            interactionJankMonitor)
                         : new FluidResizeTaskPositioner(
                             taskOrganizer,
                             transitions,

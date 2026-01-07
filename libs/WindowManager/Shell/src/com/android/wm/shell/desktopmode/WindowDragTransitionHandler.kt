@@ -17,16 +17,18 @@ package com.android.wm.shell.desktopmode
 
 import android.os.IBinder
 import android.view.SurfaceControl
-import android.window.DesktopExperienceFlags
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
+import com.android.internal.jank.Cuj
+import com.android.internal.jank.InteractionJankMonitor
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
 import com.android.wm.shell.transition.Transitions
 
 /** Handles the transition to drag a window to another display by dragging the caption. */
 class WindowDragTransitionHandler(
-    private val multiDisplayDragMoveIndicatorController: MultiDisplayDragMoveIndicatorController
+    private val multiDisplayDragMoveIndicatorController: MultiDisplayDragMoveIndicatorController,
+    private val interactionJankMonitor: InteractionJankMonitor,
 ) : Transitions.TransitionHandler {
     override fun handleRequest(
         transition: IBinder,
@@ -60,6 +62,7 @@ class WindowDragTransitionHandler(
             }
         }
 
+        interactionJankMonitor.end(Cuj.CUJ_DESKTOP_MODE_DRAG_WINDOW)
         startTransaction.apply()
         finishCallback.onTransitionFinished(null)
         return true
@@ -80,5 +83,6 @@ class WindowDragTransitionHandler(
         finishTransaction?.let {
             multiDisplayDragMoveIndicatorController.disposeAllIndicators(finishTransaction)
         }
+        interactionJankMonitor.end(Cuj.CUJ_DESKTOP_MODE_DRAG_WINDOW)
     }
 }

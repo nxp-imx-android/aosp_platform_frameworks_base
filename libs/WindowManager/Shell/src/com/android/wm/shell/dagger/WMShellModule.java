@@ -1349,9 +1349,10 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static WindowDragTransitionHandler provideWindowDragTransitionHandler(
-            MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController
-    ) {
-        return new WindowDragTransitionHandler(multiDisplayDragMoveIndicatorController);
+            MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController,
+            InteractionJankMonitor interactionJankMonitor) {
+        return new WindowDragTransitionHandler(multiDisplayDragMoveIndicatorController,
+                interactionJankMonitor);
     }
 
     @WMSingleton
