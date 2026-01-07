@@ -1402,13 +1402,21 @@ final class DefaultPermissionGrantPolicy {
                 // Honor the fixed/user-set flags of the source permission when a permission split
                 // is for migrating the same functionality towards a different name. See also
                 // b/465842402
-                int sourceFlags = switch (permission) {
-                    case HealthPermissions.READ_HEART_RATE -> pm.getPermissionFlags(
-                            Manifest.permission.BODY_SENSORS, pkg, user);
-                    case HealthPermissions.READ_HEALTH_DATA_IN_BACKGROUND -> pm.getPermissionFlags(
-                            Manifest.permission.BODY_SENSORS_BACKGROUND, pkg, user);
-                    default -> 0;
-                };
+                String sourcePermission =
+                        switch (permission) {
+                            case HealthPermissions.READ_HEART_RATE ->
+                                    Manifest.permission.BODY_SENSORS;
+                            case HealthPermissions.READ_HEALTH_DATA_IN_BACKGROUND ->
+                                    Manifest.permission.BODY_SENSORS_BACKGROUND;
+                            default -> null;
+                        };
+                boolean sourceGranted = false;
+                boolean sourceFixedOrUserSet = false;
+                if (sourcePermission != null) {
+                    sourceGranted = pm.isGranted(sourcePermission, pkg, user);
+                    sourceFixedOrUserSet =
+                            isFixedOrUserSet(pm.getPermissionFlags(sourcePermission, pkg, user));
+                }
 
                 // Certain flags imply that the permission's current state by the system or
                 // device/profile owner or the user. In these cases we do not want to clobber the
@@ -1417,7 +1425,7 @@ final class DefaultPermissionGrantPolicy {
                 // Unless the caller wants to override user choices. The override is
                 // to make sure we can grant the needed permission to the default
                 // sms and phone apps after the user chooses this in the UI.
-                if (!(isFixedOrUserSet(flags) || isFixedOrUserSet(sourceFlags))
+                if (!(isFixedOrUserSet(flags) || (!sourceGranted && sourceFixedOrUserSet))
                         || ignoreSystemPackage
                         || changingGrantForSystemFixed) {
                     // Never clobber policy fixed permissions.
