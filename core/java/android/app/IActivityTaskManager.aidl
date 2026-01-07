@@ -31,7 +31,6 @@ import android.app.IProcessObserver;
 import android.app.IScreenCaptureObserver;
 import android.app.IServiceConnection;
 import android.app.IStopUserCallback;
-import android.app.ITaskMoveAllowedListener;
 import android.app.ITaskStackListener;
 import android.app.IUiAutomationConnection;
 import android.app.IUidObserver;
@@ -137,8 +136,6 @@ interface IActivityTaskManager {
     boolean isActivityStartAllowedOnDisplay(int displayId, in Intent intent, in String resolvedType,
             int userId);
     boolean isTaskMoveAllowedOnDisplay(int displayId);
-    void registerTaskMoveAllowedListener(in ITaskMoveAllowedListener listener);
-    void unregisterTaskMoveAllowedListener(in ITaskMoveAllowedListener listener);
 
     void unhandledBack();
 

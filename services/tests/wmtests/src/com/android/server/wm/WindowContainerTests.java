@@ -1785,33 +1785,6 @@ public class WindowContainerTests extends WindowTestsBase {
     }
 
     @Test
-    public void testReparentToNewDisplay_expectTmaCallbacks() {
-        final DisplayContent newDisplayContent = createNewDisplay();
-
-        final Task rootTask = createTask(mDisplayContent);
-        rootTask.setIsTaskMoveAllowed(true);
-
-        clearInvocations(mDisplayContent);
-
-        rootTask.reparent(newDisplayContent.getDefaultTaskDisplayArea(), POSITION_TOP);
-
-        verify(mDisplayContent).onDescendantsTaskMoveAllowedChanged();
-        verify(newDisplayContent).onDescendantsTaskMoveAllowedChanged();
-    }
-
-    @Test
-    public void testRemove_expectTmaCallbacks() {
-        final Task rootTask = createTask(mDisplayContent);
-        rootTask.setIsTaskMoveAllowed(true);
-
-        clearInvocations(mDisplayContent);
-
-        rootTask.getDisplayArea().removeRootTask(rootTask);
-
-        verify(mDisplayContent).onDescendantsTaskMoveAllowedChanged();
-    }
-
-    @Test
     public void testGetFullscreenRequestAllowMode_modeNone_returnsModeNone() {
         final Task rootTask = createTask(mDisplayContent);
         rootTask.setFullscreenRequestAllowMode(REQUEST_ALLOW_MODE_NONE);

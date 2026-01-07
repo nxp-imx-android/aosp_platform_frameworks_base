@@ -1014,14 +1014,6 @@ flag {
 }
 
 flag {
-    name: "enable_task_move_allowed_listener_api"
-    namespace: "lse_desktop_experience"
-    description: "Enables the API to listen to changes of task movability state on displays."
-    bug: "400407139"
-    is_exported: true
-}
-
-flag {
     name: "enable_task_positioner_refactor"
     namespace: "lse_desktop_experience"
     description: "Enables refactoring the TaskPositioner to separate task move and resize."

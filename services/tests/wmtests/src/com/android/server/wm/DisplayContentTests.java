@@ -93,7 +93,6 @@ import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_NORMAL;
 import static com.android.window.flags.Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING;
 import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE;
-import static com.android.window.flags.Flags.FLAG_ENABLE_TASK_MOVE_ALLOWED_LISTENER_API;
 import static com.android.window.flags.Flags.FLAG_ENABLE_WINDOW_REPOSITIONING_API;
 import static com.android.window.flags.Flags.FLAG_FIX_TF_ADJACENT_FOCUS;
 
@@ -116,7 +115,6 @@ import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -3460,7 +3458,6 @@ public class DisplayContentTests extends WindowTestsBase {
     }
 
     @EnableFlags(FLAG_ENABLE_WINDOW_REPOSITIONING_API)
-    @DisableFlags(FLAG_ENABLE_TASK_MOVE_ALLOWED_LISTENER_API)
     @Test
     public void testIsTaskMoveAllowedOnDisplay_eagerCalculation() {
         final TaskDisplayArea taskDisplayArea = mDisplayContent.getDefaultTaskDisplayArea();
@@ -3481,40 +3478,6 @@ public class DisplayContentTests extends WindowTestsBase {
 
         rootTask.setIsTaskMoveAllowed(false);
         assertFalse(mDisplayContent.isTaskMoveAllowedOnDisplay());
-    }
-
-    @EnableFlags({FLAG_ENABLE_WINDOW_REPOSITIONING_API, FLAG_ENABLE_TASK_MOVE_ALLOWED_LISTENER_API})
-    @Test
-    public void testIsTaskMoveAllowedOnDisplay_lazyCalculation() {
-        final TaskDisplayArea taskDisplayArea = mDisplayContent.getDefaultTaskDisplayArea();
-        final Task rootTask =
-                taskDisplayArea.createRootTask(
-                        WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD, ON_TOP);
-
-        // An update should go to ATMS since isTaskMoveAllowedOnDisplay changed.
-        taskDisplayArea.setIsTaskMoveAllowed(true);
-        assertTrue(mDisplayContent.isTaskMoveAllowedOnDisplay());
-        verify(mAtm).onTaskMoveAllowedChanged();
-
-        // No update should go to ATMS since isTaskMoveAllowedOnDisplay hasn't changed.
-        taskDisplayArea.setIsTaskMoveAllowed(true);
-        assertTrue(mDisplayContent.isTaskMoveAllowedOnDisplay());
-        verify(mAtm).onTaskMoveAllowedChanged();
-
-        // No update should go to ATMS since isTaskMoveAllowedOnDisplay hasn't changed.
-        rootTask.setIsTaskMoveAllowed(true);
-        assertTrue(mDisplayContent.isTaskMoveAllowedOnDisplay());
-        verify(mAtm).onTaskMoveAllowedChanged();
-
-        // No update should go to ATMS since isTaskMoveAllowedOnDisplay hasn't changed.
-        taskDisplayArea.setIsTaskMoveAllowed(false);
-        assertTrue(mDisplayContent.isTaskMoveAllowedOnDisplay());
-        verify(mAtm).onTaskMoveAllowedChanged();
-
-        // An update should go to ATMS since isTaskMoveAllowedOnDisplay changed.
-        rootTask.setIsTaskMoveAllowed(false);
-        assertFalse(mDisplayContent.isTaskMoveAllowedOnDisplay());
-        verify(mAtm, times(2)).onTaskMoveAllowedChanged();
     }
 
     @Test
