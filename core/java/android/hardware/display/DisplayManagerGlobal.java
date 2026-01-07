@@ -721,22 +721,10 @@ public final class DisplayManagerGlobal {
                 // Choreographer only supports a single display, so only dispatch refresh rate
                 // changes for the default display.
                 if (displayId == Display.DEFAULT_DISPLAY) {
-                    if (Flags.nativeRrCallbacksOutsideLock()) {
-                        if (info != null
-                                && mNativeCallbackReportedRefreshRate != info.getRefreshRate()) {
-                            mNativeCallbackReportedRefreshRate = info.getRefreshRate();
-                            shouldNotifyNativeListeners = true;
-                        }
-                    } else {
-                        // We can likely save a binder hop if we attach the refresh rate onto the
-                        // listener.
-                        DisplayInfo display = getDisplayInfoInternal(displayId);
-                        if (display != null
-                                && mNativeCallbackReportedRefreshRate != display.getRefreshRate()) {
-                            mNativeCallbackReportedRefreshRate = display.getRefreshRate();
-                            // Signal native callbacks if we ever set a refresh rate.
-                            nSignalNativeCallbacks(mNativeCallbackReportedRefreshRate);
-                        }
+                    if (info != null
+                            && mNativeCallbackReportedRefreshRate != info.getRefreshRate()) {
+                        mNativeCallbackReportedRefreshRate = info.getRefreshRate();
+                        shouldNotifyNativeListeners = true;
                     }
                 }
             }
