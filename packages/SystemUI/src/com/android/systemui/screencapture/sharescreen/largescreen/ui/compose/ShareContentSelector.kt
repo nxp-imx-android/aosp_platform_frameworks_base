@@ -92,7 +92,9 @@ fun ShareContentSelector(targetsViewModel: TargetsViewModel) {
                 )
             }
             DisclaimerText(targetsViewModel)
-            AudioSwitch(targetsViewModel)
+            if (targetsViewModel is AppContentsViewModel) {
+                AudioSwitch(targetsViewModel)
+            }
         }
     }
 }
