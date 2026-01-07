@@ -7533,9 +7533,9 @@ public class AudioService extends IAudioService.Stub
         if (mContext.checkCallingOrSelfPermission(
                 MODIFY_PHONE_STATE)
                 != PackageManager.PERMISSION_GRANTED) {
-            Log.w(TAG, "MODIFY_PHONE_STATE Permission Denial: setRttEnabled from pid="
-                    + Binder.getCallingPid() + ", uid=" + Binder.getCallingUid());
-            return;
+            throw new SecurityException("MODIFY_PHONE_STATE Permission Denial:"
+                    + " setRttEnabled from pid=" + Binder.getCallingPid()
+                    + ", uid=" + Binder.getCallingUid());
         }
         synchronized (this) {
             mRttEnabled.set(rttEnabled);
