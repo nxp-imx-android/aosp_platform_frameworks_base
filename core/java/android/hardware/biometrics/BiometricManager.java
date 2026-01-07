@@ -16,6 +16,7 @@
 
 package android.hardware.biometrics;
 
+import static android.Manifest.permission.ACCESS_BIOMETRIC_SENSOR_STRENGTHS;
 import static android.Manifest.permission.SET_BIOMETRIC_DIALOG_ADVANCED;
 import static android.Manifest.permission.TEST_BIOMETRIC;
 import static android.Manifest.permission.USE_BIOMETRIC;
@@ -358,8 +359,6 @@ public class BiometricManager {
         /**
          * Represents an unknown/unexposed strength of an authenticator returned from
          * {@link BiometricManager#getBiometricSensorStrengths}.
-         *
-         * @hide
          */
         @FlaggedApi(Flags.FLAG_GET_BIOMETRIC_SENSOR_STRENGTHS)
         int AUTHENTICATOR_STRENGTH_UNKNOWN = 0;
@@ -769,18 +768,20 @@ public class BiometricManager {
     /**
      * Returns a map of biometric modalities to their sensor security strengths.
      *
+     * <p>Note that this API is intended exclusively for use by applications that hold a
+     * qualifying Android role (currently only {@link android.app.role.RoleManager#ROLE_WALLET} or
+     * {@link android.app.role.RoleManager#ROLE_DEVICE_POLICY_MANAGEMENT}) and are currently
+     * running in the foreground.
+     *
      * <p>The returned map links each biometric modality available on the device (e.g.,
      * {@link #TYPE_FINGERPRINT} for fingerprint or {@link #TYPE_FACE} for face) to its
      * corresponding sensor strength (e.g., {@link Authenticators#BIOMETRIC_STRONG} for Class-3
      * or {@link Authenticators#AUTHENTICATOR_STRENGTH_UNKNOWN} for unknown/unexposed cases).
-     *
-     * @hide
      */
     @FlaggedApi(Flags.FLAG_GET_BIOMETRIC_SENSOR_STRENGTHS)
     @RequiresPermission(allOf = {
             USE_BIOMETRIC,
-            USE_BIOMETRIC_INTERNAL,
-            // TODO(b/454275027): Replace USE_BIOMETRIC_INTERNAL with a new role-gated permission.
+            ACCESS_BIOMETRIC_SENSOR_STRENGTHS,
     })
     @NonNull
     public Map<@BiometricManager.BiometricModality Integer, @Authenticators.RedactedTypes Integer>

@@ -120,7 +120,7 @@ flag {
 
 flag {
   name: "get_biometric_sensor_strengths"
-  is_exported: false
+  is_exported: true
   namespace: "biometrics_framework"
   description: "Feature flag for adding the getBiometricSensorStrengths API to BiometricManager."
   bug: "454275027"
