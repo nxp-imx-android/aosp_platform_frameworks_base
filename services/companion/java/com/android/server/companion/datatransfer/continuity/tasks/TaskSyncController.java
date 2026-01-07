@@ -21,6 +21,7 @@ import android.app.ActivityTaskManager;
 import android.companion.AssociationInfo;
 import android.companion.datatransfer.continuity.IRemoteTaskListener;
 import android.companion.datatransfer.continuity.RemoteTask;
+import android.os.Trace;
 import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.companion.datatransfer.continuity.FeatureController;
@@ -129,9 +130,11 @@ public class TaskSyncController extends FeatureController implements RemoteTaskS
     @Override
     protected void onTaskStackBroadcastMessageReceived(
             int associationId, @NonNull TaskStackBroadcastMessage taskStackBroadcastMessage) {
+        Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER, "onTaskStackBroadcastMessageReceived");
         Slog.v(getTag(), "Received task stack broadcast message from association " + associationId);
         mRemoteTaskStore.setTasks(
                 associationId, Objects.requireNonNull(taskStackBroadcastMessage).remoteTasks());
+        Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
     }
 
     @Override

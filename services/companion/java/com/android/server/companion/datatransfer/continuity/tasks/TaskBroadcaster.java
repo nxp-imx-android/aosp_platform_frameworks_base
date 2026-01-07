@@ -19,6 +19,7 @@ package com.android.server.companion.datatransfer.continuity.tasks;
 import android.annotation.NonNull;
 import android.app.TaskStackListener;
 import android.os.RemoteException;
+import android.os.Trace;
 import android.util.Slog;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.TaskStackBroadcastMessage;
@@ -47,8 +48,10 @@ public class TaskBroadcaster extends TaskStackListener
     }
 
     public void onDeviceConnected(int associationId) {
+        Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER, "onDeviceConnected");
         Slog.v(TAG, "Transport connected for association id: " + associationId);
         broadcastTaskStack();
+        Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
     }
 
     @Override
