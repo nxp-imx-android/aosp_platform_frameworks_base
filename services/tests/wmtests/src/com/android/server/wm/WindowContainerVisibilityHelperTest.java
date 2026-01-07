@@ -800,7 +800,7 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
         adjacentTaskFragment3.setBounds(leftBounds);
         adjacentTaskFragment4.setBounds(rightBounds);
 
-        // The task behind should both be invisible.
+        // The task behind should both be invisibisTranslucentle.
         assertEquals(TASK_FRAGMENT_VISIBILITY_INVISIBLE,
                 bottomTask.getVisibility(null /* starting */));
 
@@ -929,6 +929,53 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
         assertThat(rootTask.shouldBeVisible(null)).isFalse();
         assertThat(leafTask.shouldBeVisible(null)).isFalse();
         assertThat(visibilityBarrier.shouldBeVisible(null)).isFalse();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
+    public void testShouldBeVisible_forceLeafTaskNonOccluding() {
+        final Task rootTask = createTaskWithActivity(mDefaultTaskDisplayArea,
+                WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD, true /* onTop */,
+                true /* twoLevelTask */);
+        final Task bottomTask = rootTask.getTopLeafTask();
+        final ActivityRecord topR = createActivityRecordWithParentTask(rootTask);
+        topR.visibleIgnoringKeyguard = true;
+        final Task topTask = topR.getTask();
+
+        assertThat(rootTask.shouldBeVisible(null)).isTrue();
+        assertThat(topTask.shouldBeVisible(null)).isTrue();
+        assertThat(bottomTask.shouldBeVisible(null)).isFalse();
+
+        rootTask.setForceLeafTasksNonOccluding(true);
+
+        assertThat(topTask.shouldBeVisible(null)).isTrue();
+        assertThat(bottomTask.shouldBeVisible(null)).isTrue();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
+    public void testShouldBeVisible_forceLeafTaskNonOccludingBehindVisibilityBarrier() {
+        final Task rootTask = createTaskWithActivity(mDefaultTaskDisplayArea,
+                WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD, true /* onTop */,
+                true /* twoLevelTask */);
+        rootTask.setForceLeafTasksNonOccluding(true);
+        final Task bottomTask = rootTask.getTopLeafTask();
+        final ActivityRecord topR = createActivityRecordWithParentTask(rootTask);
+        topR.visibleIgnoringKeyguard = true;
+        final Task topTask = topR.getTask();
+
+        assertThat(rootTask.shouldBeVisible(null)).isTrue();
+        assertThat(topTask.shouldBeVisible(null)).isTrue();
+        assertThat(bottomTask.shouldBeVisible(null)).isTrue();
+
+        final Task visibilityBarrier = new Task.Builder(mAtm)
+                .setIsVisibilityBarrier(true)
+                .build();
+        rootTask.addChild(visibilityBarrier, POSITION_TOP);
+
+        assertThat(rootTask.shouldBeVisible(null)).isFalse();
+        assertThat(topTask.shouldBeVisible(null)).isFalse();
+        assertThat(bottomTask.shouldBeVisible(null)).isFalse();
     }
 
     @Test
@@ -1113,6 +1160,26 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
         assertIsOpaque(rootTask, false);
         assertIsOpaque(leafTask, true);
         assertIsOpaque(visibilityBarrier, false);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
+    public void testOpaque_forceLeafTaskNonOccluding() {
+        final Task rootTask = createTaskWithActivity(mDefaultTaskDisplayArea,
+                WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD, true /* onTop */,
+                true /* twoLevelTask */);
+        final Task bottomTask = rootTask.getTopLeafTask();
+        final Task topTask = createActivityRecordWithParentTask(rootTask).getTask();
+
+        assertIsOpaque(rootTask, true);
+        assertIsOpaque(topTask, true);
+        assertIsOpaque(bottomTask, true);
+
+        rootTask.setForceLeafTasksNonOccluding(true);
+
+        assertIsOpaque(rootTask, false);
+        assertIsOpaque(topTask, false);
+        assertIsOpaque(bottomTask, false);
     }
 
     private Task createTaskWithActivityAndOverrideTranslucent(

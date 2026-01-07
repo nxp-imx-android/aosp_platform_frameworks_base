@@ -976,6 +976,10 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         }
         final Task task = builder.build();
 
+        if (Flags.visibilityManagementInBubbleRoot() && properties.isForceLeafTasksNonOccluding()) {
+            task.setForceLeafTasksNonOccluding(true);
+        }
+
         // We want to defer the task appear signal until the task is fully created and attached to
         // to the hierarchy so that the complete starting configuration is in the task info we send
         // over to the organizer.

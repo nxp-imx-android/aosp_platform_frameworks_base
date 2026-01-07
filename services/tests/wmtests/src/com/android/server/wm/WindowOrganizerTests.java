@@ -105,6 +105,7 @@ import android.window.RemoteTransition;
 import android.window.TaskAppearedInfo;
 import android.window.TaskCreationParams;
 import android.window.TaskFragmentOrganizer;
+import android.window.TaskPropertiesRequest;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
@@ -2540,6 +2541,25 @@ public class WindowOrganizerTests extends WindowTestsBase {
         assertNotNull(newTask);
         assertEquals(params.getLaunchCookie(), newTask.mLaunchCookie);
         assertTrue(newTask.isVisibilityBarrier());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
+    public void testCreateTask_setForceLeafTasksNonOccluding() {
+        final TaskCreationParams params = new TaskCreationParams.Builder()
+                .setTaskPropertiesRequest(
+                        new TaskPropertiesRequest().setForceLeafTasksNonOccluding(true))
+                .build();
+
+        final WindowContainerToken token =
+                mWm.mAtmService.mTaskOrganizerController.createTask(params);
+
+        assertNotNull(token);
+        assertNotNull(fromBinder(token.asBinder()));
+        final Task newTask = fromBinder(token.asBinder()).asTask();
+        assertNotNull(newTask);
+        assertEquals(params.getLaunchCookie(), newTask.mLaunchCookie);
+        assertTrue(newTask.isForceLeafTasksNonOccluding());
     }
 
     private void testSetAlwaysOnTop(WindowContainer wc) {

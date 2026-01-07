@@ -41,13 +41,15 @@ public final class TaskPropertiesRequest implements Parcelable {
     public static final int REQUEST_FORCE_OPAQUE = 1 << 1;
     public static final int REQUEST_IGNORE_INSETS = 1 << 2;
     public static final int REQUEST_DISABLE_APP_COMPAT_ROUNDED_CORNERS = 1 << 3;
+    public static final int REQUEST_FORCE_LEAF_TASKS_NON_OCCLUDING = 1 << 4;
 
     @IntDef(flag = true, prefix = { "REQUEST_" }, value = {
             REQUEST_NONE,
             REQUEST_REPARENT_ON_DISPLAY_REMOVAL,
             REQUEST_FORCE_OPAQUE,
             REQUEST_IGNORE_INSETS,
-            REQUEST_DISABLE_APP_COMPAT_ROUNDED_CORNERS
+            REQUEST_DISABLE_APP_COMPAT_ROUNDED_CORNERS,
+            REQUEST_FORCE_LEAF_TASKS_NON_OCCLUDING
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface RequestMask {}
@@ -79,6 +81,14 @@ public final class TaskPropertiesRequest implements Parcelable {
      * better in some cases like in a Bubble.
      */
     private boolean mDisableAppCompatRoundedCorners;
+
+    /**
+     * Whether all leaf Tasks of this Task should be treated as non-occluding when calculating
+     * visibility, unless the leaf Task is {@link #isForceOpaque()}.
+     * Note: leaf Tasks below {@link TaskCreationParams#isVisibilityBarrier()} Task will still be
+     * treated as invisible.
+     */
+    private boolean mForceLeafTasksNonOccluding;
 
     public TaskPropertiesRequest() {}
 
@@ -120,6 +130,19 @@ public final class TaskPropertiesRequest implements Parcelable {
             boolean disableAppCompatRoundedCorners) {
         mRequestMask |= REQUEST_DISABLE_APP_COMPAT_ROUNDED_CORNERS;
         mDisableAppCompatRoundedCorners = disableAppCompatRoundedCorners;
+        return this;
+    }
+
+    /**
+     * Sets whether all leaf Tasks of this Task should be treated as non-occluding when calculating
+     * visibility.
+     * Note: leaf Tasks below {@link TaskCreationParams#isVisibilityBarrier()} Task will still be
+     * treated as invisible.
+     */
+    public TaskPropertiesRequest setForceLeafTasksNonOccluding(
+            boolean forceLeafTasksNonOccluding) {
+        mRequestMask |= REQUEST_FORCE_LEAF_TASKS_NON_OCCLUDING;
+        mForceLeafTasksNonOccluding = forceLeafTasksNonOccluding;
         return this;
     }
 
@@ -182,6 +205,17 @@ public final class TaskPropertiesRequest implements Parcelable {
         return mDisableAppCompatRoundedCorners;
     }
 
+    /**
+     * Whether all leaf Tasks of this Task should be treated as non-occluding when calculating
+     * visibility, unless the leaf Task is {@link #isForceOpaque()}.
+     * Note: leaf Tasks below {@link TaskCreationParams#isVisibilityBarrier()} Task will still be
+     * treated as invisible.
+     */
+    @DataClass.Generated.Member
+    public boolean isForceLeafTasksNonOccluding() {
+        return mForceLeafTasksNonOccluding;
+    }
+
     @Override
     @DataClass.Generated.Member
     public String toString() {
@@ -193,7 +227,8 @@ public final class TaskPropertiesRequest implements Parcelable {
                 "reparentOnDisplayRemoval = " + mReparentOnDisplayRemoval + ", " +
                 "forceOpaque = " + mForceOpaque + ", " +
                 "ignoreInsets = " + mIgnoreInsets + ", " +
-                "disableAppCompatRoundedCorners = " + mDisableAppCompatRoundedCorners +
+                "disableAppCompatRoundedCorners = " + mDisableAppCompatRoundedCorners + ", " +
+                "forceLeafTasksNonOccluding = " + mForceLeafTasksNonOccluding +
         " }";
     }
 
@@ -214,7 +249,8 @@ public final class TaskPropertiesRequest implements Parcelable {
                 && mReparentOnDisplayRemoval == that.mReparentOnDisplayRemoval
                 && mForceOpaque == that.mForceOpaque
                 && mIgnoreInsets == that.mIgnoreInsets
-                && mDisableAppCompatRoundedCorners == that.mDisableAppCompatRoundedCorners;
+                && mDisableAppCompatRoundedCorners == that.mDisableAppCompatRoundedCorners
+                && mForceLeafTasksNonOccluding == that.mForceLeafTasksNonOccluding;
     }
 
     @Override
@@ -229,6 +265,7 @@ public final class TaskPropertiesRequest implements Parcelable {
         _hash = 31 * _hash + Boolean.hashCode(mForceOpaque);
         _hash = 31 * _hash + Boolean.hashCode(mIgnoreInsets);
         _hash = 31 * _hash + Boolean.hashCode(mDisableAppCompatRoundedCorners);
+        _hash = 31 * _hash + Boolean.hashCode(mForceLeafTasksNonOccluding);
         return _hash;
     }
 
@@ -243,6 +280,7 @@ public final class TaskPropertiesRequest implements Parcelable {
         if (mForceOpaque) flg |= 0x4;
         if (mIgnoreInsets) flg |= 0x8;
         if (mDisableAppCompatRoundedCorners) flg |= 0x10;
+        if (mForceLeafTasksNonOccluding) flg |= 0x20;
         dest.writeByte(flg);
         dest.writeInt(mRequestMask);
     }
@@ -263,6 +301,7 @@ public final class TaskPropertiesRequest implements Parcelable {
         boolean forceOpaque = (flg & 0x4) != 0;
         boolean ignoreInsets = (flg & 0x8) != 0;
         boolean disableAppCompatRoundedCorners = (flg & 0x10) != 0;
+        boolean forceLeafTasksNonOccluding = (flg & 0x20) != 0;
         int requestMask = in.readInt();
 
         this.mRequestMask = requestMask;
@@ -272,6 +311,7 @@ public final class TaskPropertiesRequest implements Parcelable {
         this.mForceOpaque = forceOpaque;
         this.mIgnoreInsets = ignoreInsets;
         this.mDisableAppCompatRoundedCorners = disableAppCompatRoundedCorners;
+        this.mForceLeafTasksNonOccluding = forceLeafTasksNonOccluding;
 
         // onConstructed(); // You can define this method to get a callback
     }
@@ -291,10 +331,10 @@ public final class TaskPropertiesRequest implements Parcelable {
     };
 
     @DataClass.Generated(
-            time = 1766243373258L,
+            time = 1766656586757L,
             codegenVersion = "1.0.23",
             sourceFile = "frameworks/base/core/java/android/window/TaskPropertiesRequest.java",
-            inputSignatures = "public static final  int REQUEST_NONE\npublic static final  int REQUEST_REPARENT_ON_DISPLAY_REMOVAL\npublic static final  int REQUEST_FORCE_OPAQUE\npublic static final  int REQUEST_IGNORE_INSETS\npublic static final  int REQUEST_DISABLE_APP_COMPAT_ROUNDED_CORNERS\nprivate @android.window.TaskPropertiesRequest.RequestMask int mRequestMask\nprivate  boolean mReparentOnDisplayRemoval\nprivate  boolean mForceOpaque\nprivate  boolean mIgnoreInsets\nprivate  boolean mDisableAppCompatRoundedCorners\npublic  android.window.TaskPropertiesRequest setReparentOnDisplayRemoval(boolean)\npublic  android.window.TaskPropertiesRequest setForceOpaque(boolean)\npublic  android.window.TaskPropertiesRequest setIgnoreInsets(boolean)\npublic  android.window.TaskPropertiesRequest setDisableAppCompatRoundedCorners(boolean)\nclass TaskPropertiesRequest extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genEqualsHashCode=true, genParcelable=true, genToString=true, genConstructor=false, genBuilder=false, genSetters=false, genConstDefs=false)")
+            inputSignatures = "public static final  int REQUEST_NONE\npublic static final  int REQUEST_REPARENT_ON_DISPLAY_REMOVAL\npublic static final  int REQUEST_FORCE_OPAQUE\npublic static final  int REQUEST_IGNORE_INSETS\npublic static final  int REQUEST_DISABLE_APP_COMPAT_ROUNDED_CORNERS\npublic static final  int REQUEST_FORCE_LEAF_TASKS_NON_OCCLUDING\nprivate @android.window.TaskPropertiesRequest.RequestMask int mRequestMask\nprivate  boolean mReparentOnDisplayRemoval\nprivate  boolean mForceOpaque\nprivate  boolean mIgnoreInsets\nprivate  boolean mDisableAppCompatRoundedCorners\nprivate  boolean mForceLeafTasksNonOccluding\npublic  android.window.TaskPropertiesRequest setReparentOnDisplayRemoval(boolean)\npublic  android.window.TaskPropertiesRequest setForceOpaque(boolean)\npublic  android.window.TaskPropertiesRequest setIgnoreInsets(boolean)\npublic  android.window.TaskPropertiesRequest setDisableAppCompatRoundedCorners(boolean)\npublic  android.window.TaskPropertiesRequest setForceLeafTasksNonOccluding(boolean)\nclass TaskPropertiesRequest extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genEqualsHashCode=true, genParcelable=true, genToString=true, genConstructor=false, genBuilder=false, genSetters=false, genConstDefs=false)")
     @Deprecated
     private void __metadata() {}
 
