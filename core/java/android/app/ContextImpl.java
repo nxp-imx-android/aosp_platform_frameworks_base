@@ -2611,6 +2611,11 @@ class ContextImpl extends Context {
     }
 
     @Override
+    public boolean shouldShowRequestPermissionRationale(@NonNull String permission) {
+        return getPackageManager().shouldShowRequestPermissionRationale(permission);
+    }
+
+    @Override
     public void grantUriPermission(String toPackage, Uri uri, int modeFlags) {
          try {
             ActivityManager.getService().grantUriPermission(
