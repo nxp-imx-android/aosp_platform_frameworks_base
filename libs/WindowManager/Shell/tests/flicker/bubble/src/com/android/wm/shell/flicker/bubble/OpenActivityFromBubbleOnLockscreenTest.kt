@@ -18,9 +18,9 @@ package com.android.wm.shell.flicker.bubble
 
 import android.platform.systemui_tapl.ui.Root
 import android.platform.test.annotations.Postsubmit
-import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.FlickerBuilder
 import android.tools.flicker.FlickerTest
+import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.traces.component.ComponentNameMatcher
 import android.view.WindowInsets
 import android.view.WindowManager
@@ -49,8 +49,7 @@ import org.junit.runners.Parameterized
 @RequiresDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
-class OpenActivityFromBubbleOnLockscreenTest(flicker: FlickerTest) :
-    BaseBubbleScreen(flicker) {
+class OpenActivityFromBubbleOnLockscreenTest(flicker: FlickerTest) : BaseBubbleScreen(flicker) {
 
     /** {@inheritDoc} */
     override val transition: FlickerBuilder.() -> Unit
@@ -78,7 +77,7 @@ class OpenActivityFromBubbleOnLockscreenTest(flicker: FlickerTest) :
 
                 val notification =
                     device.wait(Until.findObject(By.text("BubbleChat")), FIND_OBJECT_TIMEOUT)
-                    ?: error("Notification not found")
+                        ?: error("Notification not found")
                 notification.wait(Until.clickable(true), FIND_OBJECT_TIMEOUT)
                     ?: error("Notification not clickable")
                 notification.click()

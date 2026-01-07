@@ -48,7 +48,8 @@ fun FlickerTest.appLayerPositionedBottomRightAtEnd(component: IComponentMatcher)
         val onRightSide = windowBounds.right == displayAppBounds.right
         val onBottomSide = windowBounds.bottom == displayAppBounds.bottom
 
-        check { "window corner must meet display corner" }.that(onRightSide && onBottomSide)
+        check { "window corner must meet display corner" }
+            .that(onRightSide && onBottomSide)
             .isEqual(true)
     }
 }
@@ -100,9 +101,7 @@ fun FlickerTest.appLayerMaintainsAspectRatioAlways(component: IComponentMatcher)
 fun FlickerTest.resizeVeilKeepsIncreasingInSize(component: IComponentMatcher) {
     assertLayers {
         val layerList = layers {
-            component.layerMatchesAnyOf(it) &&
-                    it.isVisible &&
-                    it.name.contains("Resize veil")
+            component.layerMatchesAnyOf(it) && it.isVisible && it.name.contains("Resize veil")
         }
 
         layerList.zipWithNext { previous, current ->
@@ -114,9 +113,7 @@ fun FlickerTest.resizeVeilKeepsIncreasingInSize(component: IComponentMatcher) {
 fun FlickerTest.resizeVeilKeepsDecreasingInSize(component: IComponentMatcher) {
     assertLayers {
         val layerList = layers {
-            component.layerMatchesAnyOf(it) &&
-                    it.isVisible &&
-                    it.name.contains("Resize veil")
+            component.layerMatchesAnyOf(it) && it.isVisible && it.name.contains("Resize veil")
         }
 
         layerList.zipWithNext { previous, current ->
@@ -125,16 +122,10 @@ fun FlickerTest.resizeVeilKeepsDecreasingInSize(component: IComponentMatcher) {
     }
 }
 
-fun FlickerTest.appLayerHasSizeAtEnd(
-    component: IComponentMatcher,
-    widthDp: Int,
-    heightDp: Int
-) {
+fun FlickerTest.appLayerHasSizeAtEnd(component: IComponentMatcher, widthDp: Int, heightDp: Int) {
     val width = WindowManagerState.dpToPx(widthDp.toFloat(), WindowUtils.defaultDisplayDpi)
     val height = WindowManagerState.dpToPx(heightDp.toFloat(), WindowUtils.defaultDisplayDpi)
-    assertLayersEnd {
-        visibleRegion(component).hasSameSize(width, height, diffThreshold = 50)
-    }
+    assertLayersEnd { visibleRegion(component).hasSameSize(width, height, diffThreshold = 50) }
 }
 
 fun FlickerTest.leftTiledAppLargerThanRightAtEnd(
@@ -146,6 +137,7 @@ fun FlickerTest.leftTiledAppLargerThanRightAtEnd(
         visibleRegion(leftComponent).isStrictlyWiderThan(rightRegion.region)
     }
 }
+
 /**
  * Verify that app window fills > 95% of either half of the screen, accounting for the difference
  * due to the divider handle.
@@ -177,13 +169,9 @@ fun FlickerTest.appWindowBecomesPinned(component: IComponentMatcher) {
     }
 }
 
-/**
- * Assert that the app window launches on the default display.
- */
+/** Assert that the app window launches on the default display. */
 fun FlickerTest.appWindowOnDefaultDisplayAtEnd(component: IComponentMatcher) {
-    assertWmEnd {
-        this.containsAppWindow(component)
-    }
+    assertWmEnd { this.containsAppWindow(component) }
 }
 
 fun FlickerTest.appWindowReturnsToStartBoundsAndPosition(component: IComponentMatcher) {
@@ -221,7 +209,7 @@ fun FlickerTest.tilingDividerBecomesInvisibleThenVisible() {
 
 fun FlickerTest.layerExactlyCoversAnotherAtEnd(
     coveredLayer: IComponentMatcher,
-    coveringLayer: IComponentMatcher
+    coveringLayer: IComponentMatcher,
 ) {
     assertLayersEnd {
         val coveredLayerBounds = visibleRegion(coveredLayer).region.bounds
@@ -231,7 +219,7 @@ fun FlickerTest.layerExactlyCoversAnotherAtEnd(
 
 fun FlickerTest.layerContainsAnotherAtEnd(
     outerLayer: IComponentMatcher,
-    innerLayer: IComponentMatcher
+    innerLayer: IComponentMatcher,
 ) {
     assertWmEnd {
         val outerBounds = visibleRegion(outerLayer).region.bounds

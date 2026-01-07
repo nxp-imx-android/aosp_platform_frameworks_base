@@ -17,12 +17,12 @@
 package com.android.wm.shell.flicker.pip.nonmatchparent
 
 import android.platform.test.annotations.Presubmit
-import androidx.test.filters.RequiresDevice
 import android.platform.test.annotations.RequiresFlagsDisabled
-import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.FlickerBuilder
 import android.tools.flicker.FlickerTest
+import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.traces.parsers.toFlickerComponent
+import androidx.test.filters.RequiresDevice
 import com.android.server.wm.flicker.helpers.BottomHalfPipAppHelper
 import com.android.server.wm.flicker.testapp.ActivityOptions
 import com.android.wm.shell.flicker.pip.FromSplitScreenAutoEnterPipOnGoToHomeTest
@@ -37,8 +37,8 @@ import org.junit.runners.Parameterized
  * Test entering pip from a bottom half layout app via auto-enter property when navigating to home
  * from split screen.
  *
- * To run this test:
- *     `atest WMShellFlickerTestsPip:BottomHalfFromSplitScreenAutoEnterPipOnGoToHomeTest`
+ * To run this test: `atest
+ * WMShellFlickerTestsPip:BottomHalfFromSplitScreenAutoEnterPipOnGoToHomeTest`
  *
  * Actions:
  * ```
@@ -64,14 +64,14 @@ import org.junit.runners.Parameterized
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class BottomHalfFromSplitScreenAutoEnterPipOnGoToHomeTest(flicker: FlickerTest) :
-    FromSplitScreenAutoEnterPipOnGoToHomeTest(flicker)
-{
-    override val pipApp = BottomHalfPipAppHelper(
-        instrumentation,
-        useLaunchingActivity = true,
-        // Set the activity to fill task to enable auto enter pip via the radio option.
-        fillTaskOnCreate = true
-    )
+    FromSplitScreenAutoEnterPipOnGoToHomeTest(flicker) {
+    override val pipApp =
+        BottomHalfPipAppHelper(
+            instrumentation,
+            useLaunchingActivity = true,
+            // Set the activity to fill task to enable auto enter pip via the radio option.
+            fillTaskOnCreate = true,
+        )
 
     /** Defines the transition used to run the test */
     override val transition: FlickerBuilder.() -> Unit
@@ -86,15 +86,17 @@ class BottomHalfFromSplitScreenAutoEnterPipOnGoToHomeTest(flicker: FlickerTest) 
                     device,
                     pipApp,
                     secondAppForSplitScreen,
-                    flicker.scenario.startRotation
+                    flicker.scenario.startRotation,
                 )
                 pipApp.enableAutoEnterForPipActivity()
                 // Set BottomHalfPipActivity to bottom half layout to continue the test.
                 pipApp.toggleBottomHalfLayout()
-                wmHelper.StateSyncBuilder()
+                wmHelper
+                    .StateSyncBuilder()
                     .withLayerVisible(
                         ActivityOptions.BottomHalfPip.LAUNCHING_APP_COMPONENT.toFlickerComponent()
-                    ).waitForAndVerify()
+                    )
+                    .waitForAndVerify()
             }
             teardown {
                 pipApp.exit(wmHelper)
@@ -110,9 +112,7 @@ class BottomHalfFromSplitScreenAutoEnterPipOnGoToHomeTest(flicker: FlickerTest) 
         // pip task position.
     }
 
-    /**
-     * Verifies the left edge of the pip layer moves to the right continuously.
-     */
+    /** Verifies the left edge of the pip layer moves to the right continuously. */
     @Presubmit
     @Test
     fun pipLayerMovesTowardsRight() {

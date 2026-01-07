@@ -73,8 +73,7 @@ class ClosePipBySwipingDownTest(flicker: FlickerTest) : ClosePipTransition(flick
                     .getLayerWithBuffer(barComponent)
                     ?.visibleRegion
                     ?.bounds
-                    ?.height()
-                    ?: error("Couldn't find Nav or Task bar layer")
+                    ?.height() ?: error("Couldn't find Nav or Task bar layer")
             // The dismiss button doesn't appear at the complete bottom of the screen,
             // it appears above the hot seat but `hotseatBarSize` is not available outside
             // the platform

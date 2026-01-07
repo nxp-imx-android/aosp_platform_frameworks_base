@@ -16,16 +16,16 @@
 
 package com.android.wm.shell.flicker.pip
 
-import androidx.test.filters.FlakyTest
 import android.platform.test.annotations.Presubmit
-import androidx.test.filters.RequiresDevice
 import android.tools.Rotation
-import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.FlickerBuilder
 import android.tools.flicker.FlickerTest
 import android.tools.flicker.FlickerTestFactory
+import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.helpers.WindowUtils
 import android.tools.traces.parsers.toFlickerComponent
+import androidx.test.filters.FlakyTest
+import androidx.test.filters.RequiresDevice
 import com.android.server.wm.flicker.helpers.PipAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.server.wm.flicker.testapp.ActivityOptions
@@ -74,7 +74,7 @@ open class FromSplitScreenEnterPipOnUserLeaveHintTest(flicker: FlickerTest) :
         SimpleAppHelper(
             instrumentation,
             ActivityOptions.SplitScreen.Primary.LABEL,
-            ActivityOptions.SplitScreen.Primary.COMPONENT.toFlickerComponent()
+            ActivityOptions.SplitScreen.Primary.COMPONENT.toFlickerComponent(),
         )
 
     /** Defines the transition used to run the test */
@@ -90,7 +90,7 @@ open class FromSplitScreenEnterPipOnUserLeaveHintTest(flicker: FlickerTest) :
                     device,
                     pipApp,
                     secondAppForSplitScreen,
-                    flicker.scenario.startRotation
+                    flicker.scenario.startRotation,
                 )
                 pipApp.enableEnterPipOnUserLeaveHint()
             }
@@ -196,8 +196,6 @@ open class FromSplitScreenEnterPipOnUserLeaveHintTest(flicker: FlickerTest) :
         @Parameterized.Parameters(name = "{0}")
         @JvmStatic
         fun getParams() =
-            FlickerTestFactory.nonRotationTests(
-                supportedRotations = listOf(Rotation.ROTATION_0)
-            )
+            FlickerTestFactory.nonRotationTests(supportedRotations = listOf(Rotation.ROTATION_0))
     }
 }
