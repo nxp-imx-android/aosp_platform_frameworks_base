@@ -682,12 +682,12 @@ public final class JobStatus {
      * Constraints (converted to the pending job reasons they represent) mapped to
      * when they became unsatisfied.
      */
-    private final SparseLongArray mLastTimesConstraintsUnsatisfied = new SparseLongArray();
+    private SparseLongArray mLastTimesConstraintsUnsatisfied = new SparseLongArray();
     /**
      * Pending job reasons mapped to how long (aggregated) the job has been pending execution
      * due to those reasons.
      */
-    private final SparseLongArray mPendingJobReasonsStats = new SparseLongArray();
+    private SparseLongArray mPendingJobReasonsStats = new SparseLongArray();
 
     /**
      * For use only by ContentObserverController: state it is maintaining about content URIs
@@ -1005,6 +1005,12 @@ public final class JobStatus {
                 lastSuccessfulRunTime, lastFailedRunTime, cumulativeExecutionTimeMs,
                 rescheduling.getInternalFlags(),
                 rescheduling.mDynamicConstraints);
+
+        // Copy the pending reason stats and related unsatisfied constraints info from
+        // the rescheduled job status
+        this.mLastTimesConstraintsUnsatisfied =
+                rescheduling.mLastTimesConstraintsUnsatisfied.clone();
+        this.mPendingJobReasonsStats = rescheduling.mPendingJobReasonsStats.clone();
     }
 
     /**
@@ -2695,6 +2701,7 @@ public final class JobStatus {
     @NonNull
     public Map<String, ParcelDuration> getPendingJobReasonStats() {
         final Map<String, ParcelDuration> returnMap = new HashMap<>();
+        // Add all existing stats (previously satisfied constraints) and create the base return map
         for (int i = mPendingJobReasonsStats.size() - 1; i >= 0; i--) {
             returnMap.put(String.valueOf(mPendingJobReasonsStats.keyAt(i)),
                     new ParcelDuration(mPendingJobReasonsStats.valueAt(i)));
@@ -2703,11 +2710,29 @@ public final class JobStatus {
         final int unsatisfiedConstraints = ~satisfiedConstraints
                 & (requiredConstraints | mDynamicConstraints | IMPLICIT_CONSTRAINTS);
         final ArrayList<Integer> reasons = constraintsToPendingJobReasons(unsatisfiedConstraints);
-        final long waitingTime = JobSchedulerService.sElapsedRealtimeClock.millis() - enqueueTime;
+        final long timeNow = JobSchedulerService.sElapsedRealtimeClock.millis();
+        // Append each constraint that the job is still pending because of
         for (int i = reasons.size() - 1; i >= 0; i--) {
-            // Append each constraint that the job is still pending because of.
-            if (!returnMap.containsKey(String.valueOf((reasons.get(i))))) {
-                returnMap.put(String.valueOf(reasons.get(i)), new ParcelDuration(waitingTime));
+            final int pendingReason = reasons.get(i);
+            // The job has been pending because of this constraint since it was enqueued
+            if (!returnMap.containsKey(String.valueOf(pendingReason))) {
+                returnMap.put(String.valueOf(pendingReason),
+                        new ParcelDuration(timeNow - enqueueTime));
+                continue;
+            }
+
+            final int unsatisfiedConstraintIdx =
+                    mLastTimesConstraintsUnsatisfied.indexOfKey(pendingReason);
+            // The job may be pending again due to a constraint it earlier satisfied, update map
+            if (unsatisfiedConstraintIdx >= 0) {
+                long previousWaitTime = mPendingJobReasonsStats.get(pendingReason);
+                long currentWaitTime = timeNow
+                        - mLastTimesConstraintsUnsatisfied.valueAt(unsatisfiedConstraintIdx);
+                returnMap.put(String.valueOf(pendingReason),
+                        new ParcelDuration(previousWaitTime + currentWaitTime));
+            } else {
+                Slog.w(TAG, "Unsatisfied constraint not being tracked: "
+                        + constraintsToString(pendingReason));
             }
         }
 
