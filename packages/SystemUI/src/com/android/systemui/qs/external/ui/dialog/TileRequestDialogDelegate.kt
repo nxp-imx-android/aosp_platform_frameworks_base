@@ -68,7 +68,12 @@ constructor(
 ) : SystemUIDialog.Delegate {
 
     override fun createDialog(): SystemUIDialog {
-        return sysuiDialogFactory.create { TileRequestDialogContent(it) }
+        return sysuiDialogFactory
+            .create { TileRequestDialogContent(it) }
+            .apply {
+                window?.attributes?.accessibilityTitle =
+                    context.getString(R.string.qs_tile_request_dialog_title)
+            }
     }
 
     @Composable
