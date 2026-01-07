@@ -211,16 +211,6 @@ flag {
 }
 
 flag {
-    name: "remove_app_bubble_overflow_dupes"
-    namespace: "multitasking"
-    description: "Don't allow multiple instances of same app in bubble overflow"
-    bug: "415103355"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "fix_flickers_during_switch_from_dismiss"
     namespace: "multitasking"
     description: "Fixes flickers while switching bubbles as a result of dismissing a bubble."
