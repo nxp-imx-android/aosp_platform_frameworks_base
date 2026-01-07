@@ -1177,12 +1177,8 @@ public final class VirtualDeviceManager {
          * @see android.view.InputDevice#SOURCE_ROTARY_ENCODER
          */
         @NonNull
-        @FlaggedApi(Flags.FLAG_VIRTUAL_ROTARY)
         public VirtualRotaryEncoder createVirtualRotaryEncoder(
                 @NonNull VirtualRotaryEncoderConfig config) {
-            if (!Flags.virtualRotary()) {
-                throw new UnsupportedOperationException("Virtual rotary support not enabled");
-            }
             return mVirtualDeviceInternal.createVirtualRotaryEncoder(config);
         }
 

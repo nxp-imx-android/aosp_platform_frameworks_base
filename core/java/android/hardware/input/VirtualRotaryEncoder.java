@@ -19,7 +19,6 @@ package android.hardware.input;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.SystemApi;
-import android.companion.virtualdevice.flags.Flags;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.InputDevice;
@@ -34,7 +33,6 @@ import java.io.Closeable;
  *
  * @hide
  */
-@FlaggedApi(Flags.FLAG_VIRTUAL_ROTARY)
 @SystemApi
 public class VirtualRotaryEncoder implements Closeable {
 
