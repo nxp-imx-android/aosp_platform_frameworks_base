@@ -390,7 +390,6 @@ constructor(
         handleSimUnlock()
         handleDeviceUnlockStatus()
         handlePowerState()
-        handleShadeTouchability()
         handleDisableFlags()
     }
 
@@ -791,30 +790,6 @@ constructor(
                             loggingReason = "device is waking up while occluded",
                         )
                     }
-                }
-            }
-        }
-    }
-
-    private fun handleShadeTouchability() {
-        applicationScope.launch {
-            repeatWhen(deviceEntryInteractor.isDeviceEntered.map { !it }) {
-                // Run logic only when the device isn't entered.
-                repeatWhen(
-                    sceneInteractor.transitionState.map { !it.isTransitioning(to = Scenes.Gone) }
-                ) {
-                    // Run logic only when not transitioning to gone.
-                    shadeInteractor.isShadeTouchable
-                        .distinctUntilChanged()
-                        .filter { !it }
-                        .collect {
-                            switchToScene(
-                                targetSceneKey = Scenes.Lockscreen,
-                                keyguardState = getKeyguardStateForWakefulness(isAwake = false),
-                                loggingReason =
-                                    "device became non-interactive (SceneContainerStartable)",
-                            )
-                        }
                 }
             }
         }
