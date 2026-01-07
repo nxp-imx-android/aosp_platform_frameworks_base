@@ -640,7 +640,13 @@ public class BubbleStackView extends FrameLayout
                 // and should expand) or the currently selected bubble (we're expanded
                 // and should collapse).
                 if (!maybeShowStackEdu() && !mShowedUserEducationInTouchListenerActive) {
-                    mBubbleData.setExpanded(!mBubbleData.isExpanded());
+                    if (mBubbleData.isExpanded()) {
+                        mBubbleData.setExpanded(false);
+                    } else if (clickedBubble.isTaskValidToBubbleOnSmallScreen()) {
+                        mBubbleData.setExpanded(true);
+                    } else {
+                        clickedBubble.getTaskView().moveToFullscreen();
+                    }
                 }
                 mShowedUserEducationInTouchListenerActive = false;
             }
