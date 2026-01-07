@@ -7909,6 +7909,16 @@
     <permission android:name="android.permission.SET_BIOMETRIC_DIALOG_ADVANCED"
                 android:protectionLevel="signature|privileged" />
 
+    <!-- Allows an application to retrieve the sensor security strengths of the biometric sensors.
+         <p>This permission is currently granted only to the WALLET role, the
+         DEVICE_POLICY_MANAGEMENT role, and the SYSTEM_SHELL role (for easier control during
+         testing).
+         @FlaggedApi(android.hardware.biometrics.Flags.FLAG_GET_BIOMETRIC_SENSOR_STRENGTHS)
+         @hide -->
+    <permission android:name="android.permission.ACCESS_BIOMETRIC_SENSOR_STRENGTHS"
+        android:protectionLevel="internal|role"
+        android:featureFlag="android.hardware.biometrics.get_biometric_sensor_strengths" />
+
     <!-- Allows an application to control keyguard.  Only allowed for system processes.
         @hide -->
     <permission android:name="android.permission.CONTROL_KEYGUARD"
