@@ -54,7 +54,6 @@ import com.android.systemui.statusbar.notification.data.repository.HeadsUpReposi
 import com.android.systemui.statusbar.notification.data.repository.HeadsUpRowRepository;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.shared.AvalancheReplaceHunWhenCritical;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun;
 import com.android.systemui.statusbar.phone.ExpandHeadsUpOnInlineReply;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
@@ -330,9 +329,6 @@ public class HeadsUpManagerImpl
             // Add new entry and begin managing it
             mHeadsUpEntryMap.put(entry.getKey(), headsUpEntry);
             onEntryAdded(headsUpEntry, requestedPinnedStatus);
-            if (!NotificationBundleUi.isEnabled()) {
-                entry.setIsHeadsUpEntry(true);
-            }
 
             updateNotificationInternal(entry.getKey(), requestedPinnedStatus);
             entry.setInterruption();
@@ -453,7 +449,6 @@ public class HeadsUpManagerImpl
      */
     @Override
     public void releaseAllImmediately(String reason) {
-        mLogger.logReleaseAllImmediately(reason);
         // A copy is necessary here as we are changing the underlying map.  This would cause
         // undefined behavior if we iterated over the key set directly.
         ArraySet<String> keysToRemove = new ArraySet<>(mHeadsUpEntryMap.keySet());
@@ -463,10 +458,10 @@ public class HeadsUpManagerImpl
         List<String> waitingKeysToRemove = mAvalancheController.getWaitingKeys();
 
         for (String key : keysToRemove) {
-            removeEntry(key, "releaseAllImmediately (keysToRemove)");
+            removeEntry(key, reason + " (keysToRemove)");
         }
         for (String key : waitingKeysToRemove) {
-            removeEntry(key, "releaseAllImmediately (waitingKeysToRemove)");
+            removeEntry(key, reason + " (waitingKeysToRemove)");
         }
     }
 
@@ -632,7 +627,6 @@ public class HeadsUpManagerImpl
         } else {
             isWaiting = false;
         }
-        mLogger.logRemoveEntryRequest(key, reason, isWaiting);
         HeadsUpEntry finalHeadsUpEntry = headsUpEntry;
         Runnable runnable = () -> {
             mLogger.logRemoveEntry(key, reason, isWaiting);
@@ -876,17 +870,8 @@ public class HeadsUpManagerImpl
         } else {
             ExpandableNotificationRow topRow = topEntry.getRow();
             if (topEntry.rowIsChildInGroup()) {
-                if (NotificationBundleUi.isEnabled()) {
-                    if (topRow.getNotificationParent() != null) {
-                        topRow = topRow.getNotificationParent();
-                    }
-                } else {
-                    final NotificationEntry groupSummary =
-                            mGroupMembershipManager.getGroupSummary(topEntry);
-                    if (groupSummary != null) {
-                        topEntry = groupSummary;
-                        topRow = topEntry.getRow();
-                    }
+                if (topRow.getNotificationParent() != null) {
+                    topRow = topRow.getNotificationParent();
                 }
             }
 
@@ -1111,22 +1096,8 @@ public class HeadsUpManagerImpl
     @Override
     public void setExpanded(@NonNull String entryKey, @NonNull ExpandableNotificationRow row,
             boolean expanded) {
-        NotificationBundleUi.unsafeAssertInNewMode();
         HeadsUpEntry headsUpEntry = getHeadsUpEntry(entryKey);
         if (headsUpEntry != null && row.getPinnedStatus().isPinned()) {
-            headsUpEntry.setExpanded(expanded);
-        }
-    }
-
-    /**
-     * Set an entry to be expanded and therefore stick in the heads up area if it's pinned
-     * until it's collapsed again.
-     */
-    @Override
-    public void setExpanded(@NonNull NotificationEntry entry, boolean expanded) {
-        NotificationBundleUi.assertInLegacyMode();
-        HeadsUpEntry headsUpEntry = getHeadsUpEntry(entry.getKey());
-        if (headsUpEntry != null && entry.isRowPinned()) {
             headsUpEntry.setExpanded(expanded);
         }
     }
@@ -1739,7 +1710,6 @@ public class HeadsUpManagerImpl
                 }
             };
             if (mEntry != null && isHeadsUpEntry(mEntry.getKey())) {
-                mLogger.logAutoRemoveCancelRequest(this.mEntry, reason);
                 mAvalancheController.update(this, cancellationRunnable,
                         reason + " cancelAutoRemovalCallbacks");
             } else {
@@ -1754,7 +1724,6 @@ public class HeadsUpManagerImpl
                 Log.wtf(TAG, "#scheduleAutoRemovalCallback with null mEntry; returning early");
                 return;
             }
-            mLogger.logAutoRemoveRequest(mEntry, reason);
             Runnable runnable = () -> {
                 long delayMs = finishTimeCalculator.updateAndGetTimeRemaining();
 

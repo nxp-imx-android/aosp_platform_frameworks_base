@@ -23,6 +23,7 @@ import android.app.ActivityManager.RunningTaskInfo
 import android.app.ActivityOptions
 import android.app.TaskInfo
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK
@@ -594,3 +595,8 @@ private fun TaskInfo.hasPortraitTopActivity(screenOrientation: Int?): Boolean {
 private fun TaskInfo.hasFullscreenOverride(): Boolean =
     appCompatTaskInfo.isUserFullscreenOverrideEnabled ||
         appCompatTaskInfo.isSystemFullscreenOverrideEnabled
+
+/** Gets the component name to be used for remembered bounds. */
+val TaskInfo.componentNameForRememberedBounds: ComponentName?
+    // Prioritize realActivity to properly handle TWA apps.
+    get() = realActivity ?: baseActivity

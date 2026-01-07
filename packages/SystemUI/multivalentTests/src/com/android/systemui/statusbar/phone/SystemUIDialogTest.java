@@ -218,7 +218,8 @@ public class SystemUIDialogTest extends SysuiTestCase {
                 mDialogTransiationAnimator,
                 null,
                 mDelegate,
-                true) {
+                true,
+                false) {
             @Override
             protected void start() {
                 calledStart.set(true);

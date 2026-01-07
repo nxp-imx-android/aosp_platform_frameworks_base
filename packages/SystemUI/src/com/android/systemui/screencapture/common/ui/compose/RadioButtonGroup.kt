@@ -33,7 +33,9 @@ import androidx.compose.material3.ToggleButtonShapes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
@@ -131,6 +133,7 @@ private fun ToggleRadioButton(
         onCheckedChange = { item.onClick() },
         modifier =
             modifier.semantics(mergeDescendants = true) {
+                this.role = Role.RadioButton
                 this.contentDescription = item.contentDescription ?: ""
             },
     ) {

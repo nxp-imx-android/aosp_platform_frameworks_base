@@ -63,11 +63,13 @@ public abstract class BlurRegion {
      *
      * @param offsetX horizontal offset to apply to the region's coordinates
      * @param offsetY vertical offset to apply to the region's coordinates
+     * @param scaleX horizontal scale to apply to the region's coordinates
+     * @param scaleY vertical scale to apply to the region's coordinates
      * @return float array containing the region parameters
      * @hide
      */
     @NonNull
-    public abstract float[] toFloatArray(int offsetX, int offsetY);
+    public abstract float[] toFloatArray(int offsetX, int offsetY, float scaleX, float scaleY);
 
     /**
     * @return deep copy of this blur region

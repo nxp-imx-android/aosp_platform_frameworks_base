@@ -16,7 +16,9 @@
 
 package com.android.systemui.screencapture.common.ui.viewmodel
 
+import android.media.projection.IAppContentProjectionCallback
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.common.domain.interactor.ScreenCaptureAppContentInteractor
@@ -27,6 +29,7 @@ import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import java.lang.ref.WeakReference
 
 /**
  * Interface for view models concerned with app contents.
@@ -61,6 +64,12 @@ interface AppContentsViewModel : TargetsViewModel {
     override val targets: State<List<ScreenCaptureAppContent>?>
     override val selectedTarget: State<AppContentViewModel?>
 
+    /**
+     * The projection callback for the currently selected app content target. This is a
+     * [WeakReference] to avoid leaking the Binder.
+     */
+    val projectionCallback: State<WeakReference<IAppContentProjectionCallback>?>
+
     override fun createViewModelFor(target: TargetModel): AppContentViewModel
 
     interface Factory {
@@ -84,7 +93,11 @@ constructor(
     AudioSwitchViewModel by audioSwitchViewModel,
     HydratedActivatable() {
 
-    override val targets: State<List<ScreenCaptureAppContent>?> =
+    /**
+     * The full app content result from the interactor, containing both the list of shareable
+     * content and the projection callbacks for each package.
+     */
+    private val appContent =
         recentTaskInteractor.recentTasks
             .flatMapLatestConflated { tasks ->
                 appContentInteractor.appContentsFor(
@@ -94,6 +107,17 @@ constructor(
                 )
             }
             .hydratedStateOf("AppContentsViewModel#getAppContents", null)
+
+    override val projectionCallback: State<WeakReference<IAppContentProjectionCallback>?> =
+        derivedStateOf {
+            selectedTarget.value?.let {
+                appContent.value?.projectionCallbacks?.get(it.model.packageName)
+            }
+        }
+
+    override val targets: State<List<ScreenCaptureAppContent>?> = derivedStateOf {
+        appContent.value?.contents
+    }
 
     private val _selectedTarget = mutableStateOf<AppContentViewModel?>(null)
     override val selectedTarget: State<AppContentViewModel?> = _selectedTarget

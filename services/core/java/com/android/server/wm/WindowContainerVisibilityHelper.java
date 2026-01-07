@@ -57,18 +57,18 @@ interface WindowContainerVisibilityHelper {
      * Whether the container is opaque.
      *
      * @param current the {@link WindowContainer} to check.
-     */
-    boolean isOpaque(@NonNull WindowContainer<?> current);
-
-    /**
-     * Whether the container is opaque.
-     *
-     * @param current the {@link WindowContainer} to check.
      * @param starting the currently starting activity or {@code null} if there is none.
      * @param ignoringKeyguard if {@code true}, returns the result ignoring the keyguard state.
      * @param ignoringInvisibleActivity if {@code true}, only including visible activities in the
      *                                  calculation.
+     * @param ignoringFinishing if {@code true}, only including activities that are not finishing in
+     *                          the calculation. Note: when {@code ignoringInvisibleActivity} is
+     *                          {@code true}, this param will also be treated as {@code true} since
+     *                          finishing activity is invisible; when this param is {@code true}
+     *                          while {@code ignoringInvisibleActivity} is {@code false}, it will
+     *                          take invisible activity into account, but ignore finishing activity.
      */
     boolean isOpaque(@NonNull WindowContainer<?> current, @Nullable ActivityRecord starting,
-            boolean ignoringKeyguard,  boolean ignoringInvisibleActivity);
+            boolean ignoringKeyguard, boolean ignoringInvisibleActivity,
+            boolean ignoringFinishing);
 }

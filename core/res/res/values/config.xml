@@ -4325,8 +4325,7 @@
          magnification settings and adjust the default magnification capability.  -->
     <bool name="config_magnification_area">true</bool>
 
-    <!-- The default value for always on magnification feature flag if the remote feature
-         flag does not exist -->
+    <!-- Whether to support always on magnification feature -->
     <bool name="config_magnification_always_on_enabled">true</bool>
 
     <!-- Whether to keep fullscreen magnification zoom level when context changes. -->

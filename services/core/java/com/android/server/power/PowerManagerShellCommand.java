@@ -343,7 +343,16 @@ class PowerManagerShellCommand extends ShellCommand {
         }
 
         if (disableWakelocks) {
-            pmInternal.setForceDisableWakelocks(true);
+            if (groupIds.size() > 0) {
+                pmInternal.setForceDisableWakelocksByPowerGroup(true, groupIds);
+            }
+            if (displayIds.size() > 0) {
+                pmInternal.setForceDisableWakelocksByDisplay(true, displayIds);
+            }
+            // If no specific groups/displays were targeted, apply globally.
+            if (groupIds.size() == 0 && displayIds.size() == 0) {
+                pmInternal.setForceDisableWakelocks(true);
+            }
         }
 
         if (groupIds.size() > 0) {
@@ -460,9 +469,9 @@ class PowerManagerShellCommand extends ShellCommand {
         final PrintWriter pw = getOutPrintWriter();
 
         return () -> {
+            PowerManagerInternal pmInternal =
+                    LocalServices.getService(PowerManagerInternal.class);
             if (groupIds.size() > 0 || displayIds.size() > 0) {
-                PowerManagerInternal pmInternal =
-                        LocalServices.getService(PowerManagerInternal.class);
                 if (groupIds.size() > 0) {
                     try {
                         pmInternal.wakeupPerGroup(groupIds,
@@ -507,9 +516,16 @@ class PowerManagerShellCommand extends ShellCommand {
             }
 
             if (restoreWakelocks) {
-                PowerManagerInternal pmInternal =
-                        LocalServices.getService(PowerManagerInternal.class);
-                pmInternal.setForceDisableWakelocks(false);
+                if (groupIds.size() > 0) {
+                    pmInternal.setForceDisableWakelocksByPowerGroup(false, groupIds);
+                }
+                if (displayIds.size() > 0) {
+                    pmInternal.setForceDisableWakelocksByDisplay(false, displayIds);
+                }
+                // If no specific groups/displays were targeted, apply globally.
+                if (groupIds.size() == 0 && displayIds.size() == 0) {
+                    pmInternal.setForceDisableWakelocks(false);
+                }
             }
         };
     }
@@ -553,6 +569,9 @@ class PowerManagerShellCommand extends ShellCommand {
         pw.println("  sleep (--disable-wakelocks) (--group-id <group ids>) ");
         pw.println("    requests to sleep the device");
         pw.println("      --disable-wakelocks: Force disable wakelocks before going to sleep.");
+        pw.println(
+                "        It will only act upon the wakelocks associated with the listed power "
+                        + "groups or displays.");
         pw.println(
                 "      --group-id <group ids>: Only sleep certain power groups, list with spaces.");
         pw.println(

@@ -65,6 +65,7 @@ class NotificationShadeWindowState(
     @JvmField var isOnOrGoingToDream: Boolean = false,
     @JvmField var isAnimatingSurfaceBehind: Boolean = false,
     @JvmField var isAnimatingGoneToAod: Boolean = false,
+    @JvmField var launchingActivityFromWidget: Boolean = false,
 ) {
 
     fun isKeyguardShowingAndNotOccluded(): Boolean {
@@ -111,6 +112,7 @@ class NotificationShadeWindowState(
             isOnOrGoingToDream.toString(),
             isAnimatingSurfaceBehind.toString(),
             isAnimatingGoneToAod.toString(),
+            launchingActivityFromWidget.toString(),
         )
     }
 
@@ -157,6 +159,7 @@ class NotificationShadeWindowState(
             isOnOrGoingToDream: Boolean,
             isAnimatingSurfaceBehind: Boolean,
             isAnimatingGoneToAod: Boolean,
+            launchingActivityFromWidget: Boolean,
         ) {
             buffer.advance().apply {
                 this.keyguardShowing = keyguardShowing
@@ -193,6 +196,7 @@ class NotificationShadeWindowState(
                 this.isOnOrGoingToDream = isOnOrGoingToDream
                 this.isAnimatingSurfaceBehind = isAnimatingSurfaceBehind
                 this.isAnimatingGoneToAod = isAnimatingGoneToAod
+                this.launchingActivityFromWidget = launchingActivityFromWidget
             }
         }
 
@@ -243,6 +247,7 @@ class NotificationShadeWindowState(
                 "communalVisible",
                 "isOnOrGoingToDream",
                 "isAnimatingSurfaceBehind",
+                "launchingActivityFromWidget",
             )
     }
 }

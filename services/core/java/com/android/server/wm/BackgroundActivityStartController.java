@@ -48,7 +48,6 @@ import static com.android.server.wm.PendingRemoteAnimationRegistry.TIMEOUT_MS;
 import static com.android.window.flags.Flags.balDontBringExistingBackgroundTaskStackToFg;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
-import static java.util.Objects.requireNonNull;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -1006,10 +1005,10 @@ public class BackgroundActivityStartController {
                             ? state.mCallingPackage
                             + " could opt in to grant BAL privileges when creating."
                             : "")
-                            + "The intent would have started " + state.mIntent.getComponent();
+                            + "The intent would have started " + getComponent(state.mIntent);
         } else {
             abortDebugMessage = "Activity start blocked. "
-                    + "The intent would have started " + state.mIntent.getComponent();
+                    + "The intent would have started " + getComponent(state.mIntent);
         }
         strictModeLaunchAborted(state.mCallingUid, abortDebugMessage);
         if (!state.callerIsRealCaller()) {
@@ -2156,9 +2155,7 @@ public class BackgroundActivityStartController {
         if (shouldLogStats(finalVerdict, state)) {
             String activityName;
             if (shouldLogIntentActivity(finalVerdict, state)) {
-                Intent intent = state.mIntent;
-                activityName = intent == null ? "noIntent" // should never happen
-                        : requireNonNull(intent.getComponent()).flattenToShortString();
+                activityName = getComponent(state.mIntent);
             } else {
                 activityName = "";
             }
@@ -2167,6 +2164,19 @@ public class BackgroundActivityStartController {
             writeBalAllowedLogMinimal(state, finalVerdict.getCode());
         }
         return finalVerdict;
+    }
+
+    private String getComponent(Intent intent) {
+        if (intent == null) {
+            // e.g. moveTaskToFront
+            return "noIntent";
+        }
+        ComponentName component = intent.getComponent();
+        if (component == null) {
+            // should never be the case as the Intent is fully resolved when we decide about BAL
+            return "noComponent";
+        }
+        return component.flattenToShortString();
     }
 
     /**

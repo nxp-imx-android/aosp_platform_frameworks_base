@@ -243,24 +243,6 @@ class StatusBarNotificationPresenter implements NotificationPresenter, CommandQu
     }
 
     @Override
-    public void onExpandClicked(NotificationEntry clickedEntry, View clickedView,
-            boolean nowExpanded) {
-        mHeadsUpManager.setExpanded(clickedEntry, nowExpanded);
-        mPowerInteractor.wakeUpIfDozing("NOTIFICATION_CLICK", PowerManager.WAKE_REASON_GESTURE);
-        if (nowExpanded) {
-            if (mStatusBarStateController.getState() == StatusBarState.KEYGUARD) {
-                mShadeTransitionController.goToLockedShade(
-                        clickedEntry.getRow(), /* needsQSAnimation = */ true);
-            } else if (clickedEntry.isSensitive().getValue() && isInLockedDownShade()) {
-                mStatusBarStateController.setLeaveOpenOnKeyguardHide(true);
-                // launch the bouncer if the device is locked
-                mActivityStarter.dismissKeyguardThenExecute(() -> false /* dismissAction */
-                        , null /* cancelRunnable */, false /* afterKeyguardGone */);
-            }
-        }
-    }
-
-    @Override
     public void onExpandClicked(ExpandableNotificationRow row, EntryAdapter clickedEntry,
             boolean nowExpanded) {
         mHeadsUpManager.setExpanded(clickedEntry.getKey(), row, nowExpanded);

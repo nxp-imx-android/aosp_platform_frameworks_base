@@ -96,6 +96,9 @@ const bool DEBUG_ERROR = true;
 // The current process.  This is cached here on startup.
 const pid_t sThisProcess = getpid();
 
+// Token for ANR warning. The value should be same as defined in the AnrTimer class for ANR warning.
+const int ANR_WARNING_TOKEN = 0x4157;
+
 // Return true if the process exists and false if we cannot know.
 bool processExists(pid_t pid) {
     char path[PATH_MAX];
@@ -331,8 +334,9 @@ private:
  * - Trace: Log the event for debugging
  * - Expire: Immediately expire the timer
  * - EarlyNotify: Send early notification to Java layer
+ * - AnrWarning: Send ANR warning notification to the Java layer
  */
-enum class SplitAction : uint8_t { None, Trace, Expire, EarlyNotify };
+enum class SplitAction : uint8_t { None, Trace, Expire, EarlyNotify, AnrWarning };
 
 /**
  * Represents a point during timer execution where an action should be taken.
@@ -680,6 +684,11 @@ class AnrTimerService::Timer {
 
             case SplitAction::EarlyNotify:
                 event("early");
+                schedule();
+                return current;
+
+            case SplitAction::AnrWarning:
+                event("anrWarning");
                 schedule();
                 return current;
 
@@ -1129,7 +1138,8 @@ void AnrTimerService::expire(timer_id_t timerId) {
     }
 
     // Deliver the notification outside of the lock.
-    if (meta.action == SplitAction::Expire || meta.action == SplitAction::EarlyNotify) {
+    if (meta.action == SplitAction::Expire || meta.action == SplitAction::EarlyNotify ||
+        meta.action == SplitAction::AnrWarning) {
         if (!notifier_(timerId, pid, uid, started, elapsed, notifierCookie_, notifierObject_,
                        expired, meta.token)) {
             // Notification failed, which means the listener will never call accept() or
@@ -1273,7 +1283,13 @@ jlong anrTimerCreate(JNIEnv* env, jobject jtimer, jstring jname, jboolean extend
         splits.reserve(n);
 
         for (jsize i = 0; i < n; ++i) {
-            splits.emplace_back(SplitAction::EarlyNotify, percents[i], tokens[i]);
+            // Create a SplitPoint for each token and push it to the vector.
+            if (tokens[i] == ANR_WARNING_TOKEN) {
+                splits.emplace_back(SplitAction::AnrWarning, percents[i], tokens[i]);
+            } else {
+                // tokens[i] == TOKEN_LONG_METHOD_TRACING
+                splits.emplace_back(SplitAction::EarlyNotify, percents[i], tokens[i]);
+            }
         }
         std::sort(splits.begin(), splits.end());
     }

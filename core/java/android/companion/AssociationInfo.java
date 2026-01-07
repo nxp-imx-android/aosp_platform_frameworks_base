@@ -22,6 +22,7 @@ import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.annotation.UserIdInt;
+import android.companion.CompanionDeviceManager;
 import android.companion.CompanionDeviceManager.FeatureName;
 import android.graphics.drawable.Icon;
 import android.net.MacAddress;
@@ -319,7 +320,6 @@ public final class AssociationInfo implements Parcelable {
      * @return Enabled system data sync flags set via
      * {@link CompanionDeviceManager#enableSystemDataSyncForTypes(int, int)} (int, int)} and
      * {@link CompanionDeviceManager#disableSystemDataSyncForTypes(int, int)} (int, int)}.
-     * Or by default all flags are 1 (enabled).
      */
     public int getSystemDataSyncFlags() {
         return mSystemDataSyncFlags;
@@ -656,7 +656,9 @@ public final class AssociationInfo implements Parcelable {
         private boolean mTrusted;
         private long mTimeApprovedMs = System.currentTimeMillis();
         private long mLastTimeConnectedMs = Long.MAX_VALUE; // Never connected.
-        private int mSystemDataSyncFlags = -1; // By default, all system data sync is enabled.
+        // By default, only call metadata sync and task continuity sync is enabled.
+        private int mSystemDataSyncFlags = CompanionDeviceManager.FLAG_CALL_METADATA
+                | CompanionDeviceManager.FLAG_TASK_CONTINUITY;
         private int mTransportFlags;
         private Icon mDeviceIcon;
         private DeviceId mDeviceId;

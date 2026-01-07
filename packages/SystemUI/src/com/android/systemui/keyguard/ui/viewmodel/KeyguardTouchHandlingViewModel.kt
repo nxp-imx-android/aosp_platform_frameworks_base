@@ -79,6 +79,19 @@ constructor(
             source = interactor.isDoubleTapHandlingEnabled,
         )
 
+    /**
+     * Whether the lockscreen touch handling view should consume drags so that tap gestures won't
+     * trigger when touches exceed a touch slop. We don't want drags/swipes to count as tap-to-wake
+     * events when in "Fake AOD" (initial transition to AOD before the screen state becomes
+     * DisplayState.DOZE and stops sending touches directly to views) to prevent falsing.
+     */
+    val consumeDrags: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "consumeDrags",
+            initialValue = false,
+            source = interactor.consumeDrags,
+        )
+
     override suspend fun onActivated(): Nothing {
         hydrator.activate()
     }
@@ -114,11 +127,6 @@ constructor(
     /** Notifies that the lockscreen has been clicked at position [x], [y]. */
     fun onClick(x: Float, y: Float) {
         interactor.onClick(x, y)
-    }
-
-    /** Notifies that anything in the lockscreen scene has been clicked at position [x], [y]. */
-    fun onSceneClick(x: Float, y: Float) {
-        interactor.onSceneClick(x, y)
     }
 
     /** Notifies that the lockscreen has been double clicked. */

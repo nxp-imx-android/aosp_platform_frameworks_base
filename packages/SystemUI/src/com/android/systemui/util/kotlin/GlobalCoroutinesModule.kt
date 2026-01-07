@@ -22,6 +22,7 @@ import com.android.systemui.coroutines.newTracingContext
 import com.android.systemui.dagger.qualifiers.AndroidUi
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.dagger.qualifiers.MainImmediate
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -38,6 +39,12 @@ class GlobalCoroutinesModule {
     @Application
     fun applicationScope(@Main dispatcherContext: CoroutineContext): CoroutineScope =
         CoroutineScope(dispatcherContext + newTracingContext("ApplicationScope"))
+
+    @Provides
+    @Singleton
+    @MainImmediate
+    fun mainImmediateScope(@MainImmediate dispatcherContext: CoroutineContext): CoroutineScope =
+        CoroutineScope(dispatcherContext + newTracingContext("MainImmediateScope"))
 
     @OptIn(ExperimentalStdlibApi::class)
     @Provides
@@ -60,6 +67,11 @@ class GlobalCoroutinesModule {
 
     @Provides
     @Singleton
+    @MainImmediate
+    fun mainImmediateDispatcher(): CoroutineDispatcher = Dispatchers.Main.immediate
+
+    @Provides
+    @Singleton
     @AndroidUi
     fun androidUiDispatcher(): CoroutineContext = AndroidUiDispatcher.Main
 
@@ -67,9 +79,18 @@ class GlobalCoroutinesModule {
     @Singleton
     @Main
     fun mainCoroutineContext(): CoroutineContext =
-        if (Flags.doNotUseImmediateCoroutineDispatcher()) {
-            Dispatchers.Main
+        if (Flags.useAndroidUiDispatcher()) {
+            AndroidUiDispatcher.Main
         } else {
-            Dispatchers.Main.immediate
+            if (Flags.doNotUseImmediateCoroutineDispatcher()) {
+                Dispatchers.Main
+            } else {
+                Dispatchers.Main.immediate
+            }
         }
+
+    @Provides
+    @Singleton
+    @MainImmediate
+    fun mainImmediateContext(): CoroutineContext = Dispatchers.Main.immediate
 }

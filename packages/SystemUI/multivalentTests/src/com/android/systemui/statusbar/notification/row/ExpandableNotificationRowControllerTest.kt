@@ -48,7 +48,6 @@ import com.android.systemui.statusbar.notification.collection.render.GroupMember
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRowController.BUBBLES_SETTING_URI
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainerLogger
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationRowStatsLogger
@@ -252,7 +251,6 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
         val entryAdapter = mock(EntryAdapter::class.java)
         whenever(entryAdapter.sbn).thenReturn(mock(StatusBarNotification::class.java))
         whenever(row.entryAdapter).thenReturn(entryAdapter)
-        whenever(row.entryLegacy).thenReturn(mock())
         val captor = ArgumentCaptor.forClass(View.OnAttachStateChangeListener::class.java)
         verify(row, atLeastOnce()).addOnAttachStateChangeListener(captor.capture())
         captor.allValues[0].onViewAttachedToWindow(view)
@@ -269,7 +267,6 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
         val entryAdapter = mock(EntryAdapter::class.java)
         whenever(entryAdapter.sbn).thenReturn(mock(StatusBarNotification::class.java))
         whenever(row.entryAdapter).thenReturn(entryAdapter)
-        whenever(row.entryLegacy).thenReturn(entryLegacy)
         val captor = ArgumentCaptor.forClass(View.OnAttachStateChangeListener::class.java)
         verify(row, atLeastOnce()).addOnAttachStateChangeListener(captor.capture())
         captor.allValues[0].onViewDetachedFromWindow(view)
@@ -280,12 +277,7 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
     @Test
     fun settingsListener_invalidUri() {
         controller.mSettingsListener.onSettingChanged(Uri.EMPTY, entry.sbn.userId, "1")
-        assertThat(
-                view.privateLayout.shouldShowBubbleButton(
-                    if (NotificationBundleUi.isEnabled) null else entry
-                )
-            )
-            .isFalse()
+        assertThat(view.privateLayout.shouldShowBubbleButton()).isFalse()
     }
 
     @Test
@@ -293,12 +285,7 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
         controller.mSettingsListener.onSettingChanged(BUBBLES_SETTING_URI, -1000, "1")
         controller.mSettingsListener.onSettingChanged(BUBBLES_SETTING_URI, -1000, null)
 
-        assertThat(
-                view.privateLayout.shouldShowBubbleButton(
-                    if (NotificationBundleUi.isEnabled) null else entry
-                )
-            )
-            .isFalse()
+        assertThat(view.privateLayout.shouldShowBubbleButton()).isFalse()
     }
 
     @Test

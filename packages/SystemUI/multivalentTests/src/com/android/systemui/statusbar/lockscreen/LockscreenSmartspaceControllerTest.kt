@@ -23,7 +23,6 @@ import android.app.smartspace.SmartspaceSession
 import android.app.smartspace.SmartspaceSession.OnTargetsAvailableListener
 import android.app.smartspace.SmartspaceTarget
 import android.content.ComponentName
-import android.content.ContentResolver
 import android.content.Context
 import android.content.pm.UserInfo
 import android.database.ContentObserver
@@ -112,8 +111,6 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
     @Mock private lateinit var secureSettings: SecureSettings
 
     @Mock private lateinit var userTracker: UserTracker
-
-    @Mock private lateinit var contentResolver: ContentResolver
 
     @Mock private lateinit var sysuiColorExtractor: SysuiColorExtractor
 
@@ -241,7 +238,6 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
                 clock,
                 secureSettings,
                 userTracker,
-                contentResolver,
                 sysuiColorExtractor,
                 configurationController,
                 statusBarStateController,

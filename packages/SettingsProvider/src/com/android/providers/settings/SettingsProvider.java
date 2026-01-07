@@ -353,36 +353,27 @@ public class SettingsProvider extends ContentProvider {
     private static final Set<String> sReadableSecureSettings = new ArraySet<>();
     private static final ArrayMap<String, Integer> sReadableSecureSettingsWithMaxTargetSdk =
             new ArrayMap<>();
-    private static final ArrayMap<String, String> sReadableSecureSettingsWithRedactedValue =
-            new ArrayMap<>();
     static {
         Settings.Secure.getPublicSettings(sAllSecureSettings, sReadableSecureSettings,
-                sReadableSecureSettingsWithMaxTargetSdk,
-                sReadableSecureSettingsWithRedactedValue);
+                sReadableSecureSettingsWithMaxTargetSdk);
     }
 
     private static final Set<String> sAllSystemSettings = new ArraySet<>();
     private static final Set<String> sReadableSystemSettings = new ArraySet<>();
     private static final ArrayMap<String, Integer> sReadableSystemSettingsWithMaxTargetSdk =
             new ArrayMap<>();
-    private static final ArrayMap<String, String> sReadableSystemSettingsWithRedactedValue =
-            new ArrayMap<>();
     static {
         Settings.System.getPublicSettings(sAllSystemSettings, sReadableSystemSettings,
-                sReadableSystemSettingsWithMaxTargetSdk,
-                sReadableSystemSettingsWithRedactedValue);
+                sReadableSystemSettingsWithMaxTargetSdk);
     }
 
     private static final Set<String> sAllGlobalSettings = new ArraySet<>();
     private static final Set<String> sReadableGlobalSettings = new ArraySet<>();
     private static final ArrayMap<String, Integer> sReadableGlobalSettingsWithMaxTargetSdk =
             new ArrayMap<>();
-    private static final ArrayMap<String, String> sReadableGlobalSettingsWithRedactedValue =
-            new ArrayMap<>();
     static {
         Settings.Global.getPublicSettings(sAllGlobalSettings, sReadableGlobalSettings,
-                sReadableGlobalSettingsWithMaxTargetSdk,
-                sReadableGlobalSettingsWithRedactedValue);
+                sReadableGlobalSettingsWithMaxTargetSdk);
     }
 
     private final Object mLock = new Object();
@@ -1557,10 +1548,7 @@ public class SettingsProvider extends ContentProvider {
                     continue;
                 }
                 Setting setting = settingsState.getSettingLocked(name);
-                // Check if there is a redacted value setting
-                var finalSetting = getRedactedValueSettingIfPresent(name, setting,
-                        sReadableGlobalSettingsWithRedactedValue);
-                appendSettingToCursor(result, finalSetting);
+                appendSettingToCursor(result, setting);
             }
 
             return result;
@@ -1579,12 +1567,8 @@ public class SettingsProvider extends ContentProvider {
         synchronized (mLock) {
             // Global settings are applicable only for the default device, hence pass
             // Context.DEVICE_ID_DEFAULT as the deviceId.
-            var setting = mSettingsRegistry.getSettingLocked(SETTINGS_TYPE_GLOBAL,
+            return mSettingsRegistry.getSettingLocked(SETTINGS_TYPE_GLOBAL,
                     UserHandle.USER_SYSTEM, Context.DEVICE_ID_DEFAULT, name);
-
-            // Check if there is a redacted value for this setting
-            return getRedactedValueSettingIfPresent(name, setting,
-                    sReadableGlobalSettingsWithRedactedValue);
         }
     }
 
@@ -1760,11 +1744,7 @@ public class SettingsProvider extends ContentProvider {
                     setting = mSettingsRegistry.getSettingLocked(SETTINGS_TYPE_SECURE, owningUserId,
                             deviceId, name);
                 }
-
-                // Check if there is a redacted value setting
-                var finalSetting = getRedactedValueSettingIfPresent(name, setting,
-                        sReadableSecureSettingsWithRedactedValue);
-                appendSettingToCursor(result, finalSetting);
+                appendSettingToCursor(result, setting);
             }
 
             return result;
@@ -1805,12 +1785,8 @@ public class SettingsProvider extends ContentProvider {
 
         // Not the SSAID; do a straight lookup
         synchronized (mLock) {
-            var setting = mSettingsRegistry.getSettingLocked(SETTINGS_TYPE_SECURE,
+            return mSettingsRegistry.getSettingLocked(SETTINGS_TYPE_SECURE,
                     owningUserId, deviceId, name);
-
-            // Check if there is a redacted value for this setting
-            return getRedactedValueSettingIfPresent(name, setting,
-                    sReadableSecureSettingsWithRedactedValue);
         }
     }
 
@@ -2038,10 +2014,7 @@ public class SettingsProvider extends ContentProvider {
 
                 Setting setting = mSettingsRegistry.getSettingLocked(
                         SETTINGS_TYPE_SYSTEM, owningUserId, deviceId, name);
-                // Check if there is a redacted value setting
-                var finalSetting = getRedactedValueSettingIfPresent(name, setting,
-                        sReadableSystemSettingsWithRedactedValue);
-                appendSettingToCursor(result, finalSetting);
+                appendSettingToCursor(result, setting);
             }
 
             return result;
@@ -2065,12 +2038,8 @@ public class SettingsProvider extends ContentProvider {
 
         // Get the value.
         synchronized (mLock) {
-            var setting = mSettingsRegistry.getSettingLocked(SETTINGS_TYPE_SYSTEM, owningUserId,
+            return mSettingsRegistry.getSettingLocked(SETTINGS_TYPE_SYSTEM, owningUserId,
                     deviceId, name);
-
-            // Check if there is a redacted value for this setting
-            return getRedactedValueSettingIfPresent(name, setting,
-                    sReadableSystemSettingsWithRedactedValue);
         }
     }
 
@@ -2449,19 +2418,6 @@ public class SettingsProvider extends ContentProvider {
         // Don't enforce the instant app allowlist for now -- its too prone to unintended breakage
         // in the current form.
         return mSettingsRegistry.getSettingsNamesLocked(settingsType, userId, deviceId);
-    }
-
-    private Setting getRedactedValueSettingIfPresent(String name, Setting fetchedSetting,
-            ArrayMap<String, String> redactedSettingsMap) {
-        if (android.provider.Flags.enableRedactedValueForReadable()
-                && redactedSettingsMap.containsKey(name)) {
-            String redactedValue = redactedSettingsMap.get(name);
-            if (redactedValue != null && !redactedValue.isEmpty()) {
-                return fetchedSetting.withValue(redactedValue);
-            }
-        }
-
-        return fetchedSetting;
     }
 
     private void enforceSettingReadable(String settingName, int settingsType, int userId) {

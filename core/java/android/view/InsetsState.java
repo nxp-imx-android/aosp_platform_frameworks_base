@@ -383,7 +383,8 @@ public class InsetsState implements Parcelable {
             @Nullable @InternalInsetsSide SparseIntArray idSideMap,
             @Nullable boolean[] typeVisibilityMap, Rect[][] typeBoundingRectsMap) {
         final Insets insets = source.calculateInsets(relativeFrame, hostBounds, ignoreVisibility);
-        final Rect[] boundingRects = source.calculateBoundingRects(relativeFrame, ignoreVisibility);
+        final Rect[] boundingRects = source.calculateBoundingRects(relativeFrame, hostBounds,
+                ignoreVisibility);
 
         final int type = source.getType();
         processSourceAsPublicType(source, typeInsetsMap, idSideMap, typeVisibilityMap,
@@ -744,17 +745,11 @@ public class InsetsState implements Parcelable {
         }
     }
 
-    /**
-     * Write to a protocol buffer output stream.
-     * Protocol buffer message definition at {@link InsetsStateProto}
-     *
-     * @param proto Stream to write the InsetsState object to.
-     * @param fieldId Field Id of the InsetsState as defined in the parent message.
-     */
-    public void dumpDebug(@NonNull ProtoOutputStream proto, long fieldId) {
+    void dumpDebug(@NonNull ProtoOutputStream proto, long fieldId) {
         final long token = proto.start(fieldId);
-        for (int i = 0, size = mSources.size(); i < size; i++) {
-            mSources.valueAt(i).dumpDebug(proto, SOURCES);
+        final InsetsSource source = mSources.get(InsetsSource.ID_IME);
+        if (source != null) {
+            source.dumpDebug(proto, SOURCES);
         }
         mDisplayFrame.dumpDebug(proto, DISPLAY_FRAME);
         mDisplayCutout.get().dumpDebug(proto, DISPLAY_CUTOUT);

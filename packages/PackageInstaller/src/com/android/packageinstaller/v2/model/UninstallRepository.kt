@@ -278,12 +278,8 @@ class UninstallRepository(private val context: Context) {
             val userManagerForTargetUser = context.createContextAsUser(uninstalledUser!!, 0)
                 .getSystemService(UserManager::class.java)
 
-            val isPrivateSpaceFeatureEnabled = Flags.allowPrivateProfile()
-                    && MultiuserFlags.enablePrivateSpaceFeatures()
-
-            if ((isPrivateSpaceFeatureEnabled)
-                && (userManager.isPrivateProfile
-                        || (isTargetUserAProfile && userManagerForTargetUser.isPrivateProfile))) {
+            if (userManager.isPrivateProfile
+                        || (isTargetUserAProfile && userManagerForTargetUser.isPrivateProfile)) {
                 if (isArchive) {
                     messageResId = R.string.message_archive_private_space
                     dialogTitleResId = R.string.title_archive

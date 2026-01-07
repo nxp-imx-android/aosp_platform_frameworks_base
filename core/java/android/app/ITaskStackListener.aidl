@@ -181,17 +181,6 @@ oneway interface ITaskStackListener {
     void onTaskFocusChanged(int taskId, boolean focused);
 
     /**
-     * Called when a task changes its requested orientation. It is different from {@link
-     * #onActivityRequestedOrientationChanged(int, int)} in the sense that this method is called
-     * when a task changes requested orientation due to activity launch, dimiss or reparenting.
-     *
-     * @param taskId id of the task.
-     * @param requestedOrientation the new requested orientation of this task as screen orientations
-     *                             in {@link android.content.pm.ActivityInfo}.
-     */
-     void onTaskRequestedOrientationChanged(int taskId, int requestedOrientation);
-
-    /**
      * Called when a rotation is about to start on the foreground activity.
      * This applies for:
      *   * free sensor rotation

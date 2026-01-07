@@ -434,6 +434,18 @@ object CommonTileDefaults {
         @ReadOnlyComposable
         get() = dimensionResource(id = R.dimen.common_tile_default_inactive_tile_corner_radius)
 
+    /** Dimensions for focus rings with wide corners */
+    val TileDetailsEntryWideCornerRadius: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = dimensionResource(id = R.dimen.focus_ring_wide_corner_radius)
+
+    /** Dimensions for focus rings with tight corners */
+    val TileDetailsEntryTightCornerRadius: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = dimensionResource(id = R.dimen.focus_ring_tight_corner_radius)
+
     // The size of the icon in the tile with an icon and a label.
     val LargeTileIconSize: Dp
         @Composable

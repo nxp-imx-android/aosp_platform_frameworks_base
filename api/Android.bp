@@ -69,6 +69,7 @@ combined_apis {
         "art.module.public.api",
         "conscrypt.module.public.api",
         "framework-adservices",
+        "framework-anomaly-detector",
         "framework-appsearch",
         "framework-bluetooth",
         "framework-configinfrastructure",
@@ -132,11 +133,6 @@ combined_apis {
         default: [
             "framework-platformtelephony",
         ],
-    }) + select(release_flag("RELEASE_ANOMALY_DETECTOR"), {
-        true: [
-            "framework-anomaly-detector",
-        ],
-        default: [],
     }) + select(release_flag("RELEASE_NPUMANAGER_MODULE"), {
         true: [
             "framework-npumanager",
@@ -154,6 +150,7 @@ combined_apis {
         default: [],
     }),
     system_server_classpath: [
+        "service-anomaly-detector",
         "service-art",
         "service-configinfrastructure",
         "service-healthfitness",
@@ -169,11 +166,6 @@ combined_apis {
     }) + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
         "true": [
             "service-crashrecovery",
-        ],
-        default: [],
-    }) + select(release_flag("RELEASE_ANOMALY_DETECTOR"), {
-        true: [
-            "service-anomaly-detector",
         ],
         default: [],
     }),

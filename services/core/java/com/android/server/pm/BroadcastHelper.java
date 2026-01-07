@@ -525,9 +525,7 @@ public final class BroadcastHelper {
      *   granted.
      */
     boolean canLauncherAccessProfile(ComponentName launcherComponent, int userId) {
-        if (android.os.Flags.allowPrivateProfile()
-                && Flags.enablePermissionToAccessHiddenProfiles()
-                && Flags.enablePrivateSpaceFeatures()) {
+        if (Flags.enablePermissionToAccessHiddenProfiles()) {
             if (mUmInternal.getUserProperties(userId).getProfileApiVisibility()
                     != UserProperties.PROFILE_API_VISIBILITY_HIDDEN) {
                 return true;

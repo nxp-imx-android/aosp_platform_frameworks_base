@@ -87,7 +87,6 @@ import com.android.systemui.statusbar.notification.row.NotificationGuts;
 import com.android.systemui.statusbar.notification.row.shared.HeadsUpStatusBarModel;
 import com.android.systemui.statusbar.notification.row.shared.NotificationContentModel;
 import com.android.systemui.statusbar.notification.shared.LaunchNewFsiOnUpdate;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.PriorityBucket;
 
 import kotlinx.coroutines.flow.MutableStateFlow;
@@ -596,28 +595,11 @@ public final class NotificationEntry extends ListEntry {
      * TODO: Seems like most callers here should be asking a PipelineEntry, not a NotificationEntry
      */
     public @Nullable List<NotificationEntry> getAttachedNotifChildren() {
-        if (NotificationBundleUi.isEnabled()) {
-            if (isGroupSummary()) {
-                GroupEntry parent = (GroupEntry) getParent();
-                return parent != null ? new ArrayList<>(parent.getChildren()) : null;
-            }
-        } else {
-            if (row == null) {
-                return null;
-            }
-
-            List<ExpandableNotificationRow> rowChildren = row.getAttachedChildren();
-            if (rowChildren == null) {
-                return null;
-            }
-
-            ArrayList<NotificationEntry> children = new ArrayList<>();
-            for (ExpandableNotificationRow child : rowChildren) {
-                children.add(child.getEntryLegacy());
-            }
-
-            return children;
+        if (isGroupSummary()) {
+            GroupEntry parent = (GroupEntry) getParent();
+            return parent != null ? new ArrayList<>(parent.getChildren()) : null;
         }
+
         return null;
     }
 
@@ -646,12 +628,6 @@ public final class NotificationEntry extends ListEntry {
 
     public boolean hasJustSentRemoteInput() {
         return SystemClock.elapsedRealtime() < lastRemoteInputSent + REMOTE_INPUT_COOLDOWN;
-    }
-
-    public boolean hasFinishedInitialization() {
-        NotificationBundleUi.assertInLegacyMode();
-        return initializationTime != -1
-                && SystemClock.elapsedRealtime() > initializationTime + INITIALIZATION_DELAY;
     }
 
     public int getContrastedColor(Context context, boolean isLowPriority,
@@ -732,30 +708,12 @@ public final class NotificationEntry extends ListEntry {
         return false;
     }
 
-    public void resetInitializationTime() {
-        NotificationBundleUi.assertInLegacyMode();
-        initializationTime = -1;
-    }
-
-    public void setInitializationTime(long time) {
-        NotificationBundleUi.assertInLegacyMode();
-        if (initializationTime == -1) {
-            initializationTime = time;
-        }
-    }
-
     /**
      * Used by NotificationMediaManager to determine... things
      * @return {@code true} if we are a media notification
      */
     public boolean isMediaNotification() {
-        if (NotificationBundleUi.isEnabled()) {
-            return getSbn().getNotification().isMediaNotification();
-        } else {
-            if (row == null) return false;
-
-            return row.isMediaRow();
-        }
+        return getSbn().getNotification().isMediaNotification();
     }
 
     public boolean containsCustomViews() {

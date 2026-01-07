@@ -88,6 +88,9 @@ constructor(
     // Map of Runnable to label for debugging only
     private val debugRunnableLabelMap: MutableMap<Runnable, String> = HashMap()
 
+    // The last state string that was logged. Used to reduce log spam from duplicate state.
+    private var lastStateStr = ""
+
     enum class ThrottleEvent(private val id: Int) : UiEventLogger.UiEventEnum {
         @UiEvent(doc = "HUN was shown.") AVALANCHE_THROTTLING_HUN_SHOWN(1821),
         @UiEvent(doc = "HUN was dropped to show higher priority HUNs.")
@@ -613,8 +616,7 @@ constructor(
     }
 
     // Methods below are for logging only ==========================================================
-
-    private fun getStateStr(): String {
+    private fun calculateStateStr(): String {
         return "\n[AC state]" +
             "\nshow: ${getKey(headsUpEntryShowing)}" +
             "\nprevious: $previousHunKey" +
@@ -622,6 +624,18 @@ constructor(
             "\n[HeadsUpManagerImpl.mHeadsUpEntryMap] " +
             baseEntryMapStr() +
             "\n"
+    }
+
+    /**
+     * Returns the state string for logging, only if it has changed since the last call.
+     */
+    private fun getStateStr(): String {
+        val currentStr = calculateStateStr()
+        if (currentStr == lastStateStr) {
+            return "" // Suppress log if state hasn't changed
+        }
+        lastStateStr = currentStr
+        return currentStr
     }
 
     private val nextStr: String
@@ -647,6 +661,6 @@ constructor(
     }
 
     override fun dump(pw: PrintWriter, args: Array<out String>) {
-        pw.println("AvalancheController: ${getStateStr()}")
+        pw.println("AvalancheController: ${calculateStateStr()}")
     }
 }

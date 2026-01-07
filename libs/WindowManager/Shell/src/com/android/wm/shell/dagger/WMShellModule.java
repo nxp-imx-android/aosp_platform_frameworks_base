@@ -562,8 +562,9 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static AppToWebDatastoreRepository provideAppToWebDatastoreRepository(
-            Context context) {
-        return new AppToWebDatastoreRepository(context);
+            Context context,
+            @ShellBackgroundThread CoroutineScope bgCoroutineScope) {
+        return new AppToWebDatastoreRepository(context, bgCoroutineScope);
     }
 
     @Provides
@@ -1037,6 +1038,7 @@ public abstract class WMShellModule {
             MultiInstanceHelper multiInstanceHelper,
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellMainThread CoroutineScope mainScope,
+            @ShellMainThreadImmediate CoroutineScope mainScopeImmediate,
             @ShellMainThread Handler mainHandler,
             @ShellDesktopThread ShellExecutor desktopExecutor,
             Optional<DesktopTasksLimiter> desktopTasksLimiter,
@@ -1094,6 +1096,7 @@ public abstract class WMShellModule {
                 multiInstanceHelper,
                 mainExecutor,
                 mainScope,
+                mainScopeImmediate,
                 desktopExecutor,
                 desktopTasksLimiter,
                 recentTasksController.orElse(null),
@@ -2131,9 +2134,11 @@ public abstract class WMShellModule {
     @Provides
     static Optional<ClientFullscreenRequestController> provideClientFullscreenRequestController(
             ShellInit shellInit,
-            Transitions transitions) {
+            Transitions transitions,
+            ShellTaskOrganizer shellTaskOrganizer) {
         if (com.android.window.flags.Flags.delegateRequestFullscreenHandlingToShell()) {
-            return Optional.of(new ClientFullscreenRequestController(shellInit, transitions));
+            return Optional.of(new ClientFullscreenRequestController(shellInit, transitions,
+                    shellTaskOrganizer));
         }
         return Optional.empty();
     }

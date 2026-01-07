@@ -1204,7 +1204,11 @@ public class CameraServiceProxy extends SystemService
         if (!Flags.fixManagedProfilesReceiver()) {
             return;
         }
+        updateBroadcastReceiver(from, to);
+    }
 
+    @VisibleForTesting
+    void updateBroadcastReceiver(@Nullable TargetUser from, TargetUser to) {
         // TODO(b/442009819): optimize code below so it only registers the receiver when the to user
         // can have profiles
 

@@ -912,8 +912,15 @@ final class CompatConfig {
 
     @Nullable
     private Long getVersionCodeOrNullImpl(String packageName) {
+        if (packageName == null) {
+            return null;
+        }
+        final PackageManager pm = mContext.getPackageManager();
+        if (pm == null) {
+            return null;
+        }
         try {
-            ApplicationInfo applicationInfo = mContext.getPackageManager().getApplicationInfo(
+            ApplicationInfo applicationInfo = pm.getApplicationInfo(
                     packageName, MATCH_ANY_USER);
             return applicationInfo.longVersionCode;
         } catch (PackageManager.NameNotFoundException e) {

@@ -44,6 +44,8 @@ import static android.app.NotificationManager.IMPORTANCE_MAX;
 import static android.app.NotificationManager.IMPORTANCE_NONE;
 import static android.app.NotificationManager.IMPORTANCE_UNSPECIFIED;
 import static android.app.NotificationManager.VISIBILITY_NO_OVERRIDE;
+import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_NOTIF_GLOBAL;
+import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_NOTIF_PACKAGES;
 import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentResolver.SCHEME_FILE;
@@ -95,11 +97,13 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import android.app.AppOpsManager;
+import android.app.Flags;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
 import android.app.ZenBypassingApp;
+import android.app.backup.BackupRestoreEventLogger;
 import android.content.AttributionSource;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
@@ -229,6 +233,8 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     @Mock AppOpsManager mAppOpsManager;
     @Mock ManagedServices.UserProfiles mUserProfiles;
     @Mock PermissionManager mPermissionManager;
+    @Mock
+    BackupRestoreEventLogger mBackupRestoreLogger;
 
     private NotificationManager.Policy mTestNotificationPolicy;
 
@@ -247,7 +253,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
-        return FlagsParameterization.allCombinationsOf();
+        return FlagsParameterization.allCombinationsOf(Flags.FLAG_BACKUP_RESTORE_LOGGING);
     }
 
     public PreferencesHelperTest(FlagsParameterization flags) {
@@ -402,7 +408,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
         serializer.startDocument(null, true);
-        mHelper.writeXml(serializer, forBackup, userId);
+        mHelper.writeXml(serializer, forBackup, userId, forBackup ? mBackupRestoreLogger : null);
         serializer.endDocument();
         serializer.flush();
         for (String channelId : channelIds) {
@@ -421,7 +427,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         TypedXmlPullParser parser = Xml.newFastPullParser();
         parser.setInput(new BufferedInputStream(new ByteArrayInputStream(byteArray)), null);
         parser.nextTag();
-        mXmlHelper.readXml(parser, forRestore, userId);
+        mXmlHelper.readXml(parser, forRestore, userId, forRestore ? mBackupRestoreLogger : null);
     }
 
     private void compareChannels(NotificationChannel expected, NotificationChannel actual) {
@@ -754,7 +760,15 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
         mHelper.setShowBadge(PKG_O, UID_O, true);
 
+        if (Flags.backupRestoreLogging()) {
+            verify(mBackupRestoreLogger).logItemsBackedUp(DATA_TYPE_NOTIF_PACKAGES, 3);
+        }
+
         loadStreamXml(baos, true, mUserId);
+
+        if (Flags.backupRestoreLogging()) {
+            verify(mBackupRestoreLogger).logItemsRestored(DATA_TYPE_NOTIF_PACKAGES, 3);
+        }
 
         assertTrue(mXmlHelper.canShowBadge(PKG_N_MR1, UID_N_MR1));
         assertTrue(mXmlHelper.hasSentInvalidMsg(PKG_P, UID_P));
@@ -1667,7 +1681,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
         serializer.startDocument(null, true);
-        mXmlHelper.writeXml(serializer, false, mUserId);
+        mXmlHelper.writeXml(serializer, false, mUserId, null);
         serializer.endDocument();
         serializer.flush();
 
@@ -1718,7 +1732,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
         serializer.startDocument(null, true);
-        mXmlHelper.writeXml(serializer, false, mUserId);
+        mXmlHelper.writeXml(serializer, false, mUserId, null);
         serializer.endDocument();
         serializer.flush();
 
@@ -1900,7 +1914,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         parser.setInput(new BufferedInputStream(new ByteArrayInputStream(baos.toByteArray())),
                 null);
         parser.nextTag();
-        mHelper.readXml(parser, true, mUserId);
+        mHelper.readXml(parser, true, mUserId, mBackupRestoreLogger);
 
         assertNull(mHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, channel1.getId(), false));
         assertNull(mHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, channel3.getId(), false));
@@ -1957,7 +1971,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         parser.setInput(new BufferedInputStream(new ByteArrayInputStream(preupgradeXml.getBytes())),
                 null);
         parser.nextTag();
-        mHelper.readXml(parser, false, UserHandle.USER_ALL);
+        mHelper.readXml(parser, false, UserHandle.USER_ALL, null);
 
         final NotificationChannel updated1 = mHelper.getNotificationChannel(
                 PKG_N_MR1, UID_N_MR1, NotificationChannel.DEFAULT_CHANNEL_ID, false);
@@ -4275,8 +4289,17 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     public void testXml_statusBarIcons_restore() throws Exception {
         mHelper.setHideSilentStatusIcons(!PreferencesHelper.DEFAULT_HIDE_SILENT_STATUS_BAR_ICONS);
 
-        ByteArrayOutputStream baos = writeXmlAndPurge(PKG_O, UID_O, false, mUserId);
+        ByteArrayOutputStream baos = writeXmlAndPurge(PKG_O, UID_O, true, mUserId);
+
+        if (Flags.backupRestoreLogging()) {
+            verify(mBackupRestoreLogger).logItemsBackedUp(DATA_TYPE_NOTIF_GLOBAL, 1);
+        }
+
         loadStreamXml(baos, true, UserHandle.USER_SYSTEM);
+
+        if (Flags.backupRestoreLogging()) {
+            verify(mBackupRestoreLogger).logItemsRestored(DATA_TYPE_NOTIF_GLOBAL, 1);
+        }
 
         assertEquals(!PreferencesHelper.DEFAULT_HIDE_SILENT_STATUS_BAR_ICONS,
                 mXmlHelper.shouldHideSilentStatusIcons());
@@ -4398,7 +4421,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         parser.setInput(new BufferedInputStream(new ByteArrayInputStream(xml.getBytes())),
                 null);
         parser.nextTag();
-        mHelper.readXml(parser, false, UserHandle.USER_ALL);
+        mHelper.readXml(parser, false, UserHandle.USER_ALL, null);
 
         assertEquals(BUBBLE_PREFERENCE_ALL, mHelper.getBubblePreference(PKG_O, UID_O));
         assertEquals(0, mHelper.getAppLockedFields(PKG_O, UID_O));
@@ -4418,7 +4441,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         parser.setInput(new BufferedInputStream(new ByteArrayInputStream(xml.getBytes())),
                 null);
         parser.nextTag();
-        mHelper.readXml(parser, false, UserHandle.USER_ALL);
+        mHelper.readXml(parser, false, UserHandle.USER_ALL, null);
 
         assertEquals(BUBBLE_PREFERENCE_ALL, mHelper.getBubblePreference(PKG_O, UID_O));
         assertEquals(0, mHelper.getAppLockedFields(PKG_O, UID_O));
@@ -4440,7 +4463,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         parser.setInput(new BufferedInputStream(new ByteArrayInputStream(xml.getBytes())),
                 null);
         parser.nextTag();
-        mHelper.readXml(parser, false, UserHandle.USER_ALL);
+        mHelper.readXml(parser, false, UserHandle.USER_ALL, null);
 
         assertEquals(DEFAULT_BUBBLE_PREFERENCE, mHelper.getBubblePreference(PKG_O, UID_O));
         assertEquals(0, mHelper.getAppLockedFields(PKG_O, UID_O));
@@ -4464,7 +4487,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         parser.setInput(new BufferedInputStream(new ByteArrayInputStream(xml.getBytes())),
                 null);
         parser.nextTag();
-        mHelper.readXml(parser, false, UserHandle.USER_ALL);
+        mHelper.readXml(parser, false, UserHandle.USER_ALL, null);
 
         assertEquals(BUBBLE_PREFERENCE_ALL, mHelper.getBubblePreference(PKG_O, UID_O));
         assertEquals(0, mHelper.getAppLockedFields(PKG_O, UID_O));
@@ -4494,7 +4517,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         parser.setInput(new BufferedInputStream(new ByteArrayInputStream(xml.getBytes())),
                 null);
         parser.nextTag();
-        mXmlHelper.readXml(parser, false, UserHandle.USER_ALL);
+        mXmlHelper.readXml(parser, false, UserHandle.USER_ALL, null);
 
         assertEquals(DEFAULT_BUBBLE_PREFERENCE, mHelper.getBubblePreference(PKG_O, UID_O));
         assertEquals(0, mXmlHelper.getAppLockedFields(PKG_O, UID_O));
@@ -4934,7 +4957,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         parser.setInput(new BufferedInputStream(new ByteArrayInputStream(baos.toByteArray())),
                 null);
         parser.nextTag();
-        mHelper.readXml(parser, true, mUserId);
+        mHelper.readXml(parser, true, mUserId, mBackupRestoreLogger);
 
         assertTrue(mHelper.getNotificationChannel(PKG_O, UID_O, channel1.getId(), false)
                 .isImportanceLockedByCriticalDeviceFunction());
@@ -5010,7 +5033,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         parser.setInput(new BufferedInputStream(new ByteArrayInputStream(xml.getBytes())),
                 null);
         parser.nextTag();
-        mHelper.readXml(parser, false, UserHandle.USER_ALL);
+        mHelper.readXml(parser, false, UserHandle.USER_ALL, null);
 
         assertNull(mHelper.getNotificationChannel(PKG_O, UID_O, extraChannel, true));
         assertNull(mHelper.getNotificationChannel(PKG_O, UID_O, extraChannel1, true));
@@ -5068,7 +5091,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         parser.setInput(new BufferedInputStream(new ByteArrayInputStream(xml.getBytes())),
                 null);
         parser.nextTag();
-        mHelper.readXml(parser, false, UserHandle.USER_ALL);
+        mHelper.readXml(parser, false, UserHandle.USER_ALL, null);
 
         assertNull(mHelper.getNotificationChannelGroup(extraGroup, PKG_O, UID_O));
         assertNull(mHelper.getNotificationChannelGroup(extraGroup1, PKG_O, UID_O));
@@ -5102,12 +5125,12 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         parser.setInput(new BufferedInputStream(new ByteArrayInputStream(xmlUser0.getBytes())),
                 null);
         parser.nextTag();
-        mHelper.readXml(parser, true, 0);
+        mHelper.readXml(parser, true, 0, mBackupRestoreLogger);
         parser = Xml.newFastPullParser();
         parser.setInput(new BufferedInputStream(new ByteArrayInputStream(xmlUser10.getBytes())),
                 null);
         parser.nextTag();
-        mHelper.readXml(parser, true, 10);
+        mHelper.readXml(parser, true, 10, mBackupRestoreLogger);
 
         // "install" package on both users
         String[] pkgList = new String[] {pkg};
@@ -5186,7 +5209,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         parser.setInput(new BufferedInputStream(new ByteArrayInputStream(xml.getBytes())),
                 null);
         parser.nextTag();
-        mHelper.readXml(parser, false, UserHandle.USER_ALL);
+        mHelper.readXml(parser, false, UserHandle.USER_ALL, null);
 
         assertNull(mHelper.getNotificationChannel(PKG_O, UID_O, "id", true));
     }
@@ -5202,7 +5225,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         parser.setInput(new BufferedInputStream(new ByteArrayInputStream(xml.getBytes())),
                 null);
         parser.nextTag();
-        mHelper.readXml(parser, false, UserHandle.USER_ALL);
+        mHelper.readXml(parser, false, UserHandle.USER_ALL, null);
 
         assertNotNull(mHelper.getNotificationChannel(PKG_O, UID_O, "id", true));
     }
@@ -5218,7 +5241,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         parser.setInput(new BufferedInputStream(new ByteArrayInputStream(xml.getBytes())),
                 null);
         parser.nextTag();
-        mHelper.readXml(parser, false, UserHandle.USER_ALL);
+        mHelper.readXml(parser, false, UserHandle.USER_ALL, null);
 
         assertNotNull(mHelper.getNotificationChannel(PKG_O, UID_O, "id", true));
     }
@@ -5234,7 +5257,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         parser.setInput(new BufferedInputStream(new ByteArrayInputStream(xml.getBytes())),
                 null);
         parser.nextTag();
-        mHelper.readXml(parser, false, UserHandle.USER_ALL);
+        mHelper.readXml(parser, false, UserHandle.USER_ALL, null);
 
         assertNull(mHelper.getNotificationChannel(PKG_O, UID_O, "id", true));
     }
@@ -5266,7 +5289,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         parser.setInput(new BufferedInputStream(new ByteArrayInputStream(baos.toByteArray())),
                 null);
         parser.nextTag();
-        mHelper.readXml(parser, true, mUserId);
+        mHelper.readXml(parser, false, mUserId, null);
 
         NotificationChannel nc = mHelper.getNotificationChannel(PKG_P, UID_P, "id", true);
         assertTrue(DateUtils.isToday(nc.getDeletedTimeMs()));
@@ -5305,7 +5328,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         parser.setInput(new BufferedInputStream(new ByteArrayInputStream(xml.getBytes())),
                 null);
         parser.nextTag();
-        mHelper.readXml(parser, false, UserHandle.USER_ALL);
+        mHelper.readXml(parser, false, UserHandle.USER_ALL, null);
 
         NotificationChannel nc = mHelper.getNotificationChannel(PKG_O, UID_O, "id", true);
         assertNull(nc);

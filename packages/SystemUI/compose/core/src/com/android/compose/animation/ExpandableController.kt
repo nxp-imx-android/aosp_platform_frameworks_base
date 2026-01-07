@@ -146,17 +146,31 @@ fun rememberExpandableController(
             layoutDirection,
             transitionControllerFactory,
         ) {
-            ExpandableControllerImpl(
-                color,
-                contentColor,
-                shape,
-                borderStroke,
-                composeViewRoot,
-                density,
-                transitionControllerFactory,
-                layoutDirection,
-                { isComposed },
-            )
+            if (TransitionAnimator.dynamicTargetResolutionEnabled()) {
+                ComposeTransitionSource(
+                    color,
+                    contentColor,
+                    shape,
+                    borderStroke,
+                    composeViewRoot,
+                    density,
+                    transitionControllerFactory,
+                    layoutDirection,
+                    { isComposed },
+                )
+            } else {
+                ExpandableControllerImpl(
+                    color,
+                    contentColor,
+                    shape,
+                    borderStroke,
+                    composeViewRoot,
+                    density,
+                    transitionControllerFactory,
+                    layoutDirection,
+                    { isComposed },
+                )
+            }
         }
 
     DisposableEffect(Unit) {
@@ -193,6 +207,9 @@ internal class ExpandableControllerImpl(
 
     private var activityControllerForDisposal: ActivityTransitionAnimator.Controller? = null
 
+    /**
+     * The current [DrawModifierNode] in the overlay, drawing the expandable during a transition.
+     */
     override var currentNodeInOverlay: DrawModifierNode? = null
 
     override val isAnimating: Boolean by derivedStateOf { animatorState != null && overlay != null }

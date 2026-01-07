@@ -16,7 +16,7 @@
 
 package com.android.wm.shell.flicker.bubbles.testcase
 
-import androidx.test.filters.FlakyTest
+import android.platform.test.annotations.RequiresFlagsEnabled
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerSubjects
 import com.android.wm.shell.flicker.bubbles.utils.FlickerAssertionHelper.assertLayerAlphaChangeConsistently
 import com.android.wm.shell.flicker.bubbles.utils.FlickerAssertionHelper.assertLayerMoveInSingleDirection
@@ -67,7 +67,10 @@ interface AppAnimateOutTestCases : BubbleFlickerSubjects {
      * Verifies the [testApp] layer's alpha value only decreases (optional if the spec wants to keep
      * alpha unchanged).
      */
-    @FlakyTest(bugId = 456051408)
+    @RequiresFlagsEnabled(
+        com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK,
+        com.android.window.flags.Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT,
+    )
     @Test
     fun appLayerFadeOut() {
         assertLayerAlphaChangeConsistently(
@@ -81,7 +84,10 @@ interface AppAnimateOutTestCases : BubbleFlickerSubjects {
      * Verifies the [testApp] layer's bounds don't jump around (optional if the spec wants to keep
      * bounds unchanged).
      */
-    @FlakyTest(bugId = 456051408)
+    @RequiresFlagsEnabled(
+        com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK,
+        com.android.window.flags.Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT,
+    )
     @Test
     fun appLayerAnimateOut() {
         assertLayerMoveInSingleDirection(

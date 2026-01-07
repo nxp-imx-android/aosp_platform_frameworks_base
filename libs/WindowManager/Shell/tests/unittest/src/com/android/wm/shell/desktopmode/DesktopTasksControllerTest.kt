@@ -349,6 +349,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     private val shellExecutor = TestShellExecutor()
     private val bgExecutor = TestShellExecutor()
     private val testScope = TestScope()
+    private val testScopeImmediate = TestScope()
 
     // Mock running tasks are registered here so we can get the list from mock shell task organizer
     private val runningTasks = mutableListOf<RunningTaskInfo>()
@@ -555,6 +556,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             multiInstanceHelper,
             shellExecutor,
             testScope.backgroundScope,
+            testScopeImmediate.backgroundScope,
             bgExecutor,
             Optional.of(desktopTasksLimiter),
             recentTasksController,
@@ -3621,6 +3623,39 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         assertThat(task).isNotNull()
         assertThat(task?.taskId).isEqualTo(freeformTask.taskId)
         assertThat(task?.unminimizeReason).isEqualTo(UnminimizeReason.TASK_LAUNCH)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun handleRequest_minimizedFreeformTask_unminimizesTask() {
+        val deskId = 5
+        taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = deskId)
+        taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = deskId)
+
+        val transition = Binder()
+        // Create a visible task so we stay in Desktop Mode when minimizing task under test.
+        setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = deskId).also { markTaskVisible(it) }
+        val freeformTask = setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = deskId)
+        taskRepository.minimizeTask(DEFAULT_DISPLAY, freeformTask.taskId)
+
+        controller.handleRequest(transition, createTransition(freeformTask, TRANSIT_OPEN))
+
+        verify(desksOrganizer).unminimizeTask(any(), eq(deskId), eq(freeformTask))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun handleRequest_freeformTask_launchBringsToFront() {
+        val deskId = 5
+        taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = deskId)
+        taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = deskId)
+
+        val transition = Binder()
+        val freeformTask = setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = deskId)
+
+        controller.handleRequest(transition, createTransition(freeformTask, TRANSIT_OPEN))
+
+        verify(desksOrganizer).reorderTaskToFront(any(), eq(deskId), eq(freeformTask))
     }
 
     @Test
@@ -10512,6 +10547,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 userId = taskRepository.userId,
             )
             runCurrent()
+            testScopeImmediate.runCurrent()
 
             verify(transitions).startTransition(anyInt(), wctCaptor.capture(), anyOrNull())
             val wct = wctCaptor.firstValue
@@ -10594,6 +10630,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 userId = taskRepository.userId,
             )
             runCurrent()
+            testScopeImmediate.runCurrent()
 
             verify(transitions).startTransition(anyInt(), wctCaptor.capture(), anyOrNull())
             verify(desksTransitionsObserver)
@@ -10664,6 +10701,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 userId = taskRepository.userId,
             )
             runCurrent()
+            testScopeImmediate.runCurrent()
 
             verify(transitions).startTransition(anyInt(), wctCaptor.capture(), anyOrNull())
             val wct = wctCaptor.firstValue
@@ -10723,6 +10761,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 userId = taskRepository.userId,
             )
             runCurrent()
+            testScopeImmediate.runCurrent()
 
             verify(transitions).startTransition(anyInt(), wctCaptor.capture(), anyOrNull())
             val wct = wctCaptor.firstValue
@@ -10781,6 +10820,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 userId = taskRepository.userId,
             )
             runCurrent()
+            testScopeImmediate.runCurrent()
 
             verify(transitions).startTransition(anyInt(), wctCaptor.capture(), anyOrNull())
             val wct = wctCaptor.firstValue

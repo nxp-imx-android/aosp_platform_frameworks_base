@@ -31,6 +31,9 @@ import static com.android.keyguard.KeyguardSecurityContainer.BOUNCER_DISMISS_SIM
 import static com.android.keyguard.KeyguardSecurityContainer.USER_TYPE_PRIMARY;
 import static com.android.keyguard.KeyguardSecurityContainer.USER_TYPE_SECONDARY_USER;
 import static com.android.keyguard.KeyguardSecurityContainer.USER_TYPE_WORK_PROFILE;
+import static com.android.keyguard.KeyguardSecurityModel.SecurityMode.PIN;
+import static com.android.keyguard.KeyguardSecurityModel.SecurityMode.Password;
+import static com.android.keyguard.KeyguardSecurityModel.SecurityMode.Pattern;
 import static com.android.keyguard.KeyguardSecurityModel.SecurityMode.SecureLockDeviceBiometricAuth;
 import static com.android.keyguard.KeyguardSecurityModel.SecurityMode.SimPin;
 import static com.android.keyguard.KeyguardSecurityModel.SecurityMode.SimPuk;
@@ -110,6 +113,7 @@ import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteracto
 import dagger.Lazy;
 
 import kotlin.Unit;
+
 import kotlinx.coroutines.Job;
 
 import java.io.File;
@@ -305,6 +309,26 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
                     .setType(success ? MetricsEvent.TYPE_SUCCESS : MetricsEvent.TYPE_FAILURE));
             mUiEventLogger.log(success ? BouncerUiEvent.BOUNCER_PASSWORD_SUCCESS
                     : BouncerUiEvent.BOUNCER_PASSWORD_FAILURE, getSessionId());
+
+            if (mCurrentSecurityMode == Password) {
+                mUiEventLogger.log(
+                        success
+                                ? com.android.systemui.bouncer.shared.logging
+                                .BouncerUiEvent.BOUNCER_SUCCESS_PASSWORD
+                                : com.android.systemui.bouncer.shared.logging
+                                        .BouncerUiEvent.BOUNCER_FAILURE_PASSWORD,
+                        getSessionId());
+            } else if (mCurrentSecurityMode == PIN) {
+                mUiEventLogger.log(success ? com.android.systemui.bouncer.shared.logging
+                        .BouncerUiEvent.BOUNCER_SUCCESS_PIN
+                        : com.android.systemui.bouncer.shared.logging
+                                .BouncerUiEvent.BOUNCER_FAILURE_PIN, getSessionId());
+            } else if (mCurrentSecurityMode == Pattern) {
+                mUiEventLogger.log(success ? com.android.systemui.bouncer.shared.logging
+                        .BouncerUiEvent.BOUNCER_SUCCESS_PATTERN
+                        : com.android.systemui.bouncer.shared.logging
+                                .BouncerUiEvent.BOUNCER_FAILURE_PATTERN, getSessionId());
+            }
         }
 
         @Override
@@ -755,7 +779,7 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
     public int getTop() {
         int top = mView.getTop();
         // The password view has an extra top padding that should be ignored.
-        if (getCurrentSecurityMode() == SecurityMode.Password) {
+        if (getCurrentSecurityMode() == Password) {
             View messageArea = mView.findViewById(R.id.keyguard_message_area);
             top += messageArea.getTop();
         }
@@ -1060,7 +1084,7 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
      * @return whether we should dispatch the back key event before Ime.
      */
     public boolean dispatchBackKeyEventPreIme() {
-        return getCurrentSecurityMode() == SecurityMode.Password;
+        return getCurrentSecurityMode() == Password;
     }
 
     /**

@@ -22,7 +22,6 @@ import com.android.systemui.statusbar.notification.collection.coordinator.dagger
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifSectioner
 import com.android.systemui.statusbar.notification.collection.provider.SectionStyleProvider
 import com.android.systemui.statusbar.notification.shared.NmHighlights
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism
 import javax.inject.Inject
 
@@ -106,9 +105,7 @@ constructor(
         mCoordinators.add(preparationCoordinator)
         mCoordinators.add(remoteInputCoordinator)
         mCoordinators.add(dismissibilityCoordinator)
-        if (NotificationBundleUi.isEnabled) {
-            mCoordinators.add(bundleCoordinator)
-        }
+        mCoordinators.add(bundleCoordinator)
         mCoordinators.add(summarizationCoordinator)
         mCoordinators.add(statsLoggerCoordinator)
         if (NmHighlights.isEnabled) {
@@ -130,12 +127,6 @@ constructor(
         mOrderedSections.add(conversationCoordinator.priorityPeopleSectioner) // Priority People
         mOrderedSections.add(conversationCoordinator.peopleAlertingSectioner) // People Alerting
         mOrderedSections.add(rankingCoordinator.alertingSectioner) // Alerting
-        if (!NotificationBundleUi.isEnabled) {
-            mOrderedSections.add(bundleCoordinator.newsSectioner)
-            mOrderedSections.add(bundleCoordinator.socialSectioner)
-            mOrderedSections.add(bundleCoordinator.recsSectioner)
-            mOrderedSections.add(bundleCoordinator.promoSectioner)
-        }
         mOrderedSections.add(rankingCoordinator.silentSectioner) // Silent
         mOrderedSections.add(rankingCoordinator.minimizedSectioner) // Minimized
 

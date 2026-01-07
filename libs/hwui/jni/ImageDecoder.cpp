@@ -39,6 +39,10 @@
 #include <sys/stat.h>
 #include <utils/StatsUtils.h>
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include "Bitmap.h"
 #include "BitmapFactory.h"
 #include "ByteBufferStreamAdaptor.h"
@@ -162,10 +166,30 @@ static jobject native_create(JNIEnv* env, std::unique_ptr<SkStream> stream,
                           animated, isNinePatch);
 }
 
+// Gets the 'handle' field from a FileDescriptor object. This field is only
+// populated in Windows.
+#ifdef _WIN32
+static jlong jniGetHandleFromFileDescriptor(JNIEnv* env, jobject fileDescriptor) {
+    jclass fileDescriptorClass = android::FindClassOrDie(env, "java/io/FileDescriptor");
+    jfieldID handleField = android::GetFieldIDOrDie(env, fileDescriptorClass, "handle", "J");
+    return env->GetLongField(fileDescriptor, handleField);
+}
+#endif
+
 static jobject ImageDecoder_nCreateFd(JNIEnv* env, jobject /*clazz*/,
         jobject fileDescriptor, jlong length, jboolean preferAnimation, jobject source) {
-#ifdef _WIN32  // LayoutLib for Windows does not support F_DUPFD_CLOEXEC
-    return throw_exception(env, kSourceException, "Not supported on Windows", nullptr, source);
+#ifdef _WIN32
+    HANDLE fileHandle = (HANDLE)jniGetHandleFromFileDescriptor(env, fileDescriptor);
+
+    // Duplicate the file handle
+    HANDLE duplicateHandle;
+    if (!DuplicateHandle(GetCurrentProcess(), fileHandle, GetCurrentProcess(), &duplicateHandle, 0,
+                         FALSE, DUPLICATE_SAME_ACCESS)) {
+        return nullObjectReturn("DuplicateHandle failed");
+    }
+
+    int dupDescriptor = _open_osfhandle((intptr_t)duplicateHandle, _O_RDONLY);
+    FILE* file = _fdopen(dupDescriptor, "r");
 #else
     int descriptor = jniGetFDFromFileDescriptor(env, fileDescriptor);
 
@@ -177,6 +201,7 @@ static jobject ImageDecoder_nCreateFd(JNIEnv* env, jobject /*clazz*/,
 
     int dupDescriptor = fcntl(descriptor, F_DUPFD_CLOEXEC, 0);
     FILE* file = fdopen(dupDescriptor, "r");
+#endif
     if (file == NULL) {
         close(dupDescriptor);
         return throw_exception(env, kSourceMalformedData, "Could not open file",
@@ -192,7 +217,6 @@ static jobject ImageDecoder_nCreateFd(JNIEnv* env, jobject /*clazz*/,
         fileStream.reset(new SkFILEStream(file, length));
     }
     return native_create(env, std::move(fileStream), source, preferAnimation);
-#endif
 }
 
 static jobject ImageDecoder_nCreateInputStream(JNIEnv* env, jobject /*clazz*/,

@@ -90,14 +90,6 @@ flag {
 }
 
 flag {
-  name: "persistent_supervision_settings"
-  is_exported: false
-  namespace: "supervision"
-  description: "Saves supervision user data and recovery info into a binary xml file"
-  bug: "406449915"
-}
-
-flag {
   name: "enable_remove_policies_on_supervision_disable"
   is_exported: false
   namespace: "supervision"

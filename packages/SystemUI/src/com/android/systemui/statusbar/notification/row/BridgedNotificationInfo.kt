@@ -17,7 +17,6 @@ package com.android.systemui.statusbar.notification.row
 
 import android.app.INotificationManager
 import android.app.Notification
-import android.app.Notification.BridgedNotificationMetadata
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -31,7 +30,6 @@ import com.android.internal.logging.MetricsLogger
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.notification.collection.EntryAdapter
-import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider
@@ -66,7 +64,6 @@ class BridgedNotificationInfo(context: Context?, attrs: AttributeSet?) :
         pkg: String,
         ranking: NotificationListenerService.Ranking,
         sbn: StatusBarNotification,
-        entry: NotificationEntry?,
         entryAdapter: EntryAdapter?,
         onSettingsClick: OnSettingsClickListener?,
         onAppSettingsClick: OnAppSettingsClickListener?,
@@ -90,7 +87,6 @@ class BridgedNotificationInfo(context: Context?, attrs: AttributeSet?) :
             pkg,
             ranking,
             sbn,
-            entry,
             entryAdapter,
             onSettingsClick,
             onAppSettingsClick,

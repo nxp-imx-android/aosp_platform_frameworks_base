@@ -322,7 +322,7 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
                 () -> mSelectedUserInteractor,
                 mock(UserTracker.class),
                 mKosmos.getNotificationShadeWindowModel(),
-                mKosmos::getCommunalInteractor,
+                mKosmos::getCommunalSceneInteractor,
                 mKosmos.getShadeLayoutParams(),
                 mKosmos.getTopUiController(),
                 mKosmos.getKeyguardSurfaceBehindInteractor(),

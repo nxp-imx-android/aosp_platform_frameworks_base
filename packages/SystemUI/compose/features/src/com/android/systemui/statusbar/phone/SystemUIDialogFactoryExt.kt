@@ -113,6 +113,7 @@ fun SystemUIDialogFactory.create(
                 dialogGravity?.let { dialog.window?.setGravity(it) }
             }
         },
+    isTransient: Boolean = false,
     content: @Composable (SystemUIDialog) -> Unit,
 ): ComponentSystemUIDialog {
     return create(
@@ -121,6 +122,7 @@ fun SystemUIDialogFactory.create(
         dismissOnDeviceLock = dismissOnDeviceLock,
         delegate = dialogDelegate,
         content = content,
+        isTransient = isTransient,
     )
 }
 
@@ -278,9 +280,17 @@ private fun SystemUIDialogFactory.create(
     theme: Int,
     dismissOnDeviceLock: Boolean,
     delegate: DialogDelegate<SystemUIDialog>,
+    isTransient: Boolean = false,
     content: @Composable (SystemUIDialog) -> Unit,
 ): ComponentSystemUIDialog {
-    val dialog = create(context, theme, dismissOnDeviceLock, delegate)
+    val dialog =
+        create(
+            context = context,
+            theme = theme,
+            dismissOnDeviceLock = dismissOnDeviceLock,
+            dialogDelegate = delegate,
+            isTransient = isTransient,
+        )
 
     // Create the dialog so that it is properly constructed before we set the Compose content.
     // Otherwise, the ComposeView won't render properly.

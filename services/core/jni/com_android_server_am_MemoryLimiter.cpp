@@ -44,6 +44,7 @@
 #include <utils/Trace.h>
 
 #include <map>
+#include <optional>
 #include <string>
 
 namespace android {
@@ -83,8 +84,10 @@ public:
     // The pid and uid being monitored.  These are const, and therefore may be public.
     const pid_t mPid;
     const uid_t mUid;
+    const std::optional<std::string> mPkg;
 
-    Process(pid_t pid, uid_t uid) : mPid(pid), mUid(uid) {}
+    Process(pid_t pid, uid_t uid, std::optional<std::string>& pkg)
+          : mPid(pid), mUid(uid), mPkg(pkg) {}
 
     // There is no copy constructor.
     Process(Process const&) = delete;
@@ -93,7 +96,11 @@ public:
     // descriptor is not owned by the Process, but it is copied over and then reset on the
     // right-hand side.
     Process(Process&& r) noexcept
-          : mPid(r.mPid), mUid(r.mUid), mPidFd(std::move(r.mPidFd)), mMemoryWd(r.mMemoryWd) {
+          : mPid(r.mPid),
+            mUid(r.mUid),
+            mPkg(r.mPkg),
+            mPidFd(std::move(r.mPidFd)),
+            mMemoryWd(r.mMemoryWd) {
         r.mMemoryWd = UNSET;
     }
 
@@ -203,7 +210,7 @@ public:
             throwRuntime(env, "failed to find Controller class");
             return;
         }
-        mFunc = env->GetMethodID(service, "onLimitExceeded", "(III)V");
+        mFunc = env->GetMethodID(service, "onLimitExceeded", "(IIILjava/lang/String;)V");
         if (mFunc == nullptr) {
             throwRuntime(env, "failed to find limiter callback");
             return;
@@ -231,10 +238,14 @@ public:
         }
     }
 
-    void operator()(int pid, int uid, MonitoredLimit type) {
+    void operator()(int pid, int uid, MonitoredLimit type, std::optional<std::string>& pkg) {
         JNIEnv* env;
         if (mVm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) == JNI_OK) {
-            env->CallVoidMethod(mLimiter, mFunc, pid, uid, type);
+            jstring jpkg = nullptr;
+            if (pkg.has_value()) {
+                jpkg = env->NewStringUTF(pkg.value().c_str());
+            }
+            env->CallVoidMethod(mLimiter, mFunc, pid, uid, type, jpkg);
         } else {
             ALOGE("GetEnv() failed");
         }
@@ -351,13 +362,16 @@ public:
 
     // Add a process to the list of monitored processes.  The process and its file descriptors
     // is owned by the monitor.
-    bool start(int pid, int uid) {
-        Process p(pid, uid);
+    bool start(int pid, int uid, std::optional<std::string>& pkg) {
+        Process p(pid, uid, pkg);
         if (!p.init()) return false;
         base::borrowed_fd pfd = p.getPidFd();
 
         AutoMutex _l(mLock);
-        mTargets.emplace(pid, std::move(p));
+        if (auto [it, inserted] = mTargets.try_emplace(pid, std::move(p)); !inserted) {
+            mTargets.erase(pid);
+            mTargets.emplace(pid, std::move(p));
+        }
         struct epoll_event p_event = {.events = EPOLLIN, .data.u64 = static_cast<uint64_t>(pid)};
         if (epoll_ctl(mEpollFd, EPOLL_CTL_ADD, pfd.get(), &p_event) != 0) {
             ALOGE("epoll add(pid) failed pid=%d uid=%d: %s", pid, uid, strerror(errno));
@@ -492,6 +506,7 @@ private:
             pid_t pid = 0;
             uid_t uid = 0;
             MonitoredLimit limit = MonitoredLimit::kUnknown;
+            std::optional<std::string> pkg;
             {
                 AutoMutex _l(mLock);
                 pid = lookup(wd);
@@ -500,11 +515,12 @@ private:
                     Process* p = &i->second;
                     uid = p->mUid;
                     limit = p->getLimitType(wd);
+                    pkg = p->mPkg;
                     p->unwatch(mInotifyFd, mWdMap);
                 }
             }
             if (pid != 0) {
-                mCallback(pid, uid, limit);
+                mCallback(pid, uid, limit, pkg);
             }
         } else {
             ALOGE("read(inotify) failed: %s", strerror(errno));
@@ -539,10 +555,15 @@ void closeLimiter(JNIEnv* env, jclass, jlong service) {
 }
 
 // A process has started.
-jboolean startProcess(JNIEnv*, jclass, jlong service, jint pid, jint uid) {
+jboolean startProcess(JNIEnv* env, jclass, jlong service, jint pid, jint uid, jstring jpkg) {
     Monitor* m = getMonitor(service);
     ATRACE_CALL();
-    return m->start(pid, uid);
+    std::optional<std::string> pkg;
+    if (jpkg != nullptr) {
+        ScopedUtfChars name(env, jpkg);
+        pkg = std::string(name.c_str());
+    }
+    return m->start(pid, uid, pkg);
 }
 
 // A tiny class that emits a trace in its destructor.
@@ -586,7 +607,7 @@ jboolean configureLimit(JNIEnv*, jclass, jlong service, jint pid, jint uid, jlon
 
 const JNINativeMethod sMethods[] = {
         {"closeLimiter", "(J)V", (void*)closeLimiter},
-        {"onProcessStarted", "(JII)Z", (void*)startProcess},
+        {"onProcessStarted", "(JIILjava/lang/String;)Z", (void*)startProcess},
         {"configureLimit", "(JIIJ)Z", (void*)configureLimit},
         {"initLimiter", "(Lcom/android/server/am/MemoryLimiter$Controller;)J", (void*)initLimiter},
 };

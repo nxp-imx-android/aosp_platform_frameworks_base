@@ -16,18 +16,23 @@
 package com.android.systemui.statusbar.notification.collection.coordinator
 
 import android.app.NotificationChannel
-import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.shared.notifications.data.repository.NotificationSettingsRepository.Companion.EXPAND_BUNDLE_ALWAYS
+import com.android.systemui.shared.notifications.data.repository.NotificationSettingsRepository.Companion.EXPAND_BUNDLE_AUTO
+import com.android.systemui.shared.notifications.data.repository.NotificationSettingsRepository.Companion.EXPAND_BUNDLE_NEVER
 import com.android.systemui.shared.notifications.domain.interactor.NotificationSettingsInteractor
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.BundleSpec
 import com.android.systemui.statusbar.notification.collection.InternalNotificationsApi
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
+import com.android.systemui.statusbar.notification.collection.buildChildNotificationEntry
 import com.android.systemui.statusbar.notification.collection.buildNotificationEntry
+import com.android.systemui.statusbar.notification.collection.buildSummaryNotificationEntry
 import com.android.systemui.statusbar.notification.collection.listbuilder.NotifSection
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnAfterRenderBundleEntryListener
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnAfterRenderEntryListener
@@ -35,9 +40,7 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.OnAfte
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnBeforeRenderListListener
 import com.android.systemui.statusbar.notification.collection.provider.SectionStyleProvider
 import com.android.systemui.statusbar.notification.collection.render.NotifRowController
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.testKosmos
-import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.mockito.withArgCaptor
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -49,12 +52,6 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when` as whenever
 import org.mockito.MockitoAnnotations.initMocks
-import com.android.systemui.kosmos.applicationCoroutineScope
-import com.android.systemui.shared.notifications.data.repository.NotificationSettingsRepository.Companion.EXPAND_BUNDLE_ALWAYS
-import com.android.systemui.shared.notifications.data.repository.NotificationSettingsRepository.Companion.EXPAND_BUNDLE_AUTO
-import com.android.systemui.shared.notifications.data.repository.NotificationSettingsRepository.Companion.EXPAND_BUNDLE_NEVER
-import com.android.systemui.statusbar.notification.collection.buildChildNotificationEntry
-import com.android.systemui.statusbar.notification.collection.buildSummaryNotificationEntry
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -122,35 +119,41 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
                 setSection(section2)
             }
         // summary notification with no children
-        bundledSoloSummary = kosmos.buildSummaryNotificationEntry {
-            setChannel(NotificationChannel(NotificationChannel.RECS_ID, "recs", 2))
-            setSection(section2)
-        }
+        bundledSoloSummary =
+            kosmos.buildSummaryNotificationEntry {
+                setChannel(NotificationChannel(NotificationChannel.RECS_ID, "recs", 2))
+                setSection(section2)
+            }
 
         // child notification, only child in group
-        bundledSoloChild = kosmos.buildChildNotificationEntry {
-            setChannel(NotificationChannel(NotificationChannel.RECS_ID, "recs", 2))
-            setSection(section2)
-        }
+        bundledSoloChild =
+            kosmos.buildChildNotificationEntry {
+                setChannel(NotificationChannel(NotificationChannel.RECS_ID, "recs", 2))
+                setSection(section2)
+            }
         kosmos.buildSummaryNotificationEntry(listOf(bundledSoloChild)) {
             setChannel(NotificationChannel(NotificationChannel.RECS_ID, "recs", 2))
             setSection(section2)
         }
 
-        bundledChildWithSiblings = kosmos.buildChildNotificationEntry {
-            setChannel(NotificationChannel(NotificationChannel.RECS_ID, "recs", 2))
-            setSection(section2)
-        }
+        bundledChildWithSiblings =
+            kosmos.buildChildNotificationEntry {
+                setChannel(NotificationChannel(NotificationChannel.RECS_ID, "recs", 2))
+                setSection(section2)
+            }
 
-        val bundledChildWithSiblings1 = kosmos.buildChildNotificationEntry {
-            setChannel(NotificationChannel(NotificationChannel.RECS_ID, "recs", 2))
-            setSection(section2)
-        }
-        bundledChildWithSiblingsParent = kosmos.buildSummaryNotificationEntry(
-            listOf(bundledChildWithSiblings, bundledChildWithSiblings1)) {
-            setChannel(NotificationChannel(NotificationChannel.RECS_ID, "recs", 2))
-            setSection(section2)
-        }
+        val bundledChildWithSiblings1 =
+            kosmos.buildChildNotificationEntry {
+                setChannel(NotificationChannel(NotificationChannel.RECS_ID, "recs", 2))
+                setSection(section2)
+            }
+        bundledChildWithSiblingsParent =
+            kosmos.buildSummaryNotificationEntry(
+                listOf(bundledChildWithSiblings, bundledChildWithSiblings1)
+            ) {
+                setChannel(NotificationChannel(NotificationChannel.RECS_ID, "recs", 2))
+                setSection(section2)
+            }
 
         bundleEntry = BundleEntry(BundleSpec.RECOMMENDED)
         whenever(notificationSettingsInteractor.shouldExpandBundles)
@@ -179,10 +182,8 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
         verify(controller2).setSystemExpanded(eq(false))
     }
 
-
     @Test
     @OptIn(InternalNotificationsApi::class)
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_bundle_singleBundle_singleChild_Auto() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_AUTO))
@@ -196,7 +197,6 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
 
     @Test
     @OptIn(InternalNotificationsApi::class)
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_bundle_singleBundles_singleChild_Always() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_ALWAYS))
@@ -210,7 +210,6 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
 
     @Test
     @OptIn(InternalNotificationsApi::class)
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_bundle_singleBundle_singleChild_Never() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_NEVER))
@@ -224,7 +223,6 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
 
     @Test
     @OptIn(InternalNotificationsApi::class)
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_bundle_singleBundle_multipleChildren_Auto() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_AUTO))
@@ -239,7 +237,6 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
 
     @Test
     @OptIn(InternalNotificationsApi::class)
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_bundle_singleBundles_multipleChildren_Always() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_ALWAYS))
@@ -254,7 +251,6 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
 
     @Test
     @OptIn(InternalNotificationsApi::class)
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_bundle_singleBundle_multipleChildren_Never() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_NEVER))
@@ -268,46 +264,45 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_bundle_multipleBundles_Auto() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_AUTO))
 
         afterRenderListListener.onAfterRenderList(
-            listOf(bundleEntry, mock(BundleEntry::class.java)))
+            listOf(bundleEntry, mock(BundleEntry::class.java))
+        )
         afterRenderBundleEntryListener.onAfterRenderEntry(bundleEntry, controllerBundle)
 
         verify(controllerBundle).setSystemExpanded(eq(false))
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_bundle_multipleBundles_Always() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_ALWAYS))
 
         afterRenderListListener.onAfterRenderList(
-            listOf(bundleEntry, mock(BundleEntry::class.java)))
+            listOf(bundleEntry, mock(BundleEntry::class.java))
+        )
         afterRenderBundleEntryListener.onAfterRenderEntry(bundleEntry, controllerBundle)
 
         verify(controllerBundle).setSystemExpanded(eq(true))
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_bundle_multipleBundles_Never() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_NEVER))
 
         afterRenderListListener.onAfterRenderList(
-            listOf(bundledSingleton, mock(BundleEntry::class.java)))
+            listOf(bundledSingleton, mock(BundleEntry::class.java))
+        )
         afterRenderBundleEntryListener.onAfterRenderEntry(bundleEntry, controllerBundle)
 
         verify(controllerBundle).setSystemExpanded(eq(false))
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_Bundled_singleBundle_Never() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_NEVER))
@@ -323,7 +318,6 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_Bundled_singleBundle_Auto() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_AUTO))
@@ -339,7 +333,6 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_Bundled_singleBundle_Always() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_ALWAYS))
@@ -355,111 +348,110 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_Bundled_NotInGroup_multipleBundles_Never() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_NEVER))
 
         afterRenderListListener.onAfterRenderList(
-            listOf(bundledSingleton, bundleEntry, mock(BundleEntry::class.java)))
+            listOf(bundledSingleton, bundleEntry, mock(BundleEntry::class.java))
+        )
         afterRenderEntryListener.onAfterRenderEntry(bundledSingleton, controller1)
 
         verify(controller1).setSystemExpanded(eq(false))
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_Bundled_NotInGroup_multipleBundle_Auto() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_AUTO))
 
         afterRenderListListener.onAfterRenderList(
-            listOf(bundledSingleton, bundleEntry, mock(BundleEntry::class.java)))
+            listOf(bundledSingleton, bundleEntry, mock(BundleEntry::class.java))
+        )
         afterRenderEntryListener.onAfterRenderEntry(bundledSingleton, controller1)
 
         verify(controller1).setSystemExpanded(eq(true))
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_Bundled_NotInGroup_multipleBundle_Always() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_ALWAYS))
 
         afterRenderListListener.onAfterRenderList(
-            listOf(bundledSingleton, bundleEntry, mock(BundleEntry::class.java)))
+            listOf(bundledSingleton, bundleEntry, mock(BundleEntry::class.java))
+        )
         afterRenderEntryListener.onAfterRenderEntry(bundledSingleton, controller1)
 
         verify(controller1).setSystemExpanded(eq(false))
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_Bundled_singleSummary_multipleBundles_Never() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_NEVER))
 
         afterRenderListListener.onAfterRenderList(
-            listOf(bundledSoloSummary, bundleEntry, mock(BundleEntry::class.java)))
+            listOf(bundledSoloSummary, bundleEntry, mock(BundleEntry::class.java))
+        )
         afterRenderEntryListener.onAfterRenderEntry(bundledSoloSummary, controller1)
 
         verify(controller1).setSystemExpanded(eq(false))
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_Bundled_singleSummary_multipleBundle_Auto() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_AUTO))
 
         afterRenderListListener.onAfterRenderList(
-            listOf(bundledSoloSummary, bundleEntry, mock(BundleEntry::class.java)))
+            listOf(bundledSoloSummary, bundleEntry, mock(BundleEntry::class.java))
+        )
         afterRenderEntryListener.onAfterRenderEntry(bundledSoloSummary, controller1)
 
         verify(controller1).setSystemExpanded(eq(true))
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_Bundled_singleSummary_multipleBundle_Always() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_ALWAYS))
 
         afterRenderListListener.onAfterRenderList(
-            listOf(bundledSoloSummary, bundleEntry, mock(BundleEntry::class.java)))
+            listOf(bundledSoloSummary, bundleEntry, mock(BundleEntry::class.java))
+        )
         afterRenderEntryListener.onAfterRenderEntry(bundledSoloSummary, controller1)
 
         verify(controller1).setSystemExpanded(eq(false))
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_Bundled_singleChild_multipleBundles_Never() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_NEVER))
 
         afterRenderListListener.onAfterRenderList(
-            listOf(bundledSoloChild, bundleEntry, mock(BundleEntry::class.java)))
+            listOf(bundledSoloChild, bundleEntry, mock(BundleEntry::class.java))
+        )
         afterRenderEntryListener.onAfterRenderEntry(bundledSoloChild, controller1)
 
         verify(controller1).setSystemExpanded(eq(false))
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_Bundled_singleChild_multipleBundle_Auto() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_AUTO))
 
         afterRenderListListener.onAfterRenderList(
-            listOf(bundledSoloChild, bundleEntry, mock(BundleEntry::class.java)))
+            listOf(bundledSoloChild, bundleEntry, mock(BundleEntry::class.java))
+        )
         afterRenderEntryListener.onAfterRenderEntry(bundledSoloChild, controller1)
 
         verify(controller1).setSystemExpanded(eq(true))
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_Bundled_singleChild_multipleBundle_Always() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_ALWAYS))
@@ -473,33 +465,32 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_Bundled_childWithSiblings_multipleBundles_Never() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_NEVER))
 
         afterRenderListListener.onAfterRenderList(
-            listOf(bundledChildWithSiblings, bundleEntry, mock(BundleEntry::class.java)))
+            listOf(bundledChildWithSiblings, bundleEntry, mock(BundleEntry::class.java))
+        )
         afterRenderEntryListener.onAfterRenderEntry(bundledChildWithSiblings, controller1)
 
         verify(controller1).setSystemExpanded(eq(false))
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_Bundled_childWithSiblings_multipleBundle_Auto() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_AUTO))
 
         afterRenderListListener.onAfterRenderList(
-            listOf(bundledChildWithSiblings, bundleEntry, mock(BundleEntry::class.java)))
+            listOf(bundledChildWithSiblings, bundleEntry, mock(BundleEntry::class.java))
+        )
         afterRenderEntryListener.onAfterRenderEntry(bundledChildWithSiblings, controller1)
 
         verify(controller1).setSystemExpanded(eq(false))
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_Bundled_childWithSiblings_multipleBundle_Always() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_ALWAYS))
@@ -513,33 +504,32 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_Bundled_summaryWithMultipleChildren_multipleBundles_Never() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_NEVER))
 
         afterRenderListListener.onAfterRenderList(
-            listOf(bundledChildWithSiblingsParent, bundleEntry, mock(BundleEntry::class.java)))
+            listOf(bundledChildWithSiblingsParent, bundleEntry, mock(BundleEntry::class.java))
+        )
         afterRenderEntryListener.onAfterRenderEntry(bundledChildWithSiblingsParent, controller1)
 
         verify(controller1).setSystemExpanded(eq(false))
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_Bundled_summaryWithMultipleChildren_multipleBundle_Auto() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_AUTO))
 
         afterRenderListListener.onAfterRenderList(
-            listOf(bundledChildWithSiblingsParent, bundleEntry, mock(BundleEntry::class.java)))
+            listOf(bundledChildWithSiblingsParent, bundleEntry, mock(BundleEntry::class.java))
+        )
         afterRenderEntryListener.onAfterRenderEntry(bundledChildWithSiblingsParent, controller1)
 
         verify(controller1).setSystemExpanded(eq(false))
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun testSetSystemExpanded_Bundled_summaryWithMultipleChildren_multipleBundle_Always() {
         whenever(notificationSettingsInteractor.shouldExpandBundles)
             .thenReturn(MutableStateFlow(EXPAND_BUNDLE_ALWAYS))

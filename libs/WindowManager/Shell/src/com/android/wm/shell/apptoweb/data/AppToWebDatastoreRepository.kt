@@ -25,9 +25,11 @@ import androidx.datastore.core.Serializer
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.dataStoreFile
 import com.android.framework.protobuf.InvalidProtocolBufferException
+import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
@@ -35,7 +37,8 @@ import kotlinx.coroutines.flow.first
 /** Updates data in App-to-Web datastore. */
 class AppToWebDatastoreRepository constructor(private val dataStore: DataStore<AppToWebProto>) {
     constructor(
-        context: Context
+        context: Context,
+        @ShellBackgroundThread bgCoroutineScope: CoroutineScope,
     ) : this(
         DataStoreFactory.create(
             serializer = AppToWebProtoSerializer,
@@ -44,6 +47,7 @@ class AppToWebDatastoreRepository constructor(private val dataStore: DataStore<A
                 ReplaceFileCorruptionHandler(
                     produceNewData = { AppToWebProto.getDefaultInstance() }
                 ),
+            scope = bgCoroutineScope,
         )
     )
 

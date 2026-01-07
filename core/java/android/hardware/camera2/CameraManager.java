@@ -47,7 +47,6 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.CameraCompatibilityInfo;
 import android.content.res.CompatibilityInfo;
-import android.graphics.Point;
 import android.hardware.CameraExtensionSessionStats;
 import android.hardware.CameraStatus;
 import android.hardware.ICameraService;
@@ -597,47 +596,23 @@ public final class CameraManager {
         Size ret = new Size(0, 0);
         DisplayManager displayManager = mContext.getSystemService(DisplayManager.class);
 
-        if (Flags.capMandatoryPreviewSizeToAllDisplays()) {
-            Display[] builtinDisplays = displayManager.getDisplays(
-                    DisplayManager.DISPLAY_CATEGORY_BUILT_IN_DISPLAYS);
-            for (Display display : builtinDisplays) {
-                Display.Mode[] supportedModes = display.getSupportedModes();
-                for (Display.Mode mode : supportedModes) {
-                    int width = mode.getPhysicalWidth();
-                    int height = mode.getPhysicalHeight();
-                    if (height > width) {
-                        width = height;
-                        height = mode.getPhysicalWidth();
-                    }
-                    if (width * height
-                                    > ret.getWidth() * ret.getHeight()) {
-                        ret = new Size(width, height);
-                    }
+        Display[] builtinDisplays = displayManager.getDisplays(
+                DisplayManager.DISPLAY_CATEGORY_BUILT_IN_DISPLAYS);
+        for (Display display : builtinDisplays) {
+            Display.Mode[] supportedModes = display.getSupportedModes();
+            for (Display.Mode mode : supportedModes) {
+                int width = mode.getPhysicalWidth();
+                int height = mode.getPhysicalHeight();
+                if (height > width) {
+                    width = height;
+                    height = mode.getPhysicalWidth();
                 }
-            }
-        } else {
-            try {
-                Display display = displayManager.getDisplay(Display.DEFAULT_DISPLAY);
-                if (display != null) {
-                    Point sz = new Point();
-                    display.getRealSize(sz);
-                    int width = sz.x;
-                    int height = sz.y;
-
-                    if (height > width) {
-                        height = width;
-                        width = sz.y;
-                    }
-
+                if (width * height
+                                > ret.getWidth() * ret.getHeight()) {
                     ret = new Size(width, height);
-                } else {
-                    Log.e(TAG, "Invalid default display!");
                 }
-            } catch (Exception e) {
-                Log.e(TAG, "getDisplaySize Failed. " + e);
             }
         }
-
         return ret;
     }
 

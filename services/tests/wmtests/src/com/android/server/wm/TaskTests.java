@@ -2653,6 +2653,30 @@ public class TaskTests extends WindowTestsBase {
         assertTrue(task.disableAppCompatRoundedCorners());
     }
 
+    @EnableFlags(Flags.FLAG_IMPROVE_OCCLUSION_CALCULATION)
+    @Test
+    public void testFillTestInfo_isActivityStackTransparent_withTransparentEmbeddedActivity() {
+        final Task task = createTask(mDisplayContent);
+        final TaskFragment primaryTf = createTaskFragmentWithActivity(task);
+        final TaskFragment secondaryTf = createTaskFragmentWithActivity(task);
+        final ActivityRecord primaryActivity = primaryTf.getTopMostActivity();
+        final ActivityRecord secondaryActivity = secondaryTf.getTopMostActivity();
+        primaryTf.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        primaryTf.setBounds(new Rect(0, 0, 500, 1000));
+        secondaryTf.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        secondaryTf.setBounds(new Rect(500, 0, 1000, 1000));
+        primaryTf.setAdjacentTaskFragments(
+                new TaskFragment.AdjacentSet(primaryTf, secondaryTf));
+
+        doReturn(true).when(primaryActivity).occludesParent(anyBoolean());
+        doReturn(false).when(secondaryActivity).occludesParent(anyBoolean());
+
+        final ActivityManager.RunningTaskInfo info = new ActivityManager.RunningTaskInfo();
+        task.fillTaskInfo(info);
+
+        assertTrue(info.isActivityStackTransparent);
+    }
+
     private Task getTestTask() {
         return new TaskBuilder(mSupervisor).setCreateActivity(true).build();
     }

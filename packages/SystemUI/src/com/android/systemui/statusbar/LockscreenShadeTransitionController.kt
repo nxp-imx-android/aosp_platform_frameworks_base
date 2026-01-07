@@ -38,7 +38,6 @@ import com.android.systemui.shade.domain.interactor.ShadeLockscreenInteractor
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.stack.AmbientState
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayoutController
 import com.android.systemui.statusbar.phone.CentralSurfaces
@@ -305,9 +304,7 @@ constructor(
             if (startingChild != null && isLockdownShade()) {
                 if (startingChild is ExpandableNotificationRow) {
                     // Only drag down on sensitive views, otherwise the ExpandHelper will take this
-                    return if (NotificationBundleUi.isEnabled)
-                        startingChild.entryAdapter?.isSensitive?.value == true
-                    else startingChild.entryLegacy.isSensitive.value
+                    return startingChild.entryAdapter?.isSensitive?.value == true
                 }
             }
             return false
@@ -418,9 +415,7 @@ constructor(
             }
             if (view is ExpandableNotificationRow) {
                 // Only drag down on sensitive views, otherwise the ExpandHelper will take this
-                return if (NotificationBundleUi.isEnabled)
-                    view.entryAdapter?.isSensitive?.value == true
-                else view.entryLegacy.isSensitive.value
+                return view.entryAdapter?.isSensitive?.value == true
             }
         }
         return false
@@ -596,11 +591,7 @@ constructor(
             // Indicate that the group expansion is changing at this time -- this way the group
             // and children backgrounds / divider animations will look correct.
             expandView.isGroupExpansionChanging = true
-            if (NotificationBundleUi.isEnabled) {
-                expandView.entryAdapter.sbn?.userId?.let { userId = it }
-            } else {
-                userId = expandView.entryLegacy.sbn.userId
-            }
+            expandView.entryAdapter.sbn?.userId?.let { userId = it }
         }
         var fullShadeNeedsBouncer =
             (!lockScreenUserManager.shouldShowLockscreenNotifications() ||
@@ -869,7 +860,8 @@ class DragDownHelper(
                     return intercepted
                 } else {
                     if (SceneContainerFlag.isEnabled) {
-                        // Check if we're dragging upwards and if we're not in the locked, open shade
+                        // Check if we're dragging upwards and if we're not in the locked, open
+                        // shade
                         val dragUpH = -1 * h
                         if (
                             dragUpH > touchSlop &&

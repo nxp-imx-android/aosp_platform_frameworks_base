@@ -18,6 +18,7 @@ package com.android.server.am;
 
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_ACTIVITY;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_FOREGROUND_SERVICE;
+import static android.os.Process.INVALID_UID;
 
 import static com.android.internal.util.Preconditions.checkArgument;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
@@ -624,7 +625,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         mErrorState = new ProcessErrorStateRecord(this);
         mWindowProcessController = new WindowProcessController(
                 mService.mActivityTaskManager, info, processName, uid, userId, this, this);
-        mMemoryLimiter = mService.newMemoryLimiter();
+        mMemoryLimiter = mService.newMemoryLimiter(getPackageName());
 
         mOptRecord = new ProcessCachedOptimizerRecord(this);
         final long now = SystemClock.uptimeMillis();
@@ -673,6 +674,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     @GuardedBy({"mService", "mProcLock"})
     void setUidRecord(UidRecord uidRecord) {
         mUidRecord = uidRecord;
+        mMemoryLimiter.setUid((mUidRecord != null) ? mUidRecord.getUid() : INVALID_UID);
     }
 
     PackageList getPkgList() {
@@ -704,7 +706,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         }
         mPid = pid;
         mWindowProcessController.setPid(pid);
-        mMemoryLimiter.setPidUid(getPid(), (mUidRecord != null) ? mUidRecord.getUid() : 0);
+        mMemoryLimiter.setPid(getPid());
         mShortStringName = null;
         mStringName = null;
         synchronized (mProfile.mProfilerLock) {

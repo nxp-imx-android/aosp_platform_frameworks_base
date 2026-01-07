@@ -19,8 +19,8 @@ package com.android.wm.shell.bubbles
 import android.app.ActivityManager
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import com.android.internal.protolog.ProtoLog
+import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleMovedToAnotherRootTask
 import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToFullscreen
-import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToSplit
 import com.android.wm.shell.bubbles.util.DefaultBubblePolicyHelper
 import com.android.wm.shell.common.TaskStackListenerCallback
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY
@@ -68,7 +68,8 @@ class BubbleTaskStackListener(
                     )
                     if (bubbleData.isExpanded) bubbleData.isExpanded = false
                 }
-                task.isBubbleToSplit(splitScreenController) -> return // skip split task restarts
+                // skip task restarts to other multi-tasking mode
+                task.isBubbleMovedToAnotherRootTask(bubbleHelper) -> return
                 !task.isAppBubbleMovingToFront() -> selectAndExpandInStackBubble(bubble, task)
             }
         }

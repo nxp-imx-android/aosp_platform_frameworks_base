@@ -20,21 +20,22 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
-import android.util.proto.ProtoInputStream;
-import android.util.proto.ProtoOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
-public class TaskStackBroadcastMessageTest {
+public class TaskStackBroadcastMessageTest extends ProtoTest<TaskStackBroadcastMessage> {
+
+    @Override
+    protected Proto.Builder<TaskStackBroadcastMessage> newBuilder() {
+        return new TaskStackBroadcastMessage.Builder();
+    }
 
     @Test
-    public void testRoundTrip_notEmpty_works() throws IOException {
+    public void testRoundTrip_notEmpty_works() throws Exception {
         verifyRoundTrip(
                 new TaskStackBroadcastMessage(
                         Arrays.asList(
@@ -47,29 +48,11 @@ public class TaskStackBroadcastMessageTest {
     }
 
     @Test
-    public void testRoundTrip_isEmpty_works() throws IOException {
-        verifyRoundTrip(new TaskStackBroadcastMessage(List.of()));
-    }
-
-    @Test
     public void testGetFieldNumber_returnsCorrectValue() {
         TaskStackBroadcastMessage TaskStackBroadcastMessage =
                 new TaskStackBroadcastMessage(new ArrayList<>());
 
         assertThat(TaskStackBroadcastMessage.getFieldNumber())
                 .isEqualTo(android.companion.TaskContinuityMessage.TASK_STACK_BROADCAST);
-    }
-
-    private void verifyRoundTrip(TaskStackBroadcastMessage expected) throws IOException {
-        final ProtoOutputStream pos = new ProtoOutputStream();
-        expected.writeToProto(pos);
-        pos.flush();
-
-        assertThat(pos.getBytes()).isNotEmpty();
-
-        final ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
-        final TaskStackBroadcastMessage actual = TaskStackBroadcastMessage.readFromProto(pis);
-
-        assertThat(actual).isEqualTo(expected);
     }
 }

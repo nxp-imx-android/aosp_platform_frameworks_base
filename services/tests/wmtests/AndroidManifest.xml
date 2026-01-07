@@ -70,11 +70,6 @@
         <activity android:name="com.android.server.wm.TaskStackChangedListenerTest$ActivityTaskDescriptionChange" />
         <activity android:name="com.android.server.wm.TaskStackChangedListenerTest$ActivityInVirtualDisplay"
                   android:resizeableActivity="true" />
-        <activity android:name="com.android.server.wm.TaskStackChangedListenerTest$LandscapeActivity"
-                  android:configChanges="screenLayout|screenSize|smallestScreenSize|orientation"
-                  android:screenOrientation="sensorLandscape"
-                  android:showWhenLocked="true"
-                  android:turnScreenOn="true" />
         <activity android:name="com.android.server.wm.TaskStackChangedListenerTest$ResumeWhilePausingActivity"
                   android:resumeWhilePausing="true"/>
         <activity android:name="com.android.server.wm.ActivityLeakTests$DetectLeakActivity" />

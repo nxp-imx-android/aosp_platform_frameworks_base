@@ -55,6 +55,7 @@ import android.app.appfunctions.IAppFunctionSearchResults;
 import android.app.appfunctions.IAppFunctionService;
 import android.app.appfunctions.ICancellationCallback;
 import android.app.appfunctions.IExecuteAppFunctionCallback;
+import android.app.appfunctions.IObserveAppFunctionChangesCallback;
 import android.app.appfunctions.IOnAppFunctionAccessChangeListener;
 import android.app.appfunctions.ISearchAppFunctionsCallback;
 import android.app.appfunctions.SafeOneTimeExecuteAppFunctionCallback;
@@ -160,6 +161,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     private final Object mAgentAllowlistLock = new Object();
 
     private final AppFunctionMetadataReader mAppFunctionMetadataReader;
+    private final AppFunctionMetadataObserver mAppFunctionMetadataObserver;
 
     // Any agents hardcoded by the system
     private static final List<SignedPackage> sSystemAllowlist =
@@ -229,6 +231,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 dynamicAppFunctionRegistry,
                 backgroundExecutor,
                 appFunctionMetadataReader,
+                new AppFunctionMetadataObserver(context, appFunctionMetadataReader),
                 appInteractionService,
                 new VisibilityHelperImpl(context, packageManagerInternal));
     }
@@ -249,6 +252,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             MultiUserDynamicAppFunctionRegistry dynamicAppFunctionRegistry,
             Executor backgroundExecutor,
             AppFunctionMetadataReader appFunctionMetadataReader,
+            AppFunctionMetadataObserver appFunctionMetadataObserver,
             @Nullable AppInteractionService appInteractionService,
             VisibilityHelper visibilityHelper) {
         mContext = Objects.requireNonNull(context);
@@ -269,6 +273,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         mDynamicAppFunctionRegistry = Objects.requireNonNull(dynamicAppFunctionRegistry);
         mBackgroundExecutor = Objects.requireNonNull(backgroundExecutor);
         mAppFunctionMetadataReader = Objects.requireNonNull(appFunctionMetadataReader);
+        mAppFunctionMetadataObserver = Objects.requireNonNull(appFunctionMetadataObserver);
         mAppInteractionService = appInteractionService;
         mVisibilityHelper = Objects.requireNonNull(visibilityHelper);
     }
@@ -276,7 +281,11 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     /** Called when the user is unlocked. */
     public void onUserUnlocked(TargetUser user) {
         Objects.requireNonNull(user);
-        registerAppSearchObserver(user);
+        if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
+            mAppFunctionMetadataObserver.registerAppSearchObserverForUser(user);
+        } else {
+            registerAppSearchObserver(user);
+        }
         trySyncRuntimeMetadata(user);
         PackageMonitor pkgMonitorForUser =
                 AppFunctionPackageMonitor.registerPackageMonitorForUser(mContext, user);
@@ -302,7 +311,11 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     public void onUserStopping(@NonNull TargetUser user) {
         Objects.requireNonNull(user);
 
-        MetadataSyncPerUser.removeUserSyncAdapter(user.getUserHandle());
+        if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
+            mAppFunctionMetadataObserver.unregisterAppSearchObserverForUser(user);
+        } else {
+            MetadataSyncPerUser.removeUserSyncAdapter(user.getUserHandle());
+        }
 
         int userIdentifier = user.getUserIdentifier();
         if (mPackageMonitors.contains(userIdentifier)) {
@@ -662,12 +675,55 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                         try {
                             searchAppFunctionsCallback.onError(new ParcelableException(e));
                         } catch (RemoteException ex) {
-                            Slog.e(TAG, "Failed to execute callback#onError.", e);
+                            Slog.e(TAG, "Failed to execute callback#onError.", ex);
                         }
                     } finally {
                         Binder.restoreCallingIdentity(token);
                     }
                 });
+    }
+
+    @Override
+    public void registerAppFunctionObserverCallback(
+            @NonNull AppFunctionAidlSearchSpec aidlSearchSpec,
+            @NonNull IObserveAppFunctionChangesCallback observeAppFunctionsCallback)
+            throws RemoteException {
+        Objects.requireNonNull(aidlSearchSpec);
+        Objects.requireNonNull(observeAppFunctionsCallback);
+
+        final int callingUid = Binder.getCallingUid();
+        final int callingPid = Binder.getCallingPid();
+
+        try {
+            // The calling package name will be used to determine the visible packages.
+            mCallerValidator.validateCallingPackage(aidlSearchSpec.getCallingPackageName());
+            mCallerValidator.verifyUserInteraction(
+                    /* targetUserId= */ aidlSearchSpec.getTargetUserId(),
+                    /* callingUid= */ callingUid,
+                    /* callingPid= */ callingPid,
+                    /* callingPackageName= */ aidlSearchSpec.getCallingPackageName());
+        } catch (SecurityException e) {
+            try {
+                observeAppFunctionsCallback.onRegistrationError(new ParcelableException(e));
+            } catch (RemoteException ex) {
+                Slog.e(TAG, "Failed to execute callback#onError.", e);
+            }
+            return;
+        }
+
+        UserHandle targetUser = UserHandle.of(aidlSearchSpec.getTargetUserId());
+
+        // TODO(b/438413081): Instead of applying visibility filter before observing,
+        //  apply changes to observed packages/functions at runtime.
+        AppFunctionSearchSpec filteredSearchSpec =
+                mVisibilityHelper.applyVisiblePackageFilter(aidlSearchSpec, callingUid, callingPid);
+
+        if (filteredSearchSpec == null) {
+            return;
+        }
+
+        mAppFunctionMetadataObserver.registerClientAppCallback(
+                targetUser, filteredSearchSpec, observeAppFunctionsCallback);
     }
 
     private AndroidFuture<Boolean> isAppFunctionEnabled(
@@ -1277,8 +1333,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         }
         FutureGlobalSearchSession futureGlobalSearchSession =
                 new FutureGlobalSearchSession(perUserAppSearchManager, THREAD_POOL_EXECUTOR);
-        AppFunctionMetadataObserver appFunctionMetadataObserver =
-                new AppFunctionMetadataObserver(
+        AppFunctionMetadataObserverCallback appFunctionMetadataObserver =
+                new AppFunctionMetadataObserverCallback(
                         user.getUserHandle(),
                         mContext.createContextAsUser(user.getUserHandle(), /* flags= */ 0));
         var unused =
@@ -1294,10 +1350,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                 (voidResult, ex) -> {
                                     if (ex != null) {
                                         Slog.e(TAG, "Failed to register observer: ", ex);
-                                    } else if (android.app.appfunctions.flags.Flags
-                                            .enableDynamicAppFunctions()) {
-                                        mAppFunctionMetadataReader.onMetadataObserveStartedForUser(
-                                                user.getUserHandle());
                                     }
                                     futureGlobalSearchSession.close();
                                 });
@@ -1409,12 +1461,13 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 aidlRequest.getUserHandle().getIdentifier());
     }
 
-    private class AppFunctionMetadataObserver implements ObserverCallback {
+    private static class AppFunctionMetadataObserverCallback implements ObserverCallback {
         @Nullable private final MetadataSyncAdapter mPerUserMetadataSyncAdapter;
 
         @NonNull UserHandle mUserHandle;
 
-        AppFunctionMetadataObserver(@NonNull UserHandle userHandle, @NonNull Context userContext) {
+        AppFunctionMetadataObserverCallback(
+                @NonNull UserHandle userHandle, @NonNull Context userContext) {
             mPerUserMetadataSyncAdapter =
                     MetadataSyncPerUser.getPerUserMetadataSyncAdapter(userHandle, userContext);
             mUserHandle = userHandle;
@@ -1428,10 +1481,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             if (documentChangeInfo.getDatabaseName().equals(APP_FUNCTION_STATIC_METADATA_DB)
                     && documentChangeInfo.getNamespace().equals(APP_FUNCTION_STATIC_NAMESPACE)) {
                 var unused = mPerUserMetadataSyncAdapter.submitSyncRequest();
-                if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
-                    mAppFunctionMetadataReader.onStaticMetadataDocumentsChanged(
-                            mUserHandle, documentChangeInfo);
-                }
             }
         }
 
@@ -1450,10 +1499,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 }
                 if (shouldInitiateSync) {
                     var unused = mPerUserMetadataSyncAdapter.submitSyncRequest();
-
-                    if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
-                        mAppFunctionMetadataReader.onMetadataSchemaChangedForUser(mUserHandle);
-                    }
                 }
             }
         }

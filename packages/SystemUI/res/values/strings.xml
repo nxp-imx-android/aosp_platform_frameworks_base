@@ -380,6 +380,10 @@
     <string name="screen_record_should_show_touches_label">Show touches</string>
     <!-- Header for the carousel to choose an app for screen recording. [CHAR LIMIT=50] -->
     <string name="screen_record_capture_target_choose_app">Choose an app to record</string>
+    <!-- Header for the carousel to choose an app for screen recording. [CHAR LIMIT=NONE] -->
+    <string name="screen_record_settings">Screen recording settings</string>
+    <!-- Label for markup functionality in screen recording. [CHAR LIMIT=NONE] -->
+    <string name="screen_record_markup">Markup</string>
     <!-- Snackbar shows after the screen recording is saved [CHAR LIMIT=20] -->
     <string name="screen_record_video_saved">Video saved</string>
     <!-- Snackbar shows after the screen recording is deleted [CHAR LIMIT=20] -->

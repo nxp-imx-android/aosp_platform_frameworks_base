@@ -1637,8 +1637,6 @@ class BubbleStackViewTest {
         }
 
         override fun isGestureNavigationMode() = false
-
-        override fun applyBubbleExpandTransactionIfNeeded(bubble: Bubble) = false
     }
 
     private class FakeBubbleExpandListener : BubbleExpandListener {

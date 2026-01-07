@@ -55,7 +55,6 @@ class TaskChangeNotificationController {
     private static final int NOTIFY_TASK_LIST_UPDATED_LISTENERS_MSG = 22;
     private static final int NOTIFY_TASK_LIST_FROZEN_UNFROZEN_MSG = 23;
     private static final int NOTIFY_TASK_FOCUS_CHANGED_MSG = 24;
-    private static final int NOTIFY_TASK_REQUESTED_ORIENTATION_CHANGED_MSG = 25;
     private static final int NOTIFY_ACTIVITY_ROTATED_MSG = 26;
     private static final int NOTIFY_TASK_MOVED_TO_BACK_LISTENERS_MSG = 27;
     private static final int NOTIFY_LOCK_TASK_MODE_CHANGED_MSG = 28;
@@ -165,10 +164,6 @@ class TaskChangeNotificationController {
         l.onTaskFocusChanged(m.arg1, m.arg2 != 0);
     };
 
-    private final TaskStackConsumer mNotifyTaskRequestedOrientationChanged = (l, m) -> {
-        l.onTaskRequestedOrientationChanged(m.arg1, m.arg2);
-    };
-
     private final TaskStackConsumer mNotifyOnActivityRotation = (l, m) -> {
         l.onActivityRotation(m.arg1);
     };
@@ -256,9 +251,6 @@ class TaskChangeNotificationController {
                     break;
                 case NOTIFY_TASK_FOCUS_CHANGED_MSG:
                     forAllRemoteListeners(mNotifyTaskFocusChanged, msg);
-                    break;
-                case NOTIFY_TASK_REQUESTED_ORIENTATION_CHANGED_MSG:
-                    forAllRemoteListeners(mNotifyTaskRequestedOrientationChanged, msg);
                     break;
                 case NOTIFY_ACTIVITY_ROTATED_MSG:
                     forAllRemoteListeners(mNotifyOnActivityRotation, msg);
@@ -518,14 +510,6 @@ class TaskChangeNotificationController {
         final Message msg = mHandler.obtainMessage(NOTIFY_TASK_FOCUS_CHANGED_MSG,
                 taskId, focused ? 1 : 0);
         forAllLocalListeners(mNotifyTaskFocusChanged, msg);
-        msg.sendToTarget();
-    }
-
-    /** @see android.app.ITaskStackListener#onTaskRequestedOrientationChanged(int, int) */
-    void notifyTaskRequestedOrientationChanged(int taskId, int requestedOrientation) {
-        final Message msg = mHandler.obtainMessage(NOTIFY_TASK_REQUESTED_ORIENTATION_CHANGED_MSG,
-                taskId, requestedOrientation);
-        forAllLocalListeners(mNotifyTaskRequestedOrientationChanged, msg);
         msg.sendToTarget();
     }
 

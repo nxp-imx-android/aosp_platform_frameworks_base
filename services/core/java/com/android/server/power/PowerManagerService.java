@@ -120,6 +120,7 @@ import android.util.LongArray;
 import android.util.PrintWriterPrinter;
 import android.util.Slog;
 import android.util.SparseArray;
+import android.util.SparseBooleanArray;
 import android.util.TimeUtils;
 import android.util.proto.ProtoOutputStream;
 import android.view.Display;
@@ -728,9 +729,13 @@ public final class PowerManagerService extends SystemService
     // Whether to keep dreaming when the device is unplugging.
     private boolean mKeepDreamingWhenUnplugging;
 
-    // Whether to force disable wakelocks.
+    // Whether to globally force disable wakelocks.
     @GuardedBy("mLock")
-    private boolean mForceDisableWakelocks;
+    private boolean mGlobalForceDisableWakelocks;
+
+    // Mapping of power group ids to whether their wakelocks should be force disabled.
+    @GuardedBy("mLock")
+    private SparseBooleanArray mGroupsToForceDisableWakelocks = new SparseBooleanArray();
 
     @GuardedBy("mLock")
     private ScreenTimeoutOverridePolicy mScreenTimeoutOverridePolicy;
@@ -4640,12 +4645,40 @@ public final class PowerManagerService extends SystemService
         }
     }
 
-    void setForceDisableWakelocksInternal(boolean force) {
+    /**
+     * Tool to enabled / disable wakelocks. If no power group ids are specified, all wakelocks
+     * will be affected.
+     * @param forceDisable - whether to enable or disable
+     * @param groupsToActUpon - power groups to act upon. Leave empty to act upon all wakelocks
+     */
+    void setForceDisableWakelocksInternal(boolean forceDisable, IntArray groupsToActUpon) {
         synchronized (mLock) {
-            if (mFeatureFlags.isForceDisableWakelocksEnabled()) {
-                mForceDisableWakelocks = force;
-                updateWakeLockDisabledStatesLocked();
+            if (!mFeatureFlags.isForceDisableWakelocksEnabled()) {
+                return;
             }
+
+            List<WakeLock> wakeLocksToActUpon = mWakeLocks;
+
+            if (groupsToActUpon.size() > 0) {
+                Slog.i(TAG,
+                        "force-disable-wakelocks for power groups: "
+                                + groupsToActUpon + ", forceDisable: " + forceDisable);
+                for (int i = 0; i < mWakeLocks.size(); i++) {
+                    WakeLock wakelock = mWakeLocks.get(i);
+                    Integer powerGroupId = wakelock.getPowerGroupId();
+                    if (powerGroupId == null || !groupsToActUpon.contains(powerGroupId)) {
+                        // wakelocks we should not act upon
+                        wakeLocksToActUpon.remove(wakelock);
+                    } else {
+                        // wakelocks we should act upon:
+                        mGroupsToForceDisableWakelocks.put(powerGroupId, forceDisable);
+                    }
+                }
+            } else {
+                Slog.i(TAG, "force disable all wakelocks. forceDisable: " + forceDisable);
+                mGlobalForceDisableWakelocks = forceDisable;
+            }
+            updateWakeLockDisabledStatesLocked(wakeLocksToActUpon);
         }
     }
 
@@ -4727,8 +4760,11 @@ public final class PowerManagerService extends SystemService
                     }
                 }
             }
-            // Disable all PARTIAL_WAKE_LOCKS if mForceDisableWakelocks is true.
-            if (mForceDisableWakelocks) {
+            // Disable PARTIAL_WAKE_LOCKS
+            // Either globally if mGlobalForceDisableWakelocks is true
+            // or per power group if requested
+            if (mGlobalForceDisableWakelocks || (wakeLock.getPowerGroupId() != null
+                    && mGroupsToForceDisableWakelocks.get(wakeLock.getPowerGroupId()))) {
                 disabled = true;
             }
             return wakeLock.setDisabled(disabled);
@@ -5131,6 +5167,8 @@ public final class PowerManagerService extends SystemService
             pw.println("  mTheaterModeEnabled="
                     + mTheaterModeEnabled);
             pw.println("  mKeepDreamingWhenUnplugging=" + mKeepDreamingWhenUnplugging);
+            pw.println("  mGlobalForceDisableWakelocks=" + mGlobalForceDisableWakelocks);
+            pw.println("  mGroupsToForceDisableWakelocks=" + mGroupsToForceDisableWakelocks);
             pw.println("  mSuspendWhenScreenOffDueToProximityConfig="
                     + mSuspendWhenScreenOffDueToProximityConfig);
             pw.println("  mDreamsSupportedConfig=" + mDreamsSupportedConfig);
@@ -5788,11 +5826,11 @@ public final class PowerManagerService extends SystemService
                     handleProcessFrozenStateChange(msg.obj, msg.arg1);
                     break;
                 case MSG_FORCE_DISABLE_WAKELOCKS:
-                    if (msg.arg1 == 1) {
-                        setForceDisableWakelocksInternal(true);
-                    } else {
-                        setForceDisableWakelocksInternal(false);
+                    IntArray groupIdsToActUpon = new IntArray();
+                    if (msg.obj instanceof IntArray) {
+                        groupIdsToActUpon = (IntArray) msg.obj;
                     }
+                    setForceDisableWakelocksInternal(msg.arg1 == 1, groupIdsToActUpon);
                     break;
             }
 
@@ -5972,6 +6010,11 @@ public final class PowerManagerService extends SystemService
             if (mWorkSource != null) {
                 sb.append(" ws=");
                 sb.append(mWorkSource);
+            }
+            final Integer powerGroupId = getPowerGroupId();
+            if (powerGroupId != null) {
+                sb.append(" powerGroupId=");
+                sb.append(powerGroupId);
             }
             sb.append(")");
             return sb.toString();
@@ -7954,9 +7997,32 @@ public final class PowerManagerService extends SystemService
 
         @Override
         public void setForceDisableWakelocks(boolean force) {
-            Slog.i(TAG, (force ? "Starting" : "Stopping") + " to force disable partial wakelocks");
+            Slog.i(TAG, (force ? "Starting" : "Stopping") + " to force disable wakelocks");
             Message msg = mHandler.obtainMessage(MSG_FORCE_DISABLE_WAKELOCKS,
                     force ? 1 : 0,  0 /*unused*/);
+            mHandler.sendMessageAtTime(msg, mClock.uptimeMillis());
+        }
+
+        @Override
+        public void setForceDisableWakelocksByDisplay(boolean forceDisable, IntArray displayIds) {
+            Slog.i(TAG, (forceDisable ? "Starting" : "Stopping")
+                    + " to force disable wakelocks for displayids: " + displayIds);
+            IntArray groupIds = new IntArray();
+            for (int i = 0; i < displayIds.size(); i++) {
+                final int groupId = getDisplayGroupId(displayIds.get(i));
+                if (groupId != Display.INVALID_DISPLAY_GROUP) {
+                    groupIds.add(groupId);
+                }
+            }
+            setForceDisableWakelocksByPowerGroup(forceDisable, groupIds);
+        }
+
+        @Override
+        public void setForceDisableWakelocksByPowerGroup(boolean forceDisable, IntArray groupIds) {
+            Slog.i(TAG, (forceDisable ? "Starting" : "Stopping")
+                    + " to force disable wakelocks for groups: " + groupIds);
+            Message msg = mHandler.obtainMessage(MSG_FORCE_DISABLE_WAKELOCKS,
+                    forceDisable ? 1 : 0, /* unused= */ 0, groupIds);
             mHandler.sendMessageAtTime(msg, mClock.uptimeMillis());
         }
 

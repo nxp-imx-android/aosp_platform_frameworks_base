@@ -317,11 +317,27 @@ constructor(
         if (authenticationInteractor.authenticationMethod.value in setOf(Pin, Password, Pattern)) {
             if (authResult == AuthenticationResult.SUCCEEDED) {
                 uiEventLogger.log(BouncerUiEvent.BOUNCER_PASSWORD_SUCCESS)
+                val uiEventId =
+                    when (authenticationInteractor.authenticationMethod.value) {
+                        Pin -> BouncerUiEvent.BOUNCER_SUCCESS_PIN
+                        Password -> BouncerUiEvent.BOUNCER_SUCCESS_PASSWORD
+                        Pattern -> BouncerUiEvent.BOUNCER_SUCCESS_PATTERN
+                        else -> null
+                    }
+                uiEventLogger.log(uiEventId!!, sessionTracker.getSessionId(SESSION_KEYGUARD))
             } else if (authResult == AuthenticationResult.FAILED) {
                 uiEventLogger.log(
                     BouncerUiEvent.BOUNCER_PASSWORD_FAILURE,
                     sessionTracker.getSessionId(SESSION_KEYGUARD),
                 )
+                val uiEventId =
+                    when (authenticationInteractor.authenticationMethod.value) {
+                        Pin -> BouncerUiEvent.BOUNCER_FAILURE_PIN
+                        Password -> BouncerUiEvent.BOUNCER_FAILURE_PASSWORD
+                        Pattern -> BouncerUiEvent.BOUNCER_FAILURE_PATTERN
+                        else -> null
+                    }
+                uiEventLogger.log(uiEventId!!, sessionTracker.getSessionId(SESSION_KEYGUARD))
             }
         }
 

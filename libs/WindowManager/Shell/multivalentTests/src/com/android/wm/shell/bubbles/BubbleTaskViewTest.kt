@@ -17,6 +17,7 @@
 package com.android.wm.shell.bubbles
 
 import android.app.ActivityManager
+import android.app.ActivityTaskManager
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.content.ComponentName
 import android.content.Context
@@ -173,6 +174,7 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
     fun cleanup_taskTransitioningToFullscreen_removesOrUnregistersTask() {
         runningTaskInfo.apply {
             configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
+            parentTaskId = ActivityTaskManager.INVALID_TASK_ID
         }
         bubbleTaskView.listener.onTaskCreated(123 /* taskId */, componentName)
 

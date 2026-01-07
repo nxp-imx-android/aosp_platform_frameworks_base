@@ -41,6 +41,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.toggleableState
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import com.android.systemui.common.shared.model.Icon as IconModel
 import com.android.systemui.res.R
@@ -160,18 +168,31 @@ private fun RichSwitch(
     disabledMessageRes: Int = Resources.ID_NULL,
 ) {
     val context = LocalContext.current
+    require(enabled || disabledMessageRes != Resources.ID_NULL) {
+        "Provide disabled message for a disabled switch"
+    }
+    val disabledMessage: String? = if (enabled) null else stringResource(disabledMessageRes)
     SettingsRow(
-        modifier.clickable(
-            onClick = {
+        modifier
+            .clearAndSetSemantics {
+                role = Role.Switch
+                toggleableState = if (checked) ToggleableState.On else ToggleableState.Off
                 if (enabled) {
-                    onCheckedChange(!checked)
+                    contentDescription = label
                 } else {
-                    if (disabledMessageRes != Resources.ID_NULL) {
-                        Toast.makeText(context, disabledMessageRes, Toast.LENGTH_SHORT).show()
-                    }
+                    contentDescription = "$label. ${disabledMessage!!}"
+                    disabled()
                 }
             }
-        )
+            .clickable(
+                onClick = {
+                    if (enabled) {
+                        onCheckedChange(!checked)
+                    } else {
+                        Toast.makeText(context, disabledMessage, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            )
     ) {
         LoadingIcon(icon = icon.value, modifier = Modifier.size(40.dp).padding(8.dp))
         Text(
@@ -180,7 +201,12 @@ private fun RichSwitch(
             maxLines = 2,
             modifier = Modifier.padding(horizontal = 8.dp).weight(1f).basicMarquee(),
         )
-        Switch(checked = checked, enabled = enabled, onCheckedChange = onCheckedChange)
+        Switch(
+            checked = checked,
+            enabled = enabled,
+            onCheckedChange = onCheckedChange,
+            modifier = Modifier,
+        )
     }
 }
 
@@ -191,7 +217,7 @@ private fun AppSelectorButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    SettingsRow(modifier.clickable(onClick = onClick)) {
+    SettingsRow(modifier.semantics { role = Role.Button }.clickable(onClick = onClick)) {
         LoadingIcon(
             icon =
                 loadIcon(

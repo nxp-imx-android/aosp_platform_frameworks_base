@@ -27,8 +27,10 @@ import android.os.Parcelable;
 import android.text.TextUtils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Specifies the query parameters for finding app functions. A search will be performed using a
@@ -63,8 +65,8 @@ public final class AppFunctionSearchSpec implements Parcelable {
             @Nullable String schemaCategory,
             @Nullable String schemaName,
             long minSchemaVersion) {
-        mPackageNames = packageNames;
-        mFunctionNames = functionNames;
+        mPackageNames = packageNames != null ? new ArrayList<>(packageNames) : null;
+        mFunctionNames = functionNames != null ? new ArrayList<>(functionNames) : null;
         mSchemaCategory = schemaCategory;
         mSchemaName = schemaName;
         mMinSchemaVersion = minSchemaVersion;
@@ -192,6 +194,59 @@ public final class AppFunctionSearchSpec implements Parcelable {
         }
 
         return qualifiedIds;
+    }
+
+    /**
+     * Returns the set of package names to observe based on both {@link #mPackageNames} and {@link
+     * #mFunctionNames} filters. Returns null if both filters are unset.
+     *
+     * @hide
+     */
+    @Nullable
+    public Set<String> getObservedPackageNames() {
+        Set<AppFunctionName> observedAppFunctions = getObservedAppFunctions();
+        if (observedAppFunctions == null) {
+            if (mPackageNames == null) {
+                return null;
+            } else {
+                return Set.copyOf(mPackageNames);
+            }
+        }
+
+        Set<String> observedPackages = new HashSet<>();
+        for (AppFunctionName functionName : observedAppFunctions) {
+            observedPackages.add(functionName.getPackageName());
+        }
+
+        return observedPackages;
+    }
+
+    /**
+     * Returns the set of {@link AppFunctionName} to observe based on both {@link #mPackageNames}
+     * and {@link #mFunctionNames} filters. Returns null if the {@link #mFunctionNames} filter is
+     * unset.
+     *
+     * @hide
+     */
+    @Nullable
+    public Set<AppFunctionName> getObservedAppFunctions() {
+        if (mFunctionNames == null) {
+            return null;
+        }
+        if (mPackageNames == null) {
+            return Set.copyOf(mFunctionNames);
+        }
+
+        Set<String> packageNamesSet = Set.copyOf(mPackageNames);
+        Set<AppFunctionName> result = new HashSet<>();
+
+        for (AppFunctionName functionName : mFunctionNames) {
+            if (packageNamesSet.contains(functionName.getPackageName())) {
+                result.add(functionName);
+            }
+        }
+
+        return result;
     }
 
     private String getOrQueryExpression(@NonNull List<String> elements) {

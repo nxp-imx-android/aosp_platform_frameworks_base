@@ -42,9 +42,21 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
     // TODO: b/469073407 - Add more binder calls.
     private val binderCalls =
         listOf(
+            // go/keep-sorted start
             "android.app.PendingIntent#getBroadcast",
             "android.app.PendingIntent#queryIntentComponents",
             "android.media.projection.MediaProjectionManager#stopActiveProjection",
+            "android.media.session.MediaController#unregisterCallback",
+            "com.android.internal.statusbar.IStatusBarService#disableForUser",
+            // go/keep-sorted end
+        )
+
+    // A list of constructors that should be considered binder calls.
+    private val constructorBinderCalls =
+        listOf(
+            // go/keep-sorted start
+            "android.media.session.MediaController"
+            // go/keep-sorted end
         )
 
     private data class BinderCall(
@@ -78,6 +90,18 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
         // Use `toSet` first so that we don't visit the same method multiple times.
         parsedBinderCalls.map { it.methodName }.toSet().toList()
 
+    override fun getApplicableConstructorTypes() = constructorBinderCalls
+
+    override fun visitConstructor(
+        context: JavaContext,
+        node: UCallExpression,
+        constructor: PsiMethod,
+    ) {
+        // #visitConstructor should only be invoked if the constructor is in our binder call list,
+        // so we can assume it's a binder call and immediately visit it.
+        visitBinderCall(context, node)
+    }
+
     override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
         val methodName = method.name
         val packageName = context.evaluator.getPackage(method)?.qualifiedName
@@ -93,6 +117,14 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
             return
         }
 
+        visitBinderCall(context, node)
+    }
+
+    /**
+     * Visits a call that is definitely in our list of binder calls to check if it's invoked on the
+     * background or not.
+     */
+    private fun visitBinderCall(context: JavaContext, node: UCallExpression) {
         if (node.containingMethodOrClassHasWorkerThreadAnnotation(context)) {
             // This binder call is inside a method or class marked `@WorkerThread`, and that
             // annotation enforces that the method will only be invoked on the background thread.
@@ -102,7 +134,7 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
         val containingBlock = findContainingBlock(node)
         if (containingBlock != null) {
             if (
-                containingBlock.isLaunchedOnBackgroundScope() ||
+                containingBlock.isLaunchedOnBackground() ||
                     containingBlock.isStartedWithBackgroundParameter()
             ) {
                 // This binder call is correctly inside a block that explicitly runs in the
@@ -158,18 +190,19 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
     }
 
     /**
-     * Returns true if the call expression is received by the backgroundScope. Matches expressions
-     * like `bgScope.launch {}` or `backgroundScope.launch {}`.
+     * Returns true if the call expression is received by a background worker. Matches expressions
+     * like `bgScope.launch {}`, `backgroundExecutor.execute {}`, and `uiBgExecutor.execute {}`.
      */
-    private fun UCallExpression.isLaunchedOnBackgroundScope(): Boolean {
-        // For extension functions like CoroutineScope.launch, the CoroutineScope is the receiver.
+    private fun UCallExpression.isLaunchedOnBackground(): Boolean {
+        // For both member-defined functions like `Executor.execute` AND extension functions like
+        // `CoroutineScope.launch`, the `Executor`/`CoroutineScope` is the receiver.
         val receiverIdentifier: String? =
             when (val receiver = this.receiver) {
                 is USimpleNameReferenceExpression -> receiver.identifier
                 is UParenthesizedExpression -> receiver.expression.asRenderString()
                 else -> null
             }
-        return receiverIdentifier?.isBackgroundScopeIdentifier() == true
+        return receiverIdentifier?.isBackgroundIdentifier() == true
     }
 
     /**
@@ -195,15 +228,11 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
             parameter.identifier.isBackgroundIdentifier()
     }
 
-    /** Returns true if this string identifies a background context or background dispatcher. */
+    /** Returns true if this string identifies a background worker of any sort. */
     private fun String.isBackgroundIdentifier(): Boolean {
-        return this.matches(Regex(".*(bg|background|Bg|Background)(Context|Dispatcher)"))
-    }
-
-    /** Returns true if this string identifies a background scope. */
-    private fun String.isBackgroundScopeIdentifier(): Boolean {
-        return endsWith("bgScope", ignoreCase = true) ||
-            endsWith("backgroundScope", ignoreCase = true)
+        return this.matches(
+            Regex(".*(bg|background|Bg|Background)(Context|Dispatcher|Executor|Scope)")
+        )
     }
 
     companion object {

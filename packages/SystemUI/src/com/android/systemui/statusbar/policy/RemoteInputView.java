@@ -88,7 +88,6 @@ import com.android.systemui.statusbar.RemoteInputController;
 import com.android.systemui.statusbar.notification.collection.RemoteInputEntryAdapter;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.phone.LightBarController;
 
 import java.util.ArrayList;
@@ -397,13 +396,8 @@ public class RemoteInputView extends LinearLayout implements View.OnClickListene
                 LayoutInflater.from(context).inflate(R.layout.remote_input, root, false);
         v.mController = controller;
         v.mRow = parent;
-        if (NotificationBundleUi.isEnabled()) {
-            v.mRemoteInputEntryAdapter = remoteInputEntryAdapter;
-            v.mSbn = parent.getEntryAdapter().getSbn();
-        } else {
-            v.mRemoteInputEntryAdapter = parent.getEntryLegacy().getRemoteInputEntryAdapter();
-            v.mSbn = parent.getEntryLegacy().getSbn();
-        }
+        v.mRemoteInputEntryAdapter = remoteInputEntryAdapter;
+        v.mSbn = parent.getEntryAdapter().getSbn();
         UserHandle user = computeTextOperationUser(v.mSbn.getUser());
         v.mEditText.mUser = user;
         v.mEditText.setTextOperationUser(user);

@@ -400,7 +400,6 @@ constructor(
         bluetoothToggle.apply {
             isChecked = isEnabled
             setEnabled(true)
-            alpha = ENABLED_ALPHA
         }
         bluetoothToggleLayout?.isEnabled = true
         subtitleTextView?.text = contentView.context.getString(uiProperties.subTitleResId)
@@ -436,10 +435,9 @@ constructor(
     private fun setupToggle() {
         bluetoothToggle.setOnCheckedChangeListener { view, isChecked ->
             mutableBluetoothStateToggle.value = isChecked
-            view.apply {
-                isEnabled = false
-                alpha = DISABLED_ALPHA
-            }
+            // Disable toggle to prevent multiple clicks while state is changing.
+            // It will be re-enabled in onBluetoothStateUpdated.
+            view.isEnabled = false
             // The switch is disabled while waiting for the state update to avoid rapid clicks.
             // The layout (row) should also be disabled to match the behavior and prevent
             // interactions.
@@ -768,8 +766,6 @@ constructor(
             "com.android.settings.PREVIOUSLY_CONNECTED_DEVICE"
         const val ACTION_PAIR_NEW_DEVICE = "android.settings.BLUETOOTH_PAIRING_SETTINGS"
         const val ACTION_AUDIO_SHARING = "com.android.settings.BLUETOOTH_AUDIO_SHARING_SETTINGS"
-        const val DISABLED_ALPHA = 0.3f
-        const val ENABLED_ALPHA = 1f
         const val PROGRESS_BAR_ANIMATION_DURATION_MS = 1500L
 
         private fun Boolean.toInt(): Int {

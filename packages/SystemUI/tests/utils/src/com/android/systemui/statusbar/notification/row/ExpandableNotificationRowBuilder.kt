@@ -270,7 +270,10 @@ class ExpandableNotificationRowBuilder(
         )
     }
 
-    fun createRowGroup(childCount: Int = 4, channel: NotificationChannel? = null): ExpandableNotificationRow {
+    fun createRowGroup(
+        childCount: Int = 4,
+        channel: NotificationChannel? = null,
+    ): ExpandableNotificationRow {
         val children = ArrayList<NotificationEntry>()
         for (i in 0..<childCount) {
             val childEntry =
@@ -278,9 +281,7 @@ class ExpandableNotificationRowBuilder(
                     Notification.Builder(context, "channel")
                         .setSmallIcon(R.drawable.ic_person)
                         .setGroup("group")
-                    channel?.let {
-                        setChannel(channel)
-                    }
+                    channel?.let { setChannel(channel) }
                 }
             childEntry.row = kosmos.createRowWithEntry(childEntry)
             children.add(childEntry)
@@ -293,9 +294,7 @@ class ExpandableNotificationRowBuilder(
                         .setSmallIcon(R.drawable.ic_person)
                         .setGroupSummary(true)
                         .setGroup("group")
-                    channel?.let {
-                        setChannel(channel)
-                    }
+                    channel?.let { setChannel(channel) }
                 },
             )
         summary.row = kosmos.createRowWithEntry(summary)
@@ -396,8 +395,7 @@ class ExpandableNotificationRowBuilder(
         val row = rowInflaterTask.inflateSynchronously(context, null, entry)
         val entryAdapter = kosmos.entryAdapterFactory.create(entry)
         row.initialize(
-            entryAdapter, // if (NotificationBundleUi.isEnabled) entryAdapter else null,
-            entry, // if (NotificationBundleUi.isEnabled) null else entry,
+            entryAdapter,
             Mockito.mock(RemoteInputViewSubcomponent.Factory::class.java, STUB_ONLY),
             APP_NAME,
             entry.key,

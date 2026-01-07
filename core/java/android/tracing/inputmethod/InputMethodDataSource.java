@@ -19,8 +19,6 @@ package android.tracing.inputmethod;
 import android.annotation.NonNull;
 import android.tracing.perfetto.DataSource;
 import android.tracing.perfetto.DataSourceInstance;
-import android.tracing.perfetto.StartCallbackArguments;
-import android.tracing.perfetto.StopCallbackArguments;
 import android.util.proto.ProtoInputStream;
 
 /**
@@ -30,29 +28,15 @@ public final class InputMethodDataSource
         extends DataSource<DataSourceInstance, Void, Void> {
     public static final String DATA_SOURCE_NAME = "android.inputmethod";
 
-    @NonNull
-    private final Runnable mOnStartCallback;
-    @NonNull
-    private final Runnable mOnStopCallback;
-
     public InputMethodDataSource(@NonNull Runnable onStart, @NonNull Runnable onStop) {
         super(DATA_SOURCE_NAME);
-        mOnStartCallback = onStart;
-        mOnStopCallback = onStop;
+
+        this.registerOnStartCallback((idx) -> onStart.run());
+        this.registerOnStopCallback((idx) -> onStop.run());
     }
 
     @Override
     public DataSourceInstance createInstance(ProtoInputStream configStream, int instanceIndex) {
-        return new DataSourceInstance(this, instanceIndex) {
-            @Override
-            protected void onStart(StartCallbackArguments args) {
-                mOnStartCallback.run();
-            }
-
-            @Override
-            protected void onStop(StopCallbackArguments args) {
-                mOnStopCallback.run();
-            }
-        };
+        return new DataSourceInstance(this, instanceIndex) {};
     }
 }

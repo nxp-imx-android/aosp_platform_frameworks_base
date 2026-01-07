@@ -420,7 +420,8 @@ public class InsetsSourceTest {
         mSource.setFrame(new Rect(0, 0, 1000, 100));
         mSource.setBoundingRects(null);
 
-        final Rect[] rects = mSource.calculateBoundingRects(new Rect(0, 0, 1000, 1000), false);
+        final Rect[] rects = mSource.calculateBoundingRects(new Rect(0, 0, 1000, 1000),
+                new Rect(0, 0, 1000, 1000), false);
 
         assertEquals(1, rects.length);
         assertEquals(new Rect(0, 0, 1000, 100), rects[0]);
@@ -431,7 +432,8 @@ public class InsetsSourceTest {
         mSource.setFrame(new Rect(100, 100, 1200, 200));
         mSource.setBoundingRects(null);
 
-        final Rect[] rects = mSource.calculateBoundingRects(new Rect(100, 100, 1100, 1100), false);
+        final Rect[] rects = mSource.calculateBoundingRects(new Rect(100, 100, 1100, 1100),
+                new Rect(0, 0, 1000, 1000), false);
 
         assertEquals(1, rects.length);
         assertEquals(new Rect(0, 0, 1000, 100), rects[0]);
@@ -442,7 +444,8 @@ public class InsetsSourceTest {
         mSource.setFrame(new Rect(0, 0, 1000, 100));
         mSource.setBoundingRects(null);
 
-        final Rect[] rects = mSource.calculateBoundingRects(new Rect(0, 0, 500, 1000), false);
+        final Rect[] rects = mSource.calculateBoundingRects(new Rect(0, 0, 500, 1000),
+                new Rect(0, 0, 1000, 1000), false);
 
         assertEquals(1, rects.length);
         assertEquals(new Rect(0, 0, 500, 100), rects[0]);
@@ -456,7 +459,8 @@ public class InsetsSourceTest {
                 new Rect(800, 0, 1000, 100),
         });
 
-        final Rect[] rects = mSource.calculateBoundingRects(new Rect(0, 0, 1000, 1000), false);
+        final Rect[] rects = mSource.calculateBoundingRects(new Rect(0, 0, 1000, 1000),
+                new Rect(0, 0, 1000, 1000), false);
 
         assertEquals(2, rects.length);
         assertEquals(new Rect(0, 0, 300, 100), rects[0]);
@@ -471,7 +475,8 @@ public class InsetsSourceTest {
                 new Rect(800, 0, 1000, 100), // 200x100, aligned right
         });
 
-        final Rect[] rects = mSource.calculateBoundingRects(new Rect(100, 100, 1100, 1100), false);
+        final Rect[] rects = mSource.calculateBoundingRects(new Rect(100, 100, 1100, 1100),
+                new Rect(0, 0, 1000, 1000), false);
 
         assertEquals(2, rects.length);
         assertEquals(new Rect(0, 0, 300, 100), rects[0]);
@@ -485,7 +490,8 @@ public class InsetsSourceTest {
                 new Rect(100, 0, 400, 100), // Inside |frame| and |relativeFrame|.
         });
 
-        final Rect[] rects = mSource.calculateBoundingRects(new Rect(0, 0, 500, 100), false);
+        final Rect[] rects = mSource.calculateBoundingRects(new Rect(0, 0, 500, 100),
+                new Rect(0, 0, 1000, 1000), false);
 
         assertEquals(1, rects.length);
         assertEquals(new Rect(100, 0, 400, 100), rects[0]);
@@ -498,7 +504,8 @@ public class InsetsSourceTest {
                 new Rect(700, 0, 1000, 100), // Inside |frame|, but outside |relativeFrame|.
         });
 
-        final Rect[] rects = mSource.calculateBoundingRects(new Rect(0, 0, 500, 100), false);
+        final Rect[] rects = mSource.calculateBoundingRects(new Rect(0, 0, 500, 100),
+                new Rect(0, 0, 1000, 1000), false);
 
         assertEquals(0, rects.length);
     }
@@ -510,7 +517,8 @@ public class InsetsSourceTest {
                 new Rect(400, 0, 600, 100), // Inside |frame|, and only half inside |relativeFrame|.
         });
 
-        final Rect[] rects = mSource.calculateBoundingRects(new Rect(0, 0, 500, 100), false);
+        final Rect[] rects = mSource.calculateBoundingRects(new Rect(0, 0, 500, 100),
+                new Rect(0, 0, 1000, 1000), false);
 
         assertEquals(1, rects.length);
         assertEquals(new Rect(400, 0, 500, 100), rects[0]);
@@ -524,7 +532,8 @@ public class InsetsSourceTest {
                 new Rect(800, 0, 1000, 100) // 200x100 align to right.
         });
 
-        final Rect[] rects = mSource.calculateBoundingRects(new Rect(100, 100, 1100, 1100), false);
+        final Rect[] rects = mSource.calculateBoundingRects(new Rect(100, 100, 1100, 1100),
+                new Rect(0, 0, 1000, 1000), false);
 
         assertEquals(2, rects.length);
         assertEquals(new Rect(0, 0, 300, 100), rects[0]);
@@ -539,44 +548,12 @@ public class InsetsSourceTest {
                 new Rect(800, 0, 1000, 100) // 200x100, aligned right.
         });
 
-        final Rect[] rects = mCaptionSource.calculateBoundingRects(
+        final Rect[] rects = mCaptionSource.calculateBoundingRects(new Rect(0, 0, 1000, 1000),
                 new Rect(0, 0, 1000, 1000), false);
 
         assertEquals(2, rects.length);
         assertEquals(new Rect(0, 0, 200, 100), rects[0]);
         assertEquals(new Rect(800, 0, 1000, 100), rects[1]);
-    }
-
-    @Test
-    public void testCalculateBoundingRects_captionBarFrameMisaligned_rectsFixedToTop() {
-        mCaptionSource.setFrame(new Rect(500, 500, 1500, 600));
-        mCaptionSource.setBoundingRects(new Rect[]{
-                new Rect(0, 0, 100, 100), // 100x100, aligned to left/top of frame
-        });
-
-        final Rect[] rects = mCaptionSource.calculateBoundingRects(
-                new Rect(495, 495, 1500, 1500), false);
-
-        assertEquals(1, rects.length);
-        // rect should be aligned to the top of relative frame, as if the caption frame had been
-        // corrected to be aligned at the top.
-        assertEquals(new Rect(0, 0, 100, 100), rects[0]);
-    }
-
-    @Test
-    public void testCalculateBoundingRects_imeCaptionBarFrameMisaligned_rectsFixedToBottom() {
-        mImeCaptionSource.setFrame(new Rect(500, 1400, 1500, 1500));
-        mImeCaptionSource.setBoundingRects(new Rect[]{
-                new Rect(0, 0, 100, 100), // 100x100, aligned to left/top of frame
-        });
-
-        final Rect[] rects = mImeCaptionSource.calculateBoundingRects(
-                new Rect(495, 495, 1500, 1500), false);
-
-        assertEquals(1, rects.length);
-        // rect should be aligned to the bottom of relative frame, as if the ime caption frame had
-        // been corrected to be aligned at the top.
-        assertEquals(new Rect(0, 905, 100, 1005), rects[0]);
     }
 
     @Test
@@ -586,7 +563,7 @@ public class InsetsSourceTest {
                 new Rect(0, 0, 200, 100), // 200x100, aligned left.
         });
 
-        final Rect[] rects = mImeCaptionSource.calculateBoundingRects(
+        final Rect[] rects = mImeCaptionSource.calculateBoundingRects(new Rect(0, 0, 1000, 1000),
                 new Rect(0, 0, 1000, 1000), false);
 
         assertEquals(1, rects.length);
@@ -603,7 +580,7 @@ public class InsetsSourceTest {
         mSource.setVisible(false);
 
         final Rect[] rects = mSource.calculateBoundingRects(new Rect(0, 0, 1000, 1000),
-                false /* ignoreVisibility */);
+                new Rect(0, 0, 1000, 1000), false /* ignoreVisibility */);
 
         assertEquals(0, rects.length);
     }
@@ -618,11 +595,153 @@ public class InsetsSourceTest {
         mSource.setVisible(false);
 
         final Rect[] rects = mSource.calculateBoundingRects(new Rect(0, 0, 1000, 1000),
-                true /* ignoreVisibility */);
+                new Rect(0, 0, 1000, 1000), true /* ignoreVisibility */);
 
         assertEquals(2, rects.length);
         assertEquals(new Rect(0, 0, 300, 100), rects[0]);
         assertEquals(new Rect(800, 0, 1000, 100), rects[1]);
+    }
+
+    @Test
+    public void testCalculateBoundingRects_relativeInsets_top() {
+        mSource.setAttachedInsets(Insets.of(0, 100, 0, 0));
+        mSource.setBoundingRects(new Rect[]{
+                new Rect(0, 0, 300, 100),
+                new Rect(800, 0, 1000, 100),
+        });
+
+        final Rect[] rects = mSource.calculateBoundingRects(new Rect(0, 0, 1000, 1000),
+                new Rect(0, 0, 1000, 1000), false);
+
+        assertEquals(2, rects.length);
+        assertEquals(new Rect(0, 0, 300, 100), rects[0]);
+        assertEquals(new Rect(800, 0, 1000, 100), rects[1]);
+    }
+
+    @Test
+    public void testCalculateBoundingRects_relativeInsets_bottom() {
+        mSource.setAttachedInsets(Insets.of(0, 0, 0, 100));
+        mSource.setBoundingRects(new Rect[]{
+                new Rect(0, 0, 300, 100),
+                new Rect(800, 0, 1000, 100),
+        });
+
+        final Rect[] rects = mSource.calculateBoundingRects(new Rect(0, 0, 1000, 1000),
+                new Rect(0, 0, 1000, 1000), false);
+
+        assertEquals(2, rects.length);
+        assertEquals(new Rect(0, 900, 300, 1000), rects[0]);
+        assertEquals(new Rect(800, 900, 1000, 1000), rects[1]);
+    }
+
+    @Test
+    public void testCalculateBoundingRects_relativeInsets_left() {
+        mSource.setAttachedInsets(Insets.of(100, 0, 0, 0));
+        mSource.setBoundingRects(new Rect[]{
+                new Rect(0, 0, 100, 300),
+                new Rect(0, 800, 100, 1000),
+        });
+
+        final Rect[] rects = mSource.calculateBoundingRects(new Rect(0, 0, 1000, 1000),
+                new Rect(0, 0, 1000, 1000), false);
+
+        assertEquals(2, rects.length);
+        assertEquals(new Rect(0, 0, 100, 300), rects[0]);
+        assertEquals(new Rect(0, 800, 100, 1000), rects[1]);
+    }
+
+    @Test
+    public void testCalculateBoundingRects_relativeInsets_right() {
+        mSource.setAttachedInsets(Insets.of(0, 0, 100, 0));
+        mSource.setBoundingRects(new Rect[]{
+                new Rect(0, 0, 100, 300),
+                new Rect(0, 800, 100, 1000),
+        });
+
+        final Rect[] rects = mSource.calculateBoundingRects(new Rect(0, 0, 1000, 1000),
+                new Rect(0, 0, 1000, 1000), false);
+
+        assertEquals(2, rects.length);
+        assertEquals(new Rect(900, 0, 1000, 300), rects[0]);
+        assertEquals(new Rect(900, 800, 1000, 1000), rects[1]);
+    }
+
+    @Test
+    public void testCalculateBoundingRects_relativeInsets_noIntersection() {
+        mSource.setAttachedInsets(Insets.of(0, 100, 0, 0));
+        mSource.setBoundingRects(new Rect[]{
+                new Rect(0, 0, 300, 100),
+                new Rect(800, 0, 1000, 100),
+        });
+
+        final Rect[] rects = mSource.calculateBoundingRects(new Rect(250, 250, 750, 750),
+                new Rect(0, 0, 1000, 1000), false);
+
+        assertEquals(0, rects.length);
+    }
+
+    @Test
+    public void testCalculateBoundingRects_relativeInsets_partialIntersectionTop() {
+        mSource.setAttachedInsets(Insets.of(0, 100, 0, 0));
+        mSource.setBoundingRects(new Rect[]{
+                new Rect(0, 0, 300, 100),
+                new Rect(800, 0, 1000, 100),
+        });
+
+        final Rect[] rects = mSource.calculateBoundingRects(new Rect(0, 10, 1000, 1000),
+                new Rect(0, 0, 1000, 1000), false);
+
+        assertEquals(2, rects.length);
+        assertEquals(new Rect(0, 0, 300, 90), rects[0]);
+        assertEquals(new Rect(800, 0, 1000, 90), rects[1]);
+    }
+
+    @Test
+    public void testCalculateBoundingRects_relativeInsets_partialIntersectionBottom() {
+        mSource.setAttachedInsets(Insets.of(0, 0, 0, 100));
+        mSource.setBoundingRects(new Rect[]{
+                new Rect(0, 0, 300, 100),
+                new Rect(800, 0, 1000, 100),
+        });
+
+        final Rect[] rects = mSource.calculateBoundingRects(new Rect(0, 0, 1000, 990),
+                new Rect(0, 0, 1000, 1000), false);
+
+        assertEquals(2, rects.length);
+        assertEquals(new Rect(0, 900, 300, 990), rects[0]);
+        assertEquals(new Rect(800, 900, 1000, 990), rects[1]);
+    }
+
+    @Test
+    public void testCalculateBoundingRects_relativeInsets_partialIntersectionLeft() {
+        mSource.setAttachedInsets(Insets.of(100, 0, 0, 0));
+        mSource.setBoundingRects(new Rect[]{
+                new Rect(0, 0, 100, 300),
+                new Rect(0, 800, 100, 1000),
+        });
+
+        final Rect[] rects = mSource.calculateBoundingRects(new Rect(10, 0, 1000, 1000),
+                new Rect(0, 0, 1000, 1000), false);
+
+        assertEquals(2, rects.length);
+        assertEquals(new Rect(0, 0, 90, 300), rects[0]);
+        assertEquals(new Rect(0, 800, 90, 1000), rects[1]);
+    }
+
+    @Test
+    public void testCalculateBoundingRects_relativeInsets_partialIntersectionRight() {
+        mSource.setAttachedInsets(Insets.of(0, 0, 100, 0));
+        mSource.setBoundingRects(new Rect[]{
+                new Rect(0, 0, 100, 300),
+                new Rect(0, 800, 100, 1000),
+        });
+
+        final Rect[] rects = mSource.calculateBoundingRects(new Rect(0, 0, 990, 1000),
+                new Rect(0, 0, 1000, 1000), false);
+
+        assertEquals(2, rects.length);
+        assertEquals(new Rect(900, 0, 990, 300), rects[0]);
+        assertEquals(new Rect(900, 800, 990, 1000), rects[1]);
     }
 
     // Parcel and equals already tested via InsetsStateTest

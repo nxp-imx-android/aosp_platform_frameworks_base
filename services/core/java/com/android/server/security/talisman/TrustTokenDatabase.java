@@ -17,6 +17,7 @@
 package com.android.server.security.talisman;
 
 import android.annotation.NonNull;
+import android.security.talisman.TrustConfiguration;
 
 import java.util.List;
 
@@ -41,4 +42,16 @@ abstract class TrustTokenDatabase {
      */
     abstract void addTrustTokenSets(@NonNull List<TrustTokenSetWithKey> tokens)
             throws IllegalArgumentException;
+
+    /**
+     * Gets the TrustConfiguration from the database.
+     *
+     * @throws TrustConfigurationUnavailableException if the configuration is not available.
+     */
+    @NonNull
+    abstract TrustConfiguration getTrustConfiguration()
+            throws TrustConfigurationUnavailableException;
+
+    /** Updates the TrustConfiguration in the database. */
+    abstract void updateTrustConfiguration(@NonNull TrustConfiguration configuration);
 }

@@ -134,6 +134,13 @@ flag {
 }
 
 flag {
+    name: "cast_controller_media_router_in_bg"
+    namespace: "systemui"
+    description: "Moves MediaRouter Binder operations onto background thread."
+    bug: "466293987"
+}
+
+flag {
     name: "check_desktop_mode_for_spacial_model_app_pushback"
     namespace: "systemui"
     description: "Checks desktop mode for disabling spacial model as opposed to just checking if the screen is large"
@@ -828,16 +835,6 @@ flag {
 }
 
 flag {
-    name: "heads_up_style_provider_display_aware"
-    namespace: "systemui"
-    description: "Make HeadsUpStyleProvider display aware"
-    bug: "432401846"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
    name: "hide_ringer_button_in_single_volume_mode"
    namespace: "systemui"
    description: "When the device is in single volume mode, hide the ringer button because it doesn't work"
@@ -1204,13 +1201,6 @@ flag {
         " a resources threading issue, which we worked around by tinting the notification"
         " backgrounds."
     bug: "294830092"
-}
-
-flag {
-  name: "notification_bundle_ui"
-  namespace: "systemui"
-  description: "Three-level group UI for notification bundles"
-  bug: "367996732"
 }
 
 flag {

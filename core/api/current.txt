@@ -4854,12 +4854,14 @@ package android.app {
     method @RequiresPermission(android.Manifest.permission.KILL_BACKGROUND_PROCESSES) public void killBackgroundProcesses(String);
     method @RequiresPermission(android.Manifest.permission.REORDER_TASKS) public void moveTaskToFront(int, int);
     method @RequiresPermission(android.Manifest.permission.REORDER_TASKS) public void moveTaskToFront(int, int, android.os.Bundle);
+    method @FlaggedApi("android.app.enable_anr_warning_callback") public void registerAnrWarningListener(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<android.app.AnrWarningResult>);
     method @FlaggedApi("com.android.window.flags.enable_task_move_allowed_listener_api") public void registerTaskDisplayPolicyStateListener(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.util.List<android.app.TaskDisplayPolicyState>>);
     method public void removeApplicationStartInfoCompletionListener(@NonNull java.util.function.Consumer<android.app.ApplicationStartInfo>);
     method @Deprecated public void restartPackage(String);
     method public void setProcessStateSummary(@Nullable byte[]);
     method public static void setVrThread(int);
     method public void setWatchHeapLimit(long);
+    method @FlaggedApi("android.app.enable_anr_warning_callback") public void unregisterAnrWarningListener(@NonNull java.util.function.Consumer<android.app.AnrWarningResult>);
     method @FlaggedApi("com.android.window.flags.enable_task_move_allowed_listener_api") public void unregisterTaskDisplayPolicyStateListener(@NonNull java.util.function.Consumer<java.util.List<android.app.TaskDisplayPolicyState>>);
     field public static final String ACTION_REPORT_HEAP_LIMIT = "android.app.action.REPORT_HEAP_LIMIT";
     field public static final int LOCK_TASK_MODE_LOCKED = 1; // 0x1
@@ -5207,6 +5209,17 @@ package android.app {
     field public static final int ANR_TYPE_JOB_SERVICE_START = 9; // 0x9
     field public static final int ANR_TYPE_OTHER = 0; // 0x0
     field public static final int ANR_TYPE_START_FOREGROUND_SERVICE = 4; // 0x4
+  }
+
+  @FlaggedApi("android.app.enable_anr_warning_callback") public final class AnrWarningResult implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getAnrId();
+    method public int getAnrType();
+    method public long getConsumedMillis();
+    method @NonNull public String getDescription();
+    method public long getTimeoutMillis();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.AnrWarningResult> CREATOR;
   }
 
   public class AppComponentFactory {
@@ -10623,6 +10636,11 @@ package android.companion {
     field public static final int REQUEST_TRANSPORT = 2; // 0x2
   }
 
+  public static final class ActionRequest.Builder {
+    ctor public ActionRequest.Builder(int, int);
+    method @NonNull public android.companion.ActionRequest build();
+  }
+
   @FlaggedApi("android.companion.enable_data_sync") public final class ActionResult implements android.os.Parcelable {
     method public int describeContents();
     method public int getAction();
@@ -10759,8 +10777,10 @@ package android.companion {
     method @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void stopObservingDevicePresence(@NonNull android.companion.ObservingDevicePresenceRequest);
     field public static final String EXTRA_ASSOCIATION = "android.companion.extra.ASSOCIATION";
     field @Deprecated public static final String EXTRA_DEVICE = "android.companion.extra.DEVICE";
+    field @FlaggedApi("android.companion.enable_data_sync") public static final int FLAG_AIRPLANE_MODE = 16; // 0x10
     field public static final int FLAG_CALL_METADATA = 1; // 0x1
     field @FlaggedApi("android.companion.task_continuity") public static final int FLAG_TASK_CONTINUITY = 2; // 0x2
+    field @FlaggedApi("android.companion.enable_data_sync") public static final int FLAG_UNIVERSAL_MODES = 4; // 0x4
     field public static final int RESULT_CANCELED = 0; // 0x0
     field public static final int RESULT_DISCOVERY_TIMEOUT = 2; // 0x2
     field public static final int RESULT_INTERNAL_ERROR = 3; // 0x3
@@ -13629,6 +13649,7 @@ package android.content.pm {
     field public static final int REQUESTED_PERMISSION_GRANTED = 2; // 0x2
     field public static final int REQUESTED_PERMISSION_IMPLICIT = 4; // 0x4
     field public static final int REQUESTED_PERMISSION_NEVER_FOR_LOCATION = 65536; // 0x10000
+    field @FlaggedApi("android.permission.flags.location_button_enabled") public static final int REQUESTED_PERMISSION_ONLY_FOR_LOCATION_BUTTON = 131072; // 0x20000
     field @Nullable public android.content.pm.ActivityInfo[] activities;
     field @Nullable public android.content.pm.ApplicationInfo applicationInfo;
     field @Nullable public android.content.pm.Attribution[] attributions;
@@ -21581,7 +21602,6 @@ package android.hardware.display {
     field @FlaggedApi("com.android.server.display.feature.flags.display_listener_performance_improvements") public static final long EVENT_TYPE_DISPLAY_CHANGED = 4L; // 0x4L
     field @FlaggedApi("com.android.server.display.feature.flags.display_listener_performance_improvements") public static final long EVENT_TYPE_DISPLAY_REFRESH_RATE = 8L; // 0x8L
     field @FlaggedApi("com.android.server.display.feature.flags.display_listener_performance_improvements") public static final long EVENT_TYPE_DISPLAY_REMOVED = 2L; // 0x2L
-    field @FlaggedApi("com.android.server.display.feature.flags.display_listener_snapshot") public static final long EVENT_TYPE_DISPLAY_SNAPSHOT = 64L; // 0x40L
     field @FlaggedApi("com.android.server.display.feature.flags.display_listener_performance_improvements") public static final long EVENT_TYPE_DISPLAY_STATE = 16L; // 0x10L
     field public static final int MATCH_CONTENT_FRAMERATE_ALWAYS = 2; // 0x2
     field public static final int MATCH_CONTENT_FRAMERATE_NEVER = 0; // 0x0
@@ -21596,7 +21616,6 @@ package android.hardware.display {
 
   public static interface DisplayManager.DisplayListener {
     method public void onDisplayAdded(int);
-    method @FlaggedApi("com.android.server.display.feature.flags.display_listener_snapshot") public default void onDisplayAddedSnapshot(@NonNull int[]);
     method public void onDisplayChanged(int);
     method public void onDisplayRemoved(int);
   }
@@ -28185,6 +28204,7 @@ package android.media.projection {
 
   @FlaggedApi("com.android.media.projection.flags.app_content_sharing") public final class MediaProjectionAppContent implements android.os.Parcelable {
     method public int describeContents();
+    method @Nullable public android.graphics.drawable.Icon getIcon();
     method public int getId();
     method @Nullable public android.graphics.Bitmap getThumbnail();
     method @NonNull public CharSequence getTitle();
@@ -28195,6 +28215,7 @@ package android.media.projection {
   public static final class MediaProjectionAppContent.Builder {
     ctor public MediaProjectionAppContent.Builder(int);
     method @NonNull public android.media.projection.MediaProjectionAppContent build();
+    method @NonNull public android.media.projection.MediaProjectionAppContent.Builder setIcon(@NonNull android.graphics.drawable.Icon);
     method @NonNull public android.media.projection.MediaProjectionAppContent.Builder setThumbnail(@NonNull android.graphics.Bitmap);
     method @NonNull public android.media.projection.MediaProjectionAppContent.Builder setTitle(@NonNull CharSequence);
   }
@@ -39287,7 +39308,7 @@ package android.provider {
     field public static final String COLUMN_SUMMARY = "summary";
     field public static final String COLUMN_TITLE = "title";
     field public static final int FLAG_EMPTY = 64; // 0x40
-    field @FlaggedApi("android.provider.enable_sync_state") public static final int FLAG_LIMITED_FUNCTIONALITY_WHEN_OFFLINE = 1048576; // 0x100000
+    field @FlaggedApi("android.provider.enable_sync_state") public static final int FLAG_LIMITED_FUNCTIONALITY_WHEN_OFFLINE = 2097152; // 0x200000
     field public static final int FLAG_LOCAL_ONLY = 2; // 0x2
     field public static final int FLAG_SUPPORTS_CREATE = 1; // 0x1
     field public static final int FLAG_SUPPORTS_EJECT = 32; // 0x20
@@ -56589,6 +56610,7 @@ package android.view {
     field public static final String PROPERTY_CAMERA_COMPAT_ALLOW_SIMULATE_REQUESTED_ORIENTATION = "android.window.PROPERTY_CAMERA_COMPAT_ALLOW_SIMULATE_REQUESTED_ORIENTATION";
     field public static final String PROPERTY_CAMERA_COMPAT_ENABLE_REFRESH_VIA_PAUSE = "android.window.PROPERTY_CAMERA_COMPAT_ENABLE_REFRESH_VIA_PAUSE";
     field public static final String PROPERTY_COMPAT_ALLOW_DISPLAY_ORIENTATION_OVERRIDE = "android.window.PROPERTY_COMPAT_ALLOW_DISPLAY_ORIENTATION_OVERRIDE";
+    field @FlaggedApi("com.android.window.flags.exclude_caption_insets_opt_out_api") public static final String PROPERTY_COMPAT_ALLOW_EXCLUDE_CAPTION_INSETS = "android.window.PROPERTY_COMPAT_ALLOW_EXCLUDE_CAPTION_INSETS";
     field @FlaggedApi("com.android.window.flags.app_compat_properties_api") public static final String PROPERTY_COMPAT_ALLOW_IGNORING_ORIENTATION_REQUEST_WHEN_LOOP_DETECTED = "android.window.PROPERTY_COMPAT_ALLOW_IGNORING_ORIENTATION_REQUEST_WHEN_LOOP_DETECTED";
     field @FlaggedApi("com.android.window.flags.app_compat_properties_api") public static final String PROPERTY_COMPAT_ALLOW_MIN_ASPECT_RATIO_OVERRIDE = "android.window.PROPERTY_COMPAT_ALLOW_MIN_ASPECT_RATIO_OVERRIDE";
     field public static final String PROPERTY_COMPAT_ALLOW_ORIENTATION_OVERRIDE = "android.window.PROPERTY_COMPAT_ALLOW_ORIENTATION_OVERRIDE";

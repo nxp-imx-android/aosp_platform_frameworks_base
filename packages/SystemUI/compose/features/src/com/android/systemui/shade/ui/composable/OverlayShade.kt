@@ -45,7 +45,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -59,6 +58,7 @@ import com.android.mechanics.behavior.verticalExpandContainerBackground
 import com.android.mechanics.compose.modifier.motionDriver
 import com.android.systemui.qs.ui.composable.TileRevealFlag
 import com.android.systemui.res.R
+import com.android.systemui.scene.ui.composable.LocalSceneContainerPreloadedResources
 import com.android.systemui.shade.ui.ShadeColors.shadePanel
 import com.android.systemui.shade.ui.ShadeColors.shadePanelScrimBehind
 import com.android.systemui.shade.ui.composable.OverlayShade.Colors
@@ -82,7 +82,7 @@ fun ContentScope.OverlayShade(
     header: @Composable () -> Unit,
     content: @Composable () -> Unit,
 ) {
-    val isFullWidth = isFullWidthShade()
+    val isFullWidth = LocalSceneContainerPreloadedResources.current.isFullWidthShade
     val panelSpec = rememberShadeExpansionMotion(isFullWidth)
     val panelCornerRadiusPx = with(LocalDensity.current) { panelSpec.radius.toPx() }
     val panelAlignment =
@@ -213,10 +213,6 @@ private fun ContentScope.Panel(
         }
     }
 }
-
-@Composable
-@ReadOnlyComposable
-internal fun isFullWidthShade() = LocalResources.current.getBoolean(R.bool.config_isFullWidthShade)
 
 @Composable
 @ReadOnlyComposable

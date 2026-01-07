@@ -16,9 +16,12 @@
 
 package com.android.systemui.screencapture.record.smallscreen.shared.model
 
-enum class RecordDetailsPopupType {
-    Invisible,
-    Settings,
-    AppSelector,
-    MarkupColorSelector,
+import androidx.annotation.StringRes
+import com.android.systemui.res.R
+
+enum class RecordDetailsPopupType(@StringRes val contentDescriptionRes: Int?) {
+    Invisible(null),
+    Settings(R.string.screen_record_settings),
+    AppSelector(R.string.screen_record_capture_target_choose_app),
+    MarkupColorSelector(null),
 }

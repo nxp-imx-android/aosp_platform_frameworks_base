@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package com.android.systemui.screencapture.record.smallscreen.ui
 
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.view.Display
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -43,6 +45,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -64,8 +68,12 @@ import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.record.smallscreen.player.ui.compose.VideoPlayer
-import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.PostRecordingViewModel
+import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.PostRecordingActionsViewModel
+import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.PostRecordingImmediateVideoViewModel
+import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.PostRecordingVideoViewModel
+import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.PostRecordingWaitingVideoViewModel
 import com.android.systemui.screencapture.ui.postRecordingConfirmDeletion
+import com.android.systemui.screenrecord.shared.model.ScreenRecording
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
 import javax.inject.Inject
 import kotlinx.coroutines.launch
@@ -74,13 +82,16 @@ class SmallScreenPostRecordingActivity
 @Inject
 constructor(
     private val videoPlayer: VideoPlayer,
-    private val viewModelFactory: PostRecordingViewModel.Factory,
+    private val actionsViewModelFactory: PostRecordingActionsViewModel.Factory,
+    private val waitingViewModelFactory: PostRecordingWaitingVideoViewModel.Factory,
+    private val immediateViewModelFactory: PostRecordingImmediateVideoViewModel.Factory,
     private val postRecordSnackbarDialogs: PostRecordSnackbarDialogs,
     private val systemUIDialogFactory: SystemUIDialogFactory,
 ) : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        intent.data ?: error("Data URI is missing")
         enableEdgeToEdge()
         setContent { PlatformTheme { Content() } }
     }
@@ -88,35 +99,57 @@ constructor(
     @Composable
     private fun Content() {
         val coroutineScope = rememberCoroutineScope()
-        val viewModel =
-            rememberViewModel("SmallScreenPostRecordingActivity#viewModel") {
-                viewModelFactory.create(
-                    intent.data ?: error("Data URI is missing"),
-                    Display.DEFAULT_DISPLAY,
-                )
+        val shouldShowVideoSaved = intent.shouldWaitForVideo()
+        val videoViewModel: PostRecordingVideoViewModel = createVideoViewModel(intent)
+        val actionsViewModel: PostRecordingActionsViewModel =
+            rememberViewModel(
+                "SmallScreenPostRecordingActivity#actionsViewModel",
+                listOf(intent.data, displayId),
+            ) {
+                actionsViewModelFactory.create(intent.data!!, displayId)
             }
 
-        val shouldShowVideoSaved = intent.shouldWaitForVideo()
-        LaunchedEffect(shouldShowVideoSaved, viewModel.isVideoSaved) {
-            if (shouldShowVideoSaved && viewModel.isVideoSaved) {
-                intent.putExtra(SHOULD_WAIT_FOR_VIDEO, false)
+        val recording = videoViewModel.recording
+        LaunchedEffect(shouldShowVideoSaved, recording) {
+            if (shouldShowVideoSaved && recording is ScreenRecording.Saved) {
+                intent.clearShouldWaitForVideo()
                 postRecordSnackbarDialogs.showVideoSaved()
             }
         }
 
-        val shouldUseFlatBottomBar =
-            booleanResource(R.bool.screen_record_post_recording_flat_bottom_bar)
         Box(
             modifier =
                 Modifier.background(MaterialTheme.colorScheme.surface)
                     .windowInsetsPadding(WindowInsets.safeDrawing)
         ) {
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column {
+                val shouldUseFlatBottomBar =
+                    booleanResource(R.bool.screen_record_post_recording_flat_bottom_bar)
                 if (!shouldUseFlatBottomBar) {
                     Spacer(modifier = Modifier.size(50.dp))
                 }
-                Box(modifier = Modifier.weight(1f).align(Alignment.CenterHorizontally)) {
-                    videoPlayer.Content(uri = viewModel.videoUri, modifier = Modifier.fillMaxSize())
+                AnimatedContent(
+                    targetState = recording,
+                    modifier = Modifier.weight(1f).align(Alignment.CenterHorizontally),
+                ) { currentRecording ->
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        when (currentRecording) {
+                            is ScreenRecording.Saving ->
+                                LoadingIndicator(
+                                    modifier = Modifier.align(Alignment.Center).size(72.dp)
+                                )
+                            is ScreenRecording.NotSaved ->
+                                Text(
+                                    text = stringResource(R.string.screenrecord_save_error),
+                                    modifier = Modifier.align(Alignment.Center).padding(64.dp),
+                                )
+                            is ScreenRecording.Saved ->
+                                videoPlayer.Content(
+                                    uri = recording.uri,
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                        }
+                    }
                 }
                 Spacer(modifier = Modifier.size(32.dp))
                 Row(
@@ -126,37 +159,39 @@ constructor(
                     val rowModifier = Modifier.weight(1f).fillMaxHeight()
                     PostRecordButton(
                         onClick = {
-                            viewModel.retake()
+                            actionsViewModel.retake()
                             finish()
                         },
-                        drawableLoaderViewModel = viewModel,
+                        drawableLoaderViewModel = actionsViewModel,
                         iconRes = R.drawable.ic_arrow_back,
                         labelRes = R.string.screen_record_take_another,
                         modifier = rowModifier,
                     )
                     PostRecordButton(
-                        onClick = { viewModel.edit() },
-                        drawableLoaderViewModel = viewModel,
+                        onClick = { actionsViewModel.edit() },
+                        drawableLoaderViewModel = actionsViewModel,
                         iconRes = R.drawable.ic_edit_square,
                         labelRes = R.string.screen_record_edit,
                         modifier = rowModifier,
                     )
                     PostRecordButton(
                         onClick = {
+                            if (recording !is ScreenRecording.Saved) return@PostRecordButton
                             coroutineScope.launch {
                                 if (
                                     postRecordingConfirmDeletion(
                                         systemUIDialogFactory,
                                         this@SmallScreenPostRecordingActivity,
-                                        viewModel,
+                                        actionsViewModel,
                                     )
                                 ) {
-                                    postRecordSnackbarDialogs.showVideoDeleted(viewModel.videoUri)
+                                    postRecordSnackbarDialogs.showVideoDeleted(recording.uri)
                                     finish()
                                 }
                             }
                         },
-                        drawableLoaderViewModel = viewModel,
+                        enabled = recording is ScreenRecording.Saved,
+                        drawableLoaderViewModel = actionsViewModel,
                         iconRes = R.drawable.ic_screenshot_delete,
                         labelRes = R.string.screen_record_delete,
                         modifier = rowModifier,
@@ -164,7 +199,7 @@ constructor(
                     if (shouldUseFlatBottomBar) {
                         PrimaryButton(
                             text = stringResource(R.string.screenrecord_share_label),
-                            onClick = { viewModel.share() },
+                            onClick = { actionsViewModel.share() },
                             modifier = rowModifier,
                         )
                     }
@@ -172,20 +207,35 @@ constructor(
                 if (!shouldUseFlatBottomBar) {
                     val shareIcon by
                         loadIcon(
-                            viewModel,
+                            actionsViewModel,
                             R.drawable.ic_screenshot_share,
                             contentDescription = null,
                         )
                     PrimaryButton(
                         text = stringResource(R.string.screenrecord_share_label),
                         icon = shareIcon,
-                        onClick = { viewModel.share() },
+                        onClick = { actionsViewModel.share() },
                         modifier =
                             Modifier.fillMaxWidth()
                                 .padding(horizontal = 24.dp, vertical = 16.dp)
                                 .height(56.dp),
                     )
                 }
+            }
+        }
+    }
+
+    @Composable
+    private fun createVideoViewModel(intent: Intent): PostRecordingVideoViewModel {
+        val shouldShowVideoSaved = intent.shouldWaitForVideo()
+        return rememberViewModel(
+            "SmallScreenPostRecordingActivity#videoViewModel",
+            listOf(shouldShowVideoSaved, intent.data),
+        ) {
+            if (shouldShowVideoSaved) {
+                waitingViewModelFactory.create(intent.data!!)
+            } else {
+                immediateViewModelFactory.create(intent.data!!)
             }
         }
     }
@@ -217,6 +267,10 @@ constructor(
 
         private fun Intent.shouldWaitForVideo(): Boolean =
             getBooleanExtra(SHOULD_WAIT_FOR_VIDEO, false)
+
+        private fun Intent.clearShouldWaitForVideo() {
+            removeExtra(SHOULD_WAIT_FOR_VIDEO)
+        }
     }
 }
 
@@ -227,10 +281,12 @@ private fun PostRecordButton(
     labelRes: Int,
     drawableLoaderViewModel: DrawableLoaderViewModel,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     PlatformOutlinedButton(
         onClick = onClick,
         modifier = modifier,
+        enabled = enabled,
         colors =
             ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary),
         border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outlineVariant),

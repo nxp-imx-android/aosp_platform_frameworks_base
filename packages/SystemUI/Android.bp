@@ -542,6 +542,7 @@ android_library {
         "androidx.appcompat_appcompat",
         "androidx.concurrent_concurrent-futures",
         "androidx.concurrent_concurrent-futures-ktx",
+        "androidx.constraintlayout_constraintlayout-core",
         "androidx.mediarouter_mediarouter",
         "androidx.palette_palette",
         "androidx.legacy_legacy-preference-v14",

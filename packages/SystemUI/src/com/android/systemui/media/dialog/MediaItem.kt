@@ -25,6 +25,7 @@ import com.android.settingslib.media.MediaDevice
 sealed class MediaItem {
 
     /** Represents a media device. */
+    // TODO: b/472868021 - Make this an immutable data class without MediaDevice
     data class DeviceMediaItem(val mediaDevice: MediaDevice) : MediaItem()
 
     /**

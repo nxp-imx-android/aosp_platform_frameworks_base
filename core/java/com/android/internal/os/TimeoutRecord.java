@@ -23,7 +23,6 @@ import android.app.AnrTypes;
 import android.app.AnrTypes.AnrType;
 import android.app.ApplicationExitInfo;
 import android.app.ApplicationExitInfo.SubReason;
-import android.content.ComponentName;
 import android.content.Intent;
 import android.os.SystemClock;
 import android.util.Slog;
@@ -115,18 +114,7 @@ public class TimeoutRecord {
     @NonNull
     public static TimeoutRecord forBroadcastReceiver(@NonNull Intent intent,
             @Nullable String packageName, @Nullable String className) {
-        final Intent logIntent;
-        if (packageName != null) {
-            if (className != null) {
-                logIntent = new Intent(intent);
-                logIntent.setComponent(new ComponentName(packageName, className));
-            } else {
-                logIntent = new Intent(intent);
-                logIntent.setPackage(packageName);
-            }
-        } else {
-            logIntent = intent;
-        }
+        final Intent logIntent = createLogIntentForBroadcast(intent, packageName, className);
         return forBroadcastReceiver(logIntent);
     }
 
@@ -292,5 +280,25 @@ public class TimeoutRecord {
                 yield AnrTypes.ANR_TYPE_OTHER;
             }
         };
+    }
+
+    /**
+     * Creates a new {@link Intent} object with the provided {@link Intent} based on the supplied
+     * package and class names.
+     */
+    public static Intent createLogIntentForBroadcast(
+            @NonNull Intent intent, @Nullable String packageName, @Nullable String className) {
+        if (packageName == null) {
+            return intent;
+        }
+
+        final Intent resultIntent = new Intent(intent);
+
+        if (className == null) {
+            resultIntent.setPackage(packageName);
+        } else {
+            resultIntent.setClassName(packageName, className);
+        }
+        return resultIntent;
     }
 }

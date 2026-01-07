@@ -82,6 +82,7 @@ constructor(
                 theme = R.style.Theme_SystemUI_Dialog_ScreenCapture,
                 dialogDelegate = EdgeToEdgeDialogDelegate(),
                 dismissOnDeviceLock = true,
+                isTransient = true,
             ) { dialog: Dialog ->
                 DialogContent(dialog.window!!)
             }
@@ -97,7 +98,12 @@ constructor(
                 title = "ScreenCaptureUi" // Not the same as Window#setTitle
             }
         with(window) {
-            addFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED)
+            addFlags(
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                    WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
+                    WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
+            )
             addPrivateFlags(WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY)
             // TODO(b/427481098) Change to TYPE_SCREENSHOT
             setType(WindowManager.LayoutParams.TYPE_NAVIGATION_BAR_PANEL)

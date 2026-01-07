@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.sharescreen.ui.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -23,6 +24,7 @@ import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.common.ui.viewmodel.AppContentsViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.AudioSwitchViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DisplaysViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
@@ -66,6 +68,8 @@ constructor(
                 else ->
                     throw IllegalArgumentException("Unsupported ScreenCaptureTarget type: $type")
             }
+        // Reset the audio state on the newly selected view model.
+        (currentTargetsModel as AudioSwitchViewModel).setCaptureAudio(false)
     }
 
     fun onShareClicked() {
@@ -82,7 +86,18 @@ constructor(
             }
             is AppContentsViewModel -> {
                 currentModel.selectedTarget.value?.let {
-                    shareScreenUiInteractor.onAppContentSharingApproved(it.model.contentId)
+                    val callback = currentModel.projectionCallback.value?.get()
+                    // The callback is retrieved from a [WeakReference] and may be null if it was
+                    // garbage collected.
+                    if (callback == null) {
+                        Log.e(TAG, "Projection callback is not available")
+                        return@let
+                    }
+                    shareScreenUiInteractor.onAppContentSharingApproved(
+                        it.model.contentId,
+                        callback,
+                        currentModel.captureAudio.value,
+                    )
                 }
             }
             is DisplaysViewModel -> {
@@ -113,5 +128,9 @@ constructor(
             @Assisted("thumbnailWidthPx") thumbnailWidthPx: Int,
             @Assisted("thumbnailHeightPx") thumbnailHeightPx: Int,
         ): ScreenCaptureShareScreenViewModel
+    }
+
+    companion object {
+        private const val TAG = "ScreenCaptureShareScreenViewModel"
     }
 }

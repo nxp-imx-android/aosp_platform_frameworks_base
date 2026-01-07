@@ -54,16 +54,12 @@ message HandoffOptions {
 message HandoffRequestResultMessage {
   int32 statusCode = 1;
   int32 taskId = 2;
-  repeated HandoffActivityData activities = 3;
+  repeated HandoffActivityDataMessage activities = 3;
 }
 
 message HandoffActivityDataMessage {
-  HandoffActivityData activity = 1;
-  repeated bytes signature_digests = 2;
-}
-
-message HandoffActivityData {
   string componentName = 1;
   string fallbackUri = 2;
   bytes extras = 3;
+  repeated bytes signature_digests = 4;
 }

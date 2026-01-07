@@ -22,7 +22,6 @@ import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.window.TransitionInfo
 import android.window.WindowContainerToken
-import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToSplit
 import com.android.wm.shell.shared.TransitionUtil.isClosingMode
 import com.android.wm.shell.shared.TransitionUtil.isOpeningMode
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
@@ -49,7 +48,8 @@ class BubbleHelperImpl(
             return isAppBubbleRootTask(taskInfo.parentTaskId)
         }
 
-        // Skip treating the task as an app bubble if it's transitioning from bubble to split.
+        // Skip treating the task as an app bubble if it's transitioning from bubble to split or
+        // desktop.
         // In BubblesTransitionObserver#removeBubbleIfLaunchingToSplit, a WCT is applied to set
         // LaunchNextToBubble=false. Then TaskViewTaskController#notifyTaskRemovalStarted is called,
         // which triggers this check. However, the isAppBubble flag is only updated during the next
@@ -57,7 +57,7 @@ class BubbleHelperImpl(
         // Later, TaskViewTransitions#onExternalDone unblocks the animation. Without this check,
         // DefaultMixedHandler could misinterpret the OPEN change as a bubble-enter transition,
         // incorrectly re-creating the bubble instead of completing the split-screen transition.
-        if (taskInfo.isBubbleToSplit(splitScreenController)) {
+        if (taskInfo.hasParentTask()) {
             return false
         }
 

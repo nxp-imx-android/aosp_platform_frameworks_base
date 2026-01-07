@@ -45,7 +45,6 @@ import android.view.View
 import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.WindowManager.TRANSIT_CHANGE
-import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.window.TransitionInfo
 import android.window.WindowContainerToken
 import androidx.core.content.getSystemService
@@ -56,8 +55,6 @@ import com.android.internal.logging.InstanceIdSequence
 import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.internal.protolog.ProtoLog
 import com.android.internal.statusbar.IStatusBarService
-import com.android.testing.wm.util.MockToken
-import com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.Flags.FLAG_FIX_BUBBLE_SWIPE_UP_GESTURE
@@ -118,12 +115,10 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.isA
-import org.mockito.kotlin.isNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
 
@@ -166,7 +161,6 @@ class BubbleControllerTest(flags: FlagsParameterization) {
     private lateinit var bubbleTransitions: BubbleTransitions
     private lateinit var sessionTracker: BubbleSessionTracker
     private lateinit var bubbleViewInfoTaskFactory: FakeBubbleViewInfoTaskFactory
-    private lateinit var bubbleTaskViewFactory: FakeBubbleTaskViewFactory
 
     private var isStayAwakeOnFold = false
 
@@ -272,7 +266,6 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         verify(displayInsetsController)
             .addInsetsChangedListener(anyInt(), insetsChangedListenerCaptor.capture())
         imeListener = insetsChangedListenerCaptor.lastValue
-        bubbleTaskViewFactory = FakeBubbleTaskViewFactory(context, mainExecutor)
     }
 
     @After
@@ -1074,49 +1067,6 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         val log = uiEventLoggerFake.logs.first()
         assertThat(log.packageName).isEqualTo("package.name")
         assertThat(log.eventId).isEqualTo(BUBBLE_CREATED_FROM_ALL_APPS_ICON_MENU.id)
-    }
-
-    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ROOT_TASK)
-    @Test
-    fun applyBubbleExpandTransactionIfNeeded_appBubble() {
-        val taskInfo =
-            ActivityManager.RunningTaskInfo().apply {
-                taskId = 123
-                baseActivity = COMPONENT
-                token = MockToken.token()
-            }
-        val bubble = createAppBubble(taskInfo)
-        bubble.getOrCreateBubbleTaskView(bubbleTaskViewFactory)
-        val taskViewTaskController = bubble.taskView.controller
-
-        whenever(taskViewTaskController.taskInfo).thenReturn(taskInfo)
-        whenever(bubbleHelper.isAppBubbleTask(taskInfo)).thenReturn(true)
-        val rootTaskToken = MockToken.token()
-        whenever(bubbleHelper.getAppBubbleRootTaskToken()).thenReturn(rootTaskToken)
-
-        assertThat(bubbleController.applyBubbleExpandTransactionIfNeeded(bubble)).isTrue()
-
-        verify(transitions).startTransition(eq(TRANSIT_TO_FRONT), any(), isNull())
-    }
-
-    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ROOT_TASK)
-    @Test
-    fun applyBubbleExpandTransactionIfNeeded_nonAppBubble() {
-        val taskInfo =
-            ActivityManager.RunningTaskInfo().apply {
-                taskId = 123
-                baseActivity = COMPONENT
-            }
-        val bubble = FakeBubbleFactory.createChatBubble(context, "test")
-        bubble.getOrCreateBubbleTaskView(bubbleTaskViewFactory)
-        val taskViewTaskController = bubble.taskView.controller
-
-        whenever(taskViewTaskController.taskInfo).thenReturn(taskInfo)
-        whenever(bubbleHelper.isAppBubbleTask(taskInfo)).thenReturn(false)
-
-        assertThat(bubbleController.applyBubbleExpandTransactionIfNeeded(bubble)).isFalse()
-
-        verify(transitions, never()).startTransition(eq(TRANSIT_TO_FRONT), any(), isNull())
     }
 
     private fun createBubbleEntry(bubbleKey: String = "key", pkgName: String): BubbleEntry {

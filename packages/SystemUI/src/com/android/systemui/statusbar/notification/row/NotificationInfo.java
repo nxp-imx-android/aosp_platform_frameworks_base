@@ -79,7 +79,6 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor;
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import java.lang.annotation.Retention;
 import java.util.ArrayList;
@@ -122,7 +121,6 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
     private boolean mIsSingleDefaultChannel;
     private boolean mIsNonblockable;
     protected boolean mIsDismissable;
-    protected NotificationEntry mEntry;
     protected StatusBarNotification mSbn;
     private NotificationListenerService.Ranking mRanking;
     protected EntryAdapter mEntryAdapter;
@@ -193,7 +191,6 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
             String pkg,
             NotificationListenerService.Ranking ranking,
             StatusBarNotification sbn,
-            NotificationEntry entry,
             EntryAdapter entryAdapter,
             OnSettingsClickListener onSettingsClick,
             OnAppSettingsClickListener onAppSettingsClick,
@@ -215,7 +212,6 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
         mPackageName = pkg;
         mSbn = sbn;
         mRanking = ranking;
-        mEntry = entry;
         mEntryAdapter = entryAdapter;
         mPm = pm;
         mAppSettingsClickListener = onAppSettingsClick;
@@ -560,11 +556,7 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
                     new UpdateImportanceRunnable(mINotificationManager, mPackageName, mAppUid,
                             mSingleNotificationChannel,
                             mStartingChannelImportance, newImportance));
-            if (NotificationBundleUi.isEnabled()) {
-                mEntryAdapter.onImportanceChanged();
-            } else {
-                mOnUserInteractionCallback.onImportanceChanged(mEntry);
-            }
+            mEntryAdapter.onImportanceChanged();
         }
     }
 

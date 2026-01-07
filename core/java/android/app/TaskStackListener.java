@@ -193,10 +193,6 @@ public abstract class TaskStackListener extends ITaskStackListener.Stub {
     }
 
     @Override
-    public void onTaskRequestedOrientationChanged(int taskId, int requestedOrientation) {
-    }
-
-    @Override
     public void onActivityRotation(int displayId) {
     }
 

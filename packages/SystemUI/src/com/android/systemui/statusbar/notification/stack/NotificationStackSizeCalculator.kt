@@ -32,7 +32,6 @@ import com.android.systemui.statusbar.SysuiStatusBarStateController
 import com.android.systemui.statusbar.notification.domain.interactor.SeenNotificationsInteractor
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism
 import com.android.systemui.statusbar.policy.SplitShadeStateController
 import com.android.systemui.util.Compile
@@ -412,14 +411,7 @@ constructor(
             var bucket: Int? = null
             if (counter != null) {
                 bucket =
-                    if (NotificationBundleUi.isEnabled) {
-                        val entryAdapter =
-                            (currentNotification as? ExpandableNotificationRow)?.entryAdapter
-                        entryAdapter?.sectionBucket
-                    } else {
-                        val entry = (currentNotification as? ExpandableNotificationRow)?.entryLegacy
-                        entry?.bucket
-                    }
+                    (currentNotification as? ExpandableNotificationRow)?.entryAdapter?.sectionBucket
                 counter.incrementForBucket(bucket)
             }
 
@@ -480,10 +472,7 @@ constructor(
         val height = view.heightWithoutLockscreenConstraints.toFloat()
         val gapAndDividerHeight =
             calculateGapAndDividerHeight(stack, previousView, current = view, visibleIndex)
-        val canPeek =
-            view is ExpandableNotificationRow &&
-                if (NotificationBundleUi.isEnabled) view.entryAdapter?.canPeek() == true
-                else view.entryLegacy.isStickyAndNotDemoted
+        val canPeek = view is ExpandableNotificationRow && view.entryAdapter?.canPeek() == true
 
         var size =
             if (onLockscreen) {
@@ -491,8 +480,8 @@ constructor(
                     view is ExpandableNotificationRow &&
                         (canPeek ||
                             view.isPromotedOngoing ||
-                                (view.isBundle && view.isGroupExpanded) ||
-                                    (SceneContainerFlag.isEnabled && view.isUserSwipingToExpandRow))
+                            (view.isBundle && view.isGroupExpanded) ||
+                            (SceneContainerFlag.isEnabled && view.isUserSwipingToExpandRow))
                 ) {
                     height
                 } else {

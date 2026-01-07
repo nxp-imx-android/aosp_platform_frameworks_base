@@ -53,7 +53,7 @@ public class MirrorView extends FrameLayout {
     @Nullable
     private ComputerControlSession mComputerControlSession = null;
     private boolean mIsInteractive = false;
-    private boolean mIsMirrorSurfaceVisible = false;
+    private boolean mIsMirrorSurfaceCreated = false;
 
     // This member can only be read or written to from the auxiliary handler thread,
     // since its creation and interactions involve binder calls.
@@ -101,8 +101,23 @@ public class MirrorView extends FrameLayout {
             return;
         }
         mComputerControlSession = computerControlSession;
-        final boolean isInteractive = mIsInteractive;
 
+        mMirrorSurface.setVisibility(computerControlSession == null ? View.GONE : View.VISIBLE);
+        if (mIsMirrorSurfaceCreated) {
+            updateInteractiveMirrorOnAuxThread(computerControlSession, mIsInteractive);
+        }
+    }
+
+    /**
+     * Initializes or closes the {@link InteractiveMirror} from an auxiliary thread.
+     *
+     * <p>This will run on an auxiliary thread because creating an {@link InteractiveMirror}
+     * involves binder calls. Passing a null {@code computerControlSession} will close the
+     * existing mirror. All read-writes of {@link #mInteractiveMirror} must happen from this
+     * auxiliary thread.
+     */
+    private void updateInteractiveMirrorOnAuxThread(
+            @Nullable ComputerControlSession computerControlSession, boolean isInteractive) {
         mHandlerThread.getThreadExecutor().execute(() -> {
             if (mInteractiveMirror != null) {
                 mInteractiveMirror.close();
@@ -117,18 +132,14 @@ public class MirrorView extends FrameLayout {
                 mirrorSurface = interactiveMirror.getMirrorSurfaceControl();
                 size = computerControlSession.getDisplaySize();
                 if (isInteractive != InteractiveMirror.DEFAULT_INTERACTIVE) {
-                    interactiveMirror.setInteractive(mIsInteractive);
+                    interactiveMirror.setInteractive(isInteractive);
                 }
             } else {
                 mirrorSurface = null;
                 size = null;
             }
 
-            post(() -> {
-                mMirrorSurface.setMirrorSurfaceControl(mirrorSurface, size);
-                updateMirrorSurfaceVisibility(/* visible= */ mirrorSurface != null);
-                requestLayout();
-            });
+            post(() -> mMirrorSurface.setMirrorSurfaceControl(mirrorSurface, size));
         });
     }
 
@@ -172,6 +183,11 @@ public class MirrorView extends FrameLayout {
         mMirrorSurface.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(@NonNull SurfaceHolder holder) {
+                // The InteractiveMirror's lifecycle is tied to the underlying Surface. This
+                // ensures the remote mirroring session is only active when this view is visible.
+                mIsMirrorSurfaceCreated = true;
+                getViewTreeObserver().addOnPreDrawListener(mOnPreDrawListener);
+                updateInteractiveMirrorOnAuxThread(mComputerControlSession, mIsInteractive);
             }
 
             @Override
@@ -186,6 +202,9 @@ public class MirrorView extends FrameLayout {
 
             @Override
             public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
+                mIsMirrorSurfaceCreated = false;
+                getViewTreeObserver().removeOnPreDrawListener(mOnPreDrawListener);
+                updateInteractiveMirrorOnAuxThread(null, false);
             }
         });
         addView(mMirrorSurface, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
@@ -202,20 +221,6 @@ public class MirrorView extends FrameLayout {
         }
 
         return compoundedAlpha;
-    }
-
-    private void updateMirrorSurfaceVisibility(boolean visible) {
-        if (mIsMirrorSurfaceVisible == visible) {
-            return;
-        }
-        mIsMirrorSurfaceVisible = visible;
-        if (visible) {
-            mMirrorSurface.setVisibility(View.VISIBLE);
-            getViewTreeObserver().addOnPreDrawListener(mOnPreDrawListener);
-        } else {
-            mMirrorSurface.setVisibility(View.GONE);
-            getViewTreeObserver().removeOnPreDrawListener(mOnPreDrawListener);
-        }
     }
 
     @MainThread
@@ -302,7 +307,11 @@ public class MirrorView extends FrameLayout {
                 mRequestedMirrorSurface.release();
             }
             mRequestedMirrorSurface = mirrorSurfaceControl;
-            mDisplaySize = displaySize;
+            if (!Objects.equals(mDisplaySize, displaySize)) {
+                mDisplaySize = displaySize;
+                // Request a layout pass to recalculate the new aspect ratio and size for the view.
+                requestLayout();
+            }
             invalidate();
         }
 

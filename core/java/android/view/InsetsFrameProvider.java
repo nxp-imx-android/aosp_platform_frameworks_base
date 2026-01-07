@@ -16,16 +16,6 @@
 
 package android.view;
 
-import static android.internal.perfetto.protos.Windowlayoutparams.InsetsFrameProviderProto.ID;
-import static android.internal.perfetto.protos.Windowlayoutparams.InsetsFrameProviderProto.TYPE;
-import static android.internal.perfetto.protos.Windowlayoutparams.InsetsFrameProviderProto.SOURCE;
-import static android.internal.perfetto.protos.Windowlayoutparams.InsetsFrameProviderProto.ARBITRARY_RECTANGLE;
-import static android.internal.perfetto.protos.Windowlayoutparams.InsetsFrameProviderProto.FLAGS;
-import static android.internal.perfetto.protos.Windowlayoutparams.InsetsFrameProviderProto.INSETS_SIZE;
-import static android.internal.perfetto.protos.Windowlayoutparams.InsetsFrameProviderProto.INSETS_SIZE_OVERRIDE;
-import static android.internal.perfetto.protos.Windowlayoutparams.InsetsFrameProviderProto.MINIMAL_INSETS_SIZE_IN_DISPLAY_CUTOUT_SAFE;
-import static android.internal.perfetto.protos.Windowlayoutparams.InsetsFrameProviderProto.BOUNDING_RECTS;
-
 import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -33,7 +23,6 @@ import android.graphics.Insets;
 import android.graphics.Rect;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.proto.ProtoOutputStream;
 import android.view.InsetsSource.Flags;
 import android.view.WindowInsets.Type.InsetsType;
 
@@ -304,43 +293,6 @@ public class InsetsFrameProvider implements Parcelable {
         return sb.toString();
     }
 
-    /**
-     * Write to a protocol buffer output stream.
-     * Protocol buffer message definition at {@link InsetsFrameProviderProto}
-     *
-     * @param proto Stream to write the InsetsFrameProvider object to.
-     * @param fieldId Field Id of the InsetsFrameProvider as defined in the parent message.
-     */
-    public void dumpDebug(@NonNull ProtoOutputStream proto, long fieldId) {
-        final long token = proto.start(fieldId);
-        proto.write(ID, mId);
-        proto.write(TYPE, getType());
-        proto.write(SOURCE, mSource);
-        if (mArbitraryRectangle != null) {
-            mArbitraryRectangle.dumpDebug(proto, ARBITRARY_RECTANGLE);
-        }
-        proto.write(FLAGS, mFlags);
-        if (mInsetsSize != null) {
-            mInsetsSize.dumpDebug(proto, INSETS_SIZE);
-        }
-        if (mInsetsSizeOverrides != null) {
-            for (InsetsSizeOverride override : mInsetsSizeOverrides) {
-                override.dumpDebug(proto, INSETS_SIZE_OVERRIDE);
-            }
-        }
-        if (mMinimalInsetsSizeInDisplayCutoutSafe != null) {
-            mMinimalInsetsSizeInDisplayCutoutSafe.dumpDebug(proto,
-                    MINIMAL_INSETS_SIZE_IN_DISPLAY_CUTOUT_SAFE);
-        }
-        if (mBoundingRects != null) {
-            for (Rect boundingRect : mBoundingRects) {
-                boundingRect.dumpDebug(proto, BOUNDING_RECTS);
-            }
-        }
-        proto.end(token);
-    }
-
-
     @NonNull
     private static String sourceToString(int source) {
         switch (source) {
@@ -488,22 +440,6 @@ public class InsetsFrameProvider implements Parcelable {
                         "type", mWindowType)
                     + ", insetsSize=" + mInsetsSize
                     + "}";
-        }
-
-        /**
-         * Write to a protocol buffer output stream.
-         * Protocol buffer message definition at {@link InsetsSizeOverrideProto}
-         *
-         * @param proto Stream to write the InsetsSizeOverride object to.
-         * @param fieldId Field Id of the InsetsSizeOverride as defined in the parent message.
-         */
-        public void dumpDebug(ProtoOutputStream proto, long fieldId) {
-            final long token = proto.start(fieldId);
-            proto.write(InsetsSizeOverrideProto.WINDOW_TYPE, mWindowType);
-            if (mInsetsSize != null) {
-                mInsetsSize.dumpDebug(proto, InsetsSizeOverrideProto.INSETS_SIZE);
-            }
-            proto.end(token);
         }
 
         @Override

@@ -119,6 +119,7 @@ import static android.view.WindowManagerGlobal.RELAYOUT_RES_SURFACE_CHANGED;
 import static android.view.accessibility.Flags.a11ySequentialFocusStartingPoint;
 import static android.view.accessibility.Flags.forceInvertColor;
 import static android.view.accessibility.Flags.reduceWindowContentChangedEventThrottle;
+import static android.view.flags.Flags.atomicTraversalBarrier;
 import static android.view.flags.Flags.disableDrawWakeLock;
 import static android.view.flags.Flags.enableWindowlessWindowFocusNavigation;
 import static android.view.flags.Flags.sensitiveContentAppProtection;
@@ -322,6 +323,7 @@ import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -357,6 +359,14 @@ public final class ViewRootImpl implements ViewParent,
     private static final boolean DEBUG_SENSITIVE_CONTENT = false || LOCAL_LOGV;
     private static final int LOGTAG_INPUT_FOCUS = 62001;
     private static final int LOGTAG_VIEWROOT_DRAW_EVENT = 60004;
+
+    /**
+     * A value outside the range of valid sync barrier tokens.
+     * This represents the state of an unset sync barrier.
+     *
+     * @see #mTraversalBarrierAtomic
+     */
+    private static final long UNSET_TRAVERSAL_BARRIER = Long.MAX_VALUE;
 
     /**
      * This change disables the {@code DRAW_WAKE_LOCK}, an internal wakelock acquired per-frame
@@ -735,7 +745,20 @@ public final class ViewRootImpl implements ViewParent,
     private Predicate<KeyEvent> mWindowlessBackKeyCallback;
 
     public boolean mTraversalScheduled;
-    int mTraversalBarrier;
+    int mTraversalBarrier;  // Posted sync barrier; not safe for concurrent access!
+
+    /**
+     * Tracks the currently active sync barrier, or {@link #UNSET_TRAVERSAL_BARRIER} if there is
+     * none.
+     *
+     * This exists to reduce the impact of data races on the view root, ensuring that adding
+     * multiple sync barriers concurrently (only possible under racy access) will not result in
+     * leaving a sync barrier active indefinitely, stalling the thread forever.
+     *
+     * Only used if {@link Flags#atomicTraversalBarrier} is enabled.
+     */
+    private final AtomicLong mTraversalBarrierAtomic = new AtomicLong(UNSET_TRAVERSAL_BARRIER);
+
     boolean mWillDrawSoon;
     /** Set to true while in performTraversals for detecting when die(true) is called from internal
      * callbacks such as onMeasure, onPreDraw, onDraw and deferring doDie() until later. */
@@ -3194,7 +3217,7 @@ public final class ViewRootImpl implements ViewParent,
             // View#requestLayout or View#invalidate) is guaranteed to run after
             // the scheduled traversals have occurred unless the message is
             // specifically "asynchronous" - see Message#setAsynchronous
-            mTraversalBarrier = mQueue.postSyncBarrier();
+            postTraversalBarrier();
             mChoreographer.postCallback(
                     Choreographer.CALLBACK_TRAVERSAL, mTraversalRunnable, null);
             notifyRendererOfFramePending();
@@ -3206,7 +3229,7 @@ public final class ViewRootImpl implements ViewParent,
         checkThreadCompat();
         if (mTraversalScheduled) {
             mTraversalScheduled = false;
-            mQueue.removeSyncBarrier(mTraversalBarrier);
+            removeTraversalBarrier();
             mChoreographer.removeCallbacks(
                     Choreographer.CALLBACK_TRAVERSAL, mTraversalRunnable, null);
         }
@@ -3215,8 +3238,35 @@ public final class ViewRootImpl implements ViewParent,
     void doTraversal() {
         if (mTraversalScheduled) {
             mTraversalScheduled = false;
-            mQueue.removeSyncBarrier(mTraversalBarrier);
+            removeTraversalBarrier();
             performTraversals();
+        }
+    }
+
+    private void postTraversalBarrier() {
+        int newBarrier = mQueue.postSyncBarrier();
+        if (atomicTraversalBarrier()) {
+            // Atomically set the barrier
+            final long oldBarrier = mTraversalBarrierAtomic.getAndSet(newBarrier);
+            if (oldBarrier != UNSET_TRAVERSAL_BARRIER) {
+                // We clobbered a set barrier, so it's our responsibility to remove the old one
+                mQueue.removeSyncBarrier((int) oldBarrier);
+            }
+        } else {
+            mTraversalBarrier = newBarrier;
+        }
+    }
+
+    private void removeTraversalBarrier() {
+        if (atomicTraversalBarrier()) {
+            // Atomically unset the barrier
+            final long oldBarrier = mTraversalBarrierAtomic.getAndSet(UNSET_TRAVERSAL_BARRIER);
+            if (oldBarrier != UNSET_TRAVERSAL_BARRIER) {
+                // We unset a set barrier, so it's our responsibility to remove the old one
+                mQueue.removeSyncBarrier((int) oldBarrier);
+            }
+        } else {
+            mQueue.removeSyncBarrier(mTraversalBarrier);
         }
     }
 

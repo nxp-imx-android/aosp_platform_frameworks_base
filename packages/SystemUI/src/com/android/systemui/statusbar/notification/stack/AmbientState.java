@@ -40,7 +40,6 @@ import com.android.systemui.statusbar.notification.data.repository.HeadsUpReposi
 import com.android.systemui.statusbar.notification.headsup.AvalancheController;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.StackScrollAlgorithm.BypassController;
 import com.android.systemui.statusbar.notification.stack.StackScrollAlgorithm.SectionProvider;
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager;
@@ -765,9 +764,7 @@ public class AmbientState implements Dumpable {
      * @return whether a row is dozing and not pulsing right now
      */
     public boolean isDozingAndNotPulsing(ExpandableNotificationRow row) {
-        boolean isPulsing = NotificationBundleUi.isEnabled()
-                ? isPulsing(row.getKey())
-                : isPulsing(row.getEntryLegacy());
+        boolean isPulsing = isPulsing(row.getKey());
         return isDozing() && !isPulsing;
     }
 

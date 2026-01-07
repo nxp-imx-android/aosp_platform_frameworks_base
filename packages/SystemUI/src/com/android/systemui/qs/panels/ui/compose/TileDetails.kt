@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -50,6 +51,7 @@ import com.android.systemui.bluetooth.qsdialog.BluetoothDetailsContent
 import com.android.systemui.bluetooth.ui.viewModel.BluetoothDetailsViewModel
 import com.android.systemui.plugins.qs.TileDetailsViewModel
 import com.android.systemui.qs.flags.QsDetailedView
+import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileDetailsEntryWideCornerRadius
 import com.android.systemui.qs.panels.ui.viewmodel.DetailsViewModel
 import com.android.systemui.qs.tiles.dialog.AudioDetailsContent
 import com.android.systemui.qs.tiles.dialog.AudioDetailsViewModel
@@ -59,6 +61,7 @@ import com.android.systemui.qs.tiles.dialog.InternetDetailsContent
 import com.android.systemui.qs.tiles.dialog.InternetDetailsViewModel
 import com.android.systemui.qs.tiles.dialog.ModesDetailsContent
 import com.android.systemui.qs.tiles.dialog.ModesDetailsViewModel
+import com.android.systemui.qs.ui.compose.borderOnFocus
 import com.android.systemui.res.R
 
 private val TileDetailsViewModel.traceName
@@ -112,7 +115,11 @@ fun TileDetails(modifier: Modifier = Modifier, detailsViewModel: DetailsViewMode
                         colors =
                             IconButtonDefaults.iconButtonColors(contentColor = colors.onSurface),
                         modifier =
-                            Modifier.size(TileDetailsDefaults.TitleRowButtonSize)
+                            Modifier.borderOnFocus(
+                                    MaterialTheme.colorScheme.secondary,
+                                    CornerSize(TileDetailsEntryWideCornerRadius),
+                                )
+                                .size(TileDetailsDefaults.TitleRowButtonSize)
                                 .align(Alignment.CenterVertically),
                     ) {
                         Icon(
@@ -137,7 +144,11 @@ fun TileDetails(modifier: Modifier = Modifier, detailsViewModel: DetailsViewMode
                         colors =
                             IconButtonDefaults.iconButtonColors(contentColor = colors.onSurface),
                         modifier =
-                            Modifier.size(TileDetailsDefaults.TitleRowButtonSize)
+                            Modifier.borderOnFocus(
+                                    MaterialTheme.colorScheme.secondary,
+                                    CornerSize(TileDetailsEntryWideCornerRadius),
+                                )
+                                .size(TileDetailsDefaults.TitleRowButtonSize)
                                 .align(Alignment.CenterVertically),
                     ) {
                         Icon(

@@ -362,15 +362,6 @@ flag {
     bug: "410930250"
 }
 
-
-
-flag {
-    name: "multiple_system_navigation_observer_callbacks"
-    namespace: "windowing_frontend"
-    description: "Removes restriction that only one back callback with PRIORITY_SYSTEM_NAVIGATION_OBSERVER can be registered"
-    bug: "424146227"
-}
-
 flag {
     name: "fallback_transition_player"
     namespace: "windowing_frontend"
@@ -392,15 +383,6 @@ flag {
     bug: "385976595"
 }
 
-flag {
-    name: "ime_back_callback_leak_prevention"
-    namespace: "input_method"
-    description: "Prevents custom ime back callbacks from remaining registered in app process after IME hide"
-    bug: "420870283"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
 
 flag {
     name: "predictive_back_fix_ime_events_skip_back_dispatcher"
@@ -417,16 +399,6 @@ flag {
     namespace: "windowing_frontend"
     description: "Allow invisible containers to be in a transition if gone or created"
     bug: "445874680"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "predictive_back_quick_double_back_swipes"
-    namespace: "windowing_frontend"
-    description: "Allow quick double predictive back system animations"
-    bug: "455759359"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

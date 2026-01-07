@@ -41,11 +41,13 @@ import android.os.PowerManagerInternal;
 import android.os.UserHandle;
 import android.os.VibrationEffect;
 import android.os.test.TestLooper;
+import android.os.vibrator.Flags;
 import android.os.vibrator.PrebakedSegment;
 import android.os.vibrator.PrimitiveSegment;
 import android.os.vibrator.StepSegment;
 import android.os.vibrator.VibrationConfig;
 import android.os.vibrator.VibrationEffectSegment;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
@@ -140,7 +142,39 @@ public class VibrationScalerTest {
     }
 
     @Test
-    public void testGetScaleFactor() {
+    @DisableFlags(Flags.FLAG_HAPTICS_SCALE_V2_ENABLED)
+    public void testGetScaleFactor_withLegacyScaling() {
+        // Default scale gain will be ignored.
+        mConfigBuilder.setDefaultVibrationScaleLevelGain(1.4f);
+        mConfigBuilder.setDefaultHapticFeedbackIntensity(VIBRATION_INTENSITY_LOW);
+        VibrationScaler scaler = createSystemReadyScaler();
+        setUserSetting(Settings.System.HAPTIC_FEEDBACK_INTENSITY, VIBRATION_INTENSITY_HIGH);
+        assertEquals(1.4f, scaler.getScaleFactor(USAGE_TOUCH, false), TOLERANCE); // VERY_HIGH
+
+        setUserSetting(Settings.System.HAPTIC_FEEDBACK_INTENSITY, VIBRATION_INTENSITY_MEDIUM);
+        assertEquals(1.2f, scaler.getScaleFactor(USAGE_TOUCH, false), TOLERANCE); // HIGH
+
+        setUserSetting(Settings.System.HAPTIC_FEEDBACK_INTENSITY, VIBRATION_INTENSITY_LOW);
+        assertEquals(1f, scaler.getScaleFactor(USAGE_TOUCH, false), TOLERANCE); // NONE
+
+        mConfigBuilder.setDefaultHapticFeedbackIntensity(VIBRATION_INTENSITY_MEDIUM);
+        scaler = createSystemReadyScaler();
+        setUserSetting(Settings.System.HAPTIC_FEEDBACK_INTENSITY, VIBRATION_INTENSITY_LOW);
+        assertEquals(0.8f, scaler.getScaleFactor(USAGE_TOUCH, false), TOLERANCE); // LOW
+
+        mConfigBuilder.setDefaultHapticFeedbackIntensity(VIBRATION_INTENSITY_HIGH);
+        scaler = createSystemReadyScaler();
+        setUserSetting(Settings.System.HAPTIC_FEEDBACK_INTENSITY, VIBRATION_INTENSITY_LOW);
+        assertEquals(0.6f, scaler.getScaleFactor(USAGE_TOUCH, false), TOLERANCE); // VERY_LOW
+
+        setUserSetting(Settings.System.HAPTIC_FEEDBACK_INTENSITY, VIBRATION_INTENSITY_OFF);
+        // Vibration setting being bypassed will use default setting and not scale.
+        assertEquals(1f, scaler.getScaleFactor(USAGE_TOUCH, false), TOLERANCE); // NONE
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HAPTICS_SCALE_V2_ENABLED)
+    public void testGetScaleFactor_withScalingV2() {
         // Test scale factors for a default gain of 1.4
         mConfigBuilder.setDefaultVibrationScaleLevelGain(1.4f);
         mConfigBuilder.setDefaultHapticFeedbackIntensity(VIBRATION_INTENSITY_LOW);

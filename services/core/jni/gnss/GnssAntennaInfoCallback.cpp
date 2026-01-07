@@ -19,8 +19,6 @@
 
 #include "GnssAntennaInfoCallback.h"
 
-#include <android_location_flags.h>
-
 #include "Utils.h"
 
 namespace android::gnss {
@@ -330,9 +328,7 @@ jobject GnssAntennaInfoCallbackUtil::translateSingleGnssAntennaInfo(JNIEnv* env,
     env->DeleteLocalRef(phaseCenterVariationCorrections);
     env->DeleteLocalRef(signalGainCorrections);
 
-    if (android::location::flags::jni_delete_local_reference_gnss_antenna_info_builder()) {
-        env->DeleteLocalRef(gnssAntennaInfoBuilderObject);
-    }
+    env->DeleteLocalRef(gnssAntennaInfoBuilderObject);
 
     return gnssAntennaInfoObject;
 }

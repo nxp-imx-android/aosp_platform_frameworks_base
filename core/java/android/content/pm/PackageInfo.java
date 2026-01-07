@@ -21,6 +21,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SystemApi;
+import android.app.Activity;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.os.Build;
 import android.os.Bundle;
@@ -298,6 +299,15 @@ public class PackageInfo implements Parcelable {
      * {@link android.Manifest.permission#ACCESS_COARSE_LOCATION} being granted.
      */
     public static final int REQUESTED_PERMISSION_NEVER_FOR_LOCATION = 0x00010000;
+
+    /**
+     * Flag for {@link #requestedPermissionsFlags}: It only applies to {@link
+     * android.Manifest.permission#ACCESS_FINE_LOCATION}. When this flag is set, apps cannot request
+     * that permission through {@link Activity#requestPermissions(String[], int)}, and can only use
+     * location button to obtain it temporarily.
+     */
+    @FlaggedApi(android.permission.flags.Flags.FLAG_LOCATION_BUTTON_ENABLED)
+    public static final int REQUESTED_PERMISSION_ONLY_FOR_LOCATION_BUTTON = 0x00020000;
 
     /**
      * Flag for {@link #requestedPermissionsFlags}: the requested permission was

@@ -198,7 +198,7 @@ public class MagnificationControllerTest {
 
     private TestLooper mTestLooper;
 
-    private static class FakeSystemClock implements MagnificationController.SystemClock {
+    private static class FakeSystemClock extends MagnificationSystemClock {
         private long mUptimeMillis = 1984;
 
         @Override

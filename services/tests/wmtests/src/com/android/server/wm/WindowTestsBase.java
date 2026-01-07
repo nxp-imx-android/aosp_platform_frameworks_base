@@ -18,6 +18,7 @@ package com.android.server.wm;
 
 import static android.app.AppOpsManager.OP_NONE;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_DREAM;
+import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
@@ -686,12 +687,30 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         return newTaskDisplayArea;
     }
 
+    /** Gets the HOME root Task, and makes sure it is on top. */
+    Task getHomeRootTaskAndMoveToTop(TaskDisplayArea taskDisplayArea) {
+        final Task task = taskDisplayArea.getRootTask(WINDOWING_MODE_FULLSCREEN,
+                ACTIVITY_TYPE_HOME);
+        taskDisplayArea.positionChildAt(POSITION_TOP, task, false /* includingParents */);
+        return task;
+    }
+
     /**
      *  Creates a {@link Task} with a simple {@link ActivityRecord} and adds to the given
      *  {@link TaskDisplayArea}.
      */
-    Task createTaskWithActivity(TaskDisplayArea taskDisplayArea,
-            int windowingMode, int activityType, boolean onTop, boolean twoLevelTask) {
+    Task createTaskWithActivity(TaskDisplayArea taskDisplayArea, int windowingMode,
+            int activityType, boolean onTop) {
+        return createTaskWithActivity(taskDisplayArea, windowingMode, activityType, onTop,
+                false /* twoLevelTask */);
+    }
+
+    /**
+     *  Creates a {@link Task} with a simple {@link ActivityRecord} and adds to the given
+     *  {@link TaskDisplayArea}.
+     */
+    Task createTaskWithActivity(TaskDisplayArea taskDisplayArea, int windowingMode,
+            int activityType, boolean onTop, boolean twoLevelTask) {
         return createTask(taskDisplayArea, windowingMode, activityType,
                 onTop, true /* createActivity */, twoLevelTask,
                 false /* forceOpaque */, false /* shouldIgnoreInsets */,

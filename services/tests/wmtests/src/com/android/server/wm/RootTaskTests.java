@@ -43,7 +43,6 @@ import static com.android.server.wm.ActivityRecord.State.STOPPED;
 import static com.android.server.wm.ActivityRecord.State.STOPPING;
 import static com.android.server.wm.ActivityTaskManagerService.RELAUNCH_REASON_FREE_RESIZE;
 import static com.android.server.wm.ActivityTaskManagerService.RELAUNCH_REASON_WINDOWING_MODE_RESIZE;
-import static com.android.server.wm.WindowContainerVisibilityHelperTest.createTaskForShouldBeVisibleTest;
 import static com.android.server.wm.Task.REPARENT_KEEP_ROOT_TASK_AT_FRONT;
 import static com.android.server.wm.Task.REPARENT_MOVE_ROOT_TASK_TO_FRONT;
 import static com.android.server.wm.TaskDisplayArea.getRootTaskAbove;
@@ -446,10 +445,10 @@ public class RootTaskTests extends WindowTestsBase {
     public void testMoveRootTaskToBackIncludingParent() {
         final TaskDisplayArea taskDisplayArea = addNewDisplayContentAt(DisplayContent.POSITION_TOP)
                 .getDefaultTaskDisplayArea();
-        final Task rootTask1 = createTaskForShouldBeVisibleTest(taskDisplayArea,
+        final Task rootTask1 = createTaskWithActivity(taskDisplayArea,
                 WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD, true /* onTop */,
                 true /* twoLevelTask */);
-        final Task rootTask2 = createTaskForShouldBeVisibleTest(taskDisplayArea,
+        final Task rootTask2 = createTaskWithActivity(taskDisplayArea,
                 WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD, true /* onTop */,
                 true /* twoLevelTask */);
 
@@ -465,12 +464,11 @@ public class RootTaskTests extends WindowTestsBase {
 
     @Test
     public void testMoveHomeRootTaskBehindRootTask_BehindHomeRootTask() {
-        final Task fullscreenRootTask1 = createTaskForShouldBeVisibleTest(mDefaultTaskDisplayArea,
+        final Task fullscreenRootTask1 = createTaskWithActivity(mDefaultTaskDisplayArea,
                 WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD, true /* onTop */);
-        final Task fullscreenRootTask2 = createTaskForShouldBeVisibleTest(mDefaultTaskDisplayArea,
+        final Task fullscreenRootTask2 = createTaskWithActivity(mDefaultTaskDisplayArea,
                 WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD, true /* onTop */);
-        final Task homeRootTask = createTaskForShouldBeVisibleTest(mDefaultTaskDisplayArea,
-                WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_HOME, true /* onTop */);
+        final Task homeRootTask = getHomeRootTaskAndMoveToTop(mDefaultTaskDisplayArea);
 
         doReturn(false).when(homeRootTask).isTranslucent(any());
         doReturn(false).when(fullscreenRootTask1).isTranslucent(any());
@@ -484,16 +482,15 @@ public class RootTaskTests extends WindowTestsBase {
 
     @Test
     public void testMoveHomeRootTaskBehindRootTask() {
-        final Task fullscreenRootTask1 = createTaskForShouldBeVisibleTest(mDefaultTaskDisplayArea,
+        final Task fullscreenRootTask1 = createTaskWithActivity(mDefaultTaskDisplayArea,
                 WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD, true /* onTop */);
-        final Task fullscreenRootTask2 = createTaskForShouldBeVisibleTest(mDefaultTaskDisplayArea,
+        final Task fullscreenRootTask2 = createTaskWithActivity(mDefaultTaskDisplayArea,
                 WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD, true /* onTop */);
-        final Task fullscreenRootTask3 = createTaskForShouldBeVisibleTest(mDefaultTaskDisplayArea,
+        final Task fullscreenRootTask3 = createTaskWithActivity(mDefaultTaskDisplayArea,
                 WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD, true /* onTop */);
-        final Task fullscreenRootTask4 = createTaskForShouldBeVisibleTest(mDefaultTaskDisplayArea,
+        final Task fullscreenRootTask4 = createTaskWithActivity(mDefaultTaskDisplayArea,
                 WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD, true /* onTop */);
-        final Task homeRootTask = createTaskForShouldBeVisibleTest(mDefaultTaskDisplayArea,
-                WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_HOME, true /* onTop */);
+        final Task homeRootTask = getHomeRootTaskAndMoveToTop(mDefaultTaskDisplayArea);
 
         mDefaultTaskDisplayArea.moveRootTaskBehindRootTask(homeRootTask, fullscreenRootTask1);
         assertEquals(fullscreenRootTask1, getRootTaskAbove(homeRootTask));
@@ -507,26 +504,25 @@ public class RootTaskTests extends WindowTestsBase {
 
     @Test
     public void testSetAlwaysOnTop() {
-        final Task homeRootTask = createTaskForShouldBeVisibleTest(mDefaultTaskDisplayArea,
-                WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_HOME, true /* onTop */);
-        final Task pinnedRootTask = createTaskForShouldBeVisibleTest(mDefaultTaskDisplayArea,
+        final Task homeRootTask = getHomeRootTaskAndMoveToTop(mDefaultTaskDisplayArea);
+        final Task pinnedRootTask = createTaskWithActivity(mDefaultTaskDisplayArea,
                 WINDOWING_MODE_PINNED, ACTIVITY_TYPE_STANDARD, true /* onTop */);
         assertEquals(pinnedRootTask, getRootTaskAbove(homeRootTask));
 
-        final Task alwaysOnTopRootTask = createTaskForShouldBeVisibleTest(mDefaultTaskDisplayArea,
+        final Task alwaysOnTopRootTask = createTaskWithActivity(mDefaultTaskDisplayArea,
                 WINDOWING_MODE_FREEFORM, ACTIVITY_TYPE_STANDARD, true /* onTop */);
         alwaysOnTopRootTask.setAlwaysOnTop(true);
         assertTrue(alwaysOnTopRootTask.isAlwaysOnTop());
         // Ensure (non-pinned) always on top root task is put below pinned root task.
         assertEquals(pinnedRootTask, getRootTaskAbove(alwaysOnTopRootTask));
 
-        final Task nonAlwaysOnTopRootTask = createTaskForShouldBeVisibleTest(
+        final Task nonAlwaysOnTopRootTask = createTaskWithActivity(
                 mDefaultTaskDisplayArea, WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD,
                 true /* onTop */);
         // Ensure non always on top root task is put below always on top root tasks.
         assertEquals(alwaysOnTopRootTask, getRootTaskAbove(nonAlwaysOnTopRootTask));
 
-        final Task alwaysOnTopRootTask2 = createTaskForShouldBeVisibleTest(mDefaultTaskDisplayArea,
+        final Task alwaysOnTopRootTask2 = createTaskWithActivity(mDefaultTaskDisplayArea,
                 WINDOWING_MODE_FREEFORM, ACTIVITY_TYPE_STANDARD, true /* onTop */);
         alwaysOnTopRootTask2.setAlwaysOnTop(true);
         assertTrue(alwaysOnTopRootTask2.isAlwaysOnTop());
@@ -697,8 +693,7 @@ public class RootTaskTests extends WindowTestsBase {
 
     @Test
     public void testWontFinishHomeRootTaskImmediately() {
-        final Task homeRootTask = createTaskForShouldBeVisibleTest(mDefaultTaskDisplayArea,
-                WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_HOME, true /* onTop */);
+        final Task homeRootTask = getHomeRootTaskAndMoveToTop(mDefaultTaskDisplayArea);
 
         ActivityRecord activity = homeRootTask.topRunningActivity();
         if (activity == null) {
@@ -717,9 +712,9 @@ public class RootTaskTests extends WindowTestsBase {
     public void testFinishCurrentActivity() {
         // Create 2 activities on a new display.
         final DisplayContent display = addNewDisplayContentAt(DisplayContent.POSITION_TOP);
-        final Task rootTask1 = createTaskForShouldBeVisibleTest(display.getDefaultTaskDisplayArea(),
+        final Task rootTask1 = createTaskWithActivity(display.getDefaultTaskDisplayArea(),
                 WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD, true /* onTop */);
-        final Task rootTask2 = createTaskForShouldBeVisibleTest(display.getDefaultTaskDisplayArea(),
+        final Task rootTask2 = createTaskWithActivity(display.getDefaultTaskDisplayArea(),
                 WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD, true /* onTop */);
 
         // There is still an activity1 in rootTask1 so the activity2 should be added to finishing

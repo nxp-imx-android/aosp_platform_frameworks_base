@@ -5109,9 +5109,8 @@ public class RemoteViews implements Parcelable, Filter {
         public void apply(View root, ViewGroup rootParent, ActionApplyParams params) {
             final TextView target = root.findViewById(mViewId);
             if (target == null) return;
-            final int resolvedPixels =  getScaledPixelsFromValueWithUnit(params,
-                    target.getResources().getDisplayMetrics(), mSize, mUnits,
-                    /* isOffset= */ false);
+            final float resolvedPixels = getScaledFloatingPixelsFromValueWithUnit(params,
+                    target.getResources().getDisplayMetrics(), mSize, mUnits);
             target.setTextSize(COMPLEX_UNIT_PX, resolvedPixels);
         }
 
@@ -5970,9 +5969,8 @@ public class RemoteViews implements Parcelable, Filter {
                         radius = mValue == 0 ? 0 : target.getResources().getDimension(mValue);
                         break;
                     case VALUE_TYPE_COMPLEX_UNIT:
-                        radius = getScaledPixelsFromComplexValue(params,
-                                target.getResources().getDisplayMetrics(), mValue,
-                                /* isOffset= */ false);
+                        radius = getScaledFloatingPixelsFromComplexValue(params,
+                                target.getResources().getDisplayMetrics(), mValue);
                         break;
                     default:
                         radius = mValue;
@@ -11035,5 +11033,23 @@ public class RemoteViews implements Parcelable, Filter {
             DisplayMetrics displayMetrics, float value, int unit, boolean isOffset) {
         return getScaledPixelsFromComplexValue(params, displayMetrics,
                 TypedValue.createComplexDimension(value, unit), isOffset);
+    }
+
+    private static float getScaledFloatingPixelsFromComplexValue(ActionApplyParams params,
+            DisplayMetrics displayMetrics, int complexValue) {
+        if (Flags.widgetDisplayChanges() && params.hasOriginalDensity()
+                && TypedValue.getUnitFromComplexDimension(complexValue) == COMPLEX_UNIT_PX) {
+            final float scaleFactor = displayMetrics.density / params.originalDensity;
+            final float value = TypedValue.complexToFloat(complexValue);
+            complexValue = TypedValue.createComplexDimension(scaleFactor * value,
+                    COMPLEX_UNIT_PX);
+        }
+        return TypedValue.complexToDimension(complexValue, displayMetrics);
+    }
+
+    private static float getScaledFloatingPixelsFromValueWithUnit(ActionApplyParams params,
+            DisplayMetrics displayMetrics, float value, int unit) {
+        return getScaledFloatingPixelsFromComplexValue(params, displayMetrics,
+                TypedValue.createComplexDimension(value, unit));
     }
 }

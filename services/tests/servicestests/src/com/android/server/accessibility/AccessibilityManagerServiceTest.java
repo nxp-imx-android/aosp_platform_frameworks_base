@@ -706,8 +706,8 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    public void testSettingsAlwaysOn_setEnabled_featureFlagDisabled_doNothing() {
-        when(mMockMagnificationController.isAlwaysOnMagnificationFeatureFlagEnabled())
+    public void testSettingsAlwaysOn_setEnabled_configDisabled_doNothing() {
+        when(mMockMagnificationController.isAlwaysOnMagnificationConfigSupported())
                 .thenReturn(false);
 
         final AccessibilityUserState userState = mA11yms.mUserStates.get(
@@ -723,8 +723,8 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    public void testSettingsAlwaysOn_setEnabled_featureFlagEnabled_propagateToController() {
-        when(mMockMagnificationController.isAlwaysOnMagnificationFeatureFlagEnabled())
+    public void testSettingsAlwaysOn_setEnabled_configEnabled_propagateToController() {
+        when(mMockMagnificationController.isAlwaysOnMagnificationConfigSupported())
                 .thenReturn(true);
 
         final AccessibilityUserState userState = mA11yms.mUserStates.get(

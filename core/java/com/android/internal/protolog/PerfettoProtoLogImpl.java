@@ -51,6 +51,7 @@ import android.os.ServiceManager;
 import android.os.ShellCommand;
 import android.os.SystemClock;
 import android.text.TextUtils;
+import android.tracing.perfetto.DataSource;
 import android.tracing.perfetto.DataSourceParams;
 import android.tracing.perfetto.InitArguments;
 import android.tracing.perfetto.Producer;
@@ -64,9 +65,7 @@ import android.util.proto.ProtoOutputStream;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.IProtoLogConfigurationService.RegisterClientArgs;
-import com.android.internal.protolog.ProtoLogDataSource.Instance.TracingFlushCallback;
-import com.android.internal.protolog.ProtoLogDataSource.Instance.TracingInstanceStartCallback;
-import com.android.internal.protolog.ProtoLogDataSource.Instance.TracingInstanceStopCallback;
+import com.android.internal.protolog.ProtoLogDataSource.Instance.ProtoLogTracingInstanceStartCallback;
 import com.android.internal.protolog.common.ILogger;
 import com.android.internal.protolog.common.IProtoLog;
 import com.android.internal.protolog.common.IProtoLogGroup;
@@ -76,19 +75,16 @@ import com.android.internal.protolog.common.LogLevel;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -101,7 +97,9 @@ import java.util.stream.Stream;
  * A service for the ProtoLog logging system.
  */
 public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implements IProtoLog,
-        TracingInstanceStartCallback, TracingInstanceStopCallback, TracingFlushCallback {
+        ProtoLogTracingInstanceStartCallback,
+        ProtoLogDataSource.Instance.ProtoLogTracingInstanceStopCallback,
+        DataSource.TracingInstanceFlushCallback {
     private static final String LOG_TAG = "ProtoLog";
     public static final String NULL_STRING = "null";
     @VisibleForTesting
@@ -298,9 +296,9 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
             backgroundTasks.run();
         }
 
-        mDataSource.registerOnStartCallback(this);
-        mDataSource.registerOnFlushCallback(this);
-        mDataSource.registerOnStopCallback(this);
+        mDataSource.registerOnStartCallback(this::onTracingInstanceStart);
+        mDataSource.registerOnFlushCallback(this::onTracingFlush);
+        mDataSource.registerOnStopCallback(this::onTracingInstanceStop);
     }
 
     @Override

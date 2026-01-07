@@ -53,6 +53,7 @@ import android.annotation.Nullable;
 import android.annotation.UptimeMillisLong;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.AnrTypes;
 import android.app.ApplicationExitInfo;
 import android.app.BroadcastOptions;
 import android.app.IApplicationThread;
@@ -282,6 +283,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
     private static final int MSG_CHECK_PENDING_COLD_START_VALIDITY = 5;
     private static final int MSG_PROCESS_FREEZABLE_CHANGED = 6;
     private static final int MSG_UID_STATE_CHANGED = 7;
+    private static final int MSG_DELIVERY_TIMEOUT_WARNING = 8;
 
     private void enqueueUpdateRunningList() {
         mLocalHandler.removeMessages(MSG_UPDATE_RUNNING_LIST);
@@ -294,6 +296,15 @@ class BroadcastQueueImpl extends BroadcastQueue {
         switch (msg.what) {
             case MSG_UPDATE_RUNNING_LIST: {
                 updateRunningList();
+                return true;
+            }
+            case MSG_DELIVERY_TIMEOUT_WARNING: {
+                final SomeArgs args = (SomeArgs) msg.obj;
+                final BroadcastProcessQueue queue = (BroadcastProcessQueue) args.arg1;
+                final int anrId = args.argi1;
+                final long elapsedTimeMs = args.argl1;
+                args.recycle();
+                handleAnrWarning(queue, anrId, elapsedTimeMs);
                 return true;
             }
             case MSG_DELIVERY_TIMEOUT: {
@@ -1326,6 +1337,42 @@ class BroadcastQueueImpl extends BroadcastQueue {
         mAnrTimer.cancel(queue);
     }
 
+    private long calculateBroadcastTimeout(@NonNull BroadcastRecord broadcastRecord) {
+        return broadcastRecord.isForeground() ? mFgConstants.TIMEOUT : mBgConstants.TIMEOUT;
+    }
+
+    private void handleAnrWarning(
+            @NonNull BroadcastProcessQueue queue, int anrId, @UptimeMillisLong long elapsedTimeMs) {
+        final long softTimeoutMs;
+        Intent logIntent;
+        synchronized (mService) {
+            if (!queue.isActive()) {
+                logw("Ignoring handleAnrWarning; no active broadcast for " + queue);
+                return;
+            }
+
+            int index = queue.getActiveIndex();
+            final BroadcastRecord broadcastRecord = queue.getActive();
+            final Object receiver = broadcastRecord.receivers.get(index);
+
+            softTimeoutMs = calculateBroadcastTimeout(broadcastRecord);
+
+            logIntent =
+                    TimeoutRecord.createLogIntentForBroadcast(
+                            broadcastRecord.intent,
+                            getReceiverPackageName(receiver),
+                            getReceiverClassName(receiver));
+        }
+        String description = "Broadcast of " + logIntent.toString();
+        mService.notifyAnrWarning(
+                queue.uid,
+                anrId,
+                AnrTypes.ANR_TYPE_BROADCAST_OF_INTENT,
+                elapsedTimeMs,
+                softTimeoutMs,
+                description);
+    }
+
     private void deliveryTimeout(@NonNull BroadcastProcessQueue queue) {
         final int cookie = traceBegin("deliveryTimeout");
         synchronized (mService) {
@@ -1343,11 +1390,15 @@ class BroadcastQueueImpl extends BroadcastQueue {
 
     private class BroadcastAnrTimer extends AnrTimer<BroadcastProcessQueue> {
         BroadcastAnrTimer(@NonNull Handler handler) {
-            super(Objects.requireNonNull(handler),
-                    MSG_DELIVERY_TIMEOUT, "BROADCAST_TIMEOUT",
+            super(
+                    Objects.requireNonNull(handler),
+                    MSG_DELIVERY_TIMEOUT,
+                    "BROADCAST_TIMEOUT",
                     new AnrTimer.Args()
                             .extend(true)
-                            .longMethodTracing(Flags.enableLongMethodTracingOnAnrTimer()));
+                            .longMethodTracing(Flags.enableLongMethodTracingOnAnrTimer())
+                            .anrWarning(android.app.Flags.enableAnrWarningCallback())
+                            .anrWarningMessageId(MSG_DELIVERY_TIMEOUT_WARNING));
         }
 
         @Override

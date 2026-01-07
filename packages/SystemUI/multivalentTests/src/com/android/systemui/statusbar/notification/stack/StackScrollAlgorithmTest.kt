@@ -33,7 +33,6 @@ import com.android.systemui.statusbar.notification.headsup.AvalancheController
 import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimator
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.shared.NotificationHeadsUpCycling
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager
 import com.android.systemui.statusbar.ui.fakeSystemBarUtilsProxy
@@ -134,7 +133,6 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         whenever(notificationShelf.viewState).thenReturn(ExpandableViewState())
         whenever(notificationRow.key).thenReturn("key")
         whenever(notificationRow.viewState).thenReturn(ExpandableViewState())
-        whenever(notificationRow.entryLegacy).thenReturn(notificationEntry)
         whenever(notificationRow.entryAdapter).thenReturn(notificationEntryAdapter)
         whenever(notificationRow.roundableState)
             .thenReturn(RoundableState(notificationRow, notificationRow, 0f))
@@ -151,7 +149,6 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getGapHeightForChild_returnsBundleGapHeight_whenChildIsBundle() {
         // Assemble
         val child = mock<ExpandableNotificationRow>()
@@ -176,7 +173,6 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getGapHeightForChild_returnsBundleGapHeight_whenPreviousChildIsBundle() {
         // Assemble
         val child = mock<View>()
@@ -420,7 +416,6 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getGapHeightForChild_returnsBundleExpandedGapHeight_whenChildIsExpandedBundle() {
         // Assemble
         val child = mock<ExpandableNotificationRow>()
@@ -446,7 +441,6 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getGapHeightForChild_returnsBundleExpandedGapHeight_whenPreviousChildIsExpandedBundle() {
         // Assemble
         val child = mock<View>()
@@ -1996,9 +1990,6 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         mock<ExpandableNotificationRow>().apply {
             val childViewStateMock = createHunChildViewState(isShadeOpen, fullyVisible)
             whenever(this.viewState).thenReturn(childViewStateMock)
-            if (!NotificationBundleUi.isEnabled) {
-                whenever(this.entryLegacy).thenReturn(notificationEntry)
-            }
 
             whenever(this.mustStayOnScreen()).thenReturn(true)
             whenever(this.headerVisibleAmount).thenReturn(headerVisibleAmount)

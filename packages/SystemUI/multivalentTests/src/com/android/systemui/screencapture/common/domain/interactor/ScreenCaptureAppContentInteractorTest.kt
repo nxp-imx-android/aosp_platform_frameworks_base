@@ -26,9 +26,11 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.screencapture.common.data.repository.fakeScreenCaptureAppContentRepository
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureAppContent
+import com.android.systemui.screencapture.common.repository.FakeAppContentProjectionCallback
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
+import java.lang.ref.WeakReference
 import kotlinx.coroutines.launch
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -62,16 +64,18 @@ class ScreenCaptureAppContentInteractorTest : SysuiTestCase() {
                     parameters =
                         ScreenCaptureUiParameters.ShareScreen(hostAppUserHandle = fakeUserHandle),
                 )
-            var result: Result<List<ScreenCaptureAppContent>>? = null
+            var result: Result<SingleAppContent>? = null
 
             // Act
             val appContents = interactor.appContentsFor("FakePackage", 200, 150)
             val job = testScope.launch { appContents.collect { result = it } }
             assertThat(result).isNull()
+            val fakeCallback = FakeAppContentProjectionCallback(context)
             fakeScreenCaptureAppContentRepository.setAppContentSuccess(
                 packageName = "FakePackage",
                 user = fakeUserHandle,
-                fakeMediaProjectionAppContent1,
+                listOf(fakeMediaProjectionAppContent1),
+                WeakReference(fakeCallback),
             )
 
             // Assert
@@ -83,10 +87,12 @@ class ScreenCaptureAppContentInteractorTest : SysuiTestCase() {
                 assertThat(thumbnailHeightPx).isEqualTo(150)
             }
             assertThat(result?.isSuccess).isTrue()
-            assertThat(result?.getOrNull())
+            val (appContentList, callback) = result?.getOrNull()!!
+            assertThat(appContentList)
                 .containsExactly(
                     ScreenCaptureAppContent("FakePackage", fakeMediaProjectionAppContent1)
                 )
+            assertThat(callback).isNotNull()
 
             // Cleanup
             job.cancel()
@@ -102,7 +108,7 @@ class ScreenCaptureAppContentInteractorTest : SysuiTestCase() {
                     parameters =
                         ScreenCaptureUiParameters.ShareScreen(hostAppUserHandle = fakeUserHandle),
                 )
-            var result: Result<List<ScreenCaptureAppContent>>? = null
+            var result: Result<SingleAppContent>? = null
 
             // Act
             val appContents = interactor.appContentsFor("FakePackage", 200, 150)
@@ -139,7 +145,7 @@ class ScreenCaptureAppContentInteractorTest : SysuiTestCase() {
                     parameters =
                         ScreenCaptureUiParameters.ShareScreen(hostAppUserHandle = fakeUserHandle),
                 )
-            var result: List<ScreenCaptureAppContent>? = null
+            var result: MultiAppContent? = null
 
             // Act
             val appContents =
@@ -151,20 +157,24 @@ class ScreenCaptureAppContentInteractorTest : SysuiTestCase() {
             val job = testScope.launch { appContents.collect { result = it } }
             assertThat(result).isNull()
             with(fakeScreenCaptureAppContentRepository) {
+                val fakeCallback1 = FakeAppContentProjectionCallback(context)
                 setAppContentSuccess(
                     packageName = "FakePackage1",
                     user = fakeUserHandle,
-                    fakeMediaProjectionAppContent1,
+                    listOf(fakeMediaProjectionAppContent1),
+                    WeakReference(fakeCallback1),
                 )
                 setAppContentFailure(
                     packageName = "FakePackage2",
                     user = fakeUserHandle,
                     throwable = fakeThrowable,
                 )
+                val fakeCallback2 = FakeAppContentProjectionCallback(context)
                 setAppContentSuccess(
                     packageName = "FakePackage3",
                     user = fakeUserHandle,
-                    fakeMediaProjectionAppContent2,
+                    listOf(fakeMediaProjectionAppContent2),
+                    WeakReference(fakeCallback2),
                 )
             }
 
@@ -179,11 +189,15 @@ class ScreenCaptureAppContentInteractorTest : SysuiTestCase() {
                     assertThat(thumbnailHeightPx).isEqualTo(150)
                 }
             }
-            assertThat(result)
+            val (contents, callbacks) = result!!
+            assertThat(contents)
                 .containsExactly(
                     ScreenCaptureAppContent("FakePackage1", fakeMediaProjectionAppContent1),
                     ScreenCaptureAppContent("FakePackage3", fakeMediaProjectionAppContent2),
                 )
+            assertThat(callbacks).hasSize(2)
+            assertThat(callbacks).containsKey("FakePackage1")
+            assertThat(callbacks).containsKey("FakePackage3")
 
             // Cleanup
             job.cancel()

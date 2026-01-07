@@ -22,7 +22,9 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.jank.Cuj.CUJ_KEYGUARD_TRANSITION_AOD_TO_LOCKSCREEN
 import com.android.internal.jank.Cuj.CUJ_KEYGUARD_TRANSITION_LOCKSCREEN_TO_AOD
+import com.android.internal.jank.Cuj.CUJ_KEYGUARD_TRANSITION_LOCKSCREEN_TO_DOZING
 import com.android.internal.jank.Cuj.CUJ_KEYGUARD_TRANSITION_GONE_TO_AOD
+import com.android.internal.jank.Cuj.CUJ_KEYGUARD_TRANSITION_GONE_TO_DOZING
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.domain.interactor.KeyguardClockInteractor
@@ -80,6 +82,12 @@ object KeyguardJankBinder {
                     }
                 }
 
+                launch {
+                    viewModel.goneToDozingTransition.collect {
+                        processStep(it, CUJ_KEYGUARD_TRANSITION_GONE_TO_DOZING)
+                    }
+                }
+
                 // The following is already done in KeyguardTransitionAnimationCallbackImpl.
                 if (!SceneContainerFlag.isEnabled) {
                     launch {
@@ -91,6 +99,12 @@ object KeyguardJankBinder {
                     launch {
                         viewModel.aodToLockscreenTransition.collect {
                             processStep(it, CUJ_KEYGUARD_TRANSITION_AOD_TO_LOCKSCREEN)
+                        }
+                    }
+
+                    launch {
+                        viewModel.lockscreenToDozingTransition.collect {
+                            processStep(it, CUJ_KEYGUARD_TRANSITION_LOCKSCREEN_TO_DOZING)
                         }
                     }
                 }

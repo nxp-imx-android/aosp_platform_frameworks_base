@@ -53,9 +53,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Build/Install/Run:
@@ -126,21 +126,24 @@ public class MemoryLimiterTest {
 
         // A countdown latch that tests can wait on.  This is atomic so that changes to attribute
         // made in the test thread are visible in the callback thread.
-        private final AtomicReference<CountDownLatch> mLatch = new AtomicReference();
+        private final CountDownLatch mLatch;
 
-        // The total number of events received by this object.
-        private int mEventCount;
+        // A single over-limit event.
+        record Event(int pid, int uid, int limit, String pkg) {}
+
+        // The events received by this counter.
+        final ArrayList<Event> mEvents = new ArrayList<>();
 
         // The instance is created with the expected number of events.
         EventCounter(int expected) {
             super();
-            mLatch.set(new CountDownLatch(expected));
+            mLatch = new CountDownLatch(expected);
         }
 
         // Wait for the counter to go to zero within timeout seconds.  This cannot take the lock!
         boolean await(long timeout) {
             try {
-                return mLatch.get().await(timeout, TimeUnit.SECONDS);
+                return mLatch.await(timeout, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 Log.e(TAG, "exception while waiting for event", e);
                 return false;
@@ -150,8 +153,17 @@ public class MemoryLimiterTest {
         // Return the total number of events ever received by this object.
         int eventCount() {
             synchronized (mLock) {
-                return mEventCount;
+                return mEvents.size();
             }
+        }
+
+        // Match the n'th event.  Fail the test if there is no match.
+        void expect(int index, int pid, int uid, int limit, String pkg) {
+            final Event event = mEvents.get(index);
+            assertThat(event.pid).isEqualTo(pid);
+            assertThat(event.uid).isEqualTo(uid);
+            assertThat(event.limit).isEqualTo(limit);
+            assertThat(event.pkg).isEqualTo(pkg);
         }
 
         // Get the memory limit for the process state.  Use one of the process states above.
@@ -170,12 +182,10 @@ public class MemoryLimiterTest {
 
         // Capture an actual event.
         @Override
-        public void onLimitExceeded(int pid, int uid, int limit) {
+        public void onLimitExceeded(int pid, int uid, int limit, String pkg) {
             synchronized (mLock) {
-                mLatch.get().countDown();
-                mEventCount++;
-                Log.i(TAG, String.format("onLimitExceeded(%d, %d, %s)", pid, uid,
-                                MemoryLimiter.limitTypeToString(limit)));
+                mLatch.countDown();
+                mEvents.add(new Event(pid, uid, limit, pkg));
             }
         }
     }
@@ -288,7 +298,7 @@ public class MemoryLimiterTest {
         assumeTrue(isValidEnvironment());
         EventCounter counter = new EventCounter(1);
         try (MemoryLimiter controller = new MemoryLimiter(counter)) {
-            MemoryLimiter.Limiter limiter = controller.newLimiter();
+            MemoryLimiter.Limiter limiter = controller.newLimiter(HELPER);
 
             // -S stops any existing activity before starting new, ensuring cold start
             String cmd = String.format("am start-activity -S -W -n %s/.%s", HELPER, ACTIVITY);
@@ -299,7 +309,8 @@ public class MemoryLimiterTest {
 
             // Prepare the cgroup for testing.
             prepareHelperCgroup(pid, mUid);
-            limiter.setPidUid(pid, mUid);
+            limiter.setUid(mUid);
+            limiter.setPid(pid);
 
             // Set the limit, grow the app, and wait for the over-limit event.
             limiter.onProcStateUpdated(PROCESS_STATE_100M);
@@ -308,6 +319,7 @@ public class MemoryLimiterTest {
 
             // There should be exactly one event in the counter.
             assertThat(counter.eventCount()).isEqualTo(1);
+            counter.expect(0, pid, mUid, MemoryLimiter.MEMORY_LIMIT_TYPE, HELPER);
         }
     }
 
@@ -318,7 +330,7 @@ public class MemoryLimiterTest {
         assumeTrue(isValidEnvironment());
         EventCounter counter = new EventCounter(1);
         try (MemoryLimiter controller = new MemoryLimiter(counter)) {
-            MemoryLimiter.Limiter limiter = controller.newLimiter();
+            MemoryLimiter.Limiter limiter = controller.newLimiter(HELPER);
 
             // -S stops any existing activity before starting new, ensuring cold start
             String cmd = String.format("am start-activity -S -W -n %s/.%s", HELPER, ACTIVITY);
@@ -329,7 +341,8 @@ public class MemoryLimiterTest {
 
             // Prepare the cgroup for testing.
             prepareHelperCgroup(pid, mUid);
-            limiter.setPidUid(pid, mUid);
+            limiter.setUid(mUid);
+            limiter.setPid(pid);
 
             // Grow the app by 100M, set the limit, and wait for the over-limit event.
             appCommand(100);
@@ -338,6 +351,71 @@ public class MemoryLimiterTest {
 
             // There should be exactly one event in the counter.
             assertThat(counter.eventCount()).isEqualTo(1);
+            counter.expect(0, pid, mUid, MemoryLimiter.MEMORY_LIMIT_TYPE, HELPER);
+        }
+    }
+
+    @DisabledOnRavenwood
+    @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
+    @Test
+    public void testNullPackage() throws Exception {
+        assumeTrue(isValidEnvironment());
+        EventCounter counter = new EventCounter(1);
+        try (MemoryLimiter controller = new MemoryLimiter(counter)) {
+            MemoryLimiter.Limiter limiter = controller.newLimiter(null);
+
+            // -S stops any existing activity before starting new, ensuring cold start
+            String cmd = String.format("am start-activity -S -W -n %s/.%s", HELPER, ACTIVITY);
+            shellCommand(cmd);
+
+            int pid = getHelperPid();
+            Log.i(TAG, String.format("helper at pid=%d uid=%d", pid, mUid));
+
+            // Prepare the cgroup for testing.
+            prepareHelperCgroup(pid, mUid);
+            limiter.setUid(mUid);
+            limiter.setPid(pid);
+
+            // Set the limit, grow the app, and wait for the over-limit event.
+            limiter.onProcStateUpdated(PROCESS_STATE_100M);
+            appCommand(100);
+            assertTrue(counter.await(10));
+
+            // There should be exactly one event in the counter.
+            assertThat(counter.eventCount()).isEqualTo(1);
+            counter.expect(0, pid, mUid, MemoryLimiter.MEMORY_LIMIT_TYPE, null);
+        }
+    }
+
+    @DisabledOnRavenwood
+    @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
+    @Test
+    public void testEmptyPackage() throws Exception {
+        assumeTrue(isValidEnvironment());
+        EventCounter counter = new EventCounter(1);
+        try (MemoryLimiter controller = new MemoryLimiter(counter)) {
+            MemoryLimiter.Limiter limiter = controller.newLimiter("");
+
+            // -S stops any existing activity before starting new, ensuring cold start
+            String cmd = String.format("am start-activity -S -W -n %s/.%s", HELPER, ACTIVITY);
+            shellCommand(cmd);
+
+            int pid = getHelperPid();
+            Log.i(TAG, String.format("helper at pid=%d uid=%d", pid, mUid));
+
+            // Prepare the cgroup for testing.
+            prepareHelperCgroup(pid, mUid);
+            limiter.setUid(mUid);
+            limiter.setPid(pid);
+
+            // Set the limit, grow the app, and wait for the over-limit event.
+            limiter.onProcStateUpdated(PROCESS_STATE_100M);
+            appCommand(100);
+            assertTrue(counter.await(10));
+
+            // There should be exactly one event in the counter.
+            assertThat(counter.eventCount()).isEqualTo(1);
+            counter.expect(0, pid, mUid, MemoryLimiter.MEMORY_LIMIT_TYPE, "");
         }
     }
 

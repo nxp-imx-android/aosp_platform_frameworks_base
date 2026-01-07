@@ -24,6 +24,8 @@ use nix::{
     sys::resource::{getrlimit, setrlimit, Resource},
     unistd::getuid,
 };
+use rustutils::android::process::android_mallopt;
+use rustutils::android::process::MalloptOpcode;
 use rustutils::android::system_properties;
 
 use std::ffi::{c_int, c_ulong, c_void};
@@ -33,12 +35,17 @@ use std::slice;
 const AID_APP_START: u32 = 10000;
 
 static PROP_ZYGOTE_CORE_DUMP: &str = "persist.zygote.core_dump";
+static PROP_DEBUGGABLE: &str = "ro.debuggable";
 
 /// A safe wrapper around tzset()
 pub fn reset_time_zone() {
     // Refresh Bionic's timezone information.
     // SAFETY: Not passing any function parameter.
     unsafe { tzset() };
+}
+
+fn get_debuggable() -> bool {
+    system_properties::read_bool(PROP_DEBUGGABLE, false).unwrap_or(false)
 }
 
 #[allow(non_camel_case_types)]
@@ -153,6 +160,10 @@ impl RuntimeFlags {
         self.contains(Self::PROFILE_FROM_SHELL)
     }
 
+    pub fn is_profileable(&self) -> bool {
+        self.contains(Self::PROFILEABLE)
+    }
+
     pub fn is_execute_only_memory_enabled(&self) -> bool {
         self.contains(Self::ENABLE_EXECUTE_ONLY_MEMORY)
     }
@@ -173,6 +184,20 @@ pub fn apply_runtime_flags(runtime_flags: u32) -> Result<()> {
     if flags.is_profileable_from_shell() {
         // simpleperf needs the process to be dumpable to profile it.
         prctl_set_dumpable(Dumpable::ByUser).expect("prctl(PR_SET_DUMPABLE) failed");
+    }
+
+    if get_debuggable() || flags.is_profileable() {
+        // SAFETY: This opcode takes no arguments so a nullptr is passed
+        //         instead.
+        let ret = unsafe {
+            android_mallopt(MalloptOpcode::InitZygoteChildProfiling, std::ptr::null_mut(), 0)
+        };
+        if ret.is_err() {
+            log::error!(
+                "Failed to android_mallopt(M_INIT_ZYGOTE_CHILD_HEAP_PROFILING): {}",
+                Error::last_os_error()
+            );
+        }
     }
 
     if !flags.is_native_heap_zero_init_enabled() {

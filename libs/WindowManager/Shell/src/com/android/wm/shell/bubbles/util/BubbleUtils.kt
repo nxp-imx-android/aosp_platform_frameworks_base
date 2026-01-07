@@ -26,9 +26,6 @@ import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import com.android.wm.shell.bubbles.BubbleHelper
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
-import com.android.wm.shell.splitscreen.SplitScreenController
-import dagger.Lazy
-import java.util.Optional
 
 object BubbleUtils {
 
@@ -39,7 +36,7 @@ object BubbleUtils {
     private fun getBubbleTransaction(
         bubbleHelper: BubbleHelper,
         token: WindowContainerToken,
-        bounds: Rect,
+        bounds: Rect?,
         toBubble: Boolean,
         isAppBubble: Boolean,
         reparentToTda: Boolean,
@@ -50,7 +47,9 @@ object BubbleUtils {
             val rootToken = bubbleHelper.getAppBubbleRootTaskToken()
             if (toBubble && rootToken != null) {
                 wct.reparent(token, rootToken, true /* onTop */)
-                wct.setBounds(rootToken, bounds)
+                if (bounds != null) {
+                    wct.setBounds(rootToken, bounds)
+                }
                 wct.setBounds(token, Rect())
                 wct.setAlwaysOnTop(rootToken, true /* alwaysOnTop */)
             } else if (reparentToTda) {
@@ -84,9 +83,9 @@ object BubbleUtils {
             }
         }
         if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
-            if (!toBubble) {
+            if (!toBubble && bounds != null) {
                 // Clear bounds if moving out of Bubble.
-                wct.setBounds(token, Rect())
+                wct.setBounds(token, bounds)
             }
         }
         if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
@@ -140,12 +139,13 @@ object BubbleUtils {
         bubbleHelper: BubbleHelper,
         token: WindowContainerToken,
         captionInsetsOwner: Binder?,
+        resetBounds: Boolean = true,
         reparentToTda: Boolean = BubbleAnythingFlagHelper.enableRootTaskForBubble(),
     ): WindowContainerTransaction {
         return getBubbleTransaction(
             bubbleHelper,
             token,
-            bounds = Rect(),
+            bounds = if (resetBounds) Rect() else null,
             toBubble = false,
             // Everything will be reset, so doesn't matter for exit.
             isAppBubble = true,
@@ -161,12 +161,11 @@ object BubbleUtils {
             this?.windowingMode == WINDOWING_MODE_FULLSCREEN
     }
 
-    /** Determines if a bubble task is moving to split-screen based on its parent task. */
+    /** Determines if a bubble task is moving to another organized parent task. */
     @JvmStatic
-    fun ActivityManager.RunningTaskInfo?.isBubbleToSplit(
-        splitScreenController: Lazy<Optional<SplitScreenController>>
+    fun ActivityManager.RunningTaskInfo?.isBubbleMovedToAnotherRootTask(
+        bubbleHelper: BubbleHelper
     ): Boolean {
-        return this?.hasParentTask() == true &&
-            splitScreenController.get().map { it.isTaskRootOrStageRoot(parentTaskId) }.orElse(false)
+        return this?.hasParentTask() == true && !bubbleHelper.isAppBubbleTask(this)
     }
 }

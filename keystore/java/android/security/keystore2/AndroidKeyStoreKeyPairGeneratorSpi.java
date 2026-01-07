@@ -60,6 +60,7 @@ import libcore.util.EmptyArray;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidParameterException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyPairGeneratorSpi;
@@ -83,12 +84,22 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 /**
- * Provides a way to create {@code java.security.KeyPair} instances that are stored and
- * managed by Android Keystore and can only be used by the application that created them.
- * <p>
- * This class provides the implementation used by the {@code "AndroidKeyStore"} provider.
- * It cannot be directly instantiated and must instead be used by calling
- * {@link KeyPairGenerator#getInstance(String) KeyPairGenerator.getInstance("AndroidKeyStore")}.
+ * {@link KeyPairGeneratorSpi} backed by Android Keystore.
+ *
+ * <p>Initialization is only supported via an instance of {@link
+ * android.security.keystore.KeyGenParameterSpec} or {@link android.security.KeyPairGeneratorSpec}.
+ *
+ * <p>Concrete subclasses specific to ML-DSA are partially compliant with the {@link
+ * java.security.KeyPairGenerator} specification given in <a href="https://openjdk.org/jeps/497">JEP
+ * 497</a>. There is one deviation:
+ *
+ * <ul>
+ *   <li>Initialization with the relevant instance of {@link java.security.spec.NamedParameterSpec}
+ *       is not supported, despite being prescribed by JEP 497. Instead, callers can provide an
+ *       instance of {@link java.security.spec.NamedParameterSpec} as the {@code spec} argument in
+ *       the constructor for {@link android.security.keystore.KeyGenParameterSpec} or {@link
+ *       android.security.KeyPairGeneratorSpec}.
+ * </ul>
  *
  * @hide
  */
@@ -131,6 +142,30 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
         // ED25519 is treated as EC.
         public ED25519() {
             super(ALGORITHM_ED25519);
+        }
+    }
+
+    public static class MLDSA extends AndroidKeyStoreKeyPairGeneratorSpi {
+        public MLDSA() {
+            super(
+                    /* keymasterAlgorithm= */ KeyProperties.KM_ALGORITHM_ML_DSA,
+                    /* mlDsaAlgorithmName= */ KeyProperties.KEY_ALGORITHM_ML_DSA);
+        }
+    }
+
+    public static class MLDSA65 extends AndroidKeyStoreKeyPairGeneratorSpi {
+        public MLDSA65() {
+            super(
+                    /* keymasterAlgorithm= */ KeyProperties.KM_ALGORITHM_ML_DSA,
+                    /* mlDsaAlgorithmName= */ KeyProperties.KEY_ALGORITHM_ML_DSA_65);
+        }
+    }
+
+    public static class MLDSA87 extends AndroidKeyStoreKeyPairGeneratorSpi {
+        public MLDSA87() {
+            super(
+                    /* keymasterAlgorithm= */ KeyProperties.KM_ALGORITHM_ML_DSA,
+                    /* mlDsaAlgorithmName= */ KeyProperties.KEY_ALGORITHM_ML_DSA_87);
         }
     }
 
@@ -182,7 +217,22 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
     // Algorithm from the relevant KM_ALGORITHM_.* constant defined in
     // frameworks/base/core/java/android/security/keymaster/KeymasterDefs.java, or one of the
     // special values for Curve25519 ({@link #ALGORITHM_XDH}, {@link #ALGORITHM_ED25519}).
+    // This variable is only used for EC in order to set the correct algorithm for XDH and Ed25519.
     private final int mOriginalKeymasterAlgorithm;
+
+    // KeyMint Tag::ML_DSA_VARIANT AIDL enum value to use for this key pair. This variable is only
+    // populated and used for ML-DSA.
+    private int mMlDsaVariantTag;
+
+    // Algorithm name used to initialize this KeyPairGenerator. This variable is only populated and
+    // used for ML-DSA.
+    // Implementation note: Technically, KeyPairGenerator only needs to keep track of the ML-DSA
+    // parameter set in order to function correctly. However, the original algorithm name is also
+    // stored in order to provide more useful exception messages. Since JEP 497 requires that
+    // KeyPairGenerator instances initialized with the family name "ML-DSA" generate ML-DSA-65
+    // keys, it's not always possible to map the parameter set name back to the algorithm name
+    // provided at initialization time.
+    private String mMlDsaAlgorithmName;
 
     private KeyStore2 mKeyStore;
     private KeyGenParameterSpec mSpec;
@@ -204,6 +254,25 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
 
     protected AndroidKeyStoreKeyPairGeneratorSpi(int keymasterAlgorithm) {
         mOriginalKeymasterAlgorithm = keymasterAlgorithm;
+    }
+
+    protected AndroidKeyStoreKeyPairGeneratorSpi(
+            int keymasterAlgorithm, @NonNull String mlDsaAlgorithmName) {
+        mOriginalKeymasterAlgorithm = keymasterAlgorithm;
+        mMlDsaAlgorithmName = mlDsaAlgorithmName;
+        mMlDsaVariantTag =
+                switch (mlDsaAlgorithmName) {
+                    case KeyProperties.KEY_ALGORITHM_ML_DSA_65 ->
+                            KeyProperties.KM_ML_DSA_VARIANT_65;
+                    case KeyProperties.KEY_ALGORITHM_ML_DSA_87 ->
+                            KeyProperties.KM_ML_DSA_VARIANT_87;
+                    // JEP 497 requires that KeyPairGenerator instances initialized with the family
+                    // name "ML-DSA" generate ML-DSA-65 keys.
+                    case KeyProperties.KEY_ALGORITHM_ML_DSA -> KeyProperties.KM_ML_DSA_VARIANT_65;
+                    default ->
+                            throw new IllegalArgumentException(
+                                    "Unsupported ML-DSA algorithm: " + mlDsaAlgorithmName);
+                };
     }
 
     private static @EcCurve int keySizeAndNameToEcCurve(int keySizeBits, String ecCurveName)
@@ -228,10 +297,30 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
 
     @SuppressWarnings("deprecation")
     @Override
-    public void initialize(int keysize, SecureRandom random) {
-        throw new IllegalArgumentException(
-                KeyGenParameterSpec.class.getName() + " or " + KeyPairGeneratorSpec.class.getName()
-                        + " required to initialize this KeyPairGenerator");
+    public void initialize(int keysize, SecureRandom random) throws InvalidParameterException {
+        String message =
+                KeyGenParameterSpec.class.getName()
+                        + " or "
+                        + KeyPairGeneratorSpec.class.getName()
+                        + " required to initialize this KeyPairGenerator";
+
+        // JEP 497 requires ML-DSA KeyPairGenerator implementations to throw an
+        // InvalidParameterException when initialized with a key size. The JEPs for other
+        // algorithms do not prescribe an exception type for unsupported key sizes and
+        // IllegalArgumentException was chosen when the provider was first implemented. This
+        // probably wasn't the correct choice given that the "KeyPairGenerator.initialize" methods
+        // that take a key size argument declare that they throw an InvalidParameterException "if
+        // the keysize is not supported by this KeyPairGenerator object". It would be nice to
+        // simplify this and always throw an InvalidParameterException, but we don't want to break
+        // users who expect an IllegalArgumentException (Hyrum's Law).
+        // Implementation note: We can check for non-nullness of mMlDsaAlgorithmName since
+        // the AndroidKeyStoreKeyPairGeneratorSpi constructor sets this variable iff the algorithm
+        // is ML-DSA.
+        if (mMlDsaAlgorithmName != null) {
+            throw new InvalidParameterException(message);
+        } else {
+            throw new IllegalArgumentException(message);
+        }
     }
 
     @SuppressWarnings("deprecation")
@@ -327,8 +416,14 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
                 }
                 mKeymasterSignaturePaddings = KeyProperties.SignaturePadding.allToKeymaster(
                         spec.getSignaturePaddings());
+
+                validateDigests();
                 if (spec.isDigestsSpecified()) {
                     mKeymasterDigests = KeyProperties.Digest.allToKeymaster(spec.getDigests());
+                } else if (mKeymasterAlgorithm == KeyProperties.KM_ALGORITHM_ML_DSA) {
+                    mKeymasterDigests =
+                            KeyProperties.Digest.allToKeymaster(
+                                    new String[] {KeyProperties.DIGEST_NONE});
                 } else {
                     mKeymasterDigests = EmptyArray.INT;
                 }
@@ -537,6 +632,13 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
                 // padding NONE above.
                 specBuilder.setRandomizedEncryptionRequired(false);
                 break;
+            // TODO(b/395069350): Use KeymasterDefs constant when KeyMint V5 is frozen.
+            case KeyProperties.KM_ALGORITHM_ML_DSA:
+                specBuilder =
+                        new KeyGenParameterSpec.Builder(
+                                legacySpec.getKeystoreAlias(),
+                                KeyProperties.PURPOSE_SIGN | KeyProperties.PURPOSE_VERIFY);
+                break;
             default:
                 throw new ProviderException(
                         "Unsupported algorithm: " + mKeymasterAlgorithm);
@@ -643,6 +745,30 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
                 } else if (algSpecificSpec != null) {
                     throw new InvalidAlgorithmParameterException(
                             "EC may only use ECGenParameterSpec");
+                }
+                break;
+            // TODO(b/462036047): Use KeymasterDefs constant when KeyMint V5 is frozen.
+            case KeyProperties.KM_ALGORITHM_ML_DSA:
+                // An AlgorithmParameterSpec is not required for ML-DSA. However, if one is
+                // provided, it must be a NamedParameterSpec and it must be consistent with the
+                // algorithm name provided at initialization time.
+                if (algSpecificSpec instanceof NamedParameterSpec) {
+                    String algorithmName = ((NamedParameterSpec) algSpecificSpec).getName();
+                    if (!mMlDsaAlgorithmName.equalsIgnoreCase(algorithmName)) {
+                        throw new InvalidAlgorithmParameterException(
+                                "NamedParameterSpec ("
+                                        + algorithmName
+                                        + ") does not match algorithm name used to initialize"
+                                        + " KeyPairGenerator ("
+                                        + mMlDsaAlgorithmName
+                                        + ")");
+                    }
+                } else if (algSpecificSpec != null) {
+                    throw new InvalidAlgorithmParameterException(
+                            "Unsupported AlgorithmParameterSpec: "
+                                    + algSpecificSpec.getClass().getName()
+                                    + ". ML-DSA only supports "
+                                    + NamedParameterSpec.class.getName());
                 }
                 break;
             default:
@@ -985,6 +1111,12 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
                 break;
             case KeymasterDefs.KM_ALGORITHM_EC:
                 break;
+            case KeyProperties.KM_ALGORITHM_ML_DSA:
+                // TODO(b/462036047): Use KeymasterDefs constants when KeyMint V5 is frozen.
+                params.add(
+                        KeyStore2ParameterUtils.makeEnum(
+                                KeyProperties.KM_TAG_ML_DSA_VARIANT, mMlDsaVariantTag));
+                break;
             default:
                 throw new ProviderException("Unsupported algorithm: " + mKeymasterAlgorithm);
         }
@@ -996,6 +1128,11 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
                 return EC_DEFAULT_KEY_SIZE;
             case KeymasterDefs.KM_ALGORITHM_RSA:
                 return RSA_DEFAULT_KEY_SIZE;
+            case KeyProperties.KM_ALGORITHM_ML_DSA:
+                // TODO(b/462036047): Use KeymasterDefs constant when KeyMint V5 is frozen.
+                // Android Keystore and KeyMint ignore the key size for ML-DSA, so return an
+                // arbitrary value.
+                return -1;
             default:
                 throw new ProviderException("Unsupported algorithm: " + keymasterAlgorithm);
         }
@@ -1029,8 +1166,34 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
                             + RSA_MIN_KEY_SIZE + " and <= " + RSA_MAX_KEY_SIZE);
                 }
                 break;
+            // TODO(b/462036047): Use KeymasterDefs constant when KeyMint V5 is frozen.
+            case KeyProperties.KM_ALGORITHM_ML_DSA:
+                // Key size is not needed for ML-DSA, so the provided key size is ignored.
+                break;
             default:
                 throw new ProviderException("Unsupported algorithm: " + keymasterAlgorithm);
+        }
+    }
+
+    private void validateDigests() throws InvalidAlgorithmParameterException {
+        switch (mKeymasterAlgorithm) {
+            case KeymasterDefs.KM_ALGORITHM_EC, KeymasterDefs.KM_ALGORITHM_RSA -> {}
+            case KeyProperties.KM_ALGORITHM_ML_DSA -> {
+                // TODO(b/462036047): Use KeymasterDefs constant when KeyMint V5 is frozen.
+                if (mSpec.isDigestsSpecified()) {
+                    // Digests don't need to be explicitly specified for ML-DSA. If digests are
+                    // specified, check that there is exactly one and it's DIGEST_NONE.
+                    if (mSpec.getDigests().length != 1
+                            || mSpec.getDigests()[0] != KeyProperties.DIGEST_NONE) {
+                        throw new InvalidAlgorithmParameterException(
+                                "Unsupported digest(s): "
+                                        + Arrays.asList(mSpec.getDigests())
+                                        + ". For ML-DSA, exactly one digest must be specified and"
+                                        + " it must be DIGEST_NONE.");
+                    }
+                }
+            }
+            default -> throw new ProviderException("Unsupported algorithm: " + mKeymasterAlgorithm);
         }
     }
 

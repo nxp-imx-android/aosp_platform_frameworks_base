@@ -2067,7 +2067,8 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
     }
 
     @Override
-    public void onRecentTaskRemoved(Task task, boolean wasTrimmed, boolean killProcess) {
+    public void onRecentTaskRemoved(Task task, boolean wasTrimmed, boolean killProcess,
+            @Nullable Task replacingTask) {
         if (wasTrimmed) {
             // Task was trimmed from the recent tasks list -- remove the active task record as well
             // since the user won't really be able to go back to it
@@ -2207,13 +2208,9 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         finishEnteringSleep();
     }
 
-    @VisibleForTesting
-    void finishEnteringSleep() {
+    private void finishEnteringSleep() {
         // End power mode launch before going sleep
         mService.endPowerMode(ActivityTaskManagerService.POWER_MODE_REASON_ALL);
-
-        // Rank task layers to make sure the {@link Task#mLayerRank} is updated.
-        mRootWindowContainer.rankTaskLayers();
 
         removeSleepTimeouts();
 

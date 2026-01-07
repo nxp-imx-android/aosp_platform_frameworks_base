@@ -32,4 +32,7 @@ sealed interface ScreenRecording {
      * available for the video preview.
      */
     data class Saved(override val uri: Uri, val thumbnail: Icon?) : ScreenRecording
+
+    /** Couldn't save the screen recording with the [uri]. */
+    data class NotSaved(override val uri: Uri) : ScreenRecording
 }

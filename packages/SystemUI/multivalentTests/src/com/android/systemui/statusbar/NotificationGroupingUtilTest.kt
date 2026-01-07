@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar
 
 import android.app.Notification
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.filters.SmallTest
@@ -30,7 +29,6 @@ import com.android.systemui.statusbar.notification.row.createRow
 import com.android.systemui.statusbar.notification.row.createRowWithNotif
 import com.android.systemui.statusbar.notification.row.data.repository.TEST_BUNDLE_SPEC
 import com.android.systemui.statusbar.notification.row.entryAdapterFactory
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -54,7 +52,7 @@ class NotificationGroupingUtilTest(flags: FlagsParameterization) : SysuiTestCase
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf(NotificationBundleUi.FLAG_NAME)
+            return FlagsParameterization.allCombinationsOf()
         }
     }
 
@@ -84,7 +82,6 @@ class NotificationGroupingUtilTest(flags: FlagsParameterization) : SysuiTestCase
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun iconExtractor_noException_bundle() {
         val row = mock(ExpandableNotificationRow::class.java)
         val be = BundleEntry(TEST_BUNDLE_SPEC)
@@ -116,7 +113,6 @@ class NotificationGroupingUtilTest(flags: FlagsParameterization) : SysuiTestCase
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun iconComparator_bundleNotification() {
         var row = kosmos.createRow()
         assertThat(

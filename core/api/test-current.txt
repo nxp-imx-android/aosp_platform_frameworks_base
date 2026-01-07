@@ -1946,7 +1946,6 @@ package android.hardware.display {
 
   public static interface DisplayManager.DisplayListener {
     method public default void onDisplayConnected(int);
-    method @FlaggedApi("com.android.server.display.feature.flags.display_listener_snapshot") public default void onDisplayConnectedSnapshot(@NonNull int[]);
     method public default void onDisplayDisconnected(int);
   }
 
@@ -3615,6 +3614,15 @@ package android.service.settings.preferences {
 
   @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public class SettingsPreferenceServiceClient implements java.lang.AutoCloseable {
     ctor public SettingsPreferenceServiceClient(@NonNull android.content.Context, @NonNull String, boolean, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.service.settings.preferences.SettingsPreferenceServiceClient,java.lang.Exception>);
+  }
+
+}
+
+package android.service.uprobestats {
+
+  @FlaggedApi("android.security.dynamic_instrumentation_api") public final class DynamicInstrumentationManager {
+    method @FlaggedApi("android.security.dynamic_instrumentation_api") @Nullable public android.content.ComponentName getDynamicInstrumentationEventConsumer();
+    method @FlaggedApi("android.security.dynamic_instrumentation_api") public void setDynamicInstrumentationEventConsumer(@Nullable android.content.ComponentName);
   }
 
 }

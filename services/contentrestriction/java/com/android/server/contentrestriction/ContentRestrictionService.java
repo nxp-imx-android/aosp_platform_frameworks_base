@@ -142,7 +142,7 @@ public class ContentRestrictionService extends IContentRestrictionManager.Stub {
                 }
             };
 
-            dispatchContentRestricitionAppServiceEvent(userId, service -> {
+            dispatchContentRestrictionAppServiceEvent(userId, service -> {
                 if (service != null) {
                     service.onClassifyContent(content, systemCallback);
                 } else {
@@ -167,7 +167,7 @@ public class ContentRestrictionService extends IContentRestrictionManager.Stub {
         });
     }
 
-    private void dispatchContentRestricitionAppServiceEvent(
+    private void dispatchContentRestrictionAppServiceEvent(
             @UserIdInt int userId,
             @NonNull RemoteExceptionIgnoringConsumer<IContentRestrictionAppService> action) {
         mAppBindingService.dispatchAppServiceEvent(

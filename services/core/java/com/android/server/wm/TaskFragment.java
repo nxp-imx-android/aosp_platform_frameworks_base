@@ -1171,8 +1171,8 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         if (!isAttached() || isForceHidden() || isForceTranslucent()) {
             return true;
         }
-        return !mAtmService.mVisibilityHelper.isOpaque(
-                this, starting, true /* ignoringKeyguard */, true /* ignoringInvisibleActivity */);
+        return !mAtmService.mVisibilityHelper.isOpaque(this, starting, true /* ignoringKeyguard */,
+                true /* ignoringInvisibleActivity */, true /* ignoringFinishing */);
     }
 
     /**
@@ -1185,7 +1185,9 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             return true;
         }
         // Including finishing Activity if the TaskFragment is becoming invisible in the transition.
-        return !mAtmService.mVisibilityHelper.isOpaque(this);
+        return !mAtmService.mVisibilityHelper.isOpaque(this, null /* starting */,
+                true /* ignoringKeyguard */, false /* ignoringInvisibleActivity */,
+                false /* ignoringFinishing */);
     }
 
     /**
@@ -1197,7 +1199,8 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             return true;
         }
         return !mAtmService.mVisibilityHelper.isOpaque(this, /* starting */ null,
-                false /* ignoringKeyguard */, true /* ignoringInvisibleActivity */);
+                false /* ignoringKeyguard */, true /* ignoringInvisibleActivity */,
+                true /* ignoringFinishing */);
     }
 
     @Override
@@ -3271,7 +3274,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
     }
 
     @Override
-    public void writeIdentifierToProto(ProtoOutputStream proto, long fieldId) {
+    void writeIdentifierToProto(ProtoOutputStream proto, long fieldId) {
         final long token = proto.start(fieldId);
         proto.write(HASH_CODE, System.identityHashCode(this));
         final ActivityRecord topActivity = topRunningActivity();

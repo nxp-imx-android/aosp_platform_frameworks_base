@@ -49,7 +49,6 @@ import com.android.systemui.statusbar.notification.footer.ui.viewbinder.FooterVi
 import com.android.systemui.statusbar.notification.footer.ui.viewmodel.FooterViewModel
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerShelfViewBinder
 import com.android.systemui.statusbar.notification.row.StackScrollerDecorView
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.shelf.ui.viewbinder.NotificationShelfViewBinder
 import com.android.systemui.statusbar.notification.stack.DisplaySwitchNotificationsHiderTracker
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout
@@ -158,9 +157,7 @@ constructor(
                     }
                 }
 
-                if (NotificationBundleUi.isEnabled) {
-                    launch { bindBundleOnboarding(view) }
-                }
+                launch { bindBundleOnboarding(view) }
 
                 launch { bindSummarizationOnboarding(view) }
 
@@ -367,7 +364,6 @@ constructor(
     }
 
     private suspend fun bindBundleOnboarding(parentView: NotificationStackScrollLayout) {
-        if (NotificationBundleUi.isUnexpectedlyInLegacyMode()) return
         val onboardingViewModel: BundleOnboardingViewModel = viewModel.bundleOnboarding
         onboardingViewModel.showAffordance
             .flatMapLatestConflated { show ->

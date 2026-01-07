@@ -447,6 +447,13 @@ public class BubbleExpandedView extends LinearLayout {
         }
     }
 
+    /** Handle theme changes.*/
+    public void updateTheme() {
+        if (mOverflowView != null) {
+            mOverflowView.updateTheme();
+        }
+    }
+
     void applyThemeAttrs() {
         final TypedArray ta = mContext.obtainStyledAttributes(new int[]{
                 android.R.attr.dialogCornerRadius});
