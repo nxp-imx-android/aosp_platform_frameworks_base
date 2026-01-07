@@ -58,7 +58,10 @@ internal fun createSwipeAnimation(
     distance: Float = DistanceUnspecified,
 ): SwipeAnimation<*> {
     var lastDistance = distance
-    var gestureSpec = MotionSpec.InitiallyUndefined
+    var gestureSpec =
+        // For predictive-back, the distance is hard-coded to 1; Use the Identity gesture spec
+        // initially, since the lastDistance initialization below is be skipped in this case.
+        if (distance == DistanceUnspecified) MotionSpec.InitiallyUndefined else MotionSpec.Identity
 
     fun distance(animation: SwipeAnimation<*>): Float {
         if (lastDistance != DistanceUnspecified) {
