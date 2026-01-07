@@ -5608,13 +5608,15 @@ public abstract class PackageManager {
     public static final int FLAG_PERMISSION_SELECTED_LOCATION_ACCURACY =  1 << 19;
 
     /**
-     * Permission flag: This location permission is granted by system provided location button.
+     * Permission flag: The user has consented to using a trusted system component in the
+     * application. When set, the system doesn't show the consent dialog for future
+     * interactions.
      *
      * @hide
      */
     @SystemApi
     @FlaggedApi(android.permission.flags.Flags.FLAG_LOCATION_BUTTON_ENABLED)
-    public static final int FLAG_PERMISSION_GRANTED_BY_LOCATION_BUTTON =  1 << 20;
+    public static final int FLAG_PERMISSION_CONSENTED_FOR_TRUSTED_UI =  1 << 20;
 
     /**
      * Permission flags: Reserved for use by the permission controller. The platform and any
@@ -5671,7 +5673,7 @@ public abstract class PackageManager {
             | FLAG_PERMISSION_ONE_TIME
             | FLAG_PERMISSION_AUTO_REVOKED
             | FLAG_PERMISSION_SELECTED_LOCATION_ACCURACY
-            | FLAG_PERMISSION_GRANTED_BY_LOCATION_BUTTON;
+            | FLAG_PERMISSION_CONSENTED_FOR_TRUSTED_UI;
 
     /**
      * Injected activity in app that forwards user to setting activity of that app.
@@ -7018,7 +7020,7 @@ public abstract class PackageManager {
             FLAG_PERMISSION_ONE_TIME,
             FLAG_PERMISSION_AUTO_REVOKED,
             FLAG_PERMISSION_SELECTED_LOCATION_ACCURACY,
-            FLAG_PERMISSION_GRANTED_BY_LOCATION_BUTTON
+            FLAG_PERMISSION_CONSENTED_FOR_TRUSTED_UI
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface PermissionFlags {}
@@ -11105,7 +11107,7 @@ public abstract class PackageManager {
             case FLAG_PERMISSION_ONE_TIME: return "ONE_TIME";
             case FLAG_PERMISSION_AUTO_REVOKED: return "AUTO_REVOKED";
             case FLAG_PERMISSION_SELECTED_LOCATION_ACCURACY: return "SELECTED_LOCATION_ACCURACY";
-            case FLAG_PERMISSION_GRANTED_BY_LOCATION_BUTTON: return "GRANTED_BY_LOCATION_BUTTON";
+            case FLAG_PERMISSION_CONSENTED_FOR_TRUSTED_UI: return "CONSENTED_FOR_TRUSTED_UI";
             default: return Integer.toString(flag);
         }
     }
