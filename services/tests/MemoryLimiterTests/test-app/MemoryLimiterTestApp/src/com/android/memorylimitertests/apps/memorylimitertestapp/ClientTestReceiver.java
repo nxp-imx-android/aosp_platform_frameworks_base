@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.servicestests.apps.memorylimitertestapp;
+package com.android.memorylimitertests.apps.memorylimitertestapp;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

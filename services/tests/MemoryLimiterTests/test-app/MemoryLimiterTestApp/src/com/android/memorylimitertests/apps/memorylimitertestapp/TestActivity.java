@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.servicestests.apps.memorylimitertestapp;
+package com.android.memorylimitertests.apps.memorylimitertestapp;
 
 import android.app.ListActivity;
 import android.content.Context;
@@ -35,7 +35,7 @@ public class TestActivity extends ListActivity {
     static final String TAG = "MemoryLimiterTestApp";
 
     // Self.
-    static final String SELF = "com.android.servicestests.apps.memorylimitertestapp";
+    static final String SELF = "com.android.memorylimitertests.apps.memorylimitertestapp";
 
     // The broadcast receiver for instructions.
     ClientTestReceiver mReceiver;
