@@ -24,6 +24,7 @@ import android.security.keymaster.KeymasterDefs;
 import android.security.keystore.KeyPermanentlyInvalidatedException;
 import android.security.keystore.KeyProperties;
 import android.security.keystore.KeyStoreCryptoOperation;
+import android.security.keystore2.Flags;
 import android.system.keystore2.Authorization;
 import android.system.keystore2.Domain;
 import android.system.keystore2.KeyDescriptor;
@@ -94,12 +95,25 @@ public class AndroidKeyStoreProvider extends Provider {
         put("KeyPairGenerator.XDH", PACKAGE_NAME +  ".AndroidKeyStoreKeyPairGeneratorSpi$XDH");
         put("KeyPairGenerator.ED25519", PACKAGE_NAME
                 +  ".AndroidKeyStoreKeyPairGeneratorSpi$ED25519");
+        if (Flags.mldsaSupport()) {
+            put("KeyPairGenerator.ML-DSA", PACKAGE_NAME
+                    + ".AndroidKeyStoreKeyPairGeneratorSpi$MLDSA");
+            put("KeyPairGenerator.ML-DSA-65", PACKAGE_NAME
+                    + ".AndroidKeyStoreKeyPairGeneratorSpi$MLDSA65");
+            put("KeyPairGenerator.ML-DSA-87", PACKAGE_NAME
+                    + ".AndroidKeyStoreKeyPairGeneratorSpi$MLDSA87");
+        }
 
         // java.security.KeyFactory
         put("KeyFactory.EC", PACKAGE_NAME + ".AndroidKeyStoreKeyFactorySpi$EC");
         put("KeyFactory.RSA", PACKAGE_NAME + ".AndroidKeyStoreKeyFactorySpi$RSA");
         put("KeyFactory.XDH", PACKAGE_NAME + ".AndroidKeyStoreKeyFactorySpi$XDH");
         put("KeyFactory.ED25519", PACKAGE_NAME + ".AndroidKeyStoreKeyFactorySpi$ED25519");
+        if (Flags.mldsaSupport()) {
+            put("KeyFactory.ML-DSA", PACKAGE_NAME + ".AndroidKeyStoreKeyFactorySpi$MLDSA");
+            put("KeyFactory.ML-DSA-65", PACKAGE_NAME + ".AndroidKeyStoreKeyFactorySpi$MLDSA65");
+            put("KeyFactory.ML-DSA-87", PACKAGE_NAME + ".AndroidKeyStoreKeyFactorySpi$MLDSA87");
+        }
 
         // javax.crypto.KeyGenerator
         put("KeyGenerator.AES", PACKAGE_NAME + ".AndroidKeyStoreKeyGeneratorSpi$AES");
