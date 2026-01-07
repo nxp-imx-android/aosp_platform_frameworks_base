@@ -339,11 +339,17 @@ abstract class LocationTimeZoneProvider implements Dumpable {
             // this.provider is omitted deliberately to avoid recursion, since the provider holds
             // a reference to its state.
             return "ProviderState{"
-                    + "stateEnum=" + prettyPrintStateEnum(stateEnum)
-                    + ", event=" + event
-                    + ", currentUserConfiguration=" + currentUserConfiguration
-                    + ", mStateEntryTimeMillis=" + mStateEntryTimeMillis
-                    + ", mDebugInfo=" + mDebugInfo
+                    + "stateEnum="
+                    + prettyPrintStateEnum(stateEnum)
+                    + ", event="
+                    + event
+                    + ", currentUserConfiguration="
+                    + (currentUserConfiguration == null
+                            ? "null" : currentUserConfiguration.geoDetectionSettingsToString())
+                    + ", mStateEntryTimeMillis="
+                    + mStateEntryTimeMillis
+                    + ", mDebugInfo="
+                    + mDebugInfo
                     + '}';
         }
 
