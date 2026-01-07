@@ -55,6 +55,8 @@ import com.android.wm.shell.taskview.TaskView
 import com.android.wm.shell.taskview.TaskViewTransitions
 import com.android.wm.shell.transition.Transitions
 import com.google.common.truth.Truth.assertThat
+import java.util.Optional
+import java.util.concurrent.Executor
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -63,8 +65,6 @@ import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import java.util.Optional
-import java.util.concurrent.Executor
 
 /** Tests for loading / inflating views & icons for a bubble. */
 @SmallTest
@@ -99,7 +99,7 @@ class BubbleViewInfoTest : ShellTestCase() {
                 60,
                 30,
                 Color.RED,
-                mContext.resources.getDimensionPixelSize(R.dimen.importance_ring_stroke_width)
+                mContext.resources.getDimensionPixelSize(R.dimen.importance_ring_stroke_width),
             )
 
         mainExecutor = TestShellExecutor()
@@ -125,7 +125,7 @@ class BubbleViewInfoTest : ShellTestCase() {
                 bubblePositioner,
                 BubbleEducationController(context),
                 mainExecutor,
-                bgExecutor
+                bgExecutor,
             )
         val surfaceSynchronizer = { obj: Runnable -> obj.run() }
         bubbleAppInfoProvider = PackageManagerBubbleAppInfoProvider()
@@ -186,8 +186,8 @@ class BubbleViewInfoTest : ShellTestCase() {
                 mainExecutor,
                 bubbleSessionTracker,
             )
-        bubbleBarLayerView = BubbleBarLayerView(context, bubbleController, bubbleData, bubbleLogger,
-            mainExecutor)
+        bubbleBarLayerView =
+            BubbleBarLayerView(context, bubbleController, bubbleData, bubbleLogger, mainExecutor)
     }
 
     @Test
@@ -204,7 +204,7 @@ class BubbleViewInfoTest : ShellTestCase() {
                 bubble,
                 bubbleAppInfoProvider,
                 false /* skipInflation */,
-                userResolver
+                userResolver,
             )
         assertThat(info!!).isNotNull()
 
@@ -233,7 +233,7 @@ class BubbleViewInfoTest : ShellTestCase() {
                 bubble,
                 bubbleAppInfoProvider,
                 false /* skipInflation */,
-                userResolver
+                userResolver,
             )
         assertThat(info!!).isNotNull()
 
@@ -269,7 +269,7 @@ class BubbleViewInfoTest : ShellTestCase() {
                 bubble,
                 bubbleAppInfoProvider,
                 true /* skipInflation */,
-                userResolver
+                userResolver,
             )
         assertThat(info).isNotNull()
 
@@ -291,6 +291,7 @@ class BubbleViewInfoTest : ShellTestCase() {
             0 /* taskId */,
             "mockLocus",
             true /* isDismissible */,
-            metadataFlagListener)
+            metadataFlagListener,
+        )
     }
 }

@@ -62,13 +62,15 @@ class BubbleLogTest {
         BubbleLog.e("error test message", eventData = testData)
 
         val testLogs = testLogger.logs
-        assertThat(testLogs).containsExactly(
-            "d: debug test message | $testData",
-            "v: verbose test message | $testData",
-            "i: info test message | $testData",
-            "w: warning test message | $testData",
-            "e: error test message | $testData"
-        ).inOrder()
+        assertThat(testLogs)
+            .containsExactly(
+                "d: debug test message | $testData",
+                "v: verbose test message | $testData",
+                "i: info test message | $testData",
+                "w: warning test message | $testData",
+                "e: error test message | $testData",
+            )
+            .inOrder()
     }
 
     @Test

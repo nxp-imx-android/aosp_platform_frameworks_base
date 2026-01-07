@@ -23,8 +23,7 @@ import com.android.testing.wm.util.TransitionInfoTestInputBuilder
 import com.android.wm.shell.transition.Transitions.TransitionObserver
 import org.mockito.kotlin.mock
 
-@DslMarker
-annotation class TransitionObserverTagMarker
+@DslMarker annotation class TransitionObserverTagMarker
 
 @TransitionObserverTagMarker
 class TransitionObserverTestContext(
@@ -43,27 +42,23 @@ class TransitionObserverTestContext(
     }
 
     fun validateOnTransitionReady(validationBlock: () -> Unit) {
-        testTransitionObserverFactory().onTransitionReady(
-            transition,
-            transitionInfo,
-            startTransaction,
-            finishTransaction
-        )
+        testTransitionObserverFactory()
+            .onTransitionReady(transition, transitionInfo, startTransaction, finishTransaction)
         validationBlock()
     }
 }
 
 /**
- * Allows to run a test about a specific [TransitionObserver] passing the specific
- * implementation and input value as parameters for the [TransitionObserver#onTransitionReady]
- * method.
- * @param observerFactory    The Factory for the TransitionObserver
- * @param inputFactory      The Builder for the onTransitionReady input parameters
- * @param init  The test code itself.
+ * Allows to run a test about a specific [TransitionObserver] passing the specific implementation
+ * and input value as parameters for the [TransitionObserver#onTransitionReady] method.
+ *
+ * @param observerFactory The Factory for the TransitionObserver
+ * @param inputFactory The Builder for the onTransitionReady input parameters
+ * @param init The test code itself.
  */
 fun executeTransitionObserverTest(
     observerFactory: () -> TransitionObserver,
-    init: TransitionObserverTestContext.() -> Unit
+    init: TransitionObserverTestContext.() -> Unit,
 ): TransitionObserverTestContext {
     val testContext = TransitionObserverTestContext(observerFactory)
     testContext.init()

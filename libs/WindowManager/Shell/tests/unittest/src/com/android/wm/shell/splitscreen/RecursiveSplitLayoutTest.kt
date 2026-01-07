@@ -19,13 +19,13 @@ package com.android.wm.shell.splitscreen
 import android.app.ActivityManager.RunningTaskInfo
 import android.graphics.Point
 import android.graphics.Rect
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
-import androidx.test.ext.junit.runners.AndroidJUnit4
 
 @RunWith(AndroidJUnit4::class)
 class RecursiveSplitLayoutTest {
@@ -54,12 +54,13 @@ class RecursiveSplitLayoutTest {
     fun onDividerReleased_updatesTreeAndNotifiesListener() {
         val leafA = LeafNode(taskA, 0.5f)
         val leafB = LeafNode(taskB, 0.5f)
-        val root = BranchNode(
-            orientation = BranchNode.ORIENTATION_HORIZONTAL,
-            children = listOf(leafA, leafB),
-            weight = 1.0f,
-            dividerSize = 10
-        )
+        val root =
+            BranchNode(
+                orientation = BranchNode.ORIENTATION_HORIZONTAL,
+                children = listOf(leafA, leafB),
+                weight = 1.0f,
+                dividerSize = 10,
+            )
         // Set initial bounds required for the release calculation. In a real scenario,
         // a full layout pass would have set all of these.
         leafA.setBounds(Rect(0, 0, 500, 1000))
@@ -68,11 +69,12 @@ class RecursiveSplitLayoutTest {
         recursiveSplitLayout.setLayout(root)
 
         var receivedResult: CalculatedBounds? = null
-        recursiveSplitLayout.listener = object : OnLayoutChangeListener {
-            override fun onLayoutChanged(result: CalculatedBounds) {
-                receivedResult = result
+        recursiveSplitLayout.listener =
+            object : OnLayoutChangeListener {
+                override fun onLayoutChanged(result: CalculatedBounds) {
+                    receivedResult = result
+                }
             }
-        }
 
         // Simulate releasing the divider at the 30% mark of the combined space
         recursiveSplitLayout.onDividerReleased(leafA, leafB, Point(303, 500))

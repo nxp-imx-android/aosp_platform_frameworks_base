@@ -18,7 +18,6 @@ package com.android.wm.shell.splitscreen
 
 import android.app.ActivityManager.RunningTaskInfo
 import android.graphics.Rect
-import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -53,32 +52,35 @@ class LayoutEngineTest {
         val leaf3 = LeafNode(taskC, debugName = "L3")
         val leaf4 = LeafNode(taskC, debugName = "L4")
 
-        val b3 = BranchNode(
-            debugName = "B3",
-            children = listOf(leaf3, leaf4),
-            orientation = BranchNode.ORIENTATION_VERTICAL,
-            isOffscreen = true,
-            mainChildIndex = 0,
-            dividerSize = dividerSize
-        )
+        val b3 =
+            BranchNode(
+                debugName = "B3",
+                children = listOf(leaf3, leaf4),
+                orientation = BranchNode.ORIENTATION_VERTICAL,
+                isOffscreen = true,
+                mainChildIndex = 0,
+                dividerSize = dividerSize,
+            )
 
-        val b2 = BranchNode(
-            debugName = "B2",
-            children = listOf(leaf2, b3),
-            orientation = BranchNode.ORIENTATION_HORIZONTAL,
-            isOffscreen = true,
-            mainChildIndex = 0,
-            dividerSize = dividerSize
-        )
+        val b2 =
+            BranchNode(
+                debugName = "B2",
+                children = listOf(leaf2, b3),
+                orientation = BranchNode.ORIENTATION_HORIZONTAL,
+                isOffscreen = true,
+                mainChildIndex = 0,
+                dividerSize = dividerSize,
+            )
 
-        val rootNode = BranchNode(
-            debugName = "B1",
-            children = listOf(leaf1, b2),
-            orientation = BranchNode.ORIENTATION_VERTICAL,
-            isOffscreen = true,
-            mainChildIndex = 0,
-            dividerSize = dividerSize
-        )
+        val rootNode =
+            BranchNode(
+                debugName = "B1",
+                children = listOf(leaf1, b2),
+                orientation = BranchNode.ORIENTATION_VERTICAL,
+                isOffscreen = true,
+                mainChildIndex = 0,
+                dividerSize = dividerSize,
+            )
 
         val screenBounds = Rect(0, 0, 100, 100)
         val layoutEngine = LayoutEngine()
@@ -94,10 +96,8 @@ class LayoutEngineTest {
         val expectedDivider2Bounds = Rect(81, 91, 91, 172)
         val expectedDivider3Bounds = Rect(91, 155, 172, 165)
 
-
         // ACT: Execute the algorithm.
         val result = layoutEngine.calculateLayout(rootNode, screenBounds)
-
 
         // ASSERT: Verify that the calculated bounds match the expected values.
         assertEquals("There should be 4 leaf node bounds.", 4, result.leafNodeBounds.size)
@@ -121,13 +121,14 @@ class LayoutEngineTest {
         val dividerSize = 10
         val leaf1 = LeafNode(taskA, debugName = "L1")
         val leaf2 = LeafNode(taskA, debugName = "L2")
-        val root = BranchNode(
-            debugName = "B1",
-            children = listOf(leaf1, leaf2),
-            orientation = BranchNode.ORIENTATION_HORIZONTAL,
-            isOffscreen = false,
-            dividerSize = dividerSize
-        )
+        val root =
+            BranchNode(
+                debugName = "B1",
+                children = listOf(leaf1, leaf2),
+                orientation = BranchNode.ORIENTATION_HORIZONTAL,
+                isOffscreen = false,
+                dividerSize = dividerSize,
+            )
         val screenBounds = Rect(0, 0, 100, 100)
         val engine = LayoutEngine()
 
@@ -148,13 +149,14 @@ class LayoutEngineTest {
         val dividerSize = 10
         val leaf1 = LeafNode(taskA, debugName = "L1", weight = 1f)
         val leaf2 = LeafNode(taskA, debugName = "L2", weight = 3f)
-        val root = BranchNode(
-            debugName = "B1",
-            children = listOf(leaf1, leaf2),
-            orientation = BranchNode.ORIENTATION_VERTICAL,
-            isOffscreen = false,
-            dividerSize = dividerSize
-        )
+        val root =
+            BranchNode(
+                debugName = "B1",
+                children = listOf(leaf1, leaf2),
+                orientation = BranchNode.ORIENTATION_VERTICAL,
+                isOffscreen = false,
+                dividerSize = dividerSize,
+            )
         val screenBounds = Rect(0, 0, 100, 100)
         val engine = LayoutEngine()
 
@@ -173,14 +175,15 @@ class LayoutEngineTest {
         val dividerSize = 10
         val leaf1 = LeafNode(taskB, debugName = "L1")
         val leaf2 = LeafNode(taskA, debugName = "L2")
-        val root = BranchNode(
-            debugName = "B1",
-            children = listOf(leaf1, leaf2),
-            orientation = BranchNode.ORIENTATION_HORIZONTAL,
-            isOffscreen = true,
-            mainChildIndex = 1, // Second child is dominant
-            dividerSize = dividerSize
-        )
+        val root =
+            BranchNode(
+                debugName = "B1",
+                children = listOf(leaf1, leaf2),
+                orientation = BranchNode.ORIENTATION_HORIZONTAL,
+                isOffscreen = true,
+                mainChildIndex = 1, // Second child is dominant
+                dividerSize = dividerSize,
+            )
         val screenBounds = Rect(0, 0, 100, 100)
         val engine = LayoutEngine()
 
@@ -200,21 +203,23 @@ class LayoutEngineTest {
         val leaf1 = LeafNode(taskB, debugName = "L1")
         val leaf2 = LeafNode(taskB, debugName = "L2")
         val leaf3 = LeafNode(taskB, debugName = "L3")
-        val b2 = BranchNode(
-            debugName = "B2",
-            children = listOf(leaf2, leaf3),
-            orientation = BranchNode.ORIENTATION_HORIZONTAL,
-            isOffscreen = true,
-            mainChildIndex = 1,
-            dividerSize = dividerSize
-        )
-        val root = BranchNode(
-            debugName = "B1",
-            children = listOf(leaf1, b2),
-            orientation = BranchNode.ORIENTATION_VERTICAL,
-            isOffscreen = false,
-            dividerSize = dividerSize
-        )
+        val b2 =
+            BranchNode(
+                debugName = "B2",
+                children = listOf(leaf2, leaf3),
+                orientation = BranchNode.ORIENTATION_HORIZONTAL,
+                isOffscreen = true,
+                mainChildIndex = 1,
+                dividerSize = dividerSize,
+            )
+        val root =
+            BranchNode(
+                debugName = "B1",
+                children = listOf(leaf1, b2),
+                orientation = BranchNode.ORIENTATION_VERTICAL,
+                isOffscreen = false,
+                dividerSize = dividerSize,
+            )
         val screenBounds = Rect(0, 0, 100, 100)
         val engine = LayoutEngine()
 
@@ -232,12 +237,13 @@ class LayoutEngineTest {
         // ARRANGE
         val dividerSize = 10
         val leaf1 = LeafNode(taskB, debugName = "L1")
-        val root = BranchNode(
-            debugName = "B1",
-            children = listOf(leaf1),
-            orientation = BranchNode.ORIENTATION_HORIZONTAL,
-            dividerSize = dividerSize
-        )
+        val root =
+            BranchNode(
+                debugName = "B1",
+                children = listOf(leaf1),
+                orientation = BranchNode.ORIENTATION_HORIZONTAL,
+                dividerSize = dividerSize,
+            )
         val screenBounds = Rect(0, 0, 100, 100)
         val engine = LayoutEngine()
 
@@ -254,12 +260,13 @@ class LayoutEngineTest {
     fun edgeCase_noChildren_shouldNotCrashAndReturnEmpty() {
         // ARRANGE
         val dividerSize = 10
-        val root = BranchNode(
-            debugName = "B1",
-            children = emptyList(),
-            orientation = BranchNode.ORIENTATION_HORIZONTAL,
-            dividerSize = dividerSize
-        )
+        val root =
+            BranchNode(
+                debugName = "B1",
+                children = emptyList(),
+                orientation = BranchNode.ORIENTATION_HORIZONTAL,
+                dividerSize = dividerSize,
+            )
         val screenBounds = Rect(0, 0, 100, 100)
         val engine = LayoutEngine()
 
@@ -287,34 +294,37 @@ class LayoutEngineTest {
         val leaf4 = LeafNode(taskA, debugName = "L4")
 
         // B2 is the left-side branch, its FIRST child (Leaf1) is dominant.
-        val b2 = BranchNode(
-            debugName = "B2",
-            children = listOf(leaf1, leaf2),
-            orientation = BranchNode.ORIENTATION_VERTICAL,
-            isOffscreen = true,
-            mainChildIndex = 0,
-            dividerSize = dividerSize
-        )
+        val b2 =
+            BranchNode(
+                debugName = "B2",
+                children = listOf(leaf1, leaf2),
+                orientation = BranchNode.ORIENTATION_VERTICAL,
+                isOffscreen = true,
+                mainChildIndex = 0,
+                dividerSize = dividerSize,
+            )
 
         // B3 is the right-side branch, its SECOND child (Leaf4) is dominant.
-        val b3 = BranchNode(
-            debugName = "B3",
-            children = listOf(leaf3, leaf4),
-            orientation = BranchNode.ORIENTATION_VERTICAL,
-            isOffscreen = true,
-            mainChildIndex = 1,
-            dividerSize = dividerSize
-        )
+        val b3 =
+            BranchNode(
+                debugName = "B3",
+                children = listOf(leaf3, leaf4),
+                orientation = BranchNode.ORIENTATION_VERTICAL,
+                isOffscreen = true,
+                mainChildIndex = 1,
+                dividerSize = dividerSize,
+            )
 
         // B1 is the root, its FIRST child (B2) is dominant.
-        val rootNode = BranchNode(
-            debugName = "B1",
-            children = listOf(b2, b3),
-            orientation = BranchNode.ORIENTATION_HORIZONTAL,
-            isOffscreen = true,
-            mainChildIndex = 0,
-            dividerSize = dividerSize
-        )
+        val rootNode =
+            BranchNode(
+                debugName = "B1",
+                children = listOf(b2, b3),
+                orientation = BranchNode.ORIENTATION_HORIZONTAL,
+                isOffscreen = true,
+                mainChildIndex = 0,
+                dividerSize = dividerSize,
+            )
 
         val screenBounds = Rect(0, 0, 100, 100)
         val engine = LayoutEngine()
@@ -354,24 +364,26 @@ class LayoutEngineTest {
         val leaf3 = LeafNode(taskA, debugName = "L3")
 
         // B2's second child (Leaf2) is dominant.
-        val b2 = BranchNode(
-            debugName = "B2",
-            children = listOf(leaf1, leaf2),
-            orientation = BranchNode.ORIENTATION_HORIZONTAL,
-            isOffscreen = true,
-            mainChildIndex = 1,
-            dividerSize = dividerSize
-        )
+        val b2 =
+            BranchNode(
+                debugName = "B2",
+                children = listOf(leaf1, leaf2),
+                orientation = BranchNode.ORIENTATION_HORIZONTAL,
+                isOffscreen = true,
+                mainChildIndex = 1,
+                dividerSize = dividerSize,
+            )
 
         // rootNode's second child (Leaf3) is dominant, making B2 non-dominant.
-        val rootNode = BranchNode(
-            debugName = "B1",
-            children = listOf(b2, leaf3),
-            orientation = BranchNode.ORIENTATION_VERTICAL,
-            isOffscreen = true,
-            mainChildIndex = 1,
-            dividerSize = dividerSize
-        )
+        val rootNode =
+            BranchNode(
+                debugName = "B1",
+                children = listOf(b2, leaf3),
+                orientation = BranchNode.ORIENTATION_VERTICAL,
+                isOffscreen = true,
+                mainChildIndex = 1,
+                dividerSize = dividerSize,
+            )
 
         val screenBounds = Rect(0, 0, 100, 100)
 
@@ -402,24 +414,26 @@ class LayoutEngineTest {
         val leaf3 = LeafNode(taskA, debugName = "L3")
 
         // B2's second child (Leaf3) is dominant.
-        val b2 = BranchNode(
-            debugName = "B2",
-            children = listOf(leaf2, leaf3),
-            orientation = BranchNode.ORIENTATION_HORIZONTAL,
-            isOffscreen = true,
-            mainChildIndex = 1,
-            dividerSize = dividerSize
-        )
+        val b2 =
+            BranchNode(
+                debugName = "B2",
+                children = listOf(leaf2, leaf3),
+                orientation = BranchNode.ORIENTATION_HORIZONTAL,
+                isOffscreen = true,
+                mainChildIndex = 1,
+                dividerSize = dividerSize,
+            )
 
         // rootNode's second child (B2) is dominant.
-        val rootNode = BranchNode(
-            debugName = "B1",
-            children = listOf(leaf1, b2),
-            orientation = BranchNode.ORIENTATION_VERTICAL,
-            isOffscreen = true,
-            mainChildIndex = 1,
-            dividerSize = dividerSize
-        )
+        val rootNode =
+            BranchNode(
+                debugName = "B1",
+                children = listOf(leaf1, b2),
+                orientation = BranchNode.ORIENTATION_VERTICAL,
+                isOffscreen = true,
+                mainChildIndex = 1,
+                dividerSize = dividerSize,
+            )
 
         val screenBounds = Rect(0, 0, 100, 100)
 
@@ -451,24 +465,26 @@ class LayoutEngineTest {
         val leaf3 = LeafNode(taskA, debugName = "L3")
 
         // B2 is a horizontal flexible split.
-        val b2 = BranchNode(
-            debugName = "B2",
-            children = listOf(leaf1, leaf2),
-            orientation = BranchNode.ORIENTATION_HORIZONTAL,
-            isOffscreen = true,
-            mainChildIndex = 0, // Leaf1 is dominant in this sub-group
-            dividerSize = dividerSize
-        )
+        val b2 =
+            BranchNode(
+                debugName = "B2",
+                children = listOf(leaf1, leaf2),
+                orientation = BranchNode.ORIENTATION_HORIZONTAL,
+                isOffscreen = true,
+                mainChildIndex = 0, // Leaf1 is dominant in this sub-group
+                dividerSize = dividerSize,
+            )
 
         // rootNode's first child (B2) is dominant.
-        val rootNode = BranchNode(
-            debugName = "B1",
-            children = listOf(b2, leaf3),
-            orientation = BranchNode.ORIENTATION_VERTICAL,
-            isOffscreen = true,
-            mainChildIndex = 0,
-            dividerSize = dividerSize
-        )
+        val rootNode =
+            BranchNode(
+                debugName = "B1",
+                children = listOf(b2, leaf3),
+                orientation = BranchNode.ORIENTATION_VERTICAL,
+                isOffscreen = true,
+                mainChildIndex = 0,
+                dividerSize = dividerSize,
+            )
 
         val screenBounds = Rect(0, 0, 100, 100)
 
@@ -500,24 +516,26 @@ class LayoutEngineTest {
         val leaf3 = LeafNode(taskA, debugName = "L3")
 
         // B2 is a horizontal flexible split.
-        val b2 = BranchNode(
-            debugName = "B2",
-            children = listOf(leaf2, leaf3),
-            orientation = BranchNode.ORIENTATION_HORIZONTAL,
-            isOffscreen = true,
-            mainChildIndex = 0, // Leaf2 is dominant in this sub-group
-            dividerSize = dividerSize
-        )
+        val b2 =
+            BranchNode(
+                debugName = "B2",
+                children = listOf(leaf2, leaf3),
+                orientation = BranchNode.ORIENTATION_HORIZONTAL,
+                isOffscreen = true,
+                mainChildIndex = 0, // Leaf2 is dominant in this sub-group
+                dividerSize = dividerSize,
+            )
 
         // rootNode's first child (Leaf1) is dominant, making B2 non-dominant.
-        val rootNode = BranchNode(
-            debugName = "B1",
-            children = listOf(leaf1, b2),
-            orientation = BranchNode.ORIENTATION_VERTICAL,
-            isOffscreen = true,
-            mainChildIndex = 0,
-            dividerSize = dividerSize
-        )
+        val rootNode =
+            BranchNode(
+                debugName = "B1",
+                children = listOf(leaf1, b2),
+                orientation = BranchNode.ORIENTATION_VERTICAL,
+                isOffscreen = true,
+                mainChildIndex = 0,
+                dividerSize = dividerSize,
+            )
 
         val screenBounds = Rect(0, 0, 100, 100)
 

@@ -72,14 +72,15 @@ class BranchNodeTest {
 
     @Test
     fun testProperties_areSetCorrectly() {
-        val branch = BranchNode(
-            orientation = BranchNode.ORIENTATION_VERTICAL,
-            children = emptyList(),
-            weight = 1.0f,
-            dividerSize = 20,
-            isOffscreen = true,
-            mainChildIndex = 1
-        )
+        val branch =
+            BranchNode(
+                orientation = BranchNode.ORIENTATION_VERTICAL,
+                children = emptyList(),
+                weight = 1.0f,
+                dividerSize = 20,
+                isOffscreen = true,
+                mainChildIndex = 1,
+            )
         assertEquals(20, branch.dividerSize)
         assertTrue(branch.isOffscreen)
         assertEquals(1, branch.mainChildIndex)

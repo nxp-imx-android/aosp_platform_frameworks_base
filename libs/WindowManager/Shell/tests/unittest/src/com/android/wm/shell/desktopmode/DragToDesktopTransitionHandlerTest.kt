@@ -12,7 +12,6 @@ import android.graphics.PointF
 import android.graphics.Rect
 import android.os.IBinder
 import android.os.SystemProperties
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper.RunWithLooper

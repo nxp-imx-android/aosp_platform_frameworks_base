@@ -30,9 +30,9 @@ import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_FREE_FLOATIN
 import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
-import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.desktopfirst.DESKTOP_FIRST_DISPLAY_WINDOWING_MODE
 import com.android.wm.shell.desktopmode.desktopfirst.TOUCH_FIRST_DISPLAY_WINDOWING_MODE
 import com.android.wm.shell.recents.RecentsTransitionHandler
@@ -49,9 +49,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
-/**
- * Unit test against [PipDesktopState].
- */
+/** Unit test against [PipDesktopState]. */
 @SmallTest
 @RunWithLooper
 @RunWith(AndroidTestingRunner::class)
@@ -73,12 +71,11 @@ class PipDesktopStateTest : ShellTestCase() {
         whenever(mockTaskInfo.getDisplayId()).thenReturn(DISPLAY_ID)
         whenever(mockPipDisplayLayoutState.displayId).thenReturn(DISPLAY_ID)
 
-        defaultTda = DisplayAreaInfo(mock<WindowContainerToken>(), DISPLAY_ID, /* featureId = */ 0)
+        defaultTda = DisplayAreaInfo(mock<WindowContainerToken>(), DISPLAY_ID, /* featureId= */ 0)
         defaultTda.configuration.windowConfiguration.windowingMode =
             TOUCH_FIRST_DISPLAY_WINDOWING_MODE
-        whenever(mockRootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DISPLAY_ID)).thenReturn(
-            defaultTda
-        )
+        whenever(mockRootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DISPLAY_ID))
+            .thenReturn(defaultTda)
 
         pipDesktopState =
             PipDesktopState(
@@ -86,7 +83,7 @@ class PipDesktopStateTest : ShellTestCase() {
                 mockRecentsTransitionHandler,
                 Optional.of(mockDesktopUserRepositories),
                 Optional.of(mockDragToDesktopTransitionHandler),
-                mockRootTaskDisplayAreaOrganizer
+                mockRootTaskDisplayAreaOrganizer,
             )
 
         val captor = argumentCaptor<RecentsTransitionStateListener>()

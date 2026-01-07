@@ -37,18 +37,14 @@ import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
-import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.mock
 
-/**
- * Tests for [SplitDecorManager].
- */
+/** Tests for [SplitDecorManager]. */
 @SmallTest
 @TestableLooper.RunWithLooper
 @RunWith(AndroidTestingRunner::class)
 class SplitDecorManagerTest : ShellTestCase() {
-    @JvmField @Rule
-    val animatorTestRule = AnimatorTestRule(this)
+    @JvmField @Rule val animatorTestRule = AnimatorTestRule(this)
 
     private lateinit var mSplitDecorManager: SplitDecorManager
 
@@ -61,14 +57,23 @@ class SplitDecorManagerTest : ShellTestCase() {
     @Test
     @EnableFlags(Flags.FLAG_CLOSE_SPLIT_TASK_INSTEAD_OF_MOVING_TO_BACK)
     fun testAnimateResized_whileFadeOutRunning_invokesCallbackWithTrue() {
-        val taskInfo =  ActivityManager.RunningTaskInfo().apply {
-            taskDescription = ActivityManager.TaskDescription.Builder().build()
-        }
+        val taskInfo =
+            ActivityManager.RunningTaskInfo().apply {
+                taskDescription = ActivityManager.TaskDescription.Builder().build()
+            }
         val displayBounds = Rect(0, 0, 1024, 768)
         val newBounds = Rect(0, 0, 512, 768)
         // Show
-        mSplitDecorManager.onResizing(taskInfo, newBounds, Rect(), displayBounds,
-            SurfaceControl.Transaction(), 0, 0, /* immediately = */ true)
+        mSplitDecorManager.onResizing(
+            taskInfo,
+            newBounds,
+            Rect(),
+            displayBounds,
+            SurfaceControl.Transaction(),
+            0,
+            0,
+            /* immediately = */ true,
+        )
         // Start fade-out
         mSplitDecorManager.fadeOutDecor({}, /* addDelay= */ false)
 

@@ -47,10 +47,10 @@ class BubbleInfoTest : ShellTestCase() {
                 ParcelableFlyoutMessage(
                     Icon.createWithContentUri(Uri.parse("content://image/123")),
                     "sender",
-                    "message"
+                    "message",
                 ),
                 false,
-                UserType.MAIN
+                UserType.MAIN,
             )
         val parcel = Parcel.obtain()
         bubbleInfo.writeToParcel(parcel, PARCELABLE_WRITE_RETURN_VALUE)

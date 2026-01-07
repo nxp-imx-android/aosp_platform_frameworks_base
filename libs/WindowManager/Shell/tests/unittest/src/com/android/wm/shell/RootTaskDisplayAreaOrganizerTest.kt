@@ -32,8 +32,7 @@ import org.junit.runner.RunWith
 /**
  * Tests for [RootTaskDisplayAreaOrganizerTest].
  *
- * Build/Install/Run:
- *  atest WMShellUnitTests:RootTaskDisplayAreaOrganizerTest
+ * Build/Install/Run: atest WMShellUnitTests:RootTaskDisplayAreaOrganizerTest
  */
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -84,9 +83,12 @@ class RootTaskDisplayAreaOrganizerTest : ShellTestCase() {
         assertThat(listener.displayAreas).doesNotContain(FIRST_DISPLAY)
     }
 
-    private fun createDisplayAreaInfo(displayId: Int) = DisplayAreaInfo(
-        MockToken().token(), displayId, DisplayAreaOrganizer.FEATURE_DEFAULT_TASK_CONTAINER
-    )
+    private fun createDisplayAreaInfo(displayId: Int) =
+        DisplayAreaInfo(
+            MockToken().token(),
+            displayId,
+            DisplayAreaOrganizer.FEATURE_DEFAULT_TASK_CONTAINER,
+        )
 
     private class FakeRootTaskDisplayAreaListener : RootTaskDisplayAreaListener {
         val displayAreas = mutableListOf<Int>()

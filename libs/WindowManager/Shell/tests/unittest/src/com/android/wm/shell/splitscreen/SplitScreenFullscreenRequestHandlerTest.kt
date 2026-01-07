@@ -67,11 +67,12 @@ class SplitScreenFullscreenRequestHandlerTest : ShellTestCase() {
     @Before
     fun setUp() {
         whenever(stageCoordinator.splitTransitions).thenReturn(splitScreenTransitions)
-        handler = SplitScreenFullscreenRequestHandler(
-            shellTaskOrganizer,
-            stageCoordinator,
-            clientFullscreenRequestController
-        )
+        handler =
+            SplitScreenFullscreenRequestHandler(
+                shellTaskOrganizer,
+                stageCoordinator,
+                clientFullscreenRequestController,
+            )
     }
 
     @Test
@@ -112,8 +113,7 @@ class SplitScreenFullscreenRequestHandlerTest : ShellTestCase() {
     fun testHandleEnterFullscreen_persistentSnapPosition_approvesRequest() {
         val task = createTaskInfo()
         setUpActiveSplitWithTask(task)
-        whenever(stageCoordinator.calculateCurrentSnapPosition())
-            .thenReturn(SNAP_TO_2_50_50)
+        whenever(stageCoordinator.calculateCurrentSnapPosition()).thenReturn(SNAP_TO_2_50_50)
 
         val result = handler.handleEnterFullscreen(transition, task)
 
@@ -129,10 +129,9 @@ class SplitScreenFullscreenRequestHandlerTest : ShellTestCase() {
             task = task,
             splitPosition = SPLIT_POSITION_BOTTOM_OR_RIGHT,
             stageOfTask = STAGE_TYPE_SIDE,
-            otherTask = otherTask
+            otherTask = otherTask,
         )
-        whenever(stageCoordinator.calculateCurrentSnapPosition())
-            .thenReturn(SNAP_TO_2_50_50)
+        whenever(stageCoordinator.calculateCurrentSnapPosition()).thenReturn(SNAP_TO_2_50_50)
 
         val result = handler.handleEnterFullscreen(transition, task)
 
@@ -162,11 +161,12 @@ class SplitScreenFullscreenRequestHandlerTest : ShellTestCase() {
     @Test
     fun testHandleExitFullscreen_otherTaskNotRunning_returnsFailed() {
         val task = createTaskInfo()
-        val restorableState = RestorableState.SplitScreen(
-            originalSplitPosition = SPLIT_POSITION_TOP_OR_LEFT,
-            originalSnapPosition = SNAP_TO_2_50_50,
-            otherTaskId = 2
-        )
+        val restorableState =
+            RestorableState.SplitScreen(
+                originalSplitPosition = SPLIT_POSITION_TOP_OR_LEFT,
+                originalSnapPosition = SNAP_TO_2_50_50,
+                otherTaskId = 2,
+            )
         whenever(shellTaskOrganizer.getRunningTaskInfo(restorableState.otherTaskId))
             .thenReturn(null)
 
@@ -180,11 +180,12 @@ class SplitScreenFullscreenRequestHandlerTest : ShellTestCase() {
     fun testHandleExitFullscreen_otherTaskRunning_approvesRequest() {
         val task = createTaskInfo()
         val otherTask = createTaskInfo()
-        val restorableState = RestorableState.SplitScreen(
-            originalSplitPosition = SPLIT_POSITION_TOP_OR_LEFT,
-            originalSnapPosition = SNAP_TO_2_50_50,
-            otherTaskId = otherTask.taskId
-        )
+        val restorableState =
+            RestorableState.SplitScreen(
+                originalSplitPosition = SPLIT_POSITION_TOP_OR_LEFT,
+                originalSnapPosition = SNAP_TO_2_50_50,
+                otherTaskId = otherTask.taskId,
+            )
         whenever(shellTaskOrganizer.getRunningTaskInfo(restorableState.otherTaskId))
             .thenReturn(otherTask)
 
@@ -204,12 +205,10 @@ class SplitScreenFullscreenRequestHandlerTest : ShellTestCase() {
         whenever(stageCoordinator.isSplitScreenVisible).thenReturn(true)
         whenever(stageCoordinator.isTaskOnSplitDisplay(task)).thenReturn(true)
         whenever(stageCoordinator.getStageOfTask(task.taskId)).thenReturn(stageOfTask)
-        whenever(stageCoordinator.getSplitPosition(task.taskId))
-            .thenReturn(splitPosition)
+        whenever(stageCoordinator.getSplitPosition(task.taskId)).thenReturn(splitPosition)
         // Other task.
         val oppositePosition =
-            if (splitPosition == SPLIT_POSITION_TOP_OR_LEFT)
-                SPLIT_POSITION_BOTTOM_OR_RIGHT
+            if (splitPosition == SPLIT_POSITION_TOP_OR_LEFT) SPLIT_POSITION_BOTTOM_OR_RIGHT
             else SPLIT_POSITION_TOP_OR_LEFT
         whenever(stageCoordinator.getTaskId(oppositePosition)).thenReturn(otherTask.taskId)
     }

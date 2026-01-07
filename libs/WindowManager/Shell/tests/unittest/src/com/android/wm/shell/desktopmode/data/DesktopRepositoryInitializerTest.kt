@@ -127,10 +127,7 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(
-        FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
-        FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-    )
+    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE, FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun initWithPersistence_multipleUsers_addedCorrectly() =
         runTest(StandardTestDispatcher()) {
             desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
@@ -281,10 +278,7 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(
-        FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
-        FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-    )
+    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE, FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun initWithPersistence_deskRecreationFailed_deskNotAdded() =
         runTest(StandardTestDispatcher()) {
             desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
@@ -314,10 +308,7 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(
-        FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
-        FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-    )
+    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE, FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun initWithPersistence_defaultDisplayDoesNotSupportDesks_deskNotAdded() =
         runTest(StandardTestDispatcher()) {
             desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = false
@@ -359,10 +350,7 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(
-        FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
-        FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-    )
+    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE, FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun initDisplayNotFound_defaultDisplayNotSupportDesktop_preservesTransientDesk() =
         runTest(StandardTestDispatcher()) {
             desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = false
@@ -395,10 +383,7 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(
-        FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
-        FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-    )
+    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE, FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun initDisplayNotFound_defaultDisplaySupportsDesktop_preservesNonTransientDesk() =
         runTest(StandardTestDispatcher()) {
             desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
@@ -431,10 +416,7 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(
-        FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
-        FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-    )
+    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE, FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun initWithPersistence_preservedDisplayPresent_initializesAsDesk() =
         runTest(StandardTestDispatcher()) {
             desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
@@ -465,10 +447,7 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(
-        FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
-        FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-    )
+    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE, FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun initWithPersistence_preservedDisplayNotPresent_preservedAgain() =
         runTest(StandardTestDispatcher()) {
             desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true

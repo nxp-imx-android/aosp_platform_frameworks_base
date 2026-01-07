@@ -68,9 +68,7 @@ class DesktopInOrderTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun onTransitionReady_forwardsToDesktopImmersiveController() {
         val transition = Mockito.mock(IBinder::class.java)
         val info = TransitionInfoBuilder(TRANSIT_CHANGE, 0).build()
@@ -83,9 +81,7 @@ class DesktopInOrderTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun onTransitionMerged_forwardsToDesktopImmersiveController() {
         val merged = Mockito.mock(IBinder::class.java)
         val playing = Mockito.mock(IBinder::class.java)
@@ -96,9 +92,7 @@ class DesktopInOrderTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun onTransitionStarting_forwardsToDesktopImmersiveController() {
         val transition = Mockito.mock(IBinder::class.java)
 
@@ -108,9 +102,7 @@ class DesktopInOrderTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun onTransitionFinished_forwardsToDesktopImmersiveController() {
         val transition = Mockito.mock(IBinder::class.java)
 

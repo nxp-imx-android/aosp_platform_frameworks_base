@@ -40,9 +40,8 @@ class LayoutDefinitionTest {
 
     @Test
     fun testBuilder_addTask() {
-        val layout = LayoutDefinition.Builder(BranchNode.ORIENTATION_HORIZONTAL)
-            .addTask(0.5f, taskA)
-            .build()
+        val layout =
+            LayoutDefinition.Builder(BranchNode.ORIENTATION_HORIZONTAL).addTask(0.5f, taskA).build()
 
         assertFalse(layout.isLeaf)
         assertEquals(1, layout.children?.size)
@@ -53,14 +52,14 @@ class LayoutDefinitionTest {
 
     @Test
     fun testBuilder_addNode() {
-        val innerLayout = LayoutDefinition.Builder(BranchNode.ORIENTATION_VERTICAL)
-            .addTask(1.0f, taskB)
-            .build()
+        val innerLayout =
+            LayoutDefinition.Builder(BranchNode.ORIENTATION_VERTICAL).addTask(1.0f, taskB).build()
 
-        val outerLayout = LayoutDefinition.Builder(BranchNode.ORIENTATION_HORIZONTAL)
-            .addTask(0.3f, taskA)
-            .addNode(0.7f, innerLayout)
-            .build()
+        val outerLayout =
+            LayoutDefinition.Builder(BranchNode.ORIENTATION_HORIZONTAL)
+                .addTask(0.3f, taskA)
+                .addNode(0.7f, innerLayout)
+                .build()
 
         assertFalse(outerLayout.isLeaf)
         assertEquals(2, outerLayout.children?.size)
@@ -71,10 +70,11 @@ class LayoutDefinitionTest {
     @Test
     fun testBuilder_normalizesWeights() {
         // Weights add up to 2.0f, should be normalized to 0.25f and 0.75f
-        val layout = LayoutDefinition.Builder(BranchNode.ORIENTATION_HORIZONTAL)
-            .addTask(0.5f, taskA)
-            .addTask(1.5f, taskB)
-            .build()
+        val layout =
+            LayoutDefinition.Builder(BranchNode.ORIENTATION_HORIZONTAL)
+                .addTask(0.5f, taskA)
+                .addTask(1.5f, taskB)
+                .build()
 
         assertEquals(2, layout.children?.size)
         assertEquals(0.25f, layout.children?.get(0)?.weight)

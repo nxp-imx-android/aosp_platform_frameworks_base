@@ -49,8 +49,7 @@ import org.mockito.quality.Strictness
 /**
  * Unit tests for [DefaultBubblePolicyHelper].
  *
- * Build/Install/Run:
- *  atest WMShellUnitTests:DefaultBubblePolicyHelperTest
+ * Build/Install/Run: atest WMShellUnitTests:DefaultBubblePolicyHelperTest
  */
 @SmallTest
 @RunWith(TestParameterInjector::class)
@@ -58,40 +57,39 @@ class DefaultBubblePolicyHelperTest : ShellTestCase() {
 
     private val errorToast = mock<Toast>()
     private val taskOrganizer = mock<ShellTaskOrganizer>()
-    private val taskViewTaskController = mock<TaskViewTaskController> {
-        on { taskOrganizer } doReturn taskOrganizer
-    }
+    private val taskViewTaskController =
+        mock<TaskViewTaskController> { on { taskOrganizer } doReturn taskOrganizer }
     private val bubbleHelper = mock<BubbleHelper>()
     private val captionInsetsOwner = Binder()
-    private val taskView = mock<TaskView> {
-        on { controller } doReturn taskViewTaskController
-        on { captionInsetsOwner } doReturn captionInsetsOwner
-        on { context } doReturn mock<Context>()
-    }
-    private val bubble = mock<Bubble> {
-        on { taskView } doReturn taskView
-        on { key } doReturn "bubble_key"
-    }
-    private val taskToken = mock<WindowContainerToken> {
-        on { asBinder() } doReturn Binder()
-    }
-    private val taskInfo = RunningTaskInfo().apply {
-        taskId = 123
-        token = taskToken
-    }
+    private val taskView =
+        mock<TaskView> {
+            on { controller } doReturn taskViewTaskController
+            on { captionInsetsOwner } doReturn captionInsetsOwner
+            on { context } doReturn mock<Context>()
+        }
+    private val bubble =
+        mock<Bubble> {
+            on { taskView } doReturn taskView
+            on { key } doReturn "bubble_key"
+        }
+    private val taskToken = mock<WindowContainerToken> { on { asBinder() } doReturn Binder() }
+    private val taskInfo =
+        RunningTaskInfo().apply {
+            taskId = 123
+            token = taskToken
+        }
 
     @JvmField
     @Rule
-    val extendedMockitoRule = ExtendedMockitoRule.Builder(this)
-        .spyStatic(Toast::class.java)
-        .setStrictness(Strictness.LENIENT)
-        .build()!!
+    val extendedMockitoRule =
+        ExtendedMockitoRule.Builder(this)
+            .spyStatic(Toast::class.java)
+            .setStrictness(Strictness.LENIENT)
+            .build()!!
 
     @Before
     fun setUp() {
-        ExtendedMockito.doReturn(errorToast).`when` {
-            Toast.makeText(any(), anyInt(), anyInt())
-        }
+        ExtendedMockito.doReturn(errorToast).`when` { Toast.makeText(any(), anyInt(), anyInt()) }
     }
 
     @Test

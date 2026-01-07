@@ -16,7 +16,6 @@
 
 package com.android.wm.shell.splitscreen
 
-import android.animation.Animator
 import android.app.ActivityManager.RunningTaskInfo
 import android.graphics.Rect
 import androidx.test.ext.junit.runners.AndroidJUnit4

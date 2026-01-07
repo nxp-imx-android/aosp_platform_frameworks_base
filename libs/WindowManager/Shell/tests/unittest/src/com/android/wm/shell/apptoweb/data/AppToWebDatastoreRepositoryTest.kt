@@ -56,9 +56,7 @@ class AppToWebDatastoreRepositoryTest {
         datastoreScope = CoroutineScope(Dispatchers.Unconfined + SupervisorJob())
         testDatastore =
             DataStoreFactory.create(
-                serializer =
-                    AppToWebDatastoreRepository.Companion
-                        .AppToWebProtoSerializer,
+                serializer = AppToWebDatastoreRepository.Companion.AppToWebProtoSerializer,
                 scope = datastoreScope,
             ) {
                 testContext.dataStoreFile(APP_TO_WEB_DATASTORE_TEST_FILE)
@@ -81,18 +79,37 @@ class AppToWebDatastoreRepositoryTest {
             val promptAckedPackagesByUserId = mutableMapOf<Int, MutableSet<String>>()
             promptAckedPackagesByUserId[userId] = mutableSetOf(GMAIL_PACKAGE_NAME)
             datastoreRepository.updateFirstRunPromptAckedPackages(promptAckedPackagesByUserId)
-            assertThat(datastoreRepository.getAppToWebProto().appToWebRepoByUserMap[userId]
-                ?.firstRunPromptAckedPackagesList).contains(GMAIL_PACKAGE_NAME)
-            assertThat(datastoreRepository.getAppToWebProto().appToWebRepoByUserMap[userId]
-                ?.getFirstRunPromptAckedPackagesCount()).isEqualTo(1)
+            assertThat(
+                    datastoreRepository
+                        .getAppToWebProto()
+                        .appToWebRepoByUserMap[userId]
+                        ?.firstRunPromptAckedPackagesList
+                )
+                .contains(GMAIL_PACKAGE_NAME)
+            assertThat(
+                    datastoreRepository
+                        .getAppToWebProto()
+                        .appToWebRepoByUserMap[userId]
+                        ?.getFirstRunPromptAckedPackagesCount()
+                )
+                .isEqualTo(1)
 
             promptAckedPackagesByUserId[userId]?.add(YOUTUBE_PACKAGE_NAME)
             datastoreRepository.updateFirstRunPromptAckedPackages(promptAckedPackagesByUserId)
-            assertThat(datastoreRepository.getAppToWebProto().appToWebRepoByUserMap[userId]
-                ?.firstRunPromptAckedPackagesList)
+            assertThat(
+                    datastoreRepository
+                        .getAppToWebProto()
+                        .appToWebRepoByUserMap[userId]
+                        ?.firstRunPromptAckedPackagesList
+                )
                 .containsAtLeast(GMAIL_PACKAGE_NAME, YOUTUBE_PACKAGE_NAME)
-            assertThat(datastoreRepository.getAppToWebProto().appToWebRepoByUserMap[userId]
-                ?.getFirstRunPromptAckedPackagesCount()).isEqualTo(2)
+            assertThat(
+                    datastoreRepository
+                        .getAppToWebProto()
+                        .appToWebRepoByUserMap[userId]
+                        ?.getFirstRunPromptAckedPackagesCount()
+                )
+                .isEqualTo(2)
         }
 
     companion object {
