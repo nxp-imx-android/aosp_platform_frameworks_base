@@ -91,6 +91,9 @@ interface WindowDecorationActions {
     /** Launches aspect ratio settings. */
     fun onChangeAspectRatio(taskInfo: RunningTaskInfo)
 
+    /** Launches game controls. */
+    fun onLaunchGameControls(taskInfo: RunningTaskInfo)
+
     /** Creates new instance of task. */
     fun onNewWindow(taskId: Int)
 
