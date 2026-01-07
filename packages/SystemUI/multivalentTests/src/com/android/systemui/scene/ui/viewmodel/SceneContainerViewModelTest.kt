@@ -553,6 +553,7 @@ class SceneContainerViewModelTest : SysuiTestCase() {
                 hasBackAction = false,
                 sceneKey = Scenes.Lockscreen,
                 aodOrDozing = true,
+                hasAnyEnabledBackHandler = false,
             )
 
             verify(windowInsetsController).hide(eq(WindowInsetsCompat.Type.navigationBars()))
@@ -567,6 +568,7 @@ class SceneContainerViewModelTest : SysuiTestCase() {
                 hasBackAction = false,
                 sceneKey = Scenes.Lockscreen,
                 aodOrDozing = false,
+                hasAnyEnabledBackHandler = false,
             )
 
             verify(windowInsetsController).show(eq(WindowInsetsCompat.Type.navigationBars()))
@@ -581,6 +583,7 @@ class SceneContainerViewModelTest : SysuiTestCase() {
                 hasBackAction = false,
                 sceneKey = Scenes.Gone,
                 aodOrDozing = false,
+                hasAnyEnabledBackHandler = false,
             )
 
             verify(windowInsetsController).show(eq(WindowInsetsCompat.Type.navigationBars()))
@@ -596,9 +599,25 @@ class SceneContainerViewModelTest : SysuiTestCase() {
                     hasBackAction = true,
                     sceneKey = Scenes.Gone,
                     aodOrDozing = false,
+                    hasAnyEnabledBackHandler = false,
                 )
             }
             // verify "show" is only called once
+            verify(windowInsetsController).show(eq(WindowInsetsCompat.Type.navigationBars()))
+        }
+
+    @Test
+    fun hasAnyEnabledBackHandler_updateNavigationBarVisibility_show() =
+        kosmos.runTest {
+            val windowInsetsController: WindowInsetsController = mock()
+            underTest.updateNavigationBarVisibility(
+                windowInsetsController = windowInsetsController,
+                hasBackAction = false,
+                sceneKey = Scenes.QuickSettings,
+                aodOrDozing = false,
+                hasAnyEnabledBackHandler = true,
+            )
+
             verify(windowInsetsController).show(eq(WindowInsetsCompat.Type.navigationBars()))
         }
 }

@@ -19,6 +19,7 @@
 package com.android.systemui.scene.ui.composable
 
 import android.os.Build
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -29,11 +30,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -54,7 +53,6 @@ import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.animation.scene.observableTransitionState
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
-import com.android.compose.animation.scene.transitions
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffectFactory
 import com.android.compose.snapshot.ObserveReads
 import com.android.systemui.keyguard.ui.composable.modifier.burnInAware
@@ -186,6 +184,10 @@ fun SceneContainer(
         )
     }
 
+    val hasAnyEnabledBackHandler =
+        LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher?.hasEnabledCallbacks() ==
+            true
+
     val actionableContentKey =
         viewModel.getActionableContentKey(state.currentScene, state.currentOverlays, overlayByKey)
     val userActionsByContentKey: MutableMap<ContentKey, Map<UserAction, UserActionResult>> =
@@ -193,7 +195,12 @@ fun SceneContainer(
             mutableStateMapOf()
         }
     val aodOrDozing = viewModel.isAodOrDozing
-    LaunchedEffect(actionableContentKey, aodOrDozing, state.currentScene) {
+    LaunchedEffect(
+        actionableContentKey,
+        aodOrDozing,
+        state.currentScene,
+        hasAnyEnabledBackHandler,
+    ) {
         try {
             val actionableContent: ActionableContent =
                 checkNotNull(
@@ -209,6 +216,7 @@ fun SceneContainer(
                     hasBackAction = userActions.containsKey(Back),
                     sceneKey = state.currentScene,
                     aodOrDozing = aodOrDozing,
+                    hasAnyEnabledBackHandler = hasAnyEnabledBackHandler,
                 )
             }
         } finally {
