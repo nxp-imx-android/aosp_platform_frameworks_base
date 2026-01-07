@@ -69,6 +69,7 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.core.content.ContextCompat;
 
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.systemui.animation.DialogCuj;
@@ -629,6 +630,10 @@ public class QSSecurityFooterUtils implements DialogInterface.OnClickListener {
 
         if (icon != null) {
             ImageView imageView = (ImageView) dialogView.findViewById(R.id.parental_controls_icon);
+            icon.setTintList(
+                    ContextCompat.getColorStateList(
+                            quickSettingsContext,
+                            com.android.internal.R.color.materialColorPrimary));
             imageView.setImageDrawable(icon);
         }
 
