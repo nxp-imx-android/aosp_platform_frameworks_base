@@ -88,14 +88,12 @@ public class SystemUIApplicationImpl extends SystemUIApplication implements
     public SystemUIApplicationImpl() {
         super();
         if (!isSubprocess()) {
-            if (android.tracing.Flags.sysuiLargePerfettoShmemBuffer()) {
-                // Explicitly initialize a 1MB shmem buffer for Perfetto producers (b/420587648).
-                // This increases the Perfetto's shmem buffer from default size (256 KB) to 1MB,
-                // thus avoiding crashes or packet loss caused by shmem chunks exhaustion when too
-                // many threads are tracing data.
-                android.tracing.perfetto.Producer.init(new InitArguments(
-                        InitArguments.PERFETTO_BACKEND_SYSTEM, 1024));
-            }
+            // Explicitly initialize a 1MB shmem buffer for Perfetto producers (b/420587648).
+            // This increases the Perfetto's shmem buffer from default size (256 KB) to 1MB,
+            // thus avoiding crashes or packet loss caused by shmem chunks exhaustion when too
+            // many threads are tracing data.
+            android.tracing.perfetto.Producer.init(new InitArguments(
+                    InitArguments.PERFETTO_BACKEND_SYSTEM, 1024));
             Trace.registerWithPerfetto();
         }
         Log.v(TAG, "SystemUIApplication constructed.");
