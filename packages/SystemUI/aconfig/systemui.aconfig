@@ -1670,13 +1670,6 @@ flag {
 }
 
 flag {
-    name: "smartspace_viewpager2"
-    namespace: "systemui"
-    description: "Use viewpager2 in Smartspace"
-    bug: "259566300"
-}
-
-flag {
   name: "sounddose_customization"
   namespace: "systemui"
   description: "Enables custom actions for sounddose notifications"

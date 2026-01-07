@@ -382,8 +382,6 @@ constructor(
             throw RuntimeException("Cannot build view when not enabled")
         }
 
-        configPlugin?.let { plugin?.registerConfigProvider(it) }
-
         val view =
             buildView(
                 surfaceName = SmartspaceViewModel.SURFACE_GENERAL_VIEW,
