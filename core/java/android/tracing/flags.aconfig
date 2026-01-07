@@ -68,3 +68,10 @@ flag {
     description: "Push protolog initialization to background thread"
     bug: "434072453"
 }
+
+flag {
+    name: "perfetto_ime_fine_grained_config"
+    namespace: "windowing_tools"
+    description: "Fine-grained tracing configuration (client, IMS, IMMS)"
+    bug: "470926070"
+}
