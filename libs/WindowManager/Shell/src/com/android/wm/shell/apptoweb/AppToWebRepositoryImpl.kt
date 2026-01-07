@@ -123,7 +123,7 @@ class AppToWebRepositoryImpl(
     private fun onInit() {
         shellTaskOrganizer.addTaskVanishedListener(this)
 
-        if (Flags.enableEnhancedAppToWebTransition()) {
+        if (Flags.enableEnhancedAppToWebTransition() && isFirstRunPromptSupportedOnDevice()) {
             launcherApps.registerCallback(launcherAppsCallback)
             mainCoroutineScope.launch {
                 val appToWebProto = appToWebDatastoreRepository.getAppToWebProto() ?: return@launch
@@ -229,6 +229,9 @@ class AppToWebRepositoryImpl(
         if (!Flags.enableEnhancedAppToWebTransition()) {
             return false
         }
+        if (!isFirstRunPromptSupportedOnDevice()) {
+            return false
+        }
         val packageName = taskInfo.topActivity?.packageName ?: return false
         if (taskInfo.capturedLink == null) {
             // No captured link, so no prompt.
@@ -250,10 +253,6 @@ class AppToWebRepositoryImpl(
         if (ALWAYS_SHOW_APP_TO_WEB_FIRST_RUN_PROMPT_FOR_TESTING) {
             return true
         }
-        if (!context.resources.getBoolean(R.bool.config_appToWebActivePrompting)) {
-            // Active prompting is disabled.
-            return false
-        }
         val everAcked =
             firstRunPromptAckedPackagesByUserId[taskInfo.userId]?.contains(packageName) ?: false
         if (everAcked) {
@@ -262,6 +261,10 @@ class AppToWebRepositoryImpl(
         }
         return true
     }
+
+    private fun isFirstRunPromptSupportedOnDevice(): Boolean =
+        context.resources.getBoolean(R.bool.config_appToWebActivePrompting) ||
+            ALWAYS_SHOW_APP_TO_WEB_FIRST_RUN_PROMPT_FOR_TESTING
 
     override fun isFirstRunPromptShown(taskInfo: RunningTaskInfo): Boolean {
         if (!Flags.enableEnhancedAppToWebTransition()) {
