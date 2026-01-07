@@ -2028,8 +2028,7 @@ class ActivityStarter {
             }
             // When running transient transition, the transient launch target should keep on top.
             // So disallow the transient hide activity to move itself to front, e.g. trampoline.
-            if (!avoidMoveToFront() && (mService.mHomeProcess == null
-                    || mService.mHomeProcess.mUid != realCallingUid)
+            if (!avoidMoveToFront() && !r.launchedFromSystemSurface()
                     && (prevTopTask != null && prevTopTask.isActivityTypeHomeOrRecents())
                     && r.mTransitionController.isTransientHide(targetTask)) {
                 mCanMoveToFrontCode = MOVE_TO_FRONT_AVOID_LEGACY;
