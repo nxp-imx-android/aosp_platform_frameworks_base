@@ -76,7 +76,7 @@ public final class ComputerControlSessionProcessor {
 
     // TODO(b/419548594): Make this configurable.
     @VisibleForTesting
-    static final int MAXIMUM_CONCURRENT_SESSIONS = 5;
+    static final int MAXIMUM_CONCURRENT_SESSIONS = 1;
 
     private final Context mContext;
     private final KeyguardManager mKeyguardManager;
