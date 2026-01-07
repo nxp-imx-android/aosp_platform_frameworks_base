@@ -1034,10 +1034,7 @@ public class DisplayManagerServiceTest {
     }
 
     @Test
-    @EnableFlags({
-        Flags.FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED,
-        Flags.FLAG_FIX_SET_DISPLAY_STATE_AFTER_DEVICE_CHANGE
-    })
+    @EnableFlags(Flags.FLAG_CHANGE_DEFAULT_DISPLAY_LID_CLOSED)
     public void testDockedDeviceState_displayStateUpdated() {
         mDisplayManager = new DisplayManagerService(mContext,
                 mShortMockedInjector);

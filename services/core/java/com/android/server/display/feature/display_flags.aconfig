@@ -45,16 +45,6 @@ flag {
 }
 
 flag {
-    name: "fix_set_display_state_after_device_change"
-    namespace: "display_manager"
-    description: "Fix the display state code so that the state is set correctly after the underlying display device changes."
-    bug: "442587030"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "configurable_default_doze_values"
     namespace: "display_manager"
     description: "Specify the default doze values in config.xml"

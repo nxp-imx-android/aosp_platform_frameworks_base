@@ -368,11 +368,9 @@ final class DisplayPowerState {
     void resetScreenState() {
         mScreenState = Display.STATE_UNKNOWN;
         mScreenReady = false;
-        if (Flags.fixSetDisplayStateAfterDeviceChange()) {
-            mHandler.removeCallbacks(mScreenUpdateRunnable);
-            mScreenUpdatePending = false;
-            mPhotonicModulator.resetScreenState();
-        }
+        mHandler.removeCallbacks(mScreenUpdateRunnable);
+        mScreenUpdatePending = false;
+        mPhotonicModulator.resetScreenState();
     }
 
     private void scheduleScreenUpdate() {
@@ -488,11 +486,7 @@ final class DisplayPowerState {
                         mLock.notifyAll();
                     }
                 }
-                if (Flags.fixSetDisplayStateAfterDeviceChange()) {
-                    return !mStateChangeInProgress && state != Display.STATE_UNKNOWN;
-                } else {
-                    return !mStateChangeInProgress;
-                }
+                return !mStateChangeInProgress && state != Display.STATE_UNKNOWN;
             }
         }
 
