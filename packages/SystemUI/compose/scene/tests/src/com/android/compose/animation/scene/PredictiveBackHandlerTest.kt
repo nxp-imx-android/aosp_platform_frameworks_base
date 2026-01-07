@@ -39,6 +39,7 @@ import com.android.compose.animation.scene.TestScenes.SceneB
 import com.android.compose.animation.scene.TestScenes.SceneC
 import com.android.compose.animation.scene.UserActionResult.ShowOverlay
 import com.android.compose.animation.scene.subjects.assertThat
+import com.android.systemui.Flags.FLAG_STL_FLING_ANIMATION_CONSUME_OVERSHOOT
 import com.android.systemui.Flags.FLAG_STL_USER_ACTION_GESTURE
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineScope
@@ -55,7 +56,10 @@ class PredictiveBackHandlerTest(flags: FlagsParameterization) {
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf(FLAG_STL_USER_ACTION_GESTURE)
+            return FlagsParameterization.allCombinationsOf(
+                FLAG_STL_USER_ACTION_GESTURE,
+                FLAG_STL_FLING_ANIMATION_CONSUME_OVERSHOOT,
+            )
         }
     }
 

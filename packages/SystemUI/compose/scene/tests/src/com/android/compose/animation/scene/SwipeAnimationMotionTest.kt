@@ -17,6 +17,8 @@
 package com.android.compose.animation.scene
 
 import android.platform.test.annotations.MotionTest
+import android.platform.test.flag.junit.FlagsParameterization
+import android.platform.test.flag.junit.SetFlagsRule
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -36,11 +38,12 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.swipeRight
 import androidx.compose.ui.test.swipeWithVelocity
 import androidx.compose.ui.unit.dp
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.compose.animation.scene.TestScenes.SceneA
 import com.android.compose.animation.scene.TestScenes.SceneB
 import com.android.compose.gesture.effect.OffsetOverscrollEffect
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffectFactory
+import com.android.systemui.Flags.FLAG_STL_FLING_ANIMATION_CONSUME_OVERSHOOT
+import com.android.systemui.Flags.stlFlingAnimationConsumeOvershoot
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
@@ -61,13 +64,38 @@ import platform.test.motion.golden.DataPointTypes
 import platform.test.motion.golden.asDataPoint
 import platform.test.motion.golden.feature
 import platform.test.motion.testing.createGoldenPathManager
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
+import platform.test.screenshot.PathConfig
+import platform.test.screenshot.PathElementNoContext
 
-@RunWith(AndroidJUnit4::class)
+@RunWith(ParameterizedAndroidJunit4::class)
 @MotionTest
-class SwipeAnimationMotionTest {
+class SwipeAnimationMotionTest(flags: FlagsParameterization) {
 
+    companion object {
+        @JvmStatic
+        @Parameters(name = "{0}")
+        fun getParams(): List<FlagsParameterization> {
+            return FlagsParameterization.allCombinationsOf(
+                FLAG_STL_FLING_ANIMATION_CONSUME_OVERSHOOT
+            )
+        }
+    }
+
+    @get:Rule val setFlagsRule = SetFlagsRule().apply { setFlagsParameterization(flags) }
+
+    private val pathConfig =
+        PathConfig(
+            PathElementNoContext("flag", isDir = false) {
+                if (stlFlingAnimationConsumeOvershoot()) "flag_on" else "flag_off"
+            }
+        )
     private val goldenPaths =
-        createGoldenPathManager("frameworks/base/packages/SystemUI/compose/scene/tests/goldens")
+        createGoldenPathManager(
+            "frameworks/base/packages/SystemUI/compose/scene/tests/goldens",
+            pathConfig,
+        )
 
     @get:Rule val motionRule = createFixedConfigurationComposeMotionTestRule(goldenPaths)
     private val composeRule = motionRule.toolkit.composeContentTestRule
@@ -85,7 +113,9 @@ class SwipeAnimationMotionTest {
                     }
                 }
 
-            motionRule.assertThat(motion).timeSeriesMatchesGolden()
+            motionRule
+                .assertThat(motion)
+                .timeSeriesMatchesGolden("dragGesture_lowVelocity_animatesWithSpring")
         }
 
     @Test
@@ -102,7 +132,9 @@ class SwipeAnimationMotionTest {
                     }
                 }
 
-            motionRule.assertThat(motion).timeSeriesMatchesGolden()
+            motionRule
+                .assertThat(motion)
+                .timeSeriesMatchesGolden("dragGesture_overdrag_animatesBack")
         }
 
     @Test
@@ -123,7 +155,9 @@ class SwipeAnimationMotionTest {
                     }
                 }
 
-            motionRule.assertThat(motion).timeSeriesMatchesGolden()
+            motionRule
+                .assertThat(motion)
+                .timeSeriesMatchesGolden("flingGesture_highVelocity_overshoots")
         }
 
     val overscrollDistanceKey = MotionTestValueKey<Float>("overscrollDistance")

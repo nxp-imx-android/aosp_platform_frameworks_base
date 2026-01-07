@@ -1852,6 +1852,17 @@ flag {
 }
 
 flag {
+    name: "stl_fling_animation_consume_overshoot"
+    namespace: "systemui"
+    description: "Animates the fling including overshoot in NestedDraggable, instead of delegating"
+        " to nested scroll containers. Workaround for b/469714374"
+    bug: "470340805"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "stl_user_action_gesture"
     namespace: "systemui"
     description: "Enables internal support for the UserActionGesture interface in STL"
