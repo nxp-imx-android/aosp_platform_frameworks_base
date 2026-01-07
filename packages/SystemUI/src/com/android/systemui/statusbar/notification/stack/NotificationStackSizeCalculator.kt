@@ -26,6 +26,7 @@ import com.android.systemui.media.controls.domain.pipeline.MediaDataManager
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.statusbar.LockscreenShadeTransitionController
 import com.android.systemui.statusbar.StatusBarState.KEYGUARD
 import com.android.systemui.statusbar.SysuiStatusBarStateController
@@ -63,6 +64,7 @@ constructor(
     private val mediaDataManager: MediaDataManager,
     @ShadeDisplayAware private val resources: Resources,
     private val splitShadeStateController: SplitShadeStateController,
+    private val shadeModeInteractor: ShadeModeInteractor,
     private val seenNotificationsInteractor: SeenNotificationsInteractor,
     @Application private val scope: CoroutineScope,
 ) {
@@ -204,8 +206,10 @@ constructor(
 
         // TODO: Avoid making this split shade assumption by simply checking the stack for media
         val isMediaShowing = mediaDataManager.hasActiveMedia()
-        val isMediaShowingInStack =
-            isMediaShowing && !splitShadeStateController.shouldUseSplitNotificationShade(resources)
+        val isSplitShade =
+            if (SceneContainerFlag.isEnabled) shadeModeInteractor.isSplitShade
+            else splitShadeStateController.shouldUseSplitNotificationShade(resources)
+        val isMediaShowingInStack = isMediaShowing && !isSplitShade
 
         log { "\tGet maxNotifWithoutSavingSpace ---" }
         val maxNotifWithoutSavingSpace =
@@ -482,8 +486,7 @@ constructor(
                             view.isPromotedOngoing ||
                             (view.isBundle && view.isGroupExpanded) ||
                             (SceneContainerFlag.isEnabled &&
-                                (view.isHeadsUpState || view.isUserSwipingToExpandRow))
-                        )
+                                (view.isHeadsUpState || view.isUserSwipingToExpandRow)))
                 ) {
                     height
                 } else {

@@ -53,8 +53,11 @@ import com.android.systemui.media.dream.MediaDreamComplication
 import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.res.R
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
+import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.CrossFadeHelper
 import com.android.systemui.statusbar.StatusBarState
 import com.android.systemui.statusbar.SysuiStatusBarStateController
@@ -121,6 +124,7 @@ constructor(
     @Background private val handler: Handler,
     @Application private val coroutineScope: CoroutineScope,
     private val splitShadeStateController: SplitShadeStateController,
+    private val shadeModeInteractor: ShadeModeInteractor,
     private val logger: MediaViewLogger,
     private val dumpManager: DumpManager,
 ) : Dumpable {
@@ -645,6 +649,14 @@ constructor(
             }
         }
 
+        coroutineScope.launch {
+            shadeModeInteractor.shadeMode.collect { shadeMode ->
+                inSplitShade = shadeMode is ShadeMode.Split
+                updateConfiguration()
+                updateDesiredLocation(forceNoAnimation = true, forceStateUpdate = true)
+            }
+        }
+
         val settingsObserver: ContentObserver =
             object : ContentObserver(handler) {
                 override fun onChange(selfChange: Boolean, uri: Uri?) {
@@ -698,7 +710,10 @@ constructor(
             context.resources.getDimensionPixelSize(
                 R.dimen.lockscreen_shade_media_transition_distance
             )
-        inSplitShade = splitShadeStateController.shouldUseSplitNotificationShade(context.resources)
+        if (!SceneContainerFlag.isEnabled) {
+            inSplitShade =
+                splitShadeStateController.shouldUseSplitNotificationShade(context.resources)
+        }
     }
 
     /**

@@ -30,12 +30,15 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.log.impl.LogBufferFactoryImpl
 import com.android.systemui.res.R
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
+import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.disableflags.DisableFlagsLogger
 import com.android.systemui.statusbar.disableflags.shared.model.DisableFlagsModel
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.policy.RemoteInputQuickSettingsDisabler
 import com.android.systemui.statusbar.policy.ResourcesSplitShadeStateController
+import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.argumentCaptor
 import com.android.systemui.util.mockito.mock
@@ -52,8 +55,11 @@ import org.mockito.Mockito.verify
 @RunWith(AndroidJUnit4::class)
 class DisableFlagsRepositoryTest : SysuiTestCase() {
 
+    private val kosmos = testKosmos()
+
     private lateinit var underTest: DisableFlagsRepository
 
+    private val shadeModeInteractor: ShadeModeInteractor = kosmos.shadeModeInteractor
     private val testScope = TestScope(UnconfinedTestDispatcher())
     private val commandQueue: CommandQueue = mock()
     private val configurationController: ConfigurationController = mock()
@@ -62,7 +68,9 @@ class DisableFlagsRepositoryTest : SysuiTestCase() {
             context,
             commandQueue,
             ResourcesSplitShadeStateController(),
+            shadeModeInteractor,
             configurationController,
+            testScope.backgroundScope,
         )
     private val logBuffer = LogBufferFactoryImpl(DumpManager(), mock()).create("buffer", 10)
     private val disableFlagsLogger = DisableFlagsLogger()
