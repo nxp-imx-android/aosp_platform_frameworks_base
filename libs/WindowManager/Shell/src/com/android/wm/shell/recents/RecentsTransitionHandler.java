@@ -81,7 +81,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.IResultReceiver;
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.ShellTaskOrganizer;
-import com.android.wm.shell.bubbles.BubbleController;
+import com.android.wm.shell.bubbles.BubbleHelper;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
@@ -97,7 +97,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -134,7 +133,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
     private @Nullable Color mBackgroundColor;
     private final DisplayController mDisplayController;
     private final DesksOrganizer mDesksOrganizer;
-    private final Optional<BubbleController> mBubbleController;
+    private final BubbleHelper mBubbleHelper;
 
     public RecentsTransitionHandler(
             @NonNull ShellInit shellInit,
@@ -144,7 +143,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             @NonNull HomeTransitionObserver homeTransitionObserver,
             @NonNull DisplayController displayController,
             @NonNull DesksOrganizer desksOrganizer,
-            Optional<BubbleController> bubbleController) {
+            @NonNull BubbleHelper bubbleHelper) {
         mShellTaskOrganizer = shellTaskOrganizer;
         mTransitions = transitions;
         mExecutor = transitions.getMainExecutor();
@@ -152,7 +151,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
         mHomeTransitionObserver = homeTransitionObserver;
         mDisplayController = displayController;
         mDesksOrganizer = desksOrganizer;
-        mBubbleController = bubbleController;
+        mBubbleHelper = bubbleHelper;
         if (recentTasksController == null) return;
         shellInit.addInitCallback(this::onInit, this);
     }
@@ -1178,8 +1177,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             for (int i = 0; i < info.getChanges().size(); ++i) {
                 final TransitionInfo.Change change = info.getChanges().get(i);
                 final ActivityManager.RunningTaskInfo taskInfo = change.getTaskInfo();
-                if (taskInfo != null && mBubbleController.isPresent()
-                        && mBubbleController.get().hasStableBubbleForTask(taskInfo.taskId)) {
+                if (taskInfo != null && mBubbleHelper.isAppBubbleTask(taskInfo)) {
                     ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                             "[%d]   Canceling due to bubble task", mInstanceId);
                     // Explicitly check for bubble tasks as bubbles may have always_on_top reset

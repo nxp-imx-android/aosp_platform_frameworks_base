@@ -107,6 +107,7 @@ import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestShellExecutor;
+import com.android.wm.shell.bubbles.BubbleHelper;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.DisplayLayout;
@@ -128,7 +129,6 @@ import org.mockito.Answers;
 import org.mockito.InOrder;
 
 import java.util.ArrayList;
-import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -1286,7 +1286,7 @@ public class ShellTransitionTests extends ShellTestCase {
                 new RecentsTransitionHandler(shellInit, mock(ShellTaskOrganizer.class), transitions,
                         mockRecentsTaskController, mock(HomeTransitionObserver.class),
                         mock(DisplayController.class), mock(DesksOrganizer.class),
-                        Optional.empty());
+                        mock(BubbleHelper.class));
         recentsHandler.setFinishTransactionSupplier(
                 () -> mock(SurfaceControl.Transaction.class));
         transitions.replaceDefaultHandlerForTest(mDefaultHandler);
