@@ -1718,36 +1718,20 @@ public class UiModeManagerServiceTest extends UiServiceTestCase {
     @Test
     @EnableFlags(android.view.accessibility.Flags.FLAG_FORCE_INVERT_COLOR)
     public void getForceInvertOverrideState_packageInBlockList_returnsDisable() throws Exception {
-        when(mPackageManager.getPackageUidAsUser(eq(PACKAGE_NAME), anyInt()))
-                .thenReturn(TestInjector.DEFAULT_CALLING_UID);
-        when(mResources.getStringArray(R.array.config_forceInvertPackageBlocklist))
-                .thenReturn(new String[]{PACKAGE_NAME});
-        int testUserId = 9;
-        switchUser(testUserId);
-
-        assertThat(mService.getForceInvertOverrideState(testUserId, PACKAGE_NAME))
-                .isEqualTo(FORCE_INVERT_PACKAGE_ALWAYS_DISABLE);
-    }
-
-    @Test
-    @EnableFlags(android.view.accessibility.Flags.FLAG_FORCE_INVERT_COLOR)
-    public void getForceInvertOverrideState_packageInBlockList_overrideEnabled_returnsEnable()
-            throws Exception {
-        when(mPackageManager.getPackageUidAsUser(eq(PACKAGE_NAME), anyInt()))
-                .thenReturn(TestInjector.DEFAULT_CALLING_UID);
-        when(mResources.getStringArray(R.array.config_forceInvertPackageBlocklist))
-                .thenReturn(new String[]{PACKAGE_NAME});
         int testUserId = 9;
         switchUser(testUserId);
         Settings.System.putStringForUser(
                 mContentResolver,
-                Settings.System.ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_ENABLE,
-                PACKAGE_NAME,
-                testUserId);
+                Settings.System.ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_DISABLE,
+                null,
+                testUserId
+        );
+        when(mPackageManager.getPackageUidAsUser(eq(PACKAGE_NAME), anyInt()))
+                .thenReturn(TestInjector.DEFAULT_CALLING_UID);
+        when(mResources.getStringArray(R.array.config_forceInvertPackageBlocklist))
+                .thenReturn(new String[]{PACKAGE_NAME});
 
         assertThat(mService.getForceInvertOverrideState(testUserId, PACKAGE_NAME))
-                .isEqualTo(FORCE_INVERT_PACKAGE_ALWAYS_ENABLE);
-        assertThat(mService.getForceInvertOverrideState(testUserId + 1, PACKAGE_NAME))
                 .isEqualTo(FORCE_INVERT_PACKAGE_ALWAYS_DISABLE);
     }
 

@@ -41,6 +41,14 @@ class ForceInvertOverrideStateTest {
 
     @Before
     fun setup() {
+        ShellIdentityUtils.invokeWithShellPermissions {
+            Settings.System.putStringForUser(
+                context.contentResolver,
+                Settings.System.ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_DISABLE,
+                null,
+                context.userId
+            )
+        }
         context.getOrCreateTestableResources().addOverride(
             com.android.internal.R.array.config_forceInvertPackageBlocklist,
             arrayOf(BLOCKED_PACKAGE)
@@ -106,15 +114,16 @@ class ForceInvertOverrideStateTest {
     }
 
     @Test
-    fun blockListedPackage_overrideEnabled_returnsEnable() {
-        putSystemSetting(
-            Settings.System.ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_ENABLE,
-            BLOCKED_PACKAGE
-        )
+    fun blockListedPackage_enableEdtForApp_returnsEnable() {
         val state = ForceInvertOverrideState.loadFrom(context, context.userId)
-
         assertThat(state.getStateForPackage(BLOCKED_PACKAGE))
-            .isEqualTo(UiModeManager.FORCE_INVERT_PACKAGE_ALWAYS_ENABLE)
+            .isEqualTo(UiModeManager.FORCE_INVERT_PACKAGE_ALWAYS_DISABLE)
+
+        state.setForceInvertOverrideStateForPackage(
+            context.contentResolver, BLOCKED_PACKAGE,
+            UiModeManager.FORCE_INVERT_PACKAGE_ALLOWED, context.userId)
+        assertThat(state.getStateForPackage(BLOCKED_PACKAGE))
+            .isEqualTo(UiModeManager.FORCE_INVERT_PACKAGE_ALLOWED)
     }
 
     @Test
