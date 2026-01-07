@@ -153,6 +153,18 @@ class PrivacyDotWindowControllerTest : SysuiTestCase() {
     }
 
     @Test
+    fun onPrivacyDotShown_calledTwice_onlyOneViewAdded() {
+        underTest.start()
+        executor.runAllReady()
+
+        viewController.showingListener?.onPrivacyDotShown(viewController.topLeft!!)
+        viewController.showingListener?.onPrivacyDotShown(viewController.topLeft!!)
+        executor.runAllReady()
+
+        assertThat(windowManager.addedViews).hasSize(1)
+    }
+
+    @Test
     fun onPrivacyDotHidden_removesWindow() {
         underTest.start()
         executor.runAllReady()

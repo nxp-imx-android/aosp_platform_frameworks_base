@@ -88,6 +88,9 @@ constructor(
                     if (v == null || dotViewContainer == null) {
                         return
                     }
+                    if (dotWindowViewsByCorner.containsKey(dotViewContainer.corner)) {
+                        return
+                    }
                     v.addToWindow(dotViewContainer.corner)
                     dotWindowViewsByCorner[dotViewContainer.corner] = dotViewContainer.windowView
                 }
