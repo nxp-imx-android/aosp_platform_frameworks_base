@@ -243,6 +243,7 @@ public class SplitController implements JetpackTaskFragmentOrganizer.TaskFragmen
 
         // Load override rules if applicable.
         if (com.android.window.flags.Flags.virtualGamepadOverride()) {
+            AppCompatEmbeddingRuleController.init(application);
             setEmbeddingRules(AppCompatEmbeddingRuleController.loadAppCompatRules(application));
         }
 
