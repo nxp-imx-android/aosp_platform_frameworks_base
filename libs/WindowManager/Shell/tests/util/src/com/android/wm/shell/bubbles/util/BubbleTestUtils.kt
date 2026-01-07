@@ -90,8 +90,9 @@ object BubbleTestUtils {
         // Verify hierarchy ops
         if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
             assertThat(
-                wct.hierarchyOps.any { op -> op.container == taskToken && !op.isAlwaysOnTop }
-            ).isTrue()
+                    wct.hierarchyOps.any { op -> op.container == taskToken && !op.isAlwaysOnTop }
+                )
+                .isTrue()
         }
 
         // If there is a caption insets owner set, then that will add an hierarchy op after the
