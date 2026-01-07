@@ -208,6 +208,7 @@ constructor(
             hydrateActivityTransitionAnimationState()
             lockWhenDeviceBecomesUntrusted()
             lockWhenKeyguardShowWhenAwake()
+            showDismissibleKeyguardWhenFolded()
             hydrateLockScreenUserManager()
             wakeFromDozingOnContentChange()
         } else {
@@ -1284,6 +1285,28 @@ constructor(
                         if (!keyguardInteractor.isDreamingNotDozing.value) {
                             switchToScene(Scenes.Lockscreen, "Not dreaming, and $it")
                         }
+                    }
+                }
+        }
+    }
+
+    /**
+     * Handles showing the keyguard (but *not* locking) when a foldable device is folded when the
+     * "swipe up to continue using apps on fold" (or whatever that setting is currently called) is
+     * enabled.
+     *
+     * This should only happen if we're enabled, and unlike other reasons for showing keyguard while
+     * it's disabled, should not cause us to re-show keyguard when it's re-enabled if it was
+     * disabled when this request came in (since this wasn't explicitly a request to secure the
+     * device).
+     */
+    private fun showDismissibleKeyguardWhenFolded() {
+        applicationScope.launch {
+            keyguardShowWhileAwakeInteractor.showWhileAwakeEvents
+                .filter { it == ShowWhileAwakeReason.FOLDED_WITH_SWIPE_UP_TO_CONTINUE }
+                .collect {
+                    if (keyguardEnabledInteractor.isKeyguardEnabled.value) {
+                        switchToScene(Scenes.Lockscreen, "folded with swipe up to continue")
                     }
                 }
         }
