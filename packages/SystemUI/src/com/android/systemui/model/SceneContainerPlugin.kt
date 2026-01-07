@@ -27,7 +27,9 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.data.repository.ShadeDisplaysRepository
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
+import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_BOUNCER_SHOWING
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_COMMUNAL_HUB_SHOWING
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_NOTIFICATION_PANEL_EXPANDED
@@ -59,6 +61,7 @@ interface SceneContainerPlugin {
         val sceneBehind: SceneKey? = null,
         val overlays: Set<OverlayKey>,
         val isVisible: Boolean,
+        val shadeMode: ShadeMode,
     )
 }
 
@@ -69,6 +72,7 @@ constructor(
     private val sceneInteractor: Lazy<SceneInteractor>,
     private val sceneBackInteractor: Lazy<SceneBackInteractor>,
     private val shadeDisplaysRepository: Lazy<ShadeDisplaysRepository>,
+    private val shadeModeInteractor: Lazy<ShadeModeInteractor>,
 ) : SceneContainerPlugin {
 
     private val shadeDisplayId: StateFlow<Int> by lazy {
@@ -91,6 +95,7 @@ constructor(
         val transitionState = sceneInteractor.get().transitionState.value
         val idleTransitionStateOrNull = transitionState as? ObservableTransitionState.Idle
         val sceneBehind = sceneBackInteractor.get().backStack.value.peek()
+        val shadeMode = shadeModeInteractor.get().shadeMode.value
         return idleTransitionStateOrNull?.let { idleState ->
             EvaluatorByFlag[flag]?.invoke(
                 SceneContainerPlugin.SceneContainerPluginState(
@@ -98,6 +103,7 @@ constructor(
                     sceneBehind = sceneBehind,
                     overlays = idleState.currentOverlays,
                     isVisible = sceneInteractor.get().isVisible.value,
+                    shadeMode = shadeMode,
                 )
             )
         }
@@ -133,7 +139,7 @@ constructor(
                     {
                         when {
                             !it.isVisible -> false
-                            it.scene == Scenes.Shade -> true
+                            it.scene == Scenes.Shade && it.shadeMode !is ShadeMode.Split -> true
                             Overlays.NotificationsShade in it.overlays -> true
                             it.scene == Scenes.Lockscreen &&
                                 Overlays.Bouncer !in it.overlays &&
@@ -146,6 +152,7 @@ constructor(
                         when {
                             !it.isVisible -> false
                             it.scene == Scenes.QuickSettings -> true
+                            it.scene == Scenes.Shade && it.shadeMode is ShadeMode.Split -> true
                             Overlays.QuickSettingsShade in it.overlays -> true
                             else -> false
                         }

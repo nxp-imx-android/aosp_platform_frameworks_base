@@ -899,13 +899,15 @@ constructor(
                     sceneInteractor.isVisible,
                     shadePendingDisplayId,
                     sceneBackInteractor.backStack,
-                ) { idleState, isVisible, displayId, backStack ->
+                    shadeModeInteractor.shadeMode,
+                ) { idleState, isVisible, displayId, backStack, shadeMode ->
                     displayId to
                         SceneContainerPlugin.SceneContainerPluginState(
                             scene = idleState.currentScene,
                             sceneBehind = backStack.peek(),
                             overlays = idleState.currentOverlays,
                             isVisible = isVisible,
+                            shadeMode = shadeMode,
                         )
                 }
                 .map { (displayId, sceneContainerPluginState) ->
