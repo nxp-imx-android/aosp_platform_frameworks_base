@@ -32,11 +32,16 @@
 #include "hwui/Bitmap.h"
 #include "utils/ForceDark.h"
 
+#ifdef __ANDROID__
+#include <gui/SurfaceComposerClient.h>
+#endif
+
 class SkBitmap;
 class SkPicture;
 class SkImage;
 
 namespace android {
+class BLASTBufferQueue;
 class GraphicBuffer;
 class SurfaceControl;
 class Surface;
@@ -82,6 +87,18 @@ public:
     void setHardwareBuffer(AHardwareBuffer* buffer);
     void setSurface(ANativeWindow* window, bool enableTimeout = true);
     void setSurfaceControl(sp<SurfaceControl> surfaceControl);
+    void setBLASTBufferQueue(const sp<BLASTBufferQueue>& bbq);
+#ifdef __ANDROID__
+    // Can be called on UI thread or RenderThread.
+    void mergeWithNextTransaction(SurfaceComposerClient::Transaction*, uint64_t);
+
+    // Called only from RenderThread frame drawing callbacks.
+    bool syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)>, bool);
+    // Called only from RenderThread frame drawing callbacks.
+    void applyPendingTransactions(uint64_t);
+#endif
+    void updateRenderTargetSize(uint64_t width, uint64_t height);
+
     void allocateBuffers();
     bool pause();
     void setStopped(bool stopped);

@@ -29,6 +29,7 @@ import android.hardware.DataSpace;
 import android.hardware.HardwareBuffer;
 import android.hardware.OverlayProperties;
 import android.hardware.display.DisplayManager;
+import android.os.Debug;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
@@ -56,6 +57,7 @@ import java.io.FileDescriptor;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 import sun.misc.Cleaner;
 
@@ -425,6 +427,7 @@ public class HardwareRenderer {
     public void setSurfaceControl(@Nullable SurfaceControl surfaceControl,
             @Nullable BLASTBufferQueue blastBufferQueue) {
         nSetSurfaceControl(mNativeProxy, surfaceControl != null ? surfaceControl.mNativeObject : 0);
+        nSetBLASTBufferQueue(mNativeProxy, blastBufferQueue != null ? blastBufferQueue.mNativeObject : 0);
     }
 
     /**
@@ -1169,6 +1172,90 @@ public class HardwareRenderer {
         nNotifyGpuLoadUp(mNativeProxy);
     }
 
+
+    /**
+     * The following methods are used to synchronize with frame production. While they
+     * can be invoked from any-thread, in general it only makes sense to invoke them from
+     * RenderThread or the RenderThread worker pool, as otherwise we can't guarantee which
+     * frame we are syncing with. An exception is applyTransactionInOrder which can be invoked
+     * from any thread while maintaining correctness.
+     *
+     * @hide
+     */
+    public class SyncInterface {
+        /**
+         * Send a callback that accepts a transaction to BBQ. BBQ will acquire buffers into the a
+         * transaction it created and will eventually send the transaction into the callback
+         * when it is ready.
+         * @param callback The callback invoked when the buffer has been added to the transaction. The
+         *                 callback will contain the transaction with the buffer.
+         * @param acquireSingleBuffer If true, only acquire a single buffer when processing frames. The
+         *                            callback will be cleared once a single buffer has been
+         *                            acquired. If false, continue to acquire all buffers into the
+         *                            transaction until stopContinuousSyncTransaction is called.
+         * @hide
+         */
+        public static boolean syncNextTransaction(HardwareRenderer r, boolean acquireSingleBuffer,
+                @NonNull Consumer<SurfaceControl.Transaction> callback) {
+            return nSyncNextTransaction(r.mNativeProxy, callback, acquireSingleBuffer);
+        }
+
+        /**
+         * Send a callback that accepts a transaction to BBQ. BBQ will acquire buffers into the a
+         * transaction it created and will eventually send the transaction into the callback
+         * when it is ready.
+         * @param callback The callback invoked when the buffer has been added to the transaction. The
+         *                 callback will contain the transaction with the buffer.
+         * @hide
+         */
+        public static boolean syncNextTransaction(HardwareRenderer r, @NonNull Consumer<SurfaceControl.Transaction> callback) {
+            return syncNextTransaction(r, true /* acquireSingleBuffer */, callback);
+        }
+
+        /**
+         * Apply any transactions that were passed to {@link #mergeWithNextTransaction} with the
+         * specified frameNumber. This is intended to ensure transactions don't get stuck as pending
+         * if the specified frameNumber is never drawn.
+         *
+         * @param frameNumber The frameNumber used to determine which transactions to apply.
+         * @hide
+         */
+        public static void applyPendingTransactions(HardwareRenderer r, long frameNumber) {
+            nApplyPendingTransactions(r.mNativeProxy, frameNumber);
+        }
+
+        /**
+         * Merge the transaction passed in to the next transaction in BlastBufferQueue. The next
+         * transaction will be applied or merged when the next frame with specified frame number
+         * is available.
+         * @hide
+         */
+        public static void mergeWithNextTransaction(HardwareRenderer r, SurfaceControl.Transaction t, long frameNumber) {
+            nMergeWithNextTransaction(r.mNativeProxy, t.mNativeObject, frameNumber);
+        }
+
+        /**
+         * Applies the given transaction with the Transaction queues of the HardwareRenderer
+         * meaning the Transaction will be applied after any work already submitted by the
+         * HardwareRenderer.
+         *
+         * @hide
+         */
+        public static void applyTransactionInOrder(HardwareRenderer r, SurfaceControl.Transaction t) {
+            nMergeWithNextTransaction(r.mNativeProxy, t.mNativeObject, 0);
+        }
+    }
+
+    /**
+     * Update the size of the rendering surface. At the moment only used
+     * for out-of-process-rendering
+     *
+     * @hide
+     */
+    public void updateRenderTargetSize(long width, long height) {
+        nUpdateRenderTargetSize(mNativeProxy, width, height);
+    }
+
     /**
      * b/68769804, b/66945974: For low FPS experiments.
      *
@@ -1655,6 +1742,7 @@ public class HardwareRenderer {
     private static native void nSetSurface(long nativeProxy, Surface window, boolean discardBuffer);
 
     private static native void nSetSurfaceControl(long nativeProxy, long nativeSurfaceControl);
+    private static native void nSetBLASTBufferQueue(long nativeProxy, long nativeBbq);
 
     private static native boolean nPause(long nativeProxy);
 
@@ -1793,4 +1881,12 @@ public class HardwareRenderer {
     private static native void nNotifyExpensiveFrame(long nativeProxy);
 
     private static native void nNotifyGpuLoadUp(long nativeProxy);
+
+    private static native boolean nSyncNextTransaction(long ptr,
+            Consumer<SurfaceControl.Transaction> callback, boolean acquireSingleBuffer);
+
+    private static native void nMergeWithNextTransaction(long ptr, long transactionPtr,
+                                                              long frameNumber);
+    private static native void nApplyPendingTransactions(long ptr, long frameNumber);
+    private static native void nUpdateRenderTargetSize(long ptr, long width, long height);
 }

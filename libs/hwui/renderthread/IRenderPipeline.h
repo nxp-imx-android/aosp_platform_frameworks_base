@@ -20,6 +20,7 @@
 #include <SkRect.h>
 #include <android-base/unique_fd.h>
 #ifdef __ANDROID__
+#include <gui/BLASTBufferQueue.h>
 #include <gui/SurfaceControl.h>
 #endif
 #include <utils/RefBase.h>
@@ -81,7 +82,17 @@ public:
     virtual bool setSurface(ANativeWindow* window, SwapBehavior swapBehavior) = 0;
 #ifdef __ANDROID__
     virtual void setSurfaceControl(const sp<SurfaceControl>&) {}
+    virtual void setBLASTBufferQueue(const sp<BLASTBufferQueue>&) {}
+    virtual bool syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)>,
+                                     bool) {
+        return false;
+    }
+    virtual void mergeWithNextTransaction(SurfaceComposerClient::Transaction*, uint64_t) {}
+    virtual void applyPendingTransactions(uint64_t) {}
 #endif
+    // Only used on SkiaIpcPipeline so we provide an empty default impl
+    virtual void updateRenderTargetSize(uint64_t width, uint64_t height) {}
+
     virtual void onStop() = 0;
     virtual bool isSurfaceReady() = 0;
     virtual bool isContextReady() = 0;
@@ -103,6 +114,9 @@ public:
 
     virtual void setTargetSdrHdrRatio(float ratio) = 0;
     virtual const SkM44& getPixelSnapMatrix() const = 0;
+
+    virtual ANativeWindow* getSurface() = 0;
+    virtual uint64_t getFrameNumber() = 0;
 
     virtual ~IRenderPipeline() {}
 };

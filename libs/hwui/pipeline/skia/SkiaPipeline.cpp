@@ -578,6 +578,14 @@ void SkiaPipeline::renderOverdraw(const SkRect& clip,
     surface->getCanvas()->drawImage(counts.get(), 0.0f, 0.0f, SkSamplingOptions(), &paint);
 }
 
+uint64_t SkiaPipeline::getFrameNumber() {
+    ANativeWindow* anw = getSurface();
+    if (!anw) {
+        return 0;
+    }
+    return ANativeWindow_getNextFrameId(anw);
+}
+
 } /* namespace skiapipeline */
 } /* namespace uirenderer */
 } /* namespace android */
