@@ -443,15 +443,6 @@ flag {
      bug: "419086491"
 }
 
-flag {
-    name: "core_settings_multi_user"
-    namespace: "multiuser"
-    description: "Make CoreSettingsObserver multi-user aware."
-    bug: "439474431"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
 
 flag {
      name: "user_removal_minor_apis_2026"

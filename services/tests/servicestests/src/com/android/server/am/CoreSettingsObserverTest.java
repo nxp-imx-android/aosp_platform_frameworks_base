@@ -37,7 +37,6 @@ import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.UserHandle;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
@@ -224,7 +223,6 @@ public class CoreSettingsObserverTest {
     }
 
     @Test
-    @EnableFlags(android.multiuser.Flags.FLAG_CORE_SETTINGS_MULTI_USER)
     public void testPopulateSettings_multiUser_onUserStarting() {
         // Initially, only system user is running.
         Settings.System.putStringForUser(
@@ -257,7 +255,6 @@ public class CoreSettingsObserverTest {
     }
 
     @Test
-    @EnableFlags(android.multiuser.Flags.FLAG_CORE_SETTINGS_MULTI_USER)
     public void testPopulateSettings_multiUser_onUserStopping() {
         // Initially, system user and secondary user are running.
         mockGetRunningUserIds(SYSTEM_USER_ID, SECONDARY_USER_ID);
