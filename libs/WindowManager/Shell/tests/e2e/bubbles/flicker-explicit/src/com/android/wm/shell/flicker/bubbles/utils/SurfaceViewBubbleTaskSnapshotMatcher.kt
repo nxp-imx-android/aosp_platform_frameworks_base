@@ -16,22 +16,10 @@
 
 package com.android.wm.shell.flicker.bubbles.utils
 
-import android.tools.traces.component.IComponentMatcher
 import android.tools.traces.surfaceflinger.Layer
-import android.tools.traces.wm.Activity
-import android.tools.traces.wm.WindowContainer
-import java.util.function.Predicate
 
 /** Matches the SurfaceView layer that contains the bubble task snapshot. */
-class SurfaceViewBubbleTaskSnapshotMatcher : IComponentMatcher {
-    override fun windowMatchesAnyOf(windows: Collection<WindowContainer>): Boolean {
-        error("Unimplemented - There are no bubble task snapshot windows")
-    }
-
-    override fun activityMatchesAnyOf(activities: Collection<Activity>): Boolean {
-        error("Unimplemented - There are no bubble task snapshot activity")
-    }
-
+class SurfaceViewBubbleTaskSnapshotMatcher : LayerMatcher() {
     override fun layerMatchesAnyOf(layers: Collection<Layer>): Boolean {
         return layers.any {
             if (!it.name.contains(toLayerIdentifier())) {
@@ -49,22 +37,7 @@ class SurfaceViewBubbleTaskSnapshotMatcher : IComponentMatcher {
         }
     }
 
-    override fun toActivityIdentifier(): String {
-        error("Unimplemented - There are no bubble task snapshot activity")
-    }
-
-    override fun toWindowIdentifier(): String {
-        error("Unimplemented - There are no bubble task snapshot windows")
-    }
-
     override fun toLayerIdentifier(): String {
         return "SurfaceView[BubbleTaskSnapshot]"
-    }
-
-    override fun check(
-        layers: Collection<Layer>,
-        condition: Predicate<Collection<Layer>>,
-    ): Boolean {
-        return condition.test(layers.filter { layerMatchesAnyOf(it) })
     }
 }

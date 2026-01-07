@@ -157,6 +157,14 @@
     {
       "name": "WMShellExplicitFlickerTestsBubbles-RelaunchBubbleToFullscreenViaTaskbarShortcutTest",
       "keywords": ["device"]
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-RelaunchVisibleFullscreenAppToBubbleTest",
+      "keywords": ["device"]
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-RelaunchVisibleSplitAppToBubbleTest",
+      "keywords": ["device"]
     }
   ]
 }

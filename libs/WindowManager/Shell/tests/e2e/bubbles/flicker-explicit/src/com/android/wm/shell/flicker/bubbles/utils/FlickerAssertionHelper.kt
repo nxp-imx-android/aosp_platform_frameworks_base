@@ -17,7 +17,9 @@
 package com.android.wm.shell.flicker.bubbles.utils
 
 import android.tools.flicker.subject.layers.LayersTraceSubject
+import android.tools.traces.component.IComponentMatcher
 import android.tools.traces.component.IComponentNameMatcher
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /** A helper to assert the flicker traces. */
@@ -59,10 +61,14 @@ internal object FlickerAssertionHelper {
      * Asserts the [layerMatcher]'s layer screen bounds only expand or shrink when visible.
      *
      * Note: It is optional if the spec wants to keep bounds unchanged.
+     *
+     * @param threshold if set, the check is considered as pass if the bounds change is smaller or
+     *   equal to the [threshold], which defaults to `0`.
      */
     fun assertLayerResizeConsistently(
         layersTraceSubject: LayersTraceSubject,
-        layerMatcher: IComponentNameMatcher,
+        layerMatcher: IComponentMatcher,
+        threshold: Int = 0,
     ) {
         val layerList =
             layersTraceSubject.layers { layerMatcher.layerMatchesAnyOf(it) && it.isVisible }
@@ -72,10 +78,24 @@ internal object FlickerAssertionHelper {
             // Use screenBounds to take scaling into account.
             val prevBounds = previous.layer.screenBounds
             val currBounds = current.layer.screenBounds
+            val widthDiffMeetThreshold =
+                abs(currBounds.width().roundToInt() - prevBounds.width().roundToInt()) <= threshold
+            val heightDiffMeetThreshold =
+                abs(currBounds.height().roundToInt() - prevBounds.height().roundToInt()) <=
+                    threshold
             val widthChange =
-                currBounds.width().roundToInt().compareTo(prevBounds.width().roundToInt())
+                if (widthDiffMeetThreshold) {
+                    0
+                } else {
+                    currBounds.width().roundToInt().compareTo(prevBounds.width().roundToInt())
+                }
             val heightChange =
-                currBounds.height().roundToInt().compareTo(prevBounds.height().roundToInt())
+                if (heightDiffMeetThreshold) {
+                    0
+                } else {
+                    currBounds.height().roundToInt().compareTo(prevBounds.height().roundToInt())
+                }
+
             if (prevWidthChange == 0) {
                 prevWidthChange = widthChange
             }
@@ -100,30 +120,50 @@ internal object FlickerAssertionHelper {
      * when visible.
      *
      * Note: It is optional if the spec wants to keep bounds unchanged.
+     *
+     * @param threshold if set, the check is considered as pass if the position change is smaller or
+     *   equal to the [threshold], which defaults to `0`.
      */
     fun assertLayerMoveInSingleDirection(
         layersTraceSubject: LayersTraceSubject,
-        layerMatcher: IComponentNameMatcher,
+        layerMatcher: IComponentMatcher,
+        threshold: Int = 0,
     ) {
         val layerList =
             layersTraceSubject.layers { layerMatcher.layerMatchesAnyOf(it) && it.isVisible }
         var prevXDirection = 0
         var prevYDirection = 0
         layerList.zipWithNext { previous, current ->
-            // Use bounds' (left, top) for position.
-            val prevBounds = previous.layer.bounds
-            val currBounds = current.layer.bounds
-            val xDirection = currBounds.left.roundToInt().compareTo(prevBounds.left.roundToInt())
-            val yDirection = currBounds.top.roundToInt().compareTo(prevBounds.top.roundToInt())
+            // Use screenBounds' (left, top) for position.
+            val prevBounds = previous.layer.screenBounds
+            val currBounds = current.layer.screenBounds
+            val leftDiffMeetThreshold =
+                abs(currBounds.left.roundToInt() - prevBounds.left.roundToInt()) <= threshold
+            val topDiffMeetThreshold =
+                abs(currBounds.top.roundToInt() - prevBounds.top.roundToInt()) <= threshold
+            val xDirection =
+                if (leftDiffMeetThreshold) {
+                    0
+                } else {
+                    currBounds.left.roundToInt().compareTo(prevBounds.left.roundToInt())
+                }
+            val yDirection =
+                if (topDiffMeetThreshold) {
+                    0
+                } else {
+                    currBounds.top.roundToInt().compareTo(prevBounds.top.roundToInt())
+                }
+
             if (prevXDirection == 0) {
                 prevXDirection = xDirection
             }
             if (prevYDirection == 0) {
                 prevYDirection = yDirection
             }
+
             check(
-                (xDirection == 0 || prevXDirection == xDirection) &&
-                    (yDirection == 0 || prevYDirection == yDirection)
+                (leftDiffMeetThreshold || xDirection == 0 || prevXDirection == xDirection) &&
+                    (topDiffMeetThreshold || yDirection == 0 || prevYDirection == yDirection)
             ) {
                 "Position of $layerMatcher should only move in one direction, but it has" +
                     " prevXDirection=$prevXDirection currXDirection=$xDirection" +
@@ -131,5 +171,33 @@ internal object FlickerAssertionHelper {
                     " at ${current.timestamp}"
             }
         }
+    }
+
+    /**
+     * Asserts the [layerMatcher]'s layer screen bounds only expand or shrink when visible.
+     *
+     * Note: It is optional if the spec wants to keep bounds unchanged.
+     *
+     * @param threshold if set, the check is considered as pass if the bounds change is smaller or
+     *   equal to the [threshold], which defaults to `0`.
+     */
+    fun LayersTraceSubject.resizeConsistently(layerMatcher: IComponentMatcher, threshold: Int = 0) {
+        assertLayerResizeConsistently(this, layerMatcher, threshold)
+    }
+
+    /**
+     * Asserts the [layerMatcher]'s layer position only moves in one direction (no jumping around)
+     * when visible.
+     *
+     * Note: It is optional if the spec wants to keep bounds unchanged.
+     *
+     * @param threshold if set, the check is considered as pass if the position change is smaller or
+     *   equal to the [threshold], which defaults to `0`.
+     */
+    fun LayersTraceSubject.moveInSingleDirection(
+        layerMatcher: IComponentMatcher,
+        threshold: Int = 0,
+    ) {
+        assertLayerMoveInSingleDirection(this, layerMatcher, threshold)
     }
 }
