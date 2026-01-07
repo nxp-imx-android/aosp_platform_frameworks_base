@@ -77,11 +77,12 @@ test_module_config {
         "com.android.wm.shell.flicker.bubbles.ExpandBubbleWithImeViaBubbleBarTest",
         "com.android.wm.shell.flicker.bubbles.ExpandTaskTrampolineBubbleAfterSecondLaunchTest",
         "com.android.wm.shell.flicker.bubbles.ExpandedBubbleAppMoveTest",
+        "com.android.wm.shell.flicker.bubbles.FinishExpandedBubbleToExpandCollapsedTest",
         "com.android.wm.shell.flicker.bubbles.LaunchMultipleBubbleTest",
+        "com.android.wm.shell.flicker.bubbles.LaunchNewTaskFromBubbleTest",
         "com.android.wm.shell.flicker.bubbles.ScrollableBubbleAppTest",
         "com.android.wm.shell.flicker.bubbles.SwitchBetweenBubblesTest",
         "com.android.wm.shell.flicker.bubbles.SwitchBetweenBubblesTwiceTest",
-        "com.android.wm.shell.flicker.bubbles.ExpandedBubbleAppMoveTest",
         "com.android.wm.shell.flicker.bubbles.RelaunchBubbleToFullscreenViaAppIconTest",
         "com.android.wm.shell.flicker.bubbles.RelaunchBubbleToFullscreenViaShortcutTest",
         "com.android.wm.shell.flicker.bubbles.RelaunchBubbleToFullscreenViaTaskbarAppIconTest",
@@ -265,10 +266,24 @@ test_module_config {
 }
 
 test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-FinishExpandedBubbleToExpandCollapsedTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.FinishExpandedBubbleToExpandCollapsedTest"],
+}
+
+test_module_config {
     name: "WMShellExplicitFlickerTestsBubbles-LaunchMultipleBubbleTest",
     base: "WMShellExplicitFlickerTestsBubbles",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.bubbles.LaunchMultipleBubbleTest"],
+}
+
+test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-LaunchNewTaskFromBubbleTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.LaunchNewTaskFromBubbleTest"],
 }
 
 test_module_config {
