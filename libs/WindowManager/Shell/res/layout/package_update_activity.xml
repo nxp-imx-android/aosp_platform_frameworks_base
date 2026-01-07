@@ -42,15 +42,16 @@
             android:layout_height="match_parent"
             android:indeterminate="true"
             app:wavelength="20dp"
-            app:indicatorSize="130dp" />
+            app:indicatorSize="120dp" />
     </FrameLayout>
 
     <TextView
         android:id="@+id/package_update_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="24dp"
         android:textColor="@androidprv:color/materialColorOnSurface"
-        android:textSize="24sp"
+        android:textSize="16sp"
+        android:lineSpacingExtra="8sp"
         android:text="@string/package_update_text" />
 </LinearLayout>
