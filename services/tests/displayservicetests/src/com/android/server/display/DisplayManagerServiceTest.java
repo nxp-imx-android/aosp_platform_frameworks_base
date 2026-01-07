@@ -4039,7 +4039,6 @@ public class DisplayManagerServiceTest {
         Settings.Global.putInt(mContext.getContentResolver(),
                 DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS, 1);
         manageDisplaysPermission(/* granted= */ true);
-        when(mMockFlags.isDisplayTopologyEnabled()).thenReturn(true);
         mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
         DisplayManagerInternal localService = mDisplayManager.new LocalService();
         DisplayManagerService.BinderService displayManagerBinderService =
@@ -4055,24 +4054,8 @@ public class DisplayManagerServiceTest {
     }
 
     @Test
-    public void testGetDisplayTopology_NullIfFlagDisabled() {
-        manageDisplaysPermission(/* granted= */ true);
-        when(mMockFlags.isDisplayTopologyEnabled()).thenReturn(false);
-        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
-        DisplayManagerInternal localService = mDisplayManager.new LocalService();
-        DisplayManagerService.BinderService displayManagerBinderService =
-                mDisplayManager.new BinderService();
-        registerDefaultDisplays(mDisplayManager);
-        initDisplayPowerController(localService);
-
-        DisplayTopology topology = displayManagerBinderService.getDisplayTopology();
-        assertNull(topology);
-    }
-
-    @Test
     public void testSetDisplayTopology() {
         manageDisplaysPermission(/* granted= */ true);
-        when(mMockFlags.isDisplayTopologyEnabled()).thenReturn(true);
         when(mMockFlags.isDisplayContentModeManagementEnabled()).thenReturn(true);
         mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
         DisplayManagerInternal localService = mDisplayManager.new LocalService();
@@ -4094,7 +4077,6 @@ public class DisplayManagerServiceTest {
 
     @Test
     public void testSetDisplayTopology_withoutPermission_shouldThrowException() {
-        when(mMockFlags.isDisplayTopologyEnabled()).thenReturn(true);
         mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
         DisplayManagerInternal localService = mDisplayManager.new LocalService();
         DisplayManagerService.BinderService displayManagerBinderService =
@@ -4109,7 +4091,6 @@ public class DisplayManagerServiceTest {
     @Test
     public void testShouldNotifyTopologyChanged() {
         manageDisplaysPermission(/* granted= */ true);
-        when(mMockFlags.isDisplayTopologyEnabled()).thenReturn(true);
         when(mMockFlags.isDisplayContentModeManagementEnabled()).thenReturn(true);
         mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
         DisplayManagerService.BinderService displayManagerBinderService =
@@ -4135,7 +4116,6 @@ public class DisplayManagerServiceTest {
     @Test
     public void testShouldNotNotifyTopologyChanged_WhenClientIsNotSubscribed() {
         manageDisplaysPermission(/* granted= */ true);
-        when(mMockFlags.isDisplayTopologyEnabled()).thenReturn(true);
         when(mMockFlags.isDisplayContentModeManagementEnabled()).thenReturn(true);
         mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
         DisplayManagerService.BinderService displayManagerBinderService =

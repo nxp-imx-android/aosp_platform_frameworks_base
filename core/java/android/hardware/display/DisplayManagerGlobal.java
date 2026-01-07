@@ -64,7 +64,6 @@ import android.view.Display;
 import android.view.DisplayAdjustments;
 import android.view.DisplayInfo;
 import android.view.Surface;
-import android.window.DesktopExperienceFlags;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
@@ -1667,9 +1666,6 @@ public final class DisplayManagerGlobal {
      */
     public void registerTopologyListener(@NonNull @CallbackExecutor Executor executor,
             @NonNull Consumer<DisplayTopology> listener, String packageName) {
-        if (!DesktopExperienceFlags.DISPLAY_TOPOLOGY.isTrue()) {
-            return;
-        }
         if (listener == null) {
             throw new IllegalArgumentException("listener must not be null");
         }
@@ -1692,9 +1688,6 @@ public final class DisplayManagerGlobal {
      * @see DisplayManager#unregisterTopologyListener
      */
     public void unregisterTopologyListener(@NonNull Consumer<DisplayTopology> listener) {
-        if (!DesktopExperienceFlags.DISPLAY_TOPOLOGY.isTrue()) {
-            return;
-        }
         if (listener == null) {
             throw new IllegalArgumentException("listener must not be null");
         }

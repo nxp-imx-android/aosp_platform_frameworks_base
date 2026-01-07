@@ -21,14 +21,6 @@ flag {
 }
 
 flag {
-    name: "display_topology"
-    namespace: "display_manager"
-    description: "Display topology for moving cursors and windows between extended displays"
-    bug: "364906028"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "display_topology_api"
     namespace: "display_manager"
     description: "API for reading the current display topology"
