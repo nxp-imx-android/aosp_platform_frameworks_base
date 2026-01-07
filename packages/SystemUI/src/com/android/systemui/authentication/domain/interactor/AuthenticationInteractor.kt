@@ -19,6 +19,7 @@ package com.android.systemui.authentication.domain.interactor
 import android.os.UserHandle
 import android.security.Flags.lockscreenIndicateDuplicateGuesses
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.internal.util.LatencyTracker
 import com.android.internal.widget.LockPatternUtils
 import com.android.internal.widget.LockPatternView
 import com.android.internal.widget.LockscreenCredential
@@ -71,6 +72,7 @@ constructor(
     private val clock: SystemClock,
     private val repository: AuthenticationRepository,
     private val selectedUserInteractor: SelectedUserInteractor,
+    private val latencyTracker: LatencyTracker,
 ) {
     /**
      * The currently-configured authentication method. This determines how the authentication
@@ -233,6 +235,7 @@ constructor(
         credential.zeroize()
 
         if (authenticationResult.isSuccessful) {
+            latencyTracker.onActionStart(LatencyTracker.ACTION_LOCKSCREEN_UNLOCK)
             repository.reportAuthenticationAttempt(AuthenticationResult.SUCCEEDED)
             _onAuthenticationResult.emit(true)
 
