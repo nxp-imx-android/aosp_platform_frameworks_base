@@ -853,7 +853,7 @@ public abstract class WMShellModule {
             HomeTransitionObserver homeTransitionObserver,
             DisplayController displayController,
             DesksOrganizer desksOrganizer,
-            Optional<BubbleController> bubbleController) {
+            BubbleHelper bubbleHelper) {
         return new RecentsTransitionHandler(
                 shellInit,
                 shellTaskOrganizer,
@@ -862,7 +862,7 @@ public abstract class WMShellModule {
                 homeTransitionObserver,
                 displayController,
                 desksOrganizer,
-                bubbleController);
+                bubbleHelper);
     }
 
     //
