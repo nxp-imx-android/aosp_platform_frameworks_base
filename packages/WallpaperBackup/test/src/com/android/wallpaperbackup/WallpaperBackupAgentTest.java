@@ -34,13 +34,11 @@ import static com.android.wallpaperbackup.WallpaperEventLogger.WALLPAPER_IMG_LOC
 import static com.android.wallpaperbackup.WallpaperEventLogger.WALLPAPER_IMG_SYSTEM;
 import static com.android.wallpaperbackup.WallpaperEventLogger.WALLPAPER_LIVE_LOCK;
 import static com.android.wallpaperbackup.WallpaperEventLogger.WALLPAPER_LIVE_SYSTEM;
-import static com.android.window.flags.Flags.multiCrop;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -864,13 +862,8 @@ public class WallpaperBackupAgentTest {
 
     @Test
     public void testOnRestore_throwsException_logsErrors() throws Exception {
-        if (!multiCrop()) {
-            when(mWallpaperManager.setStream(any(), any(), anyBoolean(), anyInt()))
-                    .thenThrow(new RuntimeException());
-        } else {
-            when(mWallpaperManager.setStreamWithCrops(any(), any(SparseArray.class), anyBoolean(),
-                    anyInt())).thenThrow(new RuntimeException());
-        }
+        when(mWallpaperManager.setStreamWithCrops(any(), any(SparseArray.class), anyBoolean(),
+                anyInt())).thenThrow(new RuntimeException());
         mockStagedWallpaperFile(SYSTEM_WALLPAPER_STAGE);
         mockStagedWallpaperFile(WALLPAPER_INFO_STAGE);
         mWallpaperBackupAgent.onCreate(USER_HANDLE, BackupAnnotations.BackupDestination.CLOUD,
@@ -1436,7 +1429,6 @@ public class WallpaperBackupAgentTest {
             SparseArray<Rect> testCropHints,
             SparseArray<Rect> expectedCropHints
     ) throws Exception {
-        assumeTrue(multiCrop());
         mockRestoredStaticWallpaperFile(testCropHints);
         mockStagedWallpaperFile(SYSTEM_WALLPAPER_STAGE);
         mWallpaperBackupAgent.onCreate(USER_HANDLE, BackupAnnotations.BackupDestination.CLOUD,

@@ -157,7 +157,6 @@ import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 import static com.android.server.wm.WindowManagerInternal.OnWindowRemovedListener;
 import static com.android.server.wm.WindowManagerInternal.WindowFocusChangeListener;
-import static com.android.window.flags.Flags.multiCrop;
 
 import android.Manifest;
 import android.Manifest.permission;
@@ -10324,8 +10323,7 @@ public class WindowManagerService extends IWindowManager.Stub
         final long origId = Binder.clearCallingIdentity();
         try {
             synchronized (mGlobalLock) {
-                if (!mAtmService.isCallerRecents(callingUid)
-                        && (!multiCrop() || callingUid != SYSTEM_UID)) {
+                if (!mAtmService.isCallerRecents(callingUid) && callingUid != SYSTEM_UID) {
                     Slog.e(TAG, "Unable to verify uid for getPossibleDisplayInfo"
                             + " on uid " + callingUid);
                     return new ArrayList<>();
