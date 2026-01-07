@@ -117,3 +117,11 @@ flag {
   description: "Feature flag for adding double auth in biometric prompt for Identity Check"
   bug: "442571994"
 }
+
+flag {
+  name: "get_biometric_sensor_strengths"
+  is_exported: false
+  namespace: "biometrics_framework"
+  description: "Feature flag for adding the getBiometricSensorStrengths API to BiometricManager."
+  bug: "454275027"
+}
