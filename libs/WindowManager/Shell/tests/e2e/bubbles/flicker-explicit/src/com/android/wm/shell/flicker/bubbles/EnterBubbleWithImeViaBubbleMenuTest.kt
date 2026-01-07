@@ -111,5 +111,4 @@ class EnterBubbleWithImeViaBubbleMenuTest(navBar: NavBar) :
 
     override val expectedImeInset
         get() = imeInset
-
 }

@@ -34,7 +34,8 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * Base scenario test for switch between desktop app and full screen app, triggered via quick switch.
+ * Base scenario test for switch between desktop app and full screen app, triggered via quick
+ * switch.
  */
 @Ignore("Base Test Class")
 abstract class SwitchBetweenDesktopAndFullScreenViaQuickSwitch(
