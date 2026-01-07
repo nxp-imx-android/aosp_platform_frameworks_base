@@ -279,7 +279,8 @@ class DragState {
             mInputSurface = null;
         }
         if (mSurfaceControl != null) {
-            if (!mRelinquishDragSurfaceToDropTarget && !relinquishDragSurfaceToDragSource()) {
+            if (!mRelinquishDragSurfaceToDropTarget
+                    && (mDragResult || !relinquishDragSurfaceToDragSource())) {
                 mTransaction.remove(mSurfaceControl).apply();
             } else {
                 mDragDropController.sendTimeoutMessage(MSG_REMOVE_DRAG_SURFACE_TIMEOUT,
