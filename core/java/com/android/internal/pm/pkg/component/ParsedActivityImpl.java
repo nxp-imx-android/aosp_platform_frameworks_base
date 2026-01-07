@@ -198,7 +198,7 @@ public class ParsedActivityImpl extends ParsedMainComponentImpl implements Parse
         alias.setRequireContentUriPermissionFromCaller(
                 target.getRequireContentUriPermissionFromCaller());
         if (com.android.internal.pm.pkg.component.flags.Flags
-                .enableActivityAliasPersistableMode()) {
+                .enableActivityAliasPersistableModeBugfix()) {
             alias.persistableMode = target.getPersistableMode();
         }
         return alias;

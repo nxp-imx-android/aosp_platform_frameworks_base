@@ -1703,7 +1703,7 @@ public class PackageParserTest {
 
     @Test
     @RequiresFlagsEnabled(com.android.internal.pm.pkg.component.flags.Flags
-            .FLAG_ENABLE_ACTIVITY_ALIAS_PERSISTABLE_MODE)
+            .FLAG_ENABLE_ACTIVITY_ALIAS_PERSISTABLE_MODE_BUGFIX)
     public void testParseActivityAlias_inheritPersistableMode() throws Exception {
         final File testFile = extractFile("PackageParserTestActivityAlias.apk");
         try {
@@ -1725,7 +1725,7 @@ public class PackageParserTest {
 
     @Test
     @RequiresFlagsDisabled(com.android.internal.pm.pkg.component.flags.Flags
-            .FLAG_ENABLE_ACTIVITY_ALIAS_PERSISTABLE_MODE)
+            .FLAG_ENABLE_ACTIVITY_ALIAS_PERSISTABLE_MODE_BUGFIX)
     public void testParseActivityAlias_inheritPersistableMode_flagDisabled() throws Exception {
         final File testFile = extractFile("PackageParserTestActivityAlias.apk");
         try {

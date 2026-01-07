@@ -4942,7 +4942,7 @@ public class PackageParser {
 
         info.directBootAware = target.info.directBootAware;
         if (com.android.internal.pm.pkg.component.flags.Flags
-                .enableActivityAliasPersistableMode()) {
+                .enableActivityAliasPersistableModeBugfix()) {
             info.persistableMode = target.info.persistableMode;
         }
 
