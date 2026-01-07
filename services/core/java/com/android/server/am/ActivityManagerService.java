@@ -6160,8 +6160,16 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
     }
 
+    /**
+     * @deprecated Use {@link ActivityManagerInternal#setIsToastActive(int, boolean, String)}
+     *             instead. This method will be removed in the future.
+     */
     @Override
     public void setProcessImportant(IBinder token, int pid, boolean isForeground, String reason) {
+        if (Flags.simplifyToastImportance()) {
+            throw new IllegalStateException("AMS.setProcessImportant is not supported anymore!"
+                    + " Please use AMI.setIsToastActive instead.");
+        }
         enforceCallingPermission(android.Manifest.permission.SET_PROCESS_LIMIT,
                 "setProcessImportant()");
         synchronized(this) {
@@ -18252,6 +18260,27 @@ public class ActivityManagerService extends IActivityManager.Stub
         @Override
         public boolean isPendingTopUid(int uid) {
             return mPendingStartActivityUids.isPendingTopUid(uid);
+        }
+
+        @Override
+        public void setIsToastActive(int pid, boolean isActive) {
+            if (!Flags.simplifyToastImportance()) {
+                throw new IllegalStateException("AMI.setIsToastActive is not enabled yet!");
+            }
+            synchronized (ActivityManagerService.this) {
+                final ProcessRecord pr;
+                synchronized (mPidsSelfLocked) {
+                    pr = mPidsSelfLocked.get(pid);
+                    if (pr == null) {
+                        Slog.w(TAG, "setIsToastActive called on an unknown pid: " + pid);
+                        return;
+                    }
+                }
+                final Object token = isActive ? TOAST_TOKEN : null;
+                if (mProcessStateController.setForcingToImportant(pr, token)) {
+                    mProcessStateController.runUpdate(pr, OOM_ADJ_REASON_UI_VISIBILITY);
+                }
+            }
         }
 
         @Override

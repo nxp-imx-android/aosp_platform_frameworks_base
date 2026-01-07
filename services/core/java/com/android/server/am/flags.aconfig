@@ -309,6 +309,16 @@ flag {
 }
 
 flag {
+    name: "simplify_toast_importance"
+    namespace: "backstage_power"
+    description: "Simplifies the process importance mechanism for visible toasts"
+    bug: "473067328"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "battery_stats_log_combined_display_state"
     namespace: "backstage_power"
     description: "Logs atom for screen state for the most important display on device."
