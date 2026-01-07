@@ -26,6 +26,7 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.FrameLayout
 import com.android.systemui.Flags
+import com.android.systemui.animation.Expandable
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.events.BackgroundAnimatableView
 import java.time.Duration
@@ -49,6 +50,11 @@ constructor(
     abstract var privacyList: List<PrivacyItem>
 
     abstract val launchableContentView: View
+
+    // This is lazy for OngoingPrivacyChip where launchableContentView is created in its init
+    // (which happens after the init of this class). In running code, this will never be executed
+    // for OngoingPrivacyChip.
+    open val expandable: Expandable by lazy { Expandable.fromView(launchableContentView) }
 
     override fun onInitializeAccessibilityNodeInfo(info: AccessibilityNodeInfo) {
         super.onInitializeAccessibilityNodeInfo(info)
