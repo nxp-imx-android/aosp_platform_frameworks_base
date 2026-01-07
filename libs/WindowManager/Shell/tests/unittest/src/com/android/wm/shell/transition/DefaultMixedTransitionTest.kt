@@ -48,8 +48,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 /**
- * Tests for [DefaultMixedTransition]
- * Build & Run: atest WMShellUnitTests:DefaultMixedTransitionTest
+ * Tests for [DefaultMixedTransition] Build & Run: atest WMShellUnitTests:DefaultMixedTransitionTest
  */
 @SmallTest
 class DefaultMixedTransitionTest : ShellTestCase() {
@@ -91,24 +90,32 @@ class DefaultMixedTransitionTest : ShellTestCase() {
         whenever(mPlayer.dispatchTransition(any(), any(), any(), any(), any(), any()))
             .thenReturn(mRemoteTransitionHandler)
 
-        val defaultMixedTransition = getDefaultMixedTransition(
-            DefaultMixedHandler.MixedTransition.TYPE_OPTIONS_REMOTE_AND_PIP_OR_DESKTOP_CHANGE)
+        val defaultMixedTransition =
+            getDefaultMixedTransition(
+                DefaultMixedHandler.MixedTransition.TYPE_OPTIONS_REMOTE_AND_PIP_OR_DESKTOP_CHANGE
+            )
 
         val info = createRemoteTransitionInfo()
         val pipChange = createPipChange()
         whenever(mPipHandler.isEnteringPip(eq(pipChange), eq(info.type))).thenReturn(true)
         info.addChange(pipChange)
 
-        val handled = defaultMixedTransition.startAnimation(
-            mMockTransition, info, mStartT, mFinishT, mFinishCallback)
+        val handled =
+            defaultMixedTransition.startAnimation(
+                mMockTransition,
+                info,
+                mStartT,
+                mFinishT,
+                mFinishCallback,
+            )
 
         // Verify that animation was resolved.
         assertThat(handled).isTrue()
 
         // Check that PiP handler was called into for the animation with PiP change in its info.
         val infoCaptor = argumentCaptor<TransitionInfo>()
-        verify(mPipHandler, times(1)).startAnimation(eq(mMockTransition),
-            infoCaptor.capture(), any(), any(), any())
+        verify(mPipHandler, times(1))
+            .startAnimation(eq(mMockTransition), infoCaptor.capture(), any(), any(), any())
 
         // Assert that TransitionInfo was separated to contain PiP change only
         // and that transition type is carried over.
@@ -126,8 +133,10 @@ class DefaultMixedTransitionTest : ShellTestCase() {
         whenever(mPlayer.dispatchTransition(any(), any(), any(), any(), any(), any()))
             .thenReturn(mRemoteTransitionHandler)
 
-        val defaultMixedTransition = getDefaultMixedTransition(
-            DefaultMixedHandler.MixedTransition.TYPE_OPTIONS_REMOTE_AND_PIP_OR_DESKTOP_CHANGE)
+        val defaultMixedTransition =
+            getDefaultMixedTransition(
+                DefaultMixedHandler.MixedTransition.TYPE_OPTIONS_REMOTE_AND_PIP_OR_DESKTOP_CHANGE
+            )
 
         val info = createRemoteTransitionInfo()
         // Add a PiP change into the transition that is NOT entering PiP.
@@ -135,16 +144,22 @@ class DefaultMixedTransitionTest : ShellTestCase() {
         whenever(mPipHandler.isEnteringPip(eq(pipChange), eq(info.type))).thenReturn(false)
         info.addChange(pipChange)
 
-        val handled = defaultMixedTransition.startAnimation(
-            mMockTransition, info, mStartT, mFinishT, mFinishCallback)
+        val handled =
+            defaultMixedTransition.startAnimation(
+                mMockTransition,
+                info,
+                mStartT,
+                mFinishT,
+                mFinishCallback,
+            )
 
         // Verify that animation was resolved.
         assertThat(handled).isTrue()
 
         // Check that PiP handler was called into for the animation with PiP change in its info.
         val infoCaptor = argumentCaptor<TransitionInfo>()
-        verify(mPipHandler, times(1)).startAnimation(eq(mMockTransition),
-            infoCaptor.capture(), any(), any(), any())
+        verify(mPipHandler, times(1))
+            .startAnimation(eq(mMockTransition), infoCaptor.capture(), any(), any(), any())
 
         // Assert that TransitionInfo was separated to contain PiP change only
         // and that transition type is carried over; this should be done even with non-enter PiP

@@ -49,7 +49,7 @@ class RemoteTransitionHandlerTest : ShellTestCase() {
     private val testExecutor: TestSyncExecutor = TestSyncExecutor()
 
     private val testRemoteTransition =
-            RemoteTransition(TestRemoteTransition()).setFilter(TransitionFilter())
+        RemoteTransition(TestRemoteTransition()).setFilter(TransitionFilter())
     private val testRemoteTransitionInfo =
         TransitionRequestInfo.RemoteTransitionInfo(testRemoteTransition)
     private lateinit var handler: RemoteTransitionHandler

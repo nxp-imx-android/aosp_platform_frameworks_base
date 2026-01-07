@@ -18,13 +18,11 @@ package com.android.wm.shell.desktopmode
 import android.graphics.Point
 import android.graphics.Rect
 import android.os.IBinder
-import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.view.SurfaceControl
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import androidx.test.filters.SmallTest
-import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController

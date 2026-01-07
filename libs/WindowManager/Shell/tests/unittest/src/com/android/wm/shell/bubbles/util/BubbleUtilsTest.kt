@@ -41,23 +41,17 @@ import org.mockito.kotlin.stub
 /**
  * Unit tests for [BubbleUtils].
  *
- * Build/Install/Run:
- *  atest WMShellUnitTests:BubbleUtilsTest
+ * Build/Install/Run: atest WMShellUnitTests:BubbleUtilsTest
  */
 @SmallTest
 @RunWith(TestParameterInjector::class)
 class BubbleUtilsTest : ShellTestCase() {
 
     private val binder = Binder()
-    private val token = mock<WindowContainerToken> {
-        on { asBinder() } doReturn binder
-    }
-    private val rootTaskToken = mock<WindowContainerToken> {
-        on { asBinder() } doReturn binder
-    }
-    private val bubbleHelper = mock<BubbleHelper> {
-        on { getAppBubbleRootTaskToken() } doReturn rootTaskToken
-    }
+    private val token = mock<WindowContainerToken> { on { asBinder() } doReturn binder }
+    private val rootTaskToken = mock<WindowContainerToken> { on { asBinder() } doReturn binder }
+    private val bubbleHelper =
+        mock<BubbleHelper> { on { getAppBubbleRootTaskToken() } doReturn rootTaskToken }
     private val bounds = Rect(0, 0, 100, 100)
     private val captionInsetsOwner = Binder()
 
@@ -65,9 +59,7 @@ class BubbleUtilsTest : ShellTestCase() {
     @DisableFlags(FLAG_ENABLE_BUBBLE_ROOT_TASK)
     @Test
     fun testGetEnterBubbleTransaction(@TestParameter isAppBubble: Boolean) {
-        bubbleHelper.stub {
-            on { getAppBubbleRootTaskToken() } doReturn null
-        }
+        bubbleHelper.stub { on { getAppBubbleRootTaskToken() } doReturn null }
         val wctWithLaunchNextToBubble =
             getEnterBubbleTransaction(bubbleHelper, token, bounds, isAppBubble)
 
@@ -78,16 +70,14 @@ class BubbleUtilsTest : ShellTestCase() {
     @DisableFlags(FLAG_ENABLE_BUBBLE_ROOT_TASK)
     @Test
     fun testGetEnterBubbleTransaction_reparentToTda(@TestParameter isAppBubble: Boolean) {
-        bubbleHelper.stub {
-            on { getAppBubbleRootTaskToken() } doReturn null
-        }
+        bubbleHelper.stub { on { getAppBubbleRootTaskToken() } doReturn null }
         val wctWithLaunchNextToBubble =
             getEnterBubbleTransaction(
                 bubbleHelper,
                 token,
                 bounds,
                 isAppBubble,
-                reparentToTda = true
+                reparentToTda = true,
             )
 
         verifyEnterBubbleTransaction(
@@ -108,7 +98,7 @@ class BubbleUtilsTest : ShellTestCase() {
             wct,
             token.asBinder(),
             isAppBubble,
-            rootTaskToken = rootTaskToken.asBinder()
+            rootTaskToken = rootTaskToken.asBinder(),
         )
     }
 

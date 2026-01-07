@@ -55,8 +55,7 @@ import org.mockito.kotlin.whenever
 @TestableLooper.RunWithLooper
 @RunWith(AndroidTestingRunner::class)
 class DefaultCrossActivityBackAnimationTest : ShellTestCase() {
-    @get:Rule
-    val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
+    @get:Rule val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
     @Mock private lateinit var backAnimationBackground: BackAnimationBackground
     @Mock private lateinit var rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer
@@ -102,7 +101,8 @@ class DefaultCrossActivityBackAnimationTest : ShellTestCase() {
 
         startAnimation(arrayOf(closingTarget, enteringTarget))
 
-        verify(transaction, org.mockito.Mockito.times(2)).setCornerRadius(any(), eq(bubbleCornerRadius))
+        verify(transaction, org.mockito.Mockito.times(2))
+            .setCornerRadius(any(), eq(bubbleCornerRadius))
     }
 
     @Test
@@ -112,22 +112,32 @@ class DefaultCrossActivityBackAnimationTest : ShellTestCase() {
         val freeformCornerRadius = 24.5f
         // Mock the resource value
         val freeformCornerRadiusInt = freeformCornerRadius.toInt()
-        mContext.getOrCreateTestableResources().addOverride(
-            com.android.wm.shell.shared.R.dimen.desktop_windowing_freeform_rounded_corner_radius,
-            freeformCornerRadiusInt
-        )
+        mContext
+            .getOrCreateTestableResources()
+            .addOverride(
+                com.android.wm.shell.shared.R.dimen
+                    .desktop_windowing_freeform_rounded_corner_radius,
+                freeformCornerRadiusInt,
+            )
 
         val closingTarget = createAnimationTarget(false, taskId, isFreeform = true)
         val enteringTarget = createAnimationTarget(true, taskId + 1)
 
         startAnimation(arrayOf(closingTarget, enteringTarget))
 
-        verify(transaction, org.mockito.Mockito.times(2)).setCornerRadius(any(), eq(freeformCornerRadiusInt.toFloat()))
+        verify(transaction, org.mockito.Mockito.times(2))
+            .setCornerRadius(any(), eq(freeformCornerRadiusInt.toFloat()))
     }
 
     private fun startAnimation(targets: Array<RemoteAnimationTarget>) {
         defaultCrossActivityBackAnimation.prepareNextAnimation(null, 0)
-        defaultCrossActivityBackAnimation.runner.runner.onAnimationStart(0, targets, null, null, iRemoteAnimationFinishedCallback)
+        defaultCrossActivityBackAnimation.runner.runner.onAnimationStart(
+            0,
+            targets,
+            null,
+            null,
+            iRemoteAnimationFinishedCallback,
+        )
         defaultCrossActivityBackAnimation.runner.callback.onBackStarted(backMotionEventFrom(0f, 0f))
     }
 
@@ -138,17 +148,15 @@ class DefaultCrossActivityBackAnimationTest : ShellTestCase() {
             /* frameTime = */ 0,
             /* progress = */ progress,
             /* triggerBack = */ false,
-            /* swipeEdge = */ BackEvent.EDGE_LEFT
+            /* swipeEdge = */ BackEvent.EDGE_LEFT,
         )
 
     private fun createAnimationTarget(
         open: Boolean,
         taskId: Int,
-        isFreeform: Boolean = false
+        isFreeform: Boolean = false,
     ): RemoteAnimationTarget {
-        val topWindowLeash = SurfaceControl.Builder()
-            .setName("FakeLeash")
-            .build()
+        val topWindowLeash = SurfaceControl.Builder().setName("FakeLeash").build()
         val taskInfo = RunningTaskInfo()
         taskInfo.taskId = taskId
         taskInfo.taskDescription = ActivityManager.TaskDescription()
@@ -173,7 +181,7 @@ class DefaultCrossActivityBackAnimationTest : ShellTestCase() {
             null,
             taskInfo,
             false,
-            -1
+            -1,
         )
     }
 

@@ -57,9 +57,7 @@ import org.mockito.kotlin.isNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
-/**
- * Tests for [PackageUpdateController]
- */
+/** Tests for [PackageUpdateController] */
 @SmallTest
 @RunWith(AndroidTestingRunner::class)
 @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
@@ -76,14 +74,15 @@ class PackageUpdateControllerTest : ShellTestCase() {
 
     @Before
     fun setUp() {
-        packageUpdateController = PackageUpdateController(
-            transitions,
-            shellTaskOrganizer,
-            shellInit,
-            userProfileContexts,
-            taskResourceLoader,
-            Optional.of(viewModel),
-            testScope,
+        packageUpdateController =
+            PackageUpdateController(
+                transitions,
+                shellTaskOrganizer,
+                shellInit,
+                userProfileContexts,
+                taskResourceLoader,
+                Optional.of(viewModel),
+                testScope,
             )
 
         whenever(userProfileContexts[anyInt()]).thenReturn(context)
@@ -100,10 +99,11 @@ class PackageUpdateControllerTest : ShellTestCase() {
             testScope.testScheduler.advanceUntilIdle()
 
             val wct = getLatestWct(type = TRANSIT_OPEN)
-            assertThat(wct.hierarchyOps.map { it.type }).containsExactly(
-                HIERARCHY_OP_TYPE_PENDING_INTENT,
-                HIERARCHY_OP_TYPE_CONTINUE_PACKAGE_UPDATE
-            )
+            assertThat(wct.hierarchyOps.map { it.type })
+                .containsExactly(
+                    HIERARCHY_OP_TYPE_PENDING_INTENT,
+                    HIERARCHY_OP_TYPE_CONTINUE_PACKAGE_UPDATE,
+                )
             wct.assertPendingIntent(createPuActivityIntent())
             wct.assertContinuePackageUpdate(task)
         }
@@ -117,9 +117,8 @@ class PackageUpdateControllerTest : ShellTestCase() {
             testScope.testScheduler.advanceUntilIdle()
 
             val wct = getLatestWct(type = TRANSIT_OPEN)
-            assertThat(wct.hierarchyOps.map { it.type }).containsExactly(
-                HIERARCHY_OP_TYPE_CONTINUE_PACKAGE_UPDATE
-            )
+            assertThat(wct.hierarchyOps.map { it.type })
+                .containsExactly(HIERARCHY_OP_TYPE_CONTINUE_PACKAGE_UPDATE)
             wct.assertContinuePackageUpdate(task)
         }
     }
@@ -132,9 +131,8 @@ class PackageUpdateControllerTest : ShellTestCase() {
         packageUpdateController.onPackageUpdateFinished(listOf(task))
 
         val wct = getLatestWct(type = TRANSIT_CHANGE)
-        assertThat(wct.hierarchyOps.map { it.type }).containsExactly(
-            HIERARCHY_OP_TYPE_PENDING_INTENT,
-        )
+        assertThat(wct.hierarchyOps.map { it.type })
+            .containsExactly(HIERARCHY_OP_TYPE_PENDING_INTENT)
         wct.assertPendingIntent(task.baseIntent)
     }
 
@@ -148,9 +146,7 @@ class PackageUpdateControllerTest : ShellTestCase() {
         packageUpdateController.onPackageUpdateFinished(listOf(task))
 
         val wct = getLatestWct(type = TRANSIT_CHANGE)
-        assertThat(wct.hierarchyOps.map { it.type }).containsExactly(
-            HIERARCHY_OP_TYPE_REMOVE_TASK,
-        )
+        assertThat(wct.hierarchyOps.map { it.type }).containsExactly(HIERARCHY_OP_TYPE_REMOVE_TASK)
         wct.assertRemoveTask(task, removeFromRecents = false)
     }
 
@@ -177,7 +173,7 @@ class PackageUpdateControllerTest : ShellTestCase() {
     private fun createTaskInfo(
         id: Int,
         windowingMode: Int = WINDOWING_MODE_FULLSCREEN,
-        visible: Boolean = true
+        visible: Boolean = true,
     ) =
         RunningTaskInfo().apply {
             taskId = id
@@ -209,7 +205,7 @@ class PackageUpdateControllerTest : ShellTestCase() {
 
     private fun WindowContainerTransaction.assertHandlePackageUpdate(
         task: RunningTaskInfo,
-        shouldHandlePackageUpdate: Boolean
+        shouldHandlePackageUpdate: Boolean,
     ) {
         val change = changes[task.token.asBinder()]
 
@@ -217,44 +213,45 @@ class PackageUpdateControllerTest : ShellTestCase() {
             .that(change)
             .isNotNull()
 
-        assertWithMessage("Wrong handlePackageUpdate value for task ${task.taskId} expected " +
-                "$shouldHandlePackageUpdate but found ${change?.handlePackageUpdate}")
+        assertWithMessage(
+                "Wrong handlePackageUpdate value for task ${task.taskId} expected " +
+                    "$shouldHandlePackageUpdate but found ${change?.handlePackageUpdate}"
+            )
             .that(change?.handlePackageUpdate)
             .isEqualTo(shouldHandlePackageUpdate)
     }
+
     private fun WindowContainerTransaction.assertPendingIntent(intent: Intent) {
         assertHop("Type=PENDING_INTENT with component=${intent.component}") { hop ->
             hop.type == HIERARCHY_OP_TYPE_PENDING_INTENT &&
-                    hop.pendingIntent?.intent?.component == intent.component
+                hop.pendingIntent?.intent?.component == intent.component
         }
     }
 
     private fun WindowContainerTransaction.assertContinuePackageUpdate(task: RunningTaskInfo) {
         assertHop("Type=CONTINUE_UPDATE for taskId=${task.taskId}") { hop ->
             hop.type == HIERARCHY_OP_TYPE_CONTINUE_PACKAGE_UPDATE &&
-                    hop.container == task.token.asBinder()
+                hop.container == task.token.asBinder()
         }
     }
 
     private fun WindowContainerTransaction.assertRemoveTask(
         task: RunningTaskInfo,
-        removeFromRecents: Boolean
+        removeFromRecents: Boolean,
     ) {
         assertHop("Type=REMOVE_TASK for taskId=${task.taskId}") { hop ->
             hop.type == HIERARCHY_OP_TYPE_REMOVE_TASK &&
-                    hop.container == task.token.asBinder() &&
-                    hop.removeFromRecents == removeFromRecents
+                hop.container == task.token.asBinder() &&
+                hop.removeFromRecents == removeFromRecents
         }
     }
 
     private fun WindowContainerTransaction.assertHop(
         description: String,
-        predicate: (WindowContainerTransaction.HierarchyOp) -> Boolean
+        predicate: (WindowContainerTransaction.HierarchyOp) -> Boolean,
     ) {
         val match = hierarchyOps.find(predicate)
-        val actualOps = hierarchyOps.joinToString(",") { op ->
-            "$op"
-        }
+        val actualOps = hierarchyOps.joinToString(",") { op -> "$op" }
         assertWithMessage("Failed to find hop: $description.\nActual Hops:\n$actualOps")
             .that(match)
             .isNotNull()

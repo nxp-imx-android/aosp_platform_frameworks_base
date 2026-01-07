@@ -68,11 +68,14 @@ class DragZoneFactoryTest {
     private val splitScreenModeChecker = SplitScreenModeChecker { splitScreenMode }
     private var isDesktopWindowModeSupported = true
     private val desktopWindowModeChecker = DesktopWindowModeChecker { isDesktopWindowModeSupported }
-    private val bubbleBarPropertiesProvider = object : BubbleBarPropertiesProvider {
-        override fun getHeight() = 80
-        override fun getWidth() = 100
-        override fun getBottomPadding() = 50
-    }
+    private val bubbleBarPropertiesProvider =
+        object : BubbleBarPropertiesProvider {
+            override fun getHeight() = 80
+
+            override fun getWidth() = 100
+
+            override fun getBottomPadding() = 50
+        }
 
     @Test
     fun dragZonesForBubbleBar_tablet() {
@@ -300,9 +303,10 @@ class DragZoneFactoryTest {
     @Test
     fun dragZonesForExpandedView_shortFoldable_landscapeExpandedDropTargetOccupiesAvailableSpace() {
         val screenHeight = 800
-        dragZoneFactory = createDragZoneFactory(
-            deviceConfig = foldableLandscape.copy(windowBounds = Rect(0, 0, 1200, screenHeight))
-        )
+        dragZoneFactory =
+            createDragZoneFactory(
+                deviceConfig = foldableLandscape.copy(windowBounds = Rect(0, 0, 1200, screenHeight))
+            )
         val dragZones =
             dragZoneFactory.createSortedDragZones(
                 DraggedObject.ExpandedView(BubbleBarLocation.LEFT)
@@ -397,7 +401,7 @@ class DragZoneFactoryTest {
             dragZoneFactory.createSortedDragZones(
                 DraggedObject.LauncherIcon(
                     showExpandedViewDropTarget = false,
-                    showBubbleBarPillowDropTarget = true
+                    showBubbleBarPillowDropTarget = true,
                 )
             )
         val expectedZones: List<DragZoneVerifier> =
@@ -420,7 +424,7 @@ class DragZoneFactoryTest {
         val bubbleZone = dragZones.filterIsInstance<DragZone.Bubble.Left>().first()
         val bubbleBarTopPosition =
             tabletPortrait.windowBounds.bottom -
-                    bubbleBarPropertiesProvider.getBubbleBarTopFromScreenBottom()
+                bubbleBarPropertiesProvider.getBubbleBarTopFromScreenBottom()
         assertThat(bubbleZone.dropTarget!!.rect.bottom).isLessThan(bubbleBarTopPosition)
     }
 
@@ -436,7 +440,6 @@ class DragZoneFactoryTest {
         assertThat(secondDropTarget != null == isPresent).isTrue()
     }
 
-
     private fun createDragZoneFactory(
         context: Context = this.context,
         deviceConfig: DeviceConfig,
@@ -451,7 +454,7 @@ class DragZoneFactoryTest {
             splitScreenModeChecker,
             desktopWindowModeChecker,
             bubbleBarPropertiesProvider,
-            dpToPxResolver
+            dpToPxResolver,
         )
     }
 

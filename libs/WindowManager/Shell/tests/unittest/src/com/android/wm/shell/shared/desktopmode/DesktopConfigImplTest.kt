@@ -29,9 +29,7 @@ import org.junit.Test
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.whenever
 
-/**
- * Test class for [DesktopConfigImpl].
- */
+/** Test class for [DesktopConfigImpl]. */
 @SmallTest
 @Presubmit
 class DesktopConfigImplTest : ShellTestCase() {

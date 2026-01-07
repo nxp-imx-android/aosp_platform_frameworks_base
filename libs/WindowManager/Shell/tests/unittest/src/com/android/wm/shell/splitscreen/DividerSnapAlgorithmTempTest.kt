@@ -39,17 +39,35 @@ class DividerSnapAlgorithmTempTest {
         val availablePoints = listOf(0.25f, 0.5f, 0.75f) // Targets at 250, 500, 750
 
         // Test snapping to the left
-        var target = snapAlgorithm.findClosestSnapTarget(260, availablePoints, bounds, BranchNode.ORIENTATION_HORIZONTAL)
+        var target =
+            snapAlgorithm.findClosestSnapTarget(
+                260,
+                availablePoints,
+                bounds,
+                BranchNode.ORIENTATION_HORIZONTAL,
+            )
         assertEquals(250, target.position)
         assertEquals(0.25f, target.proportion)
 
         // Test snapping to the middle
-        target = snapAlgorithm.findClosestSnapTarget(400, availablePoints, bounds, BranchNode.ORIENTATION_HORIZONTAL)
+        target =
+            snapAlgorithm.findClosestSnapTarget(
+                400,
+                availablePoints,
+                bounds,
+                BranchNode.ORIENTATION_HORIZONTAL,
+            )
         assertEquals(500, target.position)
         assertEquals(0.5f, target.proportion)
 
         // Test snapping to the right
-        target = snapAlgorithm.findClosestSnapTarget(900, availablePoints, bounds, BranchNode.ORIENTATION_HORIZONTAL)
+        target =
+            snapAlgorithm.findClosestSnapTarget(
+                900,
+                availablePoints,
+                bounds,
+                BranchNode.ORIENTATION_HORIZONTAL,
+            )
         assertEquals(750, target.position)
         assertEquals(0.75f, target.proportion)
     }
@@ -60,12 +78,24 @@ class DividerSnapAlgorithmTempTest {
         val availablePoints = listOf(0.2f, 0.8f) // Targets at 400, 1600
 
         // Test snapping to the top
-        var target = snapAlgorithm.findClosestSnapTarget(300, availablePoints, bounds, BranchNode.ORIENTATION_VERTICAL)
+        var target =
+            snapAlgorithm.findClosestSnapTarget(
+                300,
+                availablePoints,
+                bounds,
+                BranchNode.ORIENTATION_VERTICAL,
+            )
         assertEquals(400, target.position)
         assertEquals(0.2f, target.proportion)
 
         // Test snapping to the bottom
-        target = snapAlgorithm.findClosestSnapTarget(1500, availablePoints, bounds, BranchNode.ORIENTATION_VERTICAL)
+        target =
+            snapAlgorithm.findClosestSnapTarget(
+                1500,
+                availablePoints,
+                bounds,
+                BranchNode.ORIENTATION_VERTICAL,
+            )
         assertEquals(1600, target.position)
         assertEquals(0.8f, target.proportion)
     }
@@ -73,7 +103,13 @@ class DividerSnapAlgorithmTempTest {
     @Test
     fun testFindClosestSnapTarget_emptyList_returnsDefault() {
         val bounds = Rect(0, 0, 1000, 500)
-        val target = snapAlgorithm.findClosestSnapTarget(300, emptyList(), bounds, BranchNode.ORIENTATION_HORIZONTAL)
+        val target =
+            snapAlgorithm.findClosestSnapTarget(
+                300,
+                emptyList(),
+                bounds,
+                BranchNode.ORIENTATION_HORIZONTAL,
+            )
 
         // Should default to the middle
         assertEquals(500, target.position)

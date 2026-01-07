@@ -119,9 +119,8 @@ class ComponentUtilsTest {
     fun getPackageName_fromTaskIdAndRecentTasksController_returnsPackageName() {
         val taskId = 1
         whenever(mockRecentTasksController.findTaskInBackground(taskId)) doReturn testRecentTaskInfo
-        assertThat(ComponentUtils.getPackageName(taskId, mockRecentTasksController)).isEqualTo(
-            testPackage
-        )
+        assertThat(ComponentUtils.getPackageName(taskId, mockRecentTasksController))
+            .isEqualTo(testPackage)
     }
 
     @Test

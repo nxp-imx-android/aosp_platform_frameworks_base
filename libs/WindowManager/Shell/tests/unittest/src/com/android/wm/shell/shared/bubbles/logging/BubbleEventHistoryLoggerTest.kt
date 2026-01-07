@@ -27,16 +27,16 @@ import com.android.wm.shell.shared.bubbles.logging.BubbleEventHistoryLogger.Comp
 import com.android.wm.shell.shared.bubbles.logging.BubbleEventHistoryLogger.Companion.MAX_EVENTS_DEBUG
 import com.android.wm.shell.shared.bubbles.logging.BubbleEventHistoryLogger.Companion.MAX_EVENTS_RELEASE
 import com.google.common.truth.Truth.assertThat
-import org.junit.AfterClass
-import org.junit.BeforeClass
-import org.junit.Rule
-import org.junit.Test
-import org.junit.runner.RunWith
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import org.junit.AfterClass
+import org.junit.BeforeClass
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
 
 /** Unit tests for [BubbleEventHistoryLogger]. */
 @SmallTest
@@ -62,11 +62,13 @@ class BubbleEventHistoryLoggerTest {
         val formattedTimeStamp = DATE_FORMATTER.format(timestamp)
         logger.logEvent("e: test | %s", "eventData", timestamp = timestamp)
         logger.logEvent("d: hey", timestamp = timestamp)
-        val expectedOutput = """
+        val expectedOutput =
+            """
             Bubbles events history:
               $formattedTimeStamp e: test | eventData
               $formattedTimeStamp d: hey
-            """.trimIndent() + "\n"
+            """
+                .trimIndent() + "\n"
         assertThat(getDumpOutput()).isEqualTo(expectedOutput)
     }
 
@@ -192,10 +194,14 @@ class BubbleEventHistoryLoggerTest {
         logger.i("debug object=%s", BubbleEventHistoryLogger())
 
         // Then primitive wrappers and toString() representation of object is saved
-        assertThat(logger.recentEvents[0].titleParams!!.first()).isInstanceOf(Int::class.javaObjectType)
-        assertThat(logger.recentEvents[1].titleParams!!.first()).isInstanceOf(Long::class.javaObjectType)
-        assertThat(logger.recentEvents[2].titleParams!!.first()).isInstanceOf(Float::class.javaObjectType)
-        assertThat(logger.recentEvents[3].titleParams!!.first()).isInstanceOf(Double::class.javaObjectType)
+        assertThat(logger.recentEvents[0].titleParams!!.first())
+            .isInstanceOf(Int::class.javaObjectType)
+        assertThat(logger.recentEvents[1].titleParams!!.first())
+            .isInstanceOf(Long::class.javaObjectType)
+        assertThat(logger.recentEvents[2].titleParams!!.first())
+            .isInstanceOf(Float::class.javaObjectType)
+        assertThat(logger.recentEvents[3].titleParams!!.first())
+            .isInstanceOf(Double::class.javaObjectType)
         assertThat(logger.recentEvents[4].titleParams!!.first()).isInstanceOf(String::class.java)
         assertThat(logger.recentEvents[5].titleParams!!.first()).isInstanceOf(String::class.java)
     }

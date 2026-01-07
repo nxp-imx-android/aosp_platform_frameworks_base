@@ -43,8 +43,7 @@ import org.mockito.kotlin.stub
 /**
  * Unit tests for [BubbleHelperImpl].
  *
- * Build/Install/Run:
- *  atest WMShellUnitTests:BubbleHelperImplTest
+ * Build/Install/Run: atest WMShellUnitTests:BubbleHelperImplTest
  */
 @SmallTest
 class BubbleHelperImplTest : ShellTestCase() {
@@ -59,10 +58,11 @@ class BubbleHelperImplTest : ShellTestCase() {
     @Before
     fun setUp() {
         bubbleRootTask = BubbleRootTask(mContext, shellInit, taskOrganizer)
-        bubbleHelper = BubbleHelperImpl(
-            bubbleRootTask = bubbleRootTask,
-            splitScreenController = { Optional.of(splitScreenController) }
-        )
+        bubbleHelper =
+            BubbleHelperImpl(
+                bubbleRootTask = bubbleRootTask,
+                splitScreenController = { Optional.of(splitScreenController) },
+            )
     }
 
     @Test
@@ -109,16 +109,15 @@ class BubbleHelperImplTest : ShellTestCase() {
     @Test
     fun isAppBubble_taskIsSplitting_returnsFalse() {
         val sideStageRootTask = 5
-        splitScreenController.stub {
-            on { isTaskRootOrStageRoot(sideStageRootTask) } doReturn true
-        }
-        val taskInfo = ActivityManager.RunningTaskInfo().apply {
-            // Task is running in split-screen mode.
-            parentTaskId = sideStageRootTask
-            // Even though the task was previously marked as an app bubble,
-            // it should not be considered a bubble when in split-screen mode.
-            isAppBubble = true
-        }
+        splitScreenController.stub { on { isTaskRootOrStageRoot(sideStageRootTask) } doReturn true }
+        val taskInfo =
+            ActivityManager.RunningTaskInfo().apply {
+                // Task is running in split-screen mode.
+                parentTaskId = sideStageRootTask
+                // Even though the task was previously marked as an app bubble,
+                // it should not be considered a bubble when in split-screen mode.
+                isAppBubble = true
+            }
 
         assertThat(bubbleHelper.isAppBubbleTask(taskInfo)).isFalse()
     }
@@ -126,10 +125,11 @@ class BubbleHelperImplTest : ShellTestCase() {
     @DisableFlags(FLAG_ENABLE_BUBBLE_ROOT_TASK)
     @Test
     fun isAppBubble_isAppBubbleNotSplitting_returnsTrue() {
-        val taskInfo = ActivityManager.RunningTaskInfo().apply {
-            isAppBubble = true
-            parentTaskId = ActivityTaskManager.INVALID_TASK_ID
-        }
+        val taskInfo =
+            ActivityManager.RunningTaskInfo().apply {
+                isAppBubble = true
+                parentTaskId = ActivityTaskManager.INVALID_TASK_ID
+            }
 
         assertThat(bubbleHelper.isAppBubbleTask(taskInfo)).isTrue()
     }
@@ -139,47 +139,54 @@ class BubbleHelperImplTest : ShellTestCase() {
         bubbleRootTask.prepareRootTaskForTest(bubbleRootTaskId = 123)
 
         // Opening of non-Bubble
-        val taskInfo0 = ActivityManager.RunningTaskInfo().apply {
-            token = MockToken().token()
-            configuration.windowConfiguration.activityType = ACTIVITY_TYPE_STANDARD
-            parentTaskId = 456
-            isAppBubble = false
-        }
-        val bubble0 = TransitionInfo.Change(taskInfo0.token, mock()).apply {
-            taskInfo = taskInfo0
-            mode = WindowManager.TRANSIT_OPEN
-        }
+        val taskInfo0 =
+            ActivityManager.RunningTaskInfo().apply {
+                token = MockToken().token()
+                configuration.windowConfiguration.activityType = ACTIVITY_TYPE_STANDARD
+                parentTaskId = 456
+                isAppBubble = false
+            }
+        val bubble0 =
+            TransitionInfo.Change(taskInfo0.token, mock()).apply {
+                taskInfo = taskInfo0
+                mode = WindowManager.TRANSIT_OPEN
+            }
 
         // Closing of Bubble
-        val taskInfo1 = ActivityManager.RunningTaskInfo().apply {
-            token = MockToken().token()
-            configuration.windowConfiguration.activityType = ACTIVITY_TYPE_STANDARD
-            parentTaskId = 123
-            isAppBubble = true
-        }
-        val bubble1 = TransitionInfo.Change(taskInfo1.token, mock()).apply {
-            taskInfo = taskInfo1
-            mode = WindowManager.TRANSIT_CLOSE
-        }
+        val taskInfo1 =
+            ActivityManager.RunningTaskInfo().apply {
+                token = MockToken().token()
+                configuration.windowConfiguration.activityType = ACTIVITY_TYPE_STANDARD
+                parentTaskId = 123
+                isAppBubble = true
+            }
+        val bubble1 =
+            TransitionInfo.Change(taskInfo1.token, mock()).apply {
+                taskInfo = taskInfo1
+                mode = WindowManager.TRANSIT_CLOSE
+            }
 
         // Opening of Bubble
-        val taskInfo2 = ActivityManager.RunningTaskInfo().apply {
-            token = MockToken().token()
-            configuration.windowConfiguration.activityType = ACTIVITY_TYPE_STANDARD
-            parentTaskId = 123
-            isAppBubble = true
-        }
-        val bubble2 = TransitionInfo.Change(taskInfo2.token, mock()).apply {
-            taskInfo = taskInfo2
-            mode = WindowManager.TRANSIT_OPEN
-        }
+        val taskInfo2 =
+            ActivityManager.RunningTaskInfo().apply {
+                token = MockToken().token()
+                configuration.windowConfiguration.activityType = ACTIVITY_TYPE_STANDARD
+                parentTaskId = 123
+                isAppBubble = true
+            }
+        val bubble2 =
+            TransitionInfo.Change(taskInfo2.token, mock()).apply {
+                taskInfo = taskInfo2
+                mode = WindowManager.TRANSIT_OPEN
+            }
 
-        val info = TransitionInfo(WindowManager.TRANSIT_OPEN, 0).apply {
-            addChange(bubble0)
-            addChange(bubble1)
-            addChange(bubble2)
-            addRoot(TransitionInfo.Root(0, mock(), 0, 0))
-        }
+        val info =
+            TransitionInfo(WindowManager.TRANSIT_OPEN, 0).apply {
+                addChange(bubble0)
+                addChange(bubble1)
+                addChange(bubble2)
+                addRoot(TransitionInfo.Root(0, mock(), 0, 0))
+            }
 
         assertThat(bubbleHelper.getEnterBubbleTask(info)).isEqualTo(bubble2)
     }
@@ -189,47 +196,54 @@ class BubbleHelperImplTest : ShellTestCase() {
         bubbleRootTask.prepareRootTaskForTest(bubbleRootTaskId = 123)
 
         // Closing of non-Bubble
-        val taskInfo0 = ActivityManager.RunningTaskInfo().apply {
-            token = MockToken().token()
-            configuration.windowConfiguration.activityType = ACTIVITY_TYPE_STANDARD
-            parentTaskId = 456
-            isAppBubble = false
-        }
-        val bubble0 = TransitionInfo.Change(taskInfo0.token, mock()).apply {
-            taskInfo = taskInfo0
-            mode = WindowManager.TRANSIT_CLOSE
-        }
+        val taskInfo0 =
+            ActivityManager.RunningTaskInfo().apply {
+                token = MockToken().token()
+                configuration.windowConfiguration.activityType = ACTIVITY_TYPE_STANDARD
+                parentTaskId = 456
+                isAppBubble = false
+            }
+        val bubble0 =
+            TransitionInfo.Change(taskInfo0.token, mock()).apply {
+                taskInfo = taskInfo0
+                mode = WindowManager.TRANSIT_CLOSE
+            }
 
         // Opening of Bubble
-        val taskInfo1 = ActivityManager.RunningTaskInfo().apply {
-            token = MockToken().token()
-            configuration.windowConfiguration.activityType = ACTIVITY_TYPE_STANDARD
-            parentTaskId = 123
-            isAppBubble = true
-        }
-        val bubble1 = TransitionInfo.Change(taskInfo1.token, mock()).apply {
-            taskInfo = taskInfo1
-            mode = WindowManager.TRANSIT_OPEN
-        }
+        val taskInfo1 =
+            ActivityManager.RunningTaskInfo().apply {
+                token = MockToken().token()
+                configuration.windowConfiguration.activityType = ACTIVITY_TYPE_STANDARD
+                parentTaskId = 123
+                isAppBubble = true
+            }
+        val bubble1 =
+            TransitionInfo.Change(taskInfo1.token, mock()).apply {
+                taskInfo = taskInfo1
+                mode = WindowManager.TRANSIT_OPEN
+            }
 
         // Closing of Bubble
-        val taskInfo2 = ActivityManager.RunningTaskInfo().apply {
-            token = MockToken().token()
-            configuration.windowConfiguration.activityType = ACTIVITY_TYPE_STANDARD
-            parentTaskId = 123
-            isAppBubble = true
-        }
-        val bubble2 = TransitionInfo.Change(taskInfo2.token, mock()).apply {
-            taskInfo = taskInfo2
-            mode = WindowManager.TRANSIT_CLOSE
-        }
+        val taskInfo2 =
+            ActivityManager.RunningTaskInfo().apply {
+                token = MockToken().token()
+                configuration.windowConfiguration.activityType = ACTIVITY_TYPE_STANDARD
+                parentTaskId = 123
+                isAppBubble = true
+            }
+        val bubble2 =
+            TransitionInfo.Change(taskInfo2.token, mock()).apply {
+                taskInfo = taskInfo2
+                mode = WindowManager.TRANSIT_CLOSE
+            }
 
-        val info = TransitionInfo(WindowManager.TRANSIT_OPEN, 0).apply {
-            addChange(bubble0)
-            addChange(bubble1)
-            addChange(bubble2)
-            addRoot(TransitionInfo.Root(0, mock(), 0, 0))
-        }
+        val info =
+            TransitionInfo(WindowManager.TRANSIT_OPEN, 0).apply {
+                addChange(bubble0)
+                addChange(bubble1)
+                addChange(bubble2)
+                addRoot(TransitionInfo.Root(0, mock(), 0, 0))
+            }
 
         assertThat(bubbleHelper.getClosingBubbleTask(info)).isEqualTo(bubble2)
     }
