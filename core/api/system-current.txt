@@ -2537,8 +2537,8 @@ package android.app.motioncues {
   @FlaggedApi("android.app.enable_motion_cues") public final class MotionCuesSettings implements android.os.Parcelable {
     method @FlaggedApi("android.app.enable_motion_cues") public int describeContents();
     method @FlaggedApi("android.app.enable_motion_cues") public int getHorizontalSpacingDp();
-    method @FlaggedApi("android.app.enable_motion_cues") public int getMarginSize();
-    method @FlaggedApi("android.app.enable_motion_cues") public int getRadius();
+    method @FlaggedApi("android.app.enable_motion_cues") public int getMarginSizeDp();
+    method @FlaggedApi("android.app.enable_motion_cues") public int getRadiusDp();
     method @FlaggedApi("android.app.enable_motion_cues") public int getVerticalSpacingDp();
     method @FlaggedApi("android.app.enable_motion_cues") public void writeToParcel(@NonNull android.os.Parcel, int);
     field @FlaggedApi("android.app.enable_motion_cues") @NonNull public static final android.os.Parcelable.Creator<android.app.motioncues.MotionCuesSettings> CREATOR;
@@ -2549,8 +2549,8 @@ package android.app.motioncues {
     ctor @FlaggedApi("android.app.enable_motion_cues") public MotionCuesSettings.Builder(@NonNull android.app.motioncues.MotionCuesSettings);
     method @FlaggedApi("android.app.enable_motion_cues") @NonNull public android.app.motioncues.MotionCuesSettings build();
     method @FlaggedApi("android.app.enable_motion_cues") @NonNull public android.app.motioncues.MotionCuesSettings.Builder setHorizontalSpacingDp(int);
-    method @FlaggedApi("android.app.enable_motion_cues") @NonNull public android.app.motioncues.MotionCuesSettings.Builder setMarginSize(int);
-    method @FlaggedApi("android.app.enable_motion_cues") @NonNull public android.app.motioncues.MotionCuesSettings.Builder setRadius(int);
+    method @FlaggedApi("android.app.enable_motion_cues") @NonNull public android.app.motioncues.MotionCuesSettings.Builder setMarginSizeDp(int);
+    method @FlaggedApi("android.app.enable_motion_cues") @NonNull public android.app.motioncues.MotionCuesSettings.Builder setRadiusDp(int);
     method @FlaggedApi("android.app.enable_motion_cues") @NonNull public android.app.motioncues.MotionCuesSettings.Builder setVerticalSpacingDp(int);
   }
 

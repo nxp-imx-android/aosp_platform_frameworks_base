@@ -36,21 +36,21 @@ import androidx.annotation.NonNull;
 public final class MotionCuesSettings implements Parcelable {
     private final int mHorizontalSpacingDp;
     private final int mVerticalSpacingDp;
-    private final int mMarginSize;
-    private final int mRadius;
+    private final int mMarginSizeDp;
+    private final int mRadiusDp;
 
     private MotionCuesSettings(Builder builder) {
         mHorizontalSpacingDp = builder.mHorizontalSpacingDp;
         mVerticalSpacingDp = builder.mVerticalSpacingDp;
-        mMarginSize = builder.mMarginSize;
-        mRadius = builder.mRadius;
+        mMarginSizeDp = builder.mMarginSizeDp;
+        mRadiusDp = builder.mRadiusDp;
     }
 
     private MotionCuesSettings(Parcel in) {
         mHorizontalSpacingDp = in.readInt();
         mVerticalSpacingDp = in.readInt();
-        mMarginSize = in.readInt();
-        mRadius = in.readInt();
+        mMarginSizeDp = in.readInt();
+        mRadiusDp = in.readInt();
     }
 
     /**
@@ -87,8 +87,8 @@ public final class MotionCuesSettings implements Parcelable {
      */
     @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
-    public int getMarginSize() {
-        return mMarginSize;
+    public int getMarginSizeDp() {
+        return mMarginSizeDp;
     }
 
     /**
@@ -99,8 +99,8 @@ public final class MotionCuesSettings implements Parcelable {
      */
     @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
-    public int getRadius() {
-        return mRadius;
+    public int getRadiusDp() {
+        return mRadiusDp;
     }
 
     /**
@@ -135,8 +135,8 @@ public final class MotionCuesSettings implements Parcelable {
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeInt(mHorizontalSpacingDp);
         dest.writeInt(mVerticalSpacingDp);
-        dest.writeInt(mMarginSize);
-        dest.writeInt(mRadius);
+        dest.writeInt(mMarginSizeDp);
+        dest.writeInt(mRadiusDp);
     }
 
     /**
@@ -150,8 +150,8 @@ public final class MotionCuesSettings implements Parcelable {
     public static final class Builder {
         private int mHorizontalSpacingDp;
         private int mVerticalSpacingDp;
-        private int mMarginSize;
-        private int mRadius;
+        private int mMarginSizeDp;
+        private int mRadiusDp;
 
         /**
          * Creates a new Builder with default values.
@@ -174,8 +174,8 @@ public final class MotionCuesSettings implements Parcelable {
         public Builder(@NonNull MotionCuesSettings original) {
             mHorizontalSpacingDp = original.mHorizontalSpacingDp;
             mVerticalSpacingDp = original.mVerticalSpacingDp;
-            mMarginSize = original.mMarginSize;
-            mRadius = original.mRadius;
+            mMarginSizeDp = original.mMarginSizeDp;
+            mRadiusDp = original.mRadiusDp;
         }
 
         /**
@@ -215,8 +215,8 @@ public final class MotionCuesSettings implements Parcelable {
          */
         @SystemApi
         @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
-        public @NonNull Builder setMarginSize(int marginSize) {
-            mMarginSize = marginSize;
+        public @NonNull Builder setMarginSizeDp(int marginSizeDp) {
+            mMarginSizeDp = marginSizeDp;
             return this;
         }
 
@@ -229,8 +229,8 @@ public final class MotionCuesSettings implements Parcelable {
          */
         @SystemApi
         @FlaggedApi(Flags.FLAG_ENABLE_MOTION_CUES)
-        public @NonNull Builder setRadius(int radius) {
-            mRadius = radius;
+        public @NonNull Builder setRadiusDp(int radiusDp) {
+            mRadiusDp = radiusDp;
             return this;
         }
 
