@@ -33,10 +33,15 @@ public class RemoteTaskFactory {
 
     private final Icon mDefaultIcon;
     private final PackageManager mPackageManager;
+    private final String mBrowserPackageName;
+    private final int mUserId;
 
-    public RemoteTaskFactory(@NonNull Context context, @NonNull PackageManager packageManager) {
+    public RemoteTaskFactory(
+            int userId, @NonNull Context context, @NonNull PackageManager packageManager) {
+        mUserId = userId;
         mPackageManager = Objects.requireNonNull(packageManager);
         mDefaultIcon = Icon.createWithResource(context, android.R.drawable.sym_def_app_icon);
+        mBrowserPackageName = packageManager.getDefaultBrowserPackageNameAsUser(userId);
     }
 
     @Nullable
@@ -46,16 +51,22 @@ public class RemoteTaskFactory {
             @NonNull RemoteTaskInfo remoteTaskInfo) {
         Objects.requireNonNull(remoteTaskInfo);
 
-        if (!canTaskBeHandedOffLocally(remoteTaskInfo)) {
+        boolean canTaskBeHandedOffLocally = canTaskBeHandedOffNatively(remoteTaskInfo);
+        boolean canTaskBeHandedOffByBrowser = canTaskBeHandedOffByBrowser(remoteTaskInfo);
+
+        if (!canTaskBeHandedOffLocally && !canTaskBeHandedOffByBrowser) {
             return null;
         }
 
+        String packageName =
+                canTaskBeHandedOffLocally ? remoteTaskInfo.packageName() : mBrowserPackageName;
+
         return new RemoteTask.Builder(associationId, remoteTaskInfo.id())
-                .setPackageName(remoteTaskInfo.packageName())
-                .setLabel(getPackageLabel(remoteTaskInfo.packageName()))
+                .setPackageName(packageName)
+                .setLabel(getPackageLabel(packageName))
                 .setLastUsedTimestampMillis(remoteTaskInfo.lastUsedTimeMillis())
                 .setAssociationDisplayName(associationDisplayName)
-                .setIcon(getPackageIcon(remoteTaskInfo.packageName()))
+                .setIcon(getPackageIcon(packageName))
                 .setTaskInForeground(remoteTaskInfo.isInForeground())
                 .setHandoffEnabled(remoteTaskInfo.handoffOptions().isHandoffEnabled())
                 .build();
@@ -95,15 +106,20 @@ public class RemoteTaskFactory {
         }
     }
 
-    private boolean canTaskBeHandedOffLocally(@NonNull RemoteTaskInfo remoteTaskInfo) {
+    private boolean canTaskBeHandedOffNatively(@NonNull RemoteTaskInfo remoteTaskInfo) {
         Objects.requireNonNull(remoteTaskInfo);
 
         if (!remoteTaskInfo.handoffOptions().isHandoffEnabled()) {
             return false;
         }
 
-        boolean isPackageInstalled = getPackageInfo(remoteTaskInfo.packageName()) != null;
-        return (isPackageInstalled && remoteTaskInfo.handoffOptions().isHandoffEnabled())
-                || !remoteTaskInfo.handoffOptions().requirePackageInstalled();
+        return getPackageInfo(remoteTaskInfo.packageName()) != null;
+    }
+
+    private boolean canTaskBeHandedOffByBrowser(@NonNull RemoteTaskInfo remoteTaskInfo) {
+        Objects.requireNonNull(remoteTaskInfo);
+        return mBrowserPackageName != null
+                && remoteTaskInfo.handoffOptions().isHandoffEnabled()
+                && !remoteTaskInfo.handoffOptions().requirePackageInstalled();
     }
 }
