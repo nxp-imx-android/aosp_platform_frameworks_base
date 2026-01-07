@@ -75,6 +75,7 @@ import android.os.IBinderCallback;
 import android.os.IIncidentManager;
 import android.os.Looper;
 import android.os.Message;
+import android.os.MessageQueue;
 import android.os.Parcel;
 import android.os.PowerManager;
 import android.os.Process;
@@ -940,6 +941,7 @@ public final class SystemServer implements Dumpable {
             // Prepare the main looper thread (this thread).
             android.os.Process.setThreadPriority(
                     android.os.Process.THREAD_PRIORITY_FOREGROUND);
+            MessageQueue.setUseDeliQueue(true);
             Looper.prepareMainLooper();
             Looper.getMainLooper().setSlowLogThresholdMs(
                     SLOW_DISPATCH_THRESHOLD_MS, SLOW_DELIVERY_THRESHOLD_MS);

@@ -23,13 +23,9 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.annotation.TestApi;
-import android.app.compat.CompatChanges;
 import android.app.ActivityThread;
-import android.app.Instrumentation;
 import android.compat.annotation.ChangeId;
-import android.compat.annotation.Disabled;
 import android.compat.annotation.EnabledAfter;
-import android.compat.annotation.Overridable;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.ravenwood.annotation.RavenwoodRedirect;
@@ -152,20 +148,16 @@ public final class MessageQueue {
      * system processes and provides a higher level of concurrency and higher enqueue throughput
      * than the legacy implementation.
      */
-    private static boolean sUseDeliQueueInitialized = false;
     private static boolean sUseDeliQueue;
 
     // This isn't named "getUseDeliQueue"; it's referenced from Message.java.
     static boolean getUseConcurrent() {
-        if (!sUseDeliQueueInitialized) {
-            // We may race and compute the underlying value more than once.
-            // This is fine because computeUseDeliQueue is idempotent.
-            final boolean useDeliQueue = computeUseDeliQueue();
-            sUseDeliQueue = useDeliQueue;
-            sUseDeliQueueInitialized = true;
-            return useDeliQueue;
-        }
         return sUseDeliQueue;
+    }
+
+    /** @hide */
+    public static void setUseDeliQueue(boolean enable) {
+        sUseDeliQueue = enable;
     }
 
     /**
@@ -174,41 +166,6 @@ public final class MessageQueue {
      */
     public static String getImplName() {
         return "deli:" + getUseConcurrent();
-    }
-
-    @RavenwoodRedirect(bug = 454028089, reason = "change IDs are not initialized when we call it")
-    private static boolean computeUseDeliQueue() {
-        if (CompatChanges.isChangeEnabled(USE_NEW_MESSAGEQUEUE)
-                || Flags.useConcurrentMessageQueueInApps()) {
-            return true;
-        }
-
-        final String processName = Process.myProcessName();
-        if (processName == null) {
-            // Assume that this is a host-side test and avoid DeliQueue mode for now.
-            return false;
-        }
-
-        // DeliQueue mode modifies behavior that is observable via reflection and is commonly
-        // used by tests.
-        // For now, we limit it to system processes to avoid breaking apps and their tests.
-        if (UserHandle.isCore(Process.myUid())) {
-            return true;
-        }
-
-        // Also explicitly allow SystemUI processes.
-        // SystemUI doesn't run in a core UID, but we want to give it the performance boost,
-        // and we know that it's safe to use the concurrent implementation in SystemUI.
-        if (processName.equals("com.android.systemui")
-                || processName.startsWith("com.android.systemui:")) {
-            return true;
-        }
-        // On Android distributions where SystemUI has a different process name,
-        // the above condition may need to be adjusted accordingly.
-
-        // We can lift these restrictions in the future after we've made it possible for test
-        // authors to test Looper and MessageQueue without resorting to reflection.
-        return false;
     }
 
     /* ------------------------------------------------------------------------------------------ */

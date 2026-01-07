@@ -20,6 +20,7 @@ import static android.Manifest.permission.LOG_COMPAT_CHANGE;
 import static android.Manifest.permission.OVERRIDE_COMPAT_CHANGE_CONFIG;
 import static android.Manifest.permission.OVERRIDE_COMPAT_CHANGE_CONFIG_ON_RELEASE_BUILD;
 import static android.Manifest.permission.READ_COMPAT_CHANGE_CONFIG;
+import static android.os.MessageQueue.USE_NEW_MESSAGEQUEUE;
 
 import android.annotation.EnforcePermission;
 import android.annotation.RequiresNoPermission;
@@ -449,6 +450,13 @@ public class PlatformCompat extends IPlatformCompat.Stub {
      */
     public long[] getDisabledChanges(ApplicationInfo appInfo) {
         return mCompatConfig.getDisabledChanges(appInfo);
+    }
+
+    /**
+     * Retrieves whether the DeliQueue implementation of MessageQueue is enabled.
+     */
+    public boolean getUseDeliQueue(ApplicationInfo appInfo) {
+        return mCompatConfig.isChangeEnabled(USE_NEW_MESSAGEQUEUE, appInfo);
     }
 
     /**
