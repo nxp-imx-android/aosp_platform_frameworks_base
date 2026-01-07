@@ -433,16 +433,6 @@ flag {
 }
 
 flag {
-  name: "tighten_admin_instantiation"
-  namespace: "enterprise"
-  description: "Don't allow arbitrary EnforcingAdmin authority to be read from disk."
-  bug: "336315393"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "package_as_admin_id"
   namespace: "enterprise"
   description: "Use only package name for DPC and role admins' identity"

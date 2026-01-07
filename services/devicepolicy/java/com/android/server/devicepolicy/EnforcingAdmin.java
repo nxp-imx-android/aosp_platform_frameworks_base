@@ -133,29 +133,11 @@ final class EnforcingAdmin {
         } else if (DeviceAdminAuthority.DEVICE_ADMIN_AUTHORITY.equals(authority)) {
             return createDeviceAdminEnforcingAdmin(admin.getComponentName(), userId);
         } else if (authority instanceof RoleAuthority roleAuthority) {
-            if (Flags.tightenAdminInstantiation()) {
-                return createRoleEnforcingAdmin(admin.getPackageName(), userId);
-            } else {
-                return new EnforcingAdmin(
-                        new AdminKey.Package(userId, admin.getPackageName()),
-                        admin.getComponentName(),
-                        true,
-                        new HashSet<>(roleAuthority.getRoles())
-                );
-            }
+            return createRoleEnforcingAdmin(admin.getPackageName(), userId);
         } else if (authority instanceof SystemAuthority systemAuthority) {
             return createSystemEnforcingAdmin(systemAuthority.getSystemEntity());
         }
-        if (Flags.tightenAdminInstantiation()) {
-            throw new IllegalArgumentException("Unknown admin type: " + admin);
-        } else {
-            return new EnforcingAdmin(
-                    new AdminKey.Package(userId, admin.getPackageName()),
-                    admin.getComponentName(),
-                    false, /* isRoleAuthority */
-                    Set.of()  /* authorities */
-            );
-        }
+        throw new IllegalArgumentException("Unknown admin type: " + admin);
     }
 
     static String getRoleAuthorityOf(String roleName) {
@@ -415,19 +397,10 @@ final class EnforcingAdmin {
             }
 
             // We've got a freak of an admin that should be impossible to create.
-            if (Flags.tightenAdminInstantiation()) {
-                Slogf.wtf(TAG,
-                        "Invalid EnforcingAdmin, package: %s, component: %s, authorities: %s",
-                        packageName, componentName, authoritiesStr);
-                return null;
-            } else {
-                return new EnforcingAdmin(
-                        new AdminKey.Package(userId, packageName),
-                        componentName,
-                        false, /* isRoleAuthority */
-                        new HashSet<>(Set.of(authorities))
-                );
-            }
+            Slogf.wtf(TAG,
+                    "Invalid EnforcingAdmin, package: %s, component: %s, authorities: %s",
+                    packageName, componentName, authoritiesStr);
+            return null;
         }
     }
 
