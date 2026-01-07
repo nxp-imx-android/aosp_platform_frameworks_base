@@ -1786,33 +1786,68 @@ public class LockSettingsService extends ILockSettings.Stub {
     /**
      * Migrate profile lock so that the profile_pwd file is the authority for whether a profile has
      * a unified profile password. Cleans up the legacy child profile lock file after saving the
-     * profile_pwd file and synchronizing the filesystem.
+     * profile_pwd file and synchronizing the filesystem. Skipped if the profile_pwd already exists
+     * and is decryptable, indicating that migration has already been performed.
      *
      * <p>Invariant: if the migration completes without throwing an error, there will be no legacy
      * child profile lock files, nor keystore profile decrypt keys with legacy aliases.
+     *
+     * @return true if the migration was performed, false if it was skipped due to the profile_pwd
+     *     already existing.
      */
-    private void migrateChildProfileLockPasswordToProfileProtectorPwd(
+    @VisibleForTesting
+    boolean migrateChildProfileLockPasswordToProfileProtectorPwd(
             LockscreenCredential password, long parentSid, int profileId, long protectorId) {
-        if (getCredentialTypeInternal(profileId) == CREDENTIAL_TYPE_NONE) {
-            Slogf.w(
+        // Protect keystore/LockSettingsStorage from concurrent modification during migration.
+        synchronized (mSpManager) {
+            byte[] encryptedProfilePwd = mSpManager.loadProfilePassword(profileId, protectorId);
+            if (encryptedProfilePwd != null) {
+                try (LockscreenCredential existingProfilePwd =
+                        decryptProfilePassword(
+                                mKeyStore, profileId, protectorId, encryptedProfilePwd)) {
+                    if (existingProfilePwd.equals(password)) {
+                        // Migration already performed.
+                        return false;
+                    }
+                    // This should not happen, but if it does, we do not want to touch anything.
+                    throw new IllegalStateException(
+                            "Existing profile_pwd conflicts with the legacy password.");
+                } catch (GeneralSecurityException e) {
+                    // This should not happen, but if it's the case, proceed with encrypting the
+                    // retrieved password, since the existing one cannot be retrieved any way.
+                    Slogf.w(
+                            TAG,
+                            "Undecryptable profile_pwd found during migration from legacy format"
+                                + " for protector %016x belonging to profile user %d. Encrypting"
+                                + " retrieved password instead.",
+                            protectorId,
+                            profileId);
+                }
+            }
+            if (getCredentialTypeInternal(profileId) == CREDENTIAL_TYPE_NONE) {
+                Slogf.w(
+                        TAG,
+                        "Removing unexpected child profile lock for profile %d with NONE "
+                                + "credential.",
+                        profileId);
+                removeKeystoreProfileKeyLegacy(mKeyStore, profileId);
+                mStorage.removeChildProfileLock(profileId);
+                return false;
+            }
+            Slogf.i(
                     TAG,
-                    "Removing unexpected child profile lock for profile %d with NONE credential.",
+                    "Migrating child profile lock for profile %d to profile protector lock",
                     profileId);
-            removeKeystoreProfileKeyLegacy(mKeyStore, profileId);
-            mStorage.removeChildProfileLock(profileId);
-            return;
+            // Commit
+            mSpManager.encryptAndSaveProfilePassword(profileId, protectorId, parentSid, password);
+            mStorage.syncSyntheticPasswordState(profileId);
         }
-        Slogf.i(
-                TAG,
-                "Migrating child profile lock for profile %d to profile protector lock",
-                profileId);
-        // Commit
-        mSpManager.encryptAndSaveProfilePassword(profileId, protectorId, parentSid, password);
-        mStorage.syncSyntheticPasswordState(profileId);
 
         // Only clean up AFTER successful commit
         removeKeystoreProfileKeyLegacy(mKeyStore, profileId);
         mStorage.removeChildProfileLock(profileId);
+
+        return true;
     }
 
     /**
