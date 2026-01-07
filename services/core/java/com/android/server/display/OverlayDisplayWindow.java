@@ -160,6 +160,13 @@ final class OverlayDisplayWindow implements DumpUtils.Dump {
             mTitle += mContext.getResources().getString(
                     com.android.internal.R.string.display_manager_overlay_display_secure_suffix);
         }
+        if (mTitleTextView != null) {
+            mTitleTextView.setText(mTitle);
+        }
+        if (mTextureView != null) {
+            mTextureView.getLayoutParams().width = mWidth;
+            mTextureView.getLayoutParams().height = mHeight;
+        }
         if (doLayout) {
             relayout();
         }

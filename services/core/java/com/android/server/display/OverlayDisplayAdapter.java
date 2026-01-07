@@ -347,6 +347,7 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
         private Surface mSurface;
         private DisplayDeviceInfo mInfo;
         private int mActiveMode;
+        private int mUserPreferredModeId = -1;
 
         OverlayDisplayDevice(IBinder displayToken, String name,
                 List<OverlayMode> modes, int activeMode, int defaultMode,
@@ -457,23 +458,50 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
         }
 
         @Override
+        public Display.Mode getUserPreferredDisplayModeLocked() {
+            if (mUserPreferredModeId == -1) {
+                return super.getUserPreferredDisplayModeLocked();
+            }
+            int index = getModeArrayIndex(mUserPreferredModeId);
+            if (index == -1) {
+                return super.getUserPreferredDisplayModeLocked();
+            }
+            return mModes[index];
+        }
+
+        @Override
+        public void setUserPreferredDisplayModeLocked(Display.Mode mode) {
+            if (mode == null) {
+                return;
+            }
+            int modeId = mode.getModeId();
+            if (getModeArrayIndex(modeId) == -1) {
+                Slog.w(TAG, "Attempted to set an unsupported user preferred display mode: " + mode);
+                return;
+            }
+            mUserPreferredModeId = modeId;
+            setDisplayMode(modeId);
+        }
+
+        @Override
         public void setDesiredDisplayModeSpecsLocked(
                 DisplayModeDirector.DesiredDisplayModeSpecs displayModeSpecs) {
-            final int id = displayModeSpecs.baseModeId;
+            setDisplayMode(
+                    mUserPreferredModeId == -1
+                            ? displayModeSpecs.baseModeId
+                            : mUserPreferredModeId);
+        }
+
+        private void setDisplayMode(int displayModeId) {
             int index = -1;
-            if (id == 0) {
+            if (displayModeId == 0) {
                 // Use the default.
                 index = 0;
             } else {
-                for (int i = 0; i < mModes.length; i++) {
-                    if (mModes[i].getModeId() == id) {
-                        index = i;
-                        break;
-                    }
-                }
+                index = getModeArrayIndex(displayModeId);
             }
             if (index == -1) {
-                Slog.w(TAG, "Unable to locate mode " + id + ", reverting to default.");
+                Slog.w(TAG, "Unable to locate mode " + displayModeId + ", reverting to default.");
                 index = mDefaultMode;
             }
             if (mActiveMode == index) {
@@ -481,8 +509,22 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
             }
             mActiveMode = index;
             mInfo = null;
+            if (mSurfaceTexture != null) {
+                Display.Mode mode = mModes[mActiveMode];
+                mSurfaceTexture.setDefaultBufferSize(
+                        mode.getPhysicalWidth(), mode.getPhysicalHeight());
+            }
             sendDisplayDeviceEventLocked(this, DISPLAY_DEVICE_EVENT_CHANGED);
             onModeChangedLocked(index);
+        }
+
+        private int getModeArrayIndex(int modeId) {
+            for (int i = 0; i < mModes.length; i++) {
+                if (mModes[i].getModeId() == modeId) {
+                    return i;
+                }
+            }
+            return -1;
         }
 
         /**
