@@ -308,6 +308,18 @@ public class ClipboardListenerTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_OVERRIDE_SUPPRESS_OVERLAY_CONDITION)
+    public void test_shouldSuppressOverlay_withNullClipSource_returnsFalse() {
+        ClipDescription desc = new ClipDescription("Test", new String[]{"text/plain"});
+        PersistableBundle bundle = new PersistableBundle();
+        bundle.putBoolean(ClipboardListener.EXTRA_SUPPRESS_OVERLAY, true);
+        desc.setExtras(bundle);
+        ClipData suppressableClipData = new ClipData(desc, new ClipData.Item("Test Item"));
+
+        assertFalse(ClipboardListener.shouldSuppressOverlay(suppressableClipData, null, false));
+    }
+
+    @Test
     public void test_logging_enterAndReenter() {
         mClipboardListener.start();
 
