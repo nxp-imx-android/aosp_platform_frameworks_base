@@ -19,6 +19,7 @@ package android.media.projection;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.graphics.Bitmap;
+import android.graphics.drawable.Icon;
 import android.os.Parcel;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -33,16 +34,20 @@ public class MediaProjectionAppContentTest {
     public void testConstructorAndGetters() {
         // Create a mock Bitmap
         Bitmap mockBitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+        // Create a mock Icon
+        Icon mockIcon = Icon.createWithResource("android", android.R.drawable.ic_delete);
 
         // Create a MediaProjectionAppContent object
         MediaProjectionAppContent content = new MediaProjectionAppContent.Builder(123)
                 .setThumbnail(mockBitmap)
                 .setTitle("Test Title")
+                .setIcon(mockIcon)
                 .build();
 
         // Verify the values using getters
         assertThat(content.getTitle()).isEqualTo("Test Title");
         assertThat(content.getId()).isEqualTo(123);
+        assertThat(content.getIcon()).isEqualTo(mockIcon);
         // Compare bitmap configurations and dimensions
         assertThat(content.getThumbnail().getConfig()).isEqualTo(mockBitmap.getConfig());
         assertThat(content.getThumbnail().getWidth()).isEqualTo(mockBitmap.getWidth());
@@ -53,11 +58,14 @@ public class MediaProjectionAppContentTest {
     public void testParcelable() {
         // Create a mock Bitmap
         Bitmap mockBitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+        // Create a mock Icon
+        Icon mockIcon = Icon.createWithResource("android", android.R.drawable.ic_delete);
 
         // Create a MediaProjectionAppContent object
         MediaProjectionAppContent content = new MediaProjectionAppContent.Builder(123)
                 .setThumbnail(mockBitmap)
                 .setTitle("Test Title")
+                .setIcon(mockIcon)
                 .build();
 
         // Parcel and unparcel the object
@@ -70,6 +78,8 @@ public class MediaProjectionAppContentTest {
         // Verify the values of the unparceled object
         assertThat(unparceledContent.getTitle()).isEqualTo("Test Title");
         assertThat(unparceledContent.getId()).isEqualTo(123);
+        // Icons are not equal after being parceled, so we compare their string representations
+        assertThat(unparceledContent.getIcon().toString()).isEqualTo(mockIcon.toString());
         // Compare bitmap configurations and dimensions
         assertThat(unparceledContent.getThumbnail().getConfig()).isEqualTo(mockBitmap.getConfig());
         assertThat(unparceledContent.getThumbnail().getWidth()).isEqualTo(mockBitmap.getWidth());
@@ -86,5 +96,19 @@ public class MediaProjectionAppContentTest {
         // Verify that the array is not null and has the correct size
         assertThat(contentArray).isNotNull();
         assertThat(contentArray).hasLength(5);
+    }
+
+    @Test
+    public void testBuilder_withOnlyRequiredFields() {
+        // Create a MediaProjectionAppContent object with only the mandatory ID
+        MediaProjectionAppContent content = new MediaProjectionAppContent.Builder(456).build();
+
+        // Verify the ID is set correctly
+        assertThat(content.getId()).isEqualTo(456);
+
+        // Verify that optional fields are set to their default values
+        assertThat(content.getTitle().toString()).isEmpty();
+        assertThat(content.getThumbnail()).isNull();
+        assertThat(content.getIcon()).isNull();
     }
 }
