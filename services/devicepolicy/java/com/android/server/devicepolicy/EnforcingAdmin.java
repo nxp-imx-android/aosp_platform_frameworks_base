@@ -71,8 +71,6 @@ final class EnforcingAdmin {
     private static final String ATTR_AUTHORITIES_SEPARATOR = ";";
     private static final String ATTR_USER_ID = "user-id";
     private static final String ATTR_IS_ROLE = "is-role";
-    @Deprecated // It is no longer read and will be removed.
-    private static final String ATTR_IS_SYSTEM = "is-system";
 
     // This is needed for DPCs and active admins
     private final ComponentName mComponentName;
@@ -355,9 +353,6 @@ final class EnforcingAdmin {
     void saveToXml(TypedXmlSerializer serializer) throws IOException {
         serializer.attribute(/* namespace= */ null, ATTR_PACKAGE_NAME, mAdminKey.getPackageName());
         serializer.attributeBoolean(/* namespace= */ null, ATTR_IS_ROLE, mIsRoleAuthority);
-        if (!Flags.dontWriteIsSystemAuthority()) {
-            serializer.attributeBoolean(/* namespace= */ null, ATTR_IS_SYSTEM, isSystemAuthority());
-        }
         serializer.attributeInt(/* namespace= */ null, ATTR_USER_ID, mAdminKey.getUserId());
         if (isSystemAuthority()) {
             serializer.attribute(
