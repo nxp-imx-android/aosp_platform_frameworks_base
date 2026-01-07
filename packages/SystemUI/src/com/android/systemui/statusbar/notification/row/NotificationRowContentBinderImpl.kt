@@ -196,23 +196,21 @@ constructor(
         result.inflatedSingleLineView =
             result.contentModel.singleLineViewModel?.let { viewModel ->
                 SingleLineViewInflater.inflatePrivateSingleLineView(
-                    viewModel.isConversation(),
-                    viewModel.isMetric(),
-                    reInflateFlags,
-                    entry,
-                    systemUIContext,
-                    logger,
+                    payload = viewModel.payload,
+                    reinflateFlags = reInflateFlags,
+                    entry = entry,
+                    context = systemUIContext,
+                    logger = logger,
                 )
             }
         result.inflatedPublicSingleLineView =
             result.contentModel.publicSingleLineViewModel?.let { viewModel ->
                 SingleLineViewInflater.inflatePublicSingleLineView(
-                    viewModel.isConversation(),
-                    viewModel.isMetric(),
-                    reInflateFlags,
-                    entry,
-                    systemUIContext,
-                    logger,
+                    payload = viewModel.payload,
+                    reinflateFlags = reInflateFlags,
+                    entry = entry,
+                    context = systemUIContext,
+                    logger = logger,
                 )
             }
         apply(
@@ -449,12 +447,11 @@ constructor(
             inflationProgress.inflatedSingleLineView =
                 inflationProgress.contentModel.singleLineViewModel?.let {
                     SingleLineViewInflater.inflatePrivateSingleLineView(
-                        it.isConversation(),
-                        it.isMetric(),
-                        reInflateFlags,
-                        entry,
-                        context,
-                        logger,
+                        payload = it.payload,
+                        reinflateFlags = reInflateFlags,
+                        entry = entry,
+                        context = context,
+                        logger = logger,
                     )
                 }
 
@@ -462,12 +459,11 @@ constructor(
             inflationProgress.inflatedPublicSingleLineView =
                 inflationProgress.contentModel.publicSingleLineViewModel?.let { viewModel ->
                     SingleLineViewInflater.inflatePublicSingleLineView(
-                        viewModel.isConversation(),
-                        viewModel.isMetric(),
-                        reInflateFlags,
-                        entry,
-                        context,
-                        logger,
+                        payload = viewModel.payload,
+                        reinflateFlags = reInflateFlags,
+                        entry = entry,
+                        context = context,
+                        logger = logger,
                     )
                 }
 
