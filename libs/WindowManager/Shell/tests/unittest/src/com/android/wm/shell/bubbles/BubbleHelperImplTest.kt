@@ -32,7 +32,6 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.bubbles.BubbleRootTaskTest.Companion.prepareRootTaskForTest
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.sysui.ShellInit
-import com.android.wm.shell.taskview.TaskViewTransitions
 import com.google.common.truth.Truth.assertThat
 import java.util.Optional
 import org.junit.Before
@@ -52,7 +51,6 @@ class BubbleHelperImplTest : ShellTestCase() {
 
     private val shellInit = mock<ShellInit>()
     private val taskOrganizer = mock<ShellTaskOrganizer>()
-    private val taskViewTransitions = mock<TaskViewTransitions>()
     private val splitScreenController = mock<SplitScreenController>()
 
     private lateinit var bubbleRootTask: BubbleRootTask
@@ -60,9 +58,9 @@ class BubbleHelperImplTest : ShellTestCase() {
 
     @Before
     fun setUp() {
-        bubbleRootTask = BubbleRootTask(mContext, shellInit, taskOrganizer, taskViewTransitions)
+        bubbleRootTask = BubbleRootTask(mContext, shellInit, taskOrganizer)
         bubbleHelper = BubbleHelperImpl(
-            bubbleRootTask = { bubbleRootTask },
+            bubbleRootTask = bubbleRootTask,
             splitScreenController = { Optional.of(splitScreenController) }
         )
     }

@@ -874,8 +874,9 @@ public abstract class WMShellBaseModule {
     @Provides
     static TaskViewTransitions provideTaskViewTransitions(Transitions transitions,
             TaskViewRepository repository, ShellTaskOrganizer organizer,
-            SyncTransactionQueue syncQueue, Optional<BubbleHelper> bubbleHelper) {
-        return new TaskViewTransitions(transitions, repository, organizer, syncQueue, bubbleHelper);
+            Optional<BubbleHelper> bubbleHelper) {
+        return new TaskViewTransitions(transitions, repository, organizer, bubbleHelper,
+                /* taskViewRootTask= */ Optional.empty());
     }
 
     @WMSingleton

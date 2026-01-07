@@ -33,7 +33,6 @@ import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.sysui.ShellInit
-import com.android.wm.shell.taskview.TaskViewTransitions
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -55,13 +54,11 @@ class BubbleRootTaskTest : ShellTestCase() {
 
     private val shellInit = mock<ShellInit>()
     private val taskOrganizer = mock<ShellTaskOrganizer>()
-    private val taskViewTransitions = mock<TaskViewTransitions>()
-    private val bubbleHelper = mock<BubbleHelper>()
     private lateinit var bubbleRootTask: BubbleRootTask
 
     @Before
     fun setUp() {
-        bubbleRootTask = BubbleRootTask(mContext, shellInit, taskOrganizer, taskViewTransitions)
+        bubbleRootTask = BubbleRootTask(mContext, shellInit, taskOrganizer)
     }
 
     @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
@@ -117,6 +114,27 @@ class BubbleRootTaskTest : ShellTestCase() {
         assertThat(change.disablePip).isTrue()
         assertThat(change.disableLaunchAdjacent).isTrue()
         assertThat(change.forceTranslucent).isTrue()
+    }
+
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ROOT_TASK)
+    @Test
+    fun onTaskInfoChanged_updatesRootTask() {
+        val initCallbackCaptor = argumentCaptor<Runnable>()
+        verify(shellInit).addInitCallback<BubbleRootTask>(initCallbackCaptor.capture(), any())
+        initCallbackCaptor.firstValue.run()
+
+        val token = MockToken.token()
+        bubbleRootTask.prepareRootTaskForTest(bubbleRootTaskId = 123, bubbleRootToken = token)
+
+        assertThat(bubbleRootTask.taskId).isEqualTo(123)
+
+        val updatedTaskInfo = ActivityManager.RunningTaskInfo().apply {
+            taskId = 456
+            this.token = token
+        }
+        bubbleRootTask.onTaskInfoChanged(updatedTaskInfo)
+
+        assertThat(bubbleRootTask.taskId).isEqualTo(456)
     }
 
     companion object {

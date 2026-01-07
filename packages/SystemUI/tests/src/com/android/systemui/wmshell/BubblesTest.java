@@ -361,8 +361,6 @@ public class BubblesTest extends SysuiTestCase {
     @Mock
     private Display mDefaultDisplay;
     @Mock
-    private SyncTransactionQueue mSyncQueue;
-    @Mock
     private HomeIntentProvider mHomeIntentProvider;
 
     private final KosmosJavaAdapter mKosmos = new KosmosJavaAdapter(this);
@@ -519,7 +517,7 @@ public class BubblesTest extends SysuiTestCase {
                 syncExecutor);
         mTaskViewRepository = new TaskViewRepository();
         mTaskViewTransitions = new TaskViewTransitions(mTransitions, mTaskViewRepository,
-                mShellTaskOrganizer, mSyncQueue, Optional.of(mBubbleHelper));
+                mShellTaskOrganizer, Optional.of(mBubbleHelper), Optional.empty());
         mAppInfoProvider = new PackageManagerBubbleAppInfoProvider();
         mBubbleUserResolver = userId -> new BubbleUserInfo(userId, UserType.MAIN);
         BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory = new BubbleViewInfoTask.Factory() {
