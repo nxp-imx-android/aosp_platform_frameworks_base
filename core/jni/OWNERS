@@ -50,7 +50,7 @@ per-file android_os_HwRemoteBinder* = file:platform/system/libhwbinder:/OWNERS
 per-file EphemeralStorage* = file:platform/system/libhwbinder:/OWNERS
 
 # Sensor
-per-file android_hardware_SensorManager* = arthuri@google.com, bduddie@google.com, stange@google.com
+per-file android_hardware_SensorManager* = file:platform/frameworks/native:/services/sensorservice/OWNERS
 
 # Context Hub
 per-file android_hardware_HubEndpoint* = file:/services/core/java/com/android/server/location/contexthub/OWNERS
