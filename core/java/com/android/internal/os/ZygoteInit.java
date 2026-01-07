@@ -702,7 +702,9 @@ public class ZygoteInit {
                 (1L << OsConstants.CAP_SYS_TIME) |
                 (1L << OsConstants.CAP_SYS_TTY_CONFIG) |
                 (1L << OsConstants.CAP_WAKE_ALARM) |
-                (1L << OsConstants.CAP_BLOCK_SUSPEND);
+                (1L << OsConstants.CAP_BLOCK_SUSPEND) |
+                /* Required for system server to manage the safesetid UID policy */
+                (1L << OsConstants.CAP_MAC_ADMIN);
         /* Containers run without some capabilities, so drop any caps that are not available. */
         StructCapUserHeader header = new StructCapUserHeader(
                 OsConstants._LINUX_CAPABILITY_VERSION_3, 0);

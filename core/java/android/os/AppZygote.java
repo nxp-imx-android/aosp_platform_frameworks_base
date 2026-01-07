@@ -104,6 +104,13 @@ public class AppZygote {
     }
 
     /**
+     * Returns the UID of the zygote process.
+     */
+    public int getZygoteUid() {
+        return mZygoteUid;
+    }
+
+    /**
      * Start a new process.
      *
      * <p>Wrap ZygoteProcess.start with retry logic.

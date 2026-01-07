@@ -64,6 +64,7 @@ import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_BACKUP;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_INSTRUMENTATION;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_PERSISTENT;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_SYSTEM;
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.content.pm.ApplicationInfo.HIDDEN_API_ENFORCEMENT_DEFAULT;
 import static android.content.pm.PackageManager.GET_SHARED_LIBRARY_FILES;
 import static android.content.pm.PackageManager.MATCH_ALL;
@@ -134,7 +135,6 @@ import static android.os.Process.setThreadScheduler;
 import static android.provider.Settings.Global.ALWAYS_FINISH_ACTIVITIES;
 import static android.provider.Settings.Global.DEBUG_APP;
 import static android.provider.Settings.Global.WAIT_FOR_DEBUGGER;
-import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.security.Flags.preventIntentRedirect;
 import static android.security.Flags.preventIntentRedirectCollectNestedKeysOnServerIfNotCollected;
 import static android.server.Flags.enableThemeService;
@@ -4857,6 +4857,16 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         if (DEBUG_ALL) Slog.v(
                 TAG, "Binding process pid " + pid + " to record " + app);
+
+        // The new process has finished initialization and at this point |callingUid|
+        // does not have permission to call setuid(), so it does not need to be
+        // tracked by the transition policy.
+        if (Flags.useSafesetidUidPolicy()
+                && UidTransitionPolicy.isEnabled()
+                && mProcessList.getUidTransitionPolicy() != null) {
+            // TODO(b/468898907) Monitor system server crashes due to failures at this call site.
+            mProcessList.getUidTransitionPolicy().purgeFromPolicy(callingUid);
+        }
 
         final String processName = app.processName;
         try {
@@ -20470,10 +20480,13 @@ public class ActivityManagerService extends IActivityManager.Stub
         int callingUid = Binder.getCallingUid();
         if (((intent.getExtendedFlags() & Intent.EXTENDED_FLAG_NESTED_INTENT_KEYS_COLLECTED) == 0)
                 && intent.getExtras() != null && intent.getExtras().hasIntent()) {
-            Slog.wtf(TAG,
-                    "[IntentRedirect Hardening] The intent does not have its nested keys collected as a "
-                            + "preparation for creating intent creator tokens. Intent: "
-                            + intent + "; creatorPackage: " + creatorPackage);
+            Slog.wtf(
+                    TAG,
+                    "[IntentRedirect Hardening] The intent does not have its nested keys collected"
+                        + " as a preparation for creating intent creator tokens. Intent: "
+                            + intent
+                            + "; creatorPackage: "
+                            + creatorPackage);
             FrameworkStatsLog.write(EXTRA_INTENT_KEYS_COLLECTED_ON_SERVER, callingUid);
 
             if (preventIntentRedirectCollectNestedKeysOnServerIfNotCollected()) {

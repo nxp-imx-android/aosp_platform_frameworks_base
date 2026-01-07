@@ -327,3 +327,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "use_safesetid_uid_policy"
+    namespace: "system_performance"
+    description: "Use SafeSetID to enforce UID policies instead of SELinux filters"
+    bug: "414893665"
+}
