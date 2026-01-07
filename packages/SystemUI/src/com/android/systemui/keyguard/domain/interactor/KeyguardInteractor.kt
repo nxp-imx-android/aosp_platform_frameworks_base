@@ -262,6 +262,12 @@ constructor(
     @Deprecated("Use KeyguardTransitionInteractor + KeyguardState.GONE")
     val isKeyguardGoingAway: SharedFlow<Boolean> = repository.isKeyguardGoingAway.asSharedFlow()
 
+    /**
+     * Whether keyguard is enabled (security is not set to None and no app/adb commands have
+     * disabled it).
+     */
+    val isKeyguardEnabled: StateFlow<Boolean> = repository.isKeyguardEnabled
+
     /** Keyguard can be clipped at the top as the shade is dragged */
     val topClippingBounds: Flow<Int?> by lazy {
         combineTransform(

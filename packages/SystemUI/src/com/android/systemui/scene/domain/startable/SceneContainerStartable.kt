@@ -47,6 +47,7 @@ import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteract
 import com.android.systemui.deviceentry.shared.model.DeviceUnlockSource
 import com.android.systemui.kairos.internal.util.fastForEach
 import com.android.systemui.keyguard.DismissCallbackRegistry
+import com.android.systemui.keyguard.WindowManagerLockscreenVisibilityManager
 import com.android.systemui.keyguard.domain.interactor.KeyguardDismissActionInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
@@ -70,6 +71,7 @@ import com.android.systemui.scene.data.model.asIterable
 import com.android.systemui.scene.data.model.peek
 import com.android.systemui.scene.domain.SceneFrameworkTableLog
 import com.android.systemui.scene.domain.interactor.DisabledContentInteractor
+import com.android.systemui.scene.domain.interactor.OnBootTransitionInteractor
 import com.android.systemui.scene.domain.interactor.SceneBackInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.domain.startable.SceneContainerStartable.HideOverlayCommand.HideSome
@@ -173,6 +175,8 @@ constructor(
     private val keyguardDismissActionInteractor: KeyguardDismissActionInteractor,
     private val wakeDirectlyToGoneInteractor: KeyguardWakeDirectlyToGoneInteractor,
     private val keyguardShowWhileAwakeInteractor: KeyguardShowWhileAwakeInteractor,
+    private val windowManagerLockscreenVisibilityManager: WindowManagerLockscreenVisibilityManager,
+    private val bootInteractor: OnBootTransitionInteractor,
 ) : CoreStartable {
     private val centralSurfaces: CentralSurfaces?
         get() = centralSurfacesOptLazy.get().getOrNull()
@@ -190,6 +194,7 @@ constructor(
         if (SceneContainerFlag.isEnabled) {
             sceneLogger.logFrameworkEnabled(isEnabled = true)
             applicationScope.launch { hydrateTableLogBuffer() }
+            maybeShowLockscreenOnStart()
             hydrateVisibility()
             automaticallySwitchScenes()
             hydrateSystemUiState()
@@ -1353,6 +1358,17 @@ constructor(
                     }
             }
         }
+    }
+
+    private fun maybeShowLockscreenOnStart() {
+        // This needs to happen immediately upon start(), we can't wait for onSystemReady,
+        // onBootCompleted, or any more reasonable events, since otherwise unlocked app content
+        // may be visible during boot. Once those events come through, the
+        // WindowManagerLockscreenVisibilityViewModel will take over.
+        windowManagerLockscreenVisibilityManager.setLockscreenShowing(
+            bootInteractor.showLockscreenOnBoot(),
+            "initial lockscreen visibility on start()",
+        )
     }
 
     /**
