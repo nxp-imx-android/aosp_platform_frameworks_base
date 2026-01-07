@@ -54,8 +54,13 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.REGISTER_WINDOW_MANAGER_LISTENERS" />
 
-    <application android:debuggable="true" android:largeHeap="true" android:testOnly="true"
-            android:enableOnBackInvokedCallback="true" >
+    <application
+        android:debuggable="true"
+        android:enableOnBackInvokedCallback="true"
+        android:largeHeap="true"
+        android:appComponentFactory="com.android.systemui.PhoneSystemUIAppComponentFactory"
+        tools:replace="android:appComponentFactory"
+        android:testOnly="true">
         <uses-library android:name="android.test.runner" />
 
         <receiver android:name="com.android.systemui.SliceBroadcastRelayHandlerTest$Receiver"
@@ -163,6 +168,12 @@
 
         <provider android:name="com.android.systemui.keyguard.CustomizationProvider"
             android:authorities="com.android.systemui.test.keyguard.quickaffordance.disabled"
+            android:enabled="false"
+            tools:replace="android:authorities"
+            tools:node="remove" />
+
+        <provider android:name="com.android.systemui.people.PeopleProvider"
+            android:authorities="com.android.systemui.tests.people.PeopleProvider"
             android:enabled="false"
             tools:replace="android:authorities"
             tools:node="remove" />

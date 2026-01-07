@@ -850,7 +850,6 @@ android_library {
         "tests/src/**/*.kt",
         "tests/src/**/*.java",
         ":SystemUI-application-srcs",
-        ":SystemUI-core-srcs",
         ":ReleaseJavaFiles",
         ":SystemUI-tests-multivalent-monolith",
         ":SystemUI-tests-multivalent-pods",
@@ -874,6 +873,7 @@ android_library {
         "kotlin-test",
         "platform-screenshot-diff-core",
         "PlatformMotionTesting",
+        "SystemUI-core",
         "SystemUICustomizationTestUtils",
         "androidx.compose.runtime_runtime",
         "kairos",
@@ -888,6 +888,9 @@ android_library {
         "android.test.base.stubs.system",
         "android.test.mock.stubs.system",
         "keepanno-annotations",
+    ],
+    associates: [
+        "SystemUI-core",
     ],
     kotlincflags: [
         "-Xjvm-default=all",
