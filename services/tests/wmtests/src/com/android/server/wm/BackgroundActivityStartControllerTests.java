@@ -696,4 +696,40 @@ public class BackgroundActivityStartControllerTests {
         // AND no toast is shown because mResultForCaller does not allow the start.
         assertThat(mShownToasts).isEmpty();
     }
+
+    private void checkAndAssertLoggedActivityName(Intent intent, String expectedActivityName) {
+        mController.checkBackgroundActivityStart(
+                REGULAR_UID_1,
+                REGULAR_PID_1,
+                REGULAR_PACKAGE_1,
+                -1, // realCallingUid
+                -1, // realCallingPid
+                mCallerApp,
+                null, // originatingPendingIntent
+                false, // allowBalExemptionForSystemProcess
+                null, // resultRecord
+                intent,
+                ActivityOptions.makeBasic());
+
+        assertThat(mBalAllowedLogs).hasSize(1);
+        assertThat(mBalAllowedLogs.get(0).packageName()).isEqualTo(expectedActivityName);
+    }
+
+    @Test
+    public void testGetComponent_withNullIntent_returnsNoIntent() {
+        // GIVEN a background activity start check with a null intent
+        // WHEN checking the background activity start
+        // THEN the logged activity name should be "noIntent"
+        checkAndAssertLoggedActivityName(null /* intent */, "noIntent");
+    }
+
+    @Test
+    public void testGetComponent_withIntentNoComponent_returnsNoComponent() {
+        // GIVEN a background activity start check with an intent that has no component
+        Intent intent = new Intent("some.action");
+
+        // WHEN checking the background activity start
+        // THEN the logged activity name should be "noComponent"
+        checkAndAssertLoggedActivityName(intent, "noComponent");
+    }
 }
