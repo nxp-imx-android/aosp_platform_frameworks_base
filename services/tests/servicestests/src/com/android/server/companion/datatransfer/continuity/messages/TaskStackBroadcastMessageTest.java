@@ -16,11 +16,8 @@
 
 package com.android.server.companion.datatransfer.continuity.messages;
 
-import static com.google.common.truth.Truth.assertThat;
-
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
-import java.util.ArrayList;
 import java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,14 +42,5 @@ public class TaskStackBroadcastMessageTest extends ProtoTest<TaskStackBroadcastM
                                         true,
                                         50,
                                         new HandoffOptions(true, true)))));
-    }
-
-    @Test
-    public void testGetFieldNumber_returnsCorrectValue() {
-        TaskStackBroadcastMessage TaskStackBroadcastMessage =
-                new TaskStackBroadcastMessage(new ArrayList<>());
-
-        assertThat(TaskStackBroadcastMessage.getFieldNumber())
-                .isEqualTo(android.companion.TaskContinuityMessage.TASK_STACK_BROADCAST);
     }
 }

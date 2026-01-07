@@ -16,8 +16,6 @@
 
 package com.android.server.companion.datatransfer.continuity.messages;
 
-import static com.google.common.truth.Truth.assertThat;
-
 import android.platform.test.annotations.Presubmit;
 import org.junit.Test;
 
@@ -32,12 +30,5 @@ public class HandoffRequestMessageTest extends ProtoTest<HandoffRequestMessage> 
     @Test
     public void testWriteAndRead_roundTrip_works() throws Exception {
         verifyRoundTrip(new HandoffRequestMessage(1));
-    }
-
-    @Test
-    public void testGetFieldNumber_returnsCorrectValue() {
-        HandoffRequestMessage handoffRequestMessage = new HandoffRequestMessage(1);
-        assertThat(handoffRequestMessage.getFieldNumber())
-                .isEqualTo(android.companion.TaskContinuityMessage.HANDOFF_REQUEST);
     }
 }

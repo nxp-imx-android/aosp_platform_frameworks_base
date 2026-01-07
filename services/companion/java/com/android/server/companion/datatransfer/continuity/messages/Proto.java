@@ -17,8 +17,10 @@
 package com.android.server.companion.datatransfer.continuity.messages;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -42,14 +44,32 @@ public interface Proto {
      * @throws IOException if an error occurs while writing
      */
     public static void writeField(
-            @NonNull ProtoOutputStream pos, long fieldNumber, @NonNull Proto proto)
+            @NonNull ProtoOutputStream pos, long fieldNumber, @Nullable Proto proto)
             throws IOException {
+        if (proto == null) {
+            return;
+        }
+
         long token = Objects.requireNonNull(pos).start(fieldNumber);
         Objects.requireNonNull(proto).write(pos);
         pos.end(token);
     }
 
+    public static byte[] toBytes(@NonNull Proto proto) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ProtoOutputStream pos = new ProtoOutputStream(baos);
+        proto.write(pos);
+        pos.flush();
+        return baos.toByteArray();
+    }
+
     public abstract class Builder<T extends Proto> {
+
+        public Builder<T> readFromBytes(@NonNull byte[] bytes) throws IOException {
+            ProtoInputStream pis = new ProtoInputStream(bytes);
+            readFromStream(pis);
+            return this;
+        }
 
         public Builder<T> readFromField(@NonNull ProtoInputStream pis, long fieldNumber)
                 throws IOException {

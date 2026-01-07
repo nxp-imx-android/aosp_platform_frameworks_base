@@ -28,6 +28,7 @@ import android.util.Slog;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
+import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.tasks.TaskSyncController;
 import java.util.HashSet;
 import java.util.Objects;
@@ -74,7 +75,13 @@ public class OutboundHandoffRequestHandler {
             mPendingHandoffRequests.add(request);
             TaskContinuityMessenger.SendMessageResult result =
                     mTaskContinuityMessenger.sendMessage(
-                            associationId, new HandoffRequestMessage(taskId));
+                            associationId,
+                            new TaskContinuityMessage.Builder()
+                                    .setHandoffRequestMessage(
+                                            new HandoffRequestMessage.Builder()
+                                                    .setTaskId(taskId)
+                                                    .build())
+                                    .build());
 
             switch (result) {
                 case TaskContinuityMessenger.SendMessageResult.SUCCESS:

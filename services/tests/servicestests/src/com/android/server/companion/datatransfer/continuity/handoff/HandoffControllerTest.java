@@ -17,30 +17,22 @@
 package com.android.server.companion.datatransfer.continuity.handoff;
 
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
 
-import android.companion.datatransfer.continuity.IHandoffRequestCallback;
 import android.companion.datatransfer.continuity.TaskContinuityManager;
-import android.content.Context;
-import android.os.RemoteException;
+import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
-import android.platform.test.annotations.Presubmit;
-
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
+import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.tasks.TaskSyncController;
-import com.android.server.companion.datatransfer.continuity.handoff.HandoffController;
-
 import java.util.List;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.junit.Test;
-import org.junit.Before;
-import org.junit.runner.RunWith;
 
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
@@ -95,7 +87,11 @@ public class HandoffControllerTest {
     public void testOnHandoffRequestMessageReceived_callsInboundHandoffRequestHandler() {
         int associationId = 1;
         HandoffRequestMessage handoffRequestMessage = new HandoffRequestMessage(1);
-        mHandoffController.onMessageReceived(associationId, handoffRequestMessage);
+        mHandoffController.onMessageReceived(
+                associationId,
+                new TaskContinuityMessage.Builder()
+                        .setHandoffRequestMessage(handoffRequestMessage)
+                        .build());
         verify(mMockInboundHandoffRequestHandler)
                 .onHandoffRequestMessageReceived(associationId, handoffRequestMessage);
     }
@@ -105,7 +101,11 @@ public class HandoffControllerTest {
         int associationId = 1;
         HandoffRequestResultMessage handoffRequestResultMessage =
                 new HandoffRequestResultMessage(1, 1, List.of());
-        mHandoffController.onMessageReceived(associationId, handoffRequestResultMessage);
+        mHandoffController.onMessageReceived(
+                associationId,
+                new TaskContinuityMessage.Builder()
+                        .setHandoffRequestResultMessage(handoffRequestResultMessage)
+                        .build());
         verify(mMockOutboundHandoffRequestHandler)
                 .onHandoffRequestResultMessageReceived(associationId, handoffRequestResultMessage);
     }

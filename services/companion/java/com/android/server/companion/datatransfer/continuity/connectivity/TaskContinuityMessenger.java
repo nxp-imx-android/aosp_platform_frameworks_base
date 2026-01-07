@@ -25,8 +25,8 @@ import android.companion.CompanionDeviceManager;
 import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.util.FrameworkStatsLog;
+import com.android.server.companion.datatransfer.continuity.messages.Proto;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
-import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageSerializer;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Objects;
@@ -40,7 +40,7 @@ import java.util.function.BiConsumer;
  */
 public class TaskContinuityMessenger implements ConnectedAssociationStore.Listener {
 
-    private static final String TAG = "TaskContinuityMessenger";
+    private static final String TAG = TaskContinuityMessenger.class.getSimpleName();
 
     private final CompanionDeviceManager mCompanionDeviceManager;
     private final ConnectedAssociationStore mConnectedAssociationStore;
@@ -143,10 +143,7 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
 
     public SendMessageResult sendMessage(
             int associationId, @NonNull TaskContinuityMessage message) {
-
-        Objects.requireNonNull(message);
-
-        return sendMessage(new int[] {associationId}, message);
+        return sendMessage(new int[] {associationId}, Objects.requireNonNull(message));
     }
 
     public SendMessageResult sendMessage(
@@ -158,7 +155,7 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
         Slog.i(TAG, "Sending message to " + associationIds.length + " associations.");
         byte[] serializedMessage;
         try {
-            serializedMessage = TaskContinuityMessageSerializer.serialize(message);
+            serializedMessage = Proto.toBytes(message);
         } catch (IOException e) {
             Slog.e(TAG, "Failed to serialize message: " + message, e);
             FrameworkStatsLog.write(
@@ -207,14 +204,12 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
     }
 
     public SendMessageResult sendMessage(@NonNull TaskContinuityMessage message) {
-        Objects.requireNonNull(message);
-
         int[] connectedAssociations =
                 mConnectedAssociationStore.getConnectedAssociations().stream()
                         .mapToInt(AssociationInfo::getId)
                         .toArray();
 
-        return sendMessage(connectedAssociations, message);
+        return sendMessage(connectedAssociations, Objects.requireNonNull(message));
     }
 
     @Override
@@ -241,7 +236,7 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
         Slog.v(TAG, "Received message from association id: " + associationId);
         try {
             TaskContinuityMessage taskContinuityMessage =
-                    TaskContinuityMessageSerializer.deserialize(data);
+                    new TaskContinuityMessage.Builder().readFromBytes(data).build();
             FrameworkStatsLog.write(
                     FrameworkStatsLog.TASK_CONTINUITY_MESSAGE_RECEIVED,
                     taskContinuityMessage.getTypeForMetrics());

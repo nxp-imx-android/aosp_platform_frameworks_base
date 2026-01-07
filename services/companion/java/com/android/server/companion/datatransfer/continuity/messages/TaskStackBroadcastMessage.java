@@ -19,7 +19,6 @@ package com.android.server.companion.datatransfer.continuity.messages;
 import android.annotation.NonNull;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
-import com.android.internal.util.FrameworkStatsLog;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +26,7 @@ import java.util.Objects;
 
 /** Deserialized version of the {@link TaskStackBroadcastMessage} proto. */
 public record TaskStackBroadcastMessage(@NonNull List<RemoteTaskInfo> remoteTasks)
-        implements TaskContinuityMessage {
+        implements Proto {
 
     public TaskStackBroadcastMessage {
         Objects.requireNonNull(remoteTasks);
@@ -35,6 +34,12 @@ public record TaskStackBroadcastMessage(@NonNull List<RemoteTaskInfo> remoteTask
 
     public static class Builder extends Proto.Builder<TaskStackBroadcastMessage> {
         private List<RemoteTaskInfo> remoteTasks = new ArrayList<>();
+
+        @NonNull
+        public Builder setRemoteTasks(@NonNull List<RemoteTaskInfo> remoteTasks) {
+            this.remoteTasks = Objects.requireNonNull(remoteTasks);
+            return this;
+        }
 
         @NonNull
         public Builder addRemoteTask(@NonNull RemoteTaskInfo remoteTask) {
@@ -71,12 +76,6 @@ public record TaskStackBroadcastMessage(@NonNull List<RemoteTaskInfo> remoteTask
         }
     }
 
-    /** Returns the proto field number for this message type. */
-    @Override
-    public long getFieldNumber() {
-        return android.companion.TaskContinuityMessage.TASK_STACK_BROADCAST;
-    }
-
     /** Writes this object to a proto output stream. */
     @Override
     public void write(@NonNull ProtoOutputStream pos) throws IOException {
@@ -91,10 +90,5 @@ public record TaskStackBroadcastMessage(@NonNull List<RemoteTaskInfo> remoteTask
                         remoteTaskInfo);
             }
         }
-    }
-
-    @Override
-    public int getTypeForMetrics() {
-        return FrameworkStatsLog.TASK_CONTINUITY_MESSAGE_SENT__MESSAGE_TYPE__TASK_STACK_BROADCAST;
     }
 }

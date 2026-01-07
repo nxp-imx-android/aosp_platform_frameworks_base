@@ -21,6 +21,7 @@ import android.app.TaskStackListener;
 import android.os.RemoteException;
 import android.util.Slog;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
+import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskStackBroadcastMessage;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import java.util.Objects;
@@ -71,6 +72,11 @@ public class TaskBroadcaster extends TaskStackListener
 
     private void broadcastTaskStack() {
         mTaskContinuityMessenger.sendMessage(
-                new TaskStackBroadcastMessage(mRunningTaskFetcher.getRunningTasks()));
+                new TaskContinuityMessage.Builder()
+                        .setTaskStackBroadcastMessage(
+                                new TaskStackBroadcastMessage.Builder()
+                                        .setRemoteTasks(mRunningTaskFetcher.getRunningTasks())
+                                        .build())
+                        .build());
     }
 }
