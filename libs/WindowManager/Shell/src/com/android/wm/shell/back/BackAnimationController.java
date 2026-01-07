@@ -545,28 +545,33 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
                     if (!com.android.window.flags.Flags.simulateTouchDisplayFromNavigationBack()) {
                         // start animation immediately for non-gestural sources (without ACTION_MOVE
                         // events)
-                        mPointersPilfered = true;
-                        onGestureStarted(touchX, touchY, swipeEdge);
-                        onThresholdCrossed();
-                        mShouldStartOnNextMoveEvent = false;
+                        startGestureWithNoEdge();
                     } else {
                         // Simulate inject key event to system server.
+                        boolean deferBackAfterTransition = false;
                         try {
-                            mActivityTaskManager.simulateTouchDisplay(displayId);
+                            deferBackAfterTransition =
+                                    mActivityTaskManager.simulateTouchDisplay(displayId);
                         } catch (RemoteException remoteException) {
                             Log.e(TAG, "Failed to simulateBackInject", remoteException);
                         }
-                        // simulateTouchDisplay can potentially trigger a display change transition.
-                        // To prevent the upcoming transition from being blocked on the Shell's main
-                        // thread, post the onGestureStart event to the next run cycle after
-                        // transition is idle.
-                        mNonGestureHandlers.add(new NonGestureStartHandler());
-                        mShellExecutor.executeDelayed(() -> {
-                            final NonGestureStartHandler next = mNonGestureHandlers.poll();
-                            if (next != null) {
-                                mTransitions.runOnIdle(next);
-                            }
-                        }, 0);
+                        if (deferBackAfterTransition) {
+                            // simulateTouchDisplay will trigger a display change transition.
+                            // To prevent the upcoming transition from being blocked on the Shell's
+                            // main thread, post the onGestureStart event to the next run cycle
+                            // after transition is idle.
+                            mNonGestureHandlers.add(new NonGestureStartHandler());
+                            mShellExecutor.executeDelayed(() -> {
+                                final NonGestureStartHandler next = mNonGestureHandlers.poll();
+                                if (next != null) {
+                                    mTransitions.runOnIdle(next);
+                                }
+                            }, 0);
+                        } else {
+                            // No display order change or active transition to interrupt; starting
+                            // back animation immediately.
+                            startGestureWithNoEdge();
+                        }
                     }
                 } else {
                     mShouldStartOnNextMoveEvent = true;
@@ -591,6 +596,13 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
         }
     }
 
+    private void startGestureWithNoEdge() {
+        mPointersPilfered = true;
+        onGestureStarted(0, 0, EDGE_NONE);
+        onThresholdCrossed();
+        mShouldStartOnNextMoveEvent = false;
+    }
+
     private void handleFinishKeyAction(int keyAction) {
         ProtoLog.d(WM_SHELL_BACK_PREVIEW,
                 "Finishing gesture with event action: %d", keyAction);
@@ -606,10 +618,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
 
         @Override
         public void run() {
-            mPointersPilfered = true;
-            onGestureStarted(0, 0, EDGE_NONE);
-            onThresholdCrossed();
-            mShouldStartOnNextMoveEvent = false;
+            startGestureWithNoEdge();
 
             if (mSetTriggerBack != null) {
                 BackAnimationController.this.setTriggerBack(mSetTriggerBack);

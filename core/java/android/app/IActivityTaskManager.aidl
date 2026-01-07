@@ -368,8 +368,9 @@ interface IActivityTaskManager {
      * Called when navigation bar is about to trigger back event but won't inject back key to input
      * manager.
      * @param displayId Id of the display the user just touched.
+     * @return Return true if display order will change.
      */
-    void simulateTouchDisplay(int displayId);
+    boolean simulateTouchDisplay(int displayId);
 
     /**
      * Prepare the back navigation in the server. This setups the leashed for sysui to animate

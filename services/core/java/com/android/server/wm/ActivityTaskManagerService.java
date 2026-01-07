@@ -1896,23 +1896,34 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     }
 
     @Override
-    public void simulateTouchDisplay(int displayId) {
+    public boolean simulateTouchDisplay(int displayId) {
         // Reference PhoneWindowManager#interceptKeyBeforeQueueing.
         // Shell use this method to trigger potential focus change because Shell won't inject key
         // event to input manager when touch back key on navigation bar.
         mAmInternal.enforceCallingPermission(START_TASKS_FROM_RECENTS, "simulateTouchDisplay()");
         final long origId = Binder.clearCallingIdentity();
         try {
-            mWindowManager.mInternal.moveFocusToAdjacentEmbeddedActivityIfNeeded();
             synchronized (mGlobalLock) {
-                final DisplayContent dc = mRootWindowContainer.getTopFocusedDisplayContent();
-                if (dc == null || dc.mDisplayId == displayId) {
-                    return;
+                final DisplayContent dc = mRootWindowContainer.getDisplayContent(displayId);
+                if (dc == null) {
+                    return false;
+                }
+                // A special case that transient launch is playing on this display, do not re-order
+                // displays because RecentsTransitionHandler cannot handle it.
+                if (dc.mTransitionController.hasTransientLaunch(dc)) {
+                    return false;
+                }
+                mWindowManager.mInternal.moveFocusToAdjacentEmbeddedActivityIfNeeded();
+                final DisplayContent focusedDisplay = mRootWindowContainer
+                        .getTopFocusedDisplayContent();
+                if (focusedDisplay == null || focusedDisplay.mDisplayId == displayId) {
+                    return false;
                 }
             }
             // Do not wait for animation as the call is from ShellMainThread, the transition
             // cannot start if core does not finish this synchronize call.
-            mWindowManager.moveDisplayToTopIfAllowed(displayId, false /* waitForAnimations */);
+            return mWindowManager.moveDisplayToTopIfAllowed(displayId,
+                    false /* waitForAnimations */);
         } finally {
             Binder.restoreCallingIdentity(origId);
         }
