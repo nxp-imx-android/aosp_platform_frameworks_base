@@ -25,9 +25,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -191,7 +189,10 @@ constructor(
                 return
             }
 
-            val clockPadding = dimensionResource(clocksR.dimen.clock_padding_start)
+            val smartspaceHorizontalPadding =
+                dimensionResource(R.dimen.smartspace_padding_horizontal) +
+                    dimensionResource(clocksR.dimen.status_view_margin_horizontal)
+
             // In wide-layouts limit the maximum width of the card to be half the screen width
             val shadeMode by keyguardSmartspaceViewModel.shadeMode.collectAsStateWithLifecycle()
             val widthMod =
@@ -237,9 +238,8 @@ constructor(
                     modifier =
                         Modifier.then(widthMod)
                             .padding(
-                                // Note: smartspace adds 16dp of start padding internally
-                                start = clockPadding - 16.dp,
-                                end = clockPadding,
+                                start = smartspaceHorizontalPadding,
+                                end = smartspaceHorizontalPadding,
                                 bottom =
                                     dimensionResource(R.dimen.keyguard_status_view_bottom_margin),
                             )
