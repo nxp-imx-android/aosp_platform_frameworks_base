@@ -78,7 +78,7 @@ flag {
     is_exported: true
 }
 
-# This flag guards the private space feature, its APIs, and some of the feature implementations. The flag android.multiuser.Flags.enable_private_space_features exclusively guards all the implementations.
+# This flag guards the private space feature, its APIs, and some of the feature implementations.
 flag {
     name: "allow_private_profile"
     is_exported: true
