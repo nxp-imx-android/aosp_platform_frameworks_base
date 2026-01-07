@@ -721,10 +721,7 @@ public class LauncherApps {
     @RequiresPermission(conditional = true,
             anyOf = {ACCESS_HIDDEN_PROFILES_FULL, ACCESS_HIDDEN_PROFILES})
     public List<UserHandle> getProfiles() {
-        if (mUserManager.isManagedProfile()
-                || (android.os.Flags.allowPrivateProfile()
-                    && android.multiuser.Flags.enablePrivateSpaceFeatures()
-                    && mUserManager.isPrivateProfile())) {
+        if (mUserManager.isManagedProfile() || (mUserManager.isPrivateProfile())) {
             // If it's a managed or private profile, only return the current profile.
             final List result = new ArrayList(1);
             result.add(android.os.Process.myUserHandle());
@@ -2244,8 +2241,7 @@ public class LauncherApps {
 
         public void onUserConfigChanged(LauncherUserInfo launcherUserInfo) {
             if (DEBUG) {
-                if (Flags.allowPrivateProfile()
-                        && android.multiuser.Flags.addLauncherUserConfig()) {
+                if (android.multiuser.Flags.addLauncherUserConfig()) {
                     Log.d(TAG, "OnUserConfigChanged for user type " + launcherUserInfo.getUserType()
                             + ", new userConfig: " + launcherUserInfo.getUserConfig());
                 }
@@ -2368,8 +2364,7 @@ public class LauncherApps {
                             info.mLoadingProgress);
                     break;
                 case MSG_USER_CONFIG_CHANGED:
-                    if (Flags.allowPrivateProfile()
-                            && android.multiuser.Flags.addLauncherUserConfig()) {
+                    if (android.multiuser.Flags.addLauncherUserConfig()) {
                         mCallback.onUserConfigChanged(Objects.requireNonNull(
                                 info.launcherExtras.getParcelable(LAUNCHER_USER_INFO_EXTRA_KEY,
                                         LauncherUserInfo.class)));
