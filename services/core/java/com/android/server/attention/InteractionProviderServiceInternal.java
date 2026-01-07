@@ -15,7 +15,13 @@
  */
 package com.android.server.attention;
 
+import android.annotation.DurationMillisLong;
 import android.annotation.NonNull;
+import android.attention.AttentionManager;
+import android.attention.IInteractionListener;
+import android.os.IBinder;
+import android.os.RemoteException;
+import android.util.SparseArray;
 
 import androidx.annotation.Keep;
 
@@ -33,6 +39,10 @@ public class InteractionProviderServiceInternal extends InteractionProviderInter
     @GuardedBy("mInteractionProvidersLock")
     private final List<InteractionProvider> mInteractionProviders = new ArrayList<>();
 
+    @GuardedBy("mPidToInteractionListeners")
+    private final SparseArray<InteractionListenerRecord> mPidToInteractionListeners =
+            new SparseArray<>();
+
     @Override
     public boolean registerInteractionProvider(@NonNull InteractionProvider provider) {
         Objects.requireNonNull(provider, "provider must not be null");
@@ -48,4 +58,60 @@ public class InteractionProviderServiceInternal extends InteractionProviderInter
             return mInteractionProviders.remove(provider);
         }
     }
+
+    /**
+     * Internal implementation for the interaction listener register API.
+     */
+    public void registerListener(int callingPid,
+            @AttentionManager.InteractionType int interactionTypes,
+            @DurationMillisLong long debounceTimeMillis,
+            IInteractionListener listener) {
+        synchronized (mPidToInteractionListeners) {
+            if (mPidToInteractionListeners.contains(callingPid)) {
+                throw new RuntimeException(
+                        "The calling process has already registered a listener.");
+            }
+            InteractionListenerRecord listenerRecord = new InteractionListenerRecord(callingPid,
+                    listener);
+            try {
+                IBinder binder = listener.asBinder();
+                binder.linkToDeath(listenerRecord, 0);
+            } catch (RemoteException ex) {
+                // give up
+                throw new RuntimeException(ex);
+            }
+            mPidToInteractionListeners.put(callingPid, listenerRecord);
+        }
+
+    }
+
+    /**
+     * Internal implementation for the interaction listener unregister API.
+     */
+    public void unregisterListener(int callingPid) {
+        synchronized (mPidToInteractionListeners) {
+            if (!mPidToInteractionListeners.contains(callingPid)) {
+                throw new RuntimeException("The calling process has not registered listener.");
+            }
+            mPidToInteractionListeners.remove(callingPid);
+        }
+    }
+
+    private final class InteractionListenerRecord implements IBinder.DeathRecipient {
+        private final int mPid;
+        private final IInteractionListener mListener;
+
+        InteractionListenerRecord(int pid, IInteractionListener listener) {
+            this.mPid = pid;
+            this.mListener = listener;
+        }
+
+        @Override
+        public void binderDied() {
+            synchronized (mPidToInteractionListeners) {
+                mPidToInteractionListeners.remove(mPid);
+            }
+        }
+    }
+
 }

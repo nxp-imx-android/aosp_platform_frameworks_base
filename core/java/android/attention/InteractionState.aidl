@@ -26,7 +26,7 @@ parcelable InteractionState {
     const int INTERACTION_TYPE_KEY = 1<<0;
     const int INTERACTION_TYPE_HOVER = 1<<1;
     const int INTERACTION_TYPE_GESTURE = 1<<2;
-    const int INTERACTION_TYPE_ALL = 0xFFFFFF;
+    const int INTERACTION_TYPE_ALL = 0xFFFFFFFF;
 
     int interactionTypes;
     long interactionTimeMillis;

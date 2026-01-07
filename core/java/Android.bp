@@ -1056,7 +1056,7 @@ filegroup {
 aidl_interface {
     name: "attentionmanager_native_aidl",
     srcs: [
-        "android/attention/*.aidl",
+        "android/attention/InteractionState.aidl",
     ],
     host_supported: true,
     unstable: true,

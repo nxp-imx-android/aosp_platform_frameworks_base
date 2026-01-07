@@ -3721,6 +3721,18 @@ package android.apphibernation {
 
 }
 
+package android.attention {
+
+  @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public final class AttentionManager {
+    field @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public static final int INTERACTION_TYPE_ALL = -1; // 0xffffffff
+    field @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public static final int INTERACTION_TYPE_GESTURE = 4; // 0x4
+    field @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public static final int INTERACTION_TYPE_HOVER = 2; // 0x2
+    field @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public static final int INTERACTION_TYPE_KEY = 1; // 0x1
+    field @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public static final int INTERACTION_TYPE_NONE = 0; // 0x0
+  }
+
+}
+
 package android.companion {
 
   public final class AssociationInfo implements android.os.Parcelable {
@@ -4287,6 +4299,7 @@ package android.content {
     field public static final String APP_HIBERNATION_SERVICE = "app_hibernation";
     field public static final String APP_INTEGRITY_SERVICE = "app_integrity";
     field public static final String APP_PREDICTION_SERVICE = "app_prediction";
+    field @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public static final String ATTENTION_SERVICE = "attention";
     field public static final String AUDIO_DEVICE_VOLUME_SERVICE = "audio_device_volume";
     field @FlaggedApi("android.security.secure_lockdown") public static final String AUTHENTICATION_POLICY_SERVICE = "authentication_policy";
     field public static final String BACKUP_SERVICE = "backup";
