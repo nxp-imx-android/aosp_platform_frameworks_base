@@ -1219,6 +1219,15 @@ public class DevicePolicyManager {
     public static final long DEFAULT_STRONG_AUTH_TIMEOUT_MS = 72 * 60 * 60 * 1000; // 72h
 
     /**
+     * Default and maximum timeout in milliseconds after which unlocking watch with weak auth times
+     * out, i.e. the user has to use a strong authentication method like password, PIN or pattern.
+     * This timeout applies to watches that have a Trust Agent enabled.
+     *
+     * @hide
+     */
+    public static final long DEFAULT_STRONG_AUTH_WATCH_TIMEOUT_MS = 14 * 24 * 60 * 60 * 1000; // 14d
+
+    /**
      * A {@link android.os.Parcelable} extra of type {@link android.os.PersistableBundle} that is
      * passed directly to the <a href="#devicepolicycontroller">Device Policy Controller</a>
      * after <a href="#managed-provisioning">provisioning</a>.
