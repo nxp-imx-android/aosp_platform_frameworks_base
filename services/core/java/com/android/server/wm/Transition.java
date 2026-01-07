@@ -3119,7 +3119,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                     // parent window further up to be considered as change parent.
                     continue;
                 }
-                if (p.mRemoteToken == null) {
+                if (!p.isOrganized()) {
                     // Intermediate parents must be those that has window to be managed by Shell.
                     continue;
                 }

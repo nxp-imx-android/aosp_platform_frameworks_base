@@ -648,6 +648,39 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
     }
 
     /**
+     * {@link WindowContainerToken}s are used to stably identify containers across processes, but
+     * that doesn't mean they should all be manipulable by other processes. This will filter out
+     * (and warn about) any containers that are not organized.
+     */
+    private void sanitizeTransaction(@NonNull WindowContainerTransaction t) {
+        final Iterator<Map.Entry<IBinder, WindowContainerTransaction.Change>> entries =
+                t.getChanges().entrySet().iterator();
+        while (entries.hasNext()) {
+            final Map.Entry<IBinder, WindowContainerTransaction.Change> entry = entries.next();
+            final WindowContainer wc = WindowContainer.fromBinder(entry.getKey());
+            if (wc == null || wc.isOrganized()) continue;
+            Slog.wtf(TAG, "Attempting to externally manipulate a non-organized container: " + wc);
+            entries.remove();
+        }
+        List<WindowContainerTransaction.HierarchyOp> hops = t.getHierarchyOps();
+        for (int h = hops.size() - 1; h >= 0; --h) {
+            final WindowContainerTransaction.HierarchyOp hop = hops.get(h);
+            if (hop.getType() == HIERARCHY_OP_TYPE_ADD_TASK_FRAGMENT_OPERATION
+                    || hop.getType() == HIERARCHY_OP_TYPE_FINISH_ACTIVITY) {
+                // TaskFragmentOrganizer ops don't use RemoteTokens and validate their inputs later
+                // via validateTaskFragmentOperation, so skip checking these here.
+                continue;
+            }
+            final IBinder binder = hop.getContainer();
+            if (binder == null) continue;
+            final WindowContainer wc = WindowContainer.fromBinder(binder);
+            if (wc == null || wc.isOrganized()) continue;
+            Slog.wtf(TAG, "Trying to externally manipulate a non-organized container: " + wc);
+            hops.remove(h);
+        }
+    }
+
+    /**
      * @param syncId If non-null, this will be a sync-transaction.
      * @param chain A lifecycle-chain to acculumate changes into.
      * @param caller Info about the calling process.
@@ -657,6 +690,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
             @NonNull ActionChain chain, @NonNull CallerInfo caller) {
         int effects = TRANSACT_EFFECTS_NONE;
         ProtoLog.v(WM_DEBUG_WINDOW_ORGANIZER, "Apply window transaction, syncId=%d", syncId);
+        sanitizeTransaction(t);
         mService.deferWindowLayout();
         mService.mTaskSupervisor.beginDeferResume();
         boolean deferResume = true;
