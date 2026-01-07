@@ -321,7 +321,7 @@ public class ThemeEventObserverTest {
         mThemeEventObserver.mThemeSettingsObserver.onChange(false, null, 0, USER_ID);
 
         verify(mThemeStateManager).onStyleChange(USER_ID, ThemeStyle.EXPRESSIVE);
-        verify(mThemeStateManager, never()).onSeedColorChange(anyInt(), anyInt(), anyBoolean());
+        verify(mThemeStateManager).onSeedColorChange(USER_ID, Color.BLUE, true);
     }
 
     @Test
