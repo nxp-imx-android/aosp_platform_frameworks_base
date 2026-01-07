@@ -6938,32 +6938,29 @@ public class SettingsProvider extends ContentProvider {
 
                 // Version 231: Update the curve for the HDR brightness boost level
                 if (currentVersion == 231) {
-                    if (com.android.server.display.feature.flags.Flags.hdrBrightnessSetting()) {
-                        Setting hdrBrightnessBoostLevelSetting = secureSettings.getSettingLocked(
-                                Secure.HDR_BRIGHTNESS_BOOST_LEVEL);
-                        if (!hdrBrightnessBoostLevelSetting.isNull()) {
-                            try {
-                                float hdrBrightnessBoostLevel = Float.parseFloat(
-                                        hdrBrightnessBoostLevelSetting.getValue());
-                                if (hdrBrightnessBoostLevel > 0 && hdrBrightnessBoostLevel < 1) {
-                                    float ratioScaleFactor = BrightnessUtils.convertGammaToLinear(
-                                            hdrBrightnessBoostLevel);
-                                    float newHdrBrightnessBoostLevel = MathUtils.sqrt(
-                                            ratioScaleFactor);
-                                    secureSettings.insertSettingLocked(
-                                            Secure.HDR_BRIGHTNESS_BOOST_LEVEL,
-                                            String.valueOf(newHdrBrightnessBoostLevel),
-                                            /* tag= */ null,
-                                            /* makeDefault= */ false,
-                                            SettingsState.SYSTEM_PACKAGE_NAME);
-                                }
-                            } catch (NumberFormatException e) {
-                                secureSettings.deleteSettingLocked(
-                                        Secure.HDR_BRIGHTNESS_BOOST_LEVEL);
+                    Setting hdrBrightnessBoostLevelSetting = secureSettings.getSettingLocked(
+                            Secure.HDR_BRIGHTNESS_BOOST_LEVEL);
+                    if (!hdrBrightnessBoostLevelSetting.isNull()) {
+                        try {
+                            float hdrBrightnessBoostLevel = Float.parseFloat(
+                                    hdrBrightnessBoostLevelSetting.getValue());
+                            if (hdrBrightnessBoostLevel > 0 && hdrBrightnessBoostLevel < 1) {
+                                float ratioScaleFactor = BrightnessUtils.convertGammaToLinear(
+                                        hdrBrightnessBoostLevel);
+                                float newHdrBrightnessBoostLevel = MathUtils.sqrt(
+                                        ratioScaleFactor);
+                                secureSettings.insertSettingLocked(
+                                        Secure.HDR_BRIGHTNESS_BOOST_LEVEL,
+                                        String.valueOf(newHdrBrightnessBoostLevel),
+                                        /* tag= */ null,
+                                        /* makeDefault= */ false,
+                                        SettingsState.SYSTEM_PACKAGE_NAME);
                             }
+                        } catch (NumberFormatException e) {
+                            secureSettings.deleteSettingLocked(
+                                    Secure.HDR_BRIGHTNESS_BOOST_LEVEL);
                         }
                     }
-
                     currentVersion = 232;
                 }
 

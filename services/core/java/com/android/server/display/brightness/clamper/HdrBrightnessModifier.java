@@ -243,9 +243,7 @@ public class HdrBrightnessModifier implements BrightnessStateModifier,
         } else {
             registerHdrListener(displayData.mDisplayToken);
             registerHdrBoostOverrideListener(displayData.getUniqueDisplayId());
-            if (mFlags.isHdrBrightnessSettingEnabled()) {
-                mHdrSettingsObserver.register();
-            }
+            mHdrSettingsObserver.register();
         }
         if (data == null || data.allowInLowPowerMode) {
             mLowPowerModeSettingObserver.unregister();
@@ -459,7 +457,7 @@ public class HdrBrightnessModifier implements BrightnessStateModifier,
     }
 
     private float getRatioScaleFactor() {
-        return mFlags.isHdrBrightnessSettingEnabled() ? MathUtils.sq(mHdrBrightnessBoostLevel) : 1;
+        return MathUtils.sq(mHdrBrightnessBoostLevel);
     }
 
     private boolean isNbmOrHbmHdr() {

@@ -154,11 +154,6 @@ public class DisplayManagerFlags {
             Flags::delayImplicitRrRegistrationUntilRrAccessed
     );
 
-    private final FlagState mHdrBrightnessSetting = new FlagState(
-            Flags.FLAG_HDR_BRIGHTNESS_SETTING,
-            Flags::hdrBrightnessSetting
-    );
-
     private final FlagState mEnableDefaultDisplayInTopologySwitch = new FlagState(
             Flags.FLAG_ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH,
             DesktopExperienceFlags.ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH::isTrue
@@ -328,10 +323,6 @@ public class DisplayManagerFlags {
         return mDelayImplicitRrRegistrationUntilRrAccessed.isEnabled();
     }
 
-    public boolean isHdrBrightnessSettingEnabled() {
-        return mHdrBrightnessSetting.isEnabled();
-    }
-
     public boolean isDefaultDisplayInTopologySwitchEnabled() {
         return mEnableDefaultDisplayInTopologySwitch.isEnabled();
     }
@@ -389,7 +380,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mSeparateTimeouts);
         pw.println(" " + mSetBrightnessByUnit);
         pw.println(" " + mDelayImplicitRrRegistrationUntilRrAccessed);
-        pw.println(" " + mHdrBrightnessSetting);
         pw.println(" " + mEnableDefaultDisplayInTopologySwitch);
         pw.println(" " + mModeSwitchWithoutSaving);
         pw.println(" " + mEnsureColorFadeWhenTurningOn);
