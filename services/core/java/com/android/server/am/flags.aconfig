@@ -329,8 +329,8 @@ flag {
 }
 
 flag {
-    name: "use_safesetid_uid_policy"
-    namespace: "system_performance"
+    name: "use_safesetid_uid_policy2"
+    namespace: "backstage_power"
     description: "Use SafeSetID to enforce UID policies instead of SELinux filters"
     bug: "414893665"
 }

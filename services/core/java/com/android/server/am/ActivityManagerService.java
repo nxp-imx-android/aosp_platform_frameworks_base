@@ -4881,7 +4881,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         // The new process has finished initialization and at this point |callingUid|
         // does not have permission to call setuid(), so it does not need to be
         // tracked by the transition policy.
-        if (Flags.useSafesetidUidPolicy()
+        if (Flags.useSafesetidUidPolicy2()
                 && UidTransitionPolicy.isEnabled()
                 && mProcessList.getUidTransitionPolicy() != null) {
             // TODO(b/468898907) Monitor system server crashes due to failures at this call site.
