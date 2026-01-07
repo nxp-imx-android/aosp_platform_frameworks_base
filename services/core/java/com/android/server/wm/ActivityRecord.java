@@ -2211,7 +2211,7 @@ final class ActivityRecord extends WindowToken {
      * @return Whether this {@link ActivityRecord} was launched from a system surface (e.g
      * Launcher, Notification,...)
      */
-    private boolean launchedFromSystemSurface() {
+    boolean launchedFromSystemSurface() {
         return mLaunchSourceType == LAUNCH_SOURCE_TYPE_SYSTEM
                 || mLaunchSourceType == LAUNCH_SOURCE_TYPE_HOME
                 || mLaunchSourceType == LAUNCH_SOURCE_TYPE_SYSTEMUI;
