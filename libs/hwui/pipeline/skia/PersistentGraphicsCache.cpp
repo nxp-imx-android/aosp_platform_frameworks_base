@@ -145,15 +145,16 @@ void PersistentGraphicsCache::store(const SkData& key, const SkData& data,
     ShaderCache::get().store(key, data, description);
 }
 
-PersistentGraphicsCache::PipelineCacheStats PersistentGraphicsCache::getPipelineCacheStats() const {
+PipelineCacheStats PersistentGraphicsCache::getPipelineCacheStats() const {
+    PipelineCacheStats stats{};
+
     if (mPipelineCache == nullptr) {
-        return PipelineCacheStats{};
+        return stats;
     }
 
-    return PipelineCacheStats{
-            .inUse = true,
-            .sizeBytes = mPipelineCache->getLastSizeBytes(),
-    };
+    stats.inUse = true;
+    mPipelineCache->fillStats(stats);
+    return stats;
 }
 
 }  // namespace skiapipeline
