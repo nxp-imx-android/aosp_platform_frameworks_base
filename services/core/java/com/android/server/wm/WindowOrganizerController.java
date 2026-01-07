@@ -2927,7 +2927,8 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
             return;
         }
         if (!ownerActivity.isResizeable()
-                && !ownerActivity.info.isChangeEnabled(ActivityInfo.FORCE_RESIZE_APP)) {
+                && !ownerActivity.mAppCompatController.getResizeOverrides()
+                .shouldOverrideForceResizeApp()) {
             final IllegalArgumentException exception = new IllegalArgumentException("Not allowed"
                     + " to operate with non-resizable owner Activity");
             sendTaskFragmentOperationFailure(organizer, errorCallbackToken, null /* taskFragment */,
