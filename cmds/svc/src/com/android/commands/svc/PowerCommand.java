@@ -40,7 +40,7 @@ public class PowerCommand extends Svc.Command {
                 + "\n"
                 + "usage: svc power stayon [true|false|usb|ac|wireless|dock]\n"
                 + "         Set the 'keep awake while plugged in' setting.\n"
-                + "       svc power reboot [reason]\n"
+                + "       svc power reboot --no-wait [reason]\n"
                 + "         Perform a runtime shutdown and reboot device with specified reason.\n"
                 + "       svc power shutdown\n"
                 + "         Perform a runtime shutdown and power off the device.\n"
@@ -97,16 +97,29 @@ public class PowerCommand extends Svc.Command {
                     return;
                 } else if ("reboot".equals(args[1])) {
                     String mode = null;
-                    if (args.length == 3) {
-                        mode = args[2];
+                    boolean wait = true;
+                    int argIdx = 2;
+                    if (argIdx < args.length && "--no-wait".equals(args[argIdx])) {
+                        wait = false;
+                        ++argIdx;
+                    }
+                    if (argIdx < args.length) {
+                        mode = args[argIdx];
                     }
                     try {
-                        // no confirm, wait till device is rebooted
-                        pm.reboot(false, mode, true);
+                        // no confirm, wait till device is rebooted unless --no-wait param is
+                        // specified.
+                        pm.reboot(false, mode, wait);
                     } catch (RemoteException e) {
                         maybeLogRemoteException("Failed to reboot.");
+                        if (!wait) {
+                            System.exit(1);
+                        }
                     } catch (Exception e) {
                         System.err.println("Failed to reboot: " + e.getMessage());
+                        if (!wait) {
+                            System.exit(1);
+                        }
                     }
                     return;
                 } else if ("shutdown".equals(args[1])) {
