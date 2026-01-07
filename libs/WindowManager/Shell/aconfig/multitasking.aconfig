@@ -172,16 +172,6 @@ flag {
 }
 
 flag {
-    name: "fix_bubbles_add_same_bubble_being_removed"
-    namespace: "multitasking"
-    description: "Fixes a race condition where a bubble gets an update while being animated out"
-    bug: "420487074"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_bubble_event_history_logs"
     namespace: "multitasking"
     description: "Enable bubble event history logs"

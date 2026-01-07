@@ -1192,7 +1192,6 @@ class BubbleStackViewTest {
         assertThat(bubbleStackView.bubbleCount).isEqualTo(0)
     }
 
-    @EnableFlags(Flags.FLAG_FIX_BUBBLES_ADD_SAME_BUBBLE_BEING_REMOVED)
     @Test
     fun removeLastBubble_whileExpanded_addBack() {
         val bubble = createAndInflateBubble()

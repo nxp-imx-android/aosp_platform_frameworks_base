@@ -1404,8 +1404,7 @@ public class BubbleStackView extends FrameLayout
             snapshot.release();
             bev.setSurfaceZOrderedOnTop(false);
             bev.setAnimating(false);
-            if (Flags.fixBubblesAddSameBubbleBeingRemoved()
-                    && !bev.getContentVisibility()) {
+            if (!bev.getContentVisibility()) {
                 ProtoLog.w(WM_SHELL_BUBBLES, "BubbleStackView#animateConvert %s "
                                 + "content wasn't visible so setting it visible",
                         bev.getBubbleKey());
@@ -2301,8 +2300,7 @@ public class BubbleStackView extends FrameLayout
 
         // If it is currently being animated out (and newly added again here), remove the view
         // and add it back so that it animates in.
-        if (Flags.fixBubblesAddSameBubbleBeingRemoved()
-                && bubble.getIconView().getParent() != null) {
+        if (bubble.getIconView().getParent() != null) {
             mBubbleContainer.removeViewNoAnimation(bubble.getIconView());
             // If the view was being animated out, need to reset its state
             bubble.getIconView().setAlpha(1f);
@@ -2345,66 +2343,45 @@ public class BubbleStackView extends FrameLayout
 
             showScrim(false, () -> {
                 mRemovingLastBubbleWhileExpanded = false;
-                if (Flags.fixBubblesAddSameBubbleBeingRemoved()) {
-                    boolean removedBubbleBackInStack = mBubbleData.hasBubbleInStackWithKey(
-                            bubble.getKey());
-                    // In the time it takes for the scrim animation, that bubble may have gotten
-                    // a new update and be added back -- only remove the view if it's not in the
-                    // stack.
-                    if (!removedBubbleBackInStack) {
-                        if (iconView != null) {
-                            mBubbleContainer.removeView(iconView);
-                        }
-                        if (bev != null) {
-                            mExpandedViewContainer.removeView(bev);
-                        }
-                    } else if (bev != null) {
-                        // If we were dragging out, reset the expanded view in case the bubble gets
-                        // re-added
-                        bev.setContentAlpha(1f);
-                        bev.setBackgroundAlpha(1f);
-                    }
-
-                    mExpandedViewContainer.setAnimationMatrix(null);
-                    mExpandedViewTemporarilyHidden = false;
-
-                    if (!removedBubbleBackInStack) {
-                        // Not in the stack -- clean up all the views
-                        bubble.cleanupViews();
-                    }
-
-                    // Bubble keys may not have changed if we receive an update to the same bubble.
-                    // Compare bubble object instances to see if the expanded bubble has changed.
-                    if (expandedBubbleBeforeScrim == mExpandedBubble && !removedBubbleBackInStack) {
-                        // Only clear expanded bubble if it has not changed since the scrim
-                        // animation started.
-                        // Scrim animation can take some time run and it is possible for a new
-                        // bubble to be added while the animation is running.
-                        // This causes the expanded bubble to change. Make sure we only clear the
-                        // expanded bubble if it did not change between when the scrim animation
-                        // started and completed.
-                        mExpandedBubble = null;
-                        updateExpandedView();
-                    }
-                } else {
-                    bubble.cleanupExpandedView();
+                boolean removedBubbleBackInStack = mBubbleData.hasBubbleInStackWithKey(
+                        bubble.getKey());
+                // In the time it takes for the scrim animation, that bubble may have gotten
+                // a new update and be added back -- only remove the view if it's not in the
+                // stack.
+                if (!removedBubbleBackInStack) {
                     if (iconView != null) {
                         mBubbleContainer.removeView(iconView);
                     }
-                    bubble.cleanupViews(); // cleans up the icon view
-                    updateExpandedView(); // resets state for no expanded bubble
-                    // Bubble keys may not have changed if we receive an update to the same bubble.
-                    // Compare bubble object instances to see if the expanded bubble has changed.
-                    if (expandedBubbleBeforeScrim == mExpandedBubble) {
-                        // Only clear expanded bubble if it has not changed since the scrim
-                        // animation started.
-                        // Scrim animation can take some time run and it is possible for a new
-                        // bubble to be added while the animation is running.
-                        // This causes the expanded bubble to change. Make sure we only clear the
-                        // expanded bubble if it did not change between when the scrim animation
-                        // started and completed.
-                        mExpandedBubble = null;
+                    if (bev != null) {
+                        mExpandedViewContainer.removeView(bev);
                     }
+                } else if (bev != null) {
+                    // If we were dragging out, reset the expanded view in case the bubble gets
+                    // re-added
+                    bev.setContentAlpha(1f);
+                    bev.setBackgroundAlpha(1f);
+                }
+
+                mExpandedViewContainer.setAnimationMatrix(null);
+                mExpandedViewTemporarilyHidden = false;
+
+                if (!removedBubbleBackInStack) {
+                    // Not in the stack -- clean up all the views
+                    bubble.cleanupViews();
+                }
+
+                // Bubble keys may not have changed if we receive an update to the same bubble.
+                // Compare bubble object instances to see if the expanded bubble has changed.
+                if (expandedBubbleBeforeScrim == mExpandedBubble && !removedBubbleBackInStack) {
+                    // Only clear expanded bubble if it has not changed since the scrim
+                    // animation started.
+                    // Scrim animation can take some time run and it is possible for a new
+                    // bubble to be added while the animation is running.
+                    // This causes the expanded bubble to change. Make sure we only clear the
+                    // expanded bubble if it did not change between when the scrim animation
+                    // started and completed.
+                    mExpandedBubble = null;
+                    updateExpandedView();
                 }
             });
             logBubbleEvent(bubble, FrameworkStatsLog.BUBBLE_UICHANGED__ACTION__DISMISSED);
@@ -3081,8 +3058,7 @@ public class BubbleStackView extends FrameLayout
                         BubbleExpandedView expView = getExpandedView();
                         if (expView != null) {
                             expView.setSurfaceZOrderedOnTop(false);
-                            if (Flags.fixBubblesAddSameBubbleBeingRemoved()
-                                    && !expView.getContentVisibility()) {
+                            if (!expView.getContentVisibility()) {
                                 ProtoLog.w(WM_SHELL_BUBBLES, "BubbleStackView#expandBubble %s "
                                         + "content wasn't visible so setting it visible",
                                         expView.getBubbleKey());
@@ -3271,8 +3247,7 @@ public class BubbleStackView extends FrameLayout
             if (expandedView != null) {
                 expandedView.setSurfaceZOrderedOnTop(false);
                 expandedView.setAnimating(false);
-                if (Flags.fixBubblesAddSameBubbleBeingRemoved()
-                        && !expandedView.getContentVisibility()) {
+                if (!expandedView.getContentVisibility()) {
                     ProtoLog.w(WM_SHELL_BUBBLES, "BubbleStackView#animateSwitchBubbles"
                                     + "%s content wasn't visible so setting it visible",
                             expandedView.getBubbleKey());
