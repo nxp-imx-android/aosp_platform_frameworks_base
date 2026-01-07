@@ -51,8 +51,12 @@ import java.util.Objects;
  * propagates to application processes to avoid multiple lookups and potentially
  * disk I/O operations. Note: This class assumes that all core settings reside
  * in {@link Settings.Secure}.
+ *
+ * <p>This class is to be used via a subclass {@link CoreSettingsObserverMultiUser},
+ * which fixes bug b/413694508, when a bugfix flag is enabled. Now that the flag is removed,
+ * but the code structure is kept as-is, so we always use {@link CoreSettingsObserverMultiUser}.
  */
-class CoreSettingsObserver extends ContentObserver {
+abstract class CoreSettingsObserver extends ContentObserver {
     private static final String TAG = CoreSettingsObserver.class.getSimpleName();
     protected static final boolean DEBUG = false;
 
@@ -210,17 +214,13 @@ class CoreSettingsObserver extends ContentObserver {
 
     /**
      * Factory method for creating a {@link CoreSettingsObserver} instance.
-     * This method returns a multi-user aware observer if the corresponding feature flag is enabled.
+     * This method returns a multi-user aware observer.
      *
      * @param activityManagerService The {@link ActivityManagerService} instance.
      * @return A new {@link CoreSettingsObserver} instance.
      */
     static CoreSettingsObserver create(ActivityManagerService activityManagerService) {
-        if (android.multiuser.Flags.coreSettingsMultiUser()) {
-            return new CoreSettingsObserverMultiUser(activityManagerService);
-        } else {
-            return new CoreSettingsObserver(activityManagerService, /* initialize */ true);
-        }
+        return new CoreSettingsObserverMultiUser(activityManagerService);
     }
 
     private static void loadDeviceConfigContextEntries(Context context) {
