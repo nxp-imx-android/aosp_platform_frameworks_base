@@ -28,6 +28,7 @@ import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
 import androidx.compose.ui.test.hasTestTag
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
+import com.android.systemui.integration.SystemUiIntegrationTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.compose.modifiers.resIdToTestTag
 import com.android.systemui.kosmos.Kosmos
@@ -68,6 +69,7 @@ import platform.test.motion.golden.TimeSeriesCaptureScope
 @RunWith(AndroidJUnit4::class)
 @LargeTest
 @MotionTest
+@SystemUiIntegrationTest
 class MediaOutputComponentMotionTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     @get:Rule val motionTestRule = createSysUiComposeMotionTestRule(kosmos)
