@@ -2359,6 +2359,9 @@
     <!--  Notification summaries onboarding affordance message [CHAR LIMIT=NONE]-->
     <string name="notification_onboarding_summaries_message">Your longer conversations can now be summarized to give you quick recaps</string>
 
+    <!--  Notification summaries onboarding affordance message. OS and apps can summarize [CHAR LIMIT=NONE]-->
+    <string name="notification_onboarding_summaries_message_with_apps">Your device and apps can now summarize longer conversations to give you quick recaps</string>
+
     <!--  Notification bundles onboarding affordance  [CHAR LIMIT=NONE]-->
     <string name="notification_onboarding_bundles_message">Notification organizer bundles and silences lower priority notifications. Add more categories in Settings.</string>
 
