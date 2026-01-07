@@ -9884,6 +9884,16 @@ public class NotificationManagerService extends SystemService {
         synchronized (mNotificationLock) {
             isBlocked |= isRecordBlockedLocked(r);
         }
+
+
+        if (isBridgedNotificationBlocked(r)) {
+            isBlocked = true;
+            if (DBG) {
+                Slog.e(TAG, "Suppressing bridged notification on behalf of package "
+                        + r.getBridgedPackageName());
+            }
+        }
+
         if (isBlocked && !(n.isMediaNotification() || isCallNotification(pkg, uid, n))) {
             if (DBG) {
                 Slog.e(TAG, "Suppressing notification from package " + r.getSbn().getPackageName()
@@ -9995,6 +10005,33 @@ public class NotificationManagerService extends SystemService {
         final int callingUid = r.getSbn().getUid();
         return mPreferencesHelper.isGroupBlocked(pkg, callingUid, r.getChannel().getGroup())
                 || r.getImportance() == IMPORTANCE_NONE;
+    }
+
+    /**
+     * Checks whether a bridged notification is banned at a group or channel level or if the NAS or
+     * system has blocked the notification.
+     */
+    boolean isBridgedNotificationBlocked(NotificationRecord r) {
+        // If this is a bridged notification check if the associated package or channel are
+        // blocked.
+        if (r.getBridgedAppUid() != android.os.Process.INVALID_UID
+                && r.getBridgedPackageName() != null
+                && r.getBridgedChannelId() != null) {
+            if (!areNotificationsEnabledForPackageInt(
+                    r.getBridgedAppUid())) {
+                return true;
+            }
+            NotificationChannel bridgedChannel = mPreferencesHelper.getNotificationChannel(
+                    r.getBridgedPackageName(), r.getBridgedAppUid(),
+                    r.getBridgedChannelId(), /*includeDeleted=*/ false);
+            if (bridgedChannel != null) {
+                return mPreferencesHelper.isGroupBlocked(
+                        r.getBridgedPackageName(), r.getBridgedAppUid(),
+                        bridgedChannel.getGroup())
+                                || bridgedChannel.getImportance() == IMPORTANCE_NONE;
+            }
+        }
+        return false;
     }
 
     protected class SnoozeNotificationRunnable implements Runnable {
@@ -10511,6 +10548,15 @@ public class NotificationManagerService extends SystemService {
                         mUsageStats.registerBlocked(r);
                         if (DBG) {
                             Slog.e(TAG, "Suppressing notification from package " + pkg);
+                        }
+                        return false;
+                    }
+
+                    if (isBridgedNotificationBlocked(r)) {
+                        mUsageStats.registerBlocked(r);
+                        if (DBG) {
+                            Slog.e(TAG, "Suppressing bridged notification on behalf of package "
+                                    + r.getBridgedPackageName());
                         }
                         return false;
                     }
@@ -12007,12 +12053,15 @@ public class NotificationManagerService extends SystemService {
             if (!flagChecker.apply(r.getFlags())) {
                 continue;
             }
-            if (pkg != null && !r.getSbn().getPackageName().equals(pkg)) {
+
+            if (pkg != null && !r.getSbn().getPackageName().equals(pkg)
+                    && !TextUtils.equals(r.getBridgedPackageName(), pkg)) {
                 continue;
             }
             if (channelId != null // Compare against possibly bundled channel AND original channel
                     && !channelId.equals(r.getChannel().getId())
-                    && !channelId.equals(r.getNotification().getChannelId())) {
+                    && !channelId.equals(r.getNotification().getChannelId())
+                    && !TextUtils.equals(r.getBridgedChannelId(), channelId)) {
                 continue;
             }
             if (r.getSbn().isGroup() && r.getNotification().isGroupChild()) {

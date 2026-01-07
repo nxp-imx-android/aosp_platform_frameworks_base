@@ -38,12 +38,12 @@ import static android.service.notification.Adjustment.KEY_USER_SENTIMENT;
 import static android.service.notification.NotificationListenerService.Ranking.USER_SENTIMENT_NEUTRAL;
 import static android.service.notification.NotificationListenerService.Ranking.USER_SENTIMENT_POSITIVE;
 
-import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.Flags;
 import android.app.KeyguardManager;
 import android.app.Notification;
+import android.app.Notification.BridgedNotificationMetadata;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Person;
@@ -246,6 +246,10 @@ public final class NotificationRecord {
     // assigned bundle.
     private int mOriginalChannelVisibility = NotificationManager.VISIBILITY_NO_OVERRIDE;
 
+    // For bridged notifications, this is the UID of the corresponding local app, if it exists.
+    // Used for permission checks against the local app's notification permissions.
+    private int mBridgedAppUid = android.os.Process.INVALID_UID;
+
     public NotificationRecord(Context context, StatusBarNotification sbn,
             NotificationChannel channel) {
         this.sbn = sbn;
@@ -272,6 +276,22 @@ public final class NotificationRecord {
         mStats = new NotificationStats();
         calculateUserSentiment();
         calculateGrantableUris();
+        calculateBridgingInfo();
+    }
+
+    /**
+     * If this is a bridged notification, find the UID of the corresponding local app and store it.
+     */
+    private void calculateBridgingInfo() {
+        if (android.app.Flags.bridgedNotifications()) {
+            BridgedNotificationMetadata bridgedMetadata =
+                    this.sbn.getNotification().getBridgedNotificationMetadata();
+            if (bridgedMetadata != null) {
+                mBridgedAppUid = LocalServices.getService(
+                        PackageManagerInternal.class).getPackageUid(
+                        bridgedMetadata.getPackageName(), 0, getUserId());
+            }
+        }
     }
 
     private boolean isPreChannelsNotification() {
@@ -1771,6 +1791,46 @@ public final class NotificationRecord {
 
     StatusBarNotification getSbn() {
         return sbn;
+    }
+
+    /**
+     * Returns the UID of the local application corresponding to a bridged notification.
+     * Returns {@link android.os.Process#INVALID_UID} if the notification is not bridged,
+     * or if the bridged package is not installed on the local device.
+     */
+    public int getBridgedAppUid() {
+        return mBridgedAppUid;
+    }
+
+    /** If the record is for a bridged notification, return the bridged package name,
+     * or {@code null} otherwise.
+     */
+    @Nullable
+    public String getBridgedPackageName() {
+        if (android.app.Flags.bridgedNotifications()) {
+            BridgedNotificationMetadata metadata =
+                    getSbn().getNotification().getBridgedNotificationMetadata();
+            if (metadata != null) {
+                return metadata.getPackageName();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * If the record is for a bridged notification, return the bridged channel ID, or {@code null}
+     * otherwise.
+     */
+    @Nullable
+    public String getBridgedChannelId() {
+        if (android.app.Flags.bridgedNotifications()) {
+            BridgedNotificationMetadata metadata =
+                    getSbn().getNotification().getBridgedNotificationMetadata();
+            if (metadata != null) {
+                return metadata.getChannelId();
+            }
+        }
+        return null;
     }
 
     /**

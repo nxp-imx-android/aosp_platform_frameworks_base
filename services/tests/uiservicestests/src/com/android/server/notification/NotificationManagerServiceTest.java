@@ -219,6 +219,7 @@ import android.app.ITransientNotification;
 import android.app.IUriGrantsManager;
 import android.app.Notification;
 import android.app.Notification.Action;
+import android.app.Notification.BridgedNotificationMetadata;
 import android.app.Notification.MessagingStyle.Message;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
@@ -372,12 +373,12 @@ import com.android.server.utils.quota.MultiRateLimiter;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
-import libcore.junit.util.compat.CoreCompatChangeRule.DisableCompatChanges;
-import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges;
-
 import com.google.android.collect.Lists;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+
+import libcore.junit.util.compat.CoreCompatChangeRule.DisableCompatChanges;
+import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -395,6 +396,9 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -410,9 +414,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
-
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
-import platform.test.runner.parameterized.Parameters;
 
 @SmallTest
 @RunWithLooper
@@ -664,7 +665,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         InstrumentationRegistry.getInstrumentation().getUiAutomation().adoptShellPermissionIdentity(
                 "android.permission.WRITE_ALLOWLISTED_DEVICE_CONFIG",
                 "android.permission.READ_DEVICE_CONFIG",
-                "android.permission.READ_CONTACTS");
+                "android.permission.READ_CONTACTS",
+                "android.permission.POST_BRIDGED_NOTIFICATIONS");
 
         mUiEventLogger = new UiEventLoggerFake();
         when(mActivityManager.getUidImportance(anyInt())).thenReturn(IMPORTANCE_VISIBLE);
@@ -1265,10 +1267,11 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     private NotificationRecord generateNotificationRecord(NotificationChannel channel,
             Notification.TvExtender extender) {
-        return generateNotificationRecord(channel, extender, null);
+        return generateNotificationRecord(channel, extender, null, false);
     }
-      private NotificationRecord generateNotificationRecord(NotificationChannel channel,
-            Notification.TvExtender extender, Action action) {
+
+    private NotificationRecord generateNotificationRecord(NotificationChannel channel,
+            Notification.TvExtender extender, Action action, boolean isBridged) {
         if (channel == null) {
             channel = mTestNotificationChannel;
         }
@@ -1283,6 +1286,14 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         }
         if (extender != null) {
             nb.extend(extender);
+        }
+        if (isBridged) {
+            Icon icon =
+                    Icon.createWithBitmap(Bitmap.createBitmap(300, 300, Bitmap.Config.ARGB_8888));
+            BridgedNotificationMetadata metadata = new BridgedNotificationMetadata(
+                    BridgedNotificationMetadata.BRIDGED_METADATA_TYPE_PHONE, "test_display_name",
+                    "test_bridged_package", TEST_CHANNEL_ID, icon);
+            nb.setBridgedNotificationMetadata(metadata);
         }
         StatusBarNotification sbn = new StatusBarNotification(mPkg, mPkg, 8, "tag", mUid, 0,
                 nb.build(), UserHandle.getUserHandleForUid(mUid), null, 0);
@@ -1963,6 +1974,63 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         assertNull(mService.getNotificationRecord(sbn.getKey()));
         assertEquals(IMPORTANCE_NONE, mBinderService.getNotificationChannel(
                 mPkg, mContext.getUserId(), mPkg, channel.getId()).getImportance());
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_BRIDGED_NOTIFICATIONS)
+    public void testBlockedBridgedNotifications_blockedChannelGroup() throws Exception {
+        when(mPmi.getPackageUid(eq("test_bridged_package"), anyLong(), anyInt()))
+                .thenReturn(1234);
+        mService.setPreferencesHelper(mPreferencesHelper);
+        NotificationChannel bridgedChannel = new NotificationChannel(
+                TEST_CHANNEL_ID, TEST_CHANNEL_ID,
+                NotificationManager.IMPORTANCE_HIGH);
+        bridgedChannel.setGroup("test_channel_group");
+        when(mPreferencesHelper.getNotificationChannel(anyString(), anyInt(),
+                eq(TEST_CHANNEL_ID), anyBoolean())).thenReturn(bridgedChannel);
+        when(mPreferencesHelper.isGroupBlocked(anyString(), anyInt(), eq("test_channel_group")))
+                .thenReturn(true);
+        NotificationChannel channel = new NotificationChannel("id", "name",
+                NotificationManager.IMPORTANCE_HIGH);
+        channel.setGroup("something");
+
+        assertEquals(true, mService.isBridgedNotificationBlocked(generateNotificationRecord(
+                channel, null, null, true)));
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_BRIDGED_NOTIFICATIONS)
+    public void testBlockedBridgedNotifications_blockedChannel() throws Exception {
+        when(mPmi.getPackageUid(eq("test_bridged_package"), anyLong(), anyInt()))
+                .thenReturn(1234);
+        mService.setPreferencesHelper(mPreferencesHelper);
+        NotificationChannel bridgedChannel = new NotificationChannel(TEST_CHANNEL_ID,
+                TEST_CHANNEL_ID, NotificationManager.IMPORTANCE_NONE);
+        bridgedChannel.setGroup("test_channel_group");
+        when(mPreferencesHelper.getNotificationChannel(anyString(), anyInt(),
+                eq(TEST_CHANNEL_ID), anyBoolean())).thenReturn(bridgedChannel);
+        NotificationChannel channel = new NotificationChannel("id", "name",
+                NotificationManager.IMPORTANCE_HIGH);
+        channel.setGroup("something");
+
+        assertEquals(true, mService.isBridgedNotificationBlocked(generateNotificationRecord(
+                channel, null, null, true)));
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_BRIDGED_NOTIFICATIONS)
+    public void testBlockedBridgedNotifications_blockedByUser() throws Exception {
+        when(mPmi.getPackageUid(eq("test_bridged_package"), anyLong(), anyInt()))
+                .thenReturn(1234);
+
+        NotificationChannel channel = new NotificationChannel("id", "name",
+                NotificationManager.IMPORTANCE_HIGH);
+        NotificationRecord r = generateNotificationRecord(channel, null, null, true);
+
+        when(mPermissionHelper.hasPermission(eq(1234))).thenReturn(false);
+
+        assertEquals(true, mService.isBridgedNotificationBlocked(generateNotificationRecord(
+                channel, null, null, true)));
     }
 
     @Test
@@ -11594,7 +11662,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 new Notification.Action.Builder(null, "text", mActivityIntent)
                 .addExtras(bundle).build();
         final NotificationRecord r =
-            generateNotificationRecord(mTestNotificationChannel, null, action);
+                generateNotificationRecord(mTestNotificationChannel, null, action, false);
         r.setNumSmartActionsAdded(1);
         mService.addNotification(r);
 
