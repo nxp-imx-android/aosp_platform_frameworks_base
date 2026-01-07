@@ -1405,6 +1405,10 @@ public class ZenModeHelper {
                     != newPolicy.getVisualEffectNotificationList()) {
                 userModifiedFields |= ZenPolicy.FIELD_VISUAL_EFFECT_NOTIFICATION_LIST;
             }
+            // Interruption Types
+            if (oldPolicy.getInterruptionTypeAlarms() != newPolicy.getInterruptionTypeAlarms()) {
+                userModifiedFields |= ZenPolicy.FIELD_INTERRUPTION_TYPE_ALARMS;
+            }
             zenRule.zenPolicyUserModifiedFields = userModifiedFields;
         }
 
@@ -2342,20 +2346,50 @@ public class ZenModeHelper {
                 || (zenPriorityOnly
                         && ZenModeConfig.areAllZenBehaviorSoundsMuted(mConsolidatedPolicy));
 
-        final IntPredicate shouldMute = (usage) ->
-        switch (AudioAttributes.getSuppressibleUsage(usage)) {
-            case AudioAttributes.SUPPRESSIBLE_NEVER -> false;
-            case AudioAttributes.SUPPRESSIBLE_NOTIFICATION -> muteNotifications || muteEverything;
-            case AudioAttributes.SUPPRESSIBLE_CALL -> muteCalls || muteEverything;
-            case AudioAttributes.SUPPRESSIBLE_ALARM -> muteAlarms || muteEverything;
-            case AudioAttributes.SUPPRESSIBLE_MEDIA -> muteMedia || muteEverything;
-            case AudioAttributes.SUPPRESSIBLE_SYSTEM -> muteSystem || muteEverything;
-            default -> muteEverything; // TODO BUG!
-        };
+        final IntPredicate shouldMute =
+                usage ->
+                        switch (AudioAttributes.getSuppressibleUsage(usage)) {
+                            case AudioAttributes.SUPPRESSIBLE_NEVER -> false;
+                            case AudioAttributes.SUPPRESSIBLE_NOTIFICATION ->
+                                    muteNotifications || muteEverything;
+                            case AudioAttributes.SUPPRESSIBLE_CALL -> muteCalls || muteEverything;
+                            case AudioAttributes.SUPPRESSIBLE_ALARM -> {
+                                if (muteAlarms || muteEverything) {
+                                    yield true;
+                                } else {
+                                    // If alarms allowed, sound should be disabled if they are meant
+                                    // to breakthrough with vibration only
+                                    yield zenPriorityOnly && !(mConsolidatedPolicy
+                                            .allowSoundFor(
+                                                    Policy.PRIORITY_CATEGORY_ALARMS
+                                            ));
+                                }
+                            }
+                            case AudioAttributes.SUPPRESSIBLE_MEDIA -> muteMedia || muteEverything;
+                            case AudioAttributes.SUPPRESSIBLE_SYSTEM ->
+                                    muteSystem || muteEverything;
+                            default -> muteEverything; // TODO BUG!
+                        };
 
         // special case: touch sounds should still vibrate during DND
-        final IntPredicate shouldMuteForVibrate = (usage)
-                -> usage != AudioAttributes.USAGE_ASSISTANCE_SONIFICATION && shouldMute.test(usage);
+        final IntPredicate shouldMuteForVibrate =
+                usage ->
+                        switch (usage) {
+                            case AudioAttributes.USAGE_ASSISTANCE_SONIFICATION -> false;
+                            case AudioAttributes.USAGE_ALARM -> {
+                                if (muteAlarms || muteEverything) {
+                                    yield true;
+                                } else {
+                                    // If alarms allowed, vibration should be disabled if they are
+                                    // meant to breakthrough with sound only
+                                    yield zenPriorityOnly && !(mConsolidatedPolicy
+                                            .allowVibrationFor(
+                                                    Policy.PRIORITY_CATEGORY_ALARMS
+                                            ));
+                                }
+                            }
+                            default -> shouldMute.test(usage);
+                        };
 
         applyRestrictions(zenPriorityOnly, shouldMute, AppOpsManager.OP_PLAY_AUDIO);
         applyRestrictions(zenPriorityOnly, shouldMuteForVibrate, AppOpsManager.OP_VIBRATE);
