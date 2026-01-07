@@ -326,6 +326,15 @@ constructor(
                     }
                         ?: getNotificationActions(dataModel.notificationActions, activityStarter)
                             .mapNotNull { it.getMediaActionModel() as? MediaActionModel.Action }
+
+            override val onSessionVisible: (areDeviceChipsVisible: Boolean) -> Unit
+                get() = { areDeviceChipsVisible ->
+                    // The device suggestion chip is not show in the resumption player or when the
+                    // presentation mode is compact or thumbnail.
+                    if (!dataModel.isResume && areDeviceChipsVisible) {
+                        dataModel.suggestionData?.onSuggestionSpaceVisible?.run()
+                    }
+                }
         }
     }
 

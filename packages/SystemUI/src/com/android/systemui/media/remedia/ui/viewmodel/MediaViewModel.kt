@@ -417,6 +417,11 @@ constructor(
         interactor.storeCurrentCarouselIndex(selectedCardIndex)
     }
 
+    /** Notifies that the card at [cardIndex] is visible on screen. */
+    fun onCardVisible(cardIndex: Int, areDeviceChipsVisible: Boolean) {
+        interactor.sessions.getOrNull(cardIndex)?.onSessionVisible(areDeviceChipsVisible)
+    }
+
     /** Notifies that the carousel is reordered and first card is now visible on screen. */
     fun onScrollToFirstCard() {
         interactor.resetScrollToFirst()
