@@ -641,7 +641,10 @@ class Task extends TaskFragment {
     IBinder mLaunchCookie;
 
     // The task will be removed when TaskOrganizer, which is managing the task, is destroyed.
-    boolean mRemoveWithTaskOrganizer;
+    final boolean mRemoveWithTaskOrganizer;
+
+    /** @see #isVisibilityBarrier() */
+    private final boolean mIsVisibilityBarrier;
 
     // The task will be reparented to another display when its display is removed.
     boolean mReparentOnDisplayRemoval;
@@ -684,7 +687,8 @@ class Task extends TaskFragment {
             IVoiceInteractor _voiceInteractor, boolean _createdByOrganizer, IBinder _launchCookie,
             boolean _deferTaskAppear, boolean _removeWithTaskOrganizer,
             boolean isForceOpaque, boolean shouldIgnoreInsets,
-            boolean disableAppCompatRoundedCorners, boolean _realActivityAppLockEnabled) {
+            boolean disableAppCompatRoundedCorners, boolean _realActivityAppLockEnabled,
+            boolean isVisibilityBarrier) {
         super(atmService, null /* fragmentToken */, _createdByOrganizer, false /* isEmbedded */);
 
         mTaskId = _taskId;
@@ -732,6 +736,7 @@ class Task extends TaskFragment {
         mLaunchCookie = _launchCookie;
         mDeferTaskAppear = _deferTaskAppear;
         mRemoveWithTaskOrganizer = _removeWithTaskOrganizer;
+        mIsVisibilityBarrier = isVisibilityBarrier;
         mIsTrimmableFromRecents = true;
         mIsForceOpaque = isForceOpaque;
         mShouldIgnoreInsets = shouldIgnoreInsets;
@@ -1574,6 +1579,9 @@ class Task extends TaskFragment {
 
     @Override
     void addChild(WindowContainer child, int index) {
+        if (isVisibilityBarrier()) {
+            throw new IllegalStateException("Visibility barrier should be empty.");
+        }
         index = getAdjustedChildPosition(child, index);
         super.addChild(child, index);
 
@@ -4321,6 +4329,10 @@ class Task extends TaskFragment {
         return mTaskOrganizer != null;
     }
 
+    boolean isCreatedByOrganizer() {
+        return mCreatedByOrganizer;
+    }
+
     private boolean canBeOrganized() {
         // All root tasks can be organized
         if (isRootTask() || mCreatedByOrganizer) {
@@ -6655,6 +6667,20 @@ class Task extends TaskFragment {
     }
 
     /**
+     * Whether this is a visibility barrier, which is an empty Task window that should occlude
+     * siblings below it.
+     *
+     * A visibility barrier is expected to remain empty, and will throw
+     * {@link IllegalStateException} if trying to add a child window to it.
+     */
+    boolean isVisibilityBarrier() {
+        if (!Flags.visibilityManagementInBubbleRoot()) {
+            return false;
+        }
+        return mIsVisibilityBarrier;
+    }
+
+    /**
      * Indicates whether this task should be force opaque when it contains any running activities.
      *
      * @see #getVisibility(ActivityRecord)
@@ -6732,6 +6758,7 @@ class Task extends TaskFragment {
         private IVoiceInteractor mVoiceInteractor;
         private int mActivityType;
         private int mWindowingMode = WINDOWING_MODE_UNDEFINED;
+        private boolean mIsVisibilityBarrier;
         private boolean mCreatedByOrganizer;
         private boolean mDeferTaskAppear;
         private IBinder mLaunchCookie;
@@ -6837,6 +6864,11 @@ class Task extends TaskFragment {
 
         int getWindowingMode() {
             return mWindowingMode;
+        }
+
+        Builder setIsVisibilityBarrier(boolean isVisibilityBarrier) {
+            mIsVisibilityBarrier = isVisibilityBarrier;
+            return this;
         }
 
         Builder setCreatedByOrganizer(boolean createdByOrganizer) {
@@ -7147,7 +7179,7 @@ class Task extends TaskFragment {
                     mActivityInfo, mVoiceSession, mVoiceInteractor, mCreatedByOrganizer,
                     mLaunchCookie, mDeferTaskAppear, mRemoveWithTaskOrganizer,
                     mIsForceOpaque, mShouldIgnoreInsets, mDisableAppCompatRoundedCorners,
-                    mRealActivityAppLockEnabled);
+                    mRealActivityAppLockEnabled, mIsVisibilityBarrier);
         }
     }
 
@@ -7258,6 +7290,10 @@ class Task extends TaskFragment {
             // Skip the task being moved
             if (child == this) {
                 continue;
+            }
+            if (child.asTask() != null && child.asTask().isVisibilityBarrier()) {
+                // Visibility barrier is always occluding.
+                return true;
             }
             if (mAtmService.mVisibilityHelper.isOpaque(child, null /* starting */,
                     true /* ignoringKeyguard */, false /* ignoringInvisibleActivity */,

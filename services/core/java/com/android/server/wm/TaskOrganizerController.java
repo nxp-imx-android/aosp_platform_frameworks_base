@@ -24,6 +24,7 @@ import static android.window.StartingWindowRemovalInfo.DEFER_MODE_ROTATION;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WINDOW_ORGANIZER;
 import static com.android.server.wm.ActivityTaskManagerService.enforceTaskPermission;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_STARTING_REVEAL;
+import static com.android.server.wm.WindowContainer.fromBinder;
 import static com.android.server.wm.WindowOrganizerController.configurationsAreEqualForOrganizer;
 
 import android.annotation.NonNull;
@@ -928,28 +929,56 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                     "createTask unknown displayId=%d", params.getDisplayId());
             return null;
         }
+        final WindowContainer parent;
+        if (Flags.visibilityManagementInBubbleRoot() && params.getParentContainer() != null) {
+            parent = fromBinder(params.getParentContainer().asBinder());
+            if (parent == null) {
+                ProtoLog.e(WM_DEBUG_WINDOW_ORGANIZER, "createTask unknown requested parent");
+                return null;
+            }
+            if (parent.asTaskDisplayArea() == null && (parent.asTask() == null
+                    || !parent.asTask().isCreatedByOrganizer())) {
+                ProtoLog.e(WM_DEBUG_WINDOW_ORGANIZER,
+                        "createTask invalid requested parent=%s", parent);
+                return null;
+            }
+            if (parent.getDisplayContent() != display) {
+                ProtoLog.e(WM_DEBUG_WINDOW_ORGANIZER,
+                        "createTask requested parent=%s is not a child of requested display=%d",
+                        parent, display.getDisplayId());
+                return null;
+            }
+        } else {
+            parent = display.getDefaultTaskDisplayArea();
+        }
+
         ProtoLog.v(WM_DEBUG_WINDOW_ORGANIZER, "Create task displayId=%d winMode=%d",
                 display.mDisplayId, params.getWindowingMode());
-        final WindowContainer parent = display.getDefaultTaskDisplayArea();
         final TaskPropertiesRequest properties = params.getTaskPropertiesRequest();
 
-        // We want to defer the task appear signal until the task is fully created and attached to
-        // to the hierarchy so that the complete starting configuration is in the task info we send
-        // over to the organizer.
-        final Task task = new Task.Builder(mService)
+        final Task.Builder builder = new Task.Builder(mService)
                 .setName(params.getName())
-                .setWindowingMode(params.getWindowingMode())
                 .setIntent(new Intent())
                 .setCreatedByOrganizer(true)
                 .setDeferTaskAppear(true)
                 .setLaunchCookie(params.getLaunchCookie())
                 .setParent(parent)
                 .setRemoveWithTaskOrganizer(true)
-                .setReparentOnDisplayRemoval(properties.isReparentOnDisplayRemoval())
-                .setForceOpaque(properties.isForceOpaque())
-                .setShouldIgnoreInsets(properties.isIgnoreInsets())
-                .setDisableAppCompatRoundedCorners(properties.isDisableAppCompatRoundedCorners())
-                .build();
+                .setReparentOnDisplayRemoval(properties.isReparentOnDisplayRemoval());
+        if (Flags.visibilityManagementInBubbleRoot() && params.isVisibilityBarrier()) {
+            builder.setIsVisibilityBarrier(true);
+        } else {
+            builder.setWindowingMode(params.getWindowingMode())
+                    .setForceOpaque(properties.isForceOpaque())
+                    .setShouldIgnoreInsets(properties.isIgnoreInsets())
+                    .setDisableAppCompatRoundedCorners(
+                            properties.isDisableAppCompatRoundedCorners());
+        }
+        final Task task = builder.build();
+
+        // We want to defer the task appear signal until the task is fully created and attached to
+        // to the hierarchy so that the complete starting configuration is in the task info we send
+        // over to the organizer.
         task.setDeferTaskAppear(false /* deferTaskAppear */);
         return task;
     }
@@ -960,7 +989,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         final long origId = Binder.clearCallingIdentity();
         try {
             synchronized (mGlobalLock) {
-                final WindowContainer wc = WindowContainer.fromBinder(token.asBinder());
+                final WindowContainer wc = fromBinder(token.asBinder());
                 if (wc == null) return false;
                 final Task task = wc.asTask();
                 if (task == null) return false;
@@ -1140,7 +1169,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                 if (parent == null) {
                     throw new IllegalArgumentException("Can't get children of null parent");
                 }
-                final WindowContainer container = WindowContainer.fromBinder(parent.asBinder());
+                final WindowContainer container = fromBinder(parent.asBinder());
                 if (container == null) {
                     Slog.e(TAG, "Can't get children of " + parent + " because it is not valid.");
                     return null;
@@ -1217,7 +1246,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         final long origId = Binder.clearCallingIdentity();
         try {
             synchronized (mGlobalLock) {
-                final WindowContainer wc = WindowContainer.fromBinder(token.asBinder());
+                final WindowContainer wc = fromBinder(token.asBinder());
                 if (wc == null) {
                     Slog.w(TAG, "Could not resolve window from token");
                     return;
@@ -1246,7 +1275,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         final long origId = Binder.clearCallingIdentity();
         try {
             synchronized (mGlobalLock) {
-                final WindowContainer wc = WindowContainer.fromBinder(token.asBinder());
+                final WindowContainer wc = fromBinder(token.asBinder());
                 if (wc == null) {
                     Slog.w(TAG, "Could not resolve window from token");
                     return;
@@ -1269,7 +1298,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         final long origId = Binder.clearCallingIdentity();
         try {
             synchronized (mGlobalLock) {
-                final WindowContainer wc = WindowContainer.fromBinder(token.asBinder());
+                final WindowContainer wc = fromBinder(token.asBinder());
                 if (wc == null) {
                     Slog.w(TAG, "Could not resolve window from token");
                     return;
