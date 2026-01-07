@@ -229,6 +229,16 @@ flag {
 }
 
 flag {
+    name: "rollout_pixel_faceauth"
+    namespace: "core_experiments_team_internal"
+    description: "Rolls out the pixel_faceauth namespace."
+    bug: "436480687"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "psc_batch_service_updates"
     namespace: "backstage_power"
     description: "Batch Service related ProcessStateController updates and auto trigger the update on state changes."
