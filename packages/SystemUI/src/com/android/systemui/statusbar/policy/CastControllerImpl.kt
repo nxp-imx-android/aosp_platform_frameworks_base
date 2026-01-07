@@ -55,8 +55,8 @@ class CastControllerImpl
 constructor(
     private val context: Context,
     private val packageManager: PackageManager,
-    private val mediaRouterLazy: dagger.Lazy<MediaRouter>,
-    private val projectionManagerLazy: dagger.Lazy<MediaProjectionManager>,
+    private val mediaRouter: dagger.Lazy<MediaRouter>,
+    private val projectionManager: dagger.Lazy<MediaProjectionManager>,
     private val logger: CastControllerLogger,
     @Application private val appScope: CoroutineScope,
     @Main private val mainDispatcher: CoroutineDispatcher,
@@ -72,9 +72,6 @@ constructor(
     private val discoveringLock = Any()
     private val projectionLock = Any()
 
-    private lateinit var mediaRouter: MediaRouter
-    private lateinit var projectionManager: MediaProjectionManager
-
     @GuardedBy("discoveringLock") private var discovering = false
     @GuardedBy("discoveringLock") private var callbackRegistered = false
     @GuardedBy("projectionLock") private var projection: MediaProjectionInfo? = null
@@ -89,9 +86,8 @@ constructor(
         if (!Flags.castControllerMediaRouterInBg()) return
         // MediaRouter does Binder calls on init so we need to lazily create it during
         // CoreStarteable startup.
-        mediaRouter = mediaRouterLazy.get()
-        mediaRouter.setRouterGroupId(MediaRouter.MIRRORING_GROUP_ID)
-        projectionManager = projectionManagerLazy.get()
+        mediaRouter.get().setRouterGroupId(MediaRouter.MIRRORING_GROUP_ID)
+        val projectionManager = projectionManager.get()
         projectionManager.addCallback(projectionCallback, bgHandler)
         synchronized(projectionLock) { projection = projectionManager.activeProjectionInfo }
     }
@@ -145,6 +141,7 @@ constructor(
     @GuardedBy("discoveringLock")
     private fun handleDiscoveryChangeLocked() =
         trace("handleDiscoveryChangeLocked") {
+            val mediaRouter = mediaRouter.get()
             if (callbackRegistered) {
                 mediaRouter.removeCallback(mediaCallback)
                 callbackRegistered = false
@@ -172,7 +169,7 @@ constructor(
 
     @AnyThread
     override fun setCurrentUserId(currentUserId: Int) {
-        appScope.launch(bgDispatcher) { mediaRouter.rebindAsUser(currentUserId) }
+        appScope.launch(bgDispatcher) { mediaRouter.get().rebindAsUser(currentUserId) }
     }
 
     @AnyThread
@@ -199,7 +196,7 @@ constructor(
             trace("startCasting") {
                 val route = device.tag as RouteInfo?
                 logger.logStartCasting(route!!)
-                mediaRouter.selectRoute(MediaRouter.ROUTE_TYPE_REMOTE_DISPLAY, route)
+                mediaRouter.get().selectRoute(MediaRouter.ROUTE_TYPE_REMOTE_DISPLAY, route)
             }
         }
 
@@ -215,6 +212,7 @@ constructor(
                 logger.logStopCasting(isProjection)
                 if (isProjection) {
                     val projection = device.tag as MediaProjectionInfo?
+                    val projectionManager = projectionManager.get()
                     if (projectionManager.activeProjectionInfo == projection) {
                         projectionManager.stopActiveProjection(stopReason)
                     } else {
@@ -222,7 +220,7 @@ constructor(
                     }
                 } else {
                     logger.logStopCastingMediaRouter()
-                    mediaRouter.fallbackRoute.select()
+                    mediaRouter.get().fallbackRoute.select()
                 }
             }
         }
@@ -257,6 +255,7 @@ constructor(
     private suspend fun updateRemoteDisplays() =
         withContext(bgDispatcher) {
             trace("updateRemoteDisplays") {
+                val mediaRouter = mediaRouter.get()
                 synchronized(routesByTag) {
                     routesByTag.clear()
                     val n = mediaRouter.routeCount
