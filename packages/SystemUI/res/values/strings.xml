@@ -432,6 +432,8 @@
     <string name="screen_share_disclaimer_app_sharing">When you’re sharing an app, anything shown or played in that app is visible to [APP NAME]. So be careful with things like passwords, payment details, messages, photos and audio &amp; video.</string>
     <!-- Disclaimer text for full screen sharing. [CHAR LIMIT=NONE] -->
     <string name="screen_share_disclaimer_full_screen_sharing">When you’re sharing your entire screen, anything on your screen is visible to [APP NAME]. So be careful with things like passwords, payment details, messages, photos, and audio &amp; video.</string>
+    <!-- Accessibility announcement for the screen share UI [CHAR LIMIT=NONE] -->
+    <string name="screen_share_a11y_announcement">Choose what to share. Select tab, app, or entire screen. Then press share.</string>
     <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "screenshot". [CHAR LIMIT=NONE] -->
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y">Take screenshot of window</string>
     <!-- Content description for the app window screenshot button in the toolbar, when the capture mode is set to "record". [CHAR LIMIT=NONE] -->
