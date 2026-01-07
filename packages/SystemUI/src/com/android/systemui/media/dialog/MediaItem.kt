@@ -25,7 +25,6 @@ import com.android.settingslib.media.MediaDevice
 sealed class MediaItem {
 
     /** Represents a media device. */
-    // TODO: b/472868021 - Make this an immutable data class without MediaDevice
     data class DeviceMediaItem(val mediaDevice: MediaDevice) : MediaItem()
 
     /**
@@ -35,10 +34,7 @@ sealed class MediaItem {
     data object DeviceGroupMediaItem : MediaItem()
 
     /** Represents the section title in the Output Switcher list. */
-    data class GroupDividerMediaItem
-    // TODO: b/448806213 - remove @JvmOverloads when MediaSwitchingController converted to Kotlin.
-    @JvmOverloads
-    constructor(
+    data class GroupDividerMediaItem(
         /** Text of the title */
         val title: String,
         /** Whether a group divider has a button that expands group device list */
