@@ -196,12 +196,6 @@ class SupervisionServiceTest {
 
         // TODO: b/427453821 Remove after converting SupervisionSettings from being a singleton.
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
-        service.mPackageMonitor.register(
-            context,
-            serviceThreadRule.serviceThread.looper,
-            UserHandle.ALL,
-            false,
-        )
         service.setSupervisionRecoveryInfo(null)
     }
 
@@ -1097,6 +1091,8 @@ class SupervisionServiceTest {
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     fun setPolicy_packagePolicyBlocked_sendsNotification() {
+        // triggerBootCompleted() is required for the PackageMonitor to be registered.
+        triggerBootCompleted()
         // The app will be hidden after the policy is set.
         setApplicationHiddenSetting(PACKAGE_NAME, hidden = true)
 
@@ -1116,6 +1112,8 @@ class SupervisionServiceTest {
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     fun setPolicy_packagePolicyBlocked_noPendingNotification_doesNotSendNotification() {
+        // triggerBootCompleted() is required for the PackageMonitor to be registered.
+        triggerBootCompleted()
         // The app will be hidden after the policy is set.
         setApplicationHiddenSetting(PACKAGE_NAME, hidden = true)
 
@@ -1136,6 +1134,8 @@ class SupervisionServiceTest {
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     fun setPolicy_packagePolicyUnblocked_sendsNotification() {
+        // triggerBootCompleted() is required for the PackageMonitor to be registered.
+        triggerBootCompleted()
         // The app will not be hidden after the policy is set.
         setApplicationHiddenSetting(PACKAGE_NAME, hidden = false)
         val launchIntent = mockPackageLaunchIntent(PACKAGE_NAME)
@@ -1156,6 +1156,8 @@ class SupervisionServiceTest {
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     fun setPolicy_packagePolicyUnblocked_noAppIntent_notificationHasNoIntent() {
+        // triggerBootCompleted() is required for the PackageMonitor to be registered.
+        triggerBootCompleted()
         // The app will not be hidden after the policy is set.
         setApplicationHiddenSetting(PACKAGE_NAME, hidden = false)
         mockPackageLaunchIntent(PACKAGE_NAME, launchIntent = null)
@@ -1172,6 +1174,8 @@ class SupervisionServiceTest {
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     fun setPolicy_packagePolicyBlocked_packageNotFound_doesNotSendNotification() {
+        // triggerBootCompleted() is required for the PackageMonitor to be registered.
+        triggerBootCompleted()
         // The app will be hidden after the policy is set.
         setApplicationHiddenSetting(PACKAGE_NAME, hidden = true)
         // But then, the app is not found.
@@ -1197,6 +1201,8 @@ class SupervisionServiceTest {
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     fun setPolicy_packagePolicyUnblocked_stillHidden_doesNotSendNotification() {
+        // triggerBootCompleted() is required for the PackageMonitor to be registered.
+        triggerBootCompleted()
         // Even after policy is set, the app will still be hidden
         setApplicationHiddenSetting(PACKAGE_NAME, hidden = true)
 
@@ -1779,7 +1785,7 @@ class SupervisionServiceTest {
 
     private fun setupMocksForUpgrade() {
         val userInfo = UserInfo(USER_ID, "testuser", 0)
-        whenever(mockUserManagerInternal.getUsers(any<UserFilter>())).thenReturn(listOf(userInfo))
+        whenever(mockUserManagerInternal.getUsers(false)).thenReturn(listOf(userInfo))
         val roleHolders = listOf(ROLE_HOLDER_PACKAGE)
         injector.setRoleHoldersAsUser(
             RoleManager.ROLE_SUPERVISION,
