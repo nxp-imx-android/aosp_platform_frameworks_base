@@ -56,7 +56,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -86,10 +85,9 @@ public class ComputerControlSessionTest {
     @Mock
     private ComputerControlSession.StabilityListener mMockStabilityListener;
 
-    @Captor
-    private ArgumentCaptor<Surface> mSurfaceCaptor;
-
     private ComputerControlSession mSession;
+    private IComputerControlLifecycleCallback mLifecycle;
+    private Surface mSurface;
 
     private AutoCloseable mMockitoSession;
 
@@ -109,16 +107,22 @@ public class ComputerControlSessionTest {
 
         mSession = new ComputerControlSession(DISPLAY_ID, mMockSession, accessibilityManager,
                 mMockOnClosedRunnable, new DisplayManagerGlobal(mDisplayManager));
+
+        // Capture session initialization args from constructor.
+        final var surfaceCaptor = ArgumentCaptor.forClass(Surface.class);
+        final var lifecycleCaptor =
+                ArgumentCaptor.forClass(IComputerControlLifecycleCallback.class);
+        verify(mMockSession).initialize(lifecycleCaptor.capture(), surfaceCaptor.capture());
+        mLifecycle = lifecycleCaptor.getValue();
+        assertThat(mLifecycle).isNotNull();
+        mSurface = surfaceCaptor.getValue();
+        assertThat(mSurface).isNotNull();
+        clearInvocations(mMockSession);
     }
 
     @After
     public void tearDown() throws Exception {
         mMockitoSession.close();
-    }
-
-    @Test
-    public void constructor_initializesSession() throws RemoteException {
-        verify(mMockSession).initialize(notNull(), notNull());
     }
 
     @Test
@@ -210,15 +214,12 @@ public class ComputerControlSessionTest {
 
     @Test
     public void setLifecycleCallback_providesLifecycleCallbacks() throws RemoteException {
-        ArgumentCaptor<IComputerControlLifecycleCallback> lifecycleCallbackCaptor =
-                ArgumentCaptor.forClass(IComputerControlLifecycleCallback.class);
-        verify(mMockSession).initialize(lifecycleCallbackCaptor.capture(), notNull());
         ComputerControlSession.LifecycleCallback mockCallback = Mockito.mock(
                 ComputerControlSession.LifecycleCallback.class);
 
         mSession.setLifecycleCallback(mExecutor, mockCallback);
 
-        lifecycleCallbackCaptor.getValue().onClosed(123);
+        mLifecycle.onClosed(123);
         verify(mockCallback).onClosed(eq(123));
         verify(mMockOnClosedRunnable).run();
     }
@@ -233,16 +234,13 @@ public class ComputerControlSessionTest {
 
     @Test
     public void clearLifecycleCallback_stopsLifecycleCallbacks() throws RemoteException {
-        ArgumentCaptor<IComputerControlLifecycleCallback> lifecycleCallbackCaptor =
-                ArgumentCaptor.forClass(IComputerControlLifecycleCallback.class);
-        verify(mMockSession).initialize(lifecycleCallbackCaptor.capture(), notNull());
         ComputerControlSession.LifecycleCallback mockCallback = Mockito.mock(
                 ComputerControlSession.LifecycleCallback.class);
         mSession.setLifecycleCallback(mExecutor, mockCallback);
 
         mSession.clearLifecycleCallback();
 
-        lifecycleCallbackCaptor.getValue().onClosed(123);
+        mLifecycle.onClosed(123);
         verify(mockCallback, never()).onClosed(anyInt());
         verify(mMockOnClosedRunnable).run();
     }
@@ -299,10 +297,6 @@ public class ComputerControlSessionTest {
 
     @Test
     public void setStabilityListener_waitsForFirstFrame() throws Exception {
-        verify(mMockSession).initialize(any(), mSurfaceCaptor.capture());
-        Surface surface = mSurfaceCaptor.getValue();
-        assertThat(surface).isNotNull();
-
         mSession.setStabilityListener(Duration.ofMillis(0), mExecutor, mMockStabilityListener);
         // Tap to reset the idle state.
         mSession.tap(0, 0);
@@ -310,18 +304,14 @@ public class ComputerControlSessionTest {
         // Verify listener is NOT called initially
         verify(mMockStabilityListener, Mockito.after(200).never()).onSessionStable();
 
-        drawFrame(surface);
+        drawFrame(mSurface);
 
         verify(mMockStabilityListener, Mockito.timeout(5000)).onSessionStable();
     }
 
     @Test
     public void setStabilityListener_frameAlreadyAvailable_firesImmediately() throws Exception {
-        verify(mMockSession).initialize(any(), mSurfaceCaptor.capture());
-        Surface surface = mSurfaceCaptor.getValue();
-        assertThat(surface).isNotNull();
-
-        drawFrame(surface);
+        drawFrame(mSurface);
         // Wait for frame to be processed.
         SystemClock.sleep(100);
 
@@ -343,7 +333,7 @@ public class ComputerControlSessionTest {
 
     @Test
     public void requestScreenshot_remoteRequestFails_fails() throws RemoteException {
-        mSession.onActive();
+        mLifecycle.onActive();
         when(mMockSession.requestScreenshot()).thenReturn(false);
 
         var callback = Mockito.mock(ScreenshotCallback.class);
@@ -355,7 +345,7 @@ public class ComputerControlSessionTest {
 
     @Test
     public void requestScreenshot_remoteRequestSucceeds_callbackPending() throws RemoteException {
-        mSession.onActive();
+        mLifecycle.onActive();
         when(mMockSession.requestScreenshot()).thenReturn(true);
 
         var callback = Mockito.mock(ScreenshotCallback.class);
@@ -367,7 +357,7 @@ public class ComputerControlSessionTest {
 
     @Test
     public void requestScreenshot_concurrentRequests_fails() throws RemoteException {
-        mSession.onActive();
+        mLifecycle.onActive();
         when(mMockSession.requestScreenshot()).thenReturn(true);
 
         var callback1 = Mockito.mock(ScreenshotCallback.class);
@@ -383,7 +373,7 @@ public class ComputerControlSessionTest {
 
     @Test
     public void requestScreenshot_remoteException_fails() throws RemoteException {
-        mSession.onActive();
+        mLifecycle.onActive();
         when(mMockSession.requestScreenshot()).thenThrow(new RemoteException());
         var callback = Mockito.mock(ScreenshotCallback.class);
 
@@ -394,18 +384,13 @@ public class ComputerControlSessionTest {
 
     @Test
     public void requestScreenshot_imageAvailable_succeeds() throws Exception {
-        mSession.onActive();
+        mLifecycle.onActive();
         when(mMockSession.requestScreenshot()).thenReturn(true);
-
-        verify(mMockSession).initialize(any(), mSurfaceCaptor.capture());
-        Surface surface = mSurfaceCaptor.getValue();
-        assertThat(surface).isNotNull();
-
         var callback = Mockito.mock(ScreenshotCallback.class);
 
         mSession.requestScreenshot(mExecutor, callback, null);
 
-        drawFrame(surface);
+        drawFrame(mSurface);
 
         verify(callback, timeout(100)).onResult(notNull());
     }
@@ -413,13 +398,9 @@ public class ComputerControlSessionTest {
     @Test
     public void requestScreenshot_remoteRequestRacesImageAvailable_succeeds()
             throws RemoteException {
-        mSession.onActive();
-        verify(mMockSession).initialize(any(), mSurfaceCaptor.capture());
-        Surface surface = mSurfaceCaptor.getValue();
-        assertThat(surface).isNotNull();
-
+        mLifecycle.onActive();
         when(mMockSession.requestScreenshot()).thenAnswer((inv) -> {
-            drawFrame(surface);
+            drawFrame(mSurface);
             // Wait for the new frame to be processed.
             SystemClock.sleep(100);
             return true;
@@ -435,15 +416,11 @@ public class ComputerControlSessionTest {
     @Test
     public void requestScreenshot_failedRemoteRequestRacesImageAvailable_succeeds()
             throws RemoteException {
-        mSession.onActive();
-        verify(mMockSession).initialize(any(), mSurfaceCaptor.capture());
-        Surface surface = mSurfaceCaptor.getValue();
-        assertThat(surface).isNotNull();
-
+        mLifecycle.onActive();
         // Set up a situation where the remote request will fail and return false, but the
         // ImageReader still happens to get a new frame within that time.
         when(mMockSession.requestScreenshot()).thenAnswer((inv) -> {
-            drawFrame(surface);
+            drawFrame(mSurface);
             // Wait for the new frame callback to be processed.
             SystemClock.sleep(100);
             return false;
@@ -458,11 +435,9 @@ public class ComputerControlSessionTest {
 
     @Test
     public void getScreenshot_returnsImage() throws Exception {
-        mSession.onActive();
-        verify(mMockSession).initialize(any(), mSurfaceCaptor.capture());
-        Surface surface = mSurfaceCaptor.getValue();
+        mLifecycle.onActive();
         when(mMockSession.requestScreenshot()).thenAnswer(invocation -> {
-            drawFrame(surface);
+            drawFrame(mSurface);
             return true;
         });
 
@@ -473,7 +448,7 @@ public class ComputerControlSessionTest {
 
     @Test
     public void getScreenshot_requestReturnsFalse_returnsNull() throws RemoteException {
-        mSession.onActive();
+        mLifecycle.onActive();
         when(mMockSession.requestScreenshot()).thenReturn(false);
 
         Image image = mSession.getScreenshot();
@@ -482,7 +457,7 @@ public class ComputerControlSessionTest {
 
     @Test
     public void requestScreenshot_canBeCancelled() throws RemoteException {
-        mSession.onActive();
+        mLifecycle.onActive();
         when(mMockSession.requestScreenshot()).thenReturn(true);
         var callback = Mockito.mock(ScreenshotCallback.class);
         var canceller = new CancellationSignal();
@@ -496,11 +471,8 @@ public class ComputerControlSessionTest {
 
     @Test
     public void requestScreenshot_afterCancelledRequest_succeeds() throws RemoteException {
-        mSession.onActive();
+        mLifecycle.onActive();
         when(mMockSession.requestScreenshot()).thenReturn(true);
-        verify(mMockSession).initialize(any(), mSurfaceCaptor.capture());
-        Surface surface = mSurfaceCaptor.getValue();
-        assertThat(surface).isNotNull();
         var callback = Mockito.mock(ScreenshotCallback.class);
         var canceller = new CancellationSignal();
 
@@ -511,25 +483,22 @@ public class ComputerControlSessionTest {
 
         mSession.requestScreenshot(mExecutor, callback, null);
 
-        drawFrame(surface);
+        drawFrame(mSurface);
 
         verify(callback, timeout(100)).onResult(notNull());
     }
 
     @Test
     public void requestScreenshot_withCancelledRequest_fails() throws RemoteException {
-        mSession.onActive();
+        mLifecycle.onActive();
         when(mMockSession.requestScreenshot()).thenReturn(true);
-        verify(mMockSession).initialize(any(), mSurfaceCaptor.capture());
-        Surface surface = mSurfaceCaptor.getValue();
-        assertThat(surface).isNotNull();
         var callback = Mockito.mock(ScreenshotCallback.class);
         var canceller = new CancellationSignal();
 
         // Use an already-cancelled signal, and let the cancellation race the frame draw.
         canceller.cancel();
         mSession.requestScreenshot(mExecutor, callback, canceller);
-        drawFrame(surface);
+        drawFrame(mSurface);
 
         verify(mMockSession).requestScreenshot();
         verify(callback, timeout(100)).onError(withCode(ScreenshotException.ERROR_CANCELED));
