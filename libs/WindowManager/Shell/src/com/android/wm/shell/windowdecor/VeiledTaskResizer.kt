@@ -1,0 +1,93 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.wm.shell.windowdecor
+
+import android.window.WindowContainerTransaction
+import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.desktopmode.freeformCaptionInsets
+import com.android.wm.shell.shared.desktopmode.DesktopState
+
+/** Implementation of [TaskResizer] for veiled resizing of tasks. */
+class VeiledTaskResizer(
+    private val displayController: DisplayController,
+    private val desktopState: DesktopState,
+) : TaskResizer {
+    override fun onResizeUpdate(session: DragSession, x: Float, y: Float) {
+        if (
+            DragPositioningCallbackUtility.changeBounds(
+                session.ctrlType,
+                session.repositionTaskBounds,
+                session.taskBoundsAtDragStart,
+                session.stableBounds,
+                DragPositioningCallbackUtility.calculateDelta(x, y, session.repositionStartPoint),
+                displayController,
+                session.windowDecoration,
+                desktopState.canEnterDesktopMode,
+            )
+        ) {
+            if (!session.isResizingOrAnimatingResize) {
+                session.windowDecoration.showResizeVeil(session.repositionTaskBounds)
+                session.isResizingOrAnimatingResize = true
+            } else {
+                session.windowDecoration.updateResizeVeil(session.repositionTaskBounds)
+            }
+        }
+    }
+
+    override fun onResizeEnd(
+        session: DragSession,
+        x: Float,
+        y: Float,
+    ): WindowContainerTransaction? {
+        DragPositioningCallbackUtility.changeBounds(
+            session.ctrlType,
+            session.repositionTaskBounds,
+            session.taskBoundsAtDragStart,
+            session.stableBounds,
+            DragPositioningCallbackUtility.calculateDelta(x, y, session.repositionStartPoint),
+            displayController,
+            session.windowDecoration,
+            desktopState.canEnterDesktopMode,
+        )
+
+        session.windowDecoration.updateResizeVeil(session.repositionTaskBounds)
+        if (session.taskBoundsAtDragStart != session.repositionTaskBounds) {
+            val wct = WindowContainerTransaction()
+            wct.setBounds(session.windowDecoration.taskInfo.token, session.repositionTaskBounds)
+            val captionInsets = session.windowDecoration.taskInfo.freeformCaptionInsets
+            if (captionInsets != 0) {
+                // Reset app bounds if app bounds were overridden.
+                wct.setAppBounds(session.windowDecoration.taskInfo.token, null)
+            }
+            return wct
+        } else {
+            endDragResizeSession(session)
+            return null
+        }
+    }
+
+    override fun cleanup(session: DragSession) {
+        endDragResizeSession(session)
+    }
+
+    private fun endDragResizeSession(session: DragSession) {
+        if (session.isResizingOrAnimatingResize) {
+            session.windowDecoration.hideResizeVeil()
+            session.isResizingOrAnimatingResize = false
+        }
+    }
+}
