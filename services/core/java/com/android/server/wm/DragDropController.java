@@ -564,18 +564,18 @@ class DragDropController {
         mDragState = null;
     }
 
-    void reportDropWindow(IBinder token, float x, float y) {
+    void reportDropWindow(IBinder token, float windowX, float windowY, float rawX, float rawY) {
         if (mDragState == null) {
             Slog.w(TAG_WM, "Drag state is closed.");
             return;
         }
 
         synchronized (mService.mGlobalLock) {
-            mDragState.reportDropWindowLock(token, x, y);
+            mDragState.reportDropWindowLock(token, windowX, windowY, rawX, rawY);
         }
     }
 
-    boolean dropForAccessibility(IWindow window, float x, float y) {
+    boolean dropForAccessibility(IWindow window, float windowX, float windowY) {
         synchronized (mService.mGlobalLock) {
             final boolean isA11yEnabled = getAccessibilityManager().isEnabled();
             if (!dragDropActiveLocked()) {
@@ -588,7 +588,9 @@ class DragDropController {
                     return false;
                 }
                 IBinder token = winState.mInputChannelToken;
-                return mDragState.reportDropWindowLock(token, x, y);
+                final float rawX = winState.getBounds().left + windowX;
+                final float rawY = winState.getBounds().top + windowY;
+                return mDragState.reportDropWindowLock(token, windowX, windowY, rawX, rawY);
             }
             return false;
         }

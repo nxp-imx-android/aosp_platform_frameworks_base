@@ -345,38 +345,38 @@ class DragState {
      * Notify the drop target and tells it about the data. If the drop event is not sent to the
      * target, invokes {@code endDragLocked} after the unhandled drag listener gets a chance to
      * handle the drop.
-     * @param inWindowX if `token` refers to a dragEvent-accepting window, `inWindowX` will be
+     * @param windowX if `token` refers to a dragEvent-accepting window, `windowX` will be
      *                  inside the window, else values might be invalid (0, 0).
-     * @param inWindowY if `token` refers to a dragEvent-accepting window, `inWindowY` will be
+     * @param windowY if `token` refers to a dragEvent-accepting window, `windowY` will be
      *                  inside the window, else values might be invalid (0, 0).
+     * @param rawX The raw X coordinate provided by the input system, specified in the
+     *             coordinate space of the display where the drop occurred.
+     * @param rawY The raw Y coordinate provided by the input system, specified in the
+     *             coordinate space of the display where the drop occurred.
      */
-    boolean reportDropWindowLock(IBinder token, float inWindowX, float inWindowY) {
+    boolean reportDropWindowLock(IBinder token, float windowX, float windowY, float rawX,
+            float rawY) {
         if (mAnimator != null) {
             return false;
         }
         try {
             Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "DragDropController#DROP");
-            return reportDropWindowLockInner(token, inWindowX, inWindowY);
+            return reportDropWindowLockInner(token, windowX, windowY, rawX, rawY);
         } finally {
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
         }
     }
 
-    private boolean reportDropWindowLockInner(IBinder token, float inWindowX, float inWindowY) {
+    private boolean reportDropWindowLockInner(IBinder token, float windowX, float windowY,
+            float rawX, float rawY) {
         if (mAnimator != null) {
             return false;
         }
 
         final WindowState touchedWin = mService.mInputToWindowMap.get(token);
-        final float displayX = touchedWin != null
-                ? touchedWin.getBounds().left + inWindowX
-                : inWindowX;
-        final float displayY = touchedWin != null
-                ? touchedWin.getBounds().top + inWindowY
-                : inWindowY;
         if (!isWindowNotified(touchedWin)) {
             if (DEBUG_DRAG) Slog.d(TAG_WM, "Received drop for unnotified window " + touchedWin);
-            final DragEvent unhandledDropEvent = createUnhandledDropEvent(displayX, displayY);
+            final DragEvent unhandledDropEvent = createUnhandledDropEvent(rawX, rawY);
             // Delegate to the unhandled drag listener as a first pass
             if (mDragDropController.notifyUnhandledDrop(unhandledDropEvent, "unhandled-drop")) {
                 // The unhandled drag listener will call back to notify whether it has consumed
@@ -394,10 +394,10 @@ class DragState {
         }
 
         if (DEBUG_DRAG) Slog.d(TAG_WM, "Sending DROP to " + touchedWin);
-        final DragEvent unhandledDropEvent = createUnhandledDropEvent(displayX, displayY);
+        final DragEvent unhandledDropEvent = createUnhandledDropEvent(rawX, rawY);
 
         final IBinder clientToken = touchedWin.mClient.asBinder();
-        final DragEvent event = createDropEvent(inWindowX, inWindowY, touchedWin);
+        final DragEvent event = createDropEvent(windowX, windowY, touchedWin);
         try {
             Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "DragDropController#dispatchDrop");
             touchedWin.mClient.dispatchDragEvent(event);
