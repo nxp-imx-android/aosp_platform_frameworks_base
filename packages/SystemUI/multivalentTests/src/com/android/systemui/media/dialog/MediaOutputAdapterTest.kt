@@ -78,6 +78,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
             on { hasAdjustVolumeUserRestriction() } doReturn false
             on { isAnyDeviceTransferring() } doReturn false
             on { getCurrentConnectedMediaDevice() } doReturn mMediaDevice1
+            on { isSingleConnectedDevice(mMediaDevice1) } doReturn true
             on { getConnectedSpeakersExpandableGroupDivider() }
                 .doReturn(
                     GroupDividerMediaItem(

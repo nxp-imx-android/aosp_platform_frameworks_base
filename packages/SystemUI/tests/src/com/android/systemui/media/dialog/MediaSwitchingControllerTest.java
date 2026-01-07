@@ -1137,6 +1137,44 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     }
 
     @Test
+    public void isSingleConnected_Device_sameDevice_returnsTrue() {
+        when(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1);
+
+        assertThat(mMediaSwitchingController.isSingleConnectedDevice(mMediaDevice1)).isTrue();
+    }
+
+    @Test
+    public void isCurrentlyConnected_singleSelected_returnsTrue() {
+        when(mMediaDevice2.isSelected()).thenReturn(true);
+
+        mMediaSwitchingController.start(mCb);
+        reset(mCb);
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
+
+        assertThat(mMediaSwitchingController.isSingleConnectedDevice(mMediaDevice2)).isTrue();
+    }
+
+    @Test
+    public void isSingleConnected_Device_groupPlayback_returnsFalse() {
+        when(mMediaDevice1.isSelected()).thenReturn(true);
+        when(mMediaDevice2.isSelected()).thenReturn(true);
+
+        mMediaSwitchingController.start(mCb);
+        reset(mCb);
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
+
+        assertThat(mMediaSwitchingController.isSingleConnectedDevice(mMediaDevice1)).isFalse();
+        assertThat(mMediaSwitchingController.isSingleConnectedDevice(mMediaDevice2)).isFalse();
+    }
+
+    @Test
+    public void isSingleConnected_Device_differentDevice_returnsFalse() {
+        when(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1);
+
+        assertThat(mMediaSwitchingController.isSingleConnectedDevice(mMediaDevice2)).isFalse();
+    }
+
+    @Test
     public void addDeviceToPlayMedia_callsLocalMediaManager() {
         MediaSwitchingController testMediaSwitchingController =
                 new MediaSwitchingController(

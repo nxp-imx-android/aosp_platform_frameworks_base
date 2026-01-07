@@ -349,7 +349,7 @@ constructor(
     /** Checks if there's any muting expected devices in the current MediaItem list. */
     fun hasMutingExpectedDevice(): Boolean {
         return mOutputMediaItemListProxy.getOutputMediaItemList().any {
-            it is MediaItem.DeviceMediaItem && it.mediaDevice.isMutingExpectedDevice
+            it is DeviceMediaItem && it.mediaDevice.isMutingExpectedDevice
         }
     }
 
@@ -590,7 +590,7 @@ constructor(
 
     private fun getSelectedDeviceItems(): List<MediaItem> {
         return mOutputMediaItemListProxy.getOutputMediaItemList().filter { item ->
-            item is MediaItem.DeviceMediaItem && item.mediaDevice.isSelected
+            item is DeviceMediaItem && item.mediaDevice.isSelected
         }
     }
 
@@ -719,6 +719,14 @@ constructor(
 
     fun getCurrentConnectedMediaDevice(): MediaDevice? =
         mLocalMediaManager.getCurrentConnectedDevice()
+
+    /**
+     * Returns whether the input device is reported by system as connected or if it's selected in a
+     * non group playback context.
+     */
+    fun isSingleConnectedDevice(device: MediaDevice): Boolean =
+        (device.getId() == getCurrentConnectedMediaDevice()?.getId()) ||
+            (!hasGroupPlayback() && device.isSelected())
 
     @VisibleForTesting
     fun clearMediaItemList() {
