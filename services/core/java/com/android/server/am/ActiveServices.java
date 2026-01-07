@@ -4527,6 +4527,12 @@ public final class ActiveServices {
                         res.aliasComponent != null ? res.aliasComponent : s.name;
                 final IBinderSession session =
                         mAm.mProcessStateController.getBoundServiceSessionFor(c);
+
+                final boolean isPccFrameworkSupportEnabled = enablePccFrameworkSupport();
+                if (isPccFrameworkSupportEnabled) {
+                    Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER,
+                            "bindServiceLocked#createPccProxyIfNeededAndNotifyClient");
+                }
                 try {
                     IBinder serviceBinder = createPccProxyIfNeeded(c, b.intent.binder);
 
@@ -4535,6 +4541,10 @@ public final class ActiveServices {
                     Slog.w(TAG, "Failure sending service " + s.shortInstanceName
                             + " to connection " + c.conn.asBinder()
                             + " (in " + c.binding.client.processName + ")", e);
+                } finally {
+                    if (isPccFrameworkSupportEnabled) {
+                        Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                    }
                 }
 
                 // If this is the first app connected back to this binding,
@@ -4618,6 +4628,12 @@ public final class ActiveServices {
                                     c.aliasComponent != null ? c.aliasComponent : r.name;
                             final IBinderSession session =
                                     mAm.mProcessStateController.getBoundServiceSessionFor(c);
+
+                            if (enablePccFrameworkSupport()) {
+                                Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER,
+                                        "publishServiceLocked"
+                                                + "#createPccProxyIfNeededAndNotifyClient");
+                            }
                             try {
                                 IBinder serviceBinder = createPccProxyIfNeeded(c, service);
 
@@ -4627,6 +4643,10 @@ public final class ActiveServices {
                                 Slog.w(TAG, "Failure sending service " + r.shortInstanceName
                                       + " to connection " + c.conn.asBinder()
                                       + " (in " + c.binding.client.processName + ")", e);
+                            } finally {
+                                if (enablePccFrameworkSupport()) {
+                                    Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                                }
                             }
                         }
                     }
@@ -7229,14 +7249,24 @@ public final class ActiveServices {
     }
 
     private void removePccProxyIfNeeded(ConnectionRecord cr) {
-        if (cr.binding.service.serviceInfo.shouldRunInPccSandbox()) {
-            mPccSandboxManagerInternal.removePccProxyIfNeeded(
-                    cr.binding.service.name,
-                    cr.binding.client.userId,
-                    cr.binding.intent.intent.getIntent(),
-                    cr.binding.intent.binder,
-                    cr.binding.client.uid
-            );
+        final boolean isPccFrameworkSupportEnabled = enablePccFrameworkSupport();
+        if (isPccFrameworkSupportEnabled) {
+            Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "removePccProxyIfNeeded");
+        }
+        try {
+            if (cr.binding.service.serviceInfo.shouldRunInPccSandbox()) {
+                mPccSandboxManagerInternal.removePccProxyIfNeeded(
+                        cr.binding.service.name,
+                        cr.binding.client.userId,
+                        cr.binding.intent.intent.getIntent(),
+                        cr.binding.intent.binder,
+                        cr.binding.client.uid
+                );
+            }
+        } finally {
+            if (isPccFrameworkSupportEnabled) {
+                Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+            }
         }
     }
 

@@ -2786,43 +2786,53 @@ public class ActivityManagerService extends IActivityManager.Stub
      */
     boolean validateAssociationAllowedLocked(String pkg1, int uid1, String pkg2, int uid2,
             @AssociationType int associationType, @Nullable Bundle extras) {
-        boolean callerOrTargetIsPcc = false;
-        if (enablePccFrameworkSupport()) {
-            callerOrTargetIsPcc =
-                    Process.isPrivateComputeCoreUid(uid1) || Process.isPrivateComputeCoreUid(uid2);
-            if (callerOrTargetIsPcc && validateAssociationAllowedForPccLocked(
-                    uid1, pkg1, uid2, pkg2, associationType, extras)) {
+        final boolean isPccFrameworkSupportEnabled = enablePccFrameworkSupport();
+        if (isPccFrameworkSupportEnabled) {
+            Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "validateAssociationAllowedLocked");
+        }
+        try {
+            boolean callerOrTargetIsPcc = false;
+            if (isPccFrameworkSupportEnabled) {
+                callerOrTargetIsPcc = Process.isPrivateComputeCoreUid(uid1)
+                        || Process.isPrivateComputeCoreUid(uid2);
+                if (callerOrTargetIsPcc && validateAssociationAllowedForPccLocked(
+                        uid1, pkg1, uid2, pkg2, associationType, extras)) {
+                    return true;
+                }
+            }
+
+            ensureAllowedAssociations();
+            // Interactions with the system uid are always allowed, since that is the core system
+            // that everyone needs to be able to interact with. Also allow reflexive associations
+            // within the same uid.
+            if (uid1 == uid2 || UserHandle.getAppId(uid1) == SYSTEM_UID
+                    || UserHandle.getAppId(uid2) == SYSTEM_UID) {
                 return true;
             }
-        }
 
-        ensureAllowedAssociations();
-        // Interactions with the system uid are always allowed, since that is the core system
-        // that everyone needs to be able to interact with. Also allow reflexive associations
-        // within the same uid.
-        if (uid1 == uid2 || UserHandle.getAppId(uid1) == SYSTEM_UID
-                || UserHandle.getAppId(uid2) == SYSTEM_UID) {
+            // Check for association on both source and target packages.
+            PackageAssociationInfo pai = mAllowedAssociations.get(pkg1);
+            if (pai != null && !pai.isPackageAssociationAllowed(pkg2)) {
+                return false;
+            }
+            pai = mAllowedAssociations.get(pkg2);
+            if (pai != null && !pai.isPackageAssociationAllowed(pkg1)) {
+                return false;
+            }
+
+            if (isPccFrameworkSupportEnabled && callerOrTargetIsPcc) {
+                // No generalized rules applicable, and no OEM defined associations.
+                return false;
+            }
+
+            // If no explicit associations are provided in the manifest at this
+            // stage, then the app is allowed associations with any package.
             return true;
+        } finally {
+            if (isPccFrameworkSupportEnabled) {
+                Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+            }
         }
-
-        // Check for association on both source and target packages.
-        PackageAssociationInfo pai = mAllowedAssociations.get(pkg1);
-        if (pai != null && !pai.isPackageAssociationAllowed(pkg2)) {
-            return false;
-        }
-        pai = mAllowedAssociations.get(pkg2);
-        if (pai != null && !pai.isPackageAssociationAllowed(pkg1)) {
-            return false;
-        }
-
-        if (enablePccFrameworkSupport() && callerOrTargetIsPcc) {
-            // No generalized rules applicable, and no OEM defined associations.
-            return false;
-        }
-
-        // If no explicit associations are provided in the manifest at this
-        // stage, then the app is allowed associations with any package.
-        return true;
     }
 
     /**
@@ -2833,13 +2843,23 @@ public class ActivityManagerService extends IActivityManager.Stub
     boolean validateAssociationAllowedForPccLocked(
             int callerUid, String callerPackage, int targetUid, String targetPackage,
             @AssociationType int associationType, Bundle extras) {
-        final PccSandboxManagerInternal pccSandboxManagerInternal =
-                LocalServices.getService(PccSandboxManagerInternal.class);
-        if (pccSandboxManagerInternal == null) {
-            return false;
+        final boolean isPccFrameworkSupportEnabled = enablePccFrameworkSupport();
+        if (isPccFrameworkSupportEnabled) {
+            Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "validateAssociationAllowedForPcc");
         }
-        return pccSandboxManagerInternal.validateAssociationAllowed(
-                callerUid, callerPackage, targetUid, targetPackage, associationType, extras);
+        try {
+            final PccSandboxManagerInternal pccSandboxManagerInternal =
+                    LocalServices.getService(PccSandboxManagerInternal.class);
+            if (pccSandboxManagerInternal == null) {
+                return false;
+            }
+            return pccSandboxManagerInternal.validateAssociationAllowed(
+                    callerUid, callerPackage, targetUid, targetPackage, associationType, extras);
+        } finally {
+            if (isPccFrameworkSupportEnabled) {
+                Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+            }
+        }
     }
 
     /**
