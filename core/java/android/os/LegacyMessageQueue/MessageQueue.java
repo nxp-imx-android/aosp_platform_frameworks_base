@@ -81,6 +81,8 @@ public final class MessageQueue {
     @UnsupportedAppUsage
     private int mNextBarrierToken;
 
+    private final Thread mLooperThread;
+
     private native static long nativeInit();
     private native static void nativeDestroy(long ptr);
     @UnsupportedAppUsage
@@ -93,6 +95,11 @@ public final class MessageQueue {
     MessageQueue(boolean quitAllowed) {
         mQuitAllowed = quitAllowed;
         mPtr = nativeInit();
+        mLooperThread = Thread.currentThread();
+    }
+
+    Thread getLooperThread() {
+        return mLooperThread;
     }
 
     @Override
@@ -578,7 +585,12 @@ public final class MessageQueue {
     @UnsupportedAppUsage
     @TestApi
     public int postSyncBarrier() {
-        return postSyncBarrier(SystemClock.uptimeMillis());
+        return onSyncBarrierPosted(postSyncBarrier(SystemClock.uptimeMillis()));
+    }
+
+    @RavenwoodRedirect
+    private int onSyncBarrierPosted(int token) {
+        return token;
     }
 
     private int postSyncBarrier(long when) {
@@ -672,6 +684,11 @@ public final class MessageQueue {
                 nativeWake(mPtr);
             }
         }
+        onSyncBarrierRemoved(token);
+    }
+
+    @RavenwoodRedirect
+    private void onSyncBarrierRemoved(int token) {
     }
 
     boolean enqueueMessage(Message msg, long when) {

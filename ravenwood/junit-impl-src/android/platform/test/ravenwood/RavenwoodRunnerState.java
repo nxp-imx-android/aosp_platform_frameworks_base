@@ -63,7 +63,7 @@ public final class RavenwoodRunnerState {
     }
 
     public void exitTestClass() {
-        RavenwoodErrorHandler.dumpWarnings(RavenwoodLogManager.getLogcatOut(Log.WARN));
+        RavenwoodErrorHandler.dumpWarnings(RavenwoodLogManager.getLogcatOut(TAG, Log.WARN));
         RavenwoodBugreportManager.dumpBugreportFiles();
         assertTrue(RAVENWOOD_RULE_ERROR, mActiveProperties.isEmpty());
     }

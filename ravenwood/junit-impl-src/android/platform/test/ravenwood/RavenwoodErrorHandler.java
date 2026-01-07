@@ -113,7 +113,7 @@ public class RavenwoodErrorHandler {
     static void exitTestMethod(Description description) {
         cancelTimeout();
         RavenwoodMessageTracker.getInstance().dumpPendingMessages(
-                RavenwoodLogManager.getLogcatOut(Log.VERBOSE),
+                RavenwoodLogManager.getLogcatOut(TAG, Log.VERBOSE),
                 "Test finished.");
         maybeThrowPendingRecoverableUncaughtExceptionAndClear();
         maybeThrowUnrecoverableUncaughtException();

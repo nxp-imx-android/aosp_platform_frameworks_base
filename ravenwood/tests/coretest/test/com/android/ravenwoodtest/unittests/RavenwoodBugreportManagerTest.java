@@ -15,20 +15,64 @@
  */
 package com.android.ravenwoodtest.unittests;
 
+import static com.google.common.truth.Truth.assertThat;
+
+import android.os.Looper;
 import android.platform.test.ravenwood.RavenwoodBugreportManager;
 
 import org.junit.Test;
 
 public class RavenwoodBugreportManagerTest {
     @Test
-    public void testBugreport() {
+    public void testBugreport() throws Exception {
+        RavenwoodBugreportManager.resetLastBugreportFile();
         // Make sure it's callable.
+        var title = "NOT A BUG, JUST TESTING BUGREPORT";
         RavenwoodBugreportManager.doBugreport(
-                "NOT A BUG, JUST TESTING BUGREPORT",
+                title,
                 Thread.currentThread(),
                 new Exception("Test exception"),
                 /* killself=*/ false);
 
-        // Ideally we should check result somehow.
+        var bugreport = RavenwoodBugreportManager.readLastBugreportFile();
+
+        // Make sure some basic contents are included.
+        assertThat(bugreport).contains("Description: " + title);
+        assertThat(bugreport).contains("= BUGREPORT END =");
+    }
+
+    @Test
+    public void testBugreportWithPendingSyncBarriers() throws Exception {
+        RavenwoodBugreportManager.resetLastBugreportFile();
+
+        int t1;
+        int t2;
+        t1 = Looper.getMainLooper().getQueue().postSyncBarrier();
+        try {
+            t2 = Looper.getMainLooper().getQueue().postSyncBarrier();
+            try {
+                RavenwoodBugreportManager.doBugreport(
+                        "Test: making sure sync barriers are included",
+                        null, null,
+                        /* killself=*/ false);
+            } finally {
+                Looper.getMainLooper().getQueue().removeSyncBarrier(t2);
+            }
+        } finally {
+            Looper.getMainLooper().getQueue().removeSyncBarrier(t1);
+        }
+
+        // Take another bugreport, and make sure these tokens are not set.
+        RavenwoodBugreportManager.resetLastBugreportFile();
+        {
+            RavenwoodBugreportManager.doBugreport(
+                    "Test: making sure sync barriers are _not_ included",
+                    null, null,
+                    /* killself=*/ false);
+
+            var bugreport = RavenwoodBugreportManager.readLastBugreportFile();
+            assertThat(bugreport).doesNotContain("syncBarrierToken=[" + t1 + "]");
+            assertThat(bugreport).doesNotContain("syncBarrierToken=[" + t2 + "]");
+        }
     }
 }

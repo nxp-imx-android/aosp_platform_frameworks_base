@@ -27,14 +27,12 @@ import java.io.PrintStream;
  * Only provides low level functionalities, so it's a static class
  */
 public class RavenwoodLogManager {
-    private static final String TAG = RavenwoodDriver.TAG;
-
     private RavenwoodLogManager() {
     }
 
     private static final PrintStream sRawOut = RavenwoodDriver.sRawStdOut;
 
-    private static class RavenwoodLoggingPrintStream extends LoggingPrintStream {
+    public static class RavenwoodLoggingPrintStream extends LoggingPrintStream {
         private final String mTag;
         private final int mLogLevel;
 
@@ -47,13 +45,29 @@ public class RavenwoodLogManager {
         protected void log(String line) {
             Log.println(mLogLevel, mTag, line);
         }
+
+        /**
+         * Flushes the current buffer, but don't flush the last line if it doesn't finish
+         * with a new line.
+         */
+        @Override
+        public synchronized void flush() {
+            flush(false);
+        }
+
+        /**
+         * Flush the buffer, even if the buffer doesn't end with a newline.
+         */
+        public void flushCompletely() {
+            flush(true);
+        }
     }
 
     /**
      * Create a {@link PrintStream} that prints as logcat.
      */
-    public static PrintStream getLogcatOut(int logLevel) {
-        return new RavenwoodLoggingPrintStream(TAG, logLevel);
+    public static RavenwoodLoggingPrintStream getLogcatOut(String tag, int logLevel) {
+        return new RavenwoodLoggingPrintStream(tag, logLevel);
     }
 
     /**
