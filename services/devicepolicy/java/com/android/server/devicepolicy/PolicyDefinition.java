@@ -403,7 +403,7 @@ public final class PolicyDefinition<V> {
                     new IntegerPolicySerializer()
             );
 
-    static final PolicyDefinition<String> LOCKSCREEN_INFO =
+    public static final PolicyDefinition<String> LOCKSCREEN_INFO =
             new PolicyDefinition<>(
                     new NoArgsPolicyKey(
                             DevicePolicyIdentifiers.LOCKSCREEN_INFO_POLICY),
