@@ -19,7 +19,6 @@ package com.android.server.companion.datatransfer.continuity.messages;
 import android.annotation.NonNull;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
-import com.android.internal.util.FrameworkStatsLog;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +30,7 @@ import java.util.Objects;
  */
 public record HandoffRequestResultMessage(
         int taskId, int statusCode, @NonNull List<HandoffActivityDataMessage> activities)
-        implements TaskContinuityMessage {
+        implements Proto {
 
     public HandoffRequestResultMessage {
         Objects.requireNonNull(activities);
@@ -89,11 +88,6 @@ public record HandoffRequestResultMessage(
     }
 
     @Override
-    public long getFieldNumber() {
-        return android.companion.TaskContinuityMessage.HANDOFF_REQUEST_RESULT;
-    }
-
-    @Override
     public void write(@NonNull ProtoOutputStream pos) throws IOException {
         Objects.requireNonNull(pos);
 
@@ -104,10 +98,5 @@ public record HandoffRequestResultMessage(
             Proto.writeField(
                     pos, android.companion.HandoffRequestResultMessage.ACTIVITIES, activity);
         }
-    }
-
-    @Override
-    public int getTypeForMetrics() {
-        return FrameworkStatsLog.TASK_CONTINUITY_MESSAGE_SENT__MESSAGE_TYPE__HANDOFF_REQUEST_RESULT;
     }
 }

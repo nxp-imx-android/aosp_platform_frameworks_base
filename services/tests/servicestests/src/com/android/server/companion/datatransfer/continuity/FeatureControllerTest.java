@@ -26,6 +26,7 @@ import android.testing.AndroidTestingRunner;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
+import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskStackBroadcastMessage;
 import java.util.Collections;
 import org.junit.Before;
@@ -97,14 +98,21 @@ public class FeatureControllerTest {
     public void
             testOnMessageReceived_taskStackBroadcastMessage_callsOnTaskStackBroadcastMessageReceived() {
         mFakeFeatureController.onMessageReceived(
-                /* associationId= */ 1, new TaskStackBroadcastMessage(Collections.emptyList()));
+                /* associationId= */ 1,
+                new TaskContinuityMessage.Builder()
+                        .setTaskStackBroadcastMessage(
+                                new TaskStackBroadcastMessage(Collections.emptyList()))
+                        .build());
         assertThat(mFakeFeatureController.mTaskStackBroadcastMessages).hasSize(1);
     }
 
     @Test
     public void testOnMessageReceived_handoffRequest_callsOnHandoffRequestMessageReceived() {
         mFakeFeatureController.onMessageReceived(
-                /* associationId= */ 1, new HandoffRequestMessage(0));
+                /* associationId= */ 1,
+                new TaskContinuityMessage.Builder()
+                        .setHandoffRequestMessage(new HandoffRequestMessage(0))
+                        .build());
         assertThat(mFakeFeatureController.mHandoffRequestMessages).hasSize(1);
     }
 
@@ -113,7 +121,10 @@ public class FeatureControllerTest {
             testOnMessageReceived_handoffRequestResult_callsOnHandoffRequestResultMessageReceived() {
         mFakeFeatureController.onMessageReceived(
                 /* associationId= */ 1,
-                new HandoffRequestResultMessage(0, 0, Collections.emptyList()));
+                new TaskContinuityMessage.Builder()
+                        .setHandoffRequestResultMessage(
+                                new HandoffRequestResultMessage(0, 0, Collections.emptyList()))
+                        .build());
         assertThat(mFakeFeatureController.mHandoffRequestResultMessages).hasSize(1);
     }
 }

@@ -33,6 +33,7 @@ import com.android.server.companion.datatransfer.continuity.connectivity.TaskCon
 import com.android.server.companion.datatransfer.continuity.messages.HandoffActivityDataMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
+import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -133,7 +134,11 @@ public class InboundHandoffRequestHandler extends IHandoffTaskDataReceiver.Stub 
             }
 
             Slog.i(TAG, "Sending result message to " + associationIds.size() + " associations.");
-            mTaskContinuityMessenger.sendMessage(associationIdsArray, handoffRequestResultMessage);
+            mTaskContinuityMessenger.sendMessage(
+                    associationIdsArray,
+                    new TaskContinuityMessage.Builder()
+                            .setHandoffRequestResultMessage(handoffRequestResultMessage)
+                            .build());
         }
     }
 

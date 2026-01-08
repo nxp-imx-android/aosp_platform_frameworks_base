@@ -42,6 +42,7 @@ import com.android.server.companion.datatransfer.continuity.connectivity.TaskCon
 import com.android.server.companion.datatransfer.continuity.messages.HandoffActivityDataMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
+import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import java.util.List;
 import org.junit.After;
@@ -94,11 +95,16 @@ public class InboundHandoffRequestHandlerTest {
         List<HandoffActivityData> handoffData = List.of(handoffActivityData);
         mInboundHandoffRequestHandler.onHandoffTaskDataRequestSucceeded(taskId, handoffData);
 
-        HandoffRequestResultMessage expectedMessage =
-                new HandoffRequestResultMessage(
-                        taskId,
-                        HANDOFF_REQUEST_RESULT_SUCCESS,
-                        List.of(new HandoffActivityDataMessage(handoffActivityData, List.of())));
+        TaskContinuityMessage expectedMessage =
+                new TaskContinuityMessage.Builder()
+                        .setHandoffRequestResultMessage(
+                                new HandoffRequestResultMessage(
+                                        taskId,
+                                        HANDOFF_REQUEST_RESULT_SUCCESS,
+                                        List.of(
+                                                new HandoffActivityDataMessage(
+                                                        handoffActivityData, List.of()))))
+                        .build();
         verify(mMockTaskContinuityMessenger)
                 .sendMessage(aryEq(new int[] {associationId}), eq(expectedMessage));
     }
@@ -126,11 +132,16 @@ public class InboundHandoffRequestHandlerTest {
         List<HandoffActivityData> handoffData = List.of(handoffActivityData);
         mInboundHandoffRequestHandler.onHandoffTaskDataRequestSucceeded(taskId, handoffData);
 
-        HandoffRequestResultMessage expectedMessage =
-                new HandoffRequestResultMessage(
-                        taskId,
-                        HANDOFF_REQUEST_RESULT_SUCCESS,
-                        List.of(new HandoffActivityDataMessage(handoffActivityData, List.of())));
+        TaskContinuityMessage expectedMessage =
+                new TaskContinuityMessage.Builder()
+                        .setHandoffRequestResultMessage(
+                                new HandoffRequestResultMessage(
+                                        taskId,
+                                        HANDOFF_REQUEST_RESULT_SUCCESS,
+                                        List.of(
+                                                new HandoffActivityDataMessage(
+                                                        handoffActivityData, List.of()))))
+                        .build();
         verify(mMockTaskContinuityMessenger)
                 .sendMessage(
                         aryEq(new int[] {firstAssociationId, secondAssociationId}),
@@ -188,8 +199,12 @@ public class InboundHandoffRequestHandlerTest {
 
         mInboundHandoffRequestHandler.onHandoffTaskDataRequestFailed(taskId, receiverErrorCode);
 
-        HandoffRequestResultMessage expectedMessage =
-                new HandoffRequestResultMessage(taskId, expectedStatusCode, List.of());
+        TaskContinuityMessage expectedMessage =
+                new TaskContinuityMessage.Builder()
+                        .setHandoffRequestResultMessage(
+                                new HandoffRequestResultMessage(
+                                        taskId, expectedStatusCode, List.of()))
+                        .build();
         verify(mMockTaskContinuityMessenger)
                 .sendMessage(aryEq(new int[] {associationId}), eq(expectedMessage));
     }

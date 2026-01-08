@@ -38,6 +38,7 @@ import com.android.server.companion.datatransfer.continuity.connectivity.TaskCon
 import com.android.server.companion.datatransfer.continuity.messages.HandoffActivityDataMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
+import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.tasks.TaskSyncController;
 import java.util.ArrayList;
 import java.util.List;
@@ -78,9 +79,13 @@ public class OutboundHandoffRequestHandlerTest {
         mOutboundHandoffRequestHandler.requestHandoff(associationId, taskId, callbackHolder);
 
         // Verify HandoffRequestMessage was sent.
-        HandoffRequestMessage expectedHandoffRequestMessage = new HandoffRequestMessage(taskId);
         verify(mMockTaskContinuityMessenger)
-                .sendMessage(eq(associationId), eq(expectedHandoffRequestMessage));
+                .sendMessage(
+                        eq(associationId),
+                        eq(
+                                new TaskContinuityMessage.Builder()
+                                        .setHandoffRequestMessage(new HandoffRequestMessage(taskId))
+                                        .build()));
 
         // Simulate a response message.
         ComponentName expectedComponentName =
@@ -157,9 +162,13 @@ public class OutboundHandoffRequestHandlerTest {
         mOutboundHandoffRequestHandler.requestHandoff(associationId, taskId, firstCallback);
         mOutboundHandoffRequestHandler.requestHandoff(associationId, taskId, secondCallback);
 
-        HandoffRequestMessage expectedHandoffRequestMessage = new HandoffRequestMessage(taskId);
         verify(mMockTaskContinuityMessenger, times(1))
-                .sendMessage(eq(associationId), eq(expectedHandoffRequestMessage));
+                .sendMessage(
+                        eq(associationId),
+                        eq(
+                                new TaskContinuityMessage.Builder()
+                                        .setHandoffRequestMessage(new HandoffRequestMessage(taskId))
+                                        .build()));
     }
 
     @Test
