@@ -23,6 +23,7 @@ import android.app.Activity;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.companion.virtual.computercontrol.ComputerControlSession.Action;
+import android.companion.virtual.computercontrol.ComputerControlSession.ScreenshotException.ErrorCode;
 import android.companion.virtual.computercontrol.ComputerControlSession.SessionBlockReason;
 import android.companion.virtual.computercontrol.ComputerControlSession.SessionCloseReason;
 import android.companion.virtual.computercontrol.InteractiveMirror;
@@ -31,6 +32,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.media.Image;
+import android.media.ImageReader;
+import android.os.CancellationSignal;
+import android.os.OutcomeReceiver;
 import android.util.Size;
 import android.view.accessibility.AccessibilityWindowInfo;
 import android.view.inputmethod.InputConnection;
@@ -99,18 +103,82 @@ public final class ComputerControlSession implements AutoCloseable {
     }
 
     /**
-     * Screenshot the current display content.
+     * Screenshot the current display content synchronously.
      *
-     * <p>The behavior is similar to {@link android.media.ImageReader#acquireLatestImage}, meaning
-     * that any previously acquired images should be released before attempting to acquire new ones.
-     * </p>
+     * <p>The behavior is similar to {@link ImageReader#acquireLatestImage}, meaning that any
+     * previously acquired images should be released before attempting to acquire new ones.</p>
+     *
+     * NOTE: This is a blocking call! If a screenshot is not immediately available, this method
+     * will block until the next frame is produced, or until the method times out. A successful
+     * screenshot acquisition could take in the order of 10s of milliseconds if one is not
+     * immediately available.
      *
      * @return A screenshot of the current display content, or {@code null} if no screenshot is
      *   currently available.
+     * @deprecated Use {@link #requestScreenshot(Executor, OutcomeReceiver, CancellationSignal)}
+     *   instead.
      */
     @Nullable
     public Image getScreenshot() {
         return mSession.getScreenshot();
+    }
+
+    /**
+     * Exception used to indicate how a screenshot request failed.
+     */
+    public static class ScreenshotException extends Exception {
+
+        @ErrorCode
+        private final int mErrorCode;
+
+        /**
+         * Get the error code that describes the failure mode.
+         */
+        @ErrorCode
+        public int getErrorCode() {
+            return mErrorCode;
+        }
+
+        /** @hide */
+        public ScreenshotException(@ErrorCode int errorCode) {
+            super("errorCode=" + errorCode);
+            mErrorCode = errorCode;
+        }
+    }
+
+    /**
+     * Requests a screenshot of the current display content asynchronously.
+     *
+     * <p>This is a one-shot operation. A new screenshot request must be made for each screenshot.
+     *
+     * <p>The behavior is similar to {@link ImageReader#acquireLatestImage}, meaning that any
+     * previously acquired images should be released before attempting to acquire new ones.
+     *
+     * <p>Only one screenshot request can be active at a time. If a new screenshot is requested
+     * while a previous one is still pending, the new request will be rejected.
+     *
+     * @param executor The executor on which the callback will be invoked.
+     * @param receiver The outcome receiver callback to be invoked when the screenshot is available
+     *                or encounters any issues.
+     *
+     * @see ScreenshotException
+     */
+    public void requestScreenshot(@NonNull @CallbackExecutor Executor executor,
+            @NonNull OutcomeReceiver<Image, ScreenshotException> receiver,
+            @Nullable CancellationSignal cancellationSignal) {
+        mSession.requestScreenshot(executor, new OutcomeReceiver<>() {
+                    @Override
+                    public void onResult(Image result) {
+                        receiver.onResult(result);
+                    }
+
+            @Override
+            public void onError(
+                    @NonNull android.companion.virtual.computercontrol.ComputerControlSession
+                            .ScreenshotException error) {
+                receiver.onError(new ScreenshotException(error.getErrorCode()));
+            }
+        }, cancellationSignal);
     }
 
     /**

@@ -78,6 +78,17 @@ interface IComputerControlSession {
      */
     void setPreviewIntent(in @nullable PendingIntent previewIntent);
 
+    /**
+     * Request a screenshot to be taken of the virtual display, which forces a new frame to be
+     * drawn during a backgrounded session. Screenshot requests should be serialized, and the client
+     * should wait for the frame to be produced in the ImageReader following a successful request
+     * before requesting another one.
+     *
+     * @return {@code true} if a screenshot request was successfully processed,
+     *     {@code false} otherwise.
+     */
+    boolean requestScreenshot();
+
     /** Closes this session. */
     void close();
 }

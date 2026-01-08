@@ -33,8 +33,10 @@ import android.hardware.display.DisplayManagerGlobal;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Binder;
+import android.os.CancellationSignal;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.OutcomeReceiver;
 import android.os.RemoteException;
 import android.util.Log;
 import android.util.Size;
@@ -56,7 +58,9 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 /**
  * A session for automated control of applications.
@@ -70,6 +74,9 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
         implements AutoCloseable {
 
     private static final String TAG = ComputerControlSession.class.getSimpleName();
+
+    /** Overall timeout for a screenshot request to complete. */
+    private static final int SCREENSHOT_TIMEOUT_MS = 5000;
 
     /** @hide */
     public static final String ACTION_REQUEST_ACCESS =
@@ -215,6 +222,12 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     @GuardedBy("mImageReaderLock")
     @Nullable
     private ImageReader mImageReader;
+    @GuardedBy("mImageReaderLock")
+    @Nullable
+    private ScreenshotCallbackRecord mOneShotPendingScreenshotCallback;
+    @GuardedBy("mImageReaderLock")
+    @Nullable
+    private Runnable mScreenshotTimeoutRunnable;
 
     @GuardedBy("mLifecycle")
     private final LifecycleStateTracker mLifecycle = new LifecycleStateTracker();
@@ -256,9 +269,11 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
         display.getDisplayInfo(displayInfo);
         mDisplaySize = new Size(displayInfo.logicalWidth, displayInfo.logicalHeight);
 
+        // ImageReader requires maxImages to be at least 2 for acquireLatestImage() to work.
         mImageReader = ImageReader.newInstance(displayInfo.logicalWidth,
                 displayInfo.logicalHeight,
                 PixelFormat.RGBA_8888, /* maxImages= */ 2);
+        mImageReader.setOnImageAvailableListener(reader -> onImageAvailable(), mHandler);
         try {
             mSession.initialize(/* lifecycleCallback=*/ this, mImageReader.getSurface());
         } catch (RemoteException e) {
@@ -316,29 +331,190 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     }
 
     /**
-     * Screenshot the current display content.
+     * Screenshot the current display content synchronously.
      *
      * <p>The behavior is similar to {@link ImageReader#acquireLatestImage}, meaning that any
      * previously acquired images should be released before attempting to acquire new ones.</p>
      *
+     * NOTE: This is a blocking call! If a screenshot is not immediately available, this method
+     * will block until the next frame is produced, or until the method times out. A successful
+     * screenshot acquisition could take in the order of 10s of milliseconds if one is not
+     * immediately available.
+     *
      * @return A screenshot of the current display content, or {@code null} if no screenshot is
      *   currently available.
+     * @deprecated Use {@link #requestScreenshot(Executor, OutcomeReceiver, CancellationSignal)}
+     *   instead.
      */
     @Nullable
     public Image getScreenshot() {
+        return requestScreenshotSync();
+    }
+
+    /**
+     * Exception used to indicate how a screenshot request failed.
+     */
+    public static class ScreenshotException extends Exception {
+
+        /** An unknown error occurred when processing this screenshot request. */
+        public static final int ERROR_UNKNOWN = 0;
+
+        /** The request to receive a screenshot timed out. */
+        public static final int ERROR_TIMEOUT = 1;
+
+        /** The request to receive a screenshot was cancelled. */
+        public static final int ERROR_CANCELED = 2;
+
+        /** The session is in a state where taking screenshots is prohibited. */
+        public static final int ERROR_PROHIBITED = 3;
+
+        /** The session encountered an internal error, and the client may try again later. */
+        public static final int ERROR_INTERNAL = 4;
+
+        /** The session encountered a remote error. */
+        public static final int ERROR_REMOTE = 5;
+
+        /** A previous request to receive a screenshot is still active. */
+        public static final int ERROR_DUPLICATE_REQUEST = 6;
+
+        @ErrorCode
+        private final int mErrorCode;
+
+        /**
+         * Get the error code that describes the failure mode.
+         */
+        @ErrorCode
+        public int getErrorCode() {
+            return mErrorCode;
+        }
+
+        /** @hide */
+        @IntDef(value = {
+                ERROR_UNKNOWN,
+                ERROR_TIMEOUT,
+                ERROR_CANCELED,
+                ERROR_PROHIBITED,
+                ERROR_INTERNAL,
+                ERROR_REMOTE,
+                ERROR_DUPLICATE_REQUEST,
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface ErrorCode {
+        }
+
+        /** @hide */
+        public ScreenshotException(@ErrorCode int errorCode) {
+            super("errorCode=" + errorCode);
+            mErrorCode = errorCode;
+        }
+    }
+
+    /**
+     * Requests a screenshot of the current display content asynchronously.
+     *
+     * <p>This is a one-shot operation. A new screenshot request must be made for each screenshot.
+     *
+     * <p>The behavior is similar to {@link ImageReader#acquireLatestImage}, meaning that any
+     * previously acquired images should be released before attempting to acquire new ones.
+     *
+     * <p>Only one screenshot request can be active at a time. If a new screenshot is requested
+     * while a previous one is still pending, the new request will be rejected.
+     *
+     * @param executor The executor on which the callback will be invoked.
+     * @param receiver The outcome receiver callback to be invoked when the screenshot is available
+     *                 or encounters any issues.
+     * @see ScreenshotException
+     */
+    @SuppressWarnings("EmptyTryBlock")
+    public void requestScreenshot(@NonNull @CallbackExecutor Executor executor,
+            @NonNull OutcomeReceiver<Image, ScreenshotException> receiver,
+            @Nullable CancellationSignal cancellationSignal) {
+        Objects.requireNonNull(executor, "Executor must not be null");
+        Objects.requireNonNull(receiver, "OutcomeReceiver must not be null");
+        final var callback = new ScreenshotCallbackRecord(executor, receiver, cancellationSignal);
+
         synchronized (mLifecycle) {
             if (!(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {
-                return null;
+                Log.w(TAG, "Cannot request screenshot: Agent interaction is not available");
+                callback.fire(it -> it.onError(
+                        new ScreenshotException(ScreenshotException.ERROR_PROHIBITED)));
+                return;
             }
         }
-        final Image image;
         synchronized (mImageReaderLock) {
-            image = mImageReader == null ? null : mImageReader.acquireLatestImage();
+            if (mImageReader == null) {
+                Log.w(TAG, "Cannot request screenshot: Image reader resources are closed");
+                callback.fire(it -> it.onError(
+                        new ScreenshotException(ScreenshotException.ERROR_PROHIBITED)));
+                return;
+            }
+            if (mOneShotPendingScreenshotCallback != null) {
+                // The screenshot pipeline cannot be fully synchronized as we don't know the exact
+                // vsync ID of the frame rendered by this request when consuming from the
+                // ImageReader, so we assume it's the first consumed frame. To avoid overlapping
+                // requests, prefer older requests and deny duplicate ones, unless the request is
+                // manually cancelled by the client.
+                Log.w(TAG, "Cannot request screenshot: Existing screenshot request still pending");
+                callback.fire(it -> it.onError(
+                        new ScreenshotException(ScreenshotException.ERROR_DUPLICATE_REQUEST)));
+                return;
+            }
+
+            // Install the callback.
+            mOneShotPendingScreenshotCallback = callback;
+            mScreenshotTimeoutRunnable = () -> onScreenshotError(
+                    callback, ScreenshotException.ERROR_TIMEOUT, "Timeout");
+            mHandler.postDelayed(mScreenshotTimeoutRunnable, SCREENSHOT_TIMEOUT_MS);
+            if (cancellationSignal != null) {
+                cancellationSignal.setOnCancelListener(
+                        () -> mHandler.post(() -> onScreenshotError(
+                                callback, ScreenshotException.ERROR_CANCELED, "Cancelled")));
+            }
+            try (var image = mImageReader.acquireLatestImage()) {
+                // Flush the image queue.
+            }
         }
-        if (image == null) {
-            Log.w(TAG, "getScreenshot: No new image available!");
+
+        try {
+            // This remote call will trigger a new frame to be drawn, which will in turn trigger
+            // onImageAvailable(). We assume that the next image that becomes available was the
+            // result of this request.
+            if (!mSession.requestScreenshot()) {
+                onScreenshotError(callback, ScreenshotException.ERROR_INTERNAL, "Server error");
+                return;
+            }
+
+        } catch (RemoteException e) {
+            onScreenshotError(callback, ScreenshotException.ERROR_REMOTE, "Remote exception");
+            return;
         }
-        return image;
+    }
+
+    /** Local adapter for making screenshot requests synchronous. */
+    private Image requestScreenshotSync() {
+        if (Thread.currentThread().threadId() == mHandlerThread.getThreadId()) {
+            throw new IllegalStateException("getScreenshot must be called from a different thread");
+        }
+
+        final var future = new CompletableFuture<Image>();
+        requestScreenshot(Runnable::run, new OutcomeReceiver<>() {
+                    @Override
+                    public void onResult(Image result) {
+                        future.complete(result);
+                    }
+
+                    @Override
+                    public void onError(@NonNull ScreenshotException error) {
+                        future.complete(null);
+                    }
+                },
+                /* cancellationSignal= */ null);
+
+        try {
+            return future.get();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -628,6 +804,59 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
                 mImageReader = null;
             }
         }
+    }
+
+    /** Record of a single screenshot request callback. */
+    private record ScreenshotCallbackRecord(@CallbackExecutor Executor executor,
+                                            OutcomeReceiver<Image, ScreenshotException> receiver,
+                                            @Nullable CancellationSignal cancellationSignal) {
+
+        /** Convenience method used to fire the callback on its executor. */
+        void fire(Consumer<OutcomeReceiver<Image, ScreenshotException>> consumer) {
+            executor.execute(() -> consumer.accept(receiver));
+        }
+    }
+
+    private void onImageAvailable() {
+        synchronized (mImageReaderLock) {
+            if (mImageReader == null) {
+                return;
+            }
+            if (mOneShotPendingScreenshotCallback == null) {
+                return;
+            }
+            final var image = mImageReader.acquireLatestImage();
+            if (image == null) {
+                // The image was already consumed by an earlier callback.
+                return;
+            }
+            fireScreenshotCallback(it -> it.onResult(image));
+        }
+    }
+
+    private void onScreenshotError(ScreenshotCallbackRecord callback,
+            @ScreenshotException.ErrorCode int error, String message) {
+        synchronized (mImageReaderLock) {
+            if (mOneShotPendingScreenshotCallback != callback) {
+                return;
+            }
+            Log.d(TAG, "onScreenshotError: code=" + error + ": " + message);
+            fireScreenshotCallback(it -> it.onError(new ScreenshotException(error)));
+        }
+    }
+
+    @GuardedBy("mImageReaderLock")
+    private void fireScreenshotCallback(
+            Consumer<OutcomeReceiver<Image, ScreenshotException>> consumer) {
+        if (mOneShotPendingScreenshotCallback != null) {
+            mOneShotPendingScreenshotCallback.fire(consumer);
+            mHandler.removeCallbacks(Objects.requireNonNull(mScreenshotTimeoutRunnable));
+            if (mOneShotPendingScreenshotCallback.cancellationSignal != null) {
+                mOneShotPendingScreenshotCallback.cancellationSignal.setOnCancelListener(null);
+            }
+        }
+        mOneShotPendingScreenshotCallback = null;
+        mScreenshotTimeoutRunnable = null;
     }
 
     /** Callback for computer control session events. */
