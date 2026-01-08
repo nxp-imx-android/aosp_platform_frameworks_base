@@ -52585,12 +52585,6 @@ package android.view {
     method public void setBlurRadius(float);
   }
 
-  public abstract static class BlurRegion.Builder<T extends android.view.BlurRegion.Builder<T>> {
-    method @NonNull public abstract android.view.BlurRegion build();
-    method @NonNull public T setAlpha(@FloatRange(from=0.0, to=1.0) float);
-    method @NonNull public T setBlurRadius(float);
-  }
-
   public final class Choreographer {
     method public static android.view.Choreographer getInstance();
     method public void postFrameCallback(android.view.Choreographer.FrameCallback);
@@ -54105,27 +54099,6 @@ package android.view {
     field public static final int TYPE_ZOOM_OUT = 1019; // 0x3fb
   }
 
-  @FlaggedApi("android.view.flags.surface_view_set_blur_regions") public final class RRectBlurRegion extends android.view.BlurRegion {
-    ctor public RRectBlurRegion(@NonNull android.view.RRectBlurRegion);
-    method @NonNull public android.view.RRectBlurRegion copy();
-    method public float getBottom();
-    method @NonNull public float[] getCornerRadius();
-    method public float getLeft();
-    method public float getRight();
-    method public float getTop();
-    method public void setBottom(float);
-    method public void setCornerRadius(@NonNull float[]);
-    method public void setLeft(float);
-    method public void setRight(float);
-    method public void setTop(float);
-  }
-
-  public static final class RRectBlurRegion.Builder extends android.view.BlurRegion.Builder<android.view.RRectBlurRegion.Builder> {
-    ctor public RRectBlurRegion.Builder(@NonNull android.view.RRectBlurRegion);
-    ctor public RRectBlurRegion.Builder(float, float, float, float, @Nullable float[]);
-    method @NonNull public android.view.RRectBlurRegion build();
-  }
-
   public final class RoundedCorner implements android.os.Parcelable {
     ctor public RoundedCorner(int, int, int, int);
     method public int describeContents();
@@ -54138,6 +54111,18 @@ package android.view {
     field public static final int POSITION_BOTTOM_RIGHT = 2; // 0x2
     field public static final int POSITION_TOP_LEFT = 0; // 0x0
     field public static final int POSITION_TOP_RIGHT = 1; // 0x1
+  }
+
+  @FlaggedApi("android.view.flags.surface_view_set_blur_regions") public final class RoundedRectBlurRegion extends android.view.BlurRegion {
+    ctor public RoundedRectBlurRegion();
+    ctor public RoundedRectBlurRegion(@NonNull android.graphics.RectF, @NonNull float[], @FloatRange(from=0.0, to=1.0) float, float);
+    ctor public RoundedRectBlurRegion(@NonNull android.view.RoundedRectBlurRegion);
+    method @NonNull public android.view.RoundedRectBlurRegion copy();
+    method @NonNull public android.graphics.RectF getBounds();
+    method @NonNull public float[] getCornerRadius();
+    method public void setBounds(@NonNull android.graphics.RectF);
+    method public void setCornerRadius(@NonNull float[]);
+    method public void setCornerRadius(float);
   }
 
   public class ScaleGestureDetector {
