@@ -17,13 +17,21 @@
 package com.android.server.companion.datatransfer.continuity.tasks;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.app.ActivityManager.RunningTaskInfo;
+import android.app.ActivityTaskManager;
+import android.app.AppOpsManager;
+import android.app.HandoffActivityParams;
 import android.app.TaskStackListener;
 import android.os.RemoteException;
 import android.util.Slog;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
+import com.android.server.companion.datatransfer.continuity.messages.HandoffOptions;
+import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskStackBroadcastMessage;
 import com.android.server.wm.ActivityTaskManagerInternal;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -36,15 +44,24 @@ public class TaskBroadcaster extends TaskStackListener
 
     private static final String TAG = TaskBroadcaster.class.getSimpleName();
 
+    private final int mUserId;
     private final TaskContinuityMessenger mTaskContinuityMessenger;
-    private final RunningTaskFetcher mRunningTaskFetcher;
+    private final ActivityTaskManager mActivityTaskManager;
+    private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
+    private final AppOpsManager mAppOps;
 
     public TaskBroadcaster(
+            int userId,
             @NonNull TaskContinuityMessenger taskContinuityMessenger,
-            @NonNull RunningTaskFetcher runningTaskFetcher) {
+            @NonNull ActivityTaskManager activityTaskManager,
+            @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
+            @NonNull AppOpsManager appOps) {
 
+        mUserId = userId;
         mTaskContinuityMessenger = Objects.requireNonNull(taskContinuityMessenger);
-        mRunningTaskFetcher = Objects.requireNonNull(runningTaskFetcher);
+        mActivityTaskManager = Objects.requireNonNull(activityTaskManager);
+        mActivityTaskManagerInternal = Objects.requireNonNull(activityTaskManagerInternal);
+        mAppOps = Objects.requireNonNull(appOps);
     }
 
     public void onDeviceConnected(int associationId) {
@@ -71,12 +88,73 @@ public class TaskBroadcaster extends TaskStackListener
     }
 
     private void broadcastTaskStack() {
+        TaskStackBroadcastMessage.Builder taskStackBroadcastMessageBuilder =
+                new TaskStackBroadcastMessage.Builder();
+        List<RunningTaskInfo> runningTaskInfos =
+                mActivityTaskManager.getTasks(Integer.MAX_VALUE, true);
+        if (runningTaskInfos != null) {
+            for (RunningTaskInfo taskInfo : runningTaskInfos) {
+                RemoteTaskInfo remoteTaskInfo = createRemoteTaskInfo(taskInfo);
+                if (remoteTaskInfo != null) {
+                    taskStackBroadcastMessageBuilder.addRemoteTask(remoteTaskInfo);
+                }
+            }
+        }
+
         mTaskContinuityMessenger.sendMessage(
                 new TaskContinuityMessage.Builder()
-                        .setTaskStackBroadcastMessage(
-                                new TaskStackBroadcastMessage.Builder()
-                                        .setRemoteTasks(mRunningTaskFetcher.getRunningTasks())
-                                        .build())
+                        .setTaskStackBroadcastMessage(taskStackBroadcastMessageBuilder.build())
                         .build());
+    }
+
+    @Nullable
+    private RemoteTaskInfo createRemoteTaskInfo(@Nullable RunningTaskInfo taskInfo) {
+        if (taskInfo == null) {
+            return null;
+        }
+
+        if (taskInfo.userId != mUserId) {
+            Slog.w(TAG, "Task " + taskInfo.taskId + " is not for user " + mUserId);
+            return null;
+        }
+
+        if (taskInfo.baseActivity == null || taskInfo.baseActivity.getPackageName() == null) {
+            Slog.w(TAG, "Package name is null for task: " + taskInfo.taskId);
+            return null;
+        }
+
+        if (mAppOps.noteOpNoThrow(
+                        AppOpsManager.OP_CONTINUE_ACROSS_DEVICES,
+                        taskInfo.userId,
+                        taskInfo.baseActivity.getPackageName())
+                != AppOpsManager.MODE_ALLOWED) {
+            Slog.w(
+                    TAG,
+                    "AppOpsManager.OP_CONTINUE_ACROSS_DEVICES is not allowed for task: "
+                            + taskInfo.taskId);
+            return null;
+        }
+
+        if (!mActivityTaskManagerInternal.isHandoffEnabledForTask(taskInfo.taskId)) {
+            return null;
+        }
+
+        RemoteTaskInfo.Builder remoteTaskInfoBuilder =
+                new RemoteTaskInfo.Builder()
+                        .setId(taskInfo.taskId)
+                        .setPackageName(taskInfo.baseActivity.getPackageName())
+                        .setIsInForeground(taskInfo.isFocused)
+                        .setLastUsedTimeMillis(taskInfo.lastActiveTime);
+
+        HandoffOptions.Builder handoffOptionsBuilder =
+                new HandoffOptions.Builder().setHandoffEnabled(true);
+        HandoffActivityParams params =
+                mActivityTaskManagerInternal.getHandoffActivityParamsForTask(taskInfo.taskId);
+        if (params != null) {
+            handoffOptionsBuilder.setRequirePackageInstalled(
+                    params.isAllowHandoffWithoutPackageInstalled());
+        }
+
+        return remoteTaskInfoBuilder.setHandoffOptions(handoffOptionsBuilder.build()).build();
     }
 }

@@ -36,12 +36,6 @@ public record TaskStackBroadcastMessage(@NonNull List<RemoteTaskInfo> remoteTask
         private List<RemoteTaskInfo> remoteTasks = new ArrayList<>();
 
         @NonNull
-        public Builder setRemoteTasks(@NonNull List<RemoteTaskInfo> remoteTasks) {
-            this.remoteTasks = Objects.requireNonNull(remoteTasks);
-            return this;
-        }
-
-        @NonNull
         public Builder addRemoteTask(@NonNull RemoteTaskInfo remoteTask) {
             this.remoteTasks.add(Objects.requireNonNull(remoteTask));
             return this;
