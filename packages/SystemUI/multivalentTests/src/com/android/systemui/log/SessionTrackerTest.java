@@ -77,6 +77,8 @@ public class SessionTrackerTest extends SysuiTestCase {
     private ProcessWrapper mProcessWrapper;
     @Mock
     private BiometricPromptLogger mBiometricPromptLogger;
+    @Mock
+    private KeyguardUpdateMonitor.StrongAuthTracker mStrongAuthTracker;
 
     @Captor
     ArgumentCaptor<KeyguardUpdateMonitorCallback> mKeyguardUpdateMonitorCallbackCaptor;
@@ -96,6 +98,8 @@ public class SessionTrackerTest extends SysuiTestCase {
     public void setup() throws RemoteException {
         MockitoAnnotations.initMocks(this);
         when(mProcessWrapper.isSystemUser()).thenReturn(true);
+        when(mKeyguardUpdateMonitor.getStrongAuthTracker()).thenReturn(mStrongAuthTracker);
+        when(mStrongAuthTracker.hasUserAuthenticatedSinceBoot()).thenReturn(true);
 
         mSessionTracker = new SessionTracker(
                 mStatusBarService,
@@ -106,6 +110,18 @@ public class SessionTrackerTest extends SysuiTestCase {
                 mProcessWrapper,
                 mBiometricPromptLogger
         );
+    }
+
+    @Test
+    public void testStartSessionWhenUserHasNotAuthenticatedSinceBoot() {
+        when(mStrongAuthTracker.hasUserAuthenticatedSinceBoot()).thenReturn(false);
+
+        // WHEN started
+        mSessionTracker.start();
+
+        // THEN keyguard session has a session id
+        assertNotNull(mSessionTracker.getSessionId(SESSION_KEYGUARD));
+
     }
 
     @Test
