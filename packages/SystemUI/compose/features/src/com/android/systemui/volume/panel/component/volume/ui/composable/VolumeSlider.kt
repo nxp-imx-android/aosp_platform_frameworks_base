@@ -37,6 +37,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon as MaterialIcon
@@ -79,10 +80,12 @@ import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.haptics.slider.SliderHapticFeedbackFilter
 import com.android.systemui.haptics.slider.compose.ui.SliderHapticsViewModel
 import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.qs.ui.compose.borderOnFocus
 import com.android.systemui.res.R
 import com.android.systemui.volume.dialog.sliders.ui.compose.SliderTrack
 import com.android.systemui.volume.haptics.ui.VolumeHapticsConfigsProvider
 import com.android.systemui.volume.panel.component.volume.slider.ui.viewmodel.SliderState
+import com.android.systemui.volume.panel.component.volume.ui.composable.InternalDimensions.SliderTrackRoundedCorner
 import com.android.systemui.volume.ui.compose.slider.AccessibilityParams
 import com.android.systemui.volume.ui.compose.slider.Haptics
 import com.android.systemui.volume.ui.compose.slider.Slider
@@ -121,7 +124,15 @@ fun VolumeSlider(
         return
     }
 
-    Column(modifier = modifier.animateContentSize()) {
+    Column(
+        modifier =
+            modifier
+                .borderOnFocus(
+                    color = MaterialTheme.colorScheme.secondary,
+                    cornerSize = CornerSize(SliderTrackRoundedCorner),
+                )
+                .animateContentSize()
+    ) {
         if (showLabel) {
             Text(
                 text = state.label,
@@ -198,6 +209,7 @@ fun VolumeSlider(
                                         )
                                     }
                                 },
+                            trackCornerSize = SliderTrackRoundedCorner,
                         )
                     },
                     thumb = { sliderState, interactionSource ->
@@ -433,6 +445,10 @@ object VolumeSlidersMotionTestKeys {
     const val ACTIVE_ICON_TAG = "Volume_Slider_activeStartIcon"
     const val INACTIVE_ICON_TAG = "Volume_Slider_inactiveStartIcon"
     const val DISABLED_MESSAGE_TAG = "disabledMessage"
+}
+
+private object InternalDimensions {
+    val SliderTrackRoundedCorner = 12.dp
 }
 
 data class VolumeSliderDimensions(
