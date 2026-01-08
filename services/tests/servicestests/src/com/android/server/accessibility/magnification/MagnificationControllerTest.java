@@ -1808,12 +1808,24 @@ public class MagnificationControllerTest {
         verify(mScreenMagnificationController).setMagnificationFollowTypingEnabled(eq(false));
     }
 
+    @DisableFlags(com.android.server.accessibility.Flags
+            .FLAG_ENABLE_MAGNIFICATION_VIEWPORT_PRIORITIZATION)
     @Test
-    public void setPreferenceMagnificationFollowKeyboardEnabled_setPrefEnabled_enableAll() {
+    public void setPreferenceMagnificationFollowKeyboardDisabled_setPrefEnabled_disableAll() {
         mMagnificationController.setMagnificationFollowKeyboardEnabled(true);
 
         verify(mMagnificationConnectionManager).setMagnificationFollowKeyboardEnabled(eq(true));
         verify(mScreenMagnificationController).setMagnificationFollowKeyboardEnabled(eq(true));
+    }
+
+    @EnableFlags(com.android.server.accessibility.Flags
+            .FLAG_ENABLE_MAGNIFICATION_VIEWPORT_PRIORITIZATION)
+    @Test
+    public void setPreferenceMagnificationFollowKeyboardEnabled_setPrefDisabled_disableAll() {
+        mMagnificationController.setMagnificationFollowKeyboardEnabled(false);
+
+        verify(mMagnificationConnectionManager).setMagnificationFollowKeyboardEnabled(eq(false));
+        verify(mScreenMagnificationController).setMagnificationFollowKeyboardEnabled(eq(false));
     }
 
     @Test

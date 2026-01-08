@@ -666,6 +666,7 @@ public class AccessibilityManagerServiceTest {
         verify(mMockMagnificationController).setMagnificationFollowTypingEnabled(false);
     }
 
+    @DisableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_VIEWPORT_PRIORITIZATION)
     @Test
     public void testFollowKeyboardEnabled_defaultDisabledAndThenEnable_propagateToController() {
         final AccessibilityUserState userState = mA11yms.mUserStates.get(
@@ -679,6 +680,22 @@ public class AccessibilityManagerServiceTest {
         mA11yms.readMagnificationFollowKeyboardLocked(userState);
 
         verify(mMockMagnificationController).setMagnificationFollowKeyboardEnabled(true);
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_VIEWPORT_PRIORITIZATION)
+    @Test
+    public void testFollowKeyboardEnabled_defaultEnabledAndThenDisable_propagateToController() {
+        final AccessibilityUserState userState = mA11yms.mUserStates.get(
+                mA11yms.getCurrentUserIdLocked());
+        Settings.Secure.putIntForUser(
+                mTestableContext.getContentResolver(),
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_FOLLOW_KEYBOARD_ENABLED,
+                0, mA11yms.getCurrentUserIdLocked());
+        verify(mMockMagnificationController, never()).setMagnificationFollowKeyboardEnabled(false);
+
+        mA11yms.readMagnificationFollowKeyboardLocked(userState);
+
+        verify(mMockMagnificationController).setMagnificationFollowKeyboardEnabled(false);
     }
 
     @Test

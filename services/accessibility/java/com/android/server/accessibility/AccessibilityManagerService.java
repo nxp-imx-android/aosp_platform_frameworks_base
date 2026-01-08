@@ -6525,10 +6525,12 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     }
 
     boolean readMagnificationFollowKeyboardLocked(AccessibilityUserState userState) {
+        // Default to true if magnification viewport prioritization is enabled to prevent viewport
+        // jitter. False otherwise.
         final boolean followKeyboardEnabled = Settings.Secure.getIntForUser(
                 mContext.getContentResolver(),
                 Settings.Secure.ACCESSIBILITY_MAGNIFICATION_FOLLOW_KEYBOARD_ENABLED,
-                0, userState.mUserId) == 1;
+                Flags.enableMagnificationViewportPrioritization() ? 1 : 0, userState.mUserId) == 1;
         if (followKeyboardEnabled != userState.isMagnificationFollowKeyboardEnabled()) {
             userState.setMagnificationFollowKeyboardEnabled(followKeyboardEnabled);
             mMagnificationController.setMagnificationFollowKeyboardEnabled(followKeyboardEnabled);
