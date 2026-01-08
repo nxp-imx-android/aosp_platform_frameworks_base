@@ -4716,6 +4716,14 @@
          must be no less than 3 for back compatibility. -->
     <integer name="config_pictureInPictureMaxNumberOfActions">3</integer>
 
+    <!-- The maximum length of title in PictureInPictureParams that is supported for
+         picture-in-picture. -->
+    <integer name="config_pictureInPictureMaxTitleLength">1024</integer>
+
+    <!-- The maximum length of subtitle in PictureInPictureParams that is supported for
+         picture-in-picture. -->
+    <integer name="config_pictureInPictureMaxSubtitleLength">1024</integer>
+
     <!-- The behavior when an activity has not specified a preference to dock big overlays or not.
          Docking puts the activity side-by-side next to the big overlay windows. -->
     <bool name="config_dockBigOverlayWindows">false</bool>

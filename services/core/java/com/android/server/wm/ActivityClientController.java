@@ -1191,6 +1191,14 @@ class ActivityClientController extends IActivityClientController.Stub {
 
         // Truncate the number of actions if necessary.
         params.truncateActions(ActivityTaskManager.getMaxNumPictureInPictureActions(mContext));
+        // Truncate the title and subtitle.
+        final int maxTitleLength = mContext.getResources().getInteger(
+                com.android.internal.R.integer.config_pictureInPictureMaxTitleLength);
+        final int maxSubtitleLength = mContext.getResources().getInteger(
+                com.android.internal.R.integer.config_pictureInPictureMaxSubtitleLength);
+        if (params.truncateTitleAndSubtitle(maxTitleLength, maxSubtitleLength)) {
+            Slog.w(TAG, "Automatically truncated the title/subtitle in PictureInPictureParams");
+        }
         return r;
     }
 
