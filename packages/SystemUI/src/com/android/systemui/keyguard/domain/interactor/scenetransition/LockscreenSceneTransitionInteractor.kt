@@ -210,6 +210,10 @@ constructor(
                             targetState,
                             "Idle after non-KTF relevant transition",
                         )
+                    } else if (currentTransitionId != null) {
+                        // We're already there but a transition is still running, we will need to
+                        // finish it.
+                        finishCurrentTransition()
                     }
                 }
             }
