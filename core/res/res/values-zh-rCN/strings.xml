@@ -2619,10 +2619,10 @@
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"安全和隐私"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="3711633462195368964">"请解锁屏幕以重新连接 USB"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="2426356396215833585">"请解锁屏幕以连接 USB"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"高级保护功能要求您先解锁屏幕，才能启用 USB 连接"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"高级保护功能要求您先解锁屏幕，才能启用 USB 连接"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="3936428118409384816">"高级保护功能要求您先解锁屏幕，才能启动 USB 连接"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_data_notification_text" msgid="8392199274984083972">"高级保护功能要求您先解锁屏幕，才能启动 USB 连接"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_charge_notification_text" msgid="6563939109526112446">"高级保护功能要求您先解锁屏幕，才能快速充电"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"高级保护功能要求您先解锁屏幕，才能快速充电或启用 USB 连接"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_charge_data_notification_text" msgid="411509882563364946">"高级保护功能要求您先解锁屏幕，才能快速充电或启动 USB 连接"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"忽略"</string>
     <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"已忽略通知"</string>
     <string name="usb_apm_usb_notification_silenced_text" msgid="8394777105856033342">"在重启设备之前，您不会收到 USB 高级保护通知"</string>
