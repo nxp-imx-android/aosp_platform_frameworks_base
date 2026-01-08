@@ -77,7 +77,10 @@ class ShadeExpansionStateManager @Inject constructor() {
         expanded: Boolean,
         tracking: Boolean,
     ) {
-        require(!fraction.isNaN()) { "fraction cannot be NaN" }
+        if (fraction.isNaN()) {
+            debugLog("The shade expansion fraction is NaN")
+            return
+        }
         val oldState = state
 
         this.fraction = fraction
