@@ -21390,6 +21390,7 @@ package android.hardware.camera2.params {
     method public int getSurfaceGroupId();
     method @NonNull public java.util.List<android.view.Surface> getSurfaces();
     method public int getTimestampBase();
+    method @FlaggedApi("com.android.internal.camera.flags.output_configuration_get_usage") public long getUsage();
     method public boolean isReadoutTimestampEnabled();
     method @FlaggedApi("com.android.internal.camera.flags.seamless_transitions") @NonNull public android.hardware.camera2.params.OutputConfiguration makeDeferredAndRemoveSurfaces();
     method public void removeSensorPixelModeUsed(int);
