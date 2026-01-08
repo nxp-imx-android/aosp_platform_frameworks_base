@@ -364,13 +364,24 @@ public class WindowStateTests extends WindowTestsBase {
     public void testIsOnScreen_hiddenByPolicy() {
         final WindowState window = newWindowBuilder("window", TYPE_APPLICATION).build();
         window.setHasSurface(true);
+        window.mWinAnimator.mSurfaceControl = mock(SurfaceControl.class);
+        window.mWinAnimator.mDrawState = WindowStateAnimator.HAS_DRAWN;
+        window.mWinAnimator.prepareSurfaceLocked(mTransaction);
         assertTrue(window.isOnScreen());
+        clearInvocations(mTransaction);
+
         window.hide(false /* doAnimation */, false /* requestAnim */);
+        window.mWinAnimator.prepareSurfaceLocked(mTransaction);
         assertFalse(window.isOnScreen());
+        verify(mTransaction).hide(window.mSurfaceControl);
+        verify(mTransaction, never()).show(window.mSurfaceControl);
+        clearInvocations(mTransaction);
 
         // Verifies that a window without animation can be hidden even if its parent is animating.
         window.show(false /* doAnimation */, false /* requestAnim */);
         assertTrue(window.isVisibleByPolicy());
+        window.mWinAnimator.prepareSurfaceLocked(mTransaction);
+        verify(mTransaction).show(window.mSurfaceControl);
         window.getParent().startAnimation(mTransaction, mock(AnimationAdapter.class),
                 false /* hidden */, SurfaceAnimator.ANIMATION_TYPE_TOKEN_TRANSFORM);
         window.mAttrs.windowAnimations = 0;
