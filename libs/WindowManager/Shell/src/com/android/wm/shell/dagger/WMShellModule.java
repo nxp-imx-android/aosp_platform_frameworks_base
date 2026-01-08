@@ -101,6 +101,7 @@ import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.common.TaskStackListenerImpl;
 import com.android.wm.shell.common.UserProfileContexts;
 import com.android.wm.shell.common.split.SplitState;
+import com.android.wm.shell.common.suppliers.TransactionSupplier;
 import com.android.wm.shell.common.transition.TransitionStateHolder;
 import com.android.wm.shell.compatui.api.CompatUIHandler;
 import com.android.wm.shell.compatui.api.CompatUISharedRepositoryCleanUp;
@@ -187,6 +188,7 @@ import com.android.wm.shell.fullscreen.FullscreenDisconnectHandler;
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
 import com.android.wm.shell.onehanded.OneHandedController;
 import com.android.wm.shell.packageupdate.PackageUpdateController;
+import com.android.wm.shell.packageupdate.PackageUpdateTransitionHandler;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerFlags;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerHandler;
@@ -2206,13 +2208,26 @@ public abstract class WMShellModule {
             UserProfileContexts userProfileContexts,
             WindowDecorTaskResourceLoader taskResourceLoader,
             Optional<DesktopModeWindowDecorViewModel> desktopModeWindowDecorViewModel,
+            PackageUpdateTransitionHandler packageUpdateTransitionHandler,
             @ShellMainThreadImmediate CoroutineScope mainImmediateScope
     ) {
         return new PackageUpdateController(transitions, shellTaskOrganizer,
                 shellInit, userProfileContexts, taskResourceLoader,
-                desktopModeWindowDecorViewModel, mainImmediateScope);
+                desktopModeWindowDecorViewModel, packageUpdateTransitionHandler,
+                mainImmediateScope);
     }
 
+    @WMSingleton
+    @Provides
+    static PackageUpdateTransitionHandler providePackageUpdateTransitionHandler(
+            TransactionSupplier transactionSupplier,
+            Context context,
+            @ShellAnimationThread ShellExecutor animExecutor,
+            @ShellMainThread ShellExecutor mainExecutor
+    ) {
+        return new PackageUpdateTransitionHandler(transactionSupplier, context, animExecutor,
+                mainExecutor);
+    }
     //
     // App zoom out
     //
