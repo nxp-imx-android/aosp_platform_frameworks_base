@@ -5850,6 +5850,10 @@
     <string name="locked_app_biometric_prompt_description">
         <xliff:g id="app_name" example="Gmail">%1$s</xliff:g> is locked
     </string>
+    <!-- Message shown on the system-provided activity, informing the user who is using an external display that the app they're trying to open needs to be unlocked on their other device. [CHAR LIMIT=NONE] -->
+    <string name="locked_app_external_display_message">
+        To access the app on this display, first verify it’s you on your other device
+    </string>
 
     <!-- Title of a dialog. This text is confirming that the user wants to turn on access to their work apps, which the user had previously paused. "Work" is an adjective. [CHAR LIMIT=30] -->
     <string name="work_mode_off_title">Unpause work apps?</string>
