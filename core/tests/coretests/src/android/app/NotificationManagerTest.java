@@ -35,8 +35,10 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.pm.PackageManager;
 import android.content.pm.ParceledListSlice;
+import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.os.UserHandle;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 
@@ -673,6 +675,178 @@ public class NotificationManagerTest {
         mContext.setPackageManager(pm);
 
         assertThat(mNotificationManager.areAutomaticZenRulesUserManaged()).isFalse();
+    }
+
+    @Test
+    public void Policy_parceling() {
+        NotificationManager.Policy policy = new NotificationManager.Policy(0, 0, 0);
+
+        Parcel parcel = Parcel.obtain();
+        policy.writeToParcel(parcel, 0);
+        parcel.setDataPosition(0);
+
+        NotificationManager.Policy fromParcel = NotificationManager.Policy.CREATOR
+                .createFromParcel(parcel);
+        assertThat(fromParcel).isEqualTo(policy);
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.
+        Flags.FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void Policy_parceling_splitSoundVibration() {
+        NotificationManager.Policy policy = new NotificationManager.Policy(
+                NotificationManager.Policy.PRIORITY_CATEGORY_ALARMS, 0, 0,
+                NotificationManager.Policy.SUPPRESSED_EFFECTS_UNSET,
+                NotificationManager.Policy.STATE_UNSET,
+                NotificationManager.Policy.CONVERSATION_SENDERS_UNSET,
+                NotificationManager.Policy.PRIORITY_CATEGORY_ALARMS, 0);
+
+        Parcel parcel = Parcel.obtain();
+        policy.writeToParcel(parcel, 0);
+        parcel.setDataPosition(0);
+
+        NotificationManager.Policy fromParcel = NotificationManager.Policy.CREATOR
+                .createFromParcel(parcel);
+        assertThat(fromParcel).isEqualTo(policy);
+        assertThat(fromParcel.allowSoundForPriorityCategory)
+                .isEqualTo(NotificationManager.Policy.PRIORITY_CATEGORY_ALARMS);
+        assertThat(fromParcel.allowVibrationForPriorityCategory).isEqualTo(0);
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.
+        Flags.FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void Policy_allowSoundFor_soundEnabled() {
+        // sound is enabled for alarms
+        NotificationManager.Policy policy = new NotificationManager.Policy(
+                NotificationManager.Policy.PRIORITY_CATEGORY_ALARMS, 0, 0,
+                NotificationManager.Policy.SUPPRESSED_EFFECTS_UNSET,
+                NotificationManager.Policy.STATE_UNSET,
+                NotificationManager.Policy.CONVERSATION_SENDERS_UNSET,
+                NotificationManager.Policy.PRIORITY_CATEGORY_ALARMS, 0);
+
+        assertThat(policy.allowSoundFor(NotificationManager.Policy.PRIORITY_CATEGORY_ALARMS))
+                .isTrue();
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.
+            Flags.FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void Policy_allowSoundFor_soundDisabled() {
+        // sound is disabled for alarms
+        NotificationManager.Policy policy = new NotificationManager.Policy(
+                0, 0, 0,
+                NotificationManager.Policy.SUPPRESSED_EFFECTS_UNSET,
+                NotificationManager.Policy.STATE_UNSET,
+                NotificationManager.Policy.CONVERSATION_SENDERS_UNSET,
+                0, 0);
+
+        assertThat(policy.allowSoundFor(NotificationManager.Policy.PRIORITY_CATEGORY_ALARMS))
+                .isFalse();
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.
+            Flags.FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void Policy_allowVibrationFor_vibrationEnabled() {
+        // vibration is enabled for alarms
+        NotificationManager.Policy policy = new NotificationManager.Policy(
+                NotificationManager.Policy.PRIORITY_CATEGORY_ALARMS, 0, 0,
+                NotificationManager.Policy.SUPPRESSED_EFFECTS_UNSET,
+                NotificationManager.Policy.STATE_UNSET,
+                NotificationManager.Policy.CONVERSATION_SENDERS_UNSET,
+                0, NotificationManager.Policy.PRIORITY_CATEGORY_ALARMS);
+
+        assertThat(policy.allowVibrationFor(NotificationManager.Policy.PRIORITY_CATEGORY_ALARMS))
+                .isTrue();
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.
+            Flags.FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void Policy_allowVibrationFor_vibrationDisabled() {
+        // vibration is disabled for alarms
+        NotificationManager.Policy policy = new NotificationManager.Policy(
+                0, 0, 0,
+                NotificationManager.Policy.SUPPRESSED_EFFECTS_UNSET,
+                NotificationManager.Policy.STATE_UNSET,
+                NotificationManager.Policy.CONVERSATION_SENDERS_UNSET,
+                0, 0);
+
+        assertThat(policy.allowVibrationFor(NotificationManager.Policy.PRIORITY_CATEGORY_ALARMS))
+                .isFalse();
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.
+            Flags.FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void Policy_allowSoundVibrationFor_unset_alarmsEnabled() {
+        // sound is disabled for alarms
+        NotificationManager.Policy policy = new NotificationManager.Policy(
+                NotificationManager.Policy.PRIORITY_CATEGORY_ALARMS, 0, 0,
+                NotificationManager.Policy.SUPPRESSED_EFFECTS_UNSET,
+                NotificationManager.Policy.STATE_UNSET,
+                NotificationManager.Policy.CONVERSATION_SENDERS_UNSET,
+                NotificationManager.Policy.ALLOWED_INTERRUPTION_TYPE_UNSET,
+                NotificationManager.Policy.ALLOWED_INTERRUPTION_TYPE_UNSET);
+
+        assertThat(policy.allowSoundFor(NotificationManager.Policy.PRIORITY_CATEGORY_ALARMS))
+                .isTrue();
+        assertThat(policy.allowVibrationFor(NotificationManager.Policy.PRIORITY_CATEGORY_ALARMS))
+                .isTrue();
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.
+            Flags.FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void Policy_allowSoundVibrationFor_unset_alarmsEnabled_defaultCtor() {
+        // sound is disabled for alarms
+        NotificationManager.Policy policy = new NotificationManager.Policy(
+                NotificationManager.Policy.PRIORITY_CATEGORY_ALARMS, 0, 0,
+                NotificationManager.Policy.SUPPRESSED_EFFECTS_UNSET,
+                NotificationManager.Policy.STATE_UNSET,
+                NotificationManager.Policy.CONVERSATION_SENDERS_UNSET);
+
+        assertThat(policy.allowSoundFor(NotificationManager.Policy.PRIORITY_CATEGORY_ALARMS))
+                .isTrue();
+        assertThat(policy.allowVibrationFor(NotificationManager.Policy.PRIORITY_CATEGORY_ALARMS))
+                .isTrue();
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.
+            Flags.FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void Policy_allowSoundVibrationFor_unset_alarmsDisabled() {
+        // sound is disabled for alarms
+        NotificationManager.Policy policy = new NotificationManager.Policy(
+                0, 0, 0,
+                NotificationManager.Policy.SUPPRESSED_EFFECTS_UNSET,
+                NotificationManager.Policy.STATE_UNSET,
+                NotificationManager.Policy.CONVERSATION_SENDERS_UNSET,
+                NotificationManager.Policy.ALLOWED_INTERRUPTION_TYPE_UNSET,
+                NotificationManager.Policy.ALLOWED_INTERRUPTION_TYPE_UNSET);
+
+        assertThat(policy.allowSoundFor(NotificationManager.Policy.PRIORITY_CATEGORY_ALARMS))
+                .isFalse();
+        assertThat(policy.allowVibrationFor(NotificationManager.Policy.PRIORITY_CATEGORY_ALARMS))
+                .isFalse();
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.
+            Flags.FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void Policy_allowSoundVibrationFor_unset_alarmsDisabled_defaultCtor() {
+        // sound is disabled for alarms
+        NotificationManager.Policy policy = new NotificationManager.Policy(
+                0, 0, 0,
+                NotificationManager.Policy.SUPPRESSED_EFFECTS_UNSET,
+                NotificationManager.Policy.STATE_UNSET,
+                NotificationManager.Policy.CONVERSATION_SENDERS_UNSET);
+
+        assertThat(policy.allowSoundFor(NotificationManager.Policy.PRIORITY_CATEGORY_ALARMS))
+                .isFalse();
+        assertThat(policy.allowVibrationFor(NotificationManager.Policy.PRIORITY_CATEGORY_ALARMS))
+                .isFalse();
     }
 
     private Notification exampleNotification() {

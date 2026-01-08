@@ -17,7 +17,6 @@
 package com.android.internal.policy;
 
 import static android.content.pm.ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED;
-import static android.content.pm.ActivityInfo.OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 
@@ -38,18 +37,29 @@ public final class DesktopModeCompatUtils {
      * Whether the caption insets should be excluded from configuration for system to handle.
      * The caller should ensure the activity is in or entering desktop view.
      *
-     * <p> The treatment is enabled when all the of the following is true:
-     * <li> Any flags to forcibly consume caption insets are enabled.
-     * <li> Top activity have configuration coupled with insets.
-     * <li> Task is not resizeable or per-app override
-     * {@link ActivityInfo#OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS} is enabled.
+     * <p> The treatment is enabled when any flags to forcibly consume caption insets are enabled
+     * and one of the following is true:
+     * <li> The per-app override
+     * {@link ActivityInfo#OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS} is enabled and
+     * app has not opted out.
+     * <li> The task is not resizable and the top activity has configuration coupled with insets.
      */
     public static boolean shouldExcludeCaptionFromAppBounds(@NonNull ActivityInfo info,
-            boolean isResizeable, boolean optOutEdgeToEdge) {
-        return isAnyForceConsumptionFlagsEnabled()
-                && !isConfigurationDecoupled(info, optOutEdgeToEdge)
-                && (!isResizeable
-                    || info.isChangeEnabled(OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS));
+            boolean isResizeable, boolean optOutEdgeToEdge,
+            boolean isExcludeCaptionInsetsOverrideEnabled) {
+        if (!isAnyForceConsumptionFlagsEnabled()) {
+            return false;
+        }
+
+        if (isExcludeCaptionInsetsOverrideEnabled) {
+            return true;
+        }
+
+        if (isConfigurationDecoupled(info, optOutEdgeToEdge)) {
+            return false;
+        }
+
+        return !isResizeable;
     }
 
     /**

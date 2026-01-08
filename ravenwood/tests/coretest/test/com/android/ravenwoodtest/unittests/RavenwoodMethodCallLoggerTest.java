@@ -46,7 +46,7 @@ public class RavenwoodMethodCallLoggerTest {
 
     private static class RavenwoodMethodCallLoggerForTest extends RavenwoodMethodCallLogger {
         RavenwoodMethodCallLoggerForTest() {
-            super(LogMode.Default);
+            super(LogMode.Default, null);
         }
 
         // We always use a fixed TID.

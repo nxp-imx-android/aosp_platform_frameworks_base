@@ -93,8 +93,9 @@ class TransitionStateHolderTest {
     }
 
     private val recentsTransitionStateListener: RecentsTransitionStateListener
-        get() = ArgumentCaptor.forClass(RecentsTransitionStateListener::class.java).run {
-            verify(recentTransitionHandler).addTransitionStateListener(capture())
-            value
-        }
+        get() =
+            ArgumentCaptor.forClass(RecentsTransitionStateListener::class.java).run {
+                verify(recentTransitionHandler).addTransitionStateListener(capture())
+                value
+            }
 }

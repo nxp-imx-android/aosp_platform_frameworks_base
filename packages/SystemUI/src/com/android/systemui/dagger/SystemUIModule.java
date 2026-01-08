@@ -140,7 +140,6 @@ import com.android.systemui.statusbar.dagger.StatusBarModule;
 import com.android.systemui.statusbar.domain.interactor.StatusBarRegionSamplingInteractorModule;
 import com.android.systemui.statusbar.events.StatusBarEventsModule;
 import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler;
-import com.android.systemui.statusbar.notification.NotifPipelineFlags;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.inflation.NotificationRowBinder;
 import com.android.systemui.statusbar.notification.collection.inflation.NotificationRowBinderImpl;
@@ -451,7 +450,6 @@ public abstract class SystemUIModule {
             NotifPipeline notifPipeline,
             SysUiState sysUiState,
             FeatureFlags featureFlags,
-            NotifPipelineFlags notifPipelineFlags,
             @Main Executor sysuiMainExecutor,
             @UiBackground Executor sysuiUiBgExecutor) {
         return Optional.ofNullable(BubblesManager.create(context,
@@ -472,7 +470,6 @@ public abstract class SystemUIModule {
                 notifPipeline,
                 sysUiState,
                 featureFlags,
-                notifPipelineFlags,
                 sysuiMainExecutor,
                 sysuiUiBgExecutor));
     }

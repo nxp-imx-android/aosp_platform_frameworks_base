@@ -66,7 +66,6 @@ class ShadeControllerSceneImplTest : SysuiTestCase() {
             testCase = this@ShadeControllerSceneImplTest
             fakeFeatureFlagsClassic.apply {
                 set(Flags.FULL_SCREEN_USER_SWITCHER, false)
-                set(Flags.NSSL_DEBUG_LINES, false)
                 set(Flags.FULL_SCREEN_USER_SWITCHER, false)
             }
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(

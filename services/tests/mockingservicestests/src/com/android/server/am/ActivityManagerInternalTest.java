@@ -23,15 +23,19 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import android.app.ActivityManagerInternal;
 import android.os.SystemClock;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.SetFlagsRule;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
+
+import com.android.server.am.psc.ProcessStateController;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -45,7 +49,7 @@ import java.util.Arrays;
  * Test class for {@link ActivityManagerInternal}.
  *
  * Build/Install/Run:
- *  atest FrameworksServicesTests:ActivityManagerInternalTest
+ *  atest FrameworksMockingServicesTests:ActivityManagerInternalTest
  */
 @Presubmit
 @SmallTest
@@ -72,6 +76,9 @@ public class ActivityManagerInternalTest {
     @Mock
     private ProcessRecord mProc;
 
+    @Mock
+    private ProcessStateController mPscMock;
+
     private ActivityManagerService mAms;
     private ActivityManagerService.LocalService mAmi;
 
@@ -86,6 +93,7 @@ public class ActivityManagerInternalTest {
         final ProcessList dummyList = new ProcessList();
         doReturn(dummyList).when(mMockInjector).getProcessList(any());
         mAms = new ActivityManagerService(mMockInjector, mServiceThreadRule.getThread());
+        mAms.mProcessStateController = mPscMock;
         mAmi = mAms.new LocalService();
     }
 
@@ -112,7 +120,7 @@ public class ActivityManagerInternalTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_GET_PACKAGE_NAMES_FOR_PID_API)
+    @EnableFlags(FLAG_GET_PACKAGE_NAMES_FOR_PID_API)
     public void testGetPackageNamesForPid() {
         String[] expected = new String[]{TEST_PKG1, TEST_PKG2};
         doReturn(expected).when(mProc).getProcessPackageNames();
@@ -129,7 +137,7 @@ public class ActivityManagerInternalTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_GET_PACKAGE_NAMES_FOR_PID_API)
+    @EnableFlags(FLAG_GET_PACKAGE_NAMES_FOR_PID_API)
     public void testGetPackageNamesForPid_differentUid_returnsEmptyArray() {
         String[] expected = new String[]{TEST_PKG1, TEST_PKG2};
         doReturn(expected).when(mProc).getProcessPackageNames();
@@ -137,6 +145,31 @@ public class ActivityManagerInternalTest {
 
         String[] resultFound = mAmi.getPackageNamesForPid(TEST_PID, 1234);
         assertEquals(0, resultFound.length);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SIMPLIFY_TOAST_IMPORTANCE)
+    public void setIsToastActive_active() {
+        mAms.mPidsSelfLocked.doAddInternal(TEST_PID, mProc);
+        mAmi.setIsToastActive(TEST_PID, true);
+        verify(mPscMock).setForcingToImportant(mProc, ActivityManagerInternal.TOAST_TOKEN);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SIMPLIFY_TOAST_IMPORTANCE)
+    public void setIsToastActive_inactive() {
+        mAms.mPidsSelfLocked.doAddInternal(TEST_PID, mProc);
+        mAmi.setIsToastActive(TEST_PID, false);
+        verify(mPscMock).setForcingToImportant(mProc, null);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SIMPLIFY_TOAST_IMPORTANCE)
+    public void setIsToastActive_unknownPid() {
+        // mPidsSelfLocked should not contain TEST_PID by default.
+        mAmi.setIsToastActive(TEST_PID, true);
+        mAmi.setIsToastActive(TEST_PID, false);
+        verify(mPscMock, never()).setForcingToImportant(any(), any());
     }
 
     private void verifyNetworkUpdatedProcStateSeq(long curProcStateSeq,

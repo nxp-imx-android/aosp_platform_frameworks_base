@@ -29,8 +29,7 @@ import org.junit.runner.RunWith
 /**
  * Tests for [GenericRepositoryUtils].
  *
- * Build/Install/Run:
- *  atest WMShellUnitTests:GenericRepositoryUtilsTest
+ * Build/Install/Run: atest WMShellUnitTests:GenericRepositoryUtilsTest
  */
 @RunWith(AndroidTestingRunner::class)
 @SmallTest
@@ -50,9 +49,7 @@ class GenericRepositoryUtilsTest : ShellTestCase() {
     fun `should iterate over all items when no predicate is provided`() {
         val collectedItems = mutableListOf<String>()
 
-        repository.iterate { item ->
-            collectedItems.add(item)
-        }
+        repository.iterate { item -> collectedItems.add(item) }
 
         assertEquals(5, collectedItems.size)
         assertTrue(collectedItems.containsAll(listOf("One", "Two", "Three", "Four", "Five")))
@@ -64,9 +61,7 @@ class GenericRepositoryUtilsTest : ShellTestCase() {
         // Predicate: item.value2 starts with "B" or "D"
         val predicate: (Int, String) -> Boolean = { _, item -> item.length == 3 }
 
-        repository.iterate(predicate) { item ->
-            collectedItems.add(item)
-        }
+        repository.iterate(predicate) { item -> collectedItems.add(item) }
 
         assertEquals(2, collectedItems.size)
         assertTrue(collectedItems.containsAll(listOf("One", "Two")))
@@ -78,9 +73,7 @@ class GenericRepositoryUtilsTest : ShellTestCase() {
         // Predicate: key.id1 is even
         val predicate: (Int, String) -> Boolean = { key, _ -> key % 2 == 0 }
 
-        repository.iterate(predicate) { item ->
-            collectedItems.add(item)
-        }
+        repository.iterate(predicate) { item -> collectedItems.add(item) }
 
         assertEquals(2, collectedItems.size)
         assertTrue(collectedItems.containsAll(listOf("Two", "Four")))
@@ -91,9 +84,7 @@ class GenericRepositoryUtilsTest : ShellTestCase() {
         val collectedItems = mutableListOf<String>()
         val predicate: (Int, String) -> Boolean = { key, item -> key >= 3 && item.contains("e") }
 
-        repository.iterate(predicate) { item ->
-            collectedItems.add(item)
-        }
+        repository.iterate(predicate) { item -> collectedItems.add(item) }
 
         assertEquals(2, collectedItems.size)
         assertTrue(collectedItems.containsAll(listOf("Three", "Five")))
@@ -104,9 +95,7 @@ class GenericRepositoryUtilsTest : ShellTestCase() {
         val collectedItems = mutableListOf<String>()
         val predicate: (Int, String) -> Boolean = { _, item -> item.startsWith("Z") }
 
-        repository.iterate(predicate) { item ->
-            collectedItems.add(item)
-        }
+        repository.iterate(predicate) { item -> collectedItems.add(item) }
 
         assertTrue(collectedItems.isEmpty())
     }
@@ -116,9 +105,7 @@ class GenericRepositoryUtilsTest : ShellTestCase() {
         val emptyRepository = MemoryRepositoryImpl<Int, String>()
         val collectedItems = mutableListOf<String>()
 
-        emptyRepository.iterate { item ->
-            collectedItems.add(item)
-        }
+        emptyRepository.iterate { item -> collectedItems.add(item) }
 
         assertTrue(collectedItems.isEmpty())
     }
@@ -127,9 +114,7 @@ class GenericRepositoryUtilsTest : ShellTestCase() {
     fun `should execute the fn for each matching FakeItem exactly once`() {
         val callCount = mutableMapOf<String, Int>()
 
-        repository.iterate { item ->
-            callCount[item] = (callCount[item] ?: 0) + 1
-        }
+        repository.iterate { item -> callCount[item] = (callCount[item] ?: 0) + 1 }
 
         assertEquals(5, callCount.size)
         callCount.values.forEach { count ->

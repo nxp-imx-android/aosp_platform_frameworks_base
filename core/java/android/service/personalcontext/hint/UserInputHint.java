@@ -20,6 +20,7 @@ import static java.util.Objects.requireNonNull;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.content.ComponentName;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.Token;
@@ -36,13 +37,19 @@ import java.util.Objects;
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class UserInputHint extends ContextHint {
     private static final String KEY_USER_INPUT_TEXT = "key_user_input_text";
+    private static final String KEY_SOURCE_APP_ACTIVITY_COMPONENT_NAME =
+            "key_source_app_activity_component_name";
     private final UserInputText mUserInputText;
+    private final ComponentName mSourceAppActivityComponentName;
 
     /** Creates a new {@link UserInputHint}. */
     private UserInputHint(
-            @NonNull ConstructorParams baseParams, @NonNull UserInputText userInputText) {
+            @NonNull ConstructorParams baseParams,
+            @NonNull UserInputText userInputText,
+            @NonNull ComponentName sourceAppActivityComponentName) {
         super(baseParams);
         mUserInputText = requireNonNull(userInputText);
+        mSourceAppActivityComponentName = sourceAppActivityComponentName;
     }
 
     /**
@@ -54,6 +61,11 @@ public final class UserInputHint extends ContextHint {
         super(baseParams);
         mUserInputText = bundle.getParcelable(KEY_USER_INPUT_TEXT, UserInputText.class);
         requireNonNull(mUserInputText, "Bundle must contain user input text");
+        mSourceAppActivityComponentName =
+                bundle.getParcelable(KEY_SOURCE_APP_ACTIVITY_COMPONENT_NAME, ComponentName.class);
+        requireNonNull(
+                mSourceAppActivityComponentName,
+                "Bundle must contain source app activity component name");
     }
 
     /** @hide */
@@ -72,11 +84,19 @@ public final class UserInputHint extends ContextHint {
         return mUserInputText;
     }
 
+    /** Get the component name of the source app activity associated with the hint. */
+    @NonNull
+    public ComponentName getSourceAppActivityComponentName() {
+        return mSourceAppActivityComponentName;
+    }
+
     @NonNull
     @Override
     Bundle toBundleImpl() {
         final Bundle bundle = new Bundle();
         bundle.putParcelable(KEY_USER_INPUT_TEXT, mUserInputText);
+        bundle.putParcelable(
+                KEY_SOURCE_APP_ACTIVITY_COMPONENT_NAME, mSourceAppActivityComponentName);
         return bundle;
     }
 
@@ -86,12 +106,14 @@ public final class UserInputHint extends ContextHint {
         if (!(o instanceof UserInputHint)) return false;
         if (!super.equals(o)) return false;
         UserInputHint that = (UserInputHint) o;
-        return Objects.equals(mUserInputText, that.mUserInputText);
+        return Objects.equals(mUserInputText, that.mUserInputText)
+                && Objects.equals(
+                        mSourceAppActivityComponentName, that.mSourceAppActivityComponentName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), mUserInputText);
+        return Objects.hash(super.hashCode(), mUserInputText, mSourceAppActivityComponentName);
     }
 
     @Override
@@ -99,6 +121,8 @@ public final class UserInputHint extends ContextHint {
         return "UserInputHint{"
                 + "mUserInputText="
                 + mUserInputText
+                + ", mSourceAppActivityComponentName="
+                + mSourceAppActivityComponentName
                 + "} extends "
                 + super.toString();
     }
@@ -108,6 +132,7 @@ public final class UserInputHint extends ContextHint {
     public static final class Builder {
         private final ConstructorParams.Builder mBaseBuilder = new ConstructorParams.Builder();
         private UserInputText mUserInputText;
+        private ComponentName mSourceAppActivityComponentName;
 
         /**
          * Creates an instance of {@link Builder}.
@@ -118,6 +143,17 @@ public final class UserInputHint extends ContextHint {
         public Builder(@NonNull UserInputText userInputText) {
             requireNonNull(userInputText, "userInputText must not be null");
             mUserInputText = userInputText;
+        }
+
+        /** Sets the component name of the source app activity associated with the hint. */
+        @NonNull
+        public Builder setSourceAppActivityComponentName(
+                @NonNull ComponentName sourceAppActivityComponentName) {
+            requireNonNull(
+                    sourceAppActivityComponentName,
+                    "sourceAppActivityComponentName must not be null");
+            mSourceAppActivityComponentName = sourceAppActivityComponentName;
+            return this;
         }
 
         /**
@@ -136,7 +172,11 @@ public final class UserInputHint extends ContextHint {
          */
         @NonNull
         public UserInputHint build() {
-            return new UserInputHint(mBaseBuilder.build(), mUserInputText);
+            requireNonNull(
+                    mSourceAppActivityComponentName,
+                    "Source app activity component name must be set");
+            return new UserInputHint(
+                    mBaseBuilder.build(), mUserInputText, mSourceAppActivityComponentName);
         }
     }
 }

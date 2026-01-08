@@ -25,8 +25,8 @@ import org.junit.runners.BlockJUnit4ClassRunner
 /**
  * Functional test for [UnmaximizeAppWindow].
  *
- * To unmaximize a desktop window means to move it from the maximized state back
- * to a regular non-maximized state.
+ * To unmaximize a desktop window means to move it from the maximized state back to a regular
+ * non-maximized state.
  */
 @RunWith(BlockJUnit4ClassRunner::class)
 @Postsubmit

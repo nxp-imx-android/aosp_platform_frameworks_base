@@ -13,13 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.internal.ravenwood;
+package com.android.ravenwoodtest.unittests;
 
 import static junit.framework.TestCase.assertEquals;
+
+import static org.junit.Assert.assertNotNull;
 
 import android.platform.test.ravenwood.RavenwoodRule;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+
+import com.android.internal.ravenwood.RavenwoodHelperBridge;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,5 +34,20 @@ public class RavenwoodHelperBridgeTest {
     public void testIsRunningOnRavenwood() {
         assertEquals(RavenwoodRule.isOnRavenwood(),
                 RavenwoodHelperBridge.getInstance().isRunningOnRavenwood());
+    }
+
+    @Test
+    public void testGetStackTrace() {
+        // Just make sure the method is callable in a bivalent test.
+        assertNotNull(RavenwoodHelperBridge.getStackTrace("message"));
+    }
+
+    @Test
+    public void testEnterMethod() {
+        // Just make sure the method is callable in a bivalent test.
+        var t = RavenwoodHelperBridge.enterMethod(RavenwoodHelperBridgeTest.class,
+                this, "testEnterMethod", "()V", new Object[0]);
+        RavenwoodHelperBridge.exitMethod(t, RavenwoodHelperBridgeTest.class,
+                this, "testEnterMethod", "()V", null);
     }
 }

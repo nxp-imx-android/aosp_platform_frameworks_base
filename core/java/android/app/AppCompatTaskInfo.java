@@ -113,6 +113,8 @@ public class AppCompatTaskInfo implements Parcelable {
     public static final int FLAG_IS_LEAF_TASK = FLAG_BASE << 13;
     /** The main window of the top activity has rounded corners. */
     public static final int FLAG_HAS_MAIN_WINDOW_ROUNDED_CORNERS = FLAG_BASE << 14;
+    /** The top activity has excluded caption insets from app bounds override and not opted out. */
+    public static final int FLAG_OVERRIDE_EXCLUDE_CAPTION_INSETS_ALLOWED = FLAG_BASE << 15;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(flag = true, value = {
@@ -131,7 +133,8 @@ public class AppCompatTaskInfo implements Parcelable {
             FLAG_OPT_OUT_EDGE_TO_EDGE,
             FLAG_SAFE_REGION_LETTERBOXED,
             FLAG_IS_LEAF_TASK,
-            FLAG_HAS_MAIN_WINDOW_ROUNDED_CORNERS
+            FLAG_HAS_MAIN_WINDOW_ROUNDED_CORNERS,
+            FLAG_OVERRIDE_EXCLUDE_CAPTION_INSETS_ALLOWED
     })
     public @interface TopActivityFlag {}
 
@@ -147,7 +150,8 @@ public class AppCompatTaskInfo implements Parcelable {
             | FLAG_ELIGIBLE_FOR_USER_ASPECT_RATIO_BUTTON | FLAG_FULLSCREEN_OVERRIDE_SYSTEM
             | FLAG_FULLSCREEN_OVERRIDE_USER | FLAG_HAS_MIN_ASPECT_RATIO_OVERRIDE
             | FLAG_OPT_OUT_EDGE_TO_EDGE | FLAG_ENABLE_RESTART_MENU_FOR_DISPLAY_MOVE
-            | FLAG_IS_LEAF_TASK | FLAG_HAS_MAIN_WINDOW_ROUNDED_CORNERS;
+            | FLAG_IS_LEAF_TASK | FLAG_HAS_MAIN_WINDOW_ROUNDED_CORNERS
+            | FLAG_OVERRIDE_EXCLUDE_CAPTION_INSETS_ALLOWED;
 
     @TopActivityFlag
     private static final int FLAGS_COMPAT_UI_INTERESTED = FLAGS_ORGANIZER_INTERESTED
@@ -418,6 +422,22 @@ public class AppCompatTaskInfo implements Parcelable {
      */
     public boolean hasOptOutEdgeToEdge() {
         return isTopActivityFlagEnabled(FLAG_OPT_OUT_EDGE_TO_EDGE);
+    }
+
+    /** Sets the top activity flag for whether {@link
+     * android.content.pm.ActivityInfo#OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS }
+     * is enabled and app has not opted out. */
+    public void setOverrideExcludeCaptionInsetsAllowed(boolean enable) {
+        setTopActivityFlag(FLAG_OVERRIDE_EXCLUDE_CAPTION_INSETS_ALLOWED, enable);
+    }
+
+    /**
+     * @return {@code true} if the top activity has {@link
+     * android.content.pm.ActivityInfo#OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS }
+     * enabled and app has not opted out.
+     */
+    public boolean hasOverrideExcludeCaptionInsetsAllowed() {
+        return isTopActivityFlagEnabled(FLAG_OVERRIDE_EXCLUDE_CAPTION_INSETS_ALLOWED);
     }
 
     /** Clear all top activity flags and set to false. */

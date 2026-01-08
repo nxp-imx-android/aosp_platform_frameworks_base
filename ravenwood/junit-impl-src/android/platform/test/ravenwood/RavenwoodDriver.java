@@ -50,7 +50,6 @@ import com.android.ravenwood.common.RavenwoodInternalUtils;
 import com.android.ravenwood.common.SneakyThrow;
 import com.android.server.LocalServices;
 
-import org.junit.internal.management.ManagementFactory;
 import org.junit.runner.Description;
 import org.mockito.Mockito;
 import org.mockito.internal.progress.ThreadSafeMockingProgress;
@@ -343,13 +342,7 @@ public class RavenwoodDriver {
     private static void dumpCommandLineArgs() {
         Log.i(TAG, "JVM arguments:");
 
-        // Note, we use the wrapper in JUnit4, not the actual class (
-        // java.lang.management.ManagementFactory), because we can't see the later at the build
-        // because this source file is compiled for the device target, where ManagementFactory
-        // doesn't exist.
-        var args = ManagementFactory.getRuntimeMXBean().getInputArguments();
-
-        for (var arg : args) {
+        for (var arg : RavenwoodImplUtils.getJvmArguments()) {
             Log.i(TAG, "  " + arg);
         }
     }

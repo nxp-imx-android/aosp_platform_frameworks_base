@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.notification
+#pragma once
 
-import com.android.systemui.flags.FeatureFlags
-import com.android.systemui.flags.Flags
-import javax.inject.Inject
+struct PipelineCacheStats {
+    bool inUse = false;
 
-class NotifPipelineFlags
-@Inject
-constructor(
-    private val featureFlags: FeatureFlags
-) {
-    fun isDevLoggingEnabled(): Boolean =
-        featureFlags.isEnabled(Flags.NOTIFICATION_PIPELINE_DEVELOPER_LOGGING)
-}
+    size_t sizeBytes = 0;
+
+    // Occurrences of undiagnosed errors, which may be caused by system health issues or code bugs
+    uint64_t fileOpenAndTruncateFailedCount = 0;
+    uint64_t fileWriteFailedCount = 0;
+    uint64_t zeroByteWriteCount = 0;
+    uint64_t partialWriteCount = 0;
+};

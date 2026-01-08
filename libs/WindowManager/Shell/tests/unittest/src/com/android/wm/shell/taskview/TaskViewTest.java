@@ -178,7 +178,7 @@ public class TaskViewTest extends ShellTestCase {
         }).when(mSyncQueue).runInSync(any());
 
         mTaskViewTransitions = spy(new TaskViewTransitions(mTransitions, mTaskViewRepository,
-                mOrganizer, mSyncQueue, Optional.of(mBubbleHelper)));
+                mOrganizer, Optional.of(mBubbleHelper), /* taskViewRootTask= */ Optional.empty()));
         mTaskViewTaskController = new TaskViewTaskController(mContext, mOrganizer,
                 mTaskViewTransitions, mSyncQueue);
         mTaskView = new TaskView(mContext, mTaskViewTransitions, mTaskViewTaskController);
@@ -352,7 +352,7 @@ public class TaskViewTest extends ShellTestCase {
     public void testOnBackPressedOnTaskRoot() {
         prepareOpenAnimation(true /* newTask */);
 
-        mTaskViewTaskController.onBackPressedOnTaskRoot(mTaskInfo, false, false, false);
+        mTaskViewTaskController.onBackOnTaskRoot(mTaskInfo, true, false, false);
 
         verify(mViewListener).onBackPressedOnTaskRoot(eq(mTaskInfo.taskId));
     }
@@ -651,6 +651,24 @@ public class TaskViewTest extends ShellTestCase {
         mTaskViewTaskController.prepareCloseAnimation(taskLeash, tx);
 
         verify(tx).setAlpha(taskLeash, 0);
+    }
+
+    @Test
+    public void onLocationChanged_withBounds_updatesTaskViewState() {
+        // Simulate a task being present in the TaskView.
+        mTaskView.surfaceCreated(mSurfaceHolder);
+        prepareOpenAnimation(true /* newTask */);
+
+        // Create a specific Rect for the new bounds.
+        final Rect newBounds = new Rect(10, 20, 130, 240);
+
+        // Call the method under test.
+        mTaskView.onLocationChanged(newBounds);
+
+        // Verify that the state in the repository has been updated with the new bounds.
+        final TaskViewRepository.TaskViewState taskViewState =
+                mTaskViewTransitions.getRepository().byTaskView(mTaskViewTaskController);
+        assertThat(taskViewState.mBounds).isEqualTo(newBounds);
     }
 
     @NonNull

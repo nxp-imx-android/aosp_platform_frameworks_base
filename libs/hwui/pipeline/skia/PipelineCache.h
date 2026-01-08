@@ -31,6 +31,8 @@
 #include <thread>
 #include <vector>
 
+#include "PipelineCacheStats.h"
+
 struct Memory {
     void* data;
     size_t size;
@@ -76,7 +78,7 @@ public:
 
     void store(std::string path, sk_sp<SkData> key, sk_sp<SkData> data);
 
-    size_t getLastSizeBytes() const;
+    void fillStats(PipelineCacheStats& stats) const;
 
 private:
     void runThread();
@@ -94,6 +96,10 @@ private:
     std::optional<StoreRequest> mStoreRequest;
 
     std::atomic_size_t mLastSizeBytes;
+    std::atomic_uint64_t mFileOpenAndTruncateFailedCount;
+    std::atomic_uint64_t mFileWriteFailedCount;
+    std::atomic_uint64_t mZeroByteWriteCount;
+    std::atomic_uint64_t mPartialWriteCount;
 
     bool mExit;
     std::thread mThread;
@@ -107,7 +113,7 @@ public:
     bool canStore(const SkString& description) const;
     void store(const SkData& key, const SkData& data);
 
-    size_t getLastSizeBytes() const;
+    void fillStats(PipelineCacheStats& stats) const;
 
 private:
     std::string mStorePath;

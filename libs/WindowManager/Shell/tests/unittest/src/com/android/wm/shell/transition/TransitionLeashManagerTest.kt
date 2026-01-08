@@ -15,6 +15,7 @@
  */
 
 package com.android.wm.shell.transition
+
 import android.app.ActivityManager.RunningTaskInfo
 import android.os.Binder
 import android.view.SurfaceControl
@@ -112,7 +113,6 @@ class TransitionLeashManagerTest : ShellTestCase() {
         verify(transaction).reparent(eq(independentLeash), eq(info.getRoot(0).leash))
         assertEquals(independentLeash, independentChange.leash)
         reset(transaction)
-
 
         underTest.setUpLeashes(
             mergeToken,

@@ -23,6 +23,7 @@ import android.security.GateKeeper;
 import android.security.keystore.KeyProperties;
 import android.security.keystore.KeyProtection;
 import android.security.keystore2.AndroidKeyStoreLoadStoreParameter;
+import android.text.TextUtils;
 import android.util.ArrayMap;
 
 import com.android.internal.util.Preconditions;
@@ -73,6 +74,10 @@ public final class FakeKeyStore {
         public Key engineGetKey(String alias, char[] password)
                 throws NoSuchAlgorithmException, UnrecoverableKeyException {
             SecretKeyEntry entry = mKeyByAlias.get(alias);
+            if (entry == null) {
+                throw new UnrecoverableKeyException(
+                        TextUtils.formatSimple("Key %s not found", alias));
+            }
             if (entry.boundSid != null) {
                 // Key is bound to an sid, implying authentication is required.
                 if (sFakeGateKeeperService.getAuthTokenForSid(entry.boundSid) == null) {

@@ -57,7 +57,6 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.shade.ShadeDisplayAware;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
 import com.android.systemui.statusbar.dagger.CentralSurfacesDependenciesModule;
-import com.android.systemui.statusbar.notification.NotifPipelineFlags;
 import com.android.systemui.statusbar.notification.RemoteInputControllerLogger;
 import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
@@ -106,7 +105,6 @@ public class NotificationRemoteInputManager implements CoreStartable {
     private final JavaAdapter mJavaAdapter;
     private final ShadeInteractor mShadeInteractor;
     protected final Context mContext;
-    protected final NotifPipelineFlags mNotifPipelineFlags;
     private final UserManager mUserManager;
     private final KeyguardManager mKeyguardManager;
     private final StatusBarStateController mStatusBarStateController;
@@ -269,7 +267,6 @@ public class NotificationRemoteInputManager implements CoreStartable {
     @Inject
     public NotificationRemoteInputManager(
             @ShadeDisplayAware Context context,
-            NotifPipelineFlags notifPipelineFlags,
             NotificationLockscreenUserManager lockscreenUserManager,
             SmartReplyController smartReplyController,
             NotificationVisibilityProvider visibilityProvider,
@@ -282,7 +279,6 @@ public class NotificationRemoteInputManager implements CoreStartable {
             JavaAdapter javaAdapter,
             ShadeInteractor shadeInteractor) {
         mContext = context;
-        mNotifPipelineFlags = notifPipelineFlags;
         mLockscreenUserManager = lockscreenUserManager;
         mSmartReplyController = smartReplyController;
         mVisibilityProvider = visibilityProvider;

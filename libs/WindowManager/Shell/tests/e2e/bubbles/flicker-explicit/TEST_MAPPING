@@ -107,7 +107,15 @@
       "keywords": ["device"]
     },
     {
+      "name": "WMShellExplicitFlickerTestsBubbles-FinishExpandedBubbleToExpandCollapsedTest",
+      "keywords": ["device"]
+    },
+    {
       "name": "WMShellExplicitFlickerTestsBubbles-LaunchMultipleBubbleTest",
+      "keywords": ["device"]
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-LaunchNewTaskFromBubbleTest",
       "keywords": ["device"]
     },
     {
@@ -156,6 +164,14 @@
     },
     {
       "name": "WMShellExplicitFlickerTestsBubbles-RelaunchBubbleToFullscreenViaTaskbarShortcutTest",
+      "keywords": ["device"]
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-RelaunchVisibleFullscreenAppToBubbleTest",
+      "keywords": ["device"]
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-RelaunchVisibleSplitAppToBubbleTest",
       "keywords": ["device"]
     }
   ]

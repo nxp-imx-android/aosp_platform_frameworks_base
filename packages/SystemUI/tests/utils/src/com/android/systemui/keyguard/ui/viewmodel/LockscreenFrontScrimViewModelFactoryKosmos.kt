@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.systemui.haptics.qs
+package com.android.systemui.keyguard.ui.viewmodel
 
-import com.android.systemui.classifier.fakeFalsingManager
-import com.android.systemui.haptics.vibratorHelper
+import com.android.systemui.keyguard.domain.interactor.aodDimInteractor
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.log.core.FakeLogBuffer
-import com.android.systemui.statusbar.policy.keyguardStateController
 
-val Kosmos.qsLongPressEffect by
+val Kosmos.lockscreenFrontScrimViewModelFactory by
     Kosmos.Fixture {
-        QSLongPressEffect(
-            vibratorHelper,
-            keyguardStateController,
-            fakeFalsingManager,
-            FakeLogBuffer.Factory.create(),
-        )
+        object : LockscreenFrontScrimViewModel.Factory {
+            override fun create(): LockscreenFrontScrimViewModel {
+                return LockscreenFrontScrimViewModel(aodDimInteractor = aodDimInteractor)
+            }
+        }
     }

@@ -32,6 +32,7 @@ import static com.android.server.wm.TaskFragment.FLAG_FORCE_HIDDEN_FOR_TASK_ORG;
 import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_INVISIBLE;
 import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_VISIBLE;
 import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_VISIBLE_BEHIND_TRANSLUCENT;
+import static com.android.server.wm.WindowContainer.POSITION_TOP;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -41,6 +42,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import android.annotation.NonNull;
 import android.app.WindowConfiguration;
 import android.graphics.Rect;
 import android.os.Binder;
@@ -798,7 +800,7 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
         adjacentTaskFragment3.setBounds(leftBounds);
         adjacentTaskFragment4.setBounds(rightBounds);
 
-        // The task behind should both be invisible.
+        // The task behind should both be invisibisTranslucentle.
         assertEquals(TASK_FRAGMENT_VISIBILITY_INVISIBLE,
                 bottomTask.getVisibility(null /* starting */));
 
@@ -883,13 +885,106 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
+    public void testShouldBeVisible_behindVisibilityBarrier() {
+        final Task bottomTask = createTaskWithActivity(mDefaultTaskDisplayArea,
+                WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD, true /* onTop */,
+                false /* twoLevelTask */);
+        final Task visibilityBarrier = new Task.Builder(mAtm)
+                .setIsVisibilityBarrier(true)
+                .build();
+        mDefaultTaskDisplayArea.addChild(visibilityBarrier, POSITION_TOP);
+        final Task topTask = createTaskWithActivity(mDefaultTaskDisplayArea,
+                WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD, true /* onTop */,
+                false /* twoLevelTask */);
+
+        bottomTask.setBounds(new Rect(0, 0, 500, 1000));
+        topTask.setBounds(new Rect(500, 0, 1000, 1000));
+
+        assertThat(topTask.shouldBeVisible(null)).isTrue();
+        assertThat(visibilityBarrier.shouldBeVisible(null)).isFalse();
+        assertThat(bottomTask.shouldBeVisible(null)).isFalse();
+
+        visibilityBarrier.removeImmediately();
+
+        assertThat(bottomTask.shouldBeVisible(null)).isTrue();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
+    public void testShouldBeVisible_rootTaskWithAllChildBehindVisibilityBarrier() {
+        final Task rootTask = createTaskWithActivity(mDefaultTaskDisplayArea,
+                WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD, true /* onTop */,
+                true /* twoLevelTask */);
+        final Task leafTask = rootTask.getTopLeafTask();
+
+        assertThat(rootTask.shouldBeVisible(null)).isTrue();
+        assertThat(leafTask.shouldBeVisible(null)).isTrue();
+
+        final Task visibilityBarrier = new Task.Builder(mAtm)
+                .setIsVisibilityBarrier(true)
+                .build();
+        rootTask.addChild(visibilityBarrier, POSITION_TOP);
+
+        assertThat(rootTask.shouldBeVisible(null)).isFalse();
+        assertThat(leafTask.shouldBeVisible(null)).isFalse();
+        assertThat(visibilityBarrier.shouldBeVisible(null)).isFalse();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
+    public void testShouldBeVisible_forceLeafTaskNonOccluding() {
+        final Task rootTask = createTaskWithActivity(mDefaultTaskDisplayArea,
+                WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD, true /* onTop */,
+                true /* twoLevelTask */);
+        final Task bottomTask = rootTask.getTopLeafTask();
+        final ActivityRecord topR = createActivityRecordWithParentTask(rootTask);
+        topR.visibleIgnoringKeyguard = true;
+        final Task topTask = topR.getTask();
+
+        assertThat(rootTask.shouldBeVisible(null)).isTrue();
+        assertThat(topTask.shouldBeVisible(null)).isTrue();
+        assertThat(bottomTask.shouldBeVisible(null)).isFalse();
+
+        rootTask.setForceLeafTasksNonOccluding(true);
+
+        assertThat(topTask.shouldBeVisible(null)).isTrue();
+        assertThat(bottomTask.shouldBeVisible(null)).isTrue();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
+    public void testShouldBeVisible_forceLeafTaskNonOccludingBehindVisibilityBarrier() {
+        final Task rootTask = createTaskWithActivity(mDefaultTaskDisplayArea,
+                WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD, true /* onTop */,
+                true /* twoLevelTask */);
+        rootTask.setForceLeafTasksNonOccluding(true);
+        final Task bottomTask = rootTask.getTopLeafTask();
+        final ActivityRecord topR = createActivityRecordWithParentTask(rootTask);
+        topR.visibleIgnoringKeyguard = true;
+        final Task topTask = topR.getTask();
+
+        assertThat(rootTask.shouldBeVisible(null)).isTrue();
+        assertThat(topTask.shouldBeVisible(null)).isTrue();
+        assertThat(bottomTask.shouldBeVisible(null)).isTrue();
+
+        final Task visibilityBarrier = new Task.Builder(mAtm)
+                .setIsVisibilityBarrier(true)
+                .build();
+        rootTask.addChild(visibilityBarrier, POSITION_TOP);
+
+        assertThat(rootTask.shouldBeVisible(null)).isFalse();
+        assertThat(topTask.shouldBeVisible(null)).isFalse();
+        assertThat(bottomTask.shouldBeVisible(null)).isFalse();
+    }
+
+    @Test
     public void testOpaque_leafTask_occludingActivity_isOpaque() {
         final ActivityRecord activity = new ActivityBuilder(mAtm).setCreateTask(true).build();
         activity.setOccludesParent(true);
         final TaskFragment tf = activity.getTaskFragment();
 
-        assertThat(mHelper.isOpaque(tf, null /* starting */, true /* ignoringKeyguard */,
-                false /* ignoringInvisibleActivity */, false /* ignoringFinishing */)).isTrue();
+        assertIsOpaque(tf, true);
     }
 
     @Test
@@ -898,8 +993,7 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
         activity.setOccludesParent(false);
         final TaskFragment tf = activity.getTaskFragment();
 
-        assertThat(mHelper.isOpaque(tf, null /* starting */, true /* ignoringKeyguard */,
-                false /* ignoringInvisibleActivity */, false /* ignoringFinishing */)).isFalse();
+        assertIsOpaque(tf, false);
     }
 
     @Test
@@ -909,8 +1003,7 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
         createLeafTaskWithActivity(/* parent */ rootTask,
                 WINDOWING_MODE_FREEFORM, /* opaque */ false, /* filling */ true);
 
-        assertThat(mHelper.isOpaque(rootTask, null /* starting */, true /* ignoringKeyguard */,
-                false /* ignoringInvisibleActivity */, false /* ignoringFinishing */)).isFalse();
+        assertIsOpaque(rootTask, false);
     }
 
     @Test
@@ -920,8 +1013,7 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
         createLeafTaskWithActivity(/* parent */ rootTask,
                 WINDOWING_MODE_FREEFORM, /* opaque */ true, /* filling */ false);
 
-        assertThat(mHelper.isOpaque(rootTask, null /* starting */, true /* ignoringKeyguard */,
-                false /* ignoringInvisibleActivity */, false /* ignoringFinishing */)).isFalse();
+        assertIsOpaque(rootTask, false);
     }
 
     @Test
@@ -931,8 +1023,7 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
         createLeafTaskWithActivity(/* parent */ rootTask,
                 WINDOWING_MODE_FREEFORM, /* opaque */ true, /* filling */ true);
 
-        assertThat(mHelper.isOpaque(rootTask, null /* starting */, true /* ignoringKeyguard */,
-                false /* ignoringInvisibleActivity */, false /* ignoringFinishing */)).isTrue();
+        assertIsOpaque(rootTask, true);
     }
 
     @Test
@@ -945,8 +1036,7 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
                 WINDOWING_MODE_MULTI_WINDOW, /* opaque */ true, /* filling */ false);
         tf1.setAdjacentTaskFragments(new TaskFragment.AdjacentSet(tf1, tf2));
 
-        assertThat(mHelper.isOpaque(rootTask, null /* starting */, true /* ignoringKeyguard */,
-                false /* ignoringInvisibleActivity */, false /* ignoringFinishing */)).isTrue();
+        assertIsOpaque(rootTask, true);
     }
 
     @Test
@@ -961,8 +1051,7 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
                 WINDOWING_MODE_MULTI_WINDOW, /* opaque */ true, /* filling */ false);
         tf1.setAdjacentTaskFragments(new TaskFragment.AdjacentSet(tf1, tf2, tf3));
 
-        assertThat(mHelper.isOpaque(rootTask, null /* starting */, true /* ignoringKeyguard */,
-                false /* ignoringInvisibleActivity */, false /* ignoringFinishing */)).isTrue();
+        assertIsOpaque(rootTask, true);
     }
 
     @Test
@@ -975,8 +1064,7 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
                 true /* createdByOrganizer */, false /* isEmbedded */);
         nonLeafTask.addChild(directChildFragment, 0);
 
-        assertThat(mHelper.isOpaque(nonLeafTask, null /* starting */, true /* ignoringKeyguard */,
-                false /* ignoringInvisibleActivity */, false /* ignoringFinishing */)).isTrue();
+        assertIsOpaque(nonLeafTask, true);
     }
 
     @Test
@@ -989,8 +1077,7 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
                 true /* createdByOrganizer */, false /* isEmbedded */);
         nonLeafTask.addChild(directChildFragment, 0);
 
-        assertThat(mHelper.isOpaque(nonLeafTask, null /* starting */, true /* ignoringKeyguard */,
-                false /* ignoringInvisibleActivity */, false /* ignoringFinishing */)).isFalse();
+        assertIsOpaque(nonLeafTask, false);
     }
 
     @Test
@@ -1004,15 +1091,12 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
 
         directChildActivity.setOccludesParent(false);
 
-        assertThat(mHelper.isOpaque(childTask, null /* starting */, true /* ignoringKeyguard */,
-                false /* ignoringInvisibleActivity */, false /* ignoringFinishing */)).isFalse();
-        assertThat(mHelper.isOpaque(opaqueTask, null /* starting */, true /* ignoringKeyguard */,
-                false /* ignoringInvisibleActivity */, false /* ignoringFinishing */)).isTrue();
+        assertIsOpaque(childTask, false);
+        assertIsOpaque(opaqueTask, true);
 
         directChildActivity.setOccludesParent(true);
 
-        assertThat(mHelper.isOpaque(childTask, null /* starting */, true /* ignoringKeyguard */,
-                false /* ignoringInvisibleActivity */, false /* ignoringFinishing */)).isTrue();
+        assertIsOpaque(childTask, true);
     }
 
     @Test
@@ -1044,9 +1128,7 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
                 new TaskFragment.AdjacentSet(adjacentTask, adjacentEmptyTask)
         );
 
-        assertThat(mHelper.isOpaque(forceOpaqueRootTask, null /* starting */,
-                true /* ignoringKeyguard */, false /* ignoringInvisibleActivity */,
-                false /* ignoringFinishing */)).isTrue();
+        assertIsOpaque(forceOpaqueRootTask, true);
 
         final Task forceOpaqueTaskWithTranslucentActivity = new TaskBuilder(mSupervisor)
                 .setCreatedByOrganizer(true)
@@ -1056,9 +1138,48 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
         final ActivityRecord activity = forceOpaqueTaskWithTranslucentActivity.getTopMostActivity();
         activity.setOccludesParent(false);
 
-        assertThat(mHelper.isOpaque(forceOpaqueTaskWithTranslucentActivity, null /* starting */,
-                true /* ignoringKeyguard */, false /* ignoringInvisibleActivity */,
-                false /* ignoringFinishing */)).isTrue();
+        assertIsOpaque(forceOpaqueTaskWithTranslucentActivity, true);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
+    public void testOpaque_rootTaskWithAllChildBehindVisibilityBarrier() {
+        final Task rootTask = createTaskWithActivity(mDefaultTaskDisplayArea,
+                WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD, true /* onTop */,
+                true /* twoLevelTask */);
+        final Task leafTask = rootTask.getTopLeafTask();
+
+        assertIsOpaque(rootTask, true);
+        assertIsOpaque(leafTask, true);
+
+        final Task visibilityBarrier = new Task.Builder(mAtm)
+                .setIsVisibilityBarrier(true)
+                .build();
+        rootTask.addChild(visibilityBarrier, POSITION_TOP);
+
+        assertIsOpaque(rootTask, false);
+        assertIsOpaque(leafTask, true);
+        assertIsOpaque(visibilityBarrier, false);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
+    public void testOpaque_forceLeafTaskNonOccluding() {
+        final Task rootTask = createTaskWithActivity(mDefaultTaskDisplayArea,
+                WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD, true /* onTop */,
+                true /* twoLevelTask */);
+        final Task bottomTask = rootTask.getTopLeafTask();
+        final Task topTask = createActivityRecordWithParentTask(rootTask).getTask();
+
+        assertIsOpaque(rootTask, true);
+        assertIsOpaque(topTask, true);
+        assertIsOpaque(bottomTask, true);
+
+        rootTask.setForceLeafTasksNonOccluding(true);
+
+        assertIsOpaque(rootTask, false);
+        assertIsOpaque(topTask, false);
+        assertIsOpaque(bottomTask, false);
     }
 
     private Task createTaskWithActivityAndOverrideTranslucent(
@@ -1067,5 +1188,18 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
                 ACTIVITY_TYPE_STANDARD, true /* onTop */);
         doReturn(translucent).when(rootTask).isTranslucent(any());
         return rootTask;
+    }
+
+    /**
+     * Note: this test asserts for the default check, which is
+     *  - ignoringKeyguard = true
+     *  - ignoringInvisibleActivity = false
+     *  - ignoringFinishing = true
+     */
+    private void assertIsOpaque(@NonNull WindowContainer windowContainer, boolean isOpaque) {
+        assertThat(mHelper.isOpaque(windowContainer, null /* starting */,
+                true /* ignoringKeyguard */, false /* ignoringInvisibleActivity */,
+                true /* ignoringFinishing */))
+                .isEqualTo(isOpaque);
     }
 }

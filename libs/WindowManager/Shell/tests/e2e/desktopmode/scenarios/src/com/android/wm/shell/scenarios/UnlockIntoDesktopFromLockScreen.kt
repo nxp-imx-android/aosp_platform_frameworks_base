@@ -52,7 +52,7 @@ abstract class UnlockIntoDesktopFromLockScreen(
     @Test
     open fun unlockIntoDesktopFromLockScreen() {
         device.wakeUp()
-        //wait for some time to find the button for unlocking from lock screen
+        // wait for some time to find the button for unlocking from lock screen
         device.waitForIdle()
         device.executeShellCommand("input keyevent ${KeyEvent.KEYCODE_MENU}")
         wmHelper

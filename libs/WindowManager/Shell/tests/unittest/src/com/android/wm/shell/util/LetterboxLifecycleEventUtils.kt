@@ -20,8 +20,7 @@ import android.window.TransitionInfo.Change
 import com.android.testing.wm.util.BaseChangeTestContext
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEventFactory
 
-@DslMarker
-annotation class LetterboxLifecycleEventTagMarker
+@DslMarker annotation class LetterboxLifecycleEventTagMarker
 
 @LetterboxLifecycleEventTagMarker
 class LetterboxLifecycleEventTestContext : BaseChangeTestContext() {
@@ -31,9 +30,7 @@ class LetterboxLifecycleEventTestContext : BaseChangeTestContext() {
     }
 }
 
-/**
- * Function to run tests for the different [LetterboxLifecycleEventFactory] implementations.
- */
+/** Function to run tests for the different [LetterboxLifecycleEventFactory] implementations. */
 fun testLetterboxLifecycleEvent(
     init: LetterboxLifecycleEventTestContext.() -> Unit
 ): LetterboxLifecycleEventTestContext {

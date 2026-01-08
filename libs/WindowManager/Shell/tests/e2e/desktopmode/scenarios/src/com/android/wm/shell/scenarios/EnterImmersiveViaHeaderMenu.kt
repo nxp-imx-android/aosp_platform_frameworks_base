@@ -51,7 +51,8 @@ abstract class EnterImmersiveViaHeaderMenu(val rotation: Rotation = Rotation.ROT
         immersiveApp.enterImmersiveMode(wmHelper, device)
         assertTrue(
             "System bar should not be visible when entering immersive mode.",
-            wmHelper.StateSyncBuilder()
+            wmHelper
+                .StateSyncBuilder()
                 .withAppTransitionIdle()
                 .add(ConditionsFactory.isStatusBarVisible().negate())
                 .add(ConditionsFactory.isNavOrTaskBarVisible().negate())

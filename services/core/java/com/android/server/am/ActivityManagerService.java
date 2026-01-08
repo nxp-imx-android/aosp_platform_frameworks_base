@@ -64,6 +64,7 @@ import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_BACKUP;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_INSTRUMENTATION;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_PERSISTENT;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_SYSTEM;
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.content.pm.ApplicationInfo.HIDDEN_API_ENFORCEMENT_DEFAULT;
 import static android.content.pm.PackageManager.GET_SHARED_LIBRARY_FILES;
 import static android.content.pm.PackageManager.MATCH_ALL;
@@ -134,7 +135,6 @@ import static android.os.Process.setThreadScheduler;
 import static android.provider.Settings.Global.ALWAYS_FINISH_ACTIVITIES;
 import static android.provider.Settings.Global.DEBUG_APP;
 import static android.provider.Settings.Global.WAIT_FOR_DEBUGGER;
-import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.security.Flags.preventIntentRedirect;
 import static android.security.Flags.preventIntentRedirectCollectNestedKeysOnServerIfNotCollected;
 import static android.server.Flags.enableThemeService;
@@ -2786,43 +2786,53 @@ public class ActivityManagerService extends IActivityManager.Stub
      */
     boolean validateAssociationAllowedLocked(String pkg1, int uid1, String pkg2, int uid2,
             @AssociationType int associationType, @Nullable Bundle extras) {
-        boolean callerOrTargetIsPcc = false;
-        if (enablePccFrameworkSupport()) {
-            callerOrTargetIsPcc =
-                    Process.isPrivateComputeCoreUid(uid1) || Process.isPrivateComputeCoreUid(uid2);
-            if (callerOrTargetIsPcc && validateAssociationAllowedForPccLocked(
-                    uid1, pkg1, uid2, pkg2, associationType, extras)) {
+        final boolean isPccFrameworkSupportEnabled = enablePccFrameworkSupport();
+        if (isPccFrameworkSupportEnabled) {
+            Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "validateAssociationAllowedLocked");
+        }
+        try {
+            boolean callerOrTargetIsPcc = false;
+            if (isPccFrameworkSupportEnabled) {
+                callerOrTargetIsPcc = Process.isPrivateComputeCoreUid(uid1)
+                        || Process.isPrivateComputeCoreUid(uid2);
+                if (callerOrTargetIsPcc && validateAssociationAllowedForPccLocked(
+                        uid1, pkg1, uid2, pkg2, associationType, extras)) {
+                    return true;
+                }
+            }
+
+            ensureAllowedAssociations();
+            // Interactions with the system uid are always allowed, since that is the core system
+            // that everyone needs to be able to interact with. Also allow reflexive associations
+            // within the same uid.
+            if (uid1 == uid2 || UserHandle.getAppId(uid1) == SYSTEM_UID
+                    || UserHandle.getAppId(uid2) == SYSTEM_UID) {
                 return true;
             }
-        }
 
-        ensureAllowedAssociations();
-        // Interactions with the system uid are always allowed, since that is the core system
-        // that everyone needs to be able to interact with. Also allow reflexive associations
-        // within the same uid.
-        if (uid1 == uid2 || UserHandle.getAppId(uid1) == SYSTEM_UID
-                || UserHandle.getAppId(uid2) == SYSTEM_UID) {
+            // Check for association on both source and target packages.
+            PackageAssociationInfo pai = mAllowedAssociations.get(pkg1);
+            if (pai != null && !pai.isPackageAssociationAllowed(pkg2)) {
+                return false;
+            }
+            pai = mAllowedAssociations.get(pkg2);
+            if (pai != null && !pai.isPackageAssociationAllowed(pkg1)) {
+                return false;
+            }
+
+            if (isPccFrameworkSupportEnabled && callerOrTargetIsPcc) {
+                // No generalized rules applicable, and no OEM defined associations.
+                return false;
+            }
+
+            // If no explicit associations are provided in the manifest at this
+            // stage, then the app is allowed associations with any package.
             return true;
+        } finally {
+            if (isPccFrameworkSupportEnabled) {
+                Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+            }
         }
-
-        // Check for association on both source and target packages.
-        PackageAssociationInfo pai = mAllowedAssociations.get(pkg1);
-        if (pai != null && !pai.isPackageAssociationAllowed(pkg2)) {
-            return false;
-        }
-        pai = mAllowedAssociations.get(pkg2);
-        if (pai != null && !pai.isPackageAssociationAllowed(pkg1)) {
-            return false;
-        }
-
-        if (enablePccFrameworkSupport() && callerOrTargetIsPcc) {
-            // No generalized rules applicable, and no OEM defined associations.
-            return false;
-        }
-
-        // If no explicit associations are provided in the manifest at this
-        // stage, then the app is allowed associations with any package.
-        return true;
     }
 
     /**
@@ -2833,13 +2843,23 @@ public class ActivityManagerService extends IActivityManager.Stub
     boolean validateAssociationAllowedForPccLocked(
             int callerUid, String callerPackage, int targetUid, String targetPackage,
             @AssociationType int associationType, Bundle extras) {
-        final PccSandboxManagerInternal pccSandboxManagerInternal =
-                LocalServices.getService(PccSandboxManagerInternal.class);
-        if (pccSandboxManagerInternal == null) {
-            return false;
+        final boolean isPccFrameworkSupportEnabled = enablePccFrameworkSupport();
+        if (isPccFrameworkSupportEnabled) {
+            Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "validateAssociationAllowedForPcc");
         }
-        return pccSandboxManagerInternal.validateAssociationAllowed(
-                callerUid, callerPackage, targetUid, targetPackage, associationType, extras);
+        try {
+            final PccSandboxManagerInternal pccSandboxManagerInternal =
+                    LocalServices.getService(PccSandboxManagerInternal.class);
+            if (pccSandboxManagerInternal == null) {
+                return false;
+            }
+            return pccSandboxManagerInternal.validateAssociationAllowed(
+                    callerUid, callerPackage, targetUid, targetPackage, associationType, extras);
+        } finally {
+            if (isPccFrameworkSupportEnabled) {
+                Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+            }
+        }
     }
 
     /**
@@ -4858,6 +4878,16 @@ public class ActivityManagerService extends IActivityManager.Stub
         if (DEBUG_ALL) Slog.v(
                 TAG, "Binding process pid " + pid + " to record " + app);
 
+        // The new process has finished initialization and at this point |callingUid|
+        // does not have permission to call setuid(), so it does not need to be
+        // tracked by the transition policy.
+        if (Flags.useSafesetidUidPolicy()
+                && UidTransitionPolicy.isEnabled()
+                && mProcessList.getUidTransitionPolicy() != null) {
+            // TODO(b/468898907) Monitor system server crashes due to failures at this call site.
+            mProcessList.getUidTransitionPolicy().purgeFromPolicy(callingUid);
+        }
+
         final String processName = app.processName;
         try {
             AppDeathRecipient adr = new AppDeathRecipient(
@@ -6160,8 +6190,16 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
     }
 
+    /**
+     * @deprecated Use {@link ActivityManagerInternal#setIsToastActive(int, boolean, String)}
+     *             instead. This method will be removed in the future.
+     */
     @Override
     public void setProcessImportant(IBinder token, int pid, boolean isForeground, String reason) {
+        if (Flags.simplifyToastImportance()) {
+            throw new IllegalStateException("AMS.setProcessImportant is not supported anymore!"
+                    + " Please use AMI.setIsToastActive instead.");
+        }
         enforceCallingPermission(android.Manifest.permission.SET_PROCESS_LIMIT,
                 "setProcessImportant()");
         synchronized(this) {
@@ -18255,6 +18293,27 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
 
         @Override
+        public void setIsToastActive(int pid, boolean isActive) {
+            if (!Flags.simplifyToastImportance()) {
+                throw new IllegalStateException("AMI.setIsToastActive is not enabled yet!");
+            }
+            synchronized (ActivityManagerService.this) {
+                final ProcessRecord pr;
+                synchronized (mPidsSelfLocked) {
+                    pr = mPidsSelfLocked.get(pid);
+                    if (pr == null) {
+                        Slog.w(TAG, "setIsToastActive called on an unknown pid: " + pid);
+                        return;
+                    }
+                }
+                final Object token = isActive ? TOAST_TOKEN : null;
+                if (mProcessStateController.setForcingToImportant(pr, token)) {
+                    mProcessStateController.runUpdate(pr, OOM_ADJ_REASON_UI_VISIBILITY);
+                }
+            }
+        }
+
+        @Override
         public Intent getIntentForIntentSender(IIntentSender sender) {
             return ActivityManagerService.this.getIntentForIntentSender(sender);
         }
@@ -20441,10 +20500,13 @@ public class ActivityManagerService extends IActivityManager.Stub
         int callingUid = Binder.getCallingUid();
         if (((intent.getExtendedFlags() & Intent.EXTENDED_FLAG_NESTED_INTENT_KEYS_COLLECTED) == 0)
                 && intent.getExtras() != null && intent.getExtras().hasIntent()) {
-            Slog.wtf(TAG,
-                    "[IntentRedirect Hardening] The intent does not have its nested keys collected as a "
-                            + "preparation for creating intent creator tokens. Intent: "
-                            + intent + "; creatorPackage: " + creatorPackage);
+            Slog.wtf(
+                    TAG,
+                    "[IntentRedirect Hardening] The intent does not have its nested keys collected"
+                        + " as a preparation for creating intent creator tokens. Intent: "
+                            + intent
+                            + "; creatorPackage: "
+                            + creatorPackage);
             FrameworkStatsLog.write(EXTRA_INTENT_KEYS_COLLECTED_ON_SERVER, callingUid);
 
             if (preventIntentRedirectCollectNestedKeysOnServerIfNotCollected()) {

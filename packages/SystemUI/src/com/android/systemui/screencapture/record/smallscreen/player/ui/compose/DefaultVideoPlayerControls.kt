@@ -41,6 +41,10 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.android.systemui.common.shared.model.ContentDescription
@@ -124,7 +128,11 @@ fun DefaultVideoPlayerControls(
                     inactiveTickColor = color,
                     thumbColor = color,
                 ),
-            modifier = Modifier.padding(16.dp),
+            modifier =
+                Modifier.padding(16.dp).semantics {
+                    stateDescription = viewModel.a11yProgressDescription
+                    liveRegion = LiveRegionMode.Polite
+                },
         )
     }
 }

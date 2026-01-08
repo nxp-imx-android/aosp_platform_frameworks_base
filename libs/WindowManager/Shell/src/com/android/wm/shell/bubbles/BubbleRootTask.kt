@@ -26,21 +26,25 @@ import android.window.TaskPropertiesRequest
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import com.android.wm.shell.ShellTaskOrganizer
+import com.android.wm.shell.dagger.WMSingleton
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.sysui.ShellInit
-import com.android.wm.shell.taskview.TaskViewTransitions
+import com.android.wm.shell.taskview.TaskViewRootTask
+import javax.inject.Inject
 
 /**
  * Class to manage the bubble root task.
  *
  * Note: This class should only be accessed through [BubbleHelper].
  */
-class BubbleRootTask(
+@WMSingleton
+class BubbleRootTask
+@Inject
+constructor(
     private val context: Context,
     shellInit: ShellInit,
     private val taskOrganizer: ShellTaskOrganizer,
-    private val taskViewTransitions: TaskViewTransitions,
-) : ShellTaskOrganizer.TaskListener {
+) : ShellTaskOrganizer.TaskListener, TaskViewRootTask {
 
     init {
         if (BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
@@ -48,7 +52,8 @@ class BubbleRootTask(
         }
     }
 
-    private var rootTaskInfo: ActivityManager.RunningTaskInfo? = null
+    override var rootTaskInfo: ActivityManager.RunningTaskInfo? = null
+        private set
 
     val windowContainerToken: WindowContainerToken?
         get() = rootTaskInfo?.token
@@ -81,7 +86,6 @@ class BubbleRootTask(
             return
         }
         rootTaskInfo = taskInfo
-        taskViewTransitions.setTaskViewRootTaskInfo(taskInfo)
 
         val wct = WindowContainerTransaction()
         wct.reorder(taskInfo.token, false /* onTop */)
@@ -101,5 +105,9 @@ class BubbleRootTask(
         wct.setDisableLaunchAdjacent(taskInfo.token, true /* disableLaunchAdjacent */)
         wct.setForceTranslucent(taskInfo.token, true /* forceTranslucent */)
         taskOrganizer.applyTransaction(wct)
+    }
+
+    override fun onTaskInfoChanged(taskInfo: ActivityManager.RunningTaskInfo?) {
+        rootTaskInfo = taskInfo
     }
 }

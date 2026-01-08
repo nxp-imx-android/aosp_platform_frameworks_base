@@ -25,6 +25,7 @@ import android.annotation.SystemApi;
 import android.hardware.security.keymint.TagType;
 import android.os.Process;
 import android.security.keymaster.KeymasterDefs;
+import android.security.keystore2.Flags;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.security.spec.AlgorithmParameterSpec;
@@ -280,6 +281,12 @@ public abstract class KeyProperties {
                 return KeymasterDefs.KM_ALGORITHM_EC;
             } else if (KEY_ALGORITHM_RSA.equalsIgnoreCase(algorithm)) {
                 return KeymasterDefs.KM_ALGORITHM_RSA;
+            } else if (Flags.mldsaSupport()
+                    && (KEY_ALGORITHM_ML_DSA.equalsIgnoreCase(algorithm)
+                            || KEY_ALGORITHM_ML_DSA_65.equalsIgnoreCase(algorithm)
+                            || KEY_ALGORITHM_ML_DSA_87.equalsIgnoreCase(algorithm))) {
+                // TODO(b/462036047): Replace with KeymasterDefs constant when KeyMint V5 is frozen.
+                return KM_ALGORITHM_ML_DSA;
             } else {
                 throw new IllegalArgumentException("Unsupported key algorithm: " + algorithm);
             }

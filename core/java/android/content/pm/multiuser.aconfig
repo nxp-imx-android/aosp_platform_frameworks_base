@@ -32,20 +32,6 @@ flag {
 }
 
 flag {
-    name: "decouple_max_users_from_profiles"
-    namespace: "multiuser"
-    description: "Builds on consistent_max_users, but now config_multiuserMaximumUsers only applies to non-Guest non-Demo switchable users, not profiles."
-    bug: "394178333"
-}
-
-flag {
-    name: "max_users_in_car_is_for_secondary"
-    namespace: "multiuser"
-    description: "Update Car SystemUi and Settings to specify FULL_SECONDARY for max users (alongside consistent_max_users flag)."
-    bug: "394178333"
-}
-
-flag {
     name: "query_user_type_supported"
     namespace: "multiuser"
     description: "Infrastructure to determine whether a given user type is supported."
@@ -244,34 +230,6 @@ flag {
     namespace: "multiuser"
     description: "Set power mode during a user switch."
     bug: "325249845"
-}
-
-flag {
-    name: "schedule_stop_of_background_user"
-    namespace: "multiuser"
-    description: "Schedule background users to be stopped at a future point. Infrastructure only."
-    bug: "330351042"
-}
-
-flag {
-    name: "schedule_stop_of_background_user_by_default"
-    namespace: "multiuser"
-    description: "Activates the background-stopping schedule of inactive users based on the time specified in the configuration."
-    bug: "330351042"
-}
-
-flag {
-    name: "stop_excess_for_background_starts"
-    namespace: "multiuser"
-    description: "Be more aggressive when stopping excess users, by triggering this even on background user starts and by allowing user 0's profiles to be stopped."
-    bug: "419867128"
-}
-
-flag {
-    name: "reschedule_stop_if_visible_activities"
-    namespace: "multiuser"
-    description: "Don't automatically stop a background user that has a top visible activity; instead, reschedule it to stop later"
-    bug: "423731424"
 }
 
 flag {

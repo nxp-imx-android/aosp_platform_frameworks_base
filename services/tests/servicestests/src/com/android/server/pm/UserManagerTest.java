@@ -477,38 +477,25 @@ public final class UserManagerTest {
 
     @MediumTest
     @Test
-    @RequiresFlagsEnabled(android.multiuser.Flags.FLAG_CONSISTENT_MAX_USERS)
     public void testAddTooManyUsers_Demo() {
-        // RequiresFlagsEnabled doesn't seem to work, so we need this assumption.
-        assumeTrue("ConsistentMaxUsers flag not set", android.multiuser.Flags.consistentMaxUsers());
-
         testAddTooManyUsers(USER_TYPE_FULL_DEMO);
     }
 
     @MediumTest
     @Test
     public void testAddTooManyUsers_Restricted() {
-        assumeTrue("ConsistentMaxUsers flag off", android.multiuser.Flags.consistentMaxUsers());
-        assumeTrue("Decoupling flag off", android.multiuser.Flags.decoupleMaxUsersFromProfiles());
-
         testAddTooManyUsers(USER_TYPE_FULL_RESTRICTED);
     }
 
     @MediumTest
     @Test
     public void testAddTooManyUsers_ManagedProfile() {
-        assumeTrue("ConsistentMaxUsers flag off", android.multiuser.Flags.consistentMaxUsers());
-        assumeTrue("Decoupling flag off", android.multiuser.Flags.decoupleMaxUsersFromProfiles());
-
         testAddTooManyUsers(USER_TYPE_PROFILE_MANAGED);
     }
 
     @MediumTest
     @Test
     public void testAddTooManyUsers_PrivateProfile() {
-        assumeTrue("ConsistentMaxUsers flag off", android.multiuser.Flags.consistentMaxUsers());
-        assumeTrue("Decoupling flag off", android.multiuser.Flags.decoupleMaxUsersFromProfiles());
-
         testAddTooManyUsers(USER_TYPE_PROFILE_PRIVATE);
     }
 
@@ -527,19 +514,14 @@ public final class UserManagerTest {
     private void testAddTooManyUsers(String userType) {
         final UserTypeDetails userTypeDetails = UserTypeFactory.getUserTypes().get(userType);
 
-        final int maxUsersForType =
-                !android.multiuser.Flags.decoupleMaxUsersFromProfiles()
-                        && userTypeDetails.getMaxAllowed()
-                        == UserTypeDetails.getLegacyUnlimitedNumberOfUsersValue()
-                        ? Integer.MAX_VALUE : userTypeDetails.getMaxAllowed();
+        final int maxUsersForType = userTypeDetails.getMaxAllowed();
         final int maxSwitchableUsers = UserManager.getMaxSwitchableUsers();
 
         int currentUsersOfType = 0;
         int currentSwitchable = 0;
         final List<UserInfo> userList = mUserManager.getAliveUsers();
         for (UserInfo user : userList) {
-            if (!android.multiuser.Flags.decoupleMaxUsersFromProfiles() ||
-                    user.supportsSwitchTo() && !user.isGuest() && !user.isDemo()) {
+            if (user.supportsSwitchTo() && !user.isGuest() && !user.isDemo()) {
                 currentSwitchable++;
             }
             if (userType.equals(user.userType)) {
@@ -549,8 +531,7 @@ public final class UserManagerTest {
 
         final int remainingUserType = maxUsersForType - currentUsersOfType;
         final int remainingSwitchable = maxSwitchableUsers - currentSwitchable;
-        final boolean isSwitchable = !android.multiuser.Flags.decoupleMaxUsersFromProfiles() ||
-                userTypeDetails.supportsSwitchTo()
+        final boolean isSwitchable = userTypeDetails.supportsSwitchTo()
                 && !userTypeDetails.isGuest()
                 && !userTypeDetails.isDemo();
         final int remaining = isSwitchable ?
@@ -564,10 +545,8 @@ public final class UserManagerTest {
                 + ", currentSwitchable=" + currentSwitchable
                 + ", remaining=" + remaining);
 
-        if (android.multiuser.Flags.consistentMaxUsers()) {
-            assertThat(mUserManager.getCurrentAllowedNumberOfUsers(userType))
-                    .isEqualTo(maxAllowedInPractice);
-        }
+        assertThat(mUserManager.getCurrentAllowedNumberOfUsers(userType))
+                .isEqualTo(maxAllowedInPractice);
 
         if (remaining >= 20) {
             Slog.w(TAG, "Device claims to support a very high number of users of type "
@@ -589,30 +568,8 @@ public final class UserManagerTest {
         // Make sure no more users of that type can be added.
         testCreatingUser(userType, false);
 
-        if (android.multiuser.Flags.consistentMaxUsers()) {
-            assertThat(mUserManager.getCurrentAllowedNumberOfUsers(userType))
-                    .isEqualTo(maxAllowedInPractice);
-        }
-
-        if (!android.multiuser.Flags.decoupleMaxUsersFromProfiles()) {
-            // We've maxed out this usertype. Can we add a user of a different type now?
-            final String otherType = !userType.equals(USER_TYPE_FULL_GUEST) ?
-                    USER_TYPE_FULL_GUEST : USER_TYPE_FULL_SECONDARY;
-            if (remainingSwitchable > usersAdded) {
-                Slog.v(TAG, "Expecting to be able to add a user of a different type.");
-                assertThat(mUserManager.canAddMoreUsers(otherType)).isTrue();
-                assertThat(mUserManager.getRemainingCreatableUserCount(otherType)).isGreaterThan(0);
-                assertThat(createUser("Other beyond", otherType, 0)).isNotNull();
-            } else {
-                if (!UserManager.isUserTypeGuest(otherType)) {
-                    Slog.v(TAG, "Expecting not to be able to add a user of a different type.");
-                    assertThat(mUserManager.canAddMoreUsers(otherType)).isFalse();
-                    assertThat(mUserManager.getRemainingCreatableUserCount(otherType)).isEqualTo(0);
-                    assertThat(createUser("Other beyond", otherType, 0)).isNull();
-                }
-            }
-            return; // The remaining tests require that decoupleMaxUsersFromProfiles be false.
-        }
+        assertThat(mUserManager.getCurrentAllowedNumberOfUsers(userType))
+                .isEqualTo(maxAllowedInPractice);
 
         // We've maxed out this usertype. Can we still add a users of various other types now?
         final boolean canAddMoreSwitchables = remainingSwitchable > (isSwitchable ? usersAdded : 0);

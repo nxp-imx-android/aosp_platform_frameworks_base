@@ -1614,6 +1614,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         private boolean mIsForceOpaque = false;
         private boolean mShouldIgnoreInsets = false;
         private boolean mDisableAppCompatRoundedCorners = false;
+        private boolean mRemoveWithTaskOrganizer = false;
 
         TaskBuilder(ActivityTaskSupervisor supervisor) {
             mSupervisor = supervisor;
@@ -1725,6 +1726,11 @@ public class WindowTestsBase extends SystemServiceTestsBase {
             return this;
         }
 
+        TaskBuilder setRemoveWithTaskOrganizer(boolean removeWithTaskOrganizer) {
+            mRemoveWithTaskOrganizer = removeWithTaskOrganizer;
+            return this;
+        }
+
         Task build() {
             SystemServicesTestRule.checkHoldsLock(mSupervisor.mService.mGlobalLock);
 
@@ -1758,6 +1764,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
                     .setWindowingMode(mWindowingMode)
                     .setActivityInfo(mActivityInfo)
                     .setIntent(mIntent)
+                    .setRemoveWithTaskOrganizer(mRemoveWithTaskOrganizer)
                     .setOnTop(mOnTop)
                     .setVoiceSession(mVoiceSession)
                     .setCreatedByOrganizer(mCreatedByOrganizer)

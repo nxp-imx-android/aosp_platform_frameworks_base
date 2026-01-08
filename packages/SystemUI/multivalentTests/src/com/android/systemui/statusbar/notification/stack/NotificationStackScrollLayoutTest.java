@@ -187,10 +187,6 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         ));
 
         // Register the debug flags we use
-        assertFalse(Flags.NSSL_DEBUG_LINES.getDefault());
-        assertFalse(Flags.NSSL_DEBUG_REMOVE_ANIMATION.getDefault());
-        mFeatureFlags.set(Flags.NSSL_DEBUG_LINES, false);
-        mFeatureFlags.set(Flags.NSSL_DEBUG_REMOVE_ANIMATION, false);
         mFeatureFlags.set(Flags.LOCKSCREEN_ENABLE_LANDSCAPE, false);
 
         // Inject dependencies before initializing the layout

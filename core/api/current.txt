@@ -4753,7 +4753,6 @@ package android.app {
     method public final void setVolumeControlStream(int);
     method public void setVrModeEnabled(boolean, @NonNull android.content.ComponentName) throws android.content.pm.PackageManager.NameNotFoundException;
     method public boolean shouldDockBigOverlays();
-    method public boolean shouldShowRequestPermissionRationale(@NonNull String);
     method @FlaggedApi("android.permission.flags.device_aware_permission_apis_enabled") public boolean shouldShowRequestPermissionRationale(@NonNull String, int);
     method public boolean shouldUpRecreateTask(android.content.Intent);
     method public boolean showAssist(android.os.Bundle);
@@ -9370,8 +9369,7 @@ package android.app.appfunctions {
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public abstract class AppFunctionService extends android.app.Service {
     ctor public AppFunctionService();
     method @NonNull public final android.os.IBinder onBind(@Nullable android.content.Intent);
-    method @Deprecated @FlaggedApi("android.app.appfunctions.flags.enable_app_function_permission_v2") @MainThread public void onExecuteFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull String, @NonNull android.content.pm.SigningInfo, @NonNull android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<android.app.appfunctions.ExecuteAppFunctionResponse,android.app.appfunctions.AppFunctionException>);
-    method @FlaggedApi("android.app.appfunctions.flags.enable_app_function_permission_v2") @MainThread public void onExecuteFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<android.app.appfunctions.ExecuteAppFunctionResponse,android.app.appfunctions.AppFunctionException>);
+    method @MainThread public abstract void onExecuteFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull String, @NonNull android.content.pm.SigningInfo, @NonNull android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<android.app.appfunctions.ExecuteAppFunctionResponse,android.app.appfunctions.AppFunctionException>);
     field @NonNull public static final String SERVICE_INTERFACE = "android.app.appfunctions.AppFunctionService";
   }
 
@@ -11652,6 +11650,7 @@ package android.content {
     method public abstract void setTheme(@StyleRes int);
     method @Deprecated public abstract void setWallpaper(android.graphics.Bitmap) throws java.io.IOException;
     method @Deprecated public abstract void setWallpaper(java.io.InputStream) throws java.io.IOException;
+    method @FlaggedApi("android.permission.flags.should_show_permission_rationale_in_context_enabled") public boolean shouldShowRequestPermissionRationale(@NonNull String);
     method public abstract void startActivities(@RequiresPermission android.content.Intent[]);
     method public abstract void startActivities(@RequiresPermission android.content.Intent[], android.os.Bundle);
     method public abstract void startActivity(@RequiresPermission android.content.Intent);
@@ -43974,6 +43973,7 @@ package android.service.personalcontext.hint {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class RecentViewHint extends android.service.personalcontext.hint.ContextHint {
     method @NonNull public java.util.List<android.service.personalcontext.hint.CapturedText> getCapturedTexts();
     method @Nullable public String getLocusId();
+    method @NonNull public android.content.ComponentName getSourceAppActivityComponentName();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class RecentViewHint.Builder {
@@ -43982,6 +43982,7 @@ package android.service.personalcontext.hint {
     method @NonNull public android.service.personalcontext.hint.RecentViewHint.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.hint.RecentViewHint build();
     method @NonNull public android.service.personalcontext.hint.RecentViewHint.Builder setLocusId(@Nullable String);
+    method @NonNull public android.service.personalcontext.hint.RecentViewHint.Builder setSourceAppActivityComponentName(@NonNull android.content.ComponentName);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public class TextClassificationHint extends android.service.personalcontext.hint.ContextHint {
@@ -43996,6 +43997,7 @@ package android.service.personalcontext.hint {
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class UserInputHint extends android.service.personalcontext.hint.ContextHint {
+    method @NonNull public android.content.ComponentName getSourceAppActivityComponentName();
     method @NonNull public android.service.personalcontext.hint.UserInputText getUserInputText();
   }
 
@@ -44003,6 +44005,7 @@ package android.service.personalcontext.hint {
     ctor public UserInputHint.Builder(@NonNull android.service.personalcontext.hint.UserInputText);
     method @NonNull public android.service.personalcontext.hint.UserInputHint.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.hint.UserInputHint build();
+    method @NonNull public android.service.personalcontext.hint.UserInputHint.Builder setSourceAppActivityComponentName(@NonNull android.content.ComponentName);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class UserInputText implements android.os.Parcelable {

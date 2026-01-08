@@ -91,7 +91,9 @@ public final class DesktopModeBoundsCalculator {
         final Display targetDisplay = displayContent.getDisplay();
         final Context displayContext = task.mWmService.mContext.createDisplayContext(targetDisplay);
         final int captionHeight = activity != null && shouldExcludeCaptionFromAppBounds(
-                activity.info, task.isResizeable(), activity.mOptOutEdgeToEdge)
+                activity.info, task.isResizeable(), activity.mOptOutEdgeToEdge,
+                activity.mAppCompatController.getSandboxOverrides()
+                        .isOverrideExcludeCaptionInsetsAllowed())
                         ? getDesktopViewAppHeaderHeightPx(displayContext) : 0;
 
         if (options != null && options.getLaunchBounds() != null

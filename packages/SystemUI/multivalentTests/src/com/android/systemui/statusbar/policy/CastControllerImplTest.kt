@@ -213,4 +213,25 @@ class CastControllerImplTest : SysuiTestCase() {
             underTest.startCasting(castDevice)
             Assert.assertTrue(underTest.hasConnectedCastDevice())
         }
+
+    @Test
+    fun setDiscoveryingCalledBeforeStart_doesntCrash() =
+        kosmos.runTest {
+            val controller =
+                CastControllerImpl(
+                    mContext,
+                    mock<PackageManager>(),
+                    { mediaRouter },
+                    { mediaProjectionManager },
+                    CastControllerLogger(logcatLogBuffer("CastControllerImplTest")),
+                    kosmos.testScope,
+                    kosmos.testDispatcher,
+                    kosmos.fakeHandler,
+                    kosmos.testDispatcher,
+                    DumpManager(),
+                )
+
+            controller.setDiscovering(true)
+            controller.start()
+        }
 }

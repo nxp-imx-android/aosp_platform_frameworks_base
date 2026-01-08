@@ -16,10 +16,12 @@
 
 package com.android.systemui.keyguard.domain.interactor.scenetransition
 
+import android.util.Log
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.keyguard.TAG
 import com.android.systemui.keyguard.data.repository.LockscreenSceneTransitionRepository
 import com.android.systemui.keyguard.domain.interactor.InternalKeyguardTransitionInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
@@ -30,6 +32,7 @@ import com.android.systemui.keyguard.shared.model.TransitionInfo
 import com.android.systemui.keyguard.shared.model.TransitionModeOnCanceled
 import com.android.systemui.keyguard.shared.model.TransitionState.FINISHED
 import com.android.systemui.keyguard.shared.model.TransitionState.RUNNING
+import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.util.kotlin.pairwise
@@ -37,6 +40,7 @@ import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 
 /**
@@ -72,6 +76,7 @@ constructor(
     @Application private val applicationScope: CoroutineScope,
     private val sceneInteractor: SceneInteractor,
     private val repository: LockscreenSceneTransitionRepository,
+    private val powerInteractor: PowerInteractor,
 ) : CoreStartable {
 
     private var currentTransitionId: UUID? = null
@@ -80,6 +85,35 @@ constructor(
 
     override fun start() {
         listenForSceneTransitionProgress()
+        listenForWakefulness()
+    }
+
+    private fun listenForWakefulness() {
+        applicationScope.launch {
+            powerInteractor.isAwake
+                .filter { awake -> awake }
+                .collect {
+                    repository.nextLockscreenTargetState.value?.let {
+                        if (KeyguardState.deviceIsAsleepInState(it, scene = null)) {
+                            // Clear the next lockscreen state if we're waking up and that state is
+                            // an asleep state. Typically, this would be cleared by a changeScene
+                            // call, but in some interruption scenarios, we don't change scenes (for
+                            // example, if we're doing Shade -> Lockscreen, and then sleep and wake
+                            // back up, we'll simply finish the transition to Lockscreen even though
+                            // KTF should do UNDEFINED -> AOD (cancel) -> LOCKSCREEN. If we don't
+                            // clear this, FromAodTransitionInteractor will wake us from
+                            // AOD -> LOCKSCREEN, but we will then return to AOD upon idling in
+                            // Scenes.Lockscreen since that's the next lockscreen target state. We
+                            // could also fix this by clearing the next lockscreen target state in
+                            // each From*TransitionInteractor, but that would require adding a
+                            // dependency on this class, which is not ideal. This seems like the
+                            // most reasonable fix until we can eliminate KTF.
+                            Log.d(TAG, "Clearing nextLsState; it's a sleep state but we're awake")
+                            setNextLockscreenTargetState(null)
+                        }
+                    }
+                }
+        }
     }
 
     fun setNextLockscreenTargetState(keyguardState: KeyguardState?) {
@@ -115,14 +149,42 @@ constructor(
                 val canceledOverlayTransition =
                     idle.currentOverlays.contains(prevTransition.fromContent)
 
-                // We're idle on the scene or overlay we were transitioning to.
+                // We're idle on the scene or overlay we were performing a scene transition to.
                 val idleOnToContentAfterCompletedTransition =
                     (idle.currentScene == prevTransition.toContent && !canceledOverlayTransition) ||
+                        // Idle while showing the overlay we were transitioning to.
                         idle.currentOverlays.contains(prevTransition.toContent)
+
+                // We're idle on the Lockscreen scene and KTF was transitioning to a non-UNDEFINED
+                // state. This can be true even if idleOnToContentAfterCompletedTransition is false
+                // when we're dealing with interrupted, reversed Scene transitions where internal
+                // KTF transitions were separately interrupted. For example:
+                //   1. Lockscreen -> Shade is in progress.
+                //   2. Power button press, we return to Scenes.Lockscreen/KeyguardState.AOD, but
+                //      the Scene framework does this by reversing the current Lockscreen -> Shade
+                //      transition but emitting Lockscreen from currentScene.
+                //   3. Another power button press occurs, interrupting UNDEFINED -> AOD and
+                //      starting AOD -> LOCKSCREEN. The reversed scene transition from
+                //      Lockscreen -> Shade is still running and is not aware that we're waking back
+                //      up (WAI, since it does not care, we *do* want to end up in
+                //      Scenes.Lockscreen.
+                //   4. We Idle in Scenes.Lockscreen. The keyguardState passed into the changeScene
+                //      call that started this transition was... AOD, so we transition back to AOD
+                //      while awake.
+                //
+                // The prevTransition's toContent this entire time is Shade due to the reversal, so
+                // idleOnToContentAfterCompletedTransition is never true.
+                val idleOnLockscreenDuringKtfTransitionFromUndefined =
+                    idle.currentScene == Scenes.Lockscreen &&
+                        idle.currentOverlays.isEmpty() &&
+                        internalTransitionInteractor.currentTransitionInfoInternal().to != UNDEFINED
 
                 // If we started a KTF transition in handleTransition, and we're idle on the content
                 // we meant to transition to, simply finish the transition.
-                if (currentTransitionId != null && idleOnToContentAfterCompletedTransition) {
+                if (
+                    currentTransitionId != null && idleOnToContentAfterCompletedTransition ||
+                        idleOnLockscreenDuringKtfTransitionFromUndefined
+                ) {
                     finishCurrentTransition()
                 } else {
                     // Otherwise, we're snapping from a transition that didn't start a KTF

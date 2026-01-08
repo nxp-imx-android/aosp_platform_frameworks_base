@@ -4301,21 +4301,26 @@ final class InstallPackageHelper {
      */
     private boolean optimisticallyRegisterAppIds(@NonNull InstallRequest installRequest)
             throws PackageManagerException {
-        boolean created = false;
-        final PackageSetting ps = installRequest.getScannedPackageSetting();
-        if (!installRequest.isExistingSettingCopied() || installRequest.needsNewAppId()) {
-            synchronized (mPm.mLock) {
-                // THROWS: when we can't allocate a user id. add call to check if there's
-                // enough space to ensure we won't throw; otherwise, don't modify state
-                created |= mPm.mSettings.registerAppIdLPw(ps,
-                        installRequest.needsNewAppId());
+        Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, "optimisticallyRegisterAppIds");
+        try {
+            boolean created = false;
+            final PackageSetting ps = installRequest.getScannedPackageSetting();
+            if (!installRequest.isExistingSettingCopied() || installRequest.needsNewAppId()) {
+                synchronized (mPm.mLock) {
+                    // THROWS: when we can't allocate a user id. add call to check if there's
+                    // enough space to ensure we won't throw; otherwise, don't modify state
+                    created |= mPm.mSettings.registerAppIdLPw(ps,
+                            installRequest.needsNewAppId());
+                }
             }
-        }
-        synchronized (mPm.mLock) {
-            created |= mPm.mSettings.registerPccIdLPw(ps);
-        }
+            synchronized (mPm.mLock) {
+                created |= mPm.mSettings.registerPccIdLPw(ps);
+            }
 
-        return created;
+            return created;
+        } finally {
+            Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);
+        }
     }
 
     /**

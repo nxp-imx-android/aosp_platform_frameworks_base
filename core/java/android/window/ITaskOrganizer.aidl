@@ -82,20 +82,20 @@ oneway interface ITaskOrganizer {
     void onTaskInfoChanged(in ActivityManager.RunningTaskInfo taskInfo);
 
     /**
-     * Called when the task organizer has requested
-     * {@link ITaskOrganizerController.setInterceptBackPressedOnTaskRoot} to get notified when the
-     * user has pressed back on the root activity of a task controlled by the task organizer.
+     * Called when a back action is performed on the root activity of a task controlled by the
+     * task organizer. This can be triggered by a user pressing the back button or by a call to
+     * {@link android.app.Activity#moveTaskToBack}. The task organizer must have requested
+     * {@link ITaskOrganizerController.setInterceptBackPressedOnTaskRoot} to receive this callback.
      *
      * @param taskInfo The information about the Task where the back press occurred.
-     * @param isFromMoveActivityTaskToBack True if the back press was triggered by
-     *        {@link Activity#moveTaskToBack}, false if it's triggered by a back press.
+     * @param isFromBackPress True if the action was triggered by a user back press, false if it
+     *                        was triggered by {@link android.app.Activity#moveTaskToBack}.
      * @param isOptInOnBackInvoked True if the root activity of the task has opted in to
      *        {@link android.window.OnBackInvokedCallback}.
      * @param hasOpaqueSibling Whether the task has an opaque sibling
      */
-    void onBackPressedOnTaskRoot(in ActivityManager.RunningTaskInfo taskInfo,
-            boolean isFromMoveActivityTaskToBack, boolean isOptInOnBackInvoked,
-            boolean hasOpaqueSibling);
+    void onBackOnTaskRoot(in ActivityManager.RunningTaskInfo taskInfo, boolean isFromBackPress,
+            boolean isOptInOnBackInvoked, boolean hasOpaqueSibling);
 
     /**
      * Called when the IME has drawn on the organized task.

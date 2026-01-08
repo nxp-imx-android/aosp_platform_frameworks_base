@@ -35,6 +35,7 @@ import android.view.accessibility.IUserInitializationCompleteCallback;
 
 import androidx.annotation.MainThread;
 
+import com.android.compose.animation.scene.SceneKey;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
@@ -50,6 +51,8 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInterac
 import com.android.systemui.keyguard.shared.model.KeyguardState;
 import com.android.systemui.navigationbar.NavigationModeController;
 import com.android.systemui.res.R;
+import com.android.systemui.scene.domain.interactor.SceneInteractor;
+import com.android.systemui.scene.shared.model.KeyguardScenesKt;
 import com.android.systemui.settings.DisplayTracker;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.util.settings.SecureSettings;
@@ -71,6 +74,7 @@ public class AccessibilityFloatingMenuController implements
     private final AccessibilityButtonTargetsObserver mAccessibilityButtonTargetsObserver;
     private final KeyguardUpdateMonitor mKeyguardUpdateMonitor;
     private final KeyguardTransitionInteractor mKeyguardInteractor;
+    private final SceneInteractor mSceneInteractor;
     private final UserTracker mUserTracker;
 
     private final Context mContext;
@@ -97,13 +101,13 @@ public class AccessibilityFloatingMenuController implements
 
         @Override
         public void onUserUnlocked() {
-            handleFloatingMenuVisibility(mIsKeyguardVisible, mBtnMode, mBtnTargets);
+            handleFloatingMenuVisibility();
         }
 
         @Override
         public void onKeyguardVisibilityChanged(boolean visible) {
             mIsKeyguardVisible = visible;
-            handleFloatingMenuVisibility(mIsKeyguardVisible, mBtnMode, mBtnTargets);
+            handleFloatingMenuVisibility();
         }
 
         @Override
@@ -123,7 +127,12 @@ public class AccessibilityFloatingMenuController implements
             case KeyguardState.LOCKSCREEN, KeyguardState.DOZING, KeyguardState.AOD -> true;
             default -> false;
         };
-        handleFloatingMenuVisibility(mIsKeyguardVisible, mBtnMode, mBtnTargets);
+        handleFloatingMenuVisibility();
+    };
+
+    final Consumer<SceneKey> mSceneConsumer = (scene) -> {
+        mIsKeyguardVisible = KeyguardScenesKt.isKeyguardScene(scene);
+        handleFloatingMenuVisibility();
     };
 
     final UserTracker.Callback mUserTrackerCallback = new UserTracker.Callback() {
@@ -149,6 +158,7 @@ public class AccessibilityFloatingMenuController implements
             @Main Handler handler,
             @Application CoroutineScope coroutineScope,
             KeyguardTransitionInteractor keyguardInteractor,
+            SceneInteractor sceneInteractor,
             UserTracker userTracker) {
         mContext = context;
         mWindowManager = windowManager;
@@ -163,6 +173,7 @@ public class AccessibilityFloatingMenuController implements
         mNavigationModeController = navigationModeController;
         mHandler = handler;
         mKeyguardInteractor = keyguardInteractor;
+        mSceneInteractor = sceneInteractor;
         mCoroutineScope = coroutineScope;
         mUserTracker = userTracker;
 
@@ -177,7 +188,7 @@ public class AccessibilityFloatingMenuController implements
     @Override
     public void onAccessibilityButtonModeChanged(@AccessibilityButtonMode int mode) {
         mBtnMode = mode;
-        handleFloatingMenuVisibility(mIsKeyguardVisible, mBtnMode, mBtnTargets);
+        handleFloatingMenuVisibility();
     }
 
     /**
@@ -189,7 +200,7 @@ public class AccessibilityFloatingMenuController implements
     @Override
     public void onAccessibilityButtonTargetsChanged(String targets) {
         mBtnTargets = targets;
-        handleFloatingMenuVisibility(mIsKeyguardVisible, mBtnMode, mBtnTargets);
+        handleFloatingMenuVisibility();
     }
 
     /** Initializes the AccessibilityFloatingMenuController configurations. */
@@ -204,8 +215,13 @@ public class AccessibilityFloatingMenuController implements
         mAccessibilityButtonTargetsObserver.addListener(this);
         if (Flags.keyguardInteractorForFloatingButton()) {
             if (mCoroutineScope != null) {
-                collectFlow(mCoroutineScope,
-                        mKeyguardInteractor.getCurrentKeyguardState(), mKeyguardStateConsumer);
+                if (Flags.sceneContainer()) {
+                    collectFlow(mCoroutineScope,
+                            mSceneInteractor.getCurrentScene(), mSceneConsumer);
+                } else {
+                    collectFlow(mCoroutineScope,
+                            mKeyguardInteractor.getCurrentKeyguardState(), mKeyguardStateConsumer);
+                }
             }
             mUserTracker.addCallback(mUserTrackerCallback, new HandlerExecutor(mHandler));
         } else {
@@ -217,29 +233,25 @@ public class AccessibilityFloatingMenuController implements
 
     /**
      * Handles the accessibility floating menu visibility with the given values.
-     *
-     * @param keyguardVisible the keyguard visibility status. Not show the
-     *                        {@link MenuView} when keyguard appears.
-     * @param mode accessibility button mode {@link AccessibilityButtonMode}
-     * @param targets accessibility button list; it should comes from
-     *                {@link Settings.Secure#ACCESSIBILITY_BUTTON_TARGETS}.
      */
-    private void handleFloatingMenuVisibility(boolean keyguardVisible,
-            @AccessibilityButtonMode int mode, String targets) {
-        if (keyguardVisible || mIsUserInInitialization) {
-            destroyFloatingMenu();
-            return;
-        }
-
-        if (shouldShowFloatingMenu(mode, targets)) {
+    private void handleFloatingMenuVisibility() {
+        if (hasValidScene() && hasValidSettings()) {
             showFloatingMenu();
         } else {
             destroyFloatingMenu();
         }
     }
 
-    private boolean shouldShowFloatingMenu(@AccessibilityButtonMode int mode, String targets) {
-        return mode == ACCESSIBILITY_BUTTON_MODE_FLOATING_MENU && !TextUtils.isEmpty(targets);
+    private boolean hasValidScene() {
+        if (mIsUserInInitialization) {
+            return false; // Not allowed during user initialization.
+        }
+        return !mIsKeyguardVisible;
+    }
+
+    private boolean hasValidSettings() {
+        return mBtnMode == ACCESSIBILITY_BUTTON_MODE_FLOATING_MENU
+                && !TextUtils.isEmpty(mBtnTargets);
     }
 
     private void showFloatingMenu() {
@@ -278,7 +290,7 @@ public class AccessibilityFloatingMenuController implements
                     () -> {
                         // Force a refresh by destroying the menu if it exists.
                         destroyFloatingMenu();
-                        handleFloatingMenuVisibility(mIsKeyguardVisible, mBtnMode, mBtnTargets);
+                        handleFloatingMenuVisibility();
                     });
         }
     }

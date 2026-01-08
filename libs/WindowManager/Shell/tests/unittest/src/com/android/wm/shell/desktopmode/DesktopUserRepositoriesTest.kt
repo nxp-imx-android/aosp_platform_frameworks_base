@@ -19,8 +19,6 @@ package com.android.wm.shell.desktopmode
 import android.app.ActivityManager
 import android.content.pm.UserInfo
 import android.os.UserManager
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession

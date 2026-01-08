@@ -840,7 +840,7 @@ public class RavenwoodEnablementTest extends RavenwoodRunnerTestBase {
     !module RavenwoodCoreTest
     com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithLargeTests_notIgnore#test1 enable
     com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithLargeTests_notIgnore#test2 enable :large
-    ** never
+    ** disable
     """
     )
     // CHECKSTYLE:ON
@@ -878,12 +878,52 @@ public class RavenwoodEnablementTest extends RavenwoodRunnerTestBase {
     !module RavenwoodCoreTest
     com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithLargeTests_Ignore#test1 enable
     com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithLargeTests_Ignore#test2 enable :large
-    ** never
+    ** disable
     """, ignoreLargeTests = true
     )
     // CHECKSTYLE:ON
     public static class TestWithLargeTests_Ignore {
         public TestWithLargeTests_Ignore() {
+        }
+
+        @Test
+        public void test1() {
+        }
+
+        @Test
+        public void test2() {
+        }
+    }
+
+    /**
+     * The class should be enabled but it should skip all test methods.
+     */
+    @RunWith(BlockJUnit4ClassRunner.class)
+    // CHECKSTYLE:OFF Generated code
+    @Expected(value = """
+    testRunStarted: classes
+    testSuiteStarted: classes
+    testSuiteStarted: com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$DumpTestsOnly
+    testStarted: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$DumpTestsOnly)
+    testAssumptionFailure: This test is disabled on Ravenwood: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$DumpTestsOnly)
+    testFinished: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$DumpTestsOnly)
+    testStarted: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$DumpTestsOnly)
+    testAssumptionFailure: This test is disabled on Ravenwood: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$DumpTestsOnly)
+    testFinished: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$DumpTestsOnly)
+    testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$DumpTestsOnly
+    testSuiteFinished: classes
+    testRunFinished: 2,0,2,0
+    """, runMode = RunMode.Normal,
+
+    // Skip the ":large" test.
+    enablementPolicy = """
+    !module RavenwoodCoreTest
+    ** enable
+    """, dumpTestsOnly = true
+    )
+    // CHECKSTYLE:ON
+    public static class DumpTestsOnly {
+        public DumpTestsOnly() {
         }
 
         @Test

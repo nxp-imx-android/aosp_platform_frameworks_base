@@ -90,7 +90,6 @@ interface IUserManager {
     int getUserLogoutability(int userId);
     boolean isRestricted(int userId);
     boolean canHaveRestrictedProfile(int userId);
-    boolean canAddPrivateProfile(int userId);
     int getUserSerialNumber(int userId);
     int getUserHandle(int userSerialNumber);
     int getUserRestrictionSource(String restrictionKey, int userId);

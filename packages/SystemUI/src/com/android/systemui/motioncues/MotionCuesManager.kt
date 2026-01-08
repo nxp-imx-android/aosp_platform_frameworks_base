@@ -29,7 +29,10 @@ import android.util.Log
 import android.view.WindowManager
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.settings.UserTracker
 import com.android.systemui.statusbar.CommandQueue
+import java.util.concurrent.Executor
 import javax.inject.Inject
 
 /**
@@ -40,8 +43,10 @@ import javax.inject.Inject
 class MotionCuesManager @Inject constructor(
     private val context: Context,
     private val commandQueue: CommandQueue,
-    val motionCuesUi: MotionCuesUi
-) : CoreStartable, CommandQueue.Callbacks {
+    val motionCuesUi: MotionCuesUi,
+    private val userTracker: UserTracker,
+    @Main private val mainExecutor: Executor
+) : CoreStartable, CommandQueue.Callbacks, UserTracker.Callback {
     companion object {
         private const val TAG = "MotionCuesManager"
     }
@@ -136,6 +141,12 @@ class MotionCuesManager @Inject constructor(
 
     override fun start() {
         commandQueue.addCallback(this)
+        userTracker.addCallback(this, mainExecutor)
+    }
+
+    override fun onUserChanged(newUser: Int, userContext: Context) {
+        Log.i(TAG, "Ending Motion Cues Session on user change.")
+        endMotionCuesSession()
     }
 
     private inner class MotionCuesCallbackImpl : IMotionCuesCallback.Stub() {

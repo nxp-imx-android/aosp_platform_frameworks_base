@@ -47,10 +47,10 @@ import androidx.annotation.OptIn;
 import androidx.annotation.VisibleForTesting;
 
 import com.android.systemui.Dumpable;
+import com.android.systemui.Flags;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.statusbar.NotificationInteractionTracker;
-import com.android.systemui.statusbar.notification.NotifPipelineFlags;
 import com.android.systemui.statusbar.notification.collection.coordinator.BundleCoordinator;
 import com.android.systemui.statusbar.notification.collection.listbuilder.NotifSection;
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnBeforeFinalizeFilterListener;
@@ -109,7 +109,6 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
     // used exclusivly by ShadeListBuilder#notifySectionEntriesUpdated
     // TODO replace temp with collection pool for readability
     private final ArrayList<PipelineEntry> mTempSectionMembers = new ArrayList<>();
-    private NotifPipelineFlags mFlags;
     private final boolean mAlwaysLogList;
 
     private List<PipelineEntry> mNotifList = new ArrayList<>();
@@ -156,15 +155,13 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
     public ShadeListBuilder(
             DumpManager dumpManager,
             NotifPipelineChoreographer pipelineChoreographer,
-            NotifPipelineFlags flags,
             NotificationInteractionTracker interactionTracker,
             ShadeListBuilderLogger logger,
             SystemClock systemClock
     ) {
         mSystemClock = systemClock;
         mLogger = logger;
-        mFlags = flags;
-        mAlwaysLogList = flags.isDevLoggingEnabled();
+        mAlwaysLogList = Flags.notificationDeveloperLogging();
         mInteractionTracker = interactionTracker;
         mChoreographer = pipelineChoreographer;
         mDumpManager = dumpManager;

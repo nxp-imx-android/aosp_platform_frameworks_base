@@ -5842,7 +5842,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     @Override
     public long getRequiredStrongAuthTimeout(ComponentName who, int userId, boolean parent) {
         if (!mHasFeature) {
-            return DevicePolicyManager.DEFAULT_STRONG_AUTH_TIMEOUT_MS;
+            return getDefaultStrongAuthTimeoutMs(userId);
         }
         Preconditions.checkArgumentNonnegative(userId, "Invalid userId");
 
@@ -5864,7 +5864,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             List<ActiveAdmin> admins = getActiveAdminsForLockscreenPoliciesLocked(
                     getProfileParentUserIfRequested(userId, parent));
 
-            long strongAuthUnlockTimeout = DevicePolicyManager.DEFAULT_STRONG_AUTH_TIMEOUT_MS;
+            long strongAuthUnlockTimeout = getDefaultStrongAuthTimeoutMs(userId);
             for (int i = 0; i < admins.size(); i++) {
                 final long timeout = admins.get(i).strongAuthUnlockTimeout;
                 if (timeout != 0) { // take only participating admins into account
@@ -5884,6 +5884,22 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         return Math.min(mInjector.systemPropertiesGetLong("persist.sys.min_str_auth_timeo",
                 MINIMUM_STRONG_AUTH_TIMEOUT_MS),
                 MINIMUM_STRONG_AUTH_TIMEOUT_MS);
+    }
+
+    @SuppressWarnings("AndroidFrameworkRequiresPermission")
+    private long getDefaultStrongAuthTimeoutMs(int userId) {
+        long timeoutMs = DevicePolicyManager.DEFAULT_STRONG_AUTH_TIMEOUT_MS;
+        if (Flags.increaseWatchStrongAuthTimeout() && mIsWatch) {
+            final long id = mInjector.binderClearCallingIdentity();
+            try {
+                if (mInjector.getTrustManager().isTrustUsuallyManaged(userId)) {
+                    timeoutMs = DevicePolicyManager.DEFAULT_STRONG_AUTH_WATCH_TIMEOUT_MS;
+                }
+            } finally {
+                mInjector.binderRestoreCallingIdentity(id);
+            }
+        }
+        return timeoutMs;
     }
 
     @Override

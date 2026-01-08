@@ -361,6 +361,10 @@ public final class MessageQueue {
         setSkipEpollWaitForZeroTimeout(mPtr);
     }
 
+    Thread getLooperThread() {
+        return mLooperThread;
+    }
+
     // Disposes of the underlying message queue.
     // Must only be called on the looper thread or the finalizer.
     private void dispose() {
@@ -1092,11 +1096,16 @@ public final class MessageQueue {
      */
     public void resetForTest() {
         ActivityThread.throwIfNotInstrumenting();
+        onResetForTestCalled();
         if (sUseDeliQueue) {
             resetDeliQueue();
         } else {
             resetLegacy();
         }
+    }
+
+    @RavenwoodRedirect
+    private static void onResetForTestCalled() {
     }
 
     private void resetDeliQueue() {
@@ -1223,10 +1232,15 @@ public final class MessageQueue {
     @TestApi
     public int postSyncBarrier() {
         if (sUseDeliQueue) {
-            return postSyncBarrierDeliQueue();
+            return onSyncBarrierPosted(postSyncBarrierDeliQueue());
         } else {
-            return postSyncBarrierLegacy();
+            return onSyncBarrierPosted(postSyncBarrierLegacy());
         }
+    }
+
+    @RavenwoodRedirect
+    private int onSyncBarrierPosted(int token) {
+        return token;
     }
 
     private int postSyncBarrierDeliQueue() {
@@ -1311,6 +1325,11 @@ public final class MessageQueue {
         } else {
             removeSyncBarrierLegacy(token);
         }
+        onSyncBarrierRemoved(token);
+    }
+
+    @RavenwoodRedirect
+    private void onSyncBarrierRemoved(int token) {
     }
 
     private void removeSyncBarrierDeliQueue(int token) {

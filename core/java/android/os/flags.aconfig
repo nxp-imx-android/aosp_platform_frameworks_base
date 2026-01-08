@@ -510,13 +510,6 @@ flag {
 
 flag {
      namespace: "system_performance"
-     name: "perfetto_sdk_tracing_v2"
-     description: "Tracing using Perfetto SDK API."
-     bug: "303199244"
-}
-
-flag {
-     namespace: "system_performance"
      name: "perfetto_sdk_tracing_v3"
      description: "Tracing using Perfetto SDK API from the 'dev.perfetto.sdk' package."
      bug: "303199244"
@@ -529,13 +522,6 @@ flag {
      description: "Control framework initialization APIs of telemetry APIs feature."
      is_fixed_read_only: true
      bug: "324241334"
-}
-
-flag {
-    namespace: "wear_services"
-    name: "bugreport_deferred_consent_screenshot_fix"
-    description: "Stops always taking a screenshot when consent is deferred."
-    bug: "385709501"
 }
 
 # keep-sorted end

@@ -25,6 +25,7 @@ import static android.view.MotionEvent.ACTION_UP;
 import static com.android.app.tracing.TrackGroupUtils.trackGroup;
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_NOTIFICATION_SHADE_SCROLL_FLING;
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_SHADE_CLEAR_ALL;
+import static com.android.systemui.Flags.notificationDebugDrawing;
 import static com.android.systemui.Flags.physicalNotificationMovement;
 import static com.android.systemui.Flags.widerLandscapeNotifications;
 import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_NEWS;
@@ -625,7 +626,6 @@ public class NotificationStackScrollLayout
         mSplitShadeStateController = splitShadeStateController;
         updateSplitNotificationShade();
     }
-    private final FeatureFlags mFeatureFlags;
 
     private final ExpandableView.OnHeightChangedListener mOnChildHeightChangedListener =
             new ExpandableView.OnHeightChangedListener() {
@@ -679,9 +679,8 @@ public class NotificationStackScrollLayout
     public NotificationStackScrollLayout(Context context, AttributeSet attrs) {
         super(context, attrs, 0, 0);
         Resources res = getResources();
-        mFeatureFlags = Dependency.get(FeatureFlags.class);
-        mDebugLines = mFeatureFlags.isEnabled(Flags.NSSL_DEBUG_LINES);
-        mDebugRemoveAnimation = mFeatureFlags.isEnabled(Flags.NSSL_DEBUG_REMOVE_ANIMATION);
+        mDebugLines = notificationDebugDrawing();
+        mDebugRemoveAnimation = SPEW;
         mSectionsManager = Dependency.get(NotificationSectionsManager.class);
         mSectionsManager.initialize(this);
 

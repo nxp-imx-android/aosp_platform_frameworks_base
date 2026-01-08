@@ -89,6 +89,11 @@ class EnsureActivitiesVisibleHelper {
         ArrayList<TaskFragment> adjacentTaskFragments = null;
         for (int i = mTaskFragment.mChildren.size() - 1; i >= 0; --i) {
             final WindowContainer child = mTaskFragment.mChildren.get(i);
+            if (child.asTask() != null && child.asTask().isVisibilityBarrier()) {
+                // Visibility barrier is occluding.
+                mBehindFullyOccludedContainer = true;
+                continue;
+            }
             final TaskFragment childTaskFragment = child.asTaskFragment();
             if (childTaskFragment != null
                     && childTaskFragment.getTopNonFinishingActivity() != null) {

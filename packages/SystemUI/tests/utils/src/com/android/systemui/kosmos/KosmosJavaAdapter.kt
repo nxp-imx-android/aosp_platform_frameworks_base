@@ -48,7 +48,6 @@ import com.android.systemui.globalactions.data.repository.globalActionsRepositor
 import com.android.systemui.globalactions.domain.interactor.globalActionsInteractor
 import com.android.systemui.haptics.msdl.bouncerHapticPlayer
 import com.android.systemui.haptics.msdl.fakeMSDLPlayer
-import com.android.systemui.haptics.qs.qsLongPressEffect
 import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.keyguard.data.repository.deviceEntryFingerprintAuthRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
@@ -208,7 +207,6 @@ class KosmosJavaAdapter() {
     val globalActionsInteractor by lazy { kosmos.globalActionsInteractor }
     val keyguardClockInteractor by lazy { kosmos.keyguardClockInteractor }
     val brightnessMirrorShowingRepository by lazy { kosmos.brightnessMirrorShowingRepository }
-    val qsLongPressEffect by lazy { kosmos.qsLongPressEffect }
     val shadeController by lazy { kosmos.shadeController }
     val shadeDisplaysInteractor by lazy { kosmos.shadeDisplaysInteractor }
     val shadeRepository by lazy { kosmos.shadeRepository }

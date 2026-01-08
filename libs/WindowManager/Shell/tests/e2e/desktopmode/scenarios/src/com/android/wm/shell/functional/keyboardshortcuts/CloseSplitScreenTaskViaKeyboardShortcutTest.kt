@@ -23,5 +23,5 @@ import org.junit.runners.BlockJUnit4ClassRunner
 
 /* Functional test for [CloseSplitScreenTaskViaKeyboardShortcut]. */
 @RunWith(BlockJUnit4ClassRunner::class)
-@Postsubmit //b/441619131
+@Postsubmit // b/441619131
 class CloseSplitScreenTaskViaKeyboardShortcutTest : CloseSplitScreenTaskViaKeyboardShortcut()

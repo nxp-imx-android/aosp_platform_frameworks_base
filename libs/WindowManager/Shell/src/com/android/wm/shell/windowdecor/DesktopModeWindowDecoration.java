@@ -1644,6 +1644,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 .shouldShowChangeAspectRatioButton(mTaskInfo);
         final boolean shouldShowRestartButton = HandleMenu.Companion
                 .shouldShowRestartButton(mTaskInfo);
+        final boolean shouldShowGameControlsButton =
+                HandleMenu.Companion.shouldShowGameControlsButton(mContext, mTaskInfo);
         final boolean inDesktopImmersive = mDesktopUserRepositories.getProfile(mTaskInfo.userId)
                 .isTaskInFullImmersiveState(mTaskInfo.taskId);
         final boolean isBrowserApp;
@@ -1671,6 +1673,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 supportsMultiInstance,
                 shouldShowManageWindowsButton,
                 shouldShowChangeAspectRatioButton,
+                shouldShowGameControlsButton,
                 mDesktopState.isDesktopModeSupportedOnDisplay(mDisplay),
                 shouldShowRestartButton,
                 isBrowserApp,

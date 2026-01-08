@@ -8,7 +8,7 @@
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distriZenbuted on an "AS IS" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -29,6 +29,7 @@ import static android.provider.Settings.Global.ZEN_MODE_OFF;
 import static android.service.notification.Condition.SOURCE_USER_ACTION;
 import static android.service.notification.Condition.STATE_FALSE;
 import static android.service.notification.Condition.STATE_TRUE;
+import static android.service.notification.Flags.splitSoundVibrationForNotificationBreakthrough;
 import static android.service.notification.NotificationListenerService.SUPPRESSED_EFFECT_SCREEN_ON;
 import static android.service.notification.ZenModeConfig.MANUAL_RULE_ID;
 import static android.service.notification.ZenModeConfig.XML_VERSION_MODES_API;
@@ -107,7 +108,6 @@ public class ZenModeConfigTest extends UiServiceTestCase {
     private final String NAME = "name";
     private final ComponentName OWNER = new ComponentName("pkg", "cls");
     private final ComponentName CONFIG_ACTIVITY = new ComponentName("pkg", "act");
-    private final ZenPolicy POLICY = new ZenPolicy.Builder().allowAlarms(true).build();
     private final Uri CONDITION_ID = new Uri.Builder().scheme("scheme")
             .authority("authority")
             .appendPath("path")
@@ -132,7 +132,10 @@ public class ZenModeConfigTest extends UiServiceTestCase {
 
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
-        return FlagsParameterization.allCombinationsOf(FLAG_BACKUP_RESTORE_LOGGING);
+        return FlagsParameterization.allCombinationsOf(
+                FLAG_BACKUP_RESTORE_LOGGING,
+                android.service.notification.Flags
+                        .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH);
     }
 
     public ZenModeConfigTest(FlagsParameterization flags) {
@@ -210,8 +213,16 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         suppressedVisualEffects |= SUPPRESSED_EFFECT_LIGHTS;
         suppressedVisualEffects |= SUPPRESSED_EFFECT_AMBIENT;
 
-        Policy expectedPolicy = new Policy(priorityCategories, priorityCallSenders,
-                priorityMessageSenders, suppressedVisualEffects, 0, priorityConversationsSenders);
+        Policy expectedPolicy = (splitSoundVibrationForNotificationBreakthrough())
+                // granular breakthrough mirrors main bitmask
+                ? new Policy(priorityCategories, priorityCallSenders,
+                        priorityMessageSenders, suppressedVisualEffects, 0,
+                        priorityConversationsSenders,
+                        priorityCategories, priorityCategories)
+                : new Policy(priorityCategories, priorityCallSenders,
+                        priorityMessageSenders, suppressedVisualEffects, 0,
+                        priorityConversationsSenders);
+
         assertEquals(expectedPolicy, config.toNotificationPolicy(zenPolicy));
     }
 
@@ -244,9 +255,17 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         suppressedVisualEffects |= SUPPRESSED_EFFECT_LIGHTS;
         suppressedVisualEffects |= SUPPRESSED_EFFECT_AMBIENT;
 
-        Policy expectedPolicy = new Policy(priorityCategories, priorityCallSenders,
-                priorityMessageSenders, suppressedVisualEffects,
-                Policy.STATE_PRIORITY_CHANNELS_BLOCKED, priorityConversationsSenders);
+        Policy expectedPolicy = (splitSoundVibrationForNotificationBreakthrough())
+                // granular breakthrough mirrors main bitmask
+                ? new Policy(priorityCategories, priorityCallSenders,
+                        priorityMessageSenders, suppressedVisualEffects,
+                        Policy.STATE_PRIORITY_CHANNELS_BLOCKED, priorityConversationsSenders,
+                        priorityCategories, priorityCategories)
+                : new Policy(priorityCategories, priorityCallSenders,
+                        priorityMessageSenders, suppressedVisualEffects,
+                        Policy.STATE_PRIORITY_CHANNELS_BLOCKED, priorityConversationsSenders);
+
+
         assertEquals(expectedPolicy, config.toNotificationPolicy(zenPolicy));
 
         // make sure allowChannels=false has gotten through correctly (also covered above)
@@ -263,6 +282,197 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         Policy policy = config.toNotificationPolicy(zenPolicy);
         assertEquals(config.manualRule.zenPolicy.getPriorityChannelsAllowed() == STATE_ALLOW,
                 policy.allowPriorityChannels());
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags
+            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void testZenPolicyToNotificationPolicy_withInterruptionType_alarmSoundOnly() {
+        ZenModeConfig config = getMutedAllConfig();
+
+        ZenPolicy zenPolicy = new ZenPolicy.Builder()
+                .allowAlarms(true, false)
+                .allowPriorityChannels(false)
+                .build();
+
+        Policy originalPolicy = config.toNotificationPolicy();
+        int priorityCategories = originalPolicy.priorityCategories;
+        int priorityCallSenders = originalPolicy.priorityCallSenders;
+        int priorityMessageSenders = originalPolicy.priorityMessageSenders;
+        int priorityConversationsSenders = originalPolicy.priorityConversationSenders;
+        int suppressedVisualEffects = originalPolicy.suppressedVisualEffects;
+        priorityCategories |= Policy.PRIORITY_CATEGORY_ALARMS;
+
+        Policy expectedPolicy = new Policy(priorityCategories, priorityCallSenders,
+                priorityMessageSenders, suppressedVisualEffects,
+                Policy.STATE_PRIORITY_CHANNELS_BLOCKED, priorityConversationsSenders,
+                Policy.PRIORITY_CATEGORY_ALARMS, 0);
+
+        assertEquals(expectedPolicy, config.toNotificationPolicy(zenPolicy));
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags
+            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void testZenPolicyToNotificationPolicy_withInterruptionType_alarmVibrationOnly() {
+        ZenModeConfig config = getMutedAllConfig();
+
+        ZenPolicy zenPolicy = new ZenPolicy.Builder()
+                .allowAlarms(false, true)
+                .allowPriorityChannels(false)
+                .build();
+
+        Policy originalPolicy = config.toNotificationPolicy();
+        int priorityCategories = originalPolicy.priorityCategories;
+        int priorityCallSenders = originalPolicy.priorityCallSenders;
+        int priorityMessageSenders = originalPolicy.priorityMessageSenders;
+        int priorityConversationsSenders = originalPolicy.priorityConversationSenders;
+        int suppressedVisualEffects = originalPolicy.suppressedVisualEffects;
+        priorityCategories |= Policy.PRIORITY_CATEGORY_ALARMS;
+
+        Policy expectedPolicy = new Policy(priorityCategories, priorityCallSenders,
+                priorityMessageSenders, suppressedVisualEffects,
+                Policy.STATE_PRIORITY_CHANNELS_BLOCKED, priorityConversationsSenders,
+                0, Policy.PRIORITY_CATEGORY_ALARMS);
+
+        assertEquals(expectedPolicy, config.toNotificationPolicy(zenPolicy));
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags
+            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void testZenPolicyToNotificationPolicy_withInterruptionType_alarmAll() {
+        ZenModeConfig config = getMutedAllConfig();
+
+        ZenPolicy zenPolicy = new ZenPolicy.Builder()
+                .allowAlarms(true, true)
+                .allowPriorityChannels(false)
+                .build();
+
+        Policy originalPolicy = config.toNotificationPolicy();
+        int priorityCategories = originalPolicy.priorityCategories;
+        int priorityCallSenders = originalPolicy.priorityCallSenders;
+        int priorityMessageSenders = originalPolicy.priorityMessageSenders;
+        int priorityConversationsSenders = originalPolicy.priorityConversationSenders;
+        int suppressedVisualEffects = originalPolicy.suppressedVisualEffects;
+        priorityCategories |= Policy.PRIORITY_CATEGORY_ALARMS;
+
+        Policy expectedPolicy = new Policy(priorityCategories, priorityCallSenders,
+                priorityMessageSenders, suppressedVisualEffects,
+                Policy.STATE_PRIORITY_CHANNELS_BLOCKED, priorityConversationsSenders,
+                Policy.PRIORITY_CATEGORY_ALARMS, Policy.PRIORITY_CATEGORY_ALARMS);
+
+        assertEquals(expectedPolicy, config.toNotificationPolicy(zenPolicy));
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags
+            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void testZenPolicyToNotificationPolicy_withInterruptionType_alarmNone() {
+        ZenModeConfig config = getMutedAllConfig();
+
+        ZenPolicy zenPolicy = new ZenPolicy.Builder()
+                .allowAlarms(false, false)
+                .allowPriorityChannels(false)
+                .build();
+
+        Policy originalPolicy = config.toNotificationPolicy();
+
+        assertEquals(originalPolicy, config.toNotificationPolicy(zenPolicy));
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags
+            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void testZenPolicyToNotificationPolicy_defaultBothAllowed_newBothDisallowed() {
+        ZenModeConfig config = getAlarmOnlyConfig_interruptionType(true, true);
+
+        ZenPolicy zenPolicy = new ZenPolicy.Builder()
+                .allowAlarms(false)
+                .allowPriorityChannels(false)
+                .build();
+
+        Policy originalPolicy = config.toNotificationPolicy();
+        Policy expectedPolicy = new Policy(
+                0,
+                originalPolicy.priorityCallSenders,
+                originalPolicy.priorityMessageSenders,
+                originalPolicy.suppressedVisualEffects,
+                Policy.STATE_PRIORITY_CHANNELS_BLOCKED,
+                originalPolicy.priorityConversationSenders,
+                0, 0
+        ); // alarms is disabled
+
+        assertEquals(expectedPolicy, config.toNotificationPolicy(zenPolicy));
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags
+            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void testZenPolicyToNotificationPolicy_defaultSoundOnly_newAllowedUnset() {
+        ZenModeConfig config = getAlarmOnlyConfig_interruptionType(true, false);
+
+        ZenPolicy zenPolicy = new ZenPolicy.Builder()
+                .allowAlarms(true) // interruption type is unset
+                .allowPriorityChannels(false)
+                .build();
+
+        Policy expectedPolicy = config.toNotificationPolicy(); // policy is unchanged
+
+        assertEquals(expectedPolicy, config.toNotificationPolicy(zenPolicy));
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags
+            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void testZenPolicyToNotificationPolicy_defaultSoundOnly_newVibrationOnly() {
+        ZenModeConfig config = getAlarmOnlyConfig_interruptionType(true, false);
+
+        ZenPolicy zenPolicy = new ZenPolicy.Builder()
+                .allowAlarms(false, true) // vibration only
+                .allowPriorityChannels(false)
+                .build();
+
+        Policy originalPolicy = config.toNotificationPolicy();
+
+        Policy expectedPolicy = new Policy(
+                originalPolicy.priorityCategories,
+                originalPolicy.priorityCallSenders,
+                originalPolicy.priorityMessageSenders,
+                originalPolicy.suppressedVisualEffects,
+                Policy.STATE_PRIORITY_CHANNELS_BLOCKED,
+                originalPolicy.priorityConversationSenders,
+                0, Policy.PRIORITY_CATEGORY_ALARMS
+        ); // vibration only
+
+        assertEquals(expectedPolicy, config.toNotificationPolicy(zenPolicy));
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags
+            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void testZenPolicyToNotificationPolicy_defaultDisallowed_newAllowedUnset() {
+        ZenModeConfig config = getMutedAllConfig();
+
+        ZenPolicy zenPolicy = new ZenPolicy.Builder()
+                .allowAlarms(true) // interruption type is unset
+                .allowPriorityChannels(false)
+                .build();
+
+        Policy originalPolicy = config.toNotificationPolicy();
+
+        Policy expectedPolicy = new Policy(
+                Policy.PRIORITY_CATEGORY_ALARMS,
+                originalPolicy.priorityCallSenders,
+                originalPolicy.priorityMessageSenders,
+                originalPolicy.suppressedVisualEffects,
+                Policy.STATE_PRIORITY_CHANNELS_BLOCKED,
+                originalPolicy.priorityConversationSenders,
+                Policy.PRIORITY_CATEGORY_ALARMS,
+                Policy.PRIORITY_CATEGORY_ALARMS
+        ); // both sound and vibration is allowed
+
+        assertEquals(expectedPolicy, config.toNotificationPolicy(zenPolicy));
     }
 
     @Test
@@ -416,22 +626,28 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         ZenModeConfig config = readConfigXml(new ByteArrayInputStream(xml.getBytes()),
                 mock(BackupRestoreEventLogger.class));
 
-        assertThat(config.manualRule.zenPolicy).isEqualTo(
-                new ZenPolicy.Builder()
-                        .allowCalls(PEOPLE_TYPE_ANYONE)
-                        .allowMessages(PEOPLE_TYPE_CONTACTS)
-                        .allowConversations(CONVERSATION_SENDERS_ANYONE)
-                        .allowRepeatCallers(false)
-                        .allowReminders(false)
-                        .allowEvents(true)
-                        .allowAlarms(true)
-                        .allowMedia(false)
-                        .allowSystem(true)
-                        .allowPriorityChannels(false)
-                        .showAllVisualEffects()
-                        .showLights(false)
-                        .showPeeking(false)
-                        .build());
+        ZenPolicy.Builder policyBuilder = new ZenPolicy.Builder()
+                .allowCalls(PEOPLE_TYPE_ANYONE)
+                .allowMessages(PEOPLE_TYPE_CONTACTS)
+                .allowConversations(CONVERSATION_SENDERS_ANYONE)
+                .allowRepeatCallers(false)
+                .allowReminders(false)
+                .allowEvents(true)
+                .allowMedia(false)
+                .allowSystem(true)
+                .allowPriorityChannels(false)
+                .showAllVisualEffects()
+                .showLights(false)
+                .showPeeking(false);
+
+        if (splitSoundVibrationForNotificationBreakthrough()) {
+            policyBuilder.allowAlarms(true, true);
+        } else {
+            policyBuilder.allowAlarms(true);
+        }
+
+        ZenPolicy expectedPolicy = policyBuilder.build();
+        assertThat(config.manualRule.zenPolicy).isEqualTo(expectedPolicy);
     }
 
     @Test
@@ -454,6 +670,52 @@ public class ZenModeConfigTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags(android.service.notification.Flags
+            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void testBackupRestore_fromPreModesUi_splitAlarmsFlagEnabled_alarmsTrue()
+            throws IOException, XmlPullParserException {
+        String xml =
+                """
+                <zen version="12">
+                <allow alarms="true" media="false" />
+                <disallow visualEffects="0" />
+                </zen>\
+                """;
+
+        ZenModeConfig config = readConfigXml(
+                new ByteArrayInputStream(xml.getBytes()), null);
+        ZenPolicy manualPolicy = config.manualRule.zenPolicy;
+
+        assertNotNull(manualPolicy);
+        assertThat(manualPolicy.getInterruptionTypeAlarms())
+                .isEqualTo(ZenPolicy.ALLOWED_INTERRUPTION_TYPE_ALL);
+        assertThat(manualPolicy.getPriorityCategoryAlarms()).isEqualTo(ZenPolicy.STATE_ALLOW);
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags
+            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void testBackupRestore_fromPreModesUi_splitAlarmsFlagEnabled_alarmsFalse()
+            throws IOException, XmlPullParserException {
+        String xml =
+                """
+                <zen version="12">
+                <allow alarms="false" media="false" />
+                <disallow visualEffects="0" />
+                </zen>\
+                """;
+
+        ZenModeConfig config = readConfigXml(
+                new ByteArrayInputStream(xml.getBytes()), null);
+        ZenPolicy manualPolicy = config.manualRule.zenPolicy;
+
+        assertNotNull(manualPolicy);
+        assertThat(manualPolicy.getInterruptionTypeAlarms())
+                .isEqualTo(ZenPolicy.ALLOWED_INTERRUPTION_TYPE_UNSET);
+        assertThat(manualPolicy.getPriorityCategoryAlarms()).isEqualTo(ZenPolicy.STATE_DISALLOW);
+    }
+
+    @Test
     public void testBackupRestore() throws IOException, XmlPullParserException {
         ZenModeConfig config = new ZenModeConfig();
         ZenModeConfig.ZenRule rule = new ZenModeConfig.ZenRule();
@@ -468,7 +730,7 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         rule.name = NAME;
         rule.setConditionOverride(OVERRIDE_DEACTIVATE);
         rule.pkg = OWNER.getPackageName();
-        rule.zenPolicy = POLICY;
+        rule.zenPolicy = getDefaultPolicy();
 
         rule.allowManualInvocation = ALLOW_MANUAL;
         rule.type = TYPE;
@@ -543,7 +805,7 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         rule.name = NAME;
         rule.setConditionOverride(OVERRIDE_DEACTIVATE);
         rule.pkg = OWNER.getPackageName();
-        rule.zenPolicy = POLICY;
+        rule.zenPolicy = getDefaultPolicy();
 
         rule.allowManualInvocation = ALLOW_MANUAL;
         rule.type = TYPE;
@@ -641,7 +903,7 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         rule.name = NAME;
         rule.setConditionOverride(OVERRIDE_DEACTIVATE);
         rule.pkg = OWNER.getPackageName();
-        rule.zenPolicy = POLICY;
+        rule.zenPolicy = getDefaultPolicy();
         rule.zenDeviceEffects =
                 new ZenDeviceEffects.Builder()
                         .setShouldDisplayGrayscale(false)
@@ -948,6 +1210,78 @@ public class ZenModeConfigTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags(android.service.notification.Flags
+            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void testZenPolicyXml_interruptionType() throws Exception {
+        ZenPolicy policy = new ZenPolicy.Builder()
+                .allowAlarms(false, true) // Vibration only
+                .build();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        writePolicyXml(policy, baos);
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        ZenPolicy fromXml = readPolicyXml(bais);
+
+        assertNotNull(fromXml);
+        assertEquals(ZenPolicy.STATE_ALLOW, fromXml.getPriorityCategoryAlarms());
+        assertEquals(ZenPolicy.ALLOWED_INTERRUPTION_TYPE_VIBRATION_ONLY,
+                fromXml.getInterruptionTypeAlarms());
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags
+            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void testZenPolicyXml_interruptionType_fromLegacy() throws Exception {
+        ZenPolicy policy = new ZenPolicy.Builder().allowMedia(true).build();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        writePolicyXml(policy, baos);
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        ZenPolicy fromXml = readPolicyXml(bais);
+
+        assertNotNull(fromXml);
+        assertEquals(ZenPolicy.STATE_UNSET, fromXml.getPriorityCategoryAlarms());
+        assertEquals(ZenPolicy.ALLOWED_INTERRUPTION_TYPE_UNSET,
+                fromXml.getInterruptionTypeAlarms());
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags
+            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void testZenPolicyXml_readWriteCycle_vibrationOnly() throws Exception {
+        ZenPolicy policy = new ZenPolicy.Builder()
+                .allowAlarms(false, true) // Vibration only
+                .allowMedia(true)
+                .allowCalls(ZenPolicy.PEOPLE_TYPE_CONTACTS)
+                .build();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        writePolicyXml(policy, baos);
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        ZenPolicy fromXml = readPolicyXml(bais);
+
+        assertEquals(policy, fromXml);
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags
+            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
+    public void testZenPolicyXml_readWriteCycle() throws Exception {
+        ZenPolicy policy = new ZenPolicy.Builder()
+                .allowAlarms(true, true)
+                .allowMedia(true)
+                .allowCalls(ZenPolicy.PEOPLE_TYPE_CONTACTS)
+                .build();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        writePolicyXml(policy, baos);
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        ZenPolicy fromXml = readPolicyXml(bais);
+
+        assertEquals(policy, fromXml);
+    }
+
+    @Test
     public void testisManualActive_stateTrue() {
         ZenModeConfig config = getMutedAllConfig();
         final ZenModeConfig.ZenRule newRule = new ZenModeConfig.ZenRule();
@@ -1204,6 +1538,19 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         return config;
     }
 
+    private ZenModeConfig getAlarmOnlyConfig_interruptionType(boolean sound, boolean vibration) {
+        ZenModeConfig config = new ZenModeConfig();
+
+        config.manualRule.zenPolicy = new ZenPolicy.Builder()
+                .disallowAllSounds()
+                .allowAlarms(sound, vibration)
+                .showAllVisualEffects()
+                .allowPriorityChannels(false)
+                .build();
+        config.hasPriorityChannels = false;
+        return config;
+    }
+
     private void writeRuleXml(ZenModeConfig.ZenRule rule, ByteArrayOutputStream os)
             throws IOException {
         String tag = "tag";
@@ -1264,5 +1611,11 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         parser.setInput(new BufferedInputStream(is), null);
         parser.nextTag();
         return ZenModeConfig.readXml(parser, logger);
+    }
+
+    private ZenPolicy getDefaultPolicy() {
+        return splitSoundVibrationForNotificationBreakthrough()
+                ? new ZenPolicy.Builder().allowAlarms(true, true).build()
+                : new ZenPolicy.Builder().allowAlarms(true).build();
     }
 }

@@ -1046,6 +1046,11 @@ public class ContextWrapper extends Context {
     }
 
     @Override
+    public boolean shouldShowRequestPermissionRationale(@NonNull String permission) {
+        return mBase.shouldShowRequestPermissionRationale(permission);
+    }
+
+    @Override
     public void grantUriPermission(String toPackage, Uri uri, int modeFlags) {
         mBase.grantUriPermission(toPackage, uri, modeFlags);
     }

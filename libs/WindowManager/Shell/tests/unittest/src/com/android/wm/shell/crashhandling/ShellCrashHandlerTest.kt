@@ -133,11 +133,16 @@ class ShellCrashHandlerTest : ShellTestCase() {
 
         val wctCaptor = ArgumentCaptor.forClass(WindowContainerTransaction::class.java)
         verify(transitions)
-            .startTransition(eq(android.view.WindowManager.TRANSIT_CLOSE), wctCaptor.capture(), eq(null))
+            .startTransition(
+                eq(android.view.WindowManager.TRANSIT_CLOSE),
+                wctCaptor.capture(),
+                eq(null),
+            )
         val wct = wctCaptor.value
         assertThat(wct.hierarchyOps).hasSize(1)
         val op = wct.hierarchyOps[0]
-        assertThat(op.type).isEqualTo(WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_TASK)
+        assertThat(op.type)
+            .isEqualTo(WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_TASK)
         assertThat(op.container).isEqualTo(pipTask.token.asBinder())
     }
 

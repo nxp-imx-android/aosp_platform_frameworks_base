@@ -30,7 +30,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.theming.ThemeSettings;
-import android.content.theming.ThemeStyle;
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Handler;
@@ -251,19 +250,15 @@ public class ThemeEventObserver {
         if (shouldIgnoreEventForUser(userId, "onThemeSettingsChanged")) {
             return;
         }
+
+        Slog.d(TAG, "User: " + userId + " updated Secure Setting directly");
         // The settings have changed on disk, invalidate the local cache.
         mThemeManagerInternal.forceReloadSettings(userId);
 
         ThemeSettings userSettings = mThemeManagerInternal.getThemeSettingsOrDefault(userId);
 
-        if (userSettings.colorSource().equals(VALUE_PRESET)) {
-            int newSeed = userSettings.systemPalette().toArgb();
-            Slog.d(TAG, "User: " + userId + " changed seed to " + Integer.toHexString(newSeed));
-            mStateManager.onSeedColorChange(userId, newSeed, true);
-        }
-
-        Slog.d(TAG, "User: " + userId + " changed style to " + ThemeStyle.name(
-                userSettings.themeStyle()));
+        int newSeed = userSettings.systemPalette().toArgb();
+        mStateManager.onSeedColorChange(userId, newSeed, true);
         mStateManager.onStyleChange(userId, userSettings.themeStyle());
     }
 

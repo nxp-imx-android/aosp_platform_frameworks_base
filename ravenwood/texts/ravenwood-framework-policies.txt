@@ -161,3 +161,11 @@ class android.view.SurfaceControl exp
 
 class android.view.accessibility.AccessibilityManager
     method isEnabled i #experimental -- accessibility disabled
+
+# Hack, useClientSurfac e won't work, so disable it for now. Relevant CLs: ag/37597307 etc
+class android.view.WindowManager
+    method useClientSurface ignore
+# Probably we should look into the following methods to better handle it.
+#class android.view.ViewRootImpl
+#    method createSurfaceControl ignore
+#    method updateSurfaceControl ignore

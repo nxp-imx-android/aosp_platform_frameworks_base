@@ -140,6 +140,8 @@ import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
@@ -3536,8 +3538,36 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         verifyScreenTimeoutCall(Long.MAX_VALUE, UserHandle.USER_SYSTEM);
     }
 
+    // TODO(b/37059253): Remove this test as soon as the flag is promoted to Prod.
+    @DisableFlags(Flags.FLAG_INCREASE_WATCH_STRONG_AUTH_TIMEOUT)
     @Test
-    public void testSetRequiredStrongAuthTimeout_DeviceOwner() throws Exception {
+    public void testSetRequiredStrongAuthTimeout_watch_flagOff() throws Exception {
+        when(getServices().packageManager.hasSystemFeature(PackageManager.FEATURE_WATCH))
+                .thenReturn(true);
+        testSetRequiredStrongAuthTimeout_DeviceOwner(
+            DevicePolicyManager.DEFAULT_STRONG_AUTH_TIMEOUT_MS);
+    }
+
+    // TODO(b/37059253): Remove EnableFlags annotation as soon as the flag is promoted to Prod.
+    @EnableFlags(Flags.FLAG_INCREASE_WATCH_STRONG_AUTH_TIMEOUT)
+    @Test
+    public void testSetRequiredStrongAuthTimeout_watch_flagOn() throws Exception {
+        when(getServices().packageManager.hasSystemFeature(PackageManager.FEATURE_WATCH))
+                .thenReturn(true);
+        testSetRequiredStrongAuthTimeout_DeviceOwner(
+            DevicePolicyManager.DEFAULT_STRONG_AUTH_WATCH_TIMEOUT_MS);
+    }
+
+    @Test
+    public void testSetRequiredStrongAuthTimeout_nonWatch() throws Exception {
+        when(getServices().packageManager.hasSystemFeature(PackageManager.FEATURE_WATCH))
+                .thenReturn(false);
+        testSetRequiredStrongAuthTimeout_DeviceOwner(
+            DevicePolicyManager.DEFAULT_STRONG_AUTH_TIMEOUT_MS);
+    }
+
+    public void testSetRequiredStrongAuthTimeout_DeviceOwner(
+        long expectedTimeout) throws Exception {
         mContext.binder.callingUid = DpmMockContext.CALLER_SYSTEM_USER_UID;
         setupDeviceOwner();
         mContext.callerPermissions.add(permission.MANAGE_PROFILE_AND_DEVICE_OWNERS);

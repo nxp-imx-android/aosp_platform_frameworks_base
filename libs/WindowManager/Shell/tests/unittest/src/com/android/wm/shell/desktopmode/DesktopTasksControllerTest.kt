@@ -11105,6 +11105,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun onRecentsInDesktopAnimationFinishing_returningToApp_noDeskDeactivation() {
         val overviewVisibilityListenerCaptor = argumentCaptor<OverviewVisibilityChangeListener>()
         whenever(shellController.isOverviewVisible(DEFAULT_DISPLAY)).thenReturn(true)
+        whenever(displayController.getDisplay(DEFAULT_DISPLAY))
+            .thenReturn(mock(Display::class.java))
         verify(shellController)
             .addOverviewVisibilityChangeListener(overviewVisibilityListenerCaptor.capture())
         overviewVisibilityListenerCaptor.lastValue.onOverviewShown(DEFAULT_DISPLAY)
@@ -11128,10 +11130,44 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_BETTER_DESK_DEACTIVATION_IN_RECENTS_TRANSITION,
+    )
+    fun onRecentsInDesktopAnimationFinishing_displayInvalid_noDeskDeactivation() {
+        val overviewVisibilityListenerCaptor = argumentCaptor<OverviewVisibilityChangeListener>()
+        whenever(shellController.isOverviewVisible(SECONDARY_DISPLAY_ID)).thenReturn(true)
+        verify(shellController)
+            .addOverviewVisibilityChangeListener(overviewVisibilityListenerCaptor.capture())
+        overviewVisibilityListenerCaptor.lastValue.onOverviewShown(SECONDARY_DISPLAY_ID)
+        val deskId = 2
+        taskRepository.addDesk(displayId = SECONDARY_DISPLAY_ID, deskId = deskId)
+        taskRepository.setActiveDesk(SECONDARY_DISPLAY_ID, deskId)
+        whenever(displayController.getDisplay(SECONDARY_DISPLAY_ID)).thenReturn(null)
+
+        val transition = Binder()
+        val finishWct = WindowContainerTransaction()
+        controller.onRecentsInDesktopAnimationFinishing(
+            transition = transition,
+            finishWct = finishWct,
+            returnToApp = false,
+            activeDeskIdOnRecentsStart = deskId,
+        )
+        overviewVisibilityListenerCaptor.lastValue.onOverviewHidden(SECONDARY_DISPLAY_ID)
+
+        verify(transitions, never()).startTransition(eq(TRANSIT_TO_BACK), any(), any())
+        verify(desksOrganizer, never()).deactivateDesk(any(), eq(deskId), any())
+        verify(desksTransitionsObserver, never())
+            .addPendingTransition(argThat { t -> t is DeskTransition.DeactivateDesk })
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onRecentsInDesktopAnimationFinishing_returningToApp_snapEventHandlerNotified() {
         val deskId = 0
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId)
+        whenever(displayController.getDisplay(DEFAULT_DISPLAY))
+            .thenReturn(mock(Display::class.java))
 
         val transition = Binder()
         val finishWct = WindowContainerTransaction()
@@ -11181,6 +11217,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         overviewVisibilityListenerCaptor.lastValue.onOverviewShown(DEFAULT_DISPLAY)
         val deskId = 0
         taskRepository.setDeskInactive(deskId)
+        whenever(displayController.getDisplay(DEFAULT_DISPLAY))
+            .thenReturn(mock(Display::class.java))
 
         val transition = Binder()
         val finishWct = WindowContainerTransaction()
@@ -11204,6 +11242,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun onRecentsInDesktopAnimationFinishing_deskStillActive_notReturningToDesk_deactivatesDesk_betterFlagDisabled() {
         val deskId = 0
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId)
+        whenever(displayController.getDisplay(DEFAULT_DISPLAY))
+            .thenReturn(mock(Display::class.java))
 
         val transition = Binder()
         val finishWct = WindowContainerTransaction()
@@ -11241,6 +11281,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         overviewVisibilityListenerCaptor.lastValue.onOverviewShown(DEFAULT_DISPLAY)
         val deskId = 0
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId)
+        whenever(displayController.getDisplay(DEFAULT_DISPLAY))
+            .thenReturn(mock(Display::class.java))
 
         val transition = Binder()
         val finishWct = WindowContainerTransaction()
@@ -11303,6 +11345,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         overviewVisibilityListenerCaptor.lastValue.onOverviewShown(DEFAULT_DISPLAY)
         val deskId = 0
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId)
+        whenever(displayController.getDisplay(DEFAULT_DISPLAY))
+            .thenReturn(mock(Display::class.java))
 
         val transition = Binder()
         val finishWct = WindowContainerTransaction()

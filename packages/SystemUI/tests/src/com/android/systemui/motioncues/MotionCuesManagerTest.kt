@@ -24,37 +24,34 @@ import android.app.motioncues.MotionCuesSettings
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.settings.UserTracker
 import com.android.systemui.statusbar.CommandQueue
+import com.google.common.util.concurrent.MoreExecutors
+import java.util.concurrent.Executor
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchers.anyInt
-import org.mockito.ArgumentMatchers.anyString
-import org.mockito.ArgumentMatchers.isA
-import org.mockito.ArgumentMatchers.nullable
-import org.mockito.Captor
-import org.mockito.Mock
-import org.mockito.Mockito.eq
-import org.mockito.Mockito.never
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when` as whenever
-import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.KArgumentCaptor
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class MotionCuesManagerTest : SysuiTestCase() {
 
-    @Mock
     private lateinit var context: Context
-    @Mock
     private lateinit var commandQueue: CommandQueue
-    @Mock
     private lateinit var motionCuesUi: MotionCuesUi
+    private lateinit var userTracker: UserTracker
+    private val mainExecutor: Executor = MoreExecutors.directExecutor()
 
-    @Captor
-    private lateinit var serviceConnectionCaptor: ArgumentCaptor<ServiceConnection>
+    private lateinit var serviceConnectionCaptor: KArgumentCaptor<ServiceConnection>
+    private lateinit var userTrackerCallbackCaptor: KArgumentCaptor<UserTracker.Callback>
 
     private lateinit var manager: MotionCuesManager
 
@@ -64,26 +61,36 @@ class MotionCuesManagerTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
-        MockitoAnnotations.initMocks(this)
-        manager = MotionCuesManager(context, commandQueue, motionCuesUi)
+        context = mock<Context>()
+        commandQueue = mock<CommandQueue>()
+        motionCuesUi = mock<MotionCuesUi>()
+        userTracker = mock<UserTracker>()
+
+        serviceConnectionCaptor = argumentCaptor<ServiceConnection>()
+        userTrackerCallbackCaptor = argumentCaptor<UserTracker.Callback>()
+
+        manager = MotionCuesManager(context, commandQueue, motionCuesUi, userTracker, mainExecutor)
     }
 
     @Test
     fun testStart() {
         manager.start()
-        verify(commandQueue).addCallback(manager)
+        verify(commandQueue).addCallback(eq(manager))
+        verify(userTracker).addCallback(eq(manager), any<Executor>())
     }
 
     @Test
     fun startMotionCuesSession_whenAlreadyStarted_logsWarning() {
         whenever(motionCuesUi.isStarted).thenReturn(true)
+
         manager.startMotionCuesSession(componentName, userId, settings)
-        verify(context, never()).bindService(any(Intent::class.java), any(ServiceConnection::class.java), anyInt())
+
+        verify(context, never()).bindService(any<Intent>(), any<ServiceConnection>(), any<Int>())
     }
 
     @Test
     fun startMotionCuesSession_bindServiceFails_endsSession() {
-        whenever(context.bindService(any(Intent::class.java), any(ServiceConnection::class.java), anyInt())).thenReturn(false)
+        whenever(context.bindService(any<Intent>(), any<ServiceConnection>(), any<Int>())).thenReturn(false)
 
         manager.startMotionCuesSession(componentName, userId, settings)
 
@@ -93,53 +100,64 @@ class MotionCuesManagerTest : SysuiTestCase() {
     @Test
     fun startMotionCuesSession_bindServiceSucceeds_startsUi() {
         whenever(motionCuesUi.isStarted).thenReturn(false)
-        whenever(context.bindService(any(Intent::class.java), serviceConnectionCaptor.capture(), eq(Context.BIND_AUTO_CREATE))).thenReturn(true)
+        whenever(context.bindService(any<Intent>(), serviceConnectionCaptor.capture(), eq(Context.BIND_AUTO_CREATE))).thenReturn(true)
 
         manager.startMotionCuesSession(componentName, userId, settings)
 
-        verify(motionCuesUi).start(settings, userId, componentName.packageName)
+        verify(motionCuesUi).start(eq(settings), eq(userId), eq(componentName.packageName))
     }
 
     @Test
     fun endMotionCuesSession_unbindsAndStopsUi() {
-        // Start a session first to ensure there's something to end
         whenever(motionCuesUi.isStarted).thenReturn(false)
-        whenever(context.bindService(any(Intent::class.java), serviceConnectionCaptor.capture(), eq(Context.BIND_AUTO_CREATE))).thenReturn(true)
+        whenever(context.bindService(any<Intent>(), serviceConnectionCaptor.capture(), eq(Context.BIND_AUTO_CREATE))).thenReturn(true)
         manager.startMotionCuesSession(componentName, userId, settings)
 
         manager.endMotionCuesSession()
 
-        verify(context).unbindService(serviceConnectionCaptor.value)
+        verify(context).unbindService(eq(serviceConnectionCaptor.lastValue))
         verify(motionCuesUi).stop()
     }
 
     @Test
     fun onServiceDisconnected_resetsSession() {
-        whenever(context.bindService(any(Intent::class.java), serviceConnectionCaptor.capture(), anyInt())).thenReturn(true)
+        whenever(context.bindService(any<Intent>(), serviceConnectionCaptor.capture(), any<Int>())).thenReturn(true)
         manager.startMotionCuesSession(componentName, userId, settings)
 
-        serviceConnectionCaptor.value.onServiceDisconnected(componentName)
+        serviceConnectionCaptor.lastValue.onServiceDisconnected(componentName)
 
         verify(motionCuesUi).stop()
     }
 
     @Test
     fun onBindingDied_endsSession() {
-        whenever(context.bindService(any(Intent::class.java), serviceConnectionCaptor.capture(), anyInt())).thenReturn(true)
+        whenever(context.bindService(any<Intent>(), serviceConnectionCaptor.capture(), any<Int>())).thenReturn(true)
         manager.startMotionCuesSession(componentName, userId, settings)
 
-        serviceConnectionCaptor.value.onBindingDied(componentName)
-        verify(context).unbindService(serviceConnectionCaptor.value)
+        serviceConnectionCaptor.lastValue.onBindingDied(componentName)
+
+        verify(context).unbindService(eq(serviceConnectionCaptor.lastValue))
         verify(motionCuesUi).stop()
     }
 
     @Test
     fun onNullBinding_endsSession() {
-        whenever(context.bindService(any(Intent::class.java), serviceConnectionCaptor.capture(), anyInt())).thenReturn(true)
+        whenever(context.bindService(any<Intent>(), serviceConnectionCaptor.capture(), any<Int>())).thenReturn(true)
         manager.startMotionCuesSession(componentName, userId, settings)
 
-        serviceConnectionCaptor.value.onNullBinding(componentName)
-        verify(context).unbindService(serviceConnectionCaptor.value)
+        serviceConnectionCaptor.lastValue.onNullBinding(componentName)
+
+        verify(context).unbindService(eq(serviceConnectionCaptor.lastValue))
+        verify(motionCuesUi).stop()
+    }
+
+    @Test
+    fun onUserChanged_endsSession() {
+        manager.start()
+        verify(userTracker).addCallback(userTrackerCallbackCaptor.capture(), any<Executor>())
+
+        userTrackerCallbackCaptor.lastValue.onUserChanged(99, context)
+
         verify(motionCuesUi).stop()
     }
 }

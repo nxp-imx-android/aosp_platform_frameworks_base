@@ -5632,11 +5632,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             if (msg.what == MSG_SEND_KEY_EVENT_TO_INPUT_FILTER) {
                 KeyEvent event = (KeyEvent) msg.obj;
                 final int policyFlags = msg.arg1;
-                synchronized (mLock) {
-                    if (mHasInputFilter && mInputFilter != null) {
-                        mInputFilter.sendInputEvent(event, policyFlags);
-                    }
-                }
+                invokeWithInputFilter(filter -> filter.sendInputEvent(event, policyFlags));
                 event.recycle();
             }
         }
@@ -6654,12 +6650,24 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 AccessibilityManagerService::requestTouchExplorationInternal, this, displayId));
     }
 
-    private void requestTouchExplorationInternal(int displayId) {
+    private void invokeWithInputFilter(Consumer<AccessibilityInputFilter> consumer) {
+        AccessibilityInputFilter inputFilter = null;
         synchronized (mLock) {
             if (mHasInputFilter && mInputFilter != null) {
-                mInputFilter.requestTouchExploration(displayId);
+                if (Flags.releaseA11yLockBeforeInputFilterCall()) {
+                    inputFilter = mInputFilter;
+                } else {
+                    consumer.accept(mInputFilter);
+                }
             }
         }
+        if (inputFilter != null) {
+            consumer.accept(inputFilter);
+        }
+    }
+
+    private void requestTouchExplorationInternal(int displayId) {
+        invokeWithInputFilter(filter -> filter.requestTouchExploration(displayId));
     }
 
     @Override
@@ -6669,11 +6677,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     }
 
     private void requestDraggingInternal(int displayId, int pointerId) {
-        synchronized (mLock) {
-            if (mHasInputFilter && mInputFilter != null) {
-                mInputFilter.requestDragging(displayId, pointerId);
-            }
-        }
+        invokeWithInputFilter(filter -> filter.requestDragging(displayId, pointerId));
     }
 
     @Override
@@ -6684,11 +6688,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     }
 
     private void requestDelegatingInternal(int displayId) {
-        synchronized (mLock) {
-            if (mHasInputFilter && mInputFilter != null) {
-                mInputFilter.requestDelegating(displayId);
-            }
-        }
+        invokeWithInputFilter(filter -> filter.requestDelegating(displayId));
     }
 
     @Override
@@ -6774,11 +6774,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     }
 
     private void onDoubleTapAndHoldInternal(int displayId) {
-        synchronized (mLock) {
-            if (mHasInputFilter && mInputFilter != null) {
-                mInputFilter.onDoubleTapAndHold(displayId);
-            }
-        }
+        invokeWithInputFilter(filter -> filter.onDoubleTapAndHold(displayId));
     }
 
     private void updateFocusAppearanceDataLocked(AccessibilityUserState userState) {

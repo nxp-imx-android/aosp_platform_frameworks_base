@@ -472,6 +472,22 @@ public final class ConfigurationInternal {
                 + '}';
     }
 
+    /** Returns a string representation of the geo detection settings. */
+    public String geoDetectionSettingsToString() {
+        return "ConfigurationInternal#GeoDetectionSettings{"
+                + "mUserId="
+                + mUserId
+                + ", mAutoDetectionEnabledSetting="
+                + mAutoDetectionEnabledSetting
+                + ", mLocationEnabledSetting="
+                + mLocationEnabledSetting
+                + ", mGeoDetectionEnabledSetting="
+                + mGeoDetectionEnabledSetting
+                + ", mGeoDetectionRunInBackgroundEnabled="
+                + mGeoDetectionRunInBackgroundEnabled
+                + '}';
+    }
+
     /**
      * A Builder for {@link ConfigurationInternal}.
      */

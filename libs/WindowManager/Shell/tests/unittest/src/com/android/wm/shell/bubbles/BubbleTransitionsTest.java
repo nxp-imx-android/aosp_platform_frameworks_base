@@ -173,7 +173,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         MockitoAnnotations.initMocks(this);
         mRepository = new TaskViewRepository();
         mBubbleHelper = spy(new BubbleHelperImpl(
-                () -> mBubbleRootTask, () -> Optional.of(mSplitScreenController)));
+                mBubbleRootTask, () -> Optional.of(mSplitScreenController)));
         final ShellExecutor syncExecutor = new TestSyncExecutor();
 
         BubbleUserResolver bubbleUserResolver = userId -> new BubbleUserInfo(userId, UserType.MAIN);
@@ -193,7 +193,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
         when(mTransitions.getMainExecutor()).thenReturn(syncExecutor);
         mTaskViewTransitions = new TaskViewTransitions(mTransitions, mRepository, mTaskOrganizer,
-                mSyncQueue, Optional.of(mBubbleHelper));
+                Optional.of(mBubbleHelper), /* taskViewRootTask= */ Optional.empty());
         mBubbleTransitions = new BubbleTransitions(mContext, mTransitions, mTaskOrganizer,
                 mRepository, mBubbleData, mTaskViewTransitions, bubbleViewInfoTaskFactory,
                 mBubbleHelper);

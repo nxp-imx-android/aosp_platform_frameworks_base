@@ -21,6 +21,7 @@ import static java.util.Objects.requireNonNull;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.content.ComponentName;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.Token;
@@ -39,17 +40,22 @@ import java.util.Objects;
 public final class RecentViewHint extends ContextHint {
     private static final String KEY_CAPTURED_TEXTS = "key_captured_texts";
     private static final String KEY_LOCUS_ID = "key_locus_id";
+    private static final String KEY_SOURCE_APP_ACTIVITY_COMPONENT_NAME =
+            "key_source_app_activity_component_name";
     private final List<CapturedText> mCapturedTexts;
     private final String mLocusId;
+    private final ComponentName mSourceAppActivityComponentName;
 
     /** Creates a new {@link RecentViewHint}. */
     private RecentViewHint(
             @NonNull ConstructorParams baseParams,
             @NonNull List<CapturedText> capturedTexts,
+            @NonNull ComponentName sourceAppActivityComponentName,
             @Nullable String locusId) {
         super(baseParams);
         mCapturedTexts = List.copyOf(capturedTexts);
         mLocusId = locusId;
+        mSourceAppActivityComponentName = sourceAppActivityComponentName;
     }
 
     /**
@@ -62,6 +68,11 @@ public final class RecentViewHint extends ContextHint {
         mCapturedTexts = bundle.getParcelableArrayList(KEY_CAPTURED_TEXTS, CapturedText.class);
         requireNonNull(mCapturedTexts, "Bundle must contain captured text set");
         mLocusId = bundle.getString(KEY_LOCUS_ID);
+        mSourceAppActivityComponentName =
+                bundle.getParcelable(KEY_SOURCE_APP_ACTIVITY_COMPONENT_NAME, ComponentName.class);
+        requireNonNull(
+                mSourceAppActivityComponentName,
+                "Bundle must contain source app activity component name");
     }
 
     /** @hide */
@@ -86,12 +97,20 @@ public final class RecentViewHint extends ContextHint {
         return mLocusId;
     }
 
+    /** Get the component name of the source app activity associated with the hint. */
+    @NonNull
+    public ComponentName getSourceAppActivityComponentName() {
+        return mSourceAppActivityComponentName;
+    }
+
     @NonNull
     @Override
     Bundle toBundleImpl() {
         final Bundle bundle = new Bundle();
         bundle.putParcelableArrayList(KEY_CAPTURED_TEXTS, new ArrayList<>(mCapturedTexts));
         bundle.putString(KEY_LOCUS_ID, mLocusId);
+        bundle.putParcelable(
+                KEY_SOURCE_APP_ACTIVITY_COMPONENT_NAME, mSourceAppActivityComponentName);
         return bundle;
     }
 
@@ -102,12 +121,15 @@ public final class RecentViewHint extends ContextHint {
         if (!super.equals(o)) return false;
         RecentViewHint that = (RecentViewHint) o;
         return Objects.equals(mCapturedTexts, that.mCapturedTexts)
-                && Objects.equals(mLocusId, that.mLocusId);
+                && Objects.equals(mLocusId, that.mLocusId)
+                && Objects.equals(
+                        mSourceAppActivityComponentName, that.mSourceAppActivityComponentName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), mCapturedTexts, mLocusId);
+        return Objects.hash(
+                super.hashCode(), mCapturedTexts, mLocusId, mSourceAppActivityComponentName);
     }
 
     @Override
@@ -117,7 +139,8 @@ public final class RecentViewHint extends ContextHint {
                 + mCapturedTexts
                 + ", mLocusId='"
                 + mLocusId
-                + '\''
+                + "', mSourceAppActivityComponentName="
+                + mSourceAppActivityComponentName
                 + "} extends "
                 + super.toString();
     }
@@ -128,6 +151,7 @@ public final class RecentViewHint extends ContextHint {
         private final ConstructorParams.Builder mBaseBuilder = new ConstructorParams.Builder();
         private final List<CapturedText> mCapturedTexts = new ArrayList<>();
         private String mLocusId;
+        private ComponentName mSourceAppActivityComponentName;
 
         /** Creates an instance of {@link Builder}. */
         public Builder() {}
@@ -161,12 +185,31 @@ public final class RecentViewHint extends ContextHint {
             return this;
         }
 
+        /** Sets the component name of the source app activity associated with the hint. */
+        @NonNull
+        public Builder setSourceAppActivityComponentName(
+                @NonNull ComponentName sourceAppActivityComponentName) {
+            requireNonNull(
+                    sourceAppActivityComponentName,
+                    "sourceAppActivityComponentName must not be null");
+            mSourceAppActivityComponentName = sourceAppActivityComponentName;
+            return this;
+        }
+
         /**
          * @return the built {@link RecentViewHint}.
          */
         @NonNull
         public RecentViewHint build() {
-            return new RecentViewHint(mBaseBuilder.build(), mCapturedTexts, mLocusId);
+            requireNonNull(mCapturedTexts, "Captured text set must be set");
+            requireNonNull(
+                    mSourceAppActivityComponentName,
+                    "Source app activity component name must be set");
+            return new RecentViewHint(
+                    mBaseBuilder.build(),
+                    mCapturedTexts,
+                    mSourceAppActivityComponentName,
+                    mLocusId);
         }
     }
 }

@@ -128,7 +128,6 @@ import com.android.systemui.statusbar.NotificationEntryHelper;
 import com.android.systemui.statusbar.NotificationLockscreenUserManager;
 import com.android.systemui.statusbar.RankingBuilder;
 import com.android.systemui.statusbar.SysuiStatusBarStateController;
-import com.android.systemui.statusbar.notification.NotifPipelineFlags;
 import com.android.systemui.statusbar.notification.collection.GroupEntry;
 import com.android.systemui.statusbar.notification.collection.GroupEntryBuilder;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
@@ -358,13 +357,9 @@ public class BubblesTest extends SysuiTestCase {
     @Mock
     private UserTracker mUserTracker;
     @Mock
-    private NotifPipelineFlags mNotifPipelineFlags;
-    @Mock
     private Icon mNotesBubbleIcon;
     @Mock
     private Display mDefaultDisplay;
-    @Mock
-    private SyncTransactionQueue mSyncQueue;
     @Mock
     private HomeIntentProvider mHomeIntentProvider;
 
@@ -522,7 +517,7 @@ public class BubblesTest extends SysuiTestCase {
                 syncExecutor);
         mTaskViewRepository = new TaskViewRepository();
         mTaskViewTransitions = new TaskViewTransitions(mTransitions, mTaskViewRepository,
-                mShellTaskOrganizer, mSyncQueue, Optional.of(mBubbleHelper));
+                mShellTaskOrganizer, Optional.of(mBubbleHelper), Optional.empty());
         mAppInfoProvider = new PackageManagerBubbleAppInfoProvider();
         mBubbleUserResolver = userId -> new BubbleUserInfo(userId, UserType.MAIN);
         BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory = new BubbleViewInfoTask.Factory() {
@@ -594,7 +589,6 @@ public class BubblesTest extends SysuiTestCase {
                 mNotifPipeline,
                 mSysUiState,
                 mFeatureFlags,
-                mNotifPipelineFlags,
                 syncExecutor,
                 syncExecutor);
         mBubblesManager.addNotifCallback(mNotifCallback);

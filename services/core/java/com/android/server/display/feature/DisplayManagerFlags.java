@@ -41,10 +41,6 @@ public class DisplayManagerFlags {
     // 'adb shell setprop persist.log.tag.DisplayManagerFlags DEBUG && adb reboot'
     private static final boolean DEBUG = DebugUtils.isDebuggable(TAG);
 
-    private final FlagState mDisplayTopology = new FlagState(
-            Flags.FLAG_DISPLAY_TOPOLOGY,
-            DesktopExperienceFlags.DISPLAY_TOPOLOGY::isTrue);
-
     private final FlagState mDisplayTopologyApi = new FlagState(
             Flags.FLAG_DISPLAY_TOPOLOGY_API,
             Flags::displayTopologyApi);
@@ -163,11 +159,6 @@ public class DisplayManagerFlags {
             Flags.FLAG_ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH,
             DesktopExperienceFlags.ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH::isTrue
     );
-
-    private final FlagState mModeSwitchWithoutSaving = new FlagState(
-            Flags.FLAG_MODE_SWITCH_WITHOUT_SAVING,
-            Flags::modeSwitchWithoutSaving
-    );
     private final FlagState mEnsureColorFadeWhenTurningOn = new FlagState(
             Flags.FLAG_ENSURE_COLOR_FADE_WHEN_TURNING_ON,
             Flags::ensureColorFadeWhenTurningOn
@@ -191,11 +182,6 @@ public class DisplayManagerFlags {
     /** Returns whether power throttling clamper is enabled on not. */
     public boolean isPowerThrottlingClamperEnabled() {
         return mPowerThrottlingClamperFlagState.isEnabled();
-    }
-
-
-    public boolean isDisplayTopologyEnabled() {
-        return mDisplayTopology.isEnabled();
     }
 
     public boolean isSyncedResolutionSwitchEnabled() {
@@ -336,10 +322,6 @@ public class DisplayManagerFlags {
         return mEnableDefaultDisplayInTopologySwitch.isEnabled();
     }
 
-    public boolean isModeSwitchWithoutSavingEnabled() {
-        return mModeSwitchWithoutSaving.isEnabled();
-    }
-
     /**
      * @return {@code true} if the flag for ensure color fad when turning screen on is enabled
      */
@@ -366,7 +348,6 @@ public class DisplayManagerFlags {
     public void dump(PrintWriter pw) {
         pw.println("DisplayManagerFlags:");
         pw.println("--------------------");
-        pw.println(" " + mDisplayTopology);
         pw.println(" " + mDisplayTopologyApi);
         pw.println(" " + mPowerThrottlingClamperFlagState);
         pw.println(" " + mSyncedResolutionSwitch);
@@ -391,7 +372,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mDelayImplicitRrRegistrationUntilRrAccessed);
         pw.println(" " + mHdrBrightnessSetting);
         pw.println(" " + mEnableDefaultDisplayInTopologySwitch);
-        pw.println(" " + mModeSwitchWithoutSaving);
         pw.println(" " + mEnsureColorFadeWhenTurningOn);
         pw.println(" " + mIsLoggingForDisplayEventsEnabled);
         pw.println(" " + mIsMinmodeCapBrightnessEnabled);

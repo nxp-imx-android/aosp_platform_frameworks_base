@@ -17,7 +17,6 @@ package com.android.systemui.media.dialog
 
 import android.content.Context
 import android.graphics.drawable.Drawable
-import android.text.TextUtils
 import android.util.Log
 import android.view.View
 import androidx.annotation.DoNotInline
@@ -32,6 +31,9 @@ import com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEH
 import com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_NONE
 import com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_TRANSFER
 import com.android.systemui.media.dialog.MediaItem.DeviceMediaItem
+import com.android.systemui.media.dialog.MediaOutputAdapterBase.ConnectionState.CONNECTED
+import com.android.systemui.media.dialog.MediaOutputAdapterBase.ConnectionState.CONNECTING
+import com.android.systemui.media.dialog.MediaOutputAdapterBase.ConnectionState.DISCONNECTED
 import com.android.systemui.res.R
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -62,13 +64,6 @@ abstract class MediaOutputAdapterBase(protected val mController: MediaSwitchingC
         setHasStableIds(true)
     }
 
-    fun isCurrentlyConnected(device: MediaDevice): Boolean {
-        val currentConnectedMediaDevice = mController.getCurrentConnectedMediaDevice()
-        return (currentConnectedMediaDevice != null &&
-            TextUtils.equals(device.getId(), currentConnectedMediaDevice.getId())) ||
-            (!mController.hasGroupPlayback() && device.isSelected())
-    }
-
     fun isDragging(): Boolean = mIsDragging
 
     fun setIsDragging(isDragging: Boolean) {
@@ -86,7 +81,8 @@ abstract class MediaOutputAdapterBase(protected val mController: MediaSwitchingC
         fun renderItem(mediaItem: DeviceMediaItem, position: Int) {
             val device = mediaItem.mediaDevice
             val isMutingExpectedDeviceExist = mController.hasMutingExpectedDevice()
-            val currentlyConnected = isCurrentlyConnected(device)
+            val currentlyConnected = mController.isSingleConnectedDevice(device)
+            val isCurrentConnectedDeviceRemote = mController.isCurrentConnectedDeviceRemote()
 
             if (DEBUG) {
                 Log.d(TAG, "#$position: $device")
@@ -94,7 +90,7 @@ abstract class MediaOutputAdapterBase(protected val mController: MediaSwitchingC
 
             var groupStatus: GroupStatus? = null
             var ongoingSessionStatus: OngoingSessionStatus? = null
-            var connectionState = ConnectionState.DISCONNECTED
+            var connectionState = DISCONNECTED
             var restrictVolumeAdjustment = mController.hasAdjustVolumeUserRestriction()
             var subtitle: String? = null
             var deviceStatusIcon: Drawable? = null
@@ -107,20 +103,18 @@ abstract class MediaOutputAdapterBase(protected val mController: MediaSwitchingC
 
             if (mController.isAnyDeviceTransferring()) {
                 if (device.state == STATE_CONNECTING) {
-                    connectionState = ConnectionState.CONNECTING
+                    connectionState = CONNECTING
                 }
             } else {
                 // Set different layout for each device
-                if (
-                    device.isMutingExpectedDevice && !mController.isCurrentConnectedDeviceRemote()
-                ) {
-                    connectionState = ConnectionState.CONNECTED
+                if (device.isMutingExpectedDevice && !isCurrentConnectedDeviceRemote) {
+                    connectionState = CONNECTED
                     restrictVolumeAdjustment = true
                     clickListener = View.OnClickListener { transferOutput(device) }
                 } else if (
                     currentlyConnected &&
                         isMutingExpectedDeviceExist &&
-                        !mController.isCurrentConnectedDeviceRemote()
+                        !isCurrentConnectedDeviceRemote
                 ) {
                     // mark as disconnected and set special click listener
                     clickListener = View.OnClickListener { cancelMuteAwaitConnection() }
@@ -239,7 +233,7 @@ abstract class MediaOutputAdapterBase(protected val mController: MediaSwitchingC
             if (mController.isAnyDeviceTransferring()) {
                 return
             }
-            if (isCurrentlyConnected(device)) {
+            if (mController.isSingleConnectedDevice(device)) {
                 Log.d(TAG, "This device is already connected! : ${device.getName()}")
                 return
             }

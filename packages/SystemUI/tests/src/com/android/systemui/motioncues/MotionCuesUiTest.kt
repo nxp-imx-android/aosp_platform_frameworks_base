@@ -54,8 +54,8 @@ class MotionCuesUiTest : SysuiTestCase() {
         MotionCuesSettings.Builder()
             .setHorizontalSpacingDp(50)
             .setVerticalSpacingDp(100)
-            .setMarginSize(10)
-            .setRadius(20)
+            .setMarginSizeDp(10)
+            .setRadiusDp(20)
             .build()
 
     @Mock private lateinit var mockContext: Context
@@ -170,8 +170,8 @@ class MotionCuesUiTest : SysuiTestCase() {
             MotionCuesSettings.Builder()
                 .setHorizontalSpacingDp(50)
                 .setVerticalSpacingDp(100)
-                .setMarginSize(10)
-                .setRadius(20)
+                .setMarginSizeDp(10)
+                .setRadiusDp(20)
                 .build()
         val userId = 1
         val clientPackageName = "com.test.app"
@@ -183,8 +183,8 @@ class MotionCuesUiTest : SysuiTestCase() {
         assertThat(state.clientPackageName).isEqualTo(clientPackageName)
         assertThat(state.horizontalSpacingDp).isEqualTo(settings.horizontalSpacingDp)
         assertThat(state.verticalSpacingDp).isEqualTo(settings.verticalSpacingDp)
-        assertThat(state.marginSize).isEqualTo(settings.marginSize)
-        assertThat(state.radius).isEqualTo(settings.radius)
+        assertThat(state.marginSizeDp).isEqualTo(settings.marginSizeDp)
+        assertThat(state.radiusDp).isEqualTo(settings.radiusDp)
         assertThat(state.motionBubbles).isNotEmpty()
     }
 }

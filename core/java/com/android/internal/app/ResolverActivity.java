@@ -776,7 +776,7 @@ public class ResolverActivity extends Activity implements
     protected UserHandle getPersonalProfileUserHandle() {
         // When launched in single user mode, only personal tab is populated, so we use
         // tabOwnerUserHandleForLaunch as personal tab's user handle.
-        if (privateSpaceEnabled() && isLaunchedInSingleUserMode()) {
+        if (mIsIntentPicker && isLaunchedInSingleUserMode()) {
             return getTabOwnerUserHandleForLaunch();
         }
         return mPersonalProfileUserHandle;
@@ -849,7 +849,7 @@ public class ResolverActivity extends Activity implements
         // as owner, otherwise we always return PersonalProfile user as owner
         if (UserHandle.of(UserHandle.myUserId()).equals(getWorkProfileUserHandle())) {
             return mWorkProfileUserHandle;
-        } else if (privateSpaceEnabled() && isLaunchedAsPrivateProfile()) {
+        } else if (mIsIntentPicker && isLaunchedAsPrivateProfile()) {
             return mPrivateProfileUserHandle;
         }
         return mPersonalProfileUserHandle;
@@ -884,7 +884,7 @@ public class ResolverActivity extends Activity implements
 
     protected boolean shouldShowTabs() {
         // No Tabs are shown when launched in single user mode.
-        if (privateSpaceEnabled() && isLaunchedInSingleUserMode()) {
+        if (mIsIntentPicker && isLaunchedInSingleUserMode()) {
             return false;
         }
         return hasWorkProfile() && ENABLE_TABBED_VIEW;
@@ -2714,11 +2714,6 @@ public class ResolverActivity extends Activity implements
             userList.add(getCloneProfileUserHandle());
         }
         return userList;
-    }
-
-    private boolean privateSpaceEnabled() {
-        return mIsIntentPicker && android.os.Flags.allowPrivateProfile()
-                && android.multiuser.Flags.enablePrivateSpaceFeatures();
     }
 
     /**

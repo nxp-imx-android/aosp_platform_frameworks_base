@@ -242,13 +242,13 @@ class MotionCuesUi(
                         MotionCue(
                             (col * bubbleSpacingX + rowOffset - xOffset).toFloat(),
                             (row * bubbleSpacingY).toFloat(),
-                            motionCuesSettings.radius.toFloat()
+                            motionCuesSettings.radiusDp.toFloat()
                         )
                     )
                 }
             }
 
-            val maxMarginSize = motionCuesSettings.marginSize / 100f
+            val maxMarginSize = motionCuesSettings.marginSizeDp / 100f
             marginLeft = (screenDimensions.x * maxMarginSize).toInt()
             marginRight = screenDimensions.x - marginLeft
         }
@@ -313,7 +313,7 @@ class MotionCuesUi(
                 val distanceFromEdge = min(distanceFromEdgeX, distanceFromEdgeY)
 
                 // Adjust radius based on distance from edge
-                var adjustedRadius = motionCuesSettings.radius.toFloat()
+                var adjustedRadius = motionCuesSettings.radiusDp.toFloat()
                 if (distanceFromEdge < EDGE_SHRINK_THRESHOLD) {
                     val shrinkFactor = distanceFromEdge / EDGE_SHRINK_THRESHOLD
                     adjustedRadius *= shrinkFactor
@@ -355,8 +355,8 @@ class MotionCuesUi(
         state.bubbleShapeResId = this@MotionCuesUi.bubbleShapeResId
         state.horizontalSpacingDp = motionCuesSettings.horizontalSpacingDp
         state.verticalSpacingDp = motionCuesSettings.verticalSpacingDp
-        state.marginSize = motionCuesSettings.marginSize
-        state.radius = motionCuesSettings.radius
+        state.marginSizeDp = motionCuesSettings.marginSizeDp
+        state.radiusDp = motionCuesSettings.radiusDp
         state.motionBubbles = motionBubbleProtos
         state.clientPackageName = this@MotionCuesUi.clientPackageName?: ""
         return state
@@ -403,8 +403,8 @@ class MotionCuesUi(
             MotionCuesSettings.Builder()
                 .setHorizontalSpacingDp(60)
                 .setVerticalSpacingDp(140)
-                .setMarginSize(20)
-                .setRadius(15)
+                .setMarginSizeDp(20)
+                .setRadiusDp(15)
                 .build()
     }
 }

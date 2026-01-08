@@ -39,6 +39,8 @@ import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.bubbles.BubbleController
 import java.util.Optional
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import junit.framework.TestCase.assertEquals
 import org.junit.Assert
 import org.junit.Before
@@ -55,8 +57,6 @@ import org.mockito.Mockito.times
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 
 @SmallTest
 @TestableLooper.RunWithLooper
@@ -87,7 +87,7 @@ class CustomCrossActivityBackAnimationTest : ShellTestCase() {
                 transaction,
                 customAnimationLoader,
                 handler,
-                Optional.of(bubbleController)
+                Optional.of(bubbleController),
             )
 
         whenever(transitionAnimation.loadAppTransitionAnimation(eq(PACKAGE_NAME), eq(OPEN_RES_ID)))
@@ -168,7 +168,7 @@ class CustomCrossActivityBackAnimationTest : ShellTestCase() {
                     eq(PACKAGE_NAME),
                     eq(windowAnimations),
                     anyInt(),
-                    anyBoolean()
+                    anyBoolean(),
                 )
             )
             .thenReturn(mockCloseAnimation)
@@ -228,7 +228,7 @@ class CustomCrossActivityBackAnimationTest : ShellTestCase() {
             /* frameTime = */ 0,
             /* progress = */ progress,
             /* triggerBack = */ false,
-            /* swipeEdge = */ BackEvent.EDGE_LEFT
+            /* swipeEdge = */ BackEvent.EDGE_LEFT,
         )
 
     private fun createAnimationTarget(open: Boolean): RemoteAnimationTarget {
@@ -253,7 +253,7 @@ class CustomCrossActivityBackAnimationTest : ShellTestCase() {
             null,
             taskInfo,
             false,
-            -1
+            -1,
         )
     }
 

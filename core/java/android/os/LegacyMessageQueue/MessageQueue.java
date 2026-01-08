@@ -24,6 +24,7 @@ import android.annotation.TestApi;
 import android.app.ActivityThread;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.ravenwood.annotation.RavenwoodRedirect;
 import android.util.Log;
 import android.util.Printer;
 import android.util.SparseArray;
@@ -80,6 +81,8 @@ public final class MessageQueue {
     @UnsupportedAppUsage
     private int mNextBarrierToken;
 
+    private final Thread mLooperThread;
+
     private native static long nativeInit();
     private native static void nativeDestroy(long ptr);
     @UnsupportedAppUsage
@@ -92,6 +95,11 @@ public final class MessageQueue {
     MessageQueue(boolean quitAllowed) {
         mQuitAllowed = quitAllowed;
         mPtr = nativeInit();
+        mLooperThread = Thread.currentThread();
+    }
+
+    Thread getLooperThread() {
+        return mLooperThread;
     }
 
     @Override
@@ -494,6 +502,7 @@ public final class MessageQueue {
      */
     public void resetForTest() {
         ActivityThread.throwIfNotInstrumenting();
+        onResetForTestCalled();
         synchronized (this) {
             // This queue is already quitting, so we can't reset its state and continue using it.
             if (mQuitting) {
@@ -508,6 +517,10 @@ public final class MessageQueue {
             resetSyncBarrierTokens();
             nativeWake(mPtr);
         }
+    }
+
+    @RavenwoodRedirect
+    private static void onResetForTestCalled() {
     }
 
     private void removeAllFdRecords() {
@@ -572,7 +585,12 @@ public final class MessageQueue {
     @UnsupportedAppUsage
     @TestApi
     public int postSyncBarrier() {
-        return postSyncBarrier(SystemClock.uptimeMillis());
+        return onSyncBarrierPosted(postSyncBarrier(SystemClock.uptimeMillis()));
+    }
+
+    @RavenwoodRedirect
+    private int onSyncBarrierPosted(int token) {
+        return token;
     }
 
     private int postSyncBarrier(long when) {
@@ -666,6 +684,11 @@ public final class MessageQueue {
                 nativeWake(mPtr);
             }
         }
+        onSyncBarrierRemoved(token);
+    }
+
+    @RavenwoodRedirect
+    private void onSyncBarrierRemoved(int token) {
     }
 
     boolean enqueueMessage(Message msg, long when) {

@@ -23,7 +23,6 @@ import android.os.Binder;
 import android.os.RemoteException;
 import android.os.ServiceSpecificException;
 import android.os.StrictMode;
-import android.security.Flags;
 import android.security.keystore.BackendBusyException;
 import android.security.keystore.KeyStoreConnectException;
 import android.system.keystore2.AuthenticatorSpec;
@@ -166,15 +165,9 @@ public class KeyStoreSecurityLevel {
             Collection<KeyParameter> args, int flags, byte[] entropy)
             throws KeyStoreException {
         StrictMode.noteDiskWrite();
-        if (Flags.threadSafeKeyGeneration()) {
-            return retryBusyException(() -> mSecurityLevel.generateKey(
-                    descriptor, attestationKey, args.toArray(new KeyParameter[args.size()]),
-                    flags, entropy));
-        } else {
-            return handleExceptions(() -> mSecurityLevel.generateKey(
-                    descriptor, attestationKey, args.toArray(new KeyParameter[args.size()]),
-                    flags, entropy));
-        }
+        return retryBusyException(() -> mSecurityLevel.generateKey(
+                descriptor, attestationKey, args.toArray(new KeyParameter[args.size()]),
+                flags, entropy));
     }
 
     /**

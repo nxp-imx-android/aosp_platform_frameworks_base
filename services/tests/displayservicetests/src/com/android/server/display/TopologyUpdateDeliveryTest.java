@@ -26,7 +26,6 @@ import android.hardware.display.DisplayTopology;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -201,7 +200,6 @@ public class TopologyUpdateDeliveryTest extends EventDeliveryTestBase {
     }
 
     @Test
-    @RequiresFlagsEnabled(com.android.server.display.feature.flags.Flags.FLAG_DISPLAY_TOPOLOGY)
     public void testTopologyUpdate() {
         testTopologyUpdateInternal(false, false);
     }
@@ -211,7 +209,6 @@ public class TopologyUpdateDeliveryTest extends EventDeliveryTestBase {
      * app.
      */
     @Test
-    @RequiresFlagsEnabled(com.android.server.display.feature.flags.Flags.FLAG_DISPLAY_TOPOLOGY)
     public void testTopologyUpdateCached() {
         testTopologyUpdateInternal(true, false);
     }
@@ -219,7 +216,6 @@ public class TopologyUpdateDeliveryTest extends EventDeliveryTestBase {
     /**
      * The app is frozen and the test verifies that no updates are delivered to the frozen app.
      */
-    @RequiresFlagsEnabled(com.android.server.display.feature.flags.Flags.FLAG_DISPLAY_TOPOLOGY)
     @Test
     public void testTopologyUpdateFrozen() {
         assumeTrue(isAppFreezerEnabled());
@@ -229,7 +225,6 @@ public class TopologyUpdateDeliveryTest extends EventDeliveryTestBase {
     /**
      * The app is cached and frozen and the test verifies that no updates are delivered to the app.
      */
-    @RequiresFlagsEnabled(com.android.server.display.feature.flags.Flags.FLAG_DISPLAY_TOPOLOGY)
     @Test
     public void testTopologyUpdateCachedFrozen() {
         assumeTrue(isAppFreezerEnabled());

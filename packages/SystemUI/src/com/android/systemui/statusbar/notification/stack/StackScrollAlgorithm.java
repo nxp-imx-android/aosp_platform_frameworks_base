@@ -994,15 +994,19 @@ public class StackScrollAlgorithm {
                         );
                         float baseZ = ambientState.getBaseZHeight();
                         if (headsUpTranslation > ambientState.getStackScrollTop()
+                                && ambientState.getExpansionFraction() < 1f
                                 && row.isAboveShelf()) {
-                            // HUN displayed outside of the stack during transition from Gone/LS;
-                            // add a shadow that corresponds to the transition progress.
+                            // HUN displayed outside of the stack during transition from Gone/LS,
+                            // or when the stack is not expanded at all; add a shadow that
+                            // corresponds to the transition progress.
                             float fraction = 1 - ambientState.getExpansionFraction();
                             childState.setZTranslation(baseZ + fraction * mPinnedZTranslationExtra);
                         } else if (headsUpTranslation < ambientState.getStackScrollTop()
+                                && ambientState.getQsExpansionFraction() > 0f
                                 && row.isAboveShelf()) {
-                            // HUN displayed outside of the stack during transition from QS;
-                            // add a shadow that corresponds to the transition progress.
+                            // HUN displayed outside of the stack during transition to/from QS, or
+                            // over a fully expanded QS; add a shadow that corresponds to the
+                            // transition progress.
                             float fraction = ambientState.getQsExpansionFraction();
                             childState.setZTranslation(baseZ + fraction * mPinnedZTranslationExtra);
                         } else if (headsUpTranslation > ambientState.getStackScrollTop()) {

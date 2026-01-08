@@ -21,14 +21,6 @@ flag {
 }
 
 flag {
-    name: "display_topology"
-    namespace: "display_manager"
-    description: "Display topology for moving cursors and windows between extended displays"
-    bug: "364906028"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "display_topology_api"
     namespace: "display_manager"
     description: "API for reading the current display topology"
@@ -42,16 +34,6 @@ flag {
     namespace: "display_manager"
     description: "Make one of the secondary displays the default display when the device's lid is closed"
     bug: "400351704"
-}
-
-flag {
-    name: "fix_set_display_state_after_device_change"
-    namespace: "display_manager"
-    description: "Fix the display state code so that the state is set correctly after the underlying display device changes."
-    bug: "442587030"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -290,14 +272,6 @@ flag {
 }
 
 flag {
-    name: "mode_switch_without_saving"
-    namespace: "display_manager"
-    description: "New hidden API allowing to switch mode without persisting"
-    bug: "253296253"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "ensure_color_fade_when_turning_on"
     namespace: "biometrics_integration"
     description: "Ensure color fade when turing on screen"
@@ -371,16 +345,6 @@ flag {
     namespace: "wear_systems"
     description: "Force Color Fade."
     bug: "420507333"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "native_rr_callbacks_outside_lock"
-    namespace: "display_manager"
-    description: "Makes the native refresh rate changed callbacks outside the lock"
-    bug: "342607960"
     metadata {
       purpose: PURPOSE_BUGFIX
     }

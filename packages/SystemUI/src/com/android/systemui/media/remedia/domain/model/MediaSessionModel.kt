@@ -86,4 +86,6 @@ interface MediaSessionModel {
     val leftAction: MediaActionModel
     val rightAction: MediaActionModel
     val additionalActions: List<MediaActionModel.Action>
+    /** Called when the session is visible in the UI. */
+    val onSessionVisible: (areDeviceChipsVisible: Boolean) -> Unit
 }

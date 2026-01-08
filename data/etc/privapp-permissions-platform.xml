@@ -699,6 +699,8 @@ applications that come with the platform
         <permission name="android.permission.MANAGE_SERIAL_PORTS"/>
         <!-- Permission required for CTS test - CtsMotionCuesTestCases -->
         <permission name="android.permission.DRAW_MOTION_CUES" />
+        <!-- Permission required for CTS test - CtsNetTestCases -->
+        <permission name="android.permission.CREATE_APP_SPECIFIC_NETWORK" />
     </privapp-permissions>
 
     <privapp-permissions package="com.android.soundpicker">

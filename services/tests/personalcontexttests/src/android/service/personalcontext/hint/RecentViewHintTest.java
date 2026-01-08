@@ -20,6 +20,7 @@ import static android.service.personalcontext.hint.ContextHintTestUtils.assertPa
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.content.ComponentName;
 import android.graphics.Rect;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -43,10 +44,12 @@ public class RecentViewHintTest {
                         .setResourceId("resourceId")
                         .setViewNodeLastUpdated(Instant.ofEpochMilli(12345L))
                         .build();
+        final ComponentName componentName = new ComponentName("packageName", "activityName");
         final RecentViewHint hint =
                 new RecentViewHint.Builder()
                         .addCapturedText(capturedText)
                         .setLocusId("locusId")
+                        .setSourceAppActivityComponentName(componentName)
                         .build();
 
         final RecentViewHint outputRecentViewHint = (RecentViewHint) assertParcelUnparcel(hint);
@@ -54,6 +57,8 @@ public class RecentViewHintTest {
         assertThat(outputRecentViewHint).isNotNull();
         assertThat(outputRecentViewHint.getCapturedTexts()).containsExactly(capturedText);
         assertThat(outputRecentViewHint.getLocusId()).isEqualTo("locusId");
+        assertThat(outputRecentViewHint.getSourceAppActivityComponentName())
+                .isEqualTo(componentName);
         assertThat(outputRecentViewHint.getCapturedTexts().get(0).getViewNodeLastSeen()).isNull();
     }
 }

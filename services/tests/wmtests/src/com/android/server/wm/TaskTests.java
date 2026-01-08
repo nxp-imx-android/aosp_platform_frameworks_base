@@ -52,6 +52,7 @@ import static com.android.server.wm.TaskFragment.EMBEDDED_DIM_AREA_PARENT_TASK;
 import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_VISIBLE_BEHIND_TRANSLUCENT;
 import static com.android.server.wm.WindowContainer.POSITION_BOTTOM;
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
+import static com.android.server.wm.testing.Assert.assertThrows;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -2675,6 +2676,18 @@ public class TaskTests extends WindowTestsBase {
         task.fillTaskInfo(info);
 
         assertTrue(info.isActivityStackTransparent);
+    }
+
+    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
+    @Test
+    public void testIsVisibilityBarrier_failAddChild() {
+        final Task visibilityBarrier = new Task.Builder(mAtm)
+                .setIsVisibilityBarrier(true)
+                .build();
+        final ActivityRecord r = createActivityRecord(mDisplayContent);
+
+        assertThrows(IllegalStateException.class,
+                () -> r.reparent(visibilityBarrier, POSITION_TOP));
     }
 
     private Task getTestTask() {

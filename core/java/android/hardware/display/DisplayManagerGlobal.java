@@ -64,7 +64,6 @@ import android.view.Display;
 import android.view.DisplayAdjustments;
 import android.view.DisplayInfo;
 import android.view.Surface;
-import android.window.DesktopExperienceFlags;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
@@ -721,22 +720,10 @@ public final class DisplayManagerGlobal {
                 // Choreographer only supports a single display, so only dispatch refresh rate
                 // changes for the default display.
                 if (displayId == Display.DEFAULT_DISPLAY) {
-                    if (Flags.nativeRrCallbacksOutsideLock()) {
-                        if (info != null
-                                && mNativeCallbackReportedRefreshRate != info.getRefreshRate()) {
-                            mNativeCallbackReportedRefreshRate = info.getRefreshRate();
-                            shouldNotifyNativeListeners = true;
-                        }
-                    } else {
-                        // We can likely save a binder hop if we attach the refresh rate onto the
-                        // listener.
-                        DisplayInfo display = getDisplayInfoInternal(displayId);
-                        if (display != null
-                                && mNativeCallbackReportedRefreshRate != display.getRefreshRate()) {
-                            mNativeCallbackReportedRefreshRate = display.getRefreshRate();
-                            // Signal native callbacks if we ever set a refresh rate.
-                            nSignalNativeCallbacks(mNativeCallbackReportedRefreshRate);
-                        }
+                    if (info != null
+                            && mNativeCallbackReportedRefreshRate != info.getRefreshRate()) {
+                        mNativeCallbackReportedRefreshRate = info.getRefreshRate();
+                        shouldNotifyNativeListeners = true;
                     }
                 }
             }
@@ -1679,9 +1666,6 @@ public final class DisplayManagerGlobal {
      */
     public void registerTopologyListener(@NonNull @CallbackExecutor Executor executor,
             @NonNull Consumer<DisplayTopology> listener, String packageName) {
-        if (!DesktopExperienceFlags.DISPLAY_TOPOLOGY.isTrue()) {
-            return;
-        }
         if (listener == null) {
             throw new IllegalArgumentException("listener must not be null");
         }
@@ -1704,9 +1688,6 @@ public final class DisplayManagerGlobal {
      * @see DisplayManager#unregisterTopologyListener
      */
     public void unregisterTopologyListener(@NonNull Consumer<DisplayTopology> listener) {
-        if (!DesktopExperienceFlags.DISPLAY_TOPOLOGY.isTrue()) {
-            return;
-        }
         if (listener == null) {
             throw new IllegalArgumentException("listener must not be null");
         }

@@ -26,14 +26,6 @@ flag {
 }
 
 flag {
-    name: "sysui_large_perfetto_shmem_buffer"
-    namespace: "windowing_tools"
-    description: "Large perfetto shmem buffer in sysui"
-    is_fixed_read_only: true
-    bug: "420587648"
-}
-
-flag {
     name: "native_proto_logging"
     namespace: "windowing_tools"
     description: "Add support for native protologging"
@@ -67,4 +59,11 @@ flag {
     namespace: "windowing_tools"
     description: "Push protolog initialization to background thread"
     bug: "434072453"
+}
+
+flag {
+    name: "perfetto_ime_fine_grained_config"
+    namespace: "windowing_tools"
+    description: "Fine-grained tracing configuration (client, IMS, IMMS)"
+    bug: "470926070"
 }

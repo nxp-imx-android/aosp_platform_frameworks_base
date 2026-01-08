@@ -92,7 +92,6 @@ public class PerfettoTraceTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.os.Flags.FLAG_PERFETTO_SDK_TRACING_V2)
     public void testDebugAnnotations() throws Exception {
         TraceConfig traceConfig = getTraceConfig(FOO);
 
@@ -152,7 +151,6 @@ public class PerfettoTraceTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.os.Flags.FLAG_PERFETTO_SDK_TRACING_V2)
     public void testNamedTrack() throws Exception {
         TraceConfig traceConfig = getTraceConfig(FOO);
 
@@ -200,7 +198,6 @@ public class PerfettoTraceTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.os.Flags.FLAG_PERFETTO_SDK_TRACING_V2)
     public void testProcessThreadNamedTrack() throws Exception {
         TraceConfig traceConfig = getTraceConfig(FOO);
 
@@ -248,7 +245,6 @@ public class PerfettoTraceTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.os.Flags.FLAG_PERFETTO_SDK_TRACING_V2)
     public void testCounterSimple() throws Exception {
         TraceConfig traceConfig = getTraceConfig(FOO);
 
@@ -291,7 +287,6 @@ public class PerfettoTraceTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.os.Flags.FLAG_PERFETTO_SDK_TRACING_V2)
     public void testCounter() throws Exception {
         TraceConfig traceConfig = getTraceConfig(FOO);
 
@@ -337,7 +332,6 @@ public class PerfettoTraceTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.os.Flags.FLAG_PERFETTO_SDK_TRACING_V2)
     public void testProcessThreadCounter() throws Exception {
         TraceConfig traceConfig = getTraceConfig(FOO);
 
@@ -381,7 +375,6 @@ public class PerfettoTraceTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.os.Flags.FLAG_PERFETTO_SDK_TRACING_V2)
     public void testProto() throws Exception {
         TraceConfig traceConfig = getTraceConfig(FOO);
 
@@ -428,7 +421,6 @@ public class PerfettoTraceTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.os.Flags.FLAG_PERFETTO_SDK_TRACING_V2)
     public void testProtoWithSlowPath() throws Exception {
         TraceConfig traceConfig = getTraceConfig(FOO);
 
@@ -475,7 +467,6 @@ public class PerfettoTraceTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.os.Flags.FLAG_PERFETTO_SDK_TRACING_V2)
     public void testProtoNested() throws Exception {
         TraceConfig traceConfig = getTraceConfig(FOO);
 
@@ -536,7 +527,6 @@ public class PerfettoTraceTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.os.Flags.FLAG_PERFETTO_SDK_TRACING_V2)
     public void testActivateTrigger() throws Exception {
         TraceConfig traceConfig = getTriggerTraceConfig(FOO, FOO);
 
@@ -566,7 +556,6 @@ public class PerfettoTraceTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.os.Flags.FLAG_PERFETTO_SDK_TRACING_V2)
     public void testRegister() throws Exception {
         TraceConfig traceConfig = getTraceConfig(BAR);
 

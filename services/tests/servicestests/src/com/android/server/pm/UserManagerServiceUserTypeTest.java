@@ -214,8 +214,7 @@ public class UserManagerServiceUserTypeTest {
         UserTypeDetails type = getMinimalBuilder().createUserTypeDetails();
 
         assertTrue(type.isEnabled());
-        assertEquals(android.multiuser.Flags.decoupleMaxUsersFromProfiles() ?
-                0 : UserTypeDetails.getLegacyUnlimitedNumberOfUsersValue(), type.getMaxAllowed());
+        assertEquals(0, type.getMaxAllowed());
         assertEquals(0, type.getMaxAllowedPerParent());
         assertEquals(FLAG_FULL, type.getDefaultUserInfoFlags());
         assertEquals(Resources.ID_NULL, type.getIconBadge());

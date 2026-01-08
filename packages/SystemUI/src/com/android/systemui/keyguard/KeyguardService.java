@@ -650,16 +650,12 @@ public class KeyguardService extends Service {
                 return;
             }
 
-            mKeyguardInteractor.showDismissibleKeyguard();
-            if (KeyguardWmStateRefactor.isEnabled()) {
+            if (SceneContainerFlag.isEnabled()) {
                 mKeyguardServiceShowLockscreenInteractor.onKeyguardServiceShowDismissibleKeyguard();
             } else {
+                // Only used by FromGoneTransitionInteractor, which is unused in Flexiglass.
+                mKeyguardInteractor.showDismissibleKeyguard();
                 mKeyguardViewMediator.showDismissibleKeyguard();
-            }
-
-            if (SceneContainerFlag.isEnabled()) {
-                mMainExecutor.execute(() -> mSceneInteractorLazy.get().changeScene(
-                        Scenes.Lockscreen, "KeyguardService.showDismissibleKeyguard"));
             }
         }
 

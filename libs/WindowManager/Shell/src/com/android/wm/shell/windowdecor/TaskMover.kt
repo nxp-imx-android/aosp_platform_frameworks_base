@@ -16,37 +16,25 @@
 
 package com.android.wm.shell.windowdecor
 
-import android.graphics.Rect
-
 /** Interface for moving a task via drag gestures. */
 interface TaskMover {
     /**
-     * Called when a drag move starts.
-     *
-     * @param session The drag session for the current drag operation.
-     * @param x The x coordinate of the drag start point.
-     * @param y The y coordinate of the drag start point.
-     * @return The bounds of the task at the start of the move.
-     */
-    fun onMoveStart(session: DragSession, x: Float, y: Float): Rect
-
-    /**
      * Called when a drag move updates.
      *
+     * @param session The drag session for the current drag operation.
      * @param displayId The ID of the display where the drag is happening.
      * @param x The new x coordinate of the drag point.
      * @param y The new y coordinate of the drag point.
-     * @return The new bounds of the task.
      */
-    fun onMoveUpdate(displayId: Int, x: Float, y: Float): Rect
+    fun onMoveUpdate(session: DragSession, displayId: Int, x: Float, y: Float)
 
     /**
      * Called when a drag move ends.
      *
+     * @param session The drag session for the current drag operation.
      * @param displayId The ID of the display where the drag ended.
      * @param x The final x coordinate of the drag point.
      * @param y The final y coordinate of the drag point.
-     * @return The final bounds of the task.
      */
-    fun onMoveEnd(displayId: Int, x: Float, y: Float): Rect
+    fun onMoveEnd(session: DragSession, displayId: Int, x: Float, y: Float)
 }

@@ -19,10 +19,10 @@ package com.android.wm.shell.flicker.splitscreen
 import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.Presubmit
 import android.tools.NavBar
-import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.FlickerBuilder
 import android.tools.flicker.FlickerTest
 import android.tools.flicker.FlickerTestFactory
+import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.flicker.splitscreen.benchmark.SwitchAppByDoubleTapDividerBenchmark
 import com.android.wm.shell.flicker.utils.ICommonAssertions
@@ -57,7 +57,8 @@ class SwitchAppByDoubleTapDividerTest(override val flicker: FlickerTest) :
 
     @Presubmit
     @Test
-    fun splitScreenDividerKeepVisible() = flicker.layerKeepVisibleOrOccluded(SPLIT_SCREEN_DIVIDER_COMPONENT)
+    fun splitScreenDividerKeepVisible() =
+        flicker.layerKeepVisibleOrOccluded(SPLIT_SCREEN_DIVIDER_COMPONENT)
 
     @Presubmit @Test fun primaryAppLayerIsVisibleAtEnd() = flicker.layerIsVisibleAtEnd(primaryApp)
 
@@ -71,7 +72,7 @@ class SwitchAppByDoubleTapDividerTest(override val flicker: FlickerTest) :
         flicker.splitAppLayerBoundsIsVisibleAtEnd(
             primaryApp,
             landscapePosLeft = !tapl.isTablet,
-            portraitPosTop = true
+            portraitPosTop = true,
         )
 
     @Presubmit
@@ -80,7 +81,7 @@ class SwitchAppByDoubleTapDividerTest(override val flicker: FlickerTest) :
         flicker.splitAppLayerBoundsIsVisibleAtEnd(
             secondaryApp,
             landscapePosLeft = tapl.isTablet,
-            portraitPosTop = false
+            portraitPosTop = false,
         )
 
     @Presubmit
