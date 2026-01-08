@@ -3889,6 +3889,10 @@ package android.text {
     method public void onTextChanged(CharSequence, int, int, int);
   }
 
+  @FlaggedApi("com.android.text.flags.split_show_passwords_to_touch_and_physical") public class ShowSecretsSetting {
+    field public static final long SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL = 417951523L; // 0x18e96f23L
+  }
+
 }
 
 package android.transition {

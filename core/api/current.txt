@@ -49853,6 +49853,13 @@ package android.text {
     field public static final Object SELECTION_START;
   }
 
+  @FlaggedApi("com.android.text.flags.split_show_passwords_to_touch_and_physical") public class ShowSecretsSetting {
+    method @NonNull public static android.net.Uri getPhysicalUri();
+    method @NonNull public static android.net.Uri getTouchUri();
+    method public static boolean shouldShowPhysicalInputForUser(@NonNull android.content.ContentResolver, @NonNull android.os.UserHandle);
+    method public static boolean shouldShowTouchInputForUser(@NonNull android.content.ContentResolver, @NonNull android.os.UserHandle);
+  }
+
   public interface SpanWatcher extends android.text.NoCopySpan {
     method public void onSpanAdded(android.text.Spannable, Object, int, int);
     method public void onSpanChanged(android.text.Spannable, Object, int, int, int, int);
