@@ -107,3 +107,13 @@ flag {
         purpose: PURPOSE_FEATURE
     }
 }
+
+flag {
+    namespace: "haptics"
+    name: "composition_api"
+    description: "Provides comprehensive composition API for vibration effects."
+    bug: "469962388"
+    metadata {
+        purpose: PURPOSE_FEATURE
+    }
+}
