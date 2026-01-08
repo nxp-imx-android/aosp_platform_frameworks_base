@@ -115,8 +115,6 @@ public enum DesktopExperienceFlags {
             true, FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT),
     ENABLE_DISPLAY_DISCONNECT_INTERACTION(Flags::enableDisplayDisconnectInteraction, true,
             Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION),
-    ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS(Flags::enableDisplayFocusInShellTransitions, true,
-            Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS),
     ENABLE_DISPLAY_MIRROR_IN_LOCK_TASK_MODE(
             com.android.server.display.feature.flags.Flags::enableDisplayMirrorInLockTaskMode,
             false, FLAG_ENABLE_DISPLAY_MIRROR_IN_LOCK_TASK_MODE),

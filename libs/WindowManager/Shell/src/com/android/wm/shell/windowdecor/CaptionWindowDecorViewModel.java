@@ -23,7 +23,6 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.content.pm.PackageManager.FEATURE_PC;
 import static android.provider.Settings.Global.DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS;
 import static android.view.WindowManager.TRANSIT_CHANGE;
-import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS;
 
 import static com.android.wm.shell.windowdecor.DragPositioningCallbackUtility.getInputMethodFromMotionEvent;
 
@@ -218,13 +217,9 @@ public class CaptionWindowDecorViewModel implements WindowDecorViewModel, FocusT
             return;
         }
 
-        if (ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue()) {
-            // Pass the current global focus status to avoid updates outside of a ShellTransition.
-            decoration.relayout(
-                    taskInfo, decoration.getHasGlobalFocus(), decoration.getExclusionRegion());
-        } else {
-            decoration.relayout(taskInfo, taskInfo.isFocused, decoration.getExclusionRegion());
-        }
+        // Pass the current global focus status to avoid updates outside of a ShellTransition.
+        decoration.relayout(
+                taskInfo, decoration.getHasGlobalFocus(), decoration.getExclusionRegion());
     }
 
     @Override

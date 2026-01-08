@@ -176,11 +176,7 @@ class DesktopImeHandler(
     }
 
     private fun getFocusedTask(displayId: Int): ActivityManager.RunningTaskInfo? =
-        if (DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue()) {
-            shellTaskOrganizer.getRunningTaskInfo(focusTransitionObserver.globallyFocusedTaskId)
-        } else {
-            shellTaskOrganizer.getRunningTasks(displayId).find { taskInfo -> taskInfo.isFocused }
-        }
+        shellTaskOrganizer.getRunningTaskInfo(focusTransitionObserver.globallyFocusedTaskId)
 
     /**
      * If a transition related to a target that we have previously moved up, remove it from the

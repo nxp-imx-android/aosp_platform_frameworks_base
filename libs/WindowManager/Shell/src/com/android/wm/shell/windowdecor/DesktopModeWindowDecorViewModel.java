@@ -25,7 +25,6 @@ import static android.view.MotionEvent.ACTION_CANCEL;
 import static android.view.MotionEvent.ACTION_MOVE;
 import static android.view.MotionEvent.ACTION_UP;
 import static android.view.WindowInsets.Type.statusBars;
-import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS;
 
 import static com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_MODE_APP_HANDLE_MENU;
 import static com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_MOVE_FROM_SPLIT_SCREEN;
@@ -629,13 +628,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             removeTaskFromEventReceiver(oldTaskInfo.displayId);
             incrementEventReceiverTasks(taskInfo.displayId);
         }
-        if (ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue()) {
-            // Pass the current global focus status to avoid updates outside of a ShellTransition.
-            decoration.relayout(
-                    taskInfo, decoration.getHasGlobalFocus(), decoration.getExclusionRegion());
-        } else {
-            decoration.relayout(taskInfo, taskInfo.isFocused, decoration.getExclusionRegion());
-        }
+        // Pass the current global focus status to avoid updates outside of a ShellTransition.
+        decoration.relayout(
+                taskInfo, decoration.getHasGlobalFocus(), decoration.getExclusionRegion());
         mActivityOrientationChangeHandler.ifPresent(handler ->
                 handler.handleActivityOrientationChange(oldTaskInfo, taskInfo));
     }
