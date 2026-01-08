@@ -195,12 +195,12 @@ final class DynamicAppFunctionRegistry {
     }
 
     /**
-     * Checks if dynamic app function is enabled.
+     * Checks if dynamic app function is registered.
      * @param packageName Name of the package containing the app function.
      * @param functionIdentifier Identifier of the app function.
-     * @return True if the app function is enabled, false otherwise.
+     * @return True if the app function is registered, false otherwise.
      */
-    public boolean isAppFunctionEnabled(String packageName, String functionIdentifier) {
+    public boolean isAppFunctionRegistered(String packageName, String functionIdentifier) {
         synchronized (mLock) {
             return mRegistrations.containsKey(getRegistrationId(packageName, functionIdentifier));
         }

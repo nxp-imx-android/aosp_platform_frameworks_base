@@ -59,7 +59,7 @@ class DynamicAppFunctionRegistryTest {
     fun register_success() {
         registry.registerAppFunction(TEST_PACKAGE, TEST_FUNCTION, createExecutorMock())
 
-        assertThat(registry.isAppFunctionEnabled(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
     }
 
     @Test
@@ -78,7 +78,7 @@ class DynamicAppFunctionRegistryTest {
         registry.unregisterAppFunction(TEST_PACKAGE, TEST_FUNCTION, executor)
 
         registry.registerAppFunction(TEST_PACKAGE, TEST_FUNCTION, executor)
-        assertThat(registry.isAppFunctionEnabled(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
     }
 
     @Test
@@ -89,8 +89,8 @@ class DynamicAppFunctionRegistryTest {
         registry.registerAppFunction(TEST_PACKAGE, TEST_FUNCTION, executor1)
         registry.registerAppFunction(TEST_PACKAGE2, TEST_FUNCTION, executor2)
 
-        assertThat(registry.isAppFunctionEnabled(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
-        assertThat(registry.isAppFunctionEnabled(TEST_PACKAGE2, TEST_FUNCTION)).isTrue()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE2, TEST_FUNCTION)).isTrue()
     }
 
     @Test
@@ -105,18 +105,18 @@ class DynamicAppFunctionRegistryTest {
     fun unregister_success() {
         val executor = createExecutorMock()
         registry.registerAppFunction(TEST_PACKAGE, TEST_FUNCTION, executor)
-        assertThat(registry.isAppFunctionEnabled(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
 
         registry.unregisterAppFunction(TEST_PACKAGE, TEST_FUNCTION, executor)
 
-        assertThat(registry.isAppFunctionEnabled(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
     }
 
     @Test
     fun unregister_notRegistered_noOp() {
         registry.unregisterAppFunction(TEST_PACKAGE, TEST_FUNCTION, createExecutorMock())
 
-        assertThat(registry.isAppFunctionEnabled(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
     }
 
     @Test
@@ -124,11 +124,11 @@ class DynamicAppFunctionRegistryTest {
         val executorA = createExecutorMock()
         val executorB = createExecutorMock()
         registry.registerAppFunction(TEST_PACKAGE, TEST_FUNCTION, executorA)
-        assertThat(registry.isAppFunctionEnabled(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
 
         registry.unregisterAppFunction(TEST_PACKAGE, TEST_FUNCTION, executorB)
 
-        assertThat(registry.isAppFunctionEnabled(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
     }
 
     @Test
@@ -136,13 +136,13 @@ class DynamicAppFunctionRegistryTest {
         val executor = createExecutorMock()
         registry.registerAppFunction(TEST_PACKAGE, TEST_FUNCTION, executor)
         registry.registerAppFunction(TEST_PACKAGE, TEST_FUNCTION2, executor)
-        assertThat(registry.isAppFunctionEnabled(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
-        assertThat(registry.isAppFunctionEnabled(TEST_PACKAGE, TEST_FUNCTION2)).isTrue()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION2)).isTrue()
 
         registry.unregisterAppFunction(TEST_PACKAGE, TEST_FUNCTION, executor)
 
-        assertThat(registry.isAppFunctionEnabled(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
-        assertThat(registry.isAppFunctionEnabled(TEST_PACKAGE, TEST_FUNCTION2)).isTrue()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION2)).isTrue()
     }
 
     @Test
@@ -152,7 +152,7 @@ class DynamicAppFunctionRegistryTest {
 
         registry.unregisterAppFunction(TEST_PACKAGE, TEST_FUNCTION2, executor)
 
-        assertThat(registry.isAppFunctionEnabled(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
     }
 
     @Test
@@ -171,9 +171,9 @@ class DynamicAppFunctionRegistryTest {
                     val functionName = "function_" + i + "_" + j
                     try {
                         registry.registerAppFunction(TEST_PACKAGE, functionName, executor)
-                        assertThat(registry.isAppFunctionEnabled(TEST_PACKAGE, functionName)).isTrue()
+                        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, functionName)).isTrue()
                         registry.unregisterAppFunction(TEST_PACKAGE, functionName, executor)
-                        assertThat(registry.isAppFunctionEnabled(TEST_PACKAGE, functionName)).isFalse()
+                        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, functionName)).isFalse()
                     } catch (e: Exception) {
                         // Fail the test if any exception occurs
                         throw e
@@ -196,9 +196,9 @@ class DynamicAppFunctionRegistryTest {
 
         val deathRecipientCaptor = argumentCaptor<IBinder.DeathRecipient>()
         verify(binder).linkToDeath(deathRecipientCaptor.capture(), anyInt())
-        assertThat(registry.isAppFunctionEnabled(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
         deathRecipientCaptor.lastValue.binderDied(binder)
-        assertThat(registry.isAppFunctionEnabled(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
     }
 
     @Test
@@ -211,8 +211,8 @@ class DynamicAppFunctionRegistryTest {
         val deathRecipientCaptor = argumentCaptor<IBinder.DeathRecipient>()
         verify(binder).linkToDeath(deathRecipientCaptor.capture(), anyInt())
         deathRecipientCaptor.lastValue.binderDied(binder)
-        assertThat(registry.isAppFunctionEnabled(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
-        assertThat(registry.isAppFunctionEnabled(TEST_PACKAGE, TEST_FUNCTION2)).isFalse()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION2)).isFalse()
     }
 
     @Test
@@ -225,7 +225,7 @@ class DynamicAppFunctionRegistryTest {
         val deathRecipientCaptor = argumentCaptor<IBinder.DeathRecipient>()
         verify(binder).linkToDeath(deathRecipientCaptor.capture(), anyInt())
         deathRecipientCaptor.lastValue.binderDied(binder)
-        assertThat(registry.isAppFunctionEnabled(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
     }
 
     @Test
@@ -261,13 +261,13 @@ class DynamicAppFunctionRegistryTest {
         latch.await(5, TimeUnit.SECONDS)
         executorService.shutdown()
 
-        assertThat(registry.isAppFunctionEnabled(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
-        assertThat(registry.isAppFunctionEnabled(TEST_PACKAGE, TEST_FUNCTION2)).isFalse()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION2)).isFalse()
     }
 
     @Test
-    fun isAppFunctionEnabled_notRegistered_returnsFalse() {
-        assertThat(registry.isAppFunctionEnabled(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
+    fun isAppFunctionRegistered_notRegistered_returnsFalse() {
+        assertThat(registry.isAppFunctionRegistered(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
     }
 
     @Test

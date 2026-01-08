@@ -120,16 +120,17 @@ public final class MultiUserDynamicAppFunctionRegistry {
     }
 
     /**
-     * Checks if dynamic app function is enabled.
+     * Checks if dynamic app function is registered.
      * @param packageName Name of the package containing the app function.
      * @param functionIdentifier Identifier of the app function.
      * @param userHandle Handle of the user to register the app function for.
-     * @return True if the app function is enabled, false otherwise.
+     * @return True if the app function is registered, false otherwise.
      * @throws IllegalStateException If the user was not unlocked.
      */
-    public boolean isAppFunctionEnabled(
+    public boolean isAppFunctionRegistered(
             String packageName, String functionIdentifier, UserHandle userHandle) {
-        return getPerUserRegistry(userHandle).isAppFunctionEnabled(packageName, functionIdentifier);
+        return getPerUserRegistry(userHandle)
+                .isAppFunctionRegistered(packageName, functionIdentifier);
     }
 
     /**

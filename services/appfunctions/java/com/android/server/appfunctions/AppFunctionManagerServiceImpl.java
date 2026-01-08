@@ -756,7 +756,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()
                 && mAppFunctionMetadataReader.isDynamicFunction(
                         targetPackage, functionIdentifier, targetUserHandle)
-                && !mDynamicAppFunctionRegistry.isAppFunctionEnabled(
+                && !mDynamicAppFunctionRegistry.isAppFunctionRegistered(
                         targetPackage, functionIdentifier, targetUserHandle)) {
             // Dynamic app function without registered implementation.
             future.complete(false);
