@@ -16,34 +16,72 @@
 
 package com.android.settingslib.metadata.preferencesapi.types
 
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.settingslib.metadata.test.R
 import com.google.common.truth.Truth.assertThat
+import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class CustomEnumTest {
+    private val context: Context = ApplicationProvider.getApplicationContext()
 
-    /** A mock Integer-based Enum to test generic type <Int>. */
-    private enum class TestIntEnum(override val asApiValue: Int, override val purpose: Int = 0) :
-        EnumApi<Int> {
-        FIRST(1),
-        SECOND(2),
-        NEGATIVE(-100),
+    /** A mock Integer-based Enum to test generic type <Int>, with string res purposes. */
+    private enum class TestIntEnum(
+        override val asApiValue: Int,
+        override val purpose: Int
+    ) : EnumApiWithRes<Int> {
+        FIRST(1, R.string.enum_api_purpose_message1),
+        SECOND(2, R.string.enum_api_purpose_message2),
+        NEGATIVE(-100, R.string.enum_api_purpose_message3),
     }
 
-    /** A mock String-based Enum to test generic type <String>. */
+    /** A mock String-based Enum to test generic type <String>, with string purposes */
     private enum class TestStringEnum(
         override val asApiValue: String,
-        override val purpose: Int = 0,
-    ) : EnumApi<String> {
-        ACTIVE("active_state"),
-        INACTIVE("inactive_state"),
+        override val purpose: String,
+    ) : EnumApiWithString<String> {
+        ACTIVE("active_state", ENUM_PURPOSE_MESSAGE),
+        INACTIVE("inactive_state", ENUM_PURPOSE_MESSAGE2),
     }
 
     /** An empty Enum */
-    private enum class EmptyEnum(override val asApiValue: Int, override val purpose: Int = 0) :
-        EnumApi<Int>
+    private enum class EmptyEnum(
+        override val asApiValue: Int,
+        override val purpose: Int = 0
+    ) : EnumApiWithRes<Int>
+
+    /** An incorrect Enum */
+    private enum class IncorrectEnum(
+        override val asApiValue: Int,
+    ) : EnumApi<Int>
+
+    @Test
+    fun instantiateCustomEnum_wrongEnumApiInterface_returnsInitError() {
+        assertThrows(IllegalArgumentException::class.java) {
+            CustomEnum(IncorrectEnum::class)
+        }
+    }
+
+    @Test
+    fun getOptions_integerEnum_returnCorrectPairValuePurpose() {
+        val customEnumOptions = CustomEnum(TestIntEnum::class).getOptions(context)
+
+        assertThat(customEnumOptions[0]).isEqualTo(TestIntEnum.FIRST to context.getString(R.string.enum_api_purpose_message1))
+        assertThat(customEnumOptions[1]).isEqualTo(TestIntEnum.SECOND to context.getString(R.string.enum_api_purpose_message2))
+        assertThat(customEnumOptions[2]).isEqualTo(TestIntEnum.NEGATIVE to context.getString(R.string.enum_api_purpose_message3))
+    }
+
+    @Test
+    fun getOptions_stringEnum_returnCorrectPairValuePurpose() {
+        val customEnumOptions = CustomEnum(TestStringEnum::class).getOptions(context)
+
+        assertThat(customEnumOptions[0]).isEqualTo(TestStringEnum.ACTIVE to ENUM_PURPOSE_MESSAGE)
+        assertThat(customEnumOptions[1]).isEqualTo(TestStringEnum.INACTIVE to ENUM_PURPOSE_MESSAGE2)
+    }
 
     @Test
     fun fromApiValue_validInteger_returnCorrectName() {
@@ -100,5 +138,10 @@ class CustomEnumTest {
         val customEnum = CustomEnum(EmptyEnum::class)
 
         assertThat(customEnum.getEntries()).isEmpty()
+    }
+
+    companion object {
+        const val ENUM_PURPOSE_MESSAGE = "Enum purpose message"
+        const val ENUM_PURPOSE_MESSAGE2 = "Enum purpose message 2"
     }
 }

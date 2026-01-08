@@ -37,4 +37,8 @@
 
     <string name="required_param_purpose" translatable="false">A required parameter</string>
     <string name="optional_param_purpose" translatable="false">An optional parameter</string>
+
+    <string name="enum_api_purpose_message1" translatable="false">Enum purpose message 1</string>
+    <string name="enum_api_purpose_message2" translatable="false">Enum purpose message 2</string>
+    <string name="enum_api_purpose_message3" translatable="false">Enum purpose message 3</string>
 </resources>
