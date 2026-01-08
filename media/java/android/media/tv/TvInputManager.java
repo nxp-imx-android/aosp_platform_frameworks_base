@@ -902,6 +902,19 @@ public final class TvInputManager {
         }
 
         /**
+         * This is called when the channel of this session is changed by the underlying TV input
+         * without any {@link TvInputManager.Session#tune(Uri)} request and with special information
+         * required to notify the app.
+         *
+         * @param session A {@link TvInputManager.Session} associated with this callback.
+         * @param channelUri The URI of a channel.
+         *
+         * @hide
+         */
+        public void onChannelRetunedWithExtraInfo(Session session, Uri channelUri, Bundle args) {
+        }
+
+        /**
          * This is called when the audio presentation information of the session has been changed.
          *
          * @param session A {@link TvInputManager.Session} associated with this callback.
@@ -1197,6 +1210,15 @@ public final class TvInputManager {
                 public void run() {
                     mSessionCallback.onChannelRetuned(mSession, channelUri);
                 }
+            });
+        }
+
+        void postChannelRetunedWithExtraInfo(final Uri channelUri, final Bundle args) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mSessionCallback.onChannelRetunedWithExtraInfo(mSession, channelUri, args);
+                    }
             });
         }
 
@@ -1727,6 +1749,19 @@ public final class TvInputManager {
                     record.postChannelRetuned(channelUri);
                 }
             }
+
+            @Override
+            public void onChannelRetunedWithExtraInfo(Uri channelUri, Bundle arg, int seq) {
+                synchronized (mSessionCallbackRecordMap) {
+                    SessionCallbackRecord record = mSessionCallbackRecordMap.get(seq);
+                    if (record == null) {
+                        Log.e(TAG, "Callback not found for seq " + seq);
+                        return;
+                    }
+                    record.postChannelRetunedWithExtraInfo(channelUri, arg);
+                }
+            }
+
             @Override
             public void onAudioPresentationsChanged(List<AudioPresentation> audioPresentations,
                     int seq) {
