@@ -21,8 +21,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4811759950673118541">"系統使用者介面"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"要開啟「慳電模式」嗎？"</string>
-    <string name="battery_low_description" msgid="7848989602036547056">"剩餘 <xliff:g id="PERCENTAGE">%s</xliff:g> 電量。「慳電模式」會開啟深色主題背景、限制背景活動，並延遲顯示通知。"</string>
-    <string name="battery_low_intro" msgid="8033783734931200690">"「慳電模式」會開啟深色主題背景、限制背景活動，並延遲顯示通知。"</string>
+    <string name="battery_low_description" msgid="7848989602036547056">"剩餘 <xliff:g id="PERCENTAGE">%s</xliff:g> 電量。「慳電模式」會開啟深色主題、限制背景活動，並延遲顯示通知。"</string>
+    <string name="battery_low_intro" msgid="8033783734931200690">"「慳電模式」會開啟深色主題、限制背景活動，並延遲顯示通知。"</string>
     <string name="battery_low_percent_format" msgid="4276661262843170964">"剩餘 <xliff:g id="PERCENTAGE">%s</xliff:g>"</string>
     <string name="invalid_charger_title" msgid="938685362320735167">"無法透過 USB 充電"</string>
     <string name="invalid_charger_text" msgid="2339310107232691577">"使用裝置隨附的充電器"</string>
@@ -156,6 +156,10 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"顯示自拍鏡頭"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"顯示觸控回應"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"選擇要錄影的應用程式"</string>
+    <!-- no translation found for screen_record_settings (2377267679200139285) -->
+    <skip />
+    <!-- no translation found for screen_record_markup (5583986085046693669) -->
+    <skip />
     <string name="screen_record_video_saved" msgid="1345283626390232282">"已儲存影片"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"影片已刪除"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"復原"</string>
@@ -168,6 +172,8 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"暫停"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"靜音"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"取消靜音"</string>
+    <!-- no translation found for screen_record_video_preview_elapsed_time_a11y_template (969599623785875798) -->
+    <skip />
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"IT 管理員已封鎖螢幕截圖功能"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"擷取整個畫面的螢幕截圖"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"錄影整個螢幕畫面"</string>
@@ -484,7 +490,7 @@
     <string name="quick_settings_night_secondary_label_until_sunrise" msgid="4063448287758262485">"在日出時關閉"</string>
     <string name="quick_settings_night_secondary_label_on_at" msgid="3584738542293528235">"<xliff:g id="TIME">%s</xliff:g> 開啟"</string>
     <string name="quick_settings_secondary_label_until" msgid="1883981263191927372">"直到<xliff:g id="TIME">%s</xliff:g>"</string>
-    <string name="quick_settings_ui_mode_night_label" msgid="1398928270610780470">"深色主題背景"</string>
+    <string name="quick_settings_ui_mode_night_label" msgid="1398928270610780470">"深色主題"</string>
     <string name="quick_settings_dark_mode_secondary_label_battery_saver" msgid="4990712734503013251">"慳電模式"</string>
     <string name="quick_settings_dark_mode_secondary_label_on_at_sunset" msgid="6017379738102015710">"在日落時開啟"</string>
     <string name="quick_settings_dark_mode_secondary_label_until_sunrise" msgid="4404885070316716472">"在日出時關閉"</string>
@@ -934,6 +940,8 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"通訊、推薦媒體和其他"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"在「設定」中開啟"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"現在系統可撮要較長的對話，方便你快速掌握重點"</string>
+    <!-- no translation found for notification_onboarding_summaries_message_with_apps (5320980333818238465) -->
+    <skip />
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"「通知整理工具」會將優先順序較低的通知分類，並設定為靜音。前往「設定」新增更多分類。"</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# 則通知}other{# 則通知}}"</string>
     <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>，<xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
@@ -1787,4 +1795,62 @@
     <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"使用精確位置"</string>
     <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"精確位置附近"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"精確位置"</string>
+    <!-- no translation found for privacy_chip_use_string (979159484631969073) -->
+    <skip />
+    <!-- no translation found for privacy_chip_use_string_with_app (6807216002072346877) -->
+    <skip />
+    <!-- no translation found for privacy_chip_camera_and_mic_text (6254449489859255607) -->
+    <skip />
+    <!-- no translation found for av_panel_title (455230832870768515) -->
+    <skip />
+    <!-- no translation found for sensor_activity_header (2145727448786698035) -->
+    <skip />
+    <!-- no translation found for sensor_activity_see_all_access_button (8005330122289549048) -->
+    <skip />
+    <!-- no translation found for sensor_activity_camera_label (4260675418606211259) -->
+    <skip />
+    <!-- no translation found for sensor_activity_microphone_label (4012136402420177411) -->
+    <skip />
+    <!-- no translation found for sensor_activity_manage_access_button (1275701280501357102) -->
+    <skip />
+    <!-- no translation found for sensor_activity_close_app_button (6907314738150753330) -->
+    <skip />
+    <!-- no translation found for sensor_activity_back_button_cd (6894532284650291222) -->
+    <skip />
+    <!-- no translation found for privacy_chip_apps_using_sensor_suffix (527247786536767096) -->
+    <skip />
+    <!-- no translation found for privacy_chip_camera_in_use (5163494654848590528) -->
+    <skip />
+    <!-- no translation found for privacy_chip_mic_in_use (1586091297556363367) -->
+    <skip />
+    <!-- no translation found for privacy_chip_camera_mic_in_use (5179267787210197484) -->
+    <skip />
+    <!-- no translation found for av_camera_portrait_touch_up (5191856296212427203) -->
+    <skip />
+    <!-- no translation found for av_mic_label (5427348054144789879) -->
+    <skip />
+    <!-- no translation found for av_camera_label (7719772172590702343) -->
+    <skip />
+    <!-- no translation found for av_camera_blur_drill_in_title (2250600375798981511) -->
+    <skip />
+    <!-- no translation found for av_camera_blur_off (3170334995799202022) -->
+    <skip />
+    <!-- no translation found for av_camera_blur_light (5666055368940059418) -->
+    <skip />
+    <!-- no translation found for av_camera_blur_full (3276351992811619332) -->
+    <skip />
+    <!-- no translation found for av_camera_improve_lighting (1540549414296669133) -->
+    <skip />
+    <!-- no translation found for av_camera_framing (5108462267843042492) -->
+    <skip />
+    <!-- no translation found for av_studio_mic (2614843492629357766) -->
+    <skip />
+    <!-- no translation found for av_studio_look (621893522645557619) -->
+    <skip />
+    <!-- no translation found for av_studio_look_effects (4105109585851068415) -->
+    <skip />
+    <!-- no translation found for av_blur (405131343487260171) -->
+    <skip />
+    <!-- no translation found for av_live_captions (7819416886586903077) -->
+    <skip />
 </resources>

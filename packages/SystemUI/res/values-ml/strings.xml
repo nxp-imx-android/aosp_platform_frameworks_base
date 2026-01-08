@@ -91,10 +91,8 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"സ്‌ക്രീൻഷോട്ട് സംരക്ഷിക്കാനാകുന്നില്ല"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"സ്ക്രീൻഷോട്ടുകൾ എടുക്കുന്നത് ആപ്പോ നിങ്ങളുടെ സ്ഥാപനമോ അനുവദിക്കുന്നില്ല"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"സ്ക്രീൻഷോട്ടുകൾ എടുക്കുന്നത് നിങ്ങളുടെ ഐടി അഡ്‌മിൻ ബ്ലോക്ക് ചെയ്തിരിക്കുന്നു"</string>
-    <!-- no translation found for screenshot_copy_label (3551237076438128722) -->
-    <skip />
-    <!-- no translation found for screenshot_copy_description (2890150686381938858) -->
-    <skip />
+    <string name="screenshot_copy_label" msgid="3551237076438128722">"പകർത്തുക"</string>
+    <string name="screenshot_copy_description" msgid="2890150686381938858">"ക്ലിപ്പ്ബോർഡിലേക്ക് സ്ക്രീൻഷോട്ട് പകർത്തുക ബട്ടൺ"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"എഡിറ്റ് ചെയ്യുക"</string>
     <string name="screenshot_edit_description" msgid="7802378587672433507">"\'സ്ക്രീൻഷോട്ട് എഡിറ്റ് ചെയ്യുക\' ബട്ടൺ"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"പങ്കിടുക"</string>
@@ -156,6 +154,10 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"സെൽഫി ക്യാമറ കാണിക്കുക"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ടച്ചുകൾ കാണിക്കുക"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"റെക്കോർഡ് ചെയ്യാൻ ഒരു ആപ്പ് തിരഞ്ഞെടുക്കുക"</string>
+    <!-- no translation found for screen_record_settings (2377267679200139285) -->
+    <skip />
+    <!-- no translation found for screen_record_markup (5583986085046693669) -->
+    <skip />
     <string name="screen_record_video_saved" msgid="1345283626390232282">"വീഡിയോ സംരക്ഷിച്ചു"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"വീഡിയോ ഇല്ലാതാക്കി"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"പഴയപടിയാക്കുക"</string>
@@ -168,6 +170,8 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"താൽക്കാലികമായി നിർത്തുക"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"മ്യൂട്ട് ചെയ്യുക"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"അൺമ്യൂട്ട് ചെയ്യുക"</string>
+    <!-- no translation found for screen_record_video_preview_elapsed_time_a11y_template (969599623785875798) -->
+    <skip />
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"നിങ്ങളുടെ ഐടി അഡ്‌മിൻ സ്ക്രീൻ ക്യാപ്‌ചർ ചെയ്യുന്നത് ബ്ലോക്ക് ചെയ്തിരിക്കുന്നു"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"മുഴുവൻ സ്ക്രീനിന്റെ സ്ക്രീൻഷോട്ട് എടുക്കുക"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"സ്ക്രീൻ പൂർണ്ണമായി റെക്കോർഡ് ചെയ്യുക"</string>
@@ -934,6 +938,8 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"വാർത്താക്കുറിപ്പുകളും നിർദ്ദേശിക്കുന്ന മീഡിയയും മറ്റും"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"ക്രമീകരണത്തിൽ ഓണാക്കുക"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ഇപ്പോൾ നിങ്ങളുടെ ദൈർഘ്യമേറിയ സംഭാഷണങ്ങൾ സംഗ്രഹിച്ച് നിങ്ങൾക്ക് വേഗത്തിലുള്ള റീക്യാപ്പുകൾ നൽകാനാകും"</string>
+    <!-- no translation found for notification_onboarding_summaries_message_with_apps (5320980333818238465) -->
+    <skip />
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"അറിയിപ്പ് ഓർഗനൈസർ, മുൻഗണന കുറഞ്ഞ അറിയിപ്പുകൾ ബണ്ടിൽ ചെയ്യുകയും അവ നിശബ്ദമാക്കുകയും ചെയ്യുന്നു. ക്രമീകരണത്തിൽ കൂടുതൽ വിഭാഗങ്ങൾ ചേർക്കുക."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# അറിയിപ്പ്}other{# അറിയിപ്പുകൾ}}"</string>
     <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>, <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
@@ -1787,4 +1793,62 @@
     <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"കൃത്യമായ ലൊക്കേഷൻ ഉപയോഗിക്കുക"</string>
     <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"കൃത്യമായ ലൊക്കേഷന് സമീപം"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"കൃത്യമായ ലൊക്കേഷൻ"</string>
+    <!-- no translation found for privacy_chip_use_string (979159484631969073) -->
+    <skip />
+    <!-- no translation found for privacy_chip_use_string_with_app (6807216002072346877) -->
+    <skip />
+    <!-- no translation found for privacy_chip_camera_and_mic_text (6254449489859255607) -->
+    <skip />
+    <!-- no translation found for av_panel_title (455230832870768515) -->
+    <skip />
+    <!-- no translation found for sensor_activity_header (2145727448786698035) -->
+    <skip />
+    <!-- no translation found for sensor_activity_see_all_access_button (8005330122289549048) -->
+    <skip />
+    <!-- no translation found for sensor_activity_camera_label (4260675418606211259) -->
+    <skip />
+    <!-- no translation found for sensor_activity_microphone_label (4012136402420177411) -->
+    <skip />
+    <!-- no translation found for sensor_activity_manage_access_button (1275701280501357102) -->
+    <skip />
+    <!-- no translation found for sensor_activity_close_app_button (6907314738150753330) -->
+    <skip />
+    <!-- no translation found for sensor_activity_back_button_cd (6894532284650291222) -->
+    <skip />
+    <!-- no translation found for privacy_chip_apps_using_sensor_suffix (527247786536767096) -->
+    <skip />
+    <!-- no translation found for privacy_chip_camera_in_use (5163494654848590528) -->
+    <skip />
+    <!-- no translation found for privacy_chip_mic_in_use (1586091297556363367) -->
+    <skip />
+    <!-- no translation found for privacy_chip_camera_mic_in_use (5179267787210197484) -->
+    <skip />
+    <!-- no translation found for av_camera_portrait_touch_up (5191856296212427203) -->
+    <skip />
+    <!-- no translation found for av_mic_label (5427348054144789879) -->
+    <skip />
+    <!-- no translation found for av_camera_label (7719772172590702343) -->
+    <skip />
+    <!-- no translation found for av_camera_blur_drill_in_title (2250600375798981511) -->
+    <skip />
+    <!-- no translation found for av_camera_blur_off (3170334995799202022) -->
+    <skip />
+    <!-- no translation found for av_camera_blur_light (5666055368940059418) -->
+    <skip />
+    <!-- no translation found for av_camera_blur_full (3276351992811619332) -->
+    <skip />
+    <!-- no translation found for av_camera_improve_lighting (1540549414296669133) -->
+    <skip />
+    <!-- no translation found for av_camera_framing (5108462267843042492) -->
+    <skip />
+    <!-- no translation found for av_studio_mic (2614843492629357766) -->
+    <skip />
+    <!-- no translation found for av_studio_look (621893522645557619) -->
+    <skip />
+    <!-- no translation found for av_studio_look_effects (4105109585851068415) -->
+    <skip />
+    <!-- no translation found for av_blur (405131343487260171) -->
+    <skip />
+    <!-- no translation found for av_live_captions (7819416886586903077) -->
+    <skip />
 </resources>
