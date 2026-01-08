@@ -1123,9 +1123,24 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                     Slog.w(TAG, "Host is null when masking widget: " + widget.appWidgetId);
                     hostUser = mUserManager.getProfileParent(appUserId).getUserHandle();
                 }
+                boolean useDisabledPreviewWhenMasked = widget.options.getBoolean(
+                        "useDisabledPreviewWhenMasked", false);
+                if (useDisabledPreviewWhenMasked) {
+                    views = new RemoteViews(provider.id.componentName.getPackageName(),
+                            R.layout.disabled_widget_mask_view);
+                    RemoteViews finalMaskedView = views;
+                    views.setBoolean(R.id.inner_frameLayout, "setEnabled", false);
+                    AndroidFuture<RemoteViews> result = getGeneratedPreviewsAsync(provider,
+                            widget.options.getInt(AppWidgetManager.OPTION_APPWIDGET_HOST_CATEGORY));
+                    widget.setMaskPending(true);
+                    result.thenAccept(generatedPreview -> {
+                        applyWidgetWithGeneratedPreviewLocked(finalMaskedView, generatedPreview,
+                                widget);
+                    });
+                }
                 if (provider.maskedByStoppedPackage) {
                     Intent intent = createUpdateIntentLocked(provider,
-                            new int[] { widget.appWidgetId });
+                            new int[]{widget.appWidgetId});
                     views.setOnClickPendingIntent(android.R.id.background,
                             PendingIntent.getBroadcastAsUser(mContext, widget.appWidgetId,
                                     intent, PendingIntent.FLAG_UPDATE_CURRENT
@@ -1133,16 +1148,33 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                 } else if (onClickIntent != null) {
                     views.setOnClickPendingIntent(android.R.id.background,
                             PendingIntent.getActivityAsUser(mContext, widget.appWidgetId,
-                            onClickIntent, PendingIntent.FLAG_UPDATE_CURRENT
-                                    | PendingIntent.FLAG_IMMUTABLE, null /* options */,
-                            hostUser));
+                                    onClickIntent, PendingIntent.FLAG_UPDATE_CURRENT
+                                            | PendingIntent.FLAG_IMMUTABLE, null /* options */,
+                                    hostUser));
                 }
-                if (widget.replaceWithMaskedViewsLocked(views)) {
-                    scheduleNotifyUpdateAppWidgetLocked(widget, widget.getEffectiveViewsLocked());
+                if (!useDisabledPreviewWhenMasked && widget.replaceWithMaskedViewsLocked(views)) {
+                    scheduleNotifyUpdateAppWidgetLocked(widget,
+                            widget.getEffectiveViewsLocked());
                 }
             }
         } finally {
             Binder.restoreCallingIdentity(identity);
+        }
+    }
+
+    private void applyWidgetWithGeneratedPreviewLocked(RemoteViews maskedView,
+            RemoteViews generatedPreview, Widget widget) {
+        if (generatedPreview != null) {
+            synchronized (mLock) {
+                if (widget.maskPending) {
+                    RemoteViews copyPreview = new RemoteViews(generatedPreview);
+                    maskedView.addView(R.id.inner_frameLayout, copyPreview);
+                    if (widget.replaceWithMaskedViewsLocked(maskedView)) {
+                        scheduleNotifyUpdateAppWidgetLocked(widget,
+                                widget.getEffectiveViewsLocked());
+                    }
+                }
+            }
         }
     }
 
@@ -6659,6 +6691,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         boolean trackingUpdate = false;
         boolean isFirstConfigActivityPending = false;
         final AppWidgetEvent.Builder eventBuilder = new AppWidgetEvent.Builder();
+        boolean maskPending = false;
 
         @Override
         public String toString() {
@@ -6671,12 +6704,17 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         }
 
         private boolean clearMaskedViewsLocked() {
+            maskPending = false;
             if (maskedViews != null) {
                 maskedViews = null;
                 return true;
             } else {
                 return false;
             }
+        }
+
+        private void setMaskPending(boolean pending) {
+            maskPending = pending;
         }
 
         public RemoteViews getEffectiveViewsLocked() {
