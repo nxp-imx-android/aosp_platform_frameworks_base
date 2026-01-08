@@ -147,7 +147,10 @@ interface AuthenticationRepository {
      * Checks the given [LockscreenCredential] to see if it's correct, returning an
      * [AuthenticationResultModel] representing what happened.
      */
-    suspend fun checkCredential(credential: LockscreenCredential): AuthenticationResultModel
+    suspend fun checkCredential(
+        credential: LockscreenCredential,
+        onEarlyMatched: () -> Unit,
+    ): AuthenticationResultModel
 
     /** Returns the length of the PIN or `0` if the current auth method is not PIN. */
     suspend fun getPinLength(): Int
@@ -326,10 +329,12 @@ constructor(
     }
 
     override suspend fun checkCredential(
-        credential: LockscreenCredential
+        credential: LockscreenCredential,
+        onEarlyMatched: () -> Unit,
     ): AuthenticationResultModel {
         return withContext(backgroundDispatcher) {
-            val response = lockPatternUtils.checkCredential(credential, selectedUserId) {}
+            val response =
+                lockPatternUtils.checkCredential(credential, selectedUserId) { onEarlyMatched() }
             return@withContext AuthenticationResultModel(
                 isSuccessful = response.isMatched,
                 lockoutDuration = response.timeout.toKotlinDuration(),

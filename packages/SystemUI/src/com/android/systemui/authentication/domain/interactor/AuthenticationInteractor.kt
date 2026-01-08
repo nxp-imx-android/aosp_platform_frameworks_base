@@ -43,6 +43,7 @@ import kotlin.math.max
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -231,35 +232,46 @@ constructor(
 
         // Attempt to authenticate:
         val credential = authMethod.createCredential(input) ?: return AuthenticationResult.SKIPPED
-        val authenticationResult = repository.checkCredential(credential)
-        credential.zeroize()
+        latencyTracker.onActionStart(LatencyTracker.ACTION_CHECK_CREDENTIAL)
+        latencyTracker.onActionStart(LatencyTracker.ACTION_CHECK_CREDENTIAL_UNLOCKED)
+        try {
+            val authenticationResult =
+                repository.checkCredential(credential) {
+                    latencyTracker.onActionEnd(LatencyTracker.ACTION_CHECK_CREDENTIAL)
+                }
+            credential.zeroize()
 
-        if (authenticationResult.isSuccessful) {
-            latencyTracker.onActionStart(LatencyTracker.ACTION_LOCKSCREEN_UNLOCK)
-            repository.reportAuthenticationAttempt(AuthenticationResult.SUCCEEDED)
-            // TODO: beverlyt
-            _onAuthenticationResult.emit(true)
+            if (authenticationResult.isSuccessful) {
+                latencyTracker.onActionEnd(LatencyTracker.ACTION_CHECK_CREDENTIAL_UNLOCKED)
+                latencyTracker.onActionStart(LatencyTracker.ACTION_LOCKSCREEN_UNLOCK)
+                repository.reportAuthenticationAttempt(AuthenticationResult.SUCCEEDED)
+                _onAuthenticationResult.emit(true)
 
-            // Force a garbage collection in an attempt to erase any credentials left in memory.
-            // Do it after a 5-sec delay to avoid making the bouncer dismiss animation janky.
-            initiateGarbageCollection(delay = 5.seconds)
+                // Force a garbage collection in an attempt to erase any credentials left in memory.
+                // Do it after a 5-sec delay to avoid making the bouncer dismiss animation janky.
+                initiateGarbageCollection(delay = 5.seconds)
 
-            return AuthenticationResult.SUCCEEDED
+                return AuthenticationResult.SUCCEEDED
+            }
+
+            // Authentication failed.
+            repository.reportAuthenticationAttempt(
+                AuthenticationResult.FAILED,
+                authenticationResult.isDuplicate,
+            )
+
+            if (authenticationResult.lockoutDuration.isPositive()) {
+                // Lockout has been triggered.
+                repository.reportLockoutStarted(authenticationResult.lockoutDuration)
+            }
+
+            _onAuthenticationResult.emit(false)
+            return AuthenticationResult.FAILED
+        } catch (ex: CancellationException) {
+            // The authentication action has been cancelled, likely due to the user leaving the UI.
+            latencyTracker.onActionEnd(LatencyTracker.ACTION_CHECK_CREDENTIAL_UNLOCKED)
+            throw ex
         }
-
-        // Authentication failed.
-        repository.reportAuthenticationAttempt(
-            AuthenticationResult.FAILED,
-            authenticationResult.isDuplicate,
-        )
-
-        if (authenticationResult.lockoutDuration.isPositive()) {
-            // Lockout has been triggered.
-            repository.reportLockoutStarted(authenticationResult.lockoutDuration)
-        }
-
-        _onAuthenticationResult.emit(false)
-        return AuthenticationResult.FAILED
     }
 
     /**
