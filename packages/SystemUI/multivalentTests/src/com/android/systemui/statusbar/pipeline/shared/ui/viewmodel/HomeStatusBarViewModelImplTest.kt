@@ -592,6 +592,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
             kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Gone)
             kosmos.sceneContainerRepository.showOverlay(Overlays.QuickSettingsShade)
             kosmos.fakeShadeDisplaysRepository.setDisplayId(EXTERNAL_DISPLAY)
+            kosmos.fakeShadeDisplaysRepository.setPendingDisplayId(EXTERNAL_DISPLAY)
             runCurrent()
 
             assertThat(latest).isTrue()
@@ -1886,6 +1887,26 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
                 .isEqualTo(logoutToSystemUserCount + 1)
         }
     }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_shadeOnExternalDisplay_statusBarOnDefaultDisplay_isVisible() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
+
+            // GIVEN shade is moving to external display
+            kosmos.fakeShadeDisplaysRepository.setPendingDisplayId(EXTERNAL_DISPLAY)
+            // AND shade window is still on default display (simulating delay)
+            kosmos.fakeShadeDisplaysRepository.setDisplayId(DEFAULT_DISPLAY)
+
+            // WHEN scene changes to Shade
+            kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Shade)
+            runCurrent()
+
+            // THEN status bar should be visible on default display
+            assertThat(latest).isTrue()
+        }
 
     private fun activeNotificationsStore(notifications: List<ActiveNotificationModel>) =
         ActiveNotificationsStore.Builder()
