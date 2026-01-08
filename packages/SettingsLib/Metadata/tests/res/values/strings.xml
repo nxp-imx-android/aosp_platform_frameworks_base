@@ -22,6 +22,10 @@
     <string name="preconditions_description2" translatable="false">Preconditions description 2</string>
     <string name="preconditions_hardware_unsupported_message" translatable="false">Plug in the device</string>
     <string name="preconditions_enterprise_restriction_message" translatable="false">Blocked by admin</string>
+    <string name="preconditions_custom_message" translatable="false">Custom preconditions message</string>
+    <string name="preconditions_invalid_preference_message" translatable="false">Requesting invalid preference</string>
+    <string name="preconditions_missing_permission_message" translatable="false">You miss an important permission</string>
+
     <string name="value_preconditions_even_number_description" translatable="false">Value\'s digits must add up to even number</string>
     <string name="value_preconditions_disallow_custom_reason" translatable="false">Wrong value</string>
     <string name="value_preconditions_description1" translatable="false">Value Preconditions Description 1</string>

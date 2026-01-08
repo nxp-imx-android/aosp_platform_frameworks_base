@@ -16,5 +16,11 @@
 
 package com.android.settingslib.metadata.preferencesapi.preconditions
 
+import androidx.annotation.StringRes
+
 /** The getter is unavailable due to some missing permissions. */
-class MissingPermission(permissions: List<String>, override val reason: Int) : Disallowed
+class MissingPermission : Disallowed {
+    constructor(permissions: List<String>, @StringRes reason: Int) : super(reason)
+
+    constructor(permissions: List<String>, reason: String) : super(reason)
+}

@@ -16,13 +16,16 @@
 
 package com.android.settingslib.metadata.preferencesapi
 
+import android.content.Context
+import androidx.annotation.StringRes
+
 /**
  * A utility object for creating standardized exception messages for the API-first approach.
  *
  * This object centralizes common error message templates to ensure that validation errors
  * (e.g. incorrect block order, duplicate definitions) are reported consistently across the module.
  */
-internal object ExceptionMessagesFormatter {
+internal object Utils {
     private const val EXCEPTION_MESSAGE_WRONG_ORDER = "%s defined in wrong order"
     private const val EXCEPTION_MESSAGE_MULTIPLE_DEFINES =
         "%s should be only defined once per screen"
@@ -41,4 +44,26 @@ internal object ExceptionMessagesFormatter {
 
     fun getExceptionMessageMultipleParametersDefined(size: Int) =
         String.format(EXCEPTION_MESSAGE_MULTIPLE_PARAMETERS_DEFINED, size)
+}
+
+/**
+ * Resolves a string from either a string resource or a direct string value.
+ * This is an internal utility to ensure consistent handling of descriptions and reasons
+ * across the Catalyst API-first approach.
+ */
+internal fun resolveString(
+    context: Context,
+    @StringRes stringRes: Int?,
+    string: String?,
+): String {
+    return when {
+        stringRes != null -> context.getString(stringRes)
+        string != null -> string
+
+        /*
+         * This case should be unreachable if callers perform a `require` check in their init
+         * blocks.
+         */
+        else -> error("Both stringRes and string cannot be null.")
+    }
 }

@@ -16,7 +16,9 @@
 
 package com.android.settingslib.metadata.preferencesapi.preconditions
 
+import android.content.Context
 import androidx.annotation.StringRes
+import com.android.settingslib.metadata.preferencesapi.resolveString
 
 interface ApiPreconditions
 
@@ -25,9 +27,21 @@ object Allowed : ApiPreconditions
 
 /**
  * Represents a failed precondition check.
- * Every implementation of `Disallowed` needs to provide a `reason`.
+ * Every implementation of `Disallowed` needs to provide A human-readable `reason` explaining why
+ * the precondition failed.
  */
-interface Disallowed : ApiPreconditions {
-    /** A human-readable reason explaining why the precondition failed. */
-    @get:StringRes val reason: Int
+open class Disallowed private constructor(
+    @StringRes val reasonRes: Int?,
+    val reason: String?
+) : ApiPreconditions {
+    init {
+        require(reasonRes != null || reason != null)
+    }
+
+    constructor(@StringRes reason: Int) : this(reasonRes = reason, reason = null)
+
+    constructor(reason: String) : this(reasonRes = null, reason = reason)
+
+    /** Get the reason as a string using the provided context. */
+    fun getReason(context: Context): String = resolveString(context, reasonRes, reason)
 }

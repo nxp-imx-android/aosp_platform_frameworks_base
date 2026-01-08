@@ -16,6 +16,7 @@
 
 package com.android.settingslib.metadata.preferencesapi.preconditions
 
+import androidx.annotation.StringRes
 import com.android.settingslib.metadata.KeyParametersSchema
 
 /**
@@ -24,20 +25,30 @@ import com.android.settingslib.metadata.KeyParametersSchema
  * problematic preference (params being required only if the other preference is
  * parameterised). The reason should explain what is wrong.
  */
-class InvalidPreference(
-    otherPreferenceScreenKey: String,
-    otherPreferenceKey: String,
-    otherPreferenceParams: KeyParametersSchema?,
-    override val reason: Int
-) : Disallowed {
+class InvalidPreference : Disallowed {
     constructor(
         otherPreferenceScreenKey: String,
         otherPreferenceKey: String,
-        reason: Int
-    ) : this(
-        otherPreferenceScreenKey,
-        otherPreferenceKey,
-        null,
-        reason
-    )
+        otherPreferenceParams: KeyParametersSchema?,
+        @StringRes reason: Int
+    ) : super(reason)
+
+    constructor(
+        otherPreferenceScreenKey: String,
+        otherPreferenceKey: String,
+        otherPreferenceParams: KeyParametersSchema?,
+        reason: String
+    ) : super(reason)
+
+    constructor(
+        otherPreferenceScreenKey: String,
+        otherPreferenceKey: String,
+        @StringRes reason: Int
+    ) : this(otherPreferenceScreenKey, otherPreferenceKey, null, reason)
+
+    constructor(
+        otherPreferenceScreenKey: String,
+        otherPreferenceKey: String,
+        reason: String
+    ) : this(otherPreferenceScreenKey, otherPreferenceKey, null, reason)
 }
