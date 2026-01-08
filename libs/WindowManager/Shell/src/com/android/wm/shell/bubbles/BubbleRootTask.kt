@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.bubbles
 
+import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
@@ -28,6 +29,7 @@ import android.window.WindowContainerTransaction
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.dagger.WMSingleton
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.shared.bubbles.logging.BubbleLog
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.taskview.TaskViewRootTask
 import javax.inject.Inject
@@ -61,6 +63,9 @@ constructor(
     val taskId: Int
         get() = rootTaskInfo?.taskId ?: INVALID_TASK_ID
 
+    var visibilityBarrierToken: WindowContainerToken? = null
+        private set
+
     /** Create the root task for bubbles. */
     private fun onInit() {
         // Create a root-task in WM Core. The app bubble tasks will be positioned as the leaf
@@ -71,6 +76,16 @@ constructor(
         // corners for better UX (e.g. when landscape apps are letterboxed).
         val taskProperties =
             TaskPropertiesRequest().setIgnoreInsets(true).setDisableAppCompatRoundedCorners(true)
+        if (com.android.window.flags.Flags.visibilityManagementInBubbleRoot()) {
+            // We are using the visibility barrier to control the task visibility.
+            // Force leaf tasks to be non-occluding, so that all tasks above the visibility barrier
+            // can be visible.
+            // During quick switch, TaskViewTransitions will ensure all participated tasks are
+            // visible, and animate their visibility through TaskView instead of actually toggling
+            // the window visibility, so that it doesn't have to wait for the activity lifecycle
+            // until stable (user stop switching).
+            taskProperties.setForceLeafTasksNonOccluding(true)
+        }
         val params =
             TaskCreationParams.Builder()
                 .setName("Bubbles")
@@ -78,7 +93,10 @@ constructor(
                 .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
                 .setTaskPropertiesRequest(taskProperties)
                 .build()
-        taskOrganizer.createTask(params, this)
+        val token = taskOrganizer.createTask(params, this)
+        if (token == null) {
+            BubbleLog.e("Failed to create Bubble root Task")
+        }
     }
 
     override fun onTaskAppeared(taskInfo: ActivityManager.RunningTaskInfo, leash: SurfaceControl) {
@@ -86,28 +104,46 @@ constructor(
             return
         }
         rootTaskInfo = taskInfo
-
-        val wct = WindowContainerTransaction()
-        wct.reorder(taskInfo.token, false /* onTop */)
-        wct.setReparentLeafTaskIfRelaunchFromHome(
-            taskInfo.token,
-            true, /* reparentLeafTaskIfRelaunchFromHome */
-        )
-        wct.setDisallowOverrideWindowingModeForChildren(
-            taskInfo.token,
-            true, /* disallowOverrideWindowingModeForChildren */
-        )
-        // Preserve bubble leaf tasks if relaunched from different windowing mode.
-        wct.setPreserveLeafTaskIfRelaunch(taskInfo.token, true /* preserveLeafTaskIfRelaunch */)
-        wct.setInterceptBackPressedOnTaskRoot(taskInfo.token, true /* interceptBackPressed */)
-        wct.setTaskForceExcludedFromRecents(taskInfo.token, true /* forceExcluded */)
-        wct.setDisablePip(taskInfo.token, true /* disablePip */)
-        wct.setDisableLaunchAdjacent(taskInfo.token, true /* disableLaunchAdjacent */)
-        wct.setForceTranslucent(taskInfo.token, true /* forceTranslucent */)
-        taskOrganizer.applyTransaction(wct)
+        configRootTask(taskInfo.token)
+        addVisibilityBarrier(taskInfo.token)
     }
 
     override fun onTaskInfoChanged(taskInfo: ActivityManager.RunningTaskInfo?) {
-        rootTaskInfo = taskInfo
+        if (taskInfo?.token == windowContainerToken) {
+            rootTaskInfo = taskInfo
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun configRootTask(rootTaskToken: WindowContainerToken) {
+        val wct = WindowContainerTransaction()
+        wct.reorder(rootTaskToken, false /* onTop */)
+        wct.setReparentLeafTaskIfRelaunchFromHome(rootTaskToken, true)
+        wct.setDisallowOverrideWindowingModeForChildren(rootTaskToken, true)
+        // Preserve bubble leaf tasks if relaunched from different windowing mode.
+        wct.setPreserveLeafTaskIfRelaunch(rootTaskToken, true)
+        wct.setInterceptBackPressedOnTaskRoot(rootTaskToken, true)
+        wct.setTaskForceExcludedFromRecents(rootTaskToken, true)
+        wct.setDisablePip(rootTaskToken, true)
+        wct.setDisableLaunchAdjacent(rootTaskToken, true)
+        wct.setForceTranslucent(rootTaskToken, true)
+        taskOrganizer.applyTransaction(wct)
+    }
+
+    private fun addVisibilityBarrier(rootTaskToken: WindowContainerToken) {
+        if (!com.android.window.flags.Flags.visibilityManagementInBubbleRoot()) {
+            return
+        }
+        val params =
+            TaskCreationParams.Builder()
+                .setName("Bubbles-visibility-barrier")
+                .setDisplayId(context.displayId)
+                .setParentContainer(rootTaskToken)
+                .setVisibilityBarrier(true)
+                .build()
+        visibilityBarrierToken = taskOrganizer.createTask(params, this)
+        if (visibilityBarrierToken == null) {
+            BubbleLog.e("Failed to create Bubble visibility barrier")
+        }
     }
 }

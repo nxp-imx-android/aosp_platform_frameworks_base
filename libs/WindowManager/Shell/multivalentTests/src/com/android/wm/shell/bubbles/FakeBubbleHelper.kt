@@ -26,6 +26,10 @@ class FakeBubbleHelper : BubbleHelper {
         return null
     }
 
+    override fun getAppBubbleVisibilityBarrierToken(): WindowContainerToken? {
+        return null
+    }
+
     override fun isAppBubbleRootTask(taskId: Int): Boolean {
         return false
     }
