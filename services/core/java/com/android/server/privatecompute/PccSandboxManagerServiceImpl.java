@@ -19,13 +19,27 @@ package com.android.server.privatecompute;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
+import android.app.privatecompute.DataMigrationToPccService;
+import android.app.privatecompute.IDataMigrationToPccService;
+import android.app.privatecompute.IMigrationRequestResultReceiver;
+import android.app.privatecompute.IMigrationRequestResultSender;
 import android.app.privatecompute.IPccSandboxManager;
+import android.app.privatecompute.MigrationRequestResult;
+import android.app.privatecompute.MigrationRequestResultReceiver;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
+import android.content.pm.ResolveInfo;
 import android.os.Binder;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Looper;
 import android.os.PersistableBundle;
 import android.os.Process;
+import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
 import android.os.ShellCommand;
@@ -35,16 +49,18 @@ import android.util.Log;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.os.BackgroundThread;
 import com.android.server.LocalServices;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Implementation of the {@link IPccSandboxManager} binder service.
- */
+  * Implementation of the {@link IPccSandboxManager} binder service.
+  */
 public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
 
     private static final String TAG = "PccSandboxManagerServiceImpl";
@@ -63,9 +79,7 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
     private PccSandboxManagerInternal mInternal;
 
     public PccSandboxManagerServiceImpl(Context context) {
-        mContext = context;
-        mPackageManagerInternal = LocalServices.getService(PackageManagerInternal.class);
-        mInjector = new Injector();
+        this(context, new Injector());
     }
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
@@ -75,19 +89,27 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
         mInjector = injector;
     }
 
+    @VisibleForTesting
+    static class Injector {
+        int getCallingUid() {
+            return Binder.getCallingUid();
+        }
+
+        Handler getHandler(Looper looper) {
+            return new Handler(looper);
+        }
+
+        boolean auditModeEnabled() {
+            return PccProperties.audit_mode_enabled().orElse(false);
+        }
+    }
+
     public void setPccSandboxManagerInternal(PccSandboxManagerInternal internal) {
         mInternal = internal;
     }
 
     public ExecutorService getExecutorService() {
         return mExecutorService;
-    }
-
-    @VisibleForTesting
-    static class Injector {
-        boolean auditModeEnabled() {
-            return PccProperties.audit_mode_enabled().orElse(false);
-        }
     }
 
     @Override
@@ -223,6 +245,187 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
             pw.println("    Add a package to the list of allowed PCC packages for testing.");
             pw.println("  remove-allowed-package PACKAGE");
             pw.println("    Remove a package from the list of allowed PCC packages for testing.");
+        }
+    }
+
+    /**
+     * Starts a non-PCC process for data migration.
+     */
+    @Override
+    @RequiresNoPermission
+    public void startNonPccProcessForDataMigration(IMigrationRequestResultReceiver callback) {
+        final int callingUid = mInjector.getCallingUid();
+        final PackageManager pm = mContext.getPackageManager();
+        final String[] packages = pm.getPackagesForUid(callingUid);
+        if (packages == null || packages.length == 0) {
+            try {
+                callback.onError(MigrationRequestResultReceiver.ERROR_INVOCATION_FAILED,
+                        "Could not find package for calling UID " + callingUid);
+            } catch (RemoteException e) {
+                // Ignore
+            }
+            return;
+        }
+
+        Intent intent = new Intent(DataMigrationToPccService.SERVICE_INTERFACE);
+        ResolveInfo resolvedService = null;
+        String targetPackage = null;
+
+        for (String pkg : packages) {
+            intent.setPackage(pkg);
+            ResolveInfo ri = pm.resolveService(intent, 0);
+            if (ri != null && ri.serviceInfo != null) {
+                resolvedService = ri;
+                targetPackage = pkg;
+                break;
+            }
+        }
+
+        if (resolvedService == null) {
+            try {
+                callback.onError(MigrationRequestResultReceiver.ERROR_INVOCATION_FAILED,
+                        "No data migration service found for calling package.");
+            } catch (RemoteException e) {
+                // Ignore
+            }
+            return;
+        }
+
+        // Only non-PCC to PCC data migration is supported.
+        if (resolvedService.serviceInfo.shouldRunInPccSandbox()) {
+            try {
+                callback.onError(MigrationRequestResultReceiver.ERROR_INVOCATION_FAILED,
+                        "Data migration service " + resolvedService.serviceInfo.name
+                                + " is marked as a PCC component");
+            } catch (RemoteException e) {
+                // Ignore
+            }
+            return;
+        }
+
+        if (!android.Manifest.permission.BIND_DATA_MIGRATION_FOR_PRIVATECOMPUTE.equals(
+                resolvedService.serviceInfo.permission)) {
+            try {
+                callback.onError(MigrationRequestResultReceiver.ERROR_INVOCATION_FAILED,
+                        "Service " + resolvedService.serviceInfo.name + " does not require "
+                                + "android.permission.BIND_DATA_MIGRATION_FOR_PRIVATECOMPUTE");
+            } catch (RemoteException e) {
+                // Ignore
+            }
+            return;
+        }
+
+        Intent bindIntent = new Intent(DataMigrationToPccService.SERVICE_INTERFACE);
+        bindIntent.setComponent(new ComponentName(targetPackage, resolvedService.serviceInfo.name));
+
+        final long token = Binder.clearCallingIdentity();
+        try {
+            boolean bound = mContext.bindServiceAsUser(bindIntent,
+                    new MigrationServiceConnection(mContext, mInjector, callback),
+                    Context.BIND_AUTO_CREATE, UserHandle.getUserHandleForUid(callingUid));
+
+            if (!bound) {
+                try {
+                    callback.onError(MigrationRequestResultReceiver.ERROR_INVOCATION_FAILED,
+                            "Failed to bind to service");
+                } catch (RemoteException e) {
+                    // Ignore
+                }
+            }
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
+    }
+
+    private static class MigrationServiceConnection implements ServiceConnection {
+        private final Context mContext;
+        private final Injector mInjector;
+        private final IMigrationRequestResultReceiver mCallback;
+        private final AtomicBoolean mIsDone = new AtomicBoolean(false);
+        private final Handler mHandler;
+        private Runnable mTimeoutRunnable;
+
+        MigrationServiceConnection(Context context, Injector injector,
+                IMigrationRequestResultReceiver callback) {
+            mContext = context;
+            mInjector = injector;
+            mCallback = callback;
+            mHandler = mInjector.getHandler(BackgroundThread.get().getLooper());
+        }
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            IDataMigrationToPccService migrationService =
+                    IDataMigrationToPccService.Stub.asInterface(service);
+
+            // Unbind after a timeout.
+            mTimeoutRunnable = () -> reportError(MigrationRequestResultReceiver.ERROR_TIMEOUT,
+                    "Migration timed out");
+            mHandler.postDelayed(mTimeoutRunnable,
+                    DataMigrationToPccService.MIGRATION_TIMEOUT_MS);
+
+            try {
+                migrationService.onMigrationRequested(new IMigrationRequestResultSender.Stub() {
+                    @Override
+                    @RequiresNoPermission
+                    public void sendResult(MigrationRequestResult result) {
+                        // TODO(): Call PccBundleSanitizationUtil.sanitizeBundle once it handles
+                        // PersistableBundle for a depth check.
+                        reportResult(result);
+                    }
+                });
+            } catch (RemoteException e) {
+                reportError(MigrationRequestResultReceiver.ERROR_INVOCATION_FAILED,
+                        "RemoteException during migration request");
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+        }
+
+        @Override
+        public void onBindingDied(ComponentName name) {
+            reportError(MigrationRequestResultReceiver.ERROR_INVOCATION_FAILED, "Binding died");
+        }
+
+        @Override
+        public void onNullBinding(ComponentName name) {
+            reportError(MigrationRequestResultReceiver.ERROR_INVOCATION_FAILED, "Null binding");
+        }
+
+        private void reportResult(MigrationRequestResult result) {
+            if (mIsDone.compareAndSet(false, true)) {
+                mHandler.removeCallbacks(mTimeoutRunnable);
+                try {
+                    mCallback.onResult(result);
+                } catch (RemoteException e) {
+                    // Ignore
+                }
+                unbind();
+            }
+        }
+
+        private void reportError(int errorCode, String errorMessage) {
+            if (mIsDone.compareAndSet(false, true)) {
+                if (mTimeoutRunnable != null) {
+                    mHandler.removeCallbacks(mTimeoutRunnable);
+                }
+                try {
+                    mCallback.onError(errorCode, errorMessage);
+                } catch (RemoteException e) {
+                    // Ignore
+                }
+                unbind();
+            }
+        }
+
+        private void unbind() {
+            try {
+                mContext.unbindService(this);
+            } catch (IllegalArgumentException e) {
+                // Ignore if already unbound
+            }
         }
     }
 }
