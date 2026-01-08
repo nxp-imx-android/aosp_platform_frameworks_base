@@ -435,16 +435,6 @@ flag {
 }
 
 flag {
-    name: "avoid_recreating_dim_surface_during_activity_transition"
-    namespace: "windowing_frontend"
-    description: "Fix dim layer flickering during activity transition"
-    bug: "456398458"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "defer_snapshot_removal_for_predictive_back_with_ime"
     namespace: "windowing_frontend"
     description: "Prevents flicker by keeping the snapshot visible until the input method has drawn"
