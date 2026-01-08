@@ -222,6 +222,22 @@ android_ravenwood_test {
     ],
 }
 
+android_ravenwood_test {
+    name: "FrameworksServicesTestsRavenwood_ActivityManager",
+    defaults: ["FrameworksServicesTestsRavenwood-defaults"],
+    static_libs: [
+        "androidx.test.ext.junit",
+        "frameworks-base-testutils",
+        "services.core.ravenwood",
+    ],
+    libs: [
+        "mockito-ravenwood-prebuilt",
+    ],
+    srcs: [
+        "src/com/android/server/am/PowerManagerBatchProxyTest.java",
+    ],
+}
+
 java_library {
     name: "servicestests-core-utils",
     srcs: [
