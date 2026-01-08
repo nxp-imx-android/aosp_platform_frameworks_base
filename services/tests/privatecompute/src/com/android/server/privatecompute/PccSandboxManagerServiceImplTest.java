@@ -16,23 +16,23 @@
 
 package com.android.server.privatecompute;
 
-
 import static android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT;
-
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManagerInternal;
+import android.os.PersistableBundle;
 import android.os.Process;
+import android.os.UserHandle;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
-
 import androidx.test.runner.AndroidJUnit4;
-
-
+import com.android.server.LocalServices;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,10 +41,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-
-/**
- * Unit tests for {@link PccSandboxManagerServiceImpl}.
- */
+/** Unit tests for {@link PccSandboxManagerServiceImpl}. */
 @RunWith(AndroidJUnit4.class)
 @RequiresFlagsEnabled(FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
 public class PccSandboxManagerServiceImplTest {
@@ -54,19 +51,21 @@ public class PccSandboxManagerServiceImplTest {
 
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
-    @Rule
-    public MockitoRule mMockitoRule = MockitoJUnit.rule();
 
-    @Mock
-    private Context mContext;
-    @Mock
-    private PackageManager mPackageManager;
+    @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule();
+
+    @Mock private Context mContext;
+    @Mock private PackageManager mPackageManager;
+
+    @Mock private PackageManagerInternal mPackageManagerInternal;
 
     private PccSandboxManagerServiceImpl mService;
 
     @Before
     public void setUp() throws Exception {
         when(mContext.getPackageManager()).thenReturn(mPackageManager);
+        LocalServices.removeServiceForTest(PackageManagerInternal.class);
+        LocalServices.addService(PackageManagerInternal.class, mPackageManagerInternal);
         mService = new PccSandboxManagerServiceImpl(mContext);
     }
 
@@ -77,7 +76,7 @@ public class PccSandboxManagerServiceImplTest {
 
     @Test
     public void testIsPrivateComputeServicesUid_uidOutsideApplicationUidRange_returnsFalse()
-                throws Exception {
+            throws Exception {
         assertFalse(mService.isPrivateComputeServicesUid(Process.FIRST_APPLICATION_UID - 1));
         assertFalse(mService.isPrivateComputeServicesUid(Process.LAST_APPLICATION_UID + 1));
     }
@@ -85,10 +84,11 @@ public class PccSandboxManagerServiceImplTest {
     @Test
     public void testIsPrivateComputeServicesUid_packageDoesNotHavePermission_returnsFalse() {
         when(mPackageManager.getPackagesForUid(TEST_UID))
-                .thenReturn(new String[]{TEST_PACKAGE_NAME});
+                .thenReturn(new String[] {TEST_PACKAGE_NAME});
         when(mPackageManager.checkPermission(
-                android.Manifest.permission.PROVIDE_PRIVATE_COMPUTE_SERVICES,
-                TEST_PACKAGE_NAME)).thenReturn(PackageManager.PERMISSION_DENIED);
+                        android.Manifest.permission.PROVIDE_PRIVATE_COMPUTE_SERVICES,
+                        TEST_PACKAGE_NAME))
+                .thenReturn(PackageManager.PERMISSION_DENIED);
 
         assertFalse(mService.isPrivateComputeServicesUid(TEST_UID));
     }
@@ -103,10 +103,11 @@ public class PccSandboxManagerServiceImplTest {
     @Test
     public void testIsPrivateComputeServicesUid_packageHasPermission_returnsTrue() {
         when(mPackageManager.getPackagesForUid(TEST_UID))
-                .thenReturn(new String[]{TEST_PACKAGE_NAME});
+                .thenReturn(new String[] {TEST_PACKAGE_NAME});
         when(mPackageManager.checkPermission(
-                android.Manifest.permission.PROVIDE_PRIVATE_COMPUTE_SERVICES,
-                TEST_PACKAGE_NAME)).thenReturn(PackageManager.PERMISSION_GRANTED);
+                        android.Manifest.permission.PROVIDE_PRIVATE_COMPUTE_SERVICES,
+                        TEST_PACKAGE_NAME))
+                .thenReturn(PackageManager.PERMISSION_GRANTED);
 
         assertTrue(mService.isPrivateComputeServicesUid(TEST_UID));
     }
@@ -114,13 +115,15 @@ public class PccSandboxManagerServiceImplTest {
     @Test
     public void testIsPrivateComputeServicesUid_multiplePackages_oneHasPermission_returnsTrue() {
         when(mPackageManager.getPackagesForUid(TEST_UID))
-                .thenReturn(new String[]{TEST_PACKAGE_NAME, ANOTHER_PACKAGE_NAME});
+                .thenReturn(new String[] {TEST_PACKAGE_NAME, ANOTHER_PACKAGE_NAME});
         when(mPackageManager.checkPermission(
-                android.Manifest.permission.PROVIDE_PRIVATE_COMPUTE_SERVICES,
-                TEST_PACKAGE_NAME)).thenReturn(PackageManager.PERMISSION_DENIED);
+                        android.Manifest.permission.PROVIDE_PRIVATE_COMPUTE_SERVICES,
+                        TEST_PACKAGE_NAME))
+                .thenReturn(PackageManager.PERMISSION_DENIED);
         when(mPackageManager.checkPermission(
-                android.Manifest.permission.PROVIDE_PRIVATE_COMPUTE_SERVICES,
-                ANOTHER_PACKAGE_NAME)).thenReturn(PackageManager.PERMISSION_GRANTED);
+                        android.Manifest.permission.PROVIDE_PRIVATE_COMPUTE_SERVICES,
+                        ANOTHER_PACKAGE_NAME))
+                .thenReturn(PackageManager.PERMISSION_GRANTED);
 
         assertTrue(mService.isPrivateComputeServicesUid(TEST_UID));
     }
@@ -128,15 +131,48 @@ public class PccSandboxManagerServiceImplTest {
     @Test
     public void testIsPrivateComputeServicesUid_multiplePackages_noneHavePermission_returnsFalse() {
         when(mPackageManager.getPackagesForUid(TEST_UID))
-                .thenReturn(new String[]{TEST_PACKAGE_NAME, ANOTHER_PACKAGE_NAME});
+                .thenReturn(new String[] {TEST_PACKAGE_NAME, ANOTHER_PACKAGE_NAME});
         when(mPackageManager.checkPermission(
-                android.Manifest.permission.PROVIDE_PRIVATE_COMPUTE_SERVICES,
-                TEST_PACKAGE_NAME)).thenReturn(PackageManager.PERMISSION_DENIED);
+                        android.Manifest.permission.PROVIDE_PRIVATE_COMPUTE_SERVICES,
+                        TEST_PACKAGE_NAME))
+                .thenReturn(PackageManager.PERMISSION_DENIED);
         when(mPackageManager.checkPermission(
-                android.Manifest.permission.PROVIDE_PRIVATE_COMPUTE_SERVICES,
-                ANOTHER_PACKAGE_NAME)).thenReturn(PackageManager.PERMISSION_DENIED);
+                        android.Manifest.permission.PROVIDE_PRIVATE_COMPUTE_SERVICES,
+                        ANOTHER_PACKAGE_NAME))
+                .thenReturn(PackageManager.PERMISSION_DENIED);
 
         assertFalse(mService.isPrivateComputeServicesUid(TEST_UID));
     }
-}
 
+    @Test
+    public void testWriteToAuditLogInternal_packageNameDoesNotMatchUid_throwsSecurityException() {
+        int testUid = android.os.Process.myUid();
+        when(mPackageManagerInternal.isSameApp(
+                        TEST_PACKAGE_NAME, testUid, UserHandle.getUserId(testUid)))
+                .thenReturn(true);
+        when(mPackageManagerInternal.isSameApp(
+                        ANOTHER_PACKAGE_NAME, testUid, UserHandle.getUserId(testUid)))
+                .thenReturn(false);
+
+        assertThrows(
+                SecurityException.class,
+                () ->
+                        mService.writeToAuditLogInternal(
+                                new PersistableBundle(), ANOTHER_PACKAGE_NAME));
+    }
+
+    @Test
+    public void testWriteToAuditLogInternal_packageNameMatchesUid_doesNotThrowSecurityException() {
+        int testUid = android.os.Process.myUid();
+        when(mPackageManagerInternal.isSameApp(
+                        TEST_PACKAGE_NAME, testUid, UserHandle.getUserId(testUid)))
+                .thenReturn(true);
+        when(mPackageManagerInternal.isSameApp(
+                        ANOTHER_PACKAGE_NAME, testUid, UserHandle.getUserId(testUid)))
+                .thenReturn(false);
+
+        mService.writeToAuditLogInternal(new PersistableBundle(), TEST_PACKAGE_NAME);
+
+        // No exception thrown.
+    }
+}

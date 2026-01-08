@@ -16,6 +16,8 @@
 
 package com.android.server.privatecompute;
 
+import android.os.Binder;
+import android.os.SystemClock;
 import com.android.internal.annotations.GuardedBy;
 
 import android.annotation.NonNull;
@@ -25,6 +27,8 @@ import android.os.PersistableBundle;
 import android.util.Log;
 import com.android.internal.annotations.VisibleForTesting;
 import java.io.BufferedOutputStream;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -35,25 +39,20 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /* Current Audit Mode limitations (tracked in b/461406944):
  * - Audit mode is set to true. Instead, a system property should be introduced to toggle
  *   audit mode on/off.
  * - Incoming data is not sanitized. Depends on ag/36599762.
- * - The data is appended to a unique file that grows indefinitely.
- *   At least the size of the file should be limited.
- *   We should support rotating the file after a certain size, and delete old files.
- *   These files should be created in a subdirectory.
- * - Appending to memory should be done asynchronously if possible, e.g. with an ArrayBlockingQueue.
- * - Writing to disk should happen asynchronously, using an ExecutorThread.
- * - When the logic is multi-threaded, tests should be added to verify thread-safety.
- * - If there is an error while writing the audit log to disk, the error is silently discarded;
- *   We should consider (silently) recovering from it, e.g., try to open a new file.
- * - The serialized format is not documented/standardized. it is now a length-prefixed
- *   serialized PersistableBundle.
- * - To be able to write the length first, the Bundle is first serialized into a byte array,
- *   then copied again into the output stream.
- * - The in-memory queue is capped by a number of bundles, not a size in bytes.
+ * - If the logging frequency is too high, the log might be incomplete.
+ * - The first logging file is always "0".
  */
 
 /**
@@ -63,142 +62,146 @@ import java.util.concurrent.ExecutorService;
 @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
 class AuditModeContext {
     private static final String TAG = "PccSandboxManagerServiceAuditMode";
-    private static final String AUDIT_LOG_FILE_NAME = "audit_log.bin";
 
-    // Number of PersistableBundle stored in memory. Does not translate to a size in bytes.
+    private static final String AUDIT_LOG_FILES_DIRNAME = "audit_logs";
+
+    // We have two kind of background tasks: serializing to a byte array, then writing to disk.
+    // They are isolated to avoid one kind of task starving the other.
+    private final ExecutorService mBundleSerializerExecutor;
+    private final ExecutorService mDiskWriterExecutor;
+
+    // Time left to worker threads (both serializer and writer) to finish their tasks before being
+    // stopped.
+    private static final int SHUTDOWN_TIMEOUT_MS = 10000; // 10 seconds.
+
+    // Number of threads to use for background tasks; this is used for both serialization and
+    // writing to disk. The total number of threads is twice this number.
+    private static final int N_THREADS = 2;
+
+    private final File mFolder;
+    private final AuditLogFileManager mAuditLogFileManager;
+    private final Object mLock = new Object();
+
+    // Once stopped, this can't be restarted. A new AuditModeContext should be created instead.
+    @GuardedBy("mLock")
+    private boolean mIsStopping = false;
+
+    @GuardedBy("mLock")
+    private AuditLogInMemoryBuffer mAuditLogInMemoryBuffer;
+
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
-    static final int AUDIT_LOG_QUEUE_CAPACITY = 100;
+    AuditModeContext(
+            ExecutorService serializerExecutor, ExecutorService diskWriterExecutor, File folder) {
+        mBundleSerializerExecutor = serializerExecutor;
+        mDiskWriterExecutor = diskWriterExecutor;
+        mFolder = folder;
+        mAuditLogFileManager = new AuditLogFileManager(mFolder);
+        mAuditLogInMemoryBuffer =
+                new AuditLogInMemoryBuffer(mAuditLogFileManager.rotateAndReturnNewFile());
+    }
 
-    @SuppressWarnings("UnusedVariable") // Is used in the child CL.
-    private final ExecutorService mExecutor;
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+    static ExecutorService getBundleSerializerExecutorService() {
+        return Executors.newFixedThreadPool(N_THREADS);
+    }
 
-    private final Object mAuditLogLock;
-
-    @GuardedBy("mAuditLogLock")
-    private final List<PersistableBundle> mAuditLogQueue;
-
-    @GuardedBy("mAuditLogLock")
-    private final OutputStream mAuditOutputStream;
-
-
-    private AuditModeContext(
-            ExecutorService executor,
-            List<PersistableBundle> auditLogQueue,
-            OutputStream auditOutputStream) {
-        mExecutor = executor;
-        mAuditLogQueue = auditLogQueue;
-        mAuditOutputStream = auditOutputStream;
-        mAuditLogLock = new Object();
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+    static ExecutorService getDiskWriterExecutorService() {
+        return Executors.newFixedThreadPool(N_THREADS);
     }
 
     /**
      * Instantiates an AuditModeContext, including an output stream to the audit log file, or
      * returns null if an error occurred.
      */
-    public static @Nullable AuditModeContext create(ExecutorService executor) {
-        File folder = new File(Environment.getDataDirectory(), "system");
-        File auditLogFile = new File(folder, AUDIT_LOG_FILE_NAME);
-        try {
-            OutputStream outputStream =
-                    new BufferedOutputStream(
-                            Files.newOutputStream(
-                                    auditLogFile.toPath(),
-                                    StandardOpenOption.CREATE,
-                                    StandardOpenOption.APPEND));
-            return AuditModeContext.create(executor, outputStream);
-        } catch (IOException e) {
-            Log.e(TAG, "Failed to start audit mode", e);
-        }
-        return null;
-    }
-
-    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
-    static AuditModeContext create(ExecutorService executor, OutputStream auditOutputStream) {
-        List<PersistableBundle> auditLogQueue = new ArrayList<>(AUDIT_LOG_QUEUE_CAPACITY);
-        return new AuditModeContext(executor, auditLogQueue, auditOutputStream);
-    }
-
-    /** Stops audit mode, writing pending data to disk. */
-    public void stopAuditing() {
-        synchronized (mAuditLogLock) {
-            try {
-                // This is a sync call for simplicity.
-                writeBundlesToStream(mAuditLogQueue, mAuditOutputStream);
-                mAuditOutputStream.close();
-            } catch (IOException e) {
-                Log.e(TAG, "Failed to write audit log to disk", e);
-            } finally {
-                mAuditLogQueue.clear();
-            }
-        }
+    public static @NonNull AuditModeContext create() {
+        File folder = new File(Environment.getDataSystemCeDirectory(), AUDIT_LOG_FILES_DIRNAME);
+        return new AuditModeContext(
+                getBundleSerializerExecutorService(), getDiskWriterExecutorService(), folder);
     }
 
     /**
      * Writes data to the in-memory audit log, returning immediately.
      *
-     * <p>If the in-memory queue is full, it is emptied and asynchronously written to disk. The
-     * order is still preserved in the queue, and because there is a single executor.
+     * <p>If the in-memory queue is full, it is emptied and asynchronously written to disk.
      */
-    void writeToAuditLog(@NonNull PersistableBundle data) {
-        synchronized (mAuditLogLock) {
-            if (mAuditLogQueue.size() < AUDIT_LOG_QUEUE_CAPACITY) {
-                mAuditLogQueue.add(data);
+    void writeToAuditLog(@NonNull PersistableBundle data, @NonNull String packageName) {
+        synchronized (mLock) {
+            if (mIsStopping) {
                 return;
             }
+        }
+        AuditLogEntry entry =
+                new AuditLogEntry(
+                        data,
+                        SystemClock.elapsedRealtimeNanos(),
+                        packageName,
+                        Binder.getCallingUid());
+        mBundleSerializerExecutor.execute(
+                () -> {
+                    try {
+                        serializeAndWrite(entry);
+                    } catch (IOException e) {
+                        Log.e(TAG, "Failed to write to audit log file: " + e);
+                    }
+                });
+    }
 
-            Log.d(TAG, "Audit log queue is full, writing to disk.");
-            try {
-                writeBundlesToStream(mAuditLogQueue, mAuditOutputStream);
-            } catch (IOException e) {
-                Log.e(TAG, "Failed to write audit log to disk", e);
+    private void serializeAndWrite(AuditLogEntry entry) throws IOException {
+        byte[] data = entry.toByteArray();
+        synchronized (mLock) {
+            if (mIsStopping) {
+                return;
             }
+            if (!mAuditLogInMemoryBuffer.add(data)) {
 
-            // Will succeed now that the queue is empty.
-            mAuditLogQueue.clear();
-            mAuditLogQueue.add(data);
+                try {
+                // Can't be added to this file, write it to disk and create a new one.
+                mDiskWriterExecutor.execute(mAuditLogInMemoryBuffer::writeToFile);
+                } catch (RejectedExecutionException e) {
+                    Log.i(TAG, "Executor is shutting down, dropping data. " + e);
+                    return;
+                }
+                mAuditLogInMemoryBuffer =
+                        new AuditLogInMemoryBuffer(mAuditLogFileManager.rotateAndReturnNewFile());
+                // New file, this will succeed.
+                if (!mAuditLogInMemoryBuffer.add(data)) {
+                    // Log just in case, but this should never happen.
+                    Log.e(TAG, "Failed to write bundle to new in-memory buffer.");
+                }
+            }
         }
     }
 
-    /**
-     * Encodes and writes a list of PersistableBundle to the audit log file.
-     *
-     * @param bundles The list of PersistableBundle to write.
-     * @throws IOException If an error occurs.
-     */
-    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
-    void writeBundlesToStream(List<PersistableBundle> bundles, OutputStream stream)
-            throws IOException {
-        final int size = bundles.size();
-        for (int i = 0; i < size; i++) {
-            writeBundleToStream(bundles.get(i), stream);
+    /** Stops audit mode, writing pending data to disk. */
+    public void stopAuditing() {
+        synchronized (mLock) {
+            mIsStopping = true;
         }
-        stream.flush();
-    }
-
-    /**
-     * Encodes a PersistableBundle into a byte array.
-     *
-     * <p>The first 4 bytes of the byte array are the length of the PersistableBundle, followed by
-     * the bytes of the PersistableBundle.
-     *
-     * <p>TODO: also write the calling package name/UID, and the timestamp.
-     *
-     * @param data The PersistableBundle to encode.
-     * @throws IOException If an error occurs.
-     */
-    private void writeBundleToStream(PersistableBundle data, OutputStream stream)
-            throws IOException {
-        // Write the PersistableBundle to a byte array to know its length.
-        ByteArrayOutputStream bundleOs = new ByteArrayOutputStream();
-        data.writeToStream(bundleOs);
-        byte[] bundleBytes = bundleOs.toByteArray();
-        DataOutputStream dos = new DataOutputStream(stream);
-
+        // Triggers write of the in-memory buffer to disk.
+        mDiskWriterExecutor.execute(mAuditLogInMemoryBuffer::writeToFile);
+        // Prevent the addition of new tasks.
+        mBundleSerializerExecutor.shutdown();
+        mDiskWriterExecutor.shutdown();
         try {
-            dos.writeInt(bundleBytes.length);
-            dos.write(bundleBytes);
-        } catch (IOException e) {
-            Log.e(TAG, "Failed to write PersistableBundle to audit log", e);
+            if (!mBundleSerializerExecutor.awaitTermination(
+                    SHUTDOWN_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
+                mBundleSerializerExecutor.shutdownNow();
+            }
+            if (!mDiskWriterExecutor.awaitTermination(SHUTDOWN_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
+                mDiskWriterExecutor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            Log.e(TAG, "Failed to wait for executor to terminate", e);
+            mBundleSerializerExecutor.shutdownNow();
+            mDiskWriterExecutor.shutdownNow();
+        }
+    }
+
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+    File getCurrentAuditLogFile() {
+        synchronized (mLock) {
+            return mAuditLogInMemoryBuffer.mAuditLogFile;
         }
     }
 }

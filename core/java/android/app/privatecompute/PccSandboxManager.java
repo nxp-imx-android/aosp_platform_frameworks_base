@@ -74,7 +74,7 @@ public final class PccSandboxManager {
     @RequiresNoPermission // Not gating sensitive functionality, and audit log is size-capped.
     public void writeToAuditLog(@NonNull PersistableBundle data) {
         try {
-            mService.writeToAuditLog(data);
+            mService.writeToAuditLog(data, mContext.getPackageName());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
