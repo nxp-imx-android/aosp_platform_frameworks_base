@@ -129,17 +129,6 @@ flag {
 }
 
 flag {
-  name: "enable_supervision_pin_snackbars_toast_message"
-  is_exported: false
-  namespace: "supervision"
-  description: "Flag that enables snack bar toast message for PIN related flows"
-  bug: "436646514"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "enable_supervision_pin_metrics"
   is_exported: false
   namespace: "supervision"
