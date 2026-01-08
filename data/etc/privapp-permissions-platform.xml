@@ -702,7 +702,7 @@ applications that come with the platform
         <!-- Permission required for CTS test - CtsNetTestCases -->
         <permission name="android.permission.CREATE_APP_SPECIFIC_NETWORK" />
         <!-- Permission required for CTS test - CtsTelephonyTestCases -->
-        <permission name="android.permission.BIND_MESSAGE_PROMOTION_SERVICE"/>
+        <permission name="android.permission.BIND_ALTERNATIVE_MESSAGE_TRANSPORT_SERVICE"/>
     </privapp-permissions>
 
     <privapp-permissions package="com.android.soundpicker">

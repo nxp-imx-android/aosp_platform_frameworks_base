@@ -29,6 +29,7 @@ package android {
     field @FlaggedApi("android.media.tv.flags.apply_picture_profiles") public static final String APPLY_PICTURE_PROFILE = "android.permission.APPLY_PICTURE_PROFILE";
     field public static final String BATTERY_STATS = "android.permission.BATTERY_STATS";
     field public static final String BIND_ACCESSIBILITY_SERVICE = "android.permission.BIND_ACCESSIBILITY_SERVICE";
+    field @FlaggedApi("com.android.internal.telephony.flags.message_promotion") public static final String BIND_ALTERNATIVE_MESSAGE_TRANSPORT_SERVICE = "android.permission.BIND_ALTERNATIVE_MESSAGE_TRANSPORT_SERVICE";
     field public static final String BIND_APPWIDGET = "android.permission.BIND_APPWIDGET";
     field @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public static final String BIND_APP_FUNCTION_SERVICE = "android.permission.BIND_APP_FUNCTION_SERVICE";
     field public static final String BIND_AUTOFILL_SERVICE = "android.permission.BIND_AUTOFILL_SERVICE";
@@ -43423,6 +43424,19 @@ package android.service.media {
   public class MediaBrowserService.Result<T> {
     method public void detach();
     method public void sendResult(T);
+  }
+
+}
+
+package android.service.messaging {
+
+  @FlaggedApi("com.android.internal.telephony.flags.message_promotion") public abstract class AlternativeMessageTransportService extends android.app.Service {
+    ctor public AlternativeMessageTransportService();
+    method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
+    method public abstract void onMessageUpgradeRequested(@NonNull android.net.Uri, @NonNull java.util.function.Consumer<java.lang.Integer>);
+    field public static final String SERVICE_INTERFACE = "android.service.messaging.AlternativeMessageTransportService";
+    field public static final int UPGRADE_STATUS_ACCEPTED = 1; // 0x1
+    field public static final int UPGRADE_STATUS_REJECTED = 2; // 0x2
   }
 
 }
