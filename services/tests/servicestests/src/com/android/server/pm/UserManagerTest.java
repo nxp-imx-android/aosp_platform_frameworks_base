@@ -153,9 +153,8 @@ public final class UserManagerTest {
                     || user.isMain()) {
                 continue;
             }
-            if (android.multiuser.Flags.disallowRemovingLastAdminUser()
-                    && mUserManager.getUserRemovability(user.id)
-                            != UserManager.REMOVE_RESULT_USER_IS_REMOVABLE) {
+            if (mUserManager.getUserRemovability(user.id)
+                    != UserManager.REMOVE_RESULT_USER_IS_REMOVABLE) {
                 continue;
             }
             removeUser(user.id);

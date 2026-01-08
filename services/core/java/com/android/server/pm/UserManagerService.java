@@ -9250,10 +9250,6 @@ public class UserManagerService extends IUserManager.Stub {
 
     @Override
     public @UserManager.RemoveResult int getUserRemovability(@UserIdInt int userId) {
-        if (!Flags.disallowRemovingLastAdminUser()) {
-            throw new UnsupportedOperationException(
-                    "aconfig flag android.multiuser.disallow_removing_last_admin_user not enabled");
-        }
         checkQueryOrCreateUsersPermission("get user removability");
         synchronized (mUsersLock) {
             return getUserRemovabilityLockedLU(userId);
@@ -9273,8 +9269,7 @@ public class UserManagerService extends IUserManager.Stub {
             // because the device can still be managed remotely without the last admin.
             return false;
         }
-        return android.multiuser.Flags.disallowRemovingLastAdminUser()
-                && getContextResources().getBoolean(R.bool.config_disallowRemovingLastAdminUser)
+        return getContextResources().getBoolean(R.bool.config_disallowRemovingLastAdminUser)
                 && isLastFullAdminUserLU(userInfo);
     }
 
