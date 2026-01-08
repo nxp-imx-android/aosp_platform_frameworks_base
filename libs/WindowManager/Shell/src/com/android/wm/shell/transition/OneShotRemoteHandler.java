@@ -175,7 +175,7 @@ public class OneShotRemoteHandler implements Transitions.TransitionHandler {
                 mTransitionLeashManager.setUpLeashes(transition, remoteInfo, remoteStartT);
                 wrappedCallback = wct -> {
                     finishCallback.onTransitionFinished(wct);
-                    mTransitionLeashManager.cleanUp(mTransition);
+                    mTransitionLeashManager.cleanUp(transition);
                 };
             }
 

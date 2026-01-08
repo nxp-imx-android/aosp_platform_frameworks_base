@@ -832,9 +832,13 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 // the scope of ownership of the handler. This is only necessary because we are
                 // handing the animation off to a remote, over which we have no control.
                 mTransitions.getLeashManager().setUpLeashes(mTransition, info, t);
+
+                // Cache the token here so we still have a reference to it in case it gets reset
+                // before the callback is invoked.
+                IBinder token = mTransition;
                 wrappedCallback = wct -> {
                     finishCB.onTransitionFinished(wct);
-                    mTransitions.getLeashManager().cleanUp(mTransition);
+                    mTransitions.getLeashManager().cleanUp(token);
                 };
             }
 
@@ -1154,9 +1158,13 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 // the scope of ownership of the handler. This is only necessary because we are
                 // handing the animation off to a remote, over which we have no control.
                 mTransitions.getLeashManager().setUpLeashes(mTransition, info, startT, excluded);
+
+                // Cache the token here so we still have a reference to it in case it gets reset
+                // before the callback is invoked.
+                IBinder token = mTransition;
                 wrappedCallback = wct -> {
                     finishCallback.onTransitionFinished(wct);
-                    mTransitions.getLeashManager().cleanUp(mTransition);
+                    mTransitions.getLeashManager().cleanUp(token);
                 };
             }
 
