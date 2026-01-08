@@ -16560,12 +16560,6 @@ public class ActivityManagerService extends IActivityManager.Stub
         synchronized (this) { }
     }
 
-    void onCoreSettingsChange(Bundle settings) {
-        synchronized (mProcLock) {
-            mProcessList.updateCoreSettingsLOSP(settings);
-        }
-    }
-
     /**
      * Called when core settings change for one or more users. This method receives the updated
      * settings and dispatches them to all relevant application processes.
