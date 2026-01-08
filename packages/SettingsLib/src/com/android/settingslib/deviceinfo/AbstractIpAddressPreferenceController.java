@@ -23,6 +23,8 @@ import android.net.LinkAddress;
 import android.net.LinkProperties;
 import android.net.Network;
 import android.net.wifi.WifiManager;
+import android.os.Handler;
+import android.os.Looper;
 import android.telephony.TelephonyCallback;
 import android.telephony.TelephonyManager;
 
@@ -101,12 +103,14 @@ public abstract class AbstractIpAddressPreferenceController
         if (mIpAddress == null) {
             return;
         }
-        String ipAddress = getDefaultIpAddresses(mCM);
-        if (ipAddress != null) {
-            mIpAddress.setSummary(ipAddress);
-        } else {
-            mIpAddress.setSummary(R.string.status_unavailable);
-        }
+        new Handler(Looper.getMainLooper()).post(() -> {
+            String ipAddress = getDefaultIpAddresses(mCM);
+            if (ipAddress != null) {
+                mIpAddress.setSummary(ipAddress);
+            } else {
+                mIpAddress.setSummary(R.string.status_unavailable);
+            }
+        });
     }
 
     @Override
