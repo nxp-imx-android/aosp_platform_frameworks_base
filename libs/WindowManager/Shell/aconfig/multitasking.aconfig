@@ -296,3 +296,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "fix_mark_task_as_trimmable"
+    namespace: "multitasking"
+    description: "Fixes a bug where tasks were not marked as trimmable when removed from a bubble"
+    bug: "474169292"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

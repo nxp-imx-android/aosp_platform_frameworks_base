@@ -19,6 +19,7 @@ package com.android.wm.shell.bubbles
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.content.ComponentName
+import android.window.WindowContainerTransaction
 import androidx.annotation.VisibleForTesting
 import com.android.wm.shell.Flags
 import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToFullscreen
@@ -129,6 +130,10 @@ constructor(
      */
     fun cleanup() {
         val task = taskView.taskInfo
+        if (task != null && task.token != null && Flags.fixMarkTaskAsTrimmable()) {
+            markTaskAsTrimmable(task)
+        }
+
         if (BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
             task?.let { t ->
                 val bubble = bubbleController.getBubble(t)
@@ -165,5 +170,12 @@ constructor(
         } else {
             taskView.removeTask()
         }
+    }
+
+    /** Ensures that the task is marked as trimmable from recents during cleanup */
+    private fun markTaskAsTrimmable(taskInfo: RunningTaskInfo) {
+        val wct = WindowContainerTransaction()
+        wct.setTaskTrimmableFromRecents(taskInfo.token, /* isTrimmableFromRecents */ true)
+        taskView.controller.taskOrganizer.applyTransaction(wct)
     }
 }
