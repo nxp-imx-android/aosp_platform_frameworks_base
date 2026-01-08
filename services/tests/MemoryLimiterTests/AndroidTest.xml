@@ -27,6 +27,15 @@
     <target_preparer class="com.android.tradefed.targetprep.RootTargetPreparer"/>
     <target_preparer class="com.android.tradefed.targetprep.DisableSELinuxTargetPreparer" />
 
+    <!-- Push data files to the device, in /data/local/tmp/cts/memorylimiter. -->
+    <target_preparer class="com.android.tradefed.targetprep.PushFilePreparer">
+        <option name="cleanup" value="true" />
+        <option name="push-file" key="config-default.xml"
+                value="/data/local/tmp/cts/memorylimiter/config-default.xml" />
+        <option name="push-file" key="config-error.xml"
+                value="/data/local/tmp/cts/memorylimiter/config-error.xml" />
+    </target_preparer>
+
     <test class="com.android.tradefed.testtype.AndroidJUnitTest" >
         <option name="package" value="com.android.server.am" />
         <option name="runner" value="androidx.test.runner.AndroidJUnitRunner" />

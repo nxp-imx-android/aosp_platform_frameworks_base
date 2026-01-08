@@ -144,6 +144,7 @@ java_library_static {
         ":supplemental_security_patches_xsd",
         ":advanced-protection-config",
         ":device-state-config",
+        ":memory-limiter-config",
         "java/com/android/server/EventLogTags.logtags",
         "java/com/android/server/am/EventLogTags.logtags",
         "java/com/android/server/wm/EventLogTags.logtags",

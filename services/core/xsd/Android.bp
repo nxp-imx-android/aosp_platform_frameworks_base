@@ -15,6 +15,13 @@ xsd_config {
 }
 
 xsd_config {
+    name: "memory-limiter-config",
+    srcs: ["memory-limiter-config/memory-limiter-config.xsd"],
+    api_dir: "memory-limiter-config/schema",
+    package_name: "com.android.server.am.memorylimiter.config",
+}
+
+xsd_config {
     name: "platform-compat-config",
     srcs: ["platform-compat/config/platform-compat-config.xsd"],
     api_dir: "platform-compat/config/schema",

@@ -1,0 +1,22 @@
+// Signature format: 2.0
+package com.android.server.am.memorylimiter.config {
+
+  public class MemoryLimiterConfig {
+    ctor public MemoryLimiterConfig();
+    method public java.math.BigInteger getNotVisible();
+    method public java.math.BigInteger getVersion();
+    method public java.math.BigInteger getVisible();
+    method public void setNotVisible(java.math.BigInteger);
+    method public void setVersion(java.math.BigInteger);
+    method public void setVisible(java.math.BigInteger);
+  }
+
+  public class XmlParser {
+    ctor public XmlParser();
+    method public static com.android.server.am.memorylimiter.config.MemoryLimiterConfig read(java.io.InputStream) throws javax.xml.datatype.DatatypeConfigurationException, java.io.IOException, org.xmlpull.v1.XmlPullParserException;
+    method public static String readText(org.xmlpull.v1.XmlPullParser) throws java.io.IOException, org.xmlpull.v1.XmlPullParserException;
+    method public static void skip(org.xmlpull.v1.XmlPullParser) throws java.io.IOException, org.xmlpull.v1.XmlPullParserException;
+  }
+
+}
+

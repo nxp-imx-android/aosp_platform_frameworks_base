@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The values here are chosen to be different from the default -->
+<MemoryLimiterConfig>
+  <version>1</version>
+  <visible>40</visible>
+  <notVisible>30</notVisible>
+</MemoryLimiterConfig>
