@@ -57,8 +57,12 @@ constructor(
             .flowName("VDSBI#isVisible")
             .stateIn(coroutineScope, SharingStarted.Eagerly, false)
 
+    fun isExpandedAudioTileDetailsEnabled(): Boolean {
+        return expandedAudioTileDetailsFeatureInteractor.isEnabled()
+    }
+
     fun onButtonClicked() {
-        if (expandedAudioTileDetailsFeatureInteractor.isEnabled()) {
+        if (isExpandedAudioTileDetailsEnabled()) {
             shadeInteractor.expandQuickSettingsShade(QS_SHADE_EXPAND_REASON)
         } else {
             volumePanelGlobalStateInteractor.setVisible(true)
