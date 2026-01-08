@@ -27,6 +27,17 @@ class FluidTaskResizer(
     private val displayController: DisplayController,
     private val desktopState: DesktopState,
 ) : TaskResizer {
+    override fun onResizeStart(session: DragSession) {
+        for (listener in session.resizeEventListeners) {
+            listener.onDragResizeStarted(
+                session.windowDecoration.taskInfo.taskId,
+                session.resizeTrigger,
+                session.inputMethod,
+                session.taskBoundsAtDragStart,
+            )
+        }
+    }
+
     override fun onResizeUpdate(session: DragSession, x: Float, y: Float) {
         val wct = WindowContainerTransaction()
         if (
@@ -48,6 +59,10 @@ class FluidTaskResizer(
                     /* dragResizing= */ true,
                 )
 
+                for (listener in session.resizeEventListeners) {
+                    listener.onDragMove(session.windowDecoration.taskInfo.taskId)
+                }
+
                 // Clear the stored pre-snapped/maximized bounds to prevent unintended restoration
                 // if the user manually resizes the window.
                 if (DesktopExperienceFlags.ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT.isTrue) {
@@ -67,6 +82,14 @@ class FluidTaskResizer(
         x: Float,
         y: Float,
     ): WindowContainerTransaction? {
+        for (listener in session.resizeEventListeners) {
+            listener.onDragResizeEnded(
+                session.windowDecoration.taskInfo.taskId,
+                session.resizeTrigger,
+                session.inputMethod,
+                session.repositionTaskBounds,
+            )
+        }
         val boundsChangedBetweenUpdateAndEnd =
             DragPositioningCallbackUtility.changeBounds(
                 session.ctrlType,

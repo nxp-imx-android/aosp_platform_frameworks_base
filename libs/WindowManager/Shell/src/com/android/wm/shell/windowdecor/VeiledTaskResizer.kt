@@ -27,6 +27,17 @@ class VeiledTaskResizer(
     private val displayController: DisplayController,
     private val desktopState: DesktopState,
 ) : TaskResizer {
+    override fun onResizeStart(session: DragSession) {
+        for (listener in session.resizeEventListeners) {
+            listener.onDragResizeStarted(
+                session.windowDecoration.taskInfo.taskId,
+                session.resizeTrigger,
+                session.inputMethod,
+                session.taskBoundsAtDragStart,
+            )
+        }
+    }
+
     override fun onResizeUpdate(session: DragSession, x: Float, y: Float) {
         if (
             DragPositioningCallbackUtility.changeBounds(
@@ -41,6 +52,9 @@ class VeiledTaskResizer(
             )
         ) {
             if (!session.isResizingOrAnimatingResize) {
+                for (listener in session.resizeEventListeners) {
+                    listener.onDragMove(session.windowDecoration.taskInfo.taskId)
+                }
                 session.windowDecoration.showResizeVeil(session.repositionTaskBounds)
                 // Clear the stored pre-snapped/maximized bounds to prevent unintended restoration
                 // if the user manually resizes the window.
@@ -61,6 +75,14 @@ class VeiledTaskResizer(
         x: Float,
         y: Float,
     ): WindowContainerTransaction? {
+        for (listener in session.resizeEventListeners) {
+            listener.onDragResizeEnded(
+                session.windowDecoration.taskInfo.taskId,
+                session.resizeTrigger,
+                session.inputMethod,
+                session.repositionTaskBounds,
+            )
+        }
         DragPositioningCallbackUtility.changeBounds(
             session.ctrlType,
             session.repositionTaskBounds,
