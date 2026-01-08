@@ -76,8 +76,6 @@
     <string name="bubble_accessibility_action_collapse_menu" msgid="2975310870146231463">"收合選單"</string>
     <string name="bubble_accessibility_action_move_bar_left" msgid="4803535120353716759">"向左移"</string>
     <string name="bubble_accessibility_action_move_bar_right" msgid="7686542531917510421">"向右移"</string>
-    <string name="bubble_accessibility_announce_expand" msgid="5388792092888203776">"展開「<xliff:g id="BUBBLE_TITLE">%1$s</xliff:g>」"</string>
-    <string name="bubble_accessibility_announce_collapse" msgid="3178806224494537097">"收合「<xliff:g id="BUBBLE_TITLE">%1$s</xliff:g>」"</string>
     <string name="bubbles_app_settings" msgid="3617224938701566416">"「<xliff:g id="NOTIFICATION_TITLE">%1$s</xliff:g>」設定"</string>
     <string name="bubble_dismiss_text" msgid="8816558050659478158">"關閉對話框"</string>
     <string name="bubble_fullscreen_text" msgid="1006758103218086231">"移至全螢幕"</string>
@@ -95,7 +93,6 @@
     <string name="bubble_bar_education_manage_text" msgid="3199732148641842038">"輕觸這裡即可管理哪些應用程式和對話可顯示對話框"</string>
     <string name="notification_bubble_title" msgid="6082910224488253378">"對話框"</string>
     <string name="manage_bubbles_text" msgid="7730624269650594419">"管理"</string>
-    <string name="accessibility_bubble_dismissed" msgid="8367471990421247357">"已關閉泡泡。"</string>
     <string name="restart_button_description" msgid="4564728020654658478">"輕觸此按鈕重新啟動這個應用程式，即可獲得更良好的觀看體驗"</string>
     <string name="user_aspect_ratio_settings_button_hint" msgid="734835849600713016">"前往「設定」變更這個應用程式的顯示比例"</string>
     <string name="user_aspect_ratio_settings_button_description" msgid="4315566801697411684">"變更顯示比例"</string>

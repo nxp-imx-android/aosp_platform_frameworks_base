@@ -76,8 +76,6 @@
     <string name="bubble_accessibility_action_collapse_menu" msgid="2975310870146231463">"បង្រួម​ម៉ឺនុយ"</string>
     <string name="bubble_accessibility_action_move_bar_left" msgid="4803535120353716759">"ផ្លាស់ទី​ទៅ​ឆ្វេង"</string>
     <string name="bubble_accessibility_action_move_bar_right" msgid="7686542531917510421">"ផ្លាស់ទីទៅ​ស្តាំ"</string>
-    <string name="bubble_accessibility_announce_expand" msgid="5388792092888203776">"ពង្រីក <xliff:g id="BUBBLE_TITLE">%1$s</xliff:g>"</string>
-    <string name="bubble_accessibility_announce_collapse" msgid="3178806224494537097">"បង្រួម <xliff:g id="BUBBLE_TITLE">%1$s</xliff:g>"</string>
     <string name="bubbles_app_settings" msgid="3617224938701566416">"ការកំណត់ <xliff:g id="NOTIFICATION_TITLE">%1$s</xliff:g>"</string>
     <string name="bubble_dismiss_text" msgid="8816558050659478158">"ច្រានចោល​ផ្ទាំងអណ្ដែត"</string>
     <string name="bubble_fullscreen_text" msgid="1006758103218086231">"ផ្លាស់ទីទៅ​អេក្រង់​ពេញ"</string>
@@ -95,7 +93,6 @@
     <string name="bubble_bar_education_manage_text" msgid="3199732148641842038">"ចុចត្រង់នេះ ដើម្បីគ្រប់គ្រងកម្មវិធី និងការសន្ទនាដែលអាចបង្ហាញជាផ្ទាំងអណ្ដែត"</string>
     <string name="notification_bubble_title" msgid="6082910224488253378">"ផ្ទាំងអណ្ដែត"</string>
     <string name="manage_bubbles_text" msgid="7730624269650594419">"គ្រប់គ្រង"</string>
-    <string name="accessibility_bubble_dismissed" msgid="8367471990421247357">"បានច្រានចោល​សារលេចឡើង។"</string>
     <string name="restart_button_description" msgid="4564728020654658478">"ចុចដើម្បី​ចាប់ផ្ដើម​កម្មវិធី​នេះឡើងវិញសម្រាប់ទិដ្ឋភាពកាន់តែប្រសើរ"</string>
     <string name="user_aspect_ratio_settings_button_hint" msgid="734835849600713016">"ផ្លាស់ប្ដូរសមាមាត្រ​របស់កម្មវិធីនេះនៅក្នុងការកំណត់"</string>
     <string name="user_aspect_ratio_settings_button_description" msgid="4315566801697411684">"ប្ដូរ​​សមាមាត្រ"</string>

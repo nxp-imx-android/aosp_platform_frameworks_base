@@ -76,8 +76,6 @@
     <string name="bubble_accessibility_action_collapse_menu" msgid="2975310870146231463">"मेनु कोल्याप्स गर्नुहोस्"</string>
     <string name="bubble_accessibility_action_move_bar_left" msgid="4803535120353716759">"बायाँतिर सार्नुहोस्"</string>
     <string name="bubble_accessibility_action_move_bar_right" msgid="7686542531917510421">"दायाँतिर सार्नुहोस्"</string>
-    <string name="bubble_accessibility_announce_expand" msgid="5388792092888203776">"<xliff:g id="BUBBLE_TITLE">%1$s</xliff:g> एक्स्पान्ड गर्नुहोस्"</string>
-    <string name="bubble_accessibility_announce_collapse" msgid="3178806224494537097">"<xliff:g id="BUBBLE_TITLE">%1$s</xliff:g> कोल्याप्स गर्नुहोस्"</string>
     <string name="bubbles_app_settings" msgid="3617224938701566416">"<xliff:g id="NOTIFICATION_TITLE">%1$s</xliff:g> का सेटिङहरू"</string>
     <string name="bubble_dismiss_text" msgid="8816558050659478158">"बबल खारेज गर्नुहोस्"</string>
     <string name="bubble_fullscreen_text" msgid="1006758103218086231">"सारेर फुल स्क्रिनमा लैजानुहोस्"</string>
@@ -95,7 +93,6 @@
     <string name="bubble_bar_education_manage_text" msgid="3199732148641842038">"कुन-कुन एप तथा वार्तालापहरू बबल हुन सक्छन् भन्ने कुरा व्यवस्थापन गर्न यहाँ ट्याप गर्नुहोस्"</string>
     <string name="notification_bubble_title" msgid="6082910224488253378">"बबल"</string>
     <string name="manage_bubbles_text" msgid="7730624269650594419">"व्यवस्थापन गर्नुहोस्"</string>
-    <string name="accessibility_bubble_dismissed" msgid="8367471990421247357">"बबल हटाइयो।"</string>
     <string name="restart_button_description" msgid="4564728020654658478">"अझ राम्रो भ्यू प्राप्त गर्नका लागि यो एप रिस्टार्ट गर्न ट्याप गर्नुहोस्"</string>
     <string name="user_aspect_ratio_settings_button_hint" msgid="734835849600713016">"सेटिङमा गई यो एपको एस्पेक्ट रेसियो परिवर्तन गर्नुहोस्"</string>
     <string name="user_aspect_ratio_settings_button_description" msgid="4315566801697411684">"एस्पेक्ट रेसियो परिवर्तन गर्नुहोस्"</string>
