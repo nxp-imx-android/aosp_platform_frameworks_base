@@ -290,13 +290,6 @@ flag {
 }
 
 flag {
-     name: "logout_user_api"
-     namespace: "multiuser"
-     description: "Add API to logout user"
-     bug: "350045389"
-}
-
-flag {
     name: "enable_moving_content_into_private_space"
     namespace: "profile_experiences"
     description: "Enable moving content into the Private Space"

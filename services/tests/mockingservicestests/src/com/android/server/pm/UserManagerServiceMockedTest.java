@@ -27,7 +27,6 @@ import static android.multiuser.Flags.FLAG_BLOCK_PRIVATE_SPACE_CREATION;
 import static android.multiuser.Flags.FLAG_CREATE_INITIAL_USER;
 import static android.multiuser.Flags.FLAG_DEMOTE_MAIN_USER;
 import static android.multiuser.Flags.FLAG_HSU_NOT_ADMIN;
-import static android.multiuser.Flags.FLAG_LOGOUT_USER_API;
 import static android.multiuser.Flags.FLAG_UNICORN_MODE_REFACTORING_FOR_HSUM_READ_ONLY;
 import static android.multiuser.Flags.FLAG_USER_FILTER_REFACTORING;
 import static android.os.UserHandle.USER_NULL;
@@ -955,7 +954,6 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @EnableFlags(FLAG_LOGOUT_USER_API)
     public void testGetUserLogoutability_HsumAndInteractiveHeadlessSystemUser_UserCanLogout()
             throws Exception {
         setSystemUserHeadless(true);
@@ -971,7 +969,6 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @EnableFlags(FLAG_LOGOUT_USER_API)
     public void testGetUserLogoutability_HsumAndNonInteractiveHeadlessSystemUser_UserCannotLogout()
             throws Exception {
         setSystemUserHeadless(true);
@@ -986,7 +983,6 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @EnableFlags(FLAG_LOGOUT_USER_API)
     public void
             testGetUserLogoutability_HsumAndInteractiveHeadlessSystemUser_SystemUserCannotLogout()
                     throws Exception {
@@ -998,7 +994,6 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @EnableFlags(FLAG_LOGOUT_USER_API)
     public void testGetUserLogoutability_NonHsum_SystemUserCannotLogout() throws Exception {
         setSystemUserHeadless(false);
         mockCurrentUser(USER_SYSTEM);
@@ -1008,7 +1003,6 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @EnableFlags(FLAG_LOGOUT_USER_API)
     public void testGetUserLogoutability_CannotSwitch_CannotLogout() throws Exception {
         setSystemUserHeadless(true);
         mockCanSwitchToHeadlessSystemUser(true);
@@ -1019,12 +1013,6 @@ public final class UserManagerServiceMockedTest {
         mUms.setUserRestriction(DISALLOW_USER_SWITCH, true, USER_ID);
         assertThat(mUms.getUserLogoutability(USER_ID))
                 .isEqualTo(UserManager.LOGOUTABILITY_STATUS_CANNOT_SWITCH);
-    }
-
-    @Test
-    @DisableFlags(FLAG_LOGOUT_USER_API)
-    public void testGetUserLogoutability_LogoutDisabled() throws Exception {
-        assertThrows(UnsupportedOperationException.class, () -> mUms.getUserLogoutability(USER_ID));
     }
 
     @Test
@@ -1141,7 +1129,6 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @EnableFlags(FLAG_LOGOUT_USER_API)
     public void testUserWithName_withDefaultName_hsum() {
         setSystemUserHeadless(true);
 
@@ -1199,7 +1186,6 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @EnableFlags(FLAG_LOGOUT_USER_API)
     public void testGetName_withDefaultNames_hsum() {
         setSystemUserHeadless(true);
 

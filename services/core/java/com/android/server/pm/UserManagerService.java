@@ -32,7 +32,6 @@ import static android.os.UserManager.DISALLOW_USER_SWITCH;
 import static android.os.UserManager.SYSTEM_USER_MODE_EMULATION_PROPERTY;
 import static android.os.UserManager.USER_OPERATION_ERROR_UNKNOWN;
 import static android.os.UserManager.USER_OPERATION_ERROR_USER_RESTRICTED;
-import static android.os.UserManager.USER_TYPE_PROFILE_PRIVATE;
 import static android.provider.Settings.Secure.HIDE_PRIVATESPACE_ENTRY_POINT;
 
 import static com.android.internal.util.ConcurrentUtils.DIRECT_EXECUTOR;
@@ -2706,10 +2705,8 @@ public class UserManagerService extends IUserManager.Stub {
                 int number = mUser0Allocations.incrementAndGet();
                 Slog.w(LOG_TAG, "System user instantiated at least " + number + " times");
             }
-            if (android.multiuser.Flags.logoutUserApi()) {
-                if (isHeadlessSystemUserMode()) {
-                    return getHeadlessSystemUserName();
-                }
+            if (isHeadlessSystemUserMode()) {
+                return getHeadlessSystemUserName();
             }
             return getOwnerName();
         }
@@ -3336,11 +3333,6 @@ public class UserManagerService extends IUserManager.Stub {
 
     @Override
     public @UserLogoutability int getUserLogoutability(@UserIdInt int userId) {
-        if (!android.multiuser.Flags.logoutUserApi()) {
-            throw new UnsupportedOperationException(
-                    "aconfig flag android.multiuser.logout_user_api not enabled");
-        }
-
         checkManageUsersPermission("getUserLogoutability");
 
         if (isHeadlessSystemUserMode() && !canSwitchToHeadlessSystemUser()) {
