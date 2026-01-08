@@ -36,6 +36,7 @@ import com.android.systemui.biometrics.Utils.getInsetsOf
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.display.data.repository.KioskModeRepository
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor.PendingDisplay
@@ -52,6 +53,7 @@ import dagger.Module
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -76,6 +78,7 @@ constructor(
     private val kioskModeRepository: KioskModeRepository,
     private val connectedDisplayInteractor: ConnectedDisplayInteractor,
     @Application private val scope: CoroutineScope,
+    @Main private val coroutineContext: CoroutineContext,
     @Background private val bgDispatcher: CoroutineDispatcher,
     private val accessibilityManagerWrapper: AccessibilityManagerWrapper,
     private val delegateFactory: ExternalDisplayConnectionDialogDelegate.Factory,
@@ -216,7 +219,6 @@ constructor(
                 MIRROR -> applyConnectionChoice(enableMirroring = true)
                 else -> Log.wtf(TAG, "Tried to enable display for unknown mode: $connectionType")
             }
-            connectedDisplays.add(id)
         }
 
         dismissDialog()
@@ -226,6 +228,7 @@ constructor(
         if (setDisplayMirrorSetting(enableMirroring)) {
             // regardless of mirror setting, display should be enabled on successful update
             enable()
+            withContext(coroutineContext) { connectedDisplays.add(id) }
         } else {
             Log.w(TAG, "Failed to update display mirroring, so ignore display $id")
             ignore()
