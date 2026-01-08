@@ -170,6 +170,23 @@ void SkiaIpcPipeline::applyPendingTransactions(uint64_t frameNumber) {
     t.setApplyToken(mApplyToken).apply(false, true);
 }
 
+void SkiaIpcPipeline::clearSyncTransaction() {
+    std::lock_guard<std::mutex> lg(mLock);
+    mTransactionReadyCallback = nullptr;
+    if (mSyncTransaction) {
+        delete mSyncTransaction;
+        mSyncTransaction = nullptr;
+    }
+}
+
+SurfaceComposerClient::Transaction* SkiaIpcPipeline::gatherPendingTransactions(
+        uint64_t frameNumber) {
+    auto t = new SurfaceComposerClient::Transaction();
+    std::lock_guard<std::mutex> lg(mLock);
+    mergePendingTransactions(t, frameNumber);
+    return t;
+}
+
 bool SkiaIpcPipeline::syncNextTransaction(
         std::function<void(SurfaceComposerClient::Transaction*)> callback,
         bool acquireSingleBuffer) {

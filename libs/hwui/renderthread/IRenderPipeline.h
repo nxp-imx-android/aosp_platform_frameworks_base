@@ -89,6 +89,10 @@ public:
     }
     virtual void mergeWithNextTransaction(SurfaceComposerClient::Transaction*, uint64_t) {}
     virtual void applyPendingTransactions(uint64_t) {}
+    virtual void clearSyncTransaction() {}
+    virtual SurfaceComposerClient::Transaction* gatherPendingTransactions(uint64_t) {
+        return new SurfaceComposerClient::Transaction();
+    }
 #endif
     // Only used on SkiaIpcPipeline so we provide an empty default impl
     virtual void updateRenderTargetSize(uint64_t width, uint64_t height) {}

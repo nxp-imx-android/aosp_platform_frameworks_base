@@ -13447,7 +13447,8 @@ public final class ViewRootImpl implements ViewParent,
                 if ((syncResult
                         & (SYNC_LOST_SURFACE_REWARD_IF_FOUND | SYNC_CONTEXT_IS_STOPPED)) != 0) {
                     surfaceSyncGroup.addTransaction(
-                            mBlastBufferQueue.gatherPendingTransactions(frame));
+                            HardwareRenderer.SyncInterface.gatherPendingTransactions(
+                                    mAttachInfo.mThreadedRenderer, frame));
                     surfaceSyncGroup.markSyncReady();
                     return null;
                 }
@@ -13490,14 +13491,16 @@ public final class ViewRootImpl implements ViewParent,
                     // the next draw attempt. The next transaction and transaction complete callback
                     // were only set for the current draw attempt.
                     if (!didProduceBuffer) {
-                        mBlastBufferQueue.clearSyncTransaction();
+                        HardwareRenderer.SyncInterface.clearSyncTransaction(
+                                mAttachInfo.mThreadedRenderer);
 
                         // Gather the transactions that were sent to mergeWithNextTransaction
                         // since the frame didn't draw on this vsync. It's possible the frame will
                         // draw later, but it's better to not be sync than to block on a frame that
                         // may never come.
                         surfaceSyncGroup.addTransaction(
-                                mBlastBufferQueue.gatherPendingTransactions(frame));
+                                HardwareRenderer.SyncInterface.gatherPendingTransactions(
+                                        mAttachInfo.mThreadedRenderer, frame));
                         surfaceSyncGroup.markSyncReady();
                         return;
                     }
