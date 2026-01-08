@@ -184,7 +184,6 @@ public class PermissionUsageHelper implements AppOpsManager.OnOpActiveChangedLis
         mVirtualDeviceManager = context.getSystemService(VirtualDeviceManager.class);
         mUserContexts = new ArrayMap<>();
         mUserContexts.put(Process.myUserHandle(), mContext);
-        // TODO ntmyren: make this listen for flag enable/disable changes
         String[] opStrs = {OPSTR_CAMERA, OPSTR_RECORD_AUDIO};
         mAppOpsManager.startWatchingActive(opStrs, context.getMainExecutor(), this);
         int[] ops = {OP_CAMERA, OP_RECORD_AUDIO};
@@ -220,7 +219,6 @@ public class PermissionUsageHelper implements AppOpsManager.OnOpActiveChangedLis
 
         // if any link in the chain is finished, remove the chain. Then, find any other chains that
         // contain this op/package/uid/tag combination, and remove them, as well.
-        // TODO ntmyren: be smarter about this
         synchronized (mAttributionChains) {
             mAttributionChains.remove(attributionChainId);
             int numChains = mAttributionChains.size();
@@ -787,7 +785,7 @@ public class PermissionUsageHelper implements AppOpsManager.OnOpActiveChangedLis
                 iterNum++;
             }
 
-            // TODO ntmyren: remove this proxy logic once camera is converted to AttributionSource
+            // TODO b/474359027: remove this proxy logic once camera is converted to AttributionSource
             // For now: don't add mic proxy usages
             if (!MICROPHONE.equals(permGroup)) {
                 usagesAndLabels.put(start,
@@ -799,7 +797,7 @@ public class PermissionUsageHelper implements AppOpsManager.OnOpActiveChangedLis
             for (int i = 0; i < mAttributionChains.size(); i++) {
                 List<AccessChainLink> usageList = mAttributionChains.valueAt(i);
                 int lastVisible = usageList.size() - 1;
-                // TODO ntmyren: remove this mic code once camera is converted to AttributionSource
+                // TODO b/474359027: remove this mic code once camera is converted to AttributionSource
                 // if the list is empty or incomplete, do not show it.
                 if (usageList.isEmpty() || !usageList.get(lastVisible).isEnd()
                         || !usageList.get(0).isStart()
@@ -808,7 +806,7 @@ public class PermissionUsageHelper implements AppOpsManager.OnOpActiveChangedLis
                     continue;
                 }
 
-                //TODO ntmyren: remove once camera etc. etc.
+                //TODO b/474359027: remove once camera etc. etc.
                 for (AccessChainLink link : usageList) {
                     proxyPackages.add(link.usage.getPackageIdHash());
                 }
