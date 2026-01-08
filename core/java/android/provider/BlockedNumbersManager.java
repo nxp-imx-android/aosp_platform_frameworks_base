@@ -231,7 +231,7 @@ public final class BlockedNumbersManager {
         } catch (NullPointerException | IllegalArgumentException ex) {
             // The content resolver can throw an NPE or IAE; we don't want to crash Telecom if
             // either of these happen.
-            Log.w(null, "shouldSystemBlockNumber: provider not ready.");
+            Log.w(LOG_TAG, "shouldSystemBlockNumber: provider not ready.", ex);
             return BlockedNumberContract.STATUS_NOT_BLOCKED;
         }
     }
@@ -397,6 +397,9 @@ public final class BlockedNumbersManager {
     }
 
     private static String obfuscatePhoneNumber(String phoneNumber) {
+        if (phoneNumber == null) {
+            return "null";
+        }
         StringBuilder sb = new StringBuilder();
         int numDigitsToObfuscate = getDialableCount(phoneNumber)
                 - NUM_DIALABLE_DIGITS_TO_LOG;
