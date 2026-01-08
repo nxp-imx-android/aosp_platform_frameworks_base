@@ -1496,6 +1496,7 @@ public class ViewFrameRateTest {
         }
     }
 
+
     private void runAfterDraw(@NonNull Runnable runnable) {
         Handler handler = new Handler(Looper.getMainLooper());
         mAfterDrawLatch = new CountDownLatch(1);
