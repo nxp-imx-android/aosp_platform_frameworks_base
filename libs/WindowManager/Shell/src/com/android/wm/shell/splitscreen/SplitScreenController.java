@@ -502,6 +502,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
         mStageCoordinator.prepareExitSplitScreen(stageToTop, wct, reason);
         mStageCoordinator.setDividerVisibility(false, null);
         mStageCoordinator.clearSplitPairedInRecents(reason);
+        mStageCoordinator.onExitingSplit();
     }
 
     /**
