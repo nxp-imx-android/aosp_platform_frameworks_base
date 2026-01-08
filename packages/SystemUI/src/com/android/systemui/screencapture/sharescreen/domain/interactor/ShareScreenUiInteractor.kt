@@ -65,6 +65,9 @@ constructor(
 
     private var initialDisplayId: Int = -1
 
+    var initialSource: Int = -1
+        private set
+
     fun initialize(
         projection: IMediaProjection,
         reviewGrantedConsentRequired: Boolean,
@@ -72,6 +75,7 @@ constructor(
         uid: Int,
         packageName: String,
         initialDisplayId: Int,
+        initialSource: Int,
     ) {
         this.projection = projection
         this.reviewGrantedConsentRequired = reviewGrantedConsentRequired
@@ -79,6 +83,7 @@ constructor(
         this.uid = uid
         this.packageName = packageName
         this.initialDisplayId = initialDisplayId
+        this.initialSource = initialSource
     }
 
     /**

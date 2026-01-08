@@ -82,6 +82,7 @@ constructor(
             intent.getBooleanExtra(EXTRA_USER_REVIEW_GRANTED_CONSENT, false)
         val projectionBinder = intent.extras?.getBinder(EXTRA_MEDIA_PROJECTION)
         val hostUserHandle: UserHandle? = intent.getParcelableExtra(EXTRA_HOST_APP_USER_HANDLE)
+        val initialSource = intent.getIntExtra(EXTRA_INITIAL_SOURCE, -1)
 
         if (
             uid == -1 || hostUserHandle == null || packageName == null || projectionBinder == null
@@ -118,6 +119,7 @@ constructor(
                                         uid,
                                         packageName,
                                         display!!.displayId,
+                                        initialSource,
                                     )
                                 }
                         ui
@@ -223,6 +225,7 @@ constructor(
         const val EXTRA_HOST_APP_UID = "launched_from_host_uid"
         const val EXTRA_PACKAGE_NAME = "package_name"
         const val EXTRA_HOST_APP_USER_HANDLE = "launched_from_user_handle"
+        const val EXTRA_INITIAL_SOURCE = "initial_source"
 
         private const val TAG = "ShareScreenActivity"
     }

@@ -21,6 +21,8 @@ import android.content.ComponentName
 import android.content.Intent
 import android.content.testableContext
 import android.media.projection.MediaProjectionAppContent
+import android.media.projection.MediaProjectionConfig.PROJECTION_SOURCE_APP_CONTENT
+import android.media.projection.MediaProjectionConfig.PROJECTION_SOURCE_DISPLAY
 import android.media.projection.ReviewGrantedConsentResult
 import android.os.UserHandle
 import android.view.Display
@@ -42,6 +44,7 @@ import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecen
 import com.android.systemui.screencapture.common.repository.FakeAppContentProjectionCallback
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.common.ui.viewmodel.AppContentsViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.DisplaysViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.appContentsViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.displayViewModelFactory
 import com.android.systemui.screencapture.common.ui.viewmodel.displaysViewModel
@@ -119,14 +122,36 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
             uid = 100,
             packageName = context.packageName,
             initialDisplayId = 0,
+            initialSource = PROJECTION_SOURCE_APP_CONTENT,
         )
     }
 
     @Test
-    fun initialState() =
+    fun initialState_initialSourceIsAppContent_showsAppContentsViewModel() =
         kosmos.runTest {
             // Assert that the initial values are as expected upon creation and activation.
             assertThat(viewModel.currentTargetsModel).isInstanceOf(AppContentsViewModel::class.java)
+
+            assertThat(viewModel.isUiVisible).isTrue()
+        }
+
+    @Test
+    fun initialState_initialSourceIsEntireScreen_showsDisplaysViewModel() =
+        kosmos.runTest {
+            // Setup the interactor for this specific test case.
+            kosmos.shareScreenUiInteractor.initialize(
+                projection = mock(),
+                reviewGrantedConsentRequired = true,
+                hostUserHandle = mock(),
+                uid = 100,
+                packageName = context.packageName,
+                initialDisplayId = 0,
+                initialSource = PROJECTION_SOURCE_DISPLAY,
+            )
+            viewModel.activateIn(kosmos.testScope)
+
+            // Assert that the initial values are as expected upon creation and activation.
+            assertThat(viewModel.currentTargetsModel).isInstanceOf(DisplaysViewModel::class.java)
 
             assertThat(viewModel.isUiVisible).isTrue()
         }

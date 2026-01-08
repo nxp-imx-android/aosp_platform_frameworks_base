@@ -17,6 +17,8 @@
 package com.android.systemui.screencapture.sharescreen.ui.viewmodel
 
 import android.content.pm.PackageManager
+import android.media.projection.MediaProjectionConfig.PROJECTION_SOURCE_APP
+import android.media.projection.MediaProjectionConfig.PROJECTION_SOURCE_DISPLAY
 import android.os.UserHandle
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -31,7 +33,6 @@ import com.android.systemui.screencapture.common.ui.viewmodel.AudioSwitchViewMod
 import com.android.systemui.screencapture.common.ui.viewmodel.DisplaysViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
-import com.android.systemui.screencapture.common.ui.viewmodel.TargetsViewModel
 import com.android.systemui.screencapture.sharescreen.domain.interactor.ShareScreenUiInteractor
 import com.android.systemui.statusbar.quickactions.sharescreen.domain.interactor.ShareScreenPrivacyIndicatorInteractor
 import dagger.assisted.Assisted
@@ -58,7 +59,14 @@ constructor(
     private val appContentsViewModel =
         appContentsViewModelFactory.create(thumbnailWidthPx, thumbnailHeightPx)
 
-    var currentTargetsModel by mutableStateOf<TargetsViewModel>(appContentsViewModel)
+    var currentTargetsModel by
+        mutableStateOf(
+            when (shareScreenUiInteractor.initialSource) {
+                PROJECTION_SOURCE_APP -> recentTasksViewModel
+                PROJECTION_SOURCE_DISPLAY -> displaysViewModel
+                else -> appContentsViewModel
+            }
+        )
         private set
 
     var isUiVisible by mutableStateOf(true)
