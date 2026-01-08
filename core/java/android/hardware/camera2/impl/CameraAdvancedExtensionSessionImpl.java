@@ -363,6 +363,10 @@ public final class CameraAdvancedExtensionSessionImpl extends CameraExtensionSes
                 }
             }
 
+            if (Flags.multiResolutionConcurrentReaders()) {
+                cameraOutput.setOnActiveOutputSurfaceCallback(output.onActiveOutputSurfaceCallback);
+            }
+
             // The extension processing logic needs to be able to match images to capture results via
             // image and result timestamps.
             cameraOutput.setTimestampBase(OutputConfiguration.TIMESTAMP_BASE_SENSOR);

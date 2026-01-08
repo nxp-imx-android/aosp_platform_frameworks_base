@@ -44,6 +44,7 @@ import android.hardware.camera2.ICameraDeviceUser;
 import android.hardware.camera2.ICameraOfflineSession;
 import android.hardware.camera2.MultiResolutionImageReader;
 import android.hardware.camera2.TotalCaptureResult;
+import android.hardware.camera2.extension.IOnActiveOutputSurfaceCallback;
 import android.hardware.camera2.impl.MultiResConcurrentReadersStartInfo;
 import android.hardware.camera2.params.DynamicRangeProfiles;
 import android.hardware.camera2.params.ExtensionSessionConfiguration;
@@ -2789,6 +2790,7 @@ public class CameraDeviceImpl extends CameraDevice
             for (MultiResConcurrentReadersStartInfo info : multiResConcurrentReadersInfo) {
                 Surface targetSurface = null;
                 MultiResolutionImageReader multiResImageReader = null;
+                IOnActiveOutputSurfaceCallback cb = null;
                 ArrayList<Surface> activeOutputSurfaces = new ArrayList<Surface>();
                 boolean isReadoutTimestamp = false;
                 for (int i = 0; i < mConfiguredOutputs.size(); ++i) {
@@ -2802,7 +2804,8 @@ public class CameraDeviceImpl extends CameraDevice
                     // cache a MultiResolutionImageReader.
                     MultiResolutionImageReader multiResReaderForConfig =
                             config.getMultiResolutionReader();
-                    if (multiResReaderForConfig == null) {
+                    cb = config.getOnActiveOutputSurfaceCallback();
+                    if (multiResReaderForConfig == null && cb == null) {
                         Log.e(TAG, "OutputConfiguration doesn't belong to "
                                 + "a MultiResolutionImageReader!");
                         return;
@@ -2833,7 +2836,7 @@ public class CameraDeviceImpl extends CameraDevice
                     return;
                 }
                 // The cached MultiResolutionImageReader object must be valid.
-                if (multiResImageReader == null) {
+                if (multiResImageReader == null && cb == null) {
                     Log.e(TAG, "MultiResolutionImageReader not found in OutputConfiguration!");
                     return;
                 }
@@ -2843,8 +2846,18 @@ public class CameraDeviceImpl extends CameraDevice
                 long chosenTimestamp = (isReadoutTimestamp && readoutTimestamp >= 0)
                         ? readoutTimestamp : timestamp;
                 chosenTimestamp -= info.timestampOffset;
-                multiResImageReader.postOnActiveOutputSurfacesCallback(
-                        activeOutputSurfaces, chosenTimestamp, frameNumber);
+                if (multiResImageReader != null) {
+                    multiResImageReader.postOnActiveOutputSurfacesCallback(
+                            activeOutputSurfaces, chosenTimestamp, frameNumber);
+                } else {
+                    try {
+                        cb.onActiveOutputSurfacesCallback(activeOutputSurfaces, chosenTimestamp,
+                                frameNumber);
+                    } catch (RemoteException e) {
+                        Log.e(TAG, "Remote client doesn't respond when calling " +
+                                "onActiveOutputSurfacesCallback", e);
+                    }
+                }
             }
         }
 

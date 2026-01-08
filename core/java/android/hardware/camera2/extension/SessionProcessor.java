@@ -532,6 +532,9 @@ public abstract class SessionProcessor {
                     for (CaptureRequest.Key captureRequestKey : sessionParameters.getKeys()) {
                         paramMap.put(captureRequestKey, sessionParameters.get(captureRequestKey));
                     }
+                    if (!cameraConfig.getSessionWideParams().isEmpty()) {
+                        Log.d(TAG, "Overriding non-empty session parameters");
+                    }
                     cameraConfig.setSessionWideParams(paramMap);
                 }
                 config = SessionProcessor.this.initSession(token, cameraId,
