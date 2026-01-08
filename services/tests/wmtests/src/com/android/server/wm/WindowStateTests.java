@@ -62,6 +62,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.never;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spy;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
+import static com.android.server.policy.WindowManagerPolicy.TRANSIT_EXIT;
 import static com.android.server.wm.WindowContainer.SYNC_STATE_WAITING_FOR_DRAW;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -358,6 +359,21 @@ public class WindowStateTests extends WindowTestsBase {
         root.removeChild(child1);
         assertEquals(child1, child1.getTopParentWindow());
         assertEquals(child1, child2.getParentWindow());
+    }
+
+    @Test
+    public void testForceHideExitingOverlayWindow() {
+        final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY).build();
+        setFieldValue(window.mSession, "mCanAddInternalSystemWindow", false);
+        window.mAttrs.windowAnimations = android.R.style.Animation_Dialog;
+        window.mAnimatingExit = true;
+        window.mWinAnimator.applyAnimationLocked(TRANSIT_EXIT, false /* isEntrance */);
+        assertTrue(window.isAnimating());
+        assertTrue(window.isVisibleByPolicy());
+
+        window.setForceHideNonSystemOverlayWindowIfNeeded(true);
+        assertFalse(window.isAnimating());
+        assertFalse(window.isVisibleByPolicy());
     }
 
     @Test
