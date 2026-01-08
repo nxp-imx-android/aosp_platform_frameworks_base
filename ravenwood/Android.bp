@@ -578,7 +578,12 @@ filegroup {
 
 android_ravenwood_libgroup {
     name: "ravenwood-runtime.ravenwood-core",
-    data: [":ravenwood-core-data"],
+    data: [
+        {
+            path: "ravenwood-data",
+            srcs: [":ravenwood-core-data"],
+        },
+    ],
     libs: [
         "hoststubgen-helper-runtime",
         "ravenwood-framework",
@@ -622,8 +627,16 @@ android_ravenwood_libgroup {
 
 android_ravenwood_libgroup {
     name: "ravenwood-runtime",
-    data: [":ravenwood-data"],
-    fonts: [":ravenwood-fonts"],
+    data: [
+        {
+            path: "ravenwood-data",
+            srcs: [":ravenwood-data"],
+        },
+        {
+            path: "fonts",
+            srcs: [":ravenwood-fonts"],
+        },
+    ],
     subruntimes: [
         "ravenwood-runtime.ravenwood-core",
         "ravenwood-runtime.framework-minus-apex",
