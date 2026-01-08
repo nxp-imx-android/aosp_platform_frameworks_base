@@ -30,7 +30,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.ParcelFileDescriptor;
 import android.os.Process;
-import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
@@ -38,15 +37,15 @@ import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.util.Log;
 
 import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -63,6 +62,7 @@ import java.util.concurrent.TimeUnit;
  */
 @SmallTest
 @Presubmit
+@RunWith(AndroidJUnit4.class)
 public class MemoryLimiterTest {
 
     private static final String TAG = "MemoryLimiterTest";
@@ -76,10 +76,10 @@ public class MemoryLimiterTest {
     // The test application package and activity name.
     // LINT.IfChange(testapp)
     private static final String HELPER =
-            "com.android.servicestests.apps.memorylimitertestapp";
+            "com.android.memorylimitertests.apps.memorylimitertestapp";
     private static final String ACTIVITY = "TestActivity";
     // LINT.ThenChange(
-    //   /services/tests/servicestests/test-apps/MemoryLimiterTestApp/AndroidManifest.xml:testapp
+    // /services/tests/MemoryLimiterTests/test-app/MemoryLimiterTestApp/AndroidManifest.xml:testapp
     // )
 
     // The UID of the test application.  This can change every time the package is installed but
@@ -190,27 +190,6 @@ public class MemoryLimiterTest {
         }
     }
 
-    // Remember the SELinux state before the test started, so it can be restored afterwards.
-    static boolean sSELinuxEnforced = false;
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        String status = shellCommand("getenforce");
-        sSELinuxEnforced = status.startsWith("Enforcing");
-        if (sSELinuxEnforced) {
-            Log.i(TAG, "disabling selinux");
-            shellCommand("setenforce 0");
-        }
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-        if (sSELinuxEnforced) {
-            Log.i(TAG, "enabling selinux");
-            shellCommand("setenforce 1");
-        }
-    }
-
     @Before
     public void setUp() throws Exception {
         mUid = getHelperUid();
@@ -291,7 +270,6 @@ public class MemoryLimiterTest {
         }
     }
 
-    @DisabledOnRavenwood
     @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
     @Test
     public void testLimiter() throws Exception {
@@ -323,7 +301,6 @@ public class MemoryLimiterTest {
         }
     }
 
-    @DisabledOnRavenwood
     @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
     @Test
     public void testLimiterAfter() throws Exception {
@@ -355,7 +332,6 @@ public class MemoryLimiterTest {
         }
     }
 
-    @DisabledOnRavenwood
     @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
     @Test
     public void testNullPackage() throws Exception {
@@ -387,7 +363,6 @@ public class MemoryLimiterTest {
         }
     }
 
-    @DisabledOnRavenwood
     @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
     @Test
     public void testEmptyPackage() throws Exception {

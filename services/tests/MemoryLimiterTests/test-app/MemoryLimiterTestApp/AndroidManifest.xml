@@ -16,7 +16,7 @@
 
 <!-- LINT.IfChange(testapp) -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-        package="com.android.servicestests.apps.memorylimitertestapp">
+        package="com.android.memorylimitertests.apps.memorylimitertestapp">
 
     <application android:label="MemoryLimiterTestApp">
         <activity android:name=".TestActivity"
@@ -25,5 +25,5 @@
 
 </manifest>
 <!-- LINT.ThenChange(
-     /services/tests/servicestests/src/com/android/server/am/MemoryLimiterTest.java:testapp)
+     /services/tests/MemoryLimiterTests/src/com/android/server/am/MemoryLimiterTest.java:testapp)
 -->

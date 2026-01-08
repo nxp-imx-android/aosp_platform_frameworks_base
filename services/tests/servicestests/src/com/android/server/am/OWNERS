@@ -1,3 +1,2 @@
 include /services/core/java/com/android/server/am/OWNERS
 include /ACTIVITY_MANAGER_OWNERS
-per-file *MemoryLimiter*  = file:/PERFORMANCE_OWNERS
