@@ -2093,6 +2093,9 @@ class Task extends TaskFragment {
             if (td.getRawIcon() == null) {
                 td.setIcon(atd.getRawIcon());
             }
+            if (td.getBadge() == null) {
+                td.setBadge(atd.getBadge());
+            }
             if (td.getIconFilename() == null) {
                 td.setIconFilename(atd.getIconFilename());
             }
