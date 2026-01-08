@@ -72,6 +72,9 @@ import java.util.regex.Pattern;
  * <pre>
  * [width]x[height]/[densityDpi]
  * </pre>
+ * <pre>
+ * [width]x[height]/[dpi]@[refreshRate]
+ * </pre>
  * Supported flags:
  * <ul>
  * <li><code>secure</code>: creates a secure display</li>
@@ -147,15 +150,18 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
 
     private static final int MIN_WIDTH = 100;
     private static final int MIN_HEIGHT = 100;
+    private static final int MIN_REFRESH_RATE = 10;
     private static final int MAX_WIDTH = 4096;
     private static final int MAX_HEIGHT = 4096;
+    private static final int MAX_REFRESH_RATE = 120;
 
     private static final String DISPLAY_SPLITTER = ";";
     private static final String MODE_SPLITTER = "\\|";
     private static final String FLAG_SPLITTER = ",";
 
     private static final Pattern DISPLAY_PATTERN = Pattern.compile("([^,]+)(,[,_a-z]+)*");
-    private static final Pattern MODE_PATTERN = Pattern.compile("(\\d+)x(\\d+)/(\\d+)");
+    private static final Pattern MODE_PATTERN =
+            Pattern.compile("(\\d+)x(\\d+)/(\\d+)(?:@(\\d+))?");
 
     // Unique id prefix for overlay displays.
     private static final String UNIQUE_ID_PREFIX = "overlay:";
@@ -249,12 +255,28 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
                             int width = Integer.parseInt(modeMatcher.group(1), 10);
                             int height = Integer.parseInt(modeMatcher.group(2), 10);
                             int densityDpi = Integer.parseInt(modeMatcher.group(3), 10);
-                            if (width >= MIN_WIDTH && width <= MAX_WIDTH
-                                    && height >= MIN_HEIGHT && height <= MAX_HEIGHT
+                            final String refreshRateStr = modeMatcher.group(4);
+                            float refreshRate =
+                                    refreshRateStr != null
+                                            ? Float.parseFloat(refreshRateStr)
+                                            : Display.INVALID_DISPLAY_REFRESH_RATE;
+
+                            // If refresh rate param is not passed, revert to default to device
+                            // screen refresh rate (passing Display.INVALID_DISPLAY_REFRESH_RATE
+                            // will be treated as reverting to default). Else, check for
+                            // out-of-bounds args, and ignore if so.
+                            boolean isValidRefreshRate =
+                                    refreshRateStr == null
+                                            || (refreshRate >= MIN_REFRESH_RATE
+                                                    && refreshRate <= MAX_REFRESH_RATE);
+                            if (isValidRefreshRate
+                                    && width >= MIN_WIDTH
+                                    && width <= MAX_WIDTH
+                                    && height >= MIN_HEIGHT
+                                    && height <= MAX_HEIGHT
                                     && densityDpi >= DisplayMetrics.DENSITY_LOW
                                     && densityDpi <= DisplayMetrics.DENSITY_XXXHIGH) {
-                                modes.add(new OverlayMode(width, height, densityDpi));
-                                continue;
+                                modes.add(new OverlayMode(width, height, densityDpi, refreshRate));
                             } else {
                                 Slog.w(TAG, "Ignoring out-of-range overlay display mode: " + mode);
                             }
@@ -325,6 +347,7 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
         private Surface mSurface;
         private DisplayDeviceInfo mInfo;
         private int mActiveMode;
+        private int mUserPreferredModeId = -1;
 
         OverlayDisplayDevice(IBinder displayToken, String name,
                 List<OverlayMode> modes, int activeMode, int defaultMode,
@@ -342,7 +365,13 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
             mModes = new Display.Mode[modes.size()];
             for (int i = 0; i < modes.size(); i++) {
                 OverlayMode mode = modes.get(i);
-                mModes[i] = createMode(mode.mWidth, mode.mHeight, refreshRate);
+                mModes[i] =
+                        createMode(
+                                mode.mWidth,
+                                mode.mHeight,
+                                mode.mRefreshRate != Display.INVALID_DISPLAY_REFRESH_RATE
+                                        ? mode.mRefreshRate
+                                        : mRefreshRate);
             }
             mActiveMode = activeMode;
             mDefaultMode = defaultMode;
@@ -429,23 +458,50 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
         }
 
         @Override
+        public Display.Mode getUserPreferredDisplayModeLocked() {
+            if (mUserPreferredModeId == -1) {
+                return super.getUserPreferredDisplayModeLocked();
+            }
+            int index = getModeArrayIndex(mUserPreferredModeId);
+            if (index == -1) {
+                return super.getUserPreferredDisplayModeLocked();
+            }
+            return mModes[index];
+        }
+
+        @Override
+        public void setUserPreferredDisplayModeLocked(Display.Mode mode) {
+            if (mode == null) {
+                return;
+            }
+            int modeId = mode.getModeId();
+            if (getModeArrayIndex(modeId) == -1) {
+                Slog.w(TAG, "Attempted to set an unsupported user preferred display mode: " + mode);
+                return;
+            }
+            mUserPreferredModeId = modeId;
+            setDisplayMode(modeId);
+        }
+
+        @Override
         public void setDesiredDisplayModeSpecsLocked(
                 DisplayModeDirector.DesiredDisplayModeSpecs displayModeSpecs) {
-            final int id = displayModeSpecs.baseModeId;
+            setDisplayMode(
+                    mUserPreferredModeId == -1
+                            ? displayModeSpecs.baseModeId
+                            : mUserPreferredModeId);
+        }
+
+        private void setDisplayMode(int displayModeId) {
             int index = -1;
-            if (id == 0) {
+            if (displayModeId == 0) {
                 // Use the default.
                 index = 0;
             } else {
-                for (int i = 0; i < mModes.length; i++) {
-                    if (mModes[i].getModeId() == id) {
-                        index = i;
-                        break;
-                    }
-                }
+                index = getModeArrayIndex(displayModeId);
             }
             if (index == -1) {
-                Slog.w(TAG, "Unable to locate mode " + id + ", reverting to default.");
+                Slog.w(TAG, "Unable to locate mode " + displayModeId + ", reverting to default.");
                 index = mDefaultMode;
             }
             if (mActiveMode == index) {
@@ -453,8 +509,22 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
             }
             mActiveMode = index;
             mInfo = null;
+            if (mSurfaceTexture != null) {
+                Display.Mode mode = mModes[mActiveMode];
+                mSurfaceTexture.setDefaultBufferSize(
+                        mode.getPhysicalWidth(), mode.getPhysicalHeight());
+            }
             sendDisplayDeviceEventLocked(this, DISPLAY_DEVICE_EVENT_CHANGED);
             onModeChangedLocked(index);
+        }
+
+        private int getModeArrayIndex(int modeId) {
+            for (int i = 0; i < mModes.length; i++) {
+                if (mModes[i].getModeId() == modeId) {
+                    return i;
+                }
+            }
+            return -1;
         }
 
         /**
@@ -632,11 +702,13 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
         final int mWidth;
         final int mHeight;
         final int mDensityDpi;
+        final float mRefreshRate;
 
-        OverlayMode(int width, int height, int densityDpi) {
+        OverlayMode(int width, int height, int densityDpi, float refreshRate) {
             mWidth = width;
             mHeight = height;
             mDensityDpi = densityDpi;
+            mRefreshRate = refreshRate;
         }
 
         @Override
@@ -645,6 +717,7 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
                     .append("width=").append(mWidth)
                     .append(", height=").append(mHeight)
                     .append(", densityDpi=").append(mDensityDpi)
+                    .append(", refreshRate=").append(mRefreshRate)
                     .append("}")
                     .toString();
         }
