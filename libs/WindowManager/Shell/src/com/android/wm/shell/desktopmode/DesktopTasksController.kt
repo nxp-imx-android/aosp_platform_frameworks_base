@@ -2850,31 +2850,62 @@ class DesktopTasksController(
         enterReason: EnterReason,
         captionInsets: Int = 0,
     ) {
-        logV("moveToDisplay: taskId=%d displayId=%d", task.taskId, displayId)
+        val wct = WindowContainerTransaction()
+        addMoveToDisplayChanges(
+                wct = wct,
+                task = task,
+                displayId = displayId,
+                bounds = bounds,
+                enterReason = enterReason,
+                captionInsets = captionInsets,
+            )
+            ?.let { runOnTransitStart ->
+                val transition =
+                    transitions.startTransition(
+                        TRANSIT_CHANGE,
+                        wct,
+                        transitionHandler ?: moveToDisplayTransitionHandler,
+                    )
+                runOnTransitStart.invoke(transition)
+            }
+    }
+
+    /**
+     * Similar to moveToDisplay, but only adds the changes needed to wct and relies on the caller to
+     * start the transition. Returns null if there should be no transitions to be started.
+     */
+    fun addMoveToDisplayChanges(
+        wct: WindowContainerTransaction,
+        task: RunningTaskInfo,
+        displayId: Int,
+        bounds: Rect? = null,
+        enterReason: EnterReason,
+        captionInsets: Int = 0,
+    ): RunOnTransitStart? {
+        logV("addMoveToDisplayChanges: taskId=%d displayId=%d", task.taskId, displayId)
         if (task.displayId == displayId) {
-            logD("moveToDisplay: task already on display %d", displayId)
-            return
+            logD("addMoveToDisplayChanges: task already on display %d", displayId)
+            return null
         }
 
         if (splitScreenController.isTaskInSplitScreen(task.taskId)) {
             moveSplitPairToDisplay(task, displayId)
-            return
+            return null
+        }
+
+        val displayAreaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(displayId)
+        if (displayAreaInfo == null) {
+            logW("addMoveToDisplayChanges: display not found")
+            return null
         }
 
         val userId = task.userId
         val repository = userRepositories.getProfile(userId)
-        val wct = WindowContainerTransaction()
-        val displayAreaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(displayId)
-        if (displayAreaInfo == null) {
-            logW("moveToDisplay: display not found")
-            return
-        }
-
         val activationRunnable: RunOnTransitStart?
         val deactivationRunnable: RunOnTransitStart?
 
         if (desktopState.isProjectedMode() && displayId == DEFAULT_DISPLAY) {
-            logV("moveToDisplay: moving task to default display during projected mode")
+            logV("addMoveToDisplayChanges: moving task to default display during projected mode")
             activationRunnable = null
             deactivationRunnable =
                 addMoveToFullscreenChanges(
@@ -2891,18 +2922,18 @@ class DesktopTasksController(
         } else {
             val destinationDeskId = repository.getDefaultDeskId(displayId)
             if (destinationDeskId == null) {
-                logW("moveToDisplay: desk not found for display: $displayId")
-                return
+                logW("addMoveToDisplayChanges: desk not found for display: $displayId")
+                return null
             }
             snapEventHandler.removeTaskIfTiled(task.displayId, task.taskId)
             // TODO: b/393977830 and b/397437641 - do not assume that freeform==desktop.
             if (!task.isFreeform) {
                 if (desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(task)) {
                     logW(
-                        "moveToDisplay: do nothing because the desktop entry points should be " +
-                            "disabled for the focused task"
+                        "addMoveToDisplayChanges: do nothing because the desktop entry points " +
+                            "should be disabled for the focused task"
                     )
-                    return
+                    return null
                 }
                 addMoveToDeskTaskChanges(wct = wct, task = task, deskId = destinationDeskId)
             } else {
@@ -2992,14 +3023,10 @@ class DesktopTasksController(
         // performDesktopExitCleanupIfNeeded ensures that the destination display becomes the
         // top (focused) display.
         wct.reorder(task.token, /* onTop= */ true, /* includingParents= */ true)
-        val transition =
-            transitions.startTransition(
-                TRANSIT_CHANGE,
-                wct,
-                transitionHandler ?: moveToDisplayTransitionHandler,
-            )
-        deactivationRunnable?.invoke(transition)
-        activationRunnable?.invoke(transition)
+        return RunOnTransitStart { transition ->
+            deactivationRunnable?.invoke(transition)
+            activationRunnable?.invoke(transition)
+        }
     }
 
     /**

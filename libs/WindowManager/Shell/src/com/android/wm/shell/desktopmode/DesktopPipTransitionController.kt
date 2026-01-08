@@ -21,6 +21,7 @@ import android.app.ActivityTaskManager
 import android.app.TaskInfo
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.windowingModeToString
+import android.view.Display
 import android.window.DesktopExperienceFlags
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
@@ -78,25 +79,32 @@ class DesktopPipTransitionController(
         // With multiple-desks, we have to reparent the task to the root desk.
         val reparentTaskRunOnTransit =
             maybeReparentTaskToDesk(wct, taskInfo, isMultiActivityPip = isMultiActivityPip)
-        return RunOnTransitStart { transition ->
-            updateParentRunOnTransit?.invoke(transition)
-            reparentTaskRunOnTransit?.invoke(transition)
-            // If we are expanding PiP in a different display than it is currently in, move the PiP
-            // task to the new display (this should only be the case when PiP is in display A and we
-            // are launching the task PiP was triggered from in display B).
-            if (displayId != pipDesktopState.getCurrentDisplayId()) {
-                logD(
-                    "updateExpandWctForDesktop: expanding PiP which was in displayId=%d to a " +
-                        "different display (id=%d), call moveToDisplay ",
-                    pipDesktopState.getCurrentDisplayId(),
-                    displayId,
-                )
-                desktopTasksController.moveToDisplay(
+        var moveToDisplayRunOnTransit: RunOnTransitStart? = null
+        // If we are expanding PiP in a different display than it is currently in, move the PiP
+        // task to the new display (this should only be the case when PiP is in display A and we
+        // are launching the task PiP was triggered from in display B).
+        if (
+            displayId != pipDesktopState.getCurrentDisplayId() &&
+                !pipDesktopState.isDisplayDesktopFirst(Display.DEFAULT_DISPLAY)
+        ) {
+            logD(
+                "updateExpandWctForDesktop: expanding PiP which was in displayId=%d to a " +
+                    "different display (id=%d), call moveToDisplay ",
+                pipDesktopState.getCurrentDisplayId(),
+                displayId,
+            )
+            moveToDisplayRunOnTransit =
+                desktopTasksController.addMoveToDisplayChanges(
+                    wct = wct,
                     task = taskInfo,
                     displayId = displayId,
                     enterReason = EnterReason.EXIT_PIP,
                 )
-            }
+        }
+        return RunOnTransitStart { transition ->
+            updateParentRunOnTransit?.invoke(transition)
+            reparentTaskRunOnTransit?.invoke(transition)
+            moveToDisplayRunOnTransit?.invoke(transition)
         }
     }
 
