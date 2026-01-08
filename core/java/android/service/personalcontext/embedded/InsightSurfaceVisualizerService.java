@@ -30,6 +30,7 @@ import android.os.HandlerExecutor;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
+import android.os.ResultReceiver;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.ContextInsightWrapper;
@@ -248,6 +249,37 @@ public abstract class InsightSurfaceVisualizerService extends Service {
             @NonNull List<ContextInsight> insights,
             @NonNull InsightSurfaceClientInfo info);
 
+    /**
+     * An insight surface client has been updated. Subclasses that wish to handled updates should
+     * override this method and return whether the update was accepted. The return value will be
+     * sent back to the client via an {@link android.os.OutcomeReceiver} callback (see
+     * {@link InsightSurfaceSession#update} for more details).
+     *
+     * @param oldClientInfo the old {@link InsightSurfaceClientInfo} for the client
+     * @param newClientInfo the new {@link InsightSurfaceClientInfo} for the client
+     * @return true if the update was accepted by the visualizer; the client will be informed of
+     * update acceptance through its {@link InsightSurfaceSession}
+     */
+    public boolean onClientUpdated(
+            @NonNull InsightSurfaceClientInfo oldClientInfo,
+            @NonNull InsightSurfaceClientInfo newClientInfo) {
+        return false;
+    }
+
+    private void onClientUpdated(
+            InsightSurfaceClientInfo oldClientInfo,
+            InsightSurfaceClientInfo newClientInfo,
+            ResultReceiver receiver) {
+        final boolean success = onClientUpdated(oldClientInfo, newClientInfo);
+        if (receiver != null) {
+            receiver.send(
+                    success
+                            ? IInsightSurfaceSession.UPDATE_OK
+                            : IInsightSurfaceSession.UPDATE_DECLINED,
+                    null);
+        }
+    }
+
     private static final class BinderService extends IInsightSurfaceVisualizer.Stub {
         private final WeakReference<InsightSurfaceVisualizerService> mService;
         private final Context mContext;
@@ -299,7 +331,19 @@ public abstract class InsightSurfaceVisualizerService extends Service {
                         view,
                         MeasureSpec.getSize(clientInfo.getMeasureSpecWidth()),
                         MeasureSpec.getSize(clientInfo.getMeasureSpecHeight()));
-                clientInfo.onSurfaceCreated(surfaceControlViewHost.getSurfacePackage());
+                clientInfo.onSurfaceCreated(
+                        surfaceControlViewHost.getSurfacePackage(),
+                        new IInsightSurfaceSession.Stub() {
+                            @Override
+                            public void onClientUpdated(
+                                    InsightSurfaceClientInfo oldClientInfo,
+                                    InsightSurfaceClientInfo newClientInfo,
+                                    ResultReceiver receiver) {
+                                post(service ->
+                                        service.onClientUpdated(
+                                                oldClientInfo, newClientInfo, receiver));
+                            }
+                        });
 
                 // Tell the visualizer the client is now connected.
                 service.onClientConnected(clientInfo);

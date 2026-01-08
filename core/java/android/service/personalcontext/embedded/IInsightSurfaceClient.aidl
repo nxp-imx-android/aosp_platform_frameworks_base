@@ -16,6 +16,7 @@
 
 package android.service.personalcontext.embedded;
 
+import android.service.personalcontext.embedded.IInsightSurfaceSession;
 import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.view.SurfaceControlViewHost;
 
@@ -24,7 +25,10 @@ import android.view.SurfaceControlViewHost;
  * @hide
  */
 interface IInsightSurfaceClient {
-    oneway void onSurfaceCreated(in SurfaceControlViewHost.SurfacePackage surfacePackage);
+    oneway void onSurfaceCreated(
+        in SurfaceControlViewHost.SurfacePackage surfacePackage, in IInsightSurfaceSession session);
     oneway void onSurfaceReleased(in SurfaceControlViewHost.SurfacePackage surfacePackage);
+    oneway void onSurfaceUpdated(in SurfaceControlViewHost.SurfacePackage surfacePackage);
     oneway void onReceiveInsight(in ContextInsightWrapper insight);
+    oneway void onSizeChanged(in int width, in int height);
 }
