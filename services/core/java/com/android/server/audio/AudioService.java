@@ -71,6 +71,7 @@ import static android.media.audiopolicy.Flags.multiZoneAudio;
 import static android.media.audiopolicy.Flags.volumeGroupManagementUpdate;
 import static android.os.Process.FIRST_APPLICATION_UID;
 import static android.os.Process.INVALID_UID;
+import static android.os.Process.SYSTEM_UID;
 import static android.provider.Settings.Secure.VOLUME_HUSH_MUTE;
 import static android.provider.Settings.Secure.VOLUME_HUSH_OFF;
 import static android.provider.Settings.Secure.VOLUME_HUSH_VIBRATE;
@@ -376,6 +377,12 @@ public class AudioService extends IAudioService.Stub
 
     /** Debug log sound fx (touchsounds...) in dumpsys */
     protected static final boolean DEBUG_LOG_SOUND_FX = Log.isLoggable(TAG + ".SoundFx", Log.DEBUG);
+
+    /**
+     * Used to identify if the caller is the Telecom framework.
+     */
+    private static final String TELECOM_PACKAGE_NAME =
+            com.android.server.telecom.TelecomLoaderService.class.getPackageName();
 
     /** How long to delay before persisting a change in volume/ringer mode. */
     private static final int PERSIST_DELAY = 500;
@@ -12140,6 +12147,18 @@ public class AudioService extends IAudioService.Stub
         return true;
     }
 
+    /**
+     * Determines if the caller is the Telecom framework.
+     * <p>
+     * The Telecom framework resides in the system UID and has a well known package name.
+     * @param uid the ui to check.
+     * @param callingPackageName the calling package name to check.
+     * @return {@code true} if the caller is Telecom.
+     */
+    private boolean isCallerTelecom(int uid, String callingPackageName) {
+        return uid == SYSTEM_UID && TELECOM_PACKAGE_NAME.equals(callingPackageName);
+    }
+
     public int requestAudioFocus(AudioAttributes aa, int focusReqType, IBinder cb,
             IAudioFocusDispatcher fd, String clientId, String callingPackageName,
             String attributionTag, int flags, IAudioPolicyCallback pcb, int sdk) {
@@ -12164,7 +12183,12 @@ public class AudioService extends IAudioService.Stub
             return AudioManager.AUDIOFOCUS_REQUEST_FAILED;
         }
         if ((flags & AudioManager.AUDIOFOCUS_FLAG_LOCK) == AudioManager.AUDIOFOCUS_FLAG_LOCK) {
-            if (AudioSystem.IN_VOICE_COMM_FOCUS_ID.equals(clientId)) {
+            if (AudioSystem.IN_VOICE_COMM_FOCUS_ID.equals(clientId)
+                    // The aforementioned clientId is used with the legacy
+                    // AudioManager#requestAudioFocusForCall method which is hidden and cannot be
+                    // called by Telecom from a mainline perspective; long term we will wrap focus
+                    // into the new API contract between Telecom and Audio.
+                    || isCallerTelecom(uid, callingPackageName)) {
                 if (PackageManager.PERMISSION_GRANTED != mContext.checkCallingOrSelfPermission(
                             MODIFY_PHONE_STATE)) {
                     final String reason = "Invalid permission to (un)lock audio focus";
