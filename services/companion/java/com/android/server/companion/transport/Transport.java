@@ -37,6 +37,7 @@ import android.companion.IOnTransportEventListener;
 import android.content.Context;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
+import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -114,7 +115,8 @@ public abstract class Transport {
     private final SparseArray<Set<IOnMessageReceivedListener>> mListeners = new SparseArray<>();
 
     @GuardedBy("mEventListeners")
-    private final Set<IOnTransportEventListener> mEventListeners = new HashSet<>();
+    private final RemoteCallbackList<IOnTransportEventListener> mEventListeners =
+            new RemoteCallbackList<>();
 
     private OnTransportClosedListener mOnTransportClosed;
 
@@ -163,7 +165,7 @@ public abstract class Transport {
      */
     void addListener(IOnTransportEventListener listener) {
         synchronized (mEventListeners) {
-            mEventListeners.add(listener);
+            mEventListeners.register(listener);
         }
     }
 
@@ -172,9 +174,23 @@ public abstract class Transport {
      */
     void removeListener(IOnTransportEventListener listener) {
         synchronized (mEventListeners) {
-            mEventListeners.remove(listener);
+            mEventListeners.unregister(listener);
         }
     }
+
+    /**
+     * Returns the session key for the transport of the given association id.
+     *
+     * @return the session key. Null if transport does not have a session.
+     */
+    public abstract byte[] getSessionKey();
+
+    /**
+     * Returns the session role for the transport of the given association id.
+     *
+     * @return the session role. Null if transport does not have a session.
+     */
+    public abstract String getSessionRole();
 
     public int getAssociationId() {
         return mAssociationId;
@@ -306,12 +322,12 @@ public abstract class Transport {
 
     protected final void eventCallback(@TransportEvent int event) {
         synchronized (mEventListeners) {
-            for (IOnTransportEventListener listener : mEventListeners) {
+            mEventListeners.broadcast(listener -> {
                 try {
                     listener.onTransportEvent(event);
                 } catch (RemoteException ignored) {
                 }
-            }
+            });
         }
     }
 

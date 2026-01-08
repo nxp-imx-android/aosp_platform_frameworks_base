@@ -47,7 +47,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
-@SuppressLint("LongLogTag")
+@SuppressLint({"LongLogTag", "EmptyCatch"})
 public class CompanionTransportManager {
     private static final String TAG = "CDM_CompanionTransportManager";
 
@@ -116,10 +116,20 @@ public class CompanionTransportManager {
             mEventListeners.get(associationId).add(listener);
         }
         synchronized (mTransports) {
-            if (!mTransports.contains(associationId)) {
+            Transport transport = mTransports.get(associationId);
+            if (transport == null) {
                 return;
             }
-            mTransports.get(associationId).addListener(listener);
+
+            transport.addListener(listener);
+
+            // Immediately callback the successful connection if already connected.
+            if (transport.getSessionKey() != null) {
+                try {
+                    listener.onTransportEvent(Transport.SUCCESSFUL_CONNECTION);
+                } catch (RemoteException ignored) {
+                }
+            }
         }
     }
 
@@ -255,6 +265,15 @@ public class CompanionTransportManager {
         }
 
         Slog.i(TAG, "Transport detached.");
+    }
+
+    /**
+     * Returns the transport instance for the given association id.
+     */
+    public Transport getTransport(int associationId) {
+        synchronized (mTransports) {
+            return mTransports.get(associationId);
+        }
     }
 
     /**
