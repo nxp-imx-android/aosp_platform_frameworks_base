@@ -62,7 +62,6 @@ import android.view.SurfaceControl.Transaction
 import android.view.WindowManager
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
-import android.view.WindowManager.TRANSIT_NONE
 import android.view.WindowManager.TRANSIT_OPEN
 import android.view.WindowManager.TRANSIT_PIP
 import android.view.WindowManager.TRANSIT_START_LOCK_TASK_MODE
@@ -130,6 +129,7 @@ import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.getExit
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum
 import com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.DragStartState
 import com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType
+import com.android.wm.shell.desktopmode.DesktopTransitionUtils.getToFrontTransitionTypeOrNone
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.Companion.DRAG_TO_DESKTOP_FINISH_ANIM_DURATION_MS
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.DragToDesktopStateListener
 import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler.FULLSCREEN_ANIMATION_DURATION
@@ -460,15 +460,6 @@ class DesktopTasksController(
     /** Setter for PiP scheduler */
     fun setPipScheduler(pipScheduler: PipScheduler) {
         mPipScheduler = pipScheduler
-    }
-
-    /** Returns the transition type for the given remote transition. */
-    private fun transitionType(remoteTransition: RemoteTransition?): Int {
-        if (remoteTransition == null) {
-            logV("RemoteTransition is null")
-            return TRANSIT_NONE
-        }
-        return TRANSIT_TO_FRONT
     }
 
     /**
@@ -1588,7 +1579,7 @@ class DesktopTasksController(
             transition = targetTransition
             invokeCallbackToOverview(transition, callback)
         } else if (remoteTransition != null) {
-            val transitionType = transitionType(remoteTransition)
+            val transitionType = getToFrontTransitionTypeOrNone(remoteTransition)
             val remoteTransitionHandler =
                 OneShotRemoteHandler(mainExecutor, transitions.leashManager, remoteTransition)
             transition = transitions.startTransition(transitionType, wct, remoteTransitionHandler)
@@ -1645,7 +1636,7 @@ class DesktopTasksController(
             transition = targetTransition
             invokeCallbackToOverview(transition, callback)
         } else if (remoteTransition != null) {
-            val transitionType = transitionType(remoteTransition)
+            val transitionType = getToFrontTransitionTypeOrNone(remoteTransition)
             val remoteTransitionHandler =
                 OneShotRemoteHandler(mainExecutor, transitions.leashManager, remoteTransition)
             transition = transitions.startTransition(transitionType, wct, remoteTransitionHandler)
@@ -2306,7 +2297,7 @@ class DesktopTasksController(
 
         val transition =
             if (remoteTransition != null) {
-                val transitionType = transitionType(remoteTransition)
+                val transitionType = getToFrontTransitionTypeOrNone(remoteTransition)
                 val remoteTransitionHandler =
                     OneShotRemoteHandler(mainExecutor, transitions.leashManager, remoteTransition)
                 transitions.startTransition(transitionType, wct, remoteTransitionHandler).also {
@@ -5760,7 +5751,7 @@ class DesktopTasksController(
             if (taskIdToReorderToFront != INVALID_TASK_ID && taskIdToReorderToFront != null) {
                 snapController.notifyTilingOfExplodedViewReorder(deskId, taskIdToReorderToFront)
             }
-            val transitionType = transitionType(remoteTransition)
+            val transitionType = getToFrontTransitionTypeOrNone(remoteTransition)
             val handler =
                 remoteTransition?.let {
                     OneShotRemoteHandler(
