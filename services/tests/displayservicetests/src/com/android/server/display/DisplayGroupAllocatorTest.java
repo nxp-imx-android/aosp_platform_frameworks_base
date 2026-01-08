@@ -123,4 +123,18 @@ public class DisplayGroupAllocatorTest {
 
     }
 
+    @Test
+    public void testCalculateGroupId_OverlayDisplay() {
+        assumeTrue(DesktopModeHelper.canEnterDesktopMode(mTestableContext));
+
+        mInjector = createInjector(/* simulateExtendedMode= */ true, /* activated= */ true);
+        mDga = new DisplayGroupAllocator(mTestableContext, mInjector);
+        mDga.initLater(mTestableContext);
+
+        doReturn(true).when(mLogicalDisplayMock).canHostTasksLocked();
+        // non-desktop should return primary, which returns an empty string.
+        assertEquals("",
+                mDga.decideRequiredGroupTypeLocked(mLogicalDisplayMock, Display.TYPE_OVERLAY));
+    }
+
 }
