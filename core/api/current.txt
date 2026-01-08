@@ -36229,8 +36229,6 @@ package android.os {
   }
 
   public static final class VibrationEffect.Composition {
-    method @FlaggedApi("android.os.vibrator.composition_pwle_apis") @NonNull public android.os.VibrationEffect.Composition addEnvelope(@NonNull android.os.VibrationEffect.WaveformEnvelopeBuilder);
-    method @FlaggedApi("android.os.vibrator.composition_pwle_apis") @NonNull public android.os.VibrationEffect.Composition addEnvelope(@NonNull android.os.VibrationEffect.BasicEnvelopeBuilder);
     method @NonNull public android.os.VibrationEffect.Composition addPrimitive(int);
     method @NonNull public android.os.VibrationEffect.Composition addPrimitive(int, @FloatRange(from=0.0f, to=1.0f) float);
     method @NonNull public android.os.VibrationEffect.Composition addPrimitive(int, @FloatRange(from=0.0f, to=1.0f) float, @IntRange(from=0) int);

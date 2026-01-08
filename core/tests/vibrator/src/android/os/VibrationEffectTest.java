@@ -1595,46 +1595,27 @@ public class VibrationEffectTest {
     @Test
     @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public void testFirstSegmentFlag() {
-        VibrationEffect waveformEnvelope =
-                new VibrationEffect.WaveformEnvelopeBuilder()
+        VibrationEffect.Composed waveformEnvelope =
+                (VibrationEffect.Composed) new VibrationEffect.WaveformEnvelopeBuilder()
                         .addControlPoint(1.0f, 150f, 100)
                         .addControlPoint(0.5f, 100f, 100)
                         .build();
 
-        assertTrue(getPwleSegment(waveformEnvelope, 0).isFirstSegmentOfEnvelope());
-        assertFalse(getPwleSegment(waveformEnvelope, 1).isFirstSegmentOfEnvelope());
+        assertTrue(
+                ((PwleSegment) waveformEnvelope.getSegments().get(0)).isFirstSegmentOfEnvelope());
+        assertFalse(
+                ((PwleSegment) waveformEnvelope.getSegments().get(1)).isFirstSegmentOfEnvelope());
 
-        VibrationEffect basicEnvelope =
-                new VibrationEffect.BasicEnvelopeBuilder()
+        VibrationEffect.Composed basicEnvelope =
+                (VibrationEffect.Composed) new VibrationEffect.BasicEnvelopeBuilder()
                         .addControlPoint(1.0f, 1.0f, 100)
                         .addControlPoint(0.0f, 0.5f, 100)
                         .build();
 
-        assertTrue(getBasicPwleSegment(basicEnvelope, 0).isFirstSegmentOfEnvelope());
-        assertFalse(getBasicPwleSegment(basicEnvelope, 1).isFirstSegmentOfEnvelope());
-    }
-
-    @Test
-    @EnableFlags({Flags.FLAG_NORMALIZED_PWLE_EFFECTS, Flags.FLAG_COMPOSITION_PWLE_APIS})
-    public void testAddEnvelopes_firstSegmentFlagCorrectlyComputed() {
-        VibrationEffect composed =
-                VibrationEffect.startComposition()
-                        .addEnvelope(
-                                new VibrationEffect.WaveformEnvelopeBuilder()
-                                        .addControlPoint(1.0f, 150f, 100)
-                                        .addControlPoint(0.5f, 100f, 100))
-                        .addPrimitive(VibrationEffect.Composition.PRIMITIVE_CLICK)
-                        .addEnvelope(
-                                new VibrationEffect.BasicEnvelopeBuilder()
-                                        .addControlPoint(1.0f, 1.0f, 100)
-                                        .addControlPoint(0.0f, 0.5f, 100))
-                        .compose();
-
-        assertTrue(getPwleSegment(composed, 0).isFirstSegmentOfEnvelope());
-        assertFalse(getPwleSegment(composed, 1).isFirstSegmentOfEnvelope());
-
-        assertTrue(getBasicPwleSegment(composed, 3).isFirstSegmentOfEnvelope());
-        assertFalse(getBasicPwleSegment(composed, 4).isFirstSegmentOfEnvelope());
+        assertTrue(
+                ((BasicPwleSegment) basicEnvelope.getSegments().get(0)).isFirstSegmentOfEnvelope());
+        assertFalse(
+                ((BasicPwleSegment) basicEnvelope.getSegments().get(1)).isFirstSegmentOfEnvelope());
     }
 
     @Test
@@ -1715,18 +1696,6 @@ public class VibrationEffectTest {
         VibrationEffectSegment segment = getEffectSegment(effect, index);
         assertThat(segment).isInstanceOf(PrebakedSegment.class);
         return (PrebakedSegment) segment;
-    }
-
-    private PwleSegment getPwleSegment(VibrationEffect effect, int index) {
-        VibrationEffectSegment segment = getEffectSegment(effect, index);
-        assertThat(segment).isInstanceOf(PwleSegment.class);
-        return (PwleSegment) segment;
-    }
-
-    private BasicPwleSegment getBasicPwleSegment(VibrationEffect effect, int index) {
-        VibrationEffectSegment segment = getEffectSegment(effect, index);
-        assertThat(segment).isInstanceOf(BasicPwleSegment.class);
-        return (BasicPwleSegment) segment;
     }
 
     private VibrationEffectSegment getEffectSegment(VibrationEffect effect, int index) {
