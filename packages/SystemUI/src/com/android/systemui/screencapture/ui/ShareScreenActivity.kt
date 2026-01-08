@@ -19,7 +19,9 @@ package com.android.systemui.screencapture.ui
 import android.content.Intent
 import android.media.projection.IMediaProjection
 import android.media.projection.IMediaProjectionManager.EXTRA_USER_REVIEW_GRANTED_CONSENT
+import android.media.projection.MediaProjectionConfig
 import android.media.projection.MediaProjectionManager.EXTRA_MEDIA_PROJECTION
+import android.media.projection.MediaProjectionManager.EXTRA_MEDIA_PROJECTION_CONFIG
 import android.os.Bundle
 import android.os.UserHandle
 import android.util.Log
@@ -81,8 +83,13 @@ constructor(
         val reviewGrantedConsentRequired =
             intent.getBooleanExtra(EXTRA_USER_REVIEW_GRANTED_CONSENT, false)
         val projectionBinder = intent.extras?.getBinder(EXTRA_MEDIA_PROJECTION)
-        val hostUserHandle: UserHandle? = intent.getParcelableExtra(EXTRA_HOST_APP_USER_HANDLE)
-        val initialSource = intent.getIntExtra(EXTRA_INITIAL_SOURCE, -1)
+        val hostUserHandle: UserHandle? =
+            intent.getParcelableExtra(EXTRA_HOST_APP_USER_HANDLE, UserHandle::class.java)
+        val config: MediaProjectionConfig? =
+            intent.getParcelableExtra(
+                EXTRA_MEDIA_PROJECTION_CONFIG,
+                MediaProjectionConfig::class.java,
+            )
 
         if (
             uid == -1 || hostUserHandle == null || packageName == null || projectionBinder == null
@@ -119,7 +126,7 @@ constructor(
                                         uid,
                                         packageName,
                                         display!!.displayId,
-                                        initialSource,
+                                        config,
                                     )
                                 }
                         ui
@@ -225,7 +232,6 @@ constructor(
         const val EXTRA_HOST_APP_UID = "launched_from_host_uid"
         const val EXTRA_PACKAGE_NAME = "package_name"
         const val EXTRA_HOST_APP_USER_HANDLE = "launched_from_user_handle"
-        const val EXTRA_INITIAL_SOURCE = "initial_source"
 
         private const val TAG = "ShareScreenActivity"
     }

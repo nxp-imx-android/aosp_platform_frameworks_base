@@ -18,6 +18,7 @@ package com.android.systemui.screencapture.sharescreen.ui.viewmodel
 
 import android.content.pm.PackageManager
 import android.media.projection.MediaProjectionConfig.PROJECTION_SOURCE_APP
+import android.media.projection.MediaProjectionConfig.PROJECTION_SOURCE_APP_CONTENT
 import android.media.projection.MediaProjectionConfig.PROJECTION_SOURCE_DISPLAY
 import android.os.UserHandle
 import android.util.Log
@@ -59,11 +60,33 @@ constructor(
     private val appContentsViewModel =
         appContentsViewModelFactory.create(thumbnailWidthPx, thumbnailHeightPx)
 
+    val isAppContentSharingEnabled: Boolean
+        get() =
+            shareScreenUiInteractor.config?.isSourceEnabled(PROJECTION_SOURCE_APP_CONTENT) ?: true
+
+    val isAppSharingEnabled: Boolean
+        get() = shareScreenUiInteractor.config?.isSourceEnabled(PROJECTION_SOURCE_APP) ?: true
+
+    val isEntireScreenSharingEnabled: Boolean
+        get() = shareScreenUiInteractor.config?.isSourceEnabled(PROJECTION_SOURCE_DISPLAY) ?: true
+
+    private val initialSource = shareScreenUiInteractor.config?.initiallySelectedSource ?: -1
+
     var currentTargetsModel by
         mutableStateOf(
-            when (shareScreenUiInteractor.initialSource) {
-                PROJECTION_SOURCE_APP -> recentTasksViewModel
-                PROJECTION_SOURCE_DISPLAY -> displaysViewModel
+            when {
+                // Prioritize initialSource if it's enabled.
+                initialSource == PROJECTION_SOURCE_APP_CONTENT && isAppContentSharingEnabled ->
+                    appContentsViewModel
+                initialSource == PROJECTION_SOURCE_APP && isAppSharingEnabled ->
+                    recentTasksViewModel
+                initialSource == PROJECTION_SOURCE_DISPLAY && isEntireScreenSharingEnabled ->
+                    displaysViewModel
+                // Fallback to the first available enabled source in order: AppContent, App, Display
+                isAppContentSharingEnabled -> appContentsViewModel
+                isAppSharingEnabled -> recentTasksViewModel
+                isEntireScreenSharingEnabled -> displaysViewModel
+                // Ultimate fallback if nothing is set.
                 else -> appContentsViewModel
             }
         )
