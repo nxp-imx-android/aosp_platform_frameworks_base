@@ -363,14 +363,11 @@ class PipTouchHandlerTest : ShellTestCase() {
     @Test
     fun pipTouchGesture_onUpFreeFloatingDisabled_pipStashedToEdge() {
         whenever(mockPipDesktopState.isFreeFloatingPipEnabled()).thenReturn(false)
-        pipTouchHandler.mEnableStash = true
-
-        // This is called when PiP is entered, which updates mEnableStash
-        pipTouchHandler.onActivityPinned()
-        pipTouchGesture.onDown(pipTouchState)
+        pipTouchHandler.mEnableStash = false
         whenever(pipTouchState.isDragging).thenReturn(true)
         PIP_BOUNDS.offset(-500, 0)
         whenever(mockPipBoundsState.bounds).thenReturn(PIP_BOUNDS)
+
         pipTouchGesture.onUp(pipTouchState)
 
         verify(mockPipMotionHelper).stashToEdge(
@@ -382,16 +379,33 @@ class PipTouchHandlerTest : ShellTestCase() {
     fun pipTouchGesture_onUpFreeFloatingEnabled_disallowsStashing() {
         whenever(mockPipDesktopState.isFreeFloatingPipEnabled()).thenReturn(true)
         pipTouchHandler.mEnableStash = true
-
-        // This is called when PiP is entered, which updates mEnableStash
-        pipTouchHandler.onActivityPinned()
-        pipTouchGesture.onDown(pipTouchState)
         whenever(pipTouchState.isDragging).thenReturn(true)
         PIP_BOUNDS.offset(-500, 0)
         whenever(mockPipBoundsState.bounds).thenReturn(PIP_BOUNDS)
+
         pipTouchGesture.onUp(pipTouchState)
 
         verify(mockPipMotionHelper, never()).stashToEdge(
+            any(), any(), anyOrNull()
+        )
+    }
+
+    @Test
+    fun pipTouchGesture_onUpFreeFloatingEnabled_thenDisabled_stashingUpdated() {
+        whenever(mockPipDesktopState.isFreeFloatingPipEnabled()).thenReturn(true)
+        pipTouchHandler.mEnableStash = true
+        whenever(pipTouchState.isDragging).thenReturn(true)
+        PIP_BOUNDS.offset(-500, 0)
+        whenever(mockPipBoundsState.bounds).thenReturn(PIP_BOUNDS)
+
+        pipTouchGesture.onUp(pipTouchState)
+        verify(mockPipMotionHelper, never()).stashToEdge(
+            any(), any(), anyOrNull()
+        )
+
+        whenever(mockPipDesktopState.isFreeFloatingPipEnabled()).thenReturn(false)
+        pipTouchGesture.onUp(pipTouchState)
+        verify(mockPipMotionHelper).stashToEdge(
             any(), any(), anyOrNull()
         )
     }
