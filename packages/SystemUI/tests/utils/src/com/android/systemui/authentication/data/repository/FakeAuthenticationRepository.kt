@@ -162,7 +162,8 @@ class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
     }
 
     override suspend fun checkCredential(
-        credential: LockscreenCredential
+        credential: LockscreenCredential,
+        onEarlyMatched: () -> Unit,
     ): AuthenticationResultModel {
         return credentialCheckingMutex.withLock {
             Log.d(
@@ -191,7 +192,9 @@ class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
                 }
             Log.d(TAG, "checked credential, isSuccessful: $isSuccessful")
 
-            if (!isSuccessful) {
+            if (isSuccessful) {
+                onEarlyMatched()
+            } else {
                 previousAttempts += credential.duplicate()
                 lockoutOverride?.let {
                     lockoutOverride = null
