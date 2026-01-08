@@ -241,7 +241,8 @@ public class Instrument {
                         protoFile = false;
                         return;
                     }
-                    SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd-hhmmss-SSS", Locale.US);
+                    SimpleDateFormat format =
+                            new SimpleDateFormat("yyyyMMdd-hhmmss-SSS", Locale.US);
                     String fileName = String.format("log-%s.instrumentation_data_proto",
                             format.format(new Date()));
                     mLog = new File(logDir, fileName);
