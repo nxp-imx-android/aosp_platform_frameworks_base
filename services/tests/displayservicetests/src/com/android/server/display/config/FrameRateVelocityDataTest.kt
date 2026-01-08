@@ -41,11 +41,11 @@ class FrameRateVelocityDataTest {
         assertThat(mappings).isNotNull()
         assertThat(mappings.size).isEqualTo(3)
         assertThat(mappings[0].getFramePerSecond()).isEqualTo(60f)
-        assertThat(mappings[0].getPixelPerSecond()).isEqualTo(600f)
+        assertThat(mappings[0].getDpPerSecond()).isEqualTo(600f)
         assertThat(mappings[1].getFramePerSecond()).isEqualTo(80f)
-        assertThat(mappings[1].getPixelPerSecond()).isEqualTo(800f)
+        assertThat(mappings[1].getDpPerSecond()).isEqualTo(800f)
         assertThat(mappings[2].getFramePerSecond()).isEqualTo(120f)
-        assertThat(mappings[2].getPixelPerSecond()).isEqualTo(1200f)
+        assertThat(mappings[2].getDpPerSecond()).isEqualTo(1200f)
     }
 
     @Test
@@ -56,15 +56,15 @@ class FrameRateVelocityDataTest {
         assertThat(mappings).isNotNull()
         assertThat(mappings.size).isEqualTo(3)
         assertThat(mappings[0].getFramePerSecond()).isEqualTo(60f)
-        assertThat(mappings[0].getPixelPerSecond()).isEqualTo(0f)
+        assertThat(mappings[0].getDpPerSecond()).isEqualTo(0f)
         assertThat(mappings[1].getFramePerSecond()).isEqualTo(80f)
-        assertThat(mappings[1].getPixelPerSecond()).isEqualTo(125f)
+        assertThat(mappings[1].getDpPerSecond()).isEqualTo(125f)
         assertThat(mappings[2].getFramePerSecond()).isEqualTo(120f)
-        assertThat(mappings[2].getPixelPerSecond()).isEqualTo(300f)
+        assertThat(mappings[2].getDpPerSecond()).isEqualTo(300f)
     }
 
     @Test
-    fun testFrameRateVelocityData_samePixelPerSecond() {
+    fun testFrameRateVelocityData_sameDpPerSecond() {
         val displayConfiguration = createDisplayConfiguration {
             frameRateVelocityDataConfig(
                 frameRateVelocityMapping = listOf(

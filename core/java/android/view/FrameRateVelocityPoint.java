@@ -29,22 +29,22 @@ import java.util.Objects;
 /**
  * Contains the frame rate / velocity values.
  * The velocity value can be used as a threshold value to determine a feasible frame rate
- * For example, if the velocity is greater than 300 pixels per seoond,
+ * For example, if the velocity is greater than 300 dp (density-independent pixels) per second,
  * then we need frame rate to be 120 to ensure the smoothness.
  */
 @FlaggedApi(FLAG_FRAME_RATE_MAPPING_API)
 public final class FrameRateVelocityPoint implements Parcelable {
     private final float mFramePerSecond;
-    private final float mPixelPerSecond;
+    private final float mDpPerSecond;
 
-    public FrameRateVelocityPoint(float framePerSecond, float pixelPerSecond) {
+    public FrameRateVelocityPoint(float framePerSecond, float dpPerSecond) {
         mFramePerSecond = framePerSecond;
-        mPixelPerSecond = pixelPerSecond;
+        mDpPerSecond = dpPerSecond;
     }
 
     private FrameRateVelocityPoint(@NonNull Parcel in) {
         mFramePerSecond = in.readFloat();
-        mPixelPerSecond = in.readFloat();
+        mDpPerSecond = in.readFloat();
     }
 
     /**
@@ -55,10 +55,10 @@ public final class FrameRateVelocityPoint implements Parcelable {
     }
 
     /**
-     * Get the value of Pixel per second
+     * Get the value of dp per second
      */
-    public float getPixelPerSecond() {
-        return mPixelPerSecond;
+    public float getDpPerSecond() {
+        return mDpPerSecond;
     }
 
     @Override
@@ -67,12 +67,12 @@ public final class FrameRateVelocityPoint implements Parcelable {
         if (o == null || getClass() != o.getClass()) return false;
         FrameRateVelocityPoint that = (FrameRateVelocityPoint) o;
         return Float.compare(that.getFramePerSecond(), mFramePerSecond) == 0
-                && Float.compare(that.getPixelPerSecond(), mPixelPerSecond) == 0;
+                && Float.compare(that.getDpPerSecond(), mDpPerSecond) == 0;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mFramePerSecond, mPixelPerSecond);
+        return Objects.hash(mFramePerSecond, mDpPerSecond);
     }
 
     @Override
@@ -83,7 +83,7 @@ public final class FrameRateVelocityPoint implements Parcelable {
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeFloat(mFramePerSecond);
-        dest.writeFloat(mPixelPerSecond);
+        dest.writeFloat(mDpPerSecond);
     }
 
     @NonNull
