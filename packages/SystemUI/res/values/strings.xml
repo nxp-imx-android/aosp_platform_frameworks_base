@@ -893,7 +893,7 @@
     <string name="accessibility_status_bar_assistant_icon">Assistant</string>
 
     <!-- Accessibility text describing the input method indicator chip in the status bar. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_status_bar_input_method_indicator">Input method</string>
+    <string name="accessibility_status_bar_input_method_indicator">Keyboard</string>
 
     <!-- The overflow indicator shown when a group has more notification inside the group than the visible ones. An example is "+ 3" [CHAR LIMIT=5] -->
     <string name="notification_group_overflow_indicator">+ <xliff:g id="number" example="3">%s</xliff:g></string>

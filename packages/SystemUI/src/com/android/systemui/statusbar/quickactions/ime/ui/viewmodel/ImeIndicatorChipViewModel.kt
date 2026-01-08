@@ -58,8 +58,6 @@ constructor(
             return QuickActionChipUiState.Hidden(QuickActionChipId.ImeIndicator)
         }
 
-        // TODO(b/458557858): Determine what to set as the accessible name when there is a selected
-        // subtype.
         val subtypeIcon =
             model.selectedSubtype?.icon?.let { subtypeIcon ->
                 android.graphics.drawable.Icon.createWithResource(
@@ -96,6 +94,10 @@ constructor(
             icons = icons,
             chipText = chipText,
             showPopup = { imeIndicatorChipInteractor.showInputMethodPicker(displayId) },
+            contentDescription =
+                ContentDescription.Resource(
+                    R.string.accessibility_status_bar_input_method_indicator
+                ),
         )
     }
 
