@@ -5023,6 +5023,7 @@ package android.app {
     ctor public ActivityManager.TaskDescription.Builder();
     method @NonNull public android.app.ActivityManager.TaskDescription build();
     method @NonNull public android.app.ActivityManager.TaskDescription.Builder setBackgroundColor(@ColorInt int);
+    method @FlaggedApi("android.app.enable_dynamic_icons_and_badging") @NonNull public android.app.ActivityManager.TaskDescription.Builder setBadge(@Nullable android.graphics.drawable.Icon);
     method @NonNull public android.app.ActivityManager.TaskDescription.Builder setIcon(@DrawableRes int);
     method @NonNull public android.app.ActivityManager.TaskDescription.Builder setLabel(@Nullable String);
     method @NonNull public android.app.ActivityManager.TaskDescription.Builder setNavigationBarColor(@ColorInt int);

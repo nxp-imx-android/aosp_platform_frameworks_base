@@ -1918,6 +1918,8 @@ public class ActivityManager {
         private String mLabel;
         @Nullable
         private Icon mIcon;
+        @Nullable
+        private Icon mBadge;
         private String mIconFilename;
         private int mColorPrimary;
         private int mColorBackground;
@@ -1950,6 +1952,8 @@ public class ActivityManager {
             private String mLabel = null;
             @DrawableRes
             private int mIconRes = Resources.ID_NULL;
+            @Nullable
+            private Icon mBadge = null;
             private int mPrimaryColor = 0;
             private int mBackgroundColor = 0;
             private int mStatusBarColor = 0;
@@ -1975,6 +1979,23 @@ public class ActivityManager {
             @NonNull
             public Builder setIcon(@DrawableRes int iconRes) {
                 this.mIconRes = iconRes;
+                return this;
+            }
+
+            /**
+             * Set the icon of the badge to use in the TaskDescription.
+             *
+             * <p>The badge is an optional, small icon that is displayed on bottom corner of the
+             * icon in places like the taskbar and launcher. There is no default badge, and if not
+             * set, no badge will be shown.
+             *
+             * @param badge An Icon of a badge to be attached to the icon.
+             * @return The same instance of the builder.
+             */
+            @FlaggedApi(Flags.FLAG_ENABLE_DYNAMIC_ICONS_AND_BADGING)
+            @NonNull
+            public Builder setBadge(@Nullable Icon badge) {
+                this.mBadge = badge;
                 return this;
             }
 
@@ -2031,7 +2052,7 @@ public class ActivityManager {
             public TaskDescription build() {
                 final Icon icon = mIconRes == Resources.ID_NULL ? null :
                         Icon.createWithResource(ActivityThread.currentPackageName(), mIconRes);
-                return new TaskDescription(mLabel, icon, mPrimaryColor, mBackgroundColor,
+                return new TaskDescription(mLabel, icon, mBadge, mPrimaryColor, mBackgroundColor,
                         mStatusBarColor, mNavigationBarColor, 0, 0, false, false,
                         RESIZE_MODE_RESIZEABLE, -1, -1, 0);
             }
@@ -2051,7 +2072,8 @@ public class ActivityManager {
         @Deprecated
         public TaskDescription(String label, @DrawableRes int iconRes, int colorPrimary) {
             this(label, Icon.createWithResource(ActivityThread.currentPackageName(), iconRes),
-                    colorPrimary, 0, 0, 0, 0, 0, false, false, RESIZE_MODE_RESIZEABLE, -1, -1, 0);
+                    null, colorPrimary, 0, 0, 0, 0, 0,
+                    false, false, RESIZE_MODE_RESIZEABLE, -1, -1, 0);
             if ((colorPrimary != 0) && (Color.alpha(colorPrimary) != 255)) {
                 throw new RuntimeException("A TaskDescription's primary color should be opaque");
             }
@@ -2069,7 +2091,7 @@ public class ActivityManager {
         @Deprecated
         public TaskDescription(String label, @DrawableRes int iconRes) {
             this(label, Icon.createWithResource(ActivityThread.currentPackageName(), iconRes),
-                    0, 0, 0, 0, 0, 0, false, false, RESIZE_MODE_RESIZEABLE, -1, -1, 0);
+                    null, 0, 0, 0, 0, 0, 0, false, false, RESIZE_MODE_RESIZEABLE, -1, -1, 0);
         }
 
         /**
@@ -2081,7 +2103,8 @@ public class ActivityManager {
          */
         @Deprecated
         public TaskDescription(String label) {
-            this(label, null, 0, 0, 0, 0, 0, 0, false, false, RESIZE_MODE_RESIZEABLE, -1, -1, 0);
+            this(label, null, null, 0, 0, 0, 0, 0, 0, false, false, RESIZE_MODE_RESIZEABLE, -1, -1,
+                    0);
         }
 
         /**
@@ -2091,7 +2114,8 @@ public class ActivityManager {
          */
         @Deprecated
         public TaskDescription() {
-            this(null, null, 0, 0, 0, 0, 0, 0, false, false, RESIZE_MODE_RESIZEABLE, -1, -1, 0);
+            this(null, null, null, 0, 0, 0, 0, 0, 0, false, false, RESIZE_MODE_RESIZEABLE, -1, -1,
+                    0);
         }
 
         /**
@@ -2106,8 +2130,8 @@ public class ActivityManager {
          */
         @Deprecated
         public TaskDescription(String label, Bitmap icon, int colorPrimary) {
-            this(label, icon != null ? Icon.createWithBitmap(icon) : null, colorPrimary, 0, 0, 0,
-                    0, 0, false, false, RESIZE_MODE_RESIZEABLE, -1, -1, 0);
+            this(label, icon != null ? Icon.createWithBitmap(icon) : null, null, colorPrimary, 0, 0,
+                    0, 0, 0, false, false, RESIZE_MODE_RESIZEABLE, -1, -1, 0);
             if ((colorPrimary != 0) && (Color.alpha(colorPrimary) != 255)) {
                 throw new RuntimeException("A TaskDescription's primary color should be opaque");
             }
@@ -2123,13 +2147,13 @@ public class ActivityManager {
          */
         @Deprecated
         public TaskDescription(String label, Bitmap icon) {
-            this(label, icon != null ? Icon.createWithBitmap(icon) : null, 0, 0, 0, 0, 0, 0, false,
-                    false, RESIZE_MODE_RESIZEABLE, -1, -1, 0);
+            this(label, icon != null ? Icon.createWithBitmap(icon) : null, null, 0, 0, 0, 0, 0, 0,
+                    false, false, RESIZE_MODE_RESIZEABLE, -1, -1, 0);
         }
 
         /** @hide */
         public TaskDescription(@Nullable String label, @Nullable Icon icon,
-                int colorPrimary, int colorBackground,
+                @Nullable Icon badge, int colorPrimary, int colorBackground,
                 int statusBarColor, int navigationBarColor,
                 @Appearance int systemBarsAppearance,
                 @Appearance int topOpaqueSystemBarsAppearance,
@@ -2138,6 +2162,7 @@ public class ActivityManager {
                 int minHeight, int colorBackgroundFloating) {
             mLabel = label;
             mIcon = icon;
+            mBadge = badge;
             mColorPrimary = colorPrimary;
             mColorBackground = colorBackground;
             mStatusBarColor = statusBarColor;
@@ -2167,6 +2192,7 @@ public class ActivityManager {
         public void copyFrom(TaskDescription other) {
             mLabel = other.mLabel;
             mIcon = other.mIcon;
+            mBadge = other.mBadge;
             mIconFilename = other.mIconFilename;
             mColorPrimary = other.mColorPrimary;
             mColorBackground = other.mColorBackground;
@@ -2191,6 +2217,7 @@ public class ActivityManager {
         public void copyFromPreserveHiddenFields(TaskDescription other) {
             mLabel = other.mLabel;
             mIcon = other.mIcon;
+            mBadge = other.mBadge;
             mIconFilename = other.mIconFilename;
             mColorPrimary = other.mColorPrimary;
 
@@ -2313,6 +2340,14 @@ public class ActivityManager {
         }
 
         /**
+         * Sets the badge for this task description.
+         * @hide
+         */
+        public void setBadge(Icon badge) {
+            mBadge = badge;
+        }
+
+        /**
          * Sets the resize mode for this task description. Resize mode as in
          * {@link android.content.pm.ActivityInfo}.
          * @hide
@@ -2429,6 +2464,17 @@ public class ActivityManager {
                 }
             }
             return null;
+        }
+
+        /**
+         * @return the icon badge for this task description.
+         * @hide
+         */
+        @TestApi
+        @FlaggedApi(Flags.FLAG_ENABLE_DYNAMIC_ICONS_AND_BADGING)
+        @Nullable
+        public Icon getBadge() {
+            return mBadge;
         }
 
         /**
@@ -2636,6 +2682,7 @@ public class ActivityManager {
                 dest.writeInt(1);
                 mIcon.writeToParcel(dest, 0);
             }
+            dest.writeTypedObject(mBadge, flags);
             dest.writeInt(mColorPrimary);
             dest.writeInt(mColorBackground);
             dest.writeInt(mStatusBarColor);
@@ -2661,6 +2708,7 @@ public class ActivityManager {
             if (source.readInt() > 0) {
                 mIcon = Icon.CREATOR.createFromParcel(source);
             }
+            mBadge = source.readTypedObject(Icon.CREATOR);
             mColorPrimary = source.readInt();
             mColorBackground = source.readInt();
             mStatusBarColor = source.readInt();
@@ -2689,6 +2737,7 @@ public class ActivityManager {
         @Override
         public String toString() {
             return "TaskDescription Label: " + mLabel + " Icon: " + mIcon
+                    + " Badge: " + mBadge
                     + " IconFilename: " + mIconFilename
                     + " colorPrimary: " + mColorPrimary + " colorBackground: " + mColorBackground
                     + " statusBarColor: " + mStatusBarColor
@@ -2711,6 +2760,9 @@ public class ActivityManager {
             }
             if (mIcon != null) {
                 result = result * 31 + mIcon.hashCode();
+            }
+            if (mBadge != null) {
+                result = result * 31 + mBadge.hashCode();
             }
             if (mIconFilename != null) {
                 result = result * 31 + mIconFilename.hashCode();
@@ -2740,6 +2792,7 @@ public class ActivityManager {
             return TextUtils.equals(mLabel, other.mLabel)
                     && TextUtils.equals(mIconFilename, other.mIconFilename)
                     && mIcon == other.mIcon
+                    && mBadge == other.mBadge
                     && mColorPrimary == other.mColorPrimary
                     && mColorBackground == other.mColorBackground
                     && mStatusBarColor == other.mStatusBarColor
