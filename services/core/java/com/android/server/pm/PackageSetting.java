@@ -1179,7 +1179,7 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
                       int installReason, int uninstallReason,
                       String harmfulAppWarning, String splashScreenTheme,
                       long firstInstallTime, int aspectRatio, ArchiveState archiveState,
-                      boolean appLockEnabled) {
+                      boolean appLockEnabled, int virtualGamepadUserOption) {
         modifyUserState(userId)
                 .setSuspendParams(suspendParams)
                 .setCeDataInode(ceDataInode)
@@ -1202,7 +1202,8 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
                 .setFirstInstallTimeMillis(firstInstallTime)
                 .setMinAspectRatio(aspectRatio)
                 .setArchiveState(archiveState)
-                .setAppLockEnabled(appLockEnabled);
+                .setAppLockEnabled(appLockEnabled)
+                .setVirtualGamepadUserOption(virtualGamepadUserOption);
         onChanged();
     }
 
@@ -1221,7 +1222,8 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
                 otherState.getInstallReason(), otherState.getUninstallReason(),
                 otherState.getHarmfulAppWarning(), otherState.getSplashScreenTheme(),
                 otherState.getFirstInstallTimeMillis(), otherState.getMinAspectRatio(),
-                otherState.getArchiveState(), otherState.isAppLockEnabled());
+                otherState.getArchiveState(), otherState.isAppLockEnabled(),
+                otherState.getVirtualGamepadUserOption());
     }
 
     WatchedArraySet<String> getEnabledComponents(int userId) {

@@ -248,6 +248,13 @@ public interface PackageUserState {
     int getMinAspectRatio();
 
     /**
+     * @return the user option for the virtual gamepad feature.
+     * @hide
+     */
+    @PackageManager.VirtualGamepadUserOption
+    int getVirtualGamepadUserOption();
+
+    /**
      * Information about the archived state of an app. Set only if an app is archived.
      *
      * @hide

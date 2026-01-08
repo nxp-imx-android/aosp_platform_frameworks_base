@@ -33,6 +33,7 @@ import static android.content.pm.PackageManager.MATCH_FACTORY_ONLY;
 import static android.content.pm.PackageManager.MATCH_SYSTEM_ONLY;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.content.pm.PackageManager.USER_MIN_ASPECT_RATIO_UNSET;
+import static android.content.pm.PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET;
 import static android.crashrecovery.flags.Flags.refactorCrashrecovery;
 import static android.os.PerfettoTrace.BIG_LOCKS_V3;
 import static android.os.Process.INVALID_UID;
@@ -5525,6 +5526,28 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         }
 
         @Override
+        @PackageManager.VirtualGamepadUserOption
+        public int getVirtualGamepadUserOption(@NonNull String packageName, int userId) {
+            final Computer snapshot = snapshotComputer();
+            final int callingUid = Binder.getCallingUid();
+            snapshot.enforceCrossUserPermission(
+                    callingUid, userId, false /* requireFullPermission */,
+                    false /* checkShell */, "getSplashScreenTheme");
+
+            // The user option can be read by the app itself or system apps holding the
+            // INJECT_EVENTS signature permission (system gamepad and Settings).
+            if (mPermissionManager.checkUidPermission(callingUid, Manifest.permission.INJECT_EVENTS,
+                    Context.DEVICE_ID_DEFAULT) != PERMISSION_GRANTED) {
+                enforceOwnerRights(snapshot, packageName, callingUid);
+            }
+
+            final PackageStateInternal packageState = snapshot
+                    .getPackageStateForInstalledAndFiltered(packageName, callingUid, userId);
+            return packageState == null ? VIRTUAL_GAMEPAD_USER_OPTION_UNSET
+                    : packageState.getUserStateOrDefault(userId).getVirtualGamepadUserOption();
+        }
+
+        @Override
         public Bundle getSuspendedPackageAppExtras(String packageName, int userId) {
             final int callingUid = Binder.getCallingUid();
             final Computer snapshot = snapshot();
@@ -6615,6 +6638,32 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
 
             commitPackageStateMutation(null, packageName, state ->
                     state.userState(userId).setMinAspectRatio(aspectRatio));
+        }
+
+        @android.annotation.EnforcePermission(Manifest.permission.INJECT_EVENTS)
+        @Override
+        public void setVirtualGamepadUserOption(@NonNull String packageName, int userId,
+                @PackageManager.VirtualGamepadUserOption int userOption) {
+            setVirtualGamepadUserOption_enforcePermission();
+            final int callingUid = Binder.getCallingUid();
+            final Computer snapshot = snapshotComputer();
+            snapshot.enforceCrossUserPermission(callingUid, userId,
+                    false /* requireFullPermission */, false /* checkShell */,
+                    "setVirtualGamepadUserOption");
+
+            final PackageStateInternal packageState = snapshot
+                    .getPackageStateForInstalledAndFiltered(packageName, callingUid, userId);
+            if (packageState == null) {
+                return;
+            }
+
+            if (packageState.getUserStateOrDefault(userId).getVirtualGamepadUserOption()
+                    == userOption) {
+                return;
+            }
+
+            commitPackageStateMutation(null, packageName, state ->
+                    state.userState(userId).setVirtualGamepadUserOption(userOption));
         }
 
         @Override

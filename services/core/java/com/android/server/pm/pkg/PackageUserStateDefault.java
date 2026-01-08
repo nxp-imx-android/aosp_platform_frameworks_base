@@ -157,6 +157,11 @@ class PackageUserStateDefault implements PackageUserStateInternal {
     }
 
     @Override
+    public @PackageManager.VirtualGamepadUserOption int getVirtualGamepadUserOption() {
+        return PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET;
+    }
+
+    @Override
     public long getFirstInstallTimeMillis() {
         return 0;
     }

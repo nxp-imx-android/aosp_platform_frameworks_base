@@ -816,6 +816,11 @@ interface IPackageManager {
     @EnforcePermission("INSTALL_PACKAGES")
     void setUserMinAspectRatio(String packageName, int userId, int aspectRatio);
 
+    int getVirtualGamepadUserOption(String packageName, int userId);
+
+    @EnforcePermission("INJECT_EVENTS")
+    void setVirtualGamepadUserOption(String packageName, int userId, int userOption);
+
     List<String> getMimeGroup(String packageName, String group);
 
     boolean isAutoRevokeWhitelisted(String packageName);
