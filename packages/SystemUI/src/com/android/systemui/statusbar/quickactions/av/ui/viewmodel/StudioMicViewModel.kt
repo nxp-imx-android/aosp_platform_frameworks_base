@@ -32,8 +32,7 @@ constructor(private val desktopEffectInteractor: DesktopEffectInteractor) :
             .map {
                 ButtonUiState(
                     isEnabled = it.studioMic,
-                    // TODO(b/436222258): Replace hardcoded strings with resource resolution
-                    subText = "Studio Mic",
+                    subText = com.android.systemui.res.R.string.av_studio_mic,
                     image = com.android.systemui.res.R.drawable.gs_mic_detect_auto,
                 )
             }

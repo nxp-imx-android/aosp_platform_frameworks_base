@@ -37,9 +37,9 @@ constructor(
                     if (it.faceRetouch) 1 else 0 + if (it.portraitRelight) 1 else 0
                 ButtonUiState(
                     isEnabled = activeEffectCount > 0,
-                    // TODO(b/436222258): Replace hardcoded strings with resource resolution
-                    mainTitle = "Studio Look",
-                    subTitle = "$activeEffectCount effects",
+                    mainTitle = com.android.systemui.res.R.string.av_studio_look,
+                    subTitle = com.android.systemui.res.R.string.av_studio_look_effects,
+                    subTitleArg = activeEffectCount,
                     image = com.android.systemui.res.R.drawable.gs_face_retouch,
                 )
             }

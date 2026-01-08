@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.quickactions.av.ui.viewmodel
 
-import androidx.compose.runtime.getValue
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.AvControlsChipInteractor
 import dagger.assisted.Assisted

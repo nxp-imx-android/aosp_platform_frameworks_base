@@ -34,8 +34,7 @@ constructor(private val desktopEffectInteractor: DesktopEffectInteractor) :
                 ButtonUiState(
                     // TODO(b/436222258): Attach to backend when available
                     isEnabled = false,
-                    // TODO(b/436222258): Replace hardcoded strings with resource resolution
-                    subText = "Camera Framing",
+                    subText = com.android.systemui.res.R.string.av_camera_framing,
                     image = R.drawable.frame_person,
                 )
             }

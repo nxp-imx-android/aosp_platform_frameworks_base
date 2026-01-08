@@ -26,11 +26,13 @@ data class ButtonUiState(
     /** Is the button toggled */
     val isEnabled: Boolean = false,
     /** To be shown on first line within the button */
-    val mainTitle: String? = null,
+    val mainTitle: Int? = null,
     /** To be shown on second line within the button */
-    val subTitle: String? = null,
+    val subTitle: Int? = null,
+    /** Argument for the subTitle */
+    val subTitleArg: Int? = null,
     /** To be displayed under the button */
-    val subText: String? = null,
+    val subText: Int? = null,
     /** Icon to be shown within the button surface */
     val image: Int? = null,
 )

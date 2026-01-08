@@ -34,8 +34,7 @@ constructor(
     @Assisted val returnToMainPage: () -> Unit,
 ) : HydratedActivatable() {
 
-    // TODO(b/436222258): Replace hardcoded strings with resource resolution
-    val drillInTitle = "Background Blur"
+    val drillInTitle = com.android.systemui.res.R.string.av_camera_blur_drill_in_title
 
     val blurOffButton =
         Button(targetBlur = BlurLevel.OFF, desktopEffectInteractor = desktopEffectInteractor)
@@ -81,12 +80,11 @@ constructor(
                         BlurLevel.FULL ->
                             com.android.systemui.res.R.drawable.gs_background_blur_full
                     },
-                // TODO(b/436222258): Replace hardcoded strings with resource resolution
                 mainTitle =
                     when (targetBlur) {
-                        BlurLevel.OFF -> "Off"
-                        BlurLevel.LIGHT -> "Light"
-                        BlurLevel.FULL -> "Full"
+                        BlurLevel.OFF -> com.android.systemui.res.R.string.av_camera_blur_off
+                        BlurLevel.LIGHT -> com.android.systemui.res.R.string.av_camera_blur_light
+                        BlurLevel.FULL -> com.android.systemui.res.R.string.av_camera_blur_full
                     },
             )
     }

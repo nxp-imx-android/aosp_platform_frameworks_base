@@ -32,6 +32,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.ButtonViewModel
@@ -51,7 +52,7 @@ fun StudioLookDrillIn(
         }
     DrillIn(
         modifier = modifier,
-        drillInTitle = viewModel.drillInTitle,
+        drillInTitle = stringResource(viewModel.drillInTitle),
         returnToMainPage = { viewModel.returnToMainPage() },
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
@@ -78,7 +79,7 @@ fun StudioLookSwitch(traceName: String, viewModelFactory: () -> ButtonViewModel)
                 Icon(painter = painterResource(id = it), contentDescription = null)
             }
         },
-        headlineContent = { viewModel.state.mainTitle?.let { Text(text = it) } },
+        headlineContent = { viewModel.state.mainTitle?.let { Text(text = stringResource(it)) } },
         trailingContent = {
             Switch(
                 checked = viewModel.state.isEnabled,

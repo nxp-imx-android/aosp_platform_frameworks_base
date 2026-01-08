@@ -28,8 +28,7 @@ constructor(
     @Assisted val returnToMainPage: () -> Unit,
 ) {
 
-    // TODO(b/436222258): Replace hardcoded strings with resource resolution
-    val drillInTitle = "Studio Look"
+    val drillInTitle = com.android.systemui.res.R.string.av_studio_look
 
     /** A factory to be used to create view model instances. */
     @AssistedFactory
