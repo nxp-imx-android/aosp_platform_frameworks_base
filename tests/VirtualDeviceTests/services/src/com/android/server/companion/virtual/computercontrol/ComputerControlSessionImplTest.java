@@ -253,6 +253,8 @@ public class ComputerControlSessionImplTest {
     private ArgumentCaptor<VirtualDeviceManager.ActivityListener> mActivityListenerArgumentCaptor;
     @Captor
     private ArgumentCaptor<SurfaceControl> mSurfaceControlArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<Consumer<Boolean>> mWindowsDrawnCallbackCaptor;
 
     private SurfaceControl.Transaction mTransaction;
     private AutoCloseable mMockitoSession;
@@ -1202,6 +1204,136 @@ public class ComputerControlSessionImplTest {
         verify(mLifecycleCallback,
                 timeout(CLOSE_ON_DISPLAY_EMPTY_TIMEOUT_MS * 2).times(0))
                 .onClosed(anyInt());
+    }
+
+    @Test
+    public void requestScreenshot_enablesHardwareRendererOutput() throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        when(mWindowManagerInternal.requestHardwareRendererOutputEnabled(anyInt(), anyLong(), any(),
+                any())).thenReturn(true);
+
+        boolean result = mSession.requestScreenshot();
+
+        assertThat(result).isTrue();
+        verify(mWindowManagerInternal).requestHardwareRendererOutputEnabled(eq(VIRTUAL_DISPLAY_ID),
+                eq(1000L), any(), any());
+    }
+
+    @Test
+    public void requestScreenshot_notActive_returnsFalse() throws Exception {
+        createComputerControlSession(mDefaultParams);
+
+        try (InBlockedState inBlockedState = new InBlockedState()) {
+            boolean result = mSession.requestScreenshot();
+            assertThat(result).isFalse();
+            verify(mWindowManagerInternal, never()).requestHardwareRendererOutputEnabled(
+                    anyInt(), anyLong(), any(), any());
+        }
+    }
+
+    @Test
+    public void requestScreenshot_alreadyWaiting_returnsFalse() throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        when(mWindowManagerInternal.requestHardwareRendererOutputEnabled(anyInt(), anyLong(), any(),
+                any())).thenReturn(true);
+
+        mSession.requestScreenshot();
+        boolean result = mSession.requestScreenshot();
+
+        assertThat(result).isFalse();
+        verify(mWindowManagerInternal, times(1)).requestHardwareRendererOutputEnabled(
+                anyInt(), anyLong(), any(), any());
+    }
+
+    @Test
+    public void requestScreenshot_callbackDisablesHardwareRendererOutput() throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        when(mWindowManagerInternal.requestHardwareRendererOutputEnabled(anyInt(), anyLong(), any(),
+                any())).thenReturn(true);
+
+        mSession.requestScreenshot();
+
+        verify(mWindowManagerInternal).requestHardwareRendererOutputEnabled(anyInt(), anyLong(),
+                mWindowsDrawnCallbackCaptor.capture(), any());
+
+        Consumer<Boolean> callback = mWindowsDrawnCallbackCaptor.getValue();
+        callback.accept(true);
+
+        verify(mWindowManagerInternal)
+                .requestHardwareRendererOutputDisabled(eq(VIRTUAL_DISPLAY_ID));
+
+        // Should be able to request again
+        mSession.requestScreenshot();
+        verify(mWindowManagerInternal, times(2)).requestHardwareRendererOutputEnabled(
+                anyInt(), anyLong(), any(), any());
+    }
+
+    @Test
+    public void requestScreenshot_withInteractiveMirror_doesNotDisableHardwareRendererOutput()
+            throws Exception {
+        createComputerControlSession(mDefaultParams);
+        when(mWindowManagerInternal.requestHardwareRendererOutputEnabled(anyInt(), anyLong(), any(),
+                any())).thenReturn(true);
+        setupMockMirror();
+
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+        assertThat(mirror).isNotNull();
+
+        mSession.requestScreenshot();
+        verify(mWindowManagerInternal, times(2)).requestHardwareRendererOutputEnabled(
+                anyInt(), anyLong(), mWindowsDrawnCallbackCaptor.capture(), any());
+
+        Consumer<Boolean> callback = mWindowsDrawnCallbackCaptor.getValue();
+        callback.accept(true);
+
+        verify(mWindowManagerInternal, never()).requestHardwareRendererOutputDisabled(anyInt());
+    }
+
+    @Test
+    public void createInteractiveMirror_enablesHardwareRendererOutput() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        setupMockMirror();
+
+        mSession.createInteractiveMirror(new SurfaceControl());
+
+        verify(mWindowManagerInternal).requestHardwareRendererOutputEnabled(eq(VIRTUAL_DISPLAY_ID),
+                eq(0L), any(), any());
+    }
+
+    @Test
+    public void closeInteractiveMirror_disablesHardwareRendererOutput() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        setupMockMirror();
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+        clearInvocations(mWindowManagerInternal);
+
+        mirror.close();
+
+        verify(mWindowManagerInternal)
+                .requestHardwareRendererOutputDisabled(eq(VIRTUAL_DISPLAY_ID));
+    }
+
+    @Test
+    public void closeInteractiveMirror_pendingScreenshot_doesNotDisableHardwareRendererOutput()
+            throws Exception {
+        createComputerControlSession(mDefaultParams);
+        when(mWindowManagerInternal.requestHardwareRendererOutputEnabled(anyInt(), anyLong(), any(),
+                any())).thenReturn(true);
+        setupMockMirror();
+
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+        mSession.requestScreenshot();
+        clearInvocations(mWindowManagerInternal);
+
+        mirror.close();
+
+        verify(mWindowManagerInternal, never()).requestHardwareRendererOutputDisabled(anyInt());
+    }
+
+    private void setupMockMirror() {
+        WindowManagerInternal.DisplayMirror displayMirror = mockDisplayMirror();
+        when(mWindowManagerInternal.createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID))
+                .thenReturn(displayMirror);
     }
 
     /** A default way to enter the blocked state to test block state functionality. */
