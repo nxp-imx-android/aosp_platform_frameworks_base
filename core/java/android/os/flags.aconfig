@@ -237,6 +237,13 @@ flag {
 }
 
 flag {
+    name: "disallow_add_guest"
+    namespace: "security"
+    description: "Introduces the ability to restrict other users from adding a guest."
+    bug: "394218707"
+}
+
+flag {
     name: "enable_angle_deny_list"
     namespace: "gpu"
     description: "Whether to use native driver for apps in the denylist"

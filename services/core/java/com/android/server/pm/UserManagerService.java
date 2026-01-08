@@ -6278,6 +6278,7 @@ public class UserManagerService extends IUserManager.Stub {
         // If new user is of type CLONE, check if creation of clone profile is allowed
         // If new user is of type MANAGED, check if creation of managed profile is allowed
         // If new user is of type PRIVATE, check if creation of private profile is allowed
+        // If new user is of type GUEST, check if creation of guest profile is allowed
         String restriction = UserManager.DISALLOW_ADD_USER;
         if (UserManager.isUserTypeCloneProfile(userType)) {
             restriction = UserManager.DISALLOW_ADD_CLONE_PROFILE;
@@ -6285,6 +6286,8 @@ public class UserManagerService extends IUserManager.Stub {
             restriction = UserManager.DISALLOW_ADD_MANAGED_PROFILE;
         } else if (UserManager.isUserTypePrivateProfile(userType)) {
             restriction = UserManager.DISALLOW_ADD_PRIVATE_PROFILE;
+        } else if (UserManager.isUserTypeGuest(userType)) {
+            restriction = UserManager.DISALLOW_ADD_GUEST;
         }
 
         enforceUserRestriction(restriction, UserHandle.getCallingUserId(),
