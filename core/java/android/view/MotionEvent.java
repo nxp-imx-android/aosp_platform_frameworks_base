@@ -2281,7 +2281,7 @@ public final class MotionEvent extends InputEvent implements Parcelable {
             pp[0].clear();
             pp[0].id = 0;
 
-            final PointerCoords pc[] = gSharedTempPointerCoords;
+            final PointerCoords[] pc = gSharedTempPointerCoords;
             pc[0].clear();
             pc[0].x = x;
             pc[0].y = y;
@@ -2357,6 +2357,58 @@ public final class MotionEvent extends InputEvent implements Parcelable {
             float x, float y, int metaState) {
         return obtain(downTime, eventTime, action, x, y, 1.0f, 1.0f,
                 metaState, 1.0f, 1.0f, 0, 0);
+    }
+
+
+    /**
+     * Create a new MotionEvent, filling in all of the basic values that
+     * define the motion.
+     *
+     * @param downTimeNanos     The time (in ns) when the user originally pressed down to start
+     *                          a stream of position events. This must be obtained from
+     *                          {@link SystemClock#uptimeNanos()}.
+     * @param eventTimeNanos    The time (in ns) when this specific event was generated. This
+     *                          must be obtained from {@link SystemClock#uptimeNanos()}.
+     * @param action            The kind of action being performed, such as {@link #ACTION_DOWN}.
+     * @param pointerCount      The number of pointers that will be in this event.
+     * @param pointerProperties An array of <em>pointerCount</em> values providing
+     *                          a {@link PointerProperties} property object for each pointer, which
+     *                          must
+     *                          include the pointer identifier.
+     * @param pointerCoords     An array of <em>pointerCount</em> values providing
+     *                          a {@link PointerCoords} coordinate object for each pointer.
+     * @param metaState         The state of any meta / modifier keys that were in effect when
+     *                          the event was generated.
+     * @param buttonState       The state of buttons that are pressed.
+     * @param xPrecision        The precision of the X coordinate being reported.
+     * @param yPrecision        The precision of the Y coordinate being reported.
+     * @param deviceId          The ID for the device that this event came from.  An ID of
+     *                          zero indicates that the event didn't come from a physical device;
+     *                          other
+     *                          numbers are arbitrary and you shouldn't depend on the values.
+     * @param edgeFlags         A bitfield indicating which edges, if any, were touched by this
+     *                          MotionEvent.
+     * @param source            The source of this event.
+     * @param displayId         The display ID associated with this event.
+     * @param flags             The motion event flags.
+     * @param classification    The classification to give this event.
+     * @hide
+     */
+    public static MotionEvent obtainNanoseconds(long downTimeNanos, long eventTimeNanos, int action,
+            int pointerCount, PointerProperties[] pointerProperties, PointerCoords[] pointerCoords,
+            int metaState, int buttonState, float xPrecision, float yPrecision, int deviceId,
+            int edgeFlags, int source, int displayId, int flags,
+            @Classification int classification) {
+        MotionEvent ev = obtain();
+        final boolean success = ev.initialize(deviceId, source, displayId, action, flags, edgeFlags,
+                metaState, buttonState, classification, 0, 0, xPrecision, yPrecision,
+                downTimeNanos, eventTimeNanos, pointerCount, pointerProperties,
+                pointerCoords);
+        if (!success) {
+            ev.recycle();
+            throw new IllegalArgumentException("Could not initialize MotionEvent");
+        }
+        return ev;
     }
 
     /**
@@ -2677,6 +2729,16 @@ public final class MotionEvent extends InputEvent implements Parcelable {
      */
     public final long getDownTime() {
         return nativeGetDownTimeNanos(mNativePtr) / NS_PER_MS;
+    }
+
+    /**
+     * Retrieve the time (in ns) when the user originally pressed down to start
+     * a stream of position events.
+     *
+     * @hide
+     */
+    public long getDownTimeNanos() {
+        return nativeGetDownTimeNanos(mNativePtr);
     }
 
     /**

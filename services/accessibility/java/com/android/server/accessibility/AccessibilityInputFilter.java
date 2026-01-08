@@ -43,8 +43,6 @@ import android.view.InputEvent;
 import android.view.InputFilter;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.MotionEvent.PointerCoords;
-import android.view.MotionEvent.PointerProperties;
 import android.view.accessibility.AccessibilityEvent;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -261,39 +259,18 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
             action = MotionEvent.ACTION_CANCEL;
         }
 
-        final int pointerCount;
+        AccessibilityMotionEventBuilder builder = AccessibilityMotionEventBuilder.fromBaseEvent(
+                        event)
+                .setAction(action);
+
         if (event.getActionMasked() == MotionEvent.ACTION_POINTER_UP) {
-            pointerCount = event.getPointerCount() - 1;
-        } else {
-            pointerCount = event.getPointerCount();
-        }
-        final PointerProperties[] properties = new PointerProperties[pointerCount];
-        final PointerCoords[] coords = new PointerCoords[pointerCount];
-        int newPointerIndex = 0;
-        for (int i = 0; i < event.getPointerCount(); i++) {
-            if (event.getActionMasked() == MotionEvent.ACTION_POINTER_UP) {
-                if (event.getActionIndex() == i) {
-                    // Skip the pointer that's going away
-                    continue;
-                }
-            }
-            final PointerCoords c = new PointerCoords();
-            c.x = event.getX(i);
-            c.y = event.getY(i);
-            coords[newPointerIndex] = c;
-            final PointerProperties p = new PointerProperties();
-            p.id = event.getPointerId(i);
-            p.toolType = event.getToolType(i);
-            properties[newPointerIndex] = p;
-            newPointerIndex++;
+            // When cancelling a POINTER_UP event, the pointer that went up is excluded from the
+            // resulting CANCEL event. This is because the cancellation applies to the gesture
+            // that would have continued with the remaining pointers.
+            builder.excludePointer(event.getActionIndex());
         }
 
-        return MotionEvent.obtain(event.getDownTime(), SystemClock.uptimeMillis(), action,
-                pointerCount, properties, coords,
-                event.getMetaState(), event.getButtonState(),
-                event.getXPrecision(), event.getYPrecision(), event.getDeviceId(),
-                event.getEdgeFlags(), event.getSource(), event.getDisplayId(), event.getFlags(),
-                event.getClassification());
+        return builder.build();
     }
 
     AccessibilityInputFilter(Context context, AccessibilityManagerService service) {
@@ -1164,37 +1141,30 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
         }
     }
 
-    private void sendTouchCancelEvent(int displayId) {
-        if (!mInstalled) {
-            Slog.w(TAG, "sendTouchCancelEvent: Filter not installed, skipping cancel event.");
+    private void sendTouchCancelEventIfNeeded(int displayId, EventStreamState state) {
+        if (!(state instanceof TouchScreenEventStreamState tsState)
+                || !tsState.mTouchSequenceStarted
+                || !Flags.sendA11yActionCancelOnReset()) {
             return;
         }
-        MotionEvent cancelEvent;
+        if (!mInstalled) {
+            Slog.w(TAG,
+                    "sendTouchCancelEventIfNeeded: Filter not installed, skipping cancel event.");
+            return;
+        }
         if (mLastActiveDeviceMotionEvent != null
                 && mLastActiveDeviceMotionEvent.getDisplayId() == displayId
-                && mLastActiveDeviceMotionEvent.isFromSource(
-                InputDevice.SOURCE_TOUCHSCREEN)) {
-            cancelEvent = cancelMotion(mLastActiveDeviceMotionEvent);
-        } else {
-            long now = SystemClock.uptimeMillis();
-            cancelEvent = MotionEvent.obtain(now, now,
-                    MotionEvent.ACTION_CANCEL, 0.0f, 0.0f, 0);
-            cancelEvent.setSource(InputDevice.SOURCE_TOUCHSCREEN);
-            cancelEvent.setDisplayId(displayId);
+                && mLastActiveDeviceMotionEvent.isFromSource(InputDevice.SOURCE_TOUCHSCREEN)) {
+            final MotionEvent cancelEvent = cancelMotion(mLastActiveDeviceMotionEvent);
+            super.onInputEvent(cancelEvent, WindowManagerPolicy.FLAG_PASS_TO_USER);
+            cancelEvent.recycle();
         }
-        super.onInputEvent(cancelEvent, WindowManagerPolicy.FLAG_PASS_TO_USER);
-        cancelEvent.recycle();
     }
-
     void resetStreamStateForDisplay(int displayId) {
         final EventStreamState touchScreenStreamState = mTouchScreenStreamStates.get(displayId);
         if (touchScreenStreamState != null) {
             // Send Cancel if needed to prevent inconsistency
-            if (Flags.sendA11yActionCancelOnReset()
-                    && touchScreenStreamState instanceof TouchScreenEventStreamState tsState
-                    && tsState.mTouchSequenceStarted) {
-                sendTouchCancelEvent(displayId);
-            }
+            sendTouchCancelEventIfNeeded(displayId, touchScreenStreamState);
             touchScreenStreamState.reset();
             mTouchScreenStreamStates.remove(displayId);
         }
