@@ -13,18 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.systemui.scene.ui.composable.transitions
 
 import com.android.compose.animation.scene.TransitionBuilder
-import com.android.compose.animation.scene.UserActionDistance
 
-fun TransitionBuilder.lockscreenToShadeSceneTransition(
-    transitionDistancePx: Float,
-    durationScale: Double = 1.0,
-    seekAnimation: Boolean = false,
-) {
-    distance = UserActionDistance { _, _, _ -> transitionDistancePx }
-
-    lockscreenFadeOutTransition(durationScale = durationScale)
-    toShadeSceneTransition(durationScale = durationScale, seekAnimation = seekAnimation)
+fun TransitionBuilder.goneToSingleShadeTransition(durationScale: Double = 1.0) {
+    toShadeSceneTransition(durationScale = durationScale)
 }
