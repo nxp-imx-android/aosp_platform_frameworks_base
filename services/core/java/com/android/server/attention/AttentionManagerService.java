@@ -1200,7 +1200,7 @@ public class AttentionManagerService extends SystemService {
                 mInteractionProviderService.registerListener(callingPid, interactionTypes,
                         debounceTimeMills, listener);
             } else {
-                throw new RuntimeException("InteractionProviderService is not available");
+                throw new IllegalStateException("InteractionProviderService is not available");
             }
         }
 
@@ -1212,7 +1212,7 @@ public class AttentionManagerService extends SystemService {
                 int callingPid = Binder.getCallingPid();
                 mInteractionProviderService.unregisterListener(callingPid);
             } else {
-                throw new RuntimeException("InteractionProviderService is not available");
+                throw new IllegalStateException("InteractionProviderService is not available");
             }
         }
     }
