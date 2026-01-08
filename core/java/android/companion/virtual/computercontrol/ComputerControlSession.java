@@ -70,8 +70,7 @@ import java.util.function.Consumer;
  *
  * @hide
  */
-public final class ComputerControlSession extends IComputerControlLifecycleCallback.Stub
-        implements AutoCloseable {
+public final class ComputerControlSession implements AutoCloseable {
 
     private static final String TAG = ComputerControlSession.class.getSimpleName();
 
@@ -241,6 +240,34 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
 
     private final ComputerControlAccessibilityProxy mAccessibilityProxy;
 
+    private final IComputerControlLifecycleCallback mRemoteLifecycleCallback =
+            new IComputerControlLifecycleCallback.Stub() {
+                @Override
+                public void onActive() {
+                    synchronized (mLifecycle) {
+                        mLifecycle.onActive();
+                    }
+                }
+
+                @Override
+                public void onBlocked(@SessionBlockReason int reason,
+                        @Nullable String blockingPackage) {
+                    synchronized (mLifecycle) {
+                        mLifecycle.onBlocked(reason, blockingPackage);
+                    }
+                }
+
+                @Override
+                public void onClosed(@SessionCloseReason int closeReason) {
+                    releaseResources();
+                    synchronized (mLifecycle) {
+                        mLifecycle.onClosed(closeReason);
+                    }
+                    mOnClosedRunnable.run();
+                    mHandlerThread.quitSafely();
+                }
+            };
+
     /** @hide */
     public ComputerControlSession(int displayId,
             @NonNull IComputerControlSession session,
@@ -275,7 +302,7 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
                 PixelFormat.RGBA_8888, /* maxImages= */ 2);
         mImageReader.setOnImageAvailableListener(reader -> onImageAvailable(), mHandler);
         try {
-            mSession.initialize(/* lifecycleCallback=*/ this, mImageReader.getSurface());
+            mSession.initialize(mRemoteLifecycleCallback, mImageReader.getSurface());
         } catch (RemoteException e) {
             e.rethrowFromSystemServer();
         }
@@ -712,30 +739,6 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
         }
     }
 
-    @Override
-    public void onActive() {
-        synchronized (mLifecycle) {
-            mLifecycle.onActive();
-        }
-    }
-
-    @Override
-    public void onBlocked(@SessionBlockReason int reason, @Nullable String blockingPackage) {
-        synchronized (mLifecycle) {
-            mLifecycle.onBlocked(reason, blockingPackage);
-        }
-    }
-
-    @Override
-    public void onClosed(@SessionCloseReason int closeReason) {
-        releaseResources();
-        synchronized (mLifecycle) {
-            mLifecycle.onClosed(closeReason);
-        }
-        mOnClosedRunnable.run();
-        mHandlerThread.quitSafely();
-    }
-
     /**
      * Returns A11y information for all windows on the display associated with the
      * {@link ComputerControlSession}, or an empty list if no information is currently available.
@@ -818,6 +821,8 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     }
 
     private void onImageAvailable() {
+        mAccessibilityProxy.onImageAvailable();
+
         synchronized (mImageReaderLock) {
             if (mImageReader == null) {
                 return;
