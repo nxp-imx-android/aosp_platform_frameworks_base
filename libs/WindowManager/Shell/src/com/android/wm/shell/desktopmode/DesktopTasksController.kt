@@ -281,6 +281,7 @@ class DesktopTasksController(
     private val desksController: DesksController,
     private val desktopTasksTransitionObserver: DesktopTasksTransitionObserver,
     private val snapController: SnapController,
+    private val desktopModeEnterExitTransitionListener: DesktopModeEnterExitTransitionListener,
 ) :
     RemoteCallable<DesktopTasksController>,
     TransitionHandler,
@@ -353,9 +354,6 @@ class DesktopTasksController(
         }
 
     @VisibleForTesting var taskbarDesktopTaskListener: TaskbarDesktopTaskListener? = null
-
-    @VisibleForTesting
-    var desktopModeEnterExitTransitionListener: DesktopModeEntryExitTransitionListener? = null
 
     /** Task id of the task currently being dragged from fullscreen/split. */
     val draggingTaskId
@@ -5777,7 +5775,7 @@ class DesktopTasksController(
             runOnTransitStart?.invoke(transition)
             // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
             if (!desktopState.enableMultipleDesktops) {
-                desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
+                desktopModeEnterExitTransitionListener.onEnterDesktopModeTransitionStarted(
                     toDesktopAnimationDurationMs
                 )
             }
@@ -6187,7 +6185,12 @@ class DesktopTasksController(
     // TODO: b/457313894 - remove this method once IDesktopModeImpl is moved to a separate class.
     /** Creates a new instance of the external interface to pass to another process. */
     public fun createExternalInterface(): ExternalInterfaceBinder =
-        IDesktopModeImpl(shellController, transitionStateHolder, this)
+        IDesktopModeImpl(
+            shellController,
+            transitionStateHolder,
+            this,
+            desktopModeEnterExitTransitionListener,
+        )
 
     /**
      * Perform checks required on drag move. Create/release fullscreen indicator as needed.
@@ -6887,6 +6890,7 @@ class DesktopTasksController(
         private var shellController: ShellController?,
         private var transitionStateHolder: TransitionStateHolder?,
         private var controller: DesktopTasksController?,
+        private val desktopModeEnterExitTransitionListener: DesktopModeEnterExitTransitionListener,
     ) : IDesktopMode.Stub(), ExternalInterfaceBinder {
 
         private lateinit var remoteListener:
@@ -6987,36 +6991,6 @@ class DesktopTasksController(
 
                     remoteListener.call { l ->
                         l.onTaskbarCornerRoundingUpdate(hasTasksRequiringTaskbarRounding, displayId)
-                    }
-                }
-            }
-
-        private val desktopModeEntryExitTransitionListener: DesktopModeEntryExitTransitionListener =
-            object : DesktopModeEntryExitTransitionListener {
-                override fun onEnterDesktopModeTransitionStarted(transitionDuration: Int) {
-                    ProtoLog.v(
-                        WM_SHELL_DESKTOP_MODE,
-                        "IDesktopModeImpl: onEnterDesktopModeTransitionStarted transitionTime=%d",
-                        transitionDuration,
-                    )
-                    remoteListener.call { l ->
-                        l.onEnterDesktopModeTransitionStarted(transitionDuration)
-                    }
-                }
-
-                override fun onExitDesktopModeTransitionStarted(
-                    transitionDuration: Int,
-                    shouldEndUpAtHome: Boolean,
-                ) {
-                    ProtoLog.v(
-                        WM_SHELL_DESKTOP_MODE,
-                        "IDesktopModeImpl: onExitDesktopModeTransitionStarted " +
-                            "transitionTime=%d shouldEndUpAtHome=%b",
-                        transitionDuration,
-                        shouldEndUpAtHome,
-                    )
-                    remoteListener.call { l ->
-                        l.onExitDesktopModeTransitionStarted(transitionDuration, shouldEndUpAtHome)
                     }
                 }
             }
@@ -7214,7 +7188,7 @@ class DesktopTasksController(
             }
             c.userRepositories.current.addVisibleTasksListener(visibleTasksListener, c.mainExecutor)
             c.taskbarDesktopTaskListener = taskbarDesktopTaskListener
-            c.desktopModeEnterExitTransitionListener = desktopModeEntryExitTransitionListener
+            desktopModeEnterExitTransitionListener.register(remoteListener)
         }
 
         private fun unregisterListeners(c: DesktopTasksController) {
@@ -7223,7 +7197,7 @@ class DesktopTasksController(
             }
             c.userRepositories.current.removeVisibleTasksListener(visibleTasksListener)
             c.taskbarDesktopTaskListener = null
-            c.desktopModeEnterExitTransitionListener = null
+            desktopModeEnterExitTransitionListener.unregister()
         }
     }
 
@@ -7289,15 +7263,6 @@ class DesktopTasksController(
          * left/right and rounded corners are enabled.
          */
         fun onTaskbarCornerRoundingUpdate(hasTasksRequiringTaskbarRounding: Boolean, displayId: Int)
-    }
-
-    /** Defines interface for entering and exiting desktop windowing mode. */
-    interface DesktopModeEntryExitTransitionListener {
-        /** [transitionDuration] time it takes to run enter desktop mode transition */
-        fun onEnterDesktopModeTransitionStarted(transitionDuration: Int)
-
-        /** [transitionDuration] time it takes to run exit desktop mode transition */
-        fun onExitDesktopModeTransitionStarted(transitionDuration: Int, shouldEndUpAtHome: Boolean)
     }
 
     /**
