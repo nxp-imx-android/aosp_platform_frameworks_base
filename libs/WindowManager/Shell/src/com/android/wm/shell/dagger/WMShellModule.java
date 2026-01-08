@@ -2245,7 +2245,8 @@ public abstract class WMShellModule {
             Optional<DesktopImeHandler> desktopImeHandler,
             ShellCrashHandler shellCrashHandler,
             AppToWebEducationController appToWebEducationController,
-            QuitFocusedAppKeyGestureHandler quitFocusedAppKeyGestureHandler) {
+            QuitFocusedAppKeyGestureHandler quitFocusedAppKeyGestureHandler,
+            BubbleRootTask bubbleRootTask) {
         return new Object();
     }
 
