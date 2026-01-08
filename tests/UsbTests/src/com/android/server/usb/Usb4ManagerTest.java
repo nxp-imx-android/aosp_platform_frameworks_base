@@ -129,13 +129,13 @@ public class Usb4ManagerTest {
 
         // Initially, we shouldn't be able to update tunnel control due to invalid user.
         assertEquals(
-                mUsb4Manager.isPciTunnelingControlAllowed(),
+                mUsb4Manager.getPciTunnelingControlAllowedStatus(),
                 UsbManager.PCI_TUNNEL_CTRL_DISALLOWED_FOR_NONADMIN_USER);
 
         // After switching users, tunnel control should be updated to unsupported.
         mUsb4Manager.onUpdateLoggedInState(true, TEST_USER_ID);
         assertEquals(
-                mUsb4Manager.isPciTunnelingControlAllowed(),
+                mUsb4Manager.getPciTunnelingControlAllowedStatus(),
                 UsbManager.PCI_TUNNEL_CTRL_UNSUPPORTED);
         assertThrows(IllegalStateException.class, () -> mUsb4Manager.setPciTunnelingEnabled(true));
 
@@ -165,7 +165,7 @@ public class Usb4ManagerTest {
                 mUsb4Manager.setPciTunnelingControlAllowed(
                         false, PCI_TUNNEL_CONTROL_DISABLE_REASON_APM));
         assertEquals(
-                mUsb4Manager.isPciTunnelingControlAllowed(),
+                mUsb4Manager.getPciTunnelingControlAllowedStatus(),
                 UsbManager.PCI_TUNNEL_CTRL_DISALLOWED_BY_APM);
         assertFalse(mUsb4Manager.isPciTunnelingEnabled());
 
@@ -173,7 +173,7 @@ public class Usb4ManagerTest {
                 mUsb4Manager.setPciTunnelingControlAllowed(
                         false, PCI_TUNNEL_CONTROL_DISABLE_REASON_ENTERPRISE));
         assertEquals(
-                mUsb4Manager.isPciTunnelingControlAllowed(),
+                mUsb4Manager.getPciTunnelingControlAllowedStatus(),
                 UsbManager.PCI_TUNNEL_CTRL_DISALLOWED_BY_ENTERPRISE_POLICY);
         assertFalse(mUsb4Manager.isPciTunnelingEnabled());
 
@@ -182,7 +182,7 @@ public class Usb4ManagerTest {
                 mUsb4Manager.setPciTunnelingControlAllowed(
                         true, PCI_TUNNEL_CONTROL_DISABLE_REASON_APM));
         assertEquals(
-                mUsb4Manager.isPciTunnelingControlAllowed(),
+                mUsb4Manager.getPciTunnelingControlAllowedStatus(),
                 UsbManager.PCI_TUNNEL_CTRL_DISALLOWED_BY_ENTERPRISE_POLICY);
         assertTrue(
                 mUsb4Manager.setPciTunnelingControlAllowed(
@@ -190,7 +190,8 @@ public class Usb4ManagerTest {
 
         // Revert to supported but don't restore tunnel enable state.
         assertEquals(
-                mUsb4Manager.isPciTunnelingControlAllowed(), UsbManager.PCI_TUNNEL_CTRL_SUPPORTED);
+                mUsb4Manager.getPciTunnelingControlAllowedStatus(),
+                UsbManager.PCI_TUNNEL_CTRL_SUPPORTED);
         assertFalse(mUsb4Manager.isPciTunnelingEnabled());
     }
 
