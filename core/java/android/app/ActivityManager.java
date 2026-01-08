@@ -1950,8 +1950,8 @@ public class ActivityManager {
              */
             @Nullable
             private String mLabel = null;
-            @DrawableRes
-            private int mIconRes = Resources.ID_NULL;
+            @Nullable
+            private Icon mIcon = null;
             @Nullable
             private Icon mBadge = null;
             private int mPrimaryColor = 0;
@@ -1978,7 +1978,24 @@ public class ActivityManager {
              */
             @NonNull
             public Builder setIcon(@DrawableRes int iconRes) {
-                this.mIconRes = iconRes;
+                if (iconRes == Resources.ID_NULL) {
+                    this.mIcon = null;
+                } else {
+                    this.mIcon =
+                            Icon.createWithResource(ActivityThread.currentPackageName(), iconRes);
+                }
+                return this;
+            }
+
+            /**
+             * Set the icon to use in the TaskDescription.
+             * @param icon An icon that represents the current state of this activity.
+             * @return The same instance of the builder.
+             */
+            @FlaggedApi(Flags.FLAG_ENABLE_DYNAMIC_ICONS_AND_BADGING)
+            @NonNull
+            public Builder setIcon(@Nullable Icon icon) {
+                this.mIcon = icon;
                 return this;
             }
 
@@ -2050,9 +2067,7 @@ public class ActivityManager {
              */
             @NonNull
             public TaskDescription build() {
-                final Icon icon = mIconRes == Resources.ID_NULL ? null :
-                        Icon.createWithResource(ActivityThread.currentPackageName(), mIconRes);
-                return new TaskDescription(mLabel, icon, mBadge, mPrimaryColor, mBackgroundColor,
+                return new TaskDescription(mLabel, mIcon, mBadge, mPrimaryColor, mBackgroundColor,
                         mStatusBarColor, mNavigationBarColor, 0, 0, false, false,
                         RESIZE_MODE_RESIZEABLE, -1, -1, 0);
             }
