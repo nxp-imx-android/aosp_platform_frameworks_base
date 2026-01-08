@@ -23,6 +23,7 @@ import android.media.tv.BroadcastInfoRequest;
 import android.media.tv.TvRecordingInfo;
 import android.media.tv.interactive.ITvInteractiveAppSession;
 import android.media.tv.interactive.TvInteractiveAppInfo;
+import android.media.tv.interactive.WebServiceClientInfo;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -66,4 +67,5 @@ oneway interface ITvInteractiveAppSessionCallback {
     void onRequestSigning2(in String id, in String algorithm, in String host, int port, in byte[] data);
     void onRequestCertificate(in String host, int port);
     void onAdRequest(in AdRequest request);
+    void onSendWebServiceClientList(in List<WebServiceClientInfo> clients);
 }

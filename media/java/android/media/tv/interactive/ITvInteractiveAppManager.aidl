@@ -116,4 +116,8 @@ interface ITvInteractiveAppManager {
 
     void registerCallback(in ITvInteractiveAppManagerCallback callback, int userId);
     void unregisterCallback(in ITvInteractiveAppManagerCallback callback, int userId);
+
+    void requestWebServiceClients(in IBinder sessionToken, int userId);
+    void updateWebServiceClientState(in IBinder sessionToken, int handle, int state, int userId);
+    void removeWebServiceClient(in IBinder sessionToken, int handle, int userId);
 }

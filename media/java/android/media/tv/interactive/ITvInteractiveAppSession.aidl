@@ -86,4 +86,8 @@ oneway interface ITvInteractiveAppSession {
     void createMediaView(in IBinder windowToken, in Rect frame);
     void relayoutMediaView(in Rect frame);
     void removeMediaView();
+
+    void requestWebServiceClients();
+    void updateWebServiceClientState(int handle, int state);
+    void removeWebServiceClient(int handle);
 }

@@ -1168,6 +1168,39 @@ public class TvInteractiveAppView extends ViewGroup {
     }
 
     /**
+     * Request a list of Web Service Clients.
+     * @hide
+     */
+    public void requestWebServiceClients() {
+        if (mSession != null) {
+            mSession.requestWebServiceClients();
+        }
+    }
+
+    /**
+     * Updates the state of a specific Web Service Client.
+     * @param handle The handle of the Web Service Client.
+     * @param state The new state of the Web Service Client.
+     * @hide
+     */
+    public void updateWebServiceClientState(int handle, int state) {
+        if (mSession != null) {
+            mSession.updateWebServiceClientState(handle, state);
+        }
+    }
+
+    /**
+     * Removes a Web Service Client.
+     * @param handle The handle of the Web Service Client to be removed.
+     * @hide
+     */
+    public void removeWebServiceClient(int handle) {
+        if (mSession != null) {
+            mSession.removeWebServiceClient(handle);
+        }
+    }
+
+    /**
      * Callback used to receive various status updates on the {@link TvInteractiveAppView}.
      */
     public abstract static class TvInteractiveAppCallback {
@@ -1523,6 +1556,17 @@ public class TvInteractiveAppView extends ViewGroup {
         public void onRequestTvRecordingInfoList(
                 @NonNull String iAppServiceId,
                 @TvRecordingInfo.TvRecordingListType int type) {
+        }
+
+        /**
+         * Invoked when the interactive app service sends a new client list.
+         *
+         * @param iAppServiceId The ID of the TV interactive app service bound to this view.
+         * @param list The list of Web Service Clients.
+         * @hide
+         */
+        public void onSendWebServiceClientList(@NonNull String iAppServiceId,
+                @NonNull List<WebServiceClientInfo> list) {
         }
     }
 
@@ -2104,6 +2148,21 @@ public class TvInteractiveAppView extends ViewGroup {
             }
             if (mCallback != null && Flags.tiafVApis()) {
                 mCallback.onRequestCertificate(mIAppServiceId, host, port);
+            }
+        }
+
+        @Override
+        public void onSendWebServiceClientList(Session session,
+                @NonNull List<WebServiceClientInfo> list) {
+            if (DEBUG) {
+                Log.d(TAG, "onSendWebServiceClientList");
+            }
+            if (this != mSessionCallback) {
+                Log.w(TAG, "onSendWebServiceClientList - session not created");
+                return;
+            }
+            if (mCallback != null) {
+                mCallback.onSendWebServiceClientList(mIAppServiceId, list);
             }
         }
     }
