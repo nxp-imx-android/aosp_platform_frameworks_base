@@ -83,7 +83,7 @@ constructor(
 
     val tileViewModels by derivedStateOf {
         currentTiles
-            .map { SizedTileImpl(TileViewModel(it.tile, it.spec), it.spec.width()) }
+            .map { SizedTileImpl(TileViewModel(it.tile, it.spec, it.expandable), it.spec.width()) }
             .let { splitInRowsSequence(it, columns).take(rows).toList().flatten() }
     }
 

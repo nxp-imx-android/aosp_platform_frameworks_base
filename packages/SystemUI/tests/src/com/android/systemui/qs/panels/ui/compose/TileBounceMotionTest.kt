@@ -34,6 +34,7 @@ import com.android.compose.animation.scene.TestScenes.SceneA
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.animation.Expandable
 import com.android.systemui.grid.ui.compose.VerticalSpannedGrid
 import com.android.systemui.haptics.msdl.tileHapticsViewModelFactory
 import com.android.systemui.motion.createSysUiComposeMotionTestRule
@@ -385,7 +386,7 @@ class TileBounceMotionTest : SysuiTestCase() {
                         }
                     )
                 }
-                .let { TileViewModel(it, TileSpec.create(spec)) }
+                .let { TileViewModel(it, TileSpec.create(spec), Expandable()) }
         }
     }
 }
