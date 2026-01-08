@@ -224,6 +224,7 @@ fun interface RunOnTransitStart {
 /** Handles moving tasks in and out of desktop */
 class DesktopTasksController(
     private val context: Context,
+    private val desktopAnimationConfiguration: DesktopAnimationConfiguration,
     shellInit: ShellInit,
     private val shellCommandHandler: ShellCommandHandler,
     private val shellController: ShellController,
@@ -373,8 +374,6 @@ class DesktopTasksController(
     // A handler for requests to preserve a disconnected display to potentially restore later.
     var preserveDisplayRequestHandler: PreserveDisplayRequestHandler? = null
 
-    private val toDesktopAnimationDurationMs =
-        context.resources.getInteger(SharedR.integer.to_desktop_animation_duration_ms)
     private val deskDeactivationFromOverviewScheduler =
         DeskDeactivationFromOverviewScheduler(shellController, this, displayController)
 
@@ -1587,7 +1586,7 @@ class DesktopTasksController(
         // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
         if (!desktopState.enableMultipleDesktops) {
             desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
-                toDesktopAnimationDurationMs
+                desktopAnimationConfiguration.toDesktopAnimationDurationMs
             )
         }
         runOnTransitStart?.invoke(transition)
@@ -1643,7 +1642,7 @@ class DesktopTasksController(
         // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
         if (!desktopState.enableMultipleDesktops) {
             desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
-                toDesktopAnimationDurationMs
+                desktopAnimationConfiguration.toDesktopAnimationDurationMs
             )
         }
         runOnTransitStart?.invoke(transition)
@@ -2530,7 +2529,7 @@ class DesktopTasksController(
             // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
             if (!desktopState.enableMultipleDesktops) {
                 desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
-                    toDesktopAnimationDurationMs
+                    desktopAnimationConfiguration.toDesktopAnimationDurationMs
                 )
             }
         }
@@ -5762,7 +5761,7 @@ class DesktopTasksController(
             // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
             if (!desktopState.enableMultipleDesktops) {
                 desktopModeEnterExitTransitionListener.onEnterDesktopModeTransitionStarted(
-                    toDesktopAnimationDurationMs
+                    desktopAnimationConfiguration.toDesktopAnimationDurationMs
                 )
             }
         }
