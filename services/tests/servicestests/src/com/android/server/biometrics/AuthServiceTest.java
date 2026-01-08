@@ -16,6 +16,7 @@
 
 package com.android.server.biometrics;
 
+import static android.Manifest.permission.ACCESS_BIOMETRIC_SENSOR_STRENGTHS;
 import static android.Manifest.permission.MANAGE_BIOMETRIC;
 import static android.Manifest.permission.SET_BIOMETRIC_DIALOG_ADVANCED;
 import static android.Manifest.permission.TEST_BIOMETRIC;
@@ -615,9 +616,8 @@ public class AuthServiceTest {
     }
 
     @Test
-    public void testGetBiometricSensorStrengths_allowedCaller() throws Exception {
-        // TODO(b/454275027): Replace USE_BIOMETRIC_INTERNAL with a new role-gated permission.
-        setPermission(mContext, USE_BIOMETRIC_INTERNAL, true);
+    public void testGetBiometricSensorStrengths_allowedRoleHolder() throws Exception {
+        setPermission(mContext, ACCESS_BIOMETRIC_SENSOR_STRENGTHS, true);
         setSensorProperties();
 
         mAuthService = new AuthService(mContext, mInjector);
@@ -642,10 +642,11 @@ public class AuthServiceTest {
     }
 
     @Test
-    public void testGetBiometricSensorStrengths_internalPermissionDenied_throwsSecurityException()
+    public void testGetBiometricSensorStrengths_rolePermissionDenied_throwsSecurityException()
             throws Exception {
-        // TODO(b/454275027): Replace USE_BIOMETRIC_INTERNAL with a new role-gated permission.
-        setPermission(mContext, USE_BIOMETRIC_INTERNAL, false);
+        // From an end-to-end perspective, this could be due to not declaring
+        // `ACCESS_BIOMETRIC_SENSOR_STRENGTHS`, or declaring it but not holding the required roles.
+        setPermission(mContext, ACCESS_BIOMETRIC_SENSOR_STRENGTHS, false);
 
         mAuthService = new AuthService(mContext, mInjector);
         mAuthService.onStart();
@@ -672,8 +673,7 @@ public class AuthServiceTest {
     @Test
     public void testGetBiometricSensorStrengths_backgroundCaller_throwsSecurityException()
             throws Exception {
-        // TODO(b/454275027): Replace USE_BIOMETRIC_INTERNAL with a new role-gated permission.
-        setPermission(mContext, USE_BIOMETRIC_INTERNAL, true);
+        setPermission(mContext, ACCESS_BIOMETRIC_SENSOR_STRENGTHS, true);
         when(mInjector.isForeground(anyInt(), anyInt())).thenReturn(false);
 
         mAuthService = new AuthService(mContext, mInjector);

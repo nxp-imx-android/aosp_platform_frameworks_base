@@ -20,6 +20,7 @@ package com.android.server.biometrics;
 // TODO(b/141025588): Create separate internal and external permissions for AuthService.
 // TODO(b/141025588): Get rid of the USE_FINGERPRINT permission.
 
+import static android.Manifest.permission.ACCESS_BIOMETRIC_SENSOR_STRENGTHS;
 import static android.Manifest.permission.SET_BIOMETRIC_DIALOG_ADVANCED;
 import static android.Manifest.permission.TEST_BIOMETRIC;
 import static android.Manifest.permission.USE_BIOMETRIC;
@@ -468,7 +469,7 @@ public class AuthService extends SystemService {
          * <p>This method is the service-side implementation for
          * {@link BiometricManager#getBiometricSensorStrengths}. It requires the caller to be in
          * the foreground and have the {@link android.Manifest.permission#USE_BIOMETRIC} and
-         * {@link android.Manifest.permission#USE_BIOMETRIC_INTERNAL} permissions.
+         * {@link android.Manifest.permission#ACCESS_BIOMETRIC_SENSOR_STRENGTHS} permissions.
          *
          * <p>Note:  Biometric sensor strengths below Class-3
          * ({@link BiometricManager.Authenticators#BIOMETRIC_STRONG}) are obscured and
@@ -480,9 +481,8 @@ public class AuthService extends SystemService {
             // Check the `USE_BIOMETRIC` permission at runtime.
             checkPermission();
 
-            // Check the `USE_BIOMETRIC_INTERNAL` permission at runtime.
-            // TODO(b/454275027): Replace USE_BIOMETRIC_INTERNAL with a new role-gated permission.
-            checkInternalPermission();
+            // Check the `ACCESS_BIOMETRIC_SENSOR_STRENGTHS` role permission at runtime.
+            checkAccessBiometricSensorStrengthsPermission();
 
             // Conduct a foreground check.
             final int callingUid = Binder.getCallingUid();
@@ -1147,6 +1147,11 @@ public class AuthService extends SystemService {
             getContext().enforceCallingOrSelfPermission(USE_BIOMETRIC,
                     "Must have USE_BIOMETRIC permission");
         }
+    }
+
+    private void checkAccessBiometricSensorStrengthsPermission() {
+        getContext().enforceCallingOrSelfPermission(ACCESS_BIOMETRIC_SENSOR_STRENGTHS,
+                String.format("Must have %s permission.", ACCESS_BIOMETRIC_SENSOR_STRENGTHS));
     }
 
     private boolean checkAppOps(int uid, String opPackageName, String reason) {
