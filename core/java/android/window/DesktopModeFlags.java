@@ -62,7 +62,6 @@ public enum DesktopModeFlags {
             Flags::enableDesktopWindowingExitTransitionsBugfix, true),
     ENABLE_DESKTOP_WINDOWING_MODE(Flags::enableDesktopWindowingMode, true),
     ENABLE_DESKTOP_WINDOWING_PERSISTENCE(Flags::enableDesktopWindowingPersistence, true),
-    ENABLE_DESKTOP_WINDOWING_SCVH_CACHE(Flags::enableDesktopWindowingScvhCacheBugFix, true),
     ENABLE_DESKTOP_WINDOWING_SIZE_CONSTRAINTS(Flags::enableDesktopWindowingSizeConstraints, true),
     ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY(Flags::enableDesktopWindowingWallpaperActivity,
             true),

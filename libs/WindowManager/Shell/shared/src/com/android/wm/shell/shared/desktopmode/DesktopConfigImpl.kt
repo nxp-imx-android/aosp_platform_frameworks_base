@@ -21,7 +21,6 @@ import android.content.Context
 import android.os.SystemProperties
 import android.util.IndentingPrintWriter
 import android.window.DesktopExperienceFlags
-import android.window.DesktopModeFlags
 import com.android.internal.R
 import com.android.internal.annotations.VisibleForTesting
 import com.android.wm.shell.shared.desktopmode.DesktopConfigImpl.Companion.WINDOW_DECOR_PRE_WARM_SIZE
@@ -57,8 +56,6 @@ class DesktopConfigImpl(
 
     override val windowDecorScvhPoolSize: Int
         get() {
-            if (!DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_SCVH_CACHE.isTrue) return 0
-
             if (maxTaskLimit > 0) return maxTaskLimit
 
             // TODO: b/368032552 - task limit equal to 0 means unlimited. Figure out what the pool

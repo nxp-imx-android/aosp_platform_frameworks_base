@@ -581,16 +581,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_windowing_scvh_cache_bug_fix"
-    namespace: "lse_desktop_experience"
-    description: "Enables a SurfaceControlViewHost cache for window decorations"
-    bug: "360452034"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_desktop_windowing_size_constraints"
     namespace: "lse_desktop_experience"
     description: "Whether to enable min/max window size constraints when resizing a window in desktop windowing mode"
