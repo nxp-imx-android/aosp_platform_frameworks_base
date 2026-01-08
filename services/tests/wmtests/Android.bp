@@ -84,6 +84,8 @@ java_genrule {
 android_test {
     name: "WmTests",
 
+    team: "trendy_team_window_manager_other",
+
     // We only want this apk build for tests.
     srcs: [
         ":wmtests-sources",
