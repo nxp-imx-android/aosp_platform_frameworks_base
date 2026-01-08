@@ -2052,7 +2052,6 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         // flag is enabled.
         // TODO: b/461541824 - Pass displayId from all split entry points.
         if (DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue()) {
-            updateSplitLayoutConfig(mRootTDAOrganizer, DEFAULT_DISPLAY, mSplitLayout);
             prepareMovingSplitScreenRoot(wct, DEFAULT_DISPLAY, false /* onTop */);
         }
 
