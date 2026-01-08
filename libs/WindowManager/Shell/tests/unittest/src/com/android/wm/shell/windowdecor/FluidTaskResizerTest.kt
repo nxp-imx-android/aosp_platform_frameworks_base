@@ -19,13 +19,16 @@ import android.app.ActivityManager
 import android.graphics.PointF
 import android.graphics.Rect
 import android.os.IBinder
+import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import androidx.test.filters.SmallTest
+import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import org.junit.Assert
 import org.junit.Before
@@ -35,7 +38,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
-import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -53,6 +55,7 @@ class FluidTaskResizerTest : ShellTestCase() {
     private val mockTaskOrganizer = mock<ShellTaskOrganizer>()
     private val mockTaskToken = mock<WindowContainerToken>()
     private val mockWindowDecoration = mock<WindowDecorationWrapper>()
+    private val mockDesktopRepository = mock<DesktopRepository>()
 
     private lateinit var taskResizer: FluidTaskResizer
     private lateinit var dragSession: DragSession
@@ -80,6 +83,7 @@ class FluidTaskResizerTest : ShellTestCase() {
                 repositionStartPoint = PointF(100f, 100f),
                 stableBounds = Rect(STABLE_BOUNDS),
                 rotation = 0,
+                desktopRepository = mockDesktopRepository,
             )
     }
 
@@ -133,6 +137,22 @@ class FluidTaskResizerTest : ShellTestCase() {
         val wct = taskResizer.onResizeEnd(dragSession, 100f, 100f)
 
         Assert.assertNull(wct)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT)
+    fun testResize_removesPreSnapOrPreMaximizeBounds() {
+        taskResizer.onResizeUpdate(dragSession, 150f, 110f)
+
+        verify(mockDesktopRepository).removeBoundsBeforeSnapOrMaximize(TASK_ID)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT)
+    fun testResize_noBoundsChange_doesNotRemovePreSnapOrPreMaximizeBounds() {
+        taskResizer.onResizeUpdate(dragSession, 100f, 100f)
+
+        verify(mockDesktopRepository, never()).removeBoundsBeforeSnapOrMaximize(any())
     }
 
     companion object {

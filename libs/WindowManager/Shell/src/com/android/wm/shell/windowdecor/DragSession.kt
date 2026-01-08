@@ -20,6 +20,7 @@ import android.graphics.PointF
 import android.graphics.Rect
 import android.os.IBinder
 import android.view.Surface
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 
 /**
  * A data class to hold the shared state and dependencies for a single drag-move or drag-resize
@@ -44,6 +45,11 @@ import android.view.Surface
  *   drag-resize operation completes, used to track the post-drag animation.
  * @param hasFirstMoveEventConsumed A flag indicating whether the one-time actions for the initial
  *   move event (e.g., updating taskbar rounding) have been consumed for this drag session.
+ * @param pendingBoundsRestoreTransition The transition for a drag-move that restores the task to
+ *   its pre-maximized or pre-snapped bounds.
+ * @param shouldRestoreBoundsOnMove Whether the task should be restored to its pre-maximized or
+ *   pre-snapped state on the first move event.
+ * @param desktopRepository The [DesktopRepository] for the current user.
  */
 data class DragSession(
     val windowDecoration: WindowDecorationWrapper,
@@ -57,4 +63,7 @@ data class DragSession(
     var hasMovedTaskSurfaceOffScreen: Boolean = false,
     var dragResizeEndTransition: IBinder? = null,
     var hasFirstMoveEventConsumed: Boolean = false,
+    var pendingBoundsRestoreTransition: IBinder? = null,
+    var shouldRestoreBoundsOnMove: Boolean = false,
+    var desktopRepository: DesktopRepository? = null,
 )

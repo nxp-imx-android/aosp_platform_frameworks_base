@@ -16,17 +16,26 @@
 
 package com.android.wm.shell.windowdecor
 
+import android.window.WindowContainerTransaction
+
 /** Interface for moving a task via drag gestures. */
 interface TaskMover {
     /**
      * Called when a drag move updates.
      *
-     * @param session The drag session for the current drag operation.
+     * @param session The [DragSession] for the current drag.
      * @param displayId The ID of the display where the drag is happening.
      * @param x The new x coordinate of the drag point.
      * @param y The new y coordinate of the drag point.
+     * @return A [WindowContainerTransaction] to restore the task's bounds if it was snapped or
+     *   maximized, or `null` otherwise.
      */
-    fun onMoveUpdate(session: DragSession, displayId: Int, x: Float, y: Float)
+    fun onMoveUpdate(
+        session: DragSession,
+        displayId: Int,
+        x: Float,
+        y: Float,
+    ): WindowContainerTransaction?
 
     /**
      * Called when a drag move ends.

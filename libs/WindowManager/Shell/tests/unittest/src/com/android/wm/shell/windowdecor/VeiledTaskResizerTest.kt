@@ -19,18 +19,23 @@ import android.app.ActivityManager
 import android.graphics.PointF
 import android.graphics.Rect
 import android.os.IBinder
+import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
 import androidx.test.internal.runner.junit4.statement.UiThreadStatement.runOnUiThread
+import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -44,6 +49,7 @@ import org.mockito.kotlin.whenever
 class VeiledTaskResizerTest : ShellTestCase() {
     private val mockWindowDecoration = mock<WindowDecorationWrapper>()
     private val mockDisplayController = mock<DisplayController>()
+    private val mockDesktopRepository = mock<DesktopRepository>()
 
     private val desktopState = FakeDesktopState()
     private lateinit var taskResizer: VeiledTaskResizer
@@ -75,6 +81,7 @@ class VeiledTaskResizerTest : ShellTestCase() {
                     PointF(STARTING_BOUNDS.left.toFloat(), STARTING_BOUNDS.top.toFloat()),
                 stableBounds = Rect(STABLE_BOUNDS),
                 rotation = 0,
+                desktopRepository = mockDesktopRepository,
             )
     }
 
@@ -117,6 +124,26 @@ class VeiledTaskResizerTest : ShellTestCase() {
         verify(mockWindowDecoration).hideResizeVeil()
         Assert.assertFalse(dragSession.isResizingOrAnimatingResize)
         Assert.assertNull(wct)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT)
+    fun testResize_removesPreSnapOrPreMaximizeBounds() {
+        taskResizer.onResizeUpdate(dragSession, 150f, 110f)
+
+        verify(mockDesktopRepository).removeBoundsBeforeSnapOrMaximize(TASK_ID)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT)
+    fun testResize_noBoundsChange_doesNotRemovePreSnapOrPreMaximizeBounds() {
+        taskResizer.onResizeUpdate(
+            dragSession,
+            STARTING_BOUNDS.left.toFloat(),
+            STARTING_BOUNDS.top.toFloat(),
+        )
+
+        verify(mockDesktopRepository, never()).removeBoundsBeforeSnapOrMaximize(any())
     }
 
     companion object {

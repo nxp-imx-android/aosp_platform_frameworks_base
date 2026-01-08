@@ -23,11 +23,13 @@ import android.os.IBinder
 import android.os.Looper
 import android.view.SurfaceControl
 import android.view.WindowManager
+import android.window.DesktopExperienceFlags
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.DesktopTasksController
+import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_BOTTOM
 import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_LEFT
@@ -47,6 +49,7 @@ import com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_TOP
  * @param transitions The [Transitions] controller for handling window transitions.
  * @param handler The handler for the main shell thread.
  * @param desktopTasksController The controller for desktop mode windowing logic and transitions.
+ * @param desktopUserRepositories The repository for desktop mode per-user data.
  */
 class ResizeTaskPositioner(
     private val windowDecoration: WindowDecorationWrapper,
@@ -56,6 +59,7 @@ class ResizeTaskPositioner(
     private val transitions: Transitions,
     private val handler: Handler,
     private val desktopTasksController: DesktopTasksController,
+    private val desktopUserRepositories: DesktopUserRepositories,
 ) : TaskPositioner, Transitions.TransitionHandler {
     private var dragSession: DragSession? = null
     private val isResizing: Boolean
@@ -86,7 +90,16 @@ class ResizeTaskPositioner(
                     rotation = rotation,
                     hasFirstMoveEventConsumed = false, // Initialize to false for a new drag session
                 )
-                .also { dragSession = it }
+                .also {
+                    dragSession = it
+                    if (DesktopExperienceFlags.ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT.isTrue) {
+                        val profile =
+                            desktopUserRepositories.getProfile(windowDecoration.taskInfo.userId)
+                        it.desktopRepository = profile
+                        it.shouldRestoreBoundsOnMove =
+                            profile.hasBoundsBeforeSnapOrMaximize(windowDecoration.taskInfo)
+                    }
+                }
 
         displayController
             .getDisplayLayout(windowDecoration.taskInfo.displayId)
@@ -104,7 +117,10 @@ class ResizeTaskPositioner(
         if (isResizing) {
             taskResizer.onResizeUpdate(session, x, y)
         } else {
-            taskMover.onMoveUpdate(session, displayId, x, y)
+            taskMover.onMoveUpdate(session, displayId, x, y)?.let {
+                session.pendingBoundsRestoreTransition =
+                    transitions.startTransition(WindowManager.TRANSIT_CHANGE, it, this)
+            }
         }
 
         if (!session.hasFirstMoveEventConsumed) {
@@ -186,7 +202,9 @@ class ResizeTaskPositioner(
         startTransaction.apply()
 
         dragSession?.let {
-            if (it.dragResizeEndTransition == transition) {
+            if (it.pendingBoundsRestoreTransition == transition) {
+                it.pendingBoundsRestoreTransition = null
+            } else if (it.dragResizeEndTransition == transition) {
                 taskResizer.cleanup(it)
                 dragSession = null
             }
