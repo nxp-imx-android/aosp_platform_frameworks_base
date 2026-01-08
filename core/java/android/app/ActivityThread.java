@@ -444,6 +444,24 @@ public final class ActivityThread extends ClientTransactionHandler
     /** Maps from activity token to the pending override configuration. */
     @GuardedBy("mPendingOverrideConfigs")
     private final ArrayMap<IBinder, Configuration> mPendingOverrideConfigs = new ArrayMap<>();
+    /** Maps from activity token to the pending configuration changes. */
+    @GuardedBy("mPendingConfigChanges")
+    private final ArrayMap<IBinder, ConfigChange> mPendingConfigChanges = new ArrayMap<>();
+
+    private static class ConfigChange {
+        @NonNull
+        private final Configuration mConfiguration;
+        @NonNull
+        private final ActivityWindowInfo mActivityWindowInfo;
+        private final int mDisplayId;
+
+        private ConfigChange(Configuration configuration, ActivityWindowInfo activityWindowInfo,
+                int displayId) {
+            mConfiguration = configuration;
+            mActivityWindowInfo = activityWindowInfo;
+            mDisplayId = displayId;
+        }
+    }
 
     /**
      * A queue of pending ApplicationInfo updates. In case when we get a concurrent update
@@ -7384,6 +7402,9 @@ public final class ActivityThread extends ClientTransactionHandler
     @Override
     public void updatePendingActivityConfiguration(@NonNull IBinder token,
             @NonNull Configuration overrideConfig) {
+        if (com.android.window.flags.Flags.improveFluidResizingPerformance()) {
+            throw new UnsupportedOperationException();
+        }
         synchronized (mPendingOverrideConfigs) {
             final Configuration pendingOverrideConfig = mPendingOverrideConfigs.get(token);
             if (pendingOverrideConfig != null
@@ -7399,11 +7420,59 @@ public final class ActivityThread extends ClientTransactionHandler
         }
     }
 
+    /**
+     * Sets the supplied {@code overrideConfig} as pending for the {@code token}. Calling
+     * this method prevents any calls to
+     * {@link #handleActivityConfigurationChanged(ActivityClientRecord, Configuration, int,
+     * ActivityWindowInfo)} from processing any configurations older than {@code overrideConfig}.
+     */
+    @Override
+    public void updatePendingActivityConfiguration(@NonNull IBinder token,
+            @NonNull Configuration overrideConfig, @NonNull ActivityWindowInfo info,
+            int displayId) {
+        synchronized (mPendingConfigChanges) {
+            final ConfigChange pendingChange = mPendingConfigChanges.get(token);
+            if (pendingChange != null
+                    && !pendingChange.mConfiguration.isOtherSeqNewer(overrideConfig)) {
+                if (DEBUG_CONFIGURATION) {
+                    Slog.v(TAG,
+                            "Activity has newer configuration pending so this transaction will"
+                                    + " be dropped. overrideConfig=" + overrideConfig
+                                    + " pendingOverrideConfig=" + pendingChange.mConfiguration);
+                }
+                return;
+            }
+            mPendingConfigChanges.put(token, new ConfigChange(overrideConfig, info, displayId));
+        }
+    }
+
     @Override
     public void handleActivityConfigurationChanged(@NonNull ActivityClientRecord r,
             @NonNull Configuration overrideConfig, int displayId,
             @NonNull ActivityWindowInfo activityWindowInfo) {
+        if (com.android.window.flags.Flags.improveFluidResizingPerformance()) {
+            throw new UnsupportedOperationException();
+        }
         handleActivityConfigurationChanged(r, overrideConfig, displayId, activityWindowInfo,
+                // This is the only place that uses alwaysReportChange=true. The entry point should
+                // be from ActivityConfigurationChangeItem or MoveToDisplayItem, so the server side
+                // has confirmed the activity should handle the configuration instead of relaunch.
+                // If Activity#onConfigurationChanged is called unexpectedly, then we can know it is
+                // something wrong from server side.
+                true /* alwaysReportChange */);
+    }
+
+    @Override
+    public void handleActivityConfigurationChanged(@NonNull ActivityClientRecord r) {
+        final ConfigChange change;
+        synchronized (mPendingConfigChanges) {
+            change = mPendingConfigChanges.remove(r.token);
+        }
+        if (change == null) {
+            return;
+        }
+        handleActivityConfigurationChanged(
+                r, change.mConfiguration, change.mDisplayId, change.mActivityWindowInfo,
                 // This is the only place that uses alwaysReportChange=true. The entry point should
                 // be from ActivityConfigurationChangeItem or MoveToDisplayItem, so the server side
                 // has confirmed the activity should handle the configuration instead of relaunch.
@@ -7441,17 +7510,19 @@ public final class ActivityThread extends ClientTransactionHandler
     private void handleActivityConfigurationChangedInner(@NonNull ActivityClientRecord r,
             @NonNull Configuration overrideConfig, int displayId,
             @NonNull ActivityWindowInfo activityWindowInfo, boolean alwaysReportChange) {
-        synchronized (mPendingOverrideConfigs) {
-            final Configuration pendingOverrideConfig = mPendingOverrideConfigs.get(r.token);
-            if (overrideConfig.isOtherSeqNewer(pendingOverrideConfig)) {
-                if (DEBUG_CONFIGURATION) {
-                    Slog.v(TAG, "Activity has newer configuration pending so drop this"
-                            + " transaction. overrideConfig=" + overrideConfig
-                            + " pendingOverrideConfig=" + pendingOverrideConfig);
+        if (!com.android.window.flags.Flags.improveFluidResizingPerformance()) {
+            synchronized (mPendingOverrideConfigs) {
+                final Configuration pendingOverrideConfig = mPendingOverrideConfigs.get(r.token);
+                if (overrideConfig.isOtherSeqNewer(pendingOverrideConfig)) {
+                    if (DEBUG_CONFIGURATION) {
+                        Slog.v(TAG, "Activity has newer configuration pending so drop this"
+                                + " transaction. overrideConfig=" + overrideConfig
+                                + " pendingOverrideConfig=" + pendingOverrideConfig);
+                    }
+                    return;
                 }
-                return;
+                mPendingOverrideConfigs.remove(r.token);
             }
-            mPendingOverrideConfigs.remove(r.token);
         }
 
         if (displayId == INVALID_DISPLAY) {
