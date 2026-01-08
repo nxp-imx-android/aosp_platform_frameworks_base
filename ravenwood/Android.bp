@@ -636,6 +636,10 @@ android_ravenwood_libgroup {
             path: "fonts",
             srcs: [":ravenwood-fonts"],
         },
+        {
+            path: "hyph-data",
+            srcs: [":hyph-data"],
+        },
     ],
     subruntimes: [
         "ravenwood-runtime.ravenwood-core",

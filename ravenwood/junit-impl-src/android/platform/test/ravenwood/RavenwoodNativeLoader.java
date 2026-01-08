@@ -51,6 +51,7 @@ public final class RavenwoodNativeLoader {
             android.content.res.StringBlock.class,
             android.content.res.XmlBlock.class,
             android.text.AndroidCharacter.class,
+            android.text.Hyphenator.class,
             com.android.internal.util.VirtualRefBasePtr.class,
     };
 
