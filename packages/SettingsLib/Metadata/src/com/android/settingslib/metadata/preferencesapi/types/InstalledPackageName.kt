@@ -17,8 +17,14 @@
 package com.android.settingslib.metadata.preferencesapi.types
 
 import android.content.Context
+import androidx.annotation.StringRes
+import com.android.settingslib.metadata.R
 
 /** Any package installed on the device.
  * TODO(b/470198761) extend FiniteOptionsType
  */
-object InstalledPackageName: ApiType<String>
+object InstalledPackageName: ApiType<String> {
+
+    override fun getDescription(context: Context): String =
+        context.getString(R.string.installed_package_name_type_description)
+}

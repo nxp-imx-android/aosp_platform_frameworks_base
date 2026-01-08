@@ -16,4 +16,8 @@
 
 package com.android.settingslib.metadata.preferencesapi.types
 
-interface ApiType<V>
+import android.content.Context
+
+interface ApiType<V> {
+    fun getDescription(context: Context): String
+}
