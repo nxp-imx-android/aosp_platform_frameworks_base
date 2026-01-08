@@ -142,7 +142,7 @@ public class HeadsUpManagerImpl
 
     private boolean mReleaseOnExpandFinish;
     private boolean mIsShadeOrQsExpanded;
-    private boolean mIsQsExpanded;
+    private boolean mIsQsFullscreen;
     private int mStatusBarState;
     private AnimationStateHandler mAnimationStateHandler;
     private int mHeadsUpInset;
@@ -264,8 +264,8 @@ public class HeadsUpManagerImpl
         javaAdapter.alwaysCollectFlow(shadeInteractor.isAnyExpanded(),
                 this::onShadeOrQsExpanded);
         if (SceneContainerFlag.isEnabled()) {
-            javaAdapter.alwaysCollectFlow(shadeInteractor.isQsExpanded(),
-                    this::onQsExpanded);
+            javaAdapter.alwaysCollectFlow(shadeInteractor.isQsFullscreen(),
+                    this::onQsFullscreen);
         }
         if (NotificationThrottleHun.isEnabled()) {
             mVisualStabilityProvider.addPersistentReorderingBannedListener(
@@ -526,7 +526,9 @@ public class HeadsUpManagerImpl
         }
         boolean pin = mStatusBarState == StatusBarState.SHADE && !mIsShadeOrQsExpanded;
         if (SceneContainerFlag.isEnabled()) {
-            pin |= mIsQsExpanded;
+            // If Quick Settings is fullscreen (in other words, fully expanded in single "accordion"
+            // shade), then the HUN should always be pinned.
+            pin |= mIsQsFullscreen;
         }
         if (mBypassController.getBypassEnabled()) {
             pin |= mStatusBarState == StatusBarState.KEYGUARD;
@@ -913,9 +915,9 @@ public class HeadsUpManagerImpl
         }
     }
 
-    private void onQsExpanded(Boolean isQsExpanded) {
+    private void onQsFullscreen(Boolean isQsFullscreen) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
-        if (isQsExpanded != mIsQsExpanded) mIsQsExpanded = isQsExpanded;
+        if (isQsFullscreen != mIsQsFullscreen) mIsQsFullscreen = isQsFullscreen;
     }
 
     @Override
