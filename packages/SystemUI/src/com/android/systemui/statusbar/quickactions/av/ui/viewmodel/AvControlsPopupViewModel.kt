@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.quickactions.av.ui.viewmodel
 
+import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupViewModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
@@ -30,10 +31,10 @@ constructor(
     val sensorActivityViewModelFactory: SensorActivityViewModel.Factory,
     val blurDrillInViewModelFactory: BlurDrillInViewModel.Factory,
     val studioLookDrillInViewModelFactory: StudioLookDrillInViewModel.Factory,
-) {
+) : StatusBarPopupViewModel {
     /** A factory to be used to create view model instances. */
     @AssistedFactory
-    interface Factory {
-        fun create(): AvControlsPopupViewModel
+    interface Factory : StatusBarPopupViewModel.Factory.AvControls {
+        override fun create(): AvControlsPopupViewModel
     }
 }

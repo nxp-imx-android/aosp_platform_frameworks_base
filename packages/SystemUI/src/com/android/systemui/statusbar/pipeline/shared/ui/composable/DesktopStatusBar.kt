@@ -55,9 +55,6 @@ import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.compose.modifiers.sysUiResTagContainer
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
-import com.android.systemui.media.controls.ui.view.MediaHost
-import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.res.R
 import com.android.systemui.shade.ui.composable.ChipHighlightModel
 import com.android.systemui.shade.ui.composable.ShadeHighlightChip
@@ -72,7 +69,6 @@ import com.android.systemui.statusbar.phone.ui.TintedIconManager
 import com.android.systemui.statusbar.pipeline.battery.ui.composable.UnifiedBattery
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel
-import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.AvControlsPopupViewModel
 import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.quickactions.ui.compose.QuickActionChipsContainer
 import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
@@ -98,10 +94,6 @@ fun DesktopStatusBar(
     clockViewModelFactory: ClockViewModel.Factory,
     statusBarIconController: StatusBarIconController,
     iconManagerFactory: TintedIconManager.Factory,
-    mediaHierarchyManager: MediaHierarchyManager,
-    mediaViewModelFactory: MediaViewModel.Factory,
-    avControlsPopupViewModelFactory: AvControlsPopupViewModel.Factory,
-    mediaHost: MediaHost,
     iconViewStore: NotificationIconContainerViewBinder.IconViewStore?,
     modifier: Modifier = Modifier,
 ) {
@@ -164,15 +156,7 @@ fun DesktopStatusBar(
             }
 
             if (StatusBarPopupChips.isEnabled) {
-                QuickActionChipsContainer(
-                    chips = viewModel.popupChips,
-                    mediaViewModelFactory = mediaViewModelFactory,
-                    mediaHost = mediaHost,
-                    onMediaControlPopupVisibilityChanged = { popupShowing ->
-                        mediaHierarchyManager.isMediaControlPopupShowing = popupShowing
-                    },
-                    avControlsPopupViewModelFactory = avControlsPopupViewModelFactory,
-                )
+                QuickActionChipsContainer(chips = viewModel.popupChips)
             }
 
             NotificationsChip(viewModel = viewModel)

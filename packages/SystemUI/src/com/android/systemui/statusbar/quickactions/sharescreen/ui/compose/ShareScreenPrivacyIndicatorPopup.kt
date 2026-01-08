@@ -30,16 +30,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.sharescreen.ui.viewmodel.ShareScreenPrivacyIndicatorPopupViewModel
 
 @Composable
-fun ShareScreenPrivacyIndicatorPopup(
-    viewModelFactory: ShareScreenPrivacyIndicatorPopupViewModel.Factory
-) {
-    val viewModel =
-        rememberViewModel("ShareScreenPrivacyIndicatorPopupViewModel") { viewModelFactory.create() }
+fun ShareScreenPrivacyIndicatorPopup(viewModel: ShareScreenPrivacyIndicatorPopupViewModel) {
     Surface(
         shape = RoundedCornerShape(28.dp),
         color = MaterialTheme.colorScheme.surfaceBright,

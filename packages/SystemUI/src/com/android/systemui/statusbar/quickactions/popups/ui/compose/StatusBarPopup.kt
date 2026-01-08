@@ -37,28 +37,21 @@ import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.android.systemui.Flags
-import com.android.systemui.media.controls.ui.view.MediaHost
-import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.av.ui.compose.AvControlsChipPopup
 import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.AvControlsPopupViewModel
 import com.android.systemui.statusbar.quickactions.media.ui.compose.MediaControlPopup
+import com.android.systemui.statusbar.quickactions.media.ui.viewmodel.MediaControlPopupViewModel
+import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupViewModel
 import com.android.systemui.statusbar.quickactions.sharescreen.ui.compose.ShareScreenPrivacyIndicatorPopup
 import com.android.systemui.statusbar.quickactions.sharescreen.ui.viewmodel.ShareScreenPrivacyIndicatorPopupViewModel
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 
 /**
  * Displays a popup in the status bar area. The offset is calculated to draw the popup below the
  * status bar.
  */
 @Composable
-fun StatusBarPopup(
-    viewModel: QuickActionChipUiState.PopupChip,
-    mediaViewModelFactory: MediaViewModel.Factory,
-    mediaHost: MediaHost,
-    avControlsPopupViewModelFactory: AvControlsPopupViewModel.Factory,
-) {
+fun StatusBarPopup(popupViewModel: StatusBarPopupViewModel, onDismiss: () -> Unit) {
     val density = Density(LocalContext.current)
 
     Popup(
@@ -74,11 +67,11 @@ fun StatusBarPopup(
                 x = 0,
                 y = with(density) { dimensionResource(R.dimen.status_bar_height).roundToPx() },
             ),
-        onDismissRequest = { viewModel.hidePopup() },
+        onDismissRequest = onDismiss,
     ) {
         Box(modifier = Modifier.padding(8.dp).wrapContentSize()) {
-            when (viewModel.chipId) {
-                is QuickActionChipId.MediaControl -> {
+            when (popupViewModel) {
+                is MediaControlPopupViewModel -> {
                     val viewRootImpl = LocalView.current.viewRootImpl
                     val lifecycle = LocalLifecycleOwner.current.lifecycle
                     val owner =
@@ -91,35 +84,19 @@ fun StatusBarPopup(
                             override val lifecycle: Lifecycle = lifecycle
                         }
                     CompositionLocalProvider(LocalOnBackPressedDispatcherOwner provides owner) {
-                        MediaControlPopup(
-                            viewModelFactory = mediaViewModelFactory,
-                            mediaHost = mediaHost,
-                        )
+                        MediaControlPopup(viewModel = popupViewModel)
                     }
                 }
-
-                is QuickActionChipId.AvControlsIndicator -> {
+                is AvControlsPopupViewModel -> {
                     if (Flags.desktopAvControlsPopup()) {
-                        AvControlsChipPopup(avControlsPopupViewModelFactory)
+                        AvControlsChipPopup(viewModel = popupViewModel)
                     }
                 }
-
-                is QuickActionChipId.ShareScreenPrivacyIndicator -> {
-                    ShareScreenPrivacyIndicatorPopup(
-                        viewModelFactory =
-                            viewModel.popupViewModelFactory
-                                as ShareScreenPrivacyIndicatorPopupViewModel.Factory
-                    )
+                is ShareScreenPrivacyIndicatorPopupViewModel -> {
+                    ShareScreenPrivacyIndicatorPopup(viewModel = popupViewModel)
                 }
-                /**
-                 * Some chip ids (e.g. AssistantIcon, ImeIndicator) have custom
-                 * [QuickActionChipUiState.PopupChip.showPopup] and don't rely on this Composable.
-                 */
-                is QuickActionChipId.AssistantIcon -> {}
-
-                is QuickActionChipId.ImeIndicator -> {}
+                else -> {}
             }
-            // Future popup types will be handled here.
         }
     }
 }

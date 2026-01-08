@@ -26,25 +26,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
 import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
 import com.android.systemui.media.remedia.ui.viewmodel.MediaCarouselVisibility
-import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.quickactions.media.ui.viewmodel.MediaControlPopupViewModel
 
 /** Displays a popup containing media controls. Embeds the MediaCarousel within a Compose popup. */
 @Composable
-fun MediaControlPopup(
-    viewModelFactory: MediaViewModel.Factory,
-    mediaHost: MediaHost,
-    modifier: Modifier = Modifier,
-) {
+fun MediaControlPopup(viewModel: MediaControlPopupViewModel, modifier: Modifier = Modifier) {
     if (MediaControlsInComposeFlag.isEnabled) {
         Media(
-            viewModelFactory = viewModelFactory,
+            viewModelFactory = viewModel.mediaViewModelFactory,
             presentationStyle = MediaPresentationStyle.Default,
             behavior =
                 MediaUiBehavior(
@@ -78,14 +73,14 @@ fun MediaControlPopup(
                             )
                     ),
             factory = { _ ->
-                mediaHost.hostView.apply {
+                viewModel.mediaHost.hostView.apply {
                     layoutParams =
                         FrameLayout.LayoutParams(
                             FrameLayout.LayoutParams.MATCH_PARENT,
                             FrameLayout.LayoutParams.MATCH_PARENT,
                         )
                 }
-                mediaHost.hostView
+                viewModel.mediaHost.hostView
             },
             onReset = {},
         )
