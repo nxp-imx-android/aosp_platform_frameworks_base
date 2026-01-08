@@ -86,7 +86,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -94,7 +93,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
@@ -129,6 +127,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastCoerceIn
 import androidx.compose.ui.util.fastForEach
@@ -148,6 +147,7 @@ import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutS
 import com.android.compose.animation.scene.transitions
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
 import com.android.compose.gesture.overscrollToDismiss
+import com.android.compose.modifiers.height
 import com.android.compose.modifiers.thenIf
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.animation.Expandable
@@ -196,6 +196,7 @@ fun Media(
     visible: () -> Boolean = { true },
     mediaSquishiness: () -> Float = { 1f },
     location: Media.Location,
+    expansion: () -> Float = { 0F },
 ) {
     val context = LocalContext.current
     val viewModel: MediaViewModel =
@@ -217,6 +218,7 @@ fun Media(
         onDismissed = onDismissed,
         modifier = modifier,
         mediaSquishiness = mediaSquishiness,
+        expansion = expansion,
     )
 }
 
@@ -236,6 +238,7 @@ private fun CardCarousel(
     onDismissed: () -> Unit,
     modifier: Modifier = Modifier,
     mediaSquishiness: () -> Float,
+    expansion: () -> Float,
 ) {
     AnimatedVisibility(
         visible = viewModel.isCarouselVisible,
@@ -249,6 +252,7 @@ private fun CardCarousel(
             behavior = behavior,
             onDismissed = onDismissed,
             mediaSquishiness = mediaSquishiness,
+            expansion = expansion,
         )
     }
 }
@@ -261,6 +265,7 @@ private fun CardCarouselContent(
     onDismissed: () -> Unit,
     modifier: Modifier = Modifier,
     mediaSquishiness: () -> Float,
+    expansion: () -> Float,
 ) {
     val carouselState = rememberCarouselState {
         if (behavior.isCarouselScrollingEnabled) {
@@ -340,10 +345,12 @@ private fun CardCarouselContent(
                                 MediaPresentationStyle.Thumbnail
                             }
                         Card(
-                            viewModel = viewModel.cards[pageIndex],
+                            mediaViewModel = viewModel,
+                            cardIndex = pageIndex,
                             cardStyle = presentation,
                             carouselStyle = presentationStyle,
                             mediaSquishiness = mediaSquishiness,
+                            expansion = expansion,
                             modifier =
                                 Modifier.maskClip(roundedCornerShape)
                                     .fillMaxWidth()
@@ -392,12 +399,15 @@ private fun CardCarouselContent(
 /** Renders the UI of a single media card. */
 @Composable
 private fun Card(
-    viewModel: MediaCardViewModel,
+    mediaViewModel: MediaViewModel,
+    cardIndex: Int,
     cardStyle: MediaPresentationStyle,
     carouselStyle: MediaPresentationStyle,
     modifier: Modifier = Modifier,
     mediaSquishiness: () -> Float,
+    expansion: () -> Float,
 ) {
+    val viewModel = mediaViewModel.cards[cardIndex]
     val stlState =
         rememberMutableSceneTransitionLayoutState(
             initialScene = cardStyle.toScene(),
@@ -434,7 +444,8 @@ private fun Card(
                     scene(Media.Scenes.Default) {
                         CardForeground(
                             expandable = it,
-                            viewModel = viewModel,
+                            mediaViewModel = mediaViewModel,
+                            cardIndex = cardIndex,
                             colorScheme = colorScheme,
                             threeRows = true,
                             fillHeight = false,
@@ -444,7 +455,8 @@ private fun Card(
                     scene(Media.Scenes.Large) {
                         CardForeground(
                             expandable = it,
-                            viewModel = viewModel,
+                            mediaViewModel = mediaViewModel,
+                            cardIndex = cardIndex,
                             colorScheme = colorScheme,
                             threeRows = true,
                             fillHeight = true,
@@ -454,7 +466,8 @@ private fun Card(
                     scene(Media.Scenes.Compressed) {
                         CardForeground(
                             expandable = it,
-                            viewModel = viewModel,
+                            mediaViewModel = mediaViewModel,
+                            cardIndex = cardIndex,
                             colorScheme = colorScheme,
                             threeRows = false,
                             fillHeight = false,
@@ -467,19 +480,25 @@ private fun Card(
 
                     scene(Media.Scenes.Thumbnail) {
                         // Thumbnail is album art only, no foreground elements
-                        val carouselHeight =
-                            when (carouselStyle) {
-                                MediaPresentationStyle.Default -> 176.dp
-                                // Large is only used for communal, which isn't scrollable
-                                MediaPresentationStyle.Large -> Dp.Unspecified
-                                MediaPresentationStyle.Compressed -> 128.dp
-                                MediaPresentationStyle.Compact -> 80.dp
-                                else ->
-                                    throw IllegalArgumentException("Invalid carousel presentation")
-                            }
                         var thumbnailModifier =
-                            Modifier.clickable(onClick = { viewModel.onClick(it) })
-                                .height(carouselHeight)
+                            Modifier.clickable(onClick = { viewModel.onClick(it) }).height {
+                                when (carouselStyle) {
+                                    MediaPresentationStyle.Default -> Media.DEFAULT_HEIGHT
+                                    // Large is only used for communal, which isn't scrollable
+                                    MediaPresentationStyle.Large -> Dp.Unspecified
+                                    MediaPresentationStyle.Compressed ->
+                                        lerp(
+                                            Media.COMPRESSED_HEIGHT,
+                                            Media.DEFAULT_HEIGHT,
+                                            expansion(),
+                                        )
+                                    MediaPresentationStyle.Compact -> Media.COMPACT_HEIGHT
+                                    else ->
+                                        throw IllegalArgumentException(
+                                            "Invalid carousel presentation"
+                                        )
+                                }.roundToPx()
+                            }
                         if (carouselStyle == MediaPresentationStyle.Compact) {
                             thumbnailModifier =
                                 thumbnailModifier.then(
@@ -488,6 +507,22 @@ private fun Card(
                         }
                         Spacer(modifier = modifier.then(thumbnailModifier))
                     }
+                }
+            }
+        }
+
+        LaunchedEffect(cardStyle) {
+            launch {
+                if (
+                    cardStyle != MediaPresentationStyle.Thumbnail &&
+                        carouselStyle == MediaPresentationStyle.Compressed
+                ) {
+                    synchronizeMediaState(
+                        stlState,
+                        expansion,
+                        Media.Scenes.Compressed,
+                        Media.Scenes.Default,
+                    )
                 }
             }
         }
@@ -529,12 +564,14 @@ private fun rememberAnimatedColorScheme(colorScheme: MediaColorScheme?): Animate
 @Composable
 private fun ContentScope.CardForeground(
     expandable: Expandable,
-    viewModel: MediaCardViewModel,
+    mediaViewModel: MediaViewModel,
+    cardIndex: Int,
     colorScheme: AnimatedColorScheme,
     threeRows: Boolean,
     fillHeight: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    val viewModel = mediaViewModel.cards[cardIndex]
     // Can't use a Crossfade composable because of the custom layout logic below. Animate the alpha
     // of the guts (and, indirectly, of the content) from here.
     val gutsAlphaAnimatable = remember { Animatable(0f) }
@@ -548,7 +585,8 @@ private fun ContentScope.CardForeground(
         content = {
             CardForegroundContent(
                 expandable = expandable,
-                viewModel = viewModel,
+                mediaViewModel = mediaViewModel,
+                cardIndex = cardIndex,
                 threeRows = threeRows,
                 fillHeight = fillHeight,
                 colorScheme = colorScheme,
@@ -595,13 +633,14 @@ private fun ContentScope.CardForeground(
 @Composable
 private fun ContentScope.CardForegroundContent(
     expandable: Expandable,
-    viewModel: MediaCardViewModel,
+    mediaViewModel: MediaViewModel,
+    cardIndex: Int,
     threeRows: Boolean,
     fillHeight: Boolean,
     colorScheme: AnimatedColorScheme,
     modifier: Modifier = Modifier,
 ) {
-
+    val viewModel = mediaViewModel.cards[cardIndex]
     Column(
         modifier =
             modifier
@@ -626,24 +665,25 @@ private fun ContentScope.CardForegroundContent(
                 )
             }
 
-            var cardMaxWidth: Int by remember { mutableIntStateOf(0) }
             Element(
                 key = Media.Elements.OutputSwitcherButton,
                 modifier = Modifier.align(Alignment.TopEnd),
             ) {
+                val cardMaxWidth = mediaViewModel.cardMaxWidth
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier =
                         Modifier
-                            // Output switcher chip must be limited to at most 40% of the maximum
-                            // width of the card.
+                            // Output switcher chip must be limited to at most 40% of the
+                            // maximum width of the card.
                             //
                             // This saves the maximum possible width of the card so it can be
                             // referred to by child custom layout code below.
                             //
                             // The assumption is that the row can be as wide as the entire card.
                             .layout { measurable, constraints ->
-                                cardMaxWidth = constraints.maxWidth
+                                mediaViewModel.cardMaxWidth =
+                                    cardMaxWidth.coerceAtLeast(constraints.maxWidth)
                                 val placeable = measurable.measure(constraints)
 
                                 layout(placeable.measuredWidth, placeable.measuredHeight) {
@@ -684,11 +724,12 @@ private fun ContentScope.CardForegroundContent(
                             ),
                         modifier =
                             Modifier
-                                // The chip must be limited to 40% of the width of the card at most.
+                                // The chip must be limited to 40% of the width of the card at
+                                // most.
                                 //
-                                // The underlying assumption is that there'll never be more than one
-                                // chip with text and one more icon-only chip. Only the one with
-                                // text can ever end up being too wide.
+                                // The underlying assumption is that there'll never be more than
+                                // one chip with text and one more icon-only chip.
+                                // Only the one with text can ever end up being too wide.
                                 .fractionalMaxWidth(
                                     containerMaxWidth = cardMaxWidth,
                                     fraction = 0.4f,
@@ -1772,6 +1813,15 @@ object Media {
         from(Scenes.Default, to = Scenes.Compact) {}
         from(Scenes.Default, to = Scenes.Large) {}
         from(Scenes.Default, to = Scenes.Compressed) { fade(Elements.SeekBarSlider) }
+        from(Scenes.Compressed, to = Scenes.Default) {
+            fractionRange(start = 0.35f) {
+                fade(Elements.SeekBarSlider)
+                fade(Elements.PrevButton)
+                for (i in 0..5) {
+                    fade(Elements.additionalActionButton(i))
+                }
+            }
+        }
         from(Scenes.Compact, to = Scenes.Compressed) { fade(Elements.SeekBarSlider) }
         from(Scenes.Thumbnail, to = Scenes.Default) { fadeAll() }
         from(Scenes.Thumbnail, to = Scenes.Compact) { fadeAll() }
@@ -1821,6 +1871,9 @@ object Media {
 
     const val TAG = "Media"
     val DEBUG = Log.isLoggable(TAG, Log.DEBUG)
+    val DEFAULT_HEIGHT = 176.dp
+    val COMPRESSED_HEIGHT = 128.dp
+    val COMPACT_HEIGHT = 80.dp
 }
 
 private fun MediaPresentationStyle.toScene(): SceneKey {
