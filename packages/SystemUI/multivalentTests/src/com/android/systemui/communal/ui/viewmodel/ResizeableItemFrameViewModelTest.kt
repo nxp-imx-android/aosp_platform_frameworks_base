@@ -16,12 +16,16 @@
 
 package com.android.systemui.communal.ui.viewmodel
 
+import android.content.ComponentName
 import android.platform.test.annotations.EnableFlags
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.internal.logging.testing.UiEventLoggerFake
+import com.android.internal.logging.uiEventLoggerFake
 import com.android.systemui.Flags.FLAG_COMMUNAL_EDIT_MODE_ACCESSIBILITY_RESIZE
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.communal.ui.metrics.CommunalUiEvent
 import com.android.systemui.compose.runTestWithSnapshots
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
@@ -42,7 +46,9 @@ import org.junit.runner.RunWith
 class ResizeableItemFrameViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
-    private val underTest = kosmos.resizeableItemFrameViewModel
+
+    private lateinit var uiEventLogger: UiEventLoggerFake
+    private lateinit var underTest: ResizeableItemFrameViewModel
 
     /** Total viewport height of the entire grid */
     private val viewportHeightPx = 100
@@ -64,6 +70,8 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
+        uiEventLogger = kosmos.uiEventLoggerFake
+        underTest = ResizeableItemFrameViewModel(uiEventLogger, ComponentName("pkg", "cls"))
         underTest.activateIn(testScope)
     }
 
@@ -474,8 +482,7 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
             val twoRowGrid = singleSpanGrid.copy(totalSpans = 2, currentSpan = 1, currentRow = 1)
             updateGridLayout(twoRowGrid)
             assertThat(underTest.canExpand()).isTrue()
-            assertThat(underTest.topDragState.anchors.toList())
-                .containsAtLeast(0 to 0f, -1 to -45f)
+            assertThat(underTest.topDragState.anchors.toList()).containsAtLeast(0 to 0f, -1 to -45f)
         }
 
     @Test
@@ -639,6 +646,66 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
         underTest.clearAccessibilityResizeHandle()
         assertThat(underTest.visibleAccessibilityResizeHandle.value).isNull()
     }
+
+    @Test
+    @EnableFlags(FLAG_COMMUNAL_EDIT_MODE_ACCESSIBILITY_RESIZE)
+    fun toggleAccessibilityResizeHandle_logsShowAndHide() {
+        val componentName = ComponentName("pkg", "cls")
+
+        // Show
+        underTest.toggleAccessibilityResizeHandle(ResizeHandle.TOP)
+        assertThat(uiEventLogger.numLogs()).isEqualTo(1)
+        assertThat(uiEventLogger.eventId(0))
+            .isEqualTo(CommunalUiEvent.COMMUNAL_HUB_WIDGET_SHOW_ACCESSIBILITY_RESIZE_BUTTONS.id)
+        assertThat(uiEventLogger.logs[0].packageName).isEqualTo(componentName.packageName)
+
+        // Hide
+        underTest.toggleAccessibilityResizeHandle(ResizeHandle.TOP)
+        assertThat(uiEventLogger.numLogs()).isEqualTo(2)
+        assertThat(uiEventLogger.eventId(1))
+            .isEqualTo(CommunalUiEvent.COMMUNAL_HUB_WIDGET_HIDE_ACCESSIBILITY_RESIZE_BUTTONS.id)
+        assertThat(uiEventLogger.logs[1].packageName).isEqualTo(componentName.packageName)
+    }
+
+    @Test
+    @EnableFlags(FLAG_COMMUNAL_EDIT_MODE_ACCESSIBILITY_RESIZE)
+    fun clearAccessibilityResizeHandle_logsHide() {
+        val componentName = ComponentName("pkg", "cls")
+        underTest.toggleAccessibilityResizeHandle(ResizeHandle.BOTTOM) // make it visible
+
+        // The toggle above logs one event.
+        assertThat(uiEventLogger.numLogs()).isEqualTo(1)
+
+        underTest.clearAccessibilityResizeHandle()
+        assertThat(uiEventLogger.numLogs()).isEqualTo(2)
+        assertThat(uiEventLogger.eventId(1))
+            .isEqualTo(CommunalUiEvent.COMMUNAL_HUB_WIDGET_HIDE_ACCESSIBILITY_RESIZE_BUTTONS.id)
+        assertThat(uiEventLogger.logs[1].packageName).isEqualTo(componentName.packageName)
+    }
+
+    @Test
+    fun expand_logsExpandEvent() =
+        testScope.runTest {
+            val componentName = ComponentName("pkg", "cls")
+
+            underTest.expand(ResizeHandle.TOP)
+            assertThat(uiEventLogger.numLogs()).isEqualTo(1)
+            assertThat(uiEventLogger.eventId(0))
+                .isEqualTo(CommunalUiEvent.COMMUNAL_HUB_WIDGET_EXPAND_BY_ACCESSIBILITY_BUTTON.id)
+            assertThat(uiEventLogger.logs[0].packageName).isEqualTo(componentName.packageName)
+        }
+
+    @Test
+    fun shrink_logsShrinkEvent() =
+        testScope.runTest {
+            val componentName = ComponentName("pkg", "cls")
+
+            underTest.shrink(ResizeHandle.BOTTOM)
+            assertThat(uiEventLogger.numLogs()).isEqualTo(1)
+            assertThat(uiEventLogger.eventId(0))
+                .isEqualTo(CommunalUiEvent.COMMUNAL_HUB_WIDGET_SHRINK_BY_ACCESSIBILITY_BUTTON.id)
+            assertThat(uiEventLogger.logs[0].packageName).isEqualTo(componentName.packageName)
+        }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun TestScope.updateGridLayout(gridLayout: GridLayout) {

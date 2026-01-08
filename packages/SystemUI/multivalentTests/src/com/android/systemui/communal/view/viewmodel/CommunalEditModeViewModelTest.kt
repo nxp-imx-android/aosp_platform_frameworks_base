@@ -42,6 +42,7 @@ import com.android.systemui.communal.shared.log.CommunalMetricsLogger
 import com.android.systemui.communal.shared.log.CommunalUiEvent
 import com.android.systemui.communal.shared.model.EditModeState
 import com.android.systemui.communal.ui.viewmodel.CommunalEditModeViewModel
+import com.android.systemui.communal.ui.viewmodel.resizeableItemFrameViewModelFactory
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
@@ -105,6 +106,7 @@ class CommunalEditModeViewModelTest : SysuiTestCase() {
                 kosmos.mediaCarouselController,
                 kosmos.mediaViewModelFactory,
                 { kosmos.mediaCarouselInteractor },
+                kosmos.resizeableItemFrameViewModelFactory,
             )
         }
 

@@ -719,11 +719,11 @@ private fun ResizableItemFrameWrapper(
     maxHeightPx: Int,
     modifier: Modifier = Modifier,
     alpha: () -> Float = { 1f },
-    viewModel: ResizeableItemFrameViewModel,
+    viewModel: ResizeableItemFrameViewModel?,
     onResize: (info: ResizeInfo) -> Unit = {},
     content: @Composable (modifier: Modifier) -> Unit,
 ) {
-    if (!communalWidgetResizing()) {
+    if (!communalWidgetResizing() || viewModel == null) {
         content(modifier)
     } else {
         ResizableItemFrame(
@@ -1011,12 +1011,25 @@ private fun BoxScope.CommunalHubLazyGrid(
                     false
                 }
 
+            // Resizing is only supported for widgets in edit mode.
             val resizeableItemFrameViewModel =
-                rememberViewModel(
-                    key = if (communalEditModeAccessibilityResize()) item.key else currentItemSpan,
-                    traceName = "ResizeableItemFrame.viewModel.$index",
+                if (
+                    viewModel is CommunalEditModeViewModel && communalEditModeAccessibilityResize()
                 ) {
-                    ResizeableItemFrameViewModel()
+                    rememberViewModel(
+                        key =
+                            if (communalEditModeAccessibilityResize()) item.key
+                            else currentItemSpan,
+                        traceName = "ResizeableItemFrame.viewModel.$index",
+                    ) {
+                        val componentName =
+                            (item as? CommunalContentModel.WidgetContent.Widget)?.componentName
+                        viewModel.resizeableItemFrameViewModelFactory.create(
+                            if (communalEditModeAccessibilityResize()) componentName else null
+                        )
+                    }
+                } else {
+                    null
                 }
             val itemAlpha =
                 if (communalResponsiveGrid()) {
@@ -1396,7 +1409,7 @@ private fun CommunalContent(
     contentListState: ContentListState,
     interactionHandler: RemoteViews.InteractionHandler?,
     widgetSection: CommunalAppWidgetSection,
-    resizeableItemFrameViewModel: ResizeableItemFrameViewModel,
+    resizeableItemFrameViewModel: ResizeableItemFrameViewModel?,
     contentScope: ContentScope? = null,
     isVisible: Boolean,
 ) {
@@ -1546,7 +1559,7 @@ private fun WidgetContent(
     index: Int,
     contentListState: ContentListState,
     widgetSection: CommunalAppWidgetSection,
-    resizeableItemFrameViewModel: ResizeableItemFrameViewModel,
+    resizeableItemFrameViewModel: ResizeableItemFrameViewModel?,
     isVisible: Boolean,
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -1634,7 +1647,10 @@ private fun WidgetContent(
                             }
                         val actions = mutableListOf(deleteAction)
 
-                        if (communalWidgetResizing() && resizeableItemFrameViewModel.canShrink()) {
+                        if (
+                            communalWidgetResizing() &&
+                                resizeableItemFrameViewModel?.canShrink() == true
+                        ) {
                             actions.add(
                                 CustomAccessibilityAction(shrinkWidgetLabel) {
                                     coroutineScope.launch {
@@ -1645,7 +1661,10 @@ private fun WidgetContent(
                             )
                         }
 
-                        if (communalWidgetResizing() && resizeableItemFrameViewModel.canExpand()) {
+                        if (
+                            communalWidgetResizing() &&
+                                resizeableItemFrameViewModel?.canExpand() == true
+                        ) {
                             actions.add(
                                 CustomAccessibilityAction(expandWidgetLabel) {
                                     coroutineScope.launch {
