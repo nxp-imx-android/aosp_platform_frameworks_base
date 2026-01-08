@@ -23,6 +23,8 @@ import android.hardware.flags.Flags;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Provides Lut properties of the device.
@@ -82,6 +84,22 @@ public final class LutProperties {
     @FlaggedApi(Flags.FLAG_LUTS_API)
     public @Dimension int getDimension() {
         return mDimension;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof LutProperties)) {
+            return false;
+        }
+        LutProperties that = (LutProperties) obj;
+        return mDimension == that.mDimension
+               && mSize == that.mSize
+               && Arrays.equals(mSamplingKeys, that.mSamplingKeys);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mDimension, mSize, Arrays.hashCode(mSamplingKeys));
     }
 
     /**
