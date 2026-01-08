@@ -49,7 +49,7 @@ data class GeneratedValue<T>(
 class GeneratedType<T : Any> private constructor(
     @field:StringRes val descriptionRes: Int?,
     val description: String?,
-    val lambda: GeneratedTypeContext.() -> Collection<GeneratedValue<T>>
+    private val lambda: GeneratedTypeContext.() -> Collection<GeneratedValue<T>>
 ) : FiniteOptionsType<T> {
     init {
         require(descriptionRes != null || description != null)

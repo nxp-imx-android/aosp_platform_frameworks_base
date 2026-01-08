@@ -17,14 +17,28 @@
 package com.android.settingslib.metadata.preferencesapi.types
 
 import android.content.Context
-import androidx.annotation.StringRes
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager.PackageInfoFlags
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.android.settingslib.metadata.R
 
 /** Any package installed on the device.
- * TODO(b/470198761) extend FiniteOptionsType
+ * @param flags - The flags used to query the underlying `getInstalledPackages` method from the
+ * package manager, when retrieving all the options.
  */
-object InstalledPackageName: ApiType<String> {
+class InstalledPackageName(
+    private val flags : PackageInfoFlags,
+): FiniteOptionsType<String> {
 
     override fun getDescription(context: Context): String =
         context.getString(R.string.installed_package_name_type_description)
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    override fun getOptions(context: Context): List<Pair<String, String>> =
+         context.packageManager.getInstalledPackages(flags)
+            .map { packageInfo: PackageInfo ->
+                packageInfo.packageName to (packageInfo.applicationInfo?.name
+                    ?: packageInfo.packageName)
+            }
 }

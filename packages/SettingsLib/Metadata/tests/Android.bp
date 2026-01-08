@@ -26,6 +26,7 @@ android_robolectric_test {
         "flag-junit",
         "kotlinx_coroutines_test",
         "mockito-robolectric-prebuilt", // mockito deps order matters!
+        "Robolectric_all-target",
         "mockito-kotlin2",
         "truth",
         "kotlin-test",
