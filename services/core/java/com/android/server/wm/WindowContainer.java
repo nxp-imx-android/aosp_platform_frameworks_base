@@ -1054,7 +1054,10 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         if (mParent != null) {
             mParent.onDescendantOverrideConfigurationChanged();
         }
+        dispatchBoundsChangeCallbacksIfNeeded(diff);
+    }
 
+    void dispatchBoundsChangeCallbacksIfNeeded(int diff) {
         if (diff == BOUNDS_CHANGE_NONE) {
             return;
         }

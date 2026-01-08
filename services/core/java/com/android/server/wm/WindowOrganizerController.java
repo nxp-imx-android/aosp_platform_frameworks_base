@@ -840,8 +840,14 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 // need it called right now. Additionally, some logic requires everything in the
                 // configuration to change at the same time (ie. surface-freezer requires bounds
                 // and mode to change at the same time).
+                final int boundsChange = container.diffRequestedOverrideBounds(
+                        change.getConfiguration().windowConfiguration.getBounds());
                 final Configuration c = container.getRequestedOverrideConfiguration();
                 c.setTo(change.getConfiguration(), configMask, windowMask);
+                // TODO: b/474212387 - Remove this workaround.
+                // Because we directly apply the bounds above, we here manually calls bounds change
+                // callbacks which are usually triggered by onRequestedOverrideConfigurationChanged.
+                container.dispatchBoundsChangeCallbacksIfNeeded(boundsChange);
             } else {
                 final Configuration c =
                         new Configuration(container.getRequestedOverrideConfiguration());
