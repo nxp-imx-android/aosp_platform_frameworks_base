@@ -394,6 +394,59 @@ class LockscreenSceneTransitionInteractorTest : SysuiTestCase() {
             )
         }
 
+    @Test
+    fun emitTransitionWithIrrelevantFieldsChanged_doesNotAffectKtf() =
+        testScope.runTest {
+            underTest.setNextLockscreenTargetState(KeyguardState.AOD)
+            sceneTransitions.value = goneToLs
+
+            val currentStep by collectLastValue(kosmos.realKeyguardTransitionRepository.transitions)
+            assertTransition(
+                step = currentStep!!,
+                from = KeyguardState.UNDEFINED,
+                to = KeyguardState.AOD,
+                state = TransitionState.RUNNING,
+                progress = 0f,
+            )
+
+            sceneTransitions.value =
+                ObservableTransitionState.Transition(
+                    Scenes.Shade,
+                    Scenes.Lockscreen,
+                    flowOf(Scenes.Lockscreen),
+                    progress,
+                    false,
+                    flowOf(false),
+                )
+
+            assertTransition(
+                step = currentStep!!,
+                from = KeyguardState.UNDEFINED,
+                to = KeyguardState.LOCKSCREEN,
+                state = TransitionState.RUNNING,
+                progress = 0f,
+            )
+
+            sceneTransitions.value =
+                ObservableTransitionState.Transition(
+                    Scenes.Shade,
+                    Scenes.Lockscreen,
+                    flowOf(Scenes.Lockscreen),
+                    progress,
+                    false,
+                    isUserInputOngoing = flowOf(true), // Change only this flow
+                )
+
+            // Should have no effect.
+            assertTransition(
+                step = currentStep!!,
+                from = KeyguardState.UNDEFINED,
+                to = KeyguardState.LOCKSCREEN,
+                state = TransitionState.RUNNING,
+                progress = 0f,
+            )
+        }
+
     /**
      * STL: Gone -> Ls, then settle with Idle(Gone). KTF in this scenario needs to invert the
      * transition UNDEFINED -> LS to LS -> UNDEFINED as there is no mechanism in KTF to
