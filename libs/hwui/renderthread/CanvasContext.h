@@ -154,7 +154,15 @@ public:
     bool pauseSurface();
     void setStopped(bool stopped);
     bool isStopped() { return mStopped || !hasOutputTarget(); }
-    bool hasOutputTarget() const { return mNativeSurface.get() || mHardwareBuffer; }
+    bool hasOutputTarget() const {
+        if (mNativeSurface.get() || mHardwareBuffer) return true;
+#ifdef __ANDROID__
+        if (mSurfaceControl != nullptr) {
+            return true;
+        }
+#endif
+        return false;
+    }
     void allocateBuffers();
 
     void setLightAlpha(uint8_t ambientShadowAlpha, uint8_t spotShadowAlpha);

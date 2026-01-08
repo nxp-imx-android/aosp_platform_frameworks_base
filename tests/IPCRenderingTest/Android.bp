@@ -32,4 +32,10 @@ android_test {
     ],
     platform_apis: true,
     certificate: "platform",
+    static_libs: [
+        "androidx.test.rules",
+        "androidx.test.runner",
+        "junit",
+    ],
+    test_suites: ["device-tests"],
 }
