@@ -3630,11 +3630,12 @@ public class WindowManagerService extends IWindowManager.Stub
         moveDisplayToTopIfAllowed(displayId, true /* waitForAnimations */);
     }
 
-    void moveDisplayToTopIfAllowed(int displayId, boolean waitForAnimations) {
+    boolean moveDisplayToTopIfAllowed(int displayId, boolean waitForAnimations) {
         final boolean moved = moveDisplayToTopInternal(displayId);
         if (moved) {
             syncInputTransactions(waitForAnimations);
         }
+        return moved;
     }
 
     /**
