@@ -17,9 +17,6 @@
 package android.view.autofill;
 
 import static android.service.autofill.Flags.FLAG_STRING_REBUILD_API;
-import static android.view.autofill.AutofillNoiseInjectedData.RETAIN_BIT_0;
-import static android.view.autofill.AutofillNoiseInjectedData.RETAIN_BIT_3;
-import static android.view.autofill.AutofillNoiseInjectedData.RETAIN_BIT_4;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -41,7 +38,7 @@ public class AutofillNoiseInjectedDataTest {
     public final SetFlagsRule mSetFlagsRule =
             new SetFlagsRule(SetFlagsRule.DefaultInitValueType.DEVICE_DEFAULT);
 
-    private final int mTestBitMask = RETAIN_BIT_0 | RETAIN_BIT_3 | RETAIN_BIT_4;
+    private final byte mTestBitMask = (byte) ((1 << 0) | (1 << 3) | (1 << 4));
 
     private AutofillNoiseInjectedData writeToParcelAndRecycle(AutofillNoiseInjectedData value) {
         Parcel parcel = Parcel.obtain();

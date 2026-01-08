@@ -39,7 +39,7 @@ public final class AutofillNoiseInjector {
 
     private final String mMasterSeed;
     private final ComponentName mActivityComponent;
-    private final int mRetainedBitMask;
+    private final byte mRetainedBitMask;
 
     /**
      * Constructs a new AutofillNoiseInjector.
@@ -84,7 +84,7 @@ public final class AutofillNoiseInjector {
                 }
             }
         }
-        mRetainedBitMask = retainedBitMask;
+        mRetainedBitMask = (byte) retainedBitMask;
     }
 
     // Helper hash function for a single string
@@ -131,7 +131,7 @@ public final class AutofillNoiseInjector {
             return null;
         }
         String originalText = textChars.toString();
-        byte[] originalBytes = originalText.getBytes(StandardCharsets.UTF_16BE);
+        byte[] originalBytes = originalText.getBytes(StandardCharsets.UTF_8);
 
         // Adjust the payload to fixed length
         byte[] adjustedBytes = new byte[FIXED_LENGTH_BYTES];

@@ -57947,17 +57947,9 @@ package android.view.autofill {
   @FlaggedApi("android.service.autofill.string_rebuild_api") public final class AutofillNoiseInjectedData implements android.os.Parcelable {
     method public int describeContents();
     method @FlaggedApi("android.service.autofill.string_rebuild_api") @NonNull public byte[] getNoiseInjectedPayload();
-    method @FlaggedApi("android.service.autofill.string_rebuild_api") public int getRetainedBitMask();
+    method @FlaggedApi("android.service.autofill.string_rebuild_api") public byte getRetainedBitMask();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.view.autofill.AutofillNoiseInjectedData> CREATOR;
-    field public static final int RETAIN_BIT_0 = 1; // 0x1
-    field public static final int RETAIN_BIT_1 = 2; // 0x2
-    field public static final int RETAIN_BIT_2 = 4; // 0x4
-    field public static final int RETAIN_BIT_3 = 8; // 0x8
-    field public static final int RETAIN_BIT_4 = 16; // 0x10
-    field public static final int RETAIN_BIT_5 = 32; // 0x20
-    field public static final int RETAIN_BIT_6 = 64; // 0x40
-    field public static final int RETAIN_BIT_7 = 128; // 0x80
   }
 
   public final class AutofillValue implements android.os.Parcelable {
