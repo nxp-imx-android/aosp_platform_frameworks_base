@@ -31,6 +31,7 @@ import android.view.SurfaceControl
 import android.view.SurfaceView
 import android.view.SurfaceHolder
 import androidx.appcompat.app.AppCompatActivity
+import android.widget.TextView
 import android.widget.RadioGroup
 import android.util.Log
 import com.android.test.silkfx.R
@@ -45,6 +46,7 @@ import java.io.ByteArrayOutputStream
 class LutTestActivity : AppCompatActivity() {
 
     private lateinit var surfaceView: SurfaceView
+    private lateinit var propertiesTextView: TextView
     private var surfaceControl: SurfaceControl? = null
     private var currentBitmap: Bitmap? = null
     private var renderNode = RenderNode("LutRenderNode")
@@ -58,14 +60,25 @@ class LutTestActivity : AppCompatActivity() {
         }
     }
 
-
-
     /** Called when the activity is first created. */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.lut_test)
 
         surfaceView = findViewById(R.id.surfaceView)
+        propertiesTextView = findViewById(R.id.lut_properties_text)
+
+        val overlayProperties = display.overlaySupport
+        val lutProperties = overlayProperties.lutProperties
+        val sb = StringBuilder("Supported LUTs:\n")
+        if (lutProperties != null) {
+            for (prop in lutProperties) {
+                sb.append(prop.toString()).append("\n")
+            }
+        } else {
+            sb.append("None")
+        }
+        propertiesTextView.text = sb.toString()
 
         surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
             override fun surfaceCreated(holder: SurfaceHolder) {
@@ -371,6 +384,8 @@ class LutTestActivity : AppCompatActivity() {
         if (applyAgtm) {
             val agtmBlob = createAgtmBlob(log2(bitmap.gainmap!!.displayRatioForFullHdr))
             buffer.setSmpte2094_50(agtmBlob, 0, agtmBlob.size)
+        } else {
+            buffer.clearSmpte2094_50()
         }
 
         val renderer = HardwareBufferRenderer(buffer)
