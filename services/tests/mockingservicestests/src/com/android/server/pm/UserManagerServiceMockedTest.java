@@ -26,7 +26,6 @@ import static android.content.pm.UserInfo.flagsToString;
 import static android.multiuser.Flags.FLAG_BLOCK_PRIVATE_SPACE_CREATION;
 import static android.multiuser.Flags.FLAG_CREATE_INITIAL_USER;
 import static android.multiuser.Flags.FLAG_DEMOTE_MAIN_USER;
-import static android.multiuser.Flags.FLAG_DISALLOW_REMOVING_LAST_ADMIN_USER;
 import static android.multiuser.Flags.FLAG_HSU_NOT_ADMIN;
 import static android.multiuser.Flags.FLAG_LOGOUT_USER_API;
 import static android.multiuser.Flags.FLAG_UNICORN_MODE_REFACTORING_FOR_HSUM_READ_ONLY;
@@ -1833,7 +1832,6 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @EnableFlags(FLAG_DISALLOW_REMOVING_LAST_ADMIN_USER)
     public void testIsLastFullAdminNonRemovable_deviceUnmanaged_returnsTrue() {
         setSystemUserHeadless(true);
         mockDisallowRemovingLastAdminUser(true);
@@ -1845,7 +1843,6 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @EnableFlags(FLAG_DISALLOW_REMOVING_LAST_ADMIN_USER)
     public void testIsLastFullAdminNonRemovable_deviceManaged_returnsFalse() {
         setSystemUserHeadless(true);
         mockDisallowRemovingLastAdminUser(true);
@@ -1857,7 +1854,6 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @EnableFlags(FLAG_DISALLOW_REMOVING_LAST_ADMIN_USER)
     public void testIsLastFullAdminNonRemovable_dpmiNull_returnsTrue() {
         setSystemUserHeadless(true);
         mockDisallowRemovingLastAdminUser(true);
@@ -1997,7 +1993,6 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_DISALLOW_REMOVING_LAST_ADMIN_USER)
     public void testRevokeUserAdminFailsForLastFullAdmin() {
         mockDisallowRemovingLastAdminUser(true);
         // Mark system user as headless so that it is not a full admin user.
@@ -2099,7 +2094,6 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @EnableFlags(FLAG_DISALLOW_REMOVING_LAST_ADMIN_USER)
     public void testGetUserRemovabilityLocked_lastAdmin_flagEnabled() {
         assumeDoesntHaveMainUser();
 
@@ -2109,22 +2103,6 @@ public final class UserManagerServiceMockedTest {
         mockDisallowRemovingLastAdminUser(true);
         expectGetUserRemovability("last admin when config is true",
                 adminUser.id, REMOVE_RESULT_ERROR_LAST_ADMIN_USER);
-
-        mockDisallowRemovingLastAdminUser(false);
-        expectGetUserRemovability("last admin when config is false",
-                adminUser.id, REMOVE_RESULT_USER_IS_REMOVABLE);
-    }
-
-    @Test
-    @DisableFlags(FLAG_DISALLOW_REMOVING_LAST_ADMIN_USER)
-    public void testGetUserRemovabilityLocked_lastAdmin_flagDisabled() {
-        assumeDoesntHaveMainUser();
-
-        var adminUser = addUser(new UserInfo(USER_ID, A_USER_HAS_NO_NAME, FLAG_FULL | FLAG_ADMIN));
-
-        mockDisallowRemovingLastAdminUser(true);
-        expectGetUserRemovability("last admin when config is true",
-                adminUser.id, REMOVE_RESULT_USER_IS_REMOVABLE);
 
         mockDisallowRemovingLastAdminUser(false);
         expectGetUserRemovability("last admin when config is false",
