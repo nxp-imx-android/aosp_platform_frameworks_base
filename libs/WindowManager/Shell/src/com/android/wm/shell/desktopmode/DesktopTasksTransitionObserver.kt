@@ -310,9 +310,25 @@ class DesktopTasksTransitionObserver(
                             bottom =
                                 (bounds.bottom - stableBounds.top) / stableBounds.height().toFloat()
                         }
+                    logV(
+                        "Remembered bounds for package=%s is updated as task#%d was resized to " +
+                            "%s: boundsRatio=%s",
+                        packageName,
+                        taskInfo.taskId,
+                        bounds,
+                        boundsRatio,
+                    )
                     desktopRepository.setRememberedBoundsRatio(packageName, boundsRatio)
                 }
             }
         }
+    }
+
+    private fun logV(msg: String, vararg arguments: Any?) {
+        ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    private companion object {
+        const val TAG = "DesktopTasksTransitionObserver"
     }
 }
