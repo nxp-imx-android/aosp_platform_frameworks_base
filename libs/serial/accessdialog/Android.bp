@@ -23,4 +23,5 @@ android_library {
     manifest: "AndroidManifest.xml",
     srcs: ["src/**/*.kt"],
     resource_dirs: ["res"],
+    static_libs: ["SystemUI-res"],
 }
