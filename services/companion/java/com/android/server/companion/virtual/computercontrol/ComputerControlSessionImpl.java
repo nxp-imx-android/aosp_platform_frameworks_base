@@ -376,6 +376,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     mVirtualDisplay.getDisplay().getDisplayId(), true);
             mVirtualDisplayId = mVirtualDisplay.getDisplay().getDisplayId();
             mWindowManagerInternal.disableSystemPerformanceHinter(mVirtualDisplayId);
+            mWindowManagerInternal.enableClientRenderingLimitationsOnDisplay(
+                    mVirtualDisplayId, /* enable = */true);
 
             mVirtualDevice.setDisplayImePolicy(
                     mVirtualDisplayId, WindowManager.DISPLAY_IME_POLICY_HIDE);
@@ -609,6 +611,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 mInputManagerInternal.setForceShowTouchesOnDisplay(mVirtualDisplayId,
                         true /* enabled */);
                 // Automation is happening in the foreground, so enable rendering.
+                mWindowManagerInternal.enableClientRenderingLimitationsOnDisplay(
+                        mVirtualDisplayId, /* enable = */false);
                 mWindowManagerInternal.requestHardwareRendererOutputEnabled(mVirtualDisplayId,
                         0 /* timeoutMs */, (success) -> {
                         }, mScheduler);
@@ -670,6 +674,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                         false /* enabled */);
                 // Disable rendering during background automation, where windows will only draw
                 // when the client requests a screenshot.
+                mWindowManagerInternal.enableClientRenderingLimitationsOnDisplay(
+                        mVirtualDisplayId, /* enable = */true);
                 synchronized (mWindowDrawLock) {
                     if (!mIsWaitingForWindowDraw) {
                         mWindowManagerInternal.requestHardwareRendererOutputDisabled(

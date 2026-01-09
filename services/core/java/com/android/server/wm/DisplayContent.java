@@ -300,6 +300,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     static final float INVALID_DPI = 0.0f;
 
+    /** Override frame rate to use for the display when client rendering limitations are enabled. */
+    private static final float CLIENT_RENDERING_LIMITATION_FRAME_RATE_OVERRIDE = 10;
+
     private final boolean mVisibleBackgroundUserEnabled =
             UserManager.isVisibleBackgroundUsersEnabled();
 
@@ -857,6 +860,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     /** Whether SystemPerformanceHinter is disabled for the display. */
     private boolean mIsSystemPerformanceHinterDisabled = false;
+
+    /** Whether client rendering limitations are enabled for this display. **/
+    private boolean mAreClientRenderingLimitationsEnabled = false;
 
     private final Consumer<WindowState> mUpdateWindowsForAnimator = w -> {
         WindowStateAnimator winAnimator = w.mWinAnimator;
@@ -1526,6 +1532,41 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
     }
 
+    void enableClientRenderingLimitations(boolean enable) {
+        if (mAreClientRenderingLimitationsEnabled == enable) {
+            return;
+        }
+
+        mAreClientRenderingLimitationsEnabled = enable;
+
+        final var transaction = mWmService.mTransactionFactory.get();
+        if (enable) {
+            enableClientRenderingLimitations(transaction);
+        } else if (mSurfaceControl != null) {
+            // Remove the frame rate override.
+            transaction
+                    .clearFrameRate(mSurfaceControl)
+                    .setFrameRateSelectionStrategy(mSurfaceControl,
+                            SurfaceControl.FRAME_RATE_SELECTION_STRATEGY_PROPAGATE);
+        }
+        transaction.apply();
+    }
+
+    boolean areClientRenderingLimitationsEnabled() {
+        return mAreClientRenderingLimitationsEnabled;
+    }
+
+    private void enableClientRenderingLimitations(Transaction transaction) {
+        if (mSurfaceControl == null) {
+            return;
+        }
+        transaction
+                .setFrameRate(mSurfaceControl, CLIENT_RENDERING_LIMITATION_FRAME_RATE_OVERRIDE,
+                        Surface.FRAME_RATE_COMPATIBILITY_DEFAULT)
+                .setFrameRateSelectionStrategy(mSurfaceControl,
+                        SurfaceControl.FRAME_RATE_SELECTION_STRATEGY_OVERRIDE_CHILDREN);
+    }
+
     /**
      * @return the window animation scale for this {@link DisplayContent}.
      */
@@ -1595,6 +1636,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         for (int i = 0; i < mDisplayMirrors.size(); i++) {
             mDisplayMirrors.get(i).recreateMirror(mSurfaceControl, transaction);
+        }
+
+        if (mAreClientRenderingLimitationsEnabled) {
+            enableClientRenderingLimitations(transaction);
         }
 
         transaction
