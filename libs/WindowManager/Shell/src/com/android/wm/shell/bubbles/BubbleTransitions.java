@@ -604,9 +604,10 @@ public class BubbleTransitions {
             // inflation (the task view will be in the right bounds)
             mTaskViewTransitions.removePendingTransitions(tv.getController());
             mTaskViewTransitions.enqueueRunningExternal(tv.getController(), mTransition);
-            // TODO(b/456051408): this should not be needed after we support switch in root task
             if (BubbleAnythingFlagHelper.enableRootTaskForBubble()
                     && mBubble.getTaskView().isSurfaceCreated()) {
+                // In case the Bubble surface has already been created, trigger the surfaceCreated
+                // immediately
                 surfaceCreated();
             }
         }
