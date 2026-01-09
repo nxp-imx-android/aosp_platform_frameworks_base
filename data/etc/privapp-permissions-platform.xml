@@ -701,6 +701,8 @@ applications that come with the platform
         <permission name="android.permission.DRAW_MOTION_CUES" />
         <!-- Permission required for CTS test - CtsNetTestCases -->
         <permission name="android.permission.CREATE_APP_SPECIFIC_NETWORK" />
+        <!-- Permission required for CTS test - CtsTelephonyTestCases -->
+        <permission name="android.permission.BIND_MESSAGE_PROMOTION_SERVICE"/>
     </privapp-permissions>
 
     <privapp-permissions package="com.android.soundpicker">
