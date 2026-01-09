@@ -279,7 +279,7 @@ constructor(
         if (SceneContainerFlag.isEnabled) {
             sceneInteractor
                 .get()
-                .transitionState
+                .transitionStateFlow
                 .filter {
                     it.isTransitioning(from = Scenes.Lockscreen, to = Scenes.Shade) ||
                         it.isTransitioning(
@@ -295,7 +295,7 @@ constructor(
 
     private val isBouncerVisible: Flow<Boolean> by lazy {
         if (SceneContainerFlag.isEnabled) {
-            sceneInteractor.get().transitionState.map {
+            sceneInteractor.get().transitionStateFlow.map {
                 it.isTransitioning(to = Overlays.Bouncer) || it.isIdle(Overlays.Bouncer)
             }
         } else {

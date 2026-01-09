@@ -65,7 +65,7 @@ class FakeCommunalSceneRepository(
     private val defaultTransitionState =
         ObservableTransitionState.Idle(currentScene.value, currentOverlays.value)
     private val _transitionState = MutableStateFlow<Flow<ObservableTransitionState>?>(null)
-    override val transitionState: StateFlow<ObservableTransitionState> =
+    override val transitionStateFlow: StateFlow<ObservableTransitionState> =
         _transitionState
             .flatMapLatest { innerFlowOrNull -> innerFlowOrNull ?: flowOf(defaultTransitionState) }
             .stateIn(

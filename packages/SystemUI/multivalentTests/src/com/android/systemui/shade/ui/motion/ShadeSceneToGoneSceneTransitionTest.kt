@@ -149,7 +149,7 @@ class ShadeSceneToGoneSceneTransitionTest : SysuiTestCase() {
                             MotionControl(
                                 delayRecording = {
                                     awaitCondition {
-                                        kosmos.sceneInteractor.transitionState.value.isIdle()
+                                        kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
                                     }
                                 }
                             ) {

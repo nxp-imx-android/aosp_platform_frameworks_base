@@ -108,15 +108,15 @@ constructor(
         )
 
     private val sceneTransitionPair =
-        sceneInteractor.transitionState
+        sceneInteractor.transitionStateFlow
             .pairwise()
             .stateInTraced(
                 "KTF-sceneTransitionPair",
                 scope,
                 SharingStarted.Eagerly,
                 WithPrev(
-                    sceneInteractor.transitionState.value,
-                    sceneInteractor.transitionState.value,
+                    sceneInteractor.transitionStateFlow.value,
+                    sceneInteractor.transitionStateFlow.value,
                 ),
             )
 
@@ -270,10 +270,10 @@ constructor(
             val isTransitioningBetweenLockscreenStates =
                 fromContent.isLockscreenOrNull() && toContent.isLockscreenOrNull()
             val isTransitioningBetweenDesiredScenes =
-                sceneInteractor.transitionState.value.isTransitioning(fromContent, toContent)
+                sceneInteractor.transitionStateFlow.value.isTransitioning(fromContent, toContent)
             val isSnapToTransitionBetweenDesiredScenes =
                 sceneTransitionPair.value.previousValue.isIdle(fromContent) &&
-                    sceneInteractor.transitionState.value.isIdle(toContent)
+                    sceneInteractor.transitionStateFlow.value.isIdle(toContent)
 
             // When in STL A -> B settles in A we can't do the same in KTF as KTF requires us to
             // start B -> A to get back to A. [LockscreenSceneTransitionInteractor] will emit these
@@ -324,7 +324,7 @@ constructor(
      * applied within this function.
      */
     private fun simulateTransitionStepsForSceneTransitions(edge: Edge) =
-        sceneInteractor.transitionState
+        sceneInteractor.transitionStateFlow
             .flatMapLatestWithFinished {
                 when (it) {
                     is ObservableTransitionState.Idle -> {
@@ -544,7 +544,7 @@ constructor(
             .stateInTraced("KTF-currentKeyguardState", scope, SharingStarted.Eagerly, OFF)
 
     val isInTransition =
-        combine(isInTransitionWhere({ true }, { true }), sceneInteractor.transitionState) {
+        combine(isInTransitionWhere({ true }, { true }), sceneInteractor.transitionStateFlow) {
             isKeyguardTransitioning,
             sceneTransitionState ->
             isKeyguardTransitioning ||
@@ -561,7 +561,7 @@ constructor(
     fun isInTransition(edge: Edge, edgeWithoutSceneContainer: Edge? = null): Flow<Boolean> {
         return if (SceneContainerFlag.isEnabled) {
                 if (edge.isContentWildcardEdge()) {
-                    sceneInteractor.transitionState.map {
+                    sceneInteractor.transitionStateFlow.map {
                         when (edge) {
                             is Edge.StateToState ->
                                 throw IllegalStateException("Should not be reachable.")
@@ -650,7 +650,7 @@ constructor(
         stateWithoutSceneContainer: KeyguardState,
     ): Flow<Boolean> {
         return if (SceneContainerFlag.isEnabled) {
-                combine(sceneInteractor.topmostContent, sceneInteractor.transitionState) {
+                combine(sceneInteractor.topmostContent, sceneInteractor.transitionStateFlow) {
                     topmostContent,
                     state ->
                     topmostContent == content || state.isTransitioning(from = content)

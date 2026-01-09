@@ -83,7 +83,7 @@ constructor(
     override val isQsBypassingShade: Flow<Boolean> =
         shadeModeInteractor.shadeMode
             .flatMapLatestConflated { shadeMode ->
-                sceneInteractor.transitionState
+                sceneInteractor.transitionStateFlow
                     .map { state ->
                         when (state) {
                             is ObservableTransitionState.Idle -> false
@@ -348,7 +348,7 @@ constructor(
         sceneInteractor
             .resolveSceneFamily(sceneKey)
             .flatMapLatestConflated { resolvedSceneKey ->
-                sceneInteractor.transitionState
+                sceneInteractor.transitionStateFlow
                     .flatMapLatestConflated { state ->
                         when (state) {
                             is ObservableTransitionState.Idle ->
@@ -376,7 +376,7 @@ constructor(
      * with a scene that is pulled down from the top of the screen.
      */
     fun sceneBasedInteracting(sceneInteractor: SceneInteractor, sceneKey: SceneKey) =
-        sceneInteractor.transitionState
+        sceneInteractor.transitionStateFlow
             .flatMapLatestConflated { state ->
                 when (state) {
                     is ObservableTransitionState.Idle -> flowOf(false)
@@ -395,7 +395,7 @@ constructor(
      * amount float.
      */
     private fun overlayBasedExpansion(sceneInteractor: SceneInteractor, overlay: OverlayKey) =
-        sceneInteractor.transitionState
+        sceneInteractor.transitionStateFlow
             .flatMapLatestConflated { state ->
                 when (state) {
                     is ObservableTransitionState.Idle ->
@@ -417,7 +417,7 @@ constructor(
      * with [overlay].
      */
     private fun overlayBasedInteracting(sceneInteractor: SceneInteractor, overlay: OverlayKey) =
-        sceneInteractor.transitionState
+        sceneInteractor.transitionStateFlow
             .map { state ->
                 when (state) {
                     is ObservableTransitionState.Idle -> false
@@ -431,7 +431,7 @@ constructor(
     /** Whether this content key is currently shown and in idle transition state. */
     private val ContentKey.isShownAndIdle: Flow<Boolean>
         get() {
-            return sceneInteractor.transitionState
+            return sceneInteractor.transitionStateFlow
                 .map { state ->
                     when (state) {
                         is ObservableTransitionState.Idle ->

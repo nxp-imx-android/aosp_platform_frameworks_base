@@ -64,11 +64,9 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import platform.test.motion.compose.ComposeFeatureCaptures.positionInRoot
 import platform.test.motion.compose.ComposeRecordingSpec
 import platform.test.motion.compose.MotionControl
 import platform.test.motion.compose.asDataPoint
-import platform.test.motion.compose.feature
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
 import platform.test.motion.golden.DataPoint
@@ -128,7 +126,7 @@ class QuickSettingsElementTransitionTest : SysuiTestCase() {
                             MotionControl(
                                 delayRecording = {
                                     awaitCondition {
-                                        kosmos.sceneInteractor.transitionState.value.isIdle()
+                                        kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
                                     }
                                 }
                             ) {
@@ -140,7 +138,7 @@ class QuickSettingsElementTransitionTest : SysuiTestCase() {
                                     )
                                 }
                                 awaitCondition {
-                                    kosmos.sceneInteractor.transitionState.value.isIdle()
+                                    kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
                                 }
                             }
                         ) {

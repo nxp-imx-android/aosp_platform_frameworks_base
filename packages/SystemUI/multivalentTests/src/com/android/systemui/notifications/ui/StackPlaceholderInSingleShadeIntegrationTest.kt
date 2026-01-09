@@ -181,13 +181,13 @@ class StackPlaceholderInSingleShadeIntegrationTest : SysuiTestCase() {
                             MotionControl(
                                 delayRecording = {
                                     awaitCondition {
-                                        kosmos.sceneInteractor.transitionState.value.isIdle()
+                                        kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
                                     }
                                 }
                             ) {
                                 performTouchInputAsync(onRoot()) { performGesture() }
                                 awaitCondition {
-                                    kosmos.sceneInteractor.transitionState.value.isIdle()
+                                    kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
                                 }
                             },
                             recordBefore = false,

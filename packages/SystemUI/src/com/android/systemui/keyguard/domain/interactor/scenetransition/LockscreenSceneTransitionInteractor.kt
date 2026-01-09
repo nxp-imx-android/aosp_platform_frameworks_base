@@ -123,7 +123,7 @@ constructor(
 
     private fun listenForSceneTransitionProgress() {
         applicationScope.launch {
-            sceneInteractor.transitionState
+            sceneInteractor.transitionStateFlow
                 // The transitionState re-emits when things like the isUserInputOngoing flow change,
                 // which we're not interested in.
                 .distinctUntilChanged { state1, state2 ->

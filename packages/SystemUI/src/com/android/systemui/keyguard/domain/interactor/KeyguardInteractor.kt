@@ -295,7 +295,7 @@ constructor(
     @JvmField
     val primaryBouncerShowing: StateFlow<Boolean> =
         if (SceneContainerFlag.isEnabled) {
-                sceneInteractorProvider.get().transitionState.map {
+                sceneInteractorProvider.get().transitionStateFlow.map {
                     it.isIdle(Overlays.Bouncer) || it.isTransitioning(to = Overlays.Bouncer)
                 }
             } else {

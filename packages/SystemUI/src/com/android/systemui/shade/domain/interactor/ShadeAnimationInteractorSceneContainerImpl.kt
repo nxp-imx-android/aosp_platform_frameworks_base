@@ -41,7 +41,7 @@ constructor(
     sceneInteractor: SceneInteractor,
 ) : ShadeAnimationInteractor(shadeAnimationRepository) {
     override val isAnyCloseAnimationRunning =
-        sceneInteractor.transitionState
+        sceneInteractor.transitionStateFlow
             .flatMapLatest { state ->
                 when (state) {
                     is ObservableTransitionState.Idle -> flowOf(false)
@@ -62,7 +62,7 @@ constructor(
             .stateIn(scope, SharingStarted.Eagerly, false)
 
     override val isAnyFlingAnimationRunning =
-        sceneInteractor.transitionState
+        sceneInteractor.transitionStateFlow
             .flatMapLatest { state ->
                 when (state) {
                     is ObservableTransitionState.Idle -> flowOf(false)

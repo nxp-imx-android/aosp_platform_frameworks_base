@@ -184,12 +184,12 @@ class BouncerPredictiveBackTest : SysuiTestCase() {
                         MotionControl(
                             delayRecording = {
                                 awaitCondition {
-                                    sceneInteractor.transitionState.value.isTransitioning()
+                                    sceneInteractor.transitionStateFlow.value.isTransitioning()
                                 }
                             }
                         ) {
                             awaitCondition {
-                                sceneInteractor.transitionState.value.isIdle(Scenes.Lockscreen)
+                                sceneInteractor.transitionStateFlow.value.isIdle(Scenes.Lockscreen)
                             }
                         }
                     ) {

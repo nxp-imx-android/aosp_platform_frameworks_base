@@ -57,7 +57,7 @@ class CommunalSceneRepositoryImplTest : SysuiTestCase() {
     @Test
     fun transitionState_idleByDefault() =
         kosmos.runTest {
-            val transitionState by collectLastValue(underTest.transitionState)
+            val transitionState by collectLastValue(underTest.transitionStateFlow)
             assertThat(transitionState)
                 .isEqualTo(ObservableTransitionState.Idle(CommunalScenes.Default))
         }
@@ -68,7 +68,7 @@ class CommunalSceneRepositoryImplTest : SysuiTestCase() {
             val expectedSceneKey = CommunalScenes.Communal
             underTest.setTransitionState(flowOf(ObservableTransitionState.Idle(expectedSceneKey)))
 
-            val transitionState by collectLastValue(underTest.transitionState)
+            val transitionState by collectLastValue(underTest.transitionStateFlow)
             assertThat(transitionState).isEqualTo(ObservableTransitionState.Idle(expectedSceneKey))
         }
 
@@ -84,7 +84,7 @@ class CommunalSceneRepositoryImplTest : SysuiTestCase() {
             underTest.setTransitionState(null)
 
             // Flow returns default scene key.
-            val transitionState by collectLastValue(underTest.transitionState)
+            val transitionState by collectLastValue(underTest.transitionStateFlow)
             assertThat(transitionState)
                 .isEqualTo(ObservableTransitionState.Idle(CommunalScenes.Default))
         }
