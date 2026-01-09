@@ -88,7 +88,6 @@ android_test {
         "services.flags",
         "services.net",
         "services.people",
-        "services.supervision",
         "services.usage",
         "servicestests-utils",
         "testables",
@@ -1096,16 +1095,6 @@ test_module_config {
         "device-tests",
     ],
     include_annotations: ["android.platform.test.annotations.Presubmit"],
-}
-
-test_module_config {
-    name: "FrameworksServicesTests_supervision",
-    base: "FrameworksServicesTests",
-    test_suites: [
-        "automotive-tests",
-        "device-tests",
-    ],
-    include_filters: ["com.android.server.supervision"],
 }
 
 test_module_config {

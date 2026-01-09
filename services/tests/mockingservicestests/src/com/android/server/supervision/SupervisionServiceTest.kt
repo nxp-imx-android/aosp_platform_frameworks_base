@@ -77,7 +77,7 @@ import android.util.StatsEvent
 import android.util.Xml
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.android.frameworks.servicestests.R as ServicestestsR
+import com.android.frameworks.mockingservicestests.R as ServicestestsR
 import com.android.internal.R as R
 import com.android.internal.util.FrameworkStatsLog
 import com.android.server.LocalServices
