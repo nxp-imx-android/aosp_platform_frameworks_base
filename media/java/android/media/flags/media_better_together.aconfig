@@ -36,14 +36,6 @@ flag {
 }
 
 flag {
-     name: "enable_built_in_speaker_route_suitability_statuses"
-     is_exported: true
-     namespace: "media_solutions"
-     description: "Make MediaRoute2Info provide information about routes suitability for transfer."
-     bug: "279555229"
-}
-
-flag {
     name: "enable_cross_user_routing_in_media_router2"
     is_exported: true
     namespace: "media_solutions"
@@ -266,3 +258,20 @@ flag {
     description: "Flag for unhiding ringtone APIs"
     bug: "450092456"
 }
+
+# Removed exported flags below this line.
+# ###############################
+# These are exported flags that:
+# - Have reached nextfood.
+# - Their references in code have been removed.
+# - Their declarations cannot be removed due to them being exported.
+# See go/exported-flag-deletion-checker.
+
+flag {
+     name: "enable_built_in_speaker_route_suitability_statuses"
+     is_exported: true
+     namespace: "media_solutions"
+     description: "Make MediaRoute2Info provide information about routes suitability for transfer."
+     bug: "279555229"
+}
+
