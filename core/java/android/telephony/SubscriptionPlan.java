@@ -295,7 +295,7 @@ public final class SubscriptionPlan implements Parcelable {
     public static final int PLAN_TYPE_TETHERING = 10;
 
     /**
-     * Value indicating that the SubscriptionPlan ID is not available.
+     * Value indicating that the SubscriptionPlan ID is not specified.
      */
     @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
     public static final int UNSPECIFIED_ID = -1;
