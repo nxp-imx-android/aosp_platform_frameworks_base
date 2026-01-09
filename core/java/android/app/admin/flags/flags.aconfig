@@ -567,6 +567,7 @@ flag {
   namespace: "enterprise"
   description: "Making sure that the existing `adb shell cmd role set-bypassing-role-qualification` command is protected against abuse on MUM devices."
   bug: "451571955"
+  is_exported: true
 }
 
 flag {
