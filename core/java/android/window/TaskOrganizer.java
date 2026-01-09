@@ -202,14 +202,14 @@ public class TaskOrganizer extends WindowOrganizer {
     /**
      * Creates a persistent Task.
      * @param params The creation params
-     * @return the TaskAppearedInfo of the newly created Task. This can be {@code null} if the
+     * @return the WindowContainerToken of the newly created Task. This can be {@code null} if the
      * Task creation fails in the system server (e.g., due to invalid displayId).
      *
      * @see #deleteTask for removal.
      */
     @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
     @Nullable
-    public TaskAppearedInfo createTask(@NonNull TaskCreationParams params) {
+    public WindowContainerToken createTask(@NonNull TaskCreationParams params) {
         try {
             return mTaskOrganizerController.createTask(params);
         } catch (RemoteException e) {

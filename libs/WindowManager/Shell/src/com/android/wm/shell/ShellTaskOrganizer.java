@@ -55,6 +55,7 @@ import android.window.TaskCreationParams;
 import android.window.TaskOrganizer;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
+import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 import android.window.WindowContainerTransactionCallback;
 
@@ -444,11 +445,11 @@ public class ShellTaskOrganizer extends TaskOrganizer {
      * Creates a persistent task with the given {@link TaskCreationParams}.
      * @param params The creation params
      * @param listener The listener to get the created task callback.
-     * @return the TaskAppearedInfo of the newly created Task. This can be {@code null} if the
+     * @return the WindowContainerToken of the newly created Task. This can be {@code null} if the
      * Task creation fails in the system server (e.g., due to invalid displayId).
      */
     @Nullable
-    public TaskAppearedInfo createTask(@NonNull TaskCreationParams params,
+    public WindowContainerToken createTask(@NonNull TaskCreationParams params,
             TaskListener listener) {
         ProtoLog.v(WM_SHELL_TASK_ORG, "createTask() displayId=%d winMode=%d listener=%s" ,
                 params.getDisplayId(), params.getWindowingMode(), listener.toString());

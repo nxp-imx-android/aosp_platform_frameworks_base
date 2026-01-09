@@ -93,8 +93,8 @@ constructor(
                 .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
                 .setTaskPropertiesRequest(taskProperties)
                 .build()
-        val rootTaskAppearedInfo = taskOrganizer.createTask(params, this)
-        if (rootTaskAppearedInfo == null) {
+        val token = taskOrganizer.createTask(params, this)
+        if (token == null) {
             BubbleLog.e("Failed to create Bubble root Task")
         }
     }
@@ -141,7 +141,7 @@ constructor(
                 .setParentContainer(rootTaskToken)
                 .setVisibilityBarrier(true)
                 .build()
-        visibilityBarrierToken = taskOrganizer.createTask(params, this)?.taskInfo?.token
+        visibilityBarrierToken = taskOrganizer.createTask(params, this)
         if (visibilityBarrierToken == null) {
             BubbleLog.e("Failed to create Bubble visibility barrier")
         }
