@@ -91,23 +91,24 @@ fun SensorActivityDrillIn(
             textAlign = TextAlign.Center,
             color = colorScheme.onSurfaceVariant,
         )
-        // TODO(469056547): Move logic into ViewModel where it can be tested.
-        val usagesPerApp = viewModel.sensorAccessList.groupBy { it.packageName }.entries.toList()
-        usagesPerApp.forEachIndexed { index, (packageName, usages) ->
-            val isFirstItem = (index == 0)
-            val isLastItem = (index == usagesPerApp.size - 1)
-            if (!isFirstItem) {
-                Spacer(modifier = Modifier.height(2.dp))
+        viewModel.appDetails.let {
+            val count = it.size
+            it.forEachIndexed { index, item ->
+                val isFirstItem = (index == 0)
+                val isLastItem = (index == count - 1)
+                if (!isFirstItem) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                }
+                AppDetailItem(
+                    viewModel = viewModel,
+                    appIcon = item.icon,
+                    appName = item.appName,
+                    packageName = item.packageName,
+                    sensorUsages = item.sensorUsages,
+                    isFirstItem = isFirstItem,
+                    isLastItem = isLastItem,
+                )
             }
-            AppDetailItem(
-                viewModel = viewModel,
-                appIcon = usages.first().icon,
-                appName = usages.first().appName,
-                packageName = packageName,
-                sensorUsages = usages.map { it.sensor }.distinct(),
-                isFirstItem = isFirstItem,
-                isLastItem = isLastItem,
-            )
         }
         Spacer(modifier = Modifier.height(16.dp))
         ListItem(
