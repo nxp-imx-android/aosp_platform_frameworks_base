@@ -237,10 +237,12 @@ class ThemeSettingsManager {
         if (colorSourceString.equals(VALUE_HOME_WALLPAPER)) {
             Integer wallpaperSeed = mWallpaperManager.getSeedColor(userId);
             if (wallpaperSeed == null) {
-                throw new IllegalStateException(
-                        "User's " + userId + " Wallpaper colors could not be retrieved.");
+                Slog.i(TAG, "User's " + userId + " Wallpaper colors not yet available. "
+                        + "Using fallback palette for HOME_WALLPAPER source.");
+                seedColor = HARDCODED_FALLBACK.systemPalette();
+            } else {
+                seedColor = Color.valueOf(wallpaperSeed);
             }
-            seedColor = Color.valueOf(wallpaperSeed);
             colorSource = VALUE_HOME_WALLPAPER;
         } else {
             seedColor = Color.valueOf(Color.parseColor(colorSourceString));
