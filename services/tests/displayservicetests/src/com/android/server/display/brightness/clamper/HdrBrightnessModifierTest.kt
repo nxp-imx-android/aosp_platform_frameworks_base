@@ -135,16 +135,7 @@ class HdrBrightnessModifierTest {
     }
 
     @Test
-    fun contentObserversRegisteredOnInit_flagDisabled() {
-        initHdrModifier(createHdrBrightnessData(allowInLowPowerMode = false))
-
-        assertThat(testInjector.registeredLowPowerModeSettingObserver).isNotNull()
-        assertThat(testInjector.registeredHdrSettingsObserver).isNull()
-    }
-
-    @Test
-    fun contentObserversRegisteredOnInit_flagEnabled() {
-        whenever(mockFlags.isHdrBrightnessSettingEnabled).thenReturn(true)
+    fun contentObserversRegisteredOnInit() {
         initHdrModifier(createHdrBrightnessData(allowInLowPowerMode = false))
 
         assertThat(testInjector.registeredLowPowerModeSettingObserver).isNotNull()
@@ -411,7 +402,6 @@ class HdrBrightnessModifierTest {
 
     @Test
     fun hdrBrightnessEnabledChanged() {
-        whenever(mockFlags.isHdrBrightnessSettingEnabled).thenReturn(true)
         initHdrModifier()
         setupDisplay(width = 100, height = 100, hdrBrightnessData = createHdrBrightnessData(
             allowInLowPowerMode = false
@@ -443,7 +433,6 @@ class HdrBrightnessModifierTest {
 
     @Test
     fun hdrBrightnessEnabledChanged_noHdrMode() {
-        whenever(mockFlags.isHdrBrightnessSettingEnabled).thenReturn(true)
         initHdrModifier()
         setupDisplay(width = 100, height = 100, hdrBrightnessData = createHdrBrightnessData(
             allowInLowPowerMode = false
@@ -457,7 +446,6 @@ class HdrBrightnessModifierTest {
 
     @Test
     fun hdrBrightnessBoostLevelChanged() {
-        whenever(mockFlags.isHdrBrightnessSettingEnabled).thenReturn(true)
         initHdrModifier()
         setupDisplay(width = 100, height = 100, hdrBrightnessData = createHdrBrightnessData(
             allowInLowPowerMode = false
@@ -498,7 +486,6 @@ class HdrBrightnessModifierTest {
 
     @Test
     fun hdrBrightnessBoostLevelChanged_noHdrMode() {
-        whenever(mockFlags.isHdrBrightnessSettingEnabled).thenReturn(true)
         initHdrModifier()
         setupDisplay(width = 100, height = 100, hdrBrightnessData = createHdrBrightnessData(
             allowInLowPowerMode = false
@@ -522,7 +509,7 @@ class HdrBrightnessModifierTest {
 
     @Test
     fun stopUnregistersContentObservers() {
-        contentObserversRegisteredOnInit_flagEnabled()
+        contentObserversRegisteredOnInit()
 
         modifier.stop()
 
