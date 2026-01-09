@@ -62,7 +62,6 @@ import dagger.Binds
 import dagger.Lazy
 import dagger.Module
 import dagger.Provides
-import dagger.multibindings.ElementsIntoSet
 import dagger.multibindings.IntoSet
 import javax.inject.Provider
 import kotlinx.coroutines.CoroutineScope
@@ -178,19 +177,6 @@ interface PerDisplayStatusBarModule {
                 )
             } else {
                 defaultSchedulerLazy.get()
-            }
-        }
-
-        @Provides
-        @ElementsIntoSet
-        @DisplayAware
-        fun systemStatusSchedulerAsLifecycleListener(
-            @DisplayAware scheduler: SystemStatusAnimationScheduler
-        ): Set<SystemUIDisplaySubcomponent.LifecycleListener> {
-            return if (Flags.systemStatusAnimationPerDisplay()) {
-                setOf(scheduler)
-            } else {
-                emptySet()
             }
         }
 
