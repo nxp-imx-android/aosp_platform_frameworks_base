@@ -125,8 +125,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         void onTaskAppeared(Task task) {
             ProtoLog.v(WM_DEBUG_WINDOW_ORGANIZER, "Task appeared taskId=%d", task.mTaskId);
             final RunningTaskInfo taskInfo = task.getTaskInfo();
-            final SurfaceControl leash = prepareLeash(task,
-                    "TaskOrganizerController.onTaskAppeared");
+            SurfaceControl leash = prepareLeash(task, "TaskOrganizerController.onTaskAppeared");
             try {
                 mTaskOrganizer.onTaskAppeared(taskInfo, leash);
             } catch (RemoteException e) {
@@ -241,7 +240,6 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                 if (task.mTaskId == entry.mTask.mTaskId) {
                     // This task is vanished so remove all pending event of it.
                     mPendingTaskEvents.remove(i);
-
                     if (entry.mEventType == PendingTaskEvent.EVENT_APPEARED) {
                         foundPendingAppearedEvents = true;
                     }
@@ -394,6 +392,10 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
             return mOrganizer.prepareLeash(t, reason);
         }
 
+        SurfaceControl prepareLeash(Task t, String reason) {
+            return mOrganizer.prepareLeash(t, reason);
+        }
+
         private boolean addTask(Task t) {
             if (t.mTaskAppearedSent) {
                 return false;
@@ -413,7 +415,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         private boolean removeTask(Task t, boolean removeFromSystem) {
             mOrganizedTasks.remove(t);
             mInterceptBackPressedOnRootTasks.remove(t.mTaskId);
-            boolean taskAppearedSent = t.mTaskAppearedSent;
+            final boolean taskAppearedSent = t.mTaskAppearedSent;
             if (taskAppearedSent) {
                 if (t.getSurfaceControl() != null) {
                     t.migrateToNewSurfaceControl(t.getSyncTransaction());
@@ -904,15 +906,35 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                 organizerState.mOrganizer.mTaskOrganizer, PendingTaskEvent.EVENT_VANISHED));
     }
 
+    /**
+     * Creates a persistent task with the given parameters.
+     *
+     * <p>Note: The {@link TaskAppearedInfo} returned by this method contains a
+     * {@link SurfaceControl} leash that is the <b>same instance</b> (or valid handle to the same
+     * surface) as the one eventually passed to {@link ITaskOrganizer#onTaskAppeared}.
+     *
+     * <p>The client can use either this return value or wait for the callback.
+     */
     @Nullable
     @Override
-    public WindowContainerToken createTask(@NonNull TaskCreationParams params) {
+    public TaskAppearedInfo createTask(@NonNull TaskCreationParams params) {
         enforceTaskPermission("createTask()");
         final long origId = Binder.clearCallingIdentity();
         try {
             synchronized (mGlobalLock) {
                 final Task task = createTaskInner(params);
-                return task != null ? task.mRemoteToken.toWindowContainerToken() : null;
+                if (task == null) {
+                    return null;
+                }
+                final ITaskOrganizer organizer = getTaskOrganizer();
+                if (organizer == null) {
+                    Slog.w(TAG, "createTask: no task organizer registered");
+                    return null;
+                }
+                final TaskOrganizerState state = mTaskOrganizerStates.get(organizer.asBinder());
+                return new TaskAppearedInfo(task.getTaskInfo(),
+                        // When returning through binder, this leash will be auto released.
+                        state.prepareLeash(task, "TaskOrganizerController.createTask"));
             }
         } finally {
             Binder.restoreCallingIdentity(origId);
