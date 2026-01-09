@@ -70,9 +70,8 @@ public final class HapticGeneratorSession implements AutoCloseable {
          *                         <ol>
          *                        <li>Sample rate must be a positive non-zero value.</li>
          *                        <li>Must specify at least one valid channel configuration,
-         *                        either via a channel mask (e.g.,
-         *                        {@link AudioFormat#CHANNEL_OUT_HAPTIC_A}) or a channel index
-         *                        mask.</li>
+         *                        either via a channel mask or a channel index mask.
+         *                        See {@link AudioFormat} for valid channel masks.</li>
          *                        </ol>
          * @param vendorExtension An optional parcelable for vendor-specific data. Can be null.
          * @throws IllegalArgumentException if the AudioFormat is invalid.
@@ -90,11 +89,17 @@ public final class HapticGeneratorSession implements AutoCloseable {
             mVendorExtension = in.readTypedObject(ParcelableHolder.CREATOR);
         }
 
+        /**
+         * Returns the audio format configuration for this haptic generator session.
+         */
         @NonNull
         public AudioFormat getAudioFormat() {
             return mAudioFormat;
         }
 
+        /**
+         * Returns the optional vendor-specific data, or {@code null} if not set.
+         */
         @Nullable
         public ParcelableHolder getVendorExtension() {
             return mVendorExtension;
