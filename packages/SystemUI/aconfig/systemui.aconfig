@@ -253,14 +253,6 @@ flag {
 }
 
 flag {
-    name: "coroutine_tracing"
-    namespace: "systemui"
-    description: "Adds thread-local data to System UI's global coroutine scopes to "
-        "allow for tracing of coroutine continuations using System UI's tracinglib"
-    bug: "289353932"
-}
-
-flag {
     name: "decouple_view_controller_in_animlib"
     namespace: "systemui"
     description: "Decouple view and controller in AnimLib."
