@@ -2562,6 +2562,35 @@ public class WindowOrganizerTests extends WindowTestsBase {
         assertTrue(newTask.isForceLeafTasksNonOccluding());
     }
 
+    @Test
+    public void testBoundsChange_withWindowingModeChange_resetLeafTaskBoundsFromOptions() {
+        final Task task = new TaskBuilder(mSupervisor)
+                .setWindowingMode(WINDOWING_MODE_FREEFORM).build();
+        task.setBoundsWithSource(new Rect(10, 10, 300, 300), /* fromActivityOptions= */ true);
+        assertTrue(task.getTaskInfo().leafTaskBoundsFromOptions);
+
+        final WindowContainerTransaction t = new WindowContainerTransaction();
+        t.setWindowingMode(task.mRemoteToken.toWindowContainerToken(), WINDOWING_MODE_FULLSCREEN);
+        t.setBounds(task.mRemoteToken.toWindowContainerToken(), new Rect());
+        mWm.mAtmService.mWindowOrganizerController.applyTransaction(t);
+
+        assertFalse(task.getTaskInfo().leafTaskBoundsFromOptions);
+    }
+
+    @Test
+    public void testBoundsChange_withoutWindowingModeChange_resetLeafTaskBoundsFromOptions() {
+        final Task task = new TaskBuilder(mSupervisor)
+                .setWindowingMode(WINDOWING_MODE_FREEFORM).build();
+        task.setBoundsWithSource(new Rect(10, 10, 300, 300), /* fromActivityOptions= */ true);
+        assertTrue(task.getTaskInfo().leafTaskBoundsFromOptions);
+
+        final WindowContainerTransaction t = new WindowContainerTransaction();
+        t.setBounds(task.mRemoteToken.toWindowContainerToken(), new Rect(20, 10, 300, 300));
+        mWm.mAtmService.mWindowOrganizerController.applyTransaction(t);
+
+        assertFalse(task.getTaskInfo().leafTaskBoundsFromOptions);
+    }
+
     private void testSetAlwaysOnTop(WindowContainer wc) {
         final WindowContainerTransaction t = new WindowContainerTransaction();
         t.setAlwaysOnTop(wc.mRemoteToken.toWindowContainerToken(), true);
