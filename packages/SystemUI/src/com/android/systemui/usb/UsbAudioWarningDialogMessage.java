@@ -62,8 +62,9 @@ public class UsbAudioWarningDialogMessage {
     }
 
     boolean isUsbAudioDevice() {
-        return mDialogHelper.isUsbDevice() && (mDialogHelper.deviceHasAudioCapture()
-                || (mDialogHelper.deviceHasAudioPlayback()));
+        return mDialogHelper.isUsbDevice()
+                && (mDialogHelper.deviceHasAudioCapture()
+                        || mDialogHelper.deviceHasAudioPlayback());
     }
 
     boolean hasAudioPlayback() {
@@ -76,25 +77,26 @@ public class UsbAudioWarningDialogMessage {
 
     /**
      * According to USB audio warning dialog matrix table to return warning message id.
-     * @return string resId for USB audio warning dialog message, otherwise {ID_NULL}.
-     * See usb_audio.md for USB audio Permission and Confirmation warning dialog resource
-     * string id matrix table.
+     *
+     * @return string resId for USB audio warning dialog message, otherwise {ID_NULL}. See
+     *     usb_audio.md for USB audio Permission and Confirmation warning dialog resource string id
+     *     matrix table.
      */
     public int getMessageId() {
-        if (!mDialogHelper.isUsbDevice()) {
+        if (mDialogHelper.isUsbAccessory()) {
             return getUsbAccessoryPromptId();
         }
 
         if (hasRecordPermission() && isUsbAudioDevice()) {
             // case# 1, 2, 3
             return R.string.usb_audio_device_prompt;
-        } else if (!hasRecordPermission() && isUsbAudioDevice() && hasAudioPlayback()
+        } else if (!hasRecordPermission()
+                && isUsbAudioDevice()
+                && hasAudioPlayback()
                 && !hasAudioCapture()) {
             // case# 5
             return R.string.usb_audio_device_prompt;
-        }
-
-        if (!hasRecordPermission() && isUsbAudioDevice() && hasAudioCapture()) {
+        } else if (!hasRecordPermission() && isUsbAudioDevice() && hasAudioCapture()) {
             // case# 6,7
             return R.string.usb_audio_device_prompt_warn;
         }

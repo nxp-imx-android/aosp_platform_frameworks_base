@@ -126,6 +126,12 @@
     <!-- Title for USB accessory dialog.  Used when the name of the accessory cannot be determined.  [CHAR LIMIT=50] -->
     <string name="title_usb_accessory">USB accessory</string>
 
+    <!-- Prompt for the USB dialog's allow only this time button [CHAR LIMIT=20] -->
+    <string name="usb_device_dialog_allow_only_this_time_button">Only this time</string>
+
+    <!-- Prompt for the USB dialog's cancel button [CHAR LIMIT=20] -->
+    <string name="usb_device_dialog_cancel_button">Cancel</string>
+
     <!-- View button label for USB dialogs.  [CHAR LIMIT=15] -->
     <string name="label_view">View</string>
 
