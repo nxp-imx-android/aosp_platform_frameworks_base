@@ -22,6 +22,7 @@ import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_AUDIO_CO
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_CAMERA;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_LOCATION;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_MICROPHONE;
+import static android.app.ActivityManager.PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_INSTRUMENTATION_DEFAULTS;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
 import static android.app.ActivityManager.PROCESS_STATE_BOUND_TOP;
@@ -66,13 +67,13 @@ class CapabilityController {
         edge.clearCpuTimeReasons();
         // No capability is granted to a non-running process.
         if (!edge.getTarget().isProcessRunning()) return PROCESS_CAPABILITY_NONE;
-        // TODO(b/466961280): Add more policies.
         // TODO(b/473696073): Optimize: If all the capabilities that a policy is able to give are
         //  already given by its preceding policies, the policy evaluation can be skipped.
         return evaluateMaxAdjPolicy(edge)
                 | evaluateForegroundServicePolicy(edge)
                 | evaluateProcStatePolicy(edge)
-                | evaluateCpuTimePolicy(edge);
+                | evaluateCpuTimePolicy(edge)
+                | evaluateImplicitCpuTimePolicy(edge);
     }
 
     /** Evaluates a filter based on the process's max oom score (maxAdj). */
@@ -229,6 +230,12 @@ class CapabilityController {
         return PROCESS_CAPABILITY_NONE;
     }
     // LINT.ThenChange(OomAdjuster.java:getCpuCapability)
+
+    /** Evaluates implicit CPU time capability on the process edge. */
+    private static @ProcessCapability int evaluateImplicitCpuTimePolicy(@NonNull ProcessEdge edge) {
+        return edge.getTarget().hasIntrinsicImplicitCpuTime()
+                ? PROCESS_CAPABILITY_IMPLICIT_CPU_TIME : PROCESS_CAPABILITY_NONE;
+    }
 
     /** Performs a partial update from a list of edges. */
     void update(@NonNull ArrayList<GraphEdge> edges) {

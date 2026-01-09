@@ -23,6 +23,7 @@ import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_AUDIO_CO
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_CAMERA;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_LOCATION;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_MICROPHONE;
+import static android.app.ActivityManager.PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_INSTRUMENTATION_DEFAULTS;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_POWER_RESTRICTED_NETWORK;
@@ -126,8 +127,7 @@ public class CapabilityControllerTest {
                 .build();
         final ProcessEdge edge = new ProcessEdge(node);
 
-        FlagAssert.assertThat(edge.evaluateCapabilityFilter())
-                .hasNotSet(PROCESS_CAPABILITY_BFSL);
+        FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasNotSet(PROCESS_CAPABILITY_BFSL);
     }
 
     @Test
@@ -384,6 +384,15 @@ public class CapabilityControllerTest {
         assertEquals(CPU_TIME_REASON_NONE, edge.getCpuTimeReasons());
     }
 
+    @Test
+    public void testEvaluateImplicitCpuTimePolicy_IntrinsicImplicitCpuTime_GrantsImplicitCpuTime() {
+        final TestNode node = new TestNode.Builder().withHasIntrinsicImplicitCpuTime(true).build();
+        final ProcessEdge edge = new ProcessEdge(node);
+
+        FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(
+                PROCESS_CAPABILITY_IMPLICIT_CPU_TIME);
+    }
+
     private static class TestServiceRecord {
         final boolean mIsForegroundService;
         final boolean mIsFgsAllowedWiuForCapabilities;
@@ -434,6 +443,7 @@ public class CapabilityControllerTest {
         private final boolean mHasForegroundActivities;
         private final boolean mHasExecutingServices;
         private final boolean mIsReceivingBroadcast;
+        private final boolean mHasIntrinsicImplicitCpuTime;
         private final int mMaxAdj;
         private final @ProcessState int mProcState;
         private final ArrayList<TestServiceRecord> mServices;
@@ -442,8 +452,8 @@ public class CapabilityControllerTest {
                 boolean hasForegroundServices, boolean hasNonShortForegroundServices,
                 boolean cachedCompatChangeCameraMicrophoneCapability, boolean isCurAllowListed,
                 boolean hasForegroundActivities, boolean hasExecutingServices,
-                boolean isReceivingBroadcast, int maxAdj, @ProcessState int procState,
-                ArrayList<TestServiceRecord> services) {
+                boolean isReceivingBroadcast, boolean hasIntrinsicImplicitCpuTime, int maxAdj,
+                @ProcessState int procState, ArrayList<TestServiceRecord> services) {
             super(mock(ProcessRecordInternal.class));
             mIsProcessRunning = isProcessRunning;
             mHasActiveInstrumentation = hasActiveInstrumentation;
@@ -455,6 +465,7 @@ public class CapabilityControllerTest {
             mHasForegroundActivities = hasForegroundActivities;
             mHasExecutingServices = hasExecutingServices;
             mIsReceivingBroadcast = isReceivingBroadcast;
+            mHasIntrinsicImplicitCpuTime = hasIntrinsicImplicitCpuTime;
             mMaxAdj = maxAdj;
             mProcState = procState;
             mServices = services;
@@ -506,6 +517,11 @@ public class CapabilityControllerTest {
         }
 
         @Override
+        boolean hasIntrinsicImplicitCpuTime() {
+            return mHasIntrinsicImplicitCpuTime;
+        }
+
+        @Override
         int getMaxAdj() {
             return mMaxAdj;
         }
@@ -547,6 +563,7 @@ public class CapabilityControllerTest {
             private boolean mHasForegroundActivities = false;
             private boolean mHasExecutingServices = false;
             private boolean mIsReceivingBroadcast = false;
+            private boolean mHasIntrinsicImplicitCpuTime = false;
             private int mMaxAdj = UNKNOWN_ADJ;
             private @ProcessState int mProcState = PROCESS_STATE_UNKNOWN;
             private final ArrayList<TestServiceRecord> mServices = new ArrayList<>();
@@ -596,6 +613,11 @@ public class CapabilityControllerTest {
                 return this;
             }
 
+            Builder withHasIntrinsicImplicitCpuTime(boolean hasIntrinsicImplicitCpuTime) {
+                mHasIntrinsicImplicitCpuTime = hasIntrinsicImplicitCpuTime;
+                return this;
+            }
+
             Builder withMaxAdj(int maxAdj) {
                 mMaxAdj = maxAdj;
                 return this;
@@ -616,7 +638,7 @@ public class CapabilityControllerTest {
                         mHasForegroundServices, mHasNonShortForegroundServices,
                         mCachedCompatChangeCameraMicrophoneCapability, mIsCurAllowListed,
                         mHasForegroundActivities, mHasExecutingServices, mIsReceivingBroadcast,
-                        mMaxAdj, mProcState, mServices);
+                        mHasIntrinsicImplicitCpuTime, mMaxAdj, mProcState, mServices);
             }
         }
     }

@@ -2090,6 +2090,9 @@ public abstract class OomAdjuster {
         if (adj < mOomConstants.mFreezerCutoffAdj
                 || app.getMaxAdj() < mOomConstants.mFreezerCutoffAdj) {
             app.addCurImplicitCpuTimeReasons(IMPLICIT_CPU_TIME_REASON_OTHER);
+            if (Flags.enableCapabilityControllerComputation()) {
+                app.getGraphNode().setHasIntrinsicImplicitCpuTime(true);
+            }
             return PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
         }
         return 0;
@@ -2448,6 +2451,9 @@ public abstract class OomAdjuster {
         app.setCurCapability(initialCapability);
         app.addCurCpuTimeReasons(CPU_TIME_REASON_OTHER);
         app.addCurImplicitCpuTimeReasons(IMPLICIT_CPU_TIME_REASON_OTHER);
+        if (Flags.enableCapabilityControllerComputation()) {
+            app.getGraphNode().setHasIntrinsicImplicitCpuTime(true);
+        }
 
         app.setCurAdj(FOREGROUND_APP_ADJ);
         app.setCurRawAdj(FOREGROUND_APP_ADJ);

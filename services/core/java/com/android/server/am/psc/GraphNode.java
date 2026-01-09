@@ -18,6 +18,7 @@ package com.android.server.am.psc;
 import static com.android.server.am.psc.PlatformCompatCache.CACHED_COMPAT_CHANGE_CAMERA_MICROPHONE_CAPABILITY;
 
 import android.annotation.NonNull;
+import android.app.ActivityManager;
 import android.app.ActivityManager.ProcessState;
 import android.content.pm.ServiceInfo.ForegroundServiceType;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
@@ -38,11 +39,29 @@ class GraphNode {
     /** A reference to the underlying ProcessRecordInternal. */
     private final @NonNull ProcessRecordInternal mProc;
 
+    /**
+     * Whether this process node has {@link ActivityManager#PROCESS_CAPABILITY_IMPLICIT_CPU_TIME}
+     * intrinsically (i.e., not propagated from other processes).
+     *
+     * If it is true, this process will get {@link OomAdjuster#IMPLICIT_CPU_TIME_REASON_OTHER}.
+     */
+    // TODO(b/479393330): Remove this property and evaluate implicit CPU time directly from
+    //  ProcessRecordInternal once the computation can be decoupled from oomadj.
+    private boolean mHasIntrinsicImplicitCpuTime;
+
     GraphNode(@NonNull ProcessRecordInternal app) {
         mProc = Objects.requireNonNull(app);
     }
 
     // TODO: b/483182189 - Move state getters below to ProcessEdge.
+    boolean hasIntrinsicImplicitCpuTime() {
+        return mHasIntrinsicImplicitCpuTime;
+    }
+
+    void setHasIntrinsicImplicitCpuTime(boolean hasIntrinsicImplicitCpuTime) {
+        mHasIntrinsicImplicitCpuTime = hasIntrinsicImplicitCpuTime;
+    }
+
     int getMaxAdj() {
         return mProc.getMaxAdj();
     }
