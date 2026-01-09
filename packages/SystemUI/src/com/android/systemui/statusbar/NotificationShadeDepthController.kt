@@ -27,6 +27,7 @@ import android.util.MathUtils
 import android.view.Choreographer
 import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
+import android.view.SurfaceControl
 import android.view.View
 import androidx.annotation.VisibleForTesting
 import androidx.dynamicanimation.animation.FloatPropertyCompat
@@ -40,12 +41,12 @@ import com.android.systemui.Flags.checkDesktopModeForSpacialModelAppPushback
 import com.android.systemui.animation.ShadeInterpolation
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.desktop.DesktopModeRepository
 import com.android.systemui.display.data.repository.FocusedDisplayRepository
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.plugins.statusbar.StatusBarStateController
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeExpansionChangeEvent
 import com.android.systemui.shade.ShadeExpansionListener
 import com.android.systemui.shade.data.repository.ShadeDisplaysRepository
@@ -56,14 +57,10 @@ import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_
 import com.android.systemui.statusbar.phone.DozeParameters
 import com.android.systemui.statusbar.phone.ScrimController
 import com.android.systemui.statusbar.policy.KeyguardStateController
-import com.android.systemui.util.WallpaperController
 import com.android.systemui.wallpapers.domain.interactor.WallpaperInteractor
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
-import com.android.wm.shell.appzoomout.AppZoomOut
-import com.android.wm.shell.desktopmode.api.DesktopMode
 import dagger.Lazy
 import java.io.PrintWriter
-import java.util.Optional
 import javax.inject.Inject
 import kotlin.math.max
 import kotlin.math.sign
@@ -84,13 +81,11 @@ constructor(
     private val keyguardStateController: KeyguardStateController,
     private val keyguardInteractor: KeyguardInteractor,
     private val choreographer: Choreographer,
-    private val wallpaperController: WallpaperController,
     private val wallpaperInteractor: WallpaperInteractor,
     private val notificationShadeWindowController: NotificationShadeWindowController,
     private val dozeParameters: DozeParameters,
     private val shadeModeInteractor: ShadeModeInteractor,
     private val windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
-    private val appZoomOutOptional: Optional<AppZoomOut>,
     private val shadeDisplaysRepository: Lazy<ShadeDisplaysRepository>,
     private val focusedDisplayRepository: FocusedDisplayRepository,
     @Application private val applicationScope: CoroutineScope,
@@ -613,9 +608,15 @@ constructor(
         }
     }
 
-    fun onTransitionAnimationEnd() {
+    fun onTransitionAnimationEnd(transaction: SurfaceControl.Transaction) {
         if (!Flags.notificationShadeBlur()) return
         blursDisabledForAppLaunch = false
+        if (SceneContainerFlag.isEnabled) {
+            val surface = root.viewRootImpl?.surfaceControl
+            if (surface?.isValid == true) {
+                transaction.setBackgroundBlurRadius(surface, 0)
+            }
+        }
     }
 
     private fun updateShadeAnimationBlur(

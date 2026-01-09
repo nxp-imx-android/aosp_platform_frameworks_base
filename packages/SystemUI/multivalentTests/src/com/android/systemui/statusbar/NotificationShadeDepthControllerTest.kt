@@ -21,7 +21,6 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import android.view.Choreographer
-import android.view.View
 import android.view.ViewRootImpl
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -36,6 +35,7 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.plugins.statusbar.StatusBarStateController
+import com.android.systemui.scene.ui.view.WindowRootView
 import com.android.systemui.shade.ShadeExpansionChangeEvent
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
@@ -49,7 +49,6 @@ import com.android.systemui.util.mockito.eq
 import com.android.systemui.wallpapers.domain.interactor.WallpaperInteractor
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
-import com.android.wm.shell.appzoomout.AppZoomOut
 import com.android.wm.shell.desktopmode.api.DesktopMode
 import com.google.common.truth.Truth.assertThat
 import java.util.Optional
@@ -100,9 +99,8 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
     private lateinit var windowRootViewBlurInteractor: WindowRootViewBlurInteractor
     @Mock private lateinit var shadeModeInteractor: ShadeModeInteractor
     @Mock private lateinit var dumpManager: DumpManager
-    @Mock private lateinit var appZoomOutOptional: Optional<AppZoomOut>
     @Mock private lateinit var focusedDisplayRepository: FocusedDisplayRepository
-    @Mock private lateinit var root: View
+    @Mock private lateinit var root: WindowRootView
     @Mock private lateinit var viewRootImpl: ViewRootImpl
     @Mock private lateinit var windowToken: IBinder
     @Mock private lateinit var shadeAnimation: NotificationShadeDepthController.DepthAnimation
@@ -159,13 +157,11 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
                 keyguardStateController,
                 keyguardInteractor,
                 choreographer,
-                wallpaperController,
                 wallpaperInteractor,
                 notificationShadeWindowController,
                 dozeParameters,
                 shadeModeInteractor,
                 windowRootViewBlurInteractor,
-                appZoomOutOptional,
                 { shadeDisplayRepository },
                 focusedDisplayRepository,
                 applicationScope,
