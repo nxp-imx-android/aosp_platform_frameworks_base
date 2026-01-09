@@ -16,6 +16,7 @@
 
 package com.android.systemui.util.kotlin.dispatchers
 
+import com.android.systemui.Flags
 import java.io.Closeable
 import java.util.AbstractQueue
 import java.util.concurrent.BlockingQueue
@@ -104,9 +105,17 @@ class SynchronizedLinkedBlockingQueue : AbstractQueue<Runnable>(), BlockingQueue
         // Open the gate so new offers can schedule a notification.
         notificationPending.set(false)
 
-        // Acquire the lock and notify all waiting consumers.
-        synchronized(takeLock) {
-            takeLock.notifyAll()
+        if (Flags.synchronizedQueueCascadeNotify()) {
+            // Acquire the lock and notify a waiting consumer. If there are more
+            // tasks in the queue, `take()` will cascade `notify()`.
+            synchronized(takeLock) {
+                takeLock.notify()
+            }
+        } else {
+            // Acquire the lock and notify all waiting consumers.
+            synchronized(takeLock) {
+                takeLock.notifyAll()
+            }
         }
     }
 
@@ -147,7 +156,19 @@ class SynchronizedLinkedBlockingQueue : AbstractQueue<Runnable>(), BlockingQueue
                 }
                 // We hold the lock, and we know count > 0
                 item = dequeue()
-                count.decrementAndGet()
+
+                if (Flags.synchronizedQueueCascadeNotify()) {
+                    // Handoff signal to the next consumer if the queue is not empty.
+                    // This avoids the thundering herd problem from notifyAll().
+                    // Given that `take()` will always be a worker thread, we
+                    // don't need to fire-and-forget here to prevent lock
+                    // contentions on the UI thread
+                    if (count.decrementAndGet() > 0) {
+                        takeLock.notify()
+                    }
+                } else {
+                    count.decrementAndGet()
+                }
             }
         } catch (e: InterruptedException) {
             Thread.currentThread().interrupt()
