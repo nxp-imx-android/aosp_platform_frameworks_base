@@ -28,11 +28,11 @@ public abstract class InteractionProviderInternal {
      * AttentionService from other system components like InputManager. These will be called by the
      * AttentionService periodically.
      */
-    public abstract boolean registerInteractionProvider(IInteractionProvider provider);
+    public abstract boolean registerInteractionProvider(InteractionProvider provider);
 
     /**
      * Unregister a previously registered interaction provider. This should be done when provider
      * is terminating or data is no longer available.
      */
-    public abstract boolean unregisterInteractionProvider(IInteractionProvider provider);
+    public abstract boolean unregisterInteractionProvider(InteractionProvider provider);
 }

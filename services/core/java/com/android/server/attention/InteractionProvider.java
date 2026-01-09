@@ -17,7 +17,6 @@
 package com.android.server.attention;
 
 import android.attention.InteractionState;
-import android.os.IInterface;
 
 import java.util.List;
 
@@ -26,7 +25,7 @@ import java.util.List;
  * fetch interaction data from other system components like InputManager.
  * @hide
  */
-public interface IInteractionProvider extends IInterface {
+public interface InteractionProvider {
     /**
      * This will be called periodically by the attention-service.
      * @return list of all available user activity types along with most recent time
