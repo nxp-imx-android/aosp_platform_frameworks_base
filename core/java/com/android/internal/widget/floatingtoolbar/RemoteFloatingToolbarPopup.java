@@ -101,6 +101,7 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
     private List<MenuItem> mMenuItems;
     private MenuItem.OnMenuItemClickListener mMenuItemClickListener;
 
+    private boolean mIsNewSurfaceViewNeeded = true;
     private int mSuggestedWidth;
     private boolean mWidthChanged = true;
     private final boolean mIsLightTheme;
@@ -296,6 +297,10 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
     }
 
     private void updatePopupWindowContent(WidgetInfo widgetInfo) {
+        if (!mIsNewSurfaceViewNeeded) {
+            return;
+        }
+        mIsNewSurfaceViewNeeded = false;
         ViewGroup contentContainer = (ViewGroup) mPopupWindow.getContentView();
         contentContainer.removeAllViews();
         SurfaceView surfaceView = new SurfaceView(mParent.getContext());
@@ -449,6 +454,7 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
             }
             mWidthChanged = true;
             mPopupWindow.dismiss();
+            mIsNewSurfaceViewNeeded = true;
         });
     }
 
