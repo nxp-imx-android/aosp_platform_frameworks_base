@@ -32,3 +32,13 @@ flag {
   description: "Expose setComponent method in WallpaperDescription"
   bug: "448138290"
 }
+
+flag {
+  name: "postpone_wallpaper_change_notification_on_unlock_user"
+  namespace: "systemui"
+  description: "Wait until wallpaper is successfully bound before notifying wallpaper change on unlock user"
+  bug: "466054968"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
