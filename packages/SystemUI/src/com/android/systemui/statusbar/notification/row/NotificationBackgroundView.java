@@ -325,15 +325,16 @@ public class NotificationBackgroundView extends View implements Dumpable,
 
     /**
      * Update whether this view should allow a blurred background or not.
+     *
      * @param enabled - If true, queues creation of a {BackgroundBlurDrawable}. If false, removes
-     *                any reference to a blurred drawable.
+     *     any reference to a blurred drawable.
      */
     @UiThread
     public void setBlurBackgroundEnabled(boolean enabled) {
-        Assert.isMainThread();
         if (!enableLockscreenBlur()) {
             return;
         }
+        Assert.isMainThread();
 
         if (enabled && mBackgroundBlurDrawable == null) {
             if (mOnAttachStateChangeListener != null) {
