@@ -182,9 +182,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_REQUEST_FULLSCREEN_REFACTOR),
     ENABLE_REQUIRE_MOVABLE_TASK_API(Flags::enableRequireMovableTaskApi, false,
             Flags.FLAG_ENABLE_REQUIRE_MOVABLE_TASK_API),
-    ENABLE_RESTRICT_FREEFORM_HIDDEN_SYSTEM_BARS_TO_FILLING_TASKS(
-            Flags::restrictFreeformHiddenSystemBarsToFillingTasks, true,
-            Flags.FLAG_RESTRICT_FREEFORM_HIDDEN_SYSTEM_BARS_TO_FILLING_TASKS),
     ENABLE_SEE_THROUGH_TASK_FRAGMENTS(Flags::enableSeeThroughTaskFragments,
             true, Flags.FLAG_ENABLE_SEE_THROUGH_TASK_FRAGMENTS),
     ENABLE_SYS_DECORS_CALLBACKS_VIA_WM(Flags::enableSysDecorsCallbacksViaWm,
