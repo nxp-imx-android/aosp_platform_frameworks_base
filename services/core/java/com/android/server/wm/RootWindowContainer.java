@@ -2805,7 +2805,8 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             if (displayContent == null) {
                 return;
             }
-            if (DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()) {
+            if (DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()
+                    && !displayContent.shouldDestroyContentOnRemove()) {
                 final Transition transition = new Transition(TRANSIT_CLOSE,
                         TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION, mTransitionController,
                         mWmService.mSyncEngine);
