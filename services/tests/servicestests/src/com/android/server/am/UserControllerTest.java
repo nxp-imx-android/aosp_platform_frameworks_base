@@ -299,12 +299,13 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* mUserSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         boolean started = mUserController.startUser(TEST_USER_ID, USER_START_MODE_BACKGROUND);
         assertWithMessage("startUser(%s, foreground=false)", TEST_USER_ID).that(started).isTrue();
         verify(mInjector, never()).showUserSwitchingDialog(
-                any(), any(), anyString(), anyString(), any());
+                any(), any(), anyString(), anyString(), anyBoolean(), any());
         verify(mInjector.getWindowManager(), never()).setSwitchingUser(anyBoolean());
         verify(mInjector, never()).clearAllLockedTasks(anyString());
         startBackgroundUserAssertions();
@@ -316,7 +317,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* mUserSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
         mockIsHeadlessSystemUserMode(true);
         mUserController.setAllowUserUnlocking(false);
         mInjector.mRelevantUser = TEST_USER_ID;
@@ -375,7 +377,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* mUserSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         boolean started = mUserController.startUserVisibleOnDisplay(TEST_USER_ID, 42,
                 /* unlockProgressListener= */ null);
@@ -384,7 +387,7 @@ public class UserControllerTest {
         verifyUserAssignedToDisplay(TEST_USER_ID, 42);
 
         verify(mInjector, never()).showUserSwitchingDialog(
-                any(), any(), anyString(), anyString(), any());
+                any(), any(), anyString(), anyString(), anyBoolean(), any());
         verify(mInjector.getWindowManager(), never()).setSwitchingUser(anyBoolean());
         verify(mInjector, never()).clearAllLockedTasks(anyString());
         startBackgroundUserAssertions();
@@ -395,11 +398,12 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ false,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
         mInjector.mHandler.mRunCallbacksImmediately = false;
         mUserController.startUser(TEST_USER_ID, USER_START_MODE_FOREGROUND);
         verify(mInjector, never()).showUserSwitchingDialog(
-                any(), any(), anyString(), anyString(), any());
+                any(), any(), anyString(), anyString(), anyBoolean(), any());
         verify(mInjector, never()).dismissUserSwitchingDialog(any());
         verify(mInjector.getWindowManager(), never()).setSwitchingUser(anyBoolean());
         startForegroundUserAssertions();
@@ -420,14 +424,15 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* mUserSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         assertTrue(mUserController.startUser(TEST_PRE_CREATED_USER_ID, USER_START_MODE_BACKGROUND));
         // Make sure no intents have been fired for pre-created users.
         assertTrue(mInjector.mSentIntents.isEmpty());
 
         verify(mInjector, never()).showUserSwitchingDialog(
-                any(), any(), anyString(), anyString(), any());
+                any(), any(), anyString(), anyString(), anyBoolean(), any());
         verify(mInjector.getWindowManager(), never()).setSwitchingUser(anyBoolean());
         verify(mInjector, never()).clearAllLockedTasks(anyString());
 
@@ -481,7 +486,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ false,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         mUserController.startUserInForeground(NONEXIST_USER_ID);
         verify(mInjector.getWindowManager(), times(1)).setSwitchingUser(anyBoolean());
@@ -552,32 +558,20 @@ public class UserControllerTest {
 
     @Test
     public void testContinueUserSwitch() {
-        mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
-                /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
-                /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
-        // Start user -- this will update state of mUserController
-        mUserController.startUser(TEST_USER_ID, USER_START_MODE_FOREGROUND);
-        Message reportMsg = mInjector.mHandler.getMessageForCode(REPORT_USER_SWITCH_MSG);
-        assertNotNull(reportMsg);
-        UserState userState = (UserState) reportMsg.obj;
-        int oldUserId = reportMsg.arg1;
-        int newUserId = reportMsg.arg2;
-        mInjector.mHandler.clearAllRecordedMessages();
-        // Verify that continueUserSwitch worked as expected
-        continueAndCompleteUserSwitch(userState, oldUserId, newUserId);
-        verify(mInjector, times(1)).dismissUserSwitchingDialog(any());
-        continueUserSwitchAssertions(oldUserId, TEST_USER_ID, false, false);
-        verifySystemUserVisibilityChangesNeverNotified();
+        continueUserSwitchWithUiEnabled(/* userSwitchUiEnabled= */ true);
     }
 
     @Test
     public void testContinueUserSwitchUIDisabled() {
-        mUserController.setInitialConfig(/* userSwitchUiEnabled= */ false,
+        continueUserSwitchWithUiEnabled(/* userSwitchUiEnabled= */ false);
+    }
+
+    private void continueUserSwitchWithUiEnabled(boolean userSwitchUiEnabled) {
+        mUserController.setInitialConfig(userSwitchUiEnabled,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
-
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
         // Start user -- this will update state of mUserController
         mUserController.startUser(TEST_USER_ID, USER_START_MODE_FOREGROUND);
         Message reportMsg = mInjector.mHandler.getMessageForCode(REPORT_USER_SWITCH_MSG);
@@ -588,8 +582,16 @@ public class UserControllerTest {
         mInjector.mHandler.clearAllRecordedMessages();
         // Verify that continueUserSwitch worked as expected
         continueAndCompleteUserSwitch(userState, oldUserId, newUserId);
-        verify(mInjector, never()).dismissUserSwitchingDialog(any());
+
+        if (userSwitchUiEnabled) {
+            verify(mInjector, times(1)).dismissUserSwitchingDialog(any());
+        } else {
+            verify(mInjector, never()).dismissUserSwitchingDialog(any());
+        }
         continueUserSwitchAssertions(oldUserId, TEST_USER_ID, false, false);
+        if (userSwitchUiEnabled) {
+            verifySystemUserVisibilityChangesNeverNotified();
+        }
     }
 
     @Test
@@ -638,7 +640,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         // Switch to the test user.
         addForegroundUserAndContinueUserSwitch(TEST_USER_ID, SYSTEM_USER_ID, 1,
@@ -660,7 +663,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         // Switch to the test user.
         addForegroundUserAndContinueUserSwitch(TEST_USER_ID, SYSTEM_USER_ID, 1,
@@ -737,7 +741,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 10, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         setUpUser(TEST_USER_ID1, DEFAULT_USER_FLAGS);
 
@@ -785,7 +790,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 10, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         // Start two full background users (which should both get scheduled for stopping)
         // and one profile (which should not according to current policy since startProfile employs
@@ -825,7 +831,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 10, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         setUpAndStartUserInBackground(TEST_USER_ID);
 
@@ -843,7 +850,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 10, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         final int PARENT_ID = 300;
         final int PROFILE1_ID = 301;
@@ -901,7 +909,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 10, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                5, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                5, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         // TEST_USER_ID will start and stop.
         // TEST_USER_ID1 is irrelevant and just to ensure it isn't affected by TEST_USER_ID's stop.
@@ -943,7 +952,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 10, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                5, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                5, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         setUpUser(TEST_USER_ID, DEFAULT_USER_FLAGS);
         mUserController.startUserInBackgroundTemporarily(TEST_USER_ID, 5);
@@ -981,7 +991,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 10, /* delayUserDataLocking= */ false,
                 /* backgroundUserScheduledStopTimeSecs= */
-                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         setUpAndStartUserInBackground(TEST_USER_ID);
 
@@ -1013,7 +1024,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 10, /* delayUserDataLocking= */ false,
                 /* backgroundUserScheduledStopTimeSecs= */
-                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         setUpAndStartUserInBackground(TEST_USER_ID);
         assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, TEST_USER_ID);
@@ -1033,7 +1045,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 10, /* delayUserDataLocking= */ false,
                 /* backgroundUserScheduledStopTimeSecs= */
-                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         setUpAndStartUserInBackground(TEST_USER_ID);
 
@@ -1075,7 +1088,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 10, /* delayUserDataLocking= */ false,
                 /* backgroundUserScheduledStopTimeSecs= */
-                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         setUpAndStartUserInBackground(TEST_USER_ID);
 
@@ -1100,7 +1114,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 10, /* delayUserDataLocking= */ false,
                 /* backgroundUserScheduledStopTimeSecs= */
-                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         setUpAndStartUserInBackground(TEST_USER_ID);
 
@@ -1126,7 +1141,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 10, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                5, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                5, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         // TEST_USER_ID will temporarily start but then later explicitly be stopped.
         setUpUser(TEST_USER_ID, DEFAULT_USER_FLAGS);
@@ -1172,7 +1188,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 10, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         setUpUser(TEST_USER_ID, DEFAULT_USER_FLAGS);
         mUserController.startUserInBackgroundTemporarily(TEST_USER_ID, 5);
@@ -1196,7 +1213,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 10, /* delayUserDataLocking= */ false,
                 /* backgroundUserScheduledStopTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         // Set up and start the user temporarily.
         setUpUser(TEST_USER_ID, DEFAULT_USER_FLAGS);
@@ -1234,7 +1252,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 10, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         // Start in background -> no scheduled stop (but judgement process initiated)
         setUpAndStartUserInBackground(TEST_USER_ID);
@@ -1262,7 +1281,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 10, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         setUpUser(TEST_USER_ID, DEFAULT_USER_FLAGS);
         mUserController.startUserInBackgroundTemporarily(TEST_USER_ID, 5);
@@ -1288,7 +1308,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 10, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         final int TEST_USER_GUEST = 902;
         setUpUser(TEST_USER_GUEST, UserInfo.FLAG_GUEST);
@@ -1345,7 +1366,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 10, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         setUpAndStartUserInBackground(TEST_USER_ID);
         assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, TEST_USER_ID);
@@ -1385,7 +1407,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 10, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         setUpAndStartUserInBackground(TEST_USER_ID);
         setUpAndStartUserInBackground(TEST_USER_ID1);
@@ -1417,7 +1440,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 10, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                2, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         setUpAndStartUserInBackground(TEST_USER_ID);
         setUpAndStartUserInBackground(TEST_USER_ID1);
@@ -1522,7 +1546,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         setUpUser(TEST_USER_ID1, 0);
         setUpUser(TEST_USER_ID2, 0);
@@ -1565,7 +1590,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ true,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         setUpUser(TEST_USER_ID1, 0);
         setUpUser(TEST_USER_ID2, 0);
@@ -1616,7 +1642,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 2, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         setUpUser(TEST_USER_ID1, 0);
         setUpUser(TEST_USER_ID2, 0);
@@ -1638,7 +1665,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 2, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         setUpUser(TEST_USER_ID1, 0);
         setUpUser(TEST_USER_ID2, UserInfo.FLAG_PROFILE);
@@ -1660,7 +1688,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 2, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         setUpUser(TEST_USER_ID1, 0);
         setUpUser(TEST_USER_ID2, 0);
@@ -1688,7 +1717,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 2, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         setUpUser(TEST_USER_ID1, 0);
         setUpUser(TEST_USER_ID2, 0);
@@ -1713,7 +1743,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 2, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         setUpUser(TEST_USER_ID1, 0); // Foreground user
         setUpUser(TEST_USER_ID2, 0); // First background user
@@ -1748,7 +1779,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         final int PARENT_ID = 300;
         final int PROFILE1_ID = 301;
@@ -1803,7 +1835,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         final int PARENT_ID = 300;
         final int PROFILE1_ID = 301;
@@ -1852,7 +1885,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 5, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         final int PARENT_ID = 200;
         final int PROFILE1_ID = 201;
@@ -1918,7 +1952,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 4, /* delayUserDataLocking= */ true,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         assertTrue(mUserController
                 .isEarlyPackageKillEnabledForUserSwitch(TEST_USER_ID, TEST_USER_ID1));
@@ -1929,7 +1964,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 4, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         assertFalse(mUserController
                 .isEarlyPackageKillEnabledForUserSwitch(TEST_USER_ID, TEST_USER_ID1));
@@ -1940,7 +1976,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 4, /* delayUserDataLocking= */ true,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         assertFalse(mUserController
                 .isEarlyPackageKillEnabledForUserSwitch(SYSTEM_USER_ID, TEST_USER_ID1));
@@ -1951,7 +1988,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 4, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         mUserController.setStopUserOnSwitch(STOP_USER_ON_SWITCH_TRUE);
 
@@ -1964,7 +2002,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 4, /* delayUserDataLocking= */ true,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         mUserController.setStopUserOnSwitch(STOP_USER_ON_SWITCH_FALSE);
 
@@ -1981,7 +2020,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 7, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         final int PARENT_ID = 200;
         final int PROFILE1_ID = 201;
@@ -2033,7 +2073,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 7, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         final int CURRENT_ID = 200;
         final int PROFILE_ID = 201;
@@ -2064,7 +2105,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         setUpAndStartUserInBackground(TEST_USER_ID);
         assertUserLockedOrUnlockedAfterStopping(TEST_USER_ID, /* allowDelayedLocking= */ true,
@@ -2124,7 +2166,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ true,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         // allowDelayedLocking set and no KeyEvictedCallback, so it should not lock.
         setUpAndStartUserInBackground(TEST_USER_ID);
@@ -2177,7 +2220,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 5, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         final Range<Integer> RUNNING_RANGE =
                 Range.closed(UserState.STATE_BOOTING, UserState.STATE_RUNNING_UNLOCKED);
@@ -2234,7 +2278,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* mUserSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         setUpAndStartProfileInBackground(TEST_USER_ID1, USER_TYPE_PROFILE_MANAGED);
 
@@ -2247,7 +2292,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* mUserSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
         mockIsUsersOnSecondaryDisplaysEnabled(true);
 
         setUpAndStartProfileInBackground(TEST_USER_ID1, USER_TYPE_PROFILE_MANAGED);
@@ -2268,7 +2314,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* mUserSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
         mSetFlagsRule.enableFlags(
                 android.multiuser.Flags.FLAG_ENABLE_BIOMETRICS_TO_UNLOCK_PRIVATE_SPACE);
         setUpAndStartProfileInBackground(TEST_USER_ID1, UserManager.USER_TYPE_PROFILE_PRIVATE);
@@ -2287,7 +2334,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* mUserSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
         mSetFlagsRule.enableFlags(
                 android.multiuser.Flags.FLAG_ENABLE_BIOMETRICS_TO_UNLOCK_PRIVATE_SPACE);
         setUpAndStartProfileInBackground(TEST_USER_ID1, UserManager.USER_TYPE_PROFILE_PRIVATE);
@@ -2302,7 +2350,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 1, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
         mSetFlagsRule.enableFlags(
                 android.multiuser.Flags.FLAG_ENABLE_BIOMETRICS_TO_UNLOCK_PRIVATE_SPACE);
         setUpAndStartProfileInBackground(TEST_USER_ID1, UserManager.USER_TYPE_PROFILE_PRIVATE);
@@ -2320,7 +2369,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
         mSetFlagsRule.enableFlags(
                 android.multiuser.Flags.FLAG_ENABLE_BIOMETRICS_TO_UNLOCK_PRIVATE_SPACE);
         setUpAndStartProfileInBackground(TEST_USER_ID1, USER_TYPE_PROFILE_MANAGED);
@@ -2476,7 +2526,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */
-                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                -1, /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         // mock the device to be secure in order to expect the keyguard to be shown
         when(mInjector.mKeyguardManagerMock.isDeviceSecure(anyInt())).thenReturn(true);
@@ -2517,7 +2568,8 @@ public class UserControllerTest {
         mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */ -1,
-                /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false);
+                /* skipKeyguardWhenSwitchingToUnlockedUsers= */ false,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         mUserController.startUser(TEST_USER_ID, USER_START_MODE_FOREGROUND);
         waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
@@ -2534,7 +2586,8 @@ public class UserControllerTest {
                 /* maxRunningUsers= */ 3,
                 /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */ -1,
-                /* skipKeyguardWhenSwitchingToUnlockedUsers= */ true);
+                /* skipKeyguardWhenSwitchingToUnlockedUsers= */ true,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         when(mInjector.isCeStorageUnlocked(eq(TEST_USER_ID))).thenReturn(ceStorageUnlocked);
         when(mInjector.mLockPatternUtilsMock.isTrustAllowedForUser(eq(TEST_USER_ID)))
@@ -2594,7 +2647,8 @@ public class UserControllerTest {
                 /* maxRunningUsers= */ 3,
                 /* delayUserDataLocking= */ false,
                 /* backgroundUserConsideredDispensableTimeSecs= */ -1,
-                skipKeyguardWhenSwitchingToUnlockedUsers);
+                skipKeyguardWhenSwitchingToUnlockedUsers,
+                /* hideUserSwitchingUiDuringSetup= */ false);
 
         // mock observer that replies to callbacks
         registerUserSwitchObserver(
@@ -3074,7 +3128,7 @@ public class UserControllerTest {
         @Override
         void showUserSwitchingDialog(UserInfo fromUser, UserInfo toUser,
                 String switchingFromSystemUserMessage, String switchingToSystemUserMessage,
-                Runnable onShown) {
+                boolean hideUserSwitchingUiDuringSetup, Runnable onShown) {
             if (onShown != null) {
                 onShown.run();
             }
