@@ -47569,8 +47569,8 @@ package android.telephony {
     method public int getPortIndex();
     method @NonNull public java.util.Set<java.lang.Integer> getServiceCapabilities();
     method public int getSimSlotIndex();
-    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public int getStreamingAppMaxDownlinkKbps();
-    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public int getStreamingAppMaxUplinkKbps();
+    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public long getStreamingAppMaxDownlinkKbps();
+    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public long getStreamingAppMaxUplinkKbps();
     method public int getSubscriptionId();
     method public int getSubscriptionType();
     method public int getUsageSetting();
@@ -47691,7 +47691,7 @@ package android.telephony {
     method @Nullable public CharSequence getTitle();
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public java.util.Set<java.lang.Integer> getTypes();
     method public void writeToParcel(android.os.Parcel, int);
-    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public static final int BITRATE_UNKNOWN = -1; // 0xffffffff
+    field @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") public static final long BITRATE_UNKNOWN = -1L; // 0xffffffffffffffffL
     field public static final long BYTES_UNKNOWN = -1L; // 0xffffffffffffffffL
     field public static final long BYTES_UNLIMITED = 9223372036854775807L; // 0x7fffffffffffffffL
     field @NonNull public static final android.os.Parcelable.Creator<android.telephony.SubscriptionPlan> CREATOR;
@@ -47729,8 +47729,8 @@ package android.telephony {
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public android.telephony.SubscriptionPlan.Builder setDataUsageResetTime(@Nullable java.time.ZonedDateTime);
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public android.telephony.SubscriptionPlan.Builder setId(int);
     method @NonNull public android.telephony.SubscriptionPlan.Builder setNetworkTypes(@NonNull int[]);
-    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public android.telephony.SubscriptionPlan.Builder setStreamingAppMaxDownlinkKbps(int);
-    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public android.telephony.SubscriptionPlan.Builder setStreamingAppMaxUplinkKbps(int);
+    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public android.telephony.SubscriptionPlan.Builder setStreamingAppMaxDownlinkKbps(long);
+    method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_enhancement") @NonNull public android.telephony.SubscriptionPlan.Builder setStreamingAppMaxUplinkKbps(long);
     method @FlaggedApi("com.android.internal.telephony.flags.subscription_plan_allow_status_and_end_date") @NonNull public android.telephony.SubscriptionPlan.Builder setSubscriptionStatus(int);
     method public android.telephony.SubscriptionPlan.Builder setSummary(@Nullable CharSequence);
     method public android.telephony.SubscriptionPlan.Builder setTitle(@Nullable CharSequence);

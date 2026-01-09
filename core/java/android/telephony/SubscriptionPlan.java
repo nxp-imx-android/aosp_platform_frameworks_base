@@ -119,7 +119,7 @@ public final class SubscriptionPlan implements Parcelable {
 
     /** Value indicating data rate is unknown. */
     @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
-    public static final int BITRATE_UNKNOWN = -1;
+    public static final long BITRATE_UNKNOWN = -1;
 
     /** Value indicating a timestamp is unknown. */
     public static final long TIME_UNKNOWN = -1;
@@ -434,7 +434,7 @@ public final class SubscriptionPlan implements Parcelable {
      * The value may be {@link #BITRATE_UNKNOWN} if this information is not available from the
      * carrier or not applicable to the plan.
      */
-    private final int mStreamingAppMaxDownlinkKbps;
+    private final long mStreamingAppMaxDownlinkKbps;
 
     /**
      * The maximum upstream bitrate for streaming applications on this subscription plan, in
@@ -448,7 +448,7 @@ public final class SubscriptionPlan implements Parcelable {
      *
      * @see #BITRATE_UNKNOWN
      */
-    private final int mStreamingAppMaxUplinkKbps;
+    private final long mStreamingAppMaxUplinkKbps;
 
 
     /**
@@ -556,8 +556,8 @@ public final class SubscriptionPlan implements Parcelable {
         mSubscriptionStatus = in.readInt();
         mTypes = Arrays.stream(in.createIntArray())
                 .boxed().collect(Collectors.toUnmodifiableSet());
-        mStreamingAppMaxDownlinkKbps = in.readInt();
-        mStreamingAppMaxUplinkKbps = in.readInt();
+        mStreamingAppMaxDownlinkKbps = in.readLong();
+        mStreamingAppMaxUplinkKbps = in.readLong();
         mDataUsageResetTime = RecurrenceRule.convertZonedDateTime(in.readString());
         mId = in.readInt();
     }
@@ -579,8 +579,8 @@ public final class SubscriptionPlan implements Parcelable {
         dest.writeIntArray(mNetworkTypes.stream().mapToInt(Integer::intValue).toArray());
         dest.writeInt(mSubscriptionStatus);
         dest.writeIntArray(mTypes.stream().mapToInt(Integer::intValue).toArray());
-        dest.writeInt(mStreamingAppMaxDownlinkKbps);
-        dest.writeInt(mStreamingAppMaxUplinkKbps);
+        dest.writeLong(mStreamingAppMaxDownlinkKbps);
+        dest.writeLong(mStreamingAppMaxUplinkKbps);
         dest.writeString(RecurrenceRule.convertZonedDateTime(mDataUsageResetTime));
         dest.writeInt(mId);
     }
@@ -890,7 +890,7 @@ public final class SubscriptionPlan implements Parcelable {
      *
      * @hide
      */
-    public int getStreamingAppMaxDownlinkKbps() {
+    public long getStreamingAppMaxDownlinkKbps() {
         return mStreamingAppMaxDownlinkKbps;
     }
 
@@ -909,7 +909,7 @@ public final class SubscriptionPlan implements Parcelable {
      *
      * @hide
      */
-    public int getStreamingAppMaxUplinkKbps() {
+    public long getStreamingAppMaxUplinkKbps() {
         return mStreamingAppMaxUplinkKbps;
     }
 
@@ -1130,7 +1130,7 @@ public final class SubscriptionPlan implements Parcelable {
          * The value may be {@link #BITRATE_UNKNOWN} if this information is not available from the
          * carrier or not applicable to the plan.
          */
-        private int mStreamingAppMaxDownlinkKbps = BITRATE_UNKNOWN;
+        private long mStreamingAppMaxDownlinkKbps = BITRATE_UNKNOWN;
 
         /**
          * The maximum upstream bitrate for streaming applications, in kilobits per second (Kbps)
@@ -1145,7 +1145,7 @@ public final class SubscriptionPlan implements Parcelable {
          * The value may be {@link #BITRATE_UNKNOWN} if this information is not available from the
          * carrier or not applicable to the plan.
          */
-        private int mStreamingAppMaxUplinkKbps = BITRATE_UNKNOWN;
+        private long mStreamingAppMaxUplinkKbps = BITRATE_UNKNOWN;
 
         /**
          * The time at which the data usage allowance resets.
@@ -1419,7 +1419,7 @@ public final class SubscriptionPlan implements Parcelable {
          */
         @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
         @NonNull
-        public Builder setStreamingAppMaxDownlinkKbps(int downlinkKbps) {
+        public Builder setStreamingAppMaxDownlinkKbps(long downlinkKbps) {
             mStreamingAppMaxDownlinkKbps = downlinkKbps;
             return this;
         }
@@ -1432,7 +1432,7 @@ public final class SubscriptionPlan implements Parcelable {
          */
         @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
         @NonNull
-        public Builder setStreamingAppMaxUplinkKbps(int uplinkKbps) {
+        public Builder setStreamingAppMaxUplinkKbps(long uplinkKbps) {
             mStreamingAppMaxUplinkKbps = uplinkKbps;
             return this;
         }

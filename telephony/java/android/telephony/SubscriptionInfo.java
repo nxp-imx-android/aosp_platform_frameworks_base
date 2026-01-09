@@ -250,7 +250,7 @@ public class SubscriptionInfo implements Parcelable {
      * applications. It can be used by streaming apps to select an appropriate media quality
      * that matches the available bandwidth, helping to avoid buffering.
      */
-    private final int mStreamingAppMaxDownlinkKbps;
+    private final long mStreamingAppMaxDownlinkKbps;
 
     /**
      * The maximum uplink data rate in Kilobits per second (Kbps) for streaming applications.
@@ -260,7 +260,7 @@ public class SubscriptionInfo implements Parcelable {
      * applications to upload data. It can be used by streaming apps to select an appropriate
      * media quality for outgoing streams, helping to avoid buffering or connection issues.
      */
-    private final int mStreamingAppMaxUplinkKbps;
+    private final long mStreamingAppMaxUplinkKbps;
 
     // Below are the fields that do not exist in the database.
 
@@ -1029,7 +1029,7 @@ public class SubscriptionInfo implements Parcelable {
      * {@link SubscriptionPlan#BITRATE_UNKNOWN} if unknown or not applicable.
      */
     @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
-    public int getStreamingAppMaxDownlinkKbps() {
+    public long getStreamingAppMaxDownlinkKbps() {
         return mStreamingAppMaxDownlinkKbps;
     }
 
@@ -1047,7 +1047,7 @@ public class SubscriptionInfo implements Parcelable {
      * {@link SubscriptionPlan#BITRATE_UNKNOWN} if unknown or not applicable.
      */
     @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
-    public int getStreamingAppMaxUplinkKbps() {
+    public long getStreamingAppMaxUplinkKbps() {
         return mStreamingAppMaxUplinkKbps;
     }
 
@@ -1093,8 +1093,8 @@ public class SubscriptionInfo implements Parcelable {
                     .setTransferStatus(source.readInt())
                     .setSatelliteESOSSupported(source.readBoolean())
                     .setIsPrivateNetwork(source.readBoolean())
-                    .setStreamingAppMaxDownlinkKbps(source.readInt())
-                    .setStreamingAppMaxUplinkKbps(source.readInt())
+                    .setStreamingAppMaxDownlinkKbps(source.readLong())
+                    .setStreamingAppMaxUplinkKbps(source.readLong())
                     .build();
         }
 
@@ -1141,8 +1141,8 @@ public class SubscriptionInfo implements Parcelable {
         dest.writeInt(mTransferStatus);
         dest.writeBoolean(mIsSatelliteESOSSupported);
         dest.writeBoolean(mIsPrivateNetwork);
-        dest.writeInt(mStreamingAppMaxDownlinkKbps);
-        dest.writeInt(mStreamingAppMaxUplinkKbps);
+        dest.writeLong(mStreamingAppMaxDownlinkKbps);
+        dest.writeLong(mStreamingAppMaxUplinkKbps);
     }
 
     @Override
@@ -1480,13 +1480,13 @@ public class SubscriptionInfo implements Parcelable {
          * The maximum downlink data rate in Kilobits per second (Kbps) for streaming applications
          * defined in GSMA TS.43 9.1.3.
          */
-        private int mStreamingAppMaxDownlinkKbps = SubscriptionPlan.BITRATE_UNKNOWN;
+        private long mStreamingAppMaxDownlinkKbps = SubscriptionPlan.BITRATE_UNKNOWN;
 
         /**
          * The maximum uplink data rate in Kilobits per second (Kbps) for streaming applications
          * defined in GSMA TS.43 9.1.3.
          */
-        private int mStreamingAppMaxUplinkKbps = SubscriptionPlan.BITRATE_UNKNOWN;
+        private long mStreamingAppMaxUplinkKbps = SubscriptionPlan.BITRATE_UNKNOWN;
 
         /**
          * Default constructor.
@@ -2011,7 +2011,7 @@ public class SubscriptionInfo implements Parcelable {
          */
         @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
         @NonNull
-        public Builder setStreamingAppMaxDownlinkKbps(int streamingAppMaxDownlinkKbps) {
+        public Builder setStreamingAppMaxDownlinkKbps(long streamingAppMaxDownlinkKbps) {
             mStreamingAppMaxDownlinkKbps = streamingAppMaxDownlinkKbps;
             return this;
         }
@@ -2029,7 +2029,7 @@ public class SubscriptionInfo implements Parcelable {
          */
         @FlaggedApi(Flags.FLAG_SUBSCRIPTION_PLAN_ENHANCEMENT)
         @NonNull
-        public Builder setStreamingAppMaxUplinkKbps(int streamingAppMaxUplinkKbps) {
+        public Builder setStreamingAppMaxUplinkKbps(long streamingAppMaxUplinkKbps) {
             mStreamingAppMaxUplinkKbps = streamingAppMaxUplinkKbps;
             return this;
         }
