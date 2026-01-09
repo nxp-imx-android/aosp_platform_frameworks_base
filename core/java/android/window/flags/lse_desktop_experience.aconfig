@@ -629,6 +629,16 @@ flag {
 }
 
 flag {
+    name: "enable_display_disconnect_pip"
+    namespace: "lse_desktop_experience"
+    description: "Enables shell-handled disconnect transition for pip tasks"
+    bug: "473895945"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_display_disconnect_splitscreen"
     namespace: "lse_desktop_experience"
     description: "Enables splitscreen disconnect handling."
