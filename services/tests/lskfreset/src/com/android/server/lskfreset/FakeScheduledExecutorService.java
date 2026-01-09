@@ -16,6 +16,7 @@
 
 package com.android.server.lskfreset;
 
+import com.android.internal.annotations.GuardedBy;
 import com.android.internal.util.Preconditions;
 
 import java.util.ArrayList;
@@ -55,10 +56,6 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
 
         int size() {
             return mQueue.size();
-        }
-
-        boolean contains(E e) {
-            return mQueue.contains(e);
         }
 
         void put(E e) {
@@ -293,7 +290,6 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
                 return future.get();
             } catch (CancellationException | ExecutionException e) {
                 // Ignore these; we're looking for a successful result.
-                continue;
             }
         }
         // If we get here than all of the tasks were either failed or were cancelled.
@@ -320,6 +316,8 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
         private final Callable<V> mCallable;
         private final long mTimeToExecuteAt;
 
+        private final Object mStateLock = new Object();
+
         private enum State {
             // The future has not been executed or cancelled.
             PENDING,
@@ -332,13 +330,17 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
             COMPLETED,
         }
 
+        @GuardedBy("mStateLock")
         private State mState = State.PENDING;
 
         // The result of the callable, if this future is for a callable. After execution if the
         // callable threw an exception then mResultException will be non-null; otherwise it returned
         // mResult. Note that callables can return null and so mResult==null does not necessarily
         // indicate that the callable was not executed.
+        @GuardedBy("mStateLock")
         private V mResult = null;
+
+        @GuardedBy("mStateLock")
         private ExecutionException mResultException = null;
 
         // Latch used to signal completion of the future.
@@ -347,6 +349,7 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
         // A list of timeout waiters, one for every get() call with a timeout. This list includes
         // both timeouts that have already expired and those that are still waiting. Entries are
         // only cleared once the future is completed or cancelled and the entire list is emptied.
+        @GuardedBy("itself")
         private final List<WaitForTimeout> mTimeouts = new ArrayList<>();
 
         private class WaitForTimeout implements Delayed {
@@ -397,7 +400,7 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
         /** Executes the task if it is still pending. */
         private void execute() {
             try {
-                synchronized (mState) {
+                synchronized (mStateLock) {
                     if (mState != State.PENDING) {
                         return;
                     }
@@ -453,7 +456,7 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
             // We can never interrupt running tasks and so mayInterruptIfRunning is ignored. If a
             // task is PENDING then it hasn't started running yet and if it's COMPLETED then it has
             // already finished.
-            synchronized (mState) {
+            synchronized (mStateLock) {
                 if (mState == State.COMPLETED) {
                     return false;
                 }
@@ -466,14 +469,14 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
 
         @Override
         public boolean isCancelled() {
-            synchronized (mState) {
+            synchronized (mStateLock) {
                 return mState == State.CANCELLED;
             }
         }
 
         @Override
         public boolean isDone() {
-            synchronized (mState) {
+            synchronized (mStateLock) {
                 return mState != State.PENDING;
             }
         }
@@ -482,7 +485,7 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
         public V get() throws ExecutionException, InterruptedException {
             assertNotExecutionThread();
             mCompletionLatch.await();
-            synchronized (mState) {
+            synchronized (mStateLock) {
                 if (mState == State.CANCELLED) {
                     throw new CancellationException();
                 } else if (mResultException != null) {
