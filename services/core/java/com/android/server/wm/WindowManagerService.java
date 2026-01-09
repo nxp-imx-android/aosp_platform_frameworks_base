@@ -1552,7 +1552,8 @@ public class WindowManagerService extends IWindowManager.Stub
         mSystemPerformanceHinter = new SystemPerformanceHinter(mContext, displayId -> {
             synchronized (mGlobalLock) {
                 DisplayContent dc = mRoot.getDisplayContent(displayId);
-                return (dc == null) ? null : dc.getSurfaceControl();
+                return (dc != null && !dc.isSystemPerformanceHinterDisabled())
+                        ? dc.getSurfaceControl() : null;
             }
         }, mTransactionFactory);
         mSystemPerformanceHinter.mTraceTag = TRACE_TAG_WINDOW_MANAGER;
@@ -8797,6 +8798,20 @@ public class WindowManagerService extends IWindowManager.Stub
 
                 mSyncEngine.setReady(syncId);
                 return true;
+            }
+        }
+
+        @Override
+        public void disableSystemPerformanceHinter(int displayId) {
+            synchronized (mGlobalLock) {
+                final DisplayContent dc = mRoot.getDisplayContent(displayId);
+                if (dc == null) {
+                    Slog.e(TAG, "Failed to disable SystemPerformanceHinter"
+                            + " for display: " + displayId
+                            + " - DisplayContent not found.");
+                    return;
+                }
+                dc.disableSystemPerformanceHinter();
             }
         }
 

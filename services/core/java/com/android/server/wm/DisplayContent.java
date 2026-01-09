@@ -855,6 +855,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      */
     private boolean mIsHardwareRendererOutputDisabled = false;
 
+    /** Whether SystemPerformanceHinter is disabled for the display. */
+    private boolean mIsSystemPerformanceHinterDisabled = false;
+
     private final Consumer<WindowState> mUpdateWindowsForAnimator = w -> {
         WindowStateAnimator winAnimator = w.mWinAnimator;
         final ActivityRecord activity = w.mActivityRecord;
@@ -1505,6 +1508,14 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     boolean isHardwareRendererOutputDisabled() {
         return mIsHardwareRendererOutputDisabled;
+    }
+
+    void disableSystemPerformanceHinter() {
+        mIsSystemPerformanceHinterDisabled = true;
+    }
+
+    boolean isSystemPerformanceHinterDisabled() {
+        return mIsSystemPerformanceHinterDisabled;
     }
 
     void setAnimationsDisabledLocked(boolean disabled) {
