@@ -17,6 +17,7 @@
 #ifndef ANDROID_MEDIA_AUDIOFORMAT_H
 #define ANDROID_MEDIA_AUDIOFORMAT_H
 
+#include <nativehelper/ScopedLocalRef.h>
 #include <system/audio.h>
 
 // keep these values in sync with AudioFormat.java
@@ -375,6 +376,21 @@ static inline audio_channel_mask_t nativeChannelMaskFromJavaChannelMasks(
     ChannelMasks channelMasks;
     channelMasks.fillFromJobject(env, fields, jChannelMasks);
     return channelMasksToNative(channelMasks.positionMask, channelMasks.indexMask, isInput);
+}
+
+static inline ScopedLocalRef<jobject> javaChannelMasksFromNativeChannelMask(
+        JNIEnv* env, const ChannelMasks::fields_t fields, audio_channel_mask_t nMask,
+        jboolean isInput) {
+    jint positionMask = CHANNEL_INVALID;
+    jint indexMask = CHANNEL_INVALID;
+    if (audio_channel_mask_get_representation(nMask) == AUDIO_CHANNEL_REPRESENTATION_INDEX) {
+        indexMask = audio_channel_mask_get_bits(nMask);
+    } else {
+        positionMask = isInput ? inChannelMaskFromNative(nMask) : outChannelMaskFromNative(nMask);
+    }
+    return ScopedLocalRef<jobject>(env,
+                                   env->NewObject(fields.clazz, fields.constructID, positionMask,
+                                                  indexMask));
 }
 
 #endif // ANDROID_MEDIA_AUDIOFORMAT_H

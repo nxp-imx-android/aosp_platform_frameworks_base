@@ -16,6 +16,7 @@
 
 package android.media;
 
+import android.annotation.NonNull;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.os.Build;
 
@@ -57,6 +58,16 @@ public class AudioMixPort extends AudioPort {
     public AudioMixPortConfig buildConfig(int samplingRate, int channelMask, int format,
                                        AudioGainConfig gain) {
         return new AudioMixPortConfig(this, samplingRate, channelMask, format, gain);
+    }
+
+    /**
+     * Build a specific configuration of this audio mix port for use by methods
+     * like AudioManager.connectAudioPatch().
+     */
+    public AudioMixPortConfig buildConfig(int samplingRate,
+                                        @NonNull AudioFormat.ChannelMasks channelMasks, int format,
+                                        AudioGainConfig gain) {
+        return new AudioMixPortConfig(this, samplingRate, channelMasks, format, gain);
     }
 
     /**
