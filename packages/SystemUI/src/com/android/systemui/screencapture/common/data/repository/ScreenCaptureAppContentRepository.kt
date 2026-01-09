@@ -163,6 +163,8 @@ constructor(
                             listener,
                             thumbnailWidthPx,
                             thumbnailHeightPx,
+                            0,
+                            0,
                         )
                     } catch (e: RemoteException) {
                         Log.e(TAG, "App content request failed", e)
