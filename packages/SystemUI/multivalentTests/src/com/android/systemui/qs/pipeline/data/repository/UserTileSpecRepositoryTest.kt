@@ -10,6 +10,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
@@ -528,6 +529,78 @@ class UserTileSpecRepositoryTest(flags: FlagsParameterization) : SysuiTestCase()
 
             assertThat(qsPreferencesRepository.getLargeTilesForUser(USER))
                 .isEqualTo(setOf(TileSpec.create("a")))
+        }
+
+    @Test
+    @EnableFlags(QsSplitInternetTile.FLAG_NAME)
+    fun flagEnabled_largeInternetTile_changeAfterMigration_correctMigration() =
+        kosmos.runTest {
+            val storedInSettings = "internet,a"
+            storeTiles(storedInSettings)
+            qsPreferencesRepository.setLargeTilesForUser(USER, setOf(TileSpec.create("internet")))
+
+            val tiles by collectLastValue(underTest.tiles())
+            assertThat(tiles!!)
+                .containsExactly(
+                    TileSpec.create("wifi"),
+                    TileSpec.create("cell"),
+                    TileSpec.create("a"),
+                )
+                .inOrder()
+
+            assertThat(qsPreferencesRepository.getLargeTilesForUser(USER)).isEmpty()
+
+            underTest.addTile(TileSpec.create("b"))
+
+            assertThat(tiles!!)
+                .containsExactly(
+                    TileSpec.create("wifi"),
+                    TileSpec.create("cell"),
+                    TileSpec.create("a"),
+                    TileSpec.create("b"),
+                )
+                .inOrder()
+
+            assertThat(qsPreferencesRepository.getLargeTilesForUser(USER)).isEmpty()
+        }
+
+    @Test
+    @EnableFlags(QsSplitInternetTile.FLAG_NAME)
+    fun flagEnabled_restore_largeInternet_smallWifiCell() =
+        kosmos.runTest {
+            val tiles by collectLastValue(underTest.tiles())
+
+            assertThat(tiles).doesNotContain(TileSpec.create("internet"))
+
+            val restoreData =
+                RestoreData(
+                    restoredTiles =
+                        listOf(
+                            TileSpec.create("a"),
+                            TileSpec.create("internet"),
+                            TileSpec.create("b"),
+                        ),
+                    restoredAutoAddedTiles = emptySet(),
+                    USER,
+                )
+            qsPreferencesRepository.setLargeTilesForUser(USER, setOf(TileSpec.create("internet")))
+
+            underTest.reconcileRestore(restoreData, emptySet())
+            runCurrent()
+
+            assertThat(tiles!!)
+                .containsExactly(
+                    TileSpec.create("a"),
+                    TileSpec.create("wifi"),
+                    TileSpec.create("cell"),
+                    TileSpec.create("b"),
+                )
+                .inOrder()
+
+            assertThat(qsPreferencesRepository.getLargeTilesForUser(USER))
+                .doesNotContain(TileSpec.create("wifi"))
+            assertThat(qsPreferencesRepository.getLargeTilesForUser(USER))
+                .doesNotContain(TileSpec.create("cell"))
         }
 
     @Test
