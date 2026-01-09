@@ -92,8 +92,10 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.PermissionChecker;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
+import android.content.pm.ServiceInfo;
 import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.net.Network;
@@ -108,6 +110,7 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SystemClock;
+import android.os.UserHandle;
 import android.os.WorkSource;
 import android.os.WorkSource.WorkChain;
 import android.platform.test.annotations.DisableFlags;
@@ -156,6 +159,9 @@ public class JobSchedulerServiceTest {
     private static final int TEST_UID = 10123;
     private static final String TEST_NAMESPACE = "JobSchedulerServiceTest";
     private static final int TEST_MAX_JOBS_PER_APP = 5;
+    private static final String TEST_PCC_PACKAGE = "com.example.pcc";
+    private static final ComponentName TEST_PCC_COMPONENT =
+            new ComponentName(TEST_PCC_PACKAGE, "PccJobService");
 
     private JobSchedulerService mService;
     private JobStore mJobStore;
@@ -3061,4 +3067,98 @@ public class JobSchedulerServiceTest {
                 .addField(eq((long) PERFETTO_TRACE_FIELD_JOB_STATE_FLAGS), eq(expectedFlags));
         verify(mMockPerfettoTracer).emit();
     }
+
+    private ServiceInfo createMockPccServiceInfo(int appUid, int pccUid) {
+        ServiceInfo serviceInfo = new ServiceInfo();
+        serviceInfo.packageName = TEST_PCC_PACKAGE;
+        serviceInfo.permission = android.app.job.JobService.PERMISSION_BIND;
+        serviceInfo.flags |= ServiceInfo.FLAG_RUN_IN_PCC_SANDBOX;
+
+        ApplicationInfo applicationInfo = new ApplicationInfo();
+        applicationInfo.uid = appUid;
+        applicationInfo.pccUid = pccUid;
+        serviceInfo.applicationInfo = applicationInfo;
+
+        return serviceInfo;
+    }
+
+    private void setupPccMocking(int appUid, int pccUid) throws Exception {
+        PackageManager mockPackageManager = mContext.getPackageManager();
+        doReturn(mContext).when(mContext).createContextAsUser(any(UserHandle.class), anyInt());
+        ServiceInfo serviceInfo = createMockPccServiceInfo(appUid, pccUid);
+        when(mockPackageManager.getServiceInfo(eq(TEST_PCC_COMPONENT), anyInt()))
+                .thenReturn(serviceInfo);
+    }
+
+    /**
+     * Verifies that {@link JobScheduler#schedule(JobInfo)} throws an
+     * {@link IllegalArgumentException} when PCC framework support is enabled and the calling
+     * UID does not match the service's PCC-aware UID.
+     */
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testSchedule_PccServiceCallingUidPccUidDifferentThrowException_FlagEnabled()
+            throws Exception {
+        final int testAppUid = Process.myUid();
+        final int testPccUid = testAppUid + Process.FIRST_PCC_UID - Process.FIRST_APPLICATION_UID;
+
+        setupPccMocking(testAppUid, testPccUid);
+
+        JobInfo job = new JobInfo.Builder(1, TEST_PCC_COMPONENT).build();
+
+        try {
+            mService.mJobSchedulerStub.schedule(TEST_NAMESPACE, job);
+            fail("Scheduling a PCC job from a non-PCC UID should fail when PCC support is enabled");
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage().contains("uid " + testAppUid + " cannot schedule job in "
+                    + TEST_PCC_PACKAGE));
+        }
+    }
+
+    /**
+     * Verifies that {@link JobScheduler#schedule(JobInfo)} succeeds when PCC framework
+     * support is enabled and the calling UID matches the service's PCC-aware UID.
+     */
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testSchedule_PccServiceCallingUidSameAsPccUidSuccess_FlagEnabled()
+            throws Exception {
+        final int testAppUid = Process.myUid();
+
+        setupPccMocking(testAppUid, testAppUid);
+
+        JobInfo job = new JobInfo.Builder(1, TEST_PCC_COMPONENT).build();
+
+        try {
+            assertEquals(JobScheduler.RESULT_SUCCESS,
+                    mService.mJobSchedulerStub.schedule(TEST_NAMESPACE, job));
+        } catch (IllegalArgumentException e) {
+            fail("Scheduling should succeed when PccUid matches AppUid: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Verifies that {@link JobScheduler#schedule(JobInfo)} succeeds when PCC framework
+     * support is disabled, even if the service has a different PCC-aware UID,
+     * as long as the calling UID matches the base application UID.
+     */
+    @Test
+    @RequiresFlagsDisabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testSchedule_PccService_FlagDisabled() throws Exception {
+        final int testAppUid = Process.myUid();
+        final int testPccUid = testAppUid + Process.FIRST_PCC_UID - Process.FIRST_APPLICATION_UID;
+
+        setupPccMocking(testAppUid, testPccUid);
+
+        JobInfo job = new JobInfo.Builder(1, TEST_PCC_COMPONENT).build();
+
+        try {
+            assertEquals(JobScheduler.RESULT_SUCCESS,
+                    mService.mJobSchedulerStub.schedule(TEST_NAMESPACE, job));
+        } catch (IllegalArgumentException e) {
+            fail("Scheduling with appUid should succeed when PCC support is disabled: "
+                    + e.getMessage());
+        }
+    }
+
 }
