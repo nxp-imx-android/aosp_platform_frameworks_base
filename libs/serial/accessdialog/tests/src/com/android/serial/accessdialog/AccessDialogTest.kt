@@ -104,7 +104,7 @@ class AccessDialogTest {
         launchActivity().use {
             val latch = CountDownLatch(1)
             doAnswer { latch.countDown() }.whenever(sSerialAccessManager!!)
-                .grantSerialPortAccess(PORT_NAME, UID, mToken)
+                .grantSerialPortAccess(PORT_NAME, UID, false, mToken)
 
             val label = Pattern.compile("Allow", Pattern.CASE_INSENSITIVE)
             val button = mDevice.wait(
@@ -114,7 +114,8 @@ class AccessDialogTest {
             button.click()
 
             assertTrue(latch.await(2, TimeUnit.SECONDS))
-            verify(sSerialAccessManager!!, never()).revokeSerialPortAccess(any(), any(), any())
+            verify(sSerialAccessManager!!, never())
+                .revokeSerialPortAccess(any(), any(), any(), any())
         }
     }
 
@@ -123,7 +124,7 @@ class AccessDialogTest {
         launchActivity().use {
             val latch = CountDownLatch(1)
             doAnswer { latch.countDown() }.whenever(sSerialAccessManager!!)
-                .revokeSerialPortAccess(PORT_NAME, UID, mToken)
+                .revokeSerialPortAccess(PORT_NAME, UID, false, mToken)
 
             val label = Pattern.compile("Don't allow", Pattern.CASE_INSENSITIVE)
             val button = mDevice.wait(
@@ -133,7 +134,8 @@ class AccessDialogTest {
             button.click()
 
             assertTrue(latch.await(2, TimeUnit.SECONDS))
-            verify(sSerialAccessManager!!, never()).grantSerialPortAccess(any(), any(), any())
+            verify(sSerialAccessManager!!, never())
+                .grantSerialPortAccess(any(), any(), any(), any())
         }
     }
 
@@ -142,12 +144,13 @@ class AccessDialogTest {
         launchActivity().use { scenario ->
             val latch = CountDownLatch(1)
             doAnswer { latch.countDown() }.whenever(sSerialAccessManager!!)
-                .revokeSerialPortAccess(PORT_NAME, UID, mToken)
+                .revokeSerialPortAccess(PORT_NAME, UID, false, mToken)
 
             scenario.moveToState(State.DESTROYED)
 
             assertTrue(latch.await(1, TimeUnit.SECONDS))
-            verify(sSerialAccessManager!!, never()).grantSerialPortAccess(any(), any(), any())
+            verify(sSerialAccessManager!!, never())
+                .grantSerialPortAccess(any(), any(), any(), any())
         }
     }
 
@@ -164,12 +167,13 @@ class AccessDialogTest {
         launchActivity().use {
             val latch = CountDownLatch(1)
             doAnswer { latch.countDown() }.whenever(sSerialAccessManager!!)
-                .revokeSerialPortAccess(PORT_NAME, UID, mToken)
+                .revokeSerialPortAccess(PORT_NAME, UID, false, mToken)
 
             listener!!.onSerialPortDisconnected(port)
 
             assertTrue(latch.await(1, TimeUnit.SECONDS))
-            verify(sSerialAccessManager!!, never()).grantSerialPortAccess(any(), any(), any())
+            verify(sSerialAccessManager!!, never())
+                .grantSerialPortAccess(any(), any(), any(), any())
         }
     }
 

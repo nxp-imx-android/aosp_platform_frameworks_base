@@ -29,11 +29,17 @@ public interface SerialUserAccessManagerInterface {
             AccessToPortDecidedCallback callback);
 
     /** Grants access to a serial port. */
-    void grantAccess(String portName, int uid, @Nullable IBinder token);
+    void grantAccess(String portName, int uid, boolean persistent, @Nullable IBinder token);
 
     /** Revokes access to a serial port. */
-    void revokeAccess(String portName, int uid, @Nullable IBinder token);
+    void revokeAccess(String portName, int uid, boolean persistent, @Nullable IBinder token);
+
+    /** The user is stopping. This is the last chance to write to system per-user storage. */
+    void onUserStopping();
 
     /** Called when a serial port is removed. */
     void onPortRemoved(String name);
+
+    /** Clear user access for tests */
+    void clearUserAccess(int userId);
 }

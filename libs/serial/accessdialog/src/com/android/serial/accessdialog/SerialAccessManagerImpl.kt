@@ -41,12 +41,14 @@ class SerialAccessManagerImpl(private val serialManager: SerialManager) : Serial
     }
 
     @RequiresPermission(Manifest.permission.MANAGE_SERIAL_PORTS)
-    override fun grantSerialPortAccess(serialPort: String, uid: Int, token: IBinder?) {
-        serialManager.grantSerialPortAccess(serialPort, uid, token)
+    override fun grantSerialPortAccess(
+            serialPort: String, uid: Int, persistent: Boolean, token: IBinder?) {
+        serialManager.grantSerialPortAccess(serialPort, uid, persistent, token)
     }
 
     @RequiresPermission(Manifest.permission.MANAGE_SERIAL_PORTS)
-    override fun revokeSerialPortAccess(serialPort: String, uid: Int, token: IBinder?) {
-        serialManager.revokeSerialPortAccess(serialPort, uid, token)
+    override fun revokeSerialPortAccess(
+            serialPort: String, uid: Int, persistent: Boolean, token: IBinder?) {
+        serialManager.revokeSerialPortAccess(serialPort, uid, persistent, token)
     }
 }

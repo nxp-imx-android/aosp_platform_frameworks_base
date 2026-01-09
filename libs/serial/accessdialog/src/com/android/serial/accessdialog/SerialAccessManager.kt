@@ -48,18 +48,22 @@ interface SerialAccessManager {
      *
      * @param serialPort The name of the serial port.
      * @param uid The user ID to grant access to.
+     * @param persistent {@code true} if the grant doesn't expire on disconnection and must be
+     *                   revoked in system settings; {@code false} otherwise
      * @param token An optional token associated with the grant.
      */
     @RequiresPermission(Manifest.permission.MANAGE_SERIAL_PORTS)
-    fun grantSerialPortAccess(serialPort: String, uid: Int, token: IBinder?)
+    fun grantSerialPortAccess(serialPort: String, uid: Int, persistent: Boolean, token: IBinder?)
 
     /**
      * Revokes a specific UID's access to a serial port.
      *
      * @param serialPort The name of the serial port.
      * @param uid The user ID to revoke access from.
+     * @param persistent {@code true} if future access requests will be automatically denied until
+     *                   users changes the access in system settings
      * @param token An optional token associated with the revocation.
      */
     @RequiresPermission(Manifest.permission.MANAGE_SERIAL_PORTS)
-    fun revokeSerialPortAccess(serialPort: String, uid: Int, token: IBinder?)
+    fun revokeSerialPortAccess(serialPort: String, uid: Int, persistent: Boolean, token: IBinder?)
 }
