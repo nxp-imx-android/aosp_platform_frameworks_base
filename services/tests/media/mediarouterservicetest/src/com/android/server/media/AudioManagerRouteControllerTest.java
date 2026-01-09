@@ -25,8 +25,10 @@ import static com.android.server.media.AudioRoutingUtils.getMediaAudioProductStr
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -350,6 +352,36 @@ public class AudioManagerRouteControllerTest {
                         mMediaAudioProductStrategy,
                         createAudioDeviceAttribute(
                                 AudioDeviceInfo.TYPE_WIRED_HEADSET, /* address= */ ""));
+    }
+
+    @Test
+    public void transferTo_rebuildsRoutes() {
+        addAvailableAudioDeviceInfo(
+                /* newSelectedDevice= */ FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET,
+                /* newAvailableDevices...= */ FAKE_AUDIO_DEVICE_INFO_BLUETOOTH_A2DP,
+                FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET);
+        MediaRoute2Info builtInSpeakerRoute =
+                getAvailableRouteWithType(MediaRoute2Info.TYPE_BUILTIN_SPEAKER);
+        clearInvocations(mEventListener);
+        AudioDeviceAttributes builtInSpeakerAttribute =
+                createAudioDeviceAttribute(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER, /* address= */ "");
+        doAnswer(
+                        invocation -> {
+                            mSelectedAudioDeviceInfo = FAKE_AUDIO_DEVICE_INFO_BUILTIN_SPEAKER;
+                            updateMockAudioManagerState();
+                            return true;
+                        })
+                .when(mMockAudioManager)
+                .setPreferredDeviceForStrategy(any(), eq(builtInSpeakerAttribute));
+
+        mControllerUnderTest.transferTo(/* requestId= */ 0L, builtInSpeakerRoute.getId());
+        mLooperManager.execute(mLooperManager.next());
+
+        verify(mMockAudioManager)
+                .setPreferredDeviceForStrategy(mMediaAudioProductStrategy, builtInSpeakerAttribute);
+        verify(mEventListener).onDeviceRouteChanged();
+        MediaRoute2Info selectedRoute = mControllerUnderTest.getSelectedRoutes().getFirst();
+        assertThat(selectedRoute.getType()).isEqualTo(MediaRoute2Info.TYPE_BUILTIN_SPEAKER);
     }
 
     @Test

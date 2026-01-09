@@ -476,6 +476,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
                 mBluetoothRouteController.activateBluetoothDeviceWithAddress(deviceAddress);
                 mAudioManager.removePreferredDeviceForStrategy(mStrategyForMedia);
                 mActiveAudioRoutingPolicyOnHandler = false;
+                // We don't need to refresh the state and send updates, because that will happen
+                // as soon as the bluetooth route becomes active and the corresponding audio output
+                // becomes available.
             };
 
         } else {
@@ -496,6 +499,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
             return () -> {
                 mActiveAudioRoutingPolicyOnHandler = true;
                 mAudioManager.setPreferredDeviceForStrategy(mStrategyForMedia, deviceAttributes);
+                rebuildAvailableRoutesAndNotify();
             };
         }
     }
