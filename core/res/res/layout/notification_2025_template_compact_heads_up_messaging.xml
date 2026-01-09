@@ -22,7 +22,6 @@
     android:clipChildren="false"
     android:tag="compactMessagingHUN"
     android:gravity="center_vertical"
-    android:theme="@style/Theme.DeviceDefault.Notification"
     android:importantForAccessibility="no">
     <com.android.internal.widget.NotificationRowIconView
         android:id="@+id/icon"
@@ -78,7 +77,6 @@
             android:layout_weight="1"
             android:clipChildren="false"
             android:gravity="center_vertical"
-            android:theme="@style/Theme.DeviceDefault.Notification"
             >
             <TextView
                 android:id="@+id/title"
