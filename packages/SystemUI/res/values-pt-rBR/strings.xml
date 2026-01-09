@@ -74,7 +74,7 @@
     <string name="usb_disable_contaminant_detection" msgid="3827082183595978641">"Ativar USB"</string>
     <string name="learn_more" msgid="4690632085667273811">"Saiba mais"</string>
     <string name="global_action_screenshot" msgid="2760267567509131654">"Capturar tela"</string>
-    <string name="global_action_smart_lock_disabled" msgid="6286551337177954859">"Desbloqueio compartilhado desativado"</string>
+    <string name="global_action_smart_lock_disabled" msgid="6286551337177954859">"Desbloqueio Compartilhado desativado"</string>
     <string name="remote_input_image_insertion_text" msgid="4850791636452521123">"enviou uma imagem"</string>
     <string name="screenshot_saving_title" msgid="2298349784913287333">"Salvando captura de tela..."</string>
     <string name="screenshot_saving_work_profile_title" msgid="5332829607308450880">"Salvando captura de tela no perfil de trabalho…"</string>
@@ -156,6 +156,10 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Mostrar câmera de selfie"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Mostrar toques"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Escolha um app para gravar"</string>
+    <!-- no translation found for screen_record_settings (2377267679200139285) -->
+    <skip />
+    <!-- no translation found for screen_record_markup (5583986085046693669) -->
+    <skip />
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Vídeo salvo"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Vídeo excluído"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Desfazer"</string>
@@ -168,6 +172,8 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"Pausar"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Desativar som"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Ativar som"</string>
+    <!-- no translation found for screen_record_video_preview_elapsed_time_a11y_template (969599623785875798) -->
+    <skip />
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"A captura de tela foi bloqueada pelo admin de TI"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Fazer captura da tela inteira"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Gravar tela toda"</string>
@@ -934,6 +940,8 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Newsletters, mídia recomendada e muito mais"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Ativar nas Configurações"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Agora, você pode receber resumos das suas conversas mais longas"</string>
+    <!-- no translation found for notification_onboarding_summaries_message_with_apps (5320980333818238465) -->
+    <skip />
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"O Organizador agrupa e silencia notificações de prioridade mais baixa. Adicione mais categorias nas Configurações."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# notificação}one{# notificação}many{# de notificações}other{# notificações}}"</string>
     <string name="notification_bundle_header_joined_description" msgid="4517556837418088139">"<xliff:g id="NAME">%1$s</xliff:g>, <xliff:g id="NUM_NOTIFICATIONS">%2$s</xliff:g>"</string>
@@ -1787,4 +1795,62 @@
     <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Usar local exato"</string>
     <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"Perto do local exato"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"Local exato"</string>
+    <!-- no translation found for privacy_chip_use_string (979159484631969073) -->
+    <skip />
+    <!-- no translation found for privacy_chip_use_string_with_app (6807216002072346877) -->
+    <skip />
+    <!-- no translation found for privacy_chip_camera_and_mic_text (6254449489859255607) -->
+    <skip />
+    <!-- no translation found for av_panel_title (455230832870768515) -->
+    <skip />
+    <!-- no translation found for sensor_activity_header (2145727448786698035) -->
+    <skip />
+    <!-- no translation found for sensor_activity_see_all_access_button (8005330122289549048) -->
+    <skip />
+    <!-- no translation found for sensor_activity_camera_label (4260675418606211259) -->
+    <skip />
+    <!-- no translation found for sensor_activity_microphone_label (4012136402420177411) -->
+    <skip />
+    <!-- no translation found for sensor_activity_manage_access_button (1275701280501357102) -->
+    <skip />
+    <!-- no translation found for sensor_activity_close_app_button (6907314738150753330) -->
+    <skip />
+    <!-- no translation found for sensor_activity_back_button_cd (6894532284650291222) -->
+    <skip />
+    <!-- no translation found for privacy_chip_apps_using_sensor_suffix (527247786536767096) -->
+    <skip />
+    <!-- no translation found for privacy_chip_camera_in_use (5163494654848590528) -->
+    <skip />
+    <!-- no translation found for privacy_chip_mic_in_use (1586091297556363367) -->
+    <skip />
+    <!-- no translation found for privacy_chip_camera_mic_in_use (5179267787210197484) -->
+    <skip />
+    <!-- no translation found for av_camera_portrait_touch_up (5191856296212427203) -->
+    <skip />
+    <!-- no translation found for av_mic_label (5427348054144789879) -->
+    <skip />
+    <!-- no translation found for av_camera_label (7719772172590702343) -->
+    <skip />
+    <!-- no translation found for av_camera_blur_drill_in_title (2250600375798981511) -->
+    <skip />
+    <!-- no translation found for av_camera_blur_off (3170334995799202022) -->
+    <skip />
+    <!-- no translation found for av_camera_blur_light (5666055368940059418) -->
+    <skip />
+    <!-- no translation found for av_camera_blur_full (3276351992811619332) -->
+    <skip />
+    <!-- no translation found for av_camera_improve_lighting (1540549414296669133) -->
+    <skip />
+    <!-- no translation found for av_camera_framing (5108462267843042492) -->
+    <skip />
+    <!-- no translation found for av_studio_mic (2614843492629357766) -->
+    <skip />
+    <!-- no translation found for av_studio_look (621893522645557619) -->
+    <skip />
+    <!-- no translation found for av_studio_look_effects (4105109585851068415) -->
+    <skip />
+    <!-- no translation found for av_blur (405131343487260171) -->
+    <skip />
+    <!-- no translation found for av_live_captions (7819416886586903077) -->
+    <skip />
 </resources>
