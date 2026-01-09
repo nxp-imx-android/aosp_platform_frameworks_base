@@ -126,13 +126,20 @@ fn run_signal_catcher_thread() -> Result<()> {
     std::thread::Builder::new()
         .name("signal_catcher".to_string())
         .spawn(move || loop {
+            // At 50% of the ANR timeout, AMS triggers long method tracing using SIGUSR1.
+            // Since we don't support this, we catch the signal and ignore it.
+            // (SIGUSR1 is also used to invoke GC explicitly, which is not supported as well.)
+            //
+            // At 100% of the ANR timeout, AMS executes the following sequence in appNotResponding():
+            // 1. debuggerd_trigger_dump(kDebuggerdJavaBacktrace): debuggerd sends SIGQUIT. We must ignore this to allow the native stack trace to proceed.
+            // 2. debuggerd_trigger_dump(kDebuggerdNativeBacktrace): debuggerd sends BIONIC_SIGNAL_DEBUGGER which is handled transparently by the signal handler set up by bionic.
+            // 3. AMS kills the app.
             match sigset.wait() {
                 Ok(Signal::SIGUSR1) => {
-                    info!("Received SIGUSR1, likely an ANR");
+                    info!("Received SIGUSR1");
                 }
                 Ok(Signal::SIGQUIT) => {
-                    info!("Received SIGQUIT, exiting");
-                    std::process::exit(1);
+                    info!("Received SIGQUIT");
                 }
                 Ok(signum) => {
                     warn!("Signal catcher thread received unexpected signal: {signum:?}");
