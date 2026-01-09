@@ -47,12 +47,6 @@ object Flags {
     val NOTIFICATION_DRAG_TO_CONTENTS =
         resourceBooleanFlag(R.bool.config_notificationToContents, "notification_drag_to_contents")
 
-    // TODO(b/280783617): Tracking Bug
-    @Keep
-    @JvmField
-    val BUILDER_EXTRAS_OVERRIDE =
-        sysPropBooleanFlag("persist.sysui.notification.builder_extras_override", default = true)
-
     // 200 - keyguard/lockscreen
     // ** Flag retired **
     // public static final BooleanFlag KEYGUARD_LAYOUT =
