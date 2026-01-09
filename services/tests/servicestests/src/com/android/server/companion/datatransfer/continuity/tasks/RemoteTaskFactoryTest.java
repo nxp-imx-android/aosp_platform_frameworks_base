@@ -21,6 +21,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import android.companion.datatransfer.continuity.RemoteTask;
+import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -41,14 +42,23 @@ import org.mockito.MockitoAnnotations;
 public class RemoteTaskFactoryTest {
 
     @Mock private PackageManager mockPackageManager;
+    @Mock private ActivityInfo mockBrowserActivityInfo;
 
     private RemoteTaskFactory remoteTaskFactory;
+
+    private final String BROWSER_PACKAGE_NAME = "com.android.browser";
+    private final String BROWSER_LABEL = "Browser";
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        when(mockPackageManager.getDefaultBrowserPackageNameAsUser(0))
+                .thenReturn(BROWSER_PACKAGE_NAME);
+        setupMockApplicationInfo(BROWSER_PACKAGE_NAME, BROWSER_LABEL, R.drawable.black_32x32);
+
         remoteTaskFactory =
                 new RemoteTaskFactory(
+                        0,
                         InstrumentationRegistry.getInstrumentation().getTargetContext(),
                         mockPackageManager);
     }
@@ -92,7 +102,7 @@ public class RemoteTaskFactoryTest {
     }
 
     @Test
-    public void testCreate_packageNotInstalled_returnsNull() {
+    public void testCreate_packageNotInstalledAndWebHandoffDisabled_returnsNull() {
         int associationId = 1;
         String associationDisplayName = "test_device";
         String packageName = "com.example.uninstalled_app";
@@ -120,8 +130,8 @@ public class RemoteTaskFactoryTest {
 
         assertThat(remoteTask).isNotNull();
         assertThat(remoteTask.getAssociationDisplayName()).isEqualTo(associationDisplayName);
-        assertThat(remoteTask.getPackageName()).isEqualTo(packageName);
-        assertThat(remoteTask.getLabel()).isNull();
+        assertThat(remoteTask.getPackageName()).isEqualTo(BROWSER_PACKAGE_NAME);
+        assertThat(remoteTask.getLabel()).isEqualTo(BROWSER_LABEL);
         assertThat(remoteTask.isHandoffEnabled()).isTrue();
         assertThat(remoteTask.isTaskInForeground()).isTrue();
     }
