@@ -64,6 +64,9 @@ interface BubbleFlickerSubjects {
     /** Indicates whether the device uses gesture navigation bar or not. */
     val isGesturalNavBar: Boolean
 
+    /** Indicates whether the device is a tablet. */
+    val isTablet: Boolean
+
     /** The app used in flicker tests to verify with. */
     val testApp: StandardAppHelper
 }

@@ -44,8 +44,10 @@ import org.junit.runners.Parameterized.Parameters
 /**
  * Test dismissing one of bubble apps by dragging a bubble item from bubble bar to dismiss view.
  *
- * To run this test: `atest
- * WMShellExplicitFlickerTestsBubbles:DismissExpandedBubbleViaBubbleBarTest`
+ * To run this test:
+ * ```
+ *     atest  WMShellExplicitFlickerTestsBubbles:DismissExpandedBubbleViaBubbleBarTest
+ * ```
  *
  * Pre-steps:
  * ```

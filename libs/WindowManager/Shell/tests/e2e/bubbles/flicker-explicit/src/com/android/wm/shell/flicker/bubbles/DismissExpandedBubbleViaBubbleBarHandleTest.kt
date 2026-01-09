@@ -39,8 +39,10 @@ import org.junit.runners.Parameterized.Parameters
  * Test dismiss bubble app via dragging bubble bar handle to the dismiss view when the bubble is in
  * expanded state.
  *
- * To run this test: `atest
- * WMShellExplicitFlickerTestsBubbles:DismissExpandedBubbleViaBubbleBarHandleTest`
+ * To run this test:
+ * ```
+ *     atest WMShellExplicitFlickerTestsBubbles:DismissExpandedBubbleViaBubbleBarHandleTest
+ * ```
  *
  * Pre-steps:
  * ```
