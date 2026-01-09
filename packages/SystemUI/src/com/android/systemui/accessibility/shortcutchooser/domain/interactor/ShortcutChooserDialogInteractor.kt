@@ -87,10 +87,10 @@ constructor(
         targetName: String,
     ) = repository.enableShortcutsForTargets(enable, shortcutType, setOf(targetName))
 
-    fun enableShortcutForAllTargets(@UserShortcutType shortcutType: Int) =
+    fun enableShortcutForAllTargetsNotNeedingWarning(@UserShortcutType shortcutType: Int) =
         repository
             .getAllAccessibilityTargetsInfo(shortcutType)
-            .filter { !it.isAssigned }
+            .filter { !it.isAssigned && !isServiceWarningRequired(it) }
             .map { it.targetName }
             .toSet()
             .takeIf { it.isNotEmpty() }
@@ -119,6 +119,12 @@ constructor(
     /** True if on login screen (HSU). */
     suspend fun isHeadlessSystemUser(): Boolean =
         hsum.isHeadlessSystemUser(userRepository.getSelectedUserInfo().id)
+
+    fun isServiceWarningRequired(target: AccessibilityTargetModel) =
+        repository.isServiceWarningRequired(target)
+
+    fun getAccessibilityServiceInfo(target: AccessibilityTargetModel) =
+        repository.getAccessibilityServiceInfo(target)
 
     private fun processShortcutChooserIntent(intent: Intent): DialogRequestModel? {
         if (!AccessibilityFlags.enableA11yTopRowShortcut()) {

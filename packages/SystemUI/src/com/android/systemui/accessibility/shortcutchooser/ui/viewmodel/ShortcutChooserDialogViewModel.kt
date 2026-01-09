@@ -26,6 +26,7 @@ import com.android.app.tracing.coroutines.launchTraced
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType
 import com.android.internal.accessibility.util.AccessibilityUtils
 import com.android.systemui.accessibility.shortcutchooser.domain.interactor.ShortcutChooserDialogInteractor
+import com.android.systemui.accessibility.shortcutchooser.shared.model.AccessibilityTargetModel
 import com.android.systemui.accessibility.shortcutchooser.shared.model.DialogRequestModel
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
@@ -80,6 +81,10 @@ constructor(
     private val _dialogType = MutableStateFlow(DialogType.NONE)
     /** The type of dialog that should be shown. */
     val dialogType = _dialogType.asStateFlow()
+
+    private val _warningDialogTarget = MutableStateFlow<AccessibilityTargetModel?>(null)
+    /** The target to show the warning dialog for. */
+    val warningDialogTarget = _warningDialogTarget.asStateFlow()
 
     fun getAllAccessibilityTargets(@UserShortcutType shortcutType: Int) =
         interactor.getAllAccessibilityTargets(shortcutType)
@@ -136,7 +141,9 @@ constructor(
         if (shortcutType == UserShortcutType.QUICK_ACCESS) {
             if (Flags.quickAccessShortcutType()) {
                 coroutineScope {
-                    launchTraced { interactor.enableShortcutForAllTargets(shortcutType) }
+                    launchTraced {
+                        interactor.enableShortcutForAllTargetsNotNeedingWarning(shortcutType)
+                    }
                 }
                 _dialogType.value = DialogType.QUICK_ACCESS
             }
@@ -175,6 +182,34 @@ constructor(
             Log.d(TAG, "No dialog for shortcut type=${shortcutType} with no assigned targets")
         }
     }
+
+    /**
+     * Shows the warning dialog if the target requires a warning dialog.
+     *
+     * @return true if the warning dialog was shown, false otherwise.
+     */
+    fun showWarningDialogIfNeeded(target: AccessibilityTargetModel): Boolean {
+        if (interactor.isServiceWarningRequired(target)) {
+            _warningDialogTarget.value = target
+            return true
+        }
+        return false
+    }
+
+    fun dismissWarningDialog() {
+        _warningDialogTarget.value = null
+    }
+
+    fun allowUntrustedService(target: AccessibilityTargetModel) {
+        enableShortcutForTarget(true, target.shortcutType, target.targetName)
+    }
+
+    fun denyUntrustedService(target: AccessibilityTargetModel) {
+        enableShortcutForTarget(false, target.shortcutType, target.targetName)
+    }
+
+    fun getAccessibilityServiceInfo(target: AccessibilityTargetModel) =
+        interactor.getAccessibilityServiceInfo(target)
 
     @AssistedFactory
     interface Factory {

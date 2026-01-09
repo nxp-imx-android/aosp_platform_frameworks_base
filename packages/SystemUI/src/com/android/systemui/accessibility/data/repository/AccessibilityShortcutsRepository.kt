@@ -16,6 +16,7 @@
 
 package com.android.systemui.accessibility.data.repository
 
+import android.accessibilityservice.AccessibilityServiceInfo
 import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
@@ -29,6 +30,7 @@ import android.text.TextUtils
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityManager
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType
+import com.android.internal.accessibility.dialog.AccessibilityServiceTarget
 import com.android.internal.accessibility.dialog.AccessibilityTarget
 import com.android.internal.accessibility.dialog.AccessibilityTargetHelper
 import com.android.internal.accessibility.util.FrameworkObjectProvider
@@ -126,6 +128,25 @@ interface AccessibilityShortcutsRepository {
     fun getSelectedAccessibilityTargets(
         @UserShortcutType shortcutType: Int
     ): Flow<List<AccessibilityTargetModel>>
+
+    /**
+     * Returns true if the accessibility service warning dialog should be shown for the given
+     * accessibility target.
+     *
+     * @param target The [AccessibilityTargetModel].
+     * @return True if the accessibility service warning dialog should be shown, false otherwise.
+     *   Also returns false if the target is not an accessibility service.
+     */
+    fun isServiceWarningRequired(target: AccessibilityTargetModel): Boolean
+
+    /**
+     * Returns the [AccessibilityServiceInfo] for the given accessibility target.
+     *
+     * @param target The [AccessibilityTargetModel].
+     * @return The [AccessibilityServiceInfo] if the target is an accessibility service, null
+     *   otherwise.
+     */
+    fun getAccessibilityServiceInfo(target: AccessibilityTargetModel): AccessibilityServiceInfo?
 }
 
 @SysUISingleton
@@ -371,6 +392,18 @@ constructor(
             }
             .conflate()
             .flowOn(backgroundDispatcher)
+
+    override fun isServiceWarningRequired(target: AccessibilityTargetModel) =
+        getAccessibilityServiceInfo(target)?.let {
+            accessibilityManager.isAccessibilityServiceWarningRequired(it)
+        } ?: false
+
+    override fun getAccessibilityServiceInfo(
+        target: AccessibilityTargetModel
+    ): AccessibilityServiceInfo? =
+        AccessibilityTargetHelper.getInstalledTargets(context, target.shortcutType)
+            .find { it.id == target.targetName }
+            ?.let { (it as? AccessibilityServiceTarget)?.accessibilityServiceInfo }
 
     private fun AccessibilityTarget.toAccessibilityTargetModel() =
         AccessibilityTargetModel(

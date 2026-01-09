@@ -216,7 +216,7 @@ class ShortcutChooserDialogInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun enableShortcutForAllTargets_enablesUnassignedShortcuts() =
+    fun enableShortcutForAllTargetsNotNeedingWarning_enablesUnassignedShortcuts() =
         kosmos.runTest {
             val shortcutType = UserShortcutType.QUICK_ACCESS
             val targetName1 = "com.android.test/TestService1"
@@ -229,7 +229,7 @@ class ShortcutChooserDialogInteractorTest : SysuiTestCase() {
             whenever(mockRepository.getAllAccessibilityTargetsInfo(shortcutType))
                 .thenReturn(targets)
 
-            underTest.enableShortcutForAllTargets(shortcutType)
+            underTest.enableShortcutForAllTargetsNotNeedingWarning(shortcutType)
 
             verify(mockRepository)
                 .enableShortcutsForTargets(eq(true), eq(shortcutType), eq(setOf(targetName2)))
