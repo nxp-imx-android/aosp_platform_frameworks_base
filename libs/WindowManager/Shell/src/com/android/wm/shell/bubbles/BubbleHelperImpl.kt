@@ -36,6 +36,8 @@ class BubbleHelperImpl @Inject constructor(private val bubbleRootTask: BubbleRoo
     override fun getAppBubbleVisibilityBarrierToken(): WindowContainerToken? =
         bubbleRootTask.visibilityBarrierToken
 
+    override fun getAppBubbleRootTaskId(): Int = bubbleRootTask.taskId
+
     override fun isAppBubbleRootTask(taskId: Int): Boolean =
         bubbleRootTask.taskId == taskId && taskId != INVALID_TASK_ID
 

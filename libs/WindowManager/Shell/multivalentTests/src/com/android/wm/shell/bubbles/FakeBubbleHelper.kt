@@ -17,6 +17,7 @@
 package com.android.wm.shell.bubbles
 
 import android.app.ActivityManager
+import android.app.ActivityTaskManager
 import android.window.TransitionInfo
 import android.window.WindowContainerToken
 
@@ -29,6 +30,8 @@ class FakeBubbleHelper : BubbleHelper {
     override fun getAppBubbleVisibilityBarrierToken(): WindowContainerToken? {
         return null
     }
+
+    override fun getAppBubbleRootTaskId(): Int = ActivityTaskManager.INVALID_TASK_ID
 
     override fun isAppBubbleRootTask(taskId: Int): Boolean {
         return false

@@ -722,6 +722,9 @@ public class BubbleController implements ConfigurationChangeListener,
             }
             mIsPrevNavModeGestures = isCurrentNavModeGestures;
             BubbleBarUpdate update = mBubbleData.getInitialStateForBubbleBar();
+            if (Flags.sendBubbleRootTaskIdToLauncher()) {
+                update.bubbleRootTaskId = mBubbleHelper.getAppBubbleRootTaskId();
+            }
             mBubbleStateListener.onBubbleStateChange(update);
         }
     }
