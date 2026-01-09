@@ -30,6 +30,27 @@ namespace skiapipeline {
 
 SkiaIpcPipeline::SkiaIpcPipeline(renderthread::RenderThread& thread) : SkiaPipeline(thread) {
     mIPCRecordingCanvas = std::make_shared<IPCRecordingCanvas>(mResourceCache);
+    mApplyToken = sp<BBinder>::make();
+}
+
+SkiaIpcPipeline::~SkiaIpcPipeline() {
+    std::function<void(SurfaceComposerClient::Transaction*)> syncCallback;
+    SurfaceComposerClient::Transaction* syncTransaction = nullptr;
+    SurfaceComposerClient::Transaction t;
+    bool hasPending = false;
+    {
+        std::lock_guard<std::mutex> lg(mLock);
+        syncCallback = mTransactionReadyCallback;
+        syncTransaction = mSyncTransaction;
+        hasPending = mergePendingTransactions(&t, std::numeric_limits<uint64_t>::max());
+
+    }
+    if (syncTransaction) {
+        syncTransaction->merge(std::move(t));
+        syncCallback(syncTransaction);
+    } else if (hasPending){
+        t.setApplyToken(mApplyToken).apply(false, true);
+    }
 }
 
 void SkiaIpcPipeline::setSurfaceControl(const sp<SurfaceControl>& surfaceControl) {
@@ -73,7 +94,7 @@ MakeCurrentResult SkiaIpcPipeline::makeCurrent() {
 
 Frame SkiaIpcPipeline::getFrame() {
     // Need to plumb "surface size" from ViewRoot
-    return Frame(1, 1, 0);
+    return Frame(mWidth, mHeight, 0);
 }
 
 IRenderPipeline::DrawResult SkiaIpcPipeline::draw(
@@ -82,19 +103,45 @@ IRenderPipeline::DrawResult SkiaIpcPipeline::draw(
         const Rect& contentDrawBounds, bool opaque, const LightInfo& lightInfo,
         const std::vector<sp<RenderNode>>& renderNodes, FrameInfoVisualizer* profiler,
         const HardwareBufferRenderParams& bufferParams, std::mutex& profilerLock) {
+    std::function<void(SurfaceComposerClient::Transaction*)> transactionReadyCallback;
     LightingInfo::updateLighting(lightGeometry, lightInfo);
     SkCanvas* canvas = mIPCRecordingCanvas.get();
     // draw all layers up front
     mIPCRecordingCanvas->startRecording();
 
     // This should be the size plummed down from ViewRoot instead.
-    int width = renderNodes[0]->getWidth();
-    int height = renderNodes[0]->getHeight();
-    mIPCRecordingCanvas->storeSize(width, height);
+    mIPCRecordingCanvas->storeSize(mWidth, mHeight);
+
     renderLayersImpl(*layerUpdateQueue, opaque);
     layerUpdateQueue->clear();
     renderFrameImpl(dirty, renderNodes, opaque, contentDrawBounds, canvas, SkMatrix::I());
     mIPCRecordingCanvas->endRecording();
+
+    SurfaceComposerClient::Transaction pendingTransactions;
+    std::function<void(SurfaceComposerClient::Transaction*)> syncCallback;
+    SurfaceComposerClient::Transaction* syncTransaction = nullptr;
+
+    {
+        std::lock_guard<std::mutex> lg(mLock);
+        mergePendingTransactions(&pendingTransactions, getFrameNumber());
+        syncCallback = mTransactionReadyCallback;
+        syncTransaction = mSyncTransaction;
+
+        mSyncTransaction = nullptr;
+        mTransactionReadyCallback = nullptr;
+    }
+
+    if (syncTransaction != nullptr) {
+        syncTransaction->setRenderCommandBufferFrameId(mSurfaceControl, getFrameNumber());
+        syncTransaction->merge(std::move(pendingTransactions));
+        syncCallback(syncTransaction);
+    } else {
+        SurfaceComposerClient::Transaction transaction;
+        transaction.setRenderCommandBufferFrameId(mSurfaceControl, getFrameNumber());
+        syncTransaction->merge(std::move(pendingTransactions));
+        transaction.setApplyToken(mApplyToken);
+        transaction.apply(false, true);
+    }
 
     return {true, IRenderPipeline::DrawResult::kUnknownTime, android::base::unique_fd{}};
 }
@@ -102,6 +149,72 @@ IRenderPipeline::DrawResult SkiaIpcPipeline::draw(
 bool SkiaIpcPipeline::setSurface(ANativeWindow* surface, SwapBehavior swapBehavior) {
     LOG_ALWAYS_FATAL("SkiaIpcPipeline::setSurface unexpected");
     return true;
+}
+
+void SkiaIpcPipeline::mergeWithNextTransaction(SurfaceComposerClient::Transaction* t,
+                                               uint64_t frameNumber) {
+    std::lock_guard<std::mutex> lg(mLock);
+    // BLASTBufferQueue uses mLastAcquiredFrameNumber...are we off by one here?
+    if (getFrameNumber() >= frameNumber) {
+        t->apply();
+    } else {
+        mPendingTransactions.emplace_back(frameNumber, *t);
+        t->clear();
+    }
+}
+
+void SkiaIpcPipeline::applyPendingTransactions(uint64_t frameNumber) {
+    SurfaceComposerClient::Transaction t;
+    std::lock_guard<std::mutex> lg(mLock);
+    mergePendingTransactions(&t, frameNumber);
+    t.setApplyToken(mApplyToken).apply(false, true);
+}
+
+bool SkiaIpcPipeline::syncNextTransaction(
+        std::function<void(SurfaceComposerClient::Transaction*)> callback,
+        bool acquireSingleBuffer) {
+    std::lock_guard<std::mutex> lg(mLock);
+    // TODO(b/463722837) implement continuous sync
+    (void)acquireSingleBuffer;
+
+    if (!isSurfaceReady()) {
+        return false;
+    }
+
+    mTransactionReadyCallback = callback;
+    mSyncTransaction = new SurfaceComposerClient::Transaction();
+    return true;
+}
+
+bool SkiaIpcPipeline::mergePendingTransactions(SurfaceComposerClient::Transaction* t,
+                                               uint64_t frameNumber) {
+    if (mPendingTransactions.empty()) {
+        return false;
+    }
+    auto mergeTransaction =
+            [&t, currentFrameNumber = frameNumber](
+                    std::tuple<uint64_t, SurfaceComposerClient::Transaction> pendingTransaction) {
+                auto& [targetFrameNumber, transaction] = pendingTransaction;
+                if (currentFrameNumber < targetFrameNumber) {
+                    return false;
+                }
+                t->merge(std::move(transaction));
+                return true;
+            };
+
+    mPendingTransactions.erase(std::remove_if(mPendingTransactions.begin(),
+                                              mPendingTransactions.end(), mergeTransaction),
+                               mPendingTransactions.end());
+    return true;
+}
+
+uint64_t SkiaIpcPipeline::getFrameNumber() {
+    return mIPCRecordingCanvas->getRenderCommandBufferProducer()->getFrameNumber();
+}
+
+void SkiaIpcPipeline::updateRenderTargetSize(uint64_t width, uint64_t height) {
+    mWidth = width;
+    mHeight = height;
 }
 
 } /* namespace skiapipeline */

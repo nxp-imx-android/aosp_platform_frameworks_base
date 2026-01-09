@@ -20,6 +20,7 @@ import android.Manifest;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SdkConstant;
 import android.annotation.SdkConstant.SdkConstantType;
@@ -37,6 +38,7 @@ import android.content.Intent;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.sqlite.SqliteWrapper;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -177,11 +179,145 @@ public final class Telephony {
          */
         public static final class ReadRestrictionValues {
             /**
+             * Not instantiable.
+             * @hide
+             */
+            private ReadRestrictionValues() {}
+
+            /**
              * The message is restricted and can be accessed only by apps with a read restricted
              * messages app op.
              * @hide
              */
             public static final int READ_RESTRICTION_RESTRICTED = 1 << READ_RESTRICTION_SHIFT;
+        }
+
+        /**
+         * Verifies that the client has permission to write restricted messages and computes the
+         * read_restriction column value for the message to be inserted. Removes the
+         * ReadRestriction.RESTRICTED key from the values.
+         *
+         * If the flag {@link Flags#FLAG_SECURE_ACCESS_TO_RESTRICTED_RCS_MESSAGES} is disabled, this
+         * method will return 0, representing an unrestricted message.
+         *
+         * @hide
+         */
+        public static int computeReadRestrictionValueOnInsert(ContentValues values,
+                boolean canWriteRestrictedMessages) {
+            if (!Flags.secureAccessToRestrictedRcsMessages()) {
+                return 0;
+            }
+            if (values.containsKey(ReadRestriction.READ_RESTRICTION_COLUMN_NAME)) {
+                throw new UnsupportedOperationException(
+                        "Read restriction column cannot be set by the client.");
+            }
+            if (!canWriteRestrictedMessages && values.containsKey(ReadRestriction.RESTRICTED)) {
+                throw new UnsupportedOperationException(
+                        "Client does not have permission to write restricted messages.");
+            }
+            int readRestrictionValue = (values.containsKey(ReadRestriction.RESTRICTED)
+                    && values.getAsBoolean(ReadRestriction.RESTRICTED) == true)
+                    ? ReadRestriction.ReadRestrictionValues.READ_RESTRICTION_RESTRICTED : 0;
+            values.remove(ReadRestriction.RESTRICTED);
+            return readRestrictionValue;
+        }
+
+        /**
+         * Verifies that the client has permission to update the read restriction value for the
+         * message to be updated. The message can be only be updated to unrestricted state.
+         * Removes the ReadRestriction.RESTRICTED key from the values.
+         *
+         * If the flag {@link Flags#FLAG_SECURE_ACCESS_TO_RESTRICTED_RCS_MESSAGES} is disabled, this
+         * method will return empty value - null.
+         *
+         * @return null if the read restriction value is not updated or 0 if it should be updated
+         * to unrestricted state.
+         * @hide
+         */
+        public static Integer computeReadRestrictionValueOnUpdate(ContentValues values,
+                boolean canWriteRestrictedMessages) {
+            if (!Flags.secureAccessToRestrictedRcsMessages()) {
+                return null;
+            }
+            if (values.containsKey(ReadRestriction.READ_RESTRICTION_COLUMN_NAME)) {
+                throw new UnsupportedOperationException(
+                        "Read restriction column cannot be updated by the client.");
+            }
+            if (!values.containsKey(ReadRestriction.RESTRICTED)) {
+                return null;
+            }
+            if (!canWriteRestrictedMessages) {
+                throw new UnsupportedOperationException(
+                        "Client does not have permission to write restricted messages.");
+            }
+            if (values.getAsBoolean(ReadRestriction.RESTRICTED)) {
+                throw new UnsupportedOperationException(
+                        "Message cannot be updated to restricted after it is inserted.");
+            }
+            values.remove(ReadRestriction.RESTRICTED);
+            return 0;
+        }
+
+        /**
+         * Appends the read_restriction column value to the query builder to make sure only apps
+         * with appropriate permissions can access restricted messages. Otherwise, the restricted
+         * messages will be filtered out. If the table name is null, the query uses
+         * "read_restriction" as the column name.
+         *
+         * If the flag {@link Flags#FLAG_SECURE_ACCESS_TO_RESTRICTED_RCS_MESSAGES} is disabled,
+         * the query will not be modified, because the client can read all messages.
+         *
+         * @param qb The SQLiteQueryBuilder to construct the query with.
+         * @param tableName The name of the table to query. If null, the query will just use the
+         * read_restriction column name.
+         * @param canReadRestrictedMessages Whether the caller can read restricted messages. If
+         * false, the restricted messages will be filtered out.
+         * @hide
+         */
+        public static void appendReadRestrictionToQuery(@NonNull SQLiteQueryBuilder qb,
+                @Nullable String tableName, boolean canReadRestrictedMessages) {
+            if (Flags.secureAccessToRestrictedRcsMessages() & !canReadRestrictedMessages) {
+                final String readRestrictionColumnName = tableName == null
+                        ? READ_RESTRICTION_COLUMN_NAME
+                        : (tableName + "." + READ_RESTRICTION_COLUMN_NAME);
+                final String readRestrictionValue = canReadRestrictedMessages ? "1" : "0";
+                final int readRestrictionMask = ReadRestrictionValues.READ_RESTRICTION_RESTRICTED;
+                qb.appendWhereStandalone(readRestrictionColumnName + " & " + readRestrictionMask
+                        + " = 0 OR " + readRestrictionValue + " = 1");
+            }
+        }
+
+        /**
+         * Appends the read_restriction column value to the query builder to make sure only apps
+         * with appropriate permissions can access restricted messages. Otherwise, the restricted
+         * messages will be filtered out. If the table name is null, the query uses
+         * "read_restriction" as the column name.
+         *
+         * If the flag {@link Flags#FLAG_SECURE_ACCESS_TO_RESTRICTED_RCS_MESSAGES} is disabled,
+         * the query will not be modified, because the client can read all messages.
+         *
+         * @param qb The SQLiteQueryBuilder to construct the query with.
+         * @param tables The tables to query. Can be a single table name or a join statement.
+         * @param readRestrictionTableName The name of the table that contains the read restriction
+         * column. Accepted values are "pdu" and "sms". If null, the query will just use the
+         * read_restriction column name.
+         * @param canReadRestrictedMessages Whether the caller can read restricted messages. If
+         * false, the restricted messages will be filtered out.
+         * @hide
+         */
+        public static void appendReadRestrictionToQuery(@NonNull SQLiteQueryBuilder qb,
+                @NonNull String joinAssignmentClause,
+                @NonNull String readRestrictionTableName,
+                boolean canReadRestrictedMessages) {
+            if (Flags.secureAccessToRestrictedRcsMessages() && !canReadRestrictedMessages) {
+                final int readRestrictionMask = ReadRestrictionValues.READ_RESTRICTION_RESTRICTED;
+                final String readRestrictionColumnName = readRestrictionTableName + "."
+                        + READ_RESTRICTION_COLUMN_NAME;
+                String whereClause = "EXISTS (SELECT 1 FROM " + readRestrictionTableName
+                        + " WHERE " + joinAssignmentClause + " AND (" +
+                        readRestrictionColumnName + " & " + readRestrictionMask + ") = 0)";
+                qb.appendWhereStandalone(whereClause);
+            }
         }
 
         /**

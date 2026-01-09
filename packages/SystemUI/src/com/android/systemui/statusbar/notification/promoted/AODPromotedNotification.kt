@@ -333,6 +333,8 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         root.context.resources.getDimensionPixelSize(R.dimen.notification_right_icon_size)
 
     private val defaultTypeface = Typeface.create(FontStyles.GSF_BODY_MEDIUM, Typeface.NORMAL)
+    private val metricValueTypeface =
+        Typeface.create(FontStyles.GSF_DISPLAY_SMALL_EMPHASIZED_LIGHT, Typeface.NORMAL)
 
     private val marginPx: Int =
         root.context.resources.getDimensionPixelSize(R.dimen.notification_2025_margin)
@@ -975,13 +977,17 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         adjustTextViewFont(appNameTextDivider)
         metricViews.forEach { metricView ->
             metricView.label?.let(::adjustTextViewFont)
-            metricView.chronometer?.let(::adjustTextViewFont)
-            metricView.textValue?.let(::adjustTextViewFont)
+            metricView.textValue?.let(::adjustMetricStyleValue)
+            metricView.chronometer?.let(::adjustMetricStyleValue)
         }
     }
 
     private fun adjustTextViewFont(view: TextView?) {
         view?.setTypeface(defaultTypeface, Typeface.NORMAL)
+    }
+
+    private fun adjustMetricStyleValue(view: TextView?) {
+        view?.setTypeface(metricValueTypeface, Typeface.NORMAL)
     }
 
     companion object {

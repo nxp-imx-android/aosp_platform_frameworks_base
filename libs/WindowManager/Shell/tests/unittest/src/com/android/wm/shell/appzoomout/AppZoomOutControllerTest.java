@@ -82,7 +82,6 @@ public class AppZoomOutControllerTest extends ShellTestCase {
 
     @Test
     @EnableFlags({
-            Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS,
             Flags.FLAG_ENABLE_FOCUS_TRANSITION_OBSERVER_CLEANUP
     })
     public void isHomeTaskFocused_zoomOutForHome() {
@@ -103,7 +102,6 @@ public class AppZoomOutControllerTest extends ShellTestCase {
 
     @Test
     @EnableFlags({
-            Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS,
             Flags.FLAG_ENABLE_FOCUS_TRANSITION_OBSERVER_CLEANUP
     })
     public void isHomeTaskNotFocused_zoomOutForApp() {

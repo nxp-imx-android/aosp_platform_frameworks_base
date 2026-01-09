@@ -33,14 +33,17 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.Manifest;
+import android.app.AnrTypes;
 import android.app.IApplicationThread;
 import android.app.compat.CompatChanges;
 import android.app.privatecompute.flags.Flags;
@@ -113,6 +116,9 @@ public final class ActiveServicesTest {
     private static final int TEST_UID = 10123;
     private static final int TEST_USERID = 0;
     private static final int TEST_PID = 1234;
+
+    private static final int ANR_ID = 1234;
+    private static final long ELAPSED_TIME_MS = 2000L;
 
     private MockitoSession mMockingSession;
     private ActivityManagerService mService;
@@ -1070,6 +1076,8 @@ public final class ActiveServicesTest {
         ProcessRecord processRecord = mock(ProcessRecord.class);
         when(processRecord.getPid()).thenReturn(TEST_PID);
         when(r.getHostProcess()).thenReturn(processRecord);
+        ComponentName componentName = new ComponentName(PACKAGE_NAME_1, SERVICE_NAME);
+        when(r.getComponentName()).thenReturn(componentName);
         return r;
     }
 
@@ -1082,5 +1090,111 @@ public final class ActiveServicesTest {
             packageInfo.requestedPermissions = new String[]{};
         }
         return packageInfo;
+    }
+
+    @Test
+    public void testServiceForegroundAnrWarning() {
+        ActiveServices activeServices = new ActiveServices(mService);
+        mService.mConstants = mock(ActivityManagerConstants.class);
+        mService.mConstants.mServiceStartForegroundTimeoutMs = 10000;
+
+        ComponentName componentName = new ComponentName(PACKAGE_NAME_1, SERVICE_NAME);
+        ServiceRecord serviceRecord = createServiceRecord();
+
+        activeServices.serviceForegroundAnrWarning(serviceRecord, ANR_ID, ELAPSED_TIME_MS);
+
+        verify(mService)
+                .notifyAnrWarning(
+                        eq(TEST_UID),
+                        eq(ANR_ID),
+                        eq(AnrTypes.ANR_TYPE_START_FOREGROUND_SERVICE),
+                        eq(ELAPSED_TIME_MS),
+                        eq((long) mService.mConstants.mServiceStartForegroundTimeoutMs),
+                        eq("Foreground Service: " + componentName));
+    }
+
+    @Test
+    public void testOnShortFgsAnrTimeoutWarning() {
+        ActiveServices activeServices = new ActiveServices(mService);
+
+        ComponentName componentName = new ComponentName(PACKAGE_NAME_1, SERVICE_NAME);
+        ServiceRecord serviceRecord = createServiceRecord();
+        ServiceRecord.ShortFgsInfo shortFgsInfo = mock(ServiceRecord.ShortFgsInfo.class);
+        when(serviceRecord.getShortFgsInfo()).thenReturn(shortFgsInfo);
+
+        long anrTime = 20000L;
+        long startTime = 5000L;
+        long expectedTimeoutMs = anrTime - startTime;
+        when(shortFgsInfo.getAnrTime()).thenReturn(anrTime);
+        when(shortFgsInfo.getStartTime()).thenReturn(startTime);
+
+        activeServices.onShortFgsAnrTimeoutWarning(serviceRecord, ANR_ID, ELAPSED_TIME_MS);
+
+        verify(mService)
+                .notifyAnrWarning(
+                        eq(TEST_UID),
+                        eq(ANR_ID),
+                        eq(AnrTypes.ANR_TYPE_FOREGROUND_SHORT_SERVICE_TIMEOUT),
+                        eq(ELAPSED_TIME_MS),
+                        eq(expectedTimeoutMs),
+                        eq("Short Foreground Service: " + componentName));
+    }
+
+    @Test
+    public void testOnShortFgsAnrTimeoutWarning_nullShortFgsInfo() {
+        ActiveServices activeServices = new ActiveServices(mService);
+
+        ServiceRecord serviceRecord = createServiceRecord();
+        when(serviceRecord.getShortFgsInfo()).thenReturn(null);
+
+        activeServices.onShortFgsAnrTimeoutWarning(serviceRecord, ANR_ID, ELAPSED_TIME_MS);
+
+        verify(mService, never())
+                .notifyAnrWarning(anyInt(), anyInt(), anyInt(), anyLong(), anyLong(), anyString());
+    }
+
+    @Test
+    public void testServiceTimeoutAnrWarning() {
+        ActiveServices activeServices = new ActiveServices(mService);
+        mService.mConstants = mock(ActivityManagerConstants.class);
+        mService.mConstants.SERVICE_TIMEOUT = 20000L;
+
+        ProcessRecord proc = mock(ProcessRecord.class);
+        setFieldValue(ProcessRecordInternal.class, proc, "uid", TEST_UID);
+        proc.info = new ApplicationInfo();
+        proc.info.uid = TEST_UID;
+
+        when(proc.getThread()).thenReturn(mock(android.app.IApplicationThread.class));
+        when(proc.isKilled()).thenReturn(false);
+
+        ProcessList processList = mock(ProcessList.class);
+        setFieldValue(ActivityManagerService.class, mService, "mProcessList", processList);
+        when(processList.isInLruListLOSP(proc)).thenReturn(true);
+
+        ProcessServiceRecord psr = mock(ProcessServiceRecord.class);
+        setFieldValue(ProcessRecord.class, proc, "mServices", psr);
+
+        ServiceRecord serviceRecord = createServiceRecord();
+
+        // Set executingStart to 30s ago (timeout is 20s)
+        long now = SystemClock.uptimeMillis();
+        long elapsedTimeMs = 30000L;
+        serviceRecord.executingStart = now - elapsedTimeMs;
+
+        // Setup PSR to return 1 executing service that is timeout
+        when(psr.numberOfExecutingServices()).thenReturn(1);
+        when(psr.getExecutingServiceAt(0)).thenReturn(serviceRecord);
+        when(psr.isExecServicesFg()).thenReturn(true);
+
+        activeServices.serviceTimeoutAnrWarning(proc, ANR_ID, elapsedTimeMs);
+
+        verify(mService)
+                .notifyAnrWarning(
+                        eq(TEST_UID),
+                        eq(ANR_ID),
+                        eq(AnrTypes.ANR_TYPE_EXECUTE_SERVICE),
+                        eq(elapsedTimeMs),
+                        eq(mService.mConstants.SERVICE_TIMEOUT),
+                        contains("Executing Service:"));
     }
 }

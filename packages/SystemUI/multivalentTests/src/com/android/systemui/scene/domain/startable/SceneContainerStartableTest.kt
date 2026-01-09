@@ -1412,7 +1412,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             prepareState(
                 initialSceneKey = Scenes.Lockscreen,
                 authenticationMethod = AuthenticationMethodModel.None,
-                isLockscreenEnabled = false,
+                isLockscreenEnabled = true,
             )
             powerInteractor.setAsleepForTest()
             underTest.start()
@@ -1485,7 +1485,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             prepareState(
                 initialSceneKey = Scenes.Lockscreen,
                 authenticationMethod = AuthenticationMethodModel.None,
-                isLockscreenEnabled = false,
+                isLockscreenEnabled = true,
             )
             powerInteractor.setAsleepForTest()
             kosmos.keyguardRepository.setCanIgnoreAuthAndReturnToGone(false)

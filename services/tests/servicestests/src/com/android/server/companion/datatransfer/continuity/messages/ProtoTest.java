@@ -19,8 +19,6 @@ package com.android.server.companion.datatransfer.continuity.messages;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.testing.AndroidTestingRunner;
-import android.util.proto.ProtoInputStream;
-import android.util.proto.ProtoOutputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -35,13 +33,6 @@ public abstract class ProtoTest<T extends Proto> {
     }
 
     protected void verifyRoundTrip(T value) throws Exception {
-        ProtoOutputStream pos = new ProtoOutputStream();
-        value.write(pos);
-        pos.flush();
-
-        ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
-        T result = newBuilder().readFromStream(pis).build();
-
-        assertThat(result).isEqualTo(value);
+        assertThat(newBuilder().readFromBytes(Proto.toBytes(value)).build()).isEqualTo(value);
     }
 }

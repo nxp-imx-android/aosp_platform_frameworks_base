@@ -16919,6 +16919,7 @@ package android.telephony {
     method @Deprecated @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE) public boolean isVisualVoicemailEnabled(android.telecom.PhoneAccountHandle);
     method @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public boolean matchesCurrentSimOperator(@NonNull String, int, @Nullable String);
     method public boolean needsOtaServiceProvisioning();
+    method @FlaggedApi("com.android.internal.telephony.flags.satellite_26q2_apis") @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void notifyEntitlementStatusChanged(int, @NonNull java.util.List<java.lang.String>, @NonNull java.time.ZonedDateTime);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void notifyOtaEmergencyNumberDbInstalled();
     method @FlaggedApi("com.android.server.telecom.flags.telecom_resolve_hidden_dependencies") @RequiresPermission(android.Manifest.permission.READ_DROPBOX_DATA) public void persistEmergencyCallDiagnosticData(@NonNull String, @NonNull android.telephony.TelephonyManager.EmergencyCallDiagnosticData);
     method @RequiresPermission(android.Manifest.permission.REBOOT) public int prepareForUnattendedReboot();
@@ -19778,6 +19779,11 @@ package android.text {
     method @NonNull public String getName();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.text.FontConfig.NamedFamilyList> CREATOR;
+  }
+
+  @FlaggedApi("com.android.text.flags.split_show_passwords_to_touch_and_physical") public class ShowSecretsSetting {
+    method @RequiresPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS) public static void setShouldShowPhysicalInputForUser(@NonNull android.content.ContentResolver, boolean, @NonNull android.os.UserHandle);
+    method @RequiresPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS) public static void setShouldShowTouchInputForUser(@NonNull android.content.ContentResolver, boolean, @NonNull android.os.UserHandle);
   }
 
 }

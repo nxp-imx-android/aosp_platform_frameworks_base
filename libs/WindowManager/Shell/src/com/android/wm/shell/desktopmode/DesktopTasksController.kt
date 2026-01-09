@@ -2984,16 +2984,14 @@ class DesktopTasksController(
                     null
                 }
         }
-        if (DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue) {
-            // Bring the destination display to top with includingParents=true, so that the
-            // destination display gains the display focus, which makes the top task in the display
-            // gains the global focus. This must be done after performDesktopExitCleanupIfNeeded.
-            // The method launches Launcher on the source display when the last task is moved, which
-            // brings the source display to the top. Calling reorder after
-            // performDesktopExitCleanupIfNeeded ensures that the destination display becomes the
-            // top (focused) display.
-            wct.reorder(task.token, /* onTop= */ true, /* includingParents= */ true)
-        }
+        // Bring the destination display to top with includingParents=true, so that the
+        // destination display gains the display focus, which makes the top task in the display
+        // gains the global focus. This must be done after performDesktopExitCleanupIfNeeded.
+        // The method launches Launcher on the source display when the last task is moved, which
+        // brings the source display to the top. Calling reorder after
+        // performDesktopExitCleanupIfNeeded ensures that the destination display becomes the
+        // top (focused) display.
+        wct.reorder(task.token, /* onTop= */ true, /* includingParents= */ true)
         val transition =
             transitions.startTransition(
                 TRANSIT_CHANGE,

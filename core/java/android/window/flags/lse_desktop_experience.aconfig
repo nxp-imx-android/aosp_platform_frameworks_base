@@ -639,13 +639,6 @@ flag {
 }
 
 flag {
-    name: "enable_display_focus_in_shell_transitions"
-    namespace: "lse_desktop_experience"
-    description: "Creates a shell transition when display focus switches."
-    bug: "356109871"
-}
-
-flag {
     name: "enable_display_reconnect_interaction"
     namespace: "lse_desktop_experience"
     description: "Enables new interaction that occurs when a display is reconnected."
@@ -1011,14 +1004,6 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
-}
-
-flag {
-    name: "enable_task_move_allowed_listener_api"
-    namespace: "lse_desktop_experience"
-    description: "Enables the API to listen to changes of task movability state on displays."
-    bug: "400407139"
-    is_exported: true
 }
 
 flag {

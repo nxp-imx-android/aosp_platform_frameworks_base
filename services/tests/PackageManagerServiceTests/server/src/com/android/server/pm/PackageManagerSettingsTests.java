@@ -1633,7 +1633,7 @@ public class PackageManagerSettingsTests {
                 false, "lastDisabledCaller", new ArraySet<>(new String[]{"enabledComponent1"}),
                 new ArraySet<>(new String[]{"disabledComponent1"}), 0, 0, "harmfulAppWarning",
                 "splashScreenTheme", 1000L, PackageManager.USER_MIN_ASPECT_RATIO_UNSET, null,
-                false);
+                false, PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET);
         final PersistableBundle appExtras1 = createPersistableBundle(
                 PACKAGE_NAME_1, 1L, 0.01, true, "appString1");
         final PersistableBundle launcherExtras1 = createPersistableBundle(
@@ -2490,7 +2490,9 @@ public class PackageManagerSettingsTests {
                 && userState.getSplashScreenTheme().equals(
                         oldUserState.getSplashScreenTheme())
                 && userState.getUninstallReason() == oldUserState.getUninstallReason()
-                && userState.getMinAspectRatio() == oldUserState.getMinAspectRatio();
+                && userState.getMinAspectRatio() == oldUserState.getMinAspectRatio()
+                && userState.getVirtualGamepadUserOption()
+                == oldUserState.getVirtualGamepadUserOption();
     }
 
     private SharedUserSetting createSharedUserSetting(Settings settings, String userName,

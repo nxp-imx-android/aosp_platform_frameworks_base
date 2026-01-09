@@ -102,3 +102,11 @@ flag {
          purpose: PURPOSE_BUGFIX
      }
 }
+
+flag {
+    namespace: "systemui"
+    name: "enable_dynamic_icons_and_badging"
+    is_exported: true
+    description: "Enables dynamic icons and badging in the launcher"
+    bug: "472296334"
+}

@@ -17,6 +17,7 @@
 package com.android.internal.systemui.lint
 
 import com.android.internal.systemui.lint.BindServiceOnMainThreadDetector.Companion.containingMethodOrClassHasWorkerThreadAnnotation
+import com.android.tools.lint.client.api.UElementHandler
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Implementation
@@ -28,6 +29,7 @@ import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiMethod
 import org.jetbrains.uast.UCallExpression
+import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UParenthesizedExpression
 import org.jetbrains.uast.USimpleNameReferenceExpression
 import org.jetbrains.uast.getContainingDeclaration
@@ -40,6 +42,17 @@ import org.jetbrains.uast.getContainingDeclaration
  */
 class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
     // TODO: b/469073407 - Add more binder calls.
+    /**
+     * A list of known binder calls that should be invoked on the background.
+     *
+     * The format is "${fully-qualified-class-name}#${method-name}". The method name will be used as
+     * a regex. Some examples:
+     * - If there's a single method in the class that's a binder call, use the method name directly:
+     *   `getBroadcast` e.g.
+     * - If *all* method calls in a class are binder calls, use `.*` as the method name.
+     * - If any registrations or unregistrations are binder calls, use `(register|unregister).*` as
+     *   the method name.
+     */
     private val binderCalls =
         listOf(
             // go/keep-sorted start
@@ -47,6 +60,7 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
             "android.app.PendingIntent#queryIntentComponents",
             "android.media.projection.MediaProjectionManager#stopActiveProjection",
             "android.media.session.MediaController#unregisterCallback",
+            "android.telephony.SubscriptionManager#.*",
             "com.android.internal.statusbar.IStatusBarService#disableForUser",
             // go/keep-sorted end
         )
@@ -86,10 +100,6 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
             BinderCall(methodName = methodName, className = className, packageName = packageName)
         }
 
-    override fun getApplicableMethodNames(): List<String> =
-        // Use `toSet` first so that we don't visit the same method multiple times.
-        parsedBinderCalls.map { it.methodName }.toSet().toList()
-
     override fun getApplicableConstructorTypes() = constructorBinderCalls
 
     override fun visitConstructor(
@@ -102,16 +112,33 @@ class BinderCallOnMainThreadDetector : Detector(), SourceCodeScanner {
         visitBinderCall(context, node)
     }
 
-    override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
-        val methodName = method.name
-        val packageName = context.evaluator.getPackage(method)?.qualifiedName
-        val className = (method.parent as? PsiClass)?.name ?: return
+    override fun getApplicableUastTypes(): List<Class<out UElement>> {
+        return listOf(UCallExpression::class.java)
+    }
+
+    override fun createUastHandler(context: JavaContext): UElementHandler {
+        return object : UElementHandler() {
+            override fun visitCallExpression(node: UCallExpression) {
+                val method = node.resolve() ?: return
+                visitMethodInternal(context, node, method)
+            }
+        }
+    }
+
+    private fun visitMethodInternal(
+        context: JavaContext,
+        node: UCallExpression,
+        method: PsiMethod,
+    ) {
+        val visitedMethodName = method.name
+        val visitedPackageName = context.evaluator.getPackage(method)?.qualifiedName
+        val visitedClassName = (method.parent as? PsiClass)?.name ?: return
 
         val isBinderCall: Boolean =
-            parsedBinderCalls.any {
-                methodName == it.methodName &&
-                    className == it.className &&
-                    packageName == it.packageName
+            parsedBinderCalls.any { binderCall ->
+                visitedPackageName == binderCall.packageName &&
+                    visitedClassName == binderCall.className &&
+                    visitedMethodName.matches(Regex(binderCall.methodName))
             }
         if (!isBinderCall) {
             return

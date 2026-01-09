@@ -279,6 +279,32 @@ void CanvasContext::setSurfaceControl(sp<SurfaceControl> surfaceControl) {
 #endif
 }
 
+void CanvasContext::setBLASTBufferQueue(const sp<BLASTBufferQueue>& bbq) {
+#ifdef __ANDROID__
+    mRenderPipeline->setBLASTBufferQueue(bbq);
+#endif
+}
+
+#ifdef __ANDROID__
+bool CanvasContext::syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)> t,
+                                        bool acquireSingleBuffer) {
+    return mRenderPipeline->syncNextTransaction(t, acquireSingleBuffer);
+}
+
+void CanvasContext::mergeWithNextTransaction(SurfaceComposerClient::Transaction* t,
+                                             uint64_t frameNumber) {
+    mRenderPipeline->mergeWithNextTransaction(t, frameNumber);
+}
+
+void CanvasContext::applyPendingTransactions(uint64_t frameNumber) {
+    mRenderPipeline->applyPendingTransactions(frameNumber);
+}
+#endif
+
+void CanvasContext::updateRenderTargetSize(uint64_t width, uint64_t height) {
+    mRenderPipeline->updateRenderTargetSize(width, height);
+}
+
 void CanvasContext::setupPipelineSurface() {
     bool hasSurface = mRenderPipeline->setSurface(
             mNativeSurface ? mNativeSurface->getNativeWindow() : nullptr, mSwapBehavior);
@@ -1121,8 +1147,8 @@ void CanvasContext::enqueueFrameWork(std::function<void()>&& func) {
 
 uint64_t CanvasContext::getFrameNumber() {
     // mFrameNumber is reset to 0 when the surface changes or we swap buffers
-    if (mFrameNumber == 0 && mNativeSurface.get()) {
-        mFrameNumber = ANativeWindow_getNextFrameId(mNativeSurface->getNativeWindow());
+    if (mFrameNumber == 0) {
+        return mRenderPipeline->getFrameNumber();
     }
     return mFrameNumber;
 }

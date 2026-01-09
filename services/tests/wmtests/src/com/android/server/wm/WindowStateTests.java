@@ -62,6 +62,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.never;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spy;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
+import static com.android.server.policy.WindowManagerPolicy.TRANSIT_EXIT;
 import static com.android.server.wm.WindowContainer.SYNC_STATE_WAITING_FOR_DRAW;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -361,16 +362,42 @@ public class WindowStateTests extends WindowTestsBase {
     }
 
     @Test
+    public void testForceHideExitingOverlayWindow() {
+        final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY).build();
+        setFieldValue(window.mSession, "mCanAddInternalSystemWindow", false);
+        window.mAttrs.windowAnimations = android.R.style.Animation_Dialog;
+        window.mAnimatingExit = true;
+        window.mWinAnimator.applyAnimationLocked(TRANSIT_EXIT, false /* isEntrance */);
+        assertTrue(window.isAnimating());
+        assertTrue(window.isVisibleByPolicy());
+
+        window.setForceHideNonSystemOverlayWindowIfNeeded(true);
+        assertFalse(window.isAnimating());
+        assertFalse(window.isVisibleByPolicy());
+    }
+
+    @Test
     public void testIsOnScreen_hiddenByPolicy() {
         final WindowState window = newWindowBuilder("window", TYPE_APPLICATION).build();
         window.setHasSurface(true);
+        window.mWinAnimator.mSurfaceControl = mock(SurfaceControl.class);
+        window.mWinAnimator.mDrawState = WindowStateAnimator.HAS_DRAWN;
+        window.mWinAnimator.prepareSurfaceLocked(mTransaction);
         assertTrue(window.isOnScreen());
+        clearInvocations(mTransaction);
+
         window.hide(false /* doAnimation */, false /* requestAnim */);
+        window.mWinAnimator.prepareSurfaceLocked(mTransaction);
         assertFalse(window.isOnScreen());
+        verify(mTransaction).hide(window.mSurfaceControl);
+        verify(mTransaction, never()).show(window.mSurfaceControl);
+        clearInvocations(mTransaction);
 
         // Verifies that a window without animation can be hidden even if its parent is animating.
         window.show(false /* doAnimation */, false /* requestAnim */);
         assertTrue(window.isVisibleByPolicy());
+        window.mWinAnimator.prepareSurfaceLocked(mTransaction);
+        verify(mTransaction).show(window.mSurfaceControl);
         window.getParent().startAnimation(mTransaction, mock(AnimationAdapter.class),
                 false /* hidden */, SurfaceAnimator.ANIMATION_TYPE_TOKEN_TRANSFORM);
         window.mAttrs.windowAnimations = 0;

@@ -24,6 +24,7 @@ import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.shared.system.QuickStepContract
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_BOUNCER_SHOWING
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_COMMUNAL_HUB_SHOWING
@@ -91,6 +92,17 @@ class SceneContainerPluginFlagEvaluationTest(private val params: Params) : Sysui
                         setOf(
                             SYSUI_STATE_NOTIFICATION_PANEL_VISIBLE,
                             SYSUI_STATE_NOTIFICATION_PANEL_EXPANDED,
+                        ),
+                ),
+                Params(
+                    currentScene = Scenes.Shade,
+                    sceneBehind = Scenes.Gone,
+                    currentOverlays = setOf(),
+                    shadeMode = ShadeMode.Split,
+                    expectedFlags =
+                        setOf(
+                            SYSUI_STATE_NOTIFICATION_PANEL_VISIBLE,
+                            SYSUI_STATE_QUICK_SETTINGS_EXPANDED,
                         ),
                 ),
                 Params(
@@ -322,6 +334,7 @@ class SceneContainerPluginFlagEvaluationTest(private val params: Params) : Sysui
                             sceneBehind = params.sceneBehind,
                             overlays = params.currentOverlays,
                             isVisible = true,
+                            shadeMode = params.shadeMode,
                         )
                     )
                 if (expected && !actual) {
@@ -360,10 +373,11 @@ class SceneContainerPluginFlagEvaluationTest(private val params: Params) : Sysui
         val currentScene: SceneKey,
         val sceneBehind: SceneKey? = null,
         val currentOverlays: Set<OverlayKey>,
+        val shadeMode: ShadeMode = ShadeMode.Single,
         val expectedFlags: Set<Long>,
     ) {
         override fun toString(): String {
-            return "currentScene=${currentScene.debugName}${sceneBehind?.let { ", sceneBehind=${it.debugName}" } ?: ""}, currentOverlays=[${currentOverlays.joinToString { it.debugName }}]"
+            return "currentScene=${currentScene.debugName}${sceneBehind?.let { ", sceneBehind=${it.debugName}" } ?: ""}, currentOverlays=[${currentOverlays.joinToString { it.debugName }}, shadeMode=$shadeMode]"
         }
     }
 }

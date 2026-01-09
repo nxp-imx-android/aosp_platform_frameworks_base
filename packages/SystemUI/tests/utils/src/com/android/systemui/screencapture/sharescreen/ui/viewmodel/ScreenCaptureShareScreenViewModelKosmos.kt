@@ -18,12 +18,14 @@ package com.android.systemui.screencapture.sharescreen.ui.viewmodel
 
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
 import com.android.systemui.screencapture.common.ui.viewmodel.appContentsViewModelFactory
 import com.android.systemui.screencapture.common.ui.viewmodel.displaysViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.drawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.recentTasksViewModel
 import com.android.systemui.screencapture.sharescreen.domain.interactor.shareScreenUiInteractor
 import com.android.systemui.statusbar.quickactions.sharescreen.domain.interactor.shareScreenPrivacyIndicatorInteractor
+import com.android.systemui.util.mockito.mock
 
 val Kosmos.screenCaptureShareScreenViewModelFactory by Fixture {
     object : ScreenCaptureShareScreenViewModel.Factory {
@@ -35,6 +37,7 @@ val Kosmos.screenCaptureShareScreenViewModelFactory by Fixture {
                 drawableLoaderViewModel,
                 shareScreenUiInteractor,
                 shareScreenPrivacyIndicatorInteractor,
+                mock<MediaProjectionMetricsLogger>(),
                 thumbnailWidthPx,
                 thumbnailHeightPx,
                 appContentsViewModelFactory,

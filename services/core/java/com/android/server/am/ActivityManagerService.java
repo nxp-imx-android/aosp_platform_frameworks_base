@@ -1689,6 +1689,11 @@ public class ActivityManagerService extends IActivityManager.Stub
     static final int SERVICE_FGS_TIMEOUT_MSG = 84;
     static final int SERVICE_FGS_CRASH_TIMEOUT_MSG = 85;
 
+    // ANR warning messages
+    static final int SERVICE_TIMEOUT_WARNING_MSG = 86;
+    static final int SERVICE_SHORT_FGS_ANR_TIMEOUT_WARNING_MSG = 87;
+    static final int SERVICE_FOREGROUND_TIMEOUT_ANR_WARNING_MSG = 88;
+
     static final int FIRST_BROADCAST_QUEUE_MSG = 200;
 
     /**
@@ -1875,6 +1880,22 @@ public class ActivityManagerService extends IActivityManager.Stub
                         (TimeoutRecord) args.arg2);
                 args.recycle();
             } break;
+            case SERVICE_FOREGROUND_TIMEOUT_ANR_WARNING_MSG: {
+                final SomeArgs args = (SomeArgs) msg.obj;
+                final ServiceRecord serviceRecord = (ServiceRecord) args.arg1;
+                final int anrId = args.argi1;
+                final long elapsedTimeMs = args.argl1;
+                args.recycle();
+                mServices.serviceForegroundAnrWarning(serviceRecord, anrId, elapsedTimeMs);
+            } break;
+            case SERVICE_TIMEOUT_WARNING_MSG: {
+                final SomeArgs args = (SomeArgs) msg.obj;
+                final ProcessRecord proc = (ProcessRecord) args.arg1;
+                final int anrId = args.argi1;
+                final long elapsedTimeMs = args.argl1;
+                args.recycle();
+                mServices.serviceTimeoutAnrWarning(proc, anrId, elapsedTimeMs);
+            } break;
             case SERVICE_FOREGROUND_CRASH_MSG: {
                 SomeArgs args = (SomeArgs) msg.obj;
                 mServices.serviceForegroundCrash(
@@ -2030,6 +2051,14 @@ public class ActivityManagerService extends IActivityManager.Stub
                 } break;
                 case SERVICE_SHORT_FGS_ANR_TIMEOUT_MSG: {
                     mServices.onShortFgsAnrTimeout((ServiceRecord) msg.obj);
+                } break;
+                case SERVICE_SHORT_FGS_ANR_TIMEOUT_WARNING_MSG: {
+                    final SomeArgs args = (SomeArgs) msg.obj;
+                    final ServiceRecord serviceRecord = (ServiceRecord) args.arg1;
+                    final int anrId = args.argi1;
+                    final long elapsedTimeMs = args.argl1;
+                    args.recycle();
+                    mServices.onShortFgsAnrTimeoutWarning(serviceRecord, anrId, elapsedTimeMs);
                 } break;
                 case UPDATE_CACHED_APP_HIGH_WATERMARK: {
                     mAppProfiler.mCachedAppsWatermarkData.updateCachedAppsSnapshot((long) msg.obj);
@@ -4881,7 +4910,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         // The new process has finished initialization and at this point |callingUid|
         // does not have permission to call setuid(), so it does not need to be
         // tracked by the transition policy.
-        if (Flags.useSafesetidUidPolicy()
+        if (Flags.useSafesetidUidPolicy2()
                 && UidTransitionPolicy.isEnabled()
                 && mProcessList.getUidTransitionPolicy() != null) {
             // TODO(b/468898907) Monitor system server crashes due to failures at this call site.

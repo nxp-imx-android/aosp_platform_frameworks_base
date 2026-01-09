@@ -1862,16 +1862,19 @@ public final class OutputConfiguration implements Parcelable {
     /**
      * Get the usage flag associated with this {@link OutputConfiguration}.
      *
-     * <p>Return the application specified usage flag if the OutputConfiguration is created
-     * with an Image format.</p>
+     * <p>If the OutputConfiguration is created using an output surface, or using a Surface
+     * source class, this function returns the consumer usage flag of the output surface or
+     * the Surface source class.</p>
      *
-     * <p>If the OutputConfiguration is created using an output surface, or using a class,
-     * this function returns 0.</p>
+     * <p>If the OutputConfiguration is created using an Image format, this function returns
+     * the application specified usage flag. If the application doesn't specify the usage flag,
+     * the return value is 0 for {@link ImageFormat#PRIVATE} and
+     * {@link HardwareBuffer#USAGE_CPU_READ_OFTEN} for all other cases.</p>
      *
-     * @return {@link HardwareBuffer#Usage} associated with this {@link OutputConfiguration}.
-     *
-     * @hide
+     * @return The usage flag associated with this {@link OutputConfiguration}, as defined in
+     *         {@link HardwareBuffer}.
      */
+    @FlaggedApi(Flags.FLAG_OUTPUT_CONFIGURATION_GET_USAGE)
     public @Usage long getUsage() {
         return mUsage;
     }

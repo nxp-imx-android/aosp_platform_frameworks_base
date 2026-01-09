@@ -19,6 +19,7 @@ package android.media;
 import static android.media.audio.Flags.FLAG_IAMF_DEFINITIONS_API;
 import static android.media.codec.Flags.FLAG_APV_SUPPORT;
 import static android.media.codec.Flags.FLAG_AUDIO_MIX_PRESENTATION_SUPPORT;
+import static android.media.codec.Flags.FLAG_FLIP_SUPPORT;
 import static android.media.codec.Flags.FLAG_IN_PROCESS_SW_AUDIO_CODEC;
 import static android.media.codec.Flags.FLAG_NUM_INPUT_SLOTS;
 import static android.media.codec.Flags.FLAG_REGION_OF_INTEREST;
@@ -97,6 +98,8 @@ import java.util.stream.Collectors;
  *         layering bitrate ratios </td></tr>
  * <tr><td>{@link #KEY_TEMPORAL_LAYER_ID}</td><td>String</td><td><b>encoder only</b>, optional,
  *         temporal layer id</td></tr>
+ * <tr><td>{@link #KEY_HORIZONTAL_FLIP}</td><td>Integer</td><td>, optional,
+ *         Set to true to horizontally flip the content</td></tr>
  * </table>
  * Specify both {@link #KEY_MAX_WIDTH} and {@link #KEY_MAX_HEIGHT} to enable
  * adaptive playback (seamless resolution change) for a video decoder that
@@ -1327,11 +1330,27 @@ public final class MediaFormat {
     public static final String KEY_OUTPUT_REORDER_DEPTH = "output-reorder-depth";
 
     /**
+     * A key describing the desired horizontal flip on an output surface.
+     * This key is only used when the codec is configured using an output surface.
+     * The associated value is an integer, where non-0 means flipped.
+     * This is an optional field; if not specified, flip defaults to 0.
+     *
+     * Note that if {@link MediaFormat#KEY_ROTATION} is also set,
+     * the flip will be applied before the rotation.
+     *
+     */
+    @FlaggedApi(FLAG_FLIP_SUPPORT)
+    public static final String KEY_HORIZONTAL_FLIP = "horizontal-flip";
+
+    /**
      * A key describing the desired clockwise rotation on an output surface.
      * This key is only used when the codec is configured using an output surface.
      * The associated value is an integer, representing degrees. Supported values
      * are 0, 90, 180 or 270. This is an optional field; if not specified, rotation
      * defaults to 0.
+     *
+     * Note that if {@link MediaFormat#KEY_HORIZONTAL_FLIP} is also set,
+     * the rotation will be applied after the flip.
      *
      * @see MediaCodecInfo.CodecCapabilities#profileLevels
      */

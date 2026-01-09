@@ -275,14 +275,26 @@ internal constructor(
                     val nextIndex = index + 1
 
                     if (previousIndex >= 0) {
-                        if (hasIntrinsicTopRoundness(child)) {
+                        if (
+                            hasIntrinsicTopRoundness(child) &&
+                                isInSameSection(
+                                    child,
+                                    children[previousIndex] as ExpandableNotificationRow,
+                                )
+                        ) {
                             children[previousIndex].requestBottomRoundness(1f, FOLLOWING)
                         } else {
                             children[previousIndex].requestBottomRoundness(0f, FOLLOWING)
                         }
                     }
                     if (nextIndex < children.size) {
-                        if (hasIntrinsicBottomRoundness(child)) {
+                        if (
+                            hasIntrinsicBottomRoundness(child) &&
+                                isInSameSection(
+                                    child,
+                                    children[nextIndex] as ExpandableNotificationRow,
+                                )
+                        ) {
                             children[nextIndex].requestTopRoundness(1f, PREVIOUS)
                         } else {
                             children[nextIndex].requestTopRoundness(0f, PREVIOUS)
@@ -306,6 +318,13 @@ internal constructor(
     fun hasIntrinsicTopRoundness(view: ExpandableView): Boolean {
         return view.getTopRoundnessSources().contains(BUNDLE) ||
             view.getTopRoundnessSources().contains(GROUPING_DISABLED_SECTION)
+    }
+
+    fun isInSameSection(
+        view: ExpandableNotificationRow,
+        view2: ExpandableNotificationRow,
+    ): Boolean {
+        return view.entryAdapter.sectionBucket == view2.entryAdapter.sectionBucket
     }
 
     /**

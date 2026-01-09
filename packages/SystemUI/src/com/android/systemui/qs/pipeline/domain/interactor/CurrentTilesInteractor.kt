@@ -24,6 +24,7 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.Dumpable
 import com.android.systemui.Flags.hsuQsChanges
 import com.android.systemui.ProtoDumpable
+import com.android.systemui.animation.Expandable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -276,7 +277,14 @@ constructor(
                     val newResolvedTiles =
                         newTileMap
                             .filter { it.value is TileOrNotInstalled.Tile }
-                            .map { TileModel(it.key, (it.value as TileOrNotInstalled.Tile).tile) }
+                            .map {
+                                val tileExpandable = Expandable()
+                                TileModel(
+                                    it.key,
+                                    (it.value as TileOrNotInstalled.Tile).tile,
+                                    tileExpandable,
+                                )
+                            }
 
                     _currentSpecsAndTiles.value = newResolvedTiles
                     logger.logTilesNotInstalled(

@@ -18,26 +18,21 @@
 
 #define LOG_NDEBUG 0
 
-#include <condition_variable>
-#include <mutex>
-#include <optional>
-
-#include <adb/pairing/pairing_server.h>
 #include <android-base/properties.h>
 #include <jni.h>
 #include <nativehelper/JNIHelp.h>
 #include <nativehelper/utils.h>
 #include <utils/Log.h>
 
+#include "adb/IPairingServer.h"
+
 namespace android {
+
+using namespace adb::pairing;
 
 // ----------------------------------------------------------------------------
 namespace {
 
-struct ServerDeleter {
-    void operator()(PairingServerCtx* p) { pairing_server_destroy(p); }
-};
-using PairingServerPtr = std::unique_ptr<PairingServerCtx, ServerDeleter>;
 struct PairingResultWaiter {
     std::mutex mutex_;
     std::condition_variable cv_;
@@ -57,13 +52,14 @@ struct PairingResultWaiter {
     }
 };
 
-PairingServerPtr sServer;
+std::unique_ptr<IPairingServer> sServer;
 std::unique_ptr<PairingResultWaiter> sWaiter;
 } // namespace
 
-static jint native_pairing_start(JNIEnv* env, jobject thiz, jstring javaGuid, jstring javaPassword) {
+static jint native_pairing_start(JNIEnv* env, jobject thiz, jstring javaGuid,
+                                 jstring javaPassword) {
     // Server-side only sends its GUID on success.
-    PeerInfo system_info = { .type = ADB_DEVICE_GUID };
+    PeerInfo system_info = {.type = ADB_DEVICE_GUID};
 
     ScopedUtfChars guid = GET_UTF_OR_RETURN(env, javaGuid);
     memcpy(system_info.data, guid.c_str(), guid.size());
@@ -71,12 +67,11 @@ static jint native_pairing_start(JNIEnv* env, jobject thiz, jstring javaGuid, js
     ScopedUtfChars password = GET_UTF_OR_RETURN(env, javaPassword);
 
     // Create the pairing server
-    sServer = PairingServerPtr(
-            pairing_server_new_no_cert(reinterpret_cast<const uint8_t*>(password.c_str()),
-                                       password.size(), &system_info, 0));
+    sServer.reset(IPairingServer::CreateNoCert(reinterpret_cast<const uint8_t*>(password.c_str()),
+                                               password.size(), &system_info));
 
     sWaiter.reset(new PairingResultWaiter);
-    uint16_t port = pairing_server_start(sServer.get(), sWaiter->ResultCallback, sWaiter.get());
+    uint16_t port = sServer->Start(sWaiter->ResultCallback, sWaiter.get());
     if (port == 0) {
         ALOGE("Failed to start pairing server");
         return -1;
@@ -87,7 +82,7 @@ static jint native_pairing_start(JNIEnv* env, jobject thiz, jstring javaGuid, js
 
 static void native_pairing_cancel(JNIEnv* /* env */, jclass /* clazz */) {
     if (sServer != nullptr) {
-        sServer.reset();
+        sServer->StopListening();
     }
 }
 
@@ -105,6 +100,13 @@ static jstring native_pairing_wait(JNIEnv* env, jobject thiz) {
     return env->NewStringUTF(peer_public_key);
 }
 
+static jint native_pairing_get_port(JNIEnv* /* env */, jobject /* thiz */) {
+    if (sServer != nullptr) {
+        return sServer->GetPort();
+    }
+    return 0;
+}
+
 // ----------------------------------------------------------------------------
 
 static const JNINativeMethod gPairingThreadMethods[] = {
@@ -113,6 +115,7 @@ static const JNINativeMethod gPairingThreadMethods[] = {
          (void*)native_pairing_start},
         {"native_pairing_cancel", "()V", (void*)native_pairing_cancel},
         {"native_pairing_wait", "()Ljava/lang/String;", (void*)native_pairing_wait},
+        {"native_pairing_get_port", "()I", (void*)native_pairing_get_port},
 };
 
 int register_android_server_AdbDebuggingManager(JNIEnv* env) {

@@ -27,7 +27,6 @@ import android.view.SurfaceControl;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
-import com.android.window.flags.Flags;
 
 
 /**
@@ -158,9 +157,7 @@ class Dimmer {
          * Whether anyone is currently requesting the dim
          */
         boolean isDimming() {
-            return mLastDimmingWindow != null
-                    && (Flags.avoidRecreatingDimSurfaceDuringActivityTransition()
-                    ? mHostContainer.isVisible() : mHostContainer.isVisibleRequested());
+            return mLastDimmingWindow != null && mHostContainer.isVisible();
         }
 
         @NonNull
@@ -210,8 +207,7 @@ class Dimmer {
      */
     protected void adjustAppearance(@NonNull WindowState dimmingContainer,
             float alpha, int blurRadius) {
-        if (Flags.avoidRecreatingDimSurfaceDuringActivityTransition()
-                ? !mHost.isVisible() : !mHost.isVisibleRequested()) {
+        if (!mHost.isVisible()) {
             // If the host is already going away, there is no point in keeping dimming
             return;
         }

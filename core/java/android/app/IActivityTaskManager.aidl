@@ -31,7 +31,6 @@ import android.app.IProcessObserver;
 import android.app.IScreenCaptureObserver;
 import android.app.IServiceConnection;
 import android.app.IStopUserCallback;
-import android.app.ITaskMoveAllowedListener;
 import android.app.ITaskStackListener;
 import android.app.IUiAutomationConnection;
 import android.app.IUidObserver;
@@ -137,8 +136,6 @@ interface IActivityTaskManager {
     boolean isActivityStartAllowedOnDisplay(int displayId, in Intent intent, in String resolvedType,
             int userId);
     boolean isTaskMoveAllowedOnDisplay(int displayId);
-    void registerTaskMoveAllowedListener(in ITaskMoveAllowedListener listener);
-    void unregisterTaskMoveAllowedListener(in ITaskMoveAllowedListener listener);
 
     void unhandledBack();
 
@@ -371,8 +368,9 @@ interface IActivityTaskManager {
      * Called when navigation bar is about to trigger back event but won't inject back key to input
      * manager.
      * @param displayId Id of the display the user just touched.
+     * @return Return true if display order will change.
      */
-    void simulateTouchDisplay(int displayId);
+    boolean simulateTouchDisplay(int displayId);
 
     /**
      * Prepare the back navigation in the server. This setups the leashed for sysui to animate

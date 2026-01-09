@@ -33,8 +33,7 @@ constructor(private val desktopEffectInteractor: DesktopEffectInteractor) :
                 ButtonUiState(
                     // TODO(b/436222258): Attach to backend when available
                     isEnabled = false,
-                    // TODO(b/436222258): Replace hardcoded strings with resource resolution
-                    subText = "Live Captions",
+                    subText = com.android.systemui.res.R.string.av_live_captions,
                     image = com.android.systemui.res.R.drawable.subtitles,
                 )
             }

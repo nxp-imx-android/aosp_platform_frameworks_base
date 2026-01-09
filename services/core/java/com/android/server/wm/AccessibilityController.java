@@ -46,7 +46,6 @@ import static com.android.server.accessibility.AccessibilityTraceProto.WHERE;
 import static com.android.server.accessibility.AccessibilityTraceProto.WINDOW_MANAGER_SERVICE;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
-import static com.android.server.wm.WindowTracingLegacy.WINSCOPE_EXT;
 
 import android.accessibilityservice.AccessibilityTrace;
 import android.annotation.NonNull;
@@ -1706,8 +1705,7 @@ final class AccessibilityController {
         private static final class LogHandler extends Handler {
             private static final int CPU_STATS_COUNT = 5;
             private static final int BUFFER_CAPACITY = 1024 * 1024 * 12;
-            private static final String TRACE_FILENAME =
-                    "/data/misc/a11ytrace/a11y_trace" + WINSCOPE_EXT;
+            private static final String TRACE_FILENAME = "/data/misc/a11ytrace/a11y_trace.winscope";
             private static final long MAGIC_NUMBER_VALUE =
                     ((long) MAGIC_NUMBER_H << 32) | MAGIC_NUMBER_L;
 

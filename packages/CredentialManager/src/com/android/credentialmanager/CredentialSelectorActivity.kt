@@ -33,8 +33,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.compose.theme.PlatformTheme
 import com.android.credentialmanager.common.Constants
@@ -49,26 +47,6 @@ import com.android.credentialmanager.getflow.hasContentToDisplay
 
 @ExperimentalMaterialApi
 class CredentialSelectorActivity : ComponentActivity() {
-
-  private val viewModel: CredentialSelectorViewModel by viewModels {
-    return@viewModels object : ViewModelProvider.Factory {
-      override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        require(modelClass.isAssignableFrom(CredentialSelectorViewModel::class.java)) {
-          "$modelClass is not recognized."
-        }
-        val viewModel = CredentialSelectorViewModel(
-          CredentialManagerRepo(
-            this@CredentialSelectorActivity,
-            intent,
-            true
-          )
-        )
-        @Suppress("UNCHECKED_CAST")
-        return viewModel as T
-      }
-    }
-  }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(Constants.LOG_TAG, "Creating new CredentialSelectorActivity")
@@ -83,12 +61,13 @@ class CredentialSelectorActivity : ComponentActivity() {
             if (isCancellationRequest && !shouldShowCancellationUi) {
                 return
             }
+            val credManRepo = CredentialManagerRepo(this, intent, isNewActivity = true)
 
             val backPressedCallback = object : OnBackPressedCallback(
                 true // default to enabled
             ) {
                 override fun handleOnBackPressed() {
-                    viewModel.onUserCancel()
+                    credManRepo.onUserCancel()
                     Log.d(Constants.LOG_TAG, "Activity back triggered: finish the activity.")
                     this@CredentialSelectorActivity.finish()
                 }
@@ -97,7 +76,7 @@ class CredentialSelectorActivity : ComponentActivity() {
 
             setContent {
                 PlatformTheme {
-                    CredentialManagerBottomSheet()
+                    CredentialManagerBottomSheet(credManRepo)
                 }
             }
         } catch (e: Exception) {
@@ -160,7 +139,12 @@ class CredentialSelectorActivity : ComponentActivity() {
 
     @ExperimentalMaterialApi
     @Composable
-    private fun CredentialManagerBottomSheet() {
+    private fun CredentialManagerBottomSheet(
+        credManRepo: CredentialManagerRepo,
+    ) {
+        val viewModel: CredentialSelectorViewModel = viewModel {
+            CredentialSelectorViewModel(credManRepo)
+        }
         val launcher = rememberLauncherForActivityResult(
             StartBalIntentSenderForResultContract()
         ) {
@@ -196,13 +180,13 @@ class CredentialSelectorActivity : ComponentActivity() {
             )
         } else {
             Log.d(Constants.LOG_TAG, "UI wasn't able to render neither get nor create flow")
-            reportInstantiationErrorAndFinishActivity(viewModel.onParsingFailureCancel)
+            reportInstantiationErrorAndFinishActivity(credManRepo)
         }
     }
 
-    private fun reportInstantiationErrorAndFinishActivity(onParsingFailureCancel: () -> Unit) {
+    private fun reportInstantiationErrorAndFinishActivity(credManRepo: CredentialManagerRepo) {
         Log.w(Constants.LOG_TAG, "Finishing the activity due to instantiation failure.")
-        onParsingFailureCancel()
+        credManRepo.onParsingFailureCancel()
         this@CredentialSelectorActivity.finish()
     }
 

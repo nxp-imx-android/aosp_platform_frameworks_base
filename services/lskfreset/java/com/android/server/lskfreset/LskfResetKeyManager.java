@@ -22,15 +22,34 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
 import android.security.keystore.KeyProperties;
+import android.security.keystore.KeyProtection;
 import android.util.Slog;
 
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.interfaces.ECPrivateKey;
 import java.security.spec.ECFieldFp;
 import java.security.spec.ECGenParameterSpec;
+import java.time.Instant;
+import java.util.Calendar;
+import java.util.Date;
 
 public class LskfResetKeyManager {
     private static final String TAG = "LskfResetKeyManagerStub";
@@ -39,6 +58,47 @@ public class LskfResetKeyManager {
 
     public LskfResetKeyManager(Context context) {
         Slog.d(TAG, "Initialized");
+    }
+
+    /**
+     * Generates a self signed certificate that signs private key with the public key
+     *
+     * @param privateKey the key that is going to be signed
+     * @param publicKey the key that will be used to sign the certificate
+     * @return The generated self signed certificate
+     */
+    @Nullable
+    private Certificate generateSelfSignedCertificate(PrivateKey privateKey, PublicKey publicKey)
+            throws OperatorCreationException, CertificateException, IOException {
+        // Trying to sign the certificate as close as possible to what Android keystore would.
+        X500Name name = new X500Name("CN=Android Keystore Key");
+        BigInteger serial = BigInteger.ONE;
+        Date notBefore = Date.from(Instant.EPOCH);
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(2048, 0, 1);
+        Date notAfter = calendar.getTime();
+
+        X509v3CertificateBuilder certBuilder =
+                new X509v3CertificateBuilder(
+                        name,
+                        serial,
+                        notBefore,
+                        notAfter,
+                        name,
+                        SubjectPublicKeyInfo.getInstance(publicKey.getEncoded()));
+
+        JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder("SHA256withECDSA");
+
+        ContentSigner signer = signerBuilder.build(privateKey);
+
+        // JcaX509CertificateConverter is not ported to Android, but in this case, we can
+        // manually send the certificate to X509 CertificateFactory.
+        X509CertificateHolder certHolder = certBuilder.build(signer);
+        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        Certificate certificate =
+                cf.generateCertificate(new ByteArrayInputStream(certHolder.getEncoded()));
+
+        return certificate;
     }
 
     /**
@@ -51,8 +111,11 @@ public class LskfResetKeyManager {
     public byte[] generateAndStoreLskfResetKey(@NonNull String keyAlias) {
         try {
             if (enableLskfResetManager()) {
-                KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(
-                          KeyProperties.KEY_ALGORITHM_EC);
+                // We don't use Android keystore key generation because it won't allow us to access
+                // the private keys scalar values. We need the scalar values for the added security
+                // reason described below.
+                KeyPairGenerator keyPairGenerator =
+                        KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC);
                 ECGenParameterSpec ecSpec = new ECGenParameterSpec(EC_CURVE_P256);
                 keyPairGenerator.initialize(ecSpec);
                 KeyPair destinationShareKey = keyPairGenerator.generateKeyPair();
@@ -71,11 +134,57 @@ public class LskfResetKeyManager {
                     ecDestinationPrivateKey = (ECPrivateKey) destinationShareKey.getPrivate();
                     ecMediatorPrivateKey = (ECPrivateKey) mediatorShareKey.getPrivate();
 
-                    p = ((ECFieldFp) ecDestinationPrivateKey.getParams().getCurve()
-                        .getField()).getP();
-                } while (ecDestinationPrivateKey.getS()
-                    .add(ecMediatorPrivateKey.getS())
-                    .mod(p).equals(BigInteger.ZERO));
+                    p =
+                            ((ECFieldFp) ecDestinationPrivateKey.getParams().getCurve().getField())
+                                    .getP();
+                } while (ecDestinationPrivateKey
+                        .getS()
+                        .add(ecMediatorPrivateKey.getS())
+                        .mod(p)
+                        .equals(BigInteger.ZERO));
+
+                // To insert EC keys into AndroidKeyStore the keys should be signed.
+                // When the keys are generated through Android keystore itself, the self signing
+                // happens inside the key generation itself.
+                Certificate selfSignedDestinationCertificate =
+                        generateSelfSignedCertificate(
+                                ecDestinationPrivateKey, destinationShareKey.getPublic());
+                if (selfSignedDestinationCertificate == null) {
+                    return null;
+                }
+                Certificate selfSignedMediatorCertificate =
+                        generateSelfSignedCertificate(
+                                ecMediatorPrivateKey, mediatorShareKey.getPublic());
+                if (selfSignedMediatorCertificate == null) {
+                    return null;
+                }
+                Certificate[] destinationCertificateChain = {selfSignedDestinationCertificate};
+                Certificate[] mediatorCertificateChain = {selfSignedMediatorCertificate};
+
+                KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
+                keyStore.load(null);
+
+                KeyProtection keyProtection =
+                        new KeyProtection.Builder(
+                                        KeyProperties.PURPOSE_SIGN
+                                                | KeyProperties.PURPOSE_VERIFY
+                                                | KeyProperties.PURPOSE_AGREE_KEY)
+                                .setDigests(
+                                        KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA512)
+                                .build();
+
+                KeyStore.PrivateKeyEntry destinationPrivateKeyEntry =
+                        new KeyStore.PrivateKeyEntry(
+                                ecDestinationPrivateKey, destinationCertificateChain);
+
+                KeyStore.PrivateKeyEntry mediatorPrivateKeyEntry =
+                        new KeyStore.PrivateKeyEntry(
+                                ecMediatorPrivateKey, mediatorCertificateChain);
+
+                keyStore.setEntry(
+                        keyAlias + "Destination", destinationPrivateKeyEntry, keyProtection);
+                keyStore.setEntry(keyAlias + "Mediator", mediatorPrivateKeyEntry, keyProtection);
+
                 return destinationShareKey.getPublic().getEncoded();
             } else {
                 return null;

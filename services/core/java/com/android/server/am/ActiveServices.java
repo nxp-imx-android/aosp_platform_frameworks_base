@@ -151,6 +151,7 @@ import android.app.ActivityManagerInternal;
 import android.app.ActivityManagerInternal.OomAdjReason;
 import android.app.ActivityManagerInternal.ServiceNotificationPolicy;
 import android.app.ActivityThread;
+import android.app.AnrTypes;
 import android.app.AppGlobals;
 import android.app.AppOpsManager;
 import android.app.BackgroundStartPrivileges;
@@ -809,21 +810,40 @@ public final class ActiveServices {
                 ? maxBg : ActivityManager.isLowRamDeviceStatic() ? 1 : 8;
 
         final IBinder b = ServiceManager.getService(Context.PLATFORM_COMPAT_SERVICE);
-        this.mFGSLogger = new ForegroundServiceTypeLoggerModule();
-        this.mActiveServiceAnrTimer = new ProcessAnrTimer(service,
-                ActivityManagerService.SERVICE_TIMEOUT_MSG,
-                "SERVICE_TIMEOUT",
-                new AnrTimer.Args().longMethodTracing(Flags.enableLongMethodTracingOnAnrTimer()));
-        this.mShortFGSAnrTimer = new ServiceAnrTimer(service,
-                ActivityManagerService.SERVICE_SHORT_FGS_ANR_TIMEOUT_MSG,
-                "SHORT_FGS_TIMEOUT",
-                new AnrTimer.Args().longMethodTracing(Flags.enableLongMethodTracingOnAnrTimer()));
-        this.mServiceFGAnrTimer = new ServiceAnrTimer(service,
-                ActivityManagerService.SERVICE_FOREGROUND_TIMEOUT_MSG,
-                "SERVICE_FOREGROUND_TIMEOUT",
-                new AnrTimer.Args()
-                            .extend(true)
-                            .longMethodTracing(Flags.enableLongMethodTracingOnAnrTimer()));
+        mFGSLogger = new ForegroundServiceTypeLoggerModule();
+        mActiveServiceAnrTimer =
+                new ProcessAnrTimer(
+                        service,
+                        ActivityManagerService.SERVICE_TIMEOUT_MSG,
+                        "SERVICE_TIMEOUT",
+                        new AnrTimer.Args()
+                                .longMethodTracing(Flags.enableLongMethodTracingOnAnrTimer())
+                                .anrWarning(android.app.Flags.enableAnrWarningCallback())
+                                .anrWarningMessageId(
+                                        ActivityManagerService.SERVICE_TIMEOUT_WARNING_MSG));
+        mShortFGSAnrTimer =
+                new ServiceAnrTimer(
+                        service,
+                        ActivityManagerService.SERVICE_SHORT_FGS_ANR_TIMEOUT_MSG,
+                        "SHORT_FGS_TIMEOUT",
+                        new AnrTimer.Args()
+                                .longMethodTracing(Flags.enableLongMethodTracingOnAnrTimer())
+                                .anrWarning(android.app.Flags.enableAnrWarningCallback())
+                                .anrWarningMessageId(
+                                        ActivityManagerService
+                                                .SERVICE_SHORT_FGS_ANR_TIMEOUT_WARNING_MSG));
+        mServiceFGAnrTimer =
+                new ServiceAnrTimer(
+                        service,
+                        ActivityManagerService.SERVICE_FOREGROUND_TIMEOUT_MSG,
+                        "SERVICE_FOREGROUND_TIMEOUT",
+                        new AnrTimer.Args()
+                                .extend(true)
+                                .longMethodTracing(Flags.enableLongMethodTracingOnAnrTimer())
+                                .anrWarning(android.app.Flags.enableAnrWarningCallback())
+                                .anrWarningMessageId(
+                                        ActivityManagerService
+                                                .SERVICE_FOREGROUND_TIMEOUT_ANR_WARNING_MSG));
     }
 
     void systemServicesReady() {
@@ -8110,6 +8130,106 @@ public final class ActiveServices {
         }
 
         return res;
+    }
+
+    /**
+     * Notifies the app about a potential ANR due to a short foreground service timeout.
+     *
+     * @param serviceRecord The service record that is timing out.
+     * @param anrId An identifier for this ANR.
+     * @param elapsedTimeMs The time in milliseconds that has elapsed since the timeout started.
+     */
+    void onShortFgsAnrTimeoutWarning(ServiceRecord serviceRecord, int anrId, long elapsedTimeMs) {
+        final String description = "Short Foreground Service: " + serviceRecord.getComponentName();
+        final long timeoutMs;
+
+        synchronized (mAm) {
+            if (serviceRecord.getShortFgsInfo() == null) {
+                return;
+            }
+            timeoutMs =
+                    serviceRecord.getShortFgsInfo().getAnrTime()
+                            - serviceRecord.getShortFgsInfo().getStartTime();
+        }
+
+        mAm.notifyAnrWarning(
+                serviceRecord.appInfo.uid,
+                anrId,
+                AnrTypes.ANR_TYPE_FOREGROUND_SHORT_SERVICE_TIMEOUT,
+                elapsedTimeMs,
+                timeoutMs,
+                description);
+    }
+
+    /**
+     * Notifies the app about a potential ANR due to a foreground service took too long to start.
+     *
+     * @param serviceRecord The service record that is timing out.
+     * @param anrId An identifier for this ANR.
+     * @param elapsedTimeMs The time in milliseconds that has elapsed since the timeout started.
+     */
+    void serviceForegroundAnrWarning(ServiceRecord serviceRecord, int anrId, long elapsedTimeMs) {
+        String description = "Foreground Service: " + serviceRecord.getComponentName();
+        mAm.notifyAnrWarning(
+                serviceRecord.appInfo.uid,
+                anrId,
+                AnrTypes.ANR_TYPE_START_FOREGROUND_SERVICE,
+                elapsedTimeMs,
+                mAm.mConstants.mServiceStartForegroundTimeoutMs,
+                description);
+    }
+
+    /**
+     * Notifies the app about a potential ANR due to service took too long to finish.
+     *
+     * @param proc The process record of the process hosting the service.
+     * @param anrId A unique integer ID for this ANR.
+     * @param elapsedTimeMs The elapsed time in milliseconds since the service execution started.
+     */
+    void serviceTimeoutAnrWarning(ProcessRecord proc, int anrId, long elapsedTimeMs) {
+        final long timeoutMs;
+        String description;
+        synchronized (mAm) {
+            final ProcessServiceRecord psr = proc.mServices;
+            if (psr.numberOfExecutingServices() == 0
+                    || proc.getThread() == null
+                    || proc.isKilled()) {
+                return;
+            }
+
+            timeoutMs =
+                    psr.isExecServicesFg()
+                            ? mAm.mConstants.SERVICE_TIMEOUT
+                            : mAm.mConstants.SERVICE_BACKGROUND_TIMEOUT;
+
+            ServiceRecord serviceRecord = null;
+            final long now = SystemClock.uptimeMillis();
+            final long maxTime = now - elapsedTimeMs;
+
+            // Find the service with the oldest start time among those that have timed out.
+            for (int i = psr.numberOfExecutingServices() - 1; i >= 0; i--) {
+                ServiceRecord temp = psr.getExecutingServiceAt(i);
+                if (temp.executingStart < maxTime) {
+                    if (serviceRecord == null
+                            || (temp.executingStart < serviceRecord.executingStart)) {
+                        serviceRecord = temp;
+                    }
+                }
+            }
+            if (serviceRecord != null && mAm.mProcessList.isInLruListLOSP(proc)) {
+                description = "Executing Service: " + serviceRecord.shortInstanceName;
+            } else {
+                return;
+            }
+        }
+
+        mAm.notifyAnrWarning(
+                proc.uid,
+                anrId,
+                AnrTypes.ANR_TYPE_EXECUTE_SERVICE,
+                elapsedTimeMs,
+                timeoutMs,
+                description);
     }
 
     void serviceTimeout(ProcessRecord proc) {

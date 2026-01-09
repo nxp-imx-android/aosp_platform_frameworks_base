@@ -16,9 +16,15 @@
 
 package com.android.settingslib.metadata.preferencesapi.preconditions
 
+import androidx.annotation.StringRes
+
 /**
  * Any failure reason not covered by the above. This should be rare so please discuss with the
  * settings team if you feel you need to use this - it may be appropriate for us to create a new
  * result type.
  */
-class Custom(override val reason: Int) : Disallowed
+class Custom : Disallowed {
+    constructor(@StringRes reason: Int) : super(reason)
+
+    constructor(reason: String) : super(reason)
+}

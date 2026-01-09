@@ -19,6 +19,7 @@ package com.android.systemui.qs.pipeline.domain.interactor
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.animation.Expandable
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.qs.FakeQSTile
@@ -204,7 +205,7 @@ class AutoAddInteractorTest : SysuiTestCase() {
     fun autoAddable_trackIfNotAdded_currentTile_markedAsAdded() =
         testScope.runTest {
             val fakeTile = FakeQSTile(USER).apply { tileSpec = SPEC.spec }
-            val fakeCurrentTileModel = TileModel(SPEC, fakeTile)
+            val fakeCurrentTileModel = TileModel(SPEC, fakeTile, Expandable())
             whenever(currentTilesInteractor.currentTiles)
                 .thenReturn(MutableStateFlow(listOf(fakeCurrentTileModel)))
 
@@ -221,7 +222,7 @@ class AutoAddInteractorTest : SysuiTestCase() {
     fun autoAddable_trackIfNotAdded_tileAddedToCurrentTiles_markedAsAdded() =
         testScope.runTest {
             val fakeTile = FakeQSTile(USER).apply { tileSpec = SPEC.spec }
-            val fakeCurrentTileModel = TileModel(SPEC, fakeTile)
+            val fakeCurrentTileModel = TileModel(SPEC, fakeTile, Expandable())
             val currentTilesFlow = MutableStateFlow(emptyList<TileModel>())
 
             whenever(currentTilesInteractor.currentTiles).thenReturn(currentTilesFlow)
@@ -245,7 +246,7 @@ class AutoAddInteractorTest : SysuiTestCase() {
                 autoAddRepository,
                 dumpManager,
                 logger,
-                testScope.backgroundScope
+                testScope.backgroundScope,
             )
             .apply { init(currentTilesInteractor) }
     }

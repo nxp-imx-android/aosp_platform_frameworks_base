@@ -22,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.common.ui.viewmodel.AppContentsViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.AudioSwitchViewModel
@@ -42,6 +43,7 @@ constructor(
     private val drawableLoaderViewModel: DrawableLoaderViewModel,
     private val shareScreenUiInteractor: ShareScreenUiInteractor,
     private val shareScreenPrivacyIndicatorInteractor: ShareScreenPrivacyIndicatorInteractor,
+    private val mediaProjectionMetricsLogger: MediaProjectionMetricsLogger,
     @Assisted("thumbnailWidthPx") private val thumbnailWidthPx: Int,
     @Assisted("thumbnailHeightPx") private val thumbnailHeightPx: Int,
     appContentsViewModelFactory: AppContentsViewModel.Factory,
@@ -62,7 +64,13 @@ constructor(
     fun setTargetViewModel(type: ScreenCaptureTarget) {
         currentTargetsModel =
             when (type) {
-                is ScreenCaptureTarget.App -> recentTasksViewModel
+                is ScreenCaptureTarget.App -> {
+                    mediaProjectionMetricsLogger.notifyAppSelectorDisplayed(
+                        shareScreenUiInteractor.uid
+                    )
+                    recentTasksViewModel
+                }
+                // TODO(b/471059930): Extend metrics for large screen sharing.
                 is ScreenCaptureTarget.AppContent -> appContentsViewModel
                 is ScreenCaptureTarget.Fullscreen -> displaysViewModel
                 else ->

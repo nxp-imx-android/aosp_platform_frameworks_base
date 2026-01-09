@@ -40,10 +40,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.android.compose.ui.graphics.painter.DrawablePainter
 import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.av.shared.model.Sensor
 import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.PageType
 import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.SensorActivityViewModel
@@ -66,11 +68,13 @@ fun SensorActivityDrillIn(
     Column(modifier = modifier) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             IconButton(onClick = { viewModel.returnToMainPage() }) {
-                // TODO(467631255): Use string resources.
-                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.sensor_activity_back_button_cd),
+                )
             }
             Text(
-                text = "Privacy", // TODO(467631255): Use string resources.
+                text = stringResource(R.string.av_panel_title),
                 modifier =
                     Modifier.weight(1f) // Takes all available horizontal space.
                         .height(24.dp)
@@ -81,7 +85,7 @@ fun SensorActivityDrillIn(
             )
         }
         Text(
-            text = "See apps that are actively or recently using these permissions.",
+            text = stringResource(R.string.sensor_activity_header),
             modifier = Modifier.height(32.dp),
             style = typography.labelMedium,
             textAlign = TextAlign.Center,
@@ -107,8 +111,12 @@ fun SensorActivityDrillIn(
         }
         Spacer(modifier = Modifier.height(16.dp))
         ListItem(
-            // TODO(467631255): Use string resources.
-            headlineContent = { Text(text = "See all access", textAlign = TextAlign.Center) },
+            headlineContent = {
+                Text(
+                    text = stringResource(R.string.sensor_activity_see_all_access_button),
+                    textAlign = TextAlign.Center,
+                )
+            },
             modifier =
                 Modifier.clip(shape = RoundedCornerShape(size = 26.dp))
                     .clickable(onClick = { viewModel.openPrivacyDashboard() }),
@@ -190,8 +198,10 @@ private fun SupportingContent(
                     contentDescription = null,
                     tint = colorScheme.onSurfaceVariant,
                 )
-                // TODO(467631255): Use string resources.
-                Text(text = "Camera", style = typography.bodySmall)
+                Text(
+                    text = stringResource(R.string.sensor_activity_camera_label),
+                    style = MaterialTheme.typography.bodySmall,
+                )
             }
             if (hasCamera && hasMicrophone) {
                 Spacer(modifier = Modifier.width(16.dp))
@@ -202,22 +212,22 @@ private fun SupportingContent(
                     contentDescription = null,
                     tint = colorScheme.onSurfaceVariant,
                 )
-                // TODO(467631255): Use string resources.
-                Text(text = "Microphone", style = typography.bodySmall)
+                Text(
+                    text = stringResource(R.string.sensor_activity_microphone_label),
+                    style = MaterialTheme.typography.bodySmall,
+                )
             }
         }
         Row(modifier = Modifier.height(24.dp).fillMaxWidth()) {
             Text(
-                // TODO(467631255): Use string resources.
-                text = "ManageAccess",
+                text = stringResource(R.string.sensor_activity_manage_access_button),
                 style = typography.labelMedium,
                 color = colorScheme.primary,
                 modifier = Modifier.clickable(onClick = { viewModel.manageApp(packageName) }),
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
-                // TODO(467631255): Use string resources.
-                text = "Close app",
+                text = stringResource(R.string.sensor_activity_close_app_button),
                 style = typography.labelMedium,
                 color = colorScheme.primary,
                 modifier = Modifier.clickable(onClick = { viewModel.closeApp(packageName) }),

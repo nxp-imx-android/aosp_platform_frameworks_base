@@ -40,6 +40,7 @@ import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 
@@ -123,6 +124,20 @@ constructor(
     private fun listenForSceneTransitionProgress() {
         applicationScope.launch {
             sceneInteractor.transitionState
+                // The transitionState re-emits when things like the isUserInputOngoing flow change,
+                // which we're not interested in.
+                .distinctUntilChanged { state1, state2 ->
+                    when (state1) {
+                        is ObservableTransitionState.Idle ->
+                            state2 is ObservableTransitionState.Idle &&
+                                state2.currentScene == state1.currentScene &&
+                                state2.currentOverlays == state1.currentOverlays
+                        is ObservableTransitionState.Transition ->
+                            state2 is ObservableTransitionState.Transition &&
+                                state2.fromContent == state1.fromContent &&
+                                state2.toContent == state1.toContent
+                    }
+                }
                 .pairwise(ObservableTransitionState.Idle(Scenes.Lockscreen))
                 .collect { (prevTransition, transition) ->
                     when (transition) {

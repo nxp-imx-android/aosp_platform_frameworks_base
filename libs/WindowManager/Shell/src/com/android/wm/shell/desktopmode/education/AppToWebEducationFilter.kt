@@ -54,10 +54,7 @@ class AppToWebEducationFilter(
 
         return if (isAppToWebEducationRequested(taskInfo)) {
             !isEducationViewLimitReached(windowingEducationProto) &&
-                if (
-                    DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue &&
-                        Flags.enableFocusTransitionObserverCleanup()
-                ) {
+                if (Flags.enableFocusTransitionObserverCleanup()) {
                     focusTransitionObserver.hasGlobalFocus(taskInfo)
                 } else {
                     taskInfo.isFocused
@@ -67,10 +64,7 @@ class AppToWebEducationFilter(
                 isBrowserSessionAvailable(taskInfo)
         } else {
             !isEducationViewLimitReached(windowingEducationProto) &&
-                if (
-                    DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue &&
-                        Flags.enableFocusTransitionObserverCleanup()
-                ) {
+                if (Flags.enableFocusTransitionObserverCleanup()) {
                     focusTransitionObserver.hasGlobalFocus(taskInfo)
                 } else {
                     taskInfo.isFocused

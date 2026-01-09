@@ -43,7 +43,6 @@ class AdbPairingThread extends Thread implements AdbdServicesManager.Registratio
     // must contain at least one letter.
     @VisibleForTesting static final String SERVICE_PROTOCOL = "adb-tls-pairing";
     private final String mServiceType = String.format("_%s._tcp.", SERVICE_PROTOCOL);
-    private int mPort;
     private final AdbWifiPairingMethod mAdbWifiPairingMethod;
 
     private final Handler mHandler;
@@ -61,7 +60,6 @@ class AdbPairingThread extends Thread implements AdbdServicesManager.Registratio
         if (serviceName == null || serviceName.isEmpty()) {
             mServiceName = mGuid;
         }
-        mPort = -1;
         mContext = context;
         mAdbWifiPairingMethod = adbWifiPairingMethod;
         mHandler = handler;
@@ -70,11 +68,17 @@ class AdbPairingThread extends Thread implements AdbdServicesManager.Registratio
     @Override
     public void run() {
         AdbdServicesManager servicesManager = new AdbdServicesManager(mContext);
-        servicesManager.registerService(mServiceName, mServiceType, mPort, this);
+        int port = native_pairing_get_port();
+        if (port <= 0) {
+            Slog.e(TAG, "Pairing server has invalid port");
+            return;
+        }
+
+        servicesManager.registerService(mServiceName, mServiceType, port, this);
 
         // Send pairing port to UI
         Message msg = mHandler.obtainMessage(AdbDebuggingHandler.MSG_RESPONSE_PAIRING_PORT);
-        msg.obj = mPort;
+        msg.obj = port;
         mHandler.sendMessage(msg);
 
         String publicKey = native_pairing_wait();
@@ -108,8 +112,8 @@ class AdbPairingThread extends Thread implements AdbdServicesManager.Registratio
             Slog.e(TAG, "adbwifi guid was not set");
             return;
         }
-        mPort = native_pairing_start(mGuid, mPairingCode);
-        if (mPort <= 0) {
+
+        if (native_pairing_start(mGuid, mPairingCode) <= 0) {
             Slog.e(TAG, "Unable to start pairing server");
             return;
         }
@@ -126,6 +130,8 @@ class AdbPairingThread extends Thread implements AdbdServicesManager.Registratio
     private native void native_pairing_cancel();
 
     private native String native_pairing_wait();
+
+    private native int native_pairing_get_port();
 
     @Override
     public void onRegistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {

@@ -115,8 +115,6 @@ public enum DesktopExperienceFlags {
             true, FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT),
     ENABLE_DISPLAY_DISCONNECT_INTERACTION(Flags::enableDisplayDisconnectInteraction, true,
             Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION),
-    ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS(Flags::enableDisplayFocusInShellTransitions, true,
-            Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS),
     ENABLE_DISPLAY_MIRROR_IN_LOCK_TASK_MODE(
             com.android.server.display.feature.flags.Flags::enableDisplayMirrorInLockTaskMode,
             false, FLAG_ENABLE_DISPLAY_MIRROR_IN_LOCK_TASK_MODE),
@@ -193,8 +191,6 @@ public enum DesktopExperienceFlags {
             true, Flags.FLAG_ENABLE_SYS_DECORS_CALLBACKS_VIA_WM),
     ENABLE_TASKBAR_CONNECTED_DISPLAYS(Flags::enableTaskbarConnectedDisplays, true,
             Flags.FLAG_ENABLE_TASKBAR_CONNECTED_DISPLAYS),
-    ENABLE_TASK_MOVE_ALLOWED_LISTENER_API(Flags::enableTaskMoveAllowedListenerApi, false,
-            Flags.FLAG_ENABLE_TASK_MOVE_ALLOWED_LISTENER_API),
     ENABLE_TILE_RESIZING(Flags::enableTileResizing, true, Flags.FLAG_ENABLE_TILE_RESIZING),
     ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS(
             Flags::enableWindowingTransitionHandlersObservers, true,

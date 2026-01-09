@@ -763,8 +763,12 @@ public class DragDropControllerTests extends WindowTestsBase {
 
         startDrag(View.DRAG_FLAG_GLOBAL | View.DRAG_FLAG_GLOBAL_URI_READ
                         | View.DRAG_FLAG_REQUEST_SURFACE_FOR_RETURN_ANIMATION,
-                ClipData.newPlainText("label", "text"), (unused) -> {
+                ClipData.newPlainText("label", "text"), (surface) -> {
                     assertTrue(dragEvents.get(0).getAction() == ACTION_DRAG_STARTED);
+
+                    final SurfaceControl.Transaction transaction =
+                            mSystemServicesTestRule.mTransaction;
+                    clearInvocations(transaction);
 
                     // Verify after consuming that the drag surface is relinquished
                     mTarget.reportDropWindow(otherWindow.mInputChannelToken, 0, 0);
@@ -777,6 +781,7 @@ public class DragDropControllerTests extends WindowTestsBase {
                     assertTrue(
                             dragEvents.get(dragEvents.size() - 1).getAction() == ACTION_DRAG_ENDED);
                     assertTrue(dropEvent.getDragSurface() == null);
+                    verify(transaction).remove(surface);
                 });
     }
 
@@ -794,8 +799,12 @@ public class DragDropControllerTests extends WindowTestsBase {
 
         startDrag(View.DRAG_FLAG_GLOBAL | View.DRAG_FLAG_GLOBAL_URI_READ
                         | View.DRAG_FLAG_REQUEST_SURFACE_FOR_RETURN_ANIMATION,
-                ClipData.newPlainText("label", "text"), (unused) -> {
+                ClipData.newPlainText("label", "text"), (surface) -> {
                     assertTrue(dragEvents.get(0).getAction() == ACTION_DRAG_STARTED);
+
+                    final SurfaceControl.Transaction transaction =
+                            mSystemServicesTestRule.mTransaction;
+                    clearInvocations(transaction);
 
                     // Verify after consuming that the drag surface is relinquished
                     mTarget.reportDropWindow(otherWindow.mInputChannelToken, 0, 0);
@@ -808,6 +817,7 @@ public class DragDropControllerTests extends WindowTestsBase {
                     assertTrue(
                             dragEvents.get(dragEvents.size() - 1).getAction() == ACTION_DRAG_ENDED);
                     assertTrue(dropEvent.getDragSurface() != null);
+                    verify(transaction, never()).remove(surface);
                 });
     }
 

@@ -100,6 +100,7 @@ import android.os.BatteryManager;
 import android.os.BatteryManagerInternal;
 import android.os.BatteryManagerInternal.ChargingPolicyChangeListener;
 import android.os.Looper;
+import android.os.ParcelDuration;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.ServiceManager;
@@ -144,6 +145,7 @@ import org.mockito.quality.Strictness;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.ZoneOffset;
+import java.util.Map;
 
 public class JobSchedulerServiceTest {
     private static final String SOURCE_PACKAGE = "com.android.frameworks.mockingservicestests";
@@ -992,6 +994,37 @@ public class JobSchedulerServiceTest {
                 mService.getMaxJobExecutionTimeMs(jobEj));
         assertEquals(mService.mConstants.RUNTIME_MIN_GUARANTEE_MS,
                 mService.getMaxJobExecutionTimeMs(jobReg));
+    }
+
+    /**
+     * Confirm that
+     * {@link JobSchedulerService#getRescheduleJobForFailureLocked(JobStatus, int, int)}
+     * correctly copies over pending job reason stats from the original job.
+     */
+    @Test
+    public void testGetRescheduleJobForFailure_copiesPendingJobReasonStats() {
+        JobStatus originalJob = createJobStatus("testGetRescheduleJobForFailure",
+                createJobInfo()
+                        .setRequiresCharging(true)
+                        .setRequiresBatteryNotLow(true));
+        // advance the clock a little so there's some data in the pending job reason stats
+        advanceElapsedClock(5 * MINUTE_IN_MILLIS); // now + 5 minutes
+        Map<String, ParcelDuration> pendingReasons = originalJob.getPendingJobReasonStats();
+        // ensure the job is pending due to at least 1 reason
+        assertFalse(pendingReasons.isEmpty());
+
+        JobStatus rescheduledJob = mService.getRescheduleJobForFailureLocked(originalJob,
+                JobParameters.STOP_REASON_UNDEFINED,
+                JobParameters.INTERNAL_STOP_REASON_UNKNOWN);
+        assertNotNull(rescheduledJob);
+        Map<String, ParcelDuration> newPendingReasons = rescheduledJob.getPendingJobReasonStats();
+
+        assertEquals(pendingReasons.size(), newPendingReasons.size());
+        for (String reason : pendingReasons.keySet()) {
+            assertTrue(newPendingReasons.containsKey(reason));
+            assertEquals(pendingReasons.get(reason).getDuration(),
+                    newPendingReasons.get(reason).getDuration());
+        }
     }
 
     /**

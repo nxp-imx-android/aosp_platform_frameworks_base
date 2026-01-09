@@ -168,6 +168,7 @@ cc_defaults {
         "libdataloader",
         "libincfs",
         "libvibrationflinger",
+        "adb_jni_pairing_server_flags_cc_lib",
         "android.hardware.audio.common@2.0",
         "android.media.audio.common.types-V5-ndk",
         "android.hardware.broadcastradio@1.0",
@@ -212,6 +213,7 @@ cc_defaults {
 
     static_libs: [
         "android.hardware.broadcastradio@common-utils-1x-lib",
+        "libadb_pairing_server_jni",
         "libaidlcommonsupport",
         "libvirtualdevicebuildflags",
     ],

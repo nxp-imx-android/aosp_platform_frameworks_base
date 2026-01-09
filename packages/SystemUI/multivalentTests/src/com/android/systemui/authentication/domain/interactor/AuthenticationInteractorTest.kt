@@ -22,6 +22,8 @@ import android.platform.test.annotations.EnableFlags
 import android.security.Flags.FLAG_LOCKSCREEN_INDICATE_DUPLICATE_GUESSES
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.internal.logging.latencyTracker
+import com.android.internal.util.LatencyTracker
 import com.android.internal.widget.LockPatternUtils
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
@@ -48,6 +50,8 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -96,6 +100,7 @@ class AuthenticationInteractorTest : SysuiTestCase() {
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pin)
 
             assertSucceeded(underTest.authenticate(FakeAuthenticationRepository.DEFAULT_PIN))
+            verify(kosmos.latencyTracker).onActionStart(LatencyTracker.ACTION_LOCKSCREEN_UNLOCK)
         }
 
     @Test
@@ -104,6 +109,8 @@ class AuthenticationInteractorTest : SysuiTestCase() {
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pin)
 
             assertFailed(underTest.authenticate(listOf(9, 8, 7, 6, 5, 4)))
+            verify(kosmos.latencyTracker, never())
+                .onActionStart(LatencyTracker.ACTION_LOCKSCREEN_UNLOCK)
         }
 
     @Test
@@ -149,6 +156,7 @@ class AuthenticationInteractorTest : SysuiTestCase() {
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Password)
 
             assertSucceeded(underTest.authenticate("password".toList()))
+            verify(kosmos.latencyTracker).onActionStart(LatencyTracker.ACTION_LOCKSCREEN_UNLOCK)
         }
 
     @Test
@@ -157,6 +165,8 @@ class AuthenticationInteractorTest : SysuiTestCase() {
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Password)
 
             assertFailed(underTest.authenticate("alohomora".toList()))
+            verify(kosmos.latencyTracker, never())
+                .onActionStart(LatencyTracker.ACTION_LOCKSCREEN_UNLOCK)
         }
 
     @Test
@@ -165,6 +175,7 @@ class AuthenticationInteractorTest : SysuiTestCase() {
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pattern)
 
             assertSucceeded(underTest.authenticate(FakeAuthenticationRepository.DEFAULT_PATTERN))
+            verify(kosmos.latencyTracker).onActionStart(LatencyTracker.ACTION_LOCKSCREEN_UNLOCK)
         }
 
     @Test
@@ -180,6 +191,8 @@ class AuthenticationInteractorTest : SysuiTestCase() {
                 )
 
             assertFailed(underTest.authenticate(wrongPattern))
+            verify(kosmos.latencyTracker, never())
+                .onActionStart(LatencyTracker.ACTION_LOCKSCREEN_UNLOCK)
         }
 
     @Test

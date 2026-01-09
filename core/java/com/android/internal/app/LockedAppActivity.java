@@ -24,6 +24,7 @@ import android.app.AppLockInternal.PackageLockedStateListener;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
@@ -36,6 +37,9 @@ import android.os.CancellationSignal;
 import android.os.UserHandle;
 import android.util.Log;
 import android.util.Slog;
+import android.view.Display;
+import android.view.View;
+import android.widget.TextView;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
 
@@ -280,9 +284,17 @@ public final class LockedAppActivity extends Activity {
                 : android.R.style.Theme_DeviceDefault_NoActionBar);
     }
 
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        // The UI must be re-initialized on configuration changes, such as when moving to a
+        // different display.
+        setupUi();
+    }
+
     /**
      * Configures the user interface based on the current mode (intercept or locked task). This must
-     * be called after {@code super.onCreate()}.
+     * be called after {@code super.onCreate()} and in {@code super.onConfigurationChanged()}.
      */
     private void setupUi() {
         if (isInterceptMode()) {
@@ -291,6 +303,18 @@ public final class LockedAppActivity extends Activity {
         } else {
             // In locked task mode, show a default UI.
             mInjector.setContentView(this, R.layout.locked_app_activity_layout);
+
+            // Setup the external display message.
+            final int displayId = mInjector.getDisplayId(this);
+            // An external display is any valid display that is not the primary one.
+            final boolean isDisplayedOnExternalDisplay = displayId != Display.INVALID_DISPLAY
+                    && displayId != Display.DEFAULT_DISPLAY;
+            final TextView externalDisplayMessage = findViewById(
+                    R.id.locked_app_activity_external_display_message_id);
+            if (externalDisplayMessage != null) {
+                externalDisplayMessage.setVisibility(isDisplayedOnExternalDisplay
+                        ? View.VISIBLE : View.GONE);
+            }
         }
     }
 
@@ -524,6 +548,17 @@ public final class LockedAppActivity extends Activity {
          */
         public void setContentView(Activity activity, int layoutResId) {
             activity.setContentView(layoutResId);
+        }
+
+        /**
+         * Returns the ID of the {@link Display} for the given activity.
+         *
+         * @param activity the activity to get the display from.
+         * @return the display ID, or {@link Display#INVALID_DISPLAY} if there is no display.
+         */
+        public int getDisplayId(Activity activity) {
+            final Display display = activity.getDisplay();
+            return display != null ? display.getDisplayId() : Display.INVALID_DISPLAY;
         }
 
         /**

@@ -214,6 +214,27 @@ class BubbleStackViewTest {
     }
 
     @Test
+    fun tapBubble_bubbleInvalidOnSmallScreens_shouldMoveToFullscreen() {
+        val bubble = createAndInflateBubble()
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.addBubble(bubble)
+        }
+
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        assertThat(bubbleStackView.bubbleCount).isEqualTo(1)
+        bubble.setIsTaskValidToBubbleOnSmallScreen(false)
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubble.iconView!!.performClick()
+            assertThat(bubbleData.isExpanded).isFalse()
+            shellExecutor.flushAll()
+        }
+
+        verify(bubble.taskView).moveToFullscreen()
+    }
+
+    @Test
     fun expandStack_imeHidden() {
         val bubble = createAndInflateBubble()
 

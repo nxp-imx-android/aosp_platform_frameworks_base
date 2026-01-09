@@ -39,6 +39,7 @@ import com.android.systemui.bouncer.ui.viewmodel.bouncerOverlayContentViewModel
 import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.integration.SystemUiIntegrationTest
 import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.ui.viewmodel.lockscreenUserActionsViewModel
@@ -75,7 +76,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceTimeBy
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -102,6 +102,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper
 @EnableSceneContainer
+@SystemUiIntegrationTest
 class SceneFrameworkIntegrationTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
@@ -405,7 +406,6 @@ class SceneFrameworkIntegrationTest : SysuiTestCase() {
         }
 
     @Test
-    @Ignore("b/462133799")
     fun swipeDownOnShade_goesToQuickSettings() =
         kosmos.runTest {
             emulateUserDrivenSceneTransition(to = Scenes.Shade)

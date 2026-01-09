@@ -17,5 +17,8 @@ java_library_static {
         ":services.lskfreset-sources",
         "java/**/*.logtags",
     ],
-    libs: ["services.core"],
+    libs: [
+        "bouncycastle-webapp",
+        "services.core",
+    ],
 }

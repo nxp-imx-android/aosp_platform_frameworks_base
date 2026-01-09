@@ -68,8 +68,7 @@ public class ViewConfigurationController {
 
     ViewConfigurationController(@NonNull Context context) {
         this(context, (key, value, deviceId) -> {
-            int callingUserId = android.multiuser.Flags.coreSettingsMultiUser()
-                    ? Binder.getCallingUserHandle().getIdentifier() : UserHandle.USER_SYSTEM;
+            int callingUserId = Binder.getCallingUserHandle().getIdentifier();
             Binder.withCleanCallingIdentity(() -> {
                 Context deviceContext = context
                         .createContextAsUser(UserHandle.of(callingUserId), 0 /* flags */)

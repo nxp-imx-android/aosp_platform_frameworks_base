@@ -8124,6 +8124,18 @@ public class Activity extends ContextThemeWrapper
                         true);
                 mTaskDescription.setIcon(Icon.createWithBitmap(icon));
             }
+            // Scale the badge down to something reasonable if it is provided
+            final Icon badge = taskDescription.getBadge();
+            if (badge != null) {
+                if (badge.getType() == Icon.TYPE_BITMAP) {
+                    final int size = ActivityManager.getLauncherLargeIconSizeInner(this);
+                    final Bitmap bitmap =
+                            Bitmap.createScaledBitmap(badge.getBitmap(), size, size, true);
+                    mTaskDescription.setBadge(Icon.createWithBitmap(bitmap));
+                } else {
+                    mTaskDescription.setBadge(badge);
+                }
+            }
         }
         if (mLastTaskDescriptionHashCode == mTaskDescription.hashCode()) {
             // Early return if the hashCode is the same.

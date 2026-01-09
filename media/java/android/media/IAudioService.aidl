@@ -528,7 +528,7 @@ interface IAudioService {
     oneway void unregisterStrategyNonDefaultDevicesDispatcher(
             IStrategyNonDefaultDevicesDispatcher dispatcher);
 
-    oneway void setRttEnabled(in boolean rttEnabled);
+    void setRttEnabled(in boolean rttEnabled);
 
     @EnforcePermission(anyOf = {"MODIFY_AUDIO_ROUTING", "MODIFY_AUDIO_SETTINGS_PRIVILEGED"})
     void setDeviceVolumeBehavior(in AudioDeviceAttributes device,

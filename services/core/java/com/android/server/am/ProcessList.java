@@ -409,7 +409,7 @@ public final class ProcessList extends ProcessListInternal
 
     @GuardedBy("mService")
     public UidTransitionPolicy getUidTransitionPolicy() {
-        if (!Flags.useSafesetidUidPolicy()) {
+        if (!Flags.useSafesetidUidPolicy2()) {
             return null;
         }
 
@@ -845,7 +845,7 @@ public final class ProcessList extends ProcessListInternal
         mAppDataIsolationAllowlistedApps = new ArrayList<>(
                 SystemConfig.getInstance().getAppDataIsolationWhitelistedApps());
 
-        if (Flags.useSafesetidUidPolicy()) {
+        if (Flags.useSafesetidUidPolicy2()) {
             mGlobalAppIsolatedUids = new IsolatedUidRange(Process.FIRST_APP_ZYGOTE_ISOLATED_UID,
                     Process.LAST_APP_ZYGOTE_ISOLATED_UID);
         }
@@ -2266,7 +2266,7 @@ public final class ProcessList extends ProcessListInternal
     @GuardedBy("mService")
     private void removeProcessFromAppZygoteLocked(final ProcessRecord app) {
         // Free the isolated uid for this process
-        if (Flags.useSafesetidUidPolicy()
+        if (Flags.useSafesetidUidPolicy2()
                 && UidTransitionPolicy.isEnabled()
                 && getUidTransitionPolicy() != null) {
             // TODO(b/467504571) Create tests for this interaction between
@@ -2331,7 +2331,7 @@ public final class ProcessList extends ProcessListInternal
 
                 final int userId = UserHandle.getUserId(uid);
 
-                if (Flags.useSafesetidUidPolicy()
+                if (Flags.useSafesetidUidPolicy2()
                         && UidTransitionPolicy.isEnabled()
                         && getUidTransitionPolicy() != null) {
                     // TODO(b/467504571) Create tests for this interaction between
@@ -2582,7 +2582,7 @@ public final class ProcessList extends ProcessListInternal
             } else if (hostingRecord.usesAppZygote()) {
                 final AppZygote appZygote = createAppZygoteForProcessIfNeeded(app);
 
-                if (Flags.useSafesetidUidPolicy()
+                if (Flags.useSafesetidUidPolicy2()
                         && UidTransitionPolicy.isEnabled()
                         && getUidTransitionPolicy() != null) {
                     // TODO(b/467504571) Create tests for this interaction between
@@ -3361,7 +3361,7 @@ public final class ProcessList extends ProcessListInternal
         if (hostingRecord == null || !hostingRecord.usesAppZygote()) {
             // Allocate an isolated UID from the global range
             return mGlobalIsolatedUids;
-        } else if (Flags.useSafesetidUidPolicy() && UidTransitionPolicy.isEnabled()) {
+        } else if (Flags.useSafesetidUidPolicy2() && UidTransitionPolicy.isEnabled()) {
             return mGlobalAppIsolatedUids;
         } else {
             return mAppIsolatedUidRangeAllocator.getOrCreateIsolatedUidRangeLocked(

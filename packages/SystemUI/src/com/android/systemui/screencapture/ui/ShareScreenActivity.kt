@@ -25,6 +25,7 @@ import android.os.UserHandle
 import android.util.Log
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.CubicBezierEasing
@@ -94,8 +95,6 @@ constructor(
         }
         val projection = IMediaProjection.Stub.asInterface(projectionBinder)
 
-        mediaProjectionMetricsLogger.notifyPermissionRequestDisplayed(uid)
-
         val parameters = ScreenCaptureUiParameters.ShareScreen(hostAppUserHandle = hostUserHandle)
         val component = builder.setScope(lifecycleScope).setParameters(parameters).build()
 
@@ -125,6 +124,7 @@ constructor(
                     }
 
                 val shareScreenUiInteractor = uiComponent.shareScreenUiInteractor
+                BackHandler { shareScreenUiInteractor.onClose() }
                 LaunchedEffect(shareScreenUiInteractor) {
                     shareScreenUiInteractor.sharingState
                         .onEach { state ->
@@ -136,6 +136,9 @@ constructor(
                                 }
                                 is ShareScreenUiInteractor.SharingState.Denied -> {
                                     setResult(RESULT_CANCELED)
+                                    mediaProjectionMetricsLogger.notifyProjectionRequestCancelled(
+                                        uid
+                                    )
                                     hide()
                                 }
                                 is ShareScreenUiInteractor.SharingState.NotStarted -> {

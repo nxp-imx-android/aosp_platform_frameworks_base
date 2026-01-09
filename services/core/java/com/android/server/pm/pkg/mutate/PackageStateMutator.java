@@ -469,6 +469,16 @@ public class PackageStateMutator {
                 }
                 return this;
             }
+
+            @NonNull
+            @Override
+            public PackageUserStateWrite setVirtualGamepadUserOption(
+                    @PackageManager.VirtualGamepadUserOption int userOption) {
+                if (mUserState != null) {
+                    mUserState.setVirtualGamepadUserOption(userOption);
+                }
+                return this;
+            }
         }
     }
 }

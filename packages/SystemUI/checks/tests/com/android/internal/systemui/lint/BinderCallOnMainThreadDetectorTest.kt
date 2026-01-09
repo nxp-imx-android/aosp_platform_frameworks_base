@@ -1100,6 +1100,77 @@ src/test/pkg/TestClass.kt:22: Warning: Binder call on main thread [BinderCallOnM
     }
 
     @Test
+    fun binderCallForSpecificMethod_errorForOnlyProvidedMethod() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                        package test.pkg
+
+                        import android.media.session.MediaController
+
+                        class TestClass {
+                            fun controlMedia(controller: MediaController, callback: MediaController.Callback) {
+                                // Binder call
+                                controller.unregisterCallback(callback)
+                                // Not a binder call
+                                controller.adjustVolume(1, 2)
+                            }
+                        }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expect(
+                """
+src/test/pkg/TestClass.kt:8: Warning: Binder call on main thread [BinderCallOnMainThread]
+        controller.unregisterCallback(callback)
+                   ~~~~~~~~~~~~~~~~~~
+0 errors, 1 warnings
+                """
+            )
+    }
+
+    @Test
+    fun binderCallForAllMethods_errorForEveryMethod() {
+        lint()
+            .files(
+                kotlin(
+                    """
+                        package test.pkg
+
+                        import android.telephony.SubscriptionManager
+
+                        class TestClass {
+                            fun getSubs(manager: SubscriptionManager) {
+                                val allSubs = manager.completeActiveSubscriptionInfoList
+                                val specificSubInfo = manager.getActiveSubscriptionInfo(0)
+                            }
+                        }
+                    """
+                        .trimIndent()
+                ),
+                *stubs,
+            )
+            .issues(BinderCallOnMainThreadDetector.ISSUE)
+            .run()
+            .expect(
+                """
+src/test/pkg/TestClass.kt:7: Warning: Binder call on main thread [BinderCallOnMainThread]
+        val allSubs = manager.completeActiveSubscriptionInfoList
+                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/test/pkg/TestClass.kt:8: Warning: Binder call on main thread [BinderCallOnMainThread]
+        val specificSubInfo = manager.getActiveSubscriptionInfo(0)
+                                      ~~~~~~~~~~~~~~~~~~~~~~~~~
+0 errors, 2 warnings
+                """
+            )
+    }
+
+    @Test
     fun queryIntentComponents_error() {
         lint()
             .files(

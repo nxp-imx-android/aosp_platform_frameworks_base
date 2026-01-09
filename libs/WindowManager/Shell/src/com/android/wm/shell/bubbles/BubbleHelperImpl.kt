@@ -40,6 +40,9 @@ constructor(
     override fun getAppBubbleRootTaskToken(): WindowContainerToken? =
         bubbleRootTask.windowContainerToken
 
+    override fun getAppBubbleVisibilityBarrierToken(): WindowContainerToken? =
+        bubbleRootTask.visibilityBarrierToken
+
     override fun isAppBubbleRootTask(taskId: Int): Boolean =
         bubbleRootTask.taskId == taskId && taskId != INVALID_TASK_ID
 

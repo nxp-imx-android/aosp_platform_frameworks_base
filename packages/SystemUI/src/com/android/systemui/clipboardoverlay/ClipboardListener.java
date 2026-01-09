@@ -62,8 +62,9 @@ public class ClipboardListener implements
 
     @VisibleForTesting
     static final String SHELL_PACKAGE = "com.android.shell";
+    // TODO (b/358473717): move once suppression controller flag is rolled out
     static final String SYSTEMUI_PACKAGE = "com.android.systemui";
-    private static final Set<String> ALLOWED_PACKAGES =
+    static final Set<String> ALLOWED_PACKAGES =
             Set.of(SHELL_PACKAGE, SYSTEMUI_PACKAGE);
     public static final String EXTRA_SUPPRESS_OVERLAY =
             "com.android.systemui.SUPPRESS_CLIPBOARD_OVERLAY";
@@ -181,7 +182,7 @@ public class ClipboardListener implements
     // when copying a screenshot via the post-screenshot UI.
     @VisibleForTesting
     static boolean shouldSuppressOverlay(ClipData clipData, String clipSource, boolean isEmulator) {
-        if (!(isEmulator || ALLOWED_PACKAGES.contains(clipSource))) {
+        if (!(isEmulator || (clipSource != null && ALLOWED_PACKAGES.contains(clipSource)))) {
             return false;
         }
 

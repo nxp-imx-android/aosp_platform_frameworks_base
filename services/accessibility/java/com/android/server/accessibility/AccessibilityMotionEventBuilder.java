@@ -36,10 +36,15 @@ public final class AccessibilityMotionEventBuilder {
     private final MotionEvent mBaseEvent;
 
     // Overridable parameters. Initialized in the constructor with mBaseEvent's values.
-    private long mDownTime;
-    private long mEventTime;
+    private int mAction;
+    private long mDownTimeNanos;
+    private long mEventTimeNanos;
     private int mDeviceId;
     private int mSource;
+    private int mPointerCount;
+    private PointerProperties[] mPointerProperties;
+    private PointerCoords[] mPointerCoords;
+    private boolean mUsed = false;
 
     /**
      * Private constructor for the Builder. All building must start via {@link #fromBaseEvent}.
@@ -48,10 +53,14 @@ public final class AccessibilityMotionEventBuilder {
         mBaseEvent = baseEvent;
 
         // Initialize all fields with the base event's values
-        mDownTime = baseEvent.getDownTime();
-        mEventTime = baseEvent.getEventTime();
+        mAction = baseEvent.getAction();
+        mDownTimeNanos = baseEvent.getDownTimeNanos();
+        mEventTimeNanos = baseEvent.getEventTimeNanos();
         mDeviceId = baseEvent.getDeviceId();
         mSource = baseEvent.getSource();
+        mPointerCount = baseEvent.getPointerCount();
+        mPointerProperties = getPointerProperties(baseEvent);
+        mPointerCoords = getPointerCoords(baseEvent);
     }
 
     /**
@@ -66,10 +75,24 @@ public final class AccessibilityMotionEventBuilder {
         return new AccessibilityMotionEventBuilder(MotionEvent.obtain(event));
     }
 
+    /** Sets the action. */
+    @NonNull
+    public AccessibilityMotionEventBuilder setAction(int action) {
+        mAction = action;
+        return this;
+    }
+
     /** Sets the down time. */
     @NonNull
     public AccessibilityMotionEventBuilder setDownTime(long downTime) {
-        mDownTime = downTime;
+        mDownTimeNanos = downTime * 1000000;
+        return this;
+    }
+
+    /** Sets the down time in nanoseconds. */
+    @NonNull
+    public AccessibilityMotionEventBuilder setDownTimeNanos(long downTimeNanos) {
+        mDownTimeNanos = downTimeNanos;
         return this;
     }
 
@@ -92,9 +115,41 @@ public final class AccessibilityMotionEventBuilder {
      */
     @NonNull
     public AccessibilityMotionEventBuilder setTimeOffset(long offset) {
-        mDownTime = mBaseEvent.getDownTime() + offset;
+        mDownTimeNanos = mBaseEvent.getDownTimeNanos() + offset * 1000000;
         // Ensure the new event time is never earlier than the new down time.
-        mEventTime = Math.max(mBaseEvent.getEventTime() + offset, mDownTime);
+        mEventTimeNanos = Math.max(mBaseEvent.getEventTimeNanos() + offset * 1000000,
+                mDownTimeNanos);
+        return this;
+    }
+
+    /**
+     * Excludes a specific pointer from the event being built.
+     *
+     * @param pointerIndex The index of the pointer to exclude.
+     * @return This builder.
+     */
+    @NonNull
+    public AccessibilityMotionEventBuilder excludePointer(int pointerIndex) {
+        if (pointerIndex < 0 || pointerIndex >= mPointerCount) {
+            throw new IllegalArgumentException("Invalid pointer index: " + pointerIndex);
+        }
+
+        PointerProperties[] newProperties = new PointerProperties[mPointerCount - 1];
+        PointerCoords[] newCoords = new PointerCoords[mPointerCount - 1];
+
+        int newIndex = 0;
+        for (int i = 0; i < mPointerCount; i++) {
+            if (i == pointerIndex) {
+                continue;
+            }
+            newProperties[newIndex] = mPointerProperties[i];
+            newCoords[newIndex] = mPointerCoords[i];
+            newIndex++;
+        }
+
+        mPointerCount--;
+        mPointerProperties = newProperties;
+        mPointerCoords = newCoords;
         return this;
     }
 
@@ -118,34 +173,42 @@ public final class AccessibilityMotionEventBuilder {
      * If this exception is thrown, please file a bug to the Input team (go/input-bug).
      */
     public MotionEvent build() {
-        MotionEvent rebaseEvent = MotionEvent.obtain(
-                mDownTime,
-                mEventTime,
-                mBaseEvent.getAction(),
-                mBaseEvent.getPointerCount(),
-                getPointerProperties(mBaseEvent),
-                getPointerCoords(mBaseEvent),
-                mBaseEvent.getMetaState(),
-                mBaseEvent.getButtonState(),
-                mBaseEvent.getXPrecision(),
-                mBaseEvent.getYPrecision(),
-                mDeviceId,
-                mBaseEvent.getEdgeFlags(),
-                mSource,
-                mBaseEvent.getDisplayId(),
-                mBaseEvent.getFlags(),
-                mBaseEvent.getClassification());
-        if (rebaseEvent == null) {
+        if (mUsed) {
+            throw new IllegalStateException("Builder can only be used once.");
+        }
+        MotionEvent rebaseEvent;
+        try {
+            rebaseEvent = MotionEvent.obtainNanoseconds(
+                    mDownTimeNanos,
+                    mEventTimeNanos,
+                    mAction,
+                    mPointerCount,
+                    mPointerProperties,
+                    mPointerCoords,
+                    mBaseEvent.getMetaState(),
+                    mBaseEvent.getButtonState(),
+                    mBaseEvent.getXPrecision(),
+                    mBaseEvent.getYPrecision(),
+                    mDeviceId,
+                    mBaseEvent.getEdgeFlags(),
+                    mSource,
+                    mBaseEvent.getDisplayId(),
+                    mBaseEvent.getFlags(),
+                    mBaseEvent.getClassification());
+        } catch (IllegalArgumentException e) {
             String errorMsg = "Failed to rebase MotionEvent. "
                     + "BaseEvent: " + mBaseEvent
-                    + ", Target DownTime: " + mDownTime
-                    + ", Target EventTime: " + mEventTime
+                    + ", Target Action: " + mAction
+                    + ", Target DownTimeNanos: " + mDownTimeNanos
+                    + ", Target EventTimeNanos: " + mEventTimeNanos
                     + ", Target DeviceId: " + mDeviceId
-                    + ", Target Source: " + mSource;
-            Log.e(TAG, errorMsg);
-            throw new IllegalStateException(errorMsg);
+                    + ", Target Source: " + mSource
+                    + ", Target PointerCount: " + mPointerCount;
+            Log.e(TAG, errorMsg, e);
+            throw new IllegalStateException(errorMsg, e);
         }
         mBaseEvent.recycle();
+        mUsed = true;
         return rebaseEvent;
     }
 

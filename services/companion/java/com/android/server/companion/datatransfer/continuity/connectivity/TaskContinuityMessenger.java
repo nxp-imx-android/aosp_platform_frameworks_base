@@ -25,8 +25,8 @@ import android.companion.CompanionDeviceManager;
 import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.util.FrameworkStatsLog;
+import com.android.server.companion.datatransfer.continuity.messages.Proto;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
-import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageSerializer;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Objects;
@@ -40,7 +40,7 @@ import java.util.function.BiConsumer;
  */
 public class TaskContinuityMessenger implements ConnectedAssociationStore.Listener {
 
-    private static final String TAG = "TaskContinuityMessenger";
+    private static final String TAG = TaskContinuityMessenger.class.getSimpleName();
 
     private final CompanionDeviceManager mCompanionDeviceManager;
     private final ConnectedAssociationStore mConnectedAssociationStore;
@@ -143,10 +143,7 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
 
     public SendMessageResult sendMessage(
             int associationId, @NonNull TaskContinuityMessage message) {
-
-        Objects.requireNonNull(message);
-
-        return sendMessage(new int[] {associationId}, message);
+        return sendMessage(new int[] {associationId}, Objects.requireNonNull(message));
     }
 
     public SendMessageResult sendMessage(
@@ -158,7 +155,7 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
         Slog.i(TAG, "Sending message to " + associationIds.length + " associations.");
         byte[] serializedMessage;
         try {
-            serializedMessage = TaskContinuityMessageSerializer.serialize(message);
+            serializedMessage = Proto.toBytes(message);
         } catch (IOException e) {
             Slog.e(TAG, "Failed to serialize message: " + message, e);
             FrameworkStatsLog.write(
@@ -166,7 +163,7 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
                     message.getTypeForMetrics(),
                     associationIds.length,
                     FrameworkStatsLog
-                            .TASK_CONTINUITY_MESSAGE_SENT__RESULT__FAILURE_MESSAGE_SERIALIZATION_FAILED);
+                            .TASK_CONTINUITY_MESSAGE_SENT__RESULT__TASK_CONTINUITY_MESSAGE_SENT_RESULT_FAILURE_MESSAGE_SERIALIZATION_FAILED);
             return SendMessageResult.FAILURE_MESSAGE_SERIALIZATION_FAILED;
         }
 
@@ -178,7 +175,7 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
                         message.getTypeForMetrics(),
                         associationIds.length,
                         FrameworkStatsLog
-                                .TASK_CONTINUITY_MESSAGE_SENT__RESULT__FAILURE_ASSOCIATION_NOT_FOUND);
+                                .TASK_CONTINUITY_MESSAGE_SENT__RESULT__TASK_CONTINUITY_MESSAGE_SENT_RESULT_FAILURE_ASSOCIATION_NOT_FOUND);
                 return SendMessageResult.FAILURE_ASSOCIATION_NOT_FOUND;
             }
         }
@@ -193,7 +190,8 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
                     FrameworkStatsLog.TASK_CONTINUITY_MESSAGE_SENT,
                     message.getTypeForMetrics(),
                     associationIds.length,
-                    FrameworkStatsLog.TASK_CONTINUITY_MESSAGE_SENT__RESULT__SUCCESS);
+                    FrameworkStatsLog
+                            .TASK_CONTINUITY_MESSAGE_SENT__RESULT__TASK_CONTINUITY_MESSAGE_SENT_RESULT_SUCCESS);
             return SendMessageResult.SUCCESS;
         } catch (Exception e) {
             Slog.e(TAG, "Failed to send message to associations", e);
@@ -201,20 +199,19 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
                     FrameworkStatsLog.TASK_CONTINUITY_MESSAGE_SENT,
                     message.getTypeForMetrics(),
                     associationIds.length,
-                    FrameworkStatsLog.TASK_CONTINUITY_MESSAGE_SENT__RESULT__FAILURE_INTERNAL_ERROR);
+                    FrameworkStatsLog
+                            .TASK_CONTINUITY_MESSAGE_SENT__RESULT__TASK_CONTINUITY_MESSAGE_SENT_RESULT_FAILURE_INTERNAL_ERROR);
             return SendMessageResult.FAILURE_INTERNAL_ERROR;
         }
     }
 
     public SendMessageResult sendMessage(@NonNull TaskContinuityMessage message) {
-        Objects.requireNonNull(message);
-
         int[] connectedAssociations =
                 mConnectedAssociationStore.getConnectedAssociations().stream()
                         .mapToInt(AssociationInfo::getId)
                         .toArray();
 
-        return sendMessage(connectedAssociations, message);
+        return sendMessage(connectedAssociations, Objects.requireNonNull(message));
     }
 
     @Override
@@ -241,7 +238,7 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
         Slog.v(TAG, "Received message from association id: " + associationId);
         try {
             TaskContinuityMessage taskContinuityMessage =
-                    TaskContinuityMessageSerializer.deserialize(data);
+                    new TaskContinuityMessage.Builder().readFromBytes(data).build();
             FrameworkStatsLog.write(
                     FrameworkStatsLog.TASK_CONTINUITY_MESSAGE_RECEIVED,
                     taskContinuityMessage.getTypeForMetrics());

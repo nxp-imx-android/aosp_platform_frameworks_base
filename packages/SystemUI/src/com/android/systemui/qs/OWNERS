@@ -3,7 +3,7 @@ set noparent
 # Bug component: 78010
 
 bhnm@google.com
+jiamingc@google.com
 kozynski@google.com
 ostonge@google.com
 pixel@google.com
-per-file tiles/* = jiamingc@google.com

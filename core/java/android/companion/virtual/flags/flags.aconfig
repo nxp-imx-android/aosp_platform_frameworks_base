@@ -264,3 +264,10 @@ flag {
     bug: "434903682"
     is_exported: true
 }
+
+flag {
+    name: "virtual_input_view_behavior"
+    namespace: "virtual_devices"
+    description: "API for setting the view behavior for virtual input devices"
+    bug: "434903682"
+}

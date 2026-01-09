@@ -146,6 +146,7 @@ package android.app {
   }
 
   public static class ActivityManager.TaskDescription implements android.os.Parcelable {
+    method @FlaggedApi("android.app.enable_dynamic_icons_and_badging") @Nullable public android.graphics.drawable.Icon getBadge();
     method public String getIconFilename();
     method public int getIconResource();
     method @Nullable public String getIconResourcePackage();
@@ -1969,15 +1970,6 @@ package android.hardware.display {
   public static class DisplayTopologyGraph.DisplayNode {
     method @NonNull public java.util.List<android.hardware.display.DisplayTopologyGraph.AdjacentEdge> getAdjacentEdges();
     method public int getDisplayId();
-  }
-
-}
-
-package android.hardware.fingerprint {
-
-  @Deprecated @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class FingerprintManager {
-    method @Deprecated @NonNull @RequiresPermission(android.Manifest.permission.TEST_BIOMETRIC) public android.hardware.biometrics.BiometricTestSession createTestSession(int);
-    method @Deprecated @NonNull @RequiresPermission(android.Manifest.permission.TEST_BIOMETRIC) public java.util.List<android.hardware.biometrics.SensorProperties> getSensorProperties();
   }
 
 }
@@ -3896,6 +3888,10 @@ package android.text {
     method public void afterTextChanged(android.text.Editable);
     method public void beforeTextChanged(CharSequence, int, int, int);
     method public void onTextChanged(CharSequence, int, int, int);
+  }
+
+  @FlaggedApi("com.android.text.flags.split_show_passwords_to_touch_and_physical") public class ShowSecretsSetting {
+    field public static final long SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL = 417951523L; // 0x18e96f23L
   }
 
 }

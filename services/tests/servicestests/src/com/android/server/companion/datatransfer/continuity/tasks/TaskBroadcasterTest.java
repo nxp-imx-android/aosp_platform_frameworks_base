@@ -28,6 +28,7 @@ import android.testing.TestableLooper;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffOptions;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
+import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskStackBroadcastMessage;
 import java.util.List;
 import org.junit.Before;
@@ -53,6 +54,14 @@ public class TaskBroadcasterTest {
                             100 /* lastActiveTime */,
                             new HandoffOptions(true, true)));
 
+    public static TaskContinuityMessage TASK_CONTINUITY_MESSAGE =
+            new TaskContinuityMessage.Builder()
+                    .setTaskStackBroadcastMessage(
+                            new TaskStackBroadcastMessage.Builder()
+                                    .setRemoteTasks(REMOTE_TASKS)
+                                    .build())
+                    .build();
+
     private TaskBroadcaster mTaskBroadcaster;
 
     @Before
@@ -67,21 +76,18 @@ public class TaskBroadcasterTest {
     public void testOnDeviceConnected_sendsMessageToDevice() throws RemoteException {
         int associationId = 100;
         mTaskBroadcaster.onDeviceConnected(associationId);
-        verify(mMockTaskContinuityMessenger, times(1))
-                .sendMessage(eq(new TaskStackBroadcastMessage(REMOTE_TASKS)));
+        verify(mMockTaskContinuityMessenger, times(1)).sendMessage(eq(TASK_CONTINUITY_MESSAGE));
     }
 
     @Test
     public void testOnTaskStackChanged_sendsMessageToDevice() throws RemoteException {
         mTaskBroadcaster.onTaskStackChanged();
-        verify(mMockTaskContinuityMessenger, times(1))
-                .sendMessage(eq(new TaskStackBroadcastMessage(REMOTE_TASKS)));
+        verify(mMockTaskContinuityMessenger, times(1)).sendMessage(eq(TASK_CONTINUITY_MESSAGE));
     }
 
     @Test
     public void testOnHandoffEnabledChanged_sendTaskStackBroadcastMessage() throws RemoteException {
         mTaskBroadcaster.onHandoffEnabledChanged(100, true);
-        verify(mMockTaskContinuityMessenger, times(1))
-                .sendMessage(eq(new TaskStackBroadcastMessage(REMOTE_TASKS)));
+        verify(mMockTaskContinuityMessenger, times(1)).sendMessage(eq(TASK_CONTINUITY_MESSAGE));
     }
 }

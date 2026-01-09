@@ -661,15 +661,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
             if (mParent != null && mParent.mDisplayContent != null
                     && mDisplayContent != mParent.mDisplayContent) {
                 onDisplayChanged(mParent.mDisplayContent);
-            } else if ((mParent == null || mParent.mDisplayContent == null)
-                    && asDisplayContent() == null
-                    && mDisplayContent != null) {
-                // This window container is detached from a display, but calling
-                // onDisplayChanged(null) causes NPE. Losing a window container that can host
-                // movable tasks means the task move allowed value of the old DisplayContent may
-                // change, so explicitly notify it.
-                // TODO(b/422700507): make onDisplayChanged(null) work
-                mDisplayContent.onDescendantsTaskMoveAllowedChanged();
             }
             onParentChanged(mParent, oldParent);
         }
@@ -1095,14 +1086,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         if (mDisplayContent != null && displayContentChanged) {
             if (asWindowState() == null) {
                 mTransitionController.collect(this);
-            }
-        }
-        if (mIsTaskMoveAllowed && displayContentChanged) {
-            if (mDisplayContent != null) {
-                mDisplayContent.onDescendantsTaskMoveAllowedChanged();
-            }
-            if (dc != null) {
-                dc.onDescendantsTaskMoveAllowedChanged();
             }
         }
         mDisplayContent = dc;
@@ -3790,9 +3773,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         }
 
         mIsTaskMoveAllowed = isTaskMoveAllowed;
-        if (mDisplayContent != null) {
-            mDisplayContent.onDescendantsTaskMoveAllowedChanged();
-        }
     }
 
     boolean getIsTaskMoveAllowed() {
@@ -3827,8 +3807,8 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
     boolean canHoldSelfMovableTasks() {
         // Is a TaskDisplayArea or a root Task.
         // Keep these types in sync with types we are traversing in
-        // DisplayContent#updateIsTaskMoveAllowedOnDisplay.
+        // DisplayContent#isTaskMoveAllowedOnDisplay.
         return (asTaskDisplayArea() != null) || (asTask() != null && asTask().isRootTask());
     }
-    // LINT.ThenChange(DisplayContent.java:updateIsTaskMoveAllowedOnDisplay)
+    // LINT.ThenChange(DisplayContent.java:isTaskMoveAllowedOnDisplay)
 }

@@ -36,6 +36,7 @@ import static android.util.DebugUtils.valueToString;
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
@@ -134,6 +135,7 @@ import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.dx.mockito.inline.extended.ExtendedMockito;
+import com.android.internal.os.SomeArgs;
 import com.android.sdksandbox.flags.Flags;
 import com.android.server.LocalServices;
 import com.android.server.am.BroadcastController.StickyBroadcast;
@@ -1983,6 +1985,83 @@ public class ActivityManagerServiceTest {
         assertThat(e).hasMessageThat().isEqualTo(
             "Default is not allowed to be passed in. "
             + "Use a more specific Delegation Service Identifier!");
+    }
+
+    @Test
+    public void testServiceForegroundTimeoutAnrWarningMsg() {
+        doNothing()
+                .when(mActiveServices)
+                .serviceForegroundAnrWarning(any(ServiceRecord.class), anyInt(), anyLong());
+
+        ServiceRecord serviceRecord = mock(ServiceRecord.class);
+        int anrId = 10;
+        long elapsedTimeMs = 5000L;
+
+        SomeArgs args = SomeArgs.obtain();
+        args.arg1 = serviceRecord;
+        args.argi1 = anrId;
+        args.argl1 = elapsedTimeMs;
+
+        Message msg =
+                mAms.mHandler.obtainMessage(
+                        ActivityManagerService.SERVICE_FOREGROUND_TIMEOUT_ANR_WARNING_MSG);
+        msg.obj = args;
+
+        mAms.mHandler.handleMessage(msg);
+
+        verify(mActiveServices)
+                .serviceForegroundAnrWarning(eq(serviceRecord), eq(anrId), eq(elapsedTimeMs));
+    }
+
+    @Test
+    public void testServiceTimeoutWarningMsg() {
+        doNothing()
+                .when(mActiveServices)
+                .serviceTimeoutAnrWarning(any(ProcessRecord.class), anyInt(), anyLong());
+
+        ProcessRecord processRecord = mock(ProcessRecord.class);
+        int anrId = 10;
+        long elapsedTimeMs = 5000L;
+
+        SomeArgs args = SomeArgs.obtain();
+        args.arg1 = processRecord;
+        args.argi1 = anrId;
+        args.argl1 = elapsedTimeMs;
+
+        Message msg =
+                mAms.mHandler.obtainMessage(ActivityManagerService.SERVICE_TIMEOUT_WARNING_MSG);
+        msg.obj = args;
+
+        mAms.mHandler.handleMessage(msg);
+
+        verify(mActiveServices)
+                .serviceTimeoutAnrWarning(eq(processRecord), eq(anrId), eq(elapsedTimeMs));
+    }
+
+    @Test
+    public void testShortFgsAnrTimeoutWarningMsg() {
+        doNothing()
+                .when(mActiveServices)
+                .onShortFgsAnrTimeoutWarning(any(ServiceRecord.class), anyInt(), anyLong());
+
+        ServiceRecord serviceRecord = mock(ServiceRecord.class);
+        int anrId = 10;
+        long elapsedTimeMs = 5000L;
+
+        SomeArgs args = SomeArgs.obtain();
+        args.arg1 = serviceRecord;
+        args.argi1 = anrId;
+        args.argl1 = elapsedTimeMs;
+
+        Message msg =
+                mAms.mHandler.obtainMessage(
+                        ActivityManagerService.SERVICE_SHORT_FGS_ANR_TIMEOUT_WARNING_MSG);
+        msg.obj = args;
+
+        mAms.mHandler.handleMessage(msg);
+
+        verify(mActiveServices)
+                .onShortFgsAnrTimeoutWarning(eq(serviceRecord), eq(anrId), eq(elapsedTimeMs));
     }
 
     private static class TestHandler extends Handler {

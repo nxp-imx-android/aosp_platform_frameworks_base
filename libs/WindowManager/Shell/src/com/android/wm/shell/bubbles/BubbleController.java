@@ -3894,6 +3894,11 @@ public class BubbleController implements ConfigurationChangeListener,
                 return wct;
             }
 
+            if (mBubbleHelper.getAppBubbleVisibilityBarrierToken() != null) {
+                // Reorder below the visibility barrier to hide the bubbled task.
+                wct.reorder(taskView.getTaskInfo().token, false /* onTop */);
+            }
+
             boolean hideRootTask = false;
             if (!mBubbleData.isExpanded()) {
                 hideRootTask = true;

@@ -110,6 +110,10 @@ import java.util.function.Supplier;
 /**
  * A computer control session that encapsulates a {@link android.companion.virtual.IVirtualDevice}.
  * The device is created and managed by the system, but it is still owned by the caller.
+ *
+ * NOTE: Lock ordering precedence: The hierarchy of locks defined in this file is determined by the
+ * order in which the locks are declared. If two locks need to be acquired at once, the lock
+ * declared earlier in the file needs to be acquired first.
  */
 final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         implements IBinder.DeathRecipient, AppOpsManager.OnOpChangedListener {
@@ -118,6 +122,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     private static final long DEFAULT_GLOBAL_SESSION_TIMEOUT_DURATION_MS =
             TimeUnit.MILLISECONDS.convert(360, TimeUnit.MINUTES);
+
+    // Timeout for waiting for all windows on the display to be drawn before taking a screenshot.
+    private static final int WINDOW_DRAW_TIMEOUT_MS = 1000;
 
     // Input device names are limited to 80 bytes, so keep the prefix shorter than that.
     private static final int MAX_INPUT_DEVICE_NAME_PREFIX_BYTES = 70;
@@ -255,6 +262,11 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     // Whether this is a session only intended for testing ComputerControl functionality.
     private final boolean mIsTestSession;
+
+    private final Object mWindowDrawLock = new Object();
+    // Whether a window draw as a result of a screenshot request is in progress.
+    @GuardedBy("mWindowDrawLock")
+    private boolean mIsWaitingForWindowDraw = false;
 
     ComputerControlSessionImpl(Context context,
             ComputerControlAllowlistController allowlistController, IBinder appToken,
@@ -587,6 +599,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 // Automation is no longer running in the background. Show touches.
                 mInputManagerInternal.setForceShowTouchesOnDisplay(mVirtualDisplayId,
                         true /* enabled */);
+                // Automation is happening in the foreground, so enable rendering.
+                mWindowManagerInternal.requestHardwareRendererOutputEnabled(mVirtualDisplayId,
+                        0 /* timeoutMs */, (success) -> {
+                        }, mScheduler);
             }
             mInteractiveMirrors.add(mirror);
         }
@@ -643,6 +659,14 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 // Automation is fully running in the background. No need to show touches.
                 mInputManagerInternal.setForceShowTouchesOnDisplay(mVirtualDisplayId,
                         false /* enabled */);
+                // Disable rendering during background automation, where windows will only draw
+                // when the client requests a screenshot.
+                synchronized (mWindowDrawLock) {
+                    if (!mIsWaitingForWindowDraw) {
+                        mWindowManagerInternal.requestHardwareRendererOutputDisabled(
+                                mVirtualDisplayId);
+                    }
+                }
             }
         }
         try (var transaction = mTransactionSupplier.get()) {
@@ -651,7 +675,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
     }
 
-    private void removeAllInteractiveMirrors() {
+    private void removeAllInteractiveMirrorsOnSessionClose() {
         synchronized (mInteractiveMirrors) {
             if (mInteractiveMirrors.isEmpty()) {
                 return;
@@ -752,6 +776,39 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     }
 
     @Override
+    public boolean requestScreenshot() {
+        if (!(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {
+            Slog.w(TAG, "Cannot request screenshot: Agent interaction is not available");
+            return false;
+        }
+        synchronized (mWindowDrawLock) {
+            if (mIsWaitingForWindowDraw) {
+                Slog.w(TAG, "Cannot request screenshot: Window draw is already in progress");
+                return false;
+            }
+            mIsWaitingForWindowDraw = mWindowManagerInternal.requestHardwareRendererOutputEnabled(
+                    mVirtualDisplayId, WINDOW_DRAW_TIMEOUT_MS, this::onWindowsDrawnCallback,
+                    mScheduler);
+            return mIsWaitingForWindowDraw;
+        }
+    }
+
+    private void onWindowsDrawnCallback(boolean success) {
+        if (!success) {
+            Slog.w(TAG, "Timed out waiting for windows to be drawn!");
+        }
+        synchronized (mInteractiveMirrors) {
+            if (mInteractiveMirrors.isEmpty()) {
+                mWindowManagerInternal.requestHardwareRendererOutputDisabled(
+                        mVirtualDisplayId);
+            }
+            synchronized (mWindowDrawLock) {
+                mIsWaitingForWindowDraw = false;
+            }
+        }
+    }
+
+    @Override
     public void close() throws RemoteException {
         close(CLOSE_REASON_CALLER_INITIATED);
     }
@@ -782,7 +839,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mAudioCapture.stopAudioCapture();
         mVirtualDevice.close(); // closes also the VirtualAudioDevice
         mAppToken.unlinkToDeath(this, 0);
-        removeAllInteractiveMirrors();
+        removeAllInteractiveMirrorsOnSessionClose();
         mOnClosedListener.accept(this);
         mAppOpsManager.stopWatchingMode(this);
     }

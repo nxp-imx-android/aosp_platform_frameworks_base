@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.notification.stack;
 
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
+import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_HEADS_UP;
 import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_SILENT;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -255,4 +256,35 @@ public class NotificationSectionsManagerTest extends SysuiTestCase {
         assertThat(silentSolo2.getBottomRoundnessSources()).containsExactly(
                 NotificationSectionsManager.Companion.getSECTION());
     }
+
+    @Test
+    @EnableFlags(NmContextualDisplay.FLAG_NAME)
+    public void testSiblingRoundingOnlyWithinSection() {
+        ExpandableNotificationRow be1 = mKosmos.createRowBundle(BundleSpec.Companion.getNEWS());
+        ExpandableNotificationRow silentSolo = mKosmos.createRow(
+                mKosmos.buildNotificationEntry(builder -> {
+                    builder.setBucket(BUCKET_HEADS_UP);
+                    return builder.done();
+                }));
+
+        List<ExpandableView> views = List.of(silentSolo, be1);
+        mSectionsManager.updateFirstAndLastViewsForAllSections(views);
+
+        assertThat(silentSolo.hasRoundedTopCorners()).isTrue();
+        assertThat(silentSolo.hasRoundedBottomCorners()).isTrue();
+        assertThat(silentSolo.getTopRoundnessSources()).containsExactly(
+                NotificationSectionsManager.Companion.getSECTION());
+        assertThat(silentSolo.getBottomRoundnessSources()).containsExactly(
+                NotificationSectionsManager.Companion.getSECTION());
+
+        assertThat(be1.hasRoundedTopCorners()).isTrue();
+        assertThat(be1.hasRoundedBottomCorners()).isTrue();
+        assertThat(be1.getTopRoundnessSources()).containsExactly(
+                NotificationSectionsManager.Companion.getSECTION(),
+                NotificationSectionsManager.Companion.getBUNDLE());
+        assertThat(be1.getBottomRoundnessSources()).containsExactly(
+                NotificationSectionsManager.Companion.getSECTION(),
+                NotificationSectionsManager.Companion.getBUNDLE());
+    }
+
 }

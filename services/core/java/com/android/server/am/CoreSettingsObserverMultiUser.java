@@ -31,7 +31,11 @@ import java.util.Arrays;
 /**
  * A multi-user-aware CoreSettingsObserver that manages core settings on a per-user basis.
  *
- * <p>This class is instantiated when the {@code core_settings_multi_user} feature flag is enabled.
+ * <p>This class was created to fix a bug in {@link CoreSettingsObserver} only when a flag is
+ * enabled, but the flag has been removed already.
+ *
+ * TODO(b/473966894): Merge this class into CoreSettingsObserver once the flag removal is confirmed
+ * to be stable.
  */
 final class CoreSettingsObserverMultiUser extends CoreSettingsObserver {
     private static final String TAG = CoreSettingsObserverMultiUser.class.getSimpleName();

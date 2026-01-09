@@ -140,6 +140,7 @@ import com.android.internal.telephony.RILConstants;
 import com.android.internal.telephony.flags.Flags;
 import com.android.internal.telephony.uicc.IccUtils;
 import com.android.internal.telephony.util.TelephonyUtils;
+import com.android.libraries.entitlement.utils.Ts43Constants;
 import com.android.telephony.Rlog;
 
 import java.io.IOException;
@@ -149,6 +150,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -14918,6 +14920,45 @@ public class TelephonyManager {
         } catch (RemoteException ex) {
             // This shouldn't happen in the normal case
             return NETWORK_TYPE_BITMASK_UNKNOWN;
+        }
+    }
+
+    /**
+     * Notify Telephony about entitlement status change.
+     *
+     * Callers (like FCM client app) could invoke this API to inform Telephony whenever
+     * there's a change on Entitlement State, so that Telephony would be able to decide to
+     * fetch latest Entitlement values and operate accordingly.
+     *
+     * For example: In case of Entitlement for Satellite, when user purchases a Satellite Plan,
+     * carriers would push notify devices. The push notifications are handled by FCM client,
+     * which then is supposed to notify Telephony about the same, so that Telephony-Satellite
+     * Framework could enable Satellite functionality based on latest subscription plan information.
+     *
+     * Same applies for all other Entitlement driven feature enablement for all Telephony features,
+     * in addition to Satellite.
+     *
+     * @param subId subscription id
+     * @param appIds list of application IDs for which the entitlement status has changed
+     * @param timestamp time when entitlement status changed
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_SATELLITE_26Q2_APIS)
+    @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE)
+    @SystemApi
+    public void notifyEntitlementStatusChanged(int subId,
+            @NonNull @Ts43Constants.AppId List<String> appIds, @NonNull ZonedDateTime timestamp) {
+        try {
+            ITelephony telephony = getITelephony();
+            if (telephony != null) {
+                long timeInMillis = timestamp.toInstant().toEpochMilli();
+                telephony.notifyEntitlementStatusChanged(subId, appIds, timeInMillis);
+            } else {
+                throw new IllegalStateException("telephony service is null.");
+            }
+        } catch (RemoteException ex) {
+            Log.e(TAG, "notifyEntitlementStatusChanged RemoteException", ex);
+            ex.rethrowAsRuntimeException();
         }
     }
 

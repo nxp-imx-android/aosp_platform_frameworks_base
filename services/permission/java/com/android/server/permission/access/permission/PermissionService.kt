@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package com.android.server.permission.access.permission
 
 import android.Manifest
@@ -79,8 +81,8 @@ import com.android.server.permission.access.MutateStateScope
 import com.android.server.permission.access.PermissionUri
 import com.android.server.permission.access.UidUri
 import com.android.server.permission.access.appop.AppIdAppOpPolicy
-import com.android.server.permission.access.collection.* // ktlint-disable no-wildcard-imports
-import com.android.server.permission.access.immutable.* // ktlint-disable no-wildcard-imports
+import com.android.server.permission.access.collection.*
+import com.android.server.permission.access.immutable.*
 import com.android.server.permission.access.util.PermissionEnforcer
 import com.android.server.permission.access.util.andInv
 import com.android.server.permission.access.util.hasAnyBit
@@ -566,8 +568,7 @@ class PermissionService(private val service: AccessCheckingService) :
             android.app.privatecompute.flags.Flags.enablePccFrameworkSupport() &&
                 Process.isPrivateComputeCoreUid(uid)
         ) {
-            val permission =
-                service.getState { with(policy) { getPermissions()[permissionName] } }
+            val permission = service.getState { with(policy) { getPermissions()[permissionName] } }
             if (permission?.isAllowedInPrivateComputeCore != true) {
                 return PackageManager.PERMISSION_DENIED
             }
@@ -3047,6 +3048,11 @@ class PermissionService(private val service: AccessCheckingService) :
                 this += Manifest.permission.INTERNET
                 this += Manifest.permission.ACCESS_LOCAL_NETWORK
                 this += Manifest.permission.UPDATE_DEVICE_STATS
+                this += Manifest.permission.USE_LOOPBACK_INTERFACE
+                this += Manifest.permission.FORCE_USE_LOOPBACK_INTERFACE
+                this += Manifest.permission.INTERACT_ACROSS_PROFILES
+                this += Manifest.permission.INTERACT_ACROSS_USERS
+                this += Manifest.permission.INTERACT_ACROSS_USERS_FULL
             }
 
         private const val MAX_ALLOWED_BPF_PERMISSIONS = Int.SIZE_BITS

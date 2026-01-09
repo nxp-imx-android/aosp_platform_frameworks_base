@@ -27,7 +27,6 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureColors
@@ -35,7 +34,8 @@ import com.android.systemui.screencapture.record.largescreen.shared.model.AppWin
 
 @Composable
 fun AppWindowBox(appWindowModel: AppWindowModel?, modifier: Modifier = Modifier) {
-    Box(modifier = modifier.fillMaxSize().background(color = ScreenCaptureColors.scrimColor)) {
+    val scrimColor = ScreenCaptureColors.scrimColor
+    Box(modifier = modifier.fillMaxSize().background(color = scrimColor)) {
         appWindowModel?.let { model ->
             val maskColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.32f)
             val cornerRadius = 16.dp
@@ -55,7 +55,7 @@ fun AppWindowBox(appWindowModel: AppWindowModel?, modifier: Modifier = Modifier)
                 // Cut out the overlapping rectangles
                 model.overlappingBounds.forEach { overlappingRect ->
                     drawRoundRect(
-                        color = Color.Transparent,
+                        color = scrimColor,
                         topLeft =
                             Offset(overlappingRect.left.toFloat(), overlappingRect.top.toFloat()),
                         size =
@@ -64,7 +64,7 @@ fun AppWindowBox(appWindowModel: AppWindowModel?, modifier: Modifier = Modifier)
                                 overlappingRect.height().toFloat(),
                             ),
                         cornerRadius = CornerRadius(cornerRadiusPx),
-                        blendMode = BlendMode.Clear,
+                        blendMode = BlendMode.Src,
                     )
                 }
             }

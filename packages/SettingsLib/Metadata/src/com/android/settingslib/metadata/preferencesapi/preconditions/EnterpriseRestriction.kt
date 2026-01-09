@@ -16,8 +16,14 @@
 
 package com.android.settingslib.metadata.preferencesapi.preconditions
 
+import androidx.annotation.StringRes
+
 /**
  * The getter is unavailable due to some enterprise restriction. The reason should explain which
  * restriction.
  */
-class EnterpriseRestriction(override val reason: Int) : Disallowed
+class EnterpriseRestriction : Disallowed {
+    constructor(@StringRes reason: Int) : super(reason)
+
+    constructor(reason: String) : super(reason)
+}

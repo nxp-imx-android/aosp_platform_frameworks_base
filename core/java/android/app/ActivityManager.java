@@ -1918,6 +1918,8 @@ public class ActivityManager {
         private String mLabel;
         @Nullable
         private Icon mIcon;
+        @Nullable
+        private Icon mBadge;
         private String mIconFilename;
         private int mColorPrimary;
         private int mColorBackground;
@@ -1948,8 +1950,10 @@ public class ActivityManager {
              */
             @Nullable
             private String mLabel = null;
-            @DrawableRes
-            private int mIconRes = Resources.ID_NULL;
+            @Nullable
+            private Icon mIcon = null;
+            @Nullable
+            private Icon mBadge = null;
             private int mPrimaryColor = 0;
             private int mBackgroundColor = 0;
             private int mStatusBarColor = 0;
@@ -1974,7 +1978,41 @@ public class ActivityManager {
              */
             @NonNull
             public Builder setIcon(@DrawableRes int iconRes) {
-                this.mIconRes = iconRes;
+                if (iconRes == Resources.ID_NULL) {
+                    this.mIcon = null;
+                } else {
+                    this.mIcon =
+                            Icon.createWithResource(ActivityThread.currentPackageName(), iconRes);
+                }
+                return this;
+            }
+
+            /**
+             * Set the icon to use in the TaskDescription.
+             * @param icon An icon that represents the current state of this activity.
+             * @return The same instance of the builder.
+             */
+            @FlaggedApi(Flags.FLAG_ENABLE_DYNAMIC_ICONS_AND_BADGING)
+            @NonNull
+            public Builder setIcon(@Nullable Icon icon) {
+                this.mIcon = icon;
+                return this;
+            }
+
+            /**
+             * Set the icon of the badge to use in the TaskDescription.
+             *
+             * <p>The badge is an optional, small icon that is displayed on bottom corner of the
+             * icon in places like the taskbar and launcher. There is no default badge, and if not
+             * set, no badge will be shown.
+             *
+             * @param badge An Icon of a badge to be attached to the icon.
+             * @return The same instance of the builder.
+             */
+            @FlaggedApi(Flags.FLAG_ENABLE_DYNAMIC_ICONS_AND_BADGING)
+            @NonNull
+            public Builder setBadge(@Nullable Icon badge) {
+                this.mBadge = badge;
                 return this;
             }
 
@@ -2029,9 +2067,7 @@ public class ActivityManager {
              */
             @NonNull
             public TaskDescription build() {
-                final Icon icon = mIconRes == Resources.ID_NULL ? null :
-                        Icon.createWithResource(ActivityThread.currentPackageName(), mIconRes);
-                return new TaskDescription(mLabel, icon, mPrimaryColor, mBackgroundColor,
+                return new TaskDescription(mLabel, mIcon, mBadge, mPrimaryColor, mBackgroundColor,
                         mStatusBarColor, mNavigationBarColor, 0, 0, false, false,
                         RESIZE_MODE_RESIZEABLE, -1, -1, 0);
             }
@@ -2051,7 +2087,8 @@ public class ActivityManager {
         @Deprecated
         public TaskDescription(String label, @DrawableRes int iconRes, int colorPrimary) {
             this(label, Icon.createWithResource(ActivityThread.currentPackageName(), iconRes),
-                    colorPrimary, 0, 0, 0, 0, 0, false, false, RESIZE_MODE_RESIZEABLE, -1, -1, 0);
+                    null, colorPrimary, 0, 0, 0, 0, 0,
+                    false, false, RESIZE_MODE_RESIZEABLE, -1, -1, 0);
             if ((colorPrimary != 0) && (Color.alpha(colorPrimary) != 255)) {
                 throw new RuntimeException("A TaskDescription's primary color should be opaque");
             }
@@ -2069,7 +2106,7 @@ public class ActivityManager {
         @Deprecated
         public TaskDescription(String label, @DrawableRes int iconRes) {
             this(label, Icon.createWithResource(ActivityThread.currentPackageName(), iconRes),
-                    0, 0, 0, 0, 0, 0, false, false, RESIZE_MODE_RESIZEABLE, -1, -1, 0);
+                    null, 0, 0, 0, 0, 0, 0, false, false, RESIZE_MODE_RESIZEABLE, -1, -1, 0);
         }
 
         /**
@@ -2081,7 +2118,8 @@ public class ActivityManager {
          */
         @Deprecated
         public TaskDescription(String label) {
-            this(label, null, 0, 0, 0, 0, 0, 0, false, false, RESIZE_MODE_RESIZEABLE, -1, -1, 0);
+            this(label, null, null, 0, 0, 0, 0, 0, 0, false, false, RESIZE_MODE_RESIZEABLE, -1, -1,
+                    0);
         }
 
         /**
@@ -2091,7 +2129,8 @@ public class ActivityManager {
          */
         @Deprecated
         public TaskDescription() {
-            this(null, null, 0, 0, 0, 0, 0, 0, false, false, RESIZE_MODE_RESIZEABLE, -1, -1, 0);
+            this(null, null, null, 0, 0, 0, 0, 0, 0, false, false, RESIZE_MODE_RESIZEABLE, -1, -1,
+                    0);
         }
 
         /**
@@ -2106,8 +2145,8 @@ public class ActivityManager {
          */
         @Deprecated
         public TaskDescription(String label, Bitmap icon, int colorPrimary) {
-            this(label, icon != null ? Icon.createWithBitmap(icon) : null, colorPrimary, 0, 0, 0,
-                    0, 0, false, false, RESIZE_MODE_RESIZEABLE, -1, -1, 0);
+            this(label, icon != null ? Icon.createWithBitmap(icon) : null, null, colorPrimary, 0, 0,
+                    0, 0, 0, false, false, RESIZE_MODE_RESIZEABLE, -1, -1, 0);
             if ((colorPrimary != 0) && (Color.alpha(colorPrimary) != 255)) {
                 throw new RuntimeException("A TaskDescription's primary color should be opaque");
             }
@@ -2123,13 +2162,13 @@ public class ActivityManager {
          */
         @Deprecated
         public TaskDescription(String label, Bitmap icon) {
-            this(label, icon != null ? Icon.createWithBitmap(icon) : null, 0, 0, 0, 0, 0, 0, false,
-                    false, RESIZE_MODE_RESIZEABLE, -1, -1, 0);
+            this(label, icon != null ? Icon.createWithBitmap(icon) : null, null, 0, 0, 0, 0, 0, 0,
+                    false, false, RESIZE_MODE_RESIZEABLE, -1, -1, 0);
         }
 
         /** @hide */
         public TaskDescription(@Nullable String label, @Nullable Icon icon,
-                int colorPrimary, int colorBackground,
+                @Nullable Icon badge, int colorPrimary, int colorBackground,
                 int statusBarColor, int navigationBarColor,
                 @Appearance int systemBarsAppearance,
                 @Appearance int topOpaqueSystemBarsAppearance,
@@ -2138,6 +2177,7 @@ public class ActivityManager {
                 int minHeight, int colorBackgroundFloating) {
             mLabel = label;
             mIcon = icon;
+            mBadge = badge;
             mColorPrimary = colorPrimary;
             mColorBackground = colorBackground;
             mStatusBarColor = statusBarColor;
@@ -2167,6 +2207,7 @@ public class ActivityManager {
         public void copyFrom(TaskDescription other) {
             mLabel = other.mLabel;
             mIcon = other.mIcon;
+            mBadge = other.mBadge;
             mIconFilename = other.mIconFilename;
             mColorPrimary = other.mColorPrimary;
             mColorBackground = other.mColorBackground;
@@ -2191,6 +2232,7 @@ public class ActivityManager {
         public void copyFromPreserveHiddenFields(TaskDescription other) {
             mLabel = other.mLabel;
             mIcon = other.mIcon;
+            mBadge = other.mBadge;
             mIconFilename = other.mIconFilename;
             mColorPrimary = other.mColorPrimary;
 
@@ -2313,6 +2355,14 @@ public class ActivityManager {
         }
 
         /**
+         * Sets the badge for this task description.
+         * @hide
+         */
+        public void setBadge(Icon badge) {
+            mBadge = badge;
+        }
+
+        /**
          * Sets the resize mode for this task description. Resize mode as in
          * {@link android.content.pm.ActivityInfo}.
          * @hide
@@ -2429,6 +2479,17 @@ public class ActivityManager {
                 }
             }
             return null;
+        }
+
+        /**
+         * @return the icon badge for this task description.
+         * @hide
+         */
+        @TestApi
+        @FlaggedApi(Flags.FLAG_ENABLE_DYNAMIC_ICONS_AND_BADGING)
+        @Nullable
+        public Icon getBadge() {
+            return mBadge;
         }
 
         /**
@@ -2636,6 +2697,7 @@ public class ActivityManager {
                 dest.writeInt(1);
                 mIcon.writeToParcel(dest, 0);
             }
+            dest.writeTypedObject(mBadge, flags);
             dest.writeInt(mColorPrimary);
             dest.writeInt(mColorBackground);
             dest.writeInt(mStatusBarColor);
@@ -2661,6 +2723,7 @@ public class ActivityManager {
             if (source.readInt() > 0) {
                 mIcon = Icon.CREATOR.createFromParcel(source);
             }
+            mBadge = source.readTypedObject(Icon.CREATOR);
             mColorPrimary = source.readInt();
             mColorBackground = source.readInt();
             mStatusBarColor = source.readInt();
@@ -2689,6 +2752,7 @@ public class ActivityManager {
         @Override
         public String toString() {
             return "TaskDescription Label: " + mLabel + " Icon: " + mIcon
+                    + " Badge: " + mBadge
                     + " IconFilename: " + mIconFilename
                     + " colorPrimary: " + mColorPrimary + " colorBackground: " + mColorBackground
                     + " statusBarColor: " + mStatusBarColor
@@ -2711,6 +2775,9 @@ public class ActivityManager {
             }
             if (mIcon != null) {
                 result = result * 31 + mIcon.hashCode();
+            }
+            if (mBadge != null) {
+                result = result * 31 + mBadge.hashCode();
             }
             if (mIconFilename != null) {
                 result = result * 31 + mIconFilename.hashCode();
@@ -2740,6 +2807,7 @@ public class ActivityManager {
             return TextUtils.equals(mLabel, other.mLabel)
                     && TextUtils.equals(mIconFilename, other.mIconFilename)
                     && mIcon == other.mIcon
+                    && mBadge == other.mBadge
                     && mColorPrimary == other.mColorPrimary
                     && mColorBackground == other.mColorBackground
                     && mStatusBarColor == other.mStatusBarColor
@@ -3282,103 +3350,6 @@ public class ActivityManager {
             return getTaskService().isTaskMoveAllowedOnDisplay(displayId);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
-        }
-    }
-
-    private final Map<Consumer<List<TaskDisplayPolicyState>>, Executor>
-            mDisplayPolicyStateListeners = new ArrayMap<>();
-
-    private final ITaskMoveAllowedListener mTaskMoveAllowedDispatchListener =
-            new ITaskMoveAllowedListener.Stub() {
-                @Override
-                public void onTaskMoveAllowedChanged(int[] keys, boolean[] values) {
-                    dispatchDisplayPolicyChanges(keys, values);
-                }
-            };
-
-    private void dispatchDisplayPolicyChanges(
-            int[] displayIds, boolean[] taskMoveAllowedPerDisplay) {
-        final List<TaskDisplayPolicyState> displayPolicyStates = new ArrayList<>();
-        for (int i = 0; i < displayIds.length; i++) {
-            final int taskMoveAllowedState =
-                    taskMoveAllowedPerDisplay[i]
-                        ? TaskDisplayPolicyState.TASK_MOVE_ALLOWED
-                        : TaskDisplayPolicyState.TASK_MOVE_DISALLOWED;
-            final TaskDisplayPolicyState displayPolicyState =
-                    new TaskDisplayPolicyState(displayIds[i], taskMoveAllowedState);
-            displayPolicyStates.add(displayPolicyState);
-        }
-
-        synchronized (mDisplayPolicyStateListeners) {
-            mDisplayPolicyStateListeners.forEach(
-                    (listener, executor) -> {
-                        executor.execute(() -> listener.accept(displayPolicyStates));
-                    }
-            );
-        }
-    }
-
-    /**
-     * Registers a listener for changes to task display policy states across all displays.
-     *
-     * <p>The listener receives {@link TaskDisplayPolicyState} objects representing the state of
-     * properties that are controlled by policies, e.g. {@link #isTaskMoveAllowedOnDisplay(int)},
-     * for all displays. It is invoked whenever this state changes, including when a display is
-     * connected (its ID is added as a key) or disconnected (its key is removed).
-     *
-     * <p>The listener is also notified of current states upon registration.
-     *
-     * @param executor The {@link Executor} on which the listener callback will be invoked.
-     * @param listener A {@link Consumer} that receives the updated state.
-     * @see #isTaskMoveAllowedOnDisplay
-     */
-    @FlaggedApi(com.android.window.flags.Flags.FLAG_ENABLE_TASK_MOVE_ALLOWED_LISTENER_API)
-    public void registerTaskDisplayPolicyStateListener(
-            @NonNull final @CallbackExecutor Executor executor,
-            @NonNull final Consumer<List<TaskDisplayPolicyState>> listener) {
-        Objects.requireNonNull(executor);
-        Objects.requireNonNull(listener);
-
-        synchronized (mDisplayPolicyStateListeners) {
-            if (mDisplayPolicyStateListeners.containsKey(listener)) {
-                return;
-            }
-
-            mDisplayPolicyStateListeners.put(listener, executor);
-
-            if (mDisplayPolicyStateListeners.size() > 1) {
-                return;
-            }
-
-            try {
-                getTaskService().registerTaskMoveAllowedListener(mTaskMoveAllowedDispatchListener);
-            } catch (RemoteException e) {
-                throw e.rethrowFromSystemServer();
-            }
-        }
-    }
-
-    /**
-     * Unregisters a task display policy state listener.
-     *
-     * @see #registerTaskDisplayPolicyStateListener(Executor, Consumer)
-     */
-    @FlaggedApi(com.android.window.flags.Flags.FLAG_ENABLE_TASK_MOVE_ALLOWED_LISTENER_API)
-    public void unregisterTaskDisplayPolicyStateListener(
-            @NonNull Consumer<List<TaskDisplayPolicyState>> listener) {
-        synchronized (mDisplayPolicyStateListeners) {
-            mDisplayPolicyStateListeners.remove(listener);
-
-            if (!mDisplayPolicyStateListeners.isEmpty()) {
-                return;
-            }
-
-            try {
-                getTaskService()
-                        .unregisterTaskMoveAllowedListener(mTaskMoveAllowedDispatchListener);
-            } catch (RemoteException e) {
-                throw e.rethrowFromSystemServer();
-            }
         }
     }
 
