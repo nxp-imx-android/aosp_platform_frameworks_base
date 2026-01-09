@@ -465,6 +465,75 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun onTransitionReady_changeTransition_updatesLastPackageState_usesRealActivity() {
+        val mockTransition = Mockito.mock(IBinder::class.java)
+        val startBounds = Rect(0, 0, 100, 100)
+        val endBounds = Rect(10, 20, 120, 130)
+        val stableBounds = Rect(0, 0, 200, 200)
+        val realPackageName = "real.package"
+        val basePackageName = "base.package"
+        val task =
+            createTaskInfo(1, WINDOWING_MODE_FREEFORM).apply {
+                realActivity = ComponentName(realPackageName, "component.name")
+                baseActivity = ComponentName(basePackageName, "component.name")
+                configuration.windowConfiguration.bounds.set(endBounds)
+            }
+        val displayLayout = mock<DisplayLayout>()
+        whenever(displayLayout.getStableBoundsForDesktopMode(any())).thenAnswer {
+            (it.arguments[0] as Rect).set(stableBounds)
+        }
+        whenever(displayController.getDisplayLayout(task.displayId)).thenReturn(displayLayout)
+
+        transitionObserver.addPendingUserBoundsChangeTransition(mockTransition)
+        transitionObserver.onTransitionReady(
+            transition = mockTransition,
+            info = createChangeTransition(task, startBounds, endBounds),
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+
+        val expectedBoundsRatio =
+            RectF(
+                (endBounds.left - stableBounds.left).toFloat() / stableBounds.width(),
+                (endBounds.top - stableBounds.top).toFloat() / stableBounds.height(),
+                (endBounds.right - stableBounds.left).toFloat() / stableBounds.width(),
+                (endBounds.bottom - stableBounds.top).toFloat() / stableBounds.height(),
+            )
+
+        verify(taskRepository).setRememberedBoundsRatio(realPackageName, expectedBoundsRatio)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun onTransitionReady_changeTransition_noPackageName_doesNotUpdateRememberedBounds() {
+        val mockTransition = Mockito.mock(IBinder::class.java)
+        val startBounds = Rect(0, 0, 100, 100)
+        val endBounds = Rect(10, 20, 120, 130)
+        val stableBounds = Rect(0, 0, 200, 200)
+        val task =
+            createTaskInfo(1, WINDOWING_MODE_FREEFORM).apply {
+                baseActivity = null
+                realActivity = null
+                configuration.windowConfiguration.bounds.set(endBounds)
+            }
+        val displayLayout = mock<DisplayLayout>()
+        whenever(displayLayout.getStableBoundsForDesktopMode(any())).thenAnswer {
+            (it.arguments[0] as Rect).set(stableBounds)
+        }
+        whenever(displayController.getDisplayLayout(task.displayId)).thenReturn(displayLayout)
+
+        transitionObserver.onTransitionReady(
+            transition = mockTransition,
+            info = createChangeTransition(task, startBounds, endBounds),
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+
+        verify(taskRepository, never()).setRememberedBoundsRatio(any(), any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
     fun onTransitionReady_changeTransition_doesNotUpdateRememberedBounds_inImmersive() {
         val startBounds = Rect(0, 0, 100, 100)
         val endBounds = Rect(10, 20, 120, 130)
