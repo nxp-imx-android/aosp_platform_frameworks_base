@@ -79,7 +79,7 @@ class SegmentedBarChartView @JvmOverloads constructor(
         ) {
             maxValue = getFloat(R.styleable.SegmentedBarChartView_maxValue, 100f)
             emptySegmentPaint.color = context.getColor(
-                com.android.settingslib.widget.theme.R.color.settingslib_materialColorOutlineVariant
+                com.android.settingslib.widget.theme.R.color.settingslib_materialColorSecondaryContainer
             )
         }
         colors = context.resources.getIntArray(R.array.segmented_bar_chart_colors)
