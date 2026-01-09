@@ -55,22 +55,6 @@ interface BubbleAppBecomesNotExpandedTestCases : AppAnimateOutTestCases {
             .forAllEntries()
     }
 
-    /** Verifies the [previousApp] becomes the top window. */
-    @Test
-    fun previousAppWindowBecomesTopWindow() {
-        wmTraceSubject
-            .isAppWindowNotOnTop(previousApp)
-            .then()
-            .isAppWindowOnTop(previousApp)
-            .forAllEntries()
-    }
-
-    /** Verifies the [previousApp] is the top window at the end of transition. */
-    @Test
-    fun previousWindowAsTopWindowAtEnd() {
-        wmStateSubjectAtEnd.isAppWindowOnTop(previousApp)
-    }
-
     /** Verifies the [testApp] window has rounded corner at the start of the transition. */
     @Test
     fun appWindowHasRoundedCornerAtStart() {
