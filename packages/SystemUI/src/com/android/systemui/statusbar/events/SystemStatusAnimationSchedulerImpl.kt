@@ -81,7 +81,7 @@ constructor(
     @Assisted private val chipAnimationController: SystemEventChipAnimationController,
     @Assisted private val displayId: Int,
     private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
-    private val dumpManager: DumpManager,
+    dumpManager: DumpManager,
     private val systemClock: SystemClock,
     @Assisted private val coroutineScope: CoroutineScope,
     private val logger: SystemStatusAnimationSchedulerLogger?,
@@ -127,8 +127,6 @@ constructor(
     /** The job that is controlling the animators when an event is cancelled. */
     private var eventCancellationJob: Job? = null
 
-    private val dumpableName: String
-
     init {
         coordinator.attachScheduler(this)
         val dumpableTagSuffix =
@@ -137,8 +135,7 @@ constructor(
             } else {
                 displayId.toString()
             }
-        dumpableName = "$TAG$dumpableTagSuffix"
-        dumpManager.registerCriticalDumpable(dumpableName, this)
+        dumpManager.registerCriticalDumpable("$TAG$dumpableTagSuffix", this)
 
         coroutineScope.launch(context = mainCoroutineContext) {
             // Wait for animationState to become ANIMATION_QUEUED and scheduledEvent to be non null.
@@ -160,13 +157,6 @@ constructor(
         coroutineScope.launch(context = mainCoroutineContext) {
             _animationState.collect { logger?.logAnimationStateUpdate(it) }
         }
-    }
-
-    override fun stop() {
-        coordinator.stopObserving()
-        listeners.clear()
-        chipAnimationController.stop()
-        dumpManager.unregisterDumpable(dumpableName)
     }
 
     override fun onStatusEvent(event: StatusEvent) {
