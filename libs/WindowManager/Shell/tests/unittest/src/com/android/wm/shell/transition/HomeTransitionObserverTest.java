@@ -25,6 +25,7 @@ import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_PREPARE_BACK_NAVIGATION;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
+import static android.view.WindowManager.TRANSIT_WAKE;
 import static android.window.TransitionInfo.FLAG_BACK_GESTURE_ANIMATED;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
@@ -435,10 +436,27 @@ public class HomeTransitionObserverTest extends ShellTestCase {
     }
 
     @Test
-    public void testHomeBecomesInvisibleWithKeyguardGoingAway() throws RemoteException {
+    public void testHomeBecomesVisibleWhileWaking() throws RemoteException {
         ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(1, ACTIVITY_TYPE_HOME);
         TransitionInfo info =
-                new TransitionInfoBuilder(TRANSIT_TO_BACK, TRANSIT_FLAG_KEYGUARD_GOING_AWAY)
+                new TransitionInfoBuilder(TRANSIT_WAKE)
+                        .addChange(TRANSIT_OPEN, 0 /* flags */, taskInfo)
+                        .build();
+
+        mHomeTransitionObserver.onTransitionReady(mock(IBinder.class),
+                info,
+                mock(SurfaceControl.Transaction.class),
+                mock(SurfaceControl.Transaction.class));
+
+        verify(mListener, times(1)).onHomeVisibilityChanged(
+                /* isVisible= */ true, /* keyguardGoingAwayOrWaking= */ true);
+    }
+
+    @Test
+    public void testHomeBecomesInvisibleWhileWaking() throws RemoteException {
+        ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(1, ACTIVITY_TYPE_HOME);
+        TransitionInfo info =
+                new TransitionInfoBuilder(TRANSIT_WAKE)
                         .addChange(TRANSIT_TO_BACK, 0 /* flags */, taskInfo)
                         .build();
 
@@ -447,8 +465,8 @@ public class HomeTransitionObserverTest extends ShellTestCase {
                 mock(SurfaceControl.Transaction.class),
                 mock(SurfaceControl.Transaction.class));
 
-        verify(mListener, times(1))
-                .onHomeVisibilityChanged(/* isVisible= */ false, /* keyguardGoingAway= */ true);
+        verify(mListener, times(1)).onHomeVisibilityChanged(
+                /* isVisible= */ false, /* keyguardGoingAwayOrWaking= */ true);
     }
 
     private static ActivityManager.RunningTaskInfo createTaskInfo(int taskId, int activityType) {

@@ -20,6 +20,7 @@ import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
 import static android.os.UserHandle.USER_NULL;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_GOING_AWAY;
+import static android.view.WindowManager.TRANSIT_WAKE;
 import static android.window.TransitionInfo.FLAG_BACK_GESTURE_ANIMATED;
 
 import static com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP;
@@ -114,7 +115,8 @@ public class HomeTransitionObserver implements TransitionObserver,
         if (homeStateUpdate != null) {
             mPendingStartDragTransition = null;
             notifyHomeVisibilityChanged(
-                    homeStateUpdate.mIsVisible, homeStateUpdate.mKeyguardGoingAway);
+                    homeStateUpdate.mIsVisible, homeStateUpdate.mKeyguardGoingAway,
+                    homeStateUpdate.mWaking);
         }
     }
 
@@ -150,7 +152,9 @@ public class HomeTransitionObserver implements TransitionObserver,
             if (visibilityUpdate != null) {
                 boolean keyguardGoingAway =
                         (info.getFlags() & TRANSIT_FLAG_KEYGUARD_GOING_AWAY) != 0;
-                UpdateParameters update = new UpdateParameters(visibilityUpdate, keyguardGoingAway);
+                boolean waking = info.getType() == TRANSIT_WAKE;
+                UpdateParameters update =
+                        new UpdateParameters(visibilityUpdate, keyguardGoingAway, waking);
                 mHomeUpdateForUser.put(taskInfo.userId, update);
                 if (taskInfo.userId == mListenerUserId) {
                     homeStateUpdate = update;
@@ -204,7 +208,8 @@ public class HomeTransitionObserver implements TransitionObserver,
 
         UpdateParameters pendingState = mHomeUpdateForUser.get(mListenerUserId);
         if (pendingState != null) {
-            notifyHomeVisibilityChanged(pendingState.mIsVisible, pendingState.mKeyguardGoingAway);
+            notifyHomeVisibilityChanged(
+                    pendingState.mIsVisible, pendingState.mKeyguardGoingAway, pendingState.mWaking);
         }
     }
 
@@ -225,7 +230,8 @@ public class HomeTransitionObserver implements TransitionObserver,
             mListener.register(listener);
             UpdateParameters update = mHomeUpdateForUser.get(userId);
             if (update != null) {
-                notifyHomeVisibilityChanged(update.mIsVisible, update.mKeyguardGoingAway);
+                notifyHomeVisibilityChanged(
+                        update.mIsVisible, update.mKeyguardGoingAway, update.mWaking);
             }
         } else {
             mListener.unregister();
@@ -237,10 +243,12 @@ public class HomeTransitionObserver implements TransitionObserver,
      * Notifies the listener that the home visibility has changed.
      * @param isVisible true when home activity is visible, false otherwise.
      * @param keyguardGoingAway true when keyguard is being dismissed, false otherwise.
+     * @param waking true when the device is waking as part of the transition, false otherwise.
      */
-    public void notifyHomeVisibilityChanged(boolean isVisible, boolean keyguardGoingAway) {
+    public void notifyHomeVisibilityChanged(
+            boolean isVisible, boolean keyguardGoingAway, boolean waking) {
         if (mListener != null) {
-            mListener.call(l -> l.onHomeVisibilityChanged(isVisible, keyguardGoingAway));
+            mListener.call(l -> l.onHomeVisibilityChanged(isVisible, keyguardGoingAway || waking));
         }
     }
 
@@ -265,14 +273,18 @@ public class HomeTransitionObserver implements TransitionObserver,
         }
     }
 
-    /** Container class for Launcher visibility changes and Keyguard transition state. */
+    /**
+     * Container class for Launcher visibility changes, Keyguard transition state, and waking state.
+     */
     private static class UpdateParameters {
         boolean mIsVisible;
         boolean mKeyguardGoingAway;
+        boolean mWaking;
 
-        UpdateParameters(boolean isVisible, boolean keyguardGoingAway) {
+        UpdateParameters(boolean isVisible, boolean keyguardGoingAway, boolean waking) {
             mIsVisible = isVisible;
             mKeyguardGoingAway = keyguardGoingAway;
+            mWaking = waking;
         }
     }
 }
