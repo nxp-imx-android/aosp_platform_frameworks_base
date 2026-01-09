@@ -17,13 +17,14 @@
 package com.android.systemui.screencapture.record.smallscreen.shared.model
 
 import android.view.Display
+import com.android.systemui.common.shared.model.Text
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 
 sealed interface RecordDetailsTargetModel {
 
-    val labelRes: Int
+    val label: Text
     val isSelectable: Boolean
     val screenCaptureTarget: ScreenCaptureTarget?
     val canShowTouches: Boolean
@@ -31,12 +32,16 @@ sealed interface RecordDetailsTargetModel {
     val canUseCamera: Boolean
     val shouldShowAppSelector: Boolean
 
-    data class EntireScreen(override val screenCaptureTarget: ScreenCaptureTarget) :
-        RecordDetailsTargetModel {
+    data class EntireScreen(
+        override val screenCaptureTarget: ScreenCaptureTarget,
+        override val label: Text,
+    ) : RecordDetailsTargetModel {
 
-        constructor(display: Display) : this(ScreenCaptureTarget.Fullscreen(display.displayId))
+        constructor(
+            display: Display,
+            label: Text,
+        ) : this(ScreenCaptureTarget.Fullscreen(display.displayId), label)
 
-        override val labelRes: Int = R.string.screen_record_entire_screen
         override val isSelectable: Boolean = true
         override val canShowTouches: Boolean = true
         override val canUseMarkup: Boolean = true
@@ -50,7 +55,7 @@ sealed interface RecordDetailsTargetModel {
         override val screenCaptureTarget: ScreenCaptureTarget =
             ScreenCaptureTarget.App(displayId = task.displayId, taskId = task.taskId)
 
-        override val labelRes: Int = R.string.screen_record_single_app
+        override val label: Text = Text.Resource(R.string.screen_record_single_app)
         override val isSelectable: Boolean = true
         override val canShowTouches: Boolean = false
         override val canUseMarkup: Boolean = false
@@ -60,7 +65,7 @@ sealed interface RecordDetailsTargetModel {
 
     data object SingleAppNoRecents : RecordDetailsTargetModel {
 
-        override val labelRes: Int = R.string.screen_record_single_app_no_recents
+        override val label: Text = Text.Resource(R.string.screen_record_single_app_no_recents)
         override val isSelectable: Boolean = false
         override val screenCaptureTarget: ScreenCaptureTarget? = null
         override val canShowTouches: Boolean = false

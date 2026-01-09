@@ -51,6 +51,7 @@ import androidx.compose.ui.semantics.toggleableState
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import com.android.systemui.common.shared.model.Icon as IconModel
+import com.android.systemui.common.ui.compose.load
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
@@ -83,7 +84,7 @@ fun RecordDetailsSettings(
                     items = targetViewModel.items,
                     selectedItemIndex = targetViewModel.selectedIndex,
                     onItemSelected = { targetViewModel.select(it) },
-                    itemToString = { stringResource(it.labelRes) },
+                    itemToString = { it.label.load()!! },
                     isItemEnabled = { it.isSelectable },
                     viewModel = drawableLoaderViewModel,
                     modifier = Modifier.padding(vertical = 12.dp),

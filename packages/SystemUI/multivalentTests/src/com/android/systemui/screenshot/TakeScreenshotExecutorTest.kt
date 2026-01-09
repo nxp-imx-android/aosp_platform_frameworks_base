@@ -83,7 +83,10 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
     fun executeScreenshots_fromOverview_honorsDisplay() =
         testScope.runTest {
             val displayId = 1
-            setDisplays(display(TYPE_INTERNAL, id = 0), display(TYPE_EXTERNAL, id = displayId))
+            setDisplays(
+                display(type = TYPE_INTERNAL, id = 0),
+                display(type = TYPE_EXTERNAL, id = displayId),
+            )
 
             val onSaved = { _: Uri? -> }
             screenshotExecutor.executeScreenshots(
@@ -108,8 +111,8 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
     fun executeScreenshots_fromOverviewInvalidDisplay_usesDefault() =
         testScope.runTest {
             setDisplays(
-                display(TYPE_INTERNAL, id = Display.DEFAULT_DISPLAY),
-                display(TYPE_EXTERNAL, id = 1),
+                display(type = TYPE_INTERNAL, id = Display.DEFAULT_DISPLAY),
+                display(type = TYPE_EXTERNAL, id = 1),
             )
             val onSaved = { _: Uri? -> }
             screenshotExecutor.executeScreenshots(
@@ -134,7 +137,10 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
     fun executeScreenshots_fromScreenCaptureUI_honorsDisplayArgument() =
         testScope.runTest {
             val displayId = 1
-            setDisplays(display(TYPE_INTERNAL, id = 0), display(TYPE_EXTERNAL, id = displayId))
+            setDisplays(
+                display(type = TYPE_INTERNAL, id = 0),
+                display(type = TYPE_EXTERNAL, id = displayId),
+            )
             val request =
                 createScreenshotRequest(
                     displayId = displayId,
@@ -154,8 +160,8 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
     fun executeScreenshots_fromScreenCaptureUI_withInvalidDisplay_usesDefaultDisplay() =
         testScope.runTest {
             setDisplays(
-                display(TYPE_INTERNAL, id = Display.DEFAULT_DISPLAY),
-                display(TYPE_EXTERNAL, id = 1),
+                display(type = TYPE_INTERNAL, id = Display.DEFAULT_DISPLAY),
+                display(type = TYPE_EXTERNAL, id = 1),
             )
             val request =
                 createScreenshotRequest(
@@ -176,7 +182,10 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
     fun executeScreenshots_keyOther_usesFocusedDisplay() =
         testScope.runTest {
             val displayId = 1
-            setDisplays(display(TYPE_INTERNAL, id = 0), display(TYPE_EXTERNAL, id = displayId))
+            setDisplays(
+                display(type = TYPE_INTERNAL, id = 0),
+                display(type = TYPE_EXTERNAL, id = displayId),
+            )
             val onSaved = { _: Uri? -> }
             screenshotProxy.stub { onBlocking { getFocusedDisplay() } doReturn displayId }
 
@@ -201,8 +210,8 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
     fun executeScreenshots_keyOtherInvalidDisplay_usesDefault() =
         testScope.runTest {
             setDisplays(
-                display(TYPE_INTERNAL, id = Display.DEFAULT_DISPLAY),
-                display(TYPE_EXTERNAL, id = 1),
+                display(type = TYPE_INTERNAL, id = Display.DEFAULT_DISPLAY),
+                display(type = TYPE_EXTERNAL, id = 1),
             )
             screenshotProxy.stub {
                 onBlocking { getFocusedDisplay() } doReturn 5 // invalid display
@@ -228,7 +237,10 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
     @Test
     fun onDestroy_propagatedToControllers() =
         testScope.runTest {
-            setDisplays(display(TYPE_INTERNAL, id = 0), display(TYPE_EXTERNAL, id = 1))
+            setDisplays(
+                display(type = TYPE_INTERNAL, id = 0),
+                display(type = TYPE_EXTERNAL, id = 1),
+            )
             val onSaved = { _: Uri? -> }
             screenshotExecutor.executeScreenshots(createScreenshotRequest(), onSaved, callback)
 
@@ -239,7 +251,10 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
     @Test
     fun removeWindows_propagatedToController() =
         testScope.runTest {
-            setDisplays(display(TYPE_INTERNAL, id = 0), display(TYPE_EXTERNAL, id = 1))
+            setDisplays(
+                display(type = TYPE_INTERNAL, id = 0),
+                display(type = TYPE_EXTERNAL, id = 1),
+            )
             val onSaved = { _: Uri? -> }
             screenshotExecutor.executeScreenshots(createScreenshotRequest(), onSaved, callback)
 
@@ -252,7 +267,10 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
     @Test
     fun onCloseSystemDialogsReceived_propagatedToController() =
         testScope.runTest {
-            setDisplays(display(TYPE_INTERNAL, id = 0), display(TYPE_EXTERNAL, id = 1))
+            setDisplays(
+                display(type = TYPE_INTERNAL, id = 0),
+                display(type = TYPE_EXTERNAL, id = 1),
+            )
             val onSaved = { _: Uri? -> }
             screenshotExecutor.executeScreenshots(createScreenshotRequest(), onSaved, callback)
 
@@ -265,7 +283,10 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
     @Test
     fun onCloseSystemDialogsReceived_controllerHasPendingTransitions() =
         testScope.runTest {
-            setDisplays(display(TYPE_INTERNAL, id = 0), display(TYPE_EXTERNAL, id = 1))
+            setDisplays(
+                display(type = TYPE_INTERNAL, id = 0),
+                display(type = TYPE_EXTERNAL, id = 1),
+            )
             whenever(controller.isPendingSharedTransition()).thenReturn(true)
             val onSaved = { _: Uri? -> }
             screenshotExecutor.executeScreenshots(createScreenshotRequest(), onSaved, callback)
@@ -279,7 +300,7 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
     @Test
     fun executeScreenshots_controllerCalledWithRequestProcessorReturnValue() =
         testScope.runTest {
-            setDisplays(display(TYPE_INTERNAL, id = 0))
+            setDisplays(display(type = TYPE_INTERNAL, id = 0))
             val screenshotRequest = createScreenshotRequest()
             val toBeReturnedByProcessor = ScreenshotData.forTesting()
             requestProcessor.toReturn = toBeReturnedByProcessor
@@ -300,7 +321,10 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
     @Test
     fun executeScreenshots_errorFromProcessorOnDefaultDisplay_showsErrorNotification() =
         testScope.runTest {
-            setDisplays(display(TYPE_INTERNAL, id = 0), display(TYPE_EXTERNAL, id = 1))
+            setDisplays(
+                display(type = TYPE_INTERNAL, id = 0),
+                display(type = TYPE_EXTERNAL, id = 1),
+            )
             val onSaved = { _: Uri? -> }
             requestProcessor.shouldThrowException = true
 
@@ -313,7 +337,7 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
     @Test
     fun executeScreenshots_errorFromProcessorOnSecondaryDisplay_showsErrorNotification() =
         testScope.runTest {
-            setDisplays(display(TYPE_INTERNAL, id = 0))
+            setDisplays(display(type = TYPE_INTERNAL, id = 0))
             val onSaved = { _: Uri? -> }
             requestProcessor.shouldThrowException = true
 
@@ -326,7 +350,10 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
     @Test
     fun executeScreenshots_errorFromScreenshotController_reportsRequested() =
         testScope.runTest {
-            setDisplays(display(TYPE_INTERNAL, id = 0), display(TYPE_EXTERNAL, id = 1))
+            setDisplays(
+                display(type = TYPE_INTERNAL, id = 0),
+                display(type = TYPE_EXTERNAL, id = 1),
+            )
             val onSaved = { _: Uri? -> }
             whenever(controller.handleScreenshot(any(), any(), any()))
                 .thenThrow(IllegalStateException::class.java)
@@ -344,7 +371,10 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
     @Test
     fun executeScreenshots_errorFromScreenshotController_reportsError() =
         testScope.runTest {
-            setDisplays(display(TYPE_INTERNAL, id = 0), display(TYPE_EXTERNAL, id = 1))
+            setDisplays(
+                display(type = TYPE_INTERNAL, id = 0),
+                display(type = TYPE_EXTERNAL, id = 1),
+            )
             val onSaved = { _: Uri? -> }
             whenever(controller.handleScreenshot(any(), any(), any()))
                 .thenThrow(IllegalStateException::class.java)
@@ -362,7 +392,10 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
     @Test
     fun executeScreenshots_errorFromScreenshotController_showsErrorNotification() =
         testScope.runTest {
-            setDisplays(display(TYPE_INTERNAL, id = 0), display(TYPE_EXTERNAL, id = 1))
+            setDisplays(
+                display(type = TYPE_INTERNAL, id = 0),
+                display(type = TYPE_EXTERNAL, id = 1),
+            )
             val onSaved = { _: Uri? -> }
             whenever(controller.handleScreenshot(any(), any(), any()))
                 .thenThrow(IllegalStateException::class.java)
@@ -376,7 +409,7 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
     @Test
     fun executeScreenshots_finisherCalledWithNullUri_succeeds() =
         testScope.runTest {
-            setDisplays(display(TYPE_INTERNAL, id = 0))
+            setDisplays(display(type = TYPE_INTERNAL, id = 0))
             var onSavedCallCount = 0
             val onSaved: (Uri?) -> Unit = {
                 assertThat(it).isNull()
@@ -395,9 +428,12 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
     @Test
     fun executeScreenshots_consecutiveRequestsOnDifferentDisplays() =
         testScope.runTest {
-            val secondaryDisplay = display(TYPE_EXTERNAL, id = 1)
+            val secondaryDisplay = display(type = TYPE_EXTERNAL, id = 1)
             var focusedDisplay = Display.DEFAULT_DISPLAY
-            setDisplays(display(TYPE_INTERNAL, id = Display.DEFAULT_DISPLAY), secondaryDisplay)
+            setDisplays(
+                display(type = TYPE_INTERNAL, id = Display.DEFAULT_DISPLAY),
+                secondaryDisplay,
+            )
             screenshotProxy.stub {
                 onBlocking { getFocusedDisplay() }.thenAnswer { focusedDisplay }
             }
