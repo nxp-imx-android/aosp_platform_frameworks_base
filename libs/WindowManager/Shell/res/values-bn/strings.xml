@@ -76,8 +76,6 @@
     <string name="bubble_accessibility_action_collapse_menu" msgid="2975310870146231463">"মেনু আড়াল করুন"</string>
     <string name="bubble_accessibility_action_move_bar_left" msgid="4803535120353716759">"বাঁদিকে সরান"</string>
     <string name="bubble_accessibility_action_move_bar_right" msgid="7686542531917510421">"ডানদিকে সরান"</string>
-    <string name="bubble_accessibility_announce_expand" msgid="5388792092888203776">"<xliff:g id="BUBBLE_TITLE">%1$s</xliff:g> বড় করুন"</string>
-    <string name="bubble_accessibility_announce_collapse" msgid="3178806224494537097">"<xliff:g id="BUBBLE_TITLE">%1$s</xliff:g> আড়াল করুন"</string>
     <string name="bubbles_app_settings" msgid="3617224938701566416">"<xliff:g id="NOTIFICATION_TITLE">%1$s</xliff:g> সেটিংস"</string>
     <string name="bubble_dismiss_text" msgid="8816558050659478158">"বাবল খারিজ করুন"</string>
     <string name="bubble_fullscreen_text" msgid="1006758103218086231">"ফুল-স্ক্রিন ব্যবহার করুন"</string>
@@ -95,7 +93,6 @@
     <string name="bubble_bar_education_manage_text" msgid="3199732148641842038">"কোন অ্যাপ ও কথোপকথনের জন্য বাবলের সুবিধা চান তা ম্যানেজ করতে এখানে ট্যাপ করুন"</string>
     <string name="notification_bubble_title" msgid="6082910224488253378">"বাবল"</string>
     <string name="manage_bubbles_text" msgid="7730624269650594419">"ম্যানেজ করুন"</string>
-    <string name="accessibility_bubble_dismissed" msgid="8367471990421247357">"বাবল বাতিল করা হয়েছে।"</string>
     <string name="restart_button_description" msgid="4564728020654658478">"আরও ভাল ভিউয়ের জন্য এই অ্যাপ রিস্টার্ট করতে ট্যাপ করুন"</string>
     <string name="user_aspect_ratio_settings_button_hint" msgid="734835849600713016">"সেটিংস থেকে এই অ্যাপের অ্যাস্পেক্ট রেশিও পরিবর্তন করুন"</string>
     <string name="user_aspect_ratio_settings_button_description" msgid="4315566801697411684">"অ্যাস্পেক্ট রেশিও পরিবর্তন করুন"</string>

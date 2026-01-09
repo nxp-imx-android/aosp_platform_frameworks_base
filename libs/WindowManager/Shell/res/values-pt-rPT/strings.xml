@@ -76,8 +76,6 @@
     <string name="bubble_accessibility_action_collapse_menu" msgid="2975310870146231463">"reduzir menu"</string>
     <string name="bubble_accessibility_action_move_bar_left" msgid="4803535120353716759">"Mover para a esquerda"</string>
     <string name="bubble_accessibility_action_move_bar_right" msgid="7686542531917510421">"Mover para a direita"</string>
-    <string name="bubble_accessibility_announce_expand" msgid="5388792092888203776">"expandir <xliff:g id="BUBBLE_TITLE">%1$s</xliff:g>"</string>
-    <string name="bubble_accessibility_announce_collapse" msgid="3178806224494537097">"reduzir <xliff:g id="BUBBLE_TITLE">%1$s</xliff:g>"</string>
     <string name="bubbles_app_settings" msgid="3617224938701566416">"Definições de <xliff:g id="NOTIFICATION_TITLE">%1$s</xliff:g>"</string>
     <string name="bubble_dismiss_text" msgid="8816558050659478158">"Ignorar balão"</string>
     <string name="bubble_fullscreen_text" msgid="1006758103218086231">"Mudar para ecrã inteiro"</string>
@@ -95,7 +93,6 @@
     <string name="bubble_bar_education_manage_text" msgid="3199732148641842038">"Toque aqui para gerir que apps e conversas podem aparecer em balões"</string>
     <string name="notification_bubble_title" msgid="6082910224488253378">"Balão"</string>
     <string name="manage_bubbles_text" msgid="7730624269650594419">"Gerir"</string>
-    <string name="accessibility_bubble_dismissed" msgid="8367471990421247357">"Balão ignorado."</string>
     <string name="restart_button_description" msgid="4564728020654658478">"Toque para reiniciar esta app e ficar com uma melhor visão"</string>
     <string name="user_aspect_ratio_settings_button_hint" msgid="734835849600713016">"Altere o formato desta app nas Definições"</string>
     <string name="user_aspect_ratio_settings_button_description" msgid="4315566801697411684">"Altere o formato"</string>
