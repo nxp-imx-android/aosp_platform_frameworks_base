@@ -16,22 +16,29 @@
 
 package android.text.method;
 
+import android.app.compat.CompatChanges;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.ContentObserver;
+import android.net.Uri;
 import android.os.Handler;
+import android.os.UserHandle;
 import android.provider.Settings;
 import android.provider.Settings.System;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.NoCopySpan;
 import android.text.Selection;
+import android.text.ShowSecretsSetting;
 import android.text.SpanWatcher;
 import android.text.Spannable;
 import android.text.TextUtils;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.View;
+
+import com.android.internal.annotations.VisibleForTesting;
+import com.android.text.flags.Flags;
 
 import java.lang.ref.WeakReference;
 
@@ -63,6 +70,8 @@ public class TextKeyListener extends BaseKeyListener implements SpanWatcher {
     /* package */ static final int AUTO_TEXT = 2;
     /* package */ static final int AUTO_PERIOD = 4;
     /* package */ static final int SHOW_PASSWORD = 8;
+    /* package */ static final int SHOW_PASSWORD_TOUCH = 16;
+    /* package */ static final int SHOW_PASSWORD_PHYSICAL = 32;
     private WeakReference<ContentResolver> mResolver;
     private TextKeyListener.SettingsObserver mObserver;
 
@@ -267,6 +276,18 @@ public class TextKeyListener extends BaseKeyListener implements SpanWatcher {
         if (mObserver == null) {
             mObserver = new SettingsObserver();
             contentResolver.registerContentObserver(Settings.System.CONTENT_URI, true, mObserver);
+            if (Flags.splitShowPasswordsToTouchAndPhysical()
+                    && CompatChanges.isChangeEnabled(
+                            ShowSecretsSetting.SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)) {
+                final Uri touchUri = ShowSecretsSetting.getTouchUri();
+                if (touchUri != null) {
+                    contentResolver.registerContentObserver(touchUri, true, mObserver);
+                }
+                final Uri physicalUri = ShowSecretsSetting.getPhysicalUri();
+                if (physicalUri != null) {
+                    contentResolver.registerContentObserver(physicalUri, true, mObserver);
+                }
+            }
         }
 
         updatePrefs(contentResolver);
@@ -298,14 +319,31 @@ public class TextKeyListener extends BaseKeyListener implements SpanWatcher {
         boolean text = System.getInt(resolver, System.TEXT_AUTO_REPLACE, 1) > 0;
         boolean period = System.getInt(resolver, System.TEXT_AUTO_PUNCTUATE, 1) > 0;
         boolean pw = System.getInt(resolver, System.TEXT_SHOW_PASSWORD, 1) > 0;
+        boolean touch = false;
+        boolean physical = false;
+        if (Flags.splitShowPasswordsToTouchAndPhysical()
+                && CompatChanges.isChangeEnabled(
+                        ShowSecretsSetting.SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)) {
+            touch =
+                    ShowSecretsSetting.shouldShowTouchInputForUser(
+                            resolver, UserHandle.of(resolver.getUserId()));
+            physical =
+                    ShowSecretsSetting.shouldShowPhysicalInputForUser(
+                            resolver, UserHandle.of(resolver.getUserId()));
+        }
 
-        mPrefs = (cap ? AUTO_CAP : 0) |
-                 (text ? AUTO_TEXT : 0) |
-                 (period ? AUTO_PERIOD : 0) |
-                 (pw ? SHOW_PASSWORD : 0);
+        mPrefs =
+                (cap ? AUTO_CAP : 0)
+                        | (text ? AUTO_TEXT : 0)
+                        | (period ? AUTO_PERIOD : 0)
+                        | (pw ? SHOW_PASSWORD : 0)
+                        | (touch ? SHOW_PASSWORD_TOUCH : 0)
+                        | (physical ? SHOW_PASSWORD_PHYSICAL : 0);
     }
 
-    /* package */ int getPrefs(Context context) {
+    /** @hide */
+    @VisibleForTesting
+    public int getPrefs(Context context) {
         synchronized (this) {
             if (!mPrefsInited || mResolver.refersTo(null)) {
                 initPrefs(context);
