@@ -35,6 +35,9 @@ import android.util.Log;
 
 import com.android.internal.annotations.GuardedBy;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Manages the lifecycle of app functions registered at runtime for a single user. Unregisters
  * AppFunction is it's process died.
@@ -43,7 +46,6 @@ final class DynamicAppFunctionRegistry {
 
     private static final boolean DEBUG = Build.TYPE.equals("eng");
     private static final String TAG = "DynamicAppFuncRegistry";
-
     private final Object mLock = new Object();
 
     @GuardedBy("mLock")
@@ -80,69 +82,84 @@ final class DynamicAppFunctionRegistry {
             };
 
     /**
-     * Registers an app function with the registry.
+     * Registers one or more app functions, making them available for execution as a single
+     * atomic operation.
+     *
      * @param packageName Name of the package containing the app function.
-     * @param functionIdentifier Identifier of the app function.
+     * @param functionIdentifiers A list of identifiers of the app functions.
      * @param executor Executor of the app function.
      * @throws IllegalStateException If the app function is already registered.
      */
-    public void registerAppFunction(
+    public void registerAppFunctions(
             @NonNull String packageName,
-            @NonNull String functionIdentifier,
+            @NonNull List<String> functionIdentifiers,
             @NonNull IAppFunctionExecutor executor) {
-        String registrationId = getRegistrationId(packageName, functionIdentifier);
-        if (DEBUG) {
-            Log.d(TAG, "registerAppFunction with ID:" + registrationId);
-        }
         synchronized (mLock) {
-            if (mRegistrations.containsKey(registrationId)) {
-                throw new IllegalStateException(
-                        "App function already registered for ID: " + registrationId);
+            List<String> registrationIds = new ArrayList<>(functionIdentifiers.size());
+            for (String functionIdentifier : functionIdentifiers) {
+                String registrationId = getRegistrationId(packageName, functionIdentifier);
+                if (mRegistrations.containsKey(registrationId)) {
+                    throw new IllegalStateException(
+                            "App function already registered for ID: " + registrationId);
+                }
+                registrationIds.add(registrationId);
             }
-            mRegistrations.put(registrationId, executor);
+            for (String registrationId : registrationIds) {
+                mRegistrations.put(registrationId, executor);
 
-            if (!mExecutorToRegistrations.containsKey(executor.asBinder())) {
-                mExecutorToRegistrations.put(executor.asBinder(), new ArraySet<>());
-                mCallbacks.register(executor);
+                if (!mExecutorToRegistrations.containsKey(executor.asBinder())) {
+                    mExecutorToRegistrations.put(executor.asBinder(), new ArraySet<>());
+                    mCallbacks.register(executor);
+                }
+                mExecutorToRegistrations.get(executor.asBinder()).add(registrationId);
+                if (DEBUG) {
+                    Log.d(TAG, "registerAppFunction with ID:" + registrationId);
+                }
             }
-            mExecutorToRegistrations.get(executor.asBinder()).add(registrationId);
         }
     }
 
     /**
-     * Unregisters an app function from the registry. This method is no-op if app function was not
-     * registered or registered with a different executor.
+     * Unregisters one or more app functions, making them unavailable for execution.
+     *
+     * <p>This removes the association between the function identifiers and the client's execution
+     * session. If a function is not currently registered, the request to unregister for it will be
+     * silently ignored.
+     *
      * @param packageName Name of the package containing the app function.
-     * @param functionIdentifier Identifier of the app function.
+     * @param functionIdentifiers List of identifier of the app functions.
      * @param executor Executor of the app function.
      */
-    public void unregisterAppFunction(
+    public void unregisterAppFunctions(
             @NonNull String packageName,
-            @NonNull String functionIdentifier,
+            @NonNull List<String> functionIdentifiers,
             @NonNull IAppFunctionExecutor executor) {
-        String registrationId = getRegistrationId(packageName, functionIdentifier);
-        if (DEBUG) {
-            Log.d(TAG, "unregisterAppFunction with ID:" + registrationId);
-        }
         synchronized (mLock) {
-            // Ensure the registration being removed actually belongs to the calling
-            // executor.
-            IAppFunctionExecutor registeredExecutor = mRegistrations.get(registrationId);
-            if (registeredExecutor == null
-                    || !registeredExecutor.asBinder().equals(executor.asBinder())) {
-                return;
-            }
+            for (String functionIdentifier : functionIdentifiers) {
+                String registrationId = getRegistrationId(packageName, functionIdentifier);
+                if (DEBUG) {
+                    Log.d(TAG, "unregisterAppFunction with ID:" + registrationId);
+                }
 
-            mRegistrations.remove(registrationId);
+                // Ensure the registration being removed actually belongs to the calling
+                // executor.
+                IAppFunctionExecutor registeredExecutor = mRegistrations.get(registrationId);
+                if (registeredExecutor == null
+                        || !registeredExecutor.asBinder().equals(executor.asBinder())) {
+                    continue;
+                }
 
-            ArraySet<String> executorRegistrations =
-                    mExecutorToRegistrations.get(executor.asBinder());
-            if (executorRegistrations != null) {
-                executorRegistrations.remove(registrationId);
-                if (executorRegistrations.isEmpty()) {
-                    mExecutorToRegistrations.remove(executor.asBinder());
-                    // This was the last registration for this executor.
-                    mCallbacks.unregister(executor);
+                mRegistrations.remove(registrationId);
+
+                ArraySet<String> executorRegistrations =
+                        mExecutorToRegistrations.get(executor.asBinder());
+                if (executorRegistrations != null) {
+                    executorRegistrations.remove(registrationId);
+                    if (executorRegistrations.isEmpty()) {
+                        mExecutorToRegistrations.remove(executor.asBinder());
+                        // This was the last registration for this executor.
+                        mCallbacks.unregister(executor);
+                    }
                 }
             }
         }

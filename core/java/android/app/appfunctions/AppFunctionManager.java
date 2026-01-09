@@ -64,6 +64,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -576,6 +577,9 @@ public final class AppFunctionManager {
      * lightweight, in-process handling of function calls and requires the app to be running to
      * execute.
      *
+     * <p>To register multiple functions at once in a single, batched call, consider using
+     * {@link #registerAppFunctions(List)} as a more efficient alternative.
+     *
      * <h3>Function Execution</h3>
      *
      * <p>While the function is registered, a call to {@link AppFunctionManager#executeAppFunction}
@@ -609,8 +613,8 @@ public final class AppFunctionManager {
      * application-level XML resources. If the ID is not found, this method will throw an {@link
      * IllegalArgumentException}.
      *
-     * @param functionId The unique identifier for the function, which must match an entry in the
-     *     app's XML resource declarations.
+     * @param functionIdentifier The unique identifier for the function, which must match an entry
+     *     in the app's XML resource declarations.
      * @param executor The {@link Executor} on which the function will be invoked.
      * @param appFunction The {@link AppFunction} implementation to be executed when the function is
      *     triggered.
@@ -623,10 +627,50 @@ public final class AppFunctionManager {
     @NonNull
     @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
     public AppFunctionRegistration registerAppFunction(
-            @NonNull String functionId,
+            @NonNull String functionIdentifier,
             @NonNull Executor executor,
             @NonNull AppFunction appFunction) {
-        return mRegistry.register(functionId, executor, appFunction);
+        return mRegistry.register(
+                List.of(new RegisterAppFunctionRequest(functionIdentifier, executor, appFunction)));
+    }
+
+    /**
+     * Registers several {@link AppFunction} implementations at once, sharing a single lifecycle.
+     *
+     * <p>This is a more efficient alternative to calling
+     * {@link #registerAppFunction(String, Executor, AppFunction)} multiple times.
+     *
+     * <h3>Behavior and Lifecycle</h3>
+     *
+     * <p>Each function registered through this method follows the same execution and lifecycle
+     * rules as those registered individually. For detailed information on function execution,
+     * lifecycle management, and error handling, see the documentation for
+     * {@link #registerAppFunction(String, Executor, AppFunction)}.
+     *
+     * <h3>Batch Operation and Atomicity</h3>
+     *
+     * <p>The registration is atomic: either all functions in the provided list are registered
+     * successfully, or none are. If any function in the list fails validation (e.g., its ID is
+     * already registered or not declared in the manifest), this method will throw an exception,
+     * and no functions from the batch will be registered.
+     *
+     * <p>A single {@link AppFunctionRegistration} object is returned, which can be used to
+     * unregister the entire batch of functions with one call.
+     *
+     * @param requests A list of {@link RegisterAppFunctionRequest} objects, each specifying a
+     *     function to be registered.
+     * @return A single {@link AppFunctionRegistration} object that can be used to unregister all
+     *     the functions in the batch with one call.
+     * @throws IllegalStateException if any function in the {@code requests} list has an ID that is
+     *     already registered by this app.
+     * @throws IllegalArgumentException if any function ID in the {@code requests} list is not
+     *     declared in the app's application-level XML resources.
+     */
+    @NonNull
+    @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
+    public AppFunctionRegistration registerAppFunctions(
+            @NonNull List<RegisterAppFunctionRequest> requests) {
+        return mRegistry.register(requests);
     }
 
     /**
@@ -1112,7 +1156,7 @@ public final class AppFunctionManager {
         private final Object mLock = new Object();
 
         @GuardedBy("mLock")
-        private final ArrayMap<String, AppFunctionRegistrationImpl> mRegistrations =
+        private final ArrayMap<String, RegistrationRecord> mRegistrations =
                 new ArrayMap<>();
 
         private final IAppFunctionExecutor.Stub mExecutor =
@@ -1123,7 +1167,7 @@ public final class AppFunctionManager {
                             ICancellationCallback cancellationCallback,
                             IExecuteAppFunctionCallback callback)
                             throws RemoteException {
-                        AppFunctionRegistrationImpl registration;
+                        RegistrationRecord registration;
                         synchronized (mLock) {
                             registration = mRegistrations.get(request.getFunctionIdentifier());
                         }
@@ -1143,94 +1187,107 @@ public final class AppFunctionManager {
                     }
                 };
 
-        AppFunctionRegistrationImpl register(
-                String functionId, Executor executor, AppFunction function) {
+        AppFunctionRegistration register(List<RegisterAppFunctionRequest> requests) {
             // This lock is held during the IPC call to the system server. This is a deliberate
             // choice to synchronize registration requests from multiple threads within this
             // process. The server-side implementation is also synchronized, preventing deadlocks
             // and ensuring that registrations are handled atomically across the entire system.
             synchronized (mLock) {
-                if (mRegistrations.containsKey(functionId)) {
-                    throw new IllegalStateException(
-                            "Function id " + functionId + " already registered");
+                ArrayMap<String, RegistrationRecord> batchRegistration =
+                        new ArrayMap<>(requests.size());
+                ArrayList<String> functionIds = new ArrayList<>(requests.size());
+                for (RegisterAppFunctionRequest request : requests) {
+                    if (mRegistrations.containsKey(request.getFunctionIdentifier())) {
+                        throw new IllegalStateException(
+                                "Function id "
+                                        + request.getFunctionIdentifier()
+                                        + " is already registered");
+                    }
+                    if (batchRegistration.containsKey(request.getFunctionIdentifier())) {
+                        throw new IllegalArgumentException(
+                                "Function ids must be unique in the registration requests list.");
+                    }
+                    batchRegistration.put(
+                            request.getFunctionIdentifier(), new RegistrationRecord(request));
+                    functionIds.add(request.getFunctionIdentifier());
                 }
+
                 try {
-                    mService.registerAppFunction(mContext.getPackageName(), functionId, mExecutor);
+                    mService.registerAppFunctions(
+                            mContext.getPackageName(), functionIds, mExecutor);
                 } catch (RemoteException e) {
                     throw e.rethrowFromSystemServer();
                 }
-                final AppFunctionRegistrationImpl registration =
-                        new AppFunctionRegistrationImpl(functionId, executor, function);
-                mRegistrations.put(functionId, registration);
-                return registration;
+                mRegistrations.putAll(batchRegistration);
+                return () -> unregister(batchRegistration);
             }
         }
 
-        void unregister(
-                @NonNull String functionId, @NonNull AppFunctionRegistrationImpl registration) {
+        void unregister(@NonNull ArrayMap<String, RegistrationRecord> batchRegistrations) {
             synchronized (mLock) {
-                if (mRegistrations.get(functionId) != registration) {
-                    return;
+                List<String> functionIdsToUnregister = new ArrayList<>(batchRegistrations.size());
+                for (Map.Entry<String, RegistrationRecord> entry :
+                        batchRegistrations.entrySet()) {
+                    String functionId = entry.getKey();
+                    if (mRegistrations.get(functionId) != entry.getValue()) {
+                        continue;
+                    }
+                    functionIdsToUnregister.add(functionId);
                 }
-
                 try {
-                    mService.unregisterAppFunction(
-                            mContext.getPackageName(), functionId, mExecutor);
+                    mService.unregisterAppFunctions(
+                            mContext.getPackageName(), functionIdsToUnregister, mExecutor);
                 } catch (RemoteException e) {
                     throw e.rethrowFromSystemServer();
                 }
-                mRegistrations.remove(functionId);
+                mRegistrations.removeAll(functionIdsToUnregister);
             }
         }
-    }
 
-    private class AppFunctionRegistrationImpl implements AppFunctionRegistration {
-        private final String mFunctionId;
-        private final AppFunction mFunction;
-        private final Executor mExecutor;
+        private static class RegistrationRecord {
+            private final AppFunction mAppFunction;
+            private final Executor mExecutor;
 
-        AppFunctionRegistrationImpl(String functionId, Executor executor, AppFunction function) {
-            this.mFunctionId = functionId;
-            this.mFunction = function;
-            this.mExecutor = executor;
-        }
+            RegistrationRecord(RegisterAppFunctionRequest request) {
+                mAppFunction = request.getAppFunction();
+                mExecutor = request.getExecutor();
+            }
 
-        @Override
-        public void unregister() {
-            mRegistry.unregister(mFunctionId, this);
-        }
+            void onExecuteFunction(
+                    ExecuteAppFunctionRequest request,
+                    CancellationSignal cancelSignal,
+                    IExecuteAppFunctionCallback callback) {
+                SafeOneTimeExecuteAppFunctionCallback safeCallback =
+                        new SafeOneTimeExecuteAppFunctionCallback(callback);
+                mExecutor.execute(
+                        () -> {
+                            try {
+                                mAppFunction.onExecuteAppFunction(
+                                        request,
+                                        cancelSignal,
+                                        new OutcomeReceiver<>() {
+                                            @Override
+                                            public void onResult(
+                                                    ExecuteAppFunctionResponse result
+                                            ) {
+                                                safeCallback.onResult(result);
+                                            }
 
-        void onExecuteFunction(
-                ExecuteAppFunctionRequest request,
-                CancellationSignal cancelSignal,
-                IExecuteAppFunctionCallback callback) {
-            SafeOneTimeExecuteAppFunctionCallback safeCallback =
-                    new SafeOneTimeExecuteAppFunctionCallback(callback);
-            mExecutor.execute(
-                    () -> {
-                        try {
-                            mFunction.onExecuteAppFunction(
-                                    request,
-                                    cancelSignal,
-                                    new OutcomeReceiver<
-                                            ExecuteAppFunctionResponse, AppFunctionException>() {
-                                        @Override
-                                        public void onResult(ExecuteAppFunctionResponse result) {
-                                            safeCallback.onResult(result);
-                                        }
-
-                                        @Override
-                                        public void onError(
-                                                @NonNull AppFunctionException exception) {
-                                            safeCallback.onError(exception);
-                                        }
-                                    });
-                        } catch (Exception ex) {
-                            safeCallback.onError(
-                                    new AppFunctionException(
-                                            executionExceptionToErrorCode(ex), ex.getMessage()));
-                        }
-                    });
+                                            @Override
+                                            public void onError(
+                                                    @NonNull AppFunctionException exception
+                                            ) {
+                                                safeCallback.onError(exception);
+                                            }
+                                        });
+                            } catch (Exception ex) {
+                                safeCallback.onError(
+                                        new AppFunctionException(
+                                                executionExceptionToErrorCode(ex), ex.getMessage())
+                                );
+                            }
+                        });
+            }
         }
     }
 

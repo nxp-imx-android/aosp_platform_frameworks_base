@@ -17,6 +17,7 @@
 package com.android.server.appfunctions;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
 import android.app.appfunctions.IAppFunctionExecutor;
 import android.app.appfunctions.SafeOneTimeExecuteAppFunctionCallback;
@@ -28,6 +29,8 @@ import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.SystemService;
+
+import java.util.List;
 
 /**
  * Manages the lifecycle of app functions registered at runtime cross user. Creates a per user
@@ -61,7 +64,7 @@ public final class MultiUserDynamicAppFunctionRegistry {
      * <p>This will create registry for this {@code user}.
      */
     public void onUserUnlocked(@NonNull SystemService.TargetUser user) {
-        maybePrintDebugLog("onUserUnlocked: " + user.getUserIdentifier());
+        maybePrintDebugLog("onUserUnlocked: " + user.getUserIdentifier(), null);
         synchronized (mCrossUserLock) {
             if (!mPerUserRegistrations.contains(user.getUserIdentifier())) {
                 mPerUserRegistrations.put(
@@ -76,47 +79,61 @@ public final class MultiUserDynamicAppFunctionRegistry {
      * <p>This will delete cache for {@code user}.
      */
     public void onUserStopped(@NonNull SystemService.TargetUser user) {
-        maybePrintDebugLog("onUserStopped: " + user.getUserIdentifier());
+        maybePrintDebugLog("onUserStopped: " + user.getUserIdentifier(), null);
         synchronized (mCrossUserLock) {
             mPerUserRegistrations.remove(user.getUserIdentifier());
         }
     }
 
     /**
-     * Registers an app function with the registry.
-     * @param packageName Name of the package containing the app function.
-     * @param functionIdentifier Identifier of the app function.
-     * @param session Executor of the app function.
-     * @param userHandle Handle of the user to register the app function for.
-     * @throws IllegalStateException If the app function is already registered or user was not
-     *      unlocked.
+     * Registers one or more app functions, making them available for execution for a specific user
+     *  as a single atomic operation.
+     *
+     * <p>This method associates the provided function identifiers with the client's execution
+     * session. As long as the registration is active, calls to execute these functions will be
+     * routed to the provided {@code session}.
+     *
+     * @param packageName Name of the package that owns the app functions.
+     * @param functionIdentifiers A list of unique identifiers for the app functions to register.
+     * @param executor The client's executor, an {@link IAppFunctionExecutor} binder used
+     *     to invoke the function implementation in the client's process.
+     * @param userHandle The user for whom the app functions are being registered.
+     * @throws IllegalStateException if any of the function identifiers are already registered for
+     *     this package and user, or if the specified user has not been unlocked. No
+     *     function identifiers from the list will be registered in this case.
      */
-    public void registerAppFunction(
+    public void registerAppFunctions(
             String packageName,
-            String functionIdentifier,
-            IAppFunctionExecutor session,
+            List<String> functionIdentifiers,
+            IAppFunctionExecutor executor,
             UserHandle userHandle) {
-        maybePrintDebugLog("registerAppFunction: " + packageName + "/" + functionIdentifier);
+        maybePrintDebugLog("registerAppFunction for " + packageName + " :", functionIdentifiers);
         getPerUserRegistry(userHandle)
-                .registerAppFunction(packageName, functionIdentifier, session);
+                .registerAppFunctions(packageName, functionIdentifiers, executor);
     }
 
     /**
-     * Unregisters app function with the registry.
-     * @param packageName Name of the package containing the app function.
-     * @param functionIdentifier Identifier of the app function.
-     * @param session Executor of the app function.
-     * @param userHandle Handle of the user to register the app function for.
-     * @throws IllegalStateException If {@code userHandle} was not unlocked.
+     * Unregisters one or more app functions, making them unavailable for execution.
+     *
+     * <p>This removes the association between the function identifiers and the client's execution
+     * session. If a function is not currently registered, the request to unregister it will be
+     * silently ignored.
+     *
+     * @param packageName Name of the package that owns the app functions.
+     * @param functionIdentifiers A list of identifiers for the app functions to unregister.
+     * @param executor The client's executor that was used for registration. The system
+     *     verifies this to ensure that only the original registrant can unregister the function.
+     * @param userHandle The user for whom the app functions should be unregistered.
+     * @throws IllegalStateException if the specified {@code userHandle} has not been unlocked.
      */
-    public void unregisterAppFunction(
+    public void unregisterAppFunctions(
             String packageName,
-            String functionIdentifier,
-            IAppFunctionExecutor session,
+            List<String> functionIdentifiers,
+            IAppFunctionExecutor executor,
             UserHandle userHandle) {
-        maybePrintDebugLog("unregisterAppFunction: " + packageName + "/" + functionIdentifier);
+        maybePrintDebugLog("unregisterAppFunction " + packageName + ": ", functionIdentifiers);
         getPerUserRegistry(userHandle)
-                .unregisterAppFunction(packageName, functionIdentifier, session);
+                .unregisterAppFunctions(packageName, functionIdentifiers, executor);
     }
 
     /**
@@ -162,9 +179,15 @@ public final class MultiUserDynamicAppFunctionRegistry {
         }
     }
 
-    private static void maybePrintDebugLog(String message) {
+    private static void maybePrintDebugLog(
+            @NonNull String message, @Nullable List<String> identifiers
+    ) {
         if (DEBUG) {
-            Log.d(TAG, message);
+            if (identifiers == null) {
+                Log.d(TAG, message);
+                return;
+            }
+            Log.d(TAG, message + String.join(", ", identifiers));
         }
     }
 }
