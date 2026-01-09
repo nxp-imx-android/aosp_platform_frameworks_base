@@ -25,7 +25,7 @@ import android.hardware.biometrics.IInvalidationCallback;
 import android.hardware.biometrics.ITestSession;
 import android.hardware.biometrics.ITestSessionCallback;
 import android.hardware.biometrics.BiometricEnrollmentStatusInternal;
-import android.hardware.biometrics.RedactedBiometricSensorStrengthInternal;
+import android.hardware.biometrics.StrongSensorStrengthInternal;
 import android.hardware.biometrics.PromptInfo;
 import android.hardware.biometrics.SensorPropertiesInternal;
 
@@ -76,7 +76,7 @@ interface IAuthService {
     List<BiometricEnrollmentStatusInternal> getEnrollmentStatusList(int userId, String opPackageName);
 
     // Return the current biometric sensor strengths, with those below Class-3 obscured.
-    List<RedactedBiometricSensorStrengthInternal> getBiometricSensorStrengths(String opPackageName);
+    List<StrongSensorStrengthInternal> getBiometricSensorStrengths(String opPackageName);
 
     // Register callback for when keyguard biometric eligibility changes.
     void registerEnabledOnKeyguardCallback(IBiometricEnabledOnKeyguardCallback callback);
