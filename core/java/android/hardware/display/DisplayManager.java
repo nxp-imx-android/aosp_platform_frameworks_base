@@ -758,7 +758,6 @@ public final class DisplayManager {
      *
      * @see #registerDisplayListener(Executor, long, DisplayListener)
      */
-    @FlaggedApi(Flags.FLAG_SET_BRIGHTNESS_BY_UNIT)
     public static final long EVENT_TYPE_DISPLAY_BRIGHTNESS = 1L << 5;
 
     /**
@@ -800,7 +799,6 @@ public final class DisplayManager {
      * environment). When this type of used, 0 and 100 map to the current brightness minimum and
      * maximum respectively.
      */
-    @FlaggedApi(Flags.FLAG_SET_BRIGHTNESS_BY_UNIT)
     public static final int BRIGHTNESS_UNIT_PERCENTAGE = 1;
 
     /**
@@ -1694,7 +1692,6 @@ public final class DisplayManager {
      * @param value The brightness value to set
      * @param unit The unit of the brightness value
      */
-    @FlaggedApi(Flags.FLAG_SET_BRIGHTNESS_BY_UNIT)
     @RequiresPermission(Manifest.permission.WRITE_SETTINGS)
     public void setBrightness(int displayId, float value, @BrightnessUnit int unit) {
         mGlobal.setBrightness(displayId, value, unit);
@@ -1723,7 +1720,6 @@ public final class DisplayManager {
      * @param displayId The display of which brightness value to get from.
      * @param unit The unit of the brightness value
      */
-    @FlaggedApi(Flags.FLAG_SET_BRIGHTNESS_BY_UNIT)
     public float getBrightness(int displayId, @BrightnessUnit int unit) {
         return mGlobal.getBrightness(displayId, unit);
     }
