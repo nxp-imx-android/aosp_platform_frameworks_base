@@ -184,6 +184,7 @@ import com.android.server.StorageManagerInternal;
 import com.android.server.SystemService;
 import com.android.server.am.UserState;
 import com.android.server.locksettings.LockSettingsInternal;
+import com.android.server.pm.GenericAllowlist.AllowlistStatus;
 import com.android.server.pm.UserFilter.DeathPredictor;
 import com.android.server.pm.UserManagerInternal.UserLifecycleListener;
 import com.android.server.pm.UserManagerInternal.UserRestrictionsListener;
@@ -9085,7 +9086,7 @@ public class UserManagerService extends IUserManager.Stub {
         }
 
         @Override
-        public UserActivitiesAllowlist getActivitiesAllowlist(int userId) {
+        public UserActivitiesAllowlist getActivitiesAllowlist(@UserIdInt int userId) {
             return UserManagerService.this.getActivitiesAllowlist(userId);
         }
 
@@ -9100,7 +9101,42 @@ public class UserManagerService extends IUserManager.Stub {
         }
 
         @Override
+        public void logActivityLaunchStatus(ComponentName activity, @UserIdInt int userId,
+                @AllowlistStatus int status) {
+            // TODO(b/414326600): proper implementation once metrics is designed
+            if (userId != UserHandle.USER_SYSTEM) {
+                Slogf.w(LOG_TAG, "logActivityLaunchStatus(%s, %d, %s): only supported for "
+                        + "USER_SYSTEM", ComponentName.flattenToShortString(activity), userId,
+                        GenericAllowlist.statusToString(status));
+                return;
+            }
+            if (GenericAllowlist.isAllowed(status)) {
+                mNonComplianceLogger.logLaunchedHsuActivity(activity);
+            } else {
+                mNonComplianceLogger.logBlockedHsuActivity(activity);
+            }
+        }
+
+        @Override
         public void logShownHsuNotification(StatusBarNotification sbn) {
+            mNonComplianceLogger.logShownHsuNotification(sbn);
+        }
+
+        @Override
+        public void logNotificationShownStatus(StatusBarNotification sbn, @UserIdInt int userId,
+                @AllowlistStatus int status) {
+            // TODO(b/414326600): proper implementation once metrics is designed
+            if (userId != UserHandle.USER_SYSTEM) {
+                Slogf.w(LOG_TAG, "logNotificationShownStatus(%s, %d, %s): only supported for "
+                        + "USER_SYSTEM", sbn, userId, GenericAllowlist.statusToString(status));
+                return;
+            }
+            if (!GenericAllowlist.isAllowed(status)) {
+                Slogf.w(LOG_TAG, "logNotificationShownStatus(%s, %d, %s): only supported for "
+                        + "allowed statuses", sbn,
+                        userId, GenericAllowlist.statusToString(status));
+                return;
+            }
             mNonComplianceLogger.logShownHsuNotification(sbn);
         }
 
