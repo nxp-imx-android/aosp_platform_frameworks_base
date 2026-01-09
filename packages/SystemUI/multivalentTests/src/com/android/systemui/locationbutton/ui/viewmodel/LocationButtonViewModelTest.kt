@@ -17,6 +17,7 @@ package com.android.systemui.locationbutton.ui.viewmodel
 
 import android.content.res.Configuration
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -51,8 +52,12 @@ class LocationButtonViewModelTest : SysuiTestCase() {
             val result = underTest.getButtonViewModel()
 
             assertThat(result).isNotNull()
-            assertThat(result!!.width).isEqualTo(buttonModel.width)
-            assertThat(result.height).isEqualTo(buttonModel.height)
+            assertThat(result!!.width).isEqualTo(96.dp)
+            assertThat(result.height).isEqualTo(44.dp)
+            assertThat(result.paddingLeft).isEqualTo(2.dp)
+            assertThat(result.paddingTop).isEqualTo(3.dp)
+            assertThat(result.paddingRight).isEqualTo(2.dp)
+            assertThat(result.paddingBottom).isEqualTo(3.dp)
             assertThat(result.backgroundColor).isEqualTo(buttonModel.backgroundColor)
         }
 
@@ -64,17 +69,25 @@ class LocationButtonViewModelTest : SysuiTestCase() {
         }
 
     private fun createTestButtonModel(): ButtonModel {
+        val configuration = Configuration()
+        configuration.densityDpi = 160
         return ButtonModel(
             width = 100,
             height = 50,
+            paddingLeft = 2,
+            paddingTop = 3,
+            paddingRight = 2,
+            paddingBottom = 3,
             backgroundColor = Color.Black,
             strokeColor = Color.White,
             strokeWidth = 2,
             cornerRadius = 10f,
+            pressedCornerRadius = 8f,
             iconTint = Color.White,
             textResId = 12345,
             textColor = Color.White,
-            configuration = Configuration(),
+            configuration = configuration,
+            density = 1.0f,
         )
     }
 }

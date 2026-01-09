@@ -15,13 +15,19 @@
  */
 package com.android.systemui.locationbutton.ui.compose
 
+import android.content.res.Configuration
 import android.view.View
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.absolutePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonShapes
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,16 +35,15 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.locationbutton.ui.viewmodel.LocationButtonViewModel
 import com.android.systemui.res.R
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun LocationButton(
     viewModelFactory: LocationButtonViewModel.Factory,
@@ -49,57 +54,75 @@ fun LocationButton(
     val buttonViewModel = rememberViewModel("LocationButton") { viewModelFactory.create(sessionId) }
     val viewModel = buttonViewModel.getButtonViewModel() ?: return
 
-    val context = LocalContext.current
-    val updatedContext =
-        remember(viewModel.configuration) {
-            context.createConfigurationContext(viewModel.configuration)
-        }
+    val systemContext = LocalContext.current
+    val clientLocales = viewModel.configuration.locales
 
-    val density =
-        remember(updatedContext) {
-            Density(
-                density = updatedContext.resources.displayMetrics.density,
-                fontScale = updatedContext.resources.configuration.fontScale,
-            )
+    // Only use locales from client configuration. Using densityDpi, fontScale etc. from client
+    // configuration isn't safe. Layout direction is derived from locales.
+    val context =
+        remember(clientLocales, systemContext) {
+            val configuration = Configuration(systemContext.resources.configuration)
+            configuration.setLocales(clientLocales)
+            systemContext.createConfigurationContext(configuration)
         }
 
     val layoutDirection =
-        if (updatedContext.resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL) {
+        if (context.resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL) {
             LayoutDirection.Rtl
         } else {
             LayoutDirection.Ltr
         }
 
     CompositionLocalProvider(
-        LocalContext provides updatedContext,
+        LocalContext provides context,
         LocalLayoutDirection provides layoutDirection,
-        LocalDensity provides density,
     ) {
-        val buttonWidth = with(LocalDensity.current) { viewModel.width.toDp() }
-        val buttonHeight = with(LocalDensity.current) { viewModel.height.toDp() }
-        val strokeWidth = with(LocalDensity.current) { viewModel.strokeWidth.toDp() }
-        val cornerRadius = with(density) { viewModel.cornerRadius.toDp() }
+        val contentPadding =
+            if (viewModel.textResId != null) {
+                ButtonDefaults.contentPaddingFor(viewModel.height)
+            } else {
+                PaddingValues()
+            }
 
         Button(
             onClick = onClick,
-            modifier = modifier.size(width = buttonWidth, height = buttonHeight),
-            shape = RoundedCornerShape(cornerRadius),
+            modifier =
+                modifier
+                    .absolutePadding(
+                        viewModel.paddingLeft,
+                        viewModel.paddingTop,
+                        viewModel.paddingRight,
+                        viewModel.paddingBottom,
+                    )
+                    .size(viewModel.width, viewModel.height),
+            shapes =
+                ButtonShapes(
+                    RoundedCornerShape(viewModel.cornerRadius),
+                    RoundedCornerShape(viewModel.pressedCornerRadius),
+                ),
             colors =
                 ButtonDefaults.buttonColors(
                     containerColor = viewModel.backgroundColor,
                     contentColor = viewModel.textColor,
                 ),
-            border = BorderStroke(strokeWidth, viewModel.strokeColor),
+            border = BorderStroke(viewModel.strokeWidth, viewModel.strokeColor),
+            contentPadding = contentPadding,
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_my_location),
                 contentDescription = null,
+                // requiredSize is needed to prevent squashing of Icon.
+                modifier = Modifier.requiredSize(ButtonDefaults.iconSizeFor(viewModel.height)),
                 tint = viewModel.iconTint,
             )
             viewModel.textResId?.let { textResId ->
                 Text(
                     text = stringResource(textResId),
-                    modifier = Modifier.padding(start = ButtonDefaults.IconSpacing),
+                    modifier =
+                        Modifier.padding(start = ButtonDefaults.iconSpacingFor(viewModel.height)),
+                    style = ButtonDefaults.textStyleFor(viewModel.height),
+                    maxLines = 1,
+                    softWrap = false,
                 )
             }
         }
