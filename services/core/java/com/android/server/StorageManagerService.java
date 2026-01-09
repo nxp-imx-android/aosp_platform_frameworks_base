@@ -1033,7 +1033,6 @@ class StorageManagerService extends IStorageManager.Stub
             transcodeEnabled = DeviceConfig.getBoolean(DeviceConfig.NAMESPACE_STORAGE_NATIVE_BOOT,
                     "transcode_enabled", defaultValue);
         }
-        SystemProperties.set("sys.fuse.transcode_enabled", String.valueOf(transcodeEnabled));
 
         if (transcodeEnabled) {
             LocalServices.getService(ActivityManagerInternal.class)
