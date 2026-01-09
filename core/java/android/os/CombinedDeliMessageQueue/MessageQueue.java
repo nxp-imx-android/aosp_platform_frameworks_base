@@ -1092,6 +1092,7 @@ public final class MessageQueue {
     /**
      * Resets this queue's state.
      *
+     * Caller must ensure that this doesn't race 'next' from the Looper thread.
      * @hide
      */
     public void resetForTest() {
