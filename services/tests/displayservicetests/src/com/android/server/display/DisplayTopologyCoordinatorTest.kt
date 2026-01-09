@@ -18,12 +18,17 @@ package com.android.server.display
 
 import android.hardware.display.DisplayTopology
 import android.hardware.display.DisplayTopologyGraph
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.SetFlagsRule
 import android.util.SparseArray
 import android.view.Display
 import android.view.DisplayInfo
 import com.android.server.display.feature.DisplayManagerFlags
+import com.android.server.display.feature.flags.Flags
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.kotlin.any
@@ -53,6 +58,8 @@ class DisplayTopologyCoordinatorTest {
     private val mockTopologyChangedCallback =
         mock<(android.util.Pair<DisplayTopology, DisplayTopologyGraph>) -> Unit>()
     private val mockFlags = mock<DisplayManagerFlags>()
+
+    @get:Rule val setFlagsRule = SetFlagsRule()
 
     @Before
     fun setUp() {
@@ -177,6 +184,7 @@ class DisplayTopologyCoordinatorTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_VIRTUAL_SECONDARY_DISPLAYS)
     fun addDisplay_virtual() {
         displayInfos[0].type = Display.TYPE_VIRTUAL
 
@@ -184,6 +192,27 @@ class DisplayTopologyCoordinatorTest {
 
         verify(mockTopology, never()).addDisplay(anyInt(), anyInt(), anyInt(), anyInt())
         verify(mockTopologyChangedCallback, never()).invoke(any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VIRTUAL_SECONDARY_DISPLAYS)
+    fun addDisplay_virtual_virtualConnectedDisplays() {
+        val displayInfo = displayInfos[0]
+        displayInfo.type = Display.TYPE_VIRTUAL
+        coordinator.onDisplayAdded(displayInfo)
+
+        verify(mockTopology).addDisplay(displayInfo.displayId, displayInfo.logicalWidth,
+            displayInfo.logicalHeight, displayInfo.logicalDensityDpi)
+        assertThat(displayIdToUniqueIdMapping.get(displayInfo.displayId))
+            .isEqualTo(displayInfo.uniqueId)
+        assertThat(uniqueIdToDisplayIdMapping[displayInfo.uniqueId])
+            .isEqualTo(displayInfo.displayId)
+        verify(mockTopologyChangedCallback).invoke(
+            android.util.Pair(
+                mockTopologyCopy,
+                mockTopologyGraph
+            )
+        )
     }
 
     @Test
@@ -439,6 +468,7 @@ class DisplayTopologyCoordinatorTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_VIRTUAL_SECONDARY_DISPLAYS)
     fun updateDisplay_virtual() {
         displayInfos[0].type = Display.TYPE_VIRTUAL
 
@@ -447,6 +477,13 @@ class DisplayTopologyCoordinatorTest {
         verify(mockTopology, never()).updateDisplay(anyInt(), anyInt(), anyInt(), anyInt())
         verify(mockTopologyCopy, never()).graph
         verify(mockTopologyChangedCallback, never()).invoke(any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VIRTUAL_SECONDARY_DISPLAYS)
+    fun updateDisplay_virtual_virtualConnectedDisplays() {
+        displayInfos[0].type = Display.TYPE_VIRTUAL
+        updateDisplay()
     }
 
     @Test
