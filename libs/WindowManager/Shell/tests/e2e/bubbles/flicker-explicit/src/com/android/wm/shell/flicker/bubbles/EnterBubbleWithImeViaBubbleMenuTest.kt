@@ -32,7 +32,9 @@ import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launch
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import com.android.wm.shell.flicker.bubbles.utils.RunOncePerParameterRule
 import org.junit.FixMethodOrder
+import org.junit.Ignore
 import org.junit.Rule
+import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import org.junit.runners.Parameterized
@@ -111,4 +113,8 @@ class EnterBubbleWithImeViaBubbleMenuTest(navBar: NavBar) :
 
     override val expectedImeInset
         get() = imeInset
+
+    @Ignore("Ime shows up during the transition, so the Bubble view can get occluded")
+    @Test
+    override fun appLayerResizeConsistently() {}
 }
