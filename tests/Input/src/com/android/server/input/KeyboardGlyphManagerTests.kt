@@ -159,11 +159,12 @@ class KeyboardGlyphManagerTests {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_KEYBOARD_GLYPH_MAP)
+    @EnableFlags(Flags.FLAG_KEYBOARD_GLYPH_MAP, Flags.FLAG_CONTROLLER_REMAPPING)
     fun testGlyphMapCorrectlyLoaded() {
         val glyphMap = keyboardGlyphManager.getKeyGlyphMap(DEVICE_ID)
         // Test glyph map used in this test: {@see test_glyph_map.xml}
         assertNotNull(glyphMap!!.getDrawableForKeycode(context, KeyEvent.KEYCODE_BACK))
+        assertEquals("Back", glyphMap.getDisplayNameForKeycode(KeyEvent.KEYCODE_BACK))
 
         assertNotNull(glyphMap.getDrawableForModifier(context, KeyEvent.KEYCODE_META_LEFT))
         assertNotNull(glyphMap.getDrawableForModifier(context, KeyEvent.KEYCODE_META_RIGHT))
