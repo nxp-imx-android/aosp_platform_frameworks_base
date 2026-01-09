@@ -21,6 +21,7 @@ import static android.system.OsConstants.O_ACCMODE;
 import static android.system.OsConstants.O_RDONLY;
 import static android.system.OsConstants.PROT_READ;
 
+import android.annotation.SuppressLint;
 import android.app.ondeviceintelligence.IResponseCallback;
 import android.app.ondeviceintelligence.IStreamingResponseCallback;
 import android.app.ondeviceintelligence.ITokenInfoCallback;
@@ -32,7 +33,9 @@ import android.app.ondeviceintelligence.TokenInfo;
 import android.database.CursorWindow;
 import android.graphics.Bitmap;
 import android.os.BadParcelableException;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Flags;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
 import android.os.PersistableBundle;
@@ -356,12 +359,13 @@ public class BundleUtil {
                 (value instanceof Boolean) || (value instanceof boolean[]);
     }
 
+    @SuppressLint("NewApi")
     private static void ensureValidBundle(Bundle bundle) {
         if (bundle == null) {
             throw new IllegalArgumentException("Request passed is expected to be non-null");
         }
 
-        if (bundle.hasBinders() != Bundle.STATUS_BINDERS_NOT_PRESENT) {
+        if (Flags.enableHasBinders() && bundle.hasBinders() != Bundle.STATUS_BINDERS_NOT_PRESENT) {
             throw new BadParcelableException("Bundle should not contain IBinder objects.");
         }
     }
