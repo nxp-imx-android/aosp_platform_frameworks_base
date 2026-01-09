@@ -38,6 +38,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.OutcomeReceiver;
 import android.os.RemoteException;
+import android.os.Trace;
 import android.util.Log;
 import android.util.Size;
 import android.view.Display;
@@ -73,6 +74,7 @@ import java.util.function.Consumer;
 public final class ComputerControlSession implements AutoCloseable {
 
     private static final String TAG = ComputerControlSession.class.getSimpleName();
+    private static final int TRACE_COOKIE_REQUEST_SCREENSHOT = 0;
 
     /** Overall timeout for a screenshot request to complete. */
     private static final int SCREENSHOT_TIMEOUT_MS = 5000;
@@ -208,6 +210,8 @@ public final class ComputerControlSession implements AutoCloseable {
     @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
     public @interface Action {
     }
+
+    private final String mTraceTrack = "ComputerControlSession#" + System.identityHashCode(this);
 
     /** Auxiliary thread for any client-side work related to the computer control session. */
     private final HandlerThread mHandlerThread;
@@ -458,7 +462,8 @@ public final class ComputerControlSession implements AutoCloseable {
             @Nullable CancellationSignal cancellationSignal) {
         Objects.requireNonNull(executor, "Executor must not be null");
         Objects.requireNonNull(receiver, "OutcomeReceiver must not be null");
-        final var callback = new ScreenshotCallbackRecord(executor, receiver, cancellationSignal);
+        final var callback =
+                new ScreenshotCallbackRecord(mTraceTrack, executor, receiver, cancellationSignal);
 
         synchronized (mLifecycle) {
             if (!(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {
@@ -810,13 +815,20 @@ public final class ComputerControlSession implements AutoCloseable {
     }
 
     /** Record of a single screenshot request callback. */
-    private record ScreenshotCallbackRecord(@CallbackExecutor Executor executor,
-                                            OutcomeReceiver<Image, ScreenshotException> receiver,
-                                            @Nullable CancellationSignal cancellationSignal) {
+    private record ScreenshotCallbackRecord(
+            String traceTrack,
+            @CallbackExecutor Executor executor,
+            OutcomeReceiver<Image, ScreenshotException> receiver,
+            @Nullable CancellationSignal cancellationSignal) {
+        ScreenshotCallbackRecord {
+            Trace.asyncTraceForTrackBegin(traceTrack, "ScreenshotCallbackRecord",
+                    TRACE_COOKIE_REQUEST_SCREENSHOT);
+        }
 
         /** Convenience method used to fire the callback on its executor. */
         void fire(Consumer<OutcomeReceiver<Image, ScreenshotException>> consumer) {
             executor.execute(() -> consumer.accept(receiver));
+            Trace.asyncTraceForTrackEnd(traceTrack, TRACE_COOKIE_REQUEST_SCREENSHOT);
         }
     }
 
