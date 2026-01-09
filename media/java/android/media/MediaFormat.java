@@ -17,6 +17,7 @@
 package android.media;
 
 import static android.media.audio.Flags.FLAG_IAMF_DEFINITIONS_API;
+import static android.media.codec.Flags.FLAG_AGTM_METADATA;
 import static android.media.codec.Flags.FLAG_APV_SUPPORT;
 import static android.media.codec.Flags.FLAG_AUDIO_MIX_PRESENTATION_SUPPORT;
 import static android.media.codec.Flags.FLAG_FLIP_SUPPORT;
@@ -1693,6 +1694,15 @@ public final class MediaFormat {
      * @see MediaCodec#PARAMETER_KEY_HDR10_PLUS_INFO
      */
     public static final String KEY_HDR10_PLUS_INFO = "hdr10-plus-info";
+
+    /**
+     * An optional key describing the eclipsa video metadata of the video content.
+     *
+     * The associated value is a ByteBuffer containing eclipsa video metadata conforming to
+     * the user_data_registered_itu_t_t35() syntax of SEI message for ST 2094-50.
+     */
+    @FlaggedApi(FLAG_AGTM_METADATA)
+    public static final String KEY_HDR_ECLIPSA_VIDEO_INFO = "hdr-eclipsa-video-info";
 
     /**
      * An optional key describing the opto-electronic transfer function
