@@ -164,6 +164,7 @@ class RootTaskDesksOrganizer(
     private fun createDeskRoot(displayId: Int, userId: Int?, callback: OnCreateCallback) {
         logV("createDeskRoot in display: %d for user: %d", displayId, userId)
         createDeskRootRequests += CreateDeskRequest(displayId, userId, callback)
+
         val taskProperties =
             TaskPropertiesRequest()
                 .setReparentOnDisplayRemoval(
@@ -176,10 +177,9 @@ class RootTaskDesksOrganizer(
                 .setWindowingMode(WINDOWING_MODE_FREEFORM)
                 .setTaskPropertiesRequest(taskProperties)
                 .build()
-        val taskAppearedInfo = shellTaskOrganizer.createTask(params, this)
+        val token = shellTaskOrganizer.createTask(params, this)
 
-        taskAppearedInfo?.let {
-            val token = taskAppearedInfo.taskInfo.token
+        token?.let {
             val wct = WindowContainerTransaction()
             if (Flags.enableBackNavigationDesktopAppNoMinimize()) {
                 wct.setInterceptBackPressedOnTaskRoot(token, /* interceptBackPressed= */ true)

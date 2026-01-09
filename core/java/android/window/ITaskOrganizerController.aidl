@@ -47,9 +47,9 @@ interface ITaskOrganizerController {
     * It may be removed using {@link #deleteTask} or through
     * {@link WindowContainerTransaction#removeRootTask}.
     *
-    * @return the TaskAppearedInfo of the newly created Task.
+    * @return the WindowContainerToken of the newly created Task.
     */
-    @nullable TaskAppearedInfo createTask(in TaskCreationParams params);
+    @nullable WindowContainerToken createTask(in TaskCreationParams params);
 
     /** Deletes a persistent Task. */
     boolean deleteTask(in WindowContainerToken task);
