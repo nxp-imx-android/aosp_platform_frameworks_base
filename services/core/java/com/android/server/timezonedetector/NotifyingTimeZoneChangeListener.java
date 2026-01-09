@@ -22,12 +22,16 @@ import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static android.content.Context.RECEIVER_NOT_EXPORTED;
 import static android.provider.Settings.ACTION_DATE_SETTINGS;
 
+import static com.android.internal.util.FrameworkStatsLog.AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__TIME_ZONE_SOURCE_LOCATION;
+import static com.android.internal.util.FrameworkStatsLog.AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__TIME_ZONE_SOURCE_TELEPHONY;
+import static com.android.internal.util.FrameworkStatsLog.AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__TIME_ZONE_SOURCE_FUSED_SIGNALS;
+import static com.android.internal.util.FrameworkStatsLog.AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__UNSPECIFIED;
+import static com.android.server.SystemTimeZone.TIME_ZONE_CONFIDENCE_LOW;
 import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.ORIGIN_FUSED;
 import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.ORIGIN_LOCATION;
 import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.ORIGIN_MANUAL;
 import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.ORIGIN_TELEPHONY;
 import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.ORIGIN_UNKNOWN;
-import static com.android.server.SystemTimeZone.TIME_ZONE_CONFIDENCE_LOW;
 
 import android.annotation.DurationMillisLong;
 import android.annotation.IntDef;
@@ -40,10 +44,12 @@ import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.timezonedetector.TelephonyTimeZoneSuggestion;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.icu.text.DateFormat;
 import android.icu.text.SimpleDateFormat;
@@ -57,7 +63,9 @@ import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.notification.SystemNotificationChannels;
+import com.android.internal.util.FrameworkStatsLog;
 import com.android.server.LocalServices;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -123,6 +131,7 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
     private final NotificationManager mNotificationManager;
     private final ActivityManagerInternal mActivityManagerInternal;
     private final KeyguardManager mKeyguardManager;
+    private final PackageManager mPackageManager;
 
     // For scheduling callbacks
     private final Handler mHandler;
@@ -193,7 +202,8 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
                         serviceConfigAccessor,
                         context.getSystemService(NotificationManager.class),
                         environment,
-                        context.getSystemService(KeyguardManager.class));
+                        context.getSystemService(KeyguardManager.class),
+                        context.getPackageManager());
 
         // Pretend there was an update to initialize configuration.
         changeTracker.handleConfigurationUpdate();
@@ -208,7 +218,8 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
             ServiceConfigAccessor serviceConfigAccessor,
             NotificationManager notificationManager,
             @NonNull Environment environment,
-            KeyguardManager keyguardManager) {
+            KeyguardManager keyguardManager,
+            PackageManager packageManager) {
         mHandler = Objects.requireNonNull(handler);
         mContext = Objects.requireNonNull(context);
         mServiceConfigAccessor = Objects.requireNonNull(serviceConfigAccessor);
@@ -218,6 +229,7 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
         mNotificationManager = notificationManager;
         mEnvironment = Objects.requireNonNull(environment);
         mKeyguardManager = keyguardManager;
+        mPackageManager = packageManager;
     }
 
     @RequiresPermission("android.permission.INTERACT_ACROSS_USERS_FULL")
@@ -342,7 +354,10 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
      */
     @GuardedBy("mTimeZoneChangeRecord")
     private void markChangeAsRejected(
-            int changeEventId, @UserIdInt int userId, @SignalType int signalType) {
+            int changeEventId,
+            @UserIdInt int userId,
+            @SignalType int signalType,
+            @NonNull TimeZoneChangeEvent manualChangeEvent) {
         if (!isUserIdCurrentUser(userId)) {
             return;
         }
@@ -359,6 +374,13 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
             }
             lastTimeZoneChangeRecord.setRejected(signalType);
 
+            if (android.timezone.flags.Flags.enableAutomaticTimeZoneRejectionLogging()) {
+                logRejectedChange(
+                        lastTimeZoneChangeRecord.getEvent(),
+                        manualChangeEvent,
+                        getPrimaryLocationTimeZoneProviderPackageUid(mContext, mPackageManager));
+            }
+
             switch (lastTimeZoneChangeRecord.getEvent().getOrigin()) {
                 case ORIGIN_TELEPHONY:
                     mRejectedTelephonyChanges += 1;
@@ -373,6 +395,131 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
                     mRejectedUnknownChanges += 1;
                     break;
             }
+        }
+    }
+
+    /**
+     * Logs a time zone change rejection event to statsd.
+     *
+     * <p>This method is marked as visible for testing because it is difficult to trigger a time
+     * zone change rejection in a test environment.
+     */
+    @VisibleForTesting
+    void logRejectedChange(
+            @NonNull TimeZoneChangeEvent autoEvent,
+            @NonNull TimeZoneChangeEvent manualEvent,
+            int locationTimeZoneProviderUid) {
+
+        int source;
+        switch (autoEvent.getOrigin()) {
+            case ORIGIN_LOCATION:
+                source =
+                        AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__TIME_ZONE_SOURCE_LOCATION;
+                break;
+            case ORIGIN_TELEPHONY:
+                source =
+                        AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__TIME_ZONE_SOURCE_TELEPHONY;
+                break;
+            case ORIGIN_FUSED:
+                source =
+                        AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__TIME_ZONE_SOURCE_FUSED_SIGNALS;
+                break;
+            default:
+                source =
+                        AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED__SOURCE__UNSPECIFIED;
+                break;
+        }
+
+        FrameworkStatsLog.write(
+                /* atomId= */ FrameworkStatsLog.
+                                    AUTOMATIC_TIME_ZONE_CHANGE_REVERTED_BY_USER_REPORTED,
+                /* source= */ source,
+                /* mcc= */ getMcc(autoEvent.getTelephonySuggestion()),
+                /* mnc= */ getMnc(autoEvent.getTelephonySuggestion()),
+                /* nitz_offset_seconds= */ getNitzOffsetSeconds(autoEvent.getTelephonySuggestion()),
+                /* nitz_dst_offset_seconds= */ getNitzDstOffsetSeconds(
+                        autoEvent.getTelephonySuggestion()),
+                /* previous_time_zone= */ autoEvent.getOldZoneId(),
+                /* rejected_automatic_time_zone= */ autoEvent.getNewZoneId(),
+                /* manual_time_zone= */ manualEvent.getNewZoneId(),
+                /* country_code= */ "", // not available yet
+                /* tzdb_version= */ TimeZone.getTZDataVersion(),
+                /* location_time_zone_provider_uid= */ locationTimeZoneProviderUid);
+
+        Log.i(
+                TAG,
+                "Time zone change rejected: source="
+                        + source
+                        + ", previous_time_zone="
+                        + autoEvent.getOldZoneId()
+                        + ", rejected_automatic_time_zone="
+                        + autoEvent.getNewZoneId()
+                        + ", manual_time_zone="
+                        + manualEvent.getNewZoneId()
+                        + ", location_time_zone_provider='"
+                        + locationTimeZoneProviderUid
+                        + "'"
+                        + ", mcc="
+                        + getMcc(autoEvent.getTelephonySuggestion())
+                        + ", mnc="
+                        + getMnc(autoEvent.getTelephonySuggestion())
+                        + ", nitz_offset_seconds="
+                        + getNitzOffsetSeconds(autoEvent.getTelephonySuggestion())
+                        + ", nitz_dst_offset_seconds="
+                        + getNitzDstOffsetSeconds(autoEvent.getTelephonySuggestion())
+                        + ", tzdb_version="
+                        + TimeZone.getTZDataVersion());
+    }
+
+    @NonNull
+    private static String getMcc(TelephonyTimeZoneSuggestion suggestion) {
+        if (suggestion == null
+                || suggestion.getTelephonySignal() == null
+                || suggestion.getTelephonySignal().getMcc() == null) {
+            return "";
+        }
+        return suggestion.getTelephonySignal().getMcc();
+    }
+
+    @NonNull
+    private static String getMnc(TelephonyTimeZoneSuggestion suggestion) {
+        if (suggestion == null || suggestion.getTelephonySignal() == null
+                || suggestion.getTelephonySignal().getMnc() == null) {
+            return "";
+        }
+        return suggestion.getTelephonySignal().getMnc();
+    }
+
+    private static int getNitzOffsetSeconds(TelephonyTimeZoneSuggestion suggestion) {
+        if (suggestion == null || suggestion.getTelephonySignal() == null
+                || suggestion.getTelephonySignal().getNitzSignal() == null) {
+            return -1;
+        }
+        return suggestion.getTelephonySignal().getNitzSignal().getZoneOffset() / 1000;
+    }
+
+    private static int getNitzDstOffsetSeconds(TelephonyTimeZoneSuggestion suggestion) {
+        if (suggestion == null || suggestion.getTelephonySignal() == null
+                || suggestion.getTelephonySignal().getNitzSignal() == null
+                || suggestion.getTelephonySignal().getNitzSignal().getDstOffset() == null) {
+            // If the NITZ DST signal is not available, device is expected to assume that it is
+            // equal to zero.
+            return 0;
+        }
+        return suggestion.getTelephonySignal().getNitzSignal().getDstOffset() / 1000;
+    }
+
+    private static int getPrimaryLocationTimeZoneProviderPackageUid(Context context,
+             PackageManager packageManager) {
+        String packageName =
+                context.getResources()
+                        .getString(
+                                com.android.internal.R.string
+                                        .config_primaryLocationTimeZoneProviderPackageName);
+        try {
+            return packageManager.getApplicationInfo(packageName, 0).uid;
+        } catch (Resources.NotFoundException | PackageManager.NameNotFoundException e) {
+            return -1;
         }
     }
 
@@ -398,7 +545,8 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
                         markChangeAsRejected(
                                 lastTimeZoneChangeRecord.getId(),
                                 changeEvent.getUserId(),
-                                SIGNAL_TYPE_HEURISTIC);
+                                SIGNAL_TYPE_HEURISTIC,
+                                changeEvent);
                     }
                 }
 
@@ -468,6 +616,7 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
                                 /* newZoneId= */ changeEvent.getOldZoneId(),
                                 /* oldConfidence= */ lastChangeEvent.getNewConfidence(),
                                 /* newConfidence= */ TIME_ZONE_CONFIDENCE_LOW,
+                                /* telephonySuggestion= */ lastChangeEvent.getTelephonySuggestion(),
                                 "Synthetic");
                 TimeZoneChangeRecord syntheticTrackedChangeEvent =
                         new TimeZoneChangeRecord(changeEventId, syntheticChangeEvent);
