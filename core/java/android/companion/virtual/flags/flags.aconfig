@@ -271,3 +271,13 @@ flag {
     description: "API for setting the view behavior for virtual input devices"
     bug: "434903682"
 }
+
+flag {
+    name: "audio_focus_environments"
+    namespace: "virtual_devices"
+    description: "Create separate audio focus environments per virtual device with custom audio policy"
+    bug: "433996961"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
