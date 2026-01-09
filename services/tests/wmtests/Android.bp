@@ -25,6 +25,7 @@ java_library {
     srcs: [":wmtests-support-sources"],
     static_libs: [
         "com.android.window.flags.window-aconfig-java",
+        "com.android.server.flags.services-aconfig-java",
         "kotlin-stdlib",
         "services.core",
     ],
@@ -100,6 +101,7 @@ android_test {
         "androidx.test.rules",
         "androidx.test.runner",
         "com.android.window.flags.window-aconfig-java",
+        "com.android.server.flags.services-aconfig-java",
         "flag-junit",
         "flickerlib",
         "frameworks-base-testutils",

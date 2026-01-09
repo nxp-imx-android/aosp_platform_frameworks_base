@@ -21,3 +21,10 @@ flag {
     description: "Remove the DynamicCodeLoggingService from the platform"
     bug: "403391929"
 }
+
+flag {
+    name: "reset_keyguard_first_state_dispatch_on_service_connected"
+    namespace: "wear_services"
+    description: "Reset the first keyguard state dispatch flag when KeyguardService is connected"
+    bug: "459721172"
+}
