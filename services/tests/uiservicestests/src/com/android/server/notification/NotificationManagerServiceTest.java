@@ -52,15 +52,9 @@ import static android.app.NotificationChannel.PROMOTIONS_ID;
 import static android.app.NotificationChannel.RECS_ID;
 import static android.app.NotificationChannel.SOCIAL_MEDIA_ID;
 import static android.app.NotificationChannel.USER_LOCKED_ALLOW_BUBBLE;
-import static android.app.NotificationManager.ACTION_AUTOMATIC_ZEN_RULE_STATUS_CHANGED;
-import static android.app.NotificationManager.ACTION_EFFECTS_SUPPRESSOR_CHANGED;
-import static android.app.NotificationManager.ACTION_INTERRUPTION_FILTER_CHANGED;
-import static android.app.NotificationManager.AUTOMATIC_RULE_STATUS_ACTIVATED;
 import static android.app.NotificationManager.BUBBLE_PREFERENCE_ALL;
 import static android.app.NotificationManager.BUBBLE_PREFERENCE_NONE;
 import static android.app.NotificationManager.BUBBLE_PREFERENCE_SELECTED;
-import static android.app.NotificationManager.EXTRA_AUTOMATIC_ZEN_RULE_ID;
-import static android.app.NotificationManager.EXTRA_AUTOMATIC_ZEN_RULE_STATUS;
 import static android.app.NotificationManager.EXTRA_BLOCKED_STATE;
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 import static android.app.NotificationManager.IMPORTANCE_HIGH;
@@ -118,9 +112,6 @@ import static android.service.notification.Adjustment.TYPE_CONTENT_RECOMMENDATIO
 import static android.service.notification.Adjustment.TYPE_NEWS;
 import static android.service.notification.Adjustment.TYPE_PROMOTION;
 import static android.service.notification.Adjustment.TYPE_SOCIAL_MEDIA;
-import static android.service.notification.Condition.SOURCE_CONTEXT;
-import static android.service.notification.Condition.SOURCE_USER_ACTION;
-import static android.service.notification.Condition.STATE_TRUE;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_BITMAP_OFFLOADING;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT;
@@ -131,9 +122,6 @@ import static android.service.notification.Flags.splitSoundVibrationForNotificat
 import static android.service.notification.NotificationListenerService.FLAG_FILTER_TYPE_ALERTING;
 import static android.service.notification.NotificationListenerService.FLAG_FILTER_TYPE_CONVERSATIONS;
 import static android.service.notification.NotificationListenerService.FLAG_FILTER_TYPE_ONGOING;
-import static android.service.notification.NotificationListenerService.HINT_HOST_DISABLE_CALL_EFFECTS;
-import static android.service.notification.NotificationListenerService.HINT_HOST_DISABLE_EFFECTS;
-import static android.service.notification.NotificationListenerService.HINT_HOST_DISABLE_NOTIFICATION_EFFECTS;
 import static android.service.notification.NotificationListenerService.REASON_CANCEL;
 import static android.service.notification.NotificationListenerService.REASON_LOCKDOWN;
 import static android.service.notification.NotificationListenerService.Ranking.USER_SENTIMENT_NEGATIVE;
@@ -158,7 +146,6 @@ import static com.android.server.notification.NotificationRecordLogger.Notificat
 import static com.android.server.notification.NotificationRecordLogger.NotificationReportedEvent.NOTIFICATION_POSTED;
 import static com.android.server.notification.NotificationRecordLogger.NotificationReportedEvent.NOTIFICATION_UPDATED;
 
-import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
@@ -177,7 +164,6 @@ import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.any;
@@ -211,7 +197,6 @@ import android.app.ActivityManagerInternal;
 import android.app.AlarmManager;
 import android.app.AppLockInternal;
 import android.app.AppOpsManager;
-import android.app.AutomaticZenRule;
 import android.app.IActivityManager;
 import android.app.ICallNotificationEventCallback;
 import android.app.INotificationManager;
@@ -224,7 +209,6 @@ import android.app.Notification.MessagingStyle.Message;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
-import android.app.NotificationManager.Policy;
 import android.app.PendingIntent;
 import android.app.Person;
 import android.app.RemoteInput;
@@ -258,7 +242,6 @@ import android.content.pm.ModuleInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ParceledListSlice;
 import android.content.pm.ResolveInfo;
-import android.content.pm.ServiceInfo;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutServiceInternal;
 import android.content.pm.UserInfo;
@@ -298,7 +281,6 @@ import android.platform.test.rule.LimitDevicesRule;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.service.notification.Adjustment;
-import android.service.notification.Condition;
 import android.service.notification.ConversationChannelWrapper;
 import android.service.notification.DeviceEffectsApplier;
 import android.service.notification.INotificationListener;
@@ -308,7 +290,6 @@ import android.service.notification.NotificationRankingUpdate;
 import android.service.notification.NotificationStats;
 import android.service.notification.StatusBarNotification;
 import android.service.notification.ZenModeConfig;
-import android.service.notification.ZenPolicy;
 import android.service.personalcontext.hint.NotificationEvent;
 import android.telecom.TelecomManager;
 import android.testing.TestWithLooperRule;
@@ -362,7 +343,6 @@ import com.android.server.notification.NotificationManagerService.NotificationAs
 import com.android.server.notification.NotificationManagerService.NotificationListeners;
 import com.android.server.notification.NotificationManagerService.PostNotificationTracker;
 import com.android.server.notification.NotificationManagerService.PostNotificationTrackerFactory;
-import com.android.server.notification.ZenModeHelper.Callback;
 import com.android.server.personalcontext.PersonalContextManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.policy.PermissionPolicyInternal;
@@ -389,7 +369,6 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatcher;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -408,7 +387,6 @@ import java.io.FileOutputStream;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -434,11 +412,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
             NotificationManagerService.class.getSimpleName() + ".TIMEOUT";
     private static final String SCHEME_TIMEOUT = "timeout";
     private static final String REDACTED_TEXT = "redacted text";
-
-    private static final AutomaticZenRule SOME_ZEN_RULE =
-            new AutomaticZenRule.Builder("rule", Uri.parse("uri"))
-                    .setOwner(new ComponentName("pkg", "cls"))
-                    .build();
 
     private static final int MAX_CHANNELS_CREATED_BY_NLS_FOR_TESTING = 10;
 
@@ -650,8 +623,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
-        return FlagsParameterization.allCombinationsOf(android.service.notification.Flags
-                .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH);
+        return FlagsParameterization.allCombinationsOf();
     }
 
     public NotificationManagerServiceTest(FlagsParameterization flags) {
@@ -5682,7 +5654,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         new Thread(() -> {
             try {
                 synchronized (this) {
-                    wait(5000);
+                    wait(1000);
                 }
                 mService.createNotificationChannelGroup(mPkg, mUid,
                         new NotificationChannelGroup("new", "new group"), true, false);
@@ -7137,22 +7109,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    public void testSetDndAccessForUser() throws Exception {
-        UserHandle user = UserHandle.of(mContext.getUserId() + 10);
-        ComponentName c = ComponentName.unflattenFromString("package/Component");
-        mBinderService.setNotificationPolicyAccessGrantedForUser(
-                c.getPackageName(), user.getIdentifier(), true);
-
-        verify(mContext, times(1)).sendBroadcastAsUser(any(), eq(user), any());
-        verify(mConditionProviders, times(1)).setPackageOrComponentEnabled(
-                c.getPackageName(), user.getIdentifier(), true, true);
-        verify(mAssistants, never()).setPackageOrComponentEnabled(
-                any(), anyInt(), anyBoolean(), anyBoolean(), anyBoolean());
-        verify(mListeners, never()).setPackageOrComponentEnabled(
-                any(), anyInt(), anyBoolean(), anyBoolean());
-    }
-
-    @Test
     public void testSetListenerAccess() throws Exception {
         ComponentName c = ComponentName.unflattenFromString("package/Component");
         mBinderService.setNotificationListenerAccessGranted(c, true, true);
@@ -7317,20 +7273,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    public void testSetDndAccess() throws Exception {
-        ComponentName c = ComponentName.unflattenFromString("package/Component");
-
-        mBinderService.setNotificationPolicyAccessGranted(c.getPackageName(), true);
-
-        verify(mConditionProviders, times(1)).setPackageOrComponentEnabled(
-                c.getPackageName(), mContext.getUserId(), true, true);
-        verify(mAssistants, never()).setPackageOrComponentEnabled(
-                any(), anyInt(), anyBoolean(), anyBoolean(), anyBoolean());
-        verify(mListeners, never()).setPackageOrComponentEnabled(
-                any(), anyInt(), anyBoolean(), anyBoolean());
-    }
-
-    @Test
     public void testSetListenerAccess_onLowRam() throws Exception {
         when(mActivityManager.isLowRamDevice()).thenReturn(true);
         ComponentName c = ComponentName.unflattenFromString("package/Component");
@@ -7355,19 +7297,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         when(mUm.getEnabledProfiles(ui.id)).thenReturn(uis);
 
         mBinderService.setNotificationAssistantAccessGranted(c, true);
-
-        verify(mListeners).migrateToXml();
-        verify(mConditionProviders).setPackageOrComponentEnabled(
-                anyString(), anyInt(), anyBoolean(), anyBoolean());
-        verify(mAssistants).migrateToXml();
-        verify(mAssistants).resetDefaultAssistantsIfNecessary();
-    }
-
-    @Test
-    public void testSetDndAccess_onLowRam() throws Exception {
-        when(mActivityManager.isLowRamDevice()).thenReturn(true);
-        ComponentName c = ComponentName.unflattenFromString("package/Component");
-        mBinderService.setNotificationPolicyAccessGranted(c.getPackageName(), true);
 
         verify(mListeners).migrateToXml();
         verify(mConditionProviders).setPackageOrComponentEnabled(
@@ -7411,22 +7340,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 c.flattenToString(), ui.id, false, true);
         verify(mAssistants, times(1)).setPackageOrComponentEnabled(
                 c.flattenToString(), ui.id, true, true, true);
-    }
-
-    @Test
-    public void testSetDndAccess_doesNothingOnLowRam_exceptWatch() throws Exception {
-        when(mPackageManagerClient.hasSystemFeature(FEATURE_WATCH)).thenReturn(true);
-        when(mActivityManager.isLowRamDevice()).thenReturn(true);
-        ComponentName c = ComponentName.unflattenFromString("package/Component");
-
-        mBinderService.setNotificationPolicyAccessGranted(c.getPackageName(), true);
-
-        verify(mListeners, never()).setPackageOrComponentEnabled(
-                anyString(), anyInt(), anyBoolean(), anyBoolean());
-        verify(mConditionProviders, times(1)).setPackageOrComponentEnabled(
-                c.getPackageName(), mContext.getUserId(), true, true);
-        verify(mAssistants, never()).setPackageOrComponentEnabled(
-                any(), anyInt(), anyBoolean(), anyBoolean(), anyBoolean());
     }
 
     @Test
@@ -8112,15 +8025,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         verify(mBrLogger).logItemsRestored(DATA_TYPE_ZEN_CONFIG, 1);
         verify(mBrLogger, never())
                 .logItemsRestoreFailed(eq(DATA_TYPE_ZEN_CONFIG), anyInt(), anyString());
-    }
-
-    @Test
-    public void testLocaleChangedCallsUpdateDefaultZenModeRules() throws Exception {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        mService.mLocaleChangeReceiver.onReceive(mContext,
-                new Intent(Intent.ACTION_LOCALE_CHANGED));
-
-        verify(zenModeHelper).updateZenRulesOnLocaleChange();
     }
 
     private void simulateNotificationTimeout(String notificationKey) {
@@ -9417,121 +9321,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
         verify(visitor).accept(eq(actionIcon.getUri()));
         verify(visitor).accept(eq(wearActionIcon.getUri()));
-    }
-
-    @Test
-    public void testSetNotificationPolicy_preP_setOldFields() {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        NotificationManager.Policy userPolicy =
-                new NotificationManager.Policy(0, 0, 0, SUPPRESSED_EFFECT_BADGE);
-        when(zenModeHelper.getNotificationPolicy(any())).thenReturn(userPolicy);
-
-        NotificationManager.Policy appPolicy = new NotificationManager.Policy(0, 0, 0,
-                SUPPRESSED_EFFECT_SCREEN_ON | SUPPRESSED_EFFECT_SCREEN_OFF);
-
-        int expected = SUPPRESSED_EFFECT_BADGE
-                | SUPPRESSED_EFFECT_SCREEN_ON | SUPPRESSED_EFFECT_SCREEN_OFF
-                | SUPPRESSED_EFFECT_PEEK | SUPPRESSED_EFFECT_LIGHTS
-                | SUPPRESSED_EFFECT_FULL_SCREEN_INTENT;
-        int actual = mService.calculateSuppressedVisualEffects(appPolicy, userPolicy, O_MR1);
-
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testSetNotificationPolicy_preP_setNewFields() {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        NotificationManager.Policy userPolicy =
-                new NotificationManager.Policy(0, 0, 0, SUPPRESSED_EFFECT_BADGE);
-        when(zenModeHelper.getNotificationPolicy(any())).thenReturn(userPolicy);
-
-        NotificationManager.Policy appPolicy = new NotificationManager.Policy(0, 0, 0,
-                SUPPRESSED_EFFECT_NOTIFICATION_LIST);
-
-        int expected = SUPPRESSED_EFFECT_BADGE;
-        int actual = mService.calculateSuppressedVisualEffects(appPolicy, userPolicy, O_MR1);
-
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testSetNotificationPolicy_preP_setOldNewFields() {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        NotificationManager.Policy userPolicy =
-                new NotificationManager.Policy(0, 0, 0, SUPPRESSED_EFFECT_BADGE);
-        when(zenModeHelper.getNotificationPolicy(any())).thenReturn(userPolicy);
-
-        NotificationManager.Policy appPolicy = new NotificationManager.Policy(0, 0, 0,
-                SUPPRESSED_EFFECT_SCREEN_ON | SUPPRESSED_EFFECT_STATUS_BAR);
-
-        int expected =
-                SUPPRESSED_EFFECT_BADGE | SUPPRESSED_EFFECT_SCREEN_ON | SUPPRESSED_EFFECT_PEEK;
-        int actual = mService.calculateSuppressedVisualEffects(appPolicy, userPolicy, O_MR1);
-
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testSetNotificationPolicy_P_setOldFields() {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        NotificationManager.Policy userPolicy =
-                new NotificationManager.Policy(0, 0, 0, SUPPRESSED_EFFECT_BADGE);
-        when(zenModeHelper.getNotificationPolicy(any())).thenReturn(userPolicy);
-
-        NotificationManager.Policy appPolicy = new NotificationManager.Policy(0, 0, 0,
-                SUPPRESSED_EFFECT_SCREEN_ON | SUPPRESSED_EFFECT_SCREEN_OFF);
-
-        int expected = SUPPRESSED_EFFECT_SCREEN_ON | SUPPRESSED_EFFECT_SCREEN_OFF
-                | SUPPRESSED_EFFECT_PEEK | SUPPRESSED_EFFECT_AMBIENT
-                | SUPPRESSED_EFFECT_LIGHTS | SUPPRESSED_EFFECT_FULL_SCREEN_INTENT;
-        int actual = mService.calculateSuppressedVisualEffects(appPolicy, userPolicy, P);
-
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testSetNotificationPolicy_P_setNewFields() {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        NotificationManager.Policy userPolicy =
-                new NotificationManager.Policy(0, 0, 0, SUPPRESSED_EFFECT_BADGE);
-        when(zenModeHelper.getNotificationPolicy(any())).thenReturn(userPolicy);
-
-        NotificationManager.Policy appPolicy = new NotificationManager.Policy(0, 0, 0,
-                SUPPRESSED_EFFECT_NOTIFICATION_LIST | SUPPRESSED_EFFECT_AMBIENT
-                        | SUPPRESSED_EFFECT_LIGHTS | SUPPRESSED_EFFECT_FULL_SCREEN_INTENT);
-
-        int expected = SUPPRESSED_EFFECT_NOTIFICATION_LIST | SUPPRESSED_EFFECT_SCREEN_OFF
-                | SUPPRESSED_EFFECT_AMBIENT | SUPPRESSED_EFFECT_LIGHTS
-                | SUPPRESSED_EFFECT_FULL_SCREEN_INTENT;
-        int actual = mService.calculateSuppressedVisualEffects(appPolicy, userPolicy, P);
-
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testSetNotificationPolicy_P_setOldNewFields() {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        NotificationManager.Policy userPolicy =
-                new NotificationManager.Policy(0, 0, 0, SUPPRESSED_EFFECT_BADGE);
-        when(zenModeHelper.getNotificationPolicy(any())).thenReturn(userPolicy);
-
-        NotificationManager.Policy appPolicy = new NotificationManager.Policy(0, 0, 0,
-                SUPPRESSED_EFFECT_SCREEN_ON | SUPPRESSED_EFFECT_STATUS_BAR);
-
-        int expected =  SUPPRESSED_EFFECT_STATUS_BAR;
-        int actual = mService.calculateSuppressedVisualEffects(appPolicy, userPolicy, P);
-
-        assertEquals(expected, actual);
-
-        appPolicy = new NotificationManager.Policy(0, 0, 0,
-                SUPPRESSED_EFFECT_SCREEN_ON | SUPPRESSED_EFFECT_AMBIENT
-                        | SUPPRESSED_EFFECT_LIGHTS | SUPPRESSED_EFFECT_FULL_SCREEN_INTENT);
-
-        expected =  SUPPRESSED_EFFECT_SCREEN_OFF | SUPPRESSED_EFFECT_AMBIENT
-                | SUPPRESSED_EFFECT_LIGHTS | SUPPRESSED_EFFECT_FULL_SCREEN_INTENT;
-        actual = mService.calculateSuppressedVisualEffects(appPolicy, userPolicy, P);
-
-        assertEquals(expected, actual);
     }
 
     @Test
@@ -12341,628 +12130,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
         assertEquals(IMPORTANCE_LOW, r.getAssistantImportance());
         assertEquals(USER_SENTIMENT_NEUTRAL, r.getUserSentiment());
-    }
-
-    @Test
-    public void testAutomaticZenRuleValidation_policyFilterAgreement() throws Exception {
-        setUpMockZenTest();
-        ComponentName owner = new ComponentName(mContext, this.getClass());
-        ZenPolicy zenPolicy = new ZenPolicy.Builder().allowAlarms(true).build();
-        boolean isEnabled = true;
-        AutomaticZenRule badRule = new AutomaticZenRule("test", owner, owner, mock(Uri.class),
-                zenPolicy, NotificationManager.INTERRUPTION_FILTER_NONE, isEnabled);
-
-        IllegalArgumentException expected = assertThrows(IllegalArgumentException.class,
-                () -> mBinderService.addAutomaticZenRule(badRule, mContext.getPackageName(),
-                        false));
-        assertThat(expected).hasMessageThat().isEqualTo(
-                "ZenPolicy is only applicable to INTERRUPTION_FILTER_PRIORITY filters");
-
-        AutomaticZenRule goodRule = new AutomaticZenRule("test", owner, owner, mock(Uri.class),
-                zenPolicy, NotificationManager.INTERRUPTION_FILTER_PRIORITY, isEnabled);
-        mBinderService.addAutomaticZenRule(goodRule, mContext.getPackageName(), false);
-
-        goodRule = new AutomaticZenRule("test", owner, owner, mock(Uri.class),
-                null, NotificationManager.INTERRUPTION_FILTER_NONE, isEnabled);
-        mBinderService.addAutomaticZenRule(goodRule, mContext.getPackageName(), false);
-    }
-
-    @Test
-    public void testAddAutomaticZenRule_systemCallTakesPackageFromOwner() throws Exception {
-        mService.isSystemUid = true;
-
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        when(mPmi.isSameApp(eq("com.android.settings"), anyLong(), eq(mUid), eq(mUserId)))
-                .thenReturn(true);
-
-        ComponentName owner = new ComponentName("android", "ProviderName");
-        ZenPolicy zenPolicy = new ZenPolicy.Builder().allowAlarms(true).build();
-        boolean isEnabled = true;
-        AutomaticZenRule rule = new AutomaticZenRule("test", owner, owner, mock(Uri.class),
-                zenPolicy, NotificationManager.INTERRUPTION_FILTER_PRIORITY, isEnabled);
-        mBinderService.addAutomaticZenRule(rule, "com.android.settings", false);
-
-        // verify that zen mode helper gets passed in a package name of "android"
-        verify(zenModeHelper).addAutomaticZenRule(any(), eq("android"), eq(rule),
-                eq(ZenModeConfig.ORIGIN_SYSTEM), anyString(), anyInt());
-    }
-
-    @Test
-    public void testAddAutomaticZenRule_systemAppIdCallTakesPackageFromOwner() throws Exception {
-        // The multi-user case: where the calling uid doesn't match the system uid, but the calling
-        // *appid* is the system.
-        when(mPmi.isSameApp("com.android.settings", 0L, mUid, mUserId))
-                .thenReturn(true);
-        mService.isSystemUid = false;
-        mService.isSystemAppId = true;
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        ComponentName owner = new ComponentName("android", "ProviderName");
-        ZenPolicy zenPolicy = new ZenPolicy.Builder().allowAlarms(true).build();
-        boolean isEnabled = true;
-        AutomaticZenRule rule = new AutomaticZenRule("test", owner, owner, mock(Uri.class),
-                zenPolicy, NotificationManager.INTERRUPTION_FILTER_PRIORITY, isEnabled);
-        mBinderService.addAutomaticZenRule(rule, "com.android.settings", false);
-
-        // verify that zen mode helper gets passed in a package name of "android"
-        verify(zenModeHelper).addAutomaticZenRule(any(), eq("android"), eq(rule),
-                eq(ZenModeConfig.ORIGIN_SYSTEM), anyString(), anyInt());
-    }
-
-    @Test
-    public void testAddAutomaticZenRule_nonSystemCallTakesPackageFromArg() throws Exception {
-        mService.isSystemUid = false;
-        mService.isSystemAppId = false;
-        when(mPmi.isSameApp(eq("another.package"), anyLong(), eq(mUid), anyInt()))
-                .thenReturn(true);
-
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        ComponentName owner = new ComponentName("android", "ProviderName");
-        ZenPolicy zenPolicy = new ZenPolicy.Builder().allowAlarms(true).build();
-        boolean isEnabled = true;
-        AutomaticZenRule rule = new AutomaticZenRule("test", owner, owner, mock(Uri.class),
-                zenPolicy, NotificationManager.INTERRUPTION_FILTER_PRIORITY, isEnabled);
-        mBinderService.addAutomaticZenRule(rule, "another.package", false);
-
-        // verify that zen mode helper gets passed in the package name from the arg, not the owner
-        verify(zenModeHelper).addAutomaticZenRule(any(), eq("another.package"), eq(rule),
-                eq(ZenModeConfig.ORIGIN_APP), anyString(), anyInt());
-    }
-
-    @Test
-    public void testAddAutomaticZenRule_typeManagedCanBeUsedByDeviceOwners() throws Exception {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        mService.setCallerIsNormalPackage();
-
-        AutomaticZenRule rule = new AutomaticZenRule.Builder("rule", Uri.parse("uri"))
-                .setType(AutomaticZenRule.TYPE_MANAGED)
-                .setOwner(new ComponentName(mPkg, "cls"))
-                .build();
-        when(mDevicePolicyManager.isActiveDeviceOwner(anyInt())).thenReturn(true);
-
-        mBinderService.addAutomaticZenRule(rule, mPkg, /* fromUser= */ false);
-
-        verify(zenModeHelper).addAutomaticZenRule(any(), eq(mPkg), eq(rule), anyInt(), any(),
-                anyInt());
-    }
-
-    @Test
-    public void testAddAutomaticZenRule_typeManagedCanBeUsedBySystem() throws Exception {
-        addAutomaticZenRule_restrictedRuleTypeCanBeUsedBySystem(AutomaticZenRule.TYPE_MANAGED);
-    }
-
-    @Test
-    public void testAddAutomaticZenRule_typeManagedCannotBeUsedByRegularApps() throws Exception {
-        addAutomaticZenRule_restrictedRuleTypeCannotBeUsedByRegularApps(
-                AutomaticZenRule.TYPE_MANAGED);
-    }
-
-    @Test
-    public void testAddAutomaticZenRule_typeBedtimeCanBeUsedByWellbeing() throws Exception {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        mService.setCallerIsNormalPackage();
-        when(mResources
-                .getString(com.android.internal.R.string.config_systemWellbeing))
-                .thenReturn(mPkg);
-        when(mContext.getResources()).thenReturn(mResources);
-
-        AutomaticZenRule rule = new AutomaticZenRule.Builder("rule", Uri.parse("uri"))
-                .setType(AutomaticZenRule.TYPE_BEDTIME)
-                .setOwner(new ComponentName(mPkg, "cls"))
-                .build();
-
-        mBinderService.addAutomaticZenRule(rule, mPkg, /* fromUser= */ false);
-
-        verify(zenModeHelper).addAutomaticZenRule(any(), eq(mPkg), eq(rule), anyInt(), any(),
-                anyInt());
-    }
-
-    @Test
-    public void testAddAutomaticZenRule_typeBedtimeCanBeUsedBySystem() throws Exception {
-        addAutomaticZenRule_restrictedRuleTypeCanBeUsedBySystem(AutomaticZenRule.TYPE_BEDTIME);
-    }
-
-    @Test
-    public void testAddAutomaticZenRule_typeBedtimeCannotBeUsedByRegularApps() throws Exception {
-        addAutomaticZenRule_restrictedRuleTypeCannotBeUsedByRegularApps(
-                AutomaticZenRule.TYPE_BEDTIME);
-    }
-
-    private void addAutomaticZenRule_restrictedRuleTypeCanBeUsedBySystem(
-            @AutomaticZenRule.Type int ruleType) throws Exception {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        mService.isSystemUid = true;
-
-        AutomaticZenRule rule = new AutomaticZenRule.Builder("rule", Uri.parse("uri"))
-                .setType(ruleType)
-                .setOwner(new ComponentName(mPkg, "cls"))
-                .build();
-        when(mDevicePolicyManager.isActiveDeviceOwner(anyInt())).thenReturn(true);
-
-        mBinderService.addAutomaticZenRule(rule, mPkg, /* fromUser= */ false);
-
-        verify(zenModeHelper).addAutomaticZenRule(any(), eq(mPkg), eq(rule), anyInt(), any(),
-                anyInt());
-    }
-
-    private void addAutomaticZenRule_restrictedRuleTypeCannotBeUsedByRegularApps(
-            @AutomaticZenRule.Type int ruleType) {
-        mService.setCallerIsNormalPackage();
-        setUpMockZenTest();
-
-        AutomaticZenRule rule = new AutomaticZenRule.Builder("rule", Uri.parse("uri"))
-                .setType(ruleType)
-                .setOwner(new ComponentName(mPkg, "cls"))
-                .build();
-        when(mDevicePolicyManager.isActiveDeviceOwner(anyInt())).thenReturn(false);
-
-        IllegalArgumentException expected = assertThrows(IllegalArgumentException.class,
-                () -> mBinderService.addAutomaticZenRule(rule, mPkg, /* fromUser= */ false));
-        assertThat(expected).hasMessageThat().contains("can use AutomaticZenRules with TYPE_");
-    }
-
-    @Test
-    public void addAutomaticZenRule_fromUser_mappedToOriginUser() throws Exception {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        mService.isSystemUid = true;
-        when(mPmi.isSameApp("pkg", 0L, mUid, mUserId)).thenReturn(true);
-
-        mBinderService.addAutomaticZenRule(SOME_ZEN_RULE, "pkg", /* fromUser= */ true);
-
-        verify(zenModeHelper).addAutomaticZenRule(any(), eq("pkg"), eq(SOME_ZEN_RULE),
-                eq(ZenModeConfig.ORIGIN_USER_IN_SYSTEMUI), anyString(), anyInt());
-    }
-
-    @Test
-    public void addAutomaticZenRule_fromSystemNotUser_mappedToOriginSystem() throws Exception {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        mService.isSystemUid = true;
-        when(mPmi.isSameApp("pkg", 0L, mUid, mUserId)).thenReturn(true);
-
-        mBinderService.addAutomaticZenRule(SOME_ZEN_RULE, "pkg", /* fromUser= */ false);
-
-        verify(zenModeHelper).addAutomaticZenRule(any(), eq("pkg"), eq(SOME_ZEN_RULE),
-                eq(ZenModeConfig.ORIGIN_SYSTEM), anyString(), anyInt());
-    }
-
-    @Test
-    public void addAutomaticZenRule_fromApp_mappedToOriginApp() throws Exception {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        mService.setCallerIsNormalPackage();
-        when(mPmi.isSameApp("pkg", 0L, mUid, mUserId)).thenReturn(true);
-
-        mBinderService.addAutomaticZenRule(SOME_ZEN_RULE, "pkg", /* fromUser= */ false);
-
-        verify(zenModeHelper).addAutomaticZenRule(any(), eq("pkg"), eq(SOME_ZEN_RULE),
-                eq(ZenModeConfig.ORIGIN_APP), anyString(), anyInt());
-    }
-
-    @Test
-    public void addAutomaticZenRule_fromAppFromUser_blocked() throws Exception {
-        setUpMockZenTest();
-        mService.setCallerIsNormalPackage();
-
-        assertThrows(SecurityException.class, () ->
-                mBinderService.addAutomaticZenRule(SOME_ZEN_RULE, "pkg", /* fromUser= */ true));
-    }
-
-    @Test
-    public void updateAutomaticZenRule_fromUserFromSystem_allowed() throws Exception {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        mService.isSystemUid = true;
-
-        mBinderService.updateAutomaticZenRule("id", SOME_ZEN_RULE, /* fromUser= */ true);
-
-        verify(zenModeHelper).updateAutomaticZenRule(any(), eq("id"), eq(SOME_ZEN_RULE),
-                eq(ZenModeConfig.ORIGIN_USER_IN_SYSTEMUI), anyString(), anyInt());
-    }
-
-    @Test
-    public void updateAutomaticZenRule_fromUserFromApp_blocked() throws Exception {
-        setUpMockZenTest();
-        mService.setCallerIsNormalPackage();
-
-        assertThrows(SecurityException.class, () ->
-                mBinderService.addAutomaticZenRule(SOME_ZEN_RULE, "pkg", /* fromUser= */ true));
-    }
-
-    @Test
-    public void removeAutomaticZenRule_fromUserFromSystem_allowed() throws Exception {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        mService.isSystemUid = true;
-
-        mBinderService.removeAutomaticZenRule("id", /* fromUser= */ true);
-
-        verify(zenModeHelper).removeAutomaticZenRule(any(), eq("id"),
-                eq(ZenModeConfig.ORIGIN_USER_IN_SYSTEMUI), anyString(), anyInt());
-    }
-
-    @Test
-    public void removeAutomaticZenRule_fromUserFromApp_blocked() throws Exception {
-        setUpMockZenTest();
-        mService.setCallerIsNormalPackage();
-
-        assertThrows(SecurityException.class, () ->
-                mBinderService.removeAutomaticZenRule("id", /* fromUser= */ true));
-    }
-
-    @Test
-    public void setAutomaticZenRuleState_fromAppWithConditionFromUser_originUserInApp()
-            throws Exception {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        mService.setCallerIsNormalPackage();
-
-        Condition withSourceUser = new Condition(Uri.parse("uri"), "summary", STATE_TRUE,
-                SOURCE_USER_ACTION);
-        mBinderService.setAutomaticZenRuleState("id", withSourceUser);
-
-        verify(zenModeHelper).setAutomaticZenRuleState(any(), eq("id"), eq(withSourceUser),
-                eq(ZenModeConfig.ORIGIN_USER_IN_APP), anyInt());
-    }
-
-    @Test
-    public void setAutomaticZenRuleState_fromAppWithConditionNotFromUser_originApp()
-            throws Exception {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        mService.setCallerIsNormalPackage();
-
-        Condition withSourceContext = new Condition(Uri.parse("uri"), "summary", STATE_TRUE,
-                SOURCE_CONTEXT);
-        mBinderService.setAutomaticZenRuleState("id", withSourceContext);
-
-        verify(zenModeHelper).setAutomaticZenRuleState(any(), eq("id"), eq(withSourceContext),
-                eq(ZenModeConfig.ORIGIN_APP), anyInt());
-    }
-
-    @Test
-    public void setAutomaticZenRuleState_fromSystemWithConditionFromUser_originUserInSystemUi()
-            throws Exception {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        mService.isSystemUid = true;
-
-        Condition withSourceContext = new Condition(Uri.parse("uri"), "summary", STATE_TRUE,
-                SOURCE_USER_ACTION);
-        mBinderService.setAutomaticZenRuleState("id", withSourceContext);
-
-        verify(zenModeHelper).setAutomaticZenRuleState(any(), eq("id"), eq(withSourceContext),
-                eq(ZenModeConfig.ORIGIN_USER_IN_SYSTEMUI), anyInt());
-    }
-    @Test
-    public void setAutomaticZenRuleState_fromSystemWithConditionNotFromUser_originSystem()
-            throws Exception {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        mService.isSystemUid = true;
-
-        Condition withSourceContext = new Condition(Uri.parse("uri"), "summary", STATE_TRUE,
-                SOURCE_CONTEXT);
-        mBinderService.setAutomaticZenRuleState("id", withSourceContext);
-
-        verify(zenModeHelper).setAutomaticZenRuleState(any(), eq("id"), eq(withSourceContext),
-                eq(ZenModeConfig.ORIGIN_SYSTEM), anyInt());
-    }
-
-
-    @Test
-    public void getAutomaticZenRules_fromSystem_readsWithCurrentUser() throws Exception {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        mService.isSystemUid = true;
-
-        // Representative used to verify getCallingZenUser().
-        mBinderService.getAutomaticZenRules();
-
-        verify(zenModeHelper).getAutomaticZenRules(eq(UserHandle.CURRENT), anyInt());
-    }
-
-    @Test
-    public void getAutomaticZenRules_fromNormalPackage_readsWithBinderUser() throws Exception {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        mService.setCallerIsNormalPackage();
-
-        // Representative used to verify getCallingZenUser().
-        mBinderService.getAutomaticZenRules();
-
-        verify(zenModeHelper).getAutomaticZenRules(eq(Binder.getCallingUserHandle()), anyInt());
-    }
-
-    @Test
-    @EnableFlags(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
-    public void internalService_getAutomaticZenRules() {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        UserHandle user = UserHandle.of(1);
-
-        mService.getInternalService().getAutomaticZenRules(user);
-
-        verify(zenModeHelper).getAutomaticZenRules(eq(user), anyInt());
-    }
-
-    @Test
-    @EnableFlags(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
-    public void internalService_isAutomaticZenRuleActive() {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        UserHandle user = UserHandle.of(1);
-        String id = "id";
-
-        mService.getInternalService().isAutomaticZenRuleActive(user, id);
-
-        verify(zenModeHelper).getAutomaticZenRuleState(eq(user), eq(id), anyInt());
-    }
-
-    @Test
-    @EnableFlags(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
-    public void internalService_isManualZenRuleActive() {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        UserHandle user = UserHandle.of(1);
-
-        mService.getInternalService().isManualZenRuleActive(user);
-
-        verify(zenModeHelper).getManualZenMode(user);
-    }
-
-    @Test
-    @EnableFlags(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
-    public void internalService_setManualZenRuleActive() {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        UserHandle user = UserHandle.of(1);
-
-        mService.getInternalService().setManualZenRuleActive(user, true);
-
-        verify(zenModeHelper).setManualZenMode(
-                eq(user),
-                eq(ZEN_MODE_IMPORTANT_INTERRUPTIONS),
-                isNull(),
-                anyInt(),
-                anyString(),
-                isNull(),
-                anyInt());
-    }
-
-    @Test
-    @EnableFlags(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
-    public void internalService_setAutomaticZenRuleActive() {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        UserHandle user = UserHandle.of(1);
-        String id = "id";
-        AutomaticZenRule rule =
-                new AutomaticZenRule(
-                        "name",
-                        /* owner= */ null,
-                        /* configurationActivity= */ null,
-                        /* conditionId= */ Uri.EMPTY,
-                        /* policy= */ null,
-                        /* interruptionFilter= */ NotificationManager
-                        .INTERRUPTION_FILTER_PRIORITY,
-                        /* enabled= */ true);
-        when(zenModeHelper.getAutomaticZenRule(eq(user), eq(id), anyInt())).thenReturn(rule);
-
-        mService.getInternalService().setAutomaticZenRuleActive(user, id, true);
-
-        // Verify that the condition is set to true.
-        ArgumentCaptor<Condition> conditionCaptor = ArgumentCaptor.forClass(Condition.class);
-        verify(zenModeHelper).setAutomaticZenRuleState(
-                eq(user),
-                eq(id),
-                conditionCaptor.capture(),
-                anyInt(),
-                anyInt());
-        assertThat(conditionCaptor.getValue().state).isEqualTo(STATE_TRUE);
-    }
-
-    @Test
-    @EnableFlags(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
-    public void internalService_addCallback() {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        Callback callback = new Callback();
-
-        mService.getInternalService().addZenModeCallback(callback);
-
-        verify(zenModeHelper).addCallback(callback);
-    }
-
-    @Test
-    @EnableFlags(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
-    public void internalService_hasZenModeConfig() {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        UserHandle user = UserHandle.of(1);
-
-        mService.getInternalService().hasZenModeConfig(user);
-
-        verify(zenModeHelper).hasZenModeConfig(user);
-    }
-
-    /** Prepares for a zen-related test that uses a mocked {@link ZenModeHelper}. */
-    private ZenModeHelper setUpMockZenTest() {
-        ZenModeHelper zenModeHelper = mock(ZenModeHelper.class);
-        mService.setZenHelper(zenModeHelper);
-        when(mConditionProviders.isPackageOrComponentAllowed(anyString(), anyInt()))
-                .thenReturn(true);
-        when(zenModeHelper.getActivityInfo(any())).thenReturn(new ActivityInfo());
-        when(zenModeHelper.getServiceInfo(any())).thenReturn(new ServiceInfo());
-        if (splitSoundVibrationForNotificationBreakthrough()) {
-            when(zenModeHelper.getNotificationPolicy(any())).thenReturn(
-                    getSplitSoundVibrationNotificationPolicy()
-            );
-        }
-        return zenModeHelper;
-    }
-
-    private Policy getSplitSoundVibrationNotificationPolicy() {
-        return new NotificationManager.Policy(
-                0, 0, 0,
-                NotificationManager.Policy.SUPPRESSED_EFFECTS_UNSET,
-                NotificationManager.Policy.STATE_UNSET,
-                NotificationManager.Policy.CONVERSATION_SENDERS_UNSET,
-                0, 0 // sound and vibration
-        );
-    }
-
-    @Test
-    public void onZenModeChanged_sendsBroadcasts() throws Exception {
-        when(mAmi.getCurrentUserId()).thenReturn(100);
-        when(mUmInternal.getProfileIds(eq(100), anyBoolean())).thenReturn(new int[]{100, 101, 102});
-        when(mConditionProviders.getAllowedPackages(anyInt())).then(new Answer<List<String>>() {
-            @Override
-            public List<String> answer(InvocationOnMock invocation) {
-                int userId = invocation.getArgument(0);
-                switch (userId) {
-                    case 100:
-                        return Lists.newArrayList("a", "b", "c");
-                    case 101:
-                        return Lists.newArrayList();
-                    case 102:
-                        return Lists.newArrayList("b");
-                    default:
-                        throw new IllegalArgumentException(
-                                "Why would you ask for packages of userId " + userId + "?");
-                }
-            }
-        });
-        Context context100 = mock(Context.class);
-        doReturn(context100).when(mContext).createContextAsUser(eq(UserHandle.of(100)), anyInt());
-        Context context101 = mock(Context.class);
-        doReturn(context101).when(mContext).createContextAsUser(eq(UserHandle.of(101)), anyInt());
-        Context context102 = mock(Context.class);
-        doReturn(context102).when(mContext).createContextAsUser(eq(UserHandle.of(102)), anyInt());
-
-        mService.getBinderService().setZenMode(Settings.Global.ZEN_MODE_NO_INTERRUPTIONS, null,
-                "testing!", false);
-        waitForIdle();
-
-        // Verify broadcasts per user: registered receivers first, then DND packages.
-        InOrder inOrder = inOrder(context100, context101, context102);
-
-        inOrder.verify(context100).sendBroadcastMultiplePermissions(
-                eqIntent(new Intent(ACTION_INTERRUPTION_FILTER_CHANGED)
-                        .setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY)),
-                eq(new String[0]), eq(new String[0]), eq(new String[] {"a", "b", "c"}));
-        inOrder.verify(context100).sendBroadcast(
-                eqIntent(new Intent(ACTION_INTERRUPTION_FILTER_CHANGED)
-                        .setPackage("a")
-                        .setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT)));
-        inOrder.verify(context100).sendBroadcast(
-                eqIntent(new Intent(ACTION_INTERRUPTION_FILTER_CHANGED)
-                        .setPackage("b")
-                        .setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT)));
-        inOrder.verify(context100).sendBroadcast(
-                eqIntent(new Intent(ACTION_INTERRUPTION_FILTER_CHANGED)
-                        .setPackage("c")
-                        .setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT)));
-
-        inOrder.verify(context101).sendBroadcastMultiplePermissions(
-                eqIntent(new Intent(ACTION_INTERRUPTION_FILTER_CHANGED)
-                        .setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY)),
-                eq(new String[0]), eq(new String[0]), eq(new String[] {}));
-
-        inOrder.verify(context102).sendBroadcastMultiplePermissions(
-                eqIntent(new Intent(ACTION_INTERRUPTION_FILTER_CHANGED)
-                        .setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY)),
-                eq(new String[0]), eq(new String[0]), eq(new String[] {"b"}));
-        inOrder.verify(context102).sendBroadcast(
-                eqIntent(new Intent(ACTION_INTERRUPTION_FILTER_CHANGED)
-                        .setPackage("b")
-                        .setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT)));
-    }
-
-    @Test
-    public void onAutomaticRuleStatusChanged_sendsBroadcastToRuleOwner() throws Exception {
-        mService.mZenModeHelper.getCallbacks().forEach(c -> c.onAutomaticRuleStatusChanged(
-                mUserId, "rule.owner.pkg", "rule_id", AUTOMATIC_RULE_STATUS_ACTIVATED));
-
-        Intent expected = new Intent(ACTION_AUTOMATIC_ZEN_RULE_STATUS_CHANGED)
-                .setPackage("rule.owner.pkg")
-                .putExtra(EXTRA_AUTOMATIC_ZEN_RULE_ID, "rule_id")
-                .putExtra(EXTRA_AUTOMATIC_ZEN_RULE_STATUS, AUTOMATIC_RULE_STATUS_ACTIVATED)
-                .addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT);
-
-        verify(mContext).sendBroadcastAsUser(eqIntent(expected), eq(UserHandle.of(mUserId)));
-    }
-
-    @Test
-    public void onConfigApplied_sendsInternalZenChangedBroadcast() throws Exception {
-        mService.mZenModeHelper.getCallbacks().forEach(c -> c.onConfigApplied());
-
-        Intent expected = new Intent(NotificationManager.ACTION_ZEN_CONFIGURATION_CHANGED_INTERNAL)
-                .addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT);
-
-        verify(mContext).sendBroadcastAsUser(eqIntent(expected), eq(UserHandle.ALL),
-                eq(android.Manifest.permission.MANAGE_NOTIFICATIONS));
-    }
-
-    private static Intent isIntentWithAction(String wantedAction) {
-        return argThat(
-                intent -> intent != null && wantedAction.equals(intent.getAction())
-        );
-    }
-
-    private static Intent eqIntent(Intent wanted) {
-        return argThat(
-                new ArgumentMatcher<Intent>() {
-                    @Override
-                    public boolean matches(Intent argument) {
-                        return wanted.filterEquals(argument)
-                                && wanted.getFlags() == argument.getFlags()
-                                && equalBundles(wanted.getExtras(), argument.getExtras());
-                    }
-
-                    @Override
-                    public String toString() {
-                        return wanted.toString();
-                    }
-
-                    private boolean equalBundles(Bundle one, Bundle two) {
-                        if (one == null && two == null) {
-                            return true;
-                        }
-                        if ((one == null) != (two == null)) {
-                            return false;
-                        }
-                        if (one.size() != two.size()) {
-                            return false;
-                        }
-
-                        HashSet<String> setOne = new HashSet<>(one.keySet());
-                        setOne.addAll(two.keySet());
-
-                        for (String key : setOne) {
-                            if (!one.containsKey(key) || !two.containsKey(key)) {
-                                return false;
-                            }
-
-                            Object valueOne = one.get(key);
-                            Object valueTwo = two.get(key);
-                            if (valueOne instanceof Bundle
-                                    && valueTwo instanceof Bundle
-                                    && !equalBundles((Bundle) valueOne, (Bundle) valueTwo)) {
-                                return false;
-                            } else if (valueOne == null) {
-                                if (valueTwo != null) {
-                                    return false;
-                                }
-                            } else if (!valueOne.equals(valueTwo)) {
-                                return false;
-                            }
-                        }
-                        return true;
-                    }
-                });
     }
 
     @Test
@@ -17242,49 +16409,23 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Test
     public void testDeleteChannelGroupChecksForUijs() throws Exception {
-        when(mCompanionMgr.getAssociations(mPkg, UserHandle.getUserId(mUid)))
-                .thenReturn(singletonList(mock(AssociationInfo.class)));
-        CountDownLatch latch = new CountDownLatch(2);
         mService.createNotificationChannelGroup(mPkg, mUid,
                 new NotificationChannelGroup("group", "group"), true, false);
-        new Thread(() -> {
-            NotificationChannel notificationChannel = new NotificationChannel("id", "id",
-                    NotificationManager.IMPORTANCE_HIGH);
-            notificationChannel.setGroup("group");
-            ParceledListSlice<NotificationChannel> pls =
-                    new ParceledListSlice(ImmutableList.of(notificationChannel));
-            try {
-                mBinderService.createNotificationChannelsForPackage(mPkg, mUid, pls);
-            } catch (RemoteException e) {
-                throw new RuntimeException(e);
-            }
-            latch.countDown();
-        }).start();
-        new Thread(() -> {
-            try {
-                synchronized (this) {
-                    wait(5000);
-                }
-                mService.createNotificationChannelGroup(mPkg, mUid,
-                        new NotificationChannelGroup("new", "new group"), true, false);
-                NotificationChannel notificationChannel =
-                        new NotificationChannel("id", "id", NotificationManager.IMPORTANCE_HIGH);
-                notificationChannel.setGroup("new");
-                ParceledListSlice<NotificationChannel> pls =
-                        new ParceledListSlice(ImmutableList.of(notificationChannel));
-                try {
-                    mBinderService.createNotificationChannelsForPackage(mPkg, mUid, pls);
-                    mBinderService.deleteNotificationChannelGroup(mPkg, "group");
-                } catch (RemoteException e) {
-                    throw new RuntimeException(e);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            latch.countDown();
-        }).start();
 
-        latch.await();
+        NotificationChannel notificationChannel = new NotificationChannel("id", "id",
+                NotificationManager.IMPORTANCE_HIGH);
+        notificationChannel.setGroup("group");
+        ParceledListSlice<NotificationChannel> pls =
+                new ParceledListSlice(ImmutableList.of(notificationChannel));
+        try {
+            mBinderService.createNotificationChannelsForPackage(mPkg, mUid, pls);
+            waitForIdle();
+            mBinderService.deleteNotificationChannelGroup(mPkg, "group");
+            waitForIdle();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+
         verify(mJsi).isNotificationChannelAssociatedWithAnyUserInitiatedJobs(
                 anyString(), anyInt(), anyString());
     }
@@ -18008,41 +17149,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_USE_SSM_USER_SWITCH_SIGNAL)
-    public void onUserSwitched_updatesZenModeAndChannelsBypassingDnd() {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        mService.setPreferencesHelper(mPreferencesHelper);
-
-        UserInfo prevUser = new UserInfo();
-        prevUser.id = 10;
-        UserInfo newUser = new UserInfo();
-        newUser.id = 20;
-
-        mService.onUserSwitching(new TargetUser(prevUser), new TargetUser(newUser));
-
-        InOrder inOrder = inOrder(mPreferencesHelper, mService.mZenModeHelper);
-        inOrder.verify(zenModeHelper).onUserSwitched(eq(20));
-        inOrder.verify(mPreferencesHelper).syncHasPriorityChannels();
-        inOrder.verifyNoMoreInteractions();
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_USE_SSM_USER_SWITCH_SIGNAL)
-    public void onUserSwitched_broadcast_updatesZenModeAndChannelsBypassingDnd() {
-        Intent intent = new Intent(Intent.ACTION_USER_SWITCHED);
-        intent.putExtra(Intent.EXTRA_USER_HANDLE, 20);
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        mService.setPreferencesHelper(mPreferencesHelper);
-
-        mUserIntentReceiver.onReceive(mContext, intent);
-
-        InOrder inOrder = inOrder(mPreferencesHelper, mService.mZenModeHelper);
-        inOrder.verify(zenModeHelper).onUserSwitched(eq(20));
-        inOrder.verify(mPreferencesHelper).syncHasPriorityChannels();
-        inOrder.verifyNoMoreInteractions();
-    }
-
-    @Test
     @EnableFlags(FLAG_MANAGED_SERVICES_CONCURRENT_MULTIUSER)
     public void onUserStopped_callBackToListeners() {
         Intent intent = new Intent(Intent.ACTION_USER_STOPPED);
@@ -18336,540 +17442,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mInternalService.setDeviceEffectsApplier(mock(DeviceEffectsApplier.class));
         assertThrows(IllegalStateException.class, () ->
                 mInternalService.setDeviceEffectsApplier(mock(DeviceEffectsApplier.class)));
-    }
-
-    @Test
-    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
-    public void setNotificationPolicy_mappedToImplicitRule() throws RemoteException {
-        mService.setCallerIsNormalPackage();
-        when(mPmi.isSameApp("package", 0L, mUid, mUserId)).thenReturn(true);
-
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-
-        NotificationManager.Policy policy = (splitSoundVibrationForNotificationBreakthrough())
-                ? getSplitSoundVibrationNotificationPolicy()
-                : new NotificationManager.Policy(0, 0, 0);
-        mBinderService.setNotificationPolicy("package", policy, false);
-
-        verify(zenModeHelper).applyGlobalPolicyAsImplicitZenRule(any(), eq("package"), anyInt(),
-                eq(policy));
-    }
-
-    @Test
-    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
-    @EnableFlags(android.service.notification.Flags
-            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
-    public void setNotificationPolicy_mappedToImplicitRule_splitSoundVibration_defaultCtor()
-            throws RemoteException {
-        mService.setCallerIsNormalPackage();
-        when(mPmi.isSameApp("package", 0L, mUid, mUserId)).thenReturn(true);
-
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-
-        NotificationManager.Policy policy = new NotificationManager.Policy(0, 0, 0);
-        mBinderService.setNotificationPolicy("package", policy, false);
-
-        NotificationManager.Policy expectedPolicy = getSplitSoundVibrationNotificationPolicy();
-
-        verify(zenModeHelper).applyGlobalPolicyAsImplicitZenRule(any(), eq("package"), anyInt(),
-                eq(expectedPolicy));
-    }
-
-    @Test
-    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
-    public void setNotificationPolicy_systemCaller_setsGlobalPolicy() throws RemoteException {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        mService.isSystemUid = true;
-        when(mPmi.isSameApp("package", 0L, mUid, mUserId)).thenReturn(true);
-
-        NotificationManager.Policy policy = (splitSoundVibrationForNotificationBreakthrough())
-                ? getSplitSoundVibrationNotificationPolicy()
-                : new NotificationManager.Policy(0, 0, 0);
-        mBinderService.setNotificationPolicy("package", policy, false);
-
-        verify(zenModeHelper).setNotificationPolicy(any(), eq(policy), anyInt(), anyInt());
-    }
-
-    @Test
-    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
-    @EnableFlags(android.service.notification.Flags
-            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
-    public void
-    setNotificationPolicy_systemCaller_setsGlobalPolicy_splitSoundVibration_defaultCtor()
-            throws RemoteException {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        mService.isSystemUid = true;
-        when(mPmi.isSameApp("package", 0L, mUid, mUserId)).thenReturn(true);
-
-        NotificationManager.Policy policy = new NotificationManager.Policy(0, 0, 0);
-        mBinderService.setNotificationPolicy("package", policy, false);
-
-        NotificationManager.Policy expectedPolicy = getSplitSoundVibrationNotificationPolicy();
-        verify(zenModeHelper).setNotificationPolicy(any(), eq(expectedPolicy), anyInt(), anyInt());
-    }
-
-    @Test
-    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
-    public void setNotificationPolicy_watchCompanionApp_setsGlobalPolicy()
-            throws RemoteException {
-        setNotificationPolicy_dependingOnCompanionAppDevice_maySetGlobalPolicy(
-                AssociationRequest.DEVICE_PROFILE_WATCH, true,
-                splitSoundVibrationForNotificationBreakthrough());
-    }
-
-    @Test
-    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
-    @EnableFlags(android.service.notification.Flags
-            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
-    public void
-    setNotificationPolicy_watchCompanionApp_setsGlobalPolicy_splitSoundVibration_defaultCtor()
-            throws RemoteException {
-        setNotificationPolicy_dependingOnCompanionAppDevice_maySetGlobalPolicy(
-                AssociationRequest.DEVICE_PROFILE_WATCH, true, false);
-    }
-
-    @Test
-    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
-    public void setNotificationPolicy_autoCompanionApp_setsGlobalPolicy()
-            throws RemoteException {
-        setNotificationPolicy_dependingOnCompanionAppDevice_maySetGlobalPolicy(
-                AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION, true,
-                splitSoundVibrationForNotificationBreakthrough());
-    }
-
-    @Test
-    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
-    @EnableFlags(android.service.notification.Flags
-            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
-    public void
-    setNotificationPolicy_autoCompanionApp_setsGlobalPolicy_splitSoundVibration_defaultCtor()
-            throws RemoteException {
-        setNotificationPolicy_dependingOnCompanionAppDevice_maySetGlobalPolicy(
-                AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION, true, false);
-    }
-
-    @Test
-    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
-    public void setNotificationPolicy_otherCompanionApp_doesNotSetGlobalPolicy()
-            throws RemoteException {
-        setNotificationPolicy_dependingOnCompanionAppDevice_maySetGlobalPolicy(
-                AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_STREAMING, false,
-                splitSoundVibrationForNotificationBreakthrough());
-    }
-
-    @Test
-    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
-    @EnableFlags(android.service.notification.Flags
-            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
-    public void
-    setNotificationPolicy_otherCompanionApp_doesNotSetGlobalPolicy_splitSoundVibration_defaultCtor()
-            throws RemoteException {
-        setNotificationPolicy_dependingOnCompanionAppDevice_maySetGlobalPolicy(
-                AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_STREAMING, false, false);
-    }
-
-    private void setNotificationPolicy_dependingOnCompanionAppDevice_maySetGlobalPolicy(
-            @AssociationRequest.DeviceProfile String deviceProfile, boolean canSetGlobalPolicy,
-            boolean splitSoundVibrationPolicy)
-            throws RemoteException {
-        mService.setCallerIsNormalPackage();
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        when(mCompanionMgr.getAssociations(anyString(), anyInt()))
-                .thenReturn(ImmutableList.of(
-                        new AssociationInfo.Builder(1, mUserId, "package")
-                                .setDisplayName("My connected device")
-                                .setDeviceProfile(deviceProfile)
-                                .build()));
-        when(mPmi.isSameApp("package", 0L, mUid, mUserId)).thenReturn(true);
-
-        NotificationManager.Policy policy = (splitSoundVibrationPolicy)
-                ? getSplitSoundVibrationNotificationPolicy()
-                : new Policy(0, 0, 0);
-        mBinderService.setNotificationPolicy("package", policy, false);
-
-        NotificationManager.Policy expectedPolicy =
-                (splitSoundVibrationForNotificationBreakthrough())
-                    ? getSplitSoundVibrationNotificationPolicy()
-                    : new Policy(0, 0, 0);
-
-        if (canSetGlobalPolicy) {
-            verify(zenModeHelper).setNotificationPolicy(any(), eq(expectedPolicy), anyInt(),
-                    anyInt());
-        } else {
-            verify(zenModeHelper).applyGlobalPolicyAsImplicitZenRule(any(), anyString(), anyInt(),
-                    eq(expectedPolicy));
-        }
-    }
-
-    @Test
-    @DisableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
-    public void setNotificationPolicy_withoutCompat_setsGlobalPolicy() throws RemoteException {
-        mService.setCallerIsNormalPackage();
-
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-
-        when(mPmi.isSameApp("package", 0L, mUid, mUserId)).thenReturn(true);
-
-        NotificationManager.Policy policy = (splitSoundVibrationForNotificationBreakthrough())
-                ? getSplitSoundVibrationNotificationPolicy()
-                : new NotificationManager.Policy(0, 0, 0);
-        mBinderService.setNotificationPolicy("package", policy, false);
-
-        verify(zenModeHelper).setNotificationPolicy(any(), eq(policy), anyInt(), anyInt());
-    }
-
-    @Test
-    @DisableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
-    @EnableFlags(android.service.notification.Flags
-            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
-    public void
-    setNotificationPolicy_withoutCompat_setsGlobalPolicy_splitSoundVibration_defaultCtor()
-            throws RemoteException {
-        mService.setCallerIsNormalPackage();
-
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-
-        when(mPmi.isSameApp("package", 0L, mUid, mUserId)).thenReturn(true);
-
-        NotificationManager.Policy policy = new Policy(0, 0, 0);
-        mBinderService.setNotificationPolicy("package", policy, false);
-
-        NotificationManager.Policy expectedPolicy = getSplitSoundVibrationNotificationPolicy();
-
-        verify(zenModeHelper).setNotificationPolicy(any(), eq(expectedPolicy), anyInt(), anyInt());
-    }
-
-    @Test
-    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
-    public void getNotificationPolicy_mappedFromImplicitRule() throws RemoteException {
-        mService.setCallerIsNormalPackage();
-
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-
-        when(mPmi.getPackageUid("package", 0L, mUserId)).thenReturn(mUid);
-
-        mBinderService.getNotificationPolicy("package");
-
-        verify(zenModeHelper).getNotificationPolicyFromImplicitZenRule(any(), eq("package"));
-    }
-
-    @Test
-    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
-    public void setInterruptionFilter_mappedToImplicitRule() throws RemoteException {
-        mService.setCallerIsNormalPackage();
-
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-
-        when(mPmi.isSameApp("package", 0L, mUid, mUserId)).thenReturn(true);
-
-        mBinderService.setInterruptionFilter("package", INTERRUPTION_FILTER_PRIORITY, false);
-
-        verify(zenModeHelper).applyGlobalZenModeAsImplicitZenRule(any(), eq("package"), anyInt(),
-                eq(ZEN_MODE_IMPORTANT_INTERRUPTIONS));
-    }
-
-    @Test
-    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
-    public void setInterruptionFilter_systemCaller_setsGlobalPolicy() throws RemoteException {
-        mService.setCallerIsNormalPackage();
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        mService.isSystemUid = true;
-        when(mPmi.isSameApp("package", 0L, mUid, mUserId)).thenReturn(true);
-
-        mBinderService.setInterruptionFilter("package", INTERRUPTION_FILTER_PRIORITY, false);
-
-        verify(zenModeHelper).setManualZenMode(any(), eq(ZEN_MODE_IMPORTANT_INTERRUPTIONS),
-                eq(null), eq(ZenModeConfig.ORIGIN_SYSTEM), anyString(), eq("package"), anyInt());
-    }
-
-    @Test
-    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
-    public void setInterruptionFilter_watchCompanionApp_setsGlobalZen() throws RemoteException {
-        setInterruptionFilter_dependingOnCompanionAppDevice_maySetGlobalZen(
-                AssociationRequest.DEVICE_PROFILE_WATCH, true);
-    }
-
-    @Test
-    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
-    public void setInterruptionFilter_autoCompanionApp_setsGlobalZen() throws RemoteException {
-        setInterruptionFilter_dependingOnCompanionAppDevice_maySetGlobalZen(
-                AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION, true);
-    }
-
-    @Test
-    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
-    public void setInterruptionFilter_otherCompanionApp_doesNotSetGlobalZen()
-            throws RemoteException {
-        setInterruptionFilter_dependingOnCompanionAppDevice_maySetGlobalZen(
-                AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_STREAMING, false);
-    }
-
-    private void setInterruptionFilter_dependingOnCompanionAppDevice_maySetGlobalZen(
-            @AssociationRequest.DeviceProfile String deviceProfile, boolean canSetGlobalPolicy)
-            throws RemoteException {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        mService.setCallerIsNormalPackage();
-        when(mCompanionMgr.getAssociations(anyString(), anyInt()))
-                .thenReturn(ImmutableList.of(
-                        new AssociationInfo.Builder(1, mUserId, "package")
-                                .setDisplayName("My connected device")
-                                .setDeviceProfile(deviceProfile)
-                                .build()));
-        when(mPmi.isSameApp("package", 0L, mUid, mUserId)).thenReturn(true);
-
-        mBinderService.setInterruptionFilter("package", INTERRUPTION_FILTER_PRIORITY, false);
-
-        if (canSetGlobalPolicy) {
-            verify(zenModeHelper).setManualZenMode(any(), eq(ZEN_MODE_IMPORTANT_INTERRUPTIONS),
-                    eq(null), eq(ZenModeConfig.ORIGIN_APP), anyString(), eq("package"), anyInt());
-        } else {
-            verify(zenModeHelper).applyGlobalZenModeAsImplicitZenRule(any(), anyString(), anyInt(),
-                    eq(ZEN_MODE_IMPORTANT_INTERRUPTIONS));
-        }
-    }
-
-    @Test
-    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
-    public void requestInterruptionFilterFromListener_fromApp_doesNotSetGlobalZen()
-            throws Exception {
-        mService.setCallerIsNormalPackage();
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        ManagedServices.ManagedServiceInfo info = mock(ManagedServices.ManagedServiceInfo.class);
-        when(mListeners.checkServiceTokenLocked(any())).thenReturn(info);
-        info.component = new ComponentName("pkg", "cls");
-
-        mBinderService.requestInterruptionFilterFromListener(mock(INotificationListener.class),
-                INTERRUPTION_FILTER_PRIORITY);
-
-        verify(zenModeHelper).applyGlobalZenModeAsImplicitZenRule(any(), eq("pkg"),
-                eq(mUid), eq(ZEN_MODE_IMPORTANT_INTERRUPTIONS));
-    }
-
-    @Test
-    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
-    public void requestInterruptionFilterFromListener_fromSystem_setsGlobalZen()
-            throws Exception {
-        mService.isSystemUid = true;
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        ManagedServices.ManagedServiceInfo info = mock(ManagedServices.ManagedServiceInfo.class);
-        when(mListeners.checkServiceTokenLocked(any())).thenReturn(info);
-        info.component = new ComponentName("pkg", "cls");
-
-        mBinderService.requestInterruptionFilterFromListener(mock(INotificationListener.class),
-                INTERRUPTION_FILTER_PRIORITY);
-
-        verify(zenModeHelper).setManualZenMode(any(),
-                eq(ZEN_MODE_IMPORTANT_INTERRUPTIONS), eq(null), eq(ZenModeConfig.ORIGIN_SYSTEM),
-                anyString(), eq("pkg"), eq(mUid));
-    }
-
-    @Test
-    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
-    public void updateAutomaticZenRule_implicitRuleWithoutCPS_disallowedFromApp() throws Exception {
-        setUpRealZenTest();
-        mService.setCallerIsNormalPackage();
-        assertThat(mBinderService.getAutomaticZenRules().getList()).isEmpty();
-
-        // Create an implicit zen rule by calling setNotificationPolicy from an app.
-        mBinderService.setNotificationPolicy(mPkg, new NotificationManager.Policy(0, 0, 0), false);
-        assertThat(mBinderService.getAutomaticZenRules().getList()).hasSize(1);
-        AutomaticZenRule.AzrWithId rule = getOnlyElement(
-                (List<AutomaticZenRule.AzrWithId>) mBinderService.getAutomaticZenRules().getList());
-        assertThat(rule.mRule.getOwner()).isNull();
-        assertThat(rule.mRule.getConfigurationActivity()).isNull();
-
-        // Now try to update said rule (e.g. disable it). Should fail.
-        // We also validate the exception message because NPE could be thrown by all sorts of test
-        // issues (e.g. misconfigured mocks).
-        rule.mRule.setEnabled(false);
-        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-                () -> mBinderService.updateAutomaticZenRule(rule.mId, rule.mRule, false));
-        assertThat(e.getMessage()).isEqualTo(
-                "Rule must have a ConditionProviderService and/or configuration activity");
-    }
-
-    @Test
-    @EnableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
-    public void updateAutomaticZenRule_implicitRuleWithoutCPS_allowedFromSystem() throws Exception {
-        setUpRealZenTest();
-        mService.setCallerIsNormalPackage();
-        assertThat(mBinderService.getAutomaticZenRules().getList()).isEmpty();
-
-        // Create an implicit zen rule by calling setNotificationPolicy from an app.
-        mBinderService.setNotificationPolicy(mPkg, new NotificationManager.Policy(0, 0, 0), false);
-        assertThat(mBinderService.getAutomaticZenRules().getList()).hasSize(1);
-        AutomaticZenRule.AzrWithId rule = getOnlyElement(
-                (List<AutomaticZenRule.AzrWithId>) mBinderService.getAutomaticZenRules().getList());
-        assertThat(rule.mRule.getOwner()).isNull();
-        assertThat(rule.mRule.getConfigurationActivity()).isNull();
-
-        // Now update said rule from Settings (e.g. disable it). Should work!
-        mService.isSystemUid = true;
-        rule.mRule.setEnabled(false);
-        mBinderService.updateAutomaticZenRule(rule.mId, rule.mRule, false);
-
-        AutomaticZenRule.AzrWithId updatedRule = getOnlyElement(
-                (List<AutomaticZenRule.AzrWithId>) mBinderService.getAutomaticZenRules().getList());
-        assertThat(updatedRule.mRule.isEnabled()).isFalse();
-    }
-
-    @Test
-    public void setNotificationPolicy_fromSystemApp_appliesPriorityChannelsAllowed()
-            throws Exception {
-        setUpRealZenTest();
-        // Start with hasPriorityChannels=true, allowPriorityChannels=true ("default").
-        mService.mZenModeHelper.setNotificationPolicy(UserHandle.CURRENT,
-                new Policy(0, 0, 0, 0, Policy.policyState(true, true), 0),
-                ZenModeConfig.ORIGIN_SYSTEM, Process.SYSTEM_UID);
-
-        // The caller will supply states with "wrong" hasPriorityChannels.
-        int stateBlockingPriorityChannels = Policy.policyState(false, false);
-        mBinderService.setNotificationPolicy(mPkg,
-                new Policy(1, 0, 0, 0, stateBlockingPriorityChannels, 0), false);
-
-        // hasPriorityChannels is untouched and allowPriorityChannels was updated.
-        assertThat(mBinderService.getNotificationPolicy(mPkg).priorityCategories).isEqualTo(1);
-        assertThat(mBinderService.getNotificationPolicy(mPkg).state).isEqualTo(
-                Policy.policyState(true, false));
-
-        // Same but setting allowPriorityChannels to true.
-        int stateAllowingPriorityChannels = Policy.policyState(false, true);
-        mBinderService.setNotificationPolicy(mPkg,
-                new Policy(2, 0, 0, 0, stateAllowingPriorityChannels, 0), false);
-
-        assertThat(mBinderService.getNotificationPolicy(mPkg).priorityCategories).isEqualTo(2);
-        assertThat(mBinderService.getNotificationPolicy(mPkg).state).isEqualTo(
-                Policy.policyState(true, true));
-    }
-
-    @Test
-    @DisableCompatChanges(NotificationManagerService.MANAGE_GLOBAL_ZEN_VIA_IMPLICIT_RULES)
-    public void setNotificationPolicy_fromRegularAppThatCanModifyPolicy_ignoresState()
-            throws Exception {
-        setUpRealZenTest();
-        // Start with hasPriorityChannels=true, allowPriorityChannels=true ("default").
-        mService.mZenModeHelper.setNotificationPolicy(UserHandle.CURRENT,
-                new Policy(0, 0, 0, 0, Policy.policyState(true, true), 0),
-                ZenModeConfig.ORIGIN_SYSTEM, Process.SYSTEM_UID);
-        mService.setCallerIsNormalPackage();
-
-        mBinderService.setNotificationPolicy(mPkg,
-                new Policy(1, 0, 0, 0, Policy.policyState(false, false), 0), false);
-
-        // Policy was updated but the attempt to change state was ignored (it's a @hide API).
-        assertThat(mBinderService.getNotificationPolicy(mPkg).priorityCategories).isEqualTo(1);
-        assertThat(mBinderService.getNotificationPolicy(mPkg).state).isEqualTo(
-                Policy.policyState(true, true));
-    }
-
-    @Test
-    @EnableFlags(android.service.notification.Flags
-            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
-    public void setNotificationPolicy_splitSoundVibration_overwritesGranularSoundAndVibration()
-            throws Exception {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        int priorityCategories = Policy.PRIORITY_CATEGORY_ALARMS | Policy.PRIORITY_CATEGORY_CALLS;
-        // current policy -- only allow vibration for alarms
-        Policy currentUserPolicy = new Policy(
-                priorityCategories, 0, 0, 0, 0, 0,
-                PRIORITY_CATEGORY_CALLS, priorityCategories);
-        when(zenModeHelper.getNotificationPolicy(any())).thenReturn(currentUserPolicy);
-
-        // new policy -- allow all breakthrough for both alarms and calls
-        Policy appPolicy = new Policy(
-                priorityCategories, 0, 0, 0, 0, 0,
-                priorityCategories, priorityCategories);
-        mBinderService.setNotificationPolicy(mPkg, appPolicy, false);
-
-        ArgumentCaptor<Policy> policyCaptor = ArgumentCaptor.forClass(Policy.class);
-        verify(zenModeHelper).setNotificationPolicy(any(), policyCaptor.capture(), anyInt(),
-                anyInt());
-
-        Policy resultingPolicy = policyCaptor.getValue();
-        assertThat(resultingPolicy.allowSoundForPriorityCategory).isEqualTo(priorityCategories);
-        assertThat(resultingPolicy.allowVibrationForPriorityCategory).isEqualTo(priorityCategories);
-    }
-
-    @Test
-    @EnableFlags(android.service.notification.Flags
-            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
-    public void
-    setNotificationPolicy_splitSoundVibration_enable_preservesGranularSoundAndVibration()
-            throws Exception {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        int priorityCategories = Policy.PRIORITY_CATEGORY_ALARMS | Policy.PRIORITY_CATEGORY_CALLS;
-        // current policy -- only allow vibration for alarms
-        Policy currentUserPolicy = new Policy(
-                priorityCategories, 0, 0, 0, 0, 0,
-                PRIORITY_CATEGORY_CALLS, priorityCategories);
-        when(zenModeHelper.getNotificationPolicy(any())).thenReturn(currentUserPolicy);
-
-        // new policy -- no granular settings
-        Policy appPolicy = new Policy(priorityCategories, 0, 0, 0, 0);
-        mBinderService.setNotificationPolicy(mPkg, appPolicy, false);
-
-        ArgumentCaptor<Policy> policyCaptor = ArgumentCaptor.forClass(Policy.class);
-        verify(zenModeHelper).setNotificationPolicy(any(), policyCaptor.capture(), anyInt(),
-                anyInt());
-
-        Policy resultingPolicy = policyCaptor.getValue();
-        assertThat(resultingPolicy.allowSoundForPriorityCategory).isEqualTo(
-                PRIORITY_CATEGORY_CALLS);
-        assertThat(resultingPolicy.allowVibrationForPriorityCategory)
-                .isEqualTo(priorityCategories);
-    }
-
-    @Test
-    @EnableFlags(android.service.notification.Flags
-            .FLAG_SPLIT_SOUND_VIBRATION_FOR_NOTIFICATION_BREAKTHROUGH)
-    public void
-    setNotificationPolicy_splitSoundVibration_disable_overwritesGranularSoundAndVibration()
-            throws Exception {
-        ZenModeHelper zenModeHelper = setUpMockZenTest();
-        int priorityCategories = Policy.PRIORITY_CATEGORY_ALARMS | Policy.PRIORITY_CATEGORY_CALLS;
-        // current policy -- only allow vibration for calls
-        Policy currentUserPolicy = new Policy(
-                priorityCategories, 0, 0, 0, 0, 0,
-                Policy.PRIORITY_CATEGORY_ALARMS, priorityCategories);
-        when(zenModeHelper.getNotificationPolicy(any())).thenReturn(currentUserPolicy);
-
-        // new policy -- no granular settings
-        int newPriorityCategories =
-                Policy.PRIORITY_CATEGORY_CALLS | Policy.PRIORITY_CATEGORY_REMINDERS;
-        Policy appPolicy = new Policy(newPriorityCategories, 0, 0, 0, 0);
-        mBinderService.setNotificationPolicy(mPkg, appPolicy, false);
-
-        ArgumentCaptor<Policy> policyCaptor = ArgumentCaptor.forClass(Policy.class);
-        verify(zenModeHelper).setNotificationPolicy(any(), policyCaptor.capture(), anyInt(),
-                anyInt());
-
-        Policy resultingPolicy = policyCaptor.getValue();
-        assertThat(resultingPolicy.allowSoundForPriorityCategory).isEqualTo(
-                Policy.PRIORITY_CATEGORY_REMINDERS);
-        assertThat(resultingPolicy.allowVibrationForPriorityCategory).isEqualTo(
-                newPriorityCategories);
-    }
-
-    /** Prepares for a zen-related test that uses the real {@link ZenModeHelper}. */
-    private void setUpRealZenTest() throws Exception {
-        when(mConditionProviders.isPackageOrComponentAllowed(anyString(), anyInt()))
-                .thenReturn(true);
-
-        int iconResId = 79;
-        String iconResName = "icon_79";
-        String pkg = mContext.getPackageName();
-        ApplicationInfo appInfoSpy = spy(new ApplicationInfo());
-        appInfoSpy.icon = iconResId;
-        when(appInfoSpy.loadLabel(any())).thenReturn("Test App");
-        when(mPackageManagerClient.getApplicationInfo(eq(pkg), anyInt())).thenReturn(appInfoSpy);
-
-        when(mResources.getResourceName(eq(iconResId))).thenReturn(iconResName);
-        when(mResources.getIdentifier(eq(iconResName), any(), any())).thenReturn(iconResId);
-        when(mPackageManagerClient.getResourcesForApplication(eq(pkg))).thenReturn(mResources);
-
-        // Ensure that there is a zen configuration for the user running the test (won't be
-        // USER_SYSTEM if running on HSUM).
-        mService.mZenModeHelper.onUserSwitched(mUserId);
     }
 
     @Test
@@ -19475,96 +18047,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         } catch (SecurityException e) {
             // yay
         }
-    }
-
-    @Test
-    public void testGetEffectsSuppressor_noSuppressor() throws Exception {
-        when(mUmInternal.getProfileIds(anyInt(), anyBoolean())).thenReturn(new int[]{mUserId});
-        when(mListeners.checkServiceTokenLocked(any())).thenReturn(mListener);
-        assertThat(mBinderService.getEffectsSuppressor()).isNull();
-    }
-
-    @Test
-    public void testGetEffectsSuppressor_suppressorSameApp() throws Exception {
-        when(mUmInternal.getProfileIds(anyInt(), anyBoolean())).thenReturn(new int[]{mUserId});
-        when(mListeners.checkServiceTokenLocked(any())).thenReturn(mListener);
-        mService.isSystemUid = false;
-        mService.isSystemAppId = false;
-        mBinderService.requestHintsFromListener(mock(INotificationListener.class),
-                HINT_HOST_DISABLE_EFFECTS);
-        assertThat(mBinderService.getEffectsSuppressor()).isEqualTo(mListener.component);
-    }
-
-    @Test
-    public void testGetEffectsSuppressor_suppressorDiffApp() throws Exception {
-        when(mUmInternal.getProfileIds(anyInt(), anyBoolean())).thenReturn(new int[]{mUserId});
-        when(mListeners.checkServiceTokenLocked(any())).thenReturn(mListener);
-        mService.isSystemUid = false;
-        mService.isSystemAppId = false;
-        mBinderService.requestHintsFromListener(mock(INotificationListener.class),
-                HINT_HOST_DISABLE_EFFECTS);
-        when(mPmi.isSameApp(anyString(), anyLong(), anyInt(), anyInt())).thenReturn(false);
-        assertThat(mBinderService.getEffectsSuppressor()).isEqualTo(null);
-    }
-
-    @Test
-    public void testGetEffectsSuppressor_suppressorDiffAppSystemCaller() throws Exception {
-        when(mUmInternal.getProfileIds(anyInt(), anyBoolean())).thenReturn(new int[]{mUserId});
-        when(mListeners.checkServiceTokenLocked(any())).thenReturn(mListener);
-        mService.isSystemUid = true;
-        mBinderService.requestHintsFromListener(mock(INotificationListener.class),
-                HINT_HOST_DISABLE_EFFECTS);
-        when(mPmi.isSameApp(anyString(), anyLong(), anyInt(), anyInt())).thenReturn(false);
-        assertThat(mBinderService.getEffectsSuppressor()).isEqualTo(mListener.component);
-    }
-
-    @Test
-    public void requestHintsFromListener_changingEffectsButNotSuppressor_noBroadcast()
-            throws Exception {
-        when(mUmInternal.getProfileIds(anyInt(), anyBoolean())).thenReturn(new int[]{mUserId});
-        when(mListeners.checkServiceTokenLocked(any())).thenReturn(mListener);
-        INotificationListener token = mock(INotificationListener.class);
-        mService.isSystemUid = true;
-
-        mBinderService.requestHintsFromListener(token, HINT_HOST_DISABLE_CALL_EFFECTS);
-        moveTimeForwardAndWaitForIdle(500); // more than ZEN_BROADCAST_DELAY
-
-        verify(mContext, times(1)).sendBroadcastMultiplePermissions(
-                isIntentWithAction(ACTION_EFFECTS_SUPPRESSOR_CHANGED), any(), any(), any());
-
-        // Same suppressor suppresses something else.
-        mBinderService.requestHintsFromListener(token, HINT_HOST_DISABLE_NOTIFICATION_EFFECTS);
-        moveTimeForwardAndWaitForIdle(500); // more than ZEN_BROADCAST_DELAY
-
-        // Still 1 total calls (the previous one).
-        verify(mContext, times(1)).sendBroadcastMultiplePermissions(
-                isIntentWithAction(ACTION_EFFECTS_SUPPRESSOR_CHANGED), any(), any(), any());
-    }
-
-    @Test
-    public void requestHintsFromListener_changingSuppressor_throttlesBroadcast() throws Exception {
-        when(mUmInternal.getProfileIds(anyInt(), anyBoolean())).thenReturn(new int[]{mUserId});
-        when(mListeners.checkServiceTokenLocked(any())).thenReturn(mListener);
-        INotificationListener token = mock(INotificationListener.class);
-        mService.isSystemUid = true;
-
-        // Several updates in quick succession.
-        mBinderService.requestHintsFromListener(token, HINT_HOST_DISABLE_CALL_EFFECTS);
-        mBinderService.clearRequestedListenerHints(token);
-        mBinderService.requestHintsFromListener(token, HINT_HOST_DISABLE_NOTIFICATION_EFFECTS);
-        mBinderService.clearRequestedListenerHints(token);
-        mBinderService.requestHintsFromListener(token, HINT_HOST_DISABLE_CALL_EFFECTS);
-        mBinderService.clearRequestedListenerHints(token);
-        mBinderService.requestHintsFromListener(token, HINT_HOST_DISABLE_NOTIFICATION_EFFECTS);
-
-        // No broadcasts yet!
-        verify(mContext, never()).sendBroadcastMultiplePermissions(any(), any(), any(), any());
-
-        moveTimeForwardAndWaitForIdle(500); // more than ZEN_BROADCAST_DELAY
-
-        // Only one broadcast after idle time.
-        verify(mContext, times(1)).sendBroadcastMultiplePermissions(
-                isIntentWithAction(ACTION_EFFECTS_SUPPRESSOR_CHANGED), any(), any(), any());
     }
 
     @Test
