@@ -523,7 +523,7 @@ constructor(
         // TODO: b/301119301 - consider moving the config data needed for diffs to relayout params
         // instead of using a whole Configuration as a parameter.
         val windowDecorConfig =
-            if (DesktopModeFlags.ENABLE_APP_HEADER_WITH_TASK_DENSITY.isTrue && isAppHeader) {
+            if (isAppHeader) {
                 // Should match the density of the task. The task may have had its density
                 // overridden
                 // to be different that SysUI's.
