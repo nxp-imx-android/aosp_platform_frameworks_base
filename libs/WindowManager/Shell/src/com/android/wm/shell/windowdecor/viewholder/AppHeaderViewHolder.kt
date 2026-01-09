@@ -160,8 +160,11 @@ class AppHeaderViewHolder(
     init {
         captionView.setOnTouchListener(onCaptionTouchListener)
         captionHandle.setOnTouchListener(onCaptionTouchListener)
-        openMenuButton.setOnClickListener(onCaptionButtonClickListener)
+        closeWindowButton.setOnTouchListener(onCaptionTouchListener)
+        maximizeWindowButton.setOnTouchListener(onCaptionTouchListener)
+        minimizeWindowButton.setOnTouchListener(onCaptionTouchListener)
         openMenuButton.setOnTouchListener(onCaptionTouchListener)
+
         closeWindowButton.throttleFirstClicks(CLICK_DELAY) { v ->
             onCaptionButtonClickListener.onClick(v)
         }
@@ -174,14 +177,9 @@ class AppHeaderViewHolder(
         openMenuButton.throttleFirstClicks(CLICK_DELAY) { v ->
             onCaptionButtonClickListener.onClick(v)
         }
-        maximizeWindowButton.setOnTouchListener(onCaptionTouchListener)
+
         maximizeWindowButton.setOnGenericMotionListener(onCaptionGenericMotionListener)
         maximizeWindowButton.onLongClickListener = onLongClickListener
-        closeWindowButton.setOnTouchListener(onCaptionTouchListener)
-        minimizeWindowButton.throttleFirstClicks(CLICK_DELAY) { v ->
-            onCaptionButtonClickListener.onClick(v)
-        }
-        minimizeWindowButton.setOnTouchListener(onCaptionTouchListener)
         maximizeButtonView.onHoverAnimationFinishedListener =
             onMaximizeHoverAnimationFinishedListener
 
