@@ -146,28 +146,6 @@ class CollapseBubbleAppViaClickBubbleIconAfterSwitchTest(navBar: NavBar) :
     }
 
     @Test
-    override fun previousWindowAsTopWindowAtEnd() {
-        wmTraceSubject
-            .isAppWindowOnTop(testApp)
-            .then()
-            .isAppWindowOnTop(previousApp)
-            .then()
-            .isAppWindowOnTop(LAUNCHER) // End up with collapsing all bubbles
-            .forAllEntries()
-    }
-
-    @Test
-    override fun previousAppWindowBecomesTopWindow() {
-        wmTraceSubject
-            .isAppWindowNotOnTop(previousApp)
-            .then()
-            .isAppWindowOnTop(previousApp)
-            .then()
-            .isAppWindowOnTop(LAUNCHER) // End up with collapsing all bubbles
-            .forAllEntries()
-    }
-
-    @Test
     override fun previousAppWindowReplacesTestAppAsTopWindow() {
         wmTraceSubject
             .isAppWindowOnTop(testApp)
