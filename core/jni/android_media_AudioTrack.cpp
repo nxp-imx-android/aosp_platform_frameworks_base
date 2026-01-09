@@ -21,6 +21,7 @@
 #include "android_media_AudioTrack.h"
 
 #include <android-base/macros.h>
+#include <android/media/audio/common/FlushFromFrameSupport.h>
 #include <android_os_Parcel.h>
 #include <binder/MemoryBase.h>
 #include <binder/MemoryHeapBase.h>
@@ -49,6 +50,7 @@
 using namespace android;
 
 using ::android::media::VolumeShaper;
+using ::android::media::audio::common::FlushFromFrameSupport;
 
 // ----------------------------------------------------------------------------
 static const char* const kClassPathName = "android/media/AudioTrack";
@@ -1478,6 +1480,36 @@ static jlong android_media_AudioTrack_flushFromFrame(JNIEnv * /*env*/, jobject /
     return positionInFrames;
 }
 
+static jint android_media_AudioTrack_getFlushWrittenFramesFromPositionSupport(
+        JNIEnv *env, jobject /*thiz*/, jint jEncoding, jint jSampleRate, jint jChannelMask,
+        jint jChannelIndexMask, jobject jAudioAttributes) {
+    audio_config_base_t nConfig = AUDIO_CONFIG_BASE_INITIALIZER;
+    nConfig.format = audioFormatToNative(jEncoding);
+    nConfig.sample_rate = jSampleRate;
+    nConfig.channel_mask = nativeChannelMaskFromJavaChannelMasks(jChannelMask, jChannelIndexMask);
+
+    JNIAudioAttributeHelper::UniqueAaPtr paa = JNIAudioAttributeHelper::makeUnique();
+    jint jStatus = JNIAudioAttributeHelper::nativeFromJava(env, jAudioAttributes, paa.get());
+    if (jStatus != (jint)AUDIO_JAVA_SUCCESS) {
+        ALOGE("%s failed to convert audio attributes to native, %d", __func__, jStatus);
+        return (jint)FlushFromFrameSupport::UNSUPPORTED;
+    }
+
+    FlushFromFrameSupport support = FlushFromFrameSupport::UNSUPPORTED;
+    if (status_t status =
+                AudioSystem::getFlushFromFrameSupport(nConfig, *paa.get(),
+                                                      static_cast<audio_output_flags_t>(
+                                                              AUDIO_OUTPUT_FLAG_COMPRESS_OFFLOAD |
+                                                              AUDIO_OUTPUT_FLAG_NON_BLOCKING),
+                                                      &support);
+        status != NO_ERROR) {
+        ALOGE("%s failed to query, error=%d", __func__, status);
+        return (jint)FlushFromFrameSupport::UNSUPPORTED;
+    }
+
+    return (jint)support;
+}
+
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 static const JNINativeMethod gMethods[] = {
@@ -1566,6 +1598,9 @@ static const JNINativeMethod gMethods[] = {
         {"native_getStartThresholdInFrames", "()I",
          (void *)android_media_AudioTrack_getStartThresholdInFrames},
         {"native_flushFromFrame", "(IJ)J", (void *)android_media_AudioTrack_flushFromFrame},
+        {"native_getFlushWrittenFramesFromPositionSupport",
+         "(IIIILandroid/media/AudioAttributes;)I",
+         (void *)android_media_AudioTrack_getFlushWrittenFramesFromPositionSupport},
 };
 
 // field names found in android/media/AudioTrack.java
