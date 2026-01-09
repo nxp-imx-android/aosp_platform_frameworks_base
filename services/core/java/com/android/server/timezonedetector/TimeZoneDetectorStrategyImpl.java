@@ -50,7 +50,6 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.SystemTimeZone.TimeZoneConfidence;
 import com.android.server.timezonedetector.ConfigurationInternal.DetectionMode;
-import com.android.server.timezonedetector.TimeZoneOffsetChangeListener.TimeZoneOffsetChangeEvent;
 import com.android.server.timezonedetector.FusedTimeZoneDetector.TimeZoneSetter;
 
 import java.time.Duration;
@@ -634,8 +633,9 @@ public final class TimeZoneDetectorStrategyImpl
             case ConfigurationInternal.DETECTION_MODE_MANUAL:
                 // No work to do.
                 break;
-            case ConfigurationInternal.DETECTION_MODE_GEO: {
-                boolean isGeoDetectionCertain = doGeolocationTimeZoneDetection(detectionReason);
+            case ConfigurationInternal.DETECTION_MODE_GEO:
+                {
+                    boolean isGeoDetectionCertain = doGeolocationTimeZoneDetection(detectionReason);
 
                 // When geolocation detection is uncertain of the time zone, telephony detection
                 // can be used if telephony fallback is enabled and supported.
@@ -716,7 +716,8 @@ public final class TimeZoneDetectorStrategyImpl
         String deviceTimeZone = mEnvironment.getDeviceTimeZone();
         if (zoneIds.contains(deviceTimeZone)) {
             if (DBG) {
-                Slog.d(LOG_TAG,
+                Slog.d(
+                        LOG_TAG,
                         "Geo tz suggestion contains current device time zone. Applying bias.");
             }
             timeZoneId = deviceTimeZone;
@@ -853,17 +854,40 @@ public final class TimeZoneDetectorStrategyImpl
 
         // Record the fact that the time zone was changed so that it can be tracked, i.e.
         // whether the device / user sticks with it.
-        TimeZoneChangeListener.TimeZoneChangeEvent changeEvent =
-                new TimeZoneChangeListener.TimeZoneChangeEvent(
-                        mEnvironment.elapsedRealtimeMillis(),
-                        mEnvironment.currentTimeMillis(),
-                        origin,
-                        userId,
-                        currentZoneId,
-                        newZoneId,
-                        currentConfidence,
-                        newConfidence,
-                        cause);
+        TimeZoneChangeListener.TimeZoneChangeEvent changeEvent;
+        QualifiedTelephonyTimeZoneSuggestion bestTelephonySuggestion =
+                findBestTelephonySuggestion();
+        if (android.timezone.flags.Flags.enableFusedTimeZoneDetector()
+                && android.timezone.flags.Flags.enableAutomaticTimeZoneRejectionLogging()
+                && bestTelephonySuggestion != null) {
+            TelephonyTimeZoneSuggestion suggestion = bestTelephonySuggestion.suggestion();
+
+            changeEvent =
+                    new TimeZoneChangeListener.TimeZoneChangeEvent(
+                            mEnvironment.elapsedRealtimeMillis(),
+                            mEnvironment.currentTimeMillis(),
+                            origin,
+                            userId,
+                            currentZoneId,
+                            newZoneId,
+                            currentConfidence,
+                            newConfidence,
+                            suggestion,
+                            cause);
+        } else {
+            changeEvent =
+                    new TimeZoneChangeListener.TimeZoneChangeEvent(
+                            mEnvironment.elapsedRealtimeMillis(),
+                            mEnvironment.currentTimeMillis(),
+                            origin,
+                            userId,
+                            currentZoneId,
+                            newZoneId,
+                            currentConfidence,
+                            newConfidence,
+                            null,
+                            cause);
+        }
         mChangeTracker.process(changeEvent);
     }
 
