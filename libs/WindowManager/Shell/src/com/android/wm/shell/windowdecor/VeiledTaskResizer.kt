@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.windowdecor
 
+import android.window.DesktopExperienceFlags
 import android.window.WindowContainerTransaction
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.freeformCaptionInsets
@@ -41,6 +42,13 @@ class VeiledTaskResizer(
         ) {
             if (!session.isResizingOrAnimatingResize) {
                 session.windowDecoration.showResizeVeil(session.repositionTaskBounds)
+                // Clear the stored pre-snapped/maximized bounds to prevent unintended restoration
+                // if the user manually resizes the window.
+                if (DesktopExperienceFlags.ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT.isTrue) {
+                    session.desktopRepository?.removeBoundsBeforeSnapOrMaximize(
+                        session.windowDecoration.taskInfo.taskId
+                    )
+                }
                 session.isResizingOrAnimatingResize = true
             } else {
                 session.windowDecoration.updateResizeVeil(session.repositionTaskBounds)

@@ -20,6 +20,7 @@ import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.RectF
 import android.os.IBinder
+import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableResources
 import android.view.Display
@@ -27,12 +28,14 @@ import android.view.SurfaceControl
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
 import androidx.test.internal.runner.junit4.statement.UiThreadStatement.runOnUiThread
+import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
 import com.android.wm.shell.common.MultiDisplayTestUtil.TestDisplay.DISPLAY_0
 import com.android.wm.shell.common.MultiDisplayTestUtil.TestDisplay.DISPLAY_1
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -54,14 +57,15 @@ import org.mockito.kotlin.whenever
 @SmallTest
 @RunWith(AndroidTestingRunner::class)
 class MultiDisplayTaskMoverTest : ShellTestCase() {
+    private val mockDesktopRepository = mock<DesktopRepository>()
     private val mockDisplay = mock<Display>()
     private val mockDisplayController = mock<DisplayController>()
     private val mockIndicatorController = mock<MultiDisplayDragMoveIndicatorController>()
     private val mockSurfaceControl = mock<SurfaceControl>()
+    private val mockTaskBinder = mock<IBinder>()
+    private val mockTaskToken = mock<WindowContainerToken>()
     private val mockTransaction = mock<SurfaceControl.Transaction>()
     private val mockWindowDecoration = mock<WindowDecorationWrapper>()
-    private val taskToken = mock<WindowContainerToken>()
-    private val taskBinder = mock<IBinder>()
 
     private lateinit var dragSession: DragSession
     private lateinit var resources: TestableResources
@@ -78,9 +82,9 @@ class MultiDisplayTaskMoverTest : ShellTestCase() {
                 taskId = TASK_ID
                 displayId = DISPLAY_0.id
                 configuration.windowConfiguration.setBounds(STARTING_BOUNDS)
+                token = mockTaskToken
             }
-        whenever(taskToken.asBinder()).thenReturn(taskBinder)
-
+        whenever(mockTaskToken.asBinder()).thenReturn(mockTaskBinder)
         whenever(mockWindowDecoration.taskInfo).thenReturn(taskInfo)
         whenever(mockWindowDecoration.taskSurface).thenReturn(mockSurfaceControl)
         whenever(mockWindowDecoration.display).thenReturn(mockDisplay)
@@ -102,6 +106,7 @@ class MultiDisplayTaskMoverTest : ShellTestCase() {
                 repositionStartPoint =
                     PointF(STARTING_BOUNDS.left.toFloat(), STARTING_BOUNDS.top.toFloat()),
                 rotation = 0,
+                desktopRepository = mockDesktopRepository,
             )
 
         taskMover =
@@ -206,6 +211,48 @@ class MultiDisplayTaskMoverTest : ShellTestCase() {
         val expectedBoundsUpdate = Rect(200, 100, 400, 300)
         Assert.assertEquals(expectedBoundsUpdate, dragSession.repositionTaskBounds)
     }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT)
+    fun testOnMoveUpdate_firstMoveWithBoundsRestoration_returnsWctAndRestoresBounds() =
+        runOnUiThread {
+            val prevBounds = Rect(100, 250, 200, 500)
+            val expectedRestoredBounds = Rect(100, 100, 200, 350)
+            dragSession.shouldRestoreBoundsOnMove = true
+            whenever(mockDesktopRepository.getBoundsBeforeSnapOrMaximize(TASK_ID))
+                .thenReturn(prevBounds)
+
+            // First Move: Trigger the restoration of previous bounds and return a WCT.
+            val wct =
+                checkNotNull(taskMover.onMoveUpdate(dragSession, DISPLAY_0.id, 500f, 100f)) {
+                    "Expected non-null return from onResizeUpdate with bounds restore"
+                }
+            val change =
+                checkNotNull(wct.changes[mockTaskBinder]) {
+                    "Expected non-null changes in WindowContainerTransaction"
+                }
+            Assert.assertEquals(
+                expectedRestoredBounds,
+                change.configuration.windowConfiguration.bounds,
+            )
+            Assert.assertEquals(expectedRestoredBounds, dragSession.repositionTaskBounds)
+            Assert.assertFalse(dragSession.shouldRestoreBoundsOnMove)
+
+            dragSession.pendingBoundsRestoreTransition = mock<IBinder>()
+
+            // Second Move: If a restore transition is active, it should return null and not update
+            // bounds.
+            Assert.assertNull(taskMover.onMoveUpdate(dragSession, DISPLAY_0.id, 300f, 300f))
+            Assert.assertEquals(expectedRestoredBounds, dragSession.repositionTaskBounds)
+
+            dragSession.pendingBoundsRestoreTransition = null
+
+            // Third Move: If the restore transition has finished, it should continue to move the
+            // window.
+            val expectedBounds = Rect(300, 300, 400, 550)
+            Assert.assertNull(taskMover.onMoveUpdate(dragSession, DISPLAY_0.id, 300f, 300f))
+            Assert.assertEquals(expectedBounds, dragSession.repositionTaskBounds)
+        }
 
     companion object {
         private const val TASK_ID = 5

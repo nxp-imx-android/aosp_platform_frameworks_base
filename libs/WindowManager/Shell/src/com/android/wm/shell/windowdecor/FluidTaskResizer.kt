@@ -15,6 +15,7 @@
  */
 package com.android.wm.shell.windowdecor
 
+import android.window.DesktopExperienceFlags
 import android.window.WindowContainerTransaction
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
@@ -46,6 +47,14 @@ class FluidTaskResizer(
                     session.windowDecoration.taskInfo.token,
                     /* dragResizing= */ true,
                 )
+
+                // Clear the stored pre-snapped/maximized bounds to prevent unintended restoration
+                // if the user manually resizes the window.
+                if (DesktopExperienceFlags.ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT.isTrue) {
+                    session.desktopRepository?.removeBoundsBeforeSnapOrMaximize(
+                        session.windowDecoration.taskInfo.taskId
+                    )
+                }
                 session.isResizingOrAnimatingResize = true
             }
             wct.setBounds(session.windowDecoration.taskInfo.token, session.repositionTaskBounds)

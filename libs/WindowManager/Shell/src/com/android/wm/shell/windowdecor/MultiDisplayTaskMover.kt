@@ -16,9 +16,12 @@
 
 package com.android.wm.shell.windowdecor
 
+import android.graphics.Rect
 import android.hardware.display.DisplayTopology
 import android.view.Choreographer
 import android.view.SurfaceControl
+import android.window.DesktopExperienceFlags
+import android.window.WindowContainerTransaction
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.MultiDisplayDragMoveBoundsCalculator
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
@@ -44,7 +47,51 @@ class MultiDisplayTaskMover(
         displayIds.addAll(topology.allNodesIdMap().keys)
     }
 
-    override fun onMoveUpdate(session: DragSession, displayId: Int, x: Float, y: Float) {
+    override fun onMoveUpdate(
+        session: DragSession,
+        displayId: Int,
+        x: Float,
+        y: Float,
+    ): WindowContainerTransaction? {
+        // A transition is in progress to restore the window to its pre-snapped or pre-maximized
+        // bounds. Defer the move until the transition is complete to avoid visual glitches.
+        if (
+            DesktopExperienceFlags.ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT.isTrue &&
+                session.pendingBoundsRestoreTransition != null
+        ) {
+            return null
+        }
+
+        // The window is currently snapped or maximized. On the first drag-move event,
+        // calculate and apply its pre-snapped or pre-maximized bounds to initiate the restoration.
+        if (
+            DesktopExperienceFlags.ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT.isTrue &&
+                session.shouldRestoreBoundsOnMove
+        ) {
+            session.shouldRestoreBoundsOnMove = false
+            val prevBounds =
+                session.desktopRepository?.getBoundsBeforeSnapOrMaximize(
+                    session.windowDecoration.taskInfo.taskId
+                )
+
+            val wct =
+                prevBounds?.run {
+                    val currentBounds =
+                        session.windowDecoration.taskInfo.configuration.windowConfiguration.bounds
+                    val restoredBounds = calculateOnMoveRestoredBounds(prevBounds, currentBounds, x)
+                    session.taskBoundsAtDragStart.set(restoredBounds)
+
+                    WindowContainerTransaction()
+                        .setBounds(
+                            session.windowDecoration.taskInfo.token,
+                            session.taskBoundsAtDragStart,
+                        )
+                }
+
+            session.repositionTaskBounds.set(session.taskBoundsAtDragStart)
+            return wct
+        }
+
         val t = transactionSupplier()
         val startDisplayLayout =
             displayController.getDisplayLayout(session.windowDecoration.taskInfo.displayId)
@@ -104,6 +151,7 @@ class MultiDisplayTaskMover(
         }
         t.setFrameTimeline(Choreographer.getInstance().vsyncId)
         t.apply()
+        return null
     }
 
     override fun onMoveEnd(session: DragSession, displayId: Int, x: Float, y: Float) {
@@ -146,5 +194,25 @@ class MultiDisplayTaskMover(
                 )
             )
         }
+    }
+
+    private fun calculateOnMoveRestoredBounds(
+        prevBounds: Rect,
+        currentBounds: Rect,
+        dragStartX: Float,
+    ): Rect {
+        val prevWidth = prevBounds.width()
+        val prevHeight = prevBounds.height()
+
+        val touchPointHorizontalRatio = (dragStartX - currentBounds.left) / currentBounds.width()
+        val positionOffset = (prevWidth * touchPointHorizontalRatio).toInt()
+
+        val newLeft = dragStartX - positionOffset
+        return Rect(
+            newLeft.toInt(),
+            currentBounds.top,
+            (newLeft + prevWidth).toInt(),
+            currentBounds.top + prevHeight,
+        )
     }
 }
