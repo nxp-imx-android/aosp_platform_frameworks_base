@@ -41,15 +41,15 @@ constructor(@NotificationHeadsUpLog private val buffer: LogBuffer) {
     }
 
 
-    fun logShowNotificationRequest(entry: NotificationEntry, isPinnedByUser: Boolean) {
+    fun logShowNotificationRequest(entry: NotificationEntry, isFromUserOpenAction: Boolean) {
         buffer.log(
             TAG,
             INFO,
             {
                 str1 = entry.logKey
-                bool1 = isPinnedByUser
+                bool1 = isFromUserOpenAction
             },
-            { "request: show notification $str1. isPinnedByUser=$bool1" },
+            { "request: show notification $str1. isFromUserOpenAction=$bool1" },
         )
     }
 
@@ -127,15 +127,15 @@ constructor(@NotificationHeadsUpLog private val buffer: LogBuffer) {
         )
     }
 
-    fun logShowNotification(entry: NotificationEntry, isPinnedByUser: Boolean) {
+    fun logShowNotification(entry: NotificationEntry, isFromUserOpenAction: Boolean) {
         buffer.log(
             TAG,
             INFO,
             {
                 str1 = entry.logKey
-                bool1 = isPinnedByUser
+                bool1 = isFromUserOpenAction
             },
-            { "show notification $str1. isPinnedByUser=$bool1" },
+            { "show notification $str1. isFromUserOpenAction=$bool1" },
         )
     }
 

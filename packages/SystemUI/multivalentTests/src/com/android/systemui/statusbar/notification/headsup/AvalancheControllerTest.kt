@@ -432,7 +432,7 @@ class AvalancheControllerTest(val flags: FlagsParameterization) : SysuiTestCase(
     }
 
     @Test
-    fun testGetDuration_nextEntryIsPinnedByUser_hideImmediately() {
+    fun testGetDuration_nextEntryIsFromUserOpenAction_hideImmediately() {
         // Entry is showing
         val showingEntry = createHeadsUpEntry(id = 0)
         mAvalancheController.headsUpEntryShowing = showingEntry
